@@ -15,7 +15,7 @@ using Meridian.Contracts.Integrity;
 namespace Meridian.Wpf.ViewModels.Accounting;
 
 /// <summary>Exposes bindable state and commands to review books, chart, rules, manual journals, GL evidence, validation, audit readiness.</summary>
-public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.BindableBase
+public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.BindableBase
 {
     private const string DefaultActor = "desktop-user";
     private const string DefaultLifecycleActor = "desktop-controller";
@@ -323,12 +323,14 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         IAccountingMigrationRunWorkerPlanStore? migrationRunWorkerPlanStore = null,
         DesktopAuthenticationSession? authenticationSession = null,
         IRecurringJournalQueueSource? recurringJournalQueueSource = null,
-        IAccountingAuditIntegrityApiClient? auditIntegrityClient = null)
+        IAccountingAuditIntegrityApiClient? auditIntegrityClient = null,
+        IFactorPaydownApiClient? factorPaydownClient = null)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _authenticationSession = authenticationSession;
         RecurringJournalQueue = new RecurringJournalQueueViewModel(recurringJournalQueueSource);
         AuditChainIntegrity = new AuditChainIntegrityViewModel(auditIntegrityClient);
+        FactorPaydown = new FactorPaydownViewModel(factorPaydownClient);
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         _manualJournalEntryWorkbenchService = manualJournalEntryWorkbenchService ?? throw new ArgumentNullException(nameof(manualJournalEntryWorkbenchService));
         _capitalAccountWorkbenchService = capitalAccountWorkbenchService;
@@ -350,7 +352,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         RefreshCommand = new AsyncRelayCommand(() => RefreshAsync());
         SeedBaselineConfigurationCommand = new AsyncRelayCommand(() => SeedBaselineConfigurationAsync());
         ActivateConfigurationCommand = new AsyncRelayCommand(() => ActivateConfigurationAsync());
-        SaveManualJournalDraftCommand = new AsyncRelayCommand(() => SaveManualJournalDraftAsync());
+        SaveManualJournalDraftCommand = new AsyncRelayCommand(() => SaveManualJournalDraftAsync(), () => CanEditManualJournalDraft);
         ValidateManualJournalDraftCommand = new AsyncRelayCommand(() => ValidateManualJournalDraftAsync());
         SubmitManualJournalDraftCommand = new AsyncRelayCommand(() => SubmitManualJournalDraftAsync());
         RefreshExternalGlCommand = new AsyncRelayCommand(() => RefreshExternalGlAsync());
@@ -377,11 +379,11 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         RetainImplementationSandboxProofCommand = new AsyncRelayCommand(
             () => RetainImplementationSandboxProofAsync(),
             () => CanRetainImplementationSandboxProof);
-        ApproveManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Approve));
-        PostManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Post));
-        ReverseManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Reverse));
-        RebookManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Rebook));
-        LockManualJournalAfterCloseCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.LockAfterClose));
+        ApproveManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Approve), () => CanEditManualJournalDraft);
+        PostManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Post), () => CanEditManualJournalDraft);
+        ReverseManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Reverse), () => CanEditManualJournalDraft);
+        RebookManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Rebook), () => CanEditManualJournalDraft);
+        LockManualJournalAfterCloseCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.LockAfterClose), () => CanEditManualJournalDraft);
 
         AccountingBasisOptions = new ObservableCollection<AccountingBasisKindDto>(
             Enum.GetValues<AccountingBasisKindDto>());
@@ -439,7 +441,6 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public RecurringJournalQueueViewModel RecurringJournalQueue { get; }
 
     /// <summary>On-demand audit-chain verification, matching the browser Configuration panel.</summary>
-    public AuditChainIntegrityViewModel AuditChainIntegrity { get; }
 
     public ObservableCollection<string> RecurringJournalEntityOptions { get; } = [];
 
@@ -1514,7 +1515,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         IsLoading = true;
         _recurringJournalFundProfileId = null;
         _recurringJournalLedgerBookId = null;
-        await RecurringJournalQueue.LoadAsync(null, null, null, ct).ConfigureAwait(false);
+        await ResetGovernedQueuesAsync(ct).ConfigureAwait(false);
         try
         {
             _activeFundProfile = _fundContextService.CurrentFundProfile;
@@ -2050,6 +2051,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
 
     public async Task SaveManualJournalDraftAsync(CancellationToken ct = default)
     {
+        if (!CanEditManualJournalDraft) { ManualJournalStatusText = AssetAccountingDraftRestrictionText; return; }
         if (_activeFundProfile is null)
         {
             ManualJournalStatusText = "Select a fund-linked context before saving a manual journal draft.";
@@ -2141,6 +2143,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         JournalEntryLifecycleActionDto action,
         CancellationToken ct = default)
     {
+        if (!CanApplySelectedJournalAction(action)) { ManualJournalLifecycleStatusText = AssetAccountingDraftRestrictionText; return; }
         if (_manualJournalEntryLifecycleService is null)
         {
             ManualJournalLifecycleStatusText = "Manual journal lifecycle service is not registered for this desktop session.";
@@ -4221,6 +4224,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             .GetWorkbenchAsync(_activeFundProfile.FundProfileId, _configuration?.LedgerBookId, ct)
             .ConfigureAwait(false);
 
+        RememberManualJournalDrafts(workbench.Drafts);
         ManualJournalDraftRows.ReplaceWith(workbench.Drafts.Select(draft =>
             new AccountingWorkbenchRow(
                 $"{FormatManualJournalEntryType(draft.EntryType)} | {draft.Memo}",
@@ -4241,7 +4245,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         var entityId = entityOptions.Contains(SelectedRecurringJournalEntityId, StringComparer.Ordinal)
             ? SelectedRecurringJournalEntityId : entityOptions.Length == 1 ? entityOptions[0] : null;
         SetProperty(ref _selectedRecurringJournalEntityId, entityId, nameof(SelectedRecurringJournalEntityId));
-        await RecurringJournalQueue.LoadAsync(_activeFundProfile.FundProfileId, _configuration?.LedgerBookId, entityId, ct).ConfigureAwait(false);
+        await LoadGovernedQueuesAsync(entityId, ct).ConfigureAwait(false);
         ApplyManualJournalLifecycleRows(_selectedDraft);
         ManualJournalStatusText = BuildManualJournalStatusText(workbench);
         RaisePropertyChanged(nameof(CanSubmitManualJournal));
@@ -4269,6 +4273,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
 
     private void RaiseManualJournalDraftComputedProperties()
     {
+        NotifyAssetAccountingDraftState();
         RaisePropertyChanged(nameof(ManualJournalDraftReferenceText));
         RaisePropertyChanged(nameof(ManualJournalDraftDateText));
         RaisePropertyChanged(nameof(ManualJournalDraftPeriodText));
@@ -4466,65 +4471,6 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 policy.FundProfileId ?? "Global",
                 $"{policy.PolicyId}:{policy.Version}")));
         PolicyPostureText = $"{policies.Count} accounting basis policy record(s) available; create fund-scoped overrides from this workbench.";
-    }
-
-    private ManualJournalEntryDraftDto BuildManualJournalDraft()
-    {
-        // Save retries must rebuild identical input. The service supplies the committed update
-        // time; client-generated timestamps and a new draft ID stay fixed until a save succeeds.
-        var now = _selectedDraft?.UpdatedAtUtc ?? _newManualJournalDraftTimestamp;
-        var fundProfileId = _activeFundProfile?.FundProfileId ?? "default-fund";
-        var currency = string.IsNullOrWhiteSpace(DraftCurrency) ? "USD" : DraftCurrency.Trim().ToUpperInvariant();
-        var ledgerBookId = _configuration?.LedgerBookId ?? _configuration?.LedgerBooks.FirstOrDefault()?.LedgerBookId;
-        var journalEntryId = _selectedDraft?.JournalEntryId ?? _newManualJournalDraftId;
-        var accountingDate = _selectedDraft?.AccountingDate ?? DateOnly.FromDateTime(now.UtcDateTime);
-        var periodId = _selectedDraft?.PeriodId
-            ?? _selectedManualJournalPeriod?.PeriodId.ToString("D", CultureInfo.InvariantCulture)
-            ?? CreateStableGuid(
-                "manual-je-period",
-                fundProfileId,
-                ledgerBookId?.ToString("D") ?? "fund-level",
-                accountingDate.ToString("yyyy-MM", CultureInfo.InvariantCulture)).ToString("D");
-        var entityId = (_activeFundProfile?.EntityIds ?? []).FirstOrDefault();
-        var dimensions = new LedgerDimensionSetDto(
-            FundId: fundProfileId,
-            EntityId: entityId,
-            SleeveId: (_activeFundProfile?.SleeveIds ?? []).FirstOrDefault());
-        return new ManualJournalEntryDraftDto(
-            journalEntryId,
-            _selectedDraft?.Status ?? ManualJournalEntryStatusDto.Draft,
-            fundProfileId,
-            ledgerBookId,
-            SelectedAccountingBasis,
-            accountingDate,
-            PeriodId: periodId,
-            EntityId: entityId,
-            FundNodeId: null,
-            currency,
-            DraftMemo,
-            ResolveActor(),
-            _selectedDraft?.CreatedAtUtc ?? now,
-            now,
-            _selectedDraft?.Version ?? 0,
-            [
-                new ManualJournalEntryLineDto("debit-line", AccountingTemplateLineSideDto.Debit, DraftAmount, currency, DraftDebitAccountPath, EntityId: entityId, Description: "Desktop debit line", EvidenceLink: NormalizeEvidenceLink(DraftEvidenceLink).FirstOrDefault(), Dimensions: dimensions),
-                new ManualJournalEntryLineDto("credit-line", AccountingTemplateLineSideDto.Credit, DraftAmount, currency, DraftCreditAccountPath, EntityId: entityId, Description: "Desktop credit line", EvidenceLink: NormalizeEvidenceLink(DraftEvidenceLink).FirstOrDefault(), Dimensions: dimensions)
-            ],
-            NormalizeEvidenceLink(DraftEvidenceLink),
-            ValidationIssues: [],
-            EvidenceAttachments: NormalizeEvidenceLink(DraftEvidenceLink)
-                .Select(link => new ManualJournalEntryEvidenceAttachmentDto(
-                    "desktop-evidence",
-                    "Desktop evidence link",
-                    "SourceDocument",
-                    link,
-                    "WPF",
-                    now,
-                    ResolveActor()))
-                .ToArray(),
-            EntryType: SelectedEntryType,
-            TreasuryContext: BuildManualJournalTreasuryContext(fundProfileId, SelectedEntryType, accountingDate, journalEntryId),
-            Dimensions: dimensions);
     }
 
     private void ApplyManualJournalEntryTypePreset(ManualJournalEntryTypeDto entryType)
@@ -4967,7 +4913,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ExternalGlEvidencePackageRows.Clear();
         ExternalGlRows.Clear();
         ManualJournalDraftRows.Clear();
-        _ = RecurringJournalQueue.LoadAsync(null, null, null);
+        RememberManualJournalDrafts([]);
+        _ = ResetGovernedQueuesAsync();
         _recurringJournalFundProfileId = null;
         _recurringJournalLedgerBookId = null;
         RecurringJournalEntityOptions.Clear();

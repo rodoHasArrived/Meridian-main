@@ -1174,6 +1174,10 @@ versions, group membership, and category values through the existing ordered lin
 Fresh draft GUIDs can replay the same posting without excluding attribution from comparison.
 Unknown, malformed, partial, or changed evidence refuses replay; all unrelated metadata, ordered
 economics, and posting scope retain their existing checks. Retained IDs and journal bytes do not change.
+`RetainedPostingEquivalence.AccountingTimestampsMatch` exposes the same schema-owned timestamp
+comparison to canonical asset replay: PostgreSQL microsecond precision, including pre-epoch and
+infinity handling. It adds no tolerance. Original command timestamps remain bound to their immutable
+fingerprints; comparisons against stored values do not replace them with a current or rounded clock.
 `LedgerJournalStoreHydrationExtensions` rebuilds an in-memory `Meridian.Ledger.Ledger` from that
 durable journal-read seam, including an as-of helper that scopes by ledger book and upper occurrence
 timestamp so restart, close, and reporting projections can hydrate from the stored spine before
@@ -1388,6 +1392,11 @@ serializable transaction for the journal, scoped tax lots, immutable mutation sn
 and correction lineage. Every atomic lot carries Security Master plus book-position identity;
 disposal compare-and-swap also rechecks unit cost and journal asset relief against the retained
 selected-lot cost basis.
+An explicitly linked, undrafted factor preparation may append a fresh Projected snapshot using
+the exact predecessor version and fingerprint. The bounded transition preserves source event,
+factors, retained evidence and owner identity, refuses any Drafted or financial authority, and
+uses the same locked version check as candidate creation. Earlier snapshots remain byte-exact;
+ordinary lifecycle transitions cannot replace the preparation link or relax source immutability.
 
 ## Roadmap traceability
 

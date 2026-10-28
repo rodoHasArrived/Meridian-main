@@ -55,8 +55,9 @@ canonical SecurityIds or acquisition FX, authorize short posting, or replace ret
 
 Principal-paydown position adjustments consume Instruments `FactorPaydownProjectionService`, reduce
 total basis by the projected monetary principal, and then recompute per-unit basis. The historical
-adjuster therefore uses the same held-face/factor economics as the governed production proof while
-remaining a rebuildable simulation rather than an accounting write path.
+adjuster uses scalar compatibility economics: it does not retain the prior lot factor or original
+face authority required for canonical pro-rata basis relief and premium/discount realization. This
+path is a rebuildable simulation, not governed lot-basis parity or an accounting write path.
 
 The live-position adjuster's additive retained-basis overload accepts the paper lot book's exact
 total and returns `AdjustedTotalCostBasis`. Splits retain that total; sequential principal paydowns

@@ -1,3 +1,4 @@
+import type { AssetAccountingWorkflowViewModel } from "./accounting-screen.asset-workflow";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { ACTIVATION_OUTCOME_KEYS, recordActivationOutcome } from "@/lib/first-run/activation";
@@ -1508,6 +1509,7 @@ export interface ReconciliationQueuePanelViewState {
 }
 
 export interface ManualJournalEntryWorkbenchServices {
+  getAssetCapabilities?: typeof import("@/lib/api/asset-accounting-workflow.api").getAssetAccountingDraftCapabilities;
   getWorkbench: (query?: ManualJournalEntryWorkbenchQuery) => Promise<ManualJournalEntryWorkbench>;
   searchSecurities: (query: string) => Promise<SecurityMasterEntry[]>;
   saveDraft: (request: SaveManualJournalEntryDraftRequest) => Promise<ManualJournalEntryDraft>;
@@ -1925,6 +1927,7 @@ export interface CapitalAccountWorkbenchViewModel {
 }
 
 export interface ManualJournalEntryWorkbenchViewModel {
+  assetWorkflow?: AssetAccountingWorkflowViewModel;
   title: string;
   description: string;
   available: boolean;

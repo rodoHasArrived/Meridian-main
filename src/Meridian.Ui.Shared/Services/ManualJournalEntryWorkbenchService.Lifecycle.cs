@@ -499,10 +499,15 @@ public sealed partial class ManualJournalEntryWorkbenchService
         bool allowHardClosedCloseLock = false)
     {
         ArgumentNullException.ThrowIfNull(draft);
+        EnsureAssetAccountingDraftMatchesSource(draft);
         var fundProfileId = NormalizeFundProfileId(draft.FundProfileId);
         var configuration = await _configurationService.GetWorkspaceAsync(fundProfileId, draft.LedgerBookId, ct, draft.TenantId, draft.CompanyId).ConfigureAwait(false);
         var chartByPath = BuildChartByPath(configuration.ChartOfAccounts);
         var issues = new List<AccountingConfigurationValidationIssueDto>();
+        if (draft.AssetAccountingDraft is not null)
+            issues.Add(Issue("manual-je.asset-approval-workflow-required", AccountingConfigurationValidationSeverityDto.Warning,
+                "Asset candidate source and financial lines are immutable; approval and posting require fresh server capabilities.",
+                "assetAccountingDraft", "Use the governed asset workflow with typed retained approval evidence."));
         var lines = new List<ManualJournalEntryLineDto>(draft.Lines.Count);
         if (draft.RequiresRecurringJournalEvidence || draft.RecurringJournalEvidenceJson is not null ||
             RecurringJournalEvidenceGuard.IsRecurring(draft.TreasuryContext?.IdempotencyKey))

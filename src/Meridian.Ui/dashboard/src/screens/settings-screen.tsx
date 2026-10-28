@@ -1,3 +1,4 @@
+import { OwnedProviderCredentialPanel } from "./settings-owned-provider-credentials";
 import { Activity, ArrowRight, ExternalLink, GitBranch, KeyRound, LoaderCircle, MonitorCheck, RefreshCcw, Save, Search, ShieldCheck, Trash2, User } from "lucide-react";
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
 import { LifecycleControlPanel } from "@/components/meridian/lifecycle-control-panel";
@@ -27,7 +28,6 @@ import {
   createRolePermissionProfile,
   createScopedAccessAssignment,
   createSecurityMasterEntry,
-  deleteProviderCredentials,
   draftSecurityAssetProfile,
   getProviderIntegrationConnectionMonitor,
   getProviderIntegrationConnectionSyncPlan,
@@ -43,7 +43,6 @@ import {
   getSecurityAssetProfileLineage,
   importProviderIntegrationOpenApi,
   listScopedAccessAssignments,
-  putProviderCredentials,
   replayProviderIntegrationQuarantineRecords,
   resolveProviderIntegrationQuarantineRecord,
   revokeScopedAccessAssignment,
@@ -52,10 +51,8 @@ import {
   runManualCsvProviderIntegrationDryRun,
   runRestProviderIntegrationDryRun,
   saveProviderIntegrationSetup,
-  testProviderConnection,
   upsertOperationsApprovalPolicyRule,
   upsertOperationsCloseCalendarItem,
-  verifyProviderConnection
 } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import {
@@ -125,8 +122,6 @@ import type {
   ReportingWorkspaceResponse,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
-  ProviderCredentialFieldMetadata,
-  ProviderEnvironmentOption,
   ProviderRoutingBinding,
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
@@ -205,8 +200,6 @@ interface SettingsScreenProps {
   workspaceErrors?: Partial<Record<WorkspaceKey, string>>;
 }
 
-type ProviderInlineField = string;
-type ProviderInlineBusyAction = "test" | "save" | "verify" | "clear" | null;
 interface LedgerMappingAssignmentState {
   accountId: string;
   ledgerGroupId: string;
@@ -297,29 +290,6 @@ interface AssetProfileDraftState {
   message: string | null;
   details: string[];
   tone: "default" | "success" | "danger" | "warning";
-}
-
-interface ProviderInlineFieldDefinition {
-  field: ProviderInlineField;
-  label: string;
-  type: "password" | "url" | "text";
-  placeholder: string;
-  helpText: string;
-  required: boolean;
-}
-
-interface ProviderInlineState {
-  editing: boolean;
-  values: Record<ProviderInlineField, string>;
-  environment: string;
-  liveAcknowledged: boolean;
-  dirty: boolean;
-  busyAction: ProviderInlineBusyAction;
-  statusMessage: string | null;
-  statusDetails: string[];
-  statusTone: "default" | "success" | "warning" | "danger";
-  verificationFailed: boolean;
-  testLatencyLabel: string | null;
 }
 
 type ProviderRuntimePhase = "idle" | "loading" | "loaded" | "error";
@@ -442,7 +412,6 @@ function settingsStorageHealthTone(
   return "default";
 }
 
-const emptyProviderInlineValues: Record<ProviderInlineField, string> = {};
 
 const requirementToneClass = {
   success: "border-success/30 bg-success/10 text-success",
@@ -736,7 +705,6 @@ export function SettingsScreen({
   const [providerHealthFilter, setProviderHealthFilter] = useState<"all" | "healthy" | "warning" | "blocked">("all");
   const [providerVerificationFilter, setProviderVerificationFilter] = useState<"all" | "verified" | "unverified">("all");
   const [providerSort, setProviderSort] = useState<"risk" | "name">("risk");
-  const [providerInlineState, setProviderInlineState] = useState<Record<string, ProviderInlineState>>({});
   const [providerRuntimeState, setProviderRuntimeState] = useState<Record<string, ProviderRuntimeEvidenceState>>({});
   const [providerOpenApiImportState, setProviderOpenApiImportState] = useState<Record<string, ProviderOpenApiImportState>>({});
   const [mutationConfirmation, setMutationConfirmation] = useState<SettingsMutationConfirmation | null>(null);
@@ -905,10 +873,6 @@ export function SettingsScreen({
     : null;
   const providerRowIdsSignature = useMemo(
     () => allProviderRows.map((row) => row.providerId).sort().join("|"),
-    [allProviderRows]
-  );
-  const providerFieldDefinitions = useMemo(
-    () => Object.fromEntries(allProviderRows.map((row) => [row.providerId, buildProviderFieldDefinitions(row)])),
     [allProviderRows]
   );
   const providerRiskScores = useMemo(
@@ -1149,25 +1113,6 @@ export function SettingsScreen({
   }, [assetProfileSignature, firstApprovedAssetProfile, approvedAssetProfiles]);
 
   useEffect(() => {
-    if (!inlineProviderManagementEnabled) {
-      return;
-    }
-
-    setProviderInlineState((current) => {
-      let changed = false;
-      const next = { ...current };
-      for (const row of allProviderRows) {
-        if (next[row.providerId]) {
-          continue;
-        }
-        next[row.providerId] = createProviderInlineState(row);
-        changed = true;
-      }
-      return changed ? next : current;
-    });
-  }, [inlineProviderManagementEnabled, providerRowIdsSignature]);
-
-  useEffect(() => {
     if (allProviderRows.length === 0) {
       return;
     }
@@ -1225,19 +1170,6 @@ export function SettingsScreen({
       }))
       .filter((group) => group.rows.length > 0);
   }, [activeProviderId, activeTaskView, filteredProviderGroups, legacyEmbeddedSettingsView]);
-
-  const updateProviderInlineState = (providerId: string, updater: (state: ProviderInlineState) => ProviderInlineState) => {
-    setProviderInlineState((current) => {
-      const previous = current[providerId];
-      if (!previous) {
-        return current;
-      }
-      return {
-        ...current,
-        [providerId]: updater(previous)
-      };
-    });
-  };
 
   const loadProviderRuntimeEvidence = async (row: SettingsProviderConnectionRow) => {
     const stateKey = providerRuntimeStateKey(row);
@@ -1627,223 +1559,6 @@ export function SettingsScreen({
           message: display.summary,
           details: display.details
         }
-      }));
-    }
-  };
-
-  const toggleProviderEdit = (providerId: string) => {
-    updateProviderInlineState(providerId, (state) => ({
-      ...state,
-      editing: !state.editing,
-      statusMessage: null,
-      statusDetails: [],
-      statusTone: "default"
-    }));
-  };
-
-  const updateProviderField = (providerId: string, field: ProviderInlineField, value: string) => {
-    updateProviderInlineState(providerId, (state) => ({
-      ...state,
-      dirty: true,
-      values: {
-        ...state.values,
-        [field]: value
-      },
-      statusMessage: null,
-      statusDetails: [],
-      statusTone: "default"
-    }));
-  };
-
-  const updateProviderEnvironment = (providerId: string, value: ProviderInlineState["environment"]) => {
-    updateProviderInlineState(providerId, (state) => ({
-      ...state,
-      dirty: true,
-      environment: value,
-      liveAcknowledged: value === "live" ? state.liveAcknowledged : false,
-      statusMessage: null,
-      statusDetails: [],
-      statusTone: "default"
-    }));
-  };
-
-  const updateProviderLiveAcknowledgement = (providerId: string, checked: boolean) => {
-    updateProviderInlineState(providerId, (state) => ({
-      ...state,
-      dirty: true,
-      liveAcknowledged: checked,
-      statusMessage: null,
-      statusDetails: [],
-      statusTone: "default"
-    }));
-  };
-
-  const runProviderTest = async (providerId: string) => {
-    updateProviderInlineState(providerId, (state) => ({
-      ...state,
-      busyAction: "test",
-      statusMessage: null,
-      statusDetails: [],
-      statusTone: "default"
-    }));
-    try {
-      const result = await testProviderConnection(providerId);
-      updateProviderInlineState(providerId, (state) => ({
-        ...state,
-        busyAction: null,
-        testLatencyLabel: result.latency ?? null,
-        statusMessage: result.success ? "Connection test passed." : "Connection test failed.",
-        statusDetails: [result.message].filter(Boolean),
-        statusTone: result.success ? "success" : "danger"
-      }));
-    } catch (error) {
-      const display = describeApiError(error, "Provider connection test failed.");
-      updateProviderInlineState(providerId, (state) => ({
-        ...state,
-        busyAction: null,
-        statusMessage: display.summary,
-        statusDetails: display.details,
-        statusTone: "danger"
-      }));
-    }
-  };
-
-  const saveProviderDraft = async (row: (typeof allProviderRows)[number]) => {
-    const state = providerInlineState[row.providerId];
-    if (!state) {
-      return;
-    }
-    const definitions = providerFieldDefinitions[row.providerId] ?? buildProviderFieldDefinitions(row);
-    const missingField = definitions.find((definition) => (
-      definition.required && !(state.values[definition.field] ?? "").trim()
-    ));
-    if (missingField) {
-      updateProviderInlineState(row.providerId, (current) => ({
-        ...current,
-        statusMessage: `${missingField.label} is required before save.`,
-        statusDetails: [],
-        statusTone: "warning"
-      }));
-      return;
-    }
-    if (state.environment === "live" && !state.liveAcknowledged) {
-      updateProviderInlineState(row.providerId, (current) => ({
-        ...current,
-        statusMessage: "Acknowledge live routing before saving live credentials.",
-        statusDetails: [],
-        statusTone: "warning"
-      }));
-      return;
-    }
-
-    updateProviderInlineState(row.providerId, (current) => ({
-      ...current,
-      busyAction: "save",
-      statusMessage: null,
-      statusDetails: [],
-      statusTone: "default"
-    }));
-
-    try {
-      const result = await putProviderCredentials(row.providerId, {
-        credentials: definitions.reduce<Record<string, string | null>>((acc, definition) => {
-          const value = (state.values[definition.field] ?? "").trim();
-          acc[definition.field] = value.length > 0 ? value : null;
-          return acc;
-        }, {}),
-        environment: state.environment,
-        requestedBy: session?.displayName ?? "settings-screen"
-      });
-      await onRefresh?.();
-      await onProviderRoutingRefresh?.();
-      updateProviderInlineState(row.providerId, (current) => ({
-        ...current,
-        busyAction: null,
-        dirty: false,
-        editing: false,
-        verificationFailed: false,
-        statusMessage: `Credentials saved (${result.credentialState}).`,
-        statusDetails: result.warnings ?? [],
-        statusTone: "success"
-      }));
-    } catch (error) {
-      const display = describeApiError(error, "Saving provider credentials failed.");
-      updateProviderInlineState(row.providerId, (current) => ({
-        ...current,
-        busyAction: null,
-        statusMessage: display.summary,
-        statusDetails: display.details,
-        statusTone: "danger"
-      }));
-    }
-  };
-
-  const runProviderVerification = async (providerId: string) => {
-    updateProviderInlineState(providerId, (state) => ({
-      ...state,
-      busyAction: "verify",
-      statusMessage: null,
-      statusDetails: [],
-      statusTone: "default"
-    }));
-    try {
-      const result = await verifyProviderConnection(providerId);
-      await onRefresh?.();
-      await onProviderRoutingRefresh?.();
-      updateProviderInlineState(providerId, (state) => ({
-        ...state,
-        busyAction: null,
-        verificationFailed: !result.success,
-        statusMessage: result.success ? "Verification succeeded." : "Verification failed.",
-        statusDetails: [
-          result.lastError,
-          ...(result.warnings ?? [])
-        ].filter((value): value is string => Boolean(value)),
-        statusTone: result.success ? "success" : "danger"
-      }));
-    } catch (error) {
-      const display = describeApiError(error, "Provider verification failed.");
-      updateProviderInlineState(providerId, (state) => ({
-        ...state,
-        busyAction: null,
-        verificationFailed: true,
-        statusMessage: display.summary,
-        statusDetails: display.details,
-        statusTone: "danger"
-      }));
-    }
-  };
-
-  const clearProviderCredentials = async (providerId: string) => {
-    updateProviderInlineState(providerId, (state) => ({
-      ...state,
-      busyAction: "clear",
-      statusMessage: null,
-      statusDetails: [],
-      statusTone: "default"
-    }));
-    try {
-      const result = await deleteProviderCredentials(providerId);
-      await onRefresh?.();
-      await onProviderRoutingRefresh?.();
-      updateProviderInlineState(providerId, (state) => ({
-        ...state,
-        busyAction: null,
-        dirty: false,
-        values: { ...emptyProviderInlineValues },
-        statusMessage: "Credentials cleared.",
-        statusDetails: result.warnings ?? [],
-        statusTone: "success",
-        verificationFailed: result.verificationState === "Failed"
-      }));
-    } catch (error) {
-      const display = describeApiError(error, "Clearing provider credentials failed.");
-      updateProviderInlineState(providerId, (state) => ({
-        ...state,
-        busyAction: null,
-        statusMessage: display.summary,
-        statusDetails: display.details,
-        statusTone: "danger"
       }));
     }
   };
@@ -4203,27 +3918,8 @@ export function SettingsScreen({
                       className="rounded-md border border-border/70 bg-background/35 px-3 py-3"
                     >
                       {showProviderSetupControls && inlineProviderManagementEnabled ? (
-                        <ProviderInlineActionPanel
-                          row={row}
-                          state={providerInlineState[row.providerId] ?? createProviderInlineState(row)}
-                          fieldDefinitions={providerFieldDefinitions[row.providerId] ?? buildProviderFieldDefinitions(row)}
-                          onToggleEdit={() => toggleProviderEdit(row.providerId)}
-                          onFieldChange={(field, value) => updateProviderField(row.providerId, field, value)}
-                          onEnvironmentChange={(value) => updateProviderEnvironment(row.providerId, value)}
-                          onLiveAcknowledgementChange={(value) => updateProviderLiveAcknowledgement(row.providerId, value)}
-                          onTest={() => void runProviderTest(row.providerId)}
-                          onSave={() => void saveProviderDraft(row)}
-                          onVerify={() => void runProviderVerification(row.providerId)}
-                          onClear={() => setMutationConfirmation({
-                            id: `clear-provider-credentials-${row.providerId}`,
-                            title: `Clear ${row.displayName} credentials?`,
-                            description: `Remove the stored credential reference for ${row.displayName}. Provider-backed workflows may remain blocked until replacement credentials are saved and verified.`,
-                            confirmLabel: "Clear credentials",
-                            confirmAriaLabel: `Confirm credential clear for ${row.displayName}`,
-                            destructive: true,
-                            run: () => clearProviderCredentials(row.providerId)
-                          })}
-                        />
+                        <OwnedProviderCredentialPanel row={row} session={session}
+                          onRefresh={async () => { await onRefresh?.(); await onProviderRoutingRefresh?.(); }} />
                       ) : null}
                       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                         <div className="min-w-0">
@@ -4236,8 +3932,8 @@ export function SettingsScreen({
                             />
                             {showProviderSetupControls && inlineProviderManagementEnabled ? (
                               <SeverityBadge
-                                status={badgeVariantToOperatorSeverity(providerDraftStatusVariant(providerInlineState[row.providerId], row))}
-                                label={providerDraftStatusLabel(providerInlineState[row.providerId], row)}
+                                status={badgeVariantToOperatorSeverity(row.readinessTone)}
+                                label={row.readinessLabel}
                               />
                             ) : null}
                           </div>
@@ -4321,13 +4017,7 @@ export function SettingsScreen({
                         })}
                       />
                       ) : null}
-                      {showProviderSetupControls && inlineProviderManagementEnabled ? (
-                        <ProviderReadinessChecklist
-                          row={row}
-                          state={providerInlineState[row.providerId] ?? createProviderInlineState(row)}
-                          fieldDefinitions={providerFieldDefinitions[row.providerId] ?? buildProviderFieldDefinitions(row)}
-                        />
-                      ) : null}
+
                     </article>
                   ))}
                 </div>
@@ -5448,171 +5138,6 @@ function FilterSelect({
   );
 }
 
-function ProviderInlineActionPanel({
-  row,
-  state,
-  fieldDefinitions,
-  onToggleEdit,
-  onFieldChange,
-  onEnvironmentChange,
-  onLiveAcknowledgementChange,
-  onTest,
-  onSave,
-  onVerify,
-  onClear
-}: {
-  row: {
-    providerId: string;
-    displayName: string;
-    affectedWorkflowsLabel: string;
-    productionStateLabel: string;
-    fallbackLabel: string;
-    environmentOptions: ProviderEnvironmentOption[];
-  };
-  state: ProviderInlineState;
-  fieldDefinitions: ProviderInlineFieldDefinition[];
-  onToggleEdit: () => void;
-  onFieldChange: (field: ProviderInlineField, value: string) => void;
-  onEnvironmentChange: (value: string) => void;
-  onLiveAcknowledgementChange: (value: boolean) => void;
-  onTest: () => void;
-  onSave: () => void;
-  onVerify: () => void;
-  onClear: () => void;
-}) {
-  const busy = state.busyAction !== null;
-  const environmentOptions = buildProviderEnvironmentOptions(row.environmentOptions, state.environment);
-  return (
-    <section className="mb-3 grid gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-3" aria-label={`${row.displayName} inline provider actions`}>
-      <div className="flex flex-wrap items-center gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={onToggleEdit}
-          disabled={busy}
-          aria-label={state.editing ? `Close ${row.displayName} editor` : `Edit ${row.displayName} credentials`}
-        >
-          {state.editing ? "Close editor" : "Edit"}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={onTest}
-          busy={state.busyAction === "test"}
-          disabled={busy}
-          busyLabel="Testing provider"
-          aria-label={`Test ${row.displayName} connection`}
-        >
-          Test
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          onClick={onSave}
-          busy={state.busyAction === "save"}
-          disabled={busy || (state.environment === "live" && !state.liveAcknowledged)}
-          busyLabel="Saving draft"
-          aria-label={`Save ${row.displayName} credentials`}
-        >
-          <Save className="h-3.5 w-3.5" aria-hidden="true" />
-          Save
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={onVerify}
-          busy={state.busyAction === "verify"}
-          disabled={busy}
-          busyLabel="Verifying provider"
-          aria-label={`Re-verify ${row.displayName} connection`}
-        >
-          Re-verify
-        </Button>
-        <Button
-          type="button"
-          variant="destructive"
-          size="sm"
-          onClick={onClear}
-          busy={state.busyAction === "clear"}
-          disabled={busy}
-          busyLabel="Clearing credentials"
-          aria-label={`Clear ${row.displayName} credentials`}
-        >
-          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-          Clear credentials
-        </Button>
-      </div>
-      {state.editing ? (
-        <div className="grid gap-3 md:grid-cols-2">
-          {fieldDefinitions.length > 0 ? (
-            fieldDefinitions.map((field) => (
-              <label key={`${row.providerId}-${field.field}`} className="grid gap-1 text-xs font-medium text-muted-foreground">
-                {field.label}
-                <Input
-                  type={field.type}
-                  value={state.values[field.field] ?? ""}
-                  onChange={(event) => onFieldChange(field.field, event.target.value)}
-                  placeholder={field.placeholder}
-                  autoComplete={field.type === "password" ? "new-password" : "off"}
-                  disabled={busy}
-                  aria-label={`${row.displayName} ${field.label}`}
-                />
-                <span className="text-[11px] leading-4 text-muted-foreground">{field.helpText}</span>
-              </label>
-            ))
-          ) : (
-            <div className="rounded-md border border-border/60 bg-background/40 px-3 py-2 text-xs leading-5 text-muted-foreground">
-              No credential fields are required for this provider.
-            </div>
-          )}
-          <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-            Environment
-            <select
-              value={state.environment}
-              onChange={(event) => onEnvironmentChange(event.target.value)}
-              className="h-9 rounded-md border border-border/70 bg-background px-2 text-sm text-foreground"
-              disabled={busy}
-              aria-label={`${row.displayName} environment`}
-            >
-              {environmentOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          {state.environment === "live" ? (
-            <Checkbox
-              checked={state.liveAcknowledged}
-              onCheckedChange={onLiveAcknowledgementChange}
-              className="rounded-md border border-live-env/35 bg-live-env/10 px-2 py-2 text-xs text-live-env"
-              disabled={busy}
-              label="I understand this save updates live provider routing credentials."
-            />
-          ) : null}
-        </div>
-      ) : null}
-      <div className="rounded-sm border border-border/60 bg-background/40 px-2 py-2 text-xs text-muted-foreground">
-        Impact summary: {row.affectedWorkflowsLabel} · Production gate {row.productionStateLabel} · Failover {row.fallbackLabel}
-      </div>
-      {state.testLatencyLabel ? <div className="text-xs text-muted-foreground">Latest test latency: {state.testLatencyLabel}</div> : null}
-      {state.statusMessage ? (
-        <div className={cn("text-xs", itemToneClass[state.statusTone])}>
-          <div>{state.statusMessage}</div>
-          {state.statusDetails.length > 0 ? (
-            <ul className="mt-1 list-disc space-y-1 pl-4 text-[11px] text-muted-foreground">
-              {state.statusDetails.map((detail) => <li key={detail}>{detail}</li>)}
-            </ul>
-          ) : null}
-        </div>
-      ) : null}
-    </section>
-  );
-}
-
 function ProviderIntegrationRuntimePanel({
   row,
   state,
@@ -6646,175 +6171,6 @@ function ProviderOpenApiImportForm({
   );
 }
 
-function ProviderReadinessChecklist({
-  row,
-  state,
-  fieldDefinitions
-}: {
-  row: Pick<SettingsProviderConnectionRow, "credentialStatus" | "verificationStatus" | "freshnessStatus" | "fallbackStatus" | "displayName">;
-  state: ProviderInlineState;
-  fieldDefinitions: ProviderInlineFieldDefinition[];
-}) {
-  const credentialsReady = state.dirty
-    ? fieldDefinitions
-      .filter((definition) => definition.required)
-      .every((definition) => (state.values[definition.field] ?? "").trim().length > 0)
-    : row.credentialStatus !== "missing";
-  const verified = !state.verificationFailed && row.verificationStatus === "verified";
-  const verificationCurrent = verified && row.freshnessStatus === "current";
-  const verificationFreshnessLabel = !verified
-    ? "Review"
-    : row.freshnessStatus === "current"
-      ? "Current"
-      : row.freshnessStatus === "delayed"
-        ? "Delayed"
-        : row.freshnessStatus === "stale"
-          ? "Stale"
-          : "Not reported";
-  const fallbackSet = row.fallbackStatus !== "missing";
-  const checks = [
-    { label: "Credentials present", statusLabel: credentialsReady ? "Ready" : "Review", ready: credentialsReady },
-    { label: "Verification freshness", statusLabel: verificationFreshnessLabel, ready: verificationCurrent },
-    { label: "Fallback set", statusLabel: fallbackSet ? "Ready" : "Review", ready: fallbackSet }
-  ];
-  return (
-    <div className="mt-3 rounded-md border border-border/60 bg-secondary/15 px-3 py-2" aria-label={`${row.displayName} readiness checks`}>
-      <div className="text-xs font-semibold text-foreground">Readiness checks</div>
-      <div className="mt-2 flex flex-wrap gap-2">
-        {checks.map((check) => (
-          <SeverityBadge
-            key={check.label}
-            status={check.ready ? "ready" : "action"}
-            label={`${check.label}: ${check.statusLabel}`}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function createProviderInlineState(row: {
-  environmentLabel: string;
-  credentialStatus: "present" | "missing" | "not-required";
-  verificationStatus: "verified" | "pending" | "failed";
-  credentialFields: ProviderCredentialFieldMetadata[];
-  environmentOptions: ProviderEnvironmentOption[];
-}): ProviderInlineState {
-  const fieldDefinitions = buildProviderFieldDefinitions(row);
-  return {
-    editing: false,
-    values: buildEmptyProviderInlineValues(fieldDefinitions),
-    environment: normalizeInlineEnvironment(row.environmentLabel, row.environmentOptions),
-    liveAcknowledged: false,
-    dirty: false,
-    busyAction: null,
-    statusMessage: null,
-    statusDetails: [],
-    statusTone: "default",
-    verificationFailed: row.verificationStatus === "failed" || row.credentialStatus === "missing",
-    testLatencyLabel: null
-  };
-}
-
-function normalizeInlineEnvironment(label: string, options: ProviderEnvironmentOption[] = []): string {
-  const value = label.trim().toLowerCase();
-  const fromOption = options.find((option) => (
-    option.value.trim().toLowerCase() === value ||
-    option.label.trim().toLowerCase() === value
-  ));
-  if (fromOption) {
-    return fromOption.value;
-  }
-
-  const defaultOption = options.find((option) => option.isDefault) ?? options[0];
-  if (defaultOption) {
-    return defaultOption.value;
-  }
-
-  if (value === "live" || value === "sandbox" || value === "production" || value === "development" || value === "custom") {
-    return value;
-  }
-
-  return "paper";
-}
-
-function buildProviderFieldDefinitions(row: {
-  credentialStatus?: "present" | "missing" | "not-required";
-  credentialFields?: ProviderCredentialFieldMetadata[] | null;
-}): ProviderInlineFieldDefinition[] {
-  const metadata = row.credentialFields ?? [];
-  if (metadata.length > 0) {
-    return metadata.map((field) => ({
-      field: field.name,
-      label: field.label,
-      type: providerInputType(field.inputKind),
-      placeholder: field.placeholder ?? "Stored server-side and masked after save",
-      helpText: field.helpText ?? "Stored in Meridian's encrypted local provider store and masked after save.",
-      required: field.required
-    }));
-  }
-
-  if (row.credentialStatus === "not-required") {
-    return [];
-  }
-
-  return [
-    {
-      field: "CredentialReference",
-      label: "Credential reference",
-      type: "password",
-      placeholder: "Stored server-side and masked after save",
-      helpText: "Fallback credential field used only when provider metadata is unavailable.",
-      required: row.credentialStatus === "missing"
-    }
-  ];
-}
-
-function providerInputType(kind: ProviderCredentialFieldMetadata["inputKind"]): ProviderInlineFieldDefinition["type"] {
-  if (kind === "Url") {
-    return "url";
-  }
-
-  if (kind === "Text") {
-    return "text";
-  }
-
-  return "password";
-}
-
-function buildEmptyProviderInlineValues(definitions: ProviderInlineFieldDefinition[]): Record<ProviderInlineField, string> {
-  if (definitions.length === 0) {
-    return { ...emptyProviderInlineValues };
-  }
-
-  return Object.fromEntries(definitions.map((definition) => [definition.field, ""]));
-}
-
-function buildProviderEnvironmentOptions(options: ProviderEnvironmentOption[], currentEnvironment: string): ProviderEnvironmentOption[] {
-  const base = options.length > 0
-    ? options
-    : [
-        { value: "paper", label: "Paper", isDefault: true },
-        { value: "live", label: "Live", isDefault: false },
-        { value: "sandbox", label: "Sandbox", isDefault: false },
-        { value: "custom", label: "Custom", isDefault: false }
-      ];
-  const current = currentEnvironment.trim();
-  if (!current || base.some((option) => option.value === current)) {
-    return base;
-  }
-
-  return [
-    {
-      value: current,
-      label: current.toUpperCase(),
-      isDefault: false,
-      helpText: "Current provider environment from the server."
-    },
-    ...base
-  ];
-}
-
 function filterProviderRow(
   row: { displayName: string; recommendedAction: string; affectedWorkflowsLabel: string; capabilityGroup: "brokerage" | "data" | "accounting"; healthTone: string; verificationStatus: "verified" | "pending" | "failed" },
   search: string,
@@ -6856,28 +6212,6 @@ function providerRiskScore(row: { healthTone: string; credentialTone: string; ve
   const verificationScore = row.verificationStatus === "failed" ? 30 : row.verificationStatus === "pending" ? 20 : 0;
   const fallbackScore = row.fallbackStatus === "active" ? 10 : row.fallbackStatus === "missing" ? 20 : 0;
   return healthScore + credentialScore + verificationScore + fallbackScore;
-}
-
-function providerDraftStatusLabel(
-  state: ProviderInlineState | undefined,
-  row: Pick<SettingsProviderConnectionRow, "verificationStatus" | "readinessLabel">
-): string {
-  if (!state) return row.readinessLabel;
-  if (state.busyAction === "save") return "Saving";
-  if (state.dirty) return "Unsaved";
-  if (state.verificationFailed || row.verificationStatus === "failed") return "Verification failed";
-  return row.readinessLabel;
-}
-
-function providerDraftStatusVariant(
-  state: ProviderInlineState | undefined,
-  row: Pick<SettingsProviderConnectionRow, "verificationStatus" | "readinessLabel" | "readinessTone">
-): "outline" | "success" | "warning" | "danger" {
-  const label = providerDraftStatusLabel(state, row);
-  if (label === "Saving") return "warning";
-  if (label === "Unsaved") return "warning";
-  if (label === "Verification failed") return "danger";
-  return row.readinessTone;
 }
 
 function providerRuntimeStateKey(row: Pick<SettingsProviderConnectionRow, "integrationConnectionId" | "providerId">): string {

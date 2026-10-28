@@ -27,6 +27,10 @@ namespace Meridian.Storage.Ledger;
 /// </summary>
 public static class RetainedPostingEquivalence
 {
+    /// <summary>Compares accounting instants at the PostgreSQL schema's retained precision.</summary>
+    public static bool AccountingTimestampsMatch(DateTimeOffset retained, DateTimeOffset candidate)
+        => LedgerRetainedValueComparison.TimestampsMatch(retained, candidate);
+
     /// <summary>
     /// Returns <see langword="true"/> when <paramref name="retained"/> is the journal
     /// <paramref name="candidate"/> would have produced. On <see langword="false"/>,

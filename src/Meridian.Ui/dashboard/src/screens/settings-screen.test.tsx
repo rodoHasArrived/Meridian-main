@@ -44,6 +44,8 @@ const apiMocks = vi.hoisted(() => ({
   upsertOperationsCloseCalendarItem: vi.fn(),
   connectAlpacaConnection: vi.fn(),
   revokeAlpacaConnection: vi.fn(),
+  getProviderRoutingConnections: vi.fn(),
+  getProviderConnections: vi.fn(),
   testProviderConnection: vi.fn(),
   putProviderCredentials: vi.fn(),
   activateProviderIntegration: vi.fn(),
@@ -87,6 +89,8 @@ vi.mock("@/lib/api", async (importActual) => ({
   upsertOperationsCloseCalendarItem: apiMocks.upsertOperationsCloseCalendarItem,
   connectAlpacaConnection: apiMocks.connectAlpacaConnection,
   revokeAlpacaConnection: apiMocks.revokeAlpacaConnection,
+  getProviderRoutingConnections: apiMocks.getProviderRoutingConnections,
+  getProviderConnections: apiMocks.getProviderConnections,
   testProviderConnection: apiMocks.testProviderConnection,
   putProviderCredentials: apiMocks.putProviderCredentials,
   activateProviderIntegration: apiMocks.activateProviderIntegration,
@@ -534,6 +538,8 @@ describe("SettingsScreen", () => {
     apiMocks.upsertOperationsApprovalPolicyRule.mockReset();
     apiMocks.upsertOperationsCloseCalendarItem.mockReset();
     apiMocks.revokeAlpacaConnection.mockReset();
+    apiMocks.getProviderRoutingConnections.mockReset().mockResolvedValue([]);
+    apiMocks.getProviderConnections.mockReset();
     apiMocks.testProviderConnection.mockReset();
     apiMocks.putProviderCredentials.mockReset();
     apiMocks.createProviderIntegrationReconciliationHandoff.mockReset();
@@ -2434,15 +2440,17 @@ describe("SettingsScreen", () => {
     )).toBeInTheDocument();
     expect(apiMocks.saveProviderIntegrationSetup).not.toHaveBeenCalled();
   });
-  it("supports inline provider edit, test, save, verify, and clear actions", async () => {
+  it("supports owned connection edit, scoped save, verification, and confirmed clear", async () => {
     const user = userEvent.setup();
     const onRefresh = vi.fn();
     const onProviderRoutingRefresh = vi.fn();
     apiMocks.testProviderConnection.mockResolvedValue({ success: true, latency: "82ms", message: "Provider reachable." });
-    apiMocks.putProviderCredentials.mockResolvedValue({ credentialState: "Configured", warnings: [] });
-    apiMocks.verifyProviderConnection.mockResolvedValue({ success: true, lastError: null, warnings: [] });
-    apiMocks.deleteProviderCredentials.mockResolvedValue({ verificationState: "NotVerified", warnings: [] });
+    apiMocks.putProviderCredentials.mockResolvedValue({ providerId: "alpaca", credentialState: "Configured", warnings: [] });
+    apiMocks.verifyProviderConnection.mockResolvedValue({ providerId: "alpaca", success: true, lastError: null, warnings: [] });
+    apiMocks.deleteProviderCredentials.mockResolvedValue({ providerId: "alpaca", verificationState: "NotVerified", warnings: [] });
 
+    apiMocks.getProviderRoutingConnections.mockResolvedValue([{ connectionId: "owned-alpaca", providerFamilyId: "alpaca", displayName: "Owned Alpaca", tenantId: "tenant-a", externalAccountId: "account-a", credentialEnvironment: "paper", enabled: true }]);
+    apiMocks.getProviderConnections.mockResolvedValue([{ ...providerConnections.find(row => row.providerId === "alpaca"), externalAccountId: "account-a", environment: "paper" }]);
     renderWithRouter(
       <SettingsScreen
         session={session}
@@ -2454,19 +2462,21 @@ describe("SettingsScreen", () => {
       { initialEntries: ["/settings/providers/alpaca/setup"] }
     );
 
+    await screen.findByRole("option", { name: /Owned Alpaca/ });
+    await user.selectOptions(screen.getByLabelText("Alpaca owned connection"), "owned-alpaca");
+    await screen.findByText("Selected connection status loaded.");
     await user.click(screen.getByRole("button", { name: "Edit Alpaca credentials" }));
     await user.type(screen.getByLabelText("Alpaca Key ID"), "alpaca-key");
     await user.type(screen.getByLabelText("Alpaca Secret key"), "alpaca-secret");
-    await user.click(screen.getByRole("button", { name: "Test Alpaca connection" }));
     await user.click(screen.getByRole("button", { name: "Save Alpaca credentials" }));
     await user.click(screen.getByRole("button", { name: "Re-verify Alpaca connection" }));
-    await user.click(screen.getByRole("button", { name: "Clear Alpaca credentials" }));
+    await user.click(screen.getByRole("button", { name: "Clear credentials for Alpaca" }));
 
     expect(apiMocks.deleteProviderCredentials).not.toHaveBeenCalled();
     expect(screen.getByRole("dialog", { name: "Clear Alpaca credentials?" })).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Confirm credential clear for Alpaca" }));
+    await user.click(screen.getByRole("button", { name: "Confirm clear for Alpaca" }));
 
-    expect(apiMocks.testProviderConnection).toHaveBeenCalledWith("alpaca");
+    expect(apiMocks.testProviderConnection).not.toHaveBeenCalled();
     expect(apiMocks.putProviderCredentials).toHaveBeenCalledWith(
       "alpaca",
       expect.objectContaining({
@@ -2474,10 +2484,11 @@ describe("SettingsScreen", () => {
           KeyId: "alpaca-key",
           SecretKey: "alpaca-secret"
         })
-      })
+      }),
+      expect.objectContaining({ connectionId: "owned-alpaca", allowDevelopmentFallback: false })
     );
-    expect(apiMocks.verifyProviderConnection).toHaveBeenCalledWith("alpaca");
-    expect(apiMocks.deleteProviderCredentials).toHaveBeenCalledWith("alpaca");
+    expect(apiMocks.verifyProviderConnection).toHaveBeenCalledWith("alpaca", expect.objectContaining({ connectionId: "owned-alpaca" }));
+    expect(apiMocks.deleteProviderCredentials).toHaveBeenCalledWith("alpaca", expect.objectContaining({ connectionId: "owned-alpaca" }));
     expect(onRefresh).toHaveBeenCalled();
     expect(onProviderRoutingRefresh).toHaveBeenCalled();
     expect(screen.getAllByText(/Impact summary:/).length).toBeGreaterThan(0);
@@ -2486,7 +2497,7 @@ describe("SettingsScreen", () => {
 
   it("saves QuickBooks Online OAuth company fields through inline setup", async () => {
     const user = userEvent.setup();
-    apiMocks.putProviderCredentials.mockResolvedValue({ credentialState: "Configured", warnings: [] });
+    apiMocks.putProviderCredentials.mockResolvedValue({ providerId: "quickbooks", credentialState: "Configured", warnings: [] });
     const quickBooksConnections: ProviderConnectionRow[] = [
       ...providerConnections,
       {
@@ -2557,6 +2568,8 @@ describe("SettingsScreen", () => {
       }
     ];
 
+    apiMocks.getProviderRoutingConnections.mockResolvedValue([{ connectionId: "owned-qbo", providerFamilyId: "quickbooks", displayName: "Owned QBO", tenantId: "tenant-a", externalAccountId: "9130359087654321", credentialEnvironment: "sandbox", enabled: true }]);
+    apiMocks.getProviderConnections.mockResolvedValue([{ ...quickBooksConnections.find(row => row.providerId === "quickbooks"), externalAccountId: "9130359087654321", environment: "sandbox" }]);
     renderWithRouter(
       <SettingsScreen
         session={session}
@@ -2566,6 +2579,9 @@ describe("SettingsScreen", () => {
       { initialEntries: ["/settings/providers/quickbooks/setup"] }
     );
 
+    await screen.findByRole("option", { name: /Owned QBO/ });
+    await user.selectOptions(screen.getByLabelText("QuickBooks Online owned connection"), "owned-qbo");
+    await screen.findByText("Selected connection status loaded.");
     await user.click(screen.getByRole("button", { name: "Edit QuickBooks Online credentials" }));
     fireEvent.change(screen.getByLabelText("QuickBooks Online Client ID"), { target: { value: "qbo-client-id" } });
     fireEvent.change(screen.getByLabelText("QuickBooks Online Client secret"), { target: { value: "qbo-client-secret" } });
@@ -2585,7 +2601,8 @@ describe("SettingsScreen", () => {
           CompanyName: "Meridian-Dev"
         }),
         environment: "sandbox"
-      })
+      }),
+      expect.objectContaining({ connectionId: "owned-qbo" })
     );
   });
 

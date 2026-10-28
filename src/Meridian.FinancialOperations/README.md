@@ -82,6 +82,21 @@ Separate journal/atomic compositions may lack optional receipt reads. In that ca
 keeps the approved version assertions and delegates replay/collision validation to the atomic
 writer; only a readable exact receipt can authorize the historical omitted-version shape.
 
+The asset spine's `Approved` stage attests governed approval evidence after both its actual human
+review and its actual retention. Its timestamp is the latest of those evidence timestamps; the
+authenticated decision receipt and evidence `ReviewedAtUtc` keep the original decision time,
+while `RetainedAtUtc` keeps the real artifact capture time. Neither can be in the future at posting.
+An already retained equal-time approval keeps its original stage bytes and exact replay identity.
+
+An exact factor-paydown retry resolves its immutable journal and atomic mutation receipt before
+rebuilding against the now-mutated lots. The original Drafted candidate, scoped approval evidence,
+journal lines and full storage command fingerprint must still agree. Missing or conflicting receipts
+block recovery; this path cannot recreate missing financial history. New postings retain their
+current lot, model, policy and period checks.
+Replay compares stored timestamps through Storage's existing PostgreSQL-precision comparison,
+then restores the exact original retained timestamp and preview decimal representation for command
+fingerprinting. It does not substitute the current clock or recalculate the original lot state.
+
 The bounded lot acquisition/disposal spine resolves a Long or Asset book position before retaining
 a projection or drafting a candidate. A Short, Liability or unknown side cannot acquire the long
 writer's accounting semantics merely by supplying positive quantity. Explicit short lot
@@ -325,7 +340,8 @@ Projected and Drafted unchanged. The effect has two or three lines: cash for the
 carrying relief when any basis is relieved, and one realized gain or loss line when the result is
 not zero. `LedgerFeatureRegistration` composes the service next to `CanonicalLotAmortizationService`
 with nullable authorities, and preparation refuses a missing ledger, Security Master, position or
-projector authority before reading anything; no operator route calls it yet. The spine event and
+projector authority before reading anything. Shared operator routes use it for reviewed preparation
+and durable manual-workbench draft intake. The spine event and
 its lineage trigger are typed `AssetAccounting.CorporateAction` and the lineage keeps the model key
 `mbs-factor-paydown`; the model's own `MbsFactorPaydown` event type stays on the projector's output
 and the persisted Asset Operations lineage. `AccountingPostingCandidateService` requires the
@@ -346,6 +362,11 @@ ordered economics, or scope remains a collision. Original drafts and retained jo
 The spine service rereads every paid-down lot
 and its carrying credit before drafting; posting dispatches a `FactorPaydown` batch to the atomic
 journal/lot store. A plain factor journal without the lot mutation is not posting authority.
+If candidate construction fails after retaining an undrafted preparation, the same preparing
+actor can review fresh lots, period versions and proposed accounts. The spine service revalidates
+current authority and appends a predecessor-bound preparation revision for the same source event;
+it retains every prior snapshot. The existing store version check makes stale candidate creation
+and recovery compete for one next version. Once Drafted authority exists, this recovery is refused.
 
 ## Purpose
 

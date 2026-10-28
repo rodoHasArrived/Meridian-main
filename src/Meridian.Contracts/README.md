@@ -317,6 +317,27 @@ event payloads keep their shape. Aggregate-only instructions do not claim an ori
 
 `OpenLotBackfillDtos` adds retained acquisition-source packets, independent review, a durable exception queue, and versioned application receipts. Apply accepts a retained source identity rather than replacement acquisition facts. `MarkFreshnessDtos` carries one server decision per position, including observation date, age, policy version, and blocking reason; absent assessments remain review required. Close plan transports retain workflow, account, and evidence-version stamps for declared-scope validation.
 
+`PrepareFactorPaydownRequestDto` carries operator factor/source assertions without caller-owned
+actor or tenant fields. `FactorPaydownPreparationDto` binds the exact lot/account preview to a
+fingerprint; `CreateFactorPaydownDraftRequestDto` requires that fingerprint before server-side
+repreparation and governed candidate creation. Component and nested decimal response values are
+exact strings on these HTTP routes, and factor input fields accept decimal strings.
+Optional `AssetAccountingEventSpineDto.PreparationRevision` links a freshly reviewed, undrafted
+factor preparation to its exact prior spine version and canonical fingerprint. The link records
+the authenticated preparing actor, time and reason; absent links preserve historical JSON.
+Recovery keeps the same economic event, factors, evidence and owner identity. Drafted and posted
+authority cannot enter this transition, and ordinary lifecycle appends preserve the retained link.
+`ManualJournalEntryDraftDto.AssetAccountingDraft` retains the exact typed asset candidate and source
+fingerprints in the review queue. It is omitted on historical manual drafts and cannot be introduced,
+removed or edited by a client. Submission preserves it. Optional `AssetAccountingApproval` retains
+the actual authenticated decision bytes/hash and exact candidate scope; `AssetAccountingPostIntent`
+binds the original command before canonical posting; `AssetAccountingPostingResult` contains only
+the actual durable financial receipt. These fields are omitted when null on legacy drafts.
+`AssetAccountingDraftCapabilitiesDto` is caller-, scope- and version-specific; missing/unknown
+protocols remain read-only. Pending post commands must be retried unchanged, including their
+original optimistic version. Approval/posting require the same independent certified operator;
+financial edits and generic corrections remain unavailable for asset-linked drafts.
+
 ## Purpose
 
 `TenantScopeEnforcementOptions.ConfigurationKey` names the supported `TenantScopeEnforcement`

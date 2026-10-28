@@ -2,13 +2,13 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 20.5,
-  "endpoint_coverage_percent": 31.4,
+  "score_percent": 20.4,
+  "endpoint_coverage_percent": 31.3,
   "contract_coverage_percent": 4.1,
   "summary": {
-    "endpoint_count": 725,
+    "endpoint_count": 728,
     "documented_endpoint_count": 228,
-    "undocumented_endpoint_count": 497,
+    "undocumented_endpoint_count": 500,
     "workstation_contract_count": 962,
     "documented_workstation_contract_count": 39,
     "undocumented_workstation_contract_count": 923
@@ -2377,6 +2377,24 @@
       "path": "/api/ledger/journal-entry-workbench/lifecycle-action",
       "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1724",
       "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/drafts/{journalEntryId:guid}/capabilities",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:25",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/prepare",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:58",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/draft",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:77",
+      "documented": false
     },
     {
       "method": "GET",

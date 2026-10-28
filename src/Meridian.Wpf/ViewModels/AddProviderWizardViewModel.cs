@@ -9,7 +9,7 @@ namespace Meridian.Wpf.ViewModels;
 /// connection-test feedback, save feedback, and step-progress indicators.
 /// The code-behind sets properties here instead of mutating UI elements directly.
 /// </summary>
-public sealed class AddProviderWizardViewModel : BindableBase
+public sealed partial class AddProviderWizardViewModel : BindableBase
 {
     private const string ProviderFilterAll = "all";
     private const string ProviderFilterFree = "free";

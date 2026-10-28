@@ -106,18 +106,21 @@ result into a full pass.
 
 ### Current Roadmap Inventory
 
-The registry contains **48 rows** as of this review: **17 `done`, 7 `in_progress`, 9 `accepted`,
-and 15 `planned`**, with no row at `ready_for_acceptance`. The reconciliation and verification
+The registry contains **53 rows** after the incoming-main reconciliation: **17 `done`, 8 `in_progress`, 9 `accepted`,
+and 19 `planned`**, with no row at `ready_for_acceptance`. The reconciliation and verification
 sections below enumerate those postures. `W9-SAFETY-007` is accepted under `DEC-W9-ACCEPTANCE-004`,
 with its OCO and deferred risk-journal/read-surface/WPF-parity reservations retained.
 `W9-CORPACT-011` was accepted on 2026-10-19 under `DEC-W9-ACCEPTANCE-007`; the in-progress
 `W10-MARK-001` and `W10-SEAM-001` retain live operator acceptance gates. `W9-DEMO-002` reached `done` separately under
 `DEC-W9-DONE-001`. `W10-JRNL-001` is in progress under the 2026-10-01 evidence carried by
 merged PR #3040; its operator acceptance and production certification remain open.
-`W10-PROV-001` is also in progress under its 2026-10-02 registry review: the posted-ledger
-amount proof slice is implemented, while typed report bindings and other amount surfaces remain open. The
-user-requested work queue completes LOT, then MARK, then SEAM before opening `W10-RECON-001`
-in that queue only. Roadmap ranking remains MARK 1, RECON 2, SEAM 7, and LOT 12. The
+`W10-PROV-001` remains in progress: posted-ledger and governed generated trial-balance
+amount bindings use the shared evidence surface in browser and WPF; other amount families,
+current-candidate verification and live acceptance remain open. `W10-RECON-001` is now in progress under the incoming
+registry: stable lineage, distinct recurrence, executed mapping proof and SLA-calendar support
+are implemented; focused hosted, Windows and rendered operator verification remain required.
+The user-requested queue retains LOT, then MARK, then SEAM before advancing RECON in this queue;
+the incoming implementation does not close those preceding acceptance gates. Roadmap ranking remains MARK 1, RECON 2, SEAM 7, and LOT 12. The
 [recorded operator-session plan](plans/next-work-determination-2026-09-27.md#tier-5--w10-two-rows-await-an-operator-session-one-has-an-undefined-criterion)
 continues to schedule SEAM before MARK, with LOT as a separate continuation. The queue adds
 no prerequisite to the recorded roadmap dependencies. These are existing registry states,
@@ -137,7 +140,7 @@ claim new test execution, accept an ADR, or close a roadmap or release-gate row.
 | Workstream | Implemented boundary | Remaining work |
 | --- | --- | --- |
 | Contractual schedules | Increments 4a and 4b read `scheduleConventions`, `callSchedule` and `putSchedule` ahead of writing them. Bond and CertificateOfDeposit write version 1/read through 3; StructuredCredit writes 2/reads through 4; Swap writes 1/reads through 2. Populated or malformed call/put arrays fail amortization closed under #3272. | Deploy both expand increments to every node before increment 5 enables writing. That contract step still owns write validation, scalar/schedule consistency, calendar resolution, declared-convention projection and StructuredCredit mappings. Schedule consumers and both workstation schedule books remain later increments. See [the schedule rollout queue](../architecture/security-master-extensibility-review.md#resolution-pass--2026-10-23-priority-5-first-increment-the-schedule-kernel-and-calendar-seam). |
-| Canonical lot factor paydowns (`W10-LOT-002`) | #3271 retains the current factor on the lot of record and adds governed atomic `FactorPaydown` posting, deterministic largest-remainder principal allocation, pro-rata basis relief, historical reads and inherited successor factors. The generic ungoverned factor candidate path is refused. | Route an operator workflow through the composed `FactorPaydownLotInstructionService`; converge Security Master lot-of-record reads on `SecurityLotModel`; retain upward-restatement, cross-currency and short-position gates. Hosted PostgreSQL proof, independent Accounting/Ledger and Storage review, broader consumer parity and live acceptance remain required. See [the lot convergence blueprint](../engineering/blueprints/security-lot-convergence-blueprint.md). |
+| Canonical lot factor paydowns (`W10-LOT-002`) | #3271 retains the current factor on the lot of record and adds governed atomic `FactorPaydown` posting, deterministic largest-remainder principal allocation, pro-rata basis relief, historical reads and inherited successor factors. Implementation PR #3296 adds shared operator preparation, recoverable draft intake, independent approval and canonical posting in browser and WPF. The generic ungoverned factor candidate path is refused. | Converge Security Master lot-of-record reads on `SecurityLotModel`; retain upward-restatement, cross-currency and short-position gates. Current-candidate checks, independent Accounting/Ledger and Storage review, broader consumer parity and live acceptance remain required. See [the lot convergence blueprint](../engineering/blueprints/security-lot-convergence-blueprint.md). |
 | Stored curves and valuation | #3271 adds immutable versioned curves, a stored forward provider, dated projection, and quoted-price/discounted-cash-flow models. Outputs retain input provenance and blockers; they do not write ledger marks. | Persist valuation receipts, bind the mark lane, and complete forward-version pinning and knowledge-time cutoffs inside projections before making broader reproducibility or valuation-authority claims. [ADR-026](../adr/026-stored-curves-and-valuation-seam.md) remains proposed; the first increment does not close `W10-MARK-001`. |
 | OTC credit support | #3271 adds retained exposure snapshots, collateral balances and governed call transitions. Calls require real complete current snapshots with unchanged recorded inputs; stale, replayed, repeated and future-dated movements are refused. | Resolve the documented market-data transaction/clock race; add tenant scoping, dedicated permission/maker-checker controls, collateral history and browser/WPF presentation before operational acceptance. Broader FX, initial margin, valuation models and settlement automation remain open. See [Credit Support](../domain/credit-support.md) and the [dated resolution pass](../architecture/security-master-extensibility-review.md#resolution-pass--2026-10-27-priority-4-third-increment-exposure-collateral-balances-and-margin-calls-on-the-contract-model). |
 | Dependency certification | #3270 pins the transitive `zod` dependency to a patched `^4.6.7` override. The earlier high-advisory dependency repair is merged. | Recheck hosted dependency evidence on the candidate commit. Signing secrets, a signed `v0.1.0-rc.2` run, complete accepted recovery receipts and required-check activation remain release gates; a dependency fix alone does not satisfy them. |
@@ -145,6 +148,47 @@ claim new test execution, accept an ADR, or close a roadmap or release-gate row.
 The next bounded implementation steps above preserve the existing LOT → MARK → SEAM user queue
 and recorded roadmap dependencies. Continue the P0 release-evidence work in parallel; no completed
 read-side increment authorizes a write-version promotion or a production-readiness claim.
+
+### Next-work implementation — 2026-10-28
+
+The factor-paydown workflow prepares exact amounts from retained lots and creates an immutable
+journal workbench draft under the canonical journal ID. Browser Ledger Explorer and WPF Accounting
+Configuration validate, submit and independently approve that draft. Approval retains the actual
+authenticated decision bytes; posting verifies their scoped Vault content and delegates exclusively
+to canonical atomic journal/lot publication. Pending commands survive restart and resume the exact
+original request. Server capabilities and the authenticated actor bind client actions to the selected
+draft; old hosts remain read-only. Generic edits and corrections remain blocked. Legacy WPF local
+journals retain their existing service lane.
+Failed undrafted preparation can be reviewed again after a lot/period version or proposed account
+changes. Recovery appends a fresh projection linked to the exact predecessor version and hash,
+retains the old snapshots and competes with stale draft creation under the existing store version
+check. Drafted and posted events cannot enter this recovery path.
+
+The real PostgreSQL round trip exposed and corrected approval-attestation chronology, immutable
+factor replay after lots change, and retained timestamp/decimal representation. The expanded local
+packet passed 645 tests, including real approval/post/restart replay and authority/tamper refusals.
+Preparation still requires a qualified retained factor observation and prospective economic model;
+it cannot invent upstream source authority. Broader LOT actions, corrections, consumer parity,
+independent review and live shadow-operation acceptance remain open.
+
+Legacy provider setup refuses provider-wide credential operations for retained owned or ambiguous
+connections while holding the configuration lease through ownership and vault operations. Browser
+Settings and the WPF provider wizard now require explicit existing-owned connection selection for
+credential status, save, verification and removal. Missing or changed ownership blocks operations;
+there is no provider-wide retry or automatic ownership. Credential edits do not activate the global
+runtime. Ownership creation, host-default binding, explicit legacy migration/rollback and complete
+`PRD-002` release evidence remain open.
+
+WPF governed reporting now opens retained generated trial-balance amounts through the shared proof
+drawer. Every declared journal and line must have support; historical contributors retain original
+posting-period manifest identity, amounts remain exact, and old run responses cannot restore proof
+for an abandoned selection. Legacy reports without retained populations remain review-required.
+
+The [next-work evidence receipt](../testing/evidence/next-work-20261028/release-readiness.md)
+separates the green review/submission milestone from later implementation validation. It also
+records external release blockers, MARK/SEAM operator scenarios and the compatibility backtesting
+factor-authority limit. No LOT/MARK/SEAM acceptance, RECON queue advancement or release
+certification follows from these code changes.
 
 ### Historical Implementation and Release Evidence
 
@@ -396,9 +440,9 @@ The word intended here is **deprecated**. Repeated filenames or concepts are not
 | Roadmap posture | Rows | Production interpretation |
 | --- | --- | --- |
 | Bounded capability evidence complete (17) | `W1-DATA-001`, `W2-TRD-001`, `W2-PROMO-001`, `W3-CONT-001`, `W4-RECON-001`, `W4-RPT-001`, `W5-ACCT-001`, `W5-MASSET-001`, `W5X-FREX-001`, `W5X-FINOPS-001`, `W5X-CONNECT-001`, `W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001`, `W6-BTSTUDIO-001`, `W7-LIVE-001`, `W9-DEMO-002`, `W9-ASSET-010` | Preserve the bounded evidence and each row's scope. W5X Evidence/Statement are browser claims; W6 covers the Covered Call evidence and governed Paper-promotion loop; W7 closes live-readiness governance; W9-ASSET closes the asset-accounting spine. W9-DEMO reached done under `DEC-W9-DONE-001` with its [closure record](w9-demo-002-closure-2026-09-16.md). None certifies a release. |
-| Active productization (7) | `W8-WPF-PARITY-001`, `W8-UX-CONSOL-001`, `W10-MARK-001`, `W10-SEAM-001`, `W10-LOT-002`, `W10-JRNL-001`, `W10-PROV-001` | Finish registered exit criteria within the supported release envelope. Apply the registry ranking and recorded operator-session plan; the user's separate queue above adds no roadmap prerequisite. Source implementation alone does not close live acceptance gates. |
+| Active productization (8) | `W8-WPF-PARITY-001`, `W8-UX-CONSOL-001`, `W10-MARK-001`, `W10-SEAM-001`, `W10-LOT-002`, `W10-JRNL-001`, `W10-PROV-001`, `W10-RECON-001` | Finish registered exit criteria within the supported release envelope. Apply the registry ranking and recorded operator-session plan; the user's separate queue above adds no roadmap prerequisite. Source implementation alone does not close live acceptance gates. |
 | Accepted bounded capabilities (9) | `W9-TRUTH-001`, `W9-PAPER-003`, `W9-ALPACA-004`, `W9-REPORT-005`, `W9-NAV-006`, `W9-SAFETY-007`, `W9-GOV-008`, `W9-INGEST-009`, `W9-CORPACT-011` | Preserve the decisions and reservations in the registry. CORPACT was accepted on 2026-10-19 under `DEC-W9-ACCEPTANCE-007` on the automated PostgreSQL round trip, with unsupported branches blocked and posting permission assigned only through governed custom roles. GOV and INGEST were accepted on 2026-10-18 under `DEC-W9-ACCEPTANCE-006`; the GOV live-installation cutover is recorded on the operator's statement, and INGEST casework evidence remains shared-service/file-store evidence, not a PostgreSQL or production-certification claim. Safety was accepted on 2026-09-11 under `DEC-W9-ACCEPTANCE-004`, restored on 2026-09-23, with OCO and deferred risk-journal/read-surface/WPF-parity work retained. TRUTH is accepted under the 2026-09-26 owner exception `DEC-W9-ACCEPTANCE-005`; independent non-author verdicts were not obtained. Acceptance alone is neither done nor release certification. |
-| Planned (15) | `W5X-OEG-001`, `W10-RECON-001`, `W10-RECON-002`, `W10-TAX-001`, `W10-RECON-003`, `W10-RECON-004`, `W10-PERF-001`, `W10-CONSOL-001`, `W10-DEBT-001`, `W11-PASSPORT-001`, `W11-COVER-001`, `W11-STAKE-001`, `W11-SHADOW-001`, `W11-PACK-001`, `W11-EXEC-001` | All retain `planned_evidence` posture. The W11 rows were registered under `DEC-CHARTER-DIRECTION-001`. The shared orchestration/durability defects in `PRD-007` and `PRD-106` still apply to broader or alternate backtest entrypoints despite the bounded W6 Covered Call evidence-loop closure. |
+| Planned (19) | `W5X-OEG-001`, `W10-RECON-002`, `W10-TAX-001`, `W10-RECON-003`, `W10-RECON-004`, `W10-PERF-001`, `W10-CONSOL-001`, `W10-DEBT-001`, `W11-PASSPORT-001`, `W11-COVER-001`, `W11-STAKE-001`, `W11-SHADOW-001`, `W11-PACK-001`, `W11-EXEC-001`, `W12-BOOK-001`, `W12-CAPITAL-001`, `W12-YEND-001`, `W12-FINRPT-001`, `W12-CREDIT-001` | All retain `planned_evidence` posture. The W11 rows were registered under `DEC-CHARTER-DIRECTION-001`. The shared orchestration/durability defects in `PRD-007` and `PRD-106` still apply to broader or alternate backtest entrypoints despite the bounded W6 Covered Call evidence-loop closure. |
 
 The following remain deferred and are not production blockers unless the signed support envelope reopens them: broad live execution and live portfolio operations beyond bounded W7 governance, treasury payment execution, broad alternative-asset expansion beyond current evidence, forecasting/scenario engines, enterprise risk platform, capital-structure modeling, client portal, no-code workflow designer, broad collaboration productization, and all native mobile lanes.
 
@@ -430,11 +474,12 @@ Reviewed on 2026-10-14 against the registry inventory, recorded decisions and ho
 - `docs/roadmap/generated/roadmap-register.md`
 - the current same-commit hosted certification and CI runs linked above
 
-The 48 registry rows reconcile to the four disjoint postures enumerated above: 17 `done`,
-7 `in_progress`, 9 `accepted`, and 15 `planned`. The done and accepted rows retain
+The 53 registry rows reconcile to the four disjoint postures enumerated above: 17 `done`,
+8 `in_progress`, 9 `accepted`, and 19 `planned`. The done and accepted rows retain
 `evidence_posture: complete`; active rows retain `in_progress`; planned rows retain
-`planned_evidence`. This refresh records the `W9-CORPACT-011` acceptance (`DEC-W9-ACCEPTANCE-007`)
-and changes no other row status, sequence, dependency or acceptance criterion. The tracker
+`planned_evidence`. The earlier refresh recorded `W9-CORPACT-011` acceptance (`DEC-W9-ACCEPTANCE-007`); this
+reconciliation reflects incoming RECON implementation and five planned W12 rows without
+changing any registry status, sequence, dependency or acceptance criterion. The tracker
 records the merged evidence above; all roadmap row review dates are retained. Historical implementation
 surveys and release evidence elsewhere in this tracker retain their original dates and limits.
 Broader design-document foundations remain separate from bounded completion claims.

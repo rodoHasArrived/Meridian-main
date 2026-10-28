@@ -23,22 +23,20 @@ namespace Meridian.Wpf.Views;
 public partial class AddProviderWizardPage : Page
 {
     private readonly WpfServices.NavigationService _navigationService;
-    private readonly WpfServices.NotificationService _notificationService;
-    private readonly WpfServices.ConfigService _configService;
     private readonly SettingsConfigurationService _settingsConfigService;
     private readonly AddProviderWizardViewModel _viewModel;
 
     private ProviderCatalogEntry? _selectedProvider;
     private IReadOnlyList<ProviderCredentialStatus> _credentialStatuses = [];
+    private IReadOnlyList<ProviderCredentialStatus> _catalogCredentialStatuses = [];
 
     // The vault field schema the credential service reported for the selected provider, or null
     // when it reported none (the provider is not vault-managed, or the status read failed).
     // Editors are built from this schema, never from the local catalog, whose field names differ.
     private IReadOnlyList<ProviderCredentialFieldMetadataDto>? _serviceFields;
 
-    // True while a Test or Save awaits the credential service. Provider selection and the other
-    // wizard command are ignored until it completes, so results and shared inputs cannot be
-    // applied to a different provider than the one the operation started for.
+    // Commands for one scope do not overlap. Selecting another owned connection cancels its
+    // predecessor and invalidates delayed responses before they can update the new editors.
     private bool _operationInProgress;
     private bool _clearingPersistedFields;
 
@@ -57,8 +55,6 @@ public partial class AddProviderWizardPage : Page
         InitializeComponent();
 
         _navigationService = navigationService;
-        _notificationService = notificationService;
-        _configService = WpfServices.ConfigService.Instance;
         _settingsConfigService = settingsConfigService;
 
         _viewModel = new AddProviderWizardViewModel();
@@ -70,13 +66,14 @@ public partial class AddProviderWizardPage : Page
 
     internal async Task LoadProviderCatalogAsync()
     {
+        var generation = _credentialScopeGeneration;
         var providers = _settingsConfigService.GetProviderCatalog();
-        // The wizard writes provider-wide records, so it reads provider-wide status rather than the
-        // tenant readiness view that also counts credentials on the tenant's own connections.
-        var credentialStatuses = await _settingsConfigService.GetProviderCredentialStatusesAsync(providerWideOnly: true);
-        _credentialStatuses = credentialStatuses;
-
-        _viewModel.LoadProviderCatalog(providers, credentialStatuses);
+        var catalogStatuses = await _settingsConfigService.GetProviderCredentialStatusesAsync();
+        await LoadOwnedConnectionsAsync(generation);
+        if (!IsCurrentCredentialScope(generation)) return;
+        _credentialStatuses = [];
+        _catalogCredentialStatuses = catalogStatuses;
+        _viewModel.LoadProviderCatalog(providers, catalogStatuses);
         _viewModel.CurrentStep = 1;
     }
 
@@ -96,9 +93,15 @@ public partial class AddProviderWizardPage : Page
         if (_operationInProgress)
             return;
 
+        ResetOwnedConnectionScope();
         _selectedProvider = _viewModel.FindProvider(providerId);
         if (_selectedProvider == null)
+        {
+            _viewModel.OwnedConnections.Clear();
             return;
+        }
+
+        ApplyOwnedConnectionChoices();
 
         // Update ViewModel display properties (XAML binds to these)
         _viewModel.ApplySelectedProvider(_selectedProvider);
@@ -122,10 +125,16 @@ public partial class AddProviderWizardPage : Page
         if (_selectedProvider == null)
             return;
 
-        _serviceFields = FindStatus(_credentialStatuses, _selectedProvider)?.CredentialFields;
+        _serviceFields = _selectedOwnedConnection is null ? null : FindStatus(_credentialStatuses, _selectedProvider)?.CredentialFields;
         if (_serviceFields is null)
         {
-            _viewModel.ApplyUnmanagedCredentialsInfo(_selectedProvider.DisplayName, LocalCatalogRequiresCredentials(_selectedProvider));
+            if (FindStatus(_catalogCredentialStatuses, _selectedProvider)?.CredentialFields is { Count: 0 })
+                _viewModel.ApplyCredentialsInfo(_selectedProvider.DisplayName, false);
+            else
+            {
+                _viewModel.ApplyUnmanagedCredentialsInfo(_selectedProvider.DisplayName, true);
+                _viewModel.CredentialsInfoText = "Select an existing owned connection to load its retained credential schema. No provider-wide fallback is used.";
+            }
             return;
         }
 
@@ -187,60 +196,30 @@ public partial class AddProviderWizardPage : Page
     internal async Task TestProviderConnectionAsync()
     {
         var provider = _selectedProvider;
-        if (provider == null || _operationInProgress)
-            return;
-
-        var serviceFields = _serviceFields;
-        if (serviceFields is null)
-        {
-            if (LocalCatalogRequiresCredentials(provider))
-            {
-                _viewModel.SetConnectionTestError(UnmanagedCredentialsMessage(provider));
-                return;
-            }
-
-            _viewModel.SetConnectionTestSuccess();
-            _viewModel.CurrentStep = 3;
-            return;
-        }
-
+        if (provider is null || _operationInProgress) return;
+        if (!TryGetOwnedCredentialScope(provider, out var connection)) return;
+        var generation = _credentialScopeGeneration;
+        var ct = _credentialScopeCts.Token;
         var fields = CollectEnteredCredentialFields();
-        if (fields.Count == 0 && !serviceFields.Any(field => field.Required))
-        {
-            // The vault needs no credentials for this provider (for example Interactive Brokers,
-            // whose host and port are connection settings), so there is nothing to verify.
-            _viewModel.SetConnectionTestSuccess();
-            _viewModel.CurrentStep = 3;
-            return;
-        }
-
         _operationInProgress = true;
         _viewModel.SetConnectionTestTesting(provider.DisplayName);
         try
         {
-            await PersistCredentialsAsync(provider, fields);
-            var verified = await _settingsConfigService.VerifyProviderCredentialsAsync(provider.Id);
-
+            await ValidateOwnedConnectionAsync(provider, connection!, ct);
+            if (!IsCurrentCredentialScope(generation)) return;
+            await PersistCredentialsAsync(provider, fields, connection!.ConnectionId, generation, ct);
+            if (!IsCurrentCredentialScope(generation)) return;
+            var verified = await _settingsConfigService.VerifyProviderCredentialsAsync(provider.Id, connection.ConnectionId, ct);
+            if (!IsCurrentCredentialScope(generation)) return;
             if (CollectEnteredCredentialFields().Count > 0)
                 _viewModel.ResetConnectionTest("Credentials changed. Test connection to verify the current edits.");
-            else if (verified)
-                _viewModel.SetConnectionTestSuccess();
-            else
-                _viewModel.SetConnectionTestUnverified();
+            else if (verified) _viewModel.SetConnectionTestSuccess();
+            else _viewModel.SetConnectionTestUnverified();
             _viewModel.CurrentStep = 3;
         }
-        catch (CredentialServiceRefusedException ex)
-        {
-            _viewModel.SetConnectionTestError(ex.Message);
-        }
-        catch (Exception)
-        {
-            _viewModel.SetConnectionTestError();
-        }
-        finally
-        {
-            _operationInProgress = false;
-        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
+        catch (Exception ex) { if (IsCurrentCredentialScope(generation)) _viewModel.SetConnectionTestError(ex is CredentialServiceRefusedException ? ex.Message : "The selected connection could not be verified. Reload its ownership and credential status."); }
+        finally { if (IsCurrentCredentialScope(generation)) _operationInProgress = false; }
     }
 
     private async void SaveProvider_Click(object sender, RoutedEventArgs e)
@@ -249,99 +228,64 @@ public partial class AddProviderWizardPage : Page
     internal async Task SaveProviderAsync()
     {
         var provider = _selectedProvider;
-        if (provider == null || _operationInProgress)
-            return;
-
-        // Capture every input before the first await; the shared controls belong to whichever
-        // provider is selected when they are read.
+        if (provider is null || _operationInProgress) return;
+        if (!TryGetOwnedCredentialScope(provider, out var connection)) return;
+        var generation = _credentialScopeGeneration;
+        var ct = _credentialScopeCts.Token;
         var fields = CollectEnteredCredentialFields();
-        var backfillOptions = provider.SupportsHistorical
-            ? new Meridian.Contracts.Configuration.BackfillProviderOptionsDto { Enabled = EnableBackfillCheck.IsChecked == true }
-            : null;
-        if (backfillOptions is not null && int.TryParse(PriorityBox.Text, out var priority) && priority >= 0)
-            backfillOptions.Priority = priority;
-
-        var serviceFields = _serviceFields;
-        if (serviceFields is null && LocalCatalogRequiresCredentials(provider))
-        {
-            _viewModel.SetSaveError(UnmanagedCredentialsMessage(provider));
-            return;
-        }
-
+        var serviceFields = _serviceFields!;
         _operationInProgress = true;
         try
         {
-            if (fields.Count > 0)
+            await ValidateOwnedConnectionAsync(provider, connection!, ct);
+            if (!IsCurrentCredentialScope(generation)) return;
+            await PersistCredentialsAsync(provider, fields, connection!.ConnectionId, generation, ct);
+            if (!IsCurrentCredentialScope(generation)) return;
+            _credentialStatuses = await _settingsConfigService.GetProviderCredentialStatusesAsync(ct, connection.ConnectionId);
+            if (!IsCurrentCredentialScope(generation)) return;
+            var current = FindStatus(_credentialStatuses, provider);
+            if (serviceFields.Any(field => field.Required) && current?.State != CredentialState.Configured)
             {
-                await PersistCredentialsAsync(provider, fields);
+                _viewModel.SetConnectionTestError("The credential service could not confirm saved credentials for this selected connection.");
+                _viewModel.SetSaveError(current?.State == CredentialState.Partial
+                    ? "The entered credentials were saved, but required fields are still missing. Enter the remaining required credentials."
+                    : "Enter the required credentials. The service reports none saved for this selected connection.");
+                return;
             }
-            ProviderCredentialStatus? current = null;
-            if (serviceFields is not null)
-            {
-                // Test has already persisted unchanged editors. Re-read the provider-wide record
-                // to preserve its verification without replacing it, and detect removal or rotation.
-                _credentialStatuses = await _settingsConfigService.GetProviderCredentialStatusesAsync(providerWideOnly: true);
-                current = FindStatus(_credentialStatuses, provider);
-                if (serviceFields.Any(field => field.Required) && current?.State != CredentialState.Configured)
-                {
-                    _viewModel.SetConnectionTestError("The credential service could not confirm saved credentials for this provider.");
-                    _viewModel.SetSaveError(current?.State == CredentialState.Partial
-                        ? "The entered credentials were saved, but required fields are still missing. Enter the remaining required credentials."
-                        : "Enter the required credentials. The credential service reports none saved for this provider.");
-                    return;
-                }
-            }
-
-            if (backfillOptions is not null)
-                await _configService.SetBackfillProviderOptionsAsync(provider.Id, backfillOptions);
-
             var hasPendingEdits = CollectEnteredCredentialFields().Count > 0;
             var verified = !hasPendingEdits && (current is
-            { State: CredentialState.Configured, VerificationState: ProviderVerificationStateDto.Verified, LastVerifiedAt: not null }
-                or { State: CredentialState.NotRequired } ||
-                serviceFields is null && !LocalCatalogRequiresCredentials(provider));
-            if (hasPendingEdits)
-                _viewModel.ResetConnectionTest("Credentials changed during the operation. Save and test the current edits.");
-            else if (verified)
-                _viewModel.SetConnectionTestSuccess();
-            else
-                _viewModel.SetConnectionTestUnverified();
-
+                { State: CredentialState.Configured, VerificationState: ProviderVerificationStateDto.Verified, LastVerifiedAt: not null }
+                or { State: CredentialState.NotRequired });
+            if (hasPendingEdits) _viewModel.ResetConnectionTest("Credentials changed during the operation. Save and test the current edits.");
+            else if (verified) _viewModel.SetConnectionTestSuccess();
+            else _viewModel.SetConnectionTestUnverified();
             _viewModel.CurrentStep = 4;
             _viewModel.SetSaveSuccess(provider.DisplayName);
-            if (hasPendingEdits)
-                _viewModel.SaveStatusText += " New credential edits remain unsaved.";
-
-            _notificationService.NotifySuccess(
-                "Provider Added",
-                hasPendingEdits
-                    ? $"{provider.DisplayName} has been configured. New credential edits remain unsaved."
-                    : verified
-                        ? $"{provider.DisplayName} has been configured and its credentials are verified."
-                        : $"{provider.DisplayName} has been configured. Use Test Connection to verify its credentials.");
+            _viewModel.SaveStatusText = $"Credentials saved for owned connection {connection.ConnectionId}. Runtime activation is managed separately."
+                + (hasPendingEdits ? " New credential edits remain unsaved." : string.Empty);
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
         catch (Exception ex)
         {
-            _viewModel.SetConnectionTestError("The save was not confirmed. Test connection again after resolving the error.");
+            if (!IsCurrentCredentialScope(generation)) return;
+            _viewModel.SetConnectionTestError("The save was not confirmed. Reload the selected connection after resolving the error.");
             _viewModel.SetSaveError(ex.Message);
         }
-        finally
-        {
-            _operationInProgress = false;
-        }
+        finally { if (IsCurrentCredentialScope(generation)) _operationInProgress = false; }
     }
 
     /// <summary>
     /// Saves only the fields the operator filled in through the authenticated credential service,
-    /// which writes the provider's encrypted vault record. Nothing is written to the process or
+    /// which writes the selected owned connection's encrypted vault record. Nothing is written to the process or
     /// user environment, and blank fields are omitted because the vault treats blanks as deletions.
     /// </summary>
-    private async Task PersistCredentialsAsync(ProviderCatalogEntry provider, Dictionary<string, string?> fields)
+    private async Task PersistCredentialsAsync(ProviderCatalogEntry provider, Dictionary<string, string?> fields, string connectionId, long generation, System.Threading.CancellationToken ct)
     {
         if (fields.Count == 0)
             return;
 
-        await _settingsConfigService.SaveProviderCredentialsAsync(provider.Id, fields);
+        await _settingsConfigService.SaveProviderCredentialsAsync(provider.Id, fields, connectionId, ct);
+        if (!IsCurrentCredentialScope(generation)) return;
 
         // Release persisted secrets rather than retaining a second plaintext copy to remember
         // which values were tested. Do not erase an edit made while the save awaited the service.

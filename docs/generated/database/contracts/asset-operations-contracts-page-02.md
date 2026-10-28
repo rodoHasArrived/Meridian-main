@@ -2,11 +2,22 @@
 
 # `asset-operations-contracts` data objects - page 2 of 2
 
-Objects 81-128 of 128. References crossing pages remain available in the dependency manifest.
+Objects 81-130 of 130. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% asset-operations-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_AssetOperations_CorporateActionProjectionEvidenceDependencyDto["CorporateActionProjectionEvidenceDependencyDto"] {
+        +string ContentHashSha256
+        +string EvidenceId
+        +string EvidenceUri
+        +long EvidenceVersion
+        +CorporateActionProjectionEvidenceRoleDto Role
+        +string SubjectId
+        +string SubjectType
+    }
+    class Meridian_Contracts_AssetOperations_CorporateActionProjectionEvidenceRoleDto["CorporateActionProjectionEvidenceRoleDto"] {
+    }
     class Meridian_Contracts_AssetOperations_CorporateActionProjectionStatusDto["CorporateActionProjectionStatusDto"] {
     }
     class Meridian_Contracts_AssetOperations_CorporateActionSpinOffTaxTreatmentDto["CorporateActionSpinOffTaxTreatmentDto"] {
@@ -323,6 +334,7 @@ classDiagram
         +decimal OriginalFace
         +string? PoolId
     }
+    Meridian_Contracts_AssetOperations_CorporateActionProjectionEvidenceDependencyDto --> Meridian_Contracts_AssetOperations_CorporateActionProjectionEvidenceRoleDto
     Meridian_Contracts_AssetOperations_CorporateActionSuccessorAllocationDto --> Meridian_Contracts_AssetOperations_CorporateActionSuccessorRoleDto
     Meridian_Contracts_AssetOperations_CorporateActionTreatmentDecisionDto --> Meridian_Contracts_AssetOperations_CorporateActionTaxClassificationDto
     Meridian_Contracts_AssetOperations_EconomicEventReferenceDto --> Meridian_Contracts_AssetOperations_RetainedEvidenceIdentityDto

@@ -14,6 +14,7 @@ namespace Meridian.Application.ProviderRouting;
 public sealed class ProviderSetupService
 {
     private const string SetupActor = "provider-setup-service";
+    private const string LegacyOwnershipError = "Provider setup requires a uniquely identified, authorized connection; provider-wide credentials cannot be used for retained ownership.";
 
     private readonly UI.ConfigStore _store;
     private readonly IProviderCredentialStore _credentialStore;
@@ -111,15 +112,6 @@ public sealed class ProviderSetupService
             return Failure(displayName, validation.Error ?? "Provider setup validation failed.");
         }
 
-        try
-        {
-            _ = _store.LoadRequired();
-        }
-        catch (Exception error) when (error is IOException or InvalidDataException or UnauthorizedAccessException or JsonException)
-        {
-            return Failure(displayName, "Provider setup requires readable existing configuration.");
-        }
-
         var environment = validation.NormalizedEnvironment ?? descriptor.NormalizeEnvironment(request.Environment);
         var referenceEnvironment = string.IsNullOrWhiteSpace(environment) ? "default" : environment;
         var credentialReference = descriptor.RequiresCredentials
@@ -130,33 +122,53 @@ public sealed class ProviderSetupService
         var submittedCredentials = new Dictionary<string, string?>(validation.Credentials ?? new Dictionary<string, string?>(), StringComparer.OrdinalIgnoreCase);
         warnings.AddRange(validation.Warnings ?? Array.Empty<string>());
         ProviderCredentialStoreStatus credentialStatus;
-        if (submittedCredentials.Count > 0)
+        // A legacy provider-wide operation must not replace or inspect credentials once this
+        // family has retained ownership. Serialize the ownership read with connection writers,
+        // keeping the lease through both vault operations so a concurrent tenant assignment
+        // cannot turn a legacy credential save into an ownership fallback.
+        using (await _store.AcquireWriteLeaseAsync(ct).ConfigureAwait(false))
         {
-            if (!descriptor.RequiresCredentials)
+            AppConfig config;
+            try
             {
-                warnings.Add("Submitted credentials were ignored because this provider does not require Meridian-managed credentials.");
+                config = _store.LoadRequired();
             }
-            else
+            catch (Exception error) when (error is IOException or InvalidDataException or UnauthorizedAccessException or JsonException)
             {
-                await _credentialStore.SaveAsync(
-                    new ProviderCredentialSaveRequest(
-                        descriptor.ProviderId,
-                        submittedCredentials,
-                        string.IsNullOrWhiteSpace(environment) ? null : environment,
-                        Actor: actor ?? SetupActor,
-                        Metadata: new Dictionary<string, string>
-                        {
-                            ["setupSource"] = "legacy-provider-configure"
-                        }),
-                    ct).ConfigureAwait(false);
+                return Failure(displayName, "Provider setup requires readable existing configuration.");
             }
-        }
-        else if (descriptor.RequiresCredentials)
-        {
-            warnings.Add("No credentials were submitted; configure and verify credentials before relying on this provider for production workflows.");
-        }
 
-        credentialStatus = await _credentialStore.GetStatusAsync(descriptor.ProviderId, ct).ConfigureAwait(false);
+            if (RequiresScopedSetup(config, descriptor.ProviderId))
+                return Failure(displayName, LegacyOwnershipError);
+
+            if (submittedCredentials.Count > 0)
+            {
+                if (!descriptor.RequiresCredentials)
+                {
+                    warnings.Add("Submitted credentials were ignored because this provider does not require Meridian-managed credentials.");
+                }
+                else
+                {
+                    await _credentialStore.SaveAsync(
+                        new ProviderCredentialSaveRequest(
+                            descriptor.ProviderId,
+                            submittedCredentials,
+                            string.IsNullOrWhiteSpace(environment) ? null : environment,
+                            Actor: actor ?? SetupActor,
+                            Metadata: new Dictionary<string, string>
+                            {
+                                ["setupSource"] = "legacy-provider-configure"
+                            }),
+                        ct).ConfigureAwait(false);
+                }
+            }
+            else if (descriptor.RequiresCredentials)
+            {
+                warnings.Add("No credentials were submitted; configure and verify credentials before relying on this provider for production workflows.");
+            }
+
+            credentialStatus = await _credentialStore.GetStatusAsync(descriptor.ProviderId, ct).ConfigureAwait(false);
+        }
         if (descriptor.RequiresCredentials && credentialStatus.CredentialState is ProviderCredentialStateDto.Missing or ProviderCredentialStateDto.Partial)
         {
             warnings.Add("Credential setup is incomplete; required credential fields are missing.");
@@ -190,6 +202,10 @@ public sealed class ProviderSetupService
 
         return await _store.UpdateRequiredAsync(cfg =>
         {
+            // Credential and configuration commits are separate. If ownership arrived after
+            // the vault phase, retain it and refuse publishing a provider-wide reference.
+            if (RequiresScopedSetup(cfg, descriptor.ProviderId))
+                return (cfg, Failure(displayName, LegacyOwnershipError));
             var dataSources = cfg.DataSources ?? new DataSourcesConfig();
             var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
             var section = ProviderRoutingConfigExtensions.GetSection(cfg);
@@ -293,6 +309,18 @@ public sealed class ProviderSetupService
             (false, true) => DataSourceType.Historical,
             _ => DataSourceType.RealTime
         };
+    }
+
+    private static bool RequiresScopedSetup(AppConfig config, string providerId)
+    {
+        var connections = config.ProviderConnections?.Connections ?? [];
+        var family = ProviderCredentialCatalog.NormalizeProviderId(providerId);
+        return connections.Where(connection => string.Equals(
+                ProviderCredentialCatalog.NormalizeProviderId(connection.ProviderFamilyId), family,
+                StringComparison.OrdinalIgnoreCase))
+            .Any(connection => connection.TenantId is not null || string.IsNullOrWhiteSpace(connection.ConnectionId) ||
+                connections.Count(candidate => string.Equals(candidate.ConnectionId, connection.ConnectionId,
+                    StringComparison.OrdinalIgnoreCase)) != 1);
     }
 
     private static string[] NormalizeCapabilities(IReadOnlyList<string>? capabilities)

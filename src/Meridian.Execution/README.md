@@ -194,6 +194,11 @@ boundary:
 - submission fails **before** the gateway call — roll back. Cancellation observed at the dispatch
   boundary is provably pre-dispatch, so it is not ambiguous and must not consume capacity.
 
+After a broker acknowledgement, the `OrderSubmitted` audit append uses a noncancelled token.
+Stopping the requesting strategy cannot discard the actual broker outcome or its account/run
+readiness evidence. The submission still waits for that append attempt, and genuine audit I/O
+failures keep their existing diagnostic handling. Predispatch cancellation still prevents routing.
+
 The ambiguous path merges rather than overwrites the tracked order state. The report pump can apply
 a fill before the acknowledgement throws, and replacing that with a rejected state built from the
 original request would erase a confirmed execution, make the client order id terminal and reusable,

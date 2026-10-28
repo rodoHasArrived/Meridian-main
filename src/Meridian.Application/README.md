@@ -234,9 +234,15 @@ writing certification state. Unrelated concurrent connection changes are retaine
 current connection record with the checked record; it does not provide a durable revision fence for
 changes that are subsequently reverted or certify the provenance of every runner implementation.
 Provider setup performs this strict read before credential persistence and returns a fixed failure
-without creating a vault when required configuration is unreadable. Its later source/connection/binding
-update re-reads configuration under the shared transaction, preserving concurrent ownership changes
-and assigning source IDs from current state. Credential and configuration commits remain separate;
+without creating a vault when required configuration is unreadable. Legacy provider-wide setup also
+refuses a provider family with retained tenant ownership, incomplete explicit ownership or ambiguous
+connection identity before saving or reading vault state. The ownership check and both vault operations
+hold the same configuration lease as connection writers. Callers must select an authorized retained
+connection for scoped setup; this guard does not migrate legacy credentials or the default resolver.
+Its later source/connection/binding
+update rechecks ownership under the shared transaction and refuses a provider-wide reference if an
+owner arrived after the vault phase. It preserves concurrent changes and assigns source IDs from
+current state. Credential and configuration commits remain separate;
 this does not resolve cross-store commit ambiguity or make legacy setup tenant-owned.
 
 Tenant-aware route preview filters connections and bindings before ranking, health queries and
