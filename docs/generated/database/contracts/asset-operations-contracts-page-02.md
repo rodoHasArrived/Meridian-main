@@ -2,7 +2,7 @@
 
 # `asset-operations-contracts` data objects - page 2 of 2
 
-Objects 81-127 of 127. References crossing pages remain available in the dependency manifest.
+Objects 81-128 of 128. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -77,6 +77,8 @@ classDiagram
         +IReadOnlyList~RetainedEvidenceIdentityDto~ RetainedEvidence
         +Guid? SecurityId
         +string? SourceContentHash
+    }
+    class Meridian_Contracts_AssetOperations_FactorPaydownProjectionIdentity["FactorPaydownProjectionIdentity"] {
     }
     class Meridian_Contracts_AssetOperations_IAccountCashForecastService["IAccountCashForecastService"] {
     }
@@ -249,9 +251,9 @@ classDiagram
         +decimal EventAmount
         +AssetAccountingEventKindDto EventKind
         +long ExpectedPeriodVersion
+        +Meridian_Contracts_Accounting_Lots_OpenLotFactorPaydownInstructionDto? FactorPaydown
         +string? Notes
         +DateTimeOffset ProjectedAtUtc
-        +ProjectedAccountingEffectDto ProjectedEffect
     }
     class Meridian_Contracts_AssetOperations_ProjectedAccountingEffectDto["ProjectedAccountingEffectDto"] {
         +string Currency
