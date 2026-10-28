@@ -143,6 +143,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// </summary>
     public static SecurityAssetSpecificTerms Convert(JsonElement economicTerms)
     {
+        EnsureScheduleModulesRecoverable(economicTerms);
         using var buffer = new MemoryStream();
         using (var writer = new Utf8JsonWriter(buffer))
         {
@@ -198,6 +199,8 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// (whose business-day convention and joint payment calendar the Accrual module carries), and the
     /// callSchedule and putSchedule arrays (whose dates and prices the Call module's lists carry). The
     /// readable-only terms travel whole in the retained flat terms until a contract step maps them.
+    /// Economic-only documents that declare the lost schedule modules are refused instead of
+    /// presenting their flattened projection as an undeclared bullet.
     /// Those keys are listed by
     /// <see cref="UnrecoverableKeys"/> and the result keeps the <see cref="FlattenedFromMarkerProperty"/>
     /// marker. When <paramref name="assetClass"/> is not a declared class (or is <see langword="null"/>)
@@ -222,6 +225,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
                 "the economic payload cannot reconstruct the complete classification and preferred/convertible terms.");
         }
 
+        EnsureScheduleModulesRecoverable(economicTerms);
         using var buffer = new MemoryStream();
         using (var writer = new Utf8JsonWriter(buffer))
         {
@@ -291,6 +295,46 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
         using var flattened = JsonDocument.Parse(buffer.ToArray());
         return new SecurityAssetSpecificTerms(flattened.RootElement.Clone(), AssetSpecificTermsSchema.Legacy);
     }
+
+    // An economic-only event cannot recover the complete flat schedule declaration: Accrual
+    // lacks roll, unit, lag and accrual-adjustment terms; Call lists lack windows and notice terms.
+    // Retaining those modules under an ignored key would let projection/amortization run a bullet.
+    // Only conversion uses this guard. Retained flat rows keep their established replay path.
+    private static void EnsureScheduleModulesRecoverable(JsonElement economicTerms)
+    {
+        if (economicTerms.ValueKind != JsonValueKind.Object)
+            return;
+        foreach (var module in economicTerms.EnumerateObject())
+        {
+            if (module.Value.ValueKind != JsonValueKind.Object)
+                continue;
+            if (module.Name.Equals("accrual", StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var member in module.Value.EnumerateObject())
+                {
+                    if ((member.Name.Equals("businessDayConvention", StringComparison.OrdinalIgnoreCase)
+                         || member.Name.Equals("holidayCalendar", StringComparison.OrdinalIgnoreCase))
+                        && member.Value.ValueKind != JsonValueKind.Null)
+                        throw UnrecoverableSchedule();
+                }
+            }
+            else if (module.Name.Equals("call", StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var member in module.Value.EnumerateObject())
+                {
+                    if ((member.Name.Equals("callSchedule", StringComparison.OrdinalIgnoreCase)
+                         || member.Name.Equals("putSchedule", StringComparison.OrdinalIgnoreCase))
+                        && member.Value.ValueKind != JsonValueKind.Null
+                        && (member.Value.ValueKind != JsonValueKind.Array || member.Value.GetArrayLength() > 0))
+                        throw UnrecoverableSchedule();
+                }
+            }
+        }
+    }
+
+    private static InvalidOperationException UnrecoverableSchedule()
+        => new("Declared schedule economic replay requires retained legacy asset-specific terms; "
+            + "the economic payload cannot reconstruct complete schedule conventions or exercise windows and notice terms.");
 
     /// <summary>
     /// The flat keys <see cref="Convert(JsonElement, string?)"/> can reconstruct for

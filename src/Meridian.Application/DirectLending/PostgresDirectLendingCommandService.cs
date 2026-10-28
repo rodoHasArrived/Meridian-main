@@ -1346,7 +1346,6 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         var annualRate = contract.CurrentTerms.FixedAnnualRate
             ?? servicing.CurrentRateReset?.AllInRate
             ?? 0m;
-        var dueDate = asOf;
         var seq = 1;
         var intervalMonths = contract.CurrentTerms.PaymentFrequency switch
         {
@@ -1357,14 +1356,9 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             _ => 12
         };
 
-        while (dueDate < contract.CurrentTerms.MaturityDate)
+        foreach (var (dueDate, nextDue) in DirectLendingSchedulePeriods.LegacyCompounded(
+            asOf, contract.CurrentTerms.MaturityDate, intervalMonths))
         {
-            var nextDue = dueDate.AddMonths(intervalMonths);
-            if (nextDue > contract.CurrentTerms.MaturityDate)
-            {
-                nextDue = contract.CurrentTerms.MaturityDate;
-            }
-
             var days = nextDue.DayNumber - dueDate.DayNumber;
             var denominator = contract.CurrentTerms.DayCountBasis == DayCountBasis.Act365F ? 365m : 360m;
             var interestAmount = Math.Round(servicing.Balances.PrincipalOutstanding * annualRate * days / denominator, 2, MidpointRounding.AwayFromZero);
@@ -1384,7 +1378,6 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
                 $"{{\"days\":{days},\"annualRate\":{annualRate}}}",
                 DateTimeOffset.UtcNow));
 
-            dueDate = nextDue;
         }
 
         if (servicing.Balances.PrincipalOutstanding > 0m)

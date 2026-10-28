@@ -125,6 +125,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
                 assetClassOverride,
                 assetTermsOverride));
         EnsureProfileBackedTermsAreCatalogValid(projection, request.EffectiveFrom);
+        SecurityAssetPackAdmission.EnsureAdmitted(projection, request.EffectiveFrom);
 
         // The amend seam is the one place the pre-write golden copy and the incoming revision are
         // both in hand: record field-level cross-source conflicts (a different source disagreeing
@@ -384,6 +385,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
             GetProfileBackedAssetClassOverride(request.AssetClass, request.AssetSpecificTerms),
             GetProfileBackedAssetSpecificTermsOverride(request.AssetSpecificTerms));
         EnsureProfileBackedTermsAreCatalogValid(projection, request.EffectiveFrom);
+        SecurityAssetPackAdmission.EnsureAdmitted(projection, request.EffectiveFrom);
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
             economic,

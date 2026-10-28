@@ -25,6 +25,9 @@ namespace Meridian.Tests.SecurityMaster;
 /// deactivation or a patch-less amend) writes for increment 4a's readable twins, with their economic
 /// terms, and for the stray rows at stamps 1, 2 and 3. Increment 4b must leave every entry, old and
 /// new, unchanged.</para>
+/// <para>The later typed-factor-history migration intentionally extends only the current
+/// StructuredCredit economic outputs with their dated observations. Flat writes and all
+/// no-history goldens remain unchanged; readable-version/container manifests stay frozen.</para>
 /// </summary>
 /// <remarks>
 /// A missing or mismatched fixture writes <c>security-terms-write-golden.received.json</c> beside the

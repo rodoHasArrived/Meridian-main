@@ -1172,6 +1172,7 @@ let ``IO strip StructuredProductTerms sets IsInterestOnly true`` () =
         Originator = None
         CreditEnhancementPct = None
         FactorScheduleReference = None
+        FactorScheduleEntries = []
     }
 
     sp.IsInterestOnly |> should equal true

@@ -33,66 +33,132 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
     public bool HasSchema => _fields.Count > 0;
 
     public IReadOnlyList<SecurityValidationIssueDto> Validate(SecurityValidationContext context)
+        => Validate(context.Record.AssetSpecificTerms, forWrite: false);
+
+    /// <summary>
+    /// Checks new canonical writes against the fields this node writes. Unlike retained-row
+    /// diagnostics, admission requires every required member inside an item to be present.
+    /// Readable-ahead fields are deliberately left to the versioned-term round-trip guard.
+    /// </summary>
+    public IReadOnlyList<SecurityValidationIssueDto> ValidateForWrite(SecurityValidationContext context)
+        => Validate(context.Record.AssetSpecificTerms, forWrite: true);
+
+    /// <summary>Checks supplied members before tolerant decoding can discard malformed input.</summary>
+    public IReadOnlyList<SecurityValidationIssueDto> ValidateSubmittedFieldsForWrite(JsonElement terms)
+        => Validate(terms, forWrite: true, requirePresence: false);
+
+    private IReadOnlyList<SecurityValidationIssueDto> Validate(JsonElement terms, bool forWrite, bool requirePresence = true)
     {
-        var terms = context.Record.AssetSpecificTerms;
         if (terms.ValueKind != JsonValueKind.Object)
         {
-            // The common record-shape validation reports a non-object payload; without an object
-            // there is no field to check and every required field would be reported as missing.
+            // The record-shape validator owns the non-object payload diagnostic.
             return [];
         }
 
-        // A field above the class's write version (ADR-024, readable before writable) is checked only
-        // where the decoder reads it: a flat payload stamped at or above its version. A stray key of
-        // that name on an older or profile-governed payload is not a term of the class.
+        var profileGoverned = SecurityTermsEnvelope.IsProfileGovernedPayload(AssetClass, terms);
+        if (forWrite && profileGoverned)
+        {
+            // Class schemas do not govern approved profile payloads (ADR-024).
+            return [];
+        }
+
         var writes = SecurityAssetClassCatalog.GetTermsVersion(AssetClass);
-        var decodesThrough = SecurityTermsEnvelope.IsProfileGovernedPayload(AssetClass, terms)
+        var decodesThrough = forWrite || profileGoverned
             ? writes
             : Math.Max(writes, SecurityTermsEnvelope.ResolveAssetClassTermsVersion(terms));
-
         var issues = new List<SecurityValidationIssueDto>();
-        foreach (var field in _fields)
+        ValidateFields(terms, _fields, "", "assetSpecificTerms", decodesThrough, profileGoverned,
+            requirePresence, forWrite, issues);
+        return issues;
+    }
+
+    private void ValidateFields(
+        JsonElement terms,
+        IReadOnlyList<SecurityAssetTermField> fields,
+        string schemaPath,
+        string valuePath,
+        int decodesThrough,
+        bool profileGoverned,
+        bool requirePresence,
+        bool forWrite,
+        List<SecurityValidationIssueDto> issues)
+    {
+        foreach (var field in fields)
         {
-            if (field.SinceTermsVersion > decodesThrough)
+            if (field.SinceTermsVersion > decodesThrough
+                || (profileGoverned && field.SinceTermsVersion > SecurityTermsEnvelope.DefaultAssetClassTermsVersion))
             {
                 continue;
             }
 
-            var issue = ValidateField(field, terms);
+            var path = $"{valuePath}.{field.Key}";
+            var exists = TryGetUnderKeyOrAlias(terms, field, out var value);
+            var issue = ValidateField(field, exists, value, path, requirePresence);
             if (issue is not null)
             {
                 issues.Add(issue);
+                continue;
+            }
+            if (!exists || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            {
+                continue;
+            }
+
+            var childSchemaPath = schemaPath.Length == 0 ? field.Key : $"{schemaPath}.{field.Key}";
+            var children = SecurityAssetTermsSchema.ElementFields(AssetClass, childSchemaPath);
+            if (children.Count == 0)
+            {
+                continue;
+            }
+            if (field.Type == SecurityAssetTermFieldType.Object)
+            {
+                ValidateFields(value, children, childSchemaPath, path, decodesThrough, profileGoverned,
+                    requirePresence: forWrite && requirePresence, forWrite, issues);
+            }
+            else if (field.Type == SecurityAssetTermFieldType.Array)
+            {
+                var index = 0;
+                foreach (var item in value.EnumerateArray())
+                {
+                    var itemPath = $"{path}.{index++}";
+                    if (item.ValueKind != JsonValueKind.Object)
+                    {
+                        issues.Add(TypeIssue(field.Key, SecurityAssetTermFieldType.Object, item, itemPath));
+                        continue;
+                    }
+                    ValidateFields(item, children, childSchemaPath, itemPath, decodesThrough, profileGoverned,
+                        requirePresence: forWrite && requirePresence, forWrite, issues);
+                }
             }
         }
-
-        return issues;
     }
 
-    private static SecurityValidationIssueDto? ValidateField(SecurityAssetTermField field, JsonElement terms)
+    private static SecurityValidationIssueDto? ValidateField(
+        SecurityAssetTermField field, bool exists, JsonElement value, string path, bool requirePresence)
     {
-        var path = $"assetSpecificTerms.{field.Key}";
-        if (!TryGetUnderKeyOrAlias(terms, field, out var value) || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+        if (!exists || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
         {
-            return field.Required
+            return field.Required && requirePresence
                 ? SecurityValidationIssueFactory.Create(
                     SecurityValidationSeverityDto.Error,
                     RequiredCode,
                     "Required term is missing",
                     $"The term schema declares '{field.Key}' as required and the record does not carry it.",
                     [path],
-                    $"Populate assetSpecificTerms.{field.Key} before the security is used downstream.")
+                    $"Populate {path} before the security is used downstream.")
                 : null;
+        }
+
+        if (field.Required && value.ValueKind == JsonValueKind.String && string.IsNullOrWhiteSpace(value.GetString()))
+        {
+            return SecurityValidationIssueFactory.Create(SecurityValidationSeverityDto.Error, RequiredCode,
+                "Required term is blank", $"The required term '{field.Key}' must not be blank.", [path],
+                $"Populate {path} before the security is used downstream.");
         }
 
         if (!MatchesType(field.Type, value))
         {
-            return SecurityValidationIssueFactory.Create(
-                SecurityValidationSeverityDto.Error,
-                TypeCode,
-                "Term has the wrong type",
-                $"The term schema declares '{field.Key}' as {DescribeType(field.Type)} and the record carries a {DescribeValue(value)}.",
-                [path],
-                $"Correct assetSpecificTerms.{field.Key} to a {DescribeType(field.Type)} value.");
+            return TypeIssue(field.Key, field.Type, value, path);
         }
 
         if (field.IsDiscriminant
@@ -106,11 +172,20 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
                 "Term value is outside its declared vocabulary",
                 $"The term schema declares '{field.Key}' as one of {string.Join(", ", field.AllowedValues)}; the record carries '{value.GetString()}'.",
                 [path],
-                $"Set assetSpecificTerms.{field.Key} to one of the declared values.");
+                $"Set {path} to one of the declared values.");
         }
 
         return null;
     }
+
+    private static SecurityValidationIssueDto TypeIssue(string key, SecurityAssetTermFieldType type, JsonElement value, string path)
+        => SecurityValidationIssueFactory.Create(
+            SecurityValidationSeverityDto.Error,
+            TypeCode,
+            "Term has the wrong type",
+            $"The term schema declares '{key}' as {DescribeType(type)} and the record carries a {DescribeValue(value)}.",
+            [path],
+            $"Correct {path} to a {DescribeType(type)} value.");
 
     private static bool TryGetUnderKeyOrAlias(JsonElement terms, SecurityAssetTermField field, out JsonElement value)
     {
@@ -139,7 +214,7 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
             SecurityAssetTermFieldType.Integer => value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out _),
             SecurityAssetTermFieldType.Boolean => value.ValueKind is JsonValueKind.True or JsonValueKind.False,
             SecurityAssetTermFieldType.Date => value.ValueKind == JsonValueKind.String && IsDate(value.GetString()),
-            SecurityAssetTermFieldType.Guid => value.ValueKind == JsonValueKind.String && Guid.TryParse(value.GetString(), out _),
+            SecurityAssetTermFieldType.Guid => value.ValueKind == JsonValueKind.String && Guid.TryParse(value.GetString(), out var guid) && guid != Guid.Empty,
             SecurityAssetTermFieldType.Array => value.ValueKind == JsonValueKind.Array,
             SecurityAssetTermFieldType.Object => value.ValueKind == JsonValueKind.Object,
             _ => true
@@ -177,8 +252,8 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
 
 /// <summary>
 /// Composes the schema-generated rules with a class's hand-written validator. The hand-written
-/// rules run first and keep their codes; a schema issue on a field the hand-written validator has
-/// already reported is dropped, so a field is reported once whichever rule set saw it first.
+/// semantic rules run after schema presence and type checks. A semantic issue is suppressed when
+/// its field already has a schema issue, so malformed data has one authoritative shape diagnostic.
 /// </summary>
 internal sealed class SchemaBackedAssetClassValidator : ISecurityAssetClassValidator
 {
@@ -196,16 +271,16 @@ internal sealed class SchemaBackedAssetClassValidator : ISecurityAssetClassValid
 
     public IReadOnlyList<SecurityValidationIssueDto> Validate(SecurityValidationContext context)
     {
-        var issues = new List<SecurityValidationIssueDto>(_handWritten.Validate(context));
         if (!_schema.HasSchema)
         {
-            return issues;
+            return _handWritten.Validate(context);
         }
 
+        var issues = new List<SecurityValidationIssueDto>(_schema.Validate(context));
         var reported = new HashSet<string>(
             issues.SelectMany(static issue => issue.AffectedFields),
             StringComparer.OrdinalIgnoreCase);
-        foreach (var issue in _schema.Validate(context))
+        foreach (var issue in _handWritten.Validate(context))
         {
             if (!issue.AffectedFields.Any(reported.Contains))
             {

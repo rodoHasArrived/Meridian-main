@@ -266,6 +266,7 @@ module SecurityMasterLegacyUpgrade =
                         Originator = None
                         CreditEnhancementPct = None
                         FactorScheduleReference = None
+                        FactorScheduleEntries = []
                     }
                 else None
             {
@@ -619,6 +620,8 @@ module SecurityMasterLegacyUpgrade =
                             // The trustee-report pointer travels as evidence lineage, not as a
                             // payment or reset frequency.
                             FactorScheduleReference = terms.FactorSchedule
+                            FactorScheduleEntries = terms.FactorScheduleEntries |> List.map (fun entry ->
+                                { EconomicFactorScheduleEntry.AsOfDate = entry.AsOfDate; Factor = entry.Factor })
                         }
             }
         | SecurityKind.PrivateFundInterest terms ->

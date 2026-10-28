@@ -13,7 +13,7 @@ using NSubstitute;
 
 namespace Meridian.Tests.Ui;
 
-public sealed class SecurityMasterOtcContractEndpointsTests
+public sealed partial class SecurityMasterOtcContractEndpointsTests
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
     private static readonly DateOnly Trade = new(2026, 3, 2);
@@ -133,7 +133,7 @@ public sealed class SecurityMasterOtcContractEndpointsTests
             DateTimeOffset.UtcNow.AddDays(-1),
             null);
 
-    private static async Task<WebApplication> CreateAppAsync(ISecurityMasterQueryService queryService, IOtcContractStore store)
+    private static async Task<WebApplication> CreateAppAsync(ISecurityMasterQueryService queryService, IOtcContractStore store, UserPermission permissions = UserPermission.ModifySecurityMaster)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Development });
         builder.WebHost.UseTestServer();
@@ -144,7 +144,7 @@ public sealed class SecurityMasterOtcContractEndpointsTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ModifySecurityMaster;
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
             context.Items[LoginSessionMiddleware.CurrentUserKey] = "casey.doyle";
             await next();
         });

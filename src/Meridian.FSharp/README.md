@@ -163,3 +163,10 @@ Keep F# interop contracts explicit and covered by tests before changing C# consu
 
 - `docs/ai/claude/CLAUDE.fsharp.md`
 - `docs/source/generated/source-module-index.md`
+
+`StructuredProductTerms.FactorScheduleEntries` retains dated factors in the typed economic model.
+The StructuredCredit upgrade carries its canonical factor history into that module; the application
+adapter emits nonempty history alongside the retained `FactorScheduleReference`. Empty histories
+leave existing economic JSON bytes unchanged, while economic-only replay retains additive history
+that a flat projection cannot express. Legacy passthrough remains a compatibility/replay concern,
+not an accounting or reporting authority.

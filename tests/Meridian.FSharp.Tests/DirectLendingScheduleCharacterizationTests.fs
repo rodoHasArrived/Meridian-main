@@ -201,13 +201,12 @@ let ``SCH-DEF-006 posting every day of January under Thirty360 accrues 31 days``
     (entries |> List.last).InterestAmount |> should equal 166.67m
     servicing.Balances.InterestAccruedUnpaid |> should equal 5_166.77m
 
-// ----- SCH-DEF-008: activateLoan rebuilds servicing positionally -----
+// ----- SCH-DEF-008 regression: activation and amendment preserve trailing servicing facts -----
 
-[<Fact>]
-[<Trait("Category", "KnownDefect")>]
-let ``SCH-DEF-008 ActivateLoan drops the PIK toggle and collateral`` () =
-    // TARGET: activation preserves IsPikToggled and the collateral list (and the unamortized
-    // discount and premium).
+[<Theory>]
+[<InlineData(false)>]
+[<InlineData(true)>]
+let ``SCH-DEF-008 activation and amendment preserve PIK collateral discount and premium`` (amend: bool) =
     let created = createLoanWith (thirty360Terms ())
     let collateral: IReadOnlyList<CollateralDto> =
         [| CollateralDto(
@@ -233,12 +232,23 @@ let ``SCH-DEF-008 ActivateLoan drops the PIK toggle and collateral`` () =
             created.Servicing.RevisionHistory,
             created.Servicing.AccrualEntries,
             Collateral = collateral,
+            UnamortizedDiscount = 125m,
+            UnamortizedPremium = 25m,
             IsPikToggled = true)
 
-    let activated =
-        DirectLendingAggregateInterop.ActivateLoan created.Contract servicing (ActivateLoanRequest(DateOnly(2026, 1, 1)))
+    let updated =
+        if amend then
+            (DirectLendingAggregateInterop.AmendTerms
+                created.Contract
+                servicing
+                (AmendLoanTermsRequest(thirty360Terms (), "preservation regression"))
+                (DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero))).Servicing
+        else
+            (DirectLendingAggregateInterop.ActivateLoan
+                created.Contract servicing (ActivateLoanRequest(DateOnly(2026, 1, 1)))).Servicing
 
-    // CURRENT defective behavior: the trailing members fall back to their defaults.
-    activated.Servicing.Status |> should equal LoanStatus.Active
-    activated.Servicing.IsPikToggled |> should equal false
-    isNull activated.Servicing.Collateral |> should equal true
+    updated.Status |> should equal (if amend then LoanStatus.Draft else LoanStatus.Active)
+    updated.IsPikToggled |> should equal true
+    updated.Collateral |> Seq.toArray |> should equal (collateral |> Seq.toArray)
+    updated.UnamortizedDiscount |> should equal 125m
+    updated.UnamortizedPremium |> should equal 25m

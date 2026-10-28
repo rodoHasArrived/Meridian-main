@@ -124,8 +124,8 @@ internal static class ScheduleSpecFactory
             throw Refused(schedule.Failure.Message);
         if (schedule.Diagnostics.Count > 0)
             throw Refused("Declared schedule exceeds the available calendar coverage.");
-        if (basis.Equals("Level", StringComparison.OrdinalIgnoreCase) && (tenor.PeriodsPerYear is null || schedule.Periods.Any(period => period.IsStub)))
-            throw Refused("Level coupon cash requires regular periods and a fixed annual cadence.");
+        if (basis.Equals("Level", StringComparison.OrdinalIgnoreCase) && tenor.PeriodsPerYear is null)
+            throw Refused("Level coupon cash requires a fixed annual cadence.");
         return new Plan(schedule, unit.Equals("Percent", StringComparison.OrdinalIgnoreCase), basis.Equals("Level", StringComparison.OrdinalIgnoreCase));
     }
 

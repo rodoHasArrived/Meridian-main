@@ -201,7 +201,9 @@ public sealed record StructuredCashFlowProjectionDto(
     StructuredCashFlowTerms? TermsUsed = null,
     IReadOnlyList<StructuredCashFlowLegSchedule>? LegSchedules = null,
     string? BlockedReason = null,
-    bool IsNormalizedPer100 = false);
+    bool IsNormalizedPer100 = false,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<StructuredCashFlowScheduleEvidence>? ScheduleEvidence = null);
 
 /// <summary>
 /// One balanced ledger journal line projected from a structured cash flow accrual.

@@ -37,7 +37,9 @@ public sealed class BrokeragePortfolioState(LiveBrokeragePortfolioSyncService sy
                 position.UnrealizedPnl, 0m)
             {
                 ExactQuantity = position.Quantity,
-                ContractMultiplier = position.AssetClass == "us_option" ? 100m : 1m,
+                ContractMultiplier = position.AssetClass == "us_option"
+                    ? LiveBrokeragePortfolioSyncService.GetObservedOptionMultiplier(observation, position.Symbol)
+                    : 1m,
                 OwnerQuantities = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase)
                 {
                     [observation.FundAccountId.ToString("D")] = position.Quantity

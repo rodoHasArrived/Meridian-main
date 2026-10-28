@@ -259,6 +259,8 @@ internal static class SecurityMasterMapping
     private static SecurityKind ToSecurityKind(string assetClass, JsonElement json, SecurityKindMappingMode mode = SecurityKindMappingMode.Read)
     {
         EnsureSupportedAssetSchemaVersion(assetClass, json, mode);
+        if (mode == SecurityKindMappingMode.Write)
+            SecurityAssetPackAdmission.EnsureSubmittedFields(assetClass, json);
         // A term above the class's write version is decoded only from a flat payload stamped at or
         // above it (ADR-024, readable before writable). Writes and profile envelopes decode exactly
         // what the write version declares, so their bytes never change.
