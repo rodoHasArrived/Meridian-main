@@ -1,3 +1,4 @@
+using System.Runtime.Versioning;
 using FluentAssertions;
 using Meridian.Contracts.Calendars;
 using Meridian.Storage.Calendars;
@@ -10,7 +11,8 @@ namespace Meridian.Tests.Calendars;
 /// <summary>
 /// Pins the file-backed business-day calendar source (ADR-025): <c>&lt;dataRoot&gt;/calendars/{ID}.json</c>,
 /// one calendar per file, loaded once with no fallback. Every refused file logs a Warning naming the
-/// file and leaves its id unresolvable while the other files still load.
+/// file and loads nothing while the other files still load; its id stays unresolvable unless another
+/// file loads it, and the Warning says which.
 /// </summary>
 /// <remarks>
 /// Calendars that load use the fictitious ZZ ids with invented dates; ids of real business centres
@@ -171,6 +173,7 @@ public sealed class FileBusinessDayCalendarSourceTests : IDisposable
             source.TryGet(stem, out _).Should().BeFalse();
             source.TryResolve([stem], out _).Should().BeFalse();
             source.TryResolve(["ZZTEST", stem], out _).Should().BeFalse();
+            warning.Message.Should().EndWith("The calendar it names stays unresolvable; no weekends-only calendar is substituted.");
         }
     }
 
@@ -178,12 +181,93 @@ public sealed class FileBusinessDayCalendarSourceTests : IDisposable
     public void WeekendsFile_DoesNotReplaceTheBuiltInCalendar()
     {
         WriteCalendar("WEEKENDS.json", Document("WEEKENDS", weekendDays: """["Friday"]"""));
+        var logger = new RecordingLogger<FileBusinessDayCalendarSource>();
 
-        var source = FileBusinessDayCalendarSource.Load(_artifacts.RootPath);
+        var source = FileBusinessDayCalendarSource.Load(_artifacts.RootPath, logger);
 
         source.RefusedFiles.Should().ContainSingle().Which.FileName.Should().Be("WEEKENDS.json");
         source.TryGet("WEEKENDS", out var weekends).Should().BeTrue();
         weekends.Should().BeSameAs(BusinessDayCalendars.WeekendsOnly);
+        logger.Entries.Should().ContainSingle().Which.Message.Should().EndWith(
+            "Nothing from this file is loaded; calendar WEEKENDS still resolves, to the built-in weekends-only calendar.");
+    }
+
+    [Fact]
+    public void AnUnparseableFileWhoseStemNamesTheBuiltInId_SaysTheBuiltInStillResolves()
+    {
+        // The document never parses, so the id it names is its file name stem, matched as lookups match it.
+        WriteCalendar("weekends.json", "{");
+        var logger = new RecordingLogger<FileBusinessDayCalendarSource>();
+
+        var source = FileBusinessDayCalendarSource.Load(_artifacts.RootPath, logger);
+
+        source.RefusedFiles.Should().ContainSingle().Which.Reason.Should().Contain("not a valid calendar document");
+        logger.Entries.Should().ContainSingle().Which.Message.Should().EndWith(
+            "Nothing from this file is loaded; calendar WEEKENDS still resolves, to the built-in weekends-only calendar.");
+    }
+
+    [Fact]
+    public void ARefusedFileNamingALoadedId_SaysTheIdStillResolvesFromTheOtherFile()
+    {
+        // A copy beside the file it copies (as a desktop file manager names it) names ZZTEST at version
+        // 2 under another stem: it is refused, and ZZTEST version 1 still resolves from ZZTEST.json.
+        WriteCalendar("ZZTEST.json", ValidZzTest);
+        WriteCalendar("ZZTEST - Copy.json", ValidZzTest.Replace("\"version\": 1", "\"version\": 2", StringComparison.Ordinal));
+        var logger = new RecordingLogger<FileBusinessDayCalendarSource>();
+
+        var source = FileBusinessDayCalendarSource.Load(_artifacts.RootPath, logger);
+
+        source.RefusedFiles.Should().ContainSingle().Which.FileName.Should().Be("ZZTEST - Copy.json");
+        source.TryGet("ZZTEST", out var resolved).Should().BeTrue();
+        resolved.Should().BeSameAs(source.Calendars.Should().ContainSingle().Which);
+        source.Calendars[0].Version.Should().Be(1);
+        var warning = logger.Entries.Should().ContainSingle(static entry => entry.LogLevel == LogLevel.Warning).Subject;
+        warning.Message.Should().Contain("ZZTEST - Copy.json").And.Contain("does not equal the file name stem 'ZZTEST - Copy' exactly")
+            .And.EndWith($"Nothing from this file is loaded; calendar ZZTEST still resolves, from {Path.Combine(_artifacts.RootPath, "calendars", "ZZTEST.json")}.");
+        warning.Message.Should().NotContain("stays unresolvable");
+    }
+
+    [Fact]
+    public void TheListing_RaisesAccessDeniedInsteadOfReadingAnEmptyDirectory()
+    {
+        // .NET skips an inaccessible directory silently unless told not to, which would read an
+        // unreadable calendars directory as an empty one; raised, it reaches the "could not be listed"
+        // Warning (pinned end to end by AnUnreadableCalendarsDirectory_LogsTheCouldNotBeListedWarning).
+        var options = FileBusinessDayCalendarSource.FileEnumerationOptions;
+
+        options.IgnoreInaccessible.Should().BeFalse();
+        options.RecurseSubdirectories.Should().BeFalse();
+        options.MatchCasing.Should().Be(MatchCasing.CaseInsensitive);
+        options.MatchType.Should().Be(MatchType.Simple);
+        options.AttributesToSkip.Should().Be((FileAttributes)0);
+    }
+
+    [UnreadableDirectoryFact]
+    [UnsupportedOSPlatform("windows")]
+    public void AnUnreadableCalendarsDirectory_LogsTheCouldNotBeListedWarning()
+    {
+        WriteCalendar("ZZTEST.json", ValidZzTest);
+        var directory = Path.Combine(_artifacts.RootPath, "calendars");
+        var logger = new RecordingLogger<FileBusinessDayCalendarSource>();
+        FileBusinessDayCalendarSource source;
+        File.SetUnixFileMode(directory, UnixFileMode.None);
+        try
+        {
+            source = FileBusinessDayCalendarSource.Load(_artifacts.RootPath, logger);
+        }
+        finally
+        {
+            File.SetUnixFileMode(directory, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        }
+
+        source.Calendars.Should().BeEmpty();
+        source.RefusedFiles.Should().BeEmpty();
+        source.TryGet("ZZTEST", out _).Should().BeFalse();
+        source.TryGet("WEEKENDS", out _).Should().BeTrue();
+        var warning = logger.Entries.Should().ContainSingle().Subject;
+        warning.LogLevel.Should().Be(LogLevel.Warning);
+        warning.Exception.Should().BeOfType<UnauthorizedAccessException>();
+        warning.Message.Should().Be($"Business-day calendar directory {directory} could not be listed; only the built-in WEEKENDS calendar is loaded.");
     }
 
     [Fact]
@@ -299,5 +383,19 @@ public sealed class FileBusinessDayCalendarSourceTests : IDisposable
         if (extra is not null)
             members.Add(extra);
         return "{ " + string.Join(", ", members) + " }";
+    }
+}
+
+/// <summary>
+/// A fact that needs a directory this process cannot list: it runs on Unix as a non-root user, and is
+/// skipped on Windows, which has no mode bits to clear, and for root, which lists any directory.
+/// </summary>
+[AttributeUsage(AttributeTargets.Method)]
+public sealed class UnreadableDirectoryFactAttribute : FactAttribute
+{
+    public UnreadableDirectoryFactAttribute()
+    {
+        if (OperatingSystem.IsWindows() || Environment.IsPrivilegedProcess)
+            Skip = "An unreadable directory needs Unix mode bits and a non-root process; root lists any directory.";
     }
 }

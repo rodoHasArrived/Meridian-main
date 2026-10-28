@@ -99,8 +99,11 @@ public sealed record DeclaredScheduleResolution(
 /// </para>
 /// <para>
 /// Nothing is guessed: there is no fallback to the record's effective-from date, an annual cadence,
-/// the common terms' holiday calendar or the weekends-only calendar, and a declared member that would
-/// have no effect, or that conflicts with another, is refused.
+/// the common terms' holiday calendar or the weekends-only calendar. The member combinations ADR-025
+/// lists as conflicting or without effect are refused: a roll that contradicts endOfMonthRule,
+/// accrualAdjusted true without a convention other than Unadjusted, a convention other than
+/// Unadjusted with accrualAdjusted absent, or with accrualAdjusted false and a payment lag above 0,
+/// and a negative lag. Not every member without effect is refused: a Term tenor ignores the roll.
 /// </para>
 /// </remarks>
 public static class ScheduleSpecFactory
@@ -116,6 +119,10 @@ public static class ScheduleSpecFactory
     private const string IssueDateKey = "issueDate";
     private const string MaturityKey = "maturity";
     private const string PaymentFrequencyKey = "paymentFrequency";
+
+    // What each anchor's exact-kind getter reads, as an ambiguity refusal names it.
+    private const string DateKind = "date";
+    private const string StringKind = "string";
 
     // The block members named in refusals; the closed vocabularies are checked against the block's schema.
     private const string BusinessDayConventionMember = "businessDayConvention";
@@ -202,7 +209,11 @@ public static class ScheduleSpecFactory
     /// <see cref="Resolve"/> except calendar resolution, then the schedule kernel over the spec with no
     /// business-day adjustments and no payment lag. A kernel failure is
     /// <see cref="DeclaredScheduleRefusalCode.KernelRefused"/>, so a write rule that calls this refuses
-    /// every block whose projection could only ever be blocked for a reason no calendar can change.
+    /// every block a factory rule or a calendar-free kernel failure would block. That is all it
+    /// guarantees: every check that runs after the factory can still block a Declared result, among
+    /// them calendar availability, the calendar-dependent kernel failures and the declared walk's
+    /// refusals (a contractual principal schedule, a missing or unrecognized dayCount, Level on a Term
+    /// period, Act/Act ICMA on adjusted accrual dates, Business/252 without a calendar).
     /// A Declared result carries that calendar-free spec.
     /// </summary>
     /// <exception cref="ArgumentNullException"><paramref name="security"/> or <paramref name="terms"/> is null.</exception>
@@ -394,15 +405,15 @@ public static class ScheduleSpecFactory
         string? ambiguity = null;
         if (issueDate != terms.IssueDate)
         {
-            ambiguity = DescribeAmbiguity("issue date", issueField.Key, Format(issueDate), Format(terms.IssueDate));
+            ambiguity = DescribeAmbiguity(root, "issue date", issueField.Key, DateKind, Format(issueDate), Format(terms.IssueDate));
         }
         else if (maturity != terms.MaturityDate)
         {
-            ambiguity = DescribeAmbiguity("maturity", maturityField?.Key ?? MaturityKey, Format(maturity), Format(terms.MaturityDate));
+            ambiguity = DescribeAmbiguity(root, "maturity", maturityField?.Key ?? MaturityKey, DateKind, Format(maturity), Format(terms.MaturityDate));
         }
         else if (frequencyField is not null && !SameFrequency(frequency, terms.PaymentFrequency))
         {
-            ambiguity = DescribeAmbiguity("payment frequency", frequencyField.Key, frequency, terms.PaymentFrequency);
+            ambiguity = DescribeAmbiguity(root, "payment frequency", frequencyField.Key, StringKind, frequency, terms.PaymentFrequency);
         }
 
         if (ambiguity is not null)
@@ -596,12 +607,31 @@ public static class ScheduleSpecFactory
             ? resolved is null
             : string.Equals(root, resolved, StringComparison.Ordinal);
 
-    private static string DescribeAmbiguity(string term, string key, string? root, string? resolved)
-        => (root, resolved) switch
+    // A root anchor the exact-kind getter could not read is either absent, so the cash-flow terms
+    // resolved it from another key or source, or present as a value the getter does not read, which the
+    // cash-flow terms may have read from the same key (they read a number or boolean as a string and a
+    // timestamp as a date).
+    private static string DescribeAmbiguity(JsonElement root, string term, string key, string kind, string? rootValue, string? resolved)
+        => (rootValue, resolved) switch
         {
+            (null, _) when root.ValueKind == JsonValueKind.Object
+                           && root.TryGetProperty(key, out var raw)
+                           && raw.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined)
+                => $"Declared schedule conventions need one unambiguous {term}; the record's '{key}' is {DescribeRootValue(raw)}, which is not a {kind} the schedule anchors read, but the cash-flow terms resolve '{resolved}'.",
             (null, _) => $"Declared schedule conventions need one unambiguous {term}; the record carries no '{key}' but the cash-flow terms resolve '{resolved}' from another key or source.",
-            (_, null) => $"Declared schedule conventions need one unambiguous {term}; the record's '{key}' is '{root}' but the cash-flow terms resolve none.",
-            _ => $"Declared schedule conventions need one unambiguous {term}; the record's '{key}' is '{root}' but the cash-flow terms resolve '{resolved}' from another key or source."
+            (_, null) => $"Declared schedule conventions need one unambiguous {term}; the record's '{key}' is '{rootValue}' but the cash-flow terms resolve none.",
+            _ => $"Declared schedule conventions need one unambiguous {term}; the record's '{key}' is '{rootValue}' but the cash-flow terms resolve '{resolved}' from another key or source."
+        };
+
+    // A root value as an ambiguity refusal quotes it: a string in quotes, a number or boolean as
+    // written, and only the kind of an object or array.
+    private static string DescribeRootValue(JsonElement value)
+        => value.ValueKind switch
+        {
+            JsonValueKind.String => $"'{value.GetString()}'",
+            JsonValueKind.Object => "an object",
+            JsonValueKind.Array => "an array",
+            _ => value.GetRawText()
         };
 
     // The declared ids the source does not hold, trimmed and de-duplicated ignoring case in declared

@@ -590,6 +590,34 @@ public sealed class ScheduleSpecFactoryTests
             "Declared schedule conventions need one unambiguous payment frequency; the record's 'paymentFrequency' is 'Quarterly' but the cash-flow terms resolve 'Monthly' from another key or source.");
     }
 
+    // A root anchor of a kind the exact getters do not read, which the cash-flow terms read from the
+    // same key: the refusal names the record's value, not another key or source.
+    public static TheoryData<string, string> UnreadableRootAnchorCases => new()
+    {
+        {
+            BondWith(frequency: null) + ",\"paymentFrequency\":4",
+            "Declared schedule conventions need one unambiguous payment frequency; the record's 'paymentFrequency' is 4, which is not a string the schedule anchors read, but the cash-flow terms resolve '4'."
+        },
+        {
+            BondWith(frequency: null) + ",\"paymentFrequency\":true",
+            "Declared schedule conventions need one unambiguous payment frequency; the record's 'paymentFrequency' is true, which is not a string the schedule anchors read, but the cash-flow terms resolve 'True'."
+        },
+        {
+            BondWith(maturity: null) + ",\"maturity\":\"2027-01-31T00:00:00Z\"",
+            "Declared schedule conventions need one unambiguous maturity; the record's 'maturity' is '2027-01-31T00:00:00Z', which is not a date the schedule anchors read, but the cash-flow terms resolve '2027-01-31'."
+        }
+    };
+
+    [Theory]
+    [MemberData(nameof(UnreadableRootAnchorCases))]
+    public void ARootAnchorTheGettersCannotRead_IsAmbiguous_WithoutBlamingAnotherKey(string body, string message)
+    {
+        var security = Bond("""{"accrualAdjusted":false}""", body: body);
+
+        ShouldRefuse(Resolve(security), DeclaredScheduleRefusalCode.TermsAmbiguous, message);
+        ShouldRefuse(Shape(security), DeclaredScheduleRefusalCode.TermsAmbiguous, message);
+    }
+
     [Fact]
     public void AnAgreeingDuplicate_IsNotAmbiguous()
     {

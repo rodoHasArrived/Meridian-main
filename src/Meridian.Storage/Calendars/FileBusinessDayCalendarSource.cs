@@ -19,12 +19,14 @@ namespace Meridian.Storage.Calendars;
 /// canonical (<c>^[A-Z][A-Z0-9]{1,15}$</c>) or not ordinally equal to the file name stem, the id is
 /// the reserved <c>WEEKENDS</c>, a weekend day is not exactly one of the seven English day names,
 /// every day is a weekend day, coverage starts after it ends, <see cref="HolidayBusinessDayCalendar"/>
-/// rejects the data, or another file defines the same id (both are refused).
+/// rejects the data, or another file that passes these checks defines the same id (both are refused).
 /// </para>
 /// <para>
-/// There is no fallback: a refused file's id stays unresolvable and is never replaced by weekends
-/// only, and loading never throws for file content. A missing directory loads only
-/// <c>WEEKENDS</c>; a <c>calendars</c> path that is a file does too, with a Warning.
+/// There is no fallback: a refused file loads nothing, an id no loaded file defines stays
+/// unresolvable and is never replaced by weekends only, and loading never throws for file content.
+/// A refused file does not block an id another file loads; its Warning names that file. A missing
+/// directory loads only <c>WEEKENDS</c>; a <c>calendars</c> path that is a file, or a directory that
+/// cannot be listed, does too, with a Warning.
 /// </para>
 /// <para>
 /// Ids are canonical because the content hash includes the id as written and joint ids sort their
@@ -106,13 +108,7 @@ public sealed class FileBusinessDayCalendarSource : IBusinessDayCalendarSource
         try
         {
             files = Directory
-                .EnumerateFiles(directory, "*" + FileExtension, new EnumerationOptions
-                {
-                    MatchCasing = MatchCasing.CaseInsensitive,
-                    MatchType = MatchType.Simple,
-                    RecurseSubdirectories = false,
-                    AttributesToSkip = 0
-                })
+                .EnumerateFiles(directory, "*" + FileExtension, FileEnumerationOptions)
                 .OrderBy(static file => Path.GetFileName(file), StringComparer.Ordinal)
                 .ToArray();
         }
@@ -139,6 +135,12 @@ public sealed class FileBusinessDayCalendarSource : IBusinessDayCalendarSource
                 static group => group.Select(static outcome => outcome.FileName).ToArray(),
                 StringComparer.OrdinalIgnoreCase);
 
+        // The calendars that load, by id ignoring case as lookups resolve them, so a refused file's
+        // Warning can say whether the id it names still resolves from another file.
+        var loaded = outcomes
+            .Where(outcome => outcome.Calendar is { } calendar && !duplicateIds.ContainsKey(calendar.CalendarId))
+            .ToDictionary(static outcome => outcome.Calendar!.CalendarId, StringComparer.OrdinalIgnoreCase);
+
         var calendars = new List<HolidayBusinessDayCalendar>();
         var refused = new List<BusinessDayCalendarFileRefusal>();
         foreach (var outcome in outcomes)
@@ -152,10 +154,7 @@ public sealed class FileBusinessDayCalendarSource : IBusinessDayCalendarSource
             if (reason is not null)
             {
                 refused.Add(new BusinessDayCalendarFileRefusal(outcome.FileName, reason));
-                log.LogWarning(
-                    "Refused business-day calendar file {CalendarFile}: {RefusalReason} The calendar it names stays unresolvable; no weekends-only calendar is substituted.",
-                    outcome.FilePath,
-                    reason);
+                LogRefusal(log, outcome, reason, loaded);
                 continue;
             }
 
@@ -185,6 +184,61 @@ public sealed class FileBusinessDayCalendarSource : IBusinessDayCalendarSource
     public bool TryResolve(IReadOnlyList<string> calendarIds, [NotNullWhen(true)] out IBusinessDayCalendar? calendar)
         => _calendars.TryResolve(calendarIds, out calendar);
 
+    // The calendar directory listing: top-level files only, matched ignoring case, hidden and system
+    // files included, and access denied raised rather than read as an empty directory.
+    internal static EnumerationOptions FileEnumerationOptions => new()
+    {
+        MatchCasing = MatchCasing.CaseInsensitive,
+        MatchType = MatchType.Simple,
+        RecurseSubdirectories = false,
+        AttributesToSkip = 0,
+        IgnoreInaccessible = false
+    };
+
+    // One Warning per refused file, saying whether the id it names (its calendarId, then its file name
+    // stem) still resolves from another file or the built-in calendar, or stays unresolvable.
+    private static void LogRefusal(
+        ILogger log,
+        FileOutcome outcome,
+        string reason,
+        IReadOnlyDictionary<string, FileOutcome> loaded)
+    {
+        foreach (var named in new[] { outcome.CalendarId, Path.GetFileNameWithoutExtension(outcome.FileName) })
+        {
+            var calendarId = named?.Trim();
+            if (string.IsNullOrEmpty(calendarId))
+            {
+                continue;
+            }
+
+            if (loaded.TryGetValue(calendarId, out var other))
+            {
+                log.LogWarning(
+                    "Refused business-day calendar file {CalendarFile}: {RefusalReason} Nothing from this file is loaded; calendar {CalendarId} still resolves, from {LoadedCalendarFile}.",
+                    outcome.FilePath,
+                    reason,
+                    other.Calendar!.CalendarId,
+                    other.FilePath);
+                return;
+            }
+
+            if (string.Equals(calendarId, BusinessDayCalendars.WeekendsOnlyId, StringComparison.OrdinalIgnoreCase))
+            {
+                log.LogWarning(
+                    "Refused business-day calendar file {CalendarFile}: {RefusalReason} Nothing from this file is loaded; calendar {CalendarId} still resolves, to the built-in weekends-only calendar.",
+                    outcome.FilePath,
+                    reason,
+                    BusinessDayCalendars.WeekendsOnlyId);
+                return;
+            }
+        }
+
+        log.LogWarning(
+            "Refused business-day calendar file {CalendarFile}: {RefusalReason} The calendar it names stays unresolvable; no weekends-only calendar is substituted.",
+            outcome.FilePath,
+            reason);
+    }
+
     private static FileOutcome ReadFile(string path)
     {
         var fileName = Path.GetFileName(path);
@@ -206,7 +260,7 @@ public sealed class FileBusinessDayCalendarSource : IBusinessDayCalendarSource
         var reason = Validate(document, Path.GetFileNameWithoutExtension(fileName), out var weekendDays);
         if (reason is not null)
         {
-            return FileOutcome.Refused(path, fileName, reason);
+            return FileOutcome.Refused(path, fileName, reason, document?.CalendarId);
         }
 
         try
@@ -220,7 +274,7 @@ public sealed class FileBusinessDayCalendarSource : IBusinessDayCalendarSource
         }
         catch (ArgumentException ex)
         {
-            return FileOutcome.Refused(path, fileName, "the calendar data is invalid: " + ex.Message);
+            return FileOutcome.Refused(path, fileName, "the calendar data is invalid: " + ex.Message, document?.CalendarId);
         }
     }
 
@@ -319,8 +373,15 @@ public sealed class FileBusinessDayCalendarSource : IBusinessDayCalendarSource
     private static string FormatDate(DateOnly? date)
         => date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "unbounded";
 
-    private sealed record FileOutcome(string FilePath, string FileName, HolidayBusinessDayCalendar? Calendar, string? Reason)
+    // CalendarId is the id a refused file's document names, when it parsed with one.
+    private sealed record FileOutcome(
+        string FilePath,
+        string FileName,
+        HolidayBusinessDayCalendar? Calendar,
+        string? Reason,
+        string? CalendarId = null)
     {
-        public static FileOutcome Refused(string path, string fileName, string reason) => new(path, fileName, null, reason);
+        public static FileOutcome Refused(string path, string fileName, string reason, string? calendarId = null)
+            => new(path, fileName, null, reason, calendarId);
     }
 }

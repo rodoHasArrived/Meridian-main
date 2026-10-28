@@ -145,6 +145,15 @@
       "review_by": "2027-02-01"
     },
     {
+      "path": "tests/Meridian.Tests/Calendars/FileBusinessDayCalendarSourceTests.cs",
+      "test": "UnreadableDirectoryFactAttribute",
+      "reason": "An unreadable directory needs Unix mode bits and a non-root process; root lists any directory.",
+      "owner": "Storage",
+      "category": "environment-gated",
+      "tracking": "docs/adr/025-contractual-schedule-kernel.md",
+      "review_by": "2027-02-01"
+    },
+    {
       "path": "tests/Meridian.Tests/Ui/AccountingSystemIntegrationServiceTests.cs",
       "test": "ProductionReadinessService_RequiresDimensionalReportQueryCertification",
       "reason": "Quarantined pending re-adjudication (a3a01eff): asserts the removed string-token dimensional model (CompletedControlCount==2 and dimensions.reporting-* rollout-scope-mismatch derived from string links); under the structured-artifact contract a bound dimensional artifact yields >=3 and those string-derived issues no longer fire. Needs a rewrite around subset dimensional artifacts.",
