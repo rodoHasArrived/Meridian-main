@@ -76,9 +76,25 @@ public partial class AddProviderWizardPage
 
     private async void OwnedConnectionSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_updatingConnectionSelection) return;
-        await SelectOwnedConnectionAsync(_viewModel.SelectedOwnedConnection?.ConnectionId);
+        if (_updatingConnectionSelection || sender is not ComboBox selector) return;
+        await ApplyOwnedConnectionSelectionAsync(selector.SelectedItem as ProviderConnectionDto);
     }
+
+    internal Task ApplyOwnedConnectionSelectionAsync(ProviderConnectionDto? selection)
+    {
+        // Binding notifications can arrive after the synchronous update guard has dropped.
+        // Compare with the accepted/pending scope, not the already-updated two-way binding.
+        if (SameOwnedCredentialScope(_selectedOwnedConnection, selection)) return Task.CompletedTask;
+        return SelectOwnedConnectionAsync(selection?.ConnectionId);
+    }
+
+    private static bool SameOwnedCredentialScope(ProviderConnectionDto? current, ProviderConnectionDto? incoming)
+        => current is null || incoming is null ? current is null && incoming is null
+            : string.Equals(current.ConnectionId, incoming.ConnectionId, StringComparison.OrdinalIgnoreCase)
+              && ProviderIdentity.EqualsId(current.ProviderFamilyId, incoming.ProviderFamilyId)
+              && string.Equals(current.TenantId, incoming.TenantId, StringComparison.Ordinal)
+              && string.Equals(current.ExternalAccountId, incoming.ExternalAccountId, StringComparison.Ordinal)
+              && string.Equals(current.CredentialEnvironment, incoming.CredentialEnvironment, StringComparison.Ordinal);
 
     internal async Task SelectOwnedConnectionAsync(string? connectionId)
     {

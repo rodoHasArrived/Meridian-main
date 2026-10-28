@@ -1,11 +1,11 @@
 {
   "total_files": 771,
-  "total_lines": 175825,
+  "total_lines": 175864,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 315,
-  "average_lines": 228.0,
+  "average_lines": 228.1,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -4335,7 +4335,7 @@
     },
     {
       "path": "docs/testing/evidence/next-work-20261028/release-readiness.md",
-      "line_count": 315,
+      "line_count": 350,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6343,7 +6343,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2954,
+      "line_count": 2958,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

@@ -313,3 +313,38 @@ review, broader LOT/correction/consumer parity, other report amount families, ho
 binding, ownership creation and explicit legacy migration remain open. Andrew Rowden is the stated
 release-signing owner; an accessible Windows acceptance target and protected signing readiness
 remain unprovided. No release certification, tag or PR merge is claimed.
+
+## Integration follow-ups after 2fda0662
+
+The expanded candidate's hosted ordinary .NET, browser, documentation, schema and CodeQL checks
+passed. Integration identified one permanent composition failure, and native Windows found three
+credential-editor input-preservation failures; those results were not classified as a green candidate.
+
+The reporting test's original 15-second worker-readiness timeout masked eager activation of the
+new optional asset posting graph: the read-only reporting composition intentionally has no
+`IAccountingJournalDraftService`. A stronger pre-start component assertion reproduced that exact
+missing dependency. Shared manual-workbench construction and endpoint fallback now defer posting
+and spine dependencies until a typed asset capability/action actually needs them. Ordinary reads
+activate neither factory; activated configuration errors still surface and fail closed. No readiness
+rule, worker option, deadline or unrelated feature registration was changed to make the test pass.
+The repaired packet passed **187 tests**, including both real PostgreSQL flows and all 38 bridge
+cases. A separate database-selector-free composition packet passed **16 tests**.
+
+Native WPF found deferred notifications for the same owned connection could reset editors after
+new input was entered during save or verification. The event handler now compares the actual
+selected item's complete identity with the accepted or pending retained scope. Duplicate same-scope
+notifications preserve newer input; real different or cleared selections still invalidate requests
+and clear secrets. Four new cases cover these events, and the original three failing regressions
+remain unchanged. Full cross-compilation and native runtime revalidation belong to the repaired
+candidate's recorded results.
+
+The interrupted local full run on `2fda0662` passed eight complete shards (16,208 tests, five
+registered skips and zero failures) before being superseded for these repairs. It is partial
+historical evidence, not a full quality-gate pass. Current main's reviewed dependency-action updates
+were integrated without source conflicts; this task authors no governance changes.
+
+The repaired MAIN source subsequently passed full Release WPF application/XAML and Windows
+test-source cross-compilation: zero errors and 275 warnings from the fresh dependency rebuild.
+It includes the original input-preservation tests and four added redundant-selection cases.
+This remains compilation proof; the repaired commit still needs native Windows execution and
+its complete candidate-bound local/hosted gates.

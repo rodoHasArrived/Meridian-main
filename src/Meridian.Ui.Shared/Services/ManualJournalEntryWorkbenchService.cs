@@ -46,7 +46,9 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         IConsolidationDraftGuard? consolidationGuard = null,
         Meridian.Ui.Shared.Evidence.IEvidenceArtifactStore? evidenceArtifacts = null,
         Meridian.FinancialOperations.Ledger.IAccountingPostingCandidatePostService? assetCandidatePosting = null,
-        Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService? assetAccountingSource = null)
+        Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService? assetAccountingSource = null,
+        Func<Meridian.FinancialOperations.Ledger.IAccountingPostingCandidatePostService?>? assetCandidatePostingFactory = null,
+        Func<Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService?>? assetAccountingSourceFactory = null)
     {
         _draftStore = draftStore ?? throw new ArgumentNullException(nameof(draftStore));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
@@ -60,8 +62,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         _recurringStore = recurringStore;
         _consolidationGuard = consolidationGuard;
         _assetEvidenceArtifacts = evidenceArtifacts;
-        _assetCandidatePosting = assetCandidatePosting;
-        _assetAccountingSource = assetAccountingSource;
+        _assetCandidatePosting = new(() => assetCandidatePosting ?? assetCandidatePostingFactory?.Invoke());
+        _assetAccountingSource = new(() => assetAccountingSource ?? assetAccountingSourceFactory?.Invoke());
     }
 
     public async Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default)

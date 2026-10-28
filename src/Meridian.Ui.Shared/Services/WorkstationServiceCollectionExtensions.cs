@@ -1045,8 +1045,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<Meridian.FinancialOperations.FundAdministration.IRecurringJournalStore>(),
                 sp.GetService<IConsolidationDraftGuard>(),
                 sp.GetService<Meridian.Ui.Shared.Evidence.IEvidenceArtifactStore>(),
-                sp.GetService<Meridian.FinancialOperations.Ledger.IAccountingPostingCandidatePostService>(),
-                sp.GetService<Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService>()));
+                assetCandidatePostingFactory: () => sp.GetService<Meridian.FinancialOperations.Ledger.IAccountingPostingCandidatePostService>(),
+                assetAccountingSourceFactory: () => sp.GetService<Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService>()));
         services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
             (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
         services.TryAddSingleton<DailyValuationBatchLifecycleService>();

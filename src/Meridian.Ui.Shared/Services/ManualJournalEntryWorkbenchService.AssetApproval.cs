@@ -11,8 +11,8 @@ namespace Meridian.Ui.Shared.Services;
 public sealed partial class ManualJournalEntryWorkbenchService
 {
     private readonly IEvidenceArtifactStore? _assetEvidenceArtifacts;
-    private readonly IAccountingPostingCandidatePostService? _assetCandidatePosting;
-    private readonly IAssetAccountingEventSpineService? _assetAccountingSource;
+    private readonly Lazy<IAccountingPostingCandidatePostService?> _assetCandidatePosting;
+    private readonly Lazy<IAssetAccountingEventSpineService?> _assetAccountingSource;
     private static readonly JsonSerializerOptions AssetReceiptJson = new(JsonSerializerDefaults.Web);
     private const int MaxAssetApprovalReceiptBytes = 1024 * 1024;
 
@@ -34,7 +34,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
     {
         EnsureAssetAccountingDraftMatchesSource(draft);
         var source = draft.AssetAccountingDraft!.Spine;
-        var service = _assetAccountingSource ?? throw new InvalidOperationException("The governed asset posting workflow source is unavailable.");
+        var service = _assetAccountingSource.Value ?? throw new InvalidOperationException("The governed asset posting workflow source is unavailable.");
         var current = await service.GetLatestAsync(source.EventId, source.EventVersion, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("The retained asset candidate authority is unavailable.");
         if (current.PostedJournalImpact is not null || current.DraftedCandidateFingerprint != source.DraftedCandidateFingerprint ||

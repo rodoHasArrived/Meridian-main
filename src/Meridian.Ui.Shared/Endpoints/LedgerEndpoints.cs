@@ -1831,8 +1831,8 @@ public static partial class LedgerEndpoints
                  context.RequestServices.GetService<ReportPackWorkflowService>(),
                  postingTarget: context.RequestServices.GetService<IGovernedLedgerPostingTarget>(),
                  evidenceArtifacts: context.RequestServices.GetService<Meridian.Ui.Shared.Evidence.IEvidenceArtifactStore>(),
-                 assetCandidatePosting: context.RequestServices.GetService<IAccountingPostingCandidatePostService>(),
-                 assetAccountingSource: ResolveAssetAccountingEventSpineService(context));
+                 assetCandidatePostingFactory: () => context.RequestServices.GetService<IAccountingPostingCandidatePostService>(),
+                 assetAccountingSourceFactory: () => ResolveAssetAccountingEventSpineService(context));
     }
 
     private static IManualJournalEntryLifecycleService? ResolveManualJournalEntryLifecycleService(HttpContext context)

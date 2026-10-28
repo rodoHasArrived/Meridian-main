@@ -21,9 +21,9 @@ public sealed partial class ManualJournalEntryWorkbenchService
             approveReason ??= "Submit the immutable asset draft for review before approval.";
         if (draft.Status != ManualJournalEntryStatusDto.Approved)
             postReason ??= "The asset draft requires a retained independent approval before posting.";
-        if (_assetAccountingSource is null)
+        if (_assetAccountingSource.Value is null)
             approveReason ??= "The governed asset posting workflow source is unavailable.";
-        if (_assetEvidenceArtifacts is null || _assetCandidatePosting is null)
+        if (_assetEvidenceArtifacts is null || _assetCandidatePosting.Value is null)
             postReason ??= "The governed asset posting workflow requires canonical posting and retained evidence storage.";
         if (draft.AssetAccountingApproval is { } receipt && !string.Equals(actor, receipt.Approver, StringComparison.OrdinalIgnoreCase))
             postReason ??= "Only the independent operator who approved this candidate may post it.";

@@ -18,7 +18,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
         _ = ValidateAssetApprovalReceipt(draft);
         if (!string.Equals(request.Actor, draft.AssetAccountingApproval!.Approver, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("The independent operator who approved this asset candidate must execute its posting.");
-        var poster = _assetCandidatePosting ?? throw new InvalidOperationException("The governed asset posting workflow is unavailable.");
+        var poster = _assetCandidatePosting.Value ?? throw new InvalidOperationException("The governed asset posting workflow is unavailable.");
         var command = _mutationCommand ?? throw new InvalidOperationException("Canonical asset posting requires a retained command lease.");
         if (HasPendingAssetPost(draft))
         {
@@ -137,7 +137,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
             throw new InvalidOperationException("The retained canonical asset journal is missing or conflicting; recovery cannot recreate it.");
         var verified = await VerifyAssetApprovalEvidenceAsync(expected, plan.VaultId, plan.DocumentId, ct).ConfigureAwait(false);
         ValidateAssetPostIntent(expected, plan, verified);
-        var replay = await (_assetCandidatePosting ?? throw new InvalidOperationException("The governed asset posting workflow is unavailable."))
+        var replay = await (_assetCandidatePosting.Value ?? throw new InvalidOperationException("The governed asset posting workflow is unavailable."))
             .PostCandidateAsync(plan.CanonicalRequest, ct).ConfigureAwait(false);
         ValidateAssetPostingOutcome(expected, replay);
         if (AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(new

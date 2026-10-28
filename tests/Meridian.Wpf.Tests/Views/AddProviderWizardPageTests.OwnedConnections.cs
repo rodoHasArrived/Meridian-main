@@ -92,6 +92,64 @@ public sealed partial class AddProviderWizardPageTests
         });
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RedundantSelectionDuringSaveOrTest_PreservesNewCredentialEdits(bool testConnection)
+    {
+        WpfTestThread.Run(async () =>
+        {
+            using var fixture = await Fixture.CreateAsync();
+            fixture.EnterCredentials();
+            fixture.PendingWrite = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            var operation = testConnection ? fixture.Page.TestProviderConnectionAsync() : fixture.Page.SaveProviderAsync();
+            await fixture.WriteStarted.Task;
+            fixture.Key.Text = "newer-fixture-key";
+            fixture.Secret.Secret = "newer-fixture-secret";
+            var scope = fixture.ViewModel.SelectedOwnedConnection!;
+            // A deferred binding can supply a new DTO instance or updated display label for the
+            // same retained scope; it must not cancel the command or recreate secret editors.
+            var notification = scope with { DisplayName = "Refreshed display label" };
+            fixture.ViewModel.SelectedOwnedConnection = notification;
+            await fixture.Page.ApplyOwnedConnectionSelectionAsync(notification);
+            fixture.Key.Text.Should().Be("newer-fixture-key");
+            fixture.Secret.Secret.Should().Be("newer-fixture-secret");
+            fixture.PendingWrite.SetResult();
+            await operation;
+            fixture.ViewModel.SelectedOwnedConnection!.ConnectionId.Should().Be(scope.ConnectionId);
+            fixture.Key.Text.Should().Be("newer-fixture-key");
+            fixture.Secret.Secret.Should().Be("newer-fixture-secret");
+            fixture.Writes.Should().ContainSingle().Which.ConnectionId.Should().Be(scope.ConnectionId);
+            fixture.ViewModel.ConnectionTestStatusText.Should().Contain("Credentials changed");
+        });
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ActualDifferentOrClearedSelection_StillInvalidatesAcceptedScope(bool clearSelection)
+    {
+        WpfTestThread.Run(async () =>
+        {
+            using var fixture = await Fixture.CreateAsync(configure: fixture =>
+            {
+                fixture.OwnedConnections.Add(Fixture.Connection("alpaca", "owned-alpaca-second"));
+                fixture.Records["owned-alpaca-second"] = new(false, false, null);
+            });
+            fixture.EnterCredentials();
+            var previousSecret = fixture.Secret;
+            var incoming = clearSelection ? null : fixture.OwnedConnections.Single(connection => connection.ConnectionId == "owned-alpaca-second");
+            // The binding updates the view model before SelectionChanged. Accepted scope is
+            // still the previous connection, so this must invalidate rather than deduplicate.
+            fixture.ViewModel.SelectedOwnedConnection = incoming;
+            await fixture.Page.ApplyOwnedConnectionSelectionAsync(incoming);
+            previousSecret.Secret.Should().BeEmpty();
+            (fixture.ViewModel.SelectedOwnedConnection?.ConnectionId).Should().Be(incoming?.ConnectionId);
+            fixture.ViewModel.CanUseOwnedCredentials.Should().Be(!clearSelection);
+            fixture.ViewModel.ConnectionTestStatusText.Should().Be("Not tested yet");
+        });
+    }
+
     [Fact]
     public void ConnectionSwitch_ClearsSecretsAndDiscardsLatePersistenceAndVerification()
     {

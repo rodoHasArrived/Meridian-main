@@ -88,6 +88,10 @@ responses resume the exact original command while other mutations remain blocked
 journal/atomic-lot receipts alone establish posted status, and recovery verifies the retained journal
 before repairing a missing queue/audit outcome. Missing source, Vault or posting authority stays
 read-only or blocks posting. Factor prepare/draft routes themselves never approve or post changes.
+The manual workbench resolves optional asset posting/source dependencies only when a typed asset
+capability, action or financial recovery needs them. Ordinary manual and reporting hosts therefore
+do not activate an unconfigured asset graph. Activation preserves dependency-resolution failures;
+it never supplies substitute policies or silently treats a broken configured graph as available.
 
 `LedgerEndpoints.AccountOversight` provides shared account-owned ledger-book routes for durable
 cash cases, retained replay/assignment, independently approved close-price sets and cash forecasts.

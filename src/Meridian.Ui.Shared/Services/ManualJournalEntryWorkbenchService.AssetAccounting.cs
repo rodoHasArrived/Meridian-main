@@ -61,8 +61,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
     private void EnsureAssetAccountingLifecycleAuthority(ManualJournalEntryDraftDto draft, JournalEntryLifecycleActionDto action)
     {
         if (draft.AssetAccountingDraft is not null &&
-            ((action == JournalEntryLifecycleActionDto.Approve && _assetAccountingSource is null) ||
-             (action == JournalEntryLifecycleActionDto.Post && (_assetCandidatePosting is null || _assetEvidenceArtifacts is null)) ||
+            ((action == JournalEntryLifecycleActionDto.Approve && _assetAccountingSource.Value is null) ||
+             (action == JournalEntryLifecycleActionDto.Post && (_assetCandidatePosting.Value is null || _assetEvidenceArtifacts is null)) ||
              action is not (JournalEntryLifecycleActionDto.Validate or JournalEntryLifecycleActionDto.Submit or
                 JournalEntryLifecycleActionDto.Reject or JournalEntryLifecycleActionDto.Approve or JournalEntryLifecycleActionDto.Post)))
             throw new InvalidOperationException("Asset accounting drafts require typed retained approval evidence and the governed asset posting workflow; generic manual approval, posting and corrections are unavailable.");

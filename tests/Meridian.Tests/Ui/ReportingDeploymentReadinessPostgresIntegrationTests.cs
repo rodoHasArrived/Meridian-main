@@ -218,6 +218,11 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
             beforeWorkerStart.Components
                 .Single(static component => component.ComponentId == "release-consistency")
                 .IsReady.Should().BeTrue();
+            beforeWorkerStart.Components
+                .Where(static component => component.ComponentId is not ("scheduling-worker" or "delivery-worker"))
+                .Should().OnlyContain(static component => component.IsReady,
+                    "source migrations must leave only worker liveness blocked: {0}",
+                    string.Join("; ", beforeWorkerStart.BlockingReasons));
             app.Services.GetRequiredService<IReportingDeploymentReadinessService>()
                 .GetScheduleWorkerCycleBlockingReasons()
                 .Should().ContainSingle(reason =>
@@ -239,7 +244,8 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
             await app.StartAsync();
             await WaitUntilAsync(
                 () => app.Services.GetRequiredService<ReportingScheduleWorkerReadinessState>().IsReady
-                      && app.Services.GetRequiredService<ReportingDeliveryWorkerReadinessState>().IsReady);
+                      && app.Services.GetRequiredService<ReportingDeliveryWorkerReadinessState>().IsReady,
+                () => DescribeWorkerReadiness(app.Services));
 
             var capability = app.Services
                 .GetRequiredService<IReportingDeploymentReadinessService>()
@@ -285,15 +291,34 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
         }
     }
 
-    private static async Task WaitUntilAsync(Func<bool> predicate)
+    private static async Task WaitUntilAsync(Func<bool> predicate, Func<string> describeState)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
-        while (!predicate())
+        try
         {
-            // BackgroundService.StartAsync returns after dispatching ExecuteAsync; the readiness
-            // receipt is the production observable for completion of each first worker cycle.
-            await Task.Delay(TimeSpan.FromMilliseconds(10), timeout.Token);
+            while (!predicate())
+            {
+                // BackgroundService.StartAsync returns after dispatching ExecuteAsync; the readiness
+                // receipt is the production observable for completion of each first worker cycle.
+                await Task.Delay(TimeSpan.FromMilliseconds(10), timeout.Token);
+            }
         }
+        catch (OperationCanceledException) when (timeout.IsCancellationRequested)
+        {
+            throw new TimeoutException("Reporting workers did not become ready within 15 seconds. " + describeState());
+        }
+    }
+
+    private static string DescribeWorkerReadiness(IServiceProvider services)
+    {
+        var schedule = services.GetRequiredService<ReportingScheduleWorkerReadinessState>();
+        var delivery = services.GetRequiredService<ReportingDeliveryWorkerReadinessState>();
+        var capability = services.GetRequiredService<IReportingDeploymentReadinessService>().Evaluate();
+        var workers = services.GetServices<IHostedService>().OfType<BackgroundService>()
+            .Select(worker => $"{worker.GetType().Name}={worker.ExecuteTask?.Status.ToString() ?? "not-started"}");
+        return $"Schedule: ready={schedule.IsReady}, failures={schedule.ConsecutiveFailures}, last-success={schedule.LastSuccessfulCycleUtc:O}; " +
+               $"Delivery: ready={delivery.IsReady}, failures={delivery.ConsecutiveFailures}, initial-start={delivery.IsInitialStartInProgress}, last-success={delivery.LastSuccessfulCycleUtc:O}; " +
+               $"Workers: {string.Join(", ", workers)}; Blockers: {string.Join("; ", capability.BlockingReasons)}";
     }
 
     private static void RegisterPostgresLedgerPresentationSources(

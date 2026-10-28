@@ -15,9 +15,11 @@ using Meridian.Identity.Auth;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Evidence;
+using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 
@@ -25,6 +27,188 @@ namespace Meridian.Tests.Ui;
 
 public sealed partial class WorkstationEndpointsTests
 {
+    [Fact]
+    public async Task AssetAccountingApproval_MinimalManualHttpFallbackDoesNotActivateOptionalAssetServices()
+    {
+        var fixture = FactorPreparationFixture();
+        var sourceCalls = 0;
+        var postingCalls = 0;
+        var owner = Substitute.For<IFundProfileTenancyRegistry>();
+        FundProfileOwnership FundOwner(string fund) => new(fund,
+            fund == fixture.Request.FundProfileId ? AssetApprovalFixture.Company : "foreign-company",
+            fund == fixture.Request.FundProfileId ? AssetApprovalFixture.Company : "foreign-company");
+        owner.ResolveAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(call => FundOwner(call.ArgAt<string>(0)));
+        owner.IsAccessibleAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(call => call.ArgAt<string>(0) == fixture.Request.FundProfileId &&
+                call.ArgAt<string>(1) == AssetApprovalFixture.Company && call.ArgAt<string?>(2) == AssetApprovalFixture.Company);
+        owner.BindAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(call => FundOwner(call.ArgAt<string>(0)));
+        await using var app = await CreateAppAsync(services =>
+        {
+            fixture.Register(services);
+            services.RemoveAll<IManualJournalEntryWorkbenchService>();
+            services.RemoveAll<IManualJournalEntryLifecycleService>();
+            services.AddSingleton(owner);
+            services.AddSingleton<IFundProfileTenantGuard, RegistryFundProfileTenantGuard>();
+            services.AddSingleton<IAccountingPostingCandidatePostService>(_ =>
+            {
+                postingCalls++;
+                throw new InvalidOperationException("The unrelated asset posting graph must remain inactive.");
+            });
+            services.AddSingleton<IAssetAccountingEventSpineService>(_ =>
+            {
+                sourceCalls++;
+                throw new InvalidOperationException("The unrelated asset source graph must remain inactive.");
+            });
+        }, currentUserPermissions: UserPermission.AdminMaintenance, currentUserCompanyId: AssetApprovalFixture.Company,
+            currentUserName: AssetApprovalFixture.Reviewer, mapLedgerApi: true);
+        app.Services.GetService<IManualJournalEntryWorkbenchService>().Should().BeNull();
+        app.Services.GetService<IManualJournalEntryLifecycleService>().Should().BeNull();
+        var client = app.GetTestClient();
+        var workbenchRoute = $"{UiApiRoutes.LedgerManualJournalEntryWorkbench}?fundProfileId={fixture.Request.FundProfileId}&ledgerBookId={fixture.Request.LedgerBookId:D}";
+        using var before = await client.GetAsync(workbenchRoute);
+        before.StatusCode.Should().Be(HttpStatusCode.OK, await before.Content.ReadAsStringAsync());
+        var draft = ManualJournalEntryDraft() with
+        {
+            LedgerBookId = fixture.Request.LedgerBookId,
+            AccountingBasis = fixture.Request.AccountingBasis,
+            EntryType = ManualJournalEntryTypeDto.General,
+            TreasuryContext = null,
+            EvidenceAttachments = [],
+            Lines =
+            [
+                new ManualJournalEntryLineDto("cash", AccountingTemplateLineSideDto.Debit, 100m, "USD", "Assets:Cash"),
+                new ManualJournalEntryLineDto("investment", AccountingTemplateLineSideDto.Credit, 100m, "USD", "Assets:Investment")
+            ]
+        };
+
+        using var save = await client.PostAsJsonAsync(UiApiRoutes.LedgerManualJournalEntryDrafts,
+            new SaveManualJournalEntryDraftRequest(draft, "browser-user", CorrelationId: "lazy-manual-fallback-save"), ServerJsonOptions);
+        using var after = await client.GetAsync(workbenchRoute);
+        using var foreign = await client.GetAsync($"{UiApiRoutes.LedgerManualJournalEntryWorkbench}?fundProfileId=foreign-fund&ledgerBookId={fixture.Request.LedgerBookId:D}");
+
+        save.StatusCode.Should().Be(HttpStatusCode.OK, await save.Content.ReadAsStringAsync());
+        var saved = (await save.Content.ReadFromJsonAsync<ManualJournalEntryDraftDto>(ServerJsonOptions))!;
+        saved.AssetAccountingDraft.Should().BeNull();
+        saved.TenantId.Should().Be(AssetApprovalFixture.Company);
+        saved.CompanyId.Should().Be(AssetApprovalFixture.Company);
+        after.StatusCode.Should().Be(HttpStatusCode.OK, await after.Content.ReadAsStringAsync());
+        var queue = (await after.Content.ReadFromJsonAsync<ManualJournalEntryWorkbenchDto>(ServerJsonOptions))!;
+        queue.Drafts.Should().ContainSingle().Which.JournalEntryId.Should().Be(saved.JournalEntryId);
+        foreign.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        sourceCalls.Should().Be(0);
+        postingCalls.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task AssetAccountingApproval_OrdinaryWorkbenchReadDoesNotActivateOptionalAssetFactories()
+    {
+        using var fixture = await AssetApprovalFixture.CreateAsync();
+        var sourceCalls = 0;
+        var postingCalls = 0;
+        var workbench = fixture.Restart(includeSource: false, includePoster: false,
+            assetCandidatePostingFactory: () =>
+            {
+                postingCalls++;
+                throw new InvalidOperationException("The optional asset posting graph is not configured.");
+            },
+            assetAccountingSourceFactory: () =>
+            {
+                sourceCalls++;
+                throw new InvalidOperationException("The optional asset source graph is not configured.");
+            });
+        sourceCalls.Should().Be(0);
+        postingCalls.Should().Be(0);
+
+        var queue = await workbench.GetWorkbenchAsync(fixture.Submitted.FundProfileId, fixture.Submitted.LedgerBookId,
+            tenantId: AssetApprovalFixture.Company, companyId: AssetApprovalFixture.Company);
+
+        queue.Drafts.Should().ContainSingle().Which.JournalEntryId.Should().Be(fixture.Submitted.JournalEntryId);
+        sourceCalls.Should().Be(0, "reading retained journals does not request asset source authority");
+        postingCalls.Should().Be(0, "reading retained journals does not request asset posting authority");
+    }
+
+    [Theory]
+    [InlineData(JournalEntryLifecycleActionDto.Approve)]
+    [InlineData(JournalEntryLifecycleActionDto.Post)]
+    public async Task AssetAccountingApproval_TypedActionPreservesTheOriginalLazyDependencyActivationFailure(JournalEntryLifecycleActionDto action)
+    {
+        using var fixture = await AssetApprovalFixture.CreateAsync();
+        var before = fixture.Submitted;
+        if (action == JournalEntryLifecycleActionDto.Post)
+            before = (await fixture.Workbench.ApplyLifecycleActionAsync(fixture.Action(JournalEntryLifecycleActionDto.Approve))).JournalEntry;
+        var failure = new InvalidOperationException("The activated asset dependency has an invalid registration.");
+        var sourceCalls = 0;
+        var postingCalls = 0;
+        var workbench = fixture.Restart(includeSource: action != JournalEntryLifecycleActionDto.Approve,
+            includePoster: action != JournalEntryLifecycleActionDto.Post,
+            assetCandidatePostingFactory: () => { postingCalls++; throw failure; },
+            assetAccountingSourceFactory: () => { sourceCalls++; throw failure; });
+        var command = fixture.Action(action, before);
+
+        for (var attempt = 0; attempt < 2; attempt++)
+        {
+            var apply = () => workbench.ApplyLifecycleActionAsync(command);
+            var rejected = await apply.Should().ThrowAsync<InvalidOperationException>();
+            rejected.Which.Should().BeSameAs(failure, "an invalid activated graph must not become an unavailable optional service");
+        }
+
+        sourceCalls.Should().Be(action == JournalEntryLifecycleActionDto.Approve ? 1 : 0);
+        postingCalls.Should().Be(action == JournalEntryLifecycleActionDto.Post ? 1 : 0);
+        var after = (await fixture.ReadAsync())!;
+        after.Version.Should().Be(before.Version);
+        after.Status.Should().Be(before.Status);
+        after.AssetAccountingApproval.Should().BeEquivalentTo(before.AssetAccountingApproval);
+        after.AssetAccountingPostIntent.Should().BeNull();
+        fixture.Published.Should().BeEmpty();
+        fixture.PostRequests.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task AssetAccountingApproval_TypedCapabilitiesPreserveTheOriginalLazyDependencyActivationFailure(bool sourceFails)
+    {
+        using var fixture = await AssetApprovalFixture.CreateAsync();
+        var failure = new InvalidOperationException("The requested asset capability has an invalid dependency registration.");
+        var sourceCalls = 0;
+        var postingCalls = 0;
+        var workbench = fixture.Restart(includeSource: !sourceFails, includePoster: sourceFails,
+            assetCandidatePostingFactory: () => { postingCalls++; throw failure; },
+            assetAccountingSourceFactory: () => { sourceCalls++; throw failure; });
+
+        for (var attempt = 0; attempt < 2; attempt++)
+        {
+            var capabilities = () => workbench.GetAssetAccountingCapabilitiesAsync(fixture.Submitted,
+                AssetApprovalFixture.Reviewer, canCertify: true, ct: CancellationToken.None);
+            var rejected = await capabilities.Should().ThrowAsync<InvalidOperationException>();
+            rejected.Which.Should().BeSameAs(failure, "dependency activation errors must remain observable to the calling boundary");
+        }
+
+        sourceCalls.Should().Be(sourceFails ? 1 : 0);
+        postingCalls.Should().Be(sourceFails ? 0 : 1);
+        (await fixture.ReadAsync())!.Version.Should().Be(fixture.Submitted.Version);
+        fixture.Published.Should().BeEmpty();
+        fixture.PostRequests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task AssetAccountingApproval_DirectDependenciesTakePrecedenceOverOptionalFactories()
+    {
+        using var fixture = await AssetApprovalFixture.CreateAsync();
+        var factoryCalls = 0;
+        var workbench = fixture.Restart(
+            assetCandidatePostingFactory: () => { factoryCalls++; throw new InvalidOperationException("The direct poster must be used."); },
+            assetAccountingSourceFactory: () => { factoryCalls++; throw new InvalidOperationException("The direct source must be used."); });
+
+        var approved = await workbench.ApplyLifecycleActionAsync(fixture.Action(JournalEntryLifecycleActionDto.Approve));
+        var posted = await workbench.ApplyLifecycleActionAsync(fixture.Action(JournalEntryLifecycleActionDto.Post, approved.JournalEntry));
+
+        posted.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.Posted);
+        fixture.PostRequests.Should().ContainSingle();
+        factoryCalls.Should().Be(0);
+    }
+
     [Fact]
     public async Task AssetAccountingApproval_AuthenticatedIndependentCommandRetainsCanonicalReceiptAndPostsOnlyThroughCanonicalService()
     {
@@ -597,7 +781,9 @@ public sealed partial class WorkstationEndpointsTests
             Workbench = Restart();
         }
 
-        public ManualJournalEntryWorkbenchService Restart(bool includeSource = true, bool includeVault = true) => new(
+        public ManualJournalEntryWorkbenchService Restart(bool includeSource = true, bool includeVault = true, bool includePoster = true,
+            Func<IAccountingPostingCandidatePostService?>? assetCandidatePostingFactory = null,
+            Func<IAssetAccountingEventSpineService?>? assetAccountingSourceFactory = null) => new(
             new FinalMirrorFaultStore(new FileManualJournalEntryDraftStore(Path.Combine(_directory, "drafts.json")), drafts =>
             {
                 if (!FailFinalMirrorSave || !drafts.Any(draft => draft.Status == ManualJournalEntryStatusDto.Posted))
@@ -607,7 +793,9 @@ public sealed partial class WorkstationEndpointsTests
             }),
             _configuration, _audit, journalStore: Ledger,
             mutationRecovery: new FileManualJournalMutationRecoveryStore(Path.Combine(_directory, "mutations")),
-            evidenceArtifacts: includeVault ? _evidence : null, assetCandidatePosting: _poster, assetAccountingSource: includeSource ? _source : null);
+            evidenceArtifacts: includeVault ? _evidence : null, assetCandidatePosting: includePoster ? _poster : null,
+            assetAccountingSource: includeSource ? _source : null, assetCandidatePostingFactory: assetCandidatePostingFactory,
+            assetAccountingSourceFactory: assetAccountingSourceFactory);
 
         public string CapabilityRoute(Guid? ledgerBookId = null, string? fundProfileId = null)
         {
