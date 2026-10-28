@@ -1,6 +1,7 @@
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
+using Meridian.Application.SecurityMaster.CashFlow;
 using Meridian.Contracts.Calendars;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.SecurityMaster.Schedules;
