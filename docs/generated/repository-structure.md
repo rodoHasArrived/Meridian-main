@@ -5365,6 +5365,7 @@ Meridian-main
 │   │   ├── BrokerNotionalMetadata.cs
 │   │   ├── CanonicalTaxLotAdapter.cs
 │   │   ├── ExecutionOrderMetadataPolicy.cs
+│   │   ├── GatewayResolvedOrder.cs
 │   │   ├── IBrokerageAccountSync.cs
 │   │   ├── IBrokerageGateway.cs
 │   │   ├── IBrokerageOrderAmendmentRecoveryGateway.cs
@@ -5388,7 +5389,8 @@ Meridian-main
 │   │   ├── PositionExtensions.cs
 │   │   ├── README.md
 │   │   ├── RiskContracts.cs
-│   │   └── TaxLot.cs
+│   │   ├── TaxLot.cs
+│   │   └── ValidatedOrder.cs
 │   ├── Meridian.FinancialOperations
 │   │   ├── AccountingClose
 │   │   │   ├── AccountingCloseManagementService.CloseReadiness.cs
@@ -10866,11 +10868,14 @@ Meridian-main
 │   │   │   ├── PortfolioStatePositionTrackerTests.cs
 │   │   │   ├── PositionLotSelectorTests.cs
 │   │   │   ├── RiskValidationResultTests.cs
+│   │   │   ├── RiskValidatorSubstitute.cs
 │   │   │   ├── RobinhoodHostedSynchronizationTests.cs
 │   │   │   ├── SessionTcaReporterTests.cs
 │   │   │   ├── TradeFillHandoffFailureStoreConcurrencyTests.cs
 │   │   │   ├── TradierExecutionReconciliationTests.cs
-│   │   │   └── UntrackedFillPositionContextTests.cs
+│   │   │   ├── TypedOrderEntryTests.cs
+│   │   │   ├── UntrackedFillPositionContextTests.cs
+│   │   │   └── ValidatedOrderTests.cs
 │   │   ├── FinancialOperations
 │   │   │   ├── AccountingClose
 │   │   │   │   ├── AccountingCloseServicesTests.cs

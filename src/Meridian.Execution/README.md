@@ -128,6 +128,20 @@ service.
 
 ## Important workflows
 
+All new OMS orders undergo structural validation after the duplicate-client-ID guard and before
+gateway sizing or governance preflight. Invalid requests are rejected through the existing audit
+path with `ORDER_REQUEST_INVALID` and structured `validationErrors` metadata, including when no
+risk validator is configured. This deliberately rejects malformed requests earlier than broker
+validation. Validated snapshots freeze caller metadata and legs through sizing, risk, and dispatch.
+
+`OrderAdmissionPolicy` resolves sizing once through `GatewayResolvedOrder`. Brokerage admission
+limits and retained exposure use that result. The OMS invokes
+`IRiskValidator.ValidateResolvedOrderAsync` under the existing reservation gate; its default
+implementation adapts to `ValidateOrderAsync`, preserving existing custom validators and risk
+rules. Typed validators may implement the new method directly. Reservation settlement, governed
+approval, and ambiguous dispatch behavior remain unchanged. Amendments and recovery continue to
+use their existing request/state contracts.
+
 Use this module for paper session execution, broker gateway behavior, order lifecycle, and execution evidence.
 
 `OrderManagementSystem` implements `IOrderManagementLifecycle` through
