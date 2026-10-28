@@ -99,6 +99,17 @@ which refuses payload types or versions newer than this build understands. Amend
 carry the stored economic terms that a flat rebuild cannot express (`retainedEconomicTerms`), so a
 newer-to-older terms conversion keeps the data rather than silently dropping it.
 
+A Security Master create or term amendment that a write guard, the Write-mode mapping or the F#
+validator refuses, whether for the terms it submits or for the state of the stored record (a
+round-trip or ahead-of-write guard it trips, or `security_inactive`), raises
+`SecurityMasterWriteRefusedException`, an `InvalidOperationException` subtype whose message is
+written for the caller (deactivation shares the guards and raises it too). Request errors raised as
+`ArgumentException`, such as a term block of the wrong JSON kind or an unsupported identifier kind,
+are not this type. A stored row this node cannot decode (amend and deactivate decode it before every
+write guard except the unrecognized-class check), a missing security, an F# rejection
+carrying `version_conflict`, `missing_state` or `security_id_mismatch` (even beside request errors)
+and a store failure are not refusals and keep their existing exception types.
+
 `SecurityMasterStructuredCreditReclassificationService` builds the ADR-022 reclassification report:
 it maps every active record through the read-tolerant mapper, asks the F# domain for a
 StructuredCredit proposal, and returns ready proposals (the exact stamped terms document the write
@@ -258,6 +269,11 @@ account, and does not recreate routing or bindings. Its result reports the canon
 the connection ID as separate identities, and it fails unless the resulting scoped status is usable
 (Configured, Verified, or NotRequired for a provider without credentials). Credential verification
 remains a separate step.
+Scoped setup takes the shared configuration lease before strictly loading ownership and holds it
+through the scoped vault write and status read. A concurrent connection removal waits for that
+operation; setup waiting behind a removal rechecks the committed ownership and refuses before
+touching the vault. Cancellation while waiting also leaves the vault untouched. The lock order is
+configuration then vault; scoped vault operations must not reenter configuration persistence.
 
 `ProviderFeatureRegistration` uses the shared `AddProviderServices` composition path. The
 Infrastructure descriptor catalog supplies built-in factories for streaming, historical backfill,
@@ -1094,8 +1110,14 @@ and dispatches to the registered `ISecurityValuationModel` whose kind the reques
 catalog's `DefaultValuationModel` declares; `QuotedPriceValuationModel` composes the golden-copy
 as-of read (retaining a selection receipt, as that read does), reports its staleness verdict as a
 diagnostic and picks the market-value function by the price's quote unit, scaling a percent-of-par
-quote by the factor in effect on the valuation date (the factor the projection selects, so a scalar
-current factor dated after the valuation date does not apply yet); `DiscountedCashFlowValuationModel` discounts
+quote by the same opening outstanding principal used by calculated cash flows. Dated factors
+include only payments through their evidence date; later contractual payments completed before
+the valuation date reduce the balance. Without an applicable factor, all completed in-window
+contractual principal payments reduce it; an undated scalar is assumed current and is not reduced
+twice. Payments on the valuation date remain payable, and a future-dated scalar does not apply yet.
+Quotations retain decimal factor precision until holding valuation; calculated schedules keep their
+existing four-place cash rounding.
+`DiscountedCashFlowValuationModel` discounts
 the base-scenario projection as of the valuation date on a stored Discount curve (pinned on the
 request by id and optionally by version id, or the one definition in the security's currency),
 refuses to extrapolate past the curve, quotes face-value lots per 100 of the outstanding face the

@@ -357,4 +357,99 @@ public sealed class AtomicFileWriterTests : TempDirectoryTestBase
         var bytes = await File.ReadAllBytesAsync(path);
         bytes.Should().Equal(Encoding.UTF8.GetBytes("Hello 世界"));
     }
+
+    // Windows refuses to replace a destination while a handle without delete sharing is open on it
+    // (antivirus and search indexers do this to freshly written files). A briefly held handle must
+    // not fail the write: the replacement waits for it and the content lands intact.
+    [Fact]
+    public async Task WriteAsync_WaitsForABrieflyHeldDestinationHandleOnWindows()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "held.txt");
+        await File.WriteAllTextAsync(path, "original");
+        var holder = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        var release = Task.Run(async () =>
+        {
+            await Task.Delay(150);
+            await holder.DisposeAsync();
+        });
+
+        await AtomicFileWriter.WriteAsync(path, "updated");
+
+        await release;
+        (await File.ReadAllTextAsync(path)).Should().Be("updated");
+        Directory.EnumerateFiles(TestDataRoot, ".held.txt.*.tmp").Should().BeEmpty();
+    }
+
+    // The retry is bounded: a handle that never closes still fails the write, and the temp file
+    // is cleaned up so a later write starts clean.
+    [Fact]
+    public async Task WriteAsync_StillFailsWhenTheDestinationHandleIsNeverReleasedOnWindows()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "pinned.txt");
+        await File.WriteAllTextAsync(path, "original");
+        using var holder = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+        var write = () => AtomicFileWriter.WriteAsync(path, "updated");
+
+        (await write.Should().ThrowAsync<Exception>()).Which.Should().Match(exception => exception is UnauthorizedAccessException || exception is IOException);
+        Directory.EnumerateFiles(TestDataRoot, ".pinned.txt.*.tmp").Should().BeEmpty();
+    }
+
+    // Off Windows a rename never waits on open handles, so a held destination is replaced at once
+    // and the reader keeps its original bytes.
+    [Fact]
+    public async Task WriteAsync_ReplacesAHeldDestinationImmediatelyOffWindows()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "held.txt");
+        await File.WriteAllTextAsync(path, "original");
+        await using var holder = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
+        await AtomicFileWriter.WriteAsync(path, "updated");
+
+        (await File.ReadAllTextAsync(path)).Should().Be("updated");
+        using var reader = new StreamReader(holder);
+        (await reader.ReadToEndAsync()).Should().Be("original");
+    }
+
+    // ReplaceAsync renames the existing destination aside before moving the temp file in; both
+    // moves must wait for a briefly held handle the same way the overwrite rename does.
+    [Fact]
+    public async Task ReplaceAsync_WaitsForABrieflyHeldDestinationHandleOnWindows()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "replace-held.txt");
+        await File.WriteAllTextAsync(path, "original");
+        var holder = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        var release = Task.Run(async () =>
+        {
+            await Task.Delay(150);
+            await holder.DisposeAsync();
+        });
+
+        await AtomicFileWriter.ReplaceAsync(path, "updated", keepBackup: true);
+
+        await release;
+        (await File.ReadAllTextAsync(path)).Should().Be("updated");
+        (await File.ReadAllTextAsync(path + ".bak")).Should().Be("original");
+        Directory.EnumerateFiles(TestDataRoot, ".replace-held.txt.*.tmp").Should().BeEmpty();
+    }
 }

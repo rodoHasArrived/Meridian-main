@@ -25,7 +25,7 @@ using Xunit;
 
 namespace Meridian.Tests.Application.Services;
 
-public sealed class FundOperationsWorkspaceReadServiceTests
+public sealed partial class FundOperationsWorkspaceReadServiceTests
 {
     [Theory]
     [InlineData(false)]
@@ -2529,6 +2529,8 @@ public sealed class FundOperationsWorkspaceReadServiceTests
     public class ReconciliationReadSpy : DispatchProxy
     {
         public IFundAccountService Inner { get; set; } = null!;
+        public Func<Task>? AfterBatchRead;
+        public bool RepeatAfterBatchRead { get; set; }
         private int _batchReads;
         private int _singleResultReads;
         public int BatchReads => _batchReads;
@@ -2538,10 +2540,23 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         protected override object? Invoke(MethodInfo? targetMethod, object?[]? args)
         {
             if (targetMethod!.Name == nameof(IFundAccountService.GetReconciliationResultsForAccountsAsync))
+            {
                 Interlocked.Increment(ref _batchReads);
+                return CompleteBatchAsync((Task<IReadOnlyList<AccountReconciliationResultDto>>)targetMethod.Invoke(Inner, args)!);
+            }
             if (targetMethod.Name == nameof(IFundAccountService.GetReconciliationResultsAsync))
                 Interlocked.Increment(ref _singleResultReads);
             return targetMethod.Invoke(Inner, args);
+        }
+
+        private async Task<IReadOnlyList<AccountReconciliationResultDto>> CompleteBatchAsync(
+            Task<IReadOnlyList<AccountReconciliationResultDto>> read)
+        {
+            var captured = await read;
+            var after = RepeatAfterBatchRead ? AfterBatchRead : Interlocked.Exchange(ref AfterBatchRead, null);
+            if (after is not null)
+                await after();
+            return captured;
         }
     }
 }

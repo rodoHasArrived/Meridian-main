@@ -1,11 +1,11 @@
 {
-  "total_files": 753,
-  "total_lines": 170312,
+  "total_files": 754,
+  "total_lines": 171268,
   "orphaned_count": 251,
   "no_heading_count": 157,
   "stale_count": 0,
-  "todo_count": 307,
-  "average_lines": 226.2,
+  "todo_count": 309,
+  "average_lines": 227.1,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1063,7 +1063,7 @@
     },
     {
       "path": "docs/adr/024-terms-payload-format-and-version-policy.md",
-      "line_count": 467,
+      "line_count": 473,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1575,7 +1575,7 @@
     },
     {
       "path": "docs/architecture/module-map.md",
-      "line_count": 148,
+      "line_count": 181,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1655,7 +1655,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 6880,
+      "line_count": 7236,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2503,7 +2503,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 440,
+      "line_count": 483,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2519,7 +2519,7 @@
     },
     {
       "path": "docs/engineering/web-development.md",
-      "line_count": 135,
+      "line_count": 147,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2919,7 +2919,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12509,
+      "line_count": 12540,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3454,6 +3454,14 @@
       "stale": false
     },
     {
+      "path": "docs/product/plans/next-work-determination-2026-10-27.md",
+      "line_count": 294,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/product/plans/product-roadmap-priorities-2026-07.md",
       "line_count": 93,
       "has_heading": true,
@@ -3471,7 +3479,7 @@
     },
     {
       "path": "docs/product/plans/README.md",
-      "line_count": 46,
+      "line_count": 47,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3663,7 +3671,7 @@
     },
     {
       "path": "docs/reference/contract-compatibility-matrix.md",
-      "line_count": 208,
+      "line_count": 209,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3903,9 +3911,9 @@
     },
     {
       "path": "docs/roadmap/README.md",
-      "line_count": 44,
+      "line_count": 60,
       "has_heading": true,
-      "todo_count": 0,
+      "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -4167,7 +4175,7 @@
     },
     {
       "path": "docs/start/README.md",
-      "line_count": 280,
+      "line_count": 326,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5903,7 +5911,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 1182,
+      "line_count": 1204,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5935,7 +5943,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1997,
+      "line_count": 1998,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5983,7 +5991,7 @@
     },
     {
       "path": "src/Meridian.Execution.Sdk/README.md",
-      "line_count": 136,
+      "line_count": 138,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5991,7 +5999,7 @@
     },
     {
       "path": "src/Meridian.Execution/README.md",
-      "line_count": 369,
+      "line_count": 401,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5999,7 +6007,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 1106,
+      "line_count": 1123,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6055,7 +6063,7 @@
     },
     {
       "path": "src/Meridian.Infrastructure/README.md",
-      "line_count": 469,
+      "line_count": 481,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6167,7 +6175,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 1394,
+      "line_count": 1399,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6191,7 +6199,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2878,
+      "line_count": 2904,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

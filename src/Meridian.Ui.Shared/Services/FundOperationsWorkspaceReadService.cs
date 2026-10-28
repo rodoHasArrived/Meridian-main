@@ -365,7 +365,7 @@ public sealed partial class FundOperationsWorkspaceReadService
             ct);
         var reconciliationTask = BuildReconciliationSummaryAsync(
             normalizedFundProfileId,
-            accountSummaries,
+            accountProjections,
             runs,
             reconciliationQueueScope,
             ct);
@@ -575,7 +575,7 @@ public sealed partial class FundOperationsWorkspaceReadService
             ct);
         var reconciliationTask = BuildReconciliationSummaryAsync(
             normalizedFundProfileId,
-            accountSummaries,
+            accountProjections,
             runs,
             accessScope: null,
             ct);
@@ -857,9 +857,7 @@ public sealed partial class FundOperationsWorkspaceReadService
         IReadOnlyList<AccountSummaryDto> accounts,
         CancellationToken ct)
     {
-        var activeResults = await _fundAccountService.GetReconciliationResultsForAccountsAsync(
-            accounts.Select(account => account.AccountId).ToArray(), openOnly: true, ct).ConfigureAwait(false);
-        var activeResultsByRun = activeResults.ToLookup(result => result.ReconciliationRunId);
+        var reconciliationCut = await ReadAccountReconciliationCutAsync(accounts, ct).ConfigureAwait(false);
         var projections = new List<AccountWorkspaceProjection>(accounts.Count);
         foreach (var account in accounts)
         {
@@ -868,9 +866,9 @@ public sealed partial class FundOperationsWorkspaceReadService
             var latestSnapshot = await _fundAccountService
                 .GetLatestBalanceSnapshotAsync(account.AccountId, ct)
                 .ConfigureAwait(false);
-            var reconciliationRuns = await _fundAccountService.GetReconciliationRunsAsync(account.AccountId, ct)
-                .ConfigureAwait(false);
-            var openBreaks = reconciliationRuns.Sum(run => activeResultsByRun[run.ReconciliationRunId].Count());
+            var reconciliationRuns = reconciliationCut.Runs[account.AccountId];
+            var reconciliationResults = reconciliationRuns.SelectMany(run => reconciliationCut.Results[run.ReconciliationRunId]).ToArray();
+            var openBreaks = reconciliationResults.Count(result => result.IsOpenBreak);
 
             var summary = new FundAccountSummary(
                 AccountId: account.AccountId,
@@ -884,7 +882,7 @@ public sealed partial class FundOperationsWorkspaceReadService
                 SecuritiesMarketValue: latestSnapshot?.SecuritiesMarketValue ?? 0m,
                 NetAssetValue: (latestSnapshot?.CashBalance ?? 0m) + (latestSnapshot?.SecuritiesMarketValue ?? 0m),
                 LastSnapshotDate: latestSnapshot?.AsOfDate,
-                ReconciliationRuns: reconciliationRuns.Count,
+                ReconciliationRuns: reconciliationRuns.Length,
                 OpenBreaks: openBreaks,
                 PortfolioId: account.PortfolioId,
                 LedgerReference: account.LedgerReference,
@@ -898,7 +896,8 @@ public sealed partial class FundOperationsWorkspaceReadService
                 StructureLabel: BuildStructureLabel(account),
                 WorkflowLabel: BuildWorkflowLabel(account));
 
-            projections.Add(new AccountWorkspaceProjection(summary, latestSnapshot, account.FundId));
+            projections.Add(new AccountWorkspaceProjection(summary, latestSnapshot, account.FundId,
+                reconciliationRuns, reconciliationResults));
         }
 
         return projections
@@ -1028,26 +1027,22 @@ public sealed partial class FundOperationsWorkspaceReadService
 
     private async Task<ReconciliationSummary> BuildReconciliationSummaryAsync(
         string fundProfileId,
-        IReadOnlyList<FundAccountSummary> accounts,
+        IReadOnlyList<AccountWorkspaceProjection> accountProjections,
         IReadOnlyList<StrategyRunEntry> runs,
         ReconciliationBreakQueueScope? accessScope,
         CancellationToken ct)
     {
-        var accountResults = await _fundAccountService.GetReconciliationResultsForAccountsAsync(
-            accounts.Select(account => account.AccountId).ToArray(), ct: ct).ConfigureAwait(false);
-        var resultsByRun = accountResults.ToLookup(result => result.ReconciliationRunId);
         var items = new List<FundReconciliationItem>();
         var openBreaks = 0;
         decimal breakAmountTotal = 0m;
         var securityCoverageIssues = 0;
 
-        foreach (var account in accounts)
+        foreach (var projection in accountProjections)
         {
             ct.ThrowIfCancellationRequested();
-
-            var accountRuns = await _fundAccountService
-                .GetReconciliationRunsAsync(account.AccountId, ct)
-                .ConfigureAwait(false);
+            var account = projection.Summary;
+            var accountRuns = projection.ReconciliationRuns;
+            var resultsByRun = projection.ReconciliationResults.ToLookup(result => result.ReconciliationRunId);
 
             foreach (var run in accountRuns)
             {

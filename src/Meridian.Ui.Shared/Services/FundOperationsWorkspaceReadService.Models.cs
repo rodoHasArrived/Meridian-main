@@ -8,5 +8,7 @@ public sealed partial class FundOperationsWorkspaceReadService
     private sealed record AccountWorkspaceProjection(
         FundAccountSummary Summary,
         AccountBalanceSnapshotDto? LatestSnapshot,
-        Guid? FundId);
+        Guid? FundId,
+        IReadOnlyList<AccountReconciliationRunDto> ReconciliationRuns,
+        IReadOnlyList<AccountReconciliationResultDto> ReconciliationResults);
 }

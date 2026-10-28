@@ -95,6 +95,20 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
 
     public async Task<StatementParseResult> ParseAsync(StatementSourceDocument document, CancellationToken ct = default)
     {
+        try
+        {
+            return await ParseCoreAsync(document, ct).ConfigureAwait(false);
+        }
+        catch (InvalidFinancialValueException ex)
+        {
+            var profileId = string.IsNullOrWhiteSpace(document.MappingProfileId)
+                ? Descriptor.DefaultProfileId : document.MappingProfileId.Trim();
+            return EmptyResult(profileId, [StatementParseIssue.Error("IBFLEX_INVALID_NUMBER", ex.Message, field: ex.Field)]);
+        }
+    }
+
+    private async Task<StatementParseResult> ParseCoreAsync(StatementSourceDocument document, CancellationToken ct)
+    {
         var issues = new List<StatementParseIssue>();
         var profileId = string.IsNullOrWhiteSpace(document.MappingProfileId)
             ? Descriptor.DefaultProfileId!
@@ -660,7 +674,7 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
     {
         var providerCode = Attribute(cash, "type") ?? "CashTransaction";
         activityCodeMap.TryGetValue(providerCode, out var canonicalActivity);
-        var amount = DecimalAttribute(cash, profile, "amount") ?? 0m;
+        var amount = AmountAttribute(cash, profile, "amount") ?? 0m;
         var (category, subtype) = canonicalActivity?.ToLowerInvariant() switch
         {
             "fee" => (BrokerageActivityCategory.Fee, BrokerageActivitySubtype.Fee),
@@ -993,8 +1007,9 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
         BrokerageOptionLifecycleSnapshotDto? option = null)
     {
         var effectiveAt = EffectiveAt(element, null, profile);
+        var netAmount = AmountAttribute(element, profile, [.. amountNames]);
         var eventId = AttributeAny(element, [.. idNames])
-            ?? $"ib-flex:{providerCode}:{effectiveAt:O}:{Attribute(element, "symbol")}:{quantity}:{price}:{DecimalAttribute(element, profile, [.. amountNames])}";
+            ?? $"ib-flex:{providerCode}:{effectiveAt:O}:{Attribute(element, "symbol")}:{quantity}:{price}:{netAmount}";
         var accountId = Attribute(element, "accountId") ?? statementAccountId ?? string.Empty;
         return new BrokerageActivityEventDto(
             EventId: eventId,
@@ -1003,7 +1018,7 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             Subtype: subtype,
             EffectiveAt: effectiveAt,
             Currency: Attribute(element, "currency") ?? string.Empty,
-            NetAmount: DecimalAttribute(element, profile, [.. amountNames]) ?? 0m,
+            NetAmount: netAmount ?? 0m,
             Symbol: Attribute(element, "symbol"),
             Quantity: quantity,
             Price: price,
@@ -1079,7 +1094,43 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
         XElement element,
         StatementMappingProfileDocument profile,
         params string[] names)
-        => StatementValueParser.TryParseDecimal(AttributeAny(element, names), profile, out var value) ? value : null;
+    {
+        var raw = AttributeAny(element, names);
+        if (raw is null)
+            return null;
+        if (StatementValueParser.TryParseDecimal(raw, profile, out var value, requireInvariantNumbers: true))
+            return value;
+
+        // Rich evidence bypasses the row mapper. A malformed amount must not become null,
+        // zero, or a fallback amount before canonical-evidence.json is retained.
+        throw new InvalidFinancialValueException(element.Name.LocalName, string.Join("/", names));
+    }
+
+    /// <summary>
+    /// Reads an amount whose absence the caller treats as zero. Attribute() folds whitespace-only
+    /// values into absence, so an explicitly blank amount is rejected here instead of becoming a
+    /// fabricated zero.
+    /// </summary>
+    private static decimal? AmountAttribute(
+        XElement element,
+        StatementMappingProfileDocument profile,
+        params string[] names)
+    {
+        var value = DecimalAttribute(element, profile, names);
+        if (value is null && element.Attributes().Any(attribute =>
+                names.Contains(attribute.Name.LocalName, StringComparer.OrdinalIgnoreCase)))
+        {
+            throw new InvalidFinancialValueException(element.Name.LocalName, string.Join("/", names));
+        }
+
+        return value;
+    }
+
+    private sealed class InvalidFinancialValueException(string element, string field)
+        : Exception($"Flex {element} requires an invariant decimal without grouping separators for {field}.")
+    {
+        public string Field { get; } = field;
+    }
 
     private static bool TryDateAttribute(
         XElement element,
@@ -1245,7 +1296,7 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
         HashSet<string> reportedUnknownCodes,
         StatementIngressLimits limits)
     {
-        var record = StatementRecordMapper.MapRecord(values, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes);
+        var record = StatementRecordMapper.MapRecord(values, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes, requireInvariantNumbers: true);
         if (record is not null)
         {
             records.Add(record);
