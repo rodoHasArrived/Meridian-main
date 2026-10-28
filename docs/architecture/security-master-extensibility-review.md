@@ -7653,21 +7653,24 @@ projection-shape, ledger-bridge and discounted-cash-flow valuation suites. The p
 with the 400-change endpoint suite, the resolver, opening-balance, valuation and logging suites and
 `Category=KnownDefect` added, passed 1,950 with one skip: the unreadable-directory test, which runs
 only as a non-root user on Unix and is registered as environment-gated; the same path was exercised
-with a privilege-dropped probe. The whole `Meridian.Tests` suite ran on the final code with 22,395
-passed, 634 skipped and 3 failed: the isolated QuantScript worker behind one strategy-design test,
-which has failed in every full run in this container since increment 3, and two timing-sensitive
-tests that 5a does not touch (an allocation budget and an identifier validity worker with a
-five-second wait), which passed alone three times out of three; the run before the review fixes had
-only the QuantScript failure. The whole `Meridian.FSharp.Tests` suite passed (525). Eleven planned
-mutations each failed the test named for them (the profile rule, option B, untrimmed calendars, a
-factory-only format check, the leg selector, an `EffectiveFrom` fallback, the resolve order, the
-ledger gate, the `DayCount` evidence row, the hosted logger and a lowercase calendar id); the plan
-named the decode golden as one tripwire for the factory-only format check, but only
-`AnUntaggedBondCarryingAProfileShape_IsDeclared` catches it, because the golden decodes through the
-mapping. Each review fix was mutation-checked the same way. The format, file-size, inline SHA-256,
-duplicate-helper, test-skip, warning-suppression and endpoint-cancellation guards pass,
-schema-control `verify` reproduces the refreshed manifests, `validate-doc-hashes` is clean and the
-`verify-docs` lane passes.
+with a privilege-dropped probe. The final tree, merged with main at `a6ad3fe15`, passes the same
+filter with the same counts, and the whole `Meridian.Tests` suite ran on it with 23,126 passed, 653
+skipped and 2 failed: the isolated QuantScript worker behind one strategy-design test, which fails
+alone too and has failed in every full run in this container since increment 3, and an allocation
+budget that 5a does not touch, which passed alone three times out of three. The full run before that
+merge had 22,395 passed, 634 skipped and the same two failures plus a timing-sensitive identifier
+validity test, which also passed alone three times out of three. The whole `Meridian.FSharp.Tests`
+suite passed (525). Eleven planned mutations each failed the test named for them (the profile rule,
+option B, untrimmed calendars, a factory-only format check, the leg selector, an `EffectiveFrom`
+fallback, the resolve order, the ledger gate, the `DayCount` evidence row, the hosted logger and a
+lowercase calendar id); the plan named the decode golden as one tripwire for the factory-only format
+check, but only `AnUntaggedBondCarryingAProfileShape_IsDeclared` catches it, because the golden
+decodes through the mapping. Each review fix was mutation-checked the same way. The format,
+file-size, inline SHA-256, duplicate-helper, test-skip, warning-suppression, endpoint-cancellation
+and contract-type-parity guards pass, schema-control `verify` reproduces the refreshed manifests,
+maintained generation converges with `check-generated-output` clean, `validate-doc-hashes` is clean,
+the `verify-docs` lane passes and the generated-output repair pre-check against main reports ready
+with an empty patch.
 
 Each of the five code lanes and the documentation was critiqued by an independent reviewer and its
 findings fixed before the next lane began. The branch was then merged with main, which had moved the
@@ -7682,4 +7685,11 @@ of its ids still resolve; and `TermsAmbiguous` and `EffectiveDateMissing` name a
 present but not of the kind the factory reads, instead of calling it another key or absent. The rest
 corrected documentation and doc comments. The refuted findings included an unbounded payment lag,
 which the kernel's period limit and the calendar walk already bound, and an end-of-month roll
-spelled as day 31, which the roll grammar reads as a fixed day.
+spelled as day 31, which the roll grammar reads as a fixed day. The branch was then merged with main
+again at `a6ad3fe15`, 355 commits that include the consolidated October review above, and that merge
+was reviewed adversarially through three lenses (posting and evidence loss, host composition, and
+claims the merge made false), with two skeptics per finding. It found that no path main added reads
+or posts a cash-flow projection, that the cash-flow service is still registered by type so the
+calendar source reaches its constructor on every host, and that `UiServer`'s log routing is
+unchanged. Its one finding, that this record still gave the counts from before that merge as the
+final ones, is fixed here.
