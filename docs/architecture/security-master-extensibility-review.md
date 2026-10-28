@@ -6622,3 +6622,101 @@ check also corrected the F# entry docs, which had read an absent end date as a s
 The one adversarial finding, that the entry readers parse dates with the node's culture, was refuted
 by both skeptics: the helper predates 4b, already reads 4a's dates, and no writer can store a
 non-ISO date.
+
+## Resolution pass — 2026-10-28 (priority 5, increment 5a-0: amortization refuses declared schedule conventions)
+
+Increment 5, the schedule-terms contract step, lands in four parts: 5a-0 (this change), 5a (the
+declared schedule engine, which follows the declared conventions before any node writes them), 5b-1
+(the write rules, neutral until the raise) and 5b-2 (the raise of the write versions). 5a-0 comes
+first because it is the one consumer that would mis-handle a declaring row: canonical amortization
+generates a bullet coupon grid that follows no business-day convention, calendar, payment lag, roll
+or stub rule.
+
+| Finding | What landed |
+| --- | --- |
+| Amortization would amortize a bond whose `scheduleConventions` block moves its payment dates as if the block were absent | `OpenLotAmortization` refuses a populated or malformed `scheduleConventions` ("Amortization does not support declared schedule conventions; the bullet coupon grid follows none of them."). Populated follows `SecurityAssetTermsSchema.IsPopulatedTermValue`, so null, `{}`, `[]` and an object whose members are all unset declare nothing, and a string, a boolean or a populated array is not read as unset. |
+| The call and put refusal read only the first spelling it found | It took the first source and the first casing that named the term, so `callSchedule: []` in the asset-specific terms hid a populated `callSchedule` in the common terms, and an unset `callschedule` hid a populated `callSchedule` in the same object. A new `AnyTerm` check reads every source the cash-flow resolver reads (`profileFields`, the root terms, the common terms) and every casing, and refuses when any of them declares the term. The call and put predicate and message are unchanged. `FirstTerm` keeps its other callers. |
+
+**Deploy gate (expect 0 in each environment; record the result in the change record).** After this
+change deploys, amortization of a Bond, TreasuryBill or CommercialPaper row that declares any of the
+three terms fails closed, and a retained amortization instruction whose security snapshot declares
+one fails when it is projected again (posting a pending event, or continuing from a predecessor).
+No writer can store a populated block or array yet, so both queries should return nothing. 5b-2's
+precondition that every node runs 5a covers this change, because 5a is built on it.
+
+- **AQ1, stored securities.** Replace `<deployment_schema>` with the Security Master schema. The
+  `profileFields` source matches the key under any casing, as the term reader does.
+
+  ```sql
+  select lower(s.asset_class) as asset_class, src.source, lower(kv.key) as term,
+         count(distinct s.security_id)
+  from <deployment_schema>.securities s
+  cross join lateral (
+      select 'root', case when jsonb_typeof(s.asset_specific_terms) = 'object'
+                          then s.asset_specific_terms else '{}'::jsonb end
+      union all
+      select 'profileFields', pf.value
+      from jsonb_each(case when jsonb_typeof(s.asset_specific_terms) = 'object'
+                           then s.asset_specific_terms else '{}'::jsonb end) pf
+      where lower(pf.key) = 'profilefields' and jsonb_typeof(pf.value) = 'object'
+      union all
+      select 'commonTerms', case when jsonb_typeof(s.common_terms) = 'object'
+                                 then s.common_terms else '{}'::jsonb end
+  ) src(source, terms)
+  cross join lateral jsonb_each(src.terms) kv
+  where lower(s.asset_class) in ('bond', 'treasurybill', 'commercialpaper')
+    and ((lower(kv.key) = 'scheduleconventions'
+          and jsonb_path_exists(kv.value, '$.** ? (@.type() != "null" && @.type() != "array" && @.type() != "object")'))
+      or (lower(kv.key) in ('callschedule', 'putschedule')
+          and jsonb_typeof(kv.value) <> 'null'
+          and (jsonb_typeof(kv.value) <> 'array' or jsonb_array_length(kv.value) > 0)))
+  group by 1, 2, 3;
+  ```
+
+- **AQ2, retained instruction snapshots.** An amortization instruction carries the security
+  projection it was calculated from, and it is retained wherever the instruction is stored, such as
+  asset-accounting event payloads and the ledger's basis-adjustment snapshots. Rather than name each
+  column, this block scans
+  every `jsonb` column of the ledger and asset-operations schemas for an object member, at any
+  depth and under any casing, that declares one of the three terms. It over-approximates (it also
+  counts other classes and documents that are not instructions), so a non-zero count is a list to
+  inspect, not a refusal. Replace the two schema names.
+
+  ```sql
+  do $gate$
+  declare
+      target record;
+      hits bigint;
+      declared jsonpath := 'strict $.** ? (@.type() == "object").keyvalue() ? (
+          (@.key like_regex "^scheduleconventions$" flag "i"
+              && exists(@.value.** ? (@.type() != "null" && @.type() != "array" && @.type() != "object")))
+          || (@.key like_regex "^(callschedule|putschedule)$" flag "i"
+              && @.value.type() != "null"
+              && !(@.value.type() == "array" && @.value.size() == 0)))';
+  begin
+      for target in
+          select c.table_schema, c.table_name, c.column_name
+          from information_schema.columns c
+          join information_schema.tables t
+            on t.table_schema = c.table_schema and t.table_name = c.table_name
+          where c.data_type = 'jsonb' and t.table_type = 'BASE TABLE'
+            and c.table_schema in ('<ledger_schema>', '<asset_operations_schema>')
+          order by 1, 2, 3
+      loop
+          execute format('select count(*) from %I.%I where jsonb_path_exists(%I, $1)',
+                         target.table_schema, target.table_name, target.column_name)
+              into hits using declared;
+          if hits > 0 then
+              raise notice '%.%.%: %', target.table_schema, target.table_name, target.column_name, hits;
+          end if;
+      end loop;
+  end
+  $gate$;
+  ```
+
+Both queries were run on PostgreSQL 16 against synthetic rows: AQ1 counted a declaring block in
+each source and casing, a call entry `[{}]` in `profileFields` and a put `{}` in the common terms,
+and skipped unset spellings, `[]` blocks and an Equity row; the AQ2 predicate matched snapshots
+nested inside arrays and objects and skipped unset spellings and an empty block.
+
+<!-- sm5a0-validation-results -->

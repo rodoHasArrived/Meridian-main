@@ -247,16 +247,33 @@ public static class OpenLotAmortization
         // bullet cannot honour; an empty list declares none, and a malformed one is not read as absent.
         foreach (var name in new[] { "callSchedule", "putSchedule" })
         {
-            if (FirstTerm(sources, [name]) is { } schedule && schedule.ValueKind != JsonValueKind.Null
-                && (schedule.ValueKind != JsonValueKind.Array || schedule.GetArrayLength() != 0))
+            if (AnyTerm(sources, name, static schedule => schedule.ValueKind != JsonValueKind.Null
+                    && (schedule.ValueKind != JsonValueKind.Array || schedule.GetArrayLength() != 0)))
                 throw new ArgumentException("Amortization does not support floating coupons, calls, puts or advance-refunding terms.");
         }
+        // A declared scheduleConventions block (ADR-024; writable from the contract step) moves payment
+        // dates, stubs and the coupon unit, and the bullet coupon grid follows none of them. Unset
+        // spellings declare nothing.
+        if (AnyTerm(sources, "scheduleConventions", SecurityAssetTermsSchema.IsPopulatedTermValue))
+            throw new ArgumentException("Amortization does not support declared schedule conventions; the bullet coupon grid follows none of them.");
         foreach (var name in new[] { "floatingIndex", "floatingRateIndex", "referenceIndex", "callDate", "preRefundDate", "mandatoryPutDate" })
         {
             if (FirstTerm(sources, [name]) is { } value && value.ValueKind != JsonValueKind.Null
                 && !(value.ValueKind == JsonValueKind.String && string.IsNullOrWhiteSpace(value.GetString())))
                 throw new ArgumentException("Amortization does not support floating coupons, calls, puts or advance-refunding terms.");
         }
+    }
+
+    // Declared schedule terms are checked in every source the cash-flow resolver reads and under every
+    // casing: an unset spelling in one source never hides a populated one in another (ADR-024, ADR-025).
+    private static bool AnyTerm(IEnumerable<JsonElement> sources, string name, Func<JsonElement, bool> refuses)
+    {
+        foreach (var source in sources)
+            if (source.ValueKind == JsonValueKind.Object)
+                foreach (var property in source.EnumerateObject())
+                    if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase) && refuses(property.Value))
+                        return true;
+        return false;
     }
 
     private static JsonElement? FirstTerm(IEnumerable<JsonElement> sources, string[] aliases)
