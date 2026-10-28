@@ -212,6 +212,69 @@ Unrelated shared guidance update.
         self.assertNotEqual(result.returncode, 0)
         self.assertEqual(before, (self.root / "brief.json").read_bytes())
 
+    def test_equivalent_excerpts_render_once_with_every_source_digest(self):
+        targets = [".agents/skills/_shared/project-context.md", ".claude/skills/_shared/project-context.md",
+                   ".codex/skills/_shared/project-context.md"]
+        body = "Exactly shared command guidance, shown once."
+        for number, path in enumerate(targets):
+            self.write(path, f"# Host {number}\n## Useful Commands\n{body}\n## Host Notes\nUnique host {number}.\n")
+        packet = build_packet(self.root, "Update guidance under ## Useful Commands", targets)
+        original = json.dumps(packet, sort_keys=True)
+        rendered = markdown(packet)
+        self.assertEqual(rendered.count(body), 1)
+        self.assertIn("### .claude/skills/_shared/project-context.md:2", rendered)
+        for item in packet["context"]:
+            if item["path"] in targets:
+                self.assertIn(item["path"], rendered)
+                self.assertIn(item["sha256"], rendered)
+        self.assertEqual(original, json.dumps(packet, sort_keys=True))
+        self.assertEqual(len([item for item in packet["context"] if item["path"] in targets]), 3)
+
+    def test_distinct_host_excerpts_remain_visible(self):
+        targets = [".claude/skills/_shared/project-context.md", ".codex/skills/_shared/project-context.md"]
+        for number, path in enumerate(targets):
+            self.write(path, f"# Host\n## Useful Commands\nHost-specific command {number}.\n")
+        packet = build_packet(self.root, "Update guidance under Useful Commands", targets)
+        rendered = markdown(packet)
+        self.assertEqual(rendered.count("Host-specific command 0."), 1)
+        self.assertEqual(rendered.count("Host-specific command 1."), 1)
+
+    def test_markdown_validation_merges_legacy_plan_and_brief_commands(self):
+        packet = self.packet()
+        command = "python -m unittest test_packet"
+        packet["brief"] = self.brief(validationCommands=[command])
+        packet["validation"].extend([command, "python  -m unittest test_packet", "bash scripts/ci.sh"])
+        packet["validationPlan"]["checks"].append({"argv": ["python", "-m", "unittest", "test_packet"],
+                                                        "reason": "Exact focused test", "id": "focused", "paths": []})
+        original = json.dumps(packet, sort_keys=True)
+        rendered = markdown(packet)
+        self.assertEqual(rendered.count(command), 1)
+        self.assertIn("Exact focused test; Declared task acceptance proof", rendered)
+        self.assertEqual(rendered.count("bash scripts/ci.sh"), 1)
+        self.assertEqual(original, json.dumps(packet, sort_keys=True))
+
+    def test_markdown_keeps_semantically_distinct_shell_declarations(self):
+        packet = self.packet()
+        commands = ['python -m unittest "$SUITE"', "python -m unittest '$SUITE'"]
+        packet["validation"].extend(commands)
+        rendered = markdown(packet)
+        for command in commands:
+            self.assertIn(command, rendered)
+
+    def test_optional_excerpts_become_references_without_losing_json_or_warnings(self):
+        self.write("src/Meridian.Contracts/README.md", "# Module Context\nOptional content body retained in JSON.\n")
+        packet = self.packet()
+        rendered = markdown(packet)
+        self.assertNotIn("Optional content body retained in JSON.", rendered)
+        optional = next(item for item in packet["context"] if item["path"] == "src/Meridian.Contracts/README.md")
+        self.assertIn(optional["path"], rendered)
+        self.assertIn(optional["sha256"], rendered)
+        self.assertIn("Optional content body retained in JSON.", optional["excerpt"])
+        for warning in packet["warnings"]:
+            self.assertIn(warning, rendered)
+        for instruction in packet["instructions"]:
+            self.assertIn(instruction, rendered)
+
     def test_missing_optional_context_is_explicit(self):
         packet = self.packet()
         self.assertIn("docs/ai/generated/repo-navigation.json", packet["missingSources"])

@@ -18,7 +18,7 @@ from urllib.parse import urlparse
 EVENTS = {"task_started", "file_read", "useful_edit", "correction", "validation_started",
           "validation_finished", "task_finished", "passing_pr"}
 METRICS = ("firstUsefulEditSeconds", "repeatedFileReads", "correctionCycles",
-           "validationWaitSeconds", "passingPrSeconds")
+           "validationWaitSeconds", "passingPrSeconds", "validatedCompletionSeconds")
 
 
 def timestamp(value: str) -> datetime:
@@ -197,6 +197,8 @@ def summarize_trial(events: list[dict[str, Any]]) -> dict[str, Any]:
             "validationOutcomes": validation_outcomes,
             "successfulValidation": successful_validation,
             "comparisonEligible": complete and successful_validation,
+            "validatedCompletionSeconds": (timestamp(finish["timestamp"]) - started).total_seconds()
+            if complete and successful_validation else None,
             "deliveryCommitSha": finish.get("commitSha") if finish else None,
             "passingPrSeconds": (timestamp(passing["timestamp"]) - started).total_seconds() if passing else None,
             "passingPrEvidence": passing,
@@ -232,7 +234,8 @@ def report(events: list[dict[str, Any]], paths: list[Path]) -> dict[str, Any]:
                                                        for p in matched) if matched else None}
     return {"schemaVersion": 1, "rawLogs": [str(p) for p in paths], "trials": rows,
             "comparisons": comparisons,
-            "interpretation": "Observed small maintenance trials only; no causal or general delivery-speed claim. "
+            "interpretation": "Observed local pilot trials only; task family and timing boundary are defined by the retained protocol. "
+            "No causal or general delivery-speed claim. "
             "Missing evidence is null, not zero. Comparisons require complete instrumentation and a final "
             "successful recorded validation; failed attempt wait is retained. Passing PR evidence is supplied by the recorder; "
             "this offline reporter does not verify GitHub policy or check authenticity."}
@@ -240,8 +243,8 @@ def report(events: list[dict[str, Any]], paths: list[Path]) -> dict[str, Any]:
 
 def markdown(data: dict[str, Any]) -> str:
     lines = ["# AI throughput pilot observations", "", data["interpretation"], "",
-             "| Trial | Cohort | First edit (s) | Repeated reads | Corrections | Validation wait (s) | Passing PR (s) |",
-             "| --- | --- | ---: | ---: | ---: | ---: | ---: |"]
+             "| Trial | Cohort | First edit (s) | Repeated reads | Corrections | Validation wait (s) | Passing PR (s) | Validated completion (s) |",
+             "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |"]
     for row in data["trials"]:
         values = ["unavailable" if row[key] is None else str(row[key]) for key in METRICS]
         lines.append("| " + " | ".join([row["trial"], row["cohort"], *values]) + " |")

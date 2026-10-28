@@ -1,0 +1,2082 @@
+{
+  "ai-python": {
+    "baseline": {
+      "schemaVersion": 1,
+      "changedPaths": [
+        "build/scripts/ai/throughput_metrics.py"
+      ],
+      "checks": [
+        {
+          "id": "check-ai-inventory",
+          "argv": [
+            "python",
+            "build/scripts/docs/check-ai-inventory.py",
+            "--summary"
+          ],
+          "reason": "Task-to-proof matrix AI tooling/guidance check",
+          "paths": [
+            "build/scripts/ai/throughput_metrics.py"
+          ]
+        },
+        {
+          "id": "check-codex-skills",
+          "argv": [
+            "python",
+            "build/scripts/docs/check-codex-skills.py",
+            "--summary"
+          ],
+          "reason": "Task-to-proof matrix AI tooling/guidance check",
+          "paths": [
+            "build/scripts/ai/throughput_metrics.py"
+          ]
+        },
+        {
+          "id": "diff-check",
+          "argv": [
+            "git",
+            "diff",
+            "--check",
+            "--",
+            "build/scripts/ai/throughput_metrics.py"
+          ],
+          "reason": "Unstaged whitespace check",
+          "paths": [
+            "build/scripts/ai/throughput_metrics.py"
+          ]
+        },
+        {
+          "id": "diff-check-staged",
+          "argv": [
+            "git",
+            "diff",
+            "--cached",
+            "--check",
+            "--",
+            "build/scripts/ai/throughput_metrics.py"
+          ],
+          "reason": "Staged whitespace check",
+          "paths": [
+            "build/scripts/ai/throughput_metrics.py"
+          ]
+        },
+        {
+          "id": "python-tests-scripts-test_throughput_metrics",
+          "argv": [
+            "python",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests/scripts",
+            "-p",
+            "test_throughput_metrics.py"
+          ],
+          "reason": "Exact existing Python test filename",
+          "paths": [
+            "build/scripts/ai/throughput_metrics.py"
+          ]
+        }
+      ],
+      "affectedConsumers": [],
+      "coverageWarnings": [
+        "Unresolved ProjectReference in src/Meridian.Infrastructure/Meridian.Infrastructure.csproj: '$(ResolvedIbApiProjectPath)'; dependency coverage is unknown."
+      ],
+      "sources": [
+        {
+          "path": "Directory.Build.props",
+          "sha256": "4eb45de30383a18a041cb41404f0efc2c0c3b8302eee3a05e11e76db914b6db0"
+        },
+        {
+          "path": "Directory.Packages.props",
+          "sha256": "13ad91234b930e61dd33e175a459f1fbf4f30006081d0403c9b02d828d117155"
+        },
+        {
+          "path": "NuGet.Config",
+          "sha256": "e802a002d13da99816e4bc2d280322c073b69f429c582ab70331bda63542b2b5"
+        },
+        {
+          "path": "artifacts/ai-throughput/lazy-graph-profile/validation_plan_baseline.py",
+          "sha256": "1b53d73dd77734f08df00651651b29f8ce679e4ad78272b223eb2af07e0b3078"
+        },
+        {
+          "path": "build/python/cli/buildctl.py",
+          "sha256": "0ed7b704fd45b994c014d428c707887e7f2f236346a5bb6180c1ab4656cbc6bd"
+        },
+        {
+          "path": "build/scripts/docs/check-ai-inventory.py",
+          "sha256": "6458255a258b47b9a8fc3037ee95bba0639c605c1745742958c4180c6f1dd84d"
+        },
+        {
+          "path": "build/scripts/docs/check-codex-skills.py",
+          "sha256": "a88b3aeab6a0e9086be416de5c5c35b8c59872a2dc0067aaccd04919e2caef0d"
+        },
+        {
+          "path": "docs/ai/codex/quickstart.md",
+          "sha256": "4a3671dd2f41a7f7c621456a1ba587ad33f4820070fcb51c41ce5a4c69db5e08"
+        },
+        {
+          "path": "docs/source/data/source-modules.yml",
+          "sha256": "40ee016b178cb707f1045f7d822d899b0e69203eecfb3da50037aa2bca6816e0"
+        },
+        {
+          "path": "global.json",
+          "sha256": "c7ad0ac5b8129ae0a35f79bf578121bce3ba093099289e76f790e72444b729e0"
+        },
+        {
+          "path": "src/Meridian.Application/Meridian.Application.csproj",
+          "sha256": "5ea1a9d91fa366045f88a36d0cd7339b9cd4c9c5ddae7c4257e4cc8c98f5a47f"
+        },
+        {
+          "path": "src/Meridian.Audit/Meridian.Audit.csproj",
+          "sha256": "460555acf7310fee0e2620607393f346730b9310418baec7dd752df84c879cc4"
+        },
+        {
+          "path": "src/Meridian.Backtesting.Sdk/Meridian.Backtesting.Sdk.csproj",
+          "sha256": "1b706ea9b75a9b914b9a11e4eebb6a499774a508d4712c364a7a1ad4207b90af"
+        },
+        {
+          "path": "src/Meridian.Backtesting/Meridian.Backtesting.csproj",
+          "sha256": "f355335a2e913fb961d3c30571a409b03e0f80c69a854f6e475f976cdd5e98ea"
+        },
+        {
+          "path": "src/Meridian.Contracts/Meridian.Contracts.csproj",
+          "sha256": "85be8c4df1d781438c21062de8db0770686bbaef306f3a17e64b4e30f9e78157"
+        },
+        {
+          "path": "src/Meridian.Core/Meridian.Core.csproj",
+          "sha256": "ff6363112364a4cacfb539e00e5bdc187e5f44193835b19b76f0ed7bc96b77a0"
+        },
+        {
+          "path": "src/Meridian.DataIntegration/Meridian.DataIntegration.csproj",
+          "sha256": "03acdf222a0ab2e927f0d347e0c69b8eec9f0eaa23f9d82409b7671d48da4057"
+        },
+        {
+          "path": "src/Meridian.Documents/Meridian.Documents.csproj",
+          "sha256": "0dd2fa8a63d75b793030649a90b787c75eb5bc44cc8cf5288ede71ba103843d3"
+        },
+        {
+          "path": "src/Meridian.Domain/Meridian.Domain.csproj",
+          "sha256": "245f1e394fd33592372d71841e2a20ed76dd37c882497d72039840406a0caf62"
+        },
+        {
+          "path": "src/Meridian.Entities/Meridian.Entities.csproj",
+          "sha256": "95b5b271bec4050c887d663f566d3ddc42548da4a4a7b602cadc5b1d7b390ba3"
+        },
+        {
+          "path": "src/Meridian.Execution.Sdk/Meridian.Execution.Sdk.csproj",
+          "sha256": "988705265a75f179a0e5f3c0c15160e07f661600d48db7483eb13b925b08f1df"
+        },
+        {
+          "path": "src/Meridian.Execution/Meridian.Execution.csproj",
+          "sha256": "a9391ddf0504d89d2866855f3db9544382298972fc0f3b0481465ad2e4e69561"
+        },
+        {
+          "path": "src/Meridian.FSharp.DirectLending.Aggregates/Meridian.FSharp.DirectLending.Aggregates.fsproj",
+          "sha256": "492256adb374cd0077eee9f67fc8bccfb86df8eee520159ec35c6797c926cf2e"
+        },
+        {
+          "path": "src/Meridian.FSharp.Ledger/Meridian.FSharp.Ledger.fsproj",
+          "sha256": "979884a6f2f85ee318198674089205635c4e4275e0cc38e767092b47a361caed"
+        },
+        {
+          "path": "src/Meridian.FSharp.Trading/Meridian.FSharp.Trading.fsproj",
+          "sha256": "fb804fc848881b2263ecdb3a875519673a95ebb0dc3d96676151e2dc53a3d812"
+        },
+        {
+          "path": "src/Meridian.FSharp/Meridian.FSharp.fsproj",
+          "sha256": "a2662584c955ee98b4900ba290311a81480e2e09ba7a6020113dba1c1eb84018"
+        },
+        {
+          "path": "src/Meridian.FinancialOperations/Meridian.FinancialOperations.csproj",
+          "sha256": "cd2eeaef7029cf1119781dfdf05eda1e0893f463bea24557772a8ac1543cd118"
+        },
+        {
+          "path": "src/Meridian.IbApi.SmokeStub/Meridian.IbApi.SmokeStub.csproj",
+          "sha256": "ddf79d2891a2a3f9d977daefbd9b6b9b6df1cf25940958c5f1a596fb34b41334"
+        },
+        {
+          "path": "src/Meridian.Identity/Meridian.Identity.csproj",
+          "sha256": "974b79f2f42e029714c726aa9537cbf871d17bc19e2dd8171b9a874c2f18315f"
+        },
+        {
+          "path": "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj",
+          "sha256": "aa001e40865356296a11f91d4c54ee78587640e06cad723d2559deeaaa25cecc"
+        },
+        {
+          "path": "src/Meridian.Instruments/Meridian.Instruments.csproj",
+          "sha256": "db2c9faf5df8824dc77678c885dd1d2603abe231348305f265145c246b609f74"
+        },
+        {
+          "path": "src/Meridian.Launcher/Meridian.Launcher.csproj",
+          "sha256": "322f3cd5115fe0651a1d7a1b1b1ef5c2f22c006788b2a48015912be6f5383d92"
+        },
+        {
+          "path": "src/Meridian.Ledger/Meridian.Ledger.csproj",
+          "sha256": "b3861e9da41884670489fd54044ad4fba18c46626a90f27076fd376af8107b27"
+        },
+        {
+          "path": "src/Meridian.LifecycleSupervisor/Meridian.LifecycleSupervisor.csproj",
+          "sha256": "18da0e4da9a93017bb5ab5bfe89f10e376b08a251023c229340fd5b0b3a89454"
+        },
+        {
+          "path": "src/Meridian.Mcp/Meridian.Mcp.csproj",
+          "sha256": "7a6c7506f89d7ba6c453fce5dd5210941da1f6dccb46d4057530d1440f1c3391"
+        },
+        {
+          "path": "src/Meridian.Platform/Meridian.Platform.csproj",
+          "sha256": "4de5d0cec2148098f5968b586b80c947ae31ae797777d72f3c7ffd3a080a350c"
+        },
+        {
+          "path": "src/Meridian.PortfolioRecords/Meridian.PortfolioRecords.csproj",
+          "sha256": "640a090e6199d2ab909453508092d16849419ab33dc3b97bedfe32cd7c426860"
+        },
+        {
+          "path": "src/Meridian.ProcessIsolation/Meridian.ProcessIsolation.csproj",
+          "sha256": "771931709e5d377b03b88a8e050f55a7cc29aeceeca5df72caf3a2b0d9b13a63"
+        },
+        {
+          "path": "src/Meridian.ProviderSdk/Meridian.ProviderSdk.csproj",
+          "sha256": "3ac28ae41f3f3743eaeedd339f466ddb0562ccc3ba94242d37868df97d1234ca"
+        },
+        {
+          "path": "src/Meridian.QuantScript.Worker/Meridian.QuantScript.Worker.csproj",
+          "sha256": "3789fc0f357f84f61b75b4e6738bda881a2b45cda352b5ab9a3f0290cfa1c605"
+        },
+        {
+          "path": "src/Meridian.QuantScript/Meridian.QuantScript.csproj",
+          "sha256": "526ecb71043061659c99c3b5b756e9621597cfc5a3751067eabb53b3ae166b35"
+        },
+        {
+          "path": "src/Meridian.ReferenceData/Meridian.ReferenceData.csproj",
+          "sha256": "9a2f48e3e4d830fd6b5b6e5e03a2b06c49560f10a0f2cc34c698fb4021c43aab"
+        },
+        {
+          "path": "src/Meridian.Reporting/Meridian.Reporting.csproj",
+          "sha256": "e150a689f16a3ef2a9919651a5fbfb1df5acd13843361ef8e26c6d6fe057d2a6"
+        },
+        {
+          "path": "src/Meridian.Risk/Meridian.Risk.csproj",
+          "sha256": "89b053038587b5a347b33afc1b6927d4ad3ba9db5b5eb6ab89efe6c1d6764296"
+        },
+        {
+          "path": "src/Meridian.Setup/Meridian.Setup.csproj",
+          "sha256": "658c9fe680e438a78b377528e1952e551ede2974382245d3f898f608a987e18f"
+        },
+        {
+          "path": "src/Meridian.Storage/Meridian.Storage.csproj",
+          "sha256": "138253dea8b389a7fee737c1117c94f8a40886243d2d32191dd3fdbca67f91c3"
+        },
+        {
+          "path": "src/Meridian.Strategies/Meridian.Strategies.csproj",
+          "sha256": "1be551885fa82f69ce189fc3b4e27f52224388d2c42a2e34693c9dca7c492c6f"
+        },
+        {
+          "path": "src/Meridian.Ui.Services/Meridian.Ui.Services.csproj",
+          "sha256": "45981198d05a53cc613a070fc98d32f0d80efb3b1364d668f9ce5dbeb9d24b48"
+        },
+        {
+          "path": "src/Meridian.Ui.Shared/Meridian.Ui.Shared.csproj",
+          "sha256": "e112595622ea7c8b4d0885a5ef1e0fc6c2f2e969bc2d5f43c82b36943cc51dbc"
+        },
+        {
+          "path": "src/Meridian.Workflow/Meridian.Workflow.csproj",
+          "sha256": "127255bb35d98f016fd70188a9fd8bd36adf2cebe116f023e5e24ad5e35e17e2"
+        },
+        {
+          "path": "src/Meridian.Wpf/Meridian.Wpf.csproj",
+          "sha256": "a225027cb1fbcb0831d0119d4cf619a858eba1f90fd2a7b7219328850da3023e"
+        },
+        {
+          "path": "src/Meridian/Meridian.csproj",
+          "sha256": "40a36721c2235c97583b0d5d6a822537045698ccb40d6e849616c293ba70388c"
+        },
+        {
+          "path": "tests/Directory.Build.props",
+          "sha256": "8bba301931d3cf02699747d8cf0dfecb2711a6cddb1f3448cffa5821c3384993"
+        },
+        {
+          "path": "tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj",
+          "sha256": "78307a446f9c1e225a0a6ffd9a17f0618f7158161a7bdd6ea8394f43aaf02e7d"
+        },
+        {
+          "path": "tests/Meridian.DesignModules.Tests/Meridian.DesignModules.Tests.csproj",
+          "sha256": "beed20b88d30a52f6de08b85269288b8963b3e68bd1af4bd7cec20d57c3176cb"
+        },
+        {
+          "path": "tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj",
+          "sha256": "f7e3018800b7c09aa839803acd2afe3ccd7b70f6f4c6c1a1aa1db91b1bfcc0d4"
+        },
+        {
+          "path": "tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj",
+          "sha256": "3aa555728e55363a9086eef98db40e916452f62e9bc7588e21aafae4e9a53e40"
+        },
+        {
+          "path": "tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj",
+          "sha256": "c3b08cd31e929bd128b72c777014cdd65bd5a0b646a972801c25fea05b5446a2"
+        },
+        {
+          "path": "tests/Meridian.Lifecycle.Tests/Meridian.Lifecycle.Tests.csproj",
+          "sha256": "c71c8d742e458aa53c5ba9aca4fd7b5c695cc8d8fac4abe14f553f8e14e99498"
+        },
+        {
+          "path": "tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj",
+          "sha256": "e1f3d01fc804f67e7ec4afb3d22d441b73e91bc81c2ecce0260e56a87bc3de78"
+        },
+        {
+          "path": "tests/Meridian.ProcessTestHelper/Meridian.ProcessTestHelper.csproj",
+          "sha256": "8ebb665b1bdf9dd9afb3e14792f5b30aa28626984369359ad252ed544e1e2e8f"
+        },
+        {
+          "path": "tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj",
+          "sha256": "043a6654a05e4035dfec1030a8b5de527358bb3dab09a0978af9a849650bf761"
+        },
+        {
+          "path": "tests/Meridian.Setup.Tests/Meridian.Setup.Tests.csproj",
+          "sha256": "c6710bdd23715f96dcb6262119ec55b3e53ad0f185f7f6ded9d67952c2e0a933"
+        },
+        {
+          "path": "tests/Meridian.TestSupport/Meridian.TestSupport.csproj",
+          "sha256": "b78c6e6a9d329b69dcd3de8d31b3d02c436235092f17c63e8b6d53b2a854d2fb"
+        },
+        {
+          "path": "tests/Meridian.Tests/Meridian.Tests.csproj",
+          "sha256": "a85baab62fba8baae8e2dc7dcda41167b0ba3ae7ceb26ccce5624d37a5adcb12"
+        },
+        {
+          "path": "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj",
+          "sha256": "a95a75f8af149e65f38906dc273d3394f7663f0cede961999355266b8590ca04"
+        },
+        {
+          "path": "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj",
+          "sha256": "0dd65ce68408f4958aa32105a67efd3a2ddebc48cec165d2850ebf6489aecaf9"
+        },
+        {
+          "path": "tests/scripts/test_throughput_metrics.py",
+          "sha256": "95f5805e0fa27b67f46097f78a49c2ce32adb8eeb426ec803efa5db0518dcd33"
+        }
+      ],
+      "requiredFinalChecks": [
+        {
+          "id": "local-ci",
+          "argv": [
+            "bash",
+            "scripts/ci.sh"
+          ],
+          "reason": "Required before completion"
+        },
+        {
+          "id": "quality-gate",
+          "kind": "github",
+          "name": "Meridian CI / quality-gate"
+        },
+        {
+          "id": "integration-gate",
+          "kind": "github",
+          "name": "Meridian CI / integration-gate"
+        }
+      ],
+      "policy": "Recommendations only; no commands executed. Focused checks do not replace required final checks."
+    },
+    "treatment": {
+      "schemaVersion": 1,
+      "changedPaths": [
+        "build/scripts/ai/throughput_metrics.py"
+      ],
+      "checks": [
+        {
+          "id": "check-ai-inventory",
+          "argv": [
+            "python",
+            "build/scripts/docs/check-ai-inventory.py",
+            "--summary"
+          ],
+          "reason": "Task-to-proof matrix AI tooling/guidance check",
+          "paths": [
+            "build/scripts/ai/throughput_metrics.py"
+          ]
+        },
+        {
+          "id": "check-codex-skills",
+          "argv": [
+            "python",
+            "build/scripts/docs/check-codex-skills.py",
+            "--summary"
+          ],
+          "reason": "Task-to-proof matrix AI tooling/guidance check",
+          "paths": [
+            "build/scripts/ai/throughput_metrics.py"
+          ]
+        },
+        {
+          "id": "diff-check",
+          "argv": [
+            "git",
+            "diff",
+            "--check",
+            "--",
+            "build/scripts/ai/throughput_metrics.py"
+          ],
+          "reason": "Unstaged whitespace check",
+          "paths": [
+            "build/scripts/ai/throughput_metrics.py"
+          ]
+        },
+        {
+          "id": "diff-check-staged",
+          "argv": [
+            "git",
+            "diff",
+            "--cached",
+            "--check",
+            "--",
+            "build/scripts/ai/throughput_metrics.py"
+          ],
+          "reason": "Staged whitespace check",
+          "paths": [
+            "build/scripts/ai/throughput_metrics.py"
+          ]
+        },
+        {
+          "id": "python-tests-scripts-test_throughput_metrics",
+          "argv": [
+            "python",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests/scripts",
+            "-p",
+            "test_throughput_metrics.py"
+          ],
+          "reason": "Exact existing Python test filename",
+          "paths": [
+            "build/scripts/ai/throughput_metrics.py"
+          ]
+        }
+      ],
+      "affectedConsumers": [],
+      "coverageWarnings": [],
+      "sources": [
+        {
+          "path": "build/python/cli/buildctl.py",
+          "sha256": "0ed7b704fd45b994c014d428c707887e7f2f236346a5bb6180c1ab4656cbc6bd"
+        },
+        {
+          "path": "build/python/cli/validation_plan.py",
+          "sha256": "4893dba12d1d1c28073e0454a280035965713cd8f93fe7fc0ec312163d03c3cd"
+        },
+        {
+          "path": "build/scripts/docs/check-ai-inventory.py",
+          "sha256": "6458255a258b47b9a8fc3037ee95bba0639c605c1745742958c4180c6f1dd84d"
+        },
+        {
+          "path": "build/scripts/docs/check-codex-skills.py",
+          "sha256": "a88b3aeab6a0e9086be416de5c5c35b8c59872a2dc0067aaccd04919e2caef0d"
+        },
+        {
+          "path": "docs/ai/codex/quickstart.md",
+          "sha256": "4a3671dd2f41a7f7c621456a1ba587ad33f4820070fcb51c41ce5a4c69db5e08"
+        },
+        {
+          "path": "tests/scripts/test_throughput_metrics.py",
+          "sha256": "95f5805e0fa27b67f46097f78a49c2ce32adb8eeb426ec803efa5db0518dcd33"
+        }
+      ],
+      "requiredFinalChecks": [
+        {
+          "id": "local-ci",
+          "argv": [
+            "bash",
+            "scripts/ci.sh"
+          ],
+          "reason": "Required before completion"
+        },
+        {
+          "id": "quality-gate",
+          "kind": "github",
+          "name": "Meridian CI / quality-gate"
+        },
+        {
+          "id": "integration-gate",
+          "kind": "github",
+          "name": "Meridian CI / integration-gate"
+        }
+      ],
+      "policy": "Recommendations only; no commands executed. Focused checks do not replace required final checks."
+    }
+  },
+  "shared-dotnet": {
+    "baseline": {
+      "schemaVersion": 1,
+      "changedPaths": [
+        "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+      ],
+      "checks": [
+        {
+          "id": "browser-build",
+          "argv": [
+            "npm",
+            "--prefix",
+            "src/Meridian.Ui/dashboard",
+            "run",
+            "build"
+          ],
+          "reason": "Browser workstation package validation",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "browser-lint",
+          "argv": [
+            "npm",
+            "--prefix",
+            "src/Meridian.Ui/dashboard",
+            "run",
+            "lint"
+          ],
+          "reason": "Browser workstation package validation",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "browser-test",
+          "argv": [
+            "npm",
+            "--prefix",
+            "src/Meridian.Ui/dashboard",
+            "run",
+            "test"
+          ],
+          "reason": "Shared/general browser coverage",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "browser-typecheck:strict",
+          "argv": [
+            "npm",
+            "--prefix",
+            "src/Meridian.Ui/dashboard",
+            "run",
+            "typecheck:strict"
+          ],
+          "reason": "Browser workstation package validation",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "diff-check",
+          "argv": [
+            "git",
+            "diff",
+            "--check",
+            "--",
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ],
+          "reason": "Unstaged whitespace check",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "diff-check-staged",
+          "argv": [
+            "git",
+            "diff",
+            "--cached",
+            "--check",
+            "--",
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ],
+          "reason": "Staged whitespace check",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "dotnet-Meridian.Backtesting.Tests",
+          "argv": [
+            "python",
+            "build/python/cli/buildctl.py",
+            "test",
+            "--project",
+            "tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj",
+            "--queue"
+          ],
+          "reason": "Changed project or transitive ProjectReference consumer",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "dotnet-Meridian.DesignModules.Tests",
+          "argv": [
+            "python",
+            "build/python/cli/buildctl.py",
+            "test",
+            "--project",
+            "tests/Meridian.DesignModules.Tests/Meridian.DesignModules.Tests.csproj",
+            "--queue"
+          ],
+          "reason": "Changed project or transitive ProjectReference consumer",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "dotnet-Meridian.DirectLending.Tests",
+          "argv": [
+            "python",
+            "build/python/cli/buildctl.py",
+            "test",
+            "--project",
+            "tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj",
+            "--queue"
+          ],
+          "reason": "Changed project or transitive ProjectReference consumer",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "dotnet-Meridian.FSharp.Tests",
+          "argv": [
+            "python",
+            "build/python/cli/buildctl.py",
+            "test",
+            "--project",
+            "tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj",
+            "--queue"
+          ],
+          "reason": "Changed project or transitive ProjectReference consumer",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "dotnet-Meridian.FundStructure.Tests",
+          "argv": [
+            "python",
+            "build/python/cli/buildctl.py",
+            "test",
+            "--project",
+            "tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj",
+            "--queue"
+          ],
+          "reason": "Changed project or transitive ProjectReference consumer",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "dotnet-Meridian.Lifecycle.Tests",
+          "argv": [
+            "python",
+            "build/python/cli/buildctl.py",
+            "test",
+            "--project",
+            "tests/Meridian.Lifecycle.Tests/Meridian.Lifecycle.Tests.csproj",
+            "--queue"
+          ],
+          "reason": "Changed project or transitive ProjectReference consumer",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "dotnet-Meridian.LifecycleSupervisor.Tests",
+          "argv": [
+            "python",
+            "build/python/cli/buildctl.py",
+            "test",
+            "--project",
+            "tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj",
+            "--queue"
+          ],
+          "reason": "Changed project or transitive ProjectReference consumer",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "dotnet-Meridian.QuantScript.Tests",
+          "argv": [
+            "python",
+            "build/python/cli/buildctl.py",
+            "test",
+            "--project",
+            "tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj",
+            "--queue"
+          ],
+          "reason": "Changed project or transitive ProjectReference consumer",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "dotnet-Meridian.Tests",
+          "argv": [
+            "python",
+            "build/python/cli/buildctl.py",
+            "test",
+            "--project",
+            "tests/Meridian.Tests/Meridian.Tests.csproj",
+            "--queue"
+          ],
+          "reason": "Changed project or transitive ProjectReference consumer",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "dotnet-Meridian.Ui.Tests",
+          "argv": [
+            "python",
+            "build/python/cli/buildctl.py",
+            "test",
+            "--project",
+            "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj",
+            "--queue"
+          ],
+          "reason": "Changed project or transitive ProjectReference consumer",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "dotnet-Meridian.Wpf.Tests",
+          "argv": [
+            "python",
+            "build/python/cli/buildctl.py",
+            "test",
+            "--project",
+            "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj",
+            "--queue",
+            "--full-wpf-build"
+          ],
+          "reason": "Changed project or transitive ProjectReference consumer",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        }
+      ],
+      "affectedConsumers": [
+        "browser",
+        "wpf"
+      ],
+      "coverageWarnings": [
+        "Unresolved ProjectReference in src/Meridian.Infrastructure/Meridian.Infrastructure.csproj: '$(ResolvedIbApiProjectPath)'; dependency coverage is unknown.",
+        "WPF tests require Windows with full WPF compilation; a non-Windows stub is not consumer proof."
+      ],
+      "sources": [
+        {
+          "path": "Directory.Build.props",
+          "sha256": "4eb45de30383a18a041cb41404f0efc2c0c3b8302eee3a05e11e76db914b6db0"
+        },
+        {
+          "path": "Directory.Packages.props",
+          "sha256": "13ad91234b930e61dd33e175a459f1fbf4f30006081d0403c9b02d828d117155"
+        },
+        {
+          "path": "NuGet.Config",
+          "sha256": "e802a002d13da99816e4bc2d280322c073b69f429c582ab70331bda63542b2b5"
+        },
+        {
+          "path": "artifacts/ai-throughput/lazy-graph-profile/validation_plan_baseline.py",
+          "sha256": "1b53d73dd77734f08df00651651b29f8ce679e4ad78272b223eb2af07e0b3078"
+        },
+        {
+          "path": "build/python/cli/buildctl.py",
+          "sha256": "0ed7b704fd45b994c014d428c707887e7f2f236346a5bb6180c1ab4656cbc6bd"
+        },
+        {
+          "path": "docs/ai/codex/quickstart.md",
+          "sha256": "4a3671dd2f41a7f7c621456a1ba587ad33f4820070fcb51c41ce5a4c69db5e08"
+        },
+        {
+          "path": "docs/source/data/source-modules.yml",
+          "sha256": "40ee016b178cb707f1045f7d822d899b0e69203eecfb3da50037aa2bca6816e0"
+        },
+        {
+          "path": "global.json",
+          "sha256": "c7ad0ac5b8129ae0a35f79bf578121bce3ba093099289e76f790e72444b729e0"
+        },
+        {
+          "path": "src/Meridian.Application/Meridian.Application.csproj",
+          "sha256": "5ea1a9d91fa366045f88a36d0cd7339b9cd4c9c5ddae7c4257e4cc8c98f5a47f"
+        },
+        {
+          "path": "src/Meridian.Audit/Meridian.Audit.csproj",
+          "sha256": "460555acf7310fee0e2620607393f346730b9310418baec7dd752df84c879cc4"
+        },
+        {
+          "path": "src/Meridian.Backtesting.Sdk/Meridian.Backtesting.Sdk.csproj",
+          "sha256": "1b706ea9b75a9b914b9a11e4eebb6a499774a508d4712c364a7a1ad4207b90af"
+        },
+        {
+          "path": "src/Meridian.Backtesting/Meridian.Backtesting.csproj",
+          "sha256": "f355335a2e913fb961d3c30571a409b03e0f80c69a854f6e475f976cdd5e98ea"
+        },
+        {
+          "path": "src/Meridian.Contracts/Meridian.Contracts.csproj",
+          "sha256": "85be8c4df1d781438c21062de8db0770686bbaef306f3a17e64b4e30f9e78157"
+        },
+        {
+          "path": "src/Meridian.Core/Meridian.Core.csproj",
+          "sha256": "ff6363112364a4cacfb539e00e5bdc187e5f44193835b19b76f0ed7bc96b77a0"
+        },
+        {
+          "path": "src/Meridian.DataIntegration/Meridian.DataIntegration.csproj",
+          "sha256": "03acdf222a0ab2e927f0d347e0c69b8eec9f0eaa23f9d82409b7671d48da4057"
+        },
+        {
+          "path": "src/Meridian.Documents/Meridian.Documents.csproj",
+          "sha256": "0dd2fa8a63d75b793030649a90b787c75eb5bc44cc8cf5288ede71ba103843d3"
+        },
+        {
+          "path": "src/Meridian.Domain/Meridian.Domain.csproj",
+          "sha256": "245f1e394fd33592372d71841e2a20ed76dd37c882497d72039840406a0caf62"
+        },
+        {
+          "path": "src/Meridian.Entities/Meridian.Entities.csproj",
+          "sha256": "95b5b271bec4050c887d663f566d3ddc42548da4a4a7b602cadc5b1d7b390ba3"
+        },
+        {
+          "path": "src/Meridian.Execution.Sdk/Meridian.Execution.Sdk.csproj",
+          "sha256": "988705265a75f179a0e5f3c0c15160e07f661600d48db7483eb13b925b08f1df"
+        },
+        {
+          "path": "src/Meridian.Execution/Meridian.Execution.csproj",
+          "sha256": "a9391ddf0504d89d2866855f3db9544382298972fc0f3b0481465ad2e4e69561"
+        },
+        {
+          "path": "src/Meridian.FSharp.DirectLending.Aggregates/Meridian.FSharp.DirectLending.Aggregates.fsproj",
+          "sha256": "492256adb374cd0077eee9f67fc8bccfb86df8eee520159ec35c6797c926cf2e"
+        },
+        {
+          "path": "src/Meridian.FSharp.Ledger/Meridian.FSharp.Ledger.fsproj",
+          "sha256": "979884a6f2f85ee318198674089205635c4e4275e0cc38e767092b47a361caed"
+        },
+        {
+          "path": "src/Meridian.FSharp.Trading/Meridian.FSharp.Trading.fsproj",
+          "sha256": "fb804fc848881b2263ecdb3a875519673a95ebb0dc3d96676151e2dc53a3d812"
+        },
+        {
+          "path": "src/Meridian.FSharp/Meridian.FSharp.fsproj",
+          "sha256": "a2662584c955ee98b4900ba290311a81480e2e09ba7a6020113dba1c1eb84018"
+        },
+        {
+          "path": "src/Meridian.FinancialOperations/Meridian.FinancialOperations.csproj",
+          "sha256": "cd2eeaef7029cf1119781dfdf05eda1e0893f463bea24557772a8ac1543cd118"
+        },
+        {
+          "path": "src/Meridian.IbApi.SmokeStub/Meridian.IbApi.SmokeStub.csproj",
+          "sha256": "ddf79d2891a2a3f9d977daefbd9b6b9b6df1cf25940958c5f1a596fb34b41334"
+        },
+        {
+          "path": "src/Meridian.Identity/Meridian.Identity.csproj",
+          "sha256": "974b79f2f42e029714c726aa9537cbf871d17bc19e2dd8171b9a874c2f18315f"
+        },
+        {
+          "path": "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj",
+          "sha256": "aa001e40865356296a11f91d4c54ee78587640e06cad723d2559deeaaa25cecc"
+        },
+        {
+          "path": "src/Meridian.Instruments/Meridian.Instruments.csproj",
+          "sha256": "db2c9faf5df8824dc77678c885dd1d2603abe231348305f265145c246b609f74"
+        },
+        {
+          "path": "src/Meridian.Launcher/Meridian.Launcher.csproj",
+          "sha256": "322f3cd5115fe0651a1d7a1b1b1ef5c2f22c006788b2a48015912be6f5383d92"
+        },
+        {
+          "path": "src/Meridian.Ledger/Meridian.Ledger.csproj",
+          "sha256": "b3861e9da41884670489fd54044ad4fba18c46626a90f27076fd376af8107b27"
+        },
+        {
+          "path": "src/Meridian.LifecycleSupervisor/Meridian.LifecycleSupervisor.csproj",
+          "sha256": "18da0e4da9a93017bb5ab5bfe89f10e376b08a251023c229340fd5b0b3a89454"
+        },
+        {
+          "path": "src/Meridian.Mcp/Meridian.Mcp.csproj",
+          "sha256": "7a6c7506f89d7ba6c453fce5dd5210941da1f6dccb46d4057530d1440f1c3391"
+        },
+        {
+          "path": "src/Meridian.Platform/Meridian.Platform.csproj",
+          "sha256": "4de5d0cec2148098f5968b586b80c947ae31ae797777d72f3c7ffd3a080a350c"
+        },
+        {
+          "path": "src/Meridian.PortfolioRecords/Meridian.PortfolioRecords.csproj",
+          "sha256": "640a090e6199d2ab909453508092d16849419ab33dc3b97bedfe32cd7c426860"
+        },
+        {
+          "path": "src/Meridian.ProcessIsolation/Meridian.ProcessIsolation.csproj",
+          "sha256": "771931709e5d377b03b88a8e050f55a7cc29aeceeca5df72caf3a2b0d9b13a63"
+        },
+        {
+          "path": "src/Meridian.ProviderSdk/Meridian.ProviderSdk.csproj",
+          "sha256": "3ac28ae41f3f3743eaeedd339f466ddb0562ccc3ba94242d37868df97d1234ca"
+        },
+        {
+          "path": "src/Meridian.QuantScript.Worker/Meridian.QuantScript.Worker.csproj",
+          "sha256": "3789fc0f357f84f61b75b4e6738bda881a2b45cda352b5ab9a3f0290cfa1c605"
+        },
+        {
+          "path": "src/Meridian.QuantScript/Meridian.QuantScript.csproj",
+          "sha256": "526ecb71043061659c99c3b5b756e9621597cfc5a3751067eabb53b3ae166b35"
+        },
+        {
+          "path": "src/Meridian.ReferenceData/Meridian.ReferenceData.csproj",
+          "sha256": "9a2f48e3e4d830fd6b5b6e5e03a2b06c49560f10a0f2cc34c698fb4021c43aab"
+        },
+        {
+          "path": "src/Meridian.Reporting/Meridian.Reporting.csproj",
+          "sha256": "e150a689f16a3ef2a9919651a5fbfb1df5acd13843361ef8e26c6d6fe057d2a6"
+        },
+        {
+          "path": "src/Meridian.Risk/Meridian.Risk.csproj",
+          "sha256": "89b053038587b5a347b33afc1b6927d4ad3ba9db5b5eb6ab89efe6c1d6764296"
+        },
+        {
+          "path": "src/Meridian.Setup/Meridian.Setup.csproj",
+          "sha256": "658c9fe680e438a78b377528e1952e551ede2974382245d3f898f608a987e18f"
+        },
+        {
+          "path": "src/Meridian.Storage/Meridian.Storage.csproj",
+          "sha256": "138253dea8b389a7fee737c1117c94f8a40886243d2d32191dd3fdbca67f91c3"
+        },
+        {
+          "path": "src/Meridian.Strategies/Meridian.Strategies.csproj",
+          "sha256": "1be551885fa82f69ce189fc3b4e27f52224388d2c42a2e34693c9dca7c492c6f"
+        },
+        {
+          "path": "src/Meridian.Ui.Services/Meridian.Ui.Services.csproj",
+          "sha256": "45981198d05a53cc613a070fc98d32f0d80efb3b1364d668f9ce5dbeb9d24b48"
+        },
+        {
+          "path": "src/Meridian.Ui.Shared/Meridian.Ui.Shared.csproj",
+          "sha256": "e112595622ea7c8b4d0885a5ef1e0fc6c2f2e969bc2d5f43c82b36943cc51dbc"
+        },
+        {
+          "path": "src/Meridian.Ui/dashboard/package.json",
+          "sha256": "ab97470983f1b5293097239aa588a556076d50c687287bf09fd976624f2928d1"
+        },
+        {
+          "path": "src/Meridian.Workflow/Meridian.Workflow.csproj",
+          "sha256": "127255bb35d98f016fd70188a9fd8bd36adf2cebe116f023e5e24ad5e35e17e2"
+        },
+        {
+          "path": "src/Meridian.Wpf/Meridian.Wpf.csproj",
+          "sha256": "a225027cb1fbcb0831d0119d4cf619a858eba1f90fd2a7b7219328850da3023e"
+        },
+        {
+          "path": "src/Meridian/Meridian.csproj",
+          "sha256": "40a36721c2235c97583b0d5d6a822537045698ccb40d6e849616c293ba70388c"
+        },
+        {
+          "path": "tests/Directory.Build.props",
+          "sha256": "8bba301931d3cf02699747d8cf0dfecb2711a6cddb1f3448cffa5821c3384993"
+        },
+        {
+          "path": "tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj",
+          "sha256": "78307a446f9c1e225a0a6ffd9a17f0618f7158161a7bdd6ea8394f43aaf02e7d"
+        },
+        {
+          "path": "tests/Meridian.DesignModules.Tests/Meridian.DesignModules.Tests.csproj",
+          "sha256": "beed20b88d30a52f6de08b85269288b8963b3e68bd1af4bd7cec20d57c3176cb"
+        },
+        {
+          "path": "tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj",
+          "sha256": "f7e3018800b7c09aa839803acd2afe3ccd7b70f6f4c6c1a1aa1db91b1bfcc0d4"
+        },
+        {
+          "path": "tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj",
+          "sha256": "3aa555728e55363a9086eef98db40e916452f62e9bc7588e21aafae4e9a53e40"
+        },
+        {
+          "path": "tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj",
+          "sha256": "c3b08cd31e929bd128b72c777014cdd65bd5a0b646a972801c25fea05b5446a2"
+        },
+        {
+          "path": "tests/Meridian.Lifecycle.Tests/Meridian.Lifecycle.Tests.csproj",
+          "sha256": "c71c8d742e458aa53c5ba9aca4fd7b5c695cc8d8fac4abe14f553f8e14e99498"
+        },
+        {
+          "path": "tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj",
+          "sha256": "e1f3d01fc804f67e7ec4afb3d22d441b73e91bc81c2ecce0260e56a87bc3de78"
+        },
+        {
+          "path": "tests/Meridian.ProcessTestHelper/Meridian.ProcessTestHelper.csproj",
+          "sha256": "8ebb665b1bdf9dd9afb3e14792f5b30aa28626984369359ad252ed544e1e2e8f"
+        },
+        {
+          "path": "tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj",
+          "sha256": "043a6654a05e4035dfec1030a8b5de527358bb3dab09a0978af9a849650bf761"
+        },
+        {
+          "path": "tests/Meridian.Setup.Tests/Meridian.Setup.Tests.csproj",
+          "sha256": "c6710bdd23715f96dcb6262119ec55b3e53ad0f185f7f6ded9d67952c2e0a933"
+        },
+        {
+          "path": "tests/Meridian.TestSupport/Meridian.TestSupport.csproj",
+          "sha256": "b78c6e6a9d329b69dcd3de8d31b3d02c436235092f17c63e8b6d53b2a854d2fb"
+        },
+        {
+          "path": "tests/Meridian.Tests/Meridian.Tests.csproj",
+          "sha256": "a85baab62fba8baae8e2dc7dcda41167b0ba3ae7ceb26ccce5624d37a5adcb12"
+        },
+        {
+          "path": "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj",
+          "sha256": "a95a75f8af149e65f38906dc273d3394f7663f0cede961999355266b8590ca04"
+        },
+        {
+          "path": "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj",
+          "sha256": "0dd65ce68408f4958aa32105a67efd3a2ddebc48cec165d2850ebf6489aecaf9"
+        }
+      ],
+      "requiredFinalChecks": [
+        {
+          "id": "local-ci",
+          "argv": [
+            "bash",
+            "scripts/ci.sh"
+          ],
+          "reason": "Required before completion"
+        },
+        {
+          "id": "quality-gate",
+          "kind": "github",
+          "name": "Meridian CI / quality-gate"
+        },
+        {
+          "id": "integration-gate",
+          "kind": "github",
+          "name": "Meridian CI / integration-gate"
+        }
+      ],
+      "policy": "Recommendations only; no commands executed. Focused checks do not replace required final checks."
+    },
+    "treatment": {
+      "schemaVersion": 1,
+      "changedPaths": [
+        "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+      ],
+      "checks": [
+        {
+          "id": "browser-build",
+          "argv": [
+            "npm",
+            "--prefix",
+            "src/Meridian.Ui/dashboard",
+            "run",
+            "build"
+          ],
+          "reason": "Browser workstation package validation",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "browser-lint",
+          "argv": [
+            "npm",
+            "--prefix",
+            "src/Meridian.Ui/dashboard",
+            "run",
+            "lint"
+          ],
+          "reason": "Browser workstation package validation",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "browser-test",
+          "argv": [
+            "npm",
+            "--prefix",
+            "src/Meridian.Ui/dashboard",
+            "run",
+            "test"
+          ],
+          "reason": "Shared/general browser coverage",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "browser-typecheck:strict",
+          "argv": [
+            "npm",
+            "--prefix",
+            "src/Meridian.Ui/dashboard",
+            "run",
+            "typecheck:strict"
+          ],
+          "reason": "Browser workstation package validation",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "diff-check",
+          "argv": [
+            "git",
+            "diff",
+            "--check",
+            "--",
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ],
+          "reason": "Unstaged whitespace check",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "diff-check-staged",
+          "argv": [
+            "git",
+            "diff",
+            "--cached",
+            "--check",
+            "--",
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ],
+          "reason": "Staged whitespace check",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "dotnet-Meridian.Backtesting.Tests",
+          "argv": [
+            "python",
+            "build/python/cli/buildctl.py",
+            "test",
+            "--project",
+            "tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj",
+            "--queue"
+          ],
+          "reason": "Changed project or transitive ProjectReference consumer",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "dotnet-Meridian.DesignModules.Tests",
+          "argv": [
+            "python",
+            "build/python/cli/buildctl.py",
+            "test",
+            "--project",
+            "tests/Meridian.DesignModules.Tests/Meridian.DesignModules.Tests.csproj",
+            "--queue"
+          ],
+          "reason": "Changed project or transitive ProjectReference consumer",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "dotnet-Meridian.DirectLending.Tests",
+          "argv": [
+            "python",
+            "build/python/cli/buildctl.py",
+            "test",
+            "--project",
+            "tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj",
+            "--queue"
+          ],
+          "reason": "Changed project or transitive ProjectReference consumer",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "dotnet-Meridian.FSharp.Tests",
+          "argv": [
+            "python",
+            "build/python/cli/buildctl.py",
+            "test",
+            "--project",
+            "tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj",
+            "--queue"
+          ],
+          "reason": "Changed project or transitive ProjectReference consumer",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "dotnet-Meridian.FundStructure.Tests",
+          "argv": [
+            "python",
+            "build/python/cli/buildctl.py",
+            "test",
+            "--project",
+            "tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj",
+            "--queue"
+          ],
+          "reason": "Changed project or transitive ProjectReference consumer",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "dotnet-Meridian.Lifecycle.Tests",
+          "argv": [
+            "python",
+            "build/python/cli/buildctl.py",
+            "test",
+            "--project",
+            "tests/Meridian.Lifecycle.Tests/Meridian.Lifecycle.Tests.csproj",
+            "--queue"
+          ],
+          "reason": "Changed project or transitive ProjectReference consumer",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "dotnet-Meridian.LifecycleSupervisor.Tests",
+          "argv": [
+            "python",
+            "build/python/cli/buildctl.py",
+            "test",
+            "--project",
+            "tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj",
+            "--queue"
+          ],
+          "reason": "Changed project or transitive ProjectReference consumer",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "dotnet-Meridian.QuantScript.Tests",
+          "argv": [
+            "python",
+            "build/python/cli/buildctl.py",
+            "test",
+            "--project",
+            "tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj",
+            "--queue"
+          ],
+          "reason": "Changed project or transitive ProjectReference consumer",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "dotnet-Meridian.Tests",
+          "argv": [
+            "python",
+            "build/python/cli/buildctl.py",
+            "test",
+            "--project",
+            "tests/Meridian.Tests/Meridian.Tests.csproj",
+            "--queue"
+          ],
+          "reason": "Changed project or transitive ProjectReference consumer",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "dotnet-Meridian.Ui.Tests",
+          "argv": [
+            "python",
+            "build/python/cli/buildctl.py",
+            "test",
+            "--project",
+            "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj",
+            "--queue"
+          ],
+          "reason": "Changed project or transitive ProjectReference consumer",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        },
+        {
+          "id": "dotnet-Meridian.Wpf.Tests",
+          "argv": [
+            "python",
+            "build/python/cli/buildctl.py",
+            "test",
+            "--project",
+            "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj",
+            "--queue",
+            "--full-wpf-build"
+          ],
+          "reason": "Changed project or transitive ProjectReference consumer",
+          "paths": [
+            "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+          ]
+        }
+      ],
+      "affectedConsumers": [
+        "browser",
+        "wpf"
+      ],
+      "coverageWarnings": [
+        "Unresolved ProjectReference in src/Meridian.Infrastructure/Meridian.Infrastructure.csproj: '$(ResolvedIbApiProjectPath)'; dependency coverage is unknown.",
+        "WPF tests require Windows with full WPF compilation; a non-Windows stub is not consumer proof."
+      ],
+      "sources": [
+        {
+          "path": "Directory.Build.props",
+          "sha256": "4eb45de30383a18a041cb41404f0efc2c0c3b8302eee3a05e11e76db914b6db0"
+        },
+        {
+          "path": "Directory.Packages.props",
+          "sha256": "13ad91234b930e61dd33e175a459f1fbf4f30006081d0403c9b02d828d117155"
+        },
+        {
+          "path": "NuGet.Config",
+          "sha256": "e802a002d13da99816e4bc2d280322c073b69f429c582ab70331bda63542b2b5"
+        },
+        {
+          "path": "build/python/cli/buildctl.py",
+          "sha256": "0ed7b704fd45b994c014d428c707887e7f2f236346a5bb6180c1ab4656cbc6bd"
+        },
+        {
+          "path": "build/python/cli/validation_plan.py",
+          "sha256": "4893dba12d1d1c28073e0454a280035965713cd8f93fe7fc0ec312163d03c3cd"
+        },
+        {
+          "path": "docs/ai/codex/quickstart.md",
+          "sha256": "4a3671dd2f41a7f7c621456a1ba587ad33f4820070fcb51c41ce5a4c69db5e08"
+        },
+        {
+          "path": "docs/source/data/source-modules.yml",
+          "sha256": "40ee016b178cb707f1045f7d822d899b0e69203eecfb3da50037aa2bca6816e0"
+        },
+        {
+          "path": "global.json",
+          "sha256": "c7ad0ac5b8129ae0a35f79bf578121bce3ba093099289e76f790e72444b729e0"
+        },
+        {
+          "path": "src/Meridian.Application/Meridian.Application.csproj",
+          "sha256": "5ea1a9d91fa366045f88a36d0cd7339b9cd4c9c5ddae7c4257e4cc8c98f5a47f"
+        },
+        {
+          "path": "src/Meridian.Audit/Meridian.Audit.csproj",
+          "sha256": "460555acf7310fee0e2620607393f346730b9310418baec7dd752df84c879cc4"
+        },
+        {
+          "path": "src/Meridian.Backtesting.Sdk/Meridian.Backtesting.Sdk.csproj",
+          "sha256": "1b706ea9b75a9b914b9a11e4eebb6a499774a508d4712c364a7a1ad4207b90af"
+        },
+        {
+          "path": "src/Meridian.Backtesting/Meridian.Backtesting.csproj",
+          "sha256": "f355335a2e913fb961d3c30571a409b03e0f80c69a854f6e475f976cdd5e98ea"
+        },
+        {
+          "path": "src/Meridian.Contracts/Meridian.Contracts.csproj",
+          "sha256": "85be8c4df1d781438c21062de8db0770686bbaef306f3a17e64b4e30f9e78157"
+        },
+        {
+          "path": "src/Meridian.Core/Meridian.Core.csproj",
+          "sha256": "ff6363112364a4cacfb539e00e5bdc187e5f44193835b19b76f0ed7bc96b77a0"
+        },
+        {
+          "path": "src/Meridian.DataIntegration/Meridian.DataIntegration.csproj",
+          "sha256": "03acdf222a0ab2e927f0d347e0c69b8eec9f0eaa23f9d82409b7671d48da4057"
+        },
+        {
+          "path": "src/Meridian.Documents/Meridian.Documents.csproj",
+          "sha256": "0dd2fa8a63d75b793030649a90b787c75eb5bc44cc8cf5288ede71ba103843d3"
+        },
+        {
+          "path": "src/Meridian.Domain/Meridian.Domain.csproj",
+          "sha256": "245f1e394fd33592372d71841e2a20ed76dd37c882497d72039840406a0caf62"
+        },
+        {
+          "path": "src/Meridian.Entities/Meridian.Entities.csproj",
+          "sha256": "95b5b271bec4050c887d663f566d3ddc42548da4a4a7b602cadc5b1d7b390ba3"
+        },
+        {
+          "path": "src/Meridian.Execution.Sdk/Meridian.Execution.Sdk.csproj",
+          "sha256": "988705265a75f179a0e5f3c0c15160e07f661600d48db7483eb13b925b08f1df"
+        },
+        {
+          "path": "src/Meridian.Execution/Meridian.Execution.csproj",
+          "sha256": "a9391ddf0504d89d2866855f3db9544382298972fc0f3b0481465ad2e4e69561"
+        },
+        {
+          "path": "src/Meridian.FSharp.DirectLending.Aggregates/Meridian.FSharp.DirectLending.Aggregates.fsproj",
+          "sha256": "492256adb374cd0077eee9f67fc8bccfb86df8eee520159ec35c6797c926cf2e"
+        },
+        {
+          "path": "src/Meridian.FSharp.Ledger/Meridian.FSharp.Ledger.fsproj",
+          "sha256": "979884a6f2f85ee318198674089205635c4e4275e0cc38e767092b47a361caed"
+        },
+        {
+          "path": "src/Meridian.FSharp.Trading/Meridian.FSharp.Trading.fsproj",
+          "sha256": "fb804fc848881b2263ecdb3a875519673a95ebb0dc3d96676151e2dc53a3d812"
+        },
+        {
+          "path": "src/Meridian.FSharp/Meridian.FSharp.fsproj",
+          "sha256": "a2662584c955ee98b4900ba290311a81480e2e09ba7a6020113dba1c1eb84018"
+        },
+        {
+          "path": "src/Meridian.FinancialOperations/Meridian.FinancialOperations.csproj",
+          "sha256": "cd2eeaef7029cf1119781dfdf05eda1e0893f463bea24557772a8ac1543cd118"
+        },
+        {
+          "path": "src/Meridian.IbApi.SmokeStub/Meridian.IbApi.SmokeStub.csproj",
+          "sha256": "ddf79d2891a2a3f9d977daefbd9b6b9b6df1cf25940958c5f1a596fb34b41334"
+        },
+        {
+          "path": "src/Meridian.Identity/Meridian.Identity.csproj",
+          "sha256": "974b79f2f42e029714c726aa9537cbf871d17bc19e2dd8171b9a874c2f18315f"
+        },
+        {
+          "path": "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj",
+          "sha256": "aa001e40865356296a11f91d4c54ee78587640e06cad723d2559deeaaa25cecc"
+        },
+        {
+          "path": "src/Meridian.Instruments/Meridian.Instruments.csproj",
+          "sha256": "db2c9faf5df8824dc77678c885dd1d2603abe231348305f265145c246b609f74"
+        },
+        {
+          "path": "src/Meridian.Launcher/Meridian.Launcher.csproj",
+          "sha256": "322f3cd5115fe0651a1d7a1b1b1ef5c2f22c006788b2a48015912be6f5383d92"
+        },
+        {
+          "path": "src/Meridian.Ledger/Meridian.Ledger.csproj",
+          "sha256": "b3861e9da41884670489fd54044ad4fba18c46626a90f27076fd376af8107b27"
+        },
+        {
+          "path": "src/Meridian.LifecycleSupervisor/Meridian.LifecycleSupervisor.csproj",
+          "sha256": "18da0e4da9a93017bb5ab5bfe89f10e376b08a251023c229340fd5b0b3a89454"
+        },
+        {
+          "path": "src/Meridian.Mcp/Meridian.Mcp.csproj",
+          "sha256": "7a6c7506f89d7ba6c453fce5dd5210941da1f6dccb46d4057530d1440f1c3391"
+        },
+        {
+          "path": "src/Meridian.Platform/Meridian.Platform.csproj",
+          "sha256": "4de5d0cec2148098f5968b586b80c947ae31ae797777d72f3c7ffd3a080a350c"
+        },
+        {
+          "path": "src/Meridian.PortfolioRecords/Meridian.PortfolioRecords.csproj",
+          "sha256": "640a090e6199d2ab909453508092d16849419ab33dc3b97bedfe32cd7c426860"
+        },
+        {
+          "path": "src/Meridian.ProcessIsolation/Meridian.ProcessIsolation.csproj",
+          "sha256": "771931709e5d377b03b88a8e050f55a7cc29aeceeca5df72caf3a2b0d9b13a63"
+        },
+        {
+          "path": "src/Meridian.ProviderSdk/Meridian.ProviderSdk.csproj",
+          "sha256": "3ac28ae41f3f3743eaeedd339f466ddb0562ccc3ba94242d37868df97d1234ca"
+        },
+        {
+          "path": "src/Meridian.QuantScript.Worker/Meridian.QuantScript.Worker.csproj",
+          "sha256": "3789fc0f357f84f61b75b4e6738bda881a2b45cda352b5ab9a3f0290cfa1c605"
+        },
+        {
+          "path": "src/Meridian.QuantScript/Meridian.QuantScript.csproj",
+          "sha256": "526ecb71043061659c99c3b5b756e9621597cfc5a3751067eabb53b3ae166b35"
+        },
+        {
+          "path": "src/Meridian.ReferenceData/Meridian.ReferenceData.csproj",
+          "sha256": "9a2f48e3e4d830fd6b5b6e5e03a2b06c49560f10a0f2cc34c698fb4021c43aab"
+        },
+        {
+          "path": "src/Meridian.Reporting/Meridian.Reporting.csproj",
+          "sha256": "e150a689f16a3ef2a9919651a5fbfb1df5acd13843361ef8e26c6d6fe057d2a6"
+        },
+        {
+          "path": "src/Meridian.Risk/Meridian.Risk.csproj",
+          "sha256": "89b053038587b5a347b33afc1b6927d4ad3ba9db5b5eb6ab89efe6c1d6764296"
+        },
+        {
+          "path": "src/Meridian.Setup/Meridian.Setup.csproj",
+          "sha256": "658c9fe680e438a78b377528e1952e551ede2974382245d3f898f608a987e18f"
+        },
+        {
+          "path": "src/Meridian.Storage/Meridian.Storage.csproj",
+          "sha256": "138253dea8b389a7fee737c1117c94f8a40886243d2d32191dd3fdbca67f91c3"
+        },
+        {
+          "path": "src/Meridian.Strategies/Meridian.Strategies.csproj",
+          "sha256": "1be551885fa82f69ce189fc3b4e27f52224388d2c42a2e34693c9dca7c492c6f"
+        },
+        {
+          "path": "src/Meridian.Ui.Services/Meridian.Ui.Services.csproj",
+          "sha256": "45981198d05a53cc613a070fc98d32f0d80efb3b1364d668f9ce5dbeb9d24b48"
+        },
+        {
+          "path": "src/Meridian.Ui.Shared/Meridian.Ui.Shared.csproj",
+          "sha256": "e112595622ea7c8b4d0885a5ef1e0fc6c2f2e969bc2d5f43c82b36943cc51dbc"
+        },
+        {
+          "path": "src/Meridian.Ui/dashboard/package.json",
+          "sha256": "ab97470983f1b5293097239aa588a556076d50c687287bf09fd976624f2928d1"
+        },
+        {
+          "path": "src/Meridian.Workflow/Meridian.Workflow.csproj",
+          "sha256": "127255bb35d98f016fd70188a9fd8bd36adf2cebe116f023e5e24ad5e35e17e2"
+        },
+        {
+          "path": "src/Meridian.Wpf/Meridian.Wpf.csproj",
+          "sha256": "a225027cb1fbcb0831d0119d4cf619a858eba1f90fd2a7b7219328850da3023e"
+        },
+        {
+          "path": "src/Meridian/Meridian.csproj",
+          "sha256": "40a36721c2235c97583b0d5d6a822537045698ccb40d6e849616c293ba70388c"
+        },
+        {
+          "path": "tests/Directory.Build.props",
+          "sha256": "8bba301931d3cf02699747d8cf0dfecb2711a6cddb1f3448cffa5821c3384993"
+        },
+        {
+          "path": "tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj",
+          "sha256": "78307a446f9c1e225a0a6ffd9a17f0618f7158161a7bdd6ea8394f43aaf02e7d"
+        },
+        {
+          "path": "tests/Meridian.DesignModules.Tests/Meridian.DesignModules.Tests.csproj",
+          "sha256": "beed20b88d30a52f6de08b85269288b8963b3e68bd1af4bd7cec20d57c3176cb"
+        },
+        {
+          "path": "tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj",
+          "sha256": "f7e3018800b7c09aa839803acd2afe3ccd7b70f6f4c6c1a1aa1db91b1bfcc0d4"
+        },
+        {
+          "path": "tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj",
+          "sha256": "3aa555728e55363a9086eef98db40e916452f62e9bc7588e21aafae4e9a53e40"
+        },
+        {
+          "path": "tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj",
+          "sha256": "c3b08cd31e929bd128b72c777014cdd65bd5a0b646a972801c25fea05b5446a2"
+        },
+        {
+          "path": "tests/Meridian.Lifecycle.Tests/Meridian.Lifecycle.Tests.csproj",
+          "sha256": "c71c8d742e458aa53c5ba9aca4fd7b5c695cc8d8fac4abe14f553f8e14e99498"
+        },
+        {
+          "path": "tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj",
+          "sha256": "e1f3d01fc804f67e7ec4afb3d22d441b73e91bc81c2ecce0260e56a87bc3de78"
+        },
+        {
+          "path": "tests/Meridian.ProcessTestHelper/Meridian.ProcessTestHelper.csproj",
+          "sha256": "8ebb665b1bdf9dd9afb3e14792f5b30aa28626984369359ad252ed544e1e2e8f"
+        },
+        {
+          "path": "tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj",
+          "sha256": "043a6654a05e4035dfec1030a8b5de527358bb3dab09a0978af9a849650bf761"
+        },
+        {
+          "path": "tests/Meridian.Setup.Tests/Meridian.Setup.Tests.csproj",
+          "sha256": "c6710bdd23715f96dcb6262119ec55b3e53ad0f185f7f6ded9d67952c2e0a933"
+        },
+        {
+          "path": "tests/Meridian.TestSupport/Meridian.TestSupport.csproj",
+          "sha256": "b78c6e6a9d329b69dcd3de8d31b3d02c436235092f17c63e8b6d53b2a854d2fb"
+        },
+        {
+          "path": "tests/Meridian.Tests/Meridian.Tests.csproj",
+          "sha256": "a85baab62fba8baae8e2dc7dcda41167b0ba3ae7ceb26ccce5624d37a5adcb12"
+        },
+        {
+          "path": "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj",
+          "sha256": "a95a75f8af149e65f38906dc273d3394f7663f0cede961999355266b8590ca04"
+        },
+        {
+          "path": "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj",
+          "sha256": "0dd65ce68408f4958aa32105a67efd3a2ddebc48cec165d2850ebf6489aecaf9"
+        }
+      ],
+      "requiredFinalChecks": [
+        {
+          "id": "local-ci",
+          "argv": [
+            "bash",
+            "scripts/ci.sh"
+          ],
+          "reason": "Required before completion"
+        },
+        {
+          "id": "quality-gate",
+          "kind": "github",
+          "name": "Meridian CI / quality-gate"
+        },
+        {
+          "id": "integration-gate",
+          "kind": "github",
+          "name": "Meridian CI / integration-gate"
+        }
+      ],
+      "policy": "Recommendations only; no commands executed. Focused checks do not replace required final checks."
+    }
+  },
+  "guidance-docs": {
+    "baseline": {
+      "schemaVersion": 1,
+      "changedPaths": [
+        "docs/ai/tooling/throughput-pilot.md"
+      ],
+      "checks": [
+        {
+          "id": "check-ai-inventory",
+          "argv": [
+            "python",
+            "build/scripts/docs/check-ai-inventory.py",
+            "--summary"
+          ],
+          "reason": "Task-to-proof matrix AI tooling/guidance check",
+          "paths": [
+            "docs/ai/tooling/throughput-pilot.md"
+          ]
+        },
+        {
+          "id": "check-codex-skills",
+          "argv": [
+            "python",
+            "build/scripts/docs/check-codex-skills.py",
+            "--summary"
+          ],
+          "reason": "Task-to-proof matrix AI tooling/guidance check",
+          "paths": [
+            "docs/ai/tooling/throughput-pilot.md"
+          ]
+        },
+        {
+          "id": "diff-check",
+          "argv": [
+            "git",
+            "diff",
+            "--check",
+            "--",
+            "docs/ai/tooling/throughput-pilot.md"
+          ],
+          "reason": "Unstaged whitespace check",
+          "paths": [
+            "docs/ai/tooling/throughput-pilot.md"
+          ]
+        },
+        {
+          "id": "diff-check-staged",
+          "argv": [
+            "git",
+            "diff",
+            "--cached",
+            "--check",
+            "--",
+            "docs/ai/tooling/throughput-pilot.md"
+          ],
+          "reason": "Staged whitespace check",
+          "paths": [
+            "docs/ai/tooling/throughput-pilot.md"
+          ]
+        }
+      ],
+      "affectedConsumers": [],
+      "coverageWarnings": [
+        "Unresolved ProjectReference in src/Meridian.Infrastructure/Meridian.Infrastructure.csproj: '$(ResolvedIbApiProjectPath)'; dependency coverage is unknown."
+      ],
+      "sources": [
+        {
+          "path": "Directory.Build.props",
+          "sha256": "4eb45de30383a18a041cb41404f0efc2c0c3b8302eee3a05e11e76db914b6db0"
+        },
+        {
+          "path": "Directory.Packages.props",
+          "sha256": "13ad91234b930e61dd33e175a459f1fbf4f30006081d0403c9b02d828d117155"
+        },
+        {
+          "path": "NuGet.Config",
+          "sha256": "e802a002d13da99816e4bc2d280322c073b69f429c582ab70331bda63542b2b5"
+        },
+        {
+          "path": "artifacts/ai-throughput/lazy-graph-profile/validation_plan_baseline.py",
+          "sha256": "1b53d73dd77734f08df00651651b29f8ce679e4ad78272b223eb2af07e0b3078"
+        },
+        {
+          "path": "build/python/cli/buildctl.py",
+          "sha256": "0ed7b704fd45b994c014d428c707887e7f2f236346a5bb6180c1ab4656cbc6bd"
+        },
+        {
+          "path": "build/scripts/docs/check-ai-inventory.py",
+          "sha256": "6458255a258b47b9a8fc3037ee95bba0639c605c1745742958c4180c6f1dd84d"
+        },
+        {
+          "path": "build/scripts/docs/check-codex-skills.py",
+          "sha256": "a88b3aeab6a0e9086be416de5c5c35b8c59872a2dc0067aaccd04919e2caef0d"
+        },
+        {
+          "path": "docs/ai/codex/quickstart.md",
+          "sha256": "4a3671dd2f41a7f7c621456a1ba587ad33f4820070fcb51c41ce5a4c69db5e08"
+        },
+        {
+          "path": "docs/source/data/source-modules.yml",
+          "sha256": "40ee016b178cb707f1045f7d822d899b0e69203eecfb3da50037aa2bca6816e0"
+        },
+        {
+          "path": "global.json",
+          "sha256": "c7ad0ac5b8129ae0a35f79bf578121bce3ba093099289e76f790e72444b729e0"
+        },
+        {
+          "path": "src/Meridian.Application/Meridian.Application.csproj",
+          "sha256": "5ea1a9d91fa366045f88a36d0cd7339b9cd4c9c5ddae7c4257e4cc8c98f5a47f"
+        },
+        {
+          "path": "src/Meridian.Audit/Meridian.Audit.csproj",
+          "sha256": "460555acf7310fee0e2620607393f346730b9310418baec7dd752df84c879cc4"
+        },
+        {
+          "path": "src/Meridian.Backtesting.Sdk/Meridian.Backtesting.Sdk.csproj",
+          "sha256": "1b706ea9b75a9b914b9a11e4eebb6a499774a508d4712c364a7a1ad4207b90af"
+        },
+        {
+          "path": "src/Meridian.Backtesting/Meridian.Backtesting.csproj",
+          "sha256": "f355335a2e913fb961d3c30571a409b03e0f80c69a854f6e475f976cdd5e98ea"
+        },
+        {
+          "path": "src/Meridian.Contracts/Meridian.Contracts.csproj",
+          "sha256": "85be8c4df1d781438c21062de8db0770686bbaef306f3a17e64b4e30f9e78157"
+        },
+        {
+          "path": "src/Meridian.Core/Meridian.Core.csproj",
+          "sha256": "ff6363112364a4cacfb539e00e5bdc187e5f44193835b19b76f0ed7bc96b77a0"
+        },
+        {
+          "path": "src/Meridian.DataIntegration/Meridian.DataIntegration.csproj",
+          "sha256": "03acdf222a0ab2e927f0d347e0c69b8eec9f0eaa23f9d82409b7671d48da4057"
+        },
+        {
+          "path": "src/Meridian.Documents/Meridian.Documents.csproj",
+          "sha256": "0dd2fa8a63d75b793030649a90b787c75eb5bc44cc8cf5288ede71ba103843d3"
+        },
+        {
+          "path": "src/Meridian.Domain/Meridian.Domain.csproj",
+          "sha256": "245f1e394fd33592372d71841e2a20ed76dd37c882497d72039840406a0caf62"
+        },
+        {
+          "path": "src/Meridian.Entities/Meridian.Entities.csproj",
+          "sha256": "95b5b271bec4050c887d663f566d3ddc42548da4a4a7b602cadc5b1d7b390ba3"
+        },
+        {
+          "path": "src/Meridian.Execution.Sdk/Meridian.Execution.Sdk.csproj",
+          "sha256": "988705265a75f179a0e5f3c0c15160e07f661600d48db7483eb13b925b08f1df"
+        },
+        {
+          "path": "src/Meridian.Execution/Meridian.Execution.csproj",
+          "sha256": "a9391ddf0504d89d2866855f3db9544382298972fc0f3b0481465ad2e4e69561"
+        },
+        {
+          "path": "src/Meridian.FSharp.DirectLending.Aggregates/Meridian.FSharp.DirectLending.Aggregates.fsproj",
+          "sha256": "492256adb374cd0077eee9f67fc8bccfb86df8eee520159ec35c6797c926cf2e"
+        },
+        {
+          "path": "src/Meridian.FSharp.Ledger/Meridian.FSharp.Ledger.fsproj",
+          "sha256": "979884a6f2f85ee318198674089205635c4e4275e0cc38e767092b47a361caed"
+        },
+        {
+          "path": "src/Meridian.FSharp.Trading/Meridian.FSharp.Trading.fsproj",
+          "sha256": "fb804fc848881b2263ecdb3a875519673a95ebb0dc3d96676151e2dc53a3d812"
+        },
+        {
+          "path": "src/Meridian.FSharp/Meridian.FSharp.fsproj",
+          "sha256": "a2662584c955ee98b4900ba290311a81480e2e09ba7a6020113dba1c1eb84018"
+        },
+        {
+          "path": "src/Meridian.FinancialOperations/Meridian.FinancialOperations.csproj",
+          "sha256": "cd2eeaef7029cf1119781dfdf05eda1e0893f463bea24557772a8ac1543cd118"
+        },
+        {
+          "path": "src/Meridian.IbApi.SmokeStub/Meridian.IbApi.SmokeStub.csproj",
+          "sha256": "ddf79d2891a2a3f9d977daefbd9b6b9b6df1cf25940958c5f1a596fb34b41334"
+        },
+        {
+          "path": "src/Meridian.Identity/Meridian.Identity.csproj",
+          "sha256": "974b79f2f42e029714c726aa9537cbf871d17bc19e2dd8171b9a874c2f18315f"
+        },
+        {
+          "path": "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj",
+          "sha256": "aa001e40865356296a11f91d4c54ee78587640e06cad723d2559deeaaa25cecc"
+        },
+        {
+          "path": "src/Meridian.Instruments/Meridian.Instruments.csproj",
+          "sha256": "db2c9faf5df8824dc77678c885dd1d2603abe231348305f265145c246b609f74"
+        },
+        {
+          "path": "src/Meridian.Launcher/Meridian.Launcher.csproj",
+          "sha256": "322f3cd5115fe0651a1d7a1b1b1ef5c2f22c006788b2a48015912be6f5383d92"
+        },
+        {
+          "path": "src/Meridian.Ledger/Meridian.Ledger.csproj",
+          "sha256": "b3861e9da41884670489fd54044ad4fba18c46626a90f27076fd376af8107b27"
+        },
+        {
+          "path": "src/Meridian.LifecycleSupervisor/Meridian.LifecycleSupervisor.csproj",
+          "sha256": "18da0e4da9a93017bb5ab5bfe89f10e376b08a251023c229340fd5b0b3a89454"
+        },
+        {
+          "path": "src/Meridian.Mcp/Meridian.Mcp.csproj",
+          "sha256": "7a6c7506f89d7ba6c453fce5dd5210941da1f6dccb46d4057530d1440f1c3391"
+        },
+        {
+          "path": "src/Meridian.Platform/Meridian.Platform.csproj",
+          "sha256": "4de5d0cec2148098f5968b586b80c947ae31ae797777d72f3c7ffd3a080a350c"
+        },
+        {
+          "path": "src/Meridian.PortfolioRecords/Meridian.PortfolioRecords.csproj",
+          "sha256": "640a090e6199d2ab909453508092d16849419ab33dc3b97bedfe32cd7c426860"
+        },
+        {
+          "path": "src/Meridian.ProcessIsolation/Meridian.ProcessIsolation.csproj",
+          "sha256": "771931709e5d377b03b88a8e050f55a7cc29aeceeca5df72caf3a2b0d9b13a63"
+        },
+        {
+          "path": "src/Meridian.ProviderSdk/Meridian.ProviderSdk.csproj",
+          "sha256": "3ac28ae41f3f3743eaeedd339f466ddb0562ccc3ba94242d37868df97d1234ca"
+        },
+        {
+          "path": "src/Meridian.QuantScript.Worker/Meridian.QuantScript.Worker.csproj",
+          "sha256": "3789fc0f357f84f61b75b4e6738bda881a2b45cda352b5ab9a3f0290cfa1c605"
+        },
+        {
+          "path": "src/Meridian.QuantScript/Meridian.QuantScript.csproj",
+          "sha256": "526ecb71043061659c99c3b5b756e9621597cfc5a3751067eabb53b3ae166b35"
+        },
+        {
+          "path": "src/Meridian.ReferenceData/Meridian.ReferenceData.csproj",
+          "sha256": "9a2f48e3e4d830fd6b5b6e5e03a2b06c49560f10a0f2cc34c698fb4021c43aab"
+        },
+        {
+          "path": "src/Meridian.Reporting/Meridian.Reporting.csproj",
+          "sha256": "e150a689f16a3ef2a9919651a5fbfb1df5acd13843361ef8e26c6d6fe057d2a6"
+        },
+        {
+          "path": "src/Meridian.Risk/Meridian.Risk.csproj",
+          "sha256": "89b053038587b5a347b33afc1b6927d4ad3ba9db5b5eb6ab89efe6c1d6764296"
+        },
+        {
+          "path": "src/Meridian.Setup/Meridian.Setup.csproj",
+          "sha256": "658c9fe680e438a78b377528e1952e551ede2974382245d3f898f608a987e18f"
+        },
+        {
+          "path": "src/Meridian.Storage/Meridian.Storage.csproj",
+          "sha256": "138253dea8b389a7fee737c1117c94f8a40886243d2d32191dd3fdbca67f91c3"
+        },
+        {
+          "path": "src/Meridian.Strategies/Meridian.Strategies.csproj",
+          "sha256": "1be551885fa82f69ce189fc3b4e27f52224388d2c42a2e34693c9dca7c492c6f"
+        },
+        {
+          "path": "src/Meridian.Ui.Services/Meridian.Ui.Services.csproj",
+          "sha256": "45981198d05a53cc613a070fc98d32f0d80efb3b1364d668f9ce5dbeb9d24b48"
+        },
+        {
+          "path": "src/Meridian.Ui.Shared/Meridian.Ui.Shared.csproj",
+          "sha256": "e112595622ea7c8b4d0885a5ef1e0fc6c2f2e969bc2d5f43c82b36943cc51dbc"
+        },
+        {
+          "path": "src/Meridian.Workflow/Meridian.Workflow.csproj",
+          "sha256": "127255bb35d98f016fd70188a9fd8bd36adf2cebe116f023e5e24ad5e35e17e2"
+        },
+        {
+          "path": "src/Meridian.Wpf/Meridian.Wpf.csproj",
+          "sha256": "a225027cb1fbcb0831d0119d4cf619a858eba1f90fd2a7b7219328850da3023e"
+        },
+        {
+          "path": "src/Meridian/Meridian.csproj",
+          "sha256": "40a36721c2235c97583b0d5d6a822537045698ccb40d6e849616c293ba70388c"
+        },
+        {
+          "path": "tests/Directory.Build.props",
+          "sha256": "8bba301931d3cf02699747d8cf0dfecb2711a6cddb1f3448cffa5821c3384993"
+        },
+        {
+          "path": "tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj",
+          "sha256": "78307a446f9c1e225a0a6ffd9a17f0618f7158161a7bdd6ea8394f43aaf02e7d"
+        },
+        {
+          "path": "tests/Meridian.DesignModules.Tests/Meridian.DesignModules.Tests.csproj",
+          "sha256": "beed20b88d30a52f6de08b85269288b8963b3e68bd1af4bd7cec20d57c3176cb"
+        },
+        {
+          "path": "tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj",
+          "sha256": "f7e3018800b7c09aa839803acd2afe3ccd7b70f6f4c6c1a1aa1db91b1bfcc0d4"
+        },
+        {
+          "path": "tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj",
+          "sha256": "3aa555728e55363a9086eef98db40e916452f62e9bc7588e21aafae4e9a53e40"
+        },
+        {
+          "path": "tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj",
+          "sha256": "c3b08cd31e929bd128b72c777014cdd65bd5a0b646a972801c25fea05b5446a2"
+        },
+        {
+          "path": "tests/Meridian.Lifecycle.Tests/Meridian.Lifecycle.Tests.csproj",
+          "sha256": "c71c8d742e458aa53c5ba9aca4fd7b5c695cc8d8fac4abe14f553f8e14e99498"
+        },
+        {
+          "path": "tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj",
+          "sha256": "e1f3d01fc804f67e7ec4afb3d22d441b73e91bc81c2ecce0260e56a87bc3de78"
+        },
+        {
+          "path": "tests/Meridian.ProcessTestHelper/Meridian.ProcessTestHelper.csproj",
+          "sha256": "8ebb665b1bdf9dd9afb3e14792f5b30aa28626984369359ad252ed544e1e2e8f"
+        },
+        {
+          "path": "tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj",
+          "sha256": "043a6654a05e4035dfec1030a8b5de527358bb3dab09a0978af9a849650bf761"
+        },
+        {
+          "path": "tests/Meridian.Setup.Tests/Meridian.Setup.Tests.csproj",
+          "sha256": "c6710bdd23715f96dcb6262119ec55b3e53ad0f185f7f6ded9d67952c2e0a933"
+        },
+        {
+          "path": "tests/Meridian.TestSupport/Meridian.TestSupport.csproj",
+          "sha256": "b78c6e6a9d329b69dcd3de8d31b3d02c436235092f17c63e8b6d53b2a854d2fb"
+        },
+        {
+          "path": "tests/Meridian.Tests/Meridian.Tests.csproj",
+          "sha256": "a85baab62fba8baae8e2dc7dcda41167b0ba3ae7ceb26ccce5624d37a5adcb12"
+        },
+        {
+          "path": "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj",
+          "sha256": "a95a75f8af149e65f38906dc273d3394f7663f0cede961999355266b8590ca04"
+        },
+        {
+          "path": "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj",
+          "sha256": "0dd65ce68408f4958aa32105a67efd3a2ddebc48cec165d2850ebf6489aecaf9"
+        }
+      ],
+      "requiredFinalChecks": [
+        {
+          "id": "local-ci",
+          "argv": [
+            "bash",
+            "scripts/ci.sh"
+          ],
+          "reason": "Required before completion"
+        },
+        {
+          "id": "quality-gate",
+          "kind": "github",
+          "name": "Meridian CI / quality-gate"
+        },
+        {
+          "id": "integration-gate",
+          "kind": "github",
+          "name": "Meridian CI / integration-gate"
+        }
+      ],
+      "policy": "Recommendations only; no commands executed. Focused checks do not replace required final checks."
+    },
+    "treatment": {
+      "schemaVersion": 1,
+      "changedPaths": [
+        "docs/ai/tooling/throughput-pilot.md"
+      ],
+      "checks": [
+        {
+          "id": "check-ai-inventory",
+          "argv": [
+            "python",
+            "build/scripts/docs/check-ai-inventory.py",
+            "--summary"
+          ],
+          "reason": "Task-to-proof matrix AI tooling/guidance check",
+          "paths": [
+            "docs/ai/tooling/throughput-pilot.md"
+          ]
+        },
+        {
+          "id": "check-codex-skills",
+          "argv": [
+            "python",
+            "build/scripts/docs/check-codex-skills.py",
+            "--summary"
+          ],
+          "reason": "Task-to-proof matrix AI tooling/guidance check",
+          "paths": [
+            "docs/ai/tooling/throughput-pilot.md"
+          ]
+        },
+        {
+          "id": "diff-check",
+          "argv": [
+            "git",
+            "diff",
+            "--check",
+            "--",
+            "docs/ai/tooling/throughput-pilot.md"
+          ],
+          "reason": "Unstaged whitespace check",
+          "paths": [
+            "docs/ai/tooling/throughput-pilot.md"
+          ]
+        },
+        {
+          "id": "diff-check-staged",
+          "argv": [
+            "git",
+            "diff",
+            "--cached",
+            "--check",
+            "--",
+            "docs/ai/tooling/throughput-pilot.md"
+          ],
+          "reason": "Staged whitespace check",
+          "paths": [
+            "docs/ai/tooling/throughput-pilot.md"
+          ]
+        }
+      ],
+      "affectedConsumers": [],
+      "coverageWarnings": [],
+      "sources": [
+        {
+          "path": "build/python/cli/buildctl.py",
+          "sha256": "0ed7b704fd45b994c014d428c707887e7f2f236346a5bb6180c1ab4656cbc6bd"
+        },
+        {
+          "path": "build/python/cli/validation_plan.py",
+          "sha256": "4893dba12d1d1c28073e0454a280035965713cd8f93fe7fc0ec312163d03c3cd"
+        },
+        {
+          "path": "build/scripts/docs/check-ai-inventory.py",
+          "sha256": "6458255a258b47b9a8fc3037ee95bba0639c605c1745742958c4180c6f1dd84d"
+        },
+        {
+          "path": "build/scripts/docs/check-codex-skills.py",
+          "sha256": "a88b3aeab6a0e9086be416de5c5c35b8c59872a2dc0067aaccd04919e2caef0d"
+        },
+        {
+          "path": "docs/ai/codex/quickstart.md",
+          "sha256": "4a3671dd2f41a7f7c621456a1ba587ad33f4820070fcb51c41ce5a4c69db5e08"
+        }
+      ],
+      "requiredFinalChecks": [
+        {
+          "id": "local-ci",
+          "argv": [
+            "bash",
+            "scripts/ci.sh"
+          ],
+          "reason": "Required before completion"
+        },
+        {
+          "id": "quality-gate",
+          "kind": "github",
+          "name": "Meridian CI / quality-gate"
+        },
+        {
+          "id": "integration-gate",
+          "kind": "github",
+          "name": "Meridian CI / integration-gate"
+        }
+      ],
+      "policy": "Recommendations only; no commands executed. Focused checks do not replace required final checks."
+    }
+  }
+}
