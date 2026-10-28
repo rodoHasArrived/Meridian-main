@@ -1,0 +1,7 @@
+{
+  "frozenReporterSha256": "37e711dab0f8734ac82570600553ab75ad7f8172d237550dd6bde59e9b534f5e",
+  "currentReporterSha256": "775fb500b97e3d4980c38726ca7a41fedfd051a92fca41e04b9af333d0db22ae",
+  "onlyChange": "Report interpretation wording generalized from maintenance to local pilot trials. No event, timing, eligibility or comparison logic changed.",
+  "allTwelveReportsEquivalentExceptWording": true,
+  "protocolUnchanged": true
+}

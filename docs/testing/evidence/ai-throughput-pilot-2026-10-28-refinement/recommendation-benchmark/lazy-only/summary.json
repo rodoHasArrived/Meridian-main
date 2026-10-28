@@ -1,0 +1,54 @@
+{
+  "method": "10 paired observations per query; baseline-first on odd rounds, treatment-first on even; one excluded warmup per implementation/query; same process, root, explicit path inputs and machine. Durations cover recommend_validation API only, excluding import and CLI process startup. Baseline retained before edits; source-code provenance differs by design. No task-speed claim.",
+  "root": "/workspace/Meridian-main",
+  "queries": {
+    "ai-python": [
+      "build/scripts/ai/throughput_metrics.py"
+    ],
+    "shared-dotnet": [
+      "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+    ],
+    "guidance-docs": [
+      "docs/ai/tooling/throughput-pilot.md"
+    ]
+  },
+  "baselineModule": "artifacts/ai-throughput/lazy-graph-profile/validation_plan_baseline.py",
+  "baselineSha256": "1b53d73dd77734f08df00651651b29f8ce679e4ad78272b223eb2af07e0b3078",
+  "treatmentModule": "build/python/cli/validation_plan.py",
+  "treatmentSha256": "be5566f7758ad9c344e97ebbe6bd7fb90736e2b6cf932ad7ae698bf6ec81ca4a",
+  "semanticChecksEquivalentEveryPair": true,
+  "observations": 60,
+  "results": {
+    "ai-python": {
+      "baselineMedianMs": 93.029788,
+      "treatmentMedianMs": 0.7338365,
+      "pairedTreatmentFasterCount": 10,
+      "pairedObservationCount": 10,
+      "baselineSourceCount": 68,
+      "treatmentSourceCount": 6,
+      "removedWarnings": [
+        "Unresolved ProjectReference in src/Meridian.Infrastructure/Meridian.Infrastructure.csproj: '$(ResolvedIbApiProjectPath)'; dependency coverage is unknown."
+      ]
+    },
+    "shared-dotnet": {
+      "baselineMedianMs": 94.6353345,
+      "treatmentMedianMs": 97.6595165,
+      "pairedTreatmentFasterCount": 4,
+      "pairedObservationCount": 10,
+      "baselineSourceCount": 66,
+      "treatmentSourceCount": 66,
+      "removedWarnings": []
+    },
+    "guidance-docs": {
+      "baselineMedianMs": 92.5781815,
+      "treatmentMedianMs": 0.6713905,
+      "pairedTreatmentFasterCount": 10,
+      "pairedObservationCount": 10,
+      "baselineSourceCount": 67,
+      "treatmentSourceCount": 5,
+      "removedWarnings": [
+        "Unresolved ProjectReference in src/Meridian.Infrastructure/Meridian.Infrastructure.csproj: '$(ResolvedIbApiProjectPath)'; dependency coverage is unknown."
+      ]
+    }
+  }
+}

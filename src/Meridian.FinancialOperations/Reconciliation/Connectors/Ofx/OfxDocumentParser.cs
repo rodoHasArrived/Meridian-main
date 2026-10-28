@@ -32,6 +32,12 @@ public static class OfxDocumentParser
         "INVBUY", "INVSELL"
     };
 
+    // Keep empty numeric leaves visible to row validation instead of losing them as empty aggregates.
+    private static readonly HashSet<string> NumericTags = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "UNITS", "UNITPRICE", "TRNAMT", "TOTAL", "BALAMT", "MKTVAL", "COMMISSION", "FEES"
+    };
+
     /// <summary>Tags that carry OFX timestamps and are normalized to their date component.</summary>
     private static readonly HashSet<string> DateTags = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -129,7 +135,7 @@ public static class OfxDocumentParser
                 statementCount++;
             var valueEnd = body.IndexOf('<', index);
             var value = selfClosing ? string.Empty : (valueEnd < 0 ? body[index..] : body[index..valueEnd]).Trim();
-            if (value.Length > 0 || name is "CURSYM" or "CURDEF" or "ACCTID")
+            if (value.Length > 0 || name is "CURSYM" or "CURDEF" or "ACCTID" || NumericTags.Contains(name))
             {
                 // The same depth comparison the aggregate branch below makes, so a leaf is refused exactly
                 // where a child aggregate in its place would be. Only aggregates were checked, so a leaf
