@@ -52,7 +52,7 @@ public sealed class SecurityAssetClassComparisonRatchetTests
             "comparing an asset class to its name bypasses the catalog; read the behaviour fact from "
             + "SecurityAssetClassDescriptor (LotUnit, CashFlowBehavior, ProjectionKind, RequiresGovernedProfile, "
             + "RequiresProfileReference, SupportsEquityClassification, CarriesBondCouponStructure, UsesOccOptionSymbols, "
-            + "QuotesRatesAsFractions) or add the fact the site needs");
+            + "QuotesRatesAsFractions, TradesAsBilateralContract, DefaultValuationModel) or add the fact the site needs");
     }
 
     [Fact]

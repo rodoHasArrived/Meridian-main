@@ -199,6 +199,10 @@ classDiagram
         +Guid SecurityId
         +decimal TotalCommitment
     }
+    class Meridian_Contracts_SecurityMaster_ComputeOtcExposureSnapshotRequest["ComputeOtcExposureSnapshotRequest"] {
+        +DateOnly AsOfDate
+        +DateTimeOffset? KnowledgeAsOf
+    }
     class Meridian_Contracts_SecurityMaster_ConvertibleEquityTermsDto["ConvertibleEquityTermsDto"] {
         +string? Classification
         +DateOnly? ConversionEndDate
@@ -508,8 +512,6 @@ classDiagram
         +string TargetState
     }
     class Meridian_Contracts_SecurityMaster_CorporateActionPersistenceUnavailableException["CorporateActionPersistenceUnavailableException"] {
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionProblemCodes["CorporateActionProblemCodes"] {
     }
     Meridian_Contracts_SecurityMaster_AcceptCorporateActionSourceProposalRequestDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseScopeDto
     Meridian_Contracts_SecurityMaster_AddCorporateActionEvidenceRequestDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseScopeDto
