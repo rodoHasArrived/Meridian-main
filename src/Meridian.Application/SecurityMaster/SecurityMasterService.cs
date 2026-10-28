@@ -86,8 +86,11 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
             ?? throw new InvalidOperationException($"Security '{request.SecurityId}' was not found.");
 
         var currentProjection = SecurityEconomicDefinitionAdapter.ToProjection(current, aliasProjection?.Aliases);
-        EnsureAssetClassRoundTripsSafely(currentProjection, request.AssetSpecificTermsPatch);
+        // Decode the stored row before the write guards. A row this node cannot decode is a fault, and
+        // no amendment can succeed here; a guard that tripped first would report it as a refusal whose
+        // repair fails at this decode.
         var currentRecord = SecurityMasterMapping.ToRecord(currentProjection);
+        EnsureAssetClassRoundTripsSafely(currentProjection, request.AssetSpecificTermsPatch);
         // The SUBMITTED envelope's profile decides which kind parses the patch: a record already
         // reclassified to a first-class kind can be repinned to a different profile, and parsing
         // the new envelope through the OLD class would demand the old class's fields (repinning
@@ -318,8 +321,9 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
             ?? throw new InvalidOperationException($"Security '{request.SecurityId}' was not found.");
 
         var currentProjection = SecurityEconomicDefinitionAdapter.ToProjection(current, aliasProjection?.Aliases);
-        EnsureAssetClassRoundTripsSafely(currentProjection);
+        // Decoded before the guards, as in an amendment, so an undecodable row stays a fault.
         var currentRecord = SecurityMasterMapping.ToRecord(currentProjection);
+        EnsureAssetClassRoundTripsSafely(currentProjection);
         var result = SecurityMasterCommandFacade.Deactivate(currentRecord, SecurityMasterMapping.ToDeactivateCommand(request));
         var projection = SecurityEconomicDefinitionAdapter.CarryRetainedEconomicTerms(
             currentProjection,

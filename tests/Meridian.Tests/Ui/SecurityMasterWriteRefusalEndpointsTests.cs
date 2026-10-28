@@ -35,8 +35,9 @@ namespace Meridian.Tests.Ui;
 /// as the Problem Details <c>detail</c>, behind the shared Problem Details writer and exception handler
 /// a deployed host registers. The real service decides what is a refusal: terms this node reads but does
 /// not write, a missing term, an F# domain validation error and a round-trip guard naming its repair.
-/// A stored row this node cannot decode, a stale version, a stream naming another security, a
-/// duplicate create, an unknown security and a deactivate keep their 500, with the reason kept out of
+/// A stored row this node cannot decode (even one a write guard would also refuse), a stale version
+/// the F# validator rejects, a stream naming another security, a duplicate create, an unknown security
+/// and a deactivate keep their 500, with the reason kept out of
 /// the body; each of those cases also pins, from the exception the shared handler logs, that the fault
 /// it means to reach is the one that answered.
 /// </summary>
@@ -242,8 +243,9 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
     [Fact]
     public async Task AmendWithoutAPatch_OfAStoredEventStampedAboveTheWriteVersionThisNodeCannotDecode_Returns500()
     {
-        // A patch-less amend of a row stamped above the write version decodes the stored row first in
-        // the ahead-of-write round-trip guard, to compare what re-serializing it would write.
+        // A patch-less amend of a row stamped above the write version reaches the ahead-of-write
+        // round-trip guard, which decodes the stored row to compare what re-serializing it would write.
+        // The amendment decodes it before any guard runs, so the decode fault answers first.
         var securityId = Guid.NewGuid();
         var stampedWithoutMaturity = JsonNode.Parse(AheadOfWriteFixtures.BondTerms(stamp: 2, withBlock: false).GetRawText())!.AsObject();
         stampedWithoutMaturity.Remove("maturity");
@@ -262,6 +264,34 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
             WebJson);
 
         var fault = await AssertServerFaultAsync(response, handlerLog, undisclosed: "maturity");
+        fault.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("Missing required date 'maturity'.");
+        await harness.AssertNothingWrittenAsync();
+    }
+
+    [Fact]
+    public async Task AmendWithoutAPatch_OfAStoredEventThisNodeCannotDecodeThatTheCouponGuardAlsoRefuses_Returns500()
+    {
+        // The bond coupon guard reads the stored terms without decoding them. Run first, it would answer
+        // 400 naming a repair that then fails at the decode, so the stored row is decoded before it.
+        var securityId = Guid.NewGuid();
+        var strayIndexWithoutMaturity = JsonNode.Parse(StepBondWithAStrayFloatingIndex.GetRawText())!.AsObject();
+        strayIndexWithoutMaturity.Remove("maturity");
+        using var harness = new CanonicalServiceHarness();
+        harness.SeedEventStream(
+            securityId,
+            "Bond",
+            StepBondWithAStrayFloatingIndex,
+            stored => stored with { LegacyAssetSpecificTerms = AheadOfWriteFixtures.Parse(strayIndexWithoutMaturity.ToJsonString()) });
+        var handlerLog = new RecordingLogger<MeridianApiExceptionHandler>();
+        await using var app = await CreateAppAsync(Substitute.For<ISecurityMasterQueryService>(), harness.Service, handlerLog);
+
+        using var response = await app.GetTestClient().PostAsJsonAsync(
+            "/api/security-master/amend",
+            AmendRequest(securityId, expectedVersion: 2, assetSpecificTermsPatch: null),
+            WebJson);
+
+        var fault = await AssertServerFaultAsync(response, handlerLog, undisclosed: "floatingIndex");
         fault.Should().BeOfType<InvalidOperationException>()
             .Which.Message.Should().Be("Missing required date 'maturity'.");
         await harness.AssertNothingWrittenAsync();
@@ -296,7 +326,7 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
     }
 
     [Fact]
-    public async Task Amend_WithAStaleVersionAndARefusablePatch_IsNotAReportedRefusal()
+    public async Task Amend_WithAStaleVersionAndAPatchTheFSharpValidatorRefuses_IsNotAReportedRefusal()
     {
         // The F# validator reports version_conflict beside the pair error; the stale version wins, so
         // the amend is not reported as refused for its terms.
@@ -315,6 +345,26 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
         fault.Should().BeOfType<InvalidOperationException>()
             .Which.Message.Should().Be(
                 "[version_conflict] ExpectedVersion does not match the current security version.; " + FxPairInvalidReason);
+        await harness.AssertNothingWrittenAsync();
+    }
+
+    [Fact]
+    public async Task Amend_WithAStaleVersionAndAPatchTheMappingRefuses_Returns400WithTheRefusal()
+    {
+        // /amend compares the expected version only in the F# validator, after the request is mapped. A
+        // patch the mapping refuses is refused whatever the version, so that reason answers first. The
+        // term-block, preferred and convertible routes compare the version before building the patch.
+        var securityId = Guid.NewGuid();
+        using var harness = new CanonicalServiceHarness();
+        harness.Seed(securityId, "FxSpot", FxSpotTerms("EUR", "USD"));
+        await using var app = await CreateAppAsync(Substitute.For<ISecurityMasterQueryService>(), harness.Service);
+
+        using var response = await app.GetTestClient().PostAsJsonAsync(
+            "/api/security-master/amend",
+            AmendRequest(securityId, expectedVersion: 1, JsonSerializer.SerializeToElement(new { baseCurrency = "EUR" })),
+            WebJson);
+
+        await AssertRefusedAsync(response, "Missing required string 'quoteCurrency'.");
         await harness.AssertNothingWrittenAsync();
     }
 
@@ -407,6 +457,34 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
         var fault = await AssertServerFaultAsync(response, handlerLog, undisclosed: "floatingIndex");
         fault.Should().BeOfType<SecurityMasterWriteRefusedException>()
             .Which.Message.Should().Be(StrayFloatingIndexRepairReason(securityId));
+        await harness.AssertNothingWrittenAsync();
+    }
+
+    [Fact]
+    public async Task Deactivate_OfAStoredEventThisNodeCannotDecodeThatTheCouponGuardAlsoRefuses_FaultsWithTheDecodeError()
+    {
+        // Deactivation decodes the stored row before the guards too, so the fault it logs is the decode
+        // error rather than a refusal of a row it cannot read.
+        var securityId = Guid.NewGuid();
+        var strayIndexWithoutMaturity = JsonNode.Parse(StepBondWithAStrayFloatingIndex.GetRawText())!.AsObject();
+        strayIndexWithoutMaturity.Remove("maturity");
+        using var harness = new CanonicalServiceHarness();
+        harness.SeedEventStream(
+            securityId,
+            "Bond",
+            StepBondWithAStrayFloatingIndex,
+            stored => stored with { LegacyAssetSpecificTerms = AheadOfWriteFixtures.Parse(strayIndexWithoutMaturity.ToJsonString()) });
+        var handlerLog = new RecordingLogger<MeridianApiExceptionHandler>();
+        await using var app = await CreateAppAsync(Substitute.For<ISecurityMasterQueryService>(), harness.Service, handlerLog);
+
+        using var response = await app.GetTestClient().PostAsJsonAsync(
+            "/api/security-master/deactivate",
+            new DeactivateSecurityRequest(securityId, 2, DateTimeOffset.UtcNow, "test", "codex", null, "deactivate"),
+            WebJson);
+
+        var fault = await AssertServerFaultAsync(response, handlerLog, undisclosed: "floatingIndex");
+        fault.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("Missing required date 'maturity'.");
         await harness.AssertNothingWrittenAsync();
     }
 

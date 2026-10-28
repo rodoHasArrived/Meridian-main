@@ -6641,17 +6641,21 @@ stored identifier set, or what re-serializing it would do): terms readable but n
 (ADR-024), a missing or malformed term, an undeclared vocabulary value, an F# domain validation
 error, a profile failing catalog validation, or a round-trip guard whose reason names the repair.
 Everything else is a fault and keeps its exception type and its response: a stored row this node
-cannot decode (the rebuild, the adapter, `ToRecord` of the current projection and the patch
-builders stay unwrapped), a missing security, a stale version, a duplicate create, an append race
-and a store failure. `ToEconomicRecord`, the conflict pre-check, the append and everything after
-them stay unwrapped too.
+cannot decode (the rebuild, the adapter, `ToRecord` of the current projection and the patch builders
+stay unwrapped, and amend and deactivate now decode the stored row before the write guards run, so a
+row a guard would also refuse is still a fault), a missing security, a stale version, a duplicate
+create, an append race and a store failure. `ToEconomicRecord`, the conflict pre-check, the append
+and everything after them stay unwrapped too.
 
 **What stays a non-refusal.** The F# codes `version_conflict`, `missing_state` and
 `security_id_mismatch` describe the stream and the aggregate, not the submitted terms. A rejection
 that carries any of them stays a plain `InvalidOperationException`, a 500 as before, and they win
-when the validator also reported request errors, so a stale amend is never reported as a refused
-one. A rejection with no error details stays plain too. Every other F# code, `security_inactive`
-included, is a refusal.
+when the F# validator also reported request errors, so F# never reports a stale amend as a refused
+one. `/amend` compares the expected version only there, after the request is mapped and the write
+guards have run, so a stale amend whose patch the mapping or a guard refuses answers 400 with that
+refusal, which holds whatever the version; the term-block, preferred and convertible routes compare
+the version before building the patch and answer 409. A rejection with no error details stays plain
+too. Every other F# code, `security_inactive` included, is a refusal.
 
 **Routes.** In: `POST /api/security-master`, `POST /api/security-master/amend`,
 `PUT /api/security-master/{securityId}/terms/{blockKey}`,
@@ -6701,15 +6705,15 @@ its request through the now-wrapped `ToAmendCommand`.
   instead of 500 with "An unexpected error occurred.". Routes, DTOs and `UiApiRoutes` are unchanged;
   create, amend, the preferred and convertible routes and the legacy alias now declare the 400 that
   the term-block route already declared.
-- **Refusals the stored record triggers answer 400 too** on these routes: an unrecognized stored
-  asset class, an undeclared stored vocabulary value, coupon structure the codec does not read, a
-  row stamped above the write version that a patch-less amend would change, a CustomAsset without
-  its envelope, `security_inactive`, an identifier-set error the F# validator reports, and, on the
-  term-block, preferred and convertible routes and the legacy alias, stored terms the Write-mode
-  mapping refuses, because those routes build the patch from the stored row (on the term-block
-  route a Bond stamped 2 gets the write-version reason). 409 or 422 would also be defensible; 400
-  matches the term-block route. Their messages echo stored values, to callers who already hold
-  `ModifySecurityMaster`.
+- **Refusals the stored record triggers answer 400 too** on these routes, for a row this node
+  decodes: an unrecognized stored asset class, an undeclared stored vocabulary value, coupon
+  structure the codec does not read, a row stamped above the write version that a patch-less amend
+  would change, a CustomAsset without its envelope, `security_inactive`, an identifier-set error the
+  F# validator reports, and, on the term-block, preferred and convertible routes and the legacy
+  alias, stored terms the Write-mode mapping refuses, because those routes build the patch from the
+  stored row (on the term-block route a Bond stamped 2 gets the write-version reason). 409 or 422
+  would also be defensible; 400 matches the term-block route. Their messages echo stored values, to
+  callers who already hold `ModifySecurityMaster`.
 - **Refusals on these routes are no longer logged.** The shared exception handler logged each one at
   error level with the exception; the filter returns the 400 without logging, as the term-block
   route's pre-check refusals already did.
@@ -6725,7 +6729,9 @@ on an updated node and 500 on an older one. Rolling back restores the 500s.
 
 - **Amend concurrency as 409.** Turning F# `version_conflict` into `SecurityMasterConcurrencyException`
   and catching stream and mutation conflicts on `/amend` would make the amend route's documented 409
-  true; today a stale amend still answers 500, and that remark is left as it stands.
+  true; today a stale amend that reaches the F# validator still answers 500, and that remark is left
+  as it stands. The same change should decide whether `/amend` compares the version before mapping
+  the request, as the term-block route does.
 - **A duplicate create as 409,** and **an amend of an unknown security as 404.**
 - **Deactivate adopting the filter.**
 - **Workbench publish carrying the merge's refusal reason** instead of 500 `publish-side-effect-failed`.
