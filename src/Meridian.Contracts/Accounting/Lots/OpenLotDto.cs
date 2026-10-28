@@ -52,7 +52,9 @@ public sealed record OpenLotBasisAdjustmentDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     OpenLotSuccessorInstructionDto? CorporateAction = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    OpenLotCapitalReturnInstructionDto? CapitalReturn = null);
+    OpenLotCapitalReturnInstructionDto? CapitalReturn = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    OpenLotFactorPaydownInstructionDto? FactorPaydown = null);
 
 public static class OpenLotBasisAdjustmentReasons
 {
@@ -61,6 +63,9 @@ public static class OpenLotBasisAdjustmentReasons
     public const string Amortization = "Amortization";
     public const string CorporateActionSuccessor = "CorporateActionSuccessor";
     public const string CapitalReturn = "CapitalReturn";
+
+    /// <summary>A principal paydown relieved the open basis pro rata to the principal repaid.</summary>
+    public const string FactorPaydown = "FactorPaydown";
 
     /// <summary>Discrete relief retains the exact unrelieved current basis on its surviving lot.</summary>
     public const string DisposalRelief = "DisposalRelief";
@@ -79,7 +84,18 @@ public sealed record OpenLotDto(
     decimal OpenTransactionCostBasis,
     decimal OpenFunctionalCostBasis,
     long Version,
-    OpenLotAcquisitionDto Acquisition);
+    OpenLotAcquisitionDto Acquisition)
+{
+    /// <summary>
+    /// The paydown factor a face lot currently holds, or null while it is still at the factor its
+    /// face was booked at (every lot that has absorbed no governed paydown). Omitted from JSON when
+    /// absent, so every retained instruction, snapshot digest and fingerprint of an un-paid-down
+    /// lot is byte-identical to what it was before the factor existed; a paid-down lot states it
+    /// and no longer compares equal to a stale expected lot that does not.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? CurrentFactor { get; init; }
+}
 
 public sealed record OpenLotReliefSelectionDto(Guid TaxLotRecordId, string LotId, long ExpectedVersion,
     decimal Quantity, decimal TransactionCostBasis, decimal FunctionalCostBasis);

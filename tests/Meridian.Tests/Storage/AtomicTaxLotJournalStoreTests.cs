@@ -370,7 +370,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
     [Trait("Category", "Integration")]
     public async Task FaceTerms_SurviveARealRoundTripAndTheAsOfScopedRead()
     {
-        // The eleven tax_lots column lists in this store feed one ORDINAL-positional reader, so a
+        // The twelve tax_lots column lists in this store feed one ORDINAL-positional reader, so a
         // list that drifts reads a value out of the wrong column rather than failing to compile.
         // Only a real database proves they still agree.
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -419,6 +419,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         saved.OriginalFace.Should().Be(800_000m);
         saved.BookedFactor.Should().Be(0.8m);
         saved.ParBasis.Should().Be(1m);
+        saved.CurrentFactor.Should().BeNull("a lot of record opens at its booked factor");
 
         // Read back through the asset-scoped seam the paydown path uses.
         var onDate = await database.JournalStore.ListOpenTaxLotsByAssetScopeAsync(
@@ -430,6 +431,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         restated.BookedFactor.Should().Be(source.BookedFactor);
         restated.ParBasis.Should().Be(source.ParBasis);
         restated.CostBasis.Should().Be(source.CostBasis);
+        restated.CurrentFactor.Should().Be(source.BookedFactor, "no paydown has been applied");
 
         // Face restated to a factor of 1 â€” the basis a paydown multiplies by the factor delta.
         restated.CurrentFace(1m).Should().Be(1_000_000m);
@@ -505,6 +507,41 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             restated.PremiumDiscount.Should().Be(source.PremiumDiscount);
             restated.CurrentFace(0.6m).Should().Be(source.CurrentFace(0.6m));
         }
+    }
+
+    [Fact]
+    public void FaceValueTerms_RehydrateTheRecordsCurrentFactor()
+    {
+        // A lot that has absorbed a paydown (written only by the governed mutation) comes back at
+        // the factor it holds, so its face outstanding is the paid-down face, while a lot still at
+        // its booked factor comes back there.
+        var source = new FaceValueLot("lot-1", TestSecurityId, new DateOnly(2026, 1, 1),
+            originalFace: 100_000m, pricePercentOfPar: 102m, bookedFactor: 0.8m);
+        var record = BuildBareLotOfRecord(TestSecurityId, source).WithFaceValueTerms(source);
+
+        record.ToFaceValueLot()!.CurrentFactor.Should().Be(0.8m);
+        record.ToFaceValueLot()!.FaceOutstanding.Should().Be(100_000m);
+
+        var paidDown = (record with { CurrentFactor = 0.6m }).ToFaceValueLot();
+        paidDown.Should().NotBeNull();
+        paidDown!.BookedFactor.Should().Be(0.8m);
+        paidDown.CurrentFactor.Should().Be(0.6m);
+        paidDown.FaceOutstanding.Should().Be(75_000m);
+        paidDown.CostBasis.Should().Be(source.CostBasis, "the factor restates face, not the acquisition cost");
+    }
+
+    [Fact]
+    public void FaceValueTerms_RefuseToOpenALotOfRecordBelowItsBookedFactor()
+    {
+        // WithFaceValueTerms is the acquisition seam: a lot that already holds a paydown cannot be
+        // opened as a record at its booked face.
+        var source = new FaceValueLot("lot-1", TestSecurityId, new DateOnly(2026, 1, 1),
+            originalFace: 100_000m, pricePercentOfPar: 102m, bookedFactor: 0.8m);
+        var paidDown = source.WithFactor(0.6m);
+
+        var act = () => BuildBareLotOfRecord(TestSecurityId, source).WithFaceValueTerms(paidDown);
+
+        act.Should().Throw<LedgerValidationException>().WithMessage("*opens at its booked factor*");
     }
 
     [Fact]
