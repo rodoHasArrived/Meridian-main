@@ -159,7 +159,7 @@ public sealed class SecurityMasterStructuredCreditReclassificationService : ISec
         AddString(node, "seniority", RefOrNull(draft.Seniority));
         // A blocked bond draft still needs the exact window/notice members for operator repair;
         // rebuilding these from the lossy economic Call lists would widen the exercise contract.
-        if (SecurityAssetClassCatalog.GetOrDefault(sourceAssetClass).AssetClass == "Bond")
+        if (SecurityAssetClassCatalog.GetOrDefault(sourceAssetClass).CarriesBondCouponStructure)
         {
             using var sourceTerms = JsonDocument.Parse(new SecurityMasterSnapshotWrapper(source).AssetSpecificTermsJson);
             foreach (var key in new[] { SecurityVersionedTerms.CallScheduleKey, SecurityVersionedTerms.PutScheduleKey })

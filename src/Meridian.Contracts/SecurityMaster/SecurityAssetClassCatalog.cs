@@ -575,7 +575,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Lei,
                 SecurityIdentifierKind.ProviderSymbol
             ],
-            RequiresMaturity: true),
+            RequiresMaturity: true) { SupportsCreditLifecycle = true },
         new(
             AssetClass: "Swaption",
             TradesAsBilateralContract: true,
@@ -1074,6 +1074,9 @@ public sealed record SecurityAssetClassDescriptor(
     /// </summary>
     public int StampFloor { get; init; } = TermsVersion;
 
+    /// <summary>Whether retained contracts support credit determination and linked auction settlement.</summary>
+    public bool SupportsCreditLifecycle { get; init; }
+
     /// <summary>
     /// The catalog facts below replace per-site asset-class name checks. Each is a declared
     /// behaviour one or more classes opt into, so a consumer asks the descriptor instead of
@@ -1090,7 +1093,7 @@ public sealed record SecurityAssetClassDescriptor(
     /// projected cash flows and a stored discount curve unless a request names another model).
     /// </summary>
     public bool HasDeclaredBehaviorFacts
-        => RequiresProfileReference || SupportsEquityClassification || CarriesBondCouponStructure || UsesOccOptionSymbols || QuotesRatesAsFractions || TradesAsBilateralContract
+        => RequiresProfileReference || SupportsEquityClassification || CarriesBondCouponStructure || UsesOccOptionSymbols || QuotesRatesAsFractions || TradesAsBilateralContract || SupportsCreditLifecycle
            || DefaultValuationModel != SecurityValuationModelKind.QuotedPrice;
 
     /// <summary>

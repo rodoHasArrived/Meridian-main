@@ -48,7 +48,7 @@ public sealed partial class PostgresOtcContractStore
         var assetClass = instrument.AssetClass;
         OtcContractRules.RequireBilateralAssetClass(assetClass);
         if (normalized.Data is OtcCreditEventData or OtcAuctionSettlementData
-            && SecurityAssetClassCatalog.GetOrDefault(assetClass).AssetClass != "CreditDefaultSwap")
+            && !SecurityAssetClassCatalog.GetOrDefault(assetClass).SupportsCreditLifecycle)
             throw new ArgumentException("Credit determinations and auction settlement require a CreditDefaultSwap contract.");
         if (successor is not null)
         {

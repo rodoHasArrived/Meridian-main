@@ -438,13 +438,13 @@ public sealed class SecurityAssetTermsSchemaTests
         foreach (var assetClass in ScheduleReadAheadClasses)
         {
             SecurityAssetTermsSchema.WritableFields(assetClass).Select(static field => field.Key).Should().Equal(
-                SecurityAssetTermsSchema.Fields(assetClass).Select(static field => field.Key).Where(static key => !ReadOnlyTermKeys.Contains(key)),
+                SecurityAssetTermsSchema.Fields(assetClass).Select(static field => field.Key),
                 assetClass);
         }
 
         SecurityAssetTermsSchema.WritableFields("StructuredCredit").Select(static field => field.Key)
-            .Should().Contain(["seniority", "nonCallPeriodEnd"], "the version-2 tranche terms are written at version 2")
-            .And.NotContain(ReadOnlyTermKeys);
+            .Should().Contain(["seniority", "nonCallPeriodEnd"], "the version-2 tranche terms remain writable")
+            .And.Contain(ReadOnlyTermKeys, "declared schedule containers are writable through the version-4 ceiling");
         SecurityAssetTermsSchema.WritableFields("Swap").Should().Equal(SecurityAssetTermsSchema.Fields("Swap"), "a swap's block lives on its legs");
         SecurityAssetTermsSchema.WritableFields("Equity").Should().Equal(SecurityAssetTermsSchema.Fields("Equity"));
         SecurityAssetTermsSchema.WritableFields("Nope").Should().BeEmpty();

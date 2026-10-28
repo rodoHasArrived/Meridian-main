@@ -907,14 +907,32 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
 
     [Theory]
     [MemberData(nameof(ForeignRowsAndPersistOperations))]
-    public async Task ForeignRow_IsPersistedByDeactivateAndPatchlessAmend_WithExactlyThePinnedBytes(string row, string operation)
+    public async Task ForeignRow_DeactivationPinsBytes_WhilePatchlessAmendmentRequiresValidDeclarations(string row, string operation)
     {
-        // The read path above is what a deactivation or a patch-less amend re-serializes, but the
-        // service persists it only when its ahead-of-write round-trip guard finds every versioned term
-        // intact: the partial block must compare equal to its twelve-member rewrite (eleven missing
-        // members against ten nulls and []), and a block-less row must downgrade cleanly.
+        // Deactivation preserves losslessly decodable historical terms. An amendment also checks
+        // the complete canonical payload against today's semantic rules before any write.
         var (assetClass, stored, persisted) = ForeignRows[row];
         var harness = new PersistPathHarness(assetClass, stored);
+
+        var amendmentRefusal = row switch
+        {
+            "partialBondBlock" or "bondBlockOnlyAtStampThree" => "*record carries no issueDate*",
+            "unsortedPutEntries" or "structuredCreditPutsOnly" => "*exerciseStyle must be explicitly stated*",
+            "partialCallEntry" or "datelessCallEntry" or "callAndPutWithoutBlock" or
+                "nullPutScheduleBesideCalls" or "unsortedCallEntries" or "lowercaseExerciseStyle"
+                => "*exercise window is inverted or extends beyond maturity*",
+            _ => null
+        };
+        if (operation == AmendWithoutTermsPatch && amendmentRefusal is not null)
+        {
+            await FluentActions.Invoking(() => harness.RunAsync(operation))
+                .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
+                .WithMessage(amendmentRefusal);
+            harness.Appended.Should().BeEmpty();
+            harness.Upserted.Should().BeEmpty();
+            harness.Saved.Should().BeEmpty();
+            return;
+        }
 
         await harness.RunAsync(operation);
 
@@ -1185,6 +1203,12 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
                 });
 
             var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+            snapshotStore.SaveAsync(Arg.Any<SecuritySnapshotRecord>(), Arg.Any<CancellationToken>())
+                .Returns(call =>
+                {
+                    Saved.Add(call.Arg<SecuritySnapshotRecord>());
+                    return Task.CompletedTask;
+                });
             _service = new SecurityMasterService(
                 eventStore,
                 snapshotStore,
@@ -1201,6 +1225,8 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
         public List<SecurityMasterEventEnvelope> Appended { get; } = [];
 
         public List<SecurityProjectionRecord> Upserted { get; } = [];
+
+        public List<SecuritySnapshotRecord> Saved { get; } = [];
 
         public Task RunAsync(string operation)
             => operation switch

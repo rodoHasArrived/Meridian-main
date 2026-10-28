@@ -101,8 +101,8 @@ public sealed class SecurityMasterStructuredCreditReclassificationServiceTests
         var terms = candidate.DerivedAssetSpecificTerms;
         terms.GetProperty(SecurityTermsEnvelope.FormatKey).GetString().Should().Be(SecurityTermsFormats.Flat);
         terms.GetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey).GetInt32().Should().Be(
-            SecurityAssetClassCatalog.GetOrDefault("StructuredCredit").TermsVersion,
-            "a ready proposal is the exact document a governed amendment would persist");
+            SecurityAssetClassCatalog.GetStampFloor("StructuredCredit"),
+            "an undeclared ready proposal keeps the S2 document floor a governed amendment would persist");
         terms.GetProperty("tranche").GetString().Should().Be("B");
         terms.GetProperty("poolId").GetString().Should().Be("CLO-2026-1");
         terms.GetProperty("collateralType").GetString().Should().Be("Leveraged loans");

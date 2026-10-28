@@ -588,7 +588,8 @@ public sealed partial class SecurityMasterServiceSnapshotTests
         if (operation == AmendWithoutTermsPatch)
         {
             await FluentActions.Invoking(() => RunAsync(harness, securityId, operation))
-                .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>().WithMessage("*stray*");
+                .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
+                .WithMessage("*Retained undeclared 'callSchedule' cannot be promoted by an unrelated amendment*");
             harness.Appended.Should().BeEmpty();
             harness.Upserted.Should().BeEmpty();
             return;

@@ -311,7 +311,7 @@ public static class OtcContractLifecycleRules
             throw new ArgumentException("Reset target does not match its contractual floating leg and index.");
         if (data is OtcCreditEventData or OtcAuctionSettlementData)
         {
-            if (descriptor.AssetClass != "CreditDefaultSwap" || string.IsNullOrWhiteSpace(target.ReferenceEntity))
+            if (!descriptor.SupportsCreditLifecycle || string.IsNullOrWhiteSpace(target.ReferenceEntity))
                 throw new ArgumentException("Credit determination and auction settlement require a CreditDefaultSwap reference entity.");
             if (data is OtcCreditEventData credit && !string.Equals(credit.ReferenceEntity, target.ReferenceEntity, StringComparison.OrdinalIgnoreCase))
                 throw new ArgumentException("Credit determination reference entity does not match the instrument.");

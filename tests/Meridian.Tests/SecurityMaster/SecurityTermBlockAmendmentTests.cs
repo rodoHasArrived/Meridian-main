@@ -240,8 +240,12 @@ public sealed class SecurityTermBlockAmendmentTests
             SourceRecordId: null,
             Reason: "set conventions ahead of the write version"));
 
-        await act.Should().ThrowAsync<ArgumentException>().WithMessage("*need the contractual issue date* (Parameter 'block')");
+        await act.Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>().WithMessage(
+            "Invalid declared schedule terms: Declared schedule conventions need the contractual issue date; the record carries no issueDate, " +
+            "and its effective-from date is not used as a schedule anchor. (Parameter 'block')");
         await eventStore.DidNotReceiveWithAnyArgs().AppendAsync(default, default, default!, default);
+        await store.DidNotReceiveWithAnyArgs().UpsertProjectionAsync(default!, default);
+        await snapshotStore.DidNotReceiveWithAnyArgs().SaveAsync(default!, default);
     }
 
     private static SecurityMasterService CreateService(
