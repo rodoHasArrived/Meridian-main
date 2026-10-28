@@ -1,15 +1,50 @@
 """Validate observable task requirements and explicit ownership boundaries."""
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import unittest
 
 SCRIPTS = Path(__file__).resolve().parents[2] / "build/scripts/ai"
-sys.path.insert(0, str(SCRIPTS))
-from task_brief import validate_brief
+_import_path = sys.path[:]
+try:
+    sys.path.insert(0, str(SCRIPTS))
+    from task_brief import validate_brief
+finally:
+    sys.path[:] = _import_path
 
 
 class TaskBriefTests(unittest.TestCase):
+    def test_discovery_preserves_repository_imports_in_spawned_worker(self):
+        # The CI runner discovers modules in its parent before spawning fresh
+        # interpreters. A permanent ai/ insertion selects ai/tests as `tests`
+        # in workers even though the parent already imported the repo package.
+        root = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory() as directory:
+            probe = Path(directory) / "probe_imports.py"
+            probe.write_text(
+                "from pathlib import Path\n"
+                "import multiprocessing\n"
+                "import sys\n"
+                "import unittest\n"
+                f"ROOT = Path({str(root)!r})\n"
+                "def worker():\n"
+                "    import tests.scripts.workflow_assertions as assertions\n"
+                "    return assertions.__file__\n"
+                "if __name__ == '__main__':\n"
+                "    sys.path.insert(0, str(ROOT))\n"
+                "    suite = unittest.TestLoader().discover(str(ROOT / 'tests/scripts'), pattern='test_task_*.py')\n"
+                "    assert suite.countTestCases() > 0\n"
+                "    with multiprocessing.get_context('spawn').Pool(1) as pool:\n"
+                "        actual = pool.apply(worker)\n"
+                "    assert Path(actual).resolve() == ROOT / 'tests/scripts/workflow_assertions.py', actual\n",
+                encoding="utf-8",
+            )
+            result = subprocess.run(
+                [sys.executable, str(probe)], cwd=root, capture_output=True, text=True, timeout=30,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)

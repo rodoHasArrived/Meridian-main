@@ -10,8 +10,8 @@ Run the following commands from the repository root.
 
 ## Install and choose a mode
 
-Use Python 3.11 or newer for the environment command, Node.js 24, and npm to match the dev
-container and browser CI. Backend-connected mode also requires the .NET SDK selected by
+Use Python 3.11 or newer for the environment command, Node.js 24, and npm to match the
+devcontainer and browser CI. Backend-connected mode also requires the .NET SDK selected by
 [global.json](../../global.json) on `PATH`; fixture-only mode does not need .NET or a database.
 Windows uses the built-in Windows
 PowerShell to establish process ownership before starting a service.

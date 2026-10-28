@@ -114,6 +114,13 @@ MSBuild imports/expressions, and external dependencies can require more checks t
 identifies. Unknown files and unresolved dependencies require manual proof selection. Full
 `bash scripts/ci.sh` and GitHub's required checks remain completion requirements.
 
+Choose tools proportionally: when the shared-guidance edit is already located, edit the canonical
+block and use the generator directly. Build a packet for discovery, cross-module work, or resuming
+context. Markdown now presents the brief and target excerpts without repeating identical text;
+equivalent paths, hashes, warnings, and instruction references remain visible. Full optional
+excerpts remain in JSON. Recommendation generation skips .NET graph discovery for non-.NET scopes
+and prunes previously excluded build/dependency directories before walking the graph.
+
 ## Record Comparable Tasks
 
 Use three matched pairs initially, with the same acceptance criteria, task family, model, and
@@ -160,6 +167,7 @@ automatic trace collector; completeness is a runner attestation. It cannot detec
 | Correction cycles | Explicit repairs of incorrect edits, counted by the runner |
 | Validation wait | Union of observed validation intervals, including failures; overlapping intervals count once |
 | Time to a passing PR | Task start to recorded successful required checks on one specific PR head revision |
+| Validated completion | Task start through recorded completion after successful final validation, including discovery, corrections, failed attempts, and validation wait |
 
 All timestamps come from the recorder's UTC clock. Validation intervals include event-recording
 overhead, and tool-call/model latency contributes to first-edit timing. Changed-content reads are
@@ -193,6 +201,22 @@ successful validation result. Earlier failures remain visible and their wait tim
 Incomplete first-edit timings appear only as observations. Passing-PR events must follow task
 completion; supply `--commit-sha` on `task_finished` to bind later check evidence to that revision.
 
+## Environment Setup And Local Validation Measurements
+
+Use the [profile-aware environment command](../../engineering/web-development.md#install-and-choose-a-mode)
+to check tool versions and fingerprint dependency/fixture inputs, or explicitly restore the two
+npm lockfiles and selected backend dependencies. Fixture-only setup does not require .NET or a
+database. The devcontainer shares the npm setup command and installs pinned Python script dependencies.
+
+For local validation feedback, supply a unique `--task-id` on related `buildctl test` attempts
+and summarize their receipts with `buildctl validation-metrics`. See the
+[measurement definitions](../../development/build-observability.md#local-feedback-latency-and-observed-retries)
+for measured feedback/queue/execution time, missing legacy data, and task grouping.
+
+Receipt metrics complement the explicit task-event recorder above. They do not measure human
+correction cycles, implementation time, or a passing PR, and are not added retroactively to the
+retained pilot evidence. A failed validation attempt alone does not establish a code defect.
+
 ## Validation And Initial Evidence
 
 ```bash
@@ -213,3 +237,9 @@ for these temporary trials. See the [retained pilot evidence](../../testing/evid
 Use these observations to decide the next experiment, not to announce a general speedup. Before
 making this workflow a default, repeat on real comparable implementation tasks through passing PRs
 with independently checked event coverage and required-check evidence.
+
+The [refinement evidence](../../testing/evidence/ai-throughput-pilot-2026-10-28-refinement/README.md)
+retains the failed maintenance retest and a separately preregistered validation-planning
+confirmation. The latter met its operational threshold: six of six pairs faster, 71.436% median
+paired reduction, all twelve final plans accepted. This supports using the recommender for
+dependency-based planning; it does not establish faster source edits or passing PRs.

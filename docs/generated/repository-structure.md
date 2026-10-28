@@ -2497,6 +2497,75 @@ Meridian-main
 │   │   │   │   ├── report.json
 │   │   │   │   ├── report.md
 │   │   │   │   └── verify-pilot.py
+│   │   │   ├── ai-throughput-pilot-2026-10-28-refinement
+│   │   │   │   ├── events
+│   │   │   │   │   ├── r2-pair-1-baseline.jsonl
+│   │   │   │   │   ├── r2-pair-1-treatment.jsonl
+│   │   │   │   │   ├── r2-pair-2-baseline.jsonl
+│   │   │   │   │   ├── r2-pair-2-treatment.jsonl
+│   │   │   │   │   ├── r2-pair-3-baseline.jsonl
+│   │   │   │   │   ├── r2-pair-3-treatment.jsonl
+│   │   │   │   │   ├── r2-pair-4-baseline.jsonl
+│   │   │   │   │   ├── r2-pair-4-treatment.jsonl
+│   │   │   │   │   ├── r2-pair-5-baseline.jsonl
+│   │   │   │   │   ├── r2-pair-5-treatment.jsonl
+│   │   │   │   │   ├── r2-pair-6-baseline.jsonl
+│   │   │   │   │   └── r2-pair-6-treatment.jsonl
+│   │   │   │   ├── packet-rendering
+│   │   │   │   │   ├── comparison-input-packet.json
+│   │   │   │   │   ├── comparison.json
+│   │   │   │   │   ├── refined.md
+│   │   │   │   │   ├── refined.md.gz
+│   │   │   │   │   ├── same-input-baseline.md
+│   │   │   │   │   ├── same-input-baseline.md.gz
+│   │   │   │   │   └── snapshot-formatting.json
+│   │   │   │   ├── recommendation-benchmark
+│   │   │   │   │   ├── lazy-only
+│   │   │   │   │   │   ├── raw-observations.jsonl
+│   │   │   │   │   │   └── summary.json
+│   │   │   │   │   ├── benchmark_recommendations.py
+│   │   │   │   │   ├── plans.json
+│   │   │   │   │   ├── raw-observations.jsonl
+│   │   │   │   │   ├── summary.json
+│   │   │   │   │   └── validation_plan_baseline.py
+│   │   │   │   ├── validation-planning
+│   │   │   │   │   ├── confirmation-events
+│   │   │   │   │   │   ├── vc-pair-1-baseline.jsonl
+│   │   │   │   │   │   ├── vc-pair-1-treatment.jsonl
+│   │   │   │   │   │   ├── vc-pair-2-baseline.jsonl
+│   │   │   │   │   │   ├── vc-pair-2-treatment.jsonl
+│   │   │   │   │   │   ├── vc-pair-3-baseline.jsonl
+│   │   │   │   │   │   ├── vc-pair-3-treatment.jsonl
+│   │   │   │   │   │   ├── vc-pair-4-baseline.jsonl
+│   │   │   │   │   │   ├── vc-pair-4-treatment.jsonl
+│   │   │   │   │   │   ├── vc-pair-5-baseline.jsonl
+│   │   │   │   │   │   ├── vc-pair-5-treatment.jsonl
+│   │   │   │   │   │   ├── vc-pair-6-baseline.jsonl
+│   │   │   │   │   │   └── vc-pair-6-treatment.jsonl
+│   │   │   │   │   ├── events
+│   │   │   │   │   │   ├── vp-pair-1-baseline.jsonl
+│   │   │   │   │   │   └── vp-pair-1-treatment.jsonl
+│   │   │   │   │   ├── assess-confirmation.py
+│   │   │   │   │   ├── confirmation-assessment.json
+│   │   │   │   │   ├── confirmation-protocol.json
+│   │   │   │   │   ├── confirmation-report.json
+│   │   │   │   │   ├── confirmation-report.md
+│   │   │   │   │   ├── expected.json
+│   │   │   │   │   ├── independent-revalidation.json
+│   │   │   │   │   ├── initial-attempt-notes.json
+│   │   │   │   │   ├── protocol.json
+│   │   │   │   │   ├── reporter-provenance.json
+│   │   │   │   │   ├── reporter-wording.patch
+│   │   │   │   │   ├── runner-initial.py
+│   │   │   │   │   ├── runner.py
+│   │   │   │   │   ├── solver-assignments.json
+│   │   │   │   │   └── verify-trial.py
+│   │   │   │   ├── assessment.json
+│   │   │   │   ├── protocol.json
+│   │   │   │   ├── README.md
+│   │   │   │   ├── report.json
+│   │   │   │   ├── report.md
+│   │   │   │   └── verify-trial.py
 │   │   │   ├── program-state-20261014
 │   │   │   │   └── main-validation.json
 │   │   │   ├── w10-615abde9
@@ -12402,6 +12471,7 @@ Meridian-main
 │   │   │   └── web-dev
 │   │   │       ├── launcher.mjs
 │   │   │       └── process-tree.mjs
+│   │   ├── __init__.py
 │   │   ├── README.md
 │   │   ├── setup-verification.sh
 │   │   ├── test_actions_collector.py
@@ -12552,6 +12622,7 @@ Meridian-main
 │   │   └── CorporateActions
 │   │       ├── GoldenCorporateActionScenario.cs
 │   │       └── GoldenCorporateActionScenarioLoader.cs
+│   ├── __init__.py
 │   ├── coverlet.runsettings
 │   ├── Directory.Build.props
 │   ├── setup-script-tests.md

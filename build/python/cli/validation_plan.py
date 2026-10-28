@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path, PurePosixPath
 import shlex
 import subprocess
@@ -42,6 +43,35 @@ def collect_changed_paths(root: Path) -> list[str]:
     return sorted(paths)
 
 
+def project_files(root: Path, tree: str) -> list[Path]:
+    """Prune directories whose projects the graph has always excluded."""
+    found = []
+    for directory, children, files in os.walk(root / tree, followlinks=False):
+        children[:] = sorted(child for child in children if child not in IGNORED_PARTS)
+        found.extend(Path(directory) / name for name in files if name.endswith((".csproj", ".fsproj")))
+    return sorted(found)
+
+
+def needs_project_graph(root: Path, paths: list[str]) -> bool:
+    """Probe nearest ownership without walking or opening unrelated project trees."""
+    for path in paths:
+        candidate = Path(path)
+        if candidate.suffix in {".props", ".targets", ".sln", ".slnf"} or candidate.name.lower() in {"global.json", "nuget.config"}:
+            return True
+        if not path.startswith(("src/", "tests/")) or path.startswith((BROWSER + "/", "tests/scripts/")):
+            continue
+        if candidate.suffix in {".cs", ".fs", ".csproj", ".fsproj", ".xaml", ".razor"}:
+            return True
+        # Runtime JSON, assets and future/deleted files can still belong to .NET.
+        # Inspect only ancestor directories; directory membership establishes ownership.
+        for parent in candidate.parents:
+            if parent == Path("."):
+                break
+            if any(project.suffix in {".csproj", ".fsproj"} for project in (root / parent).glob("*.*proj")):
+                return True
+    return False
+
+
 def recommend_validation(root: Path, paths: list[str]) -> dict:
     root = root.resolve()
     if not root.is_dir():
@@ -72,12 +102,19 @@ def recommend_validation(root: Path, paths: list[str]) -> dict:
         else:
             warnings.add(f"Expected validator is unavailable: {path}; select proof manually.")
 
-    for metadata in (MATRIX, REGISTRY, "Directory.Build.props", "tests/Directory.Build.props"):
+    graph_needed = needs_project_graph(root, paths)
+    metadata_paths = [p for p in paths if p.endswith((".props", ".targets", ".sln", ".slnf"))
+                      or Path(p).name.lower() in {"global.json", "nuget.config"}]
+    required_metadata = [MATRIX]
+    if graph_needed:
+        required_metadata += [REGISTRY, "Directory.Build.props", "tests/Directory.Build.props"]
+    for metadata in required_metadata:
         if not track(metadata):
             warnings.add(f"Validation metadata unavailable: {metadata}.")
-    for metadata in ("Directory.Packages.props", "Directory.Build.targets", "global.json", "NuGet.Config",
-                     "build/python/cli/buildctl.py"):
-        track(metadata)
+    if graph_needed:
+        for metadata in ("Directory.Packages.props", "Directory.Build.targets", "global.json", "NuGet.Config"):
+            track(metadata)
+    track("build/python/cli/buildctl.py")
     # Changes to the recommendation implementation invalidate packets built from its mapping.
     module = Path(__file__).resolve()
     if module.is_relative_to(root):
@@ -91,8 +128,8 @@ def recommend_validation(root: Path, paths: list[str]) -> dict:
 
     projects: dict[str, set[str]] = {}
     test_projects: set[str] = set()
-    for tree in ("src", "tests"):
-        for project in sorted((root / tree).rglob("*.*proj")):
+    for tree in (("src", "tests") if graph_needed else ()):
+        for project in project_files(root, tree):
             if project.suffix not in {".csproj", ".fsproj"} or IGNORED_PARTS & set(project.relative_to(root).parts):
                 continue
             relative = normalize_path(root, project.relative_to(root).as_posix())
@@ -150,7 +187,6 @@ def recommend_validation(root: Path, paths: list[str]) -> dict:
     for project, dependencies in projects.items():
         for dependency in dependencies:
             reverse.setdefault(dependency, set()).add(project)
-    metadata_paths = [p for p in paths if p.endswith((".props", ".targets")) or Path(p).name == "global.json"]
     if metadata_paths:
         for project in sorted(test_projects):
             add_dotnet(project, metadata_paths, "MSBuild/SDK metadata change requires broad existing project coverage")

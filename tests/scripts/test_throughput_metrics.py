@@ -26,6 +26,22 @@ def finish(seconds=20, trial="one", complete=True):
 
 
 class ThroughputMetricsTests(unittest.TestCase):
+    def test_validated_completion_includes_discovery_and_all_validation_wait(self):
+        events = [start(), event("useful_edit", 3, path="a.py", sha256=DIGEST),
+                  event("validation_started", 4, validationId="first"),
+                  event("validation_finished", 6, validationId="first", result="fail"),
+                  event("correction", 7), event("validation_started", 8, validationId="retry"),
+                  event("validation_finished", 12, validationId="retry", result="pass"), finish(15)]
+        row = metrics.summarize_trial(events)
+        self.assertEqual(row["validatedCompletionSeconds"], 15)
+        self.assertEqual(row["validationWaitSeconds"], 6)
+        self.assertTrue(row["comparisonEligible"])
+        self.assertIsNone(metrics.summarize_trial(events[:-1])["validatedCompletionSeconds"])
+        self.assertIsNone(metrics.summarize_trial(events[:-1] + [finish(15, complete=False)])["validatedCompletionSeconds"])
+        failed = [start(), event("validation_started", 2, validationId="v"),
+                  event("validation_finished", 4, validationId="v", result="fail"), finish()]
+        self.assertIsNone(metrics.summarize_trial(failed)["validatedCompletionSeconds"])
+
     def test_first_edit_and_identical_reads_only(self):
         events = [start(), event("file_read", 1, path="a.py", sha256=DIGEST),
                   event("file_read", 2, path="a.py", sha256=DIGEST),

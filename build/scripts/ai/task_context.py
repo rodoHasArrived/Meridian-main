@@ -328,25 +328,96 @@ def check_packet(root: Path, packet: dict[str, Any]) -> None:
 
 
 def markdown(packet: dict[str, Any]) -> str:
-    brief_lines = []
-    if packet.get("brief"):
-        brief_lines = ["## Observable task brief", "", "````json",
-                       json.dumps(packet["brief"], indent=2, ensure_ascii=False), "````", ""]
+    """Render task orientation once; keep complete excerpts and legacy fields in JSON."""
+    lines = ["# Task context packet", "", packet["objective"], "",
+             "Packets provide partial context and never override applicable instructions.", ""]
+    brief = packet.get("brief")
+    if brief:
+        lines += ["## Acceptance and boundaries", "", brief["acceptanceExample"], ""]
+        if brief.get("sharedContract"):
+            lines += ["Shared contract: " + brief["sharedContract"], ""]
+        if brief["exclusions"]:
+            lines += ["Exclusions:", "", *[f"- {item}" for item in brief["exclusions"]], ""]
+        if packet.get("briefSource"):
+            lines += [f"Brief source: `{packet['briefSource']}`", ""]
+    targets = set(packet["scope"]["targets"])
+    owned = packet["scope"].get("ownedPaths", packet["scope"]["targets"])
+    lines += ["## Scope", "", *[f"- `{name}`" for name in owned], ""]
+    anchors = sorted(targets - set(owned))
+    if anchors:
+        lines += ["Additional source anchors:", "", *[f"- `{name}`" for name in anchors], ""]
+    lines += ["## Instructions to read in full", "", *[f"- `{name}`" for name in packet["instructions"]], ""]
+
+    # JSON retains each original command. Normalize only for display so a plan,
+    # route floor and explicit brief do not make the reader scan the same check.
+    def command_key(command: str) -> tuple[str, ...]:
+        # Shell expansion and operators can make equally tokenized strings mean
+        # different checks. Keep those declarations distinct in the display.
+        if re.search(r"[$`;&|<>*?\[\]()]", command):
+            return ("shell-expression", command)
+        try:
+            return tuple(shlex.split(command))
+        except ValueError:
+            return (command,)
+
     plan = packet["validationPlan"]
-    plan_lines = ["## Focused validation plan (not executed)", "", plan["policy"], ""]
-    plan_lines += [f"- `{shlex.join(check['argv'])}`: {check['reason']}" for check in plan["checks"]]
-    plan_lines += ["", "Required final checks remain: `bash scripts/ci.sh`, `Meridian CI / quality-gate`, and `Meridian CI / integration-gate`.", ""]
-    lines = ["# Task context packet", "", packet["objective"], "", *brief_lines, *plan_lines,
-             "Packets provide partial context and never override applicable instructions.", "",
-             "## Scope", "", *[f"- `{name}`" for name in packet["scope"]["targets"]], "",
-             "## Instructions to read in full", "", *[f"- `{name}`" for name in packet["instructions"]], "",
-             "## Validation candidates (not executed)", "", *[f"- `{command}`" for command in packet["validation"]], "",
-             "## Warnings", "", *[f"- {warning}" for warning in packet["warnings"]], "",
-             "## Omitted context", "", *[f"- `{item['path']}`: {item['reason']}" for item in packet["omitted"]], "",
-             "## Selected source excerpts", ""]
+    commands: dict[tuple[str, ...], dict[str, Any]] = {}
+    final_keys = {tuple(check["argv"]) for check in plan["requiredFinalChecks"] if check.get("argv")}
+
+    def add_command(command: str, reason: str) -> None:
+        key = command_key(command)
+        if key in final_keys:
+            return
+        entry = commands.setdefault(key, {"command": command, "reasons": []})
+        if reason not in entry["reasons"]:
+            entry["reasons"].append(reason)
+
+    for check in plan["checks"]:
+        add_command(shlex.join(check["argv"]), check["reason"])
+    for command in (brief or {}).get("validationCommands", []):
+        add_command(command, "Declared task acceptance proof")
+    for command in packet["validation"]:
+        if command_key(command) not in commands:
+            add_command(command, "Module or route validation requirement")
+    lines += ["## Validation (not executed)", "", plan["policy"], ""]
+    lines += [f"- `{entry['command']}`: {'; '.join(entry['reasons'])}" for entry in commands.values()]
+    lines += ["", "Required final checks remain:", ""]
+    for check in plan["requiredFinalChecks"]:
+        label = shlex.join(check["argv"]) if check.get("argv") else check.get("name", check["id"])
+        lines.append(f"- `{label}`")
+    lines += ["", "## Warnings", "", *[f"- {warning}" for warning in packet["warnings"]], ""]
+
+    # Group exact content only. Every equivalent path still appears with its full
+    # source digest; different host-specific excerpts retain their own body.
+    groups: dict[str, list[dict[str, Any]]] = {}
     for item in packet["context"]:
-        lines += [f"### {item['path']}:{item['lineStart']}", "", item["reason"], "", "````",
-                  item["excerpt"], "````", ""]
+        groups.setdefault(item["excerpt"], []).append(item)
+    canonical = ".claude/skills/_shared/project-context.md"
+    ordered_groups = []
+    for items in groups.values():
+        items.sort(key=lambda item: (item["path"] != canonical, item["path"] not in targets, item["path"]))
+        ordered_groups.append(items)
+    ordered_groups.sort(key=lambda items: (not any(item["path"] in targets for item in items),
+                                           items[0]["path"] != canonical, items[0]["path"]))
+    lines += ["## Target excerpts", ""]
+    optional = []
+    for items in ordered_groups:
+        if not any(item["path"] in targets for item in items):
+            optional.extend(items)
+            continue
+        primary = items[0]
+        lines += [f"### {primary['path']}:{primary['lineStart']}", "", primary["reason"], ""]
+        if len(items) > 1:
+            lines += ["These sources share this exact excerpt:", ""]
+        lines += [f"- `{item['path']}:{item['lineStart']}` — SHA-256 `{item['sha256']}`" for item in items]
+        lines += ["", "````", primary["excerpt"], "````", ""]
+    if optional:
+        lines += ["## Additional context references", "",
+                  "Full optional excerpts remain in the JSON packet; open these only when relevant.", ""]
+        lines += [f"- `{item['path']}:{item['lineStart']}`: {item['reason']}; SHA-256 `{item['sha256']}`" for item in optional]
+        lines.append("")
+    if packet["omitted"]:
+        lines += [f"Omitted context: {len(packet['omitted'])} entries; paths and reasons remain in the JSON packet.", ""]
     return "\n".join(lines) + "\n"
 
 

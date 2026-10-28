@@ -223,6 +223,58 @@ class ValidationPlanTests(unittest.TestCase):
             self.assertEqual(plan.run_cli(args), 1)
         self.assertEqual(real.read_text(), "unchanged\n")
 
+    def test_ai_docs_and_python_skip_unrelated_dotnet_graph(self):
+        self.write("src/Broken/Broken.csproj", "<broken XML")
+        self.write("build/scripts/ai/example.py", "pass")
+        self.write("tests/scripts/test_example.py", "pass")
+        for changed in ("docs/ai/tooling/throughput-pilot.md", "build/scripts/ai/example.py", "tests/scripts/test_example.py"):
+            with self.subTest(changed=changed), patch.object(plan.ET, "fromstring", side_effect=AssertionError("XML must not be parsed")), \
+                    patch.object(plan.os, "walk", side_effect=AssertionError("project trees must not be walked")):
+                data = self.recommend(changed)
+                self.assertFalse(any("Broken" in warning for warning in data["coverageWarnings"]))
+                source_paths = {source["path"] for source in data["sources"]}
+                self.assertNotIn(plan.REGISTRY, source_paths)
+                self.assertNotIn("src/Broken/Broken.csproj", source_paths)
+                self.assertNotIn("Directory.Build.props", source_paths)
+                self.assertIn(plan.MATRIX, source_paths)
+
+    def test_runtime_json_and_planned_asset_keep_dotnet_owner_coverage(self):
+        self.project("src/Core")
+        tests = self.project("tests/Core.Tests", ["../../src/Core/Core.csproj"])
+        self.write("src/Core/Resources/runtime.json", "{}")
+        for changed in ("src/Core/Resources/runtime.json", "src/Core/Resources/planned.json"):
+            with self.subTest(changed=changed):
+                data = self.recommend(changed)
+                self.assertTrue(any(tests in check["argv"] for check in data["checks"]))
+                self.assertIn("src/Core/Core.csproj", [source["path"] for source in data["sources"]])
+                self.assertIn(plan.REGISTRY, [source["path"] for source in data["sources"]])
+
+    def test_project_walk_prunes_previously_ignored_output_trees(self):
+        self.project("src/Core")
+        self.project("tests/Core.Tests", ["../../src/Core/Core.csproj"])
+        for ignored in ("node_modules", "obj", "bin", "artifacts"):
+            self.write(f"src/Core/{ignored}/Broken/Broken.csproj", "<invalid XML")
+        data = self.recommend("src/Core/File.cs")
+        self.assertFalse(any("Broken" in warning for warning in data["coverageWarnings"]))
+        self.assertFalse(any("Broken" in source["path"] for source in data["sources"]))
+        visited = []
+        real_walk = plan.os.walk
+        def observe_walk(*args, **kwargs):
+            for directory, children, files in real_walk(*args, **kwargs):
+                visited.append(Path(directory).relative_to(self.root).as_posix())
+                yield directory, children, files
+        with patch.object(plan.os, "walk", side_effect=observe_walk):
+            self.recommend("src/Core/File.cs")
+        self.assertFalse(any(set(Path(path).parts) & plan.IGNORED_PARTS for path in visited))
+
+    def test_nuget_metadata_keeps_broad_dotnet_validation(self):
+        self.project("src/Core")
+        tests = self.project("tests/Core.Tests", ["../../src/Core/Core.csproj"])
+        self.write("NuGet.Config", "<configuration/>")
+        data = self.recommend("NuGet.Config")
+        self.assertTrue(any(tests in check["argv"] for check in data["checks"]))
+        self.assertTrue(any("evaluated coverage is unknown" in warning for warning in data["coverageWarnings"]))
+
     def test_buildctl_parser_recommendation_does_not_require_optional_yaml(self):
         result = subprocess.run(["python", str(REPO / "build/python/cli/buildctl.py"), "recommend-validation",
                                  "--root", str(self.root), "--changed-file", "docs/new.md", "--json"],

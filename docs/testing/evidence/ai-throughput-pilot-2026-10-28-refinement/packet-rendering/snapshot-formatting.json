@@ -1,0 +1,14 @@
+{
+  "refined.md": {
+    "rawBytes": 5665,
+    "rawSha256": "5cd2b6dab103d104dbf78bddb82787aea8d7f4e2f114029ad4f623fe4dad85fc",
+    "displayBytes": 5664,
+    "normalization": "single terminal newline for repository whitespace check; gzip snapshot preserves exact measured bytes"
+  },
+  "same-input-baseline.md": {
+    "rawBytes": 24143,
+    "rawSha256": "92c2b1b7387d9c3ccdfa23ee4d07af91aae4c60964f1bc59b631693dac283f5e",
+    "displayBytes": 24142,
+    "normalization": "single terminal newline for repository whitespace check; gzip snapshot preserves exact measured bytes"
+  }
+}
