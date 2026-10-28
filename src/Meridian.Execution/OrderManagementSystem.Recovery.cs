@@ -175,12 +175,12 @@ public sealed partial class OrderManagementSystem
         });
     }
 
-    /// <summary>Applies broker-proven recovery evidence through the ordinary idempotent fill path.</summary>
     private bool RetainedForAnotherOrder(string? brokerOrderId, string orderId)
         => brokerOrderId is { Length: > 0 }
             && _brokerIdentities.TryResolveAlias(brokerOrderId, out var owner)
             && !string.Equals(owner, orderId, StringComparison.Ordinal);
 
+    /// <summary>Applies broker-proven recovery evidence through the ordinary idempotent fill path.</summary>
     public async Task ReconcileRecoveryOrderAsync(ExecutionReport report, CancellationToken ct = default)
     {
         using var operation = EnterOperation();
