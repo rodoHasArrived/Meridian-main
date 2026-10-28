@@ -8,17 +8,17 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 1115 |
-| Valid | 642 |
+| Total code blocks | 1120 |
+| Valid | 646 |
 | Invalid | 0 |
-| Skipped | 473 |
+| Skipped | 474 |
 
 ## Summary by Language
 
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 121 | 0 | 0 | 121 |
-| `bash` | 236 | 236 | 0 | 0 |
+| `bash` | 240 | 240 | 0 | 0 |
 | `cpp` | 1 | 0 | 0 | 1 |
 | `csharp` | 307 | 307 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
@@ -30,7 +30,7 @@
 | `markdown` | 6 | 0 | 0 | 6 |
 | `md` | 10 | 0 | 0 | 10 |
 | `mermaid` | 42 | 0 | 0 | 42 |
-| `powershell` | 102 | 0 | 0 | 102 |
+| `powershell` | 103 | 0 | 0 | 103 |
 | `python` | 3 | 3 | 0 | 0 |
 | `sql` | 14 | 0 | 0 | 14 |
 | `text` | 80 | 0 | 0 | 80 |
@@ -112,6 +112,7 @@ No invalid code examples found.
 | `docs/diagrams/uml/README.md` | 2 |
 | `docs/docfx/README.md` | 4 |
 | `docs/docfx/api/index.md` | 1 |
+| `docs/engineering/README.md` | 2 |
 | `docs/engineering/actions-rollout-measurement-2026-10-05.md` | 1 |
 | `docs/engineering/actions-workflow-followup-2026-10-15.md` | 1 |
 | `docs/engineering/blueprints/accounting/commitment-and-capital-call-engine.md` | 21 |
@@ -165,7 +166,7 @@ No invalid code examples found.
 | `docs/source/generated/adapter-readiness-matrix.md` | 1 |
 | `docs/source/source-documentation-standard.md` | 3 |
 | `docs/source/source-todo-standard.md` | 1 |
-| `docs/start/README.md` | 2 |
+| `docs/start/README.md` | 4 |
 | `docs/status/README.md` | 1 |
 | `docs/status/evidence/dk1-pilot-parity-runbook.md` | 1 |
 | `docs/status/evidence/prd-106-portfolio-snapshot-hardening.md` | 1 |
