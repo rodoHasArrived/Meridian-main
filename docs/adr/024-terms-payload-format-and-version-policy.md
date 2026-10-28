@@ -374,7 +374,9 @@ This command verifies referenced files and directories exist; it does not valida
     [ADR-025](025-contractual-schedule-kernel.md#applications). A row whose block is empty re-emits at
     the write version on its next re-serialization (generalized by the increment 4b entry below: the
     highest version among the terms it still holds): the data is equal, and a contract node shows
-    only the informational BEHIND notice.
+    only the informational BEHIND notice (redefined by the increment 5a entry below: under stamp
+    model S2 that stamp is what a contract node writes for the terms the row holds, so it shows
+    none).
   - **Deploy.** Roll every node forward to this build (and to the next readable step's build) before
     any contract step raises a write version.
   - **Rollback floor.** Once a contract node has written a version-2 or version-3 stamp, no node may
@@ -429,7 +431,9 @@ This command verifies referenced files and directories exist; it does not valida
     versioned terms it still holds, or at the write version when it holds none. A Bond stamped 3
     that holds only conventions re-emits at 2, and one that holds nothing at 1; a StructuredCredit
     stamped 4 re-emits at 3 or 2 in the same way. The data is equal, and a contract node shows only
-    the informational BEHIND notice.
+    the informational BEHIND notice (redefined by the increment 5a entry below: under stamp model
+    S2 each of these stamps is what a contract node writes for the terms the row holds, so it shows
+    none).
   - **Economic terms.** Declared schedules fill the economic `call` module under one rule, frozen in
     [ADR-025](025-contractual-schedule-kernel.md#applications). Bond and CertificateOfDeposit keep
     `isCallable` and `firstCallDate` from their scalar call terms, and `callPrice` stays null, since

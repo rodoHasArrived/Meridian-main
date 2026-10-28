@@ -35,8 +35,12 @@ holiday data. The fleet-wide parity gate it feeds is in the
 - Platform: the host's own operating system; any shell.
 - Working directory: `<dataRoot>/calendars` on the node. Create it if it does not exist.
 - Logs: the host's log from start. On a WPF desktop, `ILogger` output reaches only the generic
-  host's default providers ([WPF README](../../src/Meridian.Wpf/README.md)), so attach the capture
-  before the host starts.
+  host's default providers ([WPF README](../../src/Meridian.Wpf/README.md)), none of which keeps
+  these Information lines without extra setup. Start the desktop with its console output kept in a
+  file, as
+  [Capturing a desktop's lines](security-master-terms-contract-rollout.md#capturing-a-desktops-lines)
+  in the terms contract rollout describes, and keep that file. A desktop logs these lines only
+  after sign-in, once its main window is shown.
 
 ## File Format
 
@@ -68,8 +72,8 @@ reports it as a coverage gap in its evidence and logs it at Debug, without block
 1. **Prepare the file outside the directory.** Write it under another name or path, check it
    against the format above, and raise `version` above the version the node currently logs for that
    id. Any content change needs a new version: a holiday added or removed, a weekend change or a
-   coverage change. The loader cannot tell a changed file from the previous one; only the version
-   bump makes the change visible across nodes.
+   coverage change. The hash changes with any content change, but only a version bump tells nodes
+   and the data owner which content is current; never ship changed content under an old version.
 2. **Move it into place.** Move the finished file into `<dataRoot>/calendars` as `{ID}.json` in one
    step (a rename on the same volume), so the host never reads a partial file.
 3. **Restart the host.** Files are read once at host start; there is no hot reload.

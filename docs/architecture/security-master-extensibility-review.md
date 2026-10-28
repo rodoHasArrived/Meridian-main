@@ -6916,7 +6916,7 @@ written, and the owner took its open decisions on 2026-10-28; they are listed at
   `StructuredCashFlowProjectionDto`, so in-solution callers recompile while the JSON is unchanged
   when it is null. Storage adds `FileBusinessDayCalendarSource` and
   `BusinessDayCalendarFileRefusal`. There is no migration and no `schema_version` or `terms_format`
-  change; the schema-control contracts manifest is refreshed.
+  change; the schema-control contracts manifest is to be refreshed for the new public types.
 
 **Deploy and rollback floor.** 5a writes nothing differently, so it rolls forward and back freely
 until 5b-2's first declaring write. From that write on, no node, desktops included, may run below
@@ -6930,6 +6930,25 @@ installing real ones waits on decision 10's named owner. The fleet procedure, wi
 gate, the 5b gates, edit routing and the floors for 4a, 4b, 5a and 5b-2, is the
 [terms contract rollout](../operators/security-master-terms-contract-rollout.md); the calendar
 procedure is [Business-Day Calendar Files](../operators/business-day-calendar-files.md).
+
+**The 5b gate queries.** The rollout writes out Q1, Q1b and QR, which the plan required of this
+increment, and states how a desktop's capability line is captured. The queries follow AQ1's
+conventions: class names resolved as `SecurityAssetClassCatalog.GetOrDefault` resolves them,
+aliases included, keys folded under the C collation, and a refusal of any encoding but UTF8.
+Populated means what `SecurityAssetTermsSchema.IsPopulatedTermValue` means, and a profile envelope
+what `SecurityTermsEnvelope.IsProfileGovernedPayload` decides. They were run, as written there, on
+PostgreSQL 16 against synthetic rows, in a UTF8 database with the C collation and in one whose
+default collation is ICU Turkish, with the same counts in both. Q1 counted populated blocks and
+arrays, case-variant keys holding `null` or `[]`, aliased and padded class names, a Bond carrying a
+profile id, and StructuredCredit rows whose `customProfileId` is blank or not a string or whose
+`profileFields` is not an object. It skipped unset spellings (`null`, `{"paymentCalendars": []}`,
+`[{}]`), StructuredCredit profile envelopes, Equity and Swap root blocks, non-object terms and a
+near-miss key. Q1b counted populated and case-variant leg blocks in each leg container, and skipped
+unset blocks, a container that is not an array and a Bond's legs. QR counted economic-only events
+showing each signal, including one whose class comes from `typeName` because `legacyAssetClass`
+is blank, and skipped unset signals, events with retained flat terms, legacy projection payloads,
+Equity and Swap events, payloads and modules that are not objects. Over the near misses alone, in
+the ICU Turkish database, all three returned no rows, and a SQL_ASCII database was refused.
 
 **The owner decisions taken (2026-10-28).** The owner answered "Go with the recommendations" to
 every open decision of the increment-5 plan:

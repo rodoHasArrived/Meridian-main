@@ -582,8 +582,8 @@ This command verifies referenced files and directories exist; it does not valida
   - **Conflicts and members with no effect.** Refused: a `rollConvention` other than `EndOfMonth`
     with `endOfMonthRule: true`, and `EndOfMonth` with `endOfMonthRule: false`;
     `accrualAdjusted: true` without a convention other than `Unadjusted`; a convention other than
-    `Unadjusted` with `accrualAdjusted` absent (decision 5: the block must say whether the
-    convention reaches accrual dates); a convention other than `Unadjusted` with
+    `Unadjusted` with `accrualAdjusted` absent (decision 5 of the increment-5 plan: the block must
+    say whether the convention reaches accrual dates); a convention other than `Unadjusted` with
     `accrualAdjusted: false` and a payment lag above 0, because the kernel counts a lag from the
     unadjusted accrual end and applies no payment convention with it; and a negative lag.
   - **Defaults.** Forward generation, short stubs, the anchored grid, a 1,200-period limit
@@ -609,8 +609,8 @@ This command verifies referenced files and directories exist; it does not valida
     declared convention verbatim, and it means that convention: it always governs payment dates,
     and it governs accrual dates only when the flat block's `accrualAdjusted` is true. The economic
     module does not carry `accrualAdjusted`, so it cannot say on its own whether accrual dates
-    move; since decision 5 requires `accrualAdjusted` with any convention other than `Unadjusted`,
-    the flat block always says.
+    move; since decision 5 of the increment-5 plan requires `accrualAdjusted` with any convention
+    other than `Unadjusted`, the flat block always says.
   - **Coupon treatment.** Coupon, face, factor and day count still come from
     `StructuredCashFlowTermsResolver`, as on the legacy path. `couponRateUnit` `Percent` divides the
     coupon by 100 and `Fraction` takes it as written (SCH-DEF-003); an absent unit keeps the legacy
@@ -720,11 +720,21 @@ This command verifies referenced files and directories exist; it does not valida
     {KernelVersion}, terms versions {TermsVersions}, business-day calendars {CalendarCount}:
     {Calendars}", so a node's build and calendar set are visible before any record depends on them
     ([terms contract rollout](../operators/security-master-terms-contract-rollout.md)).
-  - **`ResolveShape`.** It applies every rule above except calendar resolution, then runs the kernel
-    over the spec with no adjustments and no lag; a kernel failure is `KernelRefused`, "Declared
-    schedule could not be generated: {kernel failure message}". Increment 5b-1's write rules call
-    it, so a written declaring Bond can afterwards be blocked only by calendar availability and by
-    calendar-dependent kernel failures (`BusinessDayAdjustmentFailed`, `AdjustedPeriodCollapsed`).
+  - **`ResolveShape`.** It applies every factory rule above except calendar resolution, then runs
+    the kernel over the spec with no adjustments and no lag; a kernel failure is `KernelRefused`,
+    "Declared schedule could not be generated: {kernel failure message}". Increment 5b-1's write
+    rules call it, so no factory refusal and no calendar-free kernel failure can block a written
+    declaring Bond. That is all it guarantees: every check that runs after the factory can still
+    block one. These are calendar availability and the calendar-dependent kernel failures
+    (`BusinessDayAdjustmentFailed`, `AdjustedPeriodCollapsed`); step-coupon or inflation-linked
+    terms and a missing coupon rate; and the declared walk's refusals: a contractual principal
+    schedule, a missing or unrecognized `dayCount` with a rate above 0, `Level` on a `Term` period
+    with a rate above 0, and the day-count refusals (Act/Act ICMA on adjusted accrual dates,
+    Business/252 without a calendar). Bond's `couponRate` and `dayCount` are optional in its
+    schema, so a written block does not imply either. Of these, 5b-1's write rules are to refuse
+    only Business/252 without block calendars, ICMA with `accrualAdjusted: true` and `Level` with an
+    `AtMaturity` frequency; the others stay projection-time blocks unless a later change adds write
+    rules for them.
   - **The increment-8 proposals, amended.** Bermudan exercise dates take the roll the factory
     resolves (a declared `rollConvention`, then `endOfMonthRule`, then `AnchorDay`), not
     `rollConvention` alone. American windows and `Business` notice counts use the block's
