@@ -320,6 +320,97 @@ class ValidateScreenshotCapturesTests(unittest.TestCase):
         self.assertNotEqual(0, result.returncode)
         self.assertIn("Manifest status is 'failed', expected 'passed'.", result.stderr)
 
+    def test_web_validation_requires_explicit_manifest_to_be_readable(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            output = root / "screens"
+            output.mkdir()
+            self.write_png(output / "web-a.png")
+            config = root / "routes.json"
+            config.write_text(
+                json.dumps({"captures": [{"name": "web-a", "path": "/strategy"}]}),
+                encoding="utf-8",
+            )
+            missing = root / "missing.json"
+            invalid = root / "invalid.json"
+            invalid.write_text("{broken", encoding="utf-8")
+            wrong_shape = root / "list.json"
+            wrong_shape.write_text("[]", encoding="utf-8")
+
+            for manifest, expected_error in (
+                (missing, "Capture manifest file does not exist"),
+                (output, "Capture manifest file does not exist"),
+                (invalid, "Capture manifest could not be read"),
+                (wrong_shape, "Capture manifest must contain a JSON object"),
+            ):
+                with self.subTest(manifest=manifest.name):
+                    result = self.run_validator(
+                        "--surface", "web",
+                        "--output-dir", str(output),
+                        "--web-routes", str(config),
+                        "--manifest", str(manifest),
+                        "--require-fresh",
+                    )
+                    self.assertNotEqual(0, result.returncode)
+                    self.assertIn(expected_error, result.stderr)
+                    self.assertNotIn("Traceback", result.stderr)
+
+    def test_web_validation_requires_successful_manifest_status(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            output = root / "screens"
+            output.mkdir()
+            self.write_png(output / "web-a.png")
+            config = root / "routes.json"
+            config.write_text(
+                json.dumps({"captures": [{"name": "web-a", "path": "/strategy"}]}),
+                encoding="utf-8",
+            )
+            manifest = root / "manifest.json"
+            payload = {
+                "generatedAtUtc": datetime.now(timezone.utc).isoformat(),
+                "captures": [{
+                    "name": "web-a",
+                    "route": "/strategy",
+                    "path": str(output / "web-a.png"),
+                    "expectedPath": "/workstation/strategy",
+                    "actualPath": "/workstation/strategy",
+                    "status": "passed",
+                }],
+            }
+            for status_fields in ({}, {"status": None}, {"status": ""}, {"status": "running"}):
+                with self.subTest(status_fields=status_fields):
+                    manifest.write_text(json.dumps({**payload, **status_fields}), encoding="utf-8")
+                    result = self.run_validator(
+                        "--surface", "web",
+                        "--output-dir", str(output),
+                        "--web-routes", str(config),
+                        "--manifest", str(manifest),
+                    )
+                    self.assertNotEqual(0, result.returncode)
+                    self.assertIn("expected 'passed'", result.stderr)
+
+    def test_web_validation_without_manifest_still_checks_catalog_images(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            output = root / "screens"
+            output.mkdir()
+            self.write_png(output / "web-a.png")
+            config = root / "routes.json"
+            config.write_text(
+                json.dumps({"captures": [{"name": "web-a", "path": "/strategy"}]}),
+                encoding="utf-8",
+            )
+
+            result = self.run_validator(
+                "--surface", "web",
+                "--output-dir", str(output),
+                "--web-routes", str(config),
+                "--require-fresh",
+            )
+
+        self.assertEqual(0, result.returncode, result.stderr)
+
     def test_desktop_validation_fails_wrong_page_tag(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)

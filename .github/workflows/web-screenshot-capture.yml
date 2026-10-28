@@ -11,7 +11,12 @@ on:
         description: Path to the routes configuration file.
         required: false
         default: "scripts/dev/web-screenshot-routes.json"
-  # Dispatch is a publish path and always captures from the default branch, so
+      create_pr:
+        description: Open a catalog refresh pull request after capture and validation pass.
+        type: boolean
+        required: false
+        default: true
+  # Dispatch always captures from the default branch (optionally publishing), so
   # it can only ever report on what has already merged. Every route that broke
   # in the 2026-08-26 run broke in a pull request that this workflow never saw.
   # The pull_request lane below renders the proposed commit instead, so a route
@@ -22,12 +27,18 @@ on:
       - "scripts/dev/capture-web-screenshots.mjs"
       - "scripts/dev/web-screenshot-routes.json"
       - "scripts/dev/web-screenshot-fixtures.json"
+      - "scripts/dev/web-screenshot-scenarios.mjs"
+      - "scripts/dev/capture-web-screenshots.test.mjs"
+      - "scripts/dev/web-screenshot-scenarios.test.mjs"
       - "scripts/dev/validate-screenshot-captures.py"
+      - "scripts/dev/summarize-web-screenshots.py"
+      - "tests/scripts/test_refresh_screenshots_workflow.py"
+      - "tests/scripts/test_validate_screenshot_captures.py"
+      - "tests/scripts/test_summarize_web_screenshots.py"
       - ".github/workflows/web-screenshot-capture.yml"
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 concurrency:
   # A dispatch always checks out the default branch and writes the fixed
@@ -42,19 +53,23 @@ concurrency:
 env:
   CI: true
   PLAYWRIGHT_INSTALL_ATTEMPTS: 2
-  PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS: 1200
+  PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS: 720
+  CAPTURE_DIR: artifacts/web-screenshots/captures
 
 jobs:
   capture-web-screenshots:
     name: Capture Web Workstation Screenshots
-    # Publish path only. This job writes the automation branch and opens the
-    # refresh PR, so it stays on dispatch and never runs for a pull request.
+    # Only dispatch may write the automation branch and open a refresh PR.
     if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     timeout-minutes: 50
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
       - name: Check out repository
+        id: checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # Always capture and propose the refresh from the canonical default branch so a
@@ -63,6 +78,40 @@ jobs:
           ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
           fetch-depth: 1
+
+      - name: Validate web output directory
+        id: validate_output_dir
+        env:
+          REQUESTED_OUTPUT_DIR: ${{ inputs.output_dir }}
+        run: |
+          set -euo pipefail
+          BASE_DIR="docs/screenshots/web"
+          requested="${REQUESTED_OUTPUT_DIR:-$BASE_DIR}"
+
+          if [[ "$requested" = /* ]] || [[ "$requested" =~ ^[A-Za-z]:[\\/] ]]; then
+            echo "::error::output_dir must be a repository-relative path under '$BASE_DIR'."
+            exit 1
+          fi
+
+          export REQUESTED_OUTPUT_DIR="$requested"
+          resolved="$(python - <<'PYTHON'
+          import os
+          from pathlib import Path
+
+          repo_root = Path(os.environ["GITHUB_WORKSPACE"]).resolve()
+          base_dir = (repo_root / "docs/screenshots/web").resolve()
+          candidate = (repo_root / os.environ["REQUESTED_OUTPUT_DIR"]).resolve()
+
+          try:
+              candidate.relative_to(base_dir)
+          except ValueError:
+              raise SystemExit(f"::error::output_dir must stay within 'docs/screenshots/web'. Received '{os.environ['REQUESTED_OUTPUT_DIR']}'.")
+
+          print(candidate.relative_to(repo_root).as_posix())
+          PYTHON
+          )"
+
+          echo "safe_output_dir=$resolved" >> "$GITHUB_OUTPUT"
 
       - name: Set up Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -75,6 +124,9 @@ jobs:
         # Use a clean, lockfile-pinned install (matching ci.yml) so the capture
         # run is reproducible and cannot silently drift the dependency tree.
         run: npm ci --prefix src/Meridian.Ui/dashboard --include=optional
+
+      - name: Test screenshot harness
+        run: node --test scripts/dev/capture-web-screenshots.test.mjs scripts/dev/web-screenshot-scenarios.test.mjs
 
       - name: Cache Playwright browsers
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -129,44 +181,11 @@ jobs:
             attempt=$((attempt + 1))
           done
 
-      - name: Validate web output directory
-        id: validate_output_dir
-        env:
-          REQUESTED_OUTPUT_DIR: ${{ inputs.output_dir }}
-        run: |
-          set -euo pipefail
-          BASE_DIR="docs/screenshots/web"
-          requested="${REQUESTED_OUTPUT_DIR:-$BASE_DIR}"
-
-          if [[ "$requested" = /* ]] || [[ "$requested" =~ ^[A-Za-z]:[\\/] ]]; then
-            echo "::error::output_dir must be a repository-relative path under '$BASE_DIR'."
-            exit 1
-          fi
-
-          export REQUESTED_OUTPUT_DIR="$requested"
-          resolved="$(python - <<'PYTHON'
-          import os
-          from pathlib import Path
-
-          repo_root = Path(os.environ["GITHUB_WORKSPACE"]).resolve()
-          base_dir = (repo_root / "docs/screenshots/web").resolve()
-          candidate = (repo_root / os.environ["REQUESTED_OUTPUT_DIR"]).resolve()
-
-          try:
-              candidate.relative_to(base_dir)
-          except ValueError:
-              raise SystemExit(f"::error::output_dir must stay within 'docs/screenshots/web'. Received '{os.environ['REQUESTED_OUTPUT_DIR']}'.")
-
-          print(candidate.relative_to(repo_root).as_posix())
-          PYTHON
-          )"
-
-          echo "safe_output_dir=$resolved" >> "$GITHUB_OUTPUT"
       - name: Capture web screenshots
         id: capture_web
         env:
-          OUTPUT_DIR: ${{ steps.validate_output_dir.outputs.safe_output_dir }}
-          ROUTES_CONFIG: ${{ inputs.config }}
+          OUTPUT_DIR: ${{ env.CAPTURE_DIR }}
+          ROUTES_CONFIG: ${{ inputs.config || 'scripts/dev/web-screenshot-routes.json' }}
         run: |
           if [ -d "$OUTPUT_DIR" ]; then
             find "$OUTPUT_DIR" -maxdepth 1 -type f -name '*.png' -delete
@@ -176,10 +195,11 @@ jobs:
             --config "$ROUTES_CONFIG"
 
       - name: Validate web screenshot captures
+        id: validate_web
         if: ${{ steps.capture_web.outcome == 'success' }}
         env:
-          OUTPUT_DIR: ${{ steps.validate_output_dir.outputs.safe_output_dir }}
-          ROUTES_CONFIG: ${{ inputs.config }}
+          OUTPUT_DIR: ${{ env.CAPTURE_DIR }}
+          ROUTES_CONFIG: ${{ inputs.config || 'scripts/dev/web-screenshot-routes.json' }}
         run: >
           python scripts/dev/validate-screenshot-captures.py
           --surface web
@@ -188,50 +208,19 @@ jobs:
           --manifest artifacts/web-screenshots/manifest.json
           --require-fresh
 
-      - name: Log web screenshot capture status
-        if: ${{ always() }}
+      - name: Stage validated catalog refresh
+        if: ${{ success() && inputs.create_pr && steps.validate_web.outcome == 'success' }}
         env:
           OUTPUT_DIR: ${{ steps.validate_output_dir.outputs.safe_output_dir }}
         run: |
-          if [ ! -d "$OUTPUT_DIR" ]; then
-            echo "::warning::Web screenshot output directory '$OUTPUT_DIR' was not created."
-            exit 0
-          fi
-
-          COUNT=$(find "$OUTPUT_DIR" -maxdepth 1 -type f -name '*.png' | wc -l | tr -d ' ')
-          if [ "$COUNT" -eq 0 ]; then
-            echo "::warning::No web screenshots were captured under '$OUTPUT_DIR'."
-          else
-            echo "[INFO] Captured $COUNT web screenshot(s) in '$OUTPUT_DIR'."
-          fi
-
-      - name: Upload screenshot artifacts
-        # Upload whatever screenshots were captured even when some routes failed
-        # to render, so a partial run still surfaces the screens that worked.
-        if: ${{ always() }}
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: web-screenshots-${{ github.run_number }}
-          path: ${{ steps.validate_output_dir.outputs.safe_output_dir }}/*.png
-          if-no-files-found: ignore
-          retention-days: 14
-
-      - name: Upload capture manifest
-        # The run manifest records per-route pass/fail status, browser render
-        # errors, and the tail of the dev-server logs. Uploading it on every run
-        # (including failures) makes a broken capture diagnosable without a
-        # re-run.
-        if: ${{ always() }}
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: web-screenshots-manifest-${{ github.run_number }}
-          path: artifacts/web-screenshots/manifest.json
-          if-no-files-found: warn
-          retention-days: 14
+          set -euo pipefail
+          mkdir -p "$OUTPUT_DIR"
+          find "$OUTPUT_DIR" -maxdepth 1 -type f -name '*.png' -delete
+          cp "$CAPTURE_DIR"/*.png "$OUTPUT_DIR/"
 
       - name: Open screenshot refresh pull request
-        if: ${{ steps.capture_web.outcome == 'success' }}
-        continue-on-error: true
+        id: refresh_pr
+        if: ${{ success() && inputs.create_pr && steps.validate_web.outcome == 'success' }}
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
         with:
           branch: automation/web-screenshot-capture
@@ -240,10 +229,34 @@ jobs:
           commit-message: "chore: refresh web workstation screenshot catalog"
           body: |
             Automated refresh of the web workstation screenshot catalog captured by the
-            Web Screenshot Capture workflow. Review the rendered routes before merging.
+            Web Screenshot Capture workflow. Every configured capture and the freshness,
+            route identity, and image-quality checks passed before staging this catalog.
+
+            Capture evidence: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            Review the rendered routes before merging.
           add-paths: |
             ${{ steps.validate_output_dir.outputs.safe_output_dir }}/*.png
           delete-branch: true
+
+      - name: Summarize web screenshot run
+        if: ${{ always() }}
+        env:
+          CAPTURE_OUTCOME: ${{ steps.capture_web.outcome }}
+          VALIDATION_OUTCOME: ${{ steps.validate_web.outcome }}
+          PUBLISH_OUTCOME: ${{ steps.refresh_pr.outcome }}
+          SOURCE_SHA: ${{ steps.checkout.outputs.commit }}
+        run: >
+          python scripts/dev/summarize-web-screenshots.py
+          --github-step-summary "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload screenshot artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: web-screenshots-${{ github.run_number }}-${{ github.run_attempt }}
+          path: artifacts/web-screenshots/
+          if-no-files-found: warn
+          retention-days: 14
 
   validate-pull-request-screenshots:
     name: Validate Web Workstation Screenshots (pull request)
@@ -251,13 +264,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 50
     # Validation only. This job renders the proposed commit and reports; it
-    # writes no branch and opens no PR, so it drops the write scopes the
-    # workflow grants the publish job above.
+    # writes no branch and opens no PR; write scopes belong to dispatch only.
     permissions:
       contents: read
 
     steps:
       - name: Check out pull request head
+        id: checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # The pull request's own commit, not the merge ref. This job answers
@@ -279,6 +292,9 @@ jobs:
         # Use a clean, lockfile-pinned install (matching ci.yml) so the capture
         # run is reproducible and cannot silently drift the dependency tree.
         run: npm ci --prefix src/Meridian.Ui/dashboard --include=optional
+
+      - name: Test screenshot harness
+        run: node --test scripts/dev/capture-web-screenshots.test.mjs scripts/dev/web-screenshot-scenarios.test.mjs
 
       - name: Cache Playwright browsers
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -343,7 +359,7 @@ jobs:
         # uses the catalog's own defaults. Nothing here is operator-supplied,
         # which is also why it needs no output-directory sanitisation.
         env:
-          OUTPUT_DIR: docs/screenshots/web
+          OUTPUT_DIR: ${{ env.CAPTURE_DIR }}
           ROUTES_CONFIG: scripts/dev/web-screenshot-routes.json
         run: |
           if [ -d "$OUTPUT_DIR" ]; then
@@ -354,9 +370,10 @@ jobs:
             --config "$ROUTES_CONFIG"
 
       - name: Validate web screenshot captures
+        id: validate_web
         if: ${{ steps.capture_web.outcome == 'success' }}
         env:
-          OUTPUT_DIR: docs/screenshots/web
+          OUTPUT_DIR: ${{ env.CAPTURE_DIR }}
           ROUTES_CONFIG: scripts/dev/web-screenshot-routes.json
         run: >
           python scripts/dev/validate-screenshot-captures.py
@@ -366,25 +383,22 @@ jobs:
           --manifest artifacts/web-screenshots/manifest.json
           --require-fresh
 
-      - name: Upload rendered screenshots
-        # Uploaded even on failure: the PNGs that did render are how a reviewer
-        # tells a broken route from a broken harness.
+      - name: Summarize web screenshot run
         if: ${{ always() }}
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: web-screenshots-pr${{ github.event.pull_request.number }}-${{ github.run_number }}
-          path: docs/screenshots/web/*.png
-          if-no-files-found: ignore
-          retention-days: 14
+        env:
+          CAPTURE_OUTCOME: ${{ steps.capture_web.outcome }}
+          VALIDATION_OUTCOME: ${{ steps.validate_web.outcome }}
+          PUBLISH_OUTCOME: skipped
+          SOURCE_SHA: ${{ steps.checkout.outputs.commit }}
+        run: >
+          python scripts/dev/summarize-web-screenshots.py
+          --github-step-summary "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload capture manifest
-        # Per-route pass/fail status, browser render errors, and the tail of the
-        # dev-server logs -- what makes a failed capture diagnosable without a
-        # re-run.
+      - name: Upload screenshot artifacts
         if: ${{ always() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: web-screenshots-pr${{ github.event.pull_request.number }}-manifest-${{ github.run_number }}
-          path: artifacts/web-screenshots/manifest.json
+          name: web-screenshots-pr${{ github.event.pull_request.number }}-${{ github.run_number }}-${{ github.run_attempt }}
+          path: artifacts/web-screenshots/
           if-no-files-found: warn
           retention-days: 14
