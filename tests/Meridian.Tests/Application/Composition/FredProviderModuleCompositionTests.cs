@@ -140,11 +140,14 @@ public sealed class FredProviderModuleCompositionTests : IDisposable
         registry.GetCapability<ISymbolSearchProvider>("fred").Should().BeOfType<FredSymbolSearchProvider>();
     }
 
-    [Fact]
-    public async Task Failed_Fred_credentials_do_not_fall_back_or_prevent_other_providers_from_starting()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Failed_Fred_credentials_do_not_fall_back_or_prevent_other_providers_from_starting(bool sidecarPresent)
     {
-        var services = CreateServices(CreateConfig(new FredConfig(ApiKey: "must-not-fall-back")));
-        services.AddSingleton<IProviderCredentialResolver>(new FailingFredCredentialResolver());
+        var services = new ServiceCollection();
+        services.AddProviderServices(CreateConfig(new FredConfig(ApiKey: "must-not-fall-back")),
+            new FailingFredCredentialResolver(), sidecars: sidecarPresent ? FredSidecar() : null);
         await using var provider = services.BuildServiceProvider();
 
         var registry = provider.GetRequiredService<ProviderRegistry>();
@@ -175,24 +178,24 @@ public sealed class FredProviderModuleCompositionTests : IDisposable
     [InlineData("sidecar", "sidecar-key")]
     [InlineData("module-environment", "mapped-key")]
     [InlineData("stored", "stored-key")]
+    [InlineData("stored-over-sidecar", "stored-key")]
+    [InlineData("stored-over-module-environment", "stored-key")]
     [InlineData("environment", "environment-key")]
     [InlineData("config", "configured-key")]
     public async Task Both_capabilities_retain_credential_precedence_on_the_wire(string source, string expectedKey)
     {
         if (source != "config")
             Environment.SetEnvironmentVariable("FRED_API_KEY", "environment-key");
-        if (source is "sidecar" or "module-environment")
+        if (source is "sidecar" or "module-environment" or "stored-over-sidecar" or "stored-over-module-environment")
             Environment.SetEnvironmentVariable(MappedKeyVariable, "mapped-key");
-        var config = CreateConfig(new FredConfig(ApiKey: "configured-key"), credentialMapping: MappedKeyVariable);
+        var config = CreateConfig(new FredConfig(ApiKey: "configured-key"),
+            credentialMapping: source is "module-environment" or "stored-over-module-environment" ? MappedKeyVariable : null);
         var services = new ServiceCollection();
-        IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? sidecars = source == "sidecar"
-            ? new Dictionary<string, IReadOnlyDictionary<string, string>>
-            {
-                ["fred-symbols"] = new Dictionary<string, string> { ["apiKey"] = "sidecar-key" }
-            }
+        IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? sidecars = source is "sidecar" or "stored-over-sidecar"
+            ? FredSidecar()
             : null;
         IProviderCredentialResolver resolver = new EnvironmentCredentialResolver();
-        if (source is "sidecar" or "module-environment" or "stored")
+        if (source.StartsWith("stored", StringComparison.Ordinal))
         {
             var store = new FileProviderCredentialStore(_credentialRoot);
             await store.SaveAsync(new ProviderCredentialSaveRequest("fred",
@@ -214,6 +217,48 @@ public sealed class FredProviderModuleCompositionTests : IDisposable
         requests.Should().OnlyContain(uri => uri.GetComponents(UriComponents.Query, UriFormat.Unescaped)
             .Contains($"api_key={expectedKey}", StringComparison.Ordinal));
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Retained_empty_credentials_cannot_borrow_module_or_environment_keys(bool scoped)
+    {
+        Environment.SetEnvironmentVariable("FRED_API_KEY", "environment-key");
+        Environment.SetEnvironmentVariable(MappedKeyVariable, "mapped-key");
+        var store = new FileProviderCredentialStore(_credentialRoot);
+        var empty = new ProviderCredentialSaveRequest("fred", new Dictionary<string, string?>(), Actor: "test");
+        IProviderCredentialResolver resolver;
+        if (scoped)
+        {
+            await store.SaveAsync(empty with { Credentials = new Dictionary<string, string?> { ["ApiKey"] = "other-owner-key" } });
+            var scope = new ProviderCredentialScope("tenant-a", "fred-connection", "fred-account", "production");
+            await store.SaveScopedAsync(empty, scope);
+            resolver = new StoredProviderCredentialResolver(store, new EnvironmentCredentialResolver(), scope);
+        }
+        else
+        {
+            await store.SaveAsync(empty);
+            resolver = new StoredProviderCredentialResolver(store, new EnvironmentCredentialResolver());
+        }
+        var services = new ServiceCollection();
+        services.AddProviderServices(CreateConfig(new FredConfig(ApiKey: "configured-key"),
+            credentialMapping: MappedKeyVariable), resolver, sidecars: FredSidecar());
+        var requests = CaptureHttp(services);
+        await using var provider = services.BuildServiceProvider();
+        HttpClientFactoryProvider.Initialize(provider);
+
+        var registry = provider.GetRequiredService<ProviderRegistry>();
+
+        registry.GetCapability<IHistoricalDataProvider>("fred").Should().BeNull();
+        registry.GetCapability<ISymbolSearchProvider>("fred").Should().BeNull();
+        requests.Should().BeEmpty();
+    }
+
+    private static IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> FredSidecar() =>
+        new Dictionary<string, IReadOnlyDictionary<string, string>>
+        {
+            ["fred-symbols"] = new Dictionary<string, string> { ["apiKey"] = "sidecar-key" }
+        };
 
     private static AppConfig CreateConfig(FredConfig? fred, bool familyEnabled = true, string? credentialMapping = null)
         => new(Backfill: new BackfillConfig(Providers: new BackfillProvidersConfig(Fred: fred)),

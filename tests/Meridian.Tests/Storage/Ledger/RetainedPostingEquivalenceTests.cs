@@ -10,7 +10,7 @@ namespace Meridian.Tests.Storage.Ledger;
 /// a conflict. Both directions matter: a missed difference acknowledges a posting the books will
 /// never contain, and a false difference turns an ordinary operator retry into a hard failure.
 /// </summary>
-public sealed class RetainedPostingEquivalenceTests
+public sealed partial class RetainedPostingEquivalenceTests
 {
     private static readonly Guid AggregateId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid PeriodId = Guid.Parse("22222222-2222-2222-2222-222222222222");

@@ -11,6 +11,8 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Infrastructure
 
+Statement importers retain parser revision and upstream executed mapping proof; pre-normalized imports without upstream proof remain non-comparable. Immutable match artifacts retain that mapping fingerprint. Source-generated import and match hashing supports exact completed-checkpoint verification without rewriting legacy bytes.
+
 Broker amendment and cancellation failures retain the broker-observed order status and use
 operation-specific reports. Alpaca amendments resolve explicit client/broker identifier namespaces
 and retain replacement aliases. Successful PATCH responses remain provisional until independent
@@ -28,7 +30,37 @@ that cancellation publishes its cumulative fills through the replacement chain f
 amendment recovery refuse evidence read across a connection change, rechecked before every report, and `accepted_for_bidding` is a valid provisional
 snapshot state. Durable trade-update hashes omit derived metadata
 while serialized pending reports retain it, preserving replay identities across upgrades.
-Interactive Brokers retains uncertain amendment context for late acknowledgements, sizes execution
+Interactive Brokers implements order and amendment restart recovery from its authoritative
+open-order snapshot, matched by orderRef: echoed terms select the amendment outcome, absent or
+ambiguous orders stay unresolved, evidence read across a reconnect is refused, and recovered
+orders can be cancelled but not amended. The gateway exposes `IBrokerageConnectionState`: its
+scope is the trading environment plus the accounts IB reports via `managedAccounts` for the current
+login. Recovery requires the exact external account retained from the order's broker acknowledgement,
+or an explicitly host-pinned `recoveryAccountId` for legacy records. Membership in the login's managed
+account set never substitutes for order ownership. Unknown ownership stays unresolved before lookup.
+The bounded environment policy supports numeric `DU` paper and `U` live individual accounts, verified
+from broker callbacks and checked against `UsePaperTrading`. Unknown/advisor prefixes, mixed environments,
+and configured-environment contradictions leave the recovery scope unavailable. Multi-account recovery
+requires retained or pinned exact-account evidence. Host/port configuration is not environment proof.
+See [IB's paper-account identification](https://www.interactivebrokers.co.jp/en/support/customer-service.php?p=contact)
+and [TradeStation Global's IB live/paper account guide](https://www.tradestation-international.com/global/simulated-trading/).
+These references ground the narrow supported convention; other account classes require separate broker evidence.
+Broker execution callbacks retain their explicit external account and cannot advance a different owned
+account's cumulative cache. When `orderStatus` precedes `openOrder`, the later account observation enriches
+the latest owned-session report without changing its lifecycle, cumulative fills or prices. Account
+evidence reused by status/cancel/error reports is scoped to the callback session.
+Its connection generation also advances when the client loses or automatically restores the
+transport, and cancellation routes are installed only for evidence from the current session.
+Recovery stays unresolved for a fill price that is not confirmed cumulative, for any amendment that
+requested a trail (the snapshot carries no trailing term), and for an order whose contract is not a
+reported stock. A route recovered from a snapshot is valid only in the session that read it; after a
+session change it is dropped and refused until reconciliation recovers the order again. Cancel and
+modify check the session and send under the same gate as every session change, so a session-scoped
+order id is never sent into a later session, and stale-route cleanup removes only the exact stale
+context it found. An open-orders request abandoned before its `openOrderEnd` (which carries no request
+id) leaves that end owed, so it is drained rather than completing the next request early. Status
+echoes that the open-order snapshot produces for orders this session does not track are kept as
+recovery evidence rather than published as live reports. Interactive Brokers retains uncertain amendment context for late acknowledgements, sizes execution
 fills against pending exposure, keeps cancellation available, and keys
 positions by account plus qualified contract identity. Robinhood replacement submits only after
 confirmed cancellation with cumulative fill evidence, for the intended total less chain fills.
@@ -87,6 +119,15 @@ This layer owns external integration details while depending on lower contracts 
   SFTP publisher adapter for the Contracts-owned ETL publisher port.
 
 ## Important workflows
+
+Provider construction preserves the credential resolver's selected record, including missing,
+removed and deleted fields. Stored records cannot be overlaid by module settings; selected module
+sidecars cannot borrow missing fields from environment mappings. Alpaca historical, streaming,
+search, options, corporate-action and brokerage factories retain this ownership. Brokerage REST
+and trade-update reconnects share the resolved credential snapshot and its retained environment.
+Corporate-action adapters receive the resolved context explicitly, while legacy direct construction
+still supports environment lookup. `ProviderFactoryCredentialIsolationTests` exercises actual
+adapter construction and outbound request credentials across rotation, deletion and owner scopes.
 
 Tracked HTTP clients resolve circuit-breaker callbacks through their owning service provider.
 Each named breaker is a provider-local singleton, retaining state across requests and handler
@@ -198,6 +239,8 @@ configuration. Synthetic, Polygon and NYSE compatibility data sources are also r
 capability declarations through the existing `IProviderModule` mechanism. Historical backfill
 retains its explicit opt-in; search retains its credential-based default. Family disable settings
 and configured/stored/environment credential precedence apply before construction. The module's
+authoritative retained credential context wins over module sidecars and environment mappings,
+including an empty selected record; credential read failures never activate a fallback key. Its
 late configuration gate uses the final host credential resolver without contacting FRED; absent
 credentials leave runtime capabilities unavailable while inventory remains visible. Hosted
 resolution reuses container-owned singletons. Standalone `ProviderFactory` compatibility calls

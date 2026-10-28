@@ -84,6 +84,17 @@ public sealed class GovernedTradeFillLedgerPostingTarget : ITradeFillLedgerPosti
         ArgumentNullException.ThrowIfNull(write);
         ArgumentNullException.ThrowIfNull(write.Entry);
 
+        var collisions = await _journalStore
+            .FindPostingIdentityCollisionsAsync(LedgerPostingIdentity.FromWrite(write), ct)
+            .ConfigureAwait(false);
+        if (collisions.Count == 1 && collisions[0].Entry.JournalEntryId == write.Entry.JournalEntryId)
+        {
+            write = write with
+            {
+                Entry = TradeFillCashFlowReplayCompatibility.SelectCandidate(write.Entry, collisions[0].Entry)
+            };
+        }
+
         var result = await _postingTarget.PostAsync(write, ct).ConfigureAwait(false);
         var retained = await _journalStore
             .FindPostingIdentityCollisionsAsync(LedgerPostingIdentity.FromWrite(write), ct)

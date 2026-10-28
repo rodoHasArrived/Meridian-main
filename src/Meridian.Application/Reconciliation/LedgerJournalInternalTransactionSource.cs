@@ -104,6 +104,7 @@ public sealed class LedgerJournalInternalTransactionSource(
     private const string FitIdTag = "fitid";
     private const string QuantityTag = "quantity";
     private const string SettlementDateTag = "settlementDate";
+    private const string TradeFillPriceTag = "tradeFill.price";
 
     /// <summary>
     /// Activity classifications stamped by internal-only posting paths (period close, valuation
@@ -317,7 +318,14 @@ public sealed class LedgerJournalInternalTransactionSource(
                     transactionType,
                     quantity,
                     netAmount,
-                    $"internal:journal:{journalId}"));
+                    $"internal:journal:{journalId}")
+                {
+                    // The execution consumer also stamps fill audit tags on commission journals.
+                    // Only its single-currency share movement can use the retained execution price.
+                    Price = transactionType == "trade" && currencyGroups.Length == 1 && quantity != 0m
+                        ? ResolveTradeFillPrice(entry.Metadata)
+                        : null
+                });
             }
         }
 
@@ -476,6 +484,14 @@ public sealed class LedgerJournalInternalTransactionSource(
             && decimal.TryParse(quantityText, NumberStyles.Number, CultureInfo.InvariantCulture, out var quantity)
         ? quantity
         : 0m;
+
+    private static decimal? ResolveTradeFillPrice(JournalEntryMetadata metadata) =>
+        metadata.Tags is { } tags
+            && tags.TryGetValue(TradeFillPriceTag, out var priceText)
+            && decimal.TryParse(priceText, NumberStyles.Number, CultureInfo.InvariantCulture, out var price)
+            && price > 0m
+        ? price
+        : null;
 
     private static DateOnly? ResolveSettlementDate(JournalEntryMetadata metadata) =>
         metadata.Tags is { } tags

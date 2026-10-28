@@ -57,6 +57,9 @@ public sealed class TenantGuardedLocalFundAccountService(InMemoryFundAccountServ
     public Task<IReadOnlyList<AccountReconciliationRunDto>> GetReconciliationRunsAsync(Guid accountId, CancellationToken ct = default)
         => gate.ExecuteAsync(() => inner.GetReconciliationRunsAsync(accountId, ct));
 
+    public Task<IReadOnlyList<AccountReconciliationResultDto>> GetReconciliationResultsForAccountsAsync(IReadOnlyCollection<Guid> accountIds, bool openOnly = false, CancellationToken ct = default)
+        => gate.ExecuteAsync(() => inner.GetReconciliationResultsForAccountsAsync(accountIds, openOnly, ct));
+
     public Task<IReadOnlyList<AccountReconciliationResultDto>> GetReconciliationResultsAsync(Guid reconciliationRunId, CancellationToken ct = default)
         => gate.ExecuteAsync(() => inner.GetReconciliationResultsAsync(reconciliationRunId, ct));
 

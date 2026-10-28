@@ -94,6 +94,17 @@ public static partial class FundStructureEndpoints
                 UserPermission.DeliverReporting,
                 UserPermission.AdminMaintenance);
 
+        group.MapGet("/{runId}/amounts", (string runId, HttpContext context) =>
+                ListGovernedReportingAmountsAsync(runId, context, jsonOptions))
+            .WithName("ListGovernedReportingAmounts")
+            .Produces<IReadOnlyList<Meridian.Contracts.Workstation.ReportLedgerAmountBindingDto>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
+            .RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting,
+                UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance);
+
         group.MapGet("/{runId}/artifacts", (string runId, HttpContext context) =>
                 ListGovernedReportingArtifactsAsync(runId, context, jsonOptions))
             .WithName("ListGovernedReportingArtifacts")

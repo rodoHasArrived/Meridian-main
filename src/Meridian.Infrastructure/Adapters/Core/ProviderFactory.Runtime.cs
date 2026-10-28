@@ -40,7 +40,7 @@ public sealed partial class ProviderFactory
             .AddInMemoryCollection(configuredValues.Select(value =>
                 new KeyValuePair<string, string?>(value.Name, credentials.Get(value.Name))))
             .Build();
-        return ActivatorUtilities.CreateInstance<TProvider>(Services, configuration);
+        return ActivatorUtilities.CreateInstance<TProvider>(Services, configuration, credentials);
     }
 
     private IServiceProvider Services => _services ?? throw new InvalidOperationException(
@@ -48,15 +48,21 @@ public sealed partial class ProviderFactory
 
     private ICredentialContext WithModuleCredentials(Type implementation, ICredentialContext fallback)
     {
+        if (fallback.IsAuthoritative)
+            return fallback;
+
         var id = implementation.GetDataSourceMetadata()?.Id;
         return id is not null && _moduleContexts?.TryGetValue(ProviderIdentity.NormalizeId(id), out var context) == true
-            ? new ModuleCredentialContext(context.Credentials, fallback)
+            && (context.CredentialsAreAuthoritative || context.Credentials.Count > 0)
+            ? new ModuleCredentialContext(context)
             : fallback;
     }
 
-    private sealed class ModuleCredentialContext(
-        IReadOnlyDictionary<string, string?> credentials, ICredentialContext fallback) : ICredentialContext
+    private sealed class ModuleCredentialContext(ProviderModuleContext module) : ICredentialContext
     {
+        public bool IsAuthoritative => true;
+        public string? CredentialEnvironment => module.GetSetting("environment") ?? module.GetSetting("tradingEnvironment");
+
         public string? Get(string name)
         {
             var key = name switch
@@ -68,10 +74,10 @@ public sealed partial class ProviderFactory
                 _ when name.EndsWith("_ACCESS_TOKEN", StringComparison.Ordinal) => "accessToken",
                 _ => name
             };
-            if ((credentials.TryGetValue(name, out var value) || credentials.TryGetValue(key, out value)) &&
+            if ((module.Credentials.TryGetValue(name, out var value) || module.Credentials.TryGetValue(key, out value)) &&
                 !string.IsNullOrWhiteSpace(value))
                 return value;
-            return fallback.Get(name);
+            return null;
         }
 
         public bool IsConfigured(string name) => !string.IsNullOrWhiteSpace(Get(name));
@@ -93,8 +99,8 @@ public sealed partial class ProviderFactory
         _config.Backfill?.Providers?.Robinhood?.Enabled == true &&
         !string.IsNullOrWhiteSpace(GetRobinhoodAccessToken());
 
-    private string? GetRobinhoodAccessToken()
-        => CreateCredentialContext<RobinhoodHistoricalDataProvider>().Get("ROBINHOOD_ACCESS_TOKEN");
+    private string GetRobinhoodAccessToken()
+        => CreateCredentialContext<RobinhoodHistoricalDataProvider>().Get("ROBINHOOD_ACCESS_TOKEN") ?? string.Empty;
 
     internal IMarketDataClient CreateIbStreamingClient() => new IBMarketDataClient(
         Services.GetRequiredService<IMarketEventPublisher>(),
@@ -109,9 +115,11 @@ public sealed partial class ProviderFactory
         Services.GetRequiredService<QuoteCollector>(),
         ResolveAlpacaOptions());
 
-    private AlpacaOptions ResolveAlpacaOptions()
+    private AlpacaOptions ResolveAlpacaOptions() => ResolveAlpacaOptions(out _);
+
+    private AlpacaOptions ResolveAlpacaOptions(out ICredentialContext credentials)
     {
-        var credentials = CreateCredentialContext<AlpacaMarketDataClient>(
+        credentials = CreateCredentialContext<AlpacaMarketDataClient>(
             ("ALPACA_KEY_ID", FirstNonBlank(_config.Alpaca?.KeyId, _config.Backfill?.Providers?.Alpaca?.KeyId)),
             ("ALPACA_SECRET_KEY", FirstNonBlank(_config.Alpaca?.SecretKey, _config.Backfill?.Providers?.Alpaca?.SecretKey)));
         return ApplyAlpacaModuleSettings(_config.Alpaca ?? new AlpacaOptions()) with
@@ -189,10 +197,18 @@ public sealed partial class ProviderFactory
 
     internal IBrokerageGateway CreateAlpacaBrokerageGateway()
     {
-        var options = ResolveAlpacaOptions();
-        var stream = new AlpacaTradeUpdatesClient(options, Services.GetRequiredService<ILogger<AlpacaTradeUpdatesClient>>(), Services.GetRequiredService<IAtomicFileWriter>());
+        var options = ResolveAlpacaOptions(out var context);
+        // Keep the selected credentials fixed across REST requests and WebSocket reconnects.
+        // The legacy direct-construction path may still resolve environment credentials itself.
+        var environment = context.CredentialEnvironment is { } selectedEnvironment
+            ? AlpacaCredentialEnvironment.NormalizeTradingEnvironment(selectedEnvironment)
+            : AlpacaCredentialEnvironment.Resolve(options).Environment;
+        var credentials = new AlpacaCredentialSnapshot(options.KeyId, options.SecretKey, environment,
+            UseSandbox: environment != AlpacaCredentialEnvironment.LiveEnvironment);
+        var stream = new AlpacaTradeUpdatesClient(options, Services.GetRequiredService<ILogger<AlpacaTradeUpdatesClient>>(),
+            Services.GetRequiredService<IAtomicFileWriter>(), credentials: credentials);
         return new AlpacaBrokerageGateway(Services.GetRequiredService<IHttpClientFactory>(), options,
-            Services.GetRequiredService<ILogger<AlpacaBrokerageGateway>>(), stream);
+            Services.GetRequiredService<ILogger<AlpacaBrokerageGateway>>(), stream, credentials);
     }
 
     internal IBrokerageGateway CreateRobinhoodBrokerageGateway() => new RobinhoodBrokerageGateway(

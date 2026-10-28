@@ -38,15 +38,18 @@ public sealed partial class FinnhubCorporateActionProvider : ICorporateActionPro
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
+    private readonly ICredentialContext? _credentials;
     private readonly ILogger<FinnhubCorporateActionProvider> _logger;
 
     public FinnhubCorporateActionProvider(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
-        ILogger<FinnhubCorporateActionProvider> logger)
+        ILogger<FinnhubCorporateActionProvider> logger,
+        ICredentialContext? credentials = null)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _credentials = credentials;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -250,6 +253,9 @@ public sealed partial class FinnhubCorporateActionProvider : ICorporateActionPro
 
     private string? ResolveApiKey()
     {
+        if (_credentials is not null)
+            return _credentials.Get("FINNHUB_API_KEY");
+
         return FirstNonEmpty(
             _configuration["FINNHUB_API_KEY"],
             _configuration["FINNHUB__APIKEY"],

@@ -20,6 +20,79 @@ public sealed class FundStructureCashFlowContractTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task CashFlow_UnknownCurrentCashRemainsUnavailable(bool postgres)
+    {
+        var fixture = await SeedAsync(postgres);
+
+        var view = await fixture.Service.GetCashFlowViewAsync(new GovernanceCashFlowQuery(
+            GovernanceCashFlowScopeKindDto.Account, AccountId: fixture.AccountId, AsOf: AsOf));
+
+        Assert.NotNull(view);
+        Assert.Null(Assert.Single(view.Accounts).CurrentCashBalance);
+        Assert.Null(view.CurrentCashBalance);
+        Assert.Null(view.ProjectedClosingCashBalance);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task CashFlow_UsesWholeCorrectedStatementAndRefusesAmbiguousAuthority(bool postgres, bool ambiguous)
+    {
+        var fixture = await SeedAsync(postgres);
+        var date = new DateOnly(2026, 04, 07);
+        var corrected = Guid.NewGuid();
+        var final = new BankStatementLineDto(Guid.NewGuid(), corrected, fixture.AccountId, date, date.AddDays(-1),
+            20m, "USD", "Interest", "Closing income", null, 120m, LineSequence: 20);
+        var first = final with { LineId = Guid.NewGuid(), ValueDate = date, Amount = 10m, ClosingBalance = 100m, LineSequence = 10 };
+        await fixture.Accounts.IngestBankStatementAsync(new(corrected, fixture.AccountId, date,
+            "Bank", null, [final, first], "tests", StatementRevision: 2));
+        var other = Guid.NewGuid();
+        await fixture.Accounts.IngestBankStatementAsync(new(other, fixture.AccountId, date, "Bank", null,
+            [first with { LineId = Guid.NewGuid(), BatchId = other, Amount = 999m, ClosingBalance = 999m }],
+            "tests", StatementRevision: ambiguous ? 2 : 1));
+        var query = new GovernanceCashFlowQuery(GovernanceCashFlowScopeKindDto.Account,
+            AccountId: fixture.AccountId, AsOf: AsOf);
+
+        if (ambiguous)
+        {
+            await Assert.ThrowsAsync<BankStatementEvidenceUnavailableException>(() => fixture.Service.GetCashFlowViewAsync(query));
+            return;
+        }
+        var view = await fixture.Service.GetCashFlowViewAsync(query);
+        Assert.NotNull(view);
+        Assert.Equal(120m, view.CurrentCashBalance);
+        Assert.Equal(30m, view.RealizedLadder.NetPosition);
+        Assert.Equal(2, view.RealizedEntries.Count);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CashFlow_HistoricalFeedRowsKeepTheirOwnAsOfDate(bool postgres)
+    {
+        var fixture = await SeedAsync(postgres);
+        var date = new DateOnly(2026, 04, 07);
+        var batch = Guid.NewGuid();
+        var earlier = new BankStatementLineDto(Guid.NewGuid(), batch, fixture.AccountId, date.AddDays(-1), date.AddDays(-1),
+            10m, "USD", "Interest", "Known earlier transaction", "earlier", null);
+        var later = earlier with { LineId = Guid.NewGuid(), TransactionDate = date.AddDays(2), ValueDate = date.AddDays(2), Amount = 999m };
+        await fixture.Accounts.IngestBankStatementAsync(new(batch, fixture.AccountId, date.AddDays(2),
+            "Plaid", null, [earlier, later], "tests", IsTransactionFeed: true));
+
+        var view = await fixture.Service.GetCashFlowViewAsync(new GovernanceCashFlowQuery(
+            GovernanceCashFlowScopeKindDto.Account, AccountId: fixture.AccountId, AsOf: AsOf));
+
+        Assert.NotNull(view);
+        Assert.Equal(10m, view.RealizedLadder.NetPosition);
+        Assert.Equal(10m, Assert.Single(view.RealizedEntries).Amount);
+        Assert.DoesNotContain(view.ProjectedEntries, entry => entry.Amount == 999m);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task CashFlow_PreservesCurrencyWindowsAmountsAndSharedMetadata(bool postgres)
     {
         var metadata = new SharedDataAccess();

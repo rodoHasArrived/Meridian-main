@@ -32,10 +32,27 @@ def normalize_path(root: Path, value: str) -> str:
     return result
 
 
-def collect_changed_paths(root: Path) -> list[str]:
+def collect_changed_paths(root: Path, base: str | None = None) -> list[str]:
+    """Read local changes and optionally committed changes since a merge base.
+
+    Disabling rename detection deliberately retains both the old and new paths so
+    a cross-subsystem move selects proof for both consumers. NUL records preserve
+    spaces and newlines in filenames. No validation commands are executed here.
+    """
     paths = set()
-    for args in (("diff", "--no-renames", "--name-only", "-z"), ("diff", "--cached", "--no-renames", "--name-only", "-z"),
-                 ("ls-files", "--others", "--exclude-standard", "-z")):
+    commands = []
+    if base is not None:
+        proc = subprocess.run(["git", "merge-base", "--", "HEAD", base], cwd=root, capture_output=True)
+        if proc.returncode:
+            raise ValueError(f"cannot resolve base {base!r}: {proc.stderr.decode(errors='replace').strip()}")
+        ancestor = proc.stdout.decode("ascii").strip()
+        commands.append(("diff", "--no-ext-diff", "--no-textconv", "--no-renames", "--name-only", "-z", ancestor, "HEAD", "--"))
+    commands.extend((
+        ("diff", "--no-ext-diff", "--no-textconv", "--no-renames", "--name-only", "-z"),
+        ("diff", "--cached", "--no-ext-diff", "--no-textconv", "--no-renames", "--name-only", "-z"),
+        ("ls-files", "--others", "--exclude-standard", "-z"),
+    ))
+    for args in commands:
         proc = subprocess.run(["git", *args], cwd=root, capture_output=True)
         if proc.returncode:
             raise ValueError(f"git {' '.join(args)} failed: {proc.stderr.decode(errors='replace').strip()}")
@@ -219,7 +236,14 @@ def recommend_validation(root: Path, paths: list[str]) -> dict:
             if not affected & test_projects:
                 warnings.add(f"No existing test project mapped to {path}; select focused proof manually.")
             continue
-        if path.endswith(".py"):
+        if path.startswith("scripts/dev/") and path.endswith((".mjs", ".js")):
+            test = path if ".test." in path else str(Path(path).with_suffix(".test" + Path(path).suffix))
+            if track(test):
+                add("node-" + Path(test).stem, ["node", "--test", test],
+                    "Exact existing development launcher test file", [path])
+            else:
+                warnings.add(f"No exact Node test filename found for {path}; select focused proof manually.")
+        elif path.endswith(".py"):
             name = Path(path).stem.replace("-", "_")
             test_name = name if name.startswith("test_") else "test_" + name
             matches = []
@@ -282,6 +306,16 @@ def recommend_validation(root: Path, paths: list[str]) -> dict:
         else:
             warnings.add("Browser test script is unavailable; select consumer proof manually.")
 
+    workflow_paths = [p for p in paths if p.startswith(".github/workflows/") or p in
+                      ("scripts/ci.sh", ".github/CODEOWNERS", ".github/pull_request_template.md")]
+    if workflow_paths:
+        add("workflow-lane", ["bash", "scripts/ci.sh", "--lane", "verify-workflows"],
+            "Workflow or governance inputs require workflow validation and human review", workflow_paths)
+    docs_paths = [p for p in paths if p.startswith(("docs/", ".codex/", ".claude/", ".agents/", "build/scripts/docs/"))
+                  or p.endswith(".md") or p == ".github/copilot-instructions.md"]
+    if docs_paths:
+        add("docs-lane", ["bash", "scripts/ci.sh", "--lane", "verify-docs"],
+            "Documentation/guidance inputs require documentation validation", docs_paths)
     ai_paths = [p for p in paths if p.startswith(("docs/ai/", ".codex/", ".claude/", ".agents/", "build/scripts/ai/"))]
     if ai_paths:
         for script in ("check-ai-inventory.py", "check-codex-skills.py"):
@@ -304,8 +338,9 @@ def run_cli(args) -> int:
     try:
         root = args.root.resolve()
         paths = list(args.changed_file or [])
-        if args.from_git or not paths:
-            paths.extend(collect_changed_paths(root))
+        base = getattr(args, "base", None)
+        if args.from_git or base is not None or not paths:
+            paths.extend(collect_changed_paths(root, base))
         data = recommend_validation(root, paths)
         if args.json:
             content = json.dumps(data, indent=2) + "\n"

@@ -66,6 +66,14 @@
     <PackageReference Include="NSubstitute" />
   </ItemGroup>
 
+  <!-- Exercise shared atomic publication on the Windows runner, including retained-reader
+       replacement and transient sharing retries. The same source suite runs in Meridian.Tests
+       on other platforms; linking it here avoids a separate copy or a CI policy change. -->
+  <ItemGroup Condition="'$(IsWindows)' == 'true' AND '$(EnableFullWpfBuild)' == 'true'">
+    <Compile Include="..\Meridian.Tests\Storage\AtomicFileWriterTests.cs" Link="SharedStorage\AtomicFileWriterTests.cs" />
+    <Compile Include="..\Meridian.Tests\Infrastructure\Shared\TempDirectoryFixture.cs" Link="SharedStorage\TempDirectoryFixture.cs" />
+  </ItemGroup>
+
   <!-- Windows-only project references -->
   <ItemGroup Condition="'$(IsWindows)' == 'true'">
     <ProjectReference Include="..\..\src\Meridian.Wpf\Meridian.Wpf.csproj" />

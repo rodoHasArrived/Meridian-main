@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Identity.Auth;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
@@ -777,11 +778,20 @@ public static partial class FundStructureEndpoints
                 return ServiceUnavailable();
             }
 
-            var result = await service.GetCashFlowViewAsync(query, context.RequestAborted).ConfigureAwait(false);
-            return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+            try
+            {
+                var result = await service.GetCashFlowViewAsync(query, context.RequestAborted).ConfigureAwait(false);
+                return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+            }
+            catch (BankStatementEvidenceUnavailableException exception)
+            {
+                return Results.Problem(title: "Bank statement evidence unavailable", detail: exception.Message,
+                    statusCode: StatusCodes.Status409Conflict);
+            }
         })
         .WithName("GetGovernanceCashFlowView").RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .Produces<GovernanceCashFlowViewDto>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound);
 

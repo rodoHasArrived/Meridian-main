@@ -12,18 +12,21 @@ internal sealed class PaperTradingGatewayTradingParameters
     private const int MaxCacheableSymbolLength = 64;
 
     private readonly ILogger _logger;
-    private readonly ISecurityMasterQueryService? _securityMaster;
+    private readonly ISecurityTradingParametersQueryService? _securityMaster;
+    private readonly ISecurityIdentityQueryService? _securityIdentity;
     private readonly LogLevel _lookupFailureLogLevel;
     private readonly ConcurrentDictionary<string, TradingParametersDto> _tradingParamsCache =
         new(StringComparer.OrdinalIgnoreCase);
 
     public PaperTradingGatewayTradingParameters(
         ILogger logger,
-        ISecurityMasterQueryService? securityMaster,
-        LogLevel lookupFailureLogLevel)
+        ISecurityTradingParametersQueryService? securityMaster,
+        LogLevel lookupFailureLogLevel,
+        ISecurityIdentityQueryService? securityIdentity = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _securityMaster = securityMaster;
+        _securityIdentity = securityIdentity ?? securityMaster as ISecurityIdentityQueryService;
         _lookupFailureLogLevel = lookupFailureLogLevel;
     }
 
@@ -72,7 +75,7 @@ internal sealed class PaperTradingGatewayTradingParameters
 
     private async Task<TradingParametersDto?> TryGetTradingParamsAsync(string symbol, CancellationToken ct)
     {
-        if (_securityMaster is null)
+        if (_securityMaster is null || _securityIdentity is null)
         {
             return null;
         }
@@ -85,7 +88,7 @@ internal sealed class PaperTradingGatewayTradingParameters
 
         try
         {
-            var detail = await _securityMaster.GetByIdentifierAsync(
+            var detail = await _securityIdentity.GetByIdentifierAsync(
                 SecurityIdentifierKind.Ticker,
                 symbol,
                 provider: null,

@@ -65,7 +65,7 @@ public sealed record AccountingPostingCandidateWriteResult(
 /// <summary>
 /// Builds reviewable journal candidates and candidate writes from accounting-event evidence.
 /// </summary>
-public sealed class AccountingPostingCandidateService :
+public sealed partial class AccountingPostingCandidateService :
     IAccountingPostingCandidateService,
     IAccountingPostingCandidateWriteBuilder,
     IAccountingPostingCandidateAuthorityBuilder
@@ -417,7 +417,8 @@ public sealed class AccountingPostingCandidateService :
             ? null
             : draft.Write with
             {
-                Entry = WithSecurityMasterLineage(draft.Write.Entry, authority,
+                Entry = WithSecurityMasterLineage(
+                    WithCanonicalCashFlow(draft.Write.Entry, request, authority, dryRun.GeneratedPostingLines), authority,
                     request.AssetLotMutation?.CorporateAction?.ExpectedLot.Acquisition.AcquisitionCurrency
                         ?? request.AssetLotMutation?.CapitalReturn?.ExpectedLot.Acquisition.AcquisitionCurrency
                         ?? request.AssetLotMutation?.FactorPaydown?.Currency ?? request.Currency,

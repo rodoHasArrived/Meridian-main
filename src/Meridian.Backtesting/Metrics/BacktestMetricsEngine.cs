@@ -1,5 +1,3 @@
-using Meridian.Ledger;
-
 namespace Meridian.Backtesting.Metrics;
 
 /// <summary>
@@ -42,8 +40,8 @@ internal static class BacktestMetricsEngine
         var (maxDrawdown, maxDrawdownPct, recoveryDays) = ComputeMaxDrawdown(snapshots, initial);
         var calmar = maxDrawdown == 0 ? 0.0 : (double)annualisedReturn / (double)maxDrawdownPct;
 
-        var (winRate, profitFactor, totalTrades, wins, losses) = ComputeTradeStats(fills);
-        var attribution = ComputeAttribution(fills, snapshots, request);
+        var (winRate, profitFactor, totalTrades, wins, losses) = ComputeTradeStats(fills, snapshots[^1], allCashFlows, request);
+        var attribution = ComputeAttribution(fills, snapshots[^1], allCashFlows);
         var xirr = ComputeXirr(allCashFlows, initial, snapshots);
 
         return new BacktestMetrics(
@@ -168,241 +166,89 @@ internal static class BacktestMetricsEngine
     }
 
     private static (double winRate, double profitFactor, int total, int wins, int losses) ComputeTradeStats(
-        IReadOnlyList<FillEvent> fills)
+        IReadOnlyList<FillEvent> fills,
+        PortfolioSnapshot finalSnapshot,
+        IReadOnlyList<CashFlowEntry> cashFlows,
+        BacktestRequest request)
     {
-        if (fills.Count == 0)
-            return (0.0, 0.0, 0, 0, 0);
-
-        // Aggregate multi-fill orders (e.g. partial slices from MarketImpact model) into single
-        // order-level summaries so that one order == one potential trade entry or exit.
-        var orderSummaries = fills
-            .Where(f => f.FilledQuantity != 0)
-            .GroupBy(f => f.OrderId)
-            .Select(g =>
-            {
-                var totalAbsQty = g.Sum(f => Math.Abs(f.FilledQuantity));
-                var avgPrice = totalAbsQty == 0 ? 0m
-                    : g.Sum(f => Math.Abs(f.FilledQuantity) * f.FillPrice) / totalAbsQty;
-                return (
-                    Symbol: g.First().Symbol,
-                    FilledAt: g.Max(f => f.FilledAt),
-                    Quantity: g.Sum(f => f.FilledQuantity),
-                    Price: avgPrice,
-                    Commission: g.Sum(f => f.Commission));
-            })
-            .OrderBy(o => o.FilledAt)
+        // A closing order is one outcome, even when it spans fills or relieves several lots.
+        // Account and symbol are part of the identity: an order id cannot join separate books.
+        var orderByFill = fills
+            .GroupBy(fill => (Account: ResolveAccount(fill.AccountId, request), fill.FillId))
+            .ToDictionary(group => group.Key, group => group.First().OrderId);
+        var outcomes = finalSnapshot.Accounts.Values
+            .SelectMany(account => (account.ClosedLots ?? []).Select(lot => (
+                Account: account.AccountId.ToUpperInvariant(),
+                Lot: lot)))
+            .GroupBy(item => (
+                Account: item.Account,
+                Symbol: item.Lot.Symbol.ToUpperInvariant(),
+                Order: orderByFill.GetValueOrDefault((item.Account, item.Lot.CloseFillId), item.Lot.CloseFillId)))
+            .Select(group => group.Sum(item =>
+                item.Lot.RealizedPnl - item.Lot.EntryCommission - item.Lot.ExitCommission))
             .ToList();
 
-        var grossWins = 0m;
-        var grossLosses = 0m;
-        var wins = 0;
-        var losses = 0;
+        // A fractional entitlement is a booked disposal even when the action leaves no whole
+        // successor and no ClosedLot. Its retained evidence is separate from order closures.
+        outcomes.AddRange(cashFlows.OfType<AssetEventCashFlow>()
+            .Where(flow => flow.FractionalUnits != 0m)
+            .Select(flow => flow.RealizedPnl - flow.EntryCommissionDisposed));
 
-        // Per-symbol FIFO lot matching: count a round-trip each time a long lot is closed.
-        foreach (var symbolOrders in orderSummaries.GroupBy(o => o.Symbol, StringComparer.OrdinalIgnoreCase))
-        {
-            // Each lot entry: (quantity remaining, entry price, proportional entry commission)
-            var lots = new LinkedList<(long qty, decimal price, decimal commission)>();
-
-            foreach (var order in symbolOrders)
-            {
-                if (order.Quantity > 0)
-                {
-                    // Entry — add lot to queue
-                    lots.AddLast((order.Quantity, order.Price, order.Commission));
-                }
-                else if (order.Quantity < 0)
-                {
-                    // Exit — consume lots FIFO and compute round-trip P&L
-                    var closeQty = Math.Abs(order.Quantity);
-                    var roundTripPnl = 0m;
-
-                    var consumption = LotConsumption.Consume(
-                        EnumerateNodes(lots), closeQty, static node => node.Value.qty);
-
-                    foreach (var slice in consumption.Slices)
-                    {
-                        var (lotQty, lotPrice, lotCommission) = slice.Lot.Value;
-                        var consumed = (long)slice.Quantity;
-
-                        // Allocate entry and exit commission proportionally to consumed quantity
-                        var entryCommForConsumed = lotQty > 0 ? lotCommission * consumed / lotQty : 0m;
-                        var exitCommForConsumed = closeQty > 0 ? order.Commission * consumed / closeQty : 0m;
-
-                        roundTripPnl += consumed * (order.Price - lotPrice)
-                            - entryCommForConsumed - exitCommForConsumed;
-
-                        if (slice.ClosesLot)
-                        {
-                            lots.Remove(slice.Lot);
-                        }
-                        else
-                        {
-                            var leftoverCommission = lotQty > 0 ? lotCommission * (lotQty - consumed) / lotQty : 0m;
-                            slice.Lot.Value = (lotQty - consumed, lotPrice, leftoverCommission);
-                        }
-                    }
-
-                    // Only record a completed round-trip if at least some lots were consumed
-                    if (consumption.Slices.Count > 0)
-                    {
-                        if (roundTripPnl > 0)
-                        { grossWins += roundTripPnl; wins++; }
-                        else if (roundTripPnl < 0)
-                        { grossLosses += -roundTripPnl; losses++; }
-                    }
-                }
-            }
-        }
-
-        var total = wins + losses;
+        var wins = outcomes.Count(pnl => pnl > 0m);
+        var losses = outcomes.Count(pnl => pnl < 0m);
+        var grossWins = outcomes.Where(pnl => pnl > 0m).Sum();
+        var grossLosses = -outcomes.Where(pnl => pnl < 0m).Sum();
+        // Breakeven disposals still count as completed outcomes.
+        var total = outcomes.Count;
         var winRate = total == 0 ? 0.0 : (double)wins / total;
-        var profitFactor = grossLosses == 0
-            ? (grossWins > 0 ? double.PositiveInfinity : 0.0)
+        var profitFactor = grossLosses == 0m
+            ? (grossWins > 0m ? double.PositiveInfinity : 0.0)
             : (double)(grossWins / grossLosses);
         return (winRate, profitFactor, total, wins, losses);
     }
 
+    private static string ResolveAccount(string? accountId, BacktestRequest request) =>
+        (string.IsNullOrWhiteSpace(accountId) ? request.DefaultBrokerageAccountId : accountId.Trim())
+        .ToUpperInvariant();
+
     private static IReadOnlyDictionary<string, SymbolAttribution> ComputeAttribution(
         IReadOnlyList<FillEvent> fills,
-        IReadOnlyList<PortfolioSnapshot> snapshots,
-        BacktestRequest request)
+        PortfolioSnapshot finalSnapshot,
+        IReadOnlyList<CashFlowEntry> cashFlows)
     {
-        // Attribution realized P&L honors each account's lot-selection method so it ties out
-        // with the realized P&L the portfolio books via SimulatedPortfolio.RealiseLots.
-        // Built tolerantly: metrics must not throw on a malformed account list (blank or
-        // duplicated ids) that the engine itself would reject elsewhere.
-        var lotSelectionByAccount = new Dictionary<string, LotSelectionMethod>(StringComparer.OrdinalIgnoreCase);
-        foreach (var account in request.ResolveAccounts())
-        {
-            if (account is null || string.IsNullOrWhiteSpace(account.AccountId))
-                continue;
-
-            lotSelectionByAccount.TryAdd(account.AccountId, account.Rules?.LotSelection ?? LotSelectionMethod.Fifo);
-        }
-
+        // Closed lots retain the actual relieved basis, direction, account and selection decision,
+        // including successor lots and SpecificId. Replaying fills loses corporate-action facts.
+        var closures = finalSnapshot.Accounts.Values.SelectMany(account => account.ClosedLots ?? []).ToList();
+        var positions = finalSnapshot.Accounts.Values.SelectMany(account => account.Positions.Values).ToList();
+        var assetEvents = cashFlows.OfType<AssetEventCashFlow>().ToList();
+        var fillsBySymbol = fills.ToLookup(fill => fill.Symbol, StringComparer.OrdinalIgnoreCase);
+        var closuresBySymbol = closures.ToLookup(lot => lot.Symbol, StringComparer.OrdinalIgnoreCase);
+        var positionsBySymbol = positions.ToLookup(position => position.Symbol, StringComparer.OrdinalIgnoreCase);
+        var assetEventsBySymbol = assetEvents.ToLookup(flow => flow.Symbol, StringComparer.OrdinalIgnoreCase);
+        var symbols = fills.Select(fill => fill.Symbol)
+            .Concat(closures.Select(lot => lot.Symbol))
+            .Concat(positions.Select(position => position.Symbol))
+            .Concat(finalSnapshot.Positions.Keys)
+            .Concat(assetEvents.Select(flow => flow.Symbol))
+            .Distinct(StringComparer.OrdinalIgnoreCase);
         var result = new Dictionary<string, SymbolAttribution>(StringComparer.OrdinalIgnoreCase);
-        var groupedFills = fills.GroupBy(f => f.Symbol, StringComparer.OrdinalIgnoreCase);
-
-        foreach (var group in groupedFills)
+        foreach (var symbol in symbols)
         {
-            var symbol = group.Key;
-            var tradeCount = group.Count();
-            var totalCommission = group.Sum(f => f.Commission);
-
-            // Lots never cross accounts, so realized P&L is matched per (symbol, account).
-            var realised = group
-                .GroupBy(
-                    f => string.IsNullOrWhiteSpace(f.AccountId) ? request.DefaultBrokerageAccountId : f.AccountId,
-                    StringComparer.OrdinalIgnoreCase)
-                .Sum(accountFills => ComputeRealisedPnl(
-                    accountFills.ToList(),
-                    lotSelectionByAccount.GetValueOrDefault(accountFills.Key, LotSelectionMethod.Fifo)));
-
-            // Unrealised P&L from last snapshot
-            var lastSnapshot = snapshots.Count > 0 ? snapshots[^1] : null;
-            var unrealised = lastSnapshot?.Positions.TryGetValue(symbol, out var pos) == true ? pos.UnrealizedPnl : 0m;
-
-            result[symbol] = new SymbolAttribution(symbol, realised, unrealised, tradeCount, totalCommission, 0m);
+            var symbolFills = fillsBySymbol[symbol];
+            var realised = closuresBySymbol[symbol].Sum(lot => lot.RealizedPnl)
+                // Amount includes the principal settled as cash in lieu; only its retained
+                // disposal gain is P&L. Per-share consideration/income/fees are posted
+                // separately by the portfolio and must also remain in symbol attribution.
+                + assetEventsBySymbol[symbol].Sum(flow =>
+                    flow.RealizedPnl + flow.UnitsImpacted * flow.CashPerShare);
+            // Use account positions so offsetting long/short books survive aggregate netting.
+            var unrealised = finalSnapshot.Accounts.Count > 0
+                ? positionsBySymbol[symbol].Sum(position => position.UnrealizedPnl)
+                : finalSnapshot.Positions.GetValueOrDefault(symbol)?.UnrealizedPnl ?? 0m;
+            result[symbol] = new SymbolAttribution(symbol, realised, unrealised,
+                symbolFills.Count(), symbolFills.Sum(fill => fill.Commission), 0m);
         }
         return result;
-    }
-
-    /// <summary>
-    /// Computes realized P&amp;L for one (symbol, account) fill stream, honoring the account's
-    /// lot-selection method and mirroring the portfolio's long/short crossing semantics.
-    /// <para>
-    /// NOTE: This is an independent computation over fill events for metric attribution purposes.
-    /// It must produce results consistent with <c>SimulatedPortfolio.RealiseLots</c> /
-    /// <c>RealiseShortLots</c>, which drive the booked portfolio accounting. If one is changed,
-    /// the other must be updated in parallel.
-    /// </para>
-    /// </summary>
-    private static decimal ComputeRealisedPnl(IReadOnlyList<FillEvent> fills, LotSelectionMethod method)
-    {
-        var longLots = new LinkedList<(long Qty, decimal Price)>();
-        var shortLots = new LinkedList<(long Qty, decimal Price)>();
-        var realised = 0m;
-
-        foreach (var fill in fills.OrderBy(f => f.FilledAt))
-        {
-            var qty = fill.FilledQuantity;
-            if (qty == 0)
-                continue;
-
-            if (qty > 0)
-            {
-                // Cover any short exposure first; the residual opens a long lot.
-                var residual = ConsumeFromBook(shortLots, qty, fill.FillPrice, method, isShortBook: true, ref realised);
-                if (residual > 0)
-                    longLots.AddLast((residual, fill.FillPrice));
-            }
-            else
-            {
-                // Close long exposure first; the residual opens a short lot.
-                var residual = ConsumeFromBook(longLots, -qty, fill.FillPrice, method, isShortBook: false, ref realised);
-                if (residual > 0)
-                    shortLots.AddLast((residual, fill.FillPrice));
-            }
-        }
-
-        return realised;
-    }
-
-    /// <summary>
-    /// Consumes up to <paramref name="quantity"/> from the book in the account's relief order,
-    /// accruing realized P&amp;L, and returns the unfilled residual (which crosses the position
-    /// to the other side).
-    /// </summary>
-    private static long ConsumeFromBook(
-        LinkedList<(long Qty, decimal Price)> lots,
-        long quantity,
-        decimal fillPrice,
-        LotSelectionMethod method,
-        bool isShortBook,
-        ref decimal realised)
-    {
-        var consumption = LotConsumption.Consume(
-            OrderLots(lots, method), quantity, static node => node.Value.Qty);
-
-        foreach (var slice in consumption.Slices)
-        {
-            var (lotQty, lotPrice) = slice.Lot.Value;
-            realised += isShortBook
-                ? slice.Quantity * (lotPrice - fillPrice)
-                : slice.Quantity * (fillPrice - lotPrice);
-
-            if (slice.ClosesLot)
-                lots.Remove(slice.Lot);
-            else
-                slice.Lot.Value = (lotQty - (long)slice.Quantity, lotPrice);
-        }
-
-        return (long)consumption.Shortfall;
-    }
-
-    private static IEnumerable<LinkedListNode<(long Qty, decimal Price)>> OrderLots(
-        LinkedList<(long Qty, decimal Price)> lots,
-        LotSelectionMethod method) => method switch
-        {
-            LotSelectionMethod.Lifo => EnumerateNodesReverse(lots),
-            LotSelectionMethod.Hifo => EnumerateNodes(lots).OrderByDescending(static n => n.Value.Price),
-            // SpecificId falls back to FIFO: attribution rebuilds synthetic lots from the fill
-            // stream, so the portfolio's TargetLotId values cannot match them — the same fallback
-            // SimulatedPortfolio applies when the nominated lot is absent.
-            _ => EnumerateNodes(lots),
-        };
-
-    private static IEnumerable<LinkedListNode<T>> EnumerateNodes<T>(LinkedList<T> list)
-    {
-        for (var node = list.First; node is not null; node = node.Next)
-            yield return node;
-    }
-
-    private static IEnumerable<LinkedListNode<T>> EnumerateNodesReverse<T>(LinkedList<T> list)
-    {
-        for (var node = list.Last; node is not null; node = node.Previous)
-            yield return node;
     }
 
     private static double ComputeXirr(

@@ -126,7 +126,9 @@ internal sealed partial class FundStructureCashFlowReadService
             currency,
             projectedEntries);
         var varianceBuckets = BuildVarianceBuckets(realizedLadder, projectedLadder);
-        var currentCashBalance = accountViews.Sum(static account => account.CurrentCashBalance);
+        decimal? currentCashBalance = accountViews.Any(static account => account.CurrentCashBalance is null)
+            ? null
+            : accountViews.Sum(static account => account.CurrentCashBalance!.Value);
         var varianceSummary = new GovernanceCashFlowVarianceSummaryDto(
             RealizedInflows: realizedLadder.TotalProjectedInflows,
             RealizedOutflows: realizedLadder.TotalProjectedOutflows,
@@ -174,7 +176,6 @@ internal sealed partial class FundStructureCashFlowReadService
     {
         var historicalStartDate = DateOnly.FromDateTime(historicalWindowStart.UtcDateTime);
         var asOfDate = DateOnly.FromDateTime(asOf.UtcDateTime);
-        var projectionEndDate = DateOnly.FromDateTime(projectionWindowEnd.UtcDateTime);
         var balanceHistoryTask = _fundAccountService.GetBalanceHistoryAsync(
             account.AccountId,
             historicalStartDate,
@@ -182,9 +183,7 @@ internal sealed partial class FundStructureCashFlowReadService
             ct);
         var bankLinesTask = _fundAccountService.GetBankStatementLinesAsync(
             account.AccountId,
-            historicalStartDate,
-            projectionEndDate,
-            ct);
+            ct: ct);
 
         await Task.WhenAll(balanceHistoryTask, bankLinesTask).ConfigureAwait(false);
 
@@ -197,7 +196,14 @@ internal sealed partial class FundStructureCashFlowReadService
             .OrderByDescending(static snapshot => snapshot.AsOfDate)
             .ThenByDescending(static snapshot => snapshot.RecordedAt)
             .FirstOrDefault();
-        var bankLines = (await bankLinesTask.ConfigureAwait(false))
+        // Statement headers establish their effective date. Feed rows retain their own
+        // value dates even when another transaction moves the delivery's header forward.
+        var retainedBankLines = (await bankLinesTask.ConfigureAwait(false))
+            .Where(line => (line.IsTransactionFeed == true ? line.ValueDate : line.StatementDate) <= asOfDate).ToArray();
+        var authoritativeBankLines = BankStatementClosingBalanceAuthority.SelectAuthoritativeLines(retainedBankLines,
+            currency, historicalStartDate, DateOnly.FromDateTime(projectionWindowEnd.AddTicks(-1).UtcDateTime))
+            ?? throw new BankStatementEvidenceUnavailableException();
+        var bankLines = authoritativeBankLines
             .Where(line => MatchesCurrency(line.Currency, currency))
             .OrderBy(line => line.StatementDate)
             .ThenBy(line => line.ValueDate)
@@ -239,8 +245,7 @@ internal sealed partial class FundStructureCashFlowReadService
             bucketDays,
             ct).ConfigureAwait(false);
         var currentCashBalance = latestSnapshot?.CashBalance
-            ?? GetLatestRunningBalance(bankLines, asOf, currency)
-            ?? 0m;
+            ?? GetLatestRunningBalance(retainedBankLines, asOf, currency);
 
         return new AccountCashFlowWindow(
             account,
@@ -457,13 +462,9 @@ internal sealed partial class FundStructureCashFlowReadService
         IReadOnlyList<BankStatementLineDto> bankLines,
         DateTimeOffset asOf,
         string currency) =>
-        bankLines
-            .Where(line => MatchesCurrency(line.Currency, currency))
-            .Where(line => ToDateTimeOffset(line.ValueDate) <= asOf)
-            .OrderByDescending(line => line.StatementDate)
-            .ThenByDescending(line => line.ValueDate)
-            .Select(line => line.RunningBalance)
-            .FirstOrDefault(balance => balance.HasValue);
+        BankStatementClosingBalanceAuthority.SelectClosingBalance(
+            bankLines.Where(line => ToDateTimeOffset(line.StatementDate) <= asOf),
+            currency, DateOnly.FromDateTime(asOf.UtcDateTime));
 
     private static GovernanceCashFlowLadderDto BuildCashFlowLadder(
         DateTimeOffset anchor,
@@ -657,7 +658,7 @@ internal sealed partial class FundStructureCashFlowReadService
 
     private sealed record AccountCashFlowWindow(
         AccountSummaryDto Account,
-        decimal CurrentCashBalance,
+        decimal? CurrentCashBalance,
         DateOnly? LatestSnapshotDate,
         IReadOnlyList<GovernanceCashFlowEntryDto> RealizedEntries,
         IReadOnlyList<GovernanceCashFlowEntryDto> ProjectedEntries,

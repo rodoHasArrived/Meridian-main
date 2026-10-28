@@ -549,6 +549,7 @@ import { deriveStorageHealth, deriveSystemStatus, fallbackSystemOverview, readDe
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 
 export const developmentFixtureHeader = "x-meridian-dev-fixture";
+export const developmentScenarioHeader = "x-meridian-scenario";
 const csrfCookieName = "mdc-csrf";
 const csrfHeaderName = "X-CSRF-Token";
 
@@ -746,7 +747,7 @@ export async function getJson<T>(path: string, options: ApiRequestOptions = {}):
   });
 
   if (!response.ok) {
-    const fixture = options.allowDevelopmentFallback === false
+    const fixture = options.allowDevelopmentFallback === false || response.headers?.has?.(developmentScenarioHeader)
       ? undefined
       : await getDevelopmentFallback<T>(path, response.status);
     if (fixture !== undefined) {

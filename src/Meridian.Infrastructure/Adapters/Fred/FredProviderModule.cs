@@ -72,8 +72,12 @@ public sealed class FredProviderModule : ConfigurableProviderModuleBase,
         if (!factory.IsFamilyEnabled("fred") || !enabled)
             return null;
 
-        var key = moduleApiKey ?? factory.CreateCredentialContext<FredHistoricalDataProvider>(
-            ("FRED_API_KEY", config?.ApiKey))?.Get("FRED_API_KEY");
+        var credentials = factory.CreateCredentialContext<FredHistoricalDataProvider>(("FRED_API_KEY", config?.ApiKey));
+        // A selected retained record is a whole credential authority, including an empty
+        // record. Module sidecars and mapped environment keys cannot replace that choice.
+        var key = credentials.IsAuthoritative
+            ? credentials.Get("FRED_API_KEY")
+            : moduleApiKey ?? credentials.Get("FRED_API_KEY");
         return string.IsNullOrWhiteSpace(key) ? null : key;
     }
 }

@@ -154,6 +154,10 @@ public interface IScopedProviderCredentialStore : IProviderCredentialStore
     Task<ProviderCredentialStoreStatus> GetScopedStatusAsync(string providerId, ProviderCredentialScope scope, CancellationToken ct = default);
     Task<ProviderCredentialReadResult?> ReadScopedAsync(string providerId, ProviderCredentialScope scope, CancellationToken ct = default);
     Task SaveScopedAsync(ProviderCredentialSaveRequest request, ProviderCredentialScope scope, CancellationToken ct = default);
+    /// <summary>Conditionally rotate only the selected connection and retain the replacement in recovery storage.</summary>
+    Task<string> SaveScopedRotatedCredentialsAsync(ProviderCredentialSaveRequest request, ProviderCredentialScope scope,
+        ProviderCredentialReadResult expectedConnection, CancellationToken ct = default)
+        => throw new NotSupportedException("This credential store cannot conditionally retain scoped rotated credentials.");
     Task DeleteScopedAsync(string providerId, ProviderCredentialScope scope, string? actor = null, CancellationToken ct = default);
     Task RecordScopedVerificationAsync(ProviderCredentialVerificationUpdate update, ProviderCredentialScope scope, CancellationToken ct = default);
 }

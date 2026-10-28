@@ -60,7 +60,7 @@ flowchart LR
   W9_CORPACT_011 --> W10_DEBT_001
   W10_MARK_001["W10-MARK-001\nW10 - in_progress / green"]
   W10_DEBT_001 --> W10_MARK_001
-  W10_RECON_001["W10-RECON-001\nW10 - planned / green"]
+  W10_RECON_001["W10-RECON-001\nW10 - in_progress / yellow"]
   W10_MARK_001 --> W10_RECON_001
   W10_PROV_001["W10-PROV-001\nW10 - in_progress / green"]
   W10_RECON_001 --> W10_PROV_001
@@ -94,3 +94,13 @@ flowchart LR
   W11_SHADOW_001 --> W11_PACK_001
   W11_EXEC_001["W11-EXEC-001\nW11 - planned / green"]
   W11_PACK_001 --> W11_EXEC_001
+  W12_BOOK_001["W12-BOOK-001\nW12 - planned / green"]
+  W11_EXEC_001 --> W12_BOOK_001
+  W12_CAPITAL_001["W12-CAPITAL-001\nW12 - planned / green"]
+  W12_BOOK_001 --> W12_CAPITAL_001
+  W12_CREDIT_001["W12-CREDIT-001\nW12 - planned / green"]
+  W12_CAPITAL_001 --> W12_CREDIT_001
+  W12_FINRPT_001["W12-FINRPT-001\nW12 - planned / green"]
+  W12_CREDIT_001 --> W12_FINRPT_001
+  W12_YEND_001["W12-YEND-001\nW12 - planned / green"]
+  W12_FINRPT_001 --> W12_YEND_001

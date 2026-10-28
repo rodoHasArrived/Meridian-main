@@ -11,6 +11,8 @@ last_reviewed: 2026-07-27
 
 # src/Meridian.Ui
 
+Browser reconciliation queue source observations and retained occurrence age are projected separately from case status. Shared services own lineage, comparison evidence and SLA calendars.
+
 The generated dashboard route catalog includes the shared account oversight APIs for cash
 case continuity, reviewed price snapshots and cash forecasts. Scope and retained source authority
 remain server-owned in `Meridian.Ui.Shared`; see

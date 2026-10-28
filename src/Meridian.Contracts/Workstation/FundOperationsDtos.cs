@@ -105,7 +105,7 @@ public sealed record BankAccountSnapshot(
     string AccountCode,
     string BankName,
     string Currency,
-    decimal CurrentBalance,
+    decimal? CurrentBalance,
     decimal PendingSettlement,
     DateOnly? LastStatementDate,
     int StatementLineCount,

@@ -8,7 +8,7 @@ import subprocess
 import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from unittest.mock import Mock, patch
 
 from tools.schema_control.cli import (
@@ -144,6 +144,51 @@ class SchemaControlCliTests(unittest.TestCase):
                                 }
                             },
                         )
+
+    def test_new_migration_cli_normalizes_windows_generated_path(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            migration_directory = "src/Ledger/Migrations"
+            (root / migration_directory).mkdir(parents=True)
+            (root / "database").mkdir()
+            config = {
+                "migration_sets": [{
+                    "id": "ledger", "directory": migration_directory, "schema": "ledger",
+                }],
+                "migration_reservations": "database/migration-reservations.json",
+            }
+            register = {"version": 1, "migration_sets": [{
+                "id": "ledger", "filename_template": "V_ledger_{ordinal:03d}__{slug}.sql",
+                "ordinal_pattern": r"^V_ledger_(?P<ordinal>\d+)__", "reservations": [],
+            }]}
+            (root / "database/schema-control.json").write_text(json.dumps(config))
+            (root / "database/migration-reservations.json").write_text(json.dumps(register))
+            docs = root / "docs/engineering/blueprints/README.md"
+            docs.parent.mkdir(parents=True)
+            docs.write_text("<!-- migration-reservations:start -->\n<!-- migration-reservations:end -->\n")
+
+            # Exercise Windows path rendering on every test host, keeping real filesystem
+            # operations native. On Windows the ordinary CLI tests also cover native paths.
+            def platform_path(value):
+                return PureWindowsPath(value) if value == migration_directory else Path(value)
+
+            stdout, stderr = io.StringIO(), io.StringIO()
+            with (
+                patch("tools.schema_control.reservations.Path", side_effect=platform_path),
+                redirect_stdout(stdout), redirect_stderr(stderr),
+            ):
+                result = main([
+                    "--root", str(root), "new-migration", "--migration-set", "ledger",
+                    "--name", "windows_cli",
+                ])
+
+            self.assertEqual(0, result, stderr.getvalue())
+            relative = f"{migration_directory}/V_ledger_001__windows_cli.sql"
+            self.assertEqual(f"Created migration: {relative}\n", stdout.getvalue())
+            self.assertIn("SELECT 1;", (root / relative).read_text())
+            self.assertIn("V_ledger_001__windows_cli.sql", docs.read_text())
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(0, main(["--root", str(root), "generate-migration-docs", "--check"]))
 
     def test_configured_output_paths_reject_directory_link_escaping_repository(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

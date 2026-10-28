@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 2 of 6
 
-Objects 81-160 of 437. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 443. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -410,6 +410,8 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_IHistoricalSymbolTimelineResolver["IHistoricalSymbolTimelineResolver"] {
     }
+    class Meridian_Contracts_SecurityMaster_ILivePositionCorporateActionAdjuster["ILivePositionCorporateActionAdjuster"] {
+    }
     class Meridian_Contracts_SecurityMaster_IOtcCollateralStore["IOtcCollateralStore"] {
     }
     class Meridian_Contracts_SecurityMaster_IOtcContractStore["IOtcContractStore"] {
@@ -418,11 +420,15 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_IOtcExposureService["IOtcExposureService"] {
     }
+    class Meridian_Contracts_SecurityMaster_ISecurityCorporateActionsQueryService["ISecurityCorporateActionsQueryService"] {
+    }
     class Meridian_Contracts_SecurityMaster_ISecurityCoverageSymbolSource["ISecurityCoverageSymbolSource"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityCurveStore["ISecurityCurveStore"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityForwardCurveProvider["ISecurityForwardCurveProvider"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ISecurityIdentityQueryService["ISecurityIdentityQueryService"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterAmender["ISecurityMasterAmender"] {
     }
@@ -441,12 +447,6 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_ISecurityMasterRuntimeStatus["ISecurityMasterRuntimeStatus"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterService["ISecurityMasterService"] {
-    }
-    class Meridian_Contracts_SecurityMaster_ISecurityMasterStructuredCreditReclassificationService["ISecurityMasterStructuredCreditReclassificationService"] {
-    }
-    class Meridian_Contracts_SecurityMaster_ISecurityUnderlyingGraphStore["ISecurityUnderlyingGraphStore"] {
-    }
-    class Meridian_Contracts_SecurityMaster_ISecurityValuationModel["ISecurityValuationModel"] {
     }
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionDto
@@ -470,4 +470,6 @@ classDiagram
     Meridian_Contracts_SecurityMaster_EdgarSecurityDataRecord --> Meridian_Contracts_SecurityMaster_EdgarFundHolding
     Meridian_Contracts_SecurityMaster_ExchangeCorporateActionTerms --> Meridian_Contracts_SecurityMaster_CorporateActionTerms
     Meridian_Contracts_SecurityMaster_FaceValueLotFactorPaydown --> Meridian_Contracts_SecurityMaster_FaceValueLot
+    Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService --> Meridian_Contracts_SecurityMaster_ISecurityCorporateActionsQueryService
+    Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService --> Meridian_Contracts_SecurityMaster_ISecurityIdentityQueryService
 ```

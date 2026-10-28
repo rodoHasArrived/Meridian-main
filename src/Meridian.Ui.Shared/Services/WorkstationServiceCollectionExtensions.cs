@@ -1136,13 +1136,16 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IReconciliationSlaPolicyProvider>(sp =>
             new SecurityMasterReconciliationSlaPolicyProvider(
                 sp.GetService<SecurityMasterExceptionSlaConfig>()));
+        services.TryAddSingleton<IReconciliationSlaCalendarResolver>(sp =>
+            new FileReconciliationSlaCalendarResolver(ResolveConfigDataRoot(sp)));
         services.TryAddSingleton<IReconciliationBreakQueueRepository>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<FileReconciliationBreakQueueRepository>>();
             return new FileReconciliationBreakQueueRepository(
                 ResolveWorkstationDataDirectory(sp),
                 logger,
-                sp.GetService<IReconciliationSlaPolicyProvider>());
+                sp.GetService<IReconciliationSlaPolicyProvider>(),
+                slaCalendarResolver: sp.GetRequiredService<IReconciliationSlaCalendarResolver>());
         });
         services.TryAddSingleton<IStatementReconciliationCaseworkHandoffService>(sp =>
             new StatementReconciliationCaseworkHandoffService(
@@ -1174,7 +1177,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService>(),
                 sp.GetService<IReconciliationBreakQueueRepository>(),
                 sp.GetRequiredService<Meridian.Infrastructure.Reconciliation.ICanonicalStatementStore>(),
-                sp.GetRequiredService<Meridian.Infrastructure.Reconciliation.IStatementRunMatchArtifactStore>()));
+                sp.GetRequiredService<Meridian.Infrastructure.Reconciliation.IStatementRunMatchArtifactStore>(),
+                sp.GetRequiredService<IStatementRunRecoveryRepository>()));
         services.TryAddSingleton<IOperationsContinuityReconciliationBridge>(sp =>
             new OperationsContinuityReconciliationBridge(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
@@ -1459,7 +1463,7 @@ internal sealed class ServiceProviderReportingAuthoritativeSource :
         return source.CaptureAsync(parameters, accessContext, intent, cancellationToken);
     }
 
-    public async ValueTask<ReportingCertifiedLedgerPresentationInput?> ResolveExactAsync(
+    public ValueTask<ReportingCertifiedLedgerPresentationInput?> ResolveExactAsync(
         ReportingOutputManifest manifest,
         CancellationToken cancellationToken = default)
     {
@@ -1467,7 +1471,7 @@ internal sealed class ServiceProviderReportingAuthoritativeSource :
         cancellationToken.ThrowIfCancellationRequested();
         if (!ReportingCertifiedLedgerPresentationBinding.IsRequired(manifest))
         {
-            return null;
+            return ValueTask.FromResult<ReportingCertifiedLedgerPresentationInput?>(null);
         }
 
         var parameters = manifest.ResolvedParameters
@@ -1492,59 +1496,32 @@ internal sealed class ServiceProviderReportingAuthoritativeSource :
                 $"Reporting manifest '{manifest.RunId}' has no unique retained signed ledger-presentation checksum for canonical partners-capital resolution.");
         }
 
-        // Re-capture from the durable source rather than an in-memory cache so release/retry after a
-        // process restart is still possible. The original checkpoint is immutable as-of; any source,
-        // ownership, fund-structure, or report-pack drift therefore fails closed below.
-        var recaptured = await ResolveSource()
-            .CaptureAsync(
-                parameters,
-                new ReportAccessQueryContext(
-                    ActorPrincipalId: "reporting-artifact-producer",
-                    CompanyId: scope.CompanyId,
-                    TenantId: scope.TenantId,
-                    RequireBoundScope: true),
-                new ReportingAuthoritativeSourceCaptureIntent(manifest.TemplateId)
-                {
-                    RequiresCertifiedLedgerPresentation =
-                        ReportingCertifiedLedgerPresentationBinding.IsRequired(manifest)
-                },
-                cancellationToken)
-            .ConfigureAwait(false);
+        // Artifact rendering replays the frozen population. Release readiness separately
+        // revalidates current authorities; new postings cannot replace this run's calculations.
+        var snapshot = ReportingLedgerPopulationSnapshot.Decode(sourceCheckpoint);
         if (!string.Equals(
-                recaptured.Checkpoint.CheckpointId,
-                sourceCheckpoint.CheckpointId,
-                StringComparison.Ordinal)
-            || !string.Equals(
-                recaptured.Checkpoint.CheckpointHash,
-                sourceCheckpoint.CheckpointHash,
+                DeterministicReportingCertifiedArtifactProducer.ComputeCertifiedRowsHash(snapshot.DatasetRows),
+                DeterministicReportingCertifiedArtifactProducer.ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows),
                 StringComparison.OrdinalIgnoreCase))
         {
             throw new ReportingGovernanceException(
-                $"Reporting manifest '{manifest.RunId}' canonical ledger presentation no longer matches its exact certified source checkpoint.");
+                $"Reporting manifest '{manifest.RunId}' activity rows do not match its retained ledger population.");
         }
-
-        var presentation = recaptured.CertifiedLedgerPresentation
-            ?? throw new ReportingGovernanceException(
-                $"Reporting manifest '{manifest.RunId}' canonical partners-capital presentation is unavailable from the exact durable checkpoint.");
-        var recapturedPresentationEvidence =
-            ReportingCertifiedLedgerPresentationBinding.GetSingleEvidenceId(recaptured.Checkpoint);
+        var reportPack = snapshot.Replay();
         var resolvedPresentationEvidence =
-            ReportingCertifiedLedgerPresentationBinding.BuildEvidenceId(presentation.ReportPack);
-        if (recapturedPresentationEvidence is null
-            || !string.Equals(
-                recapturedPresentationEvidence,
-                certifiedPresentationEvidence,
-                StringComparison.OrdinalIgnoreCase)
-            || !string.Equals(
-                resolvedPresentationEvidence,
-                certifiedPresentationEvidence,
-                StringComparison.OrdinalIgnoreCase))
+            ReportingCertifiedLedgerPresentationBinding.BuildEvidenceId(reportPack);
+        if (!string.Equals(resolvedPresentationEvidence, certifiedPresentationEvidence, StringComparison.OrdinalIgnoreCase))
         {
             throw new ReportingGovernanceException(
-                $"Reporting manifest '{manifest.RunId}' canonical ledger presentation checksum changed after certification.");
+                $"Reporting manifest '{manifest.RunId}' retained ledger replay does not reproduce its certified presentation checksum.");
         }
+        var presentation = new ReportingCertifiedLedgerPresentationInput(
+            sourceCheckpoint.CheckpointId,
+            sourceCheckpoint.CheckpointHash,
+            DeterministicReportingCertifiedArtifactProducer.ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows),
+            reportPack);
 
-        return presentation;
+        return ValueTask.FromResult<ReportingCertifiedLedgerPresentationInput?>(presentation);
     }
 
     private LedgerReportingAuthoritativeSource ResolveSource()

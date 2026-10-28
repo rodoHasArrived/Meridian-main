@@ -1171,6 +1171,42 @@
       "sha256": "34411f0d35fdf449138b18fd32906cc0d99cce27d0a6840e2ebdca9eff49deab"
     },
     {
+      "filename": "005_reconciliation_resolution.sql",
+      "immutable": true,
+      "migration_set_id": "fund-accounts",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundAccounts/Migrations/005_reconciliation_resolution.sql",
+      "schema": "fund_accounts",
+      "sha256": "71f9171f25eac7417d796b47132e0a3f5ee0c430e2a2bb68e2432c10241cc605"
+    },
+    {
+      "filename": "006_sync_history_correlation.sql",
+      "immutable": true,
+      "migration_set_id": "fund-accounts",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundAccounts/Migrations/006_sync_history_correlation.sql",
+      "schema": "fund_accounts",
+      "sha256": "fbf94b3fea850a8d4f8f91f59df9133261f110bfb57ecd77804efd0e09686a54"
+    },
+    {
+      "filename": "007_bank_statement_authority.sql",
+      "immutable": true,
+      "migration_set_id": "fund-accounts",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundAccounts/Migrations/007_bank_statement_authority.sql",
+      "schema": "fund_accounts",
+      "sha256": "bc841f6038055ddf8b386fd2af9e2d0dcd578cb1b05a93a8e885a7b3e6a4ecfc"
+    },
+    {
+      "filename": "008_plaid_transaction_feed_backfill.sql",
+      "immutable": true,
+      "migration_set_id": "fund-accounts",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundAccounts/Migrations/008_plaid_transaction_feed_backfill.sql",
+      "schema": "fund_accounts",
+      "sha256": "4fc0e5464b31d9a5a068f7f8b0114001a25e72848e1ec185f3deb7930e0f48f4"
+    },
+    {
       "filename": "001_banking.sql",
       "immutable": true,
       "migration_set_id": "banking",
@@ -1334,7 +1370,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "987642a3076d920bbfafcc2281407c2ff5286503526c44b4f9181487d4c88b42",
+  "fingerprint": "d53a65a23d74bd19361826a632d968ac88bd69efe6d7cada388566b6b18ccb94",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1572,7 +1608,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 148,
+    "files": 152,
     "migration_sets": 10,
     "waivers": 25,
     "warnings": 0

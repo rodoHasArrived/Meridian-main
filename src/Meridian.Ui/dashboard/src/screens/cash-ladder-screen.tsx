@@ -129,37 +129,55 @@ export interface CashLadderScreenProps {
 }
 
 export function CashLadderScreen({ fundAccountId }: CashLadderScreenProps = {}) {
-  const [ladder, setLadder] = useState<PortfolioCashLadder | null>(null);
+  // Threshold edits and drill selections are part of this account's evidence.
+  return <AccountCashLadderScreen key={fundAccountId ?? "all-accounts"} fundAccountId={fundAccountId} />;
+}
+
+function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
+  const [result, setResult] = useState<{
+    requestKey: string;
+    ladder: PortfolioCashLadder | null;
+    status: "ready" | "error";
+  } | null>(null);
+  // Retain choices within this account while financial evidence remains request-bound.
+  const [scenarioOptions, setScenarioOptions] = useState(() => selectScenarioOptions(null));
   const [scenarioId, setScenarioId] = useState("base");
   const [minimumCashInput, setMinimumCashInput] = useState("");
   const [appliedMinimumCash, setAppliedMinimumCash] = useState<number | undefined>(undefined);
-  const [selectedBucket, setSelectedBucket] = useState<number | null>(null);
-  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
-  const requestId = useRef(0);
+  const [selection, setSelection] = useState<{ requestKey: string; index: number } | null>(null);
+  const requestKey = JSON.stringify([fundAccountId, scenarioId, appliedMinimumCash]);
+  const ladder = result?.requestKey === requestKey ? result.ladder : null;
+  const status = result?.requestKey === requestKey ? result.status : "loading";
+  const selectedBucket = selection?.requestKey === requestKey ? selection.index : null;
+  const setSelectedBucket = (index: number | null) => setSelection(index === null ? null : { requestKey, index });
   const minimumCashDirty = useRef(false);
 
   useEffect(() => {
-    const currentRequest = ++requestId.current;
-    setStatus("loading");
-    getPortfolioCashLadder({ scenario: scenarioId, minimumCash: appliedMinimumCash, fundAccountId })
+    const controller = new AbortController();
+    setResult(null);
+    setSelection(null);
+    getPortfolioCashLadder(
+      { scenario: scenarioId, minimumCash: appliedMinimumCash, fundAccountId },
+      { signal: controller.signal }
+    )
       .then((response) => {
-        if (requestId.current === currentRequest) {
-          setLadder(response);
+        if (!controller.signal.aborted) {
+          setResult({ requestKey, ladder: response, status: "ready" });
+          setScenarioOptions(selectScenarioOptions(response));
           if (!minimumCashDirty.current) {
             setMinimumCashInput(String(response.minimumCashThreshold));
           }
-          setStatus("ready");
         }
       })
       .catch(() => {
-        if (requestId.current === currentRequest) {
-          setStatus("error");
+        if (!controller.signal.aborted) {
+          setResult({ requestKey, ladder: null, status: "error" });
         }
       });
-  }, [scenarioId, appliedMinimumCash, fundAccountId]);
+    return () => controller.abort();
+  }, [requestKey, scenarioId, appliedMinimumCash, fundAccountId]);
 
   const chart = buildCashLadderChart(ladder);
-  const scenarioOptions = selectScenarioOptions(ladder);
   const activeScenario = selectActiveScenario(ladder);
   const summaryCards = selectSummaryCards(ladder);
   const drillRows = selectBucketContributions(ladder, selectedBucket);

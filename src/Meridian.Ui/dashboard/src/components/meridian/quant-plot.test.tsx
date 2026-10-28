@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { QuantPlotChart, buildQuantPlotViewModel, histogramBins, prepareSeries } from "@/components/meridian/quant-plot";
-import type { QuantPlot } from "@/types";
+import serverResponse from "@/test/fixtures/quant-run-response.json";
+import type { QuantPlot, QuantRunResponse } from "@/types";
 
 function point(date: string, value: number) {
   return { date, value };
@@ -52,28 +53,21 @@ describe("prepareSeries", () => {
     }
   });
 
-  it("converts CumulativeReturn to relative returns", () => {
-    const prepared = prepareSeries({ ...linePlot, type: "CumulativeReturn" });
+  it.each((serverResponse as QuantRunResponse).plots)("preserves calculated $type values from the server", (plot) => {
+    const prepared = prepareSeries(plot);
     if (prepared.kind !== "line") throw new Error("expected line");
-    const values = prepared.series[0].values.map((v) => v.value);
-    expect(values[0]).toBe(0);
-    expect(values[1]).toBeCloseTo(0.1, 5);
-    expect(values[2]).toBeCloseTo(-0.1, 5);
+    expect(prepared.series[0].values).toEqual(plot.series);
     expect(prepared.fillBaseline).toBe(true);
   });
 
-  it("converts Drawdown to running peak ratio", () => {
-    const prepared = prepareSeries({
-      ...linePlot,
-      type: "Drawdown",
-      series: [point("d1", 100), point("d2", 120), point("d3", 90)]
-    });
+  it("preserves already calculated values across multiple return series", () => {
+    const multiSeries = [
+      { label: "A", values: [point("d1", 0.1), point("d2", -0.25)] },
+      { label: "B", values: [point("d1", -0.1), point("d2", 0.05)] }
+    ];
+    const prepared = prepareSeries({ ...linePlot, type: "CumulativeReturn", multiSeries });
     if (prepared.kind !== "line") throw new Error("expected line");
-    const values = prepared.series[0].values.map((v) => v.value);
-    expect(values[0]).toBe(0);
-    expect(values[1]).toBe(0);
-    expect(values[2]).toBeCloseTo(-0.25, 5);
-    expect(prepared.fillBaseline).toBe(true);
+    expect(prepared.series).toEqual(multiSeries);
   });
 
   it("handles Bar/Scatter/Histogram via series field", () => {
@@ -111,6 +105,18 @@ describe("QuantPlotChart", () => {
     expect(chart).toHaveAccessibleDescription(/Series: A, B/);
     expect(screen.getByText("A")).toBeInTheDocument();
     expect(screen.getByText("B")).toBeInTheDocument();
+  });
+
+  it("renders the server's -25% drawdown below zero", () => {
+    const plot = (serverResponse as QuantRunResponse).plots[1];
+    const vm = buildQuantPlotViewModel(plot);
+    if (vm.kind !== "line") throw new Error("expected line");
+    render(<QuantPlotChart plot={plot} />);
+    const chart = screen.getByRole("img", { name: "AAPL Drawdown" });
+    const path = chart.querySelector('path[fill="none"]');
+    const coordinates = path?.getAttribute("d")?.match(/-?\d+\.\d+/g)?.map(Number) ?? [];
+    expect(coordinates[5]).toBeGreaterThan(coordinates[1]);
+    expect(vm.axisTicks.some((tick) => Number(tick.label) < -0.2)).toBe(true);
   });
 
   it("shows a fallback message for unsupported plot types", () => {

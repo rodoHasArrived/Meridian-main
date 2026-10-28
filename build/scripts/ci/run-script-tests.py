@@ -26,14 +26,16 @@ import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-# Suites import repo-rooted modules (tools.schema_control, tests.scripts.*), which
-# must precede helper directories with their own tests packages. Spawned workers
-# inherit sys.path changes made during parent discovery, but not imported modules.
+
+
 def prioritize_repository_imports() -> None:
-    root = str(REPO_ROOT)
-    sys.path[:] = [root, *(entry for entry in sys.path if entry != root)]
+    """Keep repository packages ahead of suite-specific import directories."""
+    repo_root = str(REPO_ROOT)
+    sys.path[:] = [repo_root, *(entry for entry in sys.path if entry != repo_root)]
 
 
+# Suites import repo-rooted modules (tools.schema_control, tests.scripts.*), which
+# `python -m unittest` resolves via the cwd; resolve them regardless of invocation dir.
 prioritize_repository_imports()
 DEFAULT_START_DIR = REPO_ROOT / "tests" / "scripts"
 DEFAULT_QUARANTINE = Path(__file__).resolve().parent / "script-test-quarantine.json"
@@ -95,6 +97,8 @@ def partition_suite(
 
 def run_module(module_name: str, start_dir: str, verbosity: int, expected_ids: list[str]) -> dict:
     """Run one complete module in a fresh process, including its class fixtures."""
+    # Spawn inherits sys.path after parent discovery, whose imports can put a
+    # different 'tests' package ahead of the repository's tests.scripts package.
     prioritize_repository_imports()
     print(f"Starting script module: {module_name}", flush=True)
     started = time.monotonic()

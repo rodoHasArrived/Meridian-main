@@ -22,6 +22,33 @@ namespace Meridian.Wpf.Tests.Services;
 
 public sealed class FundReconciliationWorkbenchServiceTests
 {
+    [Theory]
+    [InlineData("alpha-fund", "statement-run", true)]
+    [InlineData("other-fund", "run-fund-ops", false)]
+    [InlineData(null, "run-fund-ops", true)]
+    [InlineData(null, "statement-run", false)]
+    public async Task Explicit_fund_scope_controls_statement_queue_membership(string? fund, string runId, bool included)
+    {
+        var start = new DateTimeOffset(2026, 9, 1, 0, 0, 0, TimeSpan.Zero);
+        var lineage = new ReconciliationBreakLineageDto("line", "scope", "occ", 1, "Cleared", start, start,
+            start.AddDays(1), "last", start.AddDays(2), "clearing");
+        var item = new ReconciliationBreakQueueItem("statement-break", runId, "Statement",
+            ReconciliationBreakCategory.CashMismatch, ReconciliationBreakQueueStatus.InReview, 10m,
+            "Cash variance", null, start, start) { FundProfileId = fund, Lineage = lineage };
+        var context = await CreateContextAsync(new FakeWorkstationReconciliationApiClient([item]));
+        var snapshot = await context.Service.GetSnapshotAsync("alpha-fund");
+        snapshot.BreakQueueItems.Should().HaveCount(included ? 1 : 0);
+        if (included)
+        {
+            var row = snapshot.BreakQueueItems.Single();
+            row.Lineage.Should().Be(lineage);
+            row.SourceObservationLabel.Should().Be("Source cleared");
+            row.ObservedOccurrenceAge.Should().Contain("48");
+            row.Status.Should().Be(ReconciliationBreakQueueStatus.InReview);
+            row.SourceObservationDetail.Should().Contain("does not resolve governed casework");
+        }
+    }
+
     [Fact]
     public async Task GetSnapshotAsync_SortsBreakQueue_AndBuildsRunRowsFromServerApiOnly()
     {
@@ -167,6 +194,60 @@ public sealed class FundReconciliationWorkbenchServiceTests
         detail.AllCheckRows.Should().NotBeEmpty();
         detail.ExceptionRows.Should().NotBeEmpty();
         detail.AuditRows.Should().HaveCountGreaterThanOrEqualTo(2);
+    }
+
+    [Fact]
+    public async Task GetRunDetailAsync_ForAccountRunSupersededByCorrectedEvidence_ShowsResolvedHistoryNotOpenExceptions()
+    {
+        var context = await CreateContextAsync();
+        var asOf = new DateOnly(2026, 3, 21);
+        // A wrong internal balance opens a cash break; the corrected balance resolves it in a later run.
+        await context.FundAccountService.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
+            context.AccountId, asOf, "USD", 700m, "test", "test", SecuritiesMarketValue: 250m));
+        var broken = await context.FundAccountService.ReconcileAccountAsync(new ReconcileAccountRequest(context.AccountId, asOf, "test"));
+        // The operator opened the account run while it was the latest; the detail is read live when
+        // opened. Snapshot run rows are strategy runs only, so the account row is built as the
+        // account ledger lists it.
+        var runRow = new FundReconciliationRunRow(
+            RowKey: $"account:{broken.ReconciliationRunId:N}",
+            ReconciliationRunId: broken.ReconciliationRunId,
+            AccountId: context.AccountId,
+            SourceType: FundReconciliationSourceType.AccountRun,
+            ScopeLabel: "Account",
+            ScopeIcon: "\u25A3",
+            PrimaryLabel: "Operating account",
+            SecondaryLabel: context.AccountId.ToString("N"),
+            Status: "Break",
+            StatusLabel: "Break",
+            StatusIcon: "\u26A0",
+            AsOfDate: asOf,
+            AsOfDateText: asOf.ToString("yyyy-MM-dd"),
+            TotalChecks: 1,
+            TotalMatched: 0,
+            TotalBreaks: 1,
+            BreakAmountTotal: 50m,
+            BreakAmountText: "$50.00",
+            RequestedAt: DateTimeOffset.UtcNow,
+            RequestedAtText: "now",
+            CompletedAt: DateTimeOffset.UtcNow,
+            CompletedAtText: "now",
+            SecurityIssueCount: 0,
+            HasSecurityCoverageIssues: false,
+            CoverageLabel: "Security Master aligned");
+        await context.FundAccountService.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
+            context.AccountId, asOf, "USD", 750m, "test", "test", SecuritiesMarketValue: 250m));
+        await context.FundAccountService.ReconcileAccountAsync(new ReconcileAccountRequest(context.AccountId, asOf, "test"));
+        var results = await context.FundAccountService.GetReconciliationResultsAsync(broken.ReconciliationRunId);
+        var resolved = results.Should().ContainSingle(result => !result.IsMatch && result.ResolvedAt != null).Subject;
+
+        var detail = await context.Service.GetRunDetailAsync(runRow, "USD");
+
+        detail.Should().NotBeNull();
+        detail!.ExceptionRows.Should().NotContain(row => row.RowKey == resolved.ResultId.ToString("N"),
+            "a result resolved by a later reconciliation is history, not an open exception");
+        var history = detail.AllCheckRows.Single(row => row.RowKey == resolved.ResultId.ToString("N"));
+        history.StatusLabel.Should().Be("Resolved");
+        history.StatusIcon.Should().Be("\u2713");
     }
 
     private static async Task<WorkbenchContext> CreateContextAsync(
@@ -351,7 +432,7 @@ public sealed class FundReconciliationWorkbenchServiceTests
             workspaceService,
             apiClient);
 
-        return new WorkbenchContext(service);
+        return new WorkbenchContext(service, fundAccountService, accountId);
     }
 
     private static Guid ToFundId(string fundProfileId)
@@ -632,6 +713,7 @@ public sealed class FundReconciliationWorkbenchServiceTests
             => Task.FromException<WorkstationReconciliationActionResult>(new InvalidOperationException("Workstation API is offline."));
     }
 
-    private sealed record WorkbenchContext(FundReconciliationWorkbenchService Service);
+    private sealed record WorkbenchContext(
+        FundReconciliationWorkbenchService Service, InMemoryFundAccountService FundAccountService, Guid AccountId);
 }
 #endif
