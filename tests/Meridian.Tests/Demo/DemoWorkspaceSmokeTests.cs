@@ -21,6 +21,7 @@ using Meridian.Storage.Ledger;
 using Meridian.Storage.MoneyMarket;
 using Meridian.Storage.SecurityMaster;
 using Meridian.TestSupport;
+using Meridian.Tests.TestHelpers;
 using Meridian.Tests.TestSupport;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
@@ -364,7 +365,7 @@ public sealed class DemoWorkspaceSmokeTests : IAsyncLifetime
             "demo_money_market");
     }
 
-    private static async Task EnsureDatabaseSchemasReadyAsync(IServiceProvider services)
+    private async Task EnsureDatabaseSchemasReadyAsync(IServiceProvider services)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
         var ct = timeout.Token;
@@ -379,8 +380,15 @@ public sealed class DemoWorkspaceSmokeTests : IAsyncLifetime
             await ledger.EnsureMigratedAsync(ct);
             readiness.MarkLedgerReady();
         }
-        if (services.GetService<SecurityMasterMigrationRunner>() is { } securityMaster)
-            await securityMaster.EnsureMigratedAsync(ct);
+        if (services.GetService<SecurityMasterMigrationRunner>() is not null)
+        {
+            var securityMaster = services.GetRequiredService<SecurityMasterOptions>();
+            var scope = _databaseSchemaScopes.Single(item =>
+                string.Equals(item.Schema, securityMaster.Schema, StringComparison.Ordinal));
+            await scope.InitializeOwnedSchemaAsync(
+                (server, _, cancellationToken) => SecurityMasterTestCapabilityFloor.InitializeAndActivateAsync(
+                    server, securityMaster, cancellationToken), ct);
+        }
         if (services.GetService<DirectLendingMigrationRunner>() is { } directLending)
             await directLending.EnsureMigratedAsync(ct);
         if (services.GetService<AssetOperationsMigrationRunner>() is { } assetOperations)

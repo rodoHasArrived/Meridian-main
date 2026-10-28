@@ -34,6 +34,20 @@ public sealed class PostgresTestSchemaEnvironmentScope : IAsyncDisposable
 
     public string Schema { get; }
 
+    /// <summary>Runs fixture provisioning with the live server that allocated this scope's schema.</summary>
+    public Task InitializeOwnedSchemaAsync(
+        Func<PostgresTestServer, string, CancellationToken, Task> initialize,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(initialize);
+        ct.ThrowIfCancellationRequested();
+        var server = Volatile.Read(ref _server)
+            ?? throw new ObjectDisposedException(nameof(PostgresTestSchemaEnvironmentScope));
+        if (!server.OwnsSchema(Schema))
+            throw new InvalidOperationException("Fixture provisioning requires this scope's allocated schema.");
+        return initialize(server, Schema, ct);
+    }
+
     /// <summary>
     /// Returns <see langword="null"/> when the domain connection is not configured. Otherwise,
     /// allocates and publishes a unique schema that is dropped when the scope is disposed.

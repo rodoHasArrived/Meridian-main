@@ -105,12 +105,12 @@ internal static partial class SecurityMasterConflictDetection
         else if (value.ValueKind == JsonValueKind.Array)
         {
             var rows = value.EnumerateArray().ToArray();
-            if (containerKey is "callSchedule" or "putSchedule")
+            if (containerKey is SecurityVersionedTerms.CallScheduleKey or SecurityVersionedTerms.PutScheduleKey)
             {
                 rows = rows.Where(row => row.ValueKind != JsonValueKind.Null
                     && (row.ValueKind != JsonValueKind.Object
                         || SecurityAssetTermsSchema.IsPopulatedTermValue(row) && Meaningful(row, fields))).ToArray();
-                var dateKey = containerKey == "callSchedule" ? "callDate" : "putDate";
+                var dateKey = containerKey == SecurityVersionedTerms.CallScheduleKey ? "callDate" : "putDate";
                 var dated = rows.Select(row => (Row: row, Date: ComparableStart(row, dateKey))).ToArray();
                 if (dated.All(row => row.Date is not null) && dated.Select(row => row.Date).Distinct().Count() == dated.Length)
                     rows = dated.OrderBy(row => row.Date).Select(row => row.Row).ToArray();

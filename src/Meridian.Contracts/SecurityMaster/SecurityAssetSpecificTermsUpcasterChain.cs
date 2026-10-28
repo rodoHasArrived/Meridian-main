@@ -322,8 +322,8 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             {
                 foreach (var member in module.Value.EnumerateObject())
                 {
-                    if ((member.Name.Equals("callSchedule", StringComparison.OrdinalIgnoreCase)
-                         || member.Name.Equals("putSchedule", StringComparison.OrdinalIgnoreCase))
+                    if ((member.Name.Equals(SecurityVersionedTerms.CallScheduleKey, StringComparison.OrdinalIgnoreCase)
+                         || member.Name.Equals(SecurityVersionedTerms.PutScheduleKey, StringComparison.OrdinalIgnoreCase))
                         && member.Value.ValueKind != JsonValueKind.Null
                         && (member.Value.ValueKind != JsonValueKind.Array || member.Value.GetArrayLength() > 0))
                         throw UnrecoverableSchedule();
