@@ -348,23 +348,13 @@ export function prepareSeries(plot: QuantPlot): PreparedPlot {
         return { kind: "unsupported" };
       }
 
-      const transformed = series.map((item) => {
-        const values = item.values.map((point) => point.value);
-        const dates = item.values.map((point) => point.date);
-        let outputValues = values;
-        if (plot.type === "CumulativeReturn") {
-          outputValues = cumulativeReturn(values);
-        } else if (plot.type === "Drawdown") {
-          outputValues = drawdown(values);
-        }
-
-        return { label: item.label, values: outputValues.map((value, index) => ({ date: dates[index], value })) };
-      });
-
+      // QuantRunResponse carries the worker's calculated plot values, including
+      // fractional cumulative returns and drawdowns. Plot kind controls rendering
+      // only; recalculating these values here destroys the retained evidence.
       return {
         kind: "line",
-        series: transformed,
-        bounds: safeBounds(transformed.flatMap((item) => item.values.map((point) => point.value))),
+        series,
+        bounds: safeBounds(series.flatMap((item) => item.values.map((point) => point.value))),
         fillBaseline: plot.type === "Drawdown" || plot.type === "CumulativeReturn"
       };
     }
@@ -644,23 +634,6 @@ function buildAreaPath(points: { x: number; y: number }[], baselineY: number): s
   }
   path += ` L ${points[points.length - 1].x.toFixed(2)} ${baselineY.toFixed(2)} Z`;
   return path;
-}
-
-function cumulativeReturn(values: number[]): number[] {
-  if (values.length === 0) return [];
-  const base = values[0];
-  if (!Number.isFinite(base) || base === 0) return values.map(() => 0);
-  return values.map((value) => value / base - 1);
-}
-
-function drawdown(values: number[]): number[] {
-  const output: number[] = [];
-  let peak = Number.NEGATIVE_INFINITY;
-  for (const value of values) {
-    if (value > peak) peak = value;
-    output.push(peak === 0 ? 0 : value / peak - 1);
-  }
-  return output;
 }
 
 function chartXFor(index: number, total: number): number {

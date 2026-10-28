@@ -627,8 +627,10 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
         string baseCurrency,
         string fallbackActorLabel)
     {
+        // Shared active-blocker contract: a result superseded or resolved by a later reconciliation
+        // is history, not an open exception, even though its own outcome stays "Break".
         var exceptionRows = results
-            .Where(result => !result.IsMatch)
+            .Where(result => !result.IsMatch && result.SupersededByResultId is null)
             .Select(result => MapAccountResult(result, baseCurrency))
             .ToArray();
         var allRows = results
@@ -681,8 +683,9 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             RowKey: result.ResultId.ToString("N"),
             CheckLabel: result.CheckLabel,
             CategoryLabel: result.Category,
-            StatusLabel: result.Status,
-            StatusIcon: result.IsMatch ? "\u2713" : "\u26A0",
+            StatusLabel: result.IsMatch || result.SupersededByResultId is null ? result.Status
+                : result.ResolvedAt is not null ? "Resolved" : "Superseded",
+            StatusIcon: result.IsMatch || result.SupersededByResultId is not null ? "\u2713" : "\u26A0",
             SourceLabel: result.Category,
             ExpectedAmountText: FormatCurrency(result.ExpectedAmount, baseCurrency),
             ActualAmountText: FormatCurrency(result.ActualAmount, baseCurrency),

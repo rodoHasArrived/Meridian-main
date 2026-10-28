@@ -78,7 +78,8 @@ smaller percentage impact. Backtest metrics use the same convention and include 
 the first equity peak.
 Unavailable live-summary XIRR is retained as JSON null and restored to its SDK NaN marker, so terminal
 metrics survive durable replay. The exact legacy XIRR string `"NaN"` remains readable, while new writes
-use null. Other metric and input fields retain strict finite-number handling.
+use null. Defined positive-infinity outcomes for profit factor and Sortino retain their scoped SDK
+named-value contract; unrelated metric and input fields retain strict finite-number handling.
 `StrategyRunEntry.FundAccountId` retains the authorized execution account independently of fund
 profile and financial-account labels. Promotion copies it to the target, durable scoped runs bind it
 in the v5 input hash, and replay and lifecycle updates reject account mutation or removal. Production
@@ -169,9 +170,11 @@ facts are rejected. Compatibility tests cover C# enum/F# state names, every brid
 transition, fact mapping, retained ordering, and append retries.
 
 Durable metric snapshots write unavailable XIRR as JSON null and restore the SDK's `NaN` sentinel
-on read. The exact legacy XIRR string `"NaN"` remains readable; all other named nonfinite values
-and unrelated nonfinite metrics remain invalid. General SDK JSON serialization retains its own
-XIRR marker contract.
+on read. The exact legacy XIRR string `"NaN"` remains readable; infinite XIRR values remain invalid.
+Profit factor and Sortino preserve their defined positive-infinity outcomes through their scoped
+SDK attributes, while unrelated nonfinite metrics remain invalid. General SDK and comparison API
+JSON serialization retain the named XIRR marker contract; the null override applies only to durable
+strategy snapshots.
 
 `StrategyRunEntry` retains the W6 Backtest Studio evidence loop: operator acceptance criteria,
 retained evidence links, accounting-record references, approval references, paper-validation

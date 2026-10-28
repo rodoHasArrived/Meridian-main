@@ -183,6 +183,14 @@ It is distinct from the requested journal period. Reconciliation rows optionally
 retain gross `PeriodDebit`/`PeriodCredit` for export review, independently of report
 balances. These additive fields are omitted when absent to preserve legacy payloads.
 
+Bank-statement lines retain optional source `LineSequence`, header `StatementRevision`, and
+`StatementAsOfDate`; absent historical metadata stays omitted from JSON. Ingestion requests
+declare a positive statement revision (default 1), and corrected statements use a new batch identity
+and higher revision. These fields preserve financial authority independently of arrival time and UUIDs.
+`StatementDate` exposes the retained header date, with the legacy value-date fallback. Banking and
+governance forecast current/closing cash balances are nullable when independent evidence is unavailable;
+aggregate forecast balances remain unavailable if any account lacks a supported current balance.
+
 Reconciliation queue items optionally retain `Lineage`: a stable source identity, occurrence identity,
 first/last observation and successful-run clearing evidence. This metadata is omitted when absent
 so legacy integrity-checked snapshots keep their serialized shape. Source clearing is distinct from
@@ -1269,6 +1277,10 @@ rationale, actor, approval-reference, and correlation metadata so Data, Settings
 endpoint tests share the same governed profile lifecycle contract.
 
 Strategy run comparison and diff contracts live in `Workstation/StrategyRunReadModels.cs`.
+`RunComparisonDto` preserves the SDK's named JSON values for `SortinoRatio` and `ProfitFactor`
+(`"Infinity"`) and unavailable `Xirr` (`"NaN"`). `EquityCurveSummary.SortinoRatio` follows the same
+contract, including nested comparison curves and portfolio drawdown profiles. Handling stays scoped
+to those properties; unrelated metrics and endpoint JSON options remain strict.
 Run diff payloads include base/target mode and engine plus final-equity, drawdown, Sharpe,
 return, fill-count, net-P&L deltas, strategy id/version metadata, lineage relation,
 compatibility level, artifact completeness, and warnings so browser, WPF, and service tests can

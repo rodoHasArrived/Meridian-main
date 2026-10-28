@@ -24,13 +24,12 @@ public sealed class JsonlReplayer
 
     public async IAsyncEnumerable<MarketEvent> ReadEventsAsync([EnumeratorCancellation] CancellationToken ct = default)
     {
-        if (!File.Exists(_path) && !Directory.Exists(_path))
+        if (!JsonlArchiveFiles.Exists(_path) && !Directory.Exists(_path))
             yield break;
 
-        IEnumerable<string> files = File.Exists(_path)
+        IEnumerable<string> files = JsonlArchiveFiles.Exists(_path)
             ? new[] { _path }
-            : Directory.EnumerateFiles(_path, "*.jsonl*", SearchOption.AllDirectories)
-                .OrderBy(f => f, StringComparer.OrdinalIgnoreCase);
+            : JsonlArchiveFiles.Enumerate(_path);
 
         foreach (var file in files)
         {
@@ -41,10 +40,10 @@ public sealed class JsonlReplayer
 
     private static async IAsyncEnumerable<MarketEvent> ReadFileAsync(string file, [EnumeratorCancellation] CancellationToken ct)
     {
-        await using var fs = File.OpenRead(file);
+        await using var fs = await JsonlArchiveFiles.OpenReadAsync(file, ct);
         // Shared codec detection (magic bytes, extension fallback) so this reader honors every
         // compression suffix the storage policy can emit, not just gzip.
-        Stream stream = CompressedJsonlStream.Decompress(fs, file);
+        Stream stream = CompressedJsonlStream.Decompress(fs, fs.Name);
 
         using var reader = new StreamReader(stream);
         while (!reader.EndOfStream)

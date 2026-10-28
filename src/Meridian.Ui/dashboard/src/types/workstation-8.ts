@@ -434,12 +434,15 @@ export interface CellExecutionContext {
   interval?: DataFetchRequest["interval"];
 }
 
-export interface CellOutput {
-  kind: "console" | "metric" | "signal" | "error";
+export type CellOutput = {
   text: string;
   tone?: "default" | "success" | "warning" | "danger";
   timestamp?: string;
-}
+} & (
+  | { kind: "console" | "metric" | "signal" | "error" }
+  | { kind: "plot"; plot: QuantPlot }
+  | { kind: "trades"; trades: QuantTrade[] }
+);
 
 export interface NotebookCell {
   id: string;

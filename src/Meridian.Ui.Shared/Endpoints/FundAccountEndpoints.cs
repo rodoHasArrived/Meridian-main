@@ -819,23 +819,28 @@ public static class FundAccountEndpoints
                 return ServiceUnavailable();
 
             var runs = await queryService.GetReconciliationRunsAsync(accountId, context.RequestAborted).ConfigureAwait(false);
-            var latestRun = runs.OrderByDescending(run => run.AsOfDate).FirstOrDefault();
-            var unresolvedBreaks = latestRun is null
-                ? 0
-                : (await queryService.GetReconciliationResultsAsync(latestRun.ReconciliationRunId, context.RequestAborted).ConfigureAwait(false))
-                    .Count(result => !string.Equals(result.Status, "Matched", StringComparison.OrdinalIgnoreCase));
+            var latestRun = runs.OrderByDescending(run => run.AsOfDate).ThenByDescending(run => run.RequestedAt).FirstOrDefault();
+            var results = await queryService.GetReconciliationResultsForAccountsAsync([accountId], ct: context.RequestAborted)
+                .ConfigureAwait(false);
+            var activeBreaks = results.Where(result => result.IsOpenBreak).ToArray();
+            var unresolvedBreaks = activeBreaks.Length;
+            var latestResults = latestRun is null ? [] : results.Where(result => result.ReconciliationRunId == latestRun.ReconciliationRunId).ToArray();
+            var verified = latestResults.Length > 0 && latestResults.All(result => result.IsMatch);
+            var signOffReady = unresolvedBreaks == 0 && verified;
+            var evidenceRuns = activeBreaks.Select(result => result.ReconciliationRunId)
+                .Concat(latestRun is null ? [] : new[] { latestRun.ReconciliationRunId }).Distinct();
 
             var payload = new ReconciliationQueueAccountStatusDto(
                 AccountId: accountId,
                 AccountCode: latestRun?.AccountId.ToString("D") ?? "unknown",
-                QueueState: unresolvedBreaks == 0 ? "Ready" : "Blocked",
+                QueueState: unresolvedBreaks > 0 ? "Blocked" : signOffReady ? "Ready" : "Unverified",
                 UnresolvedBreakCount: unresolvedBreaks,
-                SignOffReady: unresolvedBreaks == 0 && latestRun is not null,
-                NextBestAction: unresolvedBreaks == 0 ? "Proceed with operator sign-off." : "Resolve unresolved breaks before sign-off.",
-                BlockerReason: unresolvedBreaks == 0 ? "None" : "One or more unresolved reconciliation breaks remain.",
-                EvidenceLinks: latestRun is null
-                    ? Array.Empty<string>()
-                    : [$"/api/fund-accounts/reconciliation-runs/{latestRun.ReconciliationRunId}/results"]);
+                SignOffReady: signOffReady,
+                NextBestAction: unresolvedBreaks > 0 ? "Resolve unresolved breaks before sign-off."
+                    : signOffReady ? "Proceed with operator sign-off." : "Supply independent reconciliation evidence before sign-off.",
+                BlockerReason: unresolvedBreaks > 0 ? "One or more unresolved reconciliation breaks remain."
+                    : signOffReady ? "None" : "Latest reconciliation lacks verified matching evidence.",
+                EvidenceLinks: evidenceRuns.Select(runId => $"/api/fund-accounts/reconciliation-runs/{runId}/results").ToArray());
 
             return Results.Json(payload, jsonOptions);
         })

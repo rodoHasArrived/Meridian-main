@@ -69,8 +69,10 @@ classDiagram
         +bool IsMatch
         +string Reason
         +Guid ReconciliationRunId
+        +DateTimeOffset? ResolvedAt
         +Guid ResultId
         +string Status
+        +Guid? SupersededByResultId
         +decimal? Variance
     }
     class Meridian_Contracts_FundStructure_AccountReconciliationRunDto["AccountReconciliationRunDto"] {
@@ -219,9 +221,11 @@ classDiagram
         +string BankName
         +Guid BatchId
         +DateTimeOffset IngestedAt
+        +bool? IsTransactionFeed
         +int LineCount
         +string LoadedBy
         +DateOnly StatementDate
+        +int? StatementRevision
     }
     class Meridian_Contracts_FundStructure_BankStatementLineDto["BankStatementLineDto"] {
         +Guid AccountId
@@ -230,11 +234,12 @@ classDiagram
         +decimal? ClosingBalance
         +string Currency
         +string Description
+        +bool? IsTransactionFeed
         +Guid LineId
+        +int? LineSequence
         +string? Reference
-        +DateOnly TransactionDate
-        +string TransactionType
-        +DateOnly ValueDate
+        +DateOnly? StatementAsOfDate
+        +int? StatementRevision
     }
     class Meridian_Contracts_FundStructure_BeneficialOwnerSummaryDto["BeneficialOwnerSummaryDto"] {
         +DateTimeOffset? EffectiveFrom
