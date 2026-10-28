@@ -183,8 +183,10 @@ public sealed partial class SecurityMasterCashFlowService
 
         // 10. Declared.
         return new StructuredCashFlowProjectionDto(
-            security.SecurityId, sourceKind, scenario, asOf, entries, staleness, sourceLastUpdatedUtc, terms.FactorSchedule, terms,
-            ScheduleEvidence: evidence);
+            security.SecurityId, sourceKind, scenario, asOf, entries, staleness, sourceLastUpdatedUtc, terms.FactorSchedule, terms)
+        {
+            ScheduleEvidence = evidence
+        };
     }
 
     /// <summary>

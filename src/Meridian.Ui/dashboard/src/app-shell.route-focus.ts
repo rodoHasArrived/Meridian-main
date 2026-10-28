@@ -1,5 +1,6 @@
 import type { WorkspaceSummary } from "@/types";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import { VIEW_STATE_QUERY_KEY } from "@/lib/view-state-envelope";
 import { REPORTING_WORK_SELECTION_PARAM } from "@/components/meridian/reporting-hub.selection";
 
 export interface AppShellRouteFocusState {
@@ -33,12 +34,14 @@ export function buildRouteFocusState(
 
 function routeFocusSearch(pathname: string, search: string): string {
   const normalizedPath = pathname.replace(/\/$/, "").toLowerCase();
-  if (normalizedPath !== WORKSTATION_ROUTE_CATALOG.reporting) return search;
+  const isReporting = normalizedPath === WORKSTATION_ROUTE_CATALOG.reporting;
+  const isPortfolio = normalizedPath === WORKSTATION_ROUTE_CATALOG.portfolio;
+  if (!isReporting && !isPortfolio) return search;
 
-  // Selecting a queue item stays in the same workbench. Treating its URL state
-  // as navigation would steal the row/detail focus managed by the shared table.
+  // Queue selection and Portfolio table controls stay in their current workbench.
+  // Treating screen-local URL state as navigation would steal the control/row focus.
   const params = new URLSearchParams(search);
-  params.delete(REPORTING_WORK_SELECTION_PARAM);
+  params.delete(isReporting ? REPORTING_WORK_SELECTION_PARAM : VIEW_STATE_QUERY_KEY);
   const focusSearch = params.toString();
   return focusSearch ? `?${focusSearch}` : "";
 }

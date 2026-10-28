@@ -26,7 +26,7 @@ describe("workspace header view model", () => {
     expect(model.badges).toContainEqual({
       id: "workspace-maturity",
       label: "Available",
-      variant: "default",
+      variant: "outline",
       ariaLabel: "Trading product maturity Available"
     });
     expect(model.metaItems).toEqual([]);
@@ -88,7 +88,7 @@ describe("workspace header view model", () => {
         session,
         canRefresh: true
       }).badges.find((badge) => badge.id === "workspace-maturity")?.variant
-    ).toBe("default");
+    ).toBe("outline");
   });
 
   it("keeps refresh enabled without a disabled reason when data is idle", () => {

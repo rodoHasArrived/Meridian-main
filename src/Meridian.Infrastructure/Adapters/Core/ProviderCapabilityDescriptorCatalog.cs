@@ -105,10 +105,7 @@ public static class ProviderCapabilityDescriptorCatalog
             SearchFactory: static f => f.CreateAlphaVantageSearchProvider(f.Config.Backfill?.Providers?.AlphaVantage),
             CorporateActionsFactory: static f => f.CreateCorporateActionProvider<AlphaVantageCorporateActionProvider, AlphaVantageHistoricalDataProvider>(
                 ("ALPHA_VANTAGE_API_KEY", f.Config.Backfill?.Providers?.AlphaVantage?.ApiKey))),
-        new("fred", Historical: typeof(FredHistoricalDataProvider), Search: typeof(FredSymbolSearchProvider),
-            InstrumentTypes: [InstrumentType.Index],
-            HistoricalFactory: static f => f.CreateFredBackfillProvider(f.Config.Backfill?.Providers?.Fred),
-            SearchFactory: static f => f.CreateFredSearchProvider(f.Config.Backfill?.Providers?.Fred)),
+        FredProviderModule.Descriptor,
         new("nasdaq", Historical: typeof(NasdaqDataLinkHistoricalDataProvider), Search: typeof(NasdaqDataLinkSymbolSearchProvider), CorporateActions: typeof(NasdaqDataLinkCorporateActionProvider),
             InstrumentTypes: [InstrumentType.Equity, InstrumentType.Commodity, InstrumentType.Index],
             HistoricalFactory: static f => f.CreateNasdaqBackfillProvider(f.Config.Backfill?.Providers?.Nasdaq),
@@ -195,11 +192,15 @@ public sealed record ProviderCapabilityDescriptor(
     /// A null result means configuration or credentials disabled that capability; it never
     /// permits substitution with another provider family.
     /// </summary>
-    public IEnumerable<ProviderCapabilityRegistration> Registrations()
+    public IEnumerable<ProviderCapabilityRegistration> Registrations() => Registrations(includeModuleOwned: false);
+
+    // Standalone ProviderFactory callers retain compatibility construction. Hosted composition
+    // publishes module factories only after successful module registration.
+    internal IEnumerable<ProviderCapabilityRegistration> Registrations(bool includeModuleOwned)
     {
         // Module inventory describes contracts; only successful module registration can
         // publish factories. Never infer a production factory from an attributed type.
-        if (FactoryOwner == ProviderCapabilityFactoryOwner.Module)
+        if (FactoryOwner == ProviderCapabilityFactoryOwner.Module && !includeModuleOwned)
             yield break;
 
         if (Streaming is not null)

@@ -42,8 +42,20 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         ISecurityMasterQueryService queryService,
         ILogger<SecurityMasterCashFlowService> logger,
         IStructuredCashFlowLedgerBridge? ledgerBridge = null,
-        ISecurityForwardCurveProvider? forwardCurves = null,
-        IBusinessDayCalendarSource? calendars = null)
+        ISecurityForwardCurveProvider? forwardCurves = null)
+        : this(null, store, providers, queryService, logger, ledgerBridge, forwardCurves)
+    {
+    }
+
+    /// <summary>Composes declared schedules with the host's explicit calendar source.</summary>
+    public SecurityMasterCashFlowService(
+        IBusinessDayCalendarSource? calendars,
+        ISecurityMasterCashFlowStore store,
+        IEnumerable<IStructuredCashFlowProvider> providers,
+        ISecurityMasterQueryService queryService,
+        ILogger<SecurityMasterCashFlowService> logger,
+        IStructuredCashFlowLedgerBridge? ledgerBridge = null,
+        ISecurityForwardCurveProvider? forwardCurves = null)
     {
         _store = store;
         _providers = providers?.ToList() ?? [];
@@ -300,7 +312,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         // Declared schedule conventions (ADR-025) are resolved before the issue-date fallback below, so
         // a declaring record without its issue date is refused with the reason rather than anchored on
         // its effective-from date. An undeclared record takes every step below exactly as before.
-        var declared = ScheduleSpecFactory.Resolve(security, terms, calendars);
+        var declared = Meridian.Contracts.SecurityMaster.ScheduleSpecFactory.Resolve(security, terms, calendars);
         if (declared.Status == DeclaredScheduleStatus.Refused)
         {
             return Empty(declared.Refusal!.Message);

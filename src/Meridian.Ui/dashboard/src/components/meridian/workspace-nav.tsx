@@ -40,7 +40,7 @@ export function WorkspaceNav({
   const viewModel = buildWorkspaceNavViewModel(location.pathname, undefined, location.search, operatingContextScope);
   const compact = density === "compact";
   const activeWorkspaceKey = viewModel.activeWorkspaceKey ?? undefined;
-  const { expandedWorkspaces, toggleWorkspace } = useWorkspaceExpansion(activeWorkspaceKey);
+  const { expandedWorkspaces, toggleWorkspace } = useWorkspaceExpansion(activeWorkspaceKey, location.pathname);
 
   return (
     <DesignSystemNavRail
@@ -66,6 +66,7 @@ export function WorkspaceNav({
             to={sub.route}
             aria-current={sub.ariaCurrent}
             aria-label={sub.ariaLabel}
+            title={sub.label}
             className={cn(
               designSystemNavRailClasses.subItem,
               FOCUS_VISIBLE_RING_CLASS,
@@ -73,7 +74,7 @@ export function WorkspaceNav({
             )}
             onClick={onNavigate}
           >
-            <span className="truncate">{sub.label}</span>
+            <span className="operator-nav-label truncate">{sub.label}</span>
           </Link>
         );
         return (
@@ -84,6 +85,7 @@ export function WorkspaceNav({
                   to={item.route}
                   aria-current={item.ariaCurrent}
                   aria-label={item.ariaLabel}
+                  title={item.label}
                   className={cn(
                     designSystemNavRailClasses.item,
                     FOCUS_VISIBLE_RING_CLASS,
@@ -92,7 +94,7 @@ export function WorkspaceNav({
                   onClick={onNavigate}
                 >
                   <img className={designSystemNavRailClasses.itemIcon} src={iconSrc} width="16" height="16" alt="" aria-hidden="true" />
-                  <span className="truncate font-medium">{item.label}</span>
+                  <span className="operator-nav-label truncate font-medium">{item.label}</span>
                   {!compact ? (
                     <span className={cn(designSystemNavRailClasses.status, designSystemNavRailClasses.statusTone(item.maturityTone))}>
                       <span className={designSystemNavRailClasses.statusDot} aria-hidden="true" />
@@ -137,7 +139,7 @@ export function WorkspaceNav({
                           role="group"
                           aria-labelledby={groupLabelId}
                         >
-                          <div id={groupLabelId} className="operator-nav-subgroup-label">
+                          <div id={groupLabelId} className="operator-nav-subgroup-label" title={group.label}>
                             {group.label}
                           </div>
                           {group.items.map(renderSubItem)}

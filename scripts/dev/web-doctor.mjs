@@ -39,7 +39,7 @@ function compareVersions(left, right) {
   return 0;
 }
 
-// The locked Vite engine uses explicit caret/minimum alternatives. Fail closed if
+// Runtime manifests use explicit caret/minimum alternatives. Fail closed if
 // a future lockfile adopts a different grammar instead of silently accepting it.
 export function supportsNode(version, range) {
   const current = versionParts(version);
@@ -48,7 +48,7 @@ export function supportsNode(version, range) {
   const alternatives = range.split("||").map((entry) => entry.trim());
   const constraints = alternatives.map((entry) => {
     const match = /^(\^|>=)(\d+\.\d+\.\d+)$/.exec(entry);
-    if (!match) throw new Error(`Unsupported Vite Node engine range: ${range}. Update the doctor range parser.`);
+    if (!match) throw new Error(`Unsupported Node engine range: ${range}. Update the doctor range parser.`);
     return { operator: match[1], minimum: versionParts(match[2]) };
   });
   return constraints.some(({ operator, minimum }) => compareVersions(current, minimum) >= 0 &&
@@ -74,8 +74,14 @@ export async function diagnoseWeb(options, {
     const range = lock.packages?.["node_modules/vite"]?.engines?.node;
     if (!range) throw new Error("The dashboard lockfile does not declare Vite's Node requirement.");
     if (!supportsNode(nodeVersion, range)) throw new Error(`Node ${nodeVersion} does not satisfy locked Vite requirement ${range}.`);
-    return `Node ${nodeVersion} satisfies locked Vite requirement ${range}.`;
-  }, "Install Node.js 24 (the repository development/CI version); restore a valid dashboard lockfile if missing.");
+    const manifest = JSON.parse(await readFile(path.join(dashboard, "package.json"), "utf8"));
+    const runtimeRange = manifest.engines?.node;
+    if (runtimeRange !== undefined && !supportsNode(nodeVersion, runtimeRange)) {
+      throw new Error(`Node ${nodeVersion} does not satisfy dashboard runtime requirement ${runtimeRange}.`);
+    }
+    return `Node ${nodeVersion} satisfies locked Vite requirement ${range}` +
+      (runtimeRange === undefined ? "." : ` and dashboard runtime requirement ${runtimeRange}.`);
+  }, "Install Node.js 24 satisfying dashboard package.json engines.node; restore a valid dashboard manifest and lockfile if missing.");
 
   await check("dashboard-dependencies", async () => {
     await assertDashboardDependencies(dashboard);

@@ -1,7 +1,7 @@
 // Meridian EmptyState (Concrete) — a consistent zero-data placeholder for tables and
 // panels. A muted line-icon, a title, an optional detail line, and an optional primary
 // action (steel accent). Flat, no decoration.
-import type { AriaRole } from "react";
+import type { AriaRole, JSX } from "react";
 import { injectStyle } from "../operations/inject-style";
 
 const CSS = `

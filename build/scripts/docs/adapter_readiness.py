@@ -14,7 +14,7 @@ import json
 import re
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath, PureWindowsPath
-from typing import Any
+from typing import Any, Callable
 
 try:
     import yaml
@@ -165,12 +165,22 @@ def _arguments(tokens: list[str]) -> list[list[str]]:
     return result
 
 
-def _constructors(tokens: list[str]) -> list[list[list[str]]]:
+def _constructors(
+    tokens: list[str],
+    resolve_descriptor: Callable[[str, str], list[list[str]]] | None = None,
+) -> list[list[list[str]]]:
     rows = []
     index = 0
     while index < len(tokens):
         if tokens[index] == ",":
             index += 1
+            continue
+        if (resolve_descriptor is not None and re.fullmatch(IDENTIFIER, tokens[index])
+                and tokens[index + 1:index + 3] == [".", "Descriptor"]):
+            if index + 3 < len(tokens) and tokens[index + 3] != ",":
+                raise SourceError(f"unsupported catalog row near {' '.join(tokens[index:index + 8])}")
+            rows.append(resolve_descriptor(tokens[index], tokens[index + 2]))
+            index += 3
             continue
         if tokens[index:index + 2] != ["new", "("]:
             raise SourceError(f"unsupported catalog row near {' '.join(tokens[index:index + 8])}")
@@ -179,6 +189,57 @@ def _constructors(tokens: list[str]) -> list[list[list[str]]]:
     if not rows:
         raise SourceError("empty source inventory")
     return rows
+
+
+def _module_descriptor(root: Path, owner: str, member: str) -> list[list[str]]:
+    """Resolve one module-owned, get-only descriptor initializer without executing C#."""
+    declarations = []
+    for path in sorted((root / ADAPTER_ROOT).rglob("*.cs")):
+        tokens = _tokens(path.read_text(encoding="utf-8"))
+        for index in range(len(tokens) - 1):
+            if tokens[index:index + 2] != ["class", owner]:
+                continue
+            cursor = index + 2
+            while cursor < len(tokens) and tokens[cursor] not in {"{", ";"}:
+                if tokens[cursor] in {"(", "["}:
+                    _, cursor = _balanced(tokens, cursor)
+                else:
+                    cursor += 1
+            if cursor < len(tokens) and tokens[cursor] == "{":
+                declarations.append(_balanced(tokens, cursor)[0])
+    if len(declarations) != 1:
+        raise SourceError(f"module descriptor owner {owner} must have exactly one class declaration; found {len(declarations)}")
+
+    body = declarations[0]
+    positions = []
+    index = 0
+    while index < len(body):
+        if body[index] in {"(", "[", "{"}:
+            _, index = _balanced(body, index)
+            continue
+        if body[index:index + 2] == ["ProviderCapabilityDescriptor", member]:
+            positions.append(index)
+        index += 1
+    if len(positions) != 1:
+        raise SourceError(f"module descriptor {owner}.{member} must have exactly one declaration; found {len(positions)}")
+    index = positions[0]
+    if index == 0 or body[index - 1] != "static" or body[index + 2:index + 3] != ["{"]:
+        raise SourceError(f"unsupported module descriptor property {owner}.{member}")
+    accessors, cursor = _balanced(body, index + 2)
+    if accessors != ["get", ";"] or body[cursor:cursor + 2] != ["=", "new"]:
+        raise SourceError(f"unsupported module descriptor initializer {owner}.{member}")
+    cursor += 2
+    if body[cursor:cursor + 1] == ["ProviderCapabilityDescriptor"]:
+        cursor += 1
+    if body[cursor:cursor + 1] != ["("]:
+        raise SourceError(f"unsupported module descriptor constructor {owner}.{member}")
+    arguments, cursor = _balanced(body, cursor)
+    if body[cursor:cursor + 1] != [";"]:
+        raise SourceError(f"unsupported module descriptor initializer {owner}.{member}")
+    result = _arguments(arguments)
+    if ["FactoryOwner", ":", "ProviderCapabilityFactoryOwner", ".", "Module"] not in result:
+        raise SourceError(f"module descriptor {owner}.{member} must declare module factory ownership")
+    return result
 
 
 def _string(tokens: list[str]) -> str:
@@ -197,7 +258,8 @@ def read_catalog(root: Path) -> tuple[dict[str, dict[str, str | None]], set[str]
     if names[:9] != ["ProviderId", *[v[0] for v in TYPE_SLOTS.values()]]:
         raise SourceError("ProviderCapabilityDescriptor type slot signature changed")
     descriptors = {}
-    for arguments in _constructors(_initializer(tokens, "Descriptors", "[")):
+    for arguments in _constructors(_initializer(tokens, "Descriptors", "["),
+                                   lambda owner, member: _module_descriptor(root, owner, member)):
         values = {}
         for index, argument in enumerate(arguments):
             if len(argument) > 1 and argument[1] == ":":

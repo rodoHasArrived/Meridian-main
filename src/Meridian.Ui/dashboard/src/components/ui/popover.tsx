@@ -5,6 +5,8 @@ type PopoverPosition = "top" | "bottom" | "left" | "right";
 
 export interface PopoverProps {
   open: boolean;
+  /** Accessible name for the non-modal dialog. */
+  ariaLabel?: string;
   onClose?: () => void;
   anchorEl?: HTMLElement | null;
   position?: PopoverPosition;
@@ -22,6 +24,7 @@ export interface PopoverProps {
  */
 export function Popover({
   open,
+  ariaLabel,
   onClose,
   anchorEl,
   position = "bottom",
@@ -104,6 +107,7 @@ export function Popover({
       <div
         ref={panelRef}
         role="dialog"
+        aria-label={ariaLabel}
         style={style}
         className={cn(
           "fixed z-[1001] max-w-[280px] rounded-[2px] border border-border bg-popover p-3 text-sm text-popover-foreground shadow-[0_2px_6px_rgba(0,0,0,0.18)]",

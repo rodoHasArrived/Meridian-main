@@ -176,7 +176,7 @@ export function AccountTree({
                 •
               </span>
             )}
-            {(node.codeLabel ?? node.code) && <span className="act__code">{node.codeLabel ?? node.code}</span>}
+            {(node.codeLabel ?? node.code) && <><span className="act__code">{node.codeLabel ?? node.code}</span>{" "}</>}
             <span className="act__label">{node.name}</span>
           </div>
           <AmountCell

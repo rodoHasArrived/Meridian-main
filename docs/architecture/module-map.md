@@ -183,13 +183,13 @@ The current product direction is the W1-W5 operational record baseline: data con
   - Query projection: `GetOrganizationStructureAsync`, `GetFundStructureGraphAsync`, `GetAdvisoryViewAsync`, `GetFundOperatingViewAsync`, `GetAccountingViewAsync`, `GetCashFlowViewAsync`.
 - `InMemoryFundStructureService`
   - Command handling: implements the full `IFundStructureService` creation, ownership lifecycle, validation, and assignment surface.
-  - Query projection: delegates organization graph, legacy fund graph, advisory, fund operating, and accounting views to `FundStructureProjector`; retains cash-flow orchestration and uses the shared scope helpers.
+  - Query projection: delegates organization graph, legacy fund graph, advisory, fund operating, and accounting views to `FundStructureProjector`; delegates cash-flow orchestration to `FundStructureCashFlowReadService` with captured structure, visible accounts, shared metadata, and explicit effective time.
   - Validation/policy: delegates pure portfolio-parent rules to `IFundStructurePolicyService`; owns existence checks, ownership-link lifecycle checks, and cycle validation.
   - Workflow orchestration: parent-link creation, ownership projection rebuilds after link lifecycle changes, shared-data synchronization, cross-service composition with account/security-master services.
   - Storage concerns: snapshot capture/load/save via `IFundStructureStateStore`, including updated, expired, and replacement ownership links.
 - `PostgresFundStructureService`
   - Command handling: implements the same `IFundStructureService` creation, ownership lifecycle, validation, and assignment surface over `IFundStructureStore`.
-  - Query projection: delegates the same graph, advisory, fund operating, and accounting views to `FundStructureProjector` after loading and tenant filtering; cash-flow views retain the snapshot-backed in-memory service adapter.
+  - Query projection: delegates the same graph, advisory, fund operating, and accounting views to `FundStructureProjector` after loading and tenant filtering; cash-flow views use `FundStructureCashFlowReadService` with the same tenant-filtered account boundary, without constructing an in-memory command service.
   - Validation/policy: reuses `FundStructurePolicyService` for pure rules and service-local ownership existence/cycle validation for persisted links.
   - Workflow orchestration: loads a mutable snapshot, applies lifecycle mutations, rebuilds ownership projections, and upserts changed rows through the store.
   - Storage concerns: persists organizations, businesses, clients, funds, sleeves, vehicles, entities, portfolios, ownership links, and assignments via `IFundStructureStore`.

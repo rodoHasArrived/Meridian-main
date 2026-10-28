@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-06
+last_reviewed: 2026-10-28
 ---
 
 # src/Meridian.Ui.Shared
@@ -507,6 +507,9 @@ repeatable-read, read-only transaction. Period activity, opening balances, finan
 and generated trial-balance amount bindings derive from that population. Primary-document rendering
 replays retained inputs after restart; release readiness separately revalidates current authorities.
 The retained content digest and source checkpoint are checked before replay or amount inspection.
+Downloadable artifacts (the retained manifest and the evidence vault) carry the population's identity
+and digest only: the population is the whole fund/book history even when a report is scoped to one
+investor or entity, so its replay payload stays in the server-side run manifest.
 
 Generated trial-balance amounts on governed run details use the shared `ledger-amount` proof packet
 with exact `report:{runId}:{amountId}` identities. Report access, fund/book/period ownership,

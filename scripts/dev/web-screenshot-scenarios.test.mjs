@@ -92,6 +92,35 @@ test("legacy fixture reads require an exact path and known supporting fixtures a
   resolver.assertNoUnexpectedRequests();
 });
 
+test("the shell's declared first-run endpoint receives the retained screenshot workspace", async () => {
+  const endpoints = await readFile(path.join(repoRoot, "src/Meridian.Ui/dashboard/src/lib/workstation-endpoints.ts"), "utf8");
+  const statusPath = endpoints.match(/\bfirstRunStatus:\s*"([^"]+)"/)?.[1];
+  assert.ok(statusPath, "The shell must declare its first-run status endpoint");
+  const fixtures = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-fixtures.json"), "utf8"));
+  const resolver = createScreenshotApiResolver(source.module, fixtures.routes, { strict: true });
+  const response = resolver.resolve(`${statusPath}?capture=activation`);
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.isComplete, true);
+  assert.equal(response.body.workspace.isSample, false,
+    "Screenshot activation must use the retained primary workspace, not the sample bootstrap fallback");
+  assert.deepEqual(response.body, fixtures.routes[statusPath]);
+  resolver.assertNoUnexpectedRequests();
+});
+
+test("the first-run fixture cannot answer unknown children or activation writes", async () => {
+  const fixtures = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-fixtures.json"), "utf8"));
+  for (const [route, method] of [
+    ["/api/workstation/first-run/unknown", "GET"],
+    ["/api/workstation/first-run/", "POST"],
+    ["/api/workstation/first-run/complete", "POST"]
+  ]) {
+    const resolver = createScreenshotApiResolver(source.module, fixtures.routes, { strict: true });
+    assert.throws(() => resolver.resolve(route, method), /Unexpected API request/);
+    assert.equal(resolver.unexpectedRequests.length, 1);
+  }
+});
+
 test("scenario captures carry the preview selector and derive readiness from the same payload", () => {
   for (const id of Object.keys(source.module.scenarios)) {
     const scenario = source.module.getScenario(id);

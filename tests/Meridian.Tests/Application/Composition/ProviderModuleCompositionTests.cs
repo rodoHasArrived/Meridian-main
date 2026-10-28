@@ -6,6 +6,10 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.DataSources;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Domain;
+using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Subscriptions.Models;
+using Meridian.Infrastructure.Contracts;
 using Meridian.Tests.Ui;
 using DataSourceType = Meridian.Infrastructure.DataSources.DataSourceType;
 
@@ -22,6 +26,7 @@ public sealed class ProviderModuleCompositionTests : IDisposable
         var assembly = CreatePluginAssembly();
         var config = new AppConfig(ProviderModules: new ProviderModulesConfig(new()
         {
+            ["fred"] = new(Enabled: false),
             [" COMPOSITION-PLUGIN "] = new(Enabled: enabled, Settings: new() { ["marker"] = "configured-by-module" })
         }));
         var services = new ServiceCollection();
@@ -117,6 +122,7 @@ public sealed class ProviderModuleCompositionTests : IDisposable
         var assembly = CreatePluginAssembly();
         var config = new AppConfig(ProviderModules: new ProviderModulesConfig(new()
         {
+            ["fred"] = new(Enabled: false),
             [" COMPOSITION-PLUGIN "] = new(Settings: new() { ["registrationMode"] = registrationMode })
         }));
         var services = new ServiceCollection();
@@ -146,6 +152,7 @@ public sealed class ProviderModuleCompositionTests : IDisposable
         var assembly = CreatePluginAssembly();
         var config = new AppConfig(ProviderModules: new ProviderModulesConfig(new()
         {
+            ["fred"] = new(Enabled: false),
             ["composition-plugin"] = new(Settings: new() { ["registrationMode"] = "no-op" })
         }));
         var adapter = assembly.GetTypes().Single(type => typeof(PluginCorporateActions).IsAssignableFrom(type));
@@ -161,8 +168,63 @@ public sealed class ProviderModuleCompositionTests : IDisposable
         ((PluginCorporateActions)provider.GetRequiredService(adapter)).Marker.Should().Be("unrelated registration");
     }
 
+    [Fact]
+    public async Task Per_contract_gate_cannot_be_bypassed_by_a_shared_multi_interface_implementation()
+    {
+        var assembly = CreatePluginAssembly(typeof(GatedPluginModule), adapterBase: typeof(CombinedProvider));
+        var config = CreateEnabledPluginConfig();
+        foreach (var descriptor in ProviderCapabilityDescriptorCatalog.Descriptors)
+            config.ProviderModules!.Modules![descriptor.ProviderId] = new(Enabled: false);
+        var services = new ServiceCollection();
+        services.AddProviderServices(config, _ => config, pluginAssemblies: [assembly]);
+        await using var provider = services.BuildServiceProvider();
+        var registry = provider.GetRequiredService<ProviderRegistry>();
+        var combined = (CombinedProvider)registry.GetCapability<ISymbolSearchProvider>("composition-plugin")!;
+
+        combined.Should().NotBeNull();
+        registry.GetAllProviderMetadata().Should().Contain(combined);
+        registry.GetCapability<IHistoricalDataProvider>("composition-plugin").Should().BeNull();
+        registry.GetProviders<IHistoricalDataProvider>().Should().BeEmpty();
+        registry.GetProvider<IHistoricalDataProvider>("composition-plugin").Should().BeNull();
+        registry.GetBackfillProvider("composition-plugin").Should().BeNull();
+        registry.GetBackfillProviders().Should().BeEmpty();
+        (await registry.GetBestBackfillProviderAsync()).Should().BeNull();
+        (await registry.IsAnyProviderAvailableAsync<IHistoricalDataProvider>()).Should().BeFalse();
+        (await registry.GetProviderAvailabilityAsync<IHistoricalDataProvider>()).Should().BeEmpty();
+        provider.GetServices<IHistoricalDataProvider>().Should().BeEmpty();
+        registry.GetProvider<ISymbolSearchProvider>("composition-plugin").Should().BeSameAs(combined);
+        registry.GetSymbolSearchProviders().Should().ContainSingle().Which.Should().BeSameAs(combined);
+        (await registry.GetBestSymbolSearchProviderAsync()).Should().BeSameAs(combined);
+        (await registry.GetProviderAvailabilityAsync<ISymbolSearchProvider>())["composition-plugin"].Should().BeTrue();
+        combined.HistoricalAvailabilityChecks.Should().Be(0);
+        combined.SearchAvailabilityChecks.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task Failed_options_constructor_is_not_retried_by_enumeration_or_catalog_reads()
+    {
+        FailingOptionsProvider.ConstructionAttempts = 0;
+        var assembly = CreatePluginAssembly(adapterBase: typeof(FailingOptionsProvider));
+        var config = CreateEnabledPluginConfig();
+        foreach (var descriptor in ProviderCapabilityDescriptorCatalog.Descriptors)
+            config.ProviderModules!.Modules![descriptor.ProviderId] = new(Enabled: false);
+        var services = new ServiceCollection();
+        services.AddProviderServices(config, _ => config, pluginAssemblies: [assembly]);
+        await using var provider = services.BuildServiceProvider();
+        var registry = provider.GetRequiredService<ProviderRegistry>();
+
+        registry.GetCapability<IOptionsChainProvider>("composition-plugin").Should().BeNull();
+        provider.GetServices<IOptionsChainProvider>().Should().BeEmpty();
+        var catalog = provider.GetRequiredService<IProviderCatalog>();
+        catalog.GetAll().Should().Contain(entry => entry.ProviderId == "composition-plugin"
+            && entry.Capabilities.SupportsOptionsChain);
+        catalog.Get("composition-plugin").Should().NotBeNull();
+        FailingOptionsProvider.ConstructionAttempts.Should().Be(1);
+    }
+
     private static AppConfig CreateEnabledPluginConfig() => new(ProviderModules: new ProviderModulesConfig(new()
     {
+        ["fred"] = new(Enabled: false),
         [" COMPOSITION-PLUGIN "] = new(Enabled: true, Settings: new() { ["marker"] = "configured-by-module" })
     }));
 
@@ -171,16 +233,17 @@ public sealed class ProviderModuleCompositionTests : IDisposable
 
     // Only this explicitly supplied assembly is discovered. Positive resolution must come
     // from its configured module; a preexisting service is used only in the negative cases.
-    private static Assembly CreatePluginAssembly(Type? moduleBase = null, bool includeModule = true)
+    private static Assembly CreatePluginAssembly(Type? moduleBase = null, bool includeModule = true, Type? adapterBase = null)
     {
+        adapterBase ??= typeof(PluginCorporateActions);
         var assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName($"CompositionPlugin{Guid.NewGuid():N}"), AssemblyBuilderAccess.Run);
         var module = assembly.DefineDynamicModule("provider");
-        var adapter = module.DefineType("ConfiguredCorporateActions", TypeAttributes.Public | TypeAttributes.Sealed, typeof(PluginCorporateActions));
+        var adapter = module.DefineType("ConfiguredCorporateActions", TypeAttributes.Public | TypeAttributes.Sealed, adapterBase);
         var constructor = adapter.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, [typeof(string)]);
         var il = constructor.GetILGenerator();
         il.Emit(OpCodes.Ldarg_0);
         il.Emit(OpCodes.Ldarg_1);
-        il.Emit(OpCodes.Call, typeof(PluginCorporateActions).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, [typeof(string)], null)!);
+        il.Emit(OpCodes.Call, adapterBase.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, [typeof(string)], null)!);
         il.Emit(OpCodes.Ret);
         adapter.SetCustomAttribute(new CustomAttributeBuilder(typeof(DataSourceAttribute).GetConstructor(
             [typeof(string), typeof(string), typeof(DataSourceType), typeof(DataSourceCategory)])!,
@@ -242,6 +305,63 @@ public sealed class ProviderModuleCompositionTests : IDisposable
             base.Register(services, registry);
             throw new InvalidOperationException("Module failed after registering its factory.");
         }
+    }
+
+    public abstract class GatedPluginModule : PluginModule, IProviderModuleCapabilityAvailability
+    {
+        public bool IsCapabilityConfigured(Type contract, IServiceProvider services)
+            => contract == typeof(ISymbolSearchProvider);
+    }
+
+    public abstract class CombinedProvider(string marker) : IHistoricalDataProvider, ISymbolSearchProvider
+    {
+        public string Marker { get; } = marker;
+        public string Name => "composition-plugin";
+        public string DisplayName => "Combined provider";
+        public string Description => "Combined provider";
+        public int Priority => 1;
+        public int HistoricalAvailabilityChecks { get; private set; }
+        public int SearchAvailabilityChecks { get; private set; }
+        string IProviderMetadata.ProviderId => Name;
+        string IProviderMetadata.ProviderDisplayName => DisplayName;
+        string IProviderMetadata.ProviderDescription => Description;
+        int IProviderMetadata.ProviderPriority => Priority;
+        ProviderCapabilities IProviderMetadata.ProviderCapabilities => new() { SupportsBackfill = true, SupportsSymbolSearch = true };
+        Task<bool> IHistoricalDataProvider.IsAvailableAsync(CancellationToken ct)
+        {
+            HistoricalAvailabilityChecks++;
+            throw new InvalidOperationException("The denied historical capability must not be probed.");
+        }
+        Task<bool> ISymbolSearchProvider.IsAvailableAsync(CancellationToken ct)
+        {
+            SearchAvailabilityChecks++;
+            return Task.FromResult(true);
+        }
+        public Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct)
+            => Task.FromResult<IReadOnlyList<HistoricalBar>>([]);
+        public Task<IReadOnlyList<SymbolSearchResult>> SearchAsync(string query, int limit, CancellationToken ct)
+            => Task.FromResult<IReadOnlyList<SymbolSearchResult>>([]);
+        public Task<SymbolDetails?> GetDetailsAsync(SymbolId symbol, CancellationToken ct)
+            => Task.FromResult<SymbolDetails?>(null);
+    }
+
+    public abstract class FailingOptionsProvider : IOptionsChainProvider
+    {
+        public static int ConstructionAttempts;
+        protected FailingOptionsProvider(string marker)
+        {
+            ConstructionAttempts++;
+            throw new InvalidOperationException("Options provider failed to initialize.");
+        }
+        public OptionsChainCapabilities Capabilities => OptionsChainCapabilities.Basic;
+        public Task<IReadOnlyList<DateOnly>> GetExpirationsAsync(string underlyingSymbol, CancellationToken ct)
+            => Task.FromResult<IReadOnlyList<DateOnly>>([]);
+        public Task<IReadOnlyList<decimal>> GetStrikesAsync(string underlyingSymbol, DateOnly expiration, CancellationToken ct)
+            => Task.FromResult<IReadOnlyList<decimal>>([]);
+        public Task<OptionChainSnapshot?> GetChainSnapshotAsync(string underlyingSymbol, DateOnly expiration, int? strikeRange, CancellationToken ct)
+            => Task.FromResult<OptionChainSnapshot?>(null);
+        public Task<OptionQuote?> GetOptionQuoteAsync(OptionContractSpec contract, CancellationToken ct)
+            => Task.FromResult<OptionQuote?>(null);
     }
 
     public abstract class UnrelatedPluginModule : PluginModule

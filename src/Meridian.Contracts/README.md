@@ -2007,8 +2007,10 @@ terms and unresolved floating fixings never mean zero, and normalized analytical
 drive ledger postings without retained principal/notional. A schedule generated from declared
 schedule conventions also carries `ScheduleEvidence` (`StructuredCashFlowScheduleEvidence`: the
 kernel and declared-mapping versions, each calendar's id, content hash and purpose, and per-calendar
-coverage gaps), a trailing optional member omitted from JSON when null, so an undeclared projection
-keeps its wire shape; a projection that carries it is not postable yet. Discount rates on Treasury
+coverage gaps), an optional nonpositional init property omitted from JSON when null. Its legacy
+twelve-argument constructor and twelve-output deconstruction remain available to compiled providers;
+an undeclared projection keeps its wire shape. A projection that carries the evidence is not postable
+yet. Discount rates on Treasury
 bills and commercial paper are not coupon payments. Classes with no implemented calculated schedule
 require provider evidence. Asset-pack template bindings use exact mappings with declared Fee,
 Amortization, and MarginSettlement lifecycle coverage.

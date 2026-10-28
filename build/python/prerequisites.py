@@ -137,6 +137,17 @@ def _check_dotnet(root: Path) -> CheckResult:
     return CheckResult(".NET SDK", "pass" if ok else "fail", f"Selected SDK: {output or 'unavailable'}", expected, None if ok else fix)
 
 
+def _node_engine_allows(version: tuple[int, int, int], engine: str) -> bool:
+    constraints = []
+    for alternative in engine.split("||"):
+        match = re.fullmatch(r"(\^|>=)(\d+)\.(\d+)\.(\d+)", alternative.strip())
+        if match is None:
+            raise ValueError("Unsupported dashboard Node engine range")
+        constraints.append((match[1], tuple(int(part) for part in match.groups()[1:])))
+    return any(version >= minimum and (operator == ">=" or version[0] == minimum[0])
+               for operator, minimum in constraints)
+
+
 def check_node(root: Path) -> CheckResult:
     try:
         required = int((root / ".nvmrc").read_text(encoding="utf-8").strip())
@@ -146,11 +157,28 @@ def check_node(root: Path) -> CheckResult:
         return CheckResult("Node.js", "fail", "Missing or invalid .nvmrc", "Supported Node major version in .nvmrc", "Restore .nvmrc from Git and rerun doctor.")
     expected = f"Node.js {required}.x (supported browser version)"
     fix = f"Run nvm install {required} && nvm use {required}, or install Node.js {required} from https://nodejs.org/; rerun in a new shell."
+    engine = None
+    try:
+        package_path = root / "src/Meridian.Ui/dashboard/package.json"
+        package = json.loads(package_path.read_text(encoding="utf-8")) if package_path.exists() else {}
+        engines = package.get("engines", {})
+        if not isinstance(engines, dict):
+            raise ValueError("Invalid dashboard engines object")
+        if "node" in engines:
+            engine = engines["node"]
+            _node_engine_allows((required, 0, 0), engine)
+            expected += f"; dashboard engines.node {engine}"
+            fix += f" The installed version must also satisfy {engine}."
+    except (OSError, ValueError, TypeError, AttributeError):
+        return CheckResult("Node.js", "fail", "Missing or unsupported dashboard Node engine constraint", expected,
+                           "Restore a valid dashboard package.json engines.node range and rerun doctor.")
     if not shutil.which("node"):
         return CheckResult("Node.js", "fail", "node not found on PATH", expected, fix)
     rc, output = _command_version(["node", "--version"], root)
     version = _version(output)
-    ok = rc == 0 and version is not None and version[0] == required
+    ok = (rc == 0 and version is not None and version[0] == required
+          and not re.search(r"\d+\.\d+\.\d+-", output)
+          and (engine is None or _node_engine_allows(version, engine)))
     return CheckResult("Node.js", "pass" if ok else "fail", f"Installed: {output or 'version unavailable'}", expected, None if ok else fix)
 
 

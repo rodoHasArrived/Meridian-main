@@ -15,6 +15,8 @@ Fund Ledger defaults and resets to all reconciliation cases, includes explicitly
 
 Strategy composition registers the canonical Security Master resolver and position adjuster, then
 exposes narrow query ports and legacy aliases through `AddSecurityMasterContractAdapters()`.
+The adjustment-service factory selects its canonical query and resolver constructor explicitly,
+so registering the retained legacy aliases cannot make desktop dependency injection ambiguous.
 
 The fund-account projection adapter counts active reconciliation results through the same batched
 service query as the browser, while retaining historical run totals. Its bank snapshot adapter uses

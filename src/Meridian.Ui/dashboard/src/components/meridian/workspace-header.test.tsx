@@ -54,3 +54,15 @@ describe("WorkspaceHeader", () => {
     expect(screen.getByRole("button", { name: /Refresh Trading workspace data/ })).toBeInTheDocument();
   });
 });
+
+it("keeps scope visible while the workspace description is disclosed on demand", async () => {
+  const { default: userEvent } = await import("@testing-library/user-event");
+  const user = userEvent.setup();
+  render(<WorkspaceHeader workspace={workspaceForKey("trading")} session={session} context={<p>Subject MSFT · Applied here</p>} />);
+  expect(screen.getByText("Subject MSFT · Applied here")).toBeVisible();
+  const about = screen.getByLabelText("About Trading");
+  expect(about.closest("details")).not.toHaveAttribute("open");
+  await user.click(about);
+  expect(about.closest("details")).toHaveAttribute("open");
+  expect(screen.getByText(workspaceForKey("trading").description)).toBeVisible();
+});

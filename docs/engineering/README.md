@@ -181,7 +181,7 @@ results. Missing or unsupported prerequisites fail even with `--no-fail-on-warn`
 | Profile | Required prerequisites |
 | --- | --- |
 | `unit-test` | Python 3.11+, the SDK selected by `global.json`, Git, and .NET repository inputs. No provider credentials, runtime configuration, Docker, PostgreSQL, Node, or Python extras. |
-| `browser` | Python 3.11+, Node 24 from `.nvmrc`, npm, Git, and dashboard package manifests/lockfile. Run `npm --prefix src/Meridian.Ui/dashboard ci --include=optional` to install dashboard packages afterward. |
+| `browser` | Python 3.11+, Node 24 from `.nvmrc` satisfying the dashboard's `engines.node` minimum, npm, Git, and dashboard package manifests/lockfile. Run `npm --prefix src/Meridian.Ui/dashboard ci --include=optional` to install dashboard packages afterward. |
 | `desktop` | Python 3.11+, the selected .NET SDK, Git, PowerShell 7+, Windows, and WPF project inputs. |
 | `full-quality-gate` | The .NET and browser toolchains, Bash, PowerShell 7+, actionlint 1.7.12, and the pinned Python packages in `build/scripts/ci/requirements.txt`, including its docs requirements. |
 

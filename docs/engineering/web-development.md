@@ -77,7 +77,8 @@ npm run dev:fixtures -- --doctor
 node scripts/dev/web-dev.mjs --mode backend-connected --doctor --json
 ```
 
-The doctor checks the running Node version against Vite's engine range in the dashboard lockfile,
+The doctor checks the running Node version against the dashboard's `engines.node` runtime floor
+and Vite's engine range in the dashboard lockfile,
 whether the installed Vite CLI can load on this OS via `--version` (including native dependencies),
 the SDK selected by `global.json` in backend-connected mode, and
 both loopback addresses for the selected mode's ports. Fixture-only diagnosis never probes .NET

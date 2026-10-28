@@ -514,8 +514,8 @@ public sealed class DiscountedCashFlowValuationModelTests
         var query = Substitute.For<ISecurityMasterQueryService>();
         query.GetByIdAsync(security.SecurityId, Arg.Any<CancellationToken>()).Returns(security);
         var cashFlows = new SecurityMasterCashFlowService(
-            store, Array.Empty<IStructuredCashFlowProvider>(), query,
-            NullLogger<SecurityMasterCashFlowService>.Instance, forwardCurves: forwardCurves, calendars: calendars);
+            calendars, store, Array.Empty<IStructuredCashFlowProvider>(), query,
+            NullLogger<SecurityMasterCashFlowService>.Instance, forwardCurves: forwardCurves);
         return new DiscountedCashFlowValuationModel(cashFlows, curves, NullLogger<DiscountedCashFlowValuationModel>.Instance);
     }
 }

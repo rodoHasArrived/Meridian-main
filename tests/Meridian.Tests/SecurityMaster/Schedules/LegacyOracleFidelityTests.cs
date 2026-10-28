@@ -438,9 +438,10 @@ public sealed class LegacyOracleFidelityTests
             : null;
     }
 
+    // Both persistence facades project through this shared cash-flow reader.
     private static Func<DateOnly?, string?, DateTimeOffset, DateTimeOffset, IReadOnlyList<DateTimeOffset>> FundStructureRoll()
         => PrivateStatic<Func<DateOnly?, string?, DateTimeOffset, DateTimeOffset, IReadOnlyList<DateTimeOffset>>>(
-            typeof(InMemoryFundStructureService),
+            typeof(FundStructureCashFlowReadService),
             "RollProjectedScheduleDates");
 
     // Asserts each case's production outcome (its date, or the exception type it threw) equals the

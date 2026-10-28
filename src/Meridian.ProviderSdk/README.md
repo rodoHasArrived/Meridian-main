@@ -70,6 +70,12 @@ this inventory instead of inferring factories from all services in the container
 or replace a concrete factory to claim it; unrelated services already in the collection do not
 grant the module a capability. Attribute-only registration derives all recognized capability
 interfaces from that same metadata.
+Modules may implement `IProviderModuleCapabilityAvailability` to evaluate configuration after the
+host container is built and before capability factories are resolved. Successful module inventory
+retains this optional predicate in `ProviderModuleCapabilityRegistration.IsConfigured`; existing
+modules without the hook retain their registration behavior. A false result leaves that contract
+unavailable and must not trigger concrete construction or interface fallback. This hook describes
+configuration, not connectivity, entitlement, or production readiness.
 `IProviderConnectionHealthSource.GetConnectionHealthAsync` reports health for exactly one connection;
 tenant-scoped routing, trust and selection use it so family-wide telemetry shared with other owners
 cannot rank a tenant's connection. Its default delegates to `GetHealthAsync`, so sources that fall back
