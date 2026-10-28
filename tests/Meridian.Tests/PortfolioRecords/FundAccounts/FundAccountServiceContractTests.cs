@@ -617,6 +617,8 @@ public abstract class FundAccountServiceContractTests
         var retained = await service.GetBankStatementLinesAsync(account.AccountId);
         retained.Should().HaveCount(2);
         retained.Select(line => line.LineSequence).Should().OnlyHaveUniqueItems().And.NotContainNulls();
+        retained.Single(line => line.LineId == coffee.LineId).LineSequence.Should().Be(2);
+        retained.Single(line => line.LineId == rent.LineId).LineSequence.Should().Be(1);
     }
 
     protected async Task IngestBankStatementAsync_TransactionFeedBatches_AreAdditiveAndSupersedeByLineIdentity_Core()

@@ -1204,7 +1204,7 @@
       "ordinal": null,
       "path": "src/Meridian.Storage/FundAccounts/Migrations/008_plaid_transaction_feed_backfill.sql",
       "schema": "fund_accounts",
-      "sha256": "9402ef3a1f29b4a8017186c63824b929498a798accab57884b66ed398c39b898"
+      "sha256": "4fc0e5464b31d9a5a068f7f8b0114001a25e72848e1ec185f3deb7930e0f48f4"
     },
     {
       "filename": "001_banking.sql",
@@ -1370,7 +1370,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "772cefeca227095e45cefa665b1606fdc1660fec154c49a509aedc7d69d119a7",
+  "fingerprint": "d53a65a23d74bd19361826a632d968ac88bd69efe6d7cada388566b6b18ccb94",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {

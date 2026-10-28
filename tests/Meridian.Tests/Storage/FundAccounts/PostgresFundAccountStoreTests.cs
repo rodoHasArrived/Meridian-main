@@ -16,7 +16,7 @@ namespace Meridian.Tests.Storage.FundAccounts;
 /// across tenants, or lost in the SQL layer.
 /// </summary>
 [Trait("Category", "Integration")]
-public sealed class PostgresFundAccountStoreTests : IClassFixture<FundAccountDatabaseFixture>
+public sealed partial class PostgresFundAccountStoreTests : IClassFixture<FundAccountDatabaseFixture>
 {
     private readonly FundAccountDatabaseFixture _fixture;
 
@@ -230,48 +230,6 @@ public sealed class PostgresFundAccountStoreTests : IClassFixture<FundAccountDat
 
         (await store.GetBankStatementLinesAsync(account.AccountId, null, null, cts.Token))
             .Should().ContainSingle().Which.LineSequence.Should().Be(7);
-    }
-
-    [FundAccountDatabaseFact]
-    public async Task Migration008_RetainedPlaidBatch_AcceptsTheNextFeedDelivery()
-    {
-        var store = CreateStore();
-        var account = MakeAccount();
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        await store.UpsertAccountAsync(account, cts.Token);
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
-        var plaid = new BankStatementBatchDto(Guid.NewGuid(), account.AccountId, date, "Plaid", 1, DateTimeOffset.UtcNow, "sync",
-            IsTransactionFeed: true);
-        var coffee = new BankStatementLineDto(Guid.NewGuid(), plaid.BatchId, account.AccountId, date, date, -25m, "USD",
-            "debit", "Coffee", "txn-1", null);
-        var statement = new BankStatementBatchDto(Guid.NewGuid(), account.AccountId, date, "Plaid", 1, DateTimeOffset.UtcNow, "operator");
-        var balance = new BankStatementLineDto(Guid.NewGuid(), statement.BatchId, account.AccountId, date, date, 125m, "USD",
-            "deposit", "Statement", null, 125m);
-        await store.InsertBankStatementBatchAsync(plaid, [coffee], cts.Token);
-        await store.InsertBankStatementBatchAsync(statement, [balance], cts.Token);
-        await using (var connection = new NpgsqlConnection(_fixture.Options.ConnectionString))
-        {
-            await connection.OpenAsync(cts.Token);
-            // Before 007 added transaction_feed, every retained batch was a complete statement.
-            await using var legacy = connection.CreateCommand();
-            legacy.CommandText = $"UPDATE {_fixture.Options.Schema}.bank_statement_batch SET transaction_feed = false WHERE account_id = @account_id";
-            legacy.Parameters.AddWithValue("account_id", account.AccountId);
-            await legacy.ExecuteNonQueryAsync(cts.Token);
-            var script = await File.ReadAllTextAsync(Path.Combine(
-                AppContext.BaseDirectory, "FundAccounts", "Migrations", "008_plaid_transaction_feed_backfill.sql"), cts.Token);
-            await using var migrate = connection.CreateCommand();
-            migrate.CommandText = script.Replace("__SCHEMA__", _fixture.Options.Schema, StringComparison.Ordinal);
-            await migrate.ExecuteNonQueryAsync(cts.Token);
-        }
-
-        // The next sync redelivers the transaction, modified, as a feed delta.
-        var redeliver = () => store.InsertBankStatementBatchAsync(plaid, [coffee with { Amount = -27m }], cts.Token);
-
-        await redeliver.Should().NotThrowAsync("a Plaid batch retained before feeds existed must not stall the sync cursor");
-        var lines = await store.GetBankStatementLinesAsync(account.AccountId, null, null, cts.Token);
-        lines.Should().ContainSingle(line => line.LineId == coffee.LineId).Which.Amount.Should().Be(-27m);
-        lines.Should().ContainSingle(line => line.LineId == balance.LineId)
-            .Which.IsTransactionFeed.Should().NotBe(true, "a batch carrying a statement balance stays a complete statement");
     }
 
     [FundAccountDatabaseFact]

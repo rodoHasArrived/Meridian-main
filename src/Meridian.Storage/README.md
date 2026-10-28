@@ -25,6 +25,13 @@ Bank statement reads hydrate header authority with every line. Replays cannot ch
 statement authority or line economics; corrected batches preserve original evidence. Historical
 line order remains unknown where no source sequence was retained.
 
+Migration 008 upgrades a retained complete batch to a transaction feed only when every line and
+the complete batch reproduce Plaid's historical deterministic identities, with matching account
+and count, no running balances, and unique ASCII references whose ordering is unambiguous. A bank
+name or actor alone does not prove feed provenance. Balance-free operator imports, missing or
+partial identity evidence, case-fold ties, and unsupported references remain complete statements
+pending explicit review.
+
 Archive repair completes all required backups before changing any source; a backup failure
 aborts the mutation phase. Backups retain source sidecars and distinguish source paths and repair
 attempts. Rejected JSONL lines also receive distinct recovery files, exposed by
@@ -52,7 +59,8 @@ process's compression then appends to the published archive. Readers take neithe
 replay keeps reading a source while it is compressed. The lock file is never deleted, carries no
 state, and is not a data extension, so storage scanners ignore it.
 Compression selects only files whose partition period (the date or hour encoded in the path) has
-closed, so the live append target stays plain. Open-period and quiet-period files are reported in `FileCompressionResult.Deferred`
+closed, so the live append target stays plain. Canonical `yyyy/MM/dd` directories own the daily
+period even when a source, instrument or filename contains another date. Open-period and quiet-period files are reported in `FileCompressionResult.Deferred`
 as informational entries, not errors, so a live day does not fail the run. A late write to a compressed closed period appends
 a gzip member to the published archive instead of recreating the plain file, so each archive keeps
 one representation; that copy-on-write append costs a full archive copy, which is acceptable only
@@ -67,6 +75,10 @@ read a `.gz` archive and its sidecar, and skip an archive that is being appended
 compression holds the same lock from publishing an archive until its sidecar exists. Retention
 deletes a file only while holding the lock its writer takes (without creating one) and only when
 the file is unchanged since it was selected, so it never removes bytes a late append just committed.
+Before either archive append path retires a retained checksum, it verifies the existing bytes
+against that checksum under the append lock. A mismatch refuses the append and preserves the
+checksum evidence. Retention subtracts bytes from its budget only after deletion succeeds, so a
+writer-held oldest file does not prevent consideration of other eligible files.
 Compression also retires a source checksum orphaned by an interrupted cleanup. The
 `RecompressOptimal` repair strategy never re-encodes a file with unresolved health issues: changing
 encoding cannot repair content, and re-signing damaged bytes would make the damage read as healthy.
