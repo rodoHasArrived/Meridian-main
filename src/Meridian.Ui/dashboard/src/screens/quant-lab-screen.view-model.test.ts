@@ -18,6 +18,7 @@ import {
   initializeNewParameterValues,
   markQuantRunSourceDrift,
   mergeQuantParameters,
+  reconcileQuantParameterValues,
   useQuantLabScreenViewModel,
   validateQuantSource,
   type QuantLabServices,
@@ -163,6 +164,34 @@ describe("Quant Lab view model helpers", () => {
     });
   });
 
+  it("retains matching overrides and removes values not present in the current source metadata", () => {
+    expect(reconcileQuantParameterValues(
+      { Lookback: "63", stale: "remove-me" },
+      [numberParameter],
+      [{ ...numberParameter, name: "lookback" }, boolParameter]
+    )).toEqual({
+      lookback: "63",
+      includeFees: "true"
+    });
+  });
+
+  it("resets retained values when an extracted descriptor changes type or constraints", () => {
+    expect(reconcileQuantParameterValues(
+      { risk: "63", lookback: "200" },
+      [
+        { ...numberParameter, name: "risk", defaultValue: "63" },
+        numberParameter
+      ],
+      [
+        { ...boolParameter, name: "risk", defaultValue: "true" },
+        { ...numberParameter, max: 50 }
+      ]
+    )).toEqual({
+      risk: "true",
+      lookback: "20"
+    });
+  });
+
   it("coerces typed parameter payloads before running scripts", () => {
     expect(buildQuantParameters([numberParameter, boolParameter], {
       lookback: "63",
@@ -180,6 +209,27 @@ describe("Quant Lab view model helpers", () => {
       disabled: true,
       disabledReason: "Enter some script source first.",
       busy: false
+    });
+  });
+
+  it("keeps Run disabled until current-source parameter metadata is available", () => {
+    expect(buildRunCommandState(
+      "var lookback = Param(\"lookback\", 20);",
+      "idle",
+      false,
+      "extracting"
+    )).toMatchObject({
+      disabled: true,
+      disabledReason: "Wait for runtime parameter detection to finish before running."
+    });
+    expect(buildRunCommandState(
+      "var lookback = Param(\"lookback\", 20);",
+      "idle",
+      false,
+      "unavailable"
+    )).toMatchObject({
+      disabled: true,
+      disabledReason: expect.stringMatching(/unavailable for the current source/i)
     });
   });
 
@@ -272,6 +322,7 @@ describe("Quant Lab view model helpers", () => {
   it("projects parameter panel loading, empty, unavailable, and ready states", () => {
     expect(buildParameterPanelState("extracting", 0, true)).toMatchObject({
       showRows: false,
+      controlsDisabled: true,
       tone: "pending",
       statusRole: "status",
       ariaLive: "polite",
@@ -280,18 +331,32 @@ describe("Quant Lab view model helpers", () => {
 
     expect(buildParameterPanelState("idle", 0, true)).toMatchObject({
       showRows: false,
+      controlsDisabled: false,
       tone: "default",
       statusMessage: "No runtime parameters detected in the current script."
     });
 
     expect(buildParameterPanelState("unavailable", 0, true)).toMatchObject({
       showRows: false,
+      controlsDisabled: true,
       tone: "warning",
-      statusMessage: "Parameter extraction is unavailable. The script can still run with inline defaults."
+      statusRole: "alert",
+      ariaLive: "assertive",
+      statusMessage: "Parameter extraction failed for the current source. Run is disabled until the source can be scanned."
+    });
+
+    expect(buildParameterPanelState("unavailable", 2, true)).toMatchObject({
+      showRows: true,
+      controlsDisabled: true,
+      tone: "warning",
+      statusRole: "alert",
+      ariaLive: "assertive",
+      statusMessage: expect.stringMatching(/retained values are shown for reference and will not be submitted/i)
     });
 
     expect(buildParameterPanelState("ready", 2, true)).toMatchObject({
       showRows: true,
+      controlsDisabled: false,
       tone: "default",
       statusMessage: null,
       listLabel: "Script parameters"
@@ -494,6 +559,195 @@ describe("Quant Lab view model helpers", () => {
     expect(result.current.parameterPhase).toBe("ready");
   });
 
+  it("preserves last usable values but fails closed when current-source extraction fails", async () => {
+    const services: QuantLabServices = {
+      getTemplates: vi.fn().mockResolvedValue({ templates: [] }),
+      extractParameters: vi.fn()
+        .mockResolvedValueOnce({ parameters: [numberParameter] })
+        .mockRejectedValueOnce(new Error("extractor unavailable")),
+      runScript: vi.fn<QuantLabServices["runScript"]>().mockResolvedValue({} as QuantRunResponse)
+    };
+
+    const { result } = renderHook(() => useQuantLabScreenViewModel(services));
+    await waitFor(() => expect(result.current.parameterPhase).toBe("ready"));
+
+    act(() => {
+      result.current.updateParameter("lookback", "63");
+    });
+    expect(result.current.parameterRows[0]?.value).toBe("63");
+
+    act(() => {
+      result.current.setSource("PrintMetric(\"new\", 1);");
+    });
+
+    expect(result.current.parameterPhase).toBe("extracting");
+    expect(result.current.parameterRows[0]?.value).toBe("63");
+    expect(result.current.runCommand.disabled).toBe(true);
+
+    await waitFor(() => expect(result.current.parameterPhase).toBe("unavailable"));
+    expect(result.current.parameterRows[0]?.value).toBe("63");
+    expect(result.current.parameterPanel.statusMessage).toMatch(/will not be submitted/i);
+    expect(result.current.runCommand).toMatchObject({
+      disabled: true,
+      disabledReason: expect.stringMatching(/unavailable for the current source/i)
+    });
+
+    await act(async () => {
+      await result.current.runScript();
+    });
+
+    expect(services.runScript).not.toHaveBeenCalled();
+    expect(result.current.run).toMatchObject({
+      phase: "error",
+      error: expect.stringMatching(/unavailable for the current source/i)
+    });
+  });
+
+  it("retries extraction when the selected template has the same source", async () => {
+    const services: QuantLabServices = {
+      getTemplates: vi.fn().mockResolvedValue({ templates: [] }),
+      extractParameters: vi.fn()
+        .mockRejectedValueOnce(new Error("extractor unavailable"))
+        .mockResolvedValueOnce({ parameters: [] }),
+      runScript: vi.fn<QuantLabServices["runScript"]>().mockResolvedValue({} as QuantRunResponse)
+    };
+
+    const { result } = renderHook(() => useQuantLabScreenViewModel(services));
+    await waitFor(() => expect(result.current.parameterPhase).toBe("unavailable"));
+    const source = result.current.source;
+
+    act(() => {
+      result.current.loadTemplate({
+        id: "same-source",
+        title: "Same source",
+        description: "Retry the current source",
+        source
+      });
+    });
+
+    expect(result.current.parameterPhase).toBe("extracting");
+    await waitFor(() => expect(result.current.parameterPhase).toBe("idle"));
+    expect(services.extractParameters).toHaveBeenCalledTimes(2);
+    expect(result.current.runCommand.disabled).toBe(false);
+  });
+
+  it("does not let an old run result establish readiness after an A-to-B-to-A edit", async () => {
+    const deferredSecondAScan = createDeferred<QuantParametersResponse>();
+    let aScanCount = 0;
+    const services: QuantLabServices = {
+      getTemplates: vi.fn().mockResolvedValue({ templates: [] }),
+      extractParameters: vi.fn((source: string) => {
+        if (source === "Print(\"A\");") {
+          aScanCount++;
+          return aScanCount === 1
+            ? Promise.resolve({ parameters: [] })
+            : deferredSecondAScan.promise;
+        }
+        if (source === "Print(\"B\");") {
+          return Promise.resolve({ parameters: [boolParameter] });
+        }
+        return Promise.resolve({ parameters: [] });
+      }),
+      runScript: vi.fn<QuantLabServices["runScript"]>().mockResolvedValue({
+        ...successfulRunState.result!,
+        runtimeParameters: [numberParameter]
+      })
+    };
+
+    const { result } = renderHook(() => useQuantLabScreenViewModel(services));
+    await waitFor(() => expect(result.current.parameterPhase).toBe("idle"));
+
+    act(() => {
+      result.current.setSource("Print(\"A\");");
+    });
+    await waitFor(() => expect(result.current.parameterPhase).toBe("idle"));
+    await act(async () => {
+      await result.current.runScript();
+    });
+    await waitFor(() => expect(result.current.parameterRows[0]?.name).toBe("lookback"));
+
+    act(() => {
+      result.current.setSource("Print(\"B\");");
+    });
+    await waitFor(() => expect(result.current.parameterRows[0]?.name).toBe("includeFees"));
+
+    act(() => {
+      result.current.setSource("Print(\"A\");");
+    });
+    await waitFor(() => expect(aScanCount).toBe(2));
+    expect(result.current.parameterPhase).toBe("extracting");
+    expect(result.current.runCommand.disabled).toBe(true);
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(result.current.parameterPhase).toBe("extracting");
+    expect(result.current.parameterRows[0]?.name).toBe("includeFees");
+
+    await act(async () => {
+      await result.current.runScript();
+    });
+    expect(services.runScript).toHaveBeenCalledTimes(1);
+    expect(result.current.run.error).toMatch(/finish before running/i);
+
+    await act(async () => {
+      deferredSecondAScan.resolve({ parameters: [] });
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(result.current.parameterPhase).toBe("idle"));
+  });
+
+  it("keeps an active run drifted and blocks a second launch when a template is loaded", async () => {
+    const deferredRun = createDeferred<QuantRunResponse>();
+    const services: QuantLabServices = {
+      getTemplates: vi.fn().mockResolvedValue({ templates: [] }),
+      extractParameters: vi.fn().mockResolvedValue({ parameters: [] }),
+      runScript: vi.fn<QuantLabServices["runScript"]>().mockReturnValue(deferredRun.promise)
+    };
+    const { result } = renderHook(() => useQuantLabScreenViewModel(services));
+    let firstRun: Promise<void> | undefined;
+    await waitFor(() => expect(result.current.parameterPhase).toBe("idle"));
+
+    act(() => {
+      firstRun = result.current.runScript();
+    });
+    await waitFor(() => expect(result.current.run.phase).toBe("running"));
+
+    act(() => {
+      result.current.loadTemplate({
+        id: "replacement",
+        title: "Replacement",
+        description: "Change source while the first run remains active",
+        source: "Print(\"replacement\");"
+      });
+    });
+
+    expect(result.current.run).toMatchObject({
+      phase: "running",
+      sourceChangedSinceRun: true
+    });
+    expect(result.current.resultPanel.sourceDriftTitle).toBe("Editor changed during this run");
+    await waitFor(() => expect(result.current.parameterPhase).toBe("idle"));
+    expect(result.current.runCommand).toMatchObject({
+      disabled: true,
+      busy: true
+    });
+
+    await act(async () => {
+      await result.current.runScript();
+    });
+    expect(services.runScript).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      deferredRun.resolve(successfulRunState.result!);
+      await firstRun;
+    });
+    expect(result.current.run).toMatchObject({
+      phase: "ready",
+      sourceChangedSinceRun: true
+    });
+  });
+
   it("finishes the initial parameter scan under React StrictMode", async () => {
     const services: QuantLabServices = {
       getTemplates: vi.fn().mockResolvedValue({ templates: [] }),
@@ -523,6 +777,7 @@ describe("Quant Lab view model helpers", () => {
     await act(async () => {
       result.current.setSource("Print(\"submitted\");");
     });
+    await waitFor(() => expect(result.current.parameterPhase).toBe("idle"));
 
     await act(async () => {
       runPromise = result.current.runScript();
@@ -558,6 +813,7 @@ describe("Quant Lab view model helpers", () => {
       title: "Run succeeded for previous source",
       sourceDrifted: true
     });
+    await waitFor(() => expect(result.current.parameterPhase).toBe("idle"));
     expect(result.current.runCommand).toMatchObject({
       label: "Run current source",
       disabled: false

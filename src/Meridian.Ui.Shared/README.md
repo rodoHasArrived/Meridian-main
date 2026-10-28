@@ -18,6 +18,11 @@ mapped activity, symbols and currencies remain comparison evidence rather than f
 
 Provider module status and connection tests select one complete credential record, matching runtime ownership. A retained partial or empty record cannot borrow mapped environment fields; only proven absence allows the separate mapped record. The compatibility vault adapter exposes record presence without exposing additional secrets.
 
+Replay file previews return an explicit empty JSON error response for malformed persisted events,
+including source file/line evidence, and distinguish active/unavailable captures from corruption.
+Quant Lab parameter discovery returns HTTP 400 when any globals `Param` metadata is incomplete;
+partial extraction cannot authorize the browser run command.
+
 Banking workspace balances, latest source transactions and statement dates use retained header,
 revision and sequence authority. Missing or ambiguous balances remain null. Provider bank cash-flow
 comparisons project complete authoritative statement revisions before summing; ambiguity produces an

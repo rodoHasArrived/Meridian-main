@@ -30,7 +30,7 @@ internal static class JsonlArchiveFiles
             .Distinct(PathComparer)
             // Snapshot logical identities before yielding. A scan can observe both names
             // while publication proceeds; filename-level grouping must precede replay.
-            .GroupBy(path => IsGzipArchive(path) ? path[..^3] : path, PathComparer)
+            .GroupBy(LogicalPath, PathComparer)
             .OrderBy(group => group.Key, StringComparer.OrdinalIgnoreCase)
             .ThenBy(group => group.Key, StringComparer.Ordinal)
             .Select(group =>
@@ -42,6 +42,8 @@ internal static class JsonlArchiveFiles
                 return compressed.Length == 1 ? compressed[0] : group.Single();
             })
             .ToArray();
+
+    internal static string LogicalPath(string path) => IsGzipArchive(path) ? path[..^3] : path;
 
     // Symmetric with OpenReadAsync: a retained gzip path whose archive was withdrawn still
     // resolves to its surviving plain source, and a plain path to its published gzip.
@@ -63,12 +65,17 @@ internal static class JsonlArchiveFiles
         set => s_afterSourceOpened.Value = value;
     }
 
-    internal static async Task<FileStream> OpenReadAsync(string path, CancellationToken ct)
+    internal static Task<FileStream> OpenReadAsync(string path, CancellationToken ct) =>
+        OpenReadAsync(path, ct, FileShare.ReadWrite | FileShare.Delete);
+
+    // Replay's closed-capture lease uses None for both representations. Other readers retain
+    // their existing shared handle and publication-race behavior through the overload above.
+    internal static async Task<FileStream> OpenReadAsync(string path, CancellationToken ct, FileShare share)
     {
         ct.ThrowIfCancellationRequested();
         var requestedGzip = IsGzipArchive(path);
         if (!requestedGzip && !path.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase))
-            return Open(path);
+            return Open(path, share);
 
         // The two representations are opened one after the other. Compression can delete the source
         // and a late append can extend the published archive in between, so the archive legitimately
@@ -76,13 +83,13 @@ internal static class JsonlArchiveFiles
         // once the source is gone the archive is the only representation, so resolve again.
         for (var attempt = 1; ; attempt++)
         {
-            var resolved = await TryOpenOneGenerationAsync(path, requestedGzip, finalAttempt: attempt == 3, ct).ConfigureAwait(false);
+            var resolved = await TryOpenOneGenerationAsync(path, requestedGzip, finalAttempt: attempt == 3, ct, share).ConfigureAwait(false);
             if (resolved is not null)
                 return resolved;
         }
     }
 
-    private static async Task<FileStream?> TryOpenOneGenerationAsync(string path, bool requestedGzip, bool finalAttempt, CancellationToken ct)
+    private static async Task<FileStream?> TryOpenOneGenerationAsync(string path, bool requestedGzip, bool finalAttempt, CancellationToken ct, FileShare share)
     {
         var sourcePath = requestedGzip ? path[..^3] : path;
         var gzipPath = requestedGzip ? path : path + ".gz";
@@ -90,10 +97,10 @@ internal static class JsonlArchiveFiles
         FileStream? compressed = null;
         try
         {
-            source = TryOpen(sourcePath);
+            source = TryOpen(sourcePath, share);
             if (source is not null)
                 s_afterSourceOpened.Value?.Invoke(sourcePath);
-            compressed = TryOpen(gzipPath);
+            compressed = TryOpen(gzipPath, share);
             if (source is null && compressed is null)
                 throw new FileNotFoundException("No representation remains for the JSONL archive.", path);
 
@@ -182,11 +189,11 @@ internal static class JsonlArchiveFiles
     private static bool IsGzipArchive(string path) =>
         path.EndsWith(".jsonl.gz", StringComparison.OrdinalIgnoreCase);
 
-    private static FileStream? TryOpen(string path)
+    private static FileStream? TryOpen(string path, FileShare share = FileShare.ReadWrite | FileShare.Delete)
     {
         try
         {
-            return Open(path);
+            return Open(path, share);
         }
         catch (FileNotFoundException)
         {
@@ -194,7 +201,7 @@ internal static class JsonlArchiveFiles
         }
     }
 
-    private static FileStream Open(string path) => new(
-        path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete,
+    private static FileStream Open(string path, FileShare share) => new(
+        path, FileMode.Open, FileAccess.Read, share,
         64 * 1024, useAsync: true);
 }
