@@ -7390,6 +7390,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CreateFactorPaydownDraftRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CreateLateAdjustmentRequestDto"
     },
     {
@@ -7463,6 +7469,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ExternalGlMappingProfileDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.FactorPaydownPreparationDto"
     },
     {
       "kind": "contract-set-member",
@@ -8027,6 +8039,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrepareFactorPaydownRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -21712,6 +21730,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CreateFactorPaydownDraftRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CreateLateAdjustmentRequestDto"
     },
     {
@@ -21785,6 +21809,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ExternalGlMappingProfileDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.FactorPaydownPreparationDto"
     },
     {
       "kind": "contract-set-member",
@@ -22349,6 +22379,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrepareFactorPaydownRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -33201,6 +33237,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CreateFactorPaydownDraftRequestDto",
+      "target": "contract:Meridian.Contracts.Ledger.PrepareFactorPaydownRequestDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.CreateLateAdjustmentRequestDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
     },
@@ -33323,6 +33365,24 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.ExternalGlMappingProfileDto",
       "target": "contract:Meridian.Contracts.Ledger.DimensionMappingProfileDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.FactorPaydownPreparationDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.FactorPaydownPreparationDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.FactorPaydownPreparationDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto"
     },
     {
       "kind": "contract-reference",
@@ -34247,6 +34307,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto",
       "target": "contract:Meridian.Contracts.Ledger.RuleDryRunResultDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrepareFactorPaydownRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrepareFactorPaydownRequestDto",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingBasisKindDto"
     },
     {
       "kind": "contract-reference",
@@ -53581,7 +53653,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "af2917df79b79fb02bdf6d431401cb40811733e7aea1e94d5d13b7cb65b74c7a",
+  "fingerprint": "ba7bc7c404067e98ff6269b955c584fd0a5cabb84b8e4a3fd16992610a251306",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -61022,6 +61094,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.CreateFactorPaydownDraftRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.CreateFactorPaydownDraftRequestDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.CreateLateAdjustmentRequestDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.CreateLateAdjustmentRequestDto"
@@ -61097,6 +61175,12 @@
       "id": "contract:Meridian.Contracts.Ledger.ExternalGlMappingProfileDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.ExternalGlMappingProfileDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.FactorPaydownPreparationDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.FactorPaydownPreparationDto"
     },
     {
       "classification": "dto",
@@ -61661,6 +61745,12 @@
       "id": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PrepareFactorPaydownRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PrepareFactorPaydownRequestDto"
     },
     {
       "classification": "dto",
@@ -78411,11 +78501,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3429,
-    "contract_set_memberships": 4229,
-    "edges": 8902,
+    "contract_references": 3435,
+    "contract_set_memberships": 4235,
+    "edges": 8914,
     "foreign_keys": 152,
     "logical_references": 6,
-    "nodes": 4308
+    "nodes": 4311
   }
 }

@@ -1,11 +1,11 @@
 {
   "total_files": 765,
-  "total_lines": 172911,
+  "total_lines": 172935,
   "orphaned_count": 257,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 313,
-  "average_lines": 226.0,
+  "average_lines": 226.1,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2677,7 +2677,7 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-03.md",
-      "line_count": 684,
+      "line_count": 679,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2685,7 +2685,7 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-04.md",
-      "line_count": 866,
+      "line_count": 863,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2693,7 +2693,7 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-05.md",
-      "line_count": 212,
+      "line_count": 244,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
