@@ -48,7 +48,7 @@ public sealed class SchemaTermsValidationTests
             // A field above the class's write version is checked where the decoder reads it: a flat
             // payload stamped at its version (ADR-024, readable before writable).
             var terms = new Dictionary<string, object?> { [field.Key] = WrongValueFor(field.Type) };
-            if (field.SinceTermsVersion > SecurityAssetClassCatalog.GetTermsVersion(assetClass))
+            if (field.SinceTermsVersion > SecurityTermsEnvelope.DefaultAssetClassTermsVersion)
             {
                 terms[SecurityTermsEnvelope.AssetClassTermsVersionKey] = field.SinceTermsVersion;
             }
@@ -346,7 +346,8 @@ public sealed class SchemaTermsValidationTests
         var schema = new SchemaTermsAssetClassValidator("Swap");
         var context = Context("Swap", new Dictionary<string, object?>
         {
-            ["effectiveDate"] = "2026-01-01", ["maturityDate"] = "2027-01-01",
+            ["effectiveDate"] = "2026-01-01",
+            ["maturityDate"] = "2027-01-01",
             ["legs"] = new[] { new { legType = "Fixed", currency = "USD" } }
         });
 
@@ -359,19 +360,22 @@ public sealed class SchemaTermsValidationTests
     [Fact]
     public void Admission_DoesNotValidateReadableAheadContainersOrProfileClassTerms()
     {
-        var bond = Context("Bond", new Dictionary<string, object?>
+        var swap = Context("Swap", new Dictionary<string, object?>
         {
-            ["maturity"] = "2027-01-01", ["assetClassTermsVersion"] = 3,
-            ["isCallable"] = false, ["subclass"] = "Corporate",
-            ["callSchedule"] = new object[] { 12 }, ["scheduleConventions"] = new { paymentLagBusinessDays = "many" }
+            ["effectiveDate"] = "2026-01-01",
+            ["maturityDate"] = "2027-01-01",
+            ["assetClassTermsVersion"] = 2,
+            ["legs"] = new[] { new { legType = "Fixed", currency = "USD", exchangesPrincipal = false,
+                scheduleConventions = new { paymentLagBusinessDays = "many" } } }
         });
-        var schema = new SchemaTermsAssetClassValidator("Bond");
-        schema.ValidateForWrite(bond).Should().BeEmpty();
-        schema.Validate(bond).Should().Contain(issue => issue.AffectedFields.Contains("assetSpecificTerms.callSchedule.0"));
+        var schema = new SchemaTermsAssetClassValidator("Swap");
+        schema.ValidateForWrite(swap).Should().BeEmpty();
+        schema.Validate(swap).Should().Contain(issue => issue.AffectedFields.Contains("assetSpecificTerms.legs.0.scheduleConventions.paymentLagBusinessDays"));
 
         var profile = Context("StructuredCredit", new Dictionary<string, object?>
         {
-            ["profileFields"] = new { tranche = "A" }, ["assetClassTermsVersion"] = 4,
+            ["profileFields"] = new { tranche = "A" },
+            ["assetClassTermsVersion"] = 4,
             ["callSchedule"] = new object[] { 12 }
         });
         new SchemaTermsAssetClassValidator("StructuredCredit").ValidateForWrite(profile).Should().BeEmpty();
@@ -395,8 +399,10 @@ public sealed class SchemaTermsValidationTests
         Registry.TryGetValidator("Swaption", out var swaption).Should().BeTrue();
         var context = Context("Swaption", new Dictionary<string, object?>
         {
-            ["payerReceiver"] = "Payer", ["strike"] = 0.03m,
-            ["expiryDate"] = "2027-01-01", ["underlyingMaturityDate"] = "2037-01-01",
+            ["payerReceiver"] = "Payer",
+            ["strike"] = 0.03m,
+            ["expiryDate"] = "2027-01-01",
+            ["underlyingMaturityDate"] = "2037-01-01",
             ["notionalAmount"] = -1m
         });
 

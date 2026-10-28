@@ -33,6 +33,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     private readonly SecurityMasterCanonicalSymbolSeedService? _seedService;
     private readonly Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? _assetProfileCatalog;
     private readonly ISecurityFieldProvenanceStore? _fieldProvenance;
+    private readonly ISecurityMasterTermsCapabilityVerifier _termsCapabilityVerifier;
 
     // Owned lifetime token so background fire-and-forget tasks are cancelled on disposal.
     private readonly CancellationTokenSource _serviceCts = new();
@@ -53,7 +54,8 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         SecurityMasterCanonicalSymbolSeedService? seedService = null,
         Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null,
         ISecurityFieldProvenanceStore? fieldProvenance = null,
-        ISecurityMasterCanonicalWriteScope? canonicalWriteScope = null)
+        ISecurityMasterCanonicalWriteScope? canonicalWriteScope = null,
+        ISecurityMasterTermsCapabilityVerifier? termsCapabilityVerifier = null)
     {
         _canonicalWriteScope = canonicalWriteScope ?? PassthroughSecurityMasterCanonicalWriteScope.Instance;
         _eventStore = eventStore;
@@ -68,6 +70,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         _seedService = seedService;
         _assetProfileCatalog = assetProfileCatalog;
         _fieldProvenance = fieldProvenance;
+        _termsCapabilityVerifier = termsCapabilityVerifier ?? new SecurityMasterTermsCapabilityVerifier(options, logger);
     }
 
     public Task<SecurityDetailDto> CreateAsync(CreateSecurityRequest request, CancellationToken ct = default)
@@ -81,6 +84,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         string eventType,
         CancellationToken ct)
     {
+        await _termsCapabilityVerifier.VerifyAsync(ct).ConfigureAwait(false);
         var aliasProjection = await _store.GetProjectionAsync(request.SecurityId, ct).ConfigureAwait(false);
         var current = await _rebuilder.RebuildEconomicDefinitionAsync(request.SecurityId, aliasProjection, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Security '{request.SecurityId}' was not found.");
@@ -91,6 +95,12 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         // they run after the decode; a row this node cannot decode is a fault, and no amendment can
         // succeed here.
         EnsureAssetClassIsRecognizedHere(currentProjection);
+        _ = MapRequestOrRefuse(() =>
+        {
+            ScheduleTermsWriteRules.EnsureAmendmentDoesNotPromoteStrayContainers(
+                currentProjection.AssetClass, currentProjection.AssetSpecificTerms, request.AssetSpecificTermsPatch);
+            return true;
+        });
         var currentRecord = SecurityMasterMapping.ToRecord(currentProjection);
         EnsureAssetClassRoundTripsSafely(currentProjection, request.AssetSpecificTermsPatch);
         // The SUBMITTED envelope's profile decides which kind parses the patch: a record already
@@ -286,12 +296,21 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
             ?? throw new InvalidOperationException($"Security '{securityId}' was not found.");
         EnsurePatchBaseMatchesExpectedVersion(currentProjection, request.ExpectedVersion);
 
+        JsonElement replacement;
+        try
+        {
+            replacement = SecurityTermBlocks.BuildPatch(
+                currentProjection.AssetClass, currentProjection.AssetSpecificTerms, blockKey, request.Block);
+        }
+        catch (ArgumentException exception) when (exception.ParamName is "block" or "blockKey")
+        {
+            throw new SecurityMasterWriteRefusedException(exception.Message, exception);
+        }
         var amendRequest = new AmendSecurityTermsRequest(
             SecurityId: securityId,
             ExpectedVersion: request.ExpectedVersion,
             CommonTerms: null,
-            AssetSpecificTermsPatch: SecurityTermBlocks.BuildPatch(
-                currentProjection.AssetClass, currentProjection.AssetSpecificTerms, blockKey, request.Block),
+            AssetSpecificTermsPatch: replacement,
             IdentifiersToAdd: Array.Empty<SecurityIdentifierDto>(),
             IdentifiersToExpire: Array.Empty<SecurityIdentifierDto>(),
             EffectiveFrom: request.EffectiveFrom,
@@ -319,6 +338,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
 
     public async Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default)
     {
+        await _termsCapabilityVerifier.VerifyAsync(ct).ConfigureAwait(false);
         var aliasProjection = await _store.GetProjectionAsync(request.SecurityId, ct).ConfigureAwait(false);
         var current = await _rebuilder.RebuildEconomicDefinitionAsync(request.SecurityId, aliasProjection, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Security '{request.SecurityId}' was not found.");
@@ -374,81 +394,6 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
             true);
 
         return UpsertAliasAsyncCore(alias, ct);
-    }
-
-    private async Task<SecurityDetailDto> ExecuteCreateAsync(CreateSecurityRequest request, CancellationToken ct)
-    {
-        var result = SecurityMasterCommandFacade.Create(MapRequestOrRefuse(() => SecurityMasterMapping.ToCreateCommand(request)));
-        var projection = CreateProjectionFromResult(
-            result,
-            aliases: null,
-            GetProfileBackedAssetClassOverride(request.AssetClass, request.AssetSpecificTerms),
-            GetProfileBackedAssetSpecificTermsOverride(request.AssetSpecificTerms));
-        EnsureProfileBackedTermsAreCatalogValid(projection, request.EffectiveFrom);
-        SecurityAssetPackAdmission.EnsureAdmitted(projection, request.EffectiveFrom);
-        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
-        var envelope = SecurityMasterMapping.ToEventEnvelope(
-            economic,
-            "SecurityCreated",
-            request.UpdatedBy,
-            request.SourceSystem,
-            request.Reason,
-            projection.Version);
-
-        // Creation is the first canonical write of every governed field the record supplies, so it
-        // seeds the per-field attribution the same way an amend does — diffed against an empty
-        // baseline instead of a previous revision.
-        var seededGovernedFields = SecurityMasterConflictDetection.ChangedGovernedFieldPaths(
-            CreateEmptyGovernedBaseline(projection), projection, _assetProfileCatalog);
-        SecurityProjectionRecord? persistedProjection;
-        if (_canonicalWriteScope.IsAtomic)
-        {
-            await _canonicalWriteScope.ExecuteAsync(request.SecurityId, async () =>
-            {
-                await _eventStore.AppendAsync(request.SecurityId, expectedVersion: 0, [envelope], ct).ConfigureAwait(false);
-                await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
-                await RecordFieldLineageInScopeAsync([], seededGovernedFields, projection, ct).ConfigureAwait(false);
-                return true;
-            }, ct).ConfigureAwait(false);
-            persistedProjection = await OnProjectionCommittedAsync(projection.SecurityId).ConfigureAwait(false);
-        }
-        else
-        {
-            await _eventStore.AppendAsync(request.SecurityId, expectedVersion: 0, [envelope], ct).ConfigureAwait(false);
-            await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
-            persistedProjection = await OnProjectionCommittedAsync(projection.SecurityId).ConfigureAwait(false);
-            await TryRecordCanonicalFieldAttributionAsync(seededGovernedFields, projection, _serviceCts.Token).ConfigureAwait(false);
-        }
-        await SaveSnapshotIfNeededAsync(economic, _serviceCts.Token).ConfigureAwait(false);
-
-        if (persistedProjection is not null)
-            await TryRecordConflictsAsync(persistedProjection, request.SecurityId, _serviceCts.Token).ConfigureAwait(false);
-
-        // Enqueue a best-effort corporate action backfill for the newly-created security so
-        // that historical corp action data is available immediately for backtesting.
-        if (_corporateActionFetcher is not null)
-        {
-            var ticker = projection.PrimaryIdentifierValue;
-            var securityId = projection.SecurityId;
-            var ct2 = _serviceCts.Token;
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    await _corporateActionFetcher.FetchAndPersistAsync(ticker, securityId, ct2)
-                        .ConfigureAwait(false);
-                }
-                catch (OperationCanceledException) { }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex,
-                        "Background corporate action sync failed for new security {Ticker} ({SecurityId})",
-                        ticker, securityId);
-                }
-            }, ct2);
-        }
-
-        return SecurityMasterMapping.ToDetail(projection);
     }
 
     /// <summary>

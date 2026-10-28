@@ -169,6 +169,9 @@ public sealed class SecurityTermsWriteGoldenTests
     [Fact]
     public void WrittenAndReportedOutput_MatchesTheCommittedGolden()
     {
+        // 5b-2 changes only registry.dtos and the Bond/CD/StructuredCredit term-block metadata
+        // here: writable container exposure and machine-readable pack schemas. No-declaration
+        // payload/economic bytes retain their existing golden entries under S2.
         var received = Compute();
 
         var fixturePath = LocateFixture();

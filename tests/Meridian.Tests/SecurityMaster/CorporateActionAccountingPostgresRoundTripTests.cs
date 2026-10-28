@@ -14,6 +14,7 @@ using Meridian.Storage.Ledger;
 using Meridian.Storage.SecurityMaster;
 using Meridian.TestSupport;
 using Meridian.Tests.Storage;
+using Meridian.Tests.TestHelpers;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -68,7 +69,7 @@ public sealed class CorporateActionAccountingPostgresRoundTripTests
             Schema = server.CreateSchemaName("ca_asset")
         };
         await new LedgerMigrationRunner(ledgerOptions).EnsureMigratedAsync(ct);
-        await new SecurityMasterMigrationRunner(securityOptions).EnsureMigratedAsync(ct);
+        await SecurityMasterTestCapabilityFloor.InitializeAndActivateAsync(server, securityOptions, ct);
         await new AssetOperationsMigrationRunner(assetOptions).EnsureMigratedAsync(ct);
 
         var journal = new PostgresLedgerJournalStore(ledgerOptions);

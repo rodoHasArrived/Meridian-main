@@ -19,10 +19,10 @@ module private NullableHelpers =
         | None -> Unchecked.defaultof<'T>
 
 /// The asset-class terms version a flat payload is written at (ADR-024, readable before writable):
-/// the class's write version, raised to the highest version among the versioned terms the record
+/// the class's S2 document floor, raised to the highest version among the versioned terms the record
 /// holds (scheduleConventions; callSchedule and putSchedule). A record read from a node that writes a
 /// newer version (a bond stamped 3 with declared calls) therefore re-serializes with its terms and
-/// stamp; a record that declares nothing writes exactly what the write version writes.
+/// stamp; a record that declares nothing preserves its pre-contract floor and bytes.
 [<RequireQualifiedAccess>]
 module internal SecurityTermsWriteVersion =
     let private scheduleConventionsKey = "scheduleConventions"
@@ -71,10 +71,10 @@ module internal SecurityTermsWriteVersion =
 
     let private holdsSchedules (schedules: CallPutSchedules) = not (CallPutSchedules.isEmpty schedules)
 
-    /// The version the record's flat payload is written at: the class's write version, raised to the
+    /// The version the record's flat payload is written at: its S2 document floor, raised to the
     /// highest version among the versioned terms the record holds.
     let effective (kind: SecurityKind) =
-        let writes = SecurityAssetClassCatalog.GetTermsVersion(SecurityKind.assetClass kind)
+        let floor = SecurityAssetClassCatalog.GetStampFloor(SecurityKind.assetClass kind)
         // Every versioned term the record can hold, with whether it holds it.
         let held =
             match kind with
@@ -90,7 +90,7 @@ module internal SecurityTermsWriteVersion =
             | SecurityKind.Swap terms ->
                 [ terms.Legs |> List.exists (fun leg -> declares leg.ScheduleConventions), blockSince kind ]
             | _ -> []
-        held |> List.filter fst |> List.fold (fun version (_, since) -> max version since) writes
+        held |> List.filter fst |> List.fold (fun version (_, since) -> max version since) floor
 
     /// The canonical written block (frozen by ADR-024): null when nothing is declared, otherwise all
     /// twelve members in alphabetical order, with null or [] for an unset one.

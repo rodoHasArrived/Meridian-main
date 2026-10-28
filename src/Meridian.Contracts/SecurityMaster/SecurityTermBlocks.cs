@@ -77,7 +77,8 @@ public static class SecurityTermBlocks
                 nameof(blockKey));
 
         var expectedKind = field.Type == SecurityAssetTermFieldType.Array ? JsonValueKind.Array : JsonValueKind.Object;
-        var nullable = !field.Required && block.ValueKind == JsonValueKind.Null;
+        var nullable = !field.Required && (block.ValueKind == JsonValueKind.Null
+            || (SecurityVersionedTerms.IsVersionedContainer(field) && !SecurityAssetTermsSchema.IsPopulatedTermValue(block)));
         if (block.ValueKind != expectedKind && !nullable)
         {
             throw new ArgumentException(
@@ -85,6 +86,10 @@ public static class SecurityTermBlocks
                 (field.Required ? "." : " or null."),
                 nameof(block));
         }
+
+        if (!nullable && !SecurityAssetTermsFieldEditValidator.TryValidate(assetClass,
+                SecurityAssetTermsFieldEditValidator.AssetSpecificTermsPrefix + field.Key, block.GetRawText(), out _, out var replacementError))
+            throw new ArgumentException(replacementError, nameof(block));
 
         if (currentTerms.ValueKind is not (JsonValueKind.Object or JsonValueKind.Undefined or JsonValueKind.Null))
         {
@@ -107,9 +112,27 @@ public static class SecurityTermBlocks
         else
         {
             terms[field.Key] = JsonNode.Parse(block.GetRawText());
+            // A complete block replacement is explicit authoring, not an unrelated amendment of
+            // an old row's stray key. S2 promotes only the versioned content this replacement holds.
+            var replacement = JsonSerializer.SerializeToElement(new Dictionary<string, JsonElement> { [field.Key] = block });
+            var since = SecurityAssetTermsSchema.PopulatedTermsAbove(assetClass, replacement, 1)
+                .Where(term => term.Field.SinceTermsVersion <= SecurityAssetClassCatalog.GetTermsVersion(assetClass))
+                .Select(term => term.Field.SinceTermsVersion).DefaultIfEmpty(1).Max();
+            if (since > SecurityTermsEnvelope.ResolveAssetClassTermsVersion(currentTerms))
+                terms[SecurityTermsEnvelope.AssetClassTermsVersionKey] = since;
         }
 
         using var document = JsonDocument.Parse(terms.ToJsonString());
-        return document.RootElement.Clone();
+        var patched = document.RootElement.Clone();
+        try
+        {
+            ScheduleTermsWriteRules.EnsureAmendmentDoesNotPromoteStrayContainers(assetClass, currentTerms, patched);
+            ScheduleTermsWriteRules.Validate(assetClass, patched);
+        }
+        catch (InvalidOperationException exception)
+        {
+            throw new ArgumentException(exception.Message, nameof(block), exception);
+        }
+        return patched;
     }
 }

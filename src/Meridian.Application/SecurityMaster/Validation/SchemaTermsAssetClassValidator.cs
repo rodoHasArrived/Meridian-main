@@ -101,6 +101,11 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
 
             var path = $"{valuePath}.{field.Key}";
             var exists = TryGetUnderKeyOrAlias(terms, field, out var value);
+            // Versioned containers use ADR-024's unset vocabulary before JSON-kind checks:
+            // null, [], {}, and wholly unset members all declare no term.
+            if (exists && SecurityVersionedTerms.IsVersionedContainer(field)
+                && !SecurityAssetTermsSchema.IsPopulatedTermValue(value))
+                continue;
             var issue = ValidateField(field, exists, value, path, requirePresence);
             if (issue is not null)
             {
@@ -129,6 +134,11 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
                 foreach (var item in value.EnumerateArray())
                 {
                     var itemPath = $"{path}.{index++}";
+                    if (SecurityVersionedTerms.IsVersionedContainer(field)
+                        && (field.Key is SecurityVersionedTerms.CallScheduleKey or SecurityVersionedTerms.PutScheduleKey)
+                        && (item.ValueKind == JsonValueKind.Null
+                            || (item.ValueKind == JsonValueKind.Object && !SecurityAssetTermsSchema.IsPopulatedTermValue(item))))
+                        continue;
                     if (item.ValueKind != JsonValueKind.Object)
                     {
                         issues.Add(TypeIssue(field.Key, SecurityAssetTermFieldType.Object, item, itemPath));

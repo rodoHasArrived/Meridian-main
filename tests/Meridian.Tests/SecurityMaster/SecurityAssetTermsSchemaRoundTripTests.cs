@@ -450,7 +450,7 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
         var payloadKeys = PayloadKeys(assetClass);
         // The fully-populated payloads are WRITES, so they carry what the node writes; a term it
         // only reads (ADR-024) has its own readable twin below.
-        foreach (var field in SecurityAssetTermsSchema.WritableFields(assetClass))
+        foreach (var field in SecurityAssetTermsSchema.WritableFields(assetClass).Where(field => field.SinceTermsVersion <= SecurityAssetClassCatalog.GetStampFloor(assetClass)))
         {
             payloadKeys.Should().Contain(
                 field.Key,
@@ -474,7 +474,7 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
 
         serialized.GetProperty(SecurityTermsEnvelope.FormatKey).GetString().Should().Be(SecurityTermsFormats.Flat);
         serialized.GetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey).GetInt32()
-            .Should().Be(SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion);
+            .Should().Be(SecurityAssetClassCatalog.GetStampFloor(assetClass));
         SecurityTermsEnvelope.ResolveFormat(serialized).Should().Be(SecurityTermsFormats.Flat);
     }
 
@@ -486,7 +486,9 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
         var serializedKeys = ElementKeys(serialized);
         serializedKeys.RemoveWhere(SecurityTermsEnvelope.IsReservedKey);
 
+        var documentStamp = SecurityTermsEnvelope.ResolveAssetClassTermsVersion(serialized);
         var declaredKeys = SecurityAssetTermsSchema.WritableFields(assetClass)
+            .Where(field => field.SinceTermsVersion <= documentStamp)
             .Select(static field => field.Key)
             .ToHashSet(StringComparer.Ordinal);
 
@@ -713,7 +715,7 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
             subclass = "Corporate"
         }))
             .Should().Throw<InvalidOperationException>()
-            .WithMessage("*'Floter' is not a declared 'couponType' value*")
+            .WithMessage("*SM_TERM_VALUE_NOT_ALLOWED*couponType*Floter*")
             .WithMessage("*Fixed, Floating, ZeroCoupon, Step, InflationLinked*");
     }
 
@@ -740,7 +742,7 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
 
         FluentActions.Invoking(() => CreateSnapshot("StructuredCredit", payload))
             .Should().Throw<InvalidOperationException>()
-            .WithMessage($"*'{property}' must be {expected} when supplied*");
+            .WithMessage($"*SM_TERM_TYPE_INVALID*{property}*");
     }
 
     [Fact]
@@ -826,7 +828,7 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
             subclass = "Corporate"
         }))
             .Should().Throw<InvalidOperationException>()
-            .WithMessage("*'123' is not a declared 'couponType' value*");
+            .WithMessage("*SM_TERM_TYPE_INVALID*couponType*");
     }
 
     [Fact]
@@ -845,7 +847,7 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
             isAdjusted = false
         }))
             .Should().Throw<InvalidOperationException>()
-            .WithMessage("*is not a declared 'exerciseStyle' value*");
+            .WithMessage("*SM_TERM_TYPE_INVALID*exerciseStyle*");
     }
 
     [Fact]
@@ -883,7 +885,7 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
             isAdjusted = false
         }))
             .Should().Throw<InvalidOperationException>()
-            .WithMessage("*'Asian' is not a declared 'exerciseStyle' value*");
+            .WithMessage("*SM_TERM_VALUE_NOT_ALLOWED*exerciseStyle*Asian*");
     }
 
     [Fact]

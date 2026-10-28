@@ -16,7 +16,7 @@ internal static class SecurityAssetPackAdmission
         var descriptor = RequirePackSchemas(assetClass);
         var issues = new SchemaTermsAssetClassValidator(descriptor.AssetClass).ValidateSubmittedFieldsForWrite(terms);
         RefuseErrors(issues, $"submitted {descriptor.AssetClass} terms");
-        ScheduleTermsWriteRules.Validate(descriptor.AssetClass, terms);
+        EnsureScheduleTermsAdmitted(descriptor.AssetClass, terms);
     }
 
     internal static void EnsureAdmitted(SecurityProjectionRecord projection, DateTimeOffset effectiveAt)
@@ -28,6 +28,9 @@ internal static class SecurityAssetPackAdmission
         var issues = new SchemaTermsAssetClassValidator(descriptor.AssetClass)
             .ValidateForWrite(new SecurityValidationContext(projection, effectiveAt));
         RefuseErrors(issues, projection.SecurityId.ToString("D"));
+        // A patch-less amendment still writes the complete decoded record. Retained declarations
+        // that survive a tolerant read must satisfy today's semantic write rules before it persists.
+        EnsureScheduleTermsAdmitted(descriptor.AssetClass, projection.AssetSpecificTerms);
     }
 
     private static SecurityAssetClassDescriptor RequirePackSchemas(string assetClass)
@@ -51,7 +54,19 @@ internal static class SecurityAssetPackAdmission
     {
         var errors = issues.Where(issue => issue.Severity == SecurityValidationSeverityDto.Error).ToArray();
         if (errors.Length > 0)
-            throw new InvalidOperationException($"Asset pack admission refused '{subject}': "
+            throw new SecurityMasterWriteRefusedException($"Asset pack admission refused '{subject}': "
                 + string.Join(" ", errors.Select(issue => $"{issue.Code} ({string.Join(", ", issue.AffectedFields)}): {issue.Message}")));
+    }
+
+    private static void EnsureScheduleTermsAdmitted(string assetClass, JsonElement terms)
+    {
+        try
+        {
+            ScheduleTermsWriteRules.Validate(assetClass, terms);
+        }
+        catch (InvalidOperationException exception) when (exception.GetType() == typeof(InvalidOperationException))
+        {
+            throw new SecurityMasterWriteRefusedException(exception.Message, exception);
+        }
     }
 }

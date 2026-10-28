@@ -1,5 +1,9 @@
 # OTC Contract Lifecycle
 
+**Status:** active guidance
+**Owner:** core-team
+**Reviewed:** 2026-10-28
+
 A lifecycle event records an externally evidenced servicing fact on one bilateral contract.
 It is distinct from the shared instrument's economic terms and from a corporate action on all
 holders of that instrument. Two contracts on the same instrument can have different fixings,
@@ -23,7 +27,10 @@ retry returns the original event even after the contract advances; reuse of its 
 content is a conflict. Each event advances the contract version, including a reset or credit
 trigger that does not otherwise change the contract snapshot. This invalidates exposure evidence
 based on the predecessor version. Once a contract has lifecycle history, generic snapshot
-amendments are refused so they cannot break replay.
+amendments are refused so they cannot break replay. A deferred database constraint also fences
+older deployed CRUD writers: once history exists, the final contract version must equal the latest
+retained lifecycle version at commit. An atomic update plus event append passes; a standalone legacy
+version increment rolls back. Contracts without lifecycle history keep their existing CRUD behavior.
 
 - A rate reset retains leg id, index name, fixing date and an explicit annual-fraction rate,
   including zero or a negative rate. Its leg must be explicitly identified on the current instrument as a floating leg with the

@@ -65,7 +65,8 @@ public sealed class OtcContractLifecycleRulesTests
             Request(current, new OtcCreditEventData(OtcCreditEventKind.FailureToPay, "Reference Co", "DC-1")), Recorded);
         credit.After.Status.Should().Be(OtcContractStatus.Confirmed, "a credit trigger alone does not supply an auction settlement");
         var auctionRequest = Request(credit.After, new OtcAuctionSettlementData(credit.EventId, Effective.AddDays(1), 40m, cash, "USD", 2, "AUCTION-1"))
-            with { EffectiveDate = Effective.AddDays(3) };
+            with
+        { EffectiveDate = Effective.AddDays(3) };
         var auction = CreateEvent(credit.After, auctionRequest, Recorded.AddDays(3), [credit]);
         auction.After.Status.Should().Be(OtcContractStatus.Terminated);
         OtcContractLifecycleRules.Replay(current,
@@ -121,6 +122,9 @@ public sealed class OtcContractLifecycleRulesTests
         var resetData = new OtcRateResetData("receive", "SOFR", Effective, 0m);
         var reset = CreateEvent(current, Request(current, resetData), Recorded);
         FluentActions.Invoking(() => CreateEvent(reset.After, Request(reset.After, resetData), Recorded, [reset]))
+            .Should().Throw<ArgumentException>().WithMessage("*already retained*");
+        FluentActions.Invoking(() => CreateEvent(reset.After,
+            Request(reset.After, resetData with { IndexName = "sofr", IndexRate = 0.03m }), Recorded, [reset]))
             .Should().Throw<ArgumentException>().WithMessage("*already retained*");
         var credit = CreateEvent(current, Request(current, new OtcCreditEventData(OtcCreditEventKind.Bankruptcy, "Co", "DC-1")), Recorded);
         FluentActions.Invoking(() => CreateEvent(credit.After,

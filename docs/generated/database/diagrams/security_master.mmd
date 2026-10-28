@@ -857,6 +857,17 @@ erDiagram
         text updated_by
         timestamp_with_time_zone updated_at
     }
+    security_master_otc_contract_lifecycle_events {
+        uuid event_id PK
+        uuid contract_id FK
+        bigint contract_version
+        text event_type
+        date effective_date
+        text actor
+        timestamp_with_time_zone recorded_at
+        integer payload_version
+        jsonb payload
+    }
     security_master_otc_contracts {
         uuid contract_id PK
         uuid security_id FK
@@ -1328,6 +1339,14 @@ erDiagram
         text field_value
         boolean field_value_recorded
     }
+    security_master_security_master_terms_capability_floor {
+        boolean singleton PK
+        text minimum_declared_mapping_version
+        text minimum_kernel_version
+        text change_record
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
     security_master_security_operator_overrides {
         uuid security_id PK,FK
         jsonb values
@@ -1702,6 +1721,7 @@ erDiagram
     security_master_otc_collateral_agreements ||--o{ security_master_otc_exposure_snapshots : "otc_exposure_snapshots_collateral_agreement_id_fkey"
     security_master_otc_collateral_agreements ||--o{ security_master_otc_margin_calls : "otc_margin_calls_collateral_agreement_id_fkey"
     security_master_otc_collateral_agreements ||--o{ security_master_otc_netting_sets : "otc_netting_sets_collateral_agreement_id_fkey"
+    security_master_otc_contracts ||--o{ security_master_otc_contract_lifecycle_events : "otc_contract_lifecycle_events_contract_id_fkey"
     security_master_otc_exposure_snapshots ||--o{ security_master_otc_margin_calls : "otc_margin_calls_snapshot_id_fkey"
     security_master_otc_master_agreements ||--o{ security_master_otc_collateral_agreements : "otc_collateral_agreements_master_agreement_id_fkey"
     security_master_otc_master_agreements ||--o{ security_master_otc_netting_sets : "otc_netting_sets_master_agreement_id_fkey"

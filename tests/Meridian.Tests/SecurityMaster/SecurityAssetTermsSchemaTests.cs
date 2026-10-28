@@ -184,7 +184,7 @@ public sealed class SecurityAssetTermsSchemaTests
     [InlineData("Bond", 2)]
     [InlineData("CertificateOfDeposit", 2)]
     [InlineData("StructuredCredit", 3)]
-    public void ScheduleConventions_IsAnOptionalObjectIntroducedAboveTheWriteVersion(string assetClass, int since)
+    public void ScheduleConventions_IsAnOptionalObjectIntroducedAboveTheDocumentFloor(string assetClass, int since)
     {
         var field = SecurityAssetTermsSchema.Field(assetClass, "scheduleConventions");
 
@@ -195,7 +195,7 @@ public sealed class SecurityAssetTermsSchemaTests
         field.Convention.Should().Be(SecurityTermConventionKind.None);
         field.SinceTermsVersion.Should().Be(since);
         SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass).Should().BeGreaterThanOrEqualTo(since);
-        SecurityAssetClassCatalog.GetTermsVersion(assetClass).Should().Be(since - 1, "the block is readable before it is writable");
+        SecurityAssetClassCatalog.GetStampFloor(assetClass).Should().Be(since - 1, "the block was introduced above the preserved document floor");
     }
 
     // ── The callSchedule and putSchedule arrays (ADR-024 readable before writable, ADR-025) ──────
@@ -227,7 +227,8 @@ public sealed class SecurityAssetTermsSchemaTests
             field.AllowedValues.Should().BeEmpty(key);
             field.Convention.Should().Be(SecurityTermConventionKind.None, key);
             field.SinceTermsVersion.Should().Be(since, key);
-            field.SinceTermsVersion.Should().BeGreaterThan(writes, $"{key} is readable before it is writable");
+            field.SinceTermsVersion.Should().BeGreaterThan(SecurityAssetClassCatalog.GetStampFloor(assetClass), $"{key} remains above the document floor");
+            field.SinceTermsVersion.Should().BeLessThanOrEqualTo(writes, $"the contract-step writer now admits {key}");
             field.SinceTermsVersion.Should().BeLessThanOrEqualTo(reads, $"{assetClass} reads {key}");
             field.SinceTermsVersion.Should().BeGreaterThan(block.SinceTermsVersion, $"{key} arrives at a later readable version than the block");
         }
@@ -423,7 +424,7 @@ public sealed class SecurityAssetTermsSchemaTests
     }
 
     [Fact]
-    public void WritableFields_AreTheFieldsAtOrBelowTheWriteVersion_SoTheBlockIsNeverOffered()
+    public void WritableFields_AreExactlyTheFieldsAtOrBelowTheCurrentWriteVersion()
     {
         foreach (var assetClass in SecurityAssetTermsSchema.AssetClasses)
         {
@@ -431,7 +432,7 @@ public sealed class SecurityAssetTermsSchemaTests
             var writable = SecurityAssetTermsSchema.WritableFields(assetClass);
 
             writable.Should().Equal(SecurityAssetTermsSchema.Fields(assetClass).Where(field => field.SinceTermsVersion <= writes), assetClass);
-            writable.Should().NotContain(static field => ReadOnlyTermKeys.Contains(field.Key), assetClass);
+            writable.Should().NotContain(field => ReadOnlyTermKeys.Contains(field.Key) && field.SinceTermsVersion > writes, assetClass);
         }
 
         foreach (var assetClass in ScheduleReadAheadClasses)

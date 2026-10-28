@@ -50,7 +50,7 @@ public sealed class SecurityAssetPackAdmissionTests
     {
         var record = Record("Equity", new { convertibleTerms = new { underlyingSecurityId = "not-a-guid", conversionRatio = 2m } });
         var action = () => SecurityAssetPackAdmission.EnsureAdmitted(record, EffectiveAt);
-        action.Should().Throw<InvalidOperationException>().WithMessage("*SM_TERM_TYPE_INVALID*underlyingSecurityId*");
+        action.Should().ThrowExactly<SecurityMasterWriteRefusedException>().WithMessage("*SM_TERM_TYPE_INVALID*underlyingSecurityId*");
     }
 
     [Fact]
@@ -68,7 +68,11 @@ public sealed class SecurityAssetPackAdmissionTests
         // must not turn that serialized-presence rule into a new caller requirement.
         var terms = JsonSerializer.SerializeToElement(new
         {
-            underlyingId = Guid.NewGuid(), putCall = "Call", strike = 100m, expiry = "2027-01-01", multiplier = 10m
+            underlyingId = Guid.NewGuid(),
+            putCall = "Call",
+            strike = 100m,
+            expiry = "2027-01-01",
+            multiplier = 10m
         });
         var action = () => SecurityAssetPackAdmission.EnsureSubmittedFields("Option", terms);
         action.Should().NotThrow();

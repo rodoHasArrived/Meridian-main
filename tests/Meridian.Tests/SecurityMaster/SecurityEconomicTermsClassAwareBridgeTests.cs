@@ -57,6 +57,9 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms;
 
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.WasFlattenedFromEconomicTerms(rebuilt).Should().BeTrue();
+        SecurityTermsEnvelope.ResolveAssetClassTermsVersion(rebuilt).Should().Be(
+            SecurityAssetClassCatalog.GetStampFloor(assetClass),
+            "economic-only fallback cannot certify the newer schedule-write contract");
         var declared = SecurityAssetTermsSchema.Fields(assetClass).Select(static field => field.Key).ToHashSet(StringComparer.Ordinal);
         foreach (var property in rebuilt.EnumerateObject())
         {
@@ -401,23 +404,19 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     [InlineData("Bond")]
     [InlineData("CertificateOfDeposit")]
     [InlineData("StructuredCredit")]
-    public void ReplayWithoutLegacyTerms_FlattensAtTheWriteVersionWithoutTheBlock_AndRetainsTheAccrualVerbatim(string assetClass)
+    public void ReplayWithoutLegacyTerms_RefusesDeclaredAccrual_WhileRetainedFlatTermsRemainAuthoritative(string assetClass)
     {
+        var twin = SecurityAssetTermsSchemaRoundTripTests.ReadableTwin(assetClass);
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
-            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, SecurityAssetTermsSchemaRoundTripTests.ReadableTwin(assetClass)));
-        var accrual = economic.EconomicTerms.GetProperty("accrual");
-        accrual.ValueKind.Should().Be(JsonValueKind.Object, "the twin's block fills the accrual module");
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, twin));
+        economic.EconomicTerms.GetProperty("accrual").ValueKind.Should().Be(JsonValueKind.Object,
+            "the historical twin declares schedule accrual information");
 
-        var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms;
+        Action replay = () => SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null });
 
-        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.WasFlattenedFromEconomicTerms(rebuilt).Should().BeTrue();
-        SecurityTermsEnvelope.ResolveAssetClassTermsVersion(rebuilt).Should().Be(
-            SecurityAssetClassCatalog.GetTermsVersion(assetClass),
-            "the bridge flattens at the version this node writes, never at a version it only reads");
-        rebuilt.EnumerateObject().Select(static property => property.Name)
-            .Should().NotContain(name => string.Equals(name, "scheduleConventions", StringComparison.OrdinalIgnoreCase));
-        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(rebuilt, out var retained).Should().BeTrue();
-        retained.GetProperty("accrual").GetRawText().Should().Be(accrual.GetRawText(), "the accrual travels verbatim in the retained economic terms");
+        replay.Should().Throw<InvalidOperationException>().WithMessage("*Declared schedule economic replay requires retained legacy*");
+        SecurityEconomicDefinitionAdapter.ToProjection(economic).AssetSpecificTerms.GetRawText().Should().Be(twin.GetRawText(),
+            "the established retained-flat path preserves the complete declaration");
     }
 
     // ── Call and put schedules read ahead of write (ADR-024; the Call fill frozen by ADR-025) ────
@@ -574,52 +573,50 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     [Theory]
     [InlineData("2032-12-15")]
     [InlineData(null)]
-    public void ReplayWithoutLegacyTerms_FlattensTheBondCallDateFromItsScalarOnly_AndWritesNoScheduleArrays(string? callDate)
+    public void ReplayWithoutLegacyTerms_RefusesDeclaredExerciseLists_RegardlessOfScalarCallDate(string? callDate)
     {
-        // The row writes its own callDate scalar (a null removes the key). Neither declared call
-        // (2027-06-15 is the earliest) ever becomes callDate: firstCallDate is the bond's own scalar, so
-        // a bond without one flattens without a callDate. The arrays are unrecoverable, so the payload
-        // is rebuilt at the write version without them, and the economic call module travels verbatim
-        // in the retained economic terms.
         var twin = ScheduleTwin(
             "Bond",
             """[{"callDate":"2031-06-15","callPrice":100},{"callDate":"2027-06-15","priceType":"MakeWhole","makeWholeSpreadBps":25}]""",
             """[{"putDate":"2029-12-15","putPrice":100}]""",
             JsonSerializer.Serialize(new { callDate }));
-        if (callDate is null)
-        {
-            twin.TryGetProperty("callDate", out _).Should().BeFalse();
-        }
-        else
-        {
-            twin.GetProperty("callDate").GetString().Should().Be(callDate);
-        }
-
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
             SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond", twin));
+        var call = economic.EconomicTerms.GetProperty("call");
+        call.GetProperty("firstCallDate").GetString().Should().Be(callDate,
+            "declared exercise dates never replace the bond's own scalar call date");
+        call.GetProperty("callSchedule").GetArrayLength().Should().Be(2);
+        call.GetProperty("putSchedule").GetArrayLength().Should().Be(1);
+
+        Action replay = () => SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null });
+
+        replay.Should().Throw<InvalidOperationException>().WithMessage("*Declared schedule economic replay requires retained legacy*");
+        SecurityEconomicDefinitionAdapter.ToProjection(economic).AssetSpecificTerms.GetRawText().Should().Be(twin.GetRawText());
+    }
+
+    [Theory]
+    [InlineData("2032-12-15")]
+    [InlineData(null)]
+    public void OrdinaryBondReplay_RecoversItsScalarCallDateAtTheHistoricalStampFloor(string? callDate)
+    {
+        var terms = JsonNode.Parse(SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+            "Bond", SecurityAssetTermsSchemaRoundTripTests.FullPayloads["Bond"]).GetRawText())!.AsObject();
+        SetOrRemove(terms, "callDate", callDate is null ? null : JsonValue.Create(callDate));
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond", ToElement(terms)));
 
         var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms;
 
-        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.WasFlattenedFromEconomicTerms(rebuilt).Should().BeTrue();
-        SecurityTermsEnvelope.ResolveAssetClassTermsVersion(rebuilt).Should().Be(
-            SecurityAssetClassCatalog.GetTermsVersion("Bond"),
-            "the bridge flattens at the version this node writes, never at a version it only reads");
+        SecurityTermsEnvelope.ResolveAssetClassTermsVersion(rebuilt).Should().Be(SecurityAssetClassCatalog.GetStampFloor("Bond"));
         rebuilt.GetProperty("isCallable").GetBoolean().Should().BeTrue();
         if (callDate is null)
-        {
-            rebuilt.TryGetProperty("callDate", out _).Should().BeFalse("no declared entry stands in for the bond's own call date");
-        }
+            rebuilt.TryGetProperty("callDate", out _).Should().BeFalse("no declared exercise date substitutes for a missing scalar");
         else
-        {
             rebuilt.GetProperty("callDate").GetString().Should().Be(callDate);
-        }
-
-        rebuilt.EnumerateObject().Select(static property => property.Name)
-            .Should().NotContain(name =>
-                string.Equals(name, "callSchedule", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(name, "putSchedule", StringComparison.OrdinalIgnoreCase));
-        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(rebuilt, out var retained).Should().BeTrue();
-        retained.GetProperty("call").GetRawText().Should().Be(economic.EconomicTerms.GetProperty("call").GetRawText());
+        rebuilt.EnumerateObject().Select(static property => property.Name).Should().NotContain(name =>
+            name.Equals("scheduleConventions", StringComparison.OrdinalIgnoreCase)
+            || name.Equals("callSchedule", StringComparison.OrdinalIgnoreCase)
+            || name.Equals("putSchedule", StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>

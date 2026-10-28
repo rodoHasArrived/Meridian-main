@@ -216,7 +216,7 @@ public static class OtcContractLifecycleRules
         {
             case OtcRateResetData reset:
                 if (prior.Any(item => item.Data is OtcRateResetData earlier && earlier.LegId == reset.LegId
-                    && earlier.IndexName == reset.IndexName && earlier.FixingDate == reset.FixingDate))
+                    && string.Equals(earlier.IndexName, reset.IndexName, StringComparison.OrdinalIgnoreCase) && earlier.FixingDate == reset.FixingDate))
                     throw new ArgumentException("A fixing for that leg, index and date is already retained; an explicit correction workflow is required.");
                 return after;
             case OtcCompressionData compression:
@@ -275,14 +275,16 @@ public static class OtcContractLifecycleRules
                     if (!SecurityTermReader.TryGetProperty(source, key, out var rows) || rows.ValueKind != JsonValueKind.Array)
                         continue;
                     var objects = rows.EnumerateArray().Where(row => row.ValueKind == JsonValueKind.Object).ToArray();
-                    if (objects.Length == 0) continue;
+                    if (objects.Length == 0)
+                        continue;
                     foreach (var row in objects)
                         if (SecurityTermReader.ReadString(row, "legId", "id", "name") is { } id)
                             declared.Add(id);
                     foundContainer = true;
                     break;
                 }
-                if (foundContainer) break;
+                if (foundContainer)
+                    break;
             }
             var matches = (StructuredCashFlowTermsResolver.Resolve(instrument).Legs ?? [])
                 .Where(leg => leg.LegId == reset.LegId && declared.Contains(leg.LegId)).ToArray();
@@ -299,7 +301,8 @@ public static class OtcContractLifecycleRules
 
     private static void ValidateTarget(OtcContractDto contract, OtcContractLifecycleData data, OtcContractLifecycleTarget? target)
     {
-        if (data is not (OtcRateResetData or OtcCreditEventData or OtcAuctionSettlementData)) return;
+        if (data is not (OtcRateResetData or OtcCreditEventData or OtcAuctionSettlementData))
+            return;
         if (target is null || target.SecurityId != contract.SecurityId || target.SecurityVersion < 1
             || !SecurityAssetClassCatalog.TryGet(target.AssetClass, out var descriptor) || !descriptor.TradesAsBilateralContract)
             throw new ArgumentException("The lifecycle event requires a matching retained instrument target.");

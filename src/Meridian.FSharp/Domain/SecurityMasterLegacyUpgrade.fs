@@ -1007,24 +1007,24 @@ module SecurityMasterLegacyUpgrade =
     let private proposeFromBond securityId (terms: BondTerms) =
         let kind, kindBlockers = splitResult (kindFromBondSubclass terms.Subclass)
         let couponOrIndex, couponBlockers = splitResult (couponOrIndexFromBond terms.Coupon)
-        // Declared schedule conventions are a StructuredCredit terms version 3 term, which this node
-        // reads but does not write (ADR-024, readable before writable): carrying them would write a
-        // version this node cannot, and dropping them would lose declared terms.
+        // Owner-approved increment-5 decision 3 keeps this blocker after the contract raise:
+        // StructuredCredit has no schema-declared issue date or payment frequency to generate it.
         let conventionBlockers =
             if ScheduleConventions.isEmpty terms.ScheduleConventions then []
             else
                 [ blocker
                       "structured_credit_schedule_conventions_unwritable"
-                      "The bond declares scheduleConventions, a StructuredCredit terms version 3 term this node cannot write; reclassify from a node that writes StructuredCredit version 3." ]
-        // Declared call and put schedules are StructuredCredit terms of a later version still, for the
-        // same reason.
+                      "The bond declares scheduleConventions, but the StructuredCredit schema has no top-level issueDate or paymentFrequency; repair the declared schedule before reclassification." ]
+        // Call and put windows can be carried whole once StructuredCredit writes their version.
+        let callPutSince =
+            match Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema.Field("StructuredCredit", "callSchedule") with
+            | null -> invalidOp "The term schema declares no StructuredCredit callSchedule; the reclassification and the schema have drifted."
+            | field -> field.SinceTermsVersion
+        let canWriteCallPut = Meridian.Contracts.SecurityMaster.SecurityAssetClassCatalog.GetTermsVersion("StructuredCredit") >= callPutSince
         let callPutBlockers =
-            if CallPutSchedules.isEmpty terms.CallPutSchedules then []
+            if CallPutSchedules.isEmpty terms.CallPutSchedules || canWriteCallPut then []
             else
-                let since =
-                    match Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema.Field("StructuredCredit", "callSchedule") with
-                    | null -> invalidOp "The term schema declares no StructuredCredit callSchedule; the reclassification and the schema have drifted."
-                    | field -> field.SinceTermsVersion
+                let since = callPutSince
                 [ blocker
                       "structured_credit_call_put_schedules_unwritable"
                       (sprintf "The bond declares callSchedule or putSchedule, StructuredCredit terms version %d terms this node cannot write; reclassify from a node that writes StructuredCredit version %d." since since) ]
@@ -1035,7 +1035,10 @@ module SecurityMasterLegacyUpgrade =
                 Maturity = Some terms.Maturity
                 Kind = kind
                 Seniority = terms.Seniority }
-        finish securityId (StructuredCreditReclassificationSource.SecuritizedBondSubclass terms.Subclass) draft (kindBlockers @ couponBlockers @ conventionBlockers @ callPutBlockers)
+        let proposal = finish securityId (StructuredCreditReclassificationSource.SecuritizedBondSubclass terms.Subclass) draft (kindBlockers @ couponBlockers @ conventionBlockers @ callPutBlockers)
+        if canWriteCallPut then
+            { proposal with ProposedTerms = proposal.ProposedTerms |> Option.map (fun proposed -> { proposed with CallPutSchedules = terms.CallPutSchedules }) }
+        else proposal
 
     let private tryProperty (name: string) (element: JsonElement) =
         if element.ValueKind = JsonValueKind.Object then

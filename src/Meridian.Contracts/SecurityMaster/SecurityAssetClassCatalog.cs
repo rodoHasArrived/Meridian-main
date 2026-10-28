@@ -115,8 +115,9 @@ public static class SecurityAssetClassCatalog
             Aliases: ["CorporateBond", "MunicipalBond"],
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond,
             // Version 2 adds the optional scheduleConventions block and version 3 the optional
-            // callSchedule and putSchedule arrays. This node reads both and writes version 1 until the
-            // contract step raises TermsVersion (ADR-024, readable before writable).
+            // callSchedule and putSchedule arrays. The contract-step writer admits through version 3;
+            // S2 retains floor 1 for documents that declare no schedules.
+            TermsVersion: 3,
             TermsUpgrades:
             [
                 SecurityAssetClassTermsUpgrade.Identity(
@@ -126,7 +127,7 @@ public static class SecurityAssetClassCatalog
                     fromVersion: 2,
                     rationale: "Version 3 adds the optional callSchedule and putSchedule arrays and changes no version-2 term, so a version-2 payload reads them as unset (ADR-024, 2026-10-25).")
             ],
-            ReadableTermsVersion: 3),
+            ReadableTermsVersion: null) { StampFloor = 1 },
         new(
             AssetClass: "FxSpot",
             AssetPackIds: ["derivatives-fx"],
@@ -195,7 +196,8 @@ public static class SecurityAssetClassCatalog
             RequiresMaturity: true,
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond,
             // Version 2 adds the optional scheduleConventions block and version 3 the optional
-            // callSchedule and putSchedule arrays; both are read ahead of write (ADR-024).
+            // callSchedule and putSchedule arrays; S2 keeps undeclared documents at floor 1 after the raise.
+            TermsVersion: 3,
             TermsUpgrades:
             [
                 SecurityAssetClassTermsUpgrade.Identity(
@@ -205,7 +207,7 @@ public static class SecurityAssetClassCatalog
                     fromVersion: 2,
                     rationale: "Version 3 adds the optional callSchedule and putSchedule arrays and changes no version-2 term, so a version-2 payload reads them as unset (ADR-024, 2026-10-25).")
             ],
-            ReadableTermsVersion: 3),
+            ReadableTermsVersion: null) { StampFloor = 1 },
         new(
             AssetClass: "CommercialPaper",
             AssetPackIds: ["fixed-income"],
@@ -382,9 +384,9 @@ public static class SecurityAssetClassCatalog
             // version-1 payload reads unchanged and needs no field transformation (ADR-024). The
             // identity step below records it, and SecurityAssetClassTermsHistoryTests checks it
             // against the committed manifests. Version 3 adds the optional scheduleConventions block and
-            // version 4 the optional callSchedule and putSchedule arrays, which this node reads and does
-            // not yet write (ADR-024, readable before writable).
-            TermsVersion: 2,
+            // version 4 the optional callSchedule and putSchedule arrays. The contract-step writer admits
+            // through version 4, while S2 retains floor 2 for documents that declare no schedules.
+            TermsVersion: 4,
             TermsUpgrades:
             [
                 SecurityAssetClassTermsUpgrade.Identity(
@@ -397,10 +399,10 @@ public static class SecurityAssetClassCatalog
                     fromVersion: 3,
                     rationale: "Version 4 adds the optional callSchedule and putSchedule arrays and changes no version-3 term, so a version-3 payload reads them as unset (ADR-024, 2026-10-25).")
             ],
-            ReadableTermsVersion: 4,
+            ReadableTermsVersion: null,
             SupportsProfileBackedTerms: true,
             Aliases: ["MortgageBacked", "MortgageBackedSecurity", "MBS", "AssetBacked", "AssetBackedSecurity", "ABS"],
-            AccountingInstrumentClass: SecurityAccountingInstrumentClasses.AssetBackedSecurity),
+            AccountingInstrumentClass: SecurityAccountingInstrumentClasses.AssetBackedSecurity) { StampFloor = 2 },
         new(
             AssetClass: "PrivateFundInterest",
             AssetPackIds: ["private-fund-partnership"],
@@ -778,17 +780,25 @@ public static class SecurityAssetClassCatalog
     public static IReadOnlyList<string> GetAssetOperationsCapabilities(string? assetClass)
         => GetOrDefault(assetClass).AssetOperationsCapabilities ?? AssetOperationsCapabilitySet.IdentityOnly;
 
-    /// <summary>
-    /// The asset-class terms version a writer stamps onto a new flat payload of the class
-    /// (<see cref="SecurityTermsEnvelope.AssetClassTermsVersionKey"/>): the descriptor's
-    /// <see cref="SecurityAssetClassDescriptor.TermsVersion"/>, or 1 for an unknown or blank class.
-    /// Hand-built envelope writers and <see cref="SecurityTermsEnvelope.StampFlat(string, string)"/>
-    /// take the version here rather than off the descriptor, so the version a node writes has one
-    /// accessor. It is also the version the upgrader brings older payloads up to and the
-    /// terms-version-behind notice compares against. The newest version a node READS is
-    /// <see cref="GetReadsTermsThrough"/>.
-    /// </summary>
+    /// <summary>The highest asset-class terms version this node admits on write; a document's S2 stamp may be lower.</summary>
     public static int GetTermsVersion(string? assetClass) => GetOrDefault(assetClass).TermsVersion;
+
+    /// <summary>The S2 stamp floor of a document with no versioned declarations, including any later transform target.</summary>
+    public static int GetStampFloor(string? assetClass) => GetStampFloor(GetOrDefault(assetClass));
+
+    /// <summary>The declared floor, raised to the target of every transform step this descriptor writes.</summary>
+    public static int GetStampFloor(SecurityAssetClassDescriptor descriptor)
+    {
+        ArgumentNullException.ThrowIfNull(descriptor);
+        if (descriptor.StampFloor < SecurityTermsEnvelope.DefaultAssetClassTermsVersion || descriptor.StampFloor > descriptor.TermsVersion)
+            throw new InvalidOperationException($"Invalid terms stamp floor for '{descriptor.AssetClass}'.");
+        var transformed = (descriptor.TermsUpgrades ?? [])
+            .Where(step => step.Kind == SecurityTermsUpgradeKind.Transform && step.ToVersion <= descriptor.TermsVersion)
+            .Select(step => step.ToVersion)
+            .DefaultIfEmpty(descriptor.StampFloor)
+            .Max();
+        return Math.Max(descriptor.StampFloor, transformed);
+    }
 
     /// <summary>
     /// The newest asset-class terms version a node accepts on read for the class: the descriptor's
@@ -1057,6 +1067,12 @@ public sealed record SecurityAssetClassDescriptor(
     /// or below it are readable but not writable (ADR-024 decision 3).
     /// </summary>
     public int ReadsTermsThrough => Math.Max(TermsVersion, ReadableTermsVersion ?? TermsVersion);
+
+    /// <summary>
+    /// The pre-contract document stamp retained under ADR-024 S2 when no newer terms are held.
+    /// <see cref="SecurityAssetClassCatalog.GetStampFloor(SecurityAssetClassDescriptor)"/> also accounts for later transform targets.
+    /// </summary>
+    public int StampFloor { get; init; } = TermsVersion;
 
     /// <summary>
     /// The catalog facts below replace per-site asset-class name checks. Each is a declared

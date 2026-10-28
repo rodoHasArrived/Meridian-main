@@ -56,7 +56,8 @@ transaction snapshot. A later commit can change a repeated query with the same c
 
 `SecurityTermsEnvelope` stamps asset-specific terms with `termsFormat` (flat, economic or custom
 profile) and a per-asset-class `assetClassTermsVersion` taken from `SecurityAssetClassCatalog`.
-Each class writes its `TermsVersion` and reads through `ReadsTermsThrough`, which an expand step
+Each class writes up to its `TermsVersion`; S2 document stamps start at `GetStampFloor` and rise only
+for populated versioned terms. It reads through `ReadsTermsThrough`, which an expand step
 raises with `ReadableTermsVersion` (ADR-024, readable before writable). Terms stamped above the read
 ceiling fail loudly; terms stamped above the write version, or populating a term introduced above
 it, are read but refused on write (`EnsureWritableAsAssetSpecificTerms`, `TryGetWriteRefusal`; a
@@ -367,10 +368,11 @@ cash-flow reader so a top-level `legs` array alone cannot conceal missing leg ec
 `Bond.scheduleConventions`, `CertificateOfDeposit.scheduleConventions`,
 `StructuredCredit.scheduleConventions` and `Swap.legs.scheduleConventions`, and the shared
 twelve-member call entry and nine-member put entry under six paths: `callSchedule` and
-`putSchedule` on `Bond`, `CertificateOfDeposit` and `StructuredCredit`. The block and both arrays
-are tagged above each class's write version, so `WritableFields` (what the registry, term blocks and
-field edits offer) leaves them out, and `PopulatedTermsAbove` finds them in a payload. The members
-of a container introduced above version 1 are frozen once readable:
+`putSchedule` on `Bond`, `CertificateOfDeposit` and `StructuredCredit`. `WritableFields` (what the
+registry, term blocks and field edits offer) now includes these top-level containers at the raised
+Bond/CD/StructuredCredit ceilings; swap-leg conventions remain readable ahead. `PopulatedTermsAbove`
+still guards containers introduced above a node's writable ceiling, and `ScheduleTermsWriteRules`
+checks populated declarations. The members of a container introduced above version 1 are frozen once readable:
 `SecurityAssetClassTermsHistoryTests` compares each one with the committed
 `tests/fixtures/security-master/terms-element-shapes/versioned-containers.json` fixture, so a
 member added later needs a new container key at a new readable version.
@@ -1285,7 +1287,8 @@ of the deal balance, `weightedAverageCoupon`/`weightedAverageMaturityMonths`/
 are optional, so a version-1 payload reads unchanged, and the pool statistics bridge to the
 `structuredProduct` economic module. It reads through version 4: version 3 adds only the optional
 `scheduleConventions` block and version 4 only the optional `callSchedule` and `putSchedule`
-arrays, and neither is yet writable. The registry keeps
+arrays. Both versions are writable, but a populated conventions block remains refused until the
+class declares the required root schedule anchors. The registry keeps
 `CustomAsset` as the governed compatibility and wide-capture fallback for profile-backed records
 that cannot yet be upgraded to one of those minimum first-class classes.
 `SecurityAssetPackRegistry` defines the additive asset-pack registry contract for wide capture and
@@ -2062,3 +2065,13 @@ names under `SecurityMaster/Compatibility/` in this assembly. Application forwar
 identities so compiled clients continue to load. Their namespaces remain deprecated; new code uses
 `Meridian.Contracts.SecurityMaster`. Legacy adjustment methods and constructor overloads preserve
 existing binaries while the new canonical contracts remove the Application assembly dependency.
+
+OTC contract servicing now has typed reset, compression, novation, credit-determination and auction
+settlement payloads with required JSON members and versioned replay rules. These facts belong to an
+individual bilateral contract, retain predecessor/successor and instrument-target evidence, and do
+not authorize cash movements or ledger postings. See [OTC contract lifecycle](../../docs/domain/otc-contract-lifecycle.md).
+Asset-pack admission uses per-class writable schemas, including registered nested item shapes;
+legacy prose metadata is descriptive. Schedule write semantics share the frozen declared mapping
+and the readable-ahead rollout guard. Bond/CD write through 3 and StructuredCredit through 4, while S2 document
+floors keep undeclared scalar payloads at 1/1/2. Configured writers require the activated deployment
+capability floor; this code change does not execute its activation SQL.

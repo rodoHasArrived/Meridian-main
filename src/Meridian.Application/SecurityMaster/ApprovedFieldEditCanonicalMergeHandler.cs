@@ -216,7 +216,22 @@ public sealed class ApprovedFieldEditCanonicalMergeHandler : ISecurityMasterRevi
             or SecurityAssetTermFieldType.Date
             or SecurityAssetTermFieldType.Guid
             ? JsonValue.Create(value)
-            : TryParseJsonNode(value.Trim()) ?? JsonValue.Create(value);
+            : field?.Type is SecurityAssetTermFieldType.Object or SecurityAssetTermFieldType.Array
+                ? JsonNode.Parse(value.Trim())
+                : TryParseJsonNode(value.Trim()) ?? JsonValue.Create(value);
+        if (field?.Type is SecurityAssetTermFieldType.Object or SecurityAssetTermFieldType.Array)
+        {
+            // The approved whole-container edit explicitly authors this declaration. Match the
+            // staging preflight's stamp promotion so repairing an old row's stray container does
+            // not become an unrelated amendment by the time it reaches canonical validation.
+            var replacement = JsonSerializer.SerializeToElement(new Dictionary<string, JsonNode?> { [canonicalKey] = merged[canonicalKey]?.DeepClone() });
+            var since = SecurityAssetTermsSchema.PopulatedTermsAbove(assetClass, replacement, 1)
+                .Where(term => term.Field.SinceTermsVersion <= SecurityAssetClassCatalog.GetTermsVersion(assetClass))
+                .Select(term => term.Field.SinceTermsVersion).DefaultIfEmpty(1).Max();
+            var stamp = merged[SecurityTermsEnvelope.AssetClassTermsVersionKey]?.GetValue<int>() ?? 1;
+            if (since > stamp)
+                merged[SecurityTermsEnvelope.AssetClassTermsVersionKey] = since;
+        }
     }
 
     /// <summary>

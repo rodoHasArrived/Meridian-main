@@ -1798,8 +1798,10 @@ Meridian-main
 │   │   ├── intercompany-consolidation.md
 │   │   ├── market-curve.md
 │   │   ├── operational-evidence-graph.md
+│   │   ├── otc-contract-lifecycle.md
 │   │   ├── README.md
 │   │   ├── recurring-journal.md
+│   │   ├── security-asset-pack-admission.md
 │   │   └── security.md
 │   ├── engineering
 │   │   ├── blueprints
@@ -4175,6 +4177,7 @@ Meridian-main
 │   │   │   ├── DailyAccrualWorker.cs
 │   │   │   ├── DirectLendingEventRebuilder.cs
 │   │   │   ├── DirectLendingOutboxDispatcher.cs
+│   │   │   ├── DirectLendingSchedulePeriods.cs
 │   │   │   ├── DirectLendingServicerStatementService.cs
 │   │   │   ├── DirectLendingServiceSupport.cs
 │   │   │   ├── DirectLendingWorkflowSupport.cs
@@ -4337,6 +4340,7 @@ Meridian-main
 │   │   │   ├── NullSecurityMasterServices.cs
 │   │   │   ├── PostgresSecurityMasterConflictService.cs
 │   │   │   ├── PostgresSecurityMasterRevisionStore.cs
+│   │   │   ├── SecurityAssetPackAdmission.cs
 │   │   │   ├── SecurityAssetProfileGovernanceService.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
 │   │   │   ├── SecurityMasterAmortizationLedgerBridge.cs
@@ -4346,6 +4350,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterConcurrencyException.cs
 │   │   │   ├── SecurityMasterConflictAuthorityPolicy.cs
 │   │   │   ├── SecurityMasterConflictDetection.cs
+│   │   │   ├── SecurityMasterConflictDetection.VersionedTerms.cs
 │   │   │   ├── SecurityMasterConflictService.cs
 │   │   │   ├── SecurityMasterContractForwarders.cs
 │   │   │   ├── SecurityMasterContractRegistrationExtensions.cs
@@ -4369,9 +4374,11 @@ Meridian-main
 │   │   │   ├── SecurityMasterPublishFailedException.cs
 │   │   │   ├── SecurityMasterQueryService.cs
 │   │   │   ├── SecurityMasterService.AheadOfWriteTerms.cs
+│   │   │   ├── SecurityMasterService.Creation.cs
 │   │   │   ├── SecurityMasterService.cs
 │   │   │   ├── SecurityMasterService.WriteRefusals.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassificationService.cs
+│   │   │   ├── SecurityMasterTermsCapabilityVerifier.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Discard.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Mutations.cs
@@ -4872,14 +4879,17 @@ Meridian-main
 │   │   │   ├── NotionalLot.cs
 │   │   │   ├── OperatorOverrides.cs
 │   │   │   ├── OtcCollateral.cs
+│   │   │   ├── OtcContractLifecycle.cs
 │   │   │   ├── OtcContracts.cs
 │   │   │   ├── OtcExposure.cs
 │   │   │   ├── ScheduleConventionTerms.cs
 │   │   │   ├── ScheduleSpecFactory.cs
+│   │   │   ├── ScheduleTermsWriteRules.cs
 │   │   │   ├── SecurityAssetClassCatalog.cs
 │   │   │   ├── SecurityAssetClassRegistry.cs
 │   │   │   ├── SecurityAssetClassTermsUpgrade.cs
 │   │   │   ├── SecurityAssetClassTermsUpgrader.cs
+│   │   │   ├── SecurityAssetPackRegistry.Admission.cs
 │   │   │   ├── SecurityAssetPackRegistry.cs
 │   │   │   ├── SecurityAssetProfiles.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcaster.cs
@@ -6844,7 +6854,9 @@ Meridian-main
 │   │   │   │   ├── 052_security_curves.sql
 │   │   │   │   ├── 053_security_governance_events_curves_stream.sql
 │   │   │   │   ├── 054_otc_exposure_and_collateral.sql
-│   │   │   │   └── 055_security_governance_events_otc_collateral_stream.sql
+│   │   │   │   ├── 055_security_governance_events_otc_collateral_stream.sql
+│   │   │   │   ├── 056_otc_contract_lifecycle_events.sql
+│   │   │   │   └── 057_terms_capability_floor.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -6868,6 +6880,7 @@ Meridian-main
 │   │   │   ├── ISecurityMasterQualityReportStore.cs
 │   │   │   ├── ISecurityMasterSnapshotStore.cs
 │   │   │   ├── ISecurityMasterStore.cs
+│   │   │   ├── ISecurityMasterTermsCapabilityStore.cs
 │   │   │   ├── IStructuredCreditReferenceProjectionStore.cs
 │   │   │   ├── ISwapReferenceProjectionStore.cs
 │   │   │   ├── OtcAdvisoryLocks.cs
@@ -6890,6 +6903,7 @@ Meridian-main
 │   │   │   ├── PostgresOptionReferenceProjectionStore.cs
 │   │   │   ├── PostgresOtcCollateralStore.cs
 │   │   │   ├── PostgresOtcContractStore.cs
+│   │   │   ├── PostgresOtcContractStore.Lifecycle.cs
 │   │   │   ├── PostgresReferenceProjectionReader.cs
 │   │   │   ├── PostgresSecurityCurveStore.cs
 │   │   │   ├── PostgresSecurityFieldProvenanceStore.cs
@@ -6905,6 +6919,7 @@ Meridian-main
 │   │   │   ├── PostgresSecurityMasterStore.IdentifierCandidates.cs
 │   │   │   ├── PostgresSecurityMasterStore.PostingAuthority.cs
 │   │   │   ├── PostgresSecurityMasterStore.TermsProjection.cs
+│   │   │   ├── PostgresSecurityMasterTermsCapabilityStore.cs
 │   │   │   ├── PostgresSecurityUnderlyingGraphStore.cs
 │   │   │   ├── PostgresStructuredCreditReferenceProjectionStore.cs
 │   │   │   ├── PostgresSwapReferenceProjectionStore.cs
@@ -8665,6 +8680,7 @@ Meridian-main
 │   │   │   ├── LedgerMarkToMarketCarryingValueSource.cs
 │   │   │   ├── LedgerReportingAuthoritativeSource.cs
 │   │   │   ├── LedgerReportingAuthoritativeSource.Successors.cs
+│   │   │   ├── LiveBrokeragePortfolioSyncService.ContractMultipliers.cs
 │   │   │   ├── LiveBrokeragePortfolioSyncService.cs
 │   │   │   ├── ManualJournalEntryDraftStores.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.AccountingCloseReceipts.cs
@@ -10512,6 +10528,7 @@ Meridian-main
 │   │   │   │   ├── ProviderFeatureRegistrationTests.cs
 │   │   │   │   ├── ProviderModuleCompositionTests.cs
 │   │   │   │   ├── SecurityMasterStartupTests.cs
+│   │   │   │   ├── SecurityMasterTermsCapabilityFloorTests.cs
 │   │   │   │   ├── SecurityMasterTermsCapabilityStartupTests.cs
 │   │   │   │   ├── StartupRefusalPreflightTests.cs
 │   │   │   │   ├── StorageFeatureRegistrationTests.cs
@@ -10637,7 +10654,8 @@ Meridian-main
 │   │   │   │   ├── EdgarIngestOrchestratorTests.cs
 │   │   │   │   ├── SecurityMasterFieldConflictDetectionTests.cs
 │   │   │   │   ├── SecurityMasterImportServiceTests.cs
-│   │   │   │   └── SecurityMasterMappingInteropTests.cs
+│   │   │   │   ├── SecurityMasterMappingInteropTests.cs
+│   │   │   │   └── SecurityMasterVersionedConflictTests.cs
 │   │   │   ├── Services
 │   │   │   │   ├── CliModeResolverTests.cs
 │   │   │   │   ├── ConfigurationPresetsTests.cs
@@ -10662,6 +10680,7 @@ Meridian-main
 │   │   │   │   └── ProviderModuleSetupServiceTests.cs
 │   │   │   ├── Wizard
 │   │   │   │   └── WizardConfigurationStepTests.cs
+│   │   │   ├── DirectLendingSchedulePeriodsTests.cs
 │   │   │   ├── DirectLendingServiceTests.cs
 │   │   │   ├── FileReconciliationRunRepositoryTests.cs
 │   │   │   ├── OperationsContinuityPostgresRoundTripTests.cs
@@ -10676,6 +10695,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterCashFlowServiceTests.AsOf.cs
 │   │   │   ├── SecurityMasterCashFlowServiceTests.cs
 │   │   │   ├── SecurityMasterCashFlowServiceTests.DeclaredConventions.cs
+│   │   │   ├── SecurityMasterCashFlowServiceTests.PrincipalConventions.cs
 │   │   │   ├── SecurityMasterCashFlowServiceTests.ScheduleCharacterization.cs
 │   │   │   ├── SecurityMasterScheduleCompatibilityTests.cs
 │   │   │   ├── StructuredCashFlowLedgerBridgeTests.cs
@@ -11501,6 +11521,7 @@ Meridian-main
 │   │   │   │   ├── AheadOfWriteWorkbenchFixtures.cs
 │   │   │   │   ├── ApprovedFieldEditCanonicalMergeHandlerTests.AheadOfWrite.cs
 │   │   │   │   ├── ApprovedFieldEditCanonicalMergeHandlerTests.cs
+│   │   │   │   ├── ApprovedFieldEditCanonicalMergeHandlerTests.ScheduleAuthoring.cs
 │   │   │   │   ├── InMemorySecurityMasterRevisionStoreTests.cs
 │   │   │   │   ├── LedgerBookAffectedResolverTests.cs
 │   │   │   │   ├── LedgerPeriodLockReaderTests.cs
@@ -11511,7 +11532,8 @@ Meridian-main
 │   │   │   │   ├── ReportPeriodRangeTests.cs
 │   │   │   │   ├── SecurityMasterConflictAuthorityPolicyTests.cs
 │   │   │   │   ├── SecurityMasterWorkbenchCommandServiceTests.AheadOfWrite.cs
-│   │   │   │   └── SecurityMasterWorkbenchCommandServiceTests.cs
+│   │   │   │   ├── SecurityMasterWorkbenchCommandServiceTests.cs
+│   │   │   │   └── SecurityMasterWorkbenchCommandServiceTests.ScheduleSubmission.cs
 │   │   │   ├── AlternativeAssetLotTests.cs
 │   │   │   ├── AssetOperationsProjectionRoundTripTests.cs
 │   │   │   ├── BondProjectionGoldenTests.cs
@@ -11554,9 +11576,11 @@ Meridian-main
 │   │   │   ├── OtcCollateralMigrationTests.cs
 │   │   │   ├── OtcCollateralPostgresTests.cs
 │   │   │   ├── OtcCollateralRulesTests.cs
+│   │   │   ├── OtcContractLifecycleRulesTests.cs
 │   │   │   ├── OtcContractRulesTests.cs
 │   │   │   ├── OtcContractsMigrationTests.cs
 │   │   │   ├── OtcContractsPostgresTests.cs
+│   │   │   ├── OtcContractsPostgresTests.Lifecycle.cs
 │   │   │   ├── OtcExposureRulesTests.cs
 │   │   │   ├── OtcExposureServiceTests.cs
 │   │   │   ├── PostgresOperatorOverridesStoreTests.cs
@@ -11572,6 +11596,7 @@ Meridian-main
 │   │   │   ├── QuotedPriceValuationModelTests.cs
 │   │   │   ├── RegistryMigratedProjectionGoldenTests.cs
 │   │   │   ├── ScheduleConventionsDecodeGoldenTests.cs
+│   │   │   ├── ScheduleTermsWriteRulesTests.cs
 │   │   │   ├── SchemaTermsValidationTests.cs
 │   │   │   ├── SecurityAccountingInstrumentClassTests.cs
 │   │   │   ├── SecurityAssetClassBehaviorFactsTests.cs
@@ -11582,6 +11607,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetClassTermsHistoryTests.cs
 │   │   │   ├── SecurityAssetClassTermsUpgraderTests.cs
 │   │   │   ├── SecurityAssetClassTermsUpgradeWiringTests.cs
+│   │   │   ├── SecurityAssetPackAdmissionTests.cs
 │   │   │   ├── SecurityAssetProfileGovernanceServiceTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterChainTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterPipelineTests.cs
@@ -11594,8 +11620,10 @@ Meridian-main
 │   │   │   ├── SecurityCurveRulesTests.cs
 │   │   │   ├── SecurityCurvesMigrationTests.cs
 │   │   │   ├── SecurityCurvesPostgresTests.cs
+│   │   │   ├── SecurityEconomicScheduleReplayRefusalTests.cs
 │   │   │   ├── SecurityEconomicTermsClassAwareBridgeTests.cs
 │   │   │   ├── SecurityEconomicTermsV2BridgeCoverageTests.cs
+│   │   │   ├── SecurityEconomicTypedFactorHistoryTests.cs
 │   │   │   ├── SecurityEnrichmentTests.cs
 │   │   │   ├── SecurityIdentifierNormalizerTests.cs
 │   │   │   ├── SecurityIncomeCashFlowProjectorTests.cs
@@ -11653,15 +11681,21 @@ Meridian-main
 │   │   │   ├── SecurityMasterSchemaVersionsTests.cs
 │   │   │   ├── SecurityMasterServiceAliasCacheRefreshTests.cs
 │   │   │   ├── SecurityMasterServiceCommittedReadbackTests.cs
+│   │   │   ├── SecurityMasterServiceSnapshotTests.Admission.cs
 │   │   │   ├── SecurityMasterServiceSnapshotTests.AheadOfWrite.cs
+│   │   │   ├── SecurityMasterServiceSnapshotTests.CapabilityFloor.cs
 │   │   │   ├── SecurityMasterServiceSnapshotTests.cs
+│   │   │   ├── SecurityMasterServiceSnapshotTests.StrayScheduleAmendment.cs
 │   │   │   ├── SecurityMasterSnapshotStoreTests.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassificationServiceTests.cs
+│   │   │   ├── SecurityMasterTermsCapabilityPostgresTests.cs
 │   │   │   ├── SecurityMasterTickerChangeServiceTests.cs
 │   │   │   ├── SecurityReferenceTaxonomyCatalogTests.cs
+│   │   │   ├── SecurityScheduleAuthoringParityTests.cs
 │   │   │   ├── SecurityTermBlockAmendmentTests.cs
 │   │   │   ├── SecurityTermConventionTests.cs
 │   │   │   ├── SecurityTermsProjectionRegistryTests.cs
+│   │   │   ├── SecurityTermsS2StampTests.cs
 │   │   │   ├── SecurityTermsVersioningTests.cs
 │   │   │   ├── SecurityTermsWriteGoldenTests.cs
 │   │   │   ├── SecurityUnderlyingGraphPostgresTests.cs
@@ -11951,6 +11985,7 @@ Meridian-main
 │   │   │   ├── MarketScenarioBuilder.cs
 │   │   │   ├── PolygonStubClient.cs
 │   │   │   ├── RecordingLogger.cs
+│   │   │   ├── SecurityMasterTestCapabilityFloor.cs
 │   │   │   ├── SignalingMarketEventPublisher.cs
 │   │   │   ├── StubHttpMessageHandler.cs
 │   │   │   ├── TestMarketEventPublisher.cs
@@ -12019,6 +12054,7 @@ Meridian-main
 │   │   │   ├── BondReferenceEndpointsTests.cs
 │   │   │   ├── BrokerageConnectionEndpointsTests.cs
 │   │   │   ├── BrokerageConnectionIsolationTests.cs
+│   │   │   ├── BrokerageContractMultiplierTests.cs
 │   │   │   ├── BrokeragePortfolioStateTests.cs
 │   │   │   ├── BrokeragePortfolioSyncServiceTests.cs
 │   │   │   ├── CapitalAccountWorkbenchServiceTests.cs
@@ -12150,6 +12186,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterOperatorOverrideDecisionEndpointsTests.cs
 │   │   │   ├── SecurityMasterOtcCollateralEndpointsTests.cs
 │   │   │   ├── SecurityMasterOtcContractEndpointsTests.cs
+│   │   │   ├── SecurityMasterOtcContractEndpointsTests.Lifecycle.cs
 │   │   │   ├── SecurityMasterPreferredEquityEndpointsTests.cs
 │   │   │   ├── SecurityMasterReconciliationSlaPolicyProviderTests.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassificationEndpointsTests.cs

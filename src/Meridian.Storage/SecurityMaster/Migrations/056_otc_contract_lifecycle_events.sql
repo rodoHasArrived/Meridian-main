@@ -30,3 +30,29 @@ create trigger otc_contract_lifecycle_no_truncate
 
 comment on table __SCHEMA__.otc_contract_lifecycle_events is
     'Immutable versioned contract servicing facts, with explicit event identity, source and actor, and exact predecessor/successor snapshots. Written atomically with the contract version; no ledger posting or cash movement is implied.';
+
+-- Older deployed CRUD writers do not know the application-level lifecycle refusal. Fence their
+-- version increments at the database boundary while allowing a new writer to update and append
+-- atomically. Deferred execution reads the final row rather than a queued intermediate NEW.version,
+-- so several valid lifecycle transitions can share one transaction.
+create function __SCHEMA__.require_otc_contract_lifecycle_version() returns trigger
+language plpgsql as $$
+declare
+    current_version bigint;
+    retained_version bigint;
+begin
+    select version into current_version
+        from __SCHEMA__.otc_contracts where contract_id = new.contract_id;
+    select max(contract_version) into retained_version
+        from __SCHEMA__.otc_contract_lifecycle_events where contract_id = new.contract_id;
+    if retained_version is not null and current_version is distinct from retained_version then
+        raise exception 'OTC contract % must advance with its retained lifecycle history', new.contract_id
+            using errcode = '23514', constraint = 'otc_contract_lifecycle_version_guard';
+    end if;
+    return null;
+end;
+$$;
+create constraint trigger otc_contract_lifecycle_version_guard
+    after update on __SCHEMA__.otc_contracts
+    deferrable initially deferred
+    for each row execute function __SCHEMA__.require_otc_contract_lifecycle_version();

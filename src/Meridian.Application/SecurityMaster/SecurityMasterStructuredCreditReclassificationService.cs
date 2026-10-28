@@ -104,7 +104,7 @@ public sealed class SecurityMasterStructuredCreditReclassificationService : ISec
             .ToArray();
         var proposedTerms = RefOrNull(proposal.ProposedTerms);
         var derivedTerms = proposedTerms is null
-            ? DraftTerms(proposal.Draft)
+            ? DraftTerms(proposal.Draft, projection.AssetClass, record)
             : StampedTerms(record, proposedTerms);
 
         return new StructuredCreditReclassificationCandidateDto(
@@ -143,7 +143,7 @@ public sealed class SecurityMasterStructuredCreditReclassificationService : ISec
     }
 
     /// <summary>The terms carried over from the source record, under the StructuredCredit wire keys.</summary>
-    private static JsonElement DraftTerms(SecurityMasterLegacyUpgrade.StructuredCreditReclassificationDraft draft)
+    private static JsonElement DraftTerms(SecurityMasterLegacyUpgrade.StructuredCreditReclassificationDraft draft, string sourceAssetClass, SecurityMasterRecord source)
     {
         var node = new JsonObject();
         AddString(node, "tranche", RefOrNull(draft.Tranche));
@@ -157,6 +157,20 @@ public sealed class SecurityMasterStructuredCreditReclassificationService : ISec
             node["maturity"] = date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         AddString(node, "structuredCreditKind", KindLabel(draft.Kind));
         AddString(node, "seniority", RefOrNull(draft.Seniority));
+        // A blocked bond draft still needs the exact window/notice members for operator repair;
+        // rebuilding these from the lossy economic Call lists would widen the exercise contract.
+        if (SecurityAssetClassCatalog.GetOrDefault(sourceAssetClass).AssetClass == "Bond")
+        {
+            using var sourceTerms = JsonDocument.Parse(new SecurityMasterSnapshotWrapper(source).AssetSpecificTermsJson);
+            foreach (var key in new[] { SecurityVersionedTerms.CallScheduleKey, SecurityVersionedTerms.PutScheduleKey })
+            {
+                if (SecurityAssetTermsSchema.Field("StructuredCredit", key) is { } field
+                    && field.SinceTermsVersion <= SecurityAssetClassCatalog.GetTermsVersion("StructuredCredit")
+                    && sourceTerms.RootElement.TryGetProperty(key, out var schedules)
+                    && schedules.ValueKind == JsonValueKind.Array && schedules.GetArrayLength() > 0)
+                    node[key] = JsonNode.Parse(schedules.GetRawText());
+            }
+        }
         return JsonSerializer.SerializeToElement(node);
     }
 

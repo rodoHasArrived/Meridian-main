@@ -3,12 +3,12 @@
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
   "score_percent": 20.4,
-  "endpoint_coverage_percent": 31.3,
+  "endpoint_coverage_percent": 31.2,
   "contract_coverage_percent": 4.1,
   "summary": {
-    "endpoint_count": 728,
+    "endpoint_count": 730,
     "documented_endpoint_count": 228,
-    "undocumented_endpoint_count": 500,
+    "undocumented_endpoint_count": 502,
     "workstation_contract_count": 962,
     "documented_workstation_contract_count": 39,
     "undocumented_workstation_contract_count": 923
@@ -3922,44 +3922,56 @@
     },
     {
       "method": "GET",
+      "path": "/api/security-master/otc/contracts/{contractId:guid}/lifecycle",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs:65",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/security-master/otc/contracts/{contractId:guid}/lifecycle",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs:76",
+      "documented": false
+    },
+    {
+      "method": "GET",
       "path": "/api/security-master/otc/master-agreements",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs:66",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs:107",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/otc/master-agreements",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs:75",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs:116",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/otc/master-agreements/{agreementId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs:90",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs:131",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/otc/collateral-agreements",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs:102",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs:143",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/otc/collateral-agreements/{collateralAgreementId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs:117",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs:158",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/otc/netting-sets",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs:129",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs:170",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/otc/netting-sets/{nettingSetId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs:144",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs:185",
       "documented": false
     },
     {
@@ -9156,37 +9168,37 @@
     },
     {
       "name": "MultiAssetCoverageSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1049",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1051",
       "documented": false
     },
     {
       "name": "WorkstationDataProviderDiagnostic",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1068",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1070",
       "documented": false
     },
     {
       "name": "WorkstationDataProviderRoutingSummary",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1078",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1080",
       "documented": false
     },
     {
       "name": "WorkstationDataProviderRecord",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1090",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1092",
       "documented": false
     },
     {
       "name": "WorkstationDataBackfillRecord",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1112",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1114",
       "documented": false
     },
     {
       "name": "WorkstationDataExportRecord",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1123",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1125",
       "documented": false
     },
     {
       "name": "WorkstationDataPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1135",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1137",
       "documented": false
     },
     {

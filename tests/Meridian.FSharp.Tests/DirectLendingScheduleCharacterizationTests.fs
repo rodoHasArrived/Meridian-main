@@ -252,3 +252,73 @@ let ``SCH-DEF-008 activation and amendment preserve PIK collateral discount and 
     updated.Collateral |> Seq.toArray |> should equal (collateral |> Seq.toArray)
     updated.UnamortizedDiscount |> should equal 125m
     updated.UnamortizedPremium |> should equal 25m
+
+
+// Frozen formula-one oracle captured before the servicing day interval moved onto ADR-025's
+// kernel. Keep multiplication order as well as the known Thirty360 calendar-day behavior.
+let private legacyDailyFraction (basis: DayCountBasis) (date: DateOnly) =
+    match basis with
+    | DayCountBasis.Act365F -> 1m / 365m
+    | DayCountBasis.ActualActualISDA -> 1m / (if DateTime.IsLeapYear date.Year then 366m else 365m)
+    | _ -> 1m / 360m
+
+[<Fact>]
+let ``Kernel daily cash and PIK fractions match frozen formula one across leap year and terminal dates`` () =
+    let dates =
+        [ DateOnly.MinValue; DateOnly(2023, 12, 31); DateOnly(2024, 1, 1)
+          DateOnly(2024, 2, 29); DateOnly(2024, 12, 31); DateOnly(2025, 1, 1)
+          DateOnly(2026, 1, 31); DateOnly.MaxValue ]
+    for basis in Enum.GetValues<DayCountBasis>() do
+        for date in dates do
+            for principal in [ 0m; 1m; 1_000_000.25m ] do
+                for rate in [ 0m; 0.06m; 0.0725m ] do
+                    let expected =
+                        if principal <= 0m || rate <= 0m then 0m
+                        else principal * rate * legacyDailyFraction basis date
+                    DirectLendingInterop.CalculateDailyAccrualAmountForDate(principal, rate, int basis, date)
+                    |> should equal expected
+                    DirectLendingInterop.CalculatePikAccrual(principal, rate, int basis, date)
+                    |> should equal expected
+
+[<Theory>]
+[<InlineData(false)>]
+[<InlineData(true)>]
+let ``Manual cash and PIK requests keep their explicit date and do not fill a skipped accrual range`` (pik: bool) =
+    let terms = thirty360Terms ()
+    let created = createLoanWith terms
+    let activated = DirectLendingAggregateInterop.ActivateLoan created.Contract created.Servicing (ActivateLoanRequest(DateOnly(2026, 1, 1)))
+    let drawn = DirectLendingAggregateInterop.BookDrawdown activated.Servicing (BookDrawdownRequest(1_000_000m, DateOnly(2026, 1, 1), DateOnly(2026, 1, 1), "manual-range-pin"))
+    let basis = drawn.Servicing
+    let servicing =
+        LoanServicingStateDto(
+            basis.LoanId, basis.Status, basis.CurrentCommitment, basis.TotalDrawn, basis.AvailableToDraw,
+            basis.Balances, basis.DrawdownLots, basis.CurrentRateReset, basis.LastAccrualDate, basis.LastPaymentDate,
+            basis.ServicingRevision, basis.RevisionHistory, basis.AccrualEntries, IsPikToggled = pik)
+    let first = DirectLendingAggregateInterop.PostDailyAccrual servicing terms (PostDailyAccrualRequest(DateOnly(2026, 1, 1)))
+    let secondDate = DateOnly(2026, 2, 1)
+    let second = DirectLendingAggregateInterop.PostDailyAccrual first.Servicing terms (PostDailyAccrualRequest(secondDate))
+    let principal = first.Servicing.Balances.PrincipalOutstanding
+    let expected = Math.Round(principal * 0.06m * legacyDailyFraction terms.DayCountBasis secondDate, 2, MidpointRounding.AwayFromZero)
+    second.Entry.AccrualDate |> should equal secondDate
+    second.Servicing.LastAccrualDate |> should equal (Nullable secondDate)
+    second.Servicing.AccrualEntries.Count |> should equal 2
+    second.Entry.InterestAmount |> should equal (if pik then 0m else expected)
+    second.Entry.PikInterestAmount |> should equal (if pik then expected else 0m)
+
+[<Fact>]
+let ``Manual floating resets retain their explicit backdated and future dates and frozen rate arithmetic`` () =
+    let terms = floatingWithFloorCapAndSecurityMasterTerms ()
+    let created = createLoanWith terms
+    // These are existing manual operation semantics, not an inferred reset grid or approval of
+    // automatic application. A versioned scheduled-reset contract must define any stronger rule.
+    for effectiveDate in [ DateOnly(2024, 2, 29); DateOnly(2026, 3, 22); DateOnly(2032, 1, 1) ] do
+        for observed in [ -0.05m; 0m; 0.03m; 0.20m ] do
+            let spread = 475m
+            let expected = max 0.01m (observed + spread / 10000m) |> min 0.12m
+            let request = ApplyRateResetRequest(effectiveDate, observed, Nullable spread, "manual-reset-pin")
+            let decision = DirectLendingAggregateInterop.ApplyRateReset created.Servicing terms request
+            decision.AllInRate |> should equal expected
+            decision.Servicing.CurrentRateReset.EffectiveDate |> should equal effectiveDate
+            decision.Servicing.CurrentRateReset.ObservedRate |> should equal observed
+            decision.Servicing.CurrentRateReset.IndexName |> should equal "EURIBOR-3M"
+            decision.Servicing.CurrentRateReset.SourceRef |> should equal "manual-reset-pin"

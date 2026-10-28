@@ -1474,3 +1474,9 @@ delete, and truncate. Identical retain retries never update the row. This closes
 visibility gap in timestamp-only queries: a transaction can begin before a knowledge cutoff and
 commit after evaluation, so only receipt replay guarantees the original evaluated result.
 Receipts preserve an evaluation; they do not independently certify accounting-close approval.
+
+Security Master migration 056 adds immutable per-contract OTC lifecycle history. Contract state and
+its retained before/after event snapshots commit in one transaction with expected-version checks,
+idempotent event identity and authoritative instrument-target validation. Generic snapshot edits
+cannot bypass an existing lifecycle history. The scoped migration-truncate waiver covers only a
+BEFORE TRUNCATE rejection trigger; no data is removed. See [OTC lifecycle](../../docs/domain/otc-contract-lifecycle.md).

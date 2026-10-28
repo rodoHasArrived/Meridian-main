@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "4d25dcd5cd5f4c14b5052c468c7b3fb71ee3af8cf52f802a402bc3980178b23a",
+  "database_fingerprint": "d1d28f5f550433093c3fb39a0c75dced830372cde26a43a452ad4e56d1c4ae8e",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -8330,6 +8330,90 @@
       "target_schema": "security_master"
     },
     {
+      "fingerprint": "fdac44fbd57d03e5f3661f2228ca5fe81f2d5c4fe57be805ddad72cac60df1e2",
+      "kind": "normal",
+      "source": "security_master.otc_contract_lifecycle_events_actor_check on security_master.otc_contract_lifecycle_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_contract_lifecycle_events.actor",
+      "target_kind": "table column",
+      "target_name": "otc_contract_lifecycle_events",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "f268589e5d4efd69c6a54e9ff6af99003fbeed7658ef19cc766cf4dacea402ec",
+      "kind": "normal",
+      "source": "security_master.otc_contract_lifecycle_events_contract_id_fkey on security_master.otc_contract_lifecycle_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_contracts.contract_id",
+      "target_kind": "table column",
+      "target_name": "otc_contracts",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "0220dfe46c64e81df1c2accefd7f209eab626766ab0973e0010db2edcb5e946c",
+      "kind": "normal",
+      "source": "security_master.otc_contract_lifecycle_events_contract_id_fkey on security_master.otc_contract_lifecycle_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_contracts_pkey",
+      "target_kind": "index",
+      "target_name": "otc_contracts_pkey",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "1e74cc0605f192a93d2add81d4aedac851bccbf0ad8877d949e12cb1b9e126fc",
+      "kind": "normal",
+      "source": "security_master.otc_contract_lifecycle_events_contract_version_check on security_master.otc_contract_lifecycle_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_contract_lifecycle_events.contract_version",
+      "target_kind": "table column",
+      "target_name": "otc_contract_lifecycle_events",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "5c0a116adbc522a9bc10881f5a2a97d0bfd31621b0e81dfe5c5a755dc032a165",
+      "kind": "normal",
+      "source": "security_master.otc_contract_lifecycle_events_event_type_check on security_master.otc_contract_lifecycle_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_contract_lifecycle_events.event_type",
+      "target_kind": "table column",
+      "target_name": "otc_contract_lifecycle_events",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "bd3d320b70d48aaf735f94c960bc532f0dd15aa87c117ba2ed69a67fdb973bd6",
+      "kind": "normal",
+      "source": "security_master.otc_contract_lifecycle_events_payload_check on security_master.otc_contract_lifecycle_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_contract_lifecycle_events.payload",
+      "target_kind": "table column",
+      "target_name": "otc_contract_lifecycle_events",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "ee2d3c08c1b38cd74ddcfa70a6e58407e91e65a4484a2d16511189e595eb581d",
+      "kind": "normal",
+      "source": "security_master.otc_contract_lifecycle_events_payload_version_check on security_master.otc_contract_lifecycle_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_contract_lifecycle_events.payload_version",
+      "target_kind": "table column",
+      "target_name": "otc_contract_lifecycle_events",
+      "target_schema": "security_master"
+    },
+    {
       "fingerprint": "21103af5799333a2171bb2e7b8ac86b87f6b702d933be2cf5652caa51ea6176b",
       "kind": "normal",
       "source": "security_master.otc_contracts_dates_check on security_master.otc_contracts",
@@ -9599,6 +9683,66 @@
       "target": "security_master.securities_pkey",
       "target_kind": "index",
       "target_name": "securities_pkey",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "0fb56700d0e5c2daa7014c5fd7144743441875bb54171e1cabbc5967116074e4",
+      "kind": "normal",
+      "source": "security_master.security_master_terms_capabi_minimum_declared_mapping_ver_check on security_master.security_master_terms_capability_floor",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_terms_capability_floor.minimum_declared_mapping_version",
+      "target_kind": "table column",
+      "target_name": "security_master_terms_capability_floor",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "55caa115894fc862d2dcadfdb3ac0cea442957fe818a66a3df04f952a4f80f20",
+      "kind": "normal",
+      "source": "security_master.security_master_terms_capability_f_minimum_kernel_version_check on security_master.security_master_terms_capability_floor",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_terms_capability_floor.minimum_kernel_version",
+      "target_kind": "table column",
+      "target_name": "security_master_terms_capability_floor",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "ea806a5009be8809a0451330f8eb7970d141781ff9cfc0d2be8743af54aff9ef",
+      "kind": "normal",
+      "source": "security_master.security_master_terms_capability_floor_change_record_check on security_master.security_master_terms_capability_floor",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_terms_capability_floor.change_record",
+      "target_kind": "table column",
+      "target_name": "security_master_terms_capability_floor",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "b2f02ee7d9a4e4417b01a5ba9206b3d258b2ab29fd292abd237766ff838ee4d2",
+      "kind": "normal",
+      "source": "security_master.security_master_terms_capability_floor_singleton_check on security_master.security_master_terms_capability_floor",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_terms_capability_floor.singleton",
+      "target_kind": "table column",
+      "target_name": "security_master_terms_capability_floor",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "953a087787fdca6131021b01d02aa0480906a433be02795534aa299ca63041ba",
+      "kind": "normal",
+      "source": "security_master.security_master_terms_capability_floor_updated_by_check on security_master.security_master_terms_capability_floor",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_terms_capability_floor.updated_by",
+      "target_kind": "table column",
+      "target_name": "security_master_terms_capability_floor",
       "target_schema": "security_master"
     },
     {
@@ -17777,6 +17921,42 @@
       "object": "column:security_master.otc_collateral_balances.version"
     },
     {
+      "fingerprint": "e2cc3f1b3f04ba450c5d13f4aee4d62edbc442bcbf0153a5c2edb983d2b10961",
+      "object": "column:security_master.otc_contract_lifecycle_events.actor"
+    },
+    {
+      "fingerprint": "1fa83eeba7ea88f5d2c497439bdcc62998efc9bf6e63aa182dde97af11bac1c7",
+      "object": "column:security_master.otc_contract_lifecycle_events.contract_id"
+    },
+    {
+      "fingerprint": "9f0ebf7bedcf2b0d684554c2623fb394382fc389b86a8a299dec11d8d251fd33",
+      "object": "column:security_master.otc_contract_lifecycle_events.contract_version"
+    },
+    {
+      "fingerprint": "878e9f5823bbc3f2d31045ce8b380913d483dbf70e71f6f46d3326ff0244c816",
+      "object": "column:security_master.otc_contract_lifecycle_events.effective_date"
+    },
+    {
+      "fingerprint": "83c5a4a97bd76e27789df58d722d4fa08d4f2b3451db49feabe7e2f2026cdb29",
+      "object": "column:security_master.otc_contract_lifecycle_events.event_id"
+    },
+    {
+      "fingerprint": "42684e3718217edf4ddb938d8b9fe429a9d216e4f98a4339a2e238aa876fe24d",
+      "object": "column:security_master.otc_contract_lifecycle_events.event_type"
+    },
+    {
+      "fingerprint": "d21d126b78098ae4d23ccec466c76c4ebcc83806c02d6e0a060c4651b3cfba39",
+      "object": "column:security_master.otc_contract_lifecycle_events.payload"
+    },
+    {
+      "fingerprint": "d3730b4e458f077737a97300caf7b39b900005f94bac3224edf3c9047e4c1465",
+      "object": "column:security_master.otc_contract_lifecycle_events.payload_version"
+    },
+    {
+      "fingerprint": "089639f0deb59450ffd5f1fb63c4e14bda1d3dd5dd5989b7ad3b0a5e65873722",
+      "object": "column:security_master.otc_contract_lifecycle_events.recorded_at"
+    },
+    {
       "fingerprint": "db2a5260be5f4797d5dda49e00de8371eebd0ce9f9f89f10cc3a4770aedfaa00",
       "object": "column:security_master.otc_contracts.confirmation_reference"
     },
@@ -19345,6 +19525,30 @@
       "object": "column:security_master.security_master_revisions.workflow_id"
     },
     {
+      "fingerprint": "52db1899b01b60d2afb609484657a707860c337a90f4ee0d780000ceefd064a2",
+      "object": "column:security_master.security_master_terms_capability_floor.change_record"
+    },
+    {
+      "fingerprint": "cacb0d5c54d0a0a0d701a185f9efeb76c5083df1a5794ed40e8d1c421abd3682",
+      "object": "column:security_master.security_master_terms_capability_floor.minimum_declared_mapping_version"
+    },
+    {
+      "fingerprint": "49ecaddc3c251627bff79e3cee0e48d733f3734e646cec2e34784f466cc4611b",
+      "object": "column:security_master.security_master_terms_capability_floor.minimum_kernel_version"
+    },
+    {
+      "fingerprint": "8d029729661efaf07d4893a213599fcc159635ac4d10974e50a42623b8bd8195",
+      "object": "column:security_master.security_master_terms_capability_floor.singleton"
+    },
+    {
+      "fingerprint": "94818421b32ecba400a2687ca9ad3d4a20675613d7e2fd642626f69fd3be2693",
+      "object": "column:security_master.security_master_terms_capability_floor.updated_at"
+    },
+    {
+      "fingerprint": "bab802b59229fc4cf21c9adb00addf513b092b81fd38e35525c2f95349c3ca39",
+      "object": "column:security_master.security_master_terms_capability_floor.updated_by"
+    },
+    {
       "fingerprint": "cdc75dd88fae9570795cef1d59324cba3cd2858aabb34b5943d26dd6ef917395",
       "object": "column:security_master.security_operator_overrides.approval_status"
     },
@@ -20565,6 +20769,10 @@
       "object": "comment:table:security_master.otc_collateral_balances"
     },
     {
+      "fingerprint": "7c0cacc59cadba93fa070ab45e8e2c8faa6bdbd839b2db6b29182c50696a96d1",
+      "object": "comment:table:security_master.otc_contract_lifecycle_events"
+    },
+    {
       "fingerprint": "75fca75886e91846f87423ff1a7ce071f6c8c5a00a346a7c078507a082b5bed2",
       "object": "comment:table:security_master.otc_contracts"
     },
@@ -20627,6 +20835,10 @@
     {
       "fingerprint": "8a7dff8fdaea18834824cd4cbe70c108f1408c0065625ac9d31d76947c2a9d9c",
       "object": "comment:table:security_master.security_governance_events"
+    },
+    {
+      "fingerprint": "66ba24031a982e1280beddb5c400c6be05c43aedb8e069e7a14a8eb13c709a56",
+      "object": "comment:table:security_master.security_master_terms_capability_floor"
     },
     {
       "fingerprint": "721fd5347a8becbaad67b9d44e75f2ab5048b9041a9b8ca3c917f7d7c83edd15",
@@ -22969,6 +23181,38 @@
       "object": "constraint:security_master.otc_collateral_balances.otc_collateral_balances_security_id_fkey"
     },
     {
+      "fingerprint": "3942b78271c1c5915472c9ae3794abd69e9bd8feaf529ffdff726dc6f7eb45c5",
+      "object": "constraint:security_master.otc_contract_lifecycle_events.otc_contract_lifecycle_events_actor_check"
+    },
+    {
+      "fingerprint": "41d7182a1620c191ee88c67572a0c01b287a16df58d06afe1d236e23149460cd",
+      "object": "constraint:security_master.otc_contract_lifecycle_events.otc_contract_lifecycle_events_contract_id_contract_version_key"
+    },
+    {
+      "fingerprint": "ccdb87c9bc77a57f7d1f4bd87e2e6d49b3cc812e9b1ada65bc60beaa97afa20e",
+      "object": "constraint:security_master.otc_contract_lifecycle_events.otc_contract_lifecycle_events_contract_id_fkey"
+    },
+    {
+      "fingerprint": "f9084fdcd84c21c19d1ff20a3c55bf826c3be9338e385346251eb8a2e7bba62c",
+      "object": "constraint:security_master.otc_contract_lifecycle_events.otc_contract_lifecycle_events_contract_version_check"
+    },
+    {
+      "fingerprint": "c07ffc180a536fe5f76ec5236c2b1f849bac688c76e76f6013fddd1270288c8a",
+      "object": "constraint:security_master.otc_contract_lifecycle_events.otc_contract_lifecycle_events_event_type_check"
+    },
+    {
+      "fingerprint": "0db7d628887b88c21034174abeff1102f17c54ec3a5df24d9ee8f5639632c1f3",
+      "object": "constraint:security_master.otc_contract_lifecycle_events.otc_contract_lifecycle_events_payload_check"
+    },
+    {
+      "fingerprint": "3c7aa607f3e6ae687166e55fffdc3fd8d00a0cc1ec7ed773dce91ba2b2faf019",
+      "object": "constraint:security_master.otc_contract_lifecycle_events.otc_contract_lifecycle_events_payload_version_check"
+    },
+    {
+      "fingerprint": "77f4a1012fc8f4bbcc0aabc7f494f3ae0dec6f1adcc38a6aa231da770d12240a",
+      "object": "constraint:security_master.otc_contract_lifecycle_events.otc_contract_lifecycle_events_pkey"
+    },
+    {
       "fingerprint": "822e3dbe8f4104fb6179f01af7ec21c49faa4727cfbcc36317351f61a8ffac65",
       "object": "constraint:security_master.otc_contracts.otc_contracts_dates_check"
     },
@@ -23391,6 +23635,30 @@
     {
       "fingerprint": "87958f28a7a70d6504c8c189b1ebd8079633a2035f2695868d03b6e958b81b0c",
       "object": "constraint:security_master.security_master_revisions.security_master_revisions_pkey"
+    },
+    {
+      "fingerprint": "5acbd046229482cdf96bd12520b843b07e1a84204ba2e701c59c4e9b955cd23f",
+      "object": "constraint:security_master.security_master_terms_capability_floor.security_master_terms_capabi_minimum_declared_mapping_ver_check"
+    },
+    {
+      "fingerprint": "b4e3073b5204be02b5342ebbb2fd05cf5ff3d1dc60297ba367a5d6a2ab67dcc9",
+      "object": "constraint:security_master.security_master_terms_capability_floor.security_master_terms_capability_f_minimum_kernel_version_check"
+    },
+    {
+      "fingerprint": "ed35f42470cfd764d9e095ebfa1cd0015887035821ed9899412f470d236f444f",
+      "object": "constraint:security_master.security_master_terms_capability_floor.security_master_terms_capability_floor_change_record_check"
+    },
+    {
+      "fingerprint": "d98bf2a11dc7beb45f200dd37e5557ec214bdfd1afbccc83040e35489f2b880d",
+      "object": "constraint:security_master.security_master_terms_capability_floor.security_master_terms_capability_floor_pkey"
+    },
+    {
+      "fingerprint": "39620f705b754adf7dbc16200e26742c5100d33ccde1523ed63fac98789fc3d3",
+      "object": "constraint:security_master.security_master_terms_capability_floor.security_master_terms_capability_floor_singleton_check"
+    },
+    {
+      "fingerprint": "926842d07909cc3de7ace0b2aa39655a4311a5a56f27b7977ce2680b5c34c23b",
+      "object": "constraint:security_master.security_master_terms_capability_floor.security_master_terms_capability_floor_updated_by_check"
     },
     {
       "fingerprint": "575264d586e12d6d0bdbad5b21c41903517940cad4eab45207db525befd9f652",
@@ -26357,6 +26625,34 @@
       "object": "dependency:security_master.otc_collateral_balances_security_id_fkey on security_master.otc_collateral_balances->security_master.securities_pkey:normal"
     },
     {
+      "fingerprint": "fdac44fbd57d03e5f3661f2228ca5fe81f2d5c4fe57be805ddad72cac60df1e2",
+      "object": "dependency:security_master.otc_contract_lifecycle_events_actor_check on security_master.otc_contract_lifecycle_events->security_master.otc_contract_lifecycle_events.actor:normal"
+    },
+    {
+      "fingerprint": "f268589e5d4efd69c6a54e9ff6af99003fbeed7658ef19cc766cf4dacea402ec",
+      "object": "dependency:security_master.otc_contract_lifecycle_events_contract_id_fkey on security_master.otc_contract_lifecycle_events->security_master.otc_contracts.contract_id:normal"
+    },
+    {
+      "fingerprint": "0220dfe46c64e81df1c2accefd7f209eab626766ab0973e0010db2edcb5e946c",
+      "object": "dependency:security_master.otc_contract_lifecycle_events_contract_id_fkey on security_master.otc_contract_lifecycle_events->security_master.otc_contracts_pkey:normal"
+    },
+    {
+      "fingerprint": "1e74cc0605f192a93d2add81d4aedac851bccbf0ad8877d949e12cb1b9e126fc",
+      "object": "dependency:security_master.otc_contract_lifecycle_events_contract_version_check on security_master.otc_contract_lifecycle_events->security_master.otc_contract_lifecycle_events.contract_version:normal"
+    },
+    {
+      "fingerprint": "5c0a116adbc522a9bc10881f5a2a97d0bfd31621b0e81dfe5c5a755dc032a165",
+      "object": "dependency:security_master.otc_contract_lifecycle_events_event_type_check on security_master.otc_contract_lifecycle_events->security_master.otc_contract_lifecycle_events.event_type:normal"
+    },
+    {
+      "fingerprint": "bd3d320b70d48aaf735f94c960bc532f0dd15aa87c117ba2ed69a67fdb973bd6",
+      "object": "dependency:security_master.otc_contract_lifecycle_events_payload_check on security_master.otc_contract_lifecycle_events->security_master.otc_contract_lifecycle_events.payload:normal"
+    },
+    {
+      "fingerprint": "ee2d3c08c1b38cd74ddcfa70a6e58407e91e65a4484a2d16511189e595eb581d",
+      "object": "dependency:security_master.otc_contract_lifecycle_events_payload_version_check on security_master.otc_contract_lifecycle_events->security_master.otc_contract_lifecycle_events.payload_version:normal"
+    },
+    {
       "fingerprint": "21103af5799333a2171bb2e7b8ac86b87f6b702d933be2cf5652caa51ea6176b",
       "object": "dependency:security_master.otc_contracts_dates_check on security_master.otc_contracts->security_master.otc_contracts.effective_date:normal"
     },
@@ -26781,6 +27077,26 @@
       "object": "dependency:security_master.security_identifiers_security_id_fkey on security_master.security_identifiers->security_master.securities_pkey:normal"
     },
     {
+      "fingerprint": "0fb56700d0e5c2daa7014c5fd7144743441875bb54171e1cabbc5967116074e4",
+      "object": "dependency:security_master.security_master_terms_capabi_minimum_declared_mapping_ver_check on security_master.security_master_terms_capability_floor->security_master.security_master_terms_capability_floor.minimum_declared_mapping_version:normal"
+    },
+    {
+      "fingerprint": "55caa115894fc862d2dcadfdb3ac0cea442957fe818a66a3df04f952a4f80f20",
+      "object": "dependency:security_master.security_master_terms_capability_f_minimum_kernel_version_check on security_master.security_master_terms_capability_floor->security_master.security_master_terms_capability_floor.minimum_kernel_version:normal"
+    },
+    {
+      "fingerprint": "ea806a5009be8809a0451330f8eb7970d141781ff9cfc0d2be8743af54aff9ef",
+      "object": "dependency:security_master.security_master_terms_capability_floor_change_record_check on security_master.security_master_terms_capability_floor->security_master.security_master_terms_capability_floor.change_record:normal"
+    },
+    {
+      "fingerprint": "b2f02ee7d9a4e4417b01a5ba9206b3d258b2ab29fd292abd237766ff838ee4d2",
+      "object": "dependency:security_master.security_master_terms_capability_floor_singleton_check on security_master.security_master_terms_capability_floor->security_master.security_master_terms_capability_floor.singleton:normal"
+    },
+    {
+      "fingerprint": "953a087787fdca6131021b01d02aa0480906a433be02795534aa299ca63041ba",
+      "object": "dependency:security_master.security_master_terms_capability_floor_updated_by_check on security_master.security_master_terms_capability_floor->security_master.security_master_terms_capability_floor.updated_by:normal"
+    },
+    {
       "fingerprint": "ec6e675902a9c38b1085f0c08788e0284cf66994cb1a84bf45a02e4dc53742db",
       "object": "dependency:security_master.security_operator_overrides_security_id_fkey on security_master.security_operator_overrides->security_master.securities.security_id:normal"
     },
@@ -27097,6 +27413,10 @@
       "object": "function:security_master.guard_close_price_snapshot_append()"
     },
     {
+      "fingerprint": "8c3a738ba4673a8ab767d318ef962674213704c16942ff0b5ee2ea0fb402420d",
+      "object": "function:security_master.reject_otc_contract_lifecycle_mutation()"
+    },
+    {
       "fingerprint": "00f867df4ceed1cef4b8eaee6c275fe6c270d2f42d785be14a843c140040d9f9",
       "object": "function:security_master.reject_otc_exposure_snapshot_mutation()"
     },
@@ -27115,6 +27435,10 @@
     {
       "fingerprint": "1e2b6992e7f6d3be838defbe9598445a1ca89b8ee60a9383e1eefa162e70fedc",
       "object": "function:security_master.reject_security_governance_event_mutation()"
+    },
+    {
+      "fingerprint": "b407fc695185923f6dca12d5cac512f5a9219ef6ee05280eac10e3668e6b0c59",
+      "object": "function:security_master.require_otc_contract_lifecycle_version()"
     },
     {
       "fingerprint": "e3e3f6e3b8e0cea4de38dfc1498c2bbf9778dbcd603f1b8e264926a5017b2061",
@@ -28965,6 +29289,18 @@
       "object": "index:security_master.otc_collateral_balances_pkey"
     },
     {
+      "fingerprint": "7c62f69f48d8e6c21e049a3ec4bc21ad9a1a2ad964481a9ee3cf253130836f03",
+      "object": "index:security_master.otc_contract_lifecycle_events_contract_id_contract_version_key"
+    },
+    {
+      "fingerprint": "494afb6847d9d10074f8df1efaa4aaed7b2c6b7f645d469fddbcad428acaf212",
+      "object": "index:security_master.otc_contract_lifecycle_events_pkey"
+    },
+    {
+      "fingerprint": "ba988483f23b95e4f9f64fdd8a14fb1753873705d618c9a62ce4dc1da51dcf18",
+      "object": "index:security_master.otc_contract_lifecycle_novation_successor_idx"
+    },
+    {
       "fingerprint": "786882e4bd37196e0307a15d1ac7d4656952dba0ac68d6a89daabc105d24ae10",
       "object": "index:security_master.otc_contracts_external_trade_idx"
     },
@@ -29203,6 +29539,10 @@
     {
       "fingerprint": "9f89584a7c0d47c1b2d49166ca0c3d98478f9ff83ac365482a7264c53dda2af7",
       "object": "index:security_master.security_master_revisions_pkey"
+    },
+    {
+      "fingerprint": "43856fd9155d0822f88bd7f035ddc678337914870269f9c1fe983f081dd00e74",
+      "object": "index:security_master.security_master_terms_capability_floor_pkey"
     },
     {
       "fingerprint": "914254ee6027199458a93499d80d63bca78414cdbeb547305d61b8bd04886994",
@@ -30129,6 +30469,10 @@
       "object": "rls:security_master.otc_collateral_balances"
     },
     {
+      "fingerprint": "fc911dd0bf3e86652c8d7cf0070182a610fd007e3725c10713176baf40453092",
+      "object": "rls:security_master.otc_contract_lifecycle_events"
+    },
+    {
       "fingerprint": "2694b068f06c034aa27fb8a456ec8bdab1a15ea9df2a26a2ed348fc5e672730e",
       "object": "rls:security_master.otc_contracts"
     },
@@ -30269,6 +30613,10 @@
       "object": "rls:security_master.security_master_revisions"
     },
     {
+      "fingerprint": "e5d016d7d21709f7c9aab05937351fee8334aed24ef85be10888fba6d442fb53",
+      "object": "rls:security_master.security_master_terms_capability_floor"
+    },
+    {
       "fingerprint": "4ac6162aad7ce9bedad5e865bf419ad99acb008ac7485cc22ae282cb1cdebfee",
       "object": "rls:security_master.security_operator_overrides"
     },
@@ -30405,7 +30753,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "5c48b456066145161350fb5a43ccbbce3de995bd8c8610adf28c7e7668213188",
+      "fingerprint": "7bea5bb0ecaf87dbec40641ee87c44130688146d4ce76d77f0a5d38b38050664",
       "object": "schema:security_master"
     },
     {
@@ -31097,7 +31445,11 @@
       "object": "table:security_master.otc_collateral_balances"
     },
     {
-      "fingerprint": "c4225b87cd14a0ddbe08bb8d8354596c782aedc745510f4e6caff8cae05dbddb",
+      "fingerprint": "ddf80410ab3d8334987cdc1ed9b71e47773e8e13721688927068944e2835a0d4",
+      "object": "table:security_master.otc_contract_lifecycle_events"
+    },
+    {
+      "fingerprint": "e4d1cb31dacbde6ac06dab448ddb84bfad2a088c56a2275d94a4a71063dbeec5",
       "object": "table:security_master.otc_contracts"
     },
     {
@@ -31235,6 +31587,10 @@
     {
       "fingerprint": "5c9ca5ebd8f8a6c076a8d872166ebce89645684f1ecaf1b72f6f21d31c8d9a93",
       "object": "table:security_master.security_master_revisions"
+    },
+    {
+      "fingerprint": "684a3b598f82cfcad60d5cc79daae3fcf3d18d3db83491bbced01ffd78807065",
+      "object": "table:security_master.security_master_terms_capability_floor"
     },
     {
       "fingerprint": "816d6b5410e31ae648f29738d68184030bd3785861d8885718ee006b3e172c1f",
@@ -31539,6 +31895,18 @@
     {
       "fingerprint": "1bc7290c6709817c8dd7fde3920442a8e2febf5b82ef6aed74e77a0ebd2b252c",
       "object": "trigger:reporting.reporting_statement_reconciliation_documents.trg_reporting_statement_document_truncate_guard"
+    },
+    {
+      "fingerprint": "55f97ace58093c707a4cbcdf062c7e28034d8605ffdbc4c8e433b45acf410731",
+      "object": "trigger:security_master.otc_contract_lifecycle_events.otc_contract_lifecycle_append_only"
+    },
+    {
+      "fingerprint": "a622fe6ad637dbaa064f152bb8b7c45bb97b979c04eb3977be05a53d9be55d66",
+      "object": "trigger:security_master.otc_contract_lifecycle_events.otc_contract_lifecycle_no_truncate"
+    },
+    {
+      "fingerprint": "fdf44fd554356bef84f295c55e2c9dbd744eba00ca96c53ba42fedaf95784a42",
+      "object": "trigger:security_master.otc_contracts.otc_contract_lifecycle_version_guard"
     },
     {
       "fingerprint": "3c3c0a19565290ab789b5d473f78adb8d345284993052e592bdeb6c2f7a7a8f1",
@@ -126822,6 +127190,12 @@
           "object_type": "table"
         },
         {
+          "comment": "Immutable versioned contract servicing facts, with explicit event identity, source and actor, and exact predecessor/successor snapshots. Written atomically with the contract version; no ledger posting or cash movement is implied.",
+          "fingerprint": "7c0cacc59cadba93fa070ab45e8e2c8faa6bdbd839b2db6b29182c50696a96d1",
+          "object": "security_master.otc_contract_lifecycle_events",
+          "object_type": "table"
+        },
+        {
           "comment": "Bilateral contracts: one trade against a counterparty on a Security Master instrument, in a netting set, with its notional, direction, dates and lifecycle status. Many contracts share one instrument.",
           "fingerprint": "75fca75886e91846f87423ff1a7ce071f6c8c5a00a346a7c078507a082b5bed2",
           "object": "security_master.otc_contracts",
@@ -126915,6 +127289,12 @@
           "comment": "Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds, declared underlying-graph links, stored curves, OTC exposure snapshots, collateral balances and margin calls), written in the same transaction as the state change.",
           "fingerprint": "8a7dff8fdaea18834824cd4cbe70c108f1408c0065625ac9d31d76947c2a9d9c",
           "object": "security_master.security_governance_events",
+          "object_type": "table"
+        },
+        {
+          "comment": "One reviewed minimum declared-mapping/kernel capability floor for configured Security Master writers. Empty during 5b-1; activated only after the fleet inventory and data gates, before 5b-2. Server and WPF writer startup refuse unknown/newer active floors. Does not enable declared terms or authorize deployment.",
+          "fingerprint": "66ba24031a982e1280beddb5c400c6be05c43aedb8e069e7a14a8eb13c709a56",
+          "object": "security_master.security_master_terms_capability_floor",
           "object_type": "table"
         },
         {
@@ -129195,6 +129575,90 @@
           "target_schema": "security_master"
         },
         {
+          "fingerprint": "fdac44fbd57d03e5f3661f2228ca5fe81f2d5c4fe57be805ddad72cac60df1e2",
+          "kind": "normal",
+          "source": "security_master.otc_contract_lifecycle_events_actor_check on security_master.otc_contract_lifecycle_events",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_contract_lifecycle_events.actor",
+          "target_kind": "table column",
+          "target_name": "otc_contract_lifecycle_events",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "f268589e5d4efd69c6a54e9ff6af99003fbeed7658ef19cc766cf4dacea402ec",
+          "kind": "normal",
+          "source": "security_master.otc_contract_lifecycle_events_contract_id_fkey on security_master.otc_contract_lifecycle_events",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_contracts.contract_id",
+          "target_kind": "table column",
+          "target_name": "otc_contracts",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "0220dfe46c64e81df1c2accefd7f209eab626766ab0973e0010db2edcb5e946c",
+          "kind": "normal",
+          "source": "security_master.otc_contract_lifecycle_events_contract_id_fkey on security_master.otc_contract_lifecycle_events",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_contracts_pkey",
+          "target_kind": "index",
+          "target_name": "otc_contracts_pkey",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "1e74cc0605f192a93d2add81d4aedac851bccbf0ad8877d949e12cb1b9e126fc",
+          "kind": "normal",
+          "source": "security_master.otc_contract_lifecycle_events_contract_version_check on security_master.otc_contract_lifecycle_events",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_contract_lifecycle_events.contract_version",
+          "target_kind": "table column",
+          "target_name": "otc_contract_lifecycle_events",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "5c0a116adbc522a9bc10881f5a2a97d0bfd31621b0e81dfe5c5a755dc032a165",
+          "kind": "normal",
+          "source": "security_master.otc_contract_lifecycle_events_event_type_check on security_master.otc_contract_lifecycle_events",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_contract_lifecycle_events.event_type",
+          "target_kind": "table column",
+          "target_name": "otc_contract_lifecycle_events",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "bd3d320b70d48aaf735f94c960bc532f0dd15aa87c117ba2ed69a67fdb973bd6",
+          "kind": "normal",
+          "source": "security_master.otc_contract_lifecycle_events_payload_check on security_master.otc_contract_lifecycle_events",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_contract_lifecycle_events.payload",
+          "target_kind": "table column",
+          "target_name": "otc_contract_lifecycle_events",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "ee2d3c08c1b38cd74ddcfa70a6e58407e91e65a4484a2d16511189e595eb581d",
+          "kind": "normal",
+          "source": "security_master.otc_contract_lifecycle_events_payload_version_check on security_master.otc_contract_lifecycle_events",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_contract_lifecycle_events.payload_version",
+          "target_kind": "table column",
+          "target_name": "otc_contract_lifecycle_events",
+          "target_schema": "security_master"
+        },
+        {
           "fingerprint": "21103af5799333a2171bb2e7b8ac86b87f6b702d933be2cf5652caa51ea6176b",
           "kind": "normal",
           "source": "security_master.otc_contracts_dates_check on security_master.otc_contracts",
@@ -130467,6 +130931,66 @@
           "target_schema": "security_master"
         },
         {
+          "fingerprint": "0fb56700d0e5c2daa7014c5fd7144743441875bb54171e1cabbc5967116074e4",
+          "kind": "normal",
+          "source": "security_master.security_master_terms_capabi_minimum_declared_mapping_ver_check on security_master.security_master_terms_capability_floor",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_terms_capability_floor.minimum_declared_mapping_version",
+          "target_kind": "table column",
+          "target_name": "security_master_terms_capability_floor",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "55caa115894fc862d2dcadfdb3ac0cea442957fe818a66a3df04f952a4f80f20",
+          "kind": "normal",
+          "source": "security_master.security_master_terms_capability_f_minimum_kernel_version_check on security_master.security_master_terms_capability_floor",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_terms_capability_floor.minimum_kernel_version",
+          "target_kind": "table column",
+          "target_name": "security_master_terms_capability_floor",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "ea806a5009be8809a0451330f8eb7970d141781ff9cfc0d2be8743af54aff9ef",
+          "kind": "normal",
+          "source": "security_master.security_master_terms_capability_floor_change_record_check on security_master.security_master_terms_capability_floor",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_terms_capability_floor.change_record",
+          "target_kind": "table column",
+          "target_name": "security_master_terms_capability_floor",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "b2f02ee7d9a4e4417b01a5ba9206b3d258b2ab29fd292abd237766ff838ee4d2",
+          "kind": "normal",
+          "source": "security_master.security_master_terms_capability_floor_singleton_check on security_master.security_master_terms_capability_floor",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_terms_capability_floor.singleton",
+          "target_kind": "table column",
+          "target_name": "security_master_terms_capability_floor",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "953a087787fdca6131021b01d02aa0480906a433be02795534aa299ca63041ba",
+          "kind": "normal",
+          "source": "security_master.security_master_terms_capability_floor_updated_by_check on security_master.security_master_terms_capability_floor",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_terms_capability_floor.updated_by",
+          "target_kind": "table column",
+          "target_name": "security_master_terms_capability_floor",
+          "target_schema": "security_master"
+        },
+        {
           "fingerprint": "ec6e675902a9c38b1085f0c08788e0284cf66994cb1a84bf45a02e4dc53742db",
           "kind": "normal",
           "source": "security_master.security_operator_overrides_security_id_fkey on security_master.security_operator_overrides",
@@ -130939,7 +131463,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "5c48b456066145161350fb5a43ccbbce3de995bd8c8610adf28c7e7668213188",
+      "fingerprint": "7bea5bb0ecaf87dbec40641ee87c44130688146d4ce76d77f0a5d38b38050664",
       "foreign_tables": [],
       "functions": [
         {
@@ -131001,6 +131525,37 @@
           "security_definer": false,
           "security_labels": [],
           "signature": "guard_close_price_snapshot_append()",
+          "strict": false,
+          "volatility": "volatile"
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "PUBLIC",
+              "grantor": "meridian",
+              "privilege": "execute"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "execute"
+            }
+          ],
+          "comment": null,
+          "definition_hash": "646819143be2a75ca04286aaa1f4e2e1c733ab7a0d78e5bbc22ae213fec1be7a",
+          "fingerprint": "8c3a738ba4673a8ab767d318ef962674213704c16942ff0b5ee2ea0fb402420d",
+          "kind": "function",
+          "language": "plpgsql",
+          "name": "reject_otc_contract_lifecycle_mutation",
+          "owner": "meridian",
+          "parallel_safety": "unsafe",
+          "result_type": "trigger",
+          "schema": "security_master",
+          "security_definer": false,
+          "security_labels": [],
+          "signature": "reject_otc_contract_lifecycle_mutation()",
           "strict": false,
           "volatility": "volatile"
         },
@@ -131156,6 +131711,37 @@
           "security_definer": false,
           "security_labels": [],
           "signature": "reject_security_governance_event_mutation()",
+          "strict": false,
+          "volatility": "volatile"
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "PUBLIC",
+              "grantor": "meridian",
+              "privilege": "execute"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "execute"
+            }
+          ],
+          "comment": null,
+          "definition_hash": "1c3c13192d5c9ac552e0860119974b9078d622c1fe031b7d33792eb41a0991e3",
+          "fingerprint": "b407fc695185923f6dca12d5cac512f5a9219ef6ee05280eac10e3668e6b0c59",
+          "kind": "function",
+          "language": "plpgsql",
+          "name": "require_otc_contract_lifecycle_version",
+          "owner": "meridian",
+          "parallel_safety": "unsafe",
+          "result_type": "trigger",
+          "schema": "security_master",
+          "security_definer": false,
+          "security_labels": [],
+          "signature": "require_otc_contract_lifecycle_version()",
           "strict": false,
           "volatility": "volatile"
         },
@@ -154291,6 +154877,488 @@
               "comment": null,
               "data_type": "uuid",
               "default": null,
+              "fingerprint": "83c5a4a97bd76e27789df58d722d4fa08d4f2b3451db49feabe7e2f2026cdb29",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "event_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "1fa83eeba7ea88f5d2c497439bdcc62998efc9bf6e63aa182dde97af11bac1c7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "contract_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "9f0ebf7bedcf2b0d684554c2623fb394382fc389b86a8a299dec11d8d251fd33",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "contract_version",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "42684e3718217edf4ddb938d8b9fe429a9d216e4f98a4339a2e238aa876fe24d",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "event_type",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "878e9f5823bbc3f2d31045ce8b380913d483dbf70e71f6f46d3326ff0244c816",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "effective_date",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "e2cc3f1b3f04ba450c5d13f4aee4d62edbc442bcbf0153a5c2edb983d2b10961",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "actor",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "089639f0deb59450ffd5f1fb63c4e14bda1d3dd5dd5989b7ad3b0a5e65873722",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_at",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "integer",
+              "default": null,
+              "fingerprint": "d3730b4e458f077737a97300caf7b39b900005f94bac3224edf3c9047e4c1465",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload_version",
+              "nullable": false,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "int4",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "d21d126b78098ae4d23ccec466c76c4ebcc83806c02d6e0a060c4651b3cfba39",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Immutable versioned contract servicing facts, with explicit event identity, source and actor, and exact predecessor/successor snapshots. Written atomically with the contract version; no ledger posting or cash movement is implied.",
+          "constraints": [
+            {
+              "columns": [
+                "actor"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (length(TRIM(BOTH FROM actor)) > 0)",
+              "delete_action": null,
+              "fingerprint": "3942b78271c1c5915472c9ae3794abd69e9bd8feaf529ffdff726dc6f7eb45c5",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contract_lifecycle_events_actor_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "contract_version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (contract_version > 1)",
+              "delete_action": null,
+              "fingerprint": "f9084fdcd84c21c19d1ff20a3c55bf826c3be9338e385346251eb8a2e7bba62c",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contract_lifecycle_events_contract_version_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "event_type"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (event_type = ANY (ARRAY['RateReset'::text, 'Compression'::text, 'Novation'::text, 'CreditEvent'::text, 'AuctionSettlement'::text]))",
+              "delete_action": null,
+              "fingerprint": "c07ffc180a536fe5f76ec5236c2b1f849bac688c76e76f6013fddd1270288c8a",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contract_lifecycle_events_event_type_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "payload"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (jsonb_typeof(payload) = 'object'::text)",
+              "delete_action": null,
+              "fingerprint": "0db7d628887b88c21034174abeff1102f17c54ec3a5df24d9ee8f5639632c1f3",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contract_lifecycle_events_payload_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "payload_version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (payload_version >= 1)",
+              "delete_action": null,
+              "fingerprint": "3c7aa607f3e6ae687166e55fffdc3fd8d00a0cc1ec7ed773dce91ba2b2faf019",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contract_lifecycle_events_payload_version_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "contract_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (contract_id) REFERENCES security_master.otc_contracts(contract_id)",
+              "delete_action": "no_action",
+              "fingerprint": "ccdb87c9bc77a57f7d1f4bd87e2e6d49b3cc812e9b1ada65bc60beaa97afa20e",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "otc_contract_lifecycle_events_contract_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "contract_id"
+              ],
+              "referenced_schema": "security_master",
+              "referenced_table": "otc_contracts",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "event_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (event_id)",
+              "delete_action": null,
+              "fingerprint": "77f4a1012fc8f4bbcc0aabc7f494f3ae0dec6f1adcc38a6aa231da770d12240a",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contract_lifecycle_events_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "contract_id",
+                "contract_version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "UNIQUE (contract_id, contract_version)",
+              "delete_action": null,
+              "fingerprint": "41d7182a1620c191ee88c67572a0c01b287a16df58d06afe1d236e23149460cd",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contract_lifecycle_events_contract_id_contract_version_key",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "unique",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "ddf80410ab3d8334987cdc1ed9b71e47773e8e13721688927068944e2835a0d4",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX otc_contract_lifecycle_events_contract_id_contract_version_key ON security_master.otc_contract_lifecycle_events USING btree (contract_id, contract_version)",
+              "expression": null,
+              "fingerprint": "7c62f69f48d8e6c21e049a3ec4bc21ad9a1a2ad964481a9ee3cf253130836f03",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "contract_id",
+                "contract_version"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_contract_lifecycle_events_contract_id_contract_version_key",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX otc_contract_lifecycle_events_pkey ON security_master.otc_contract_lifecycle_events USING btree (event_id)",
+              "expression": null,
+              "fingerprint": "494afb6847d9d10074f8df1efaa4aaed7b2c6b7f645d469fddbcad428acaf212",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "event_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_contract_lifecycle_events_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX otc_contract_lifecycle_novation_successor_idx ON security_master.otc_contract_lifecycle_events USING btree (((payload #>> '{data,successorContractId}'::text[]))) WHERE (event_type = 'Novation'::text)",
+              "expression": "payload #>> '{data,successorContractId}'::text[]",
+              "fingerprint": "ba988483f23b95e4f9f64fdd8a14fb1753873705d618c9a62ce4dc1da51dcf18",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "(payload #>> '{data,successorContractId}'::text[])"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_contract_lifecycle_novation_successor_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "event_type = 'Novation'::text",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "otc_contract_lifecycle_events",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER otc_contract_lifecycle_append_only BEFORE DELETE OR UPDATE ON security_master.otc_contract_lifecycle_events FOR EACH ROW EXECUTE FUNCTION security_master.reject_otc_contract_lifecycle_mutation()",
+              "definition_hash": "671c45a6c598fe453b6c6e443325e96e3cc00f7b7715b00b06300ea342456421",
+              "enabled": "origin",
+              "events": [
+                "delete",
+                "update"
+              ],
+              "fingerprint": "55f97ace58093c707a4cbcdf062c7e28034d8605ffdbc4c8e433b45acf410731",
+              "function_schema": "security_master",
+              "function_signature": "reject_otc_contract_lifecycle_mutation()",
+              "level": "row",
+              "name": "otc_contract_lifecycle_append_only",
+              "relation": "otc_contract_lifecycle_events",
+              "schema": "security_master",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER otc_contract_lifecycle_no_truncate BEFORE TRUNCATE ON security_master.otc_contract_lifecycle_events FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_otc_contract_lifecycle_mutation()",
+              "definition_hash": "867b4795cd6c519d717ddc09c6f17df7b5494537947efdbfce2cd415d42e39d8",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "a622fe6ad637dbaa064f152bb8b7c45bb97b979c04eb3977be05a53d9be55d66",
+              "function_schema": "security_master",
+              "function_signature": "reject_otc_contract_lifecycle_mutation()",
+              "level": "statement",
+              "name": "otc_contract_lifecycle_no_truncate",
+              "relation": "otc_contract_lifecycle_events",
+              "schema": "security_master",
+              "timing": "before"
+            }
+          ]
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
               "fingerprint": "c15e12825281d110301aa15fe3d2ed1b1fac6407b20744a5d041c58f79d31088",
               "generated": null,
               "generated_expression": null,
@@ -154694,7 +155762,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "c4225b87cd14a0ddbe08bb8d8354596c782aedc745510f4e6caff8cae05dbddb",
+          "fingerprint": "e4d1cb31dacbde6ac06dab448ddb84bfad2a088c56a2275d94a4a71063dbeec5",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -154800,7 +155868,25 @@
           "schema": "security_master",
           "security_labels": [],
           "sequence": null,
-          "triggers": []
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE CONSTRAINT TRIGGER otc_contract_lifecycle_version_guard AFTER UPDATE ON security_master.otc_contracts DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION security_master.require_otc_contract_lifecycle_version()",
+              "definition_hash": "333d80bd0f3c296c7dc55045644a35a3d72b39ef71646a51909b4f376375acc8",
+              "enabled": "origin",
+              "events": [
+                "update"
+              ],
+              "fingerprint": "fdf44fd554356bef84f295c55e2c9dbd744eba00ca96c53ba42fedaf95784a42",
+              "function_schema": "security_master",
+              "function_signature": "require_otc_contract_lifecycle_version()",
+              "level": "row",
+              "name": "otc_contract_lifecycle_version_guard",
+              "relation": "otc_contracts",
+              "schema": "security_master",
+              "timing": "after"
+            }
+          ]
         },
         {
           "acl": [
@@ -167877,6 +168963,316 @@
             {
               "collation": null,
               "comment": null,
+              "data_type": "boolean",
+              "default": null,
+              "fingerprint": "8d029729661efaf07d4893a213599fcc159635ac4d10974e50a42623b8bd8195",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "singleton",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "bool",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "cacb0d5c54d0a0a0d701a185f9efeb76c5083df1a5794ed40e8d1c421abd3682",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "minimum_declared_mapping_version",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "49ecaddc3c251627bff79e3cee0e48d733f3734e646cec2e34784f466cc4611b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "minimum_kernel_version",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "52db1899b01b60d2afb609484657a707860c337a90f4ee0d780000ceefd064a2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "change_record",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "bab802b59229fc4cf21c9adb00addf513b092b81fd38e35525c2f95349c3ca39",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_by",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "94818421b32ecba400a2687ca9ad3d4a20675613d7e2fd642626f69fd3be2693",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_at",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "One reviewed minimum declared-mapping/kernel capability floor for configured Security Master writers. Empty during 5b-1; activated only after the fleet inventory and data gates, before 5b-2. Server and WPF writer startup refuse unknown/newer active floors. Does not enable declared terms or authorize deployment.",
+          "constraints": [
+            {
+              "columns": [
+                "minimum_declared_mapping_version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (length(TRIM(BOTH FROM minimum_declared_mapping_version)) > 0)",
+              "delete_action": null,
+              "fingerprint": "5acbd046229482cdf96bd12520b843b07e1a84204ba2e701c59c4e9b955cd23f",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_master_terms_capabi_minimum_declared_mapping_ver_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "minimum_kernel_version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (length(TRIM(BOTH FROM minimum_kernel_version)) > 0)",
+              "delete_action": null,
+              "fingerprint": "b4e3073b5204be02b5342ebbb2fd05cf5ff3d1dc60297ba367a5d6a2ab67dcc9",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_master_terms_capability_f_minimum_kernel_version_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "change_record"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (length(TRIM(BOTH FROM change_record)) > 0)",
+              "delete_action": null,
+              "fingerprint": "ed35f42470cfd764d9e095ebfa1cd0015887035821ed9899412f470d236f444f",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_master_terms_capability_floor_change_record_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "singleton"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (singleton)",
+              "delete_action": null,
+              "fingerprint": "39620f705b754adf7dbc16200e26742c5100d33ccde1523ed63fac98789fc3d3",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_master_terms_capability_floor_singleton_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "updated_by"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (length(TRIM(BOTH FROM updated_by)) > 0)",
+              "delete_action": null,
+              "fingerprint": "926842d07909cc3de7ace0b2aa39655a4311a5a56f27b7977ce2680b5c34c23b",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_master_terms_capability_floor_updated_by_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "singleton"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (singleton)",
+              "delete_action": null,
+              "fingerprint": "d98bf2a11dc7beb45f200dd37e5557ec214bdfd1afbccc83040e35489f2b880d",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_master_terms_capability_floor_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "684a3b598f82cfcad60d5cc79daae3fcf3d18d3db83491bbced01ffd78807065",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX security_master_terms_capability_floor_pkey ON security_master.security_master_terms_capability_floor USING btree (singleton)",
+              "expression": null,
+              "fingerprint": "43856fd9155d0822f88bd7f035ddc678337914870269f9c1fe983f081dd00e74",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "singleton"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "security_master_terms_capability_floor_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "security_master_terms_capability_floor",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
               "data_type": "uuid",
               "default": null,
               "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
@@ -176695,6 +178091,14 @@
         },
         {
           "enabled": false,
+          "fingerprint": "fc911dd0bf3e86652c8d7cf0070182a610fd007e3725c10713176baf40453092",
+          "forced": false,
+          "policies": [],
+          "relation": "otc_contract_lifecycle_events",
+          "schema": "security_master"
+        },
+        {
+          "enabled": false,
           "fingerprint": "2694b068f06c034aa27fb8a456ec8bdab1a15ea9df2a26a2ed348fc5e672730e",
           "forced": false,
           "policies": [],
@@ -176971,6 +178375,14 @@
           "forced": false,
           "policies": [],
           "relation": "security_master_revisions",
+          "schema": "security_master"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "e5d016d7d21709f7c9aab05937351fee8334aed24ef85be10888fba6d442fb53",
+          "forced": false,
+          "policies": [],
+          "relation": "security_master_terms_capability_floor",
           "schema": "security_master"
         },
         {
@@ -200395,6 +201807,488 @@
               "comment": null,
               "data_type": "uuid",
               "default": null,
+              "fingerprint": "83c5a4a97bd76e27789df58d722d4fa08d4f2b3451db49feabe7e2f2026cdb29",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "event_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "1fa83eeba7ea88f5d2c497439bdcc62998efc9bf6e63aa182dde97af11bac1c7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "contract_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "9f0ebf7bedcf2b0d684554c2623fb394382fc389b86a8a299dec11d8d251fd33",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "contract_version",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "42684e3718217edf4ddb938d8b9fe429a9d216e4f98a4339a2e238aa876fe24d",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "event_type",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "878e9f5823bbc3f2d31045ce8b380913d483dbf70e71f6f46d3326ff0244c816",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "effective_date",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "e2cc3f1b3f04ba450c5d13f4aee4d62edbc442bcbf0153a5c2edb983d2b10961",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "actor",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "089639f0deb59450ffd5f1fb63c4e14bda1d3dd5dd5989b7ad3b0a5e65873722",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_at",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "integer",
+              "default": null,
+              "fingerprint": "d3730b4e458f077737a97300caf7b39b900005f94bac3224edf3c9047e4c1465",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload_version",
+              "nullable": false,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "int4",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "d21d126b78098ae4d23ccec466c76c4ebcc83806c02d6e0a060c4651b3cfba39",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Immutable versioned contract servicing facts, with explicit event identity, source and actor, and exact predecessor/successor snapshots. Written atomically with the contract version; no ledger posting or cash movement is implied.",
+          "constraints": [
+            {
+              "columns": [
+                "actor"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (length(TRIM(BOTH FROM actor)) > 0)",
+              "delete_action": null,
+              "fingerprint": "3942b78271c1c5915472c9ae3794abd69e9bd8feaf529ffdff726dc6f7eb45c5",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contract_lifecycle_events_actor_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "contract_version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (contract_version > 1)",
+              "delete_action": null,
+              "fingerprint": "f9084fdcd84c21c19d1ff20a3c55bf826c3be9338e385346251eb8a2e7bba62c",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contract_lifecycle_events_contract_version_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "event_type"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (event_type = ANY (ARRAY['RateReset'::text, 'Compression'::text, 'Novation'::text, 'CreditEvent'::text, 'AuctionSettlement'::text]))",
+              "delete_action": null,
+              "fingerprint": "c07ffc180a536fe5f76ec5236c2b1f849bac688c76e76f6013fddd1270288c8a",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contract_lifecycle_events_event_type_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "payload"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (jsonb_typeof(payload) = 'object'::text)",
+              "delete_action": null,
+              "fingerprint": "0db7d628887b88c21034174abeff1102f17c54ec3a5df24d9ee8f5639632c1f3",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contract_lifecycle_events_payload_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "payload_version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (payload_version >= 1)",
+              "delete_action": null,
+              "fingerprint": "3c7aa607f3e6ae687166e55fffdc3fd8d00a0cc1ec7ed773dce91ba2b2faf019",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contract_lifecycle_events_payload_version_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "contract_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (contract_id) REFERENCES security_master.otc_contracts(contract_id)",
+              "delete_action": "no_action",
+              "fingerprint": "ccdb87c9bc77a57f7d1f4bd87e2e6d49b3cc812e9b1ada65bc60beaa97afa20e",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "otc_contract_lifecycle_events_contract_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "contract_id"
+              ],
+              "referenced_schema": "security_master",
+              "referenced_table": "otc_contracts",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "event_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (event_id)",
+              "delete_action": null,
+              "fingerprint": "77f4a1012fc8f4bbcc0aabc7f494f3ae0dec6f1adcc38a6aa231da770d12240a",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contract_lifecycle_events_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "contract_id",
+                "contract_version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "UNIQUE (contract_id, contract_version)",
+              "delete_action": null,
+              "fingerprint": "41d7182a1620c191ee88c67572a0c01b287a16df58d06afe1d236e23149460cd",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contract_lifecycle_events_contract_id_contract_version_key",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "unique",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "ddf80410ab3d8334987cdc1ed9b71e47773e8e13721688927068944e2835a0d4",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX otc_contract_lifecycle_events_contract_id_contract_version_key ON security_master.otc_contract_lifecycle_events USING btree (contract_id, contract_version)",
+              "expression": null,
+              "fingerprint": "7c62f69f48d8e6c21e049a3ec4bc21ad9a1a2ad964481a9ee3cf253130836f03",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "contract_id",
+                "contract_version"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_contract_lifecycle_events_contract_id_contract_version_key",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX otc_contract_lifecycle_events_pkey ON security_master.otc_contract_lifecycle_events USING btree (event_id)",
+              "expression": null,
+              "fingerprint": "494afb6847d9d10074f8df1efaa4aaed7b2c6b7f645d469fddbcad428acaf212",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "event_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_contract_lifecycle_events_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX otc_contract_lifecycle_novation_successor_idx ON security_master.otc_contract_lifecycle_events USING btree (((payload #>> '{data,successorContractId}'::text[]))) WHERE (event_type = 'Novation'::text)",
+              "expression": "payload #>> '{data,successorContractId}'::text[]",
+              "fingerprint": "ba988483f23b95e4f9f64fdd8a14fb1753873705d618c9a62ce4dc1da51dcf18",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "(payload #>> '{data,successorContractId}'::text[])"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_contract_lifecycle_novation_successor_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "event_type = 'Novation'::text",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "otc_contract_lifecycle_events",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER otc_contract_lifecycle_append_only BEFORE DELETE OR UPDATE ON security_master.otc_contract_lifecycle_events FOR EACH ROW EXECUTE FUNCTION security_master.reject_otc_contract_lifecycle_mutation()",
+              "definition_hash": "671c45a6c598fe453b6c6e443325e96e3cc00f7b7715b00b06300ea342456421",
+              "enabled": "origin",
+              "events": [
+                "delete",
+                "update"
+              ],
+              "fingerprint": "55f97ace58093c707a4cbcdf062c7e28034d8605ffdbc4c8e433b45acf410731",
+              "function_schema": "security_master",
+              "function_signature": "reject_otc_contract_lifecycle_mutation()",
+              "level": "row",
+              "name": "otc_contract_lifecycle_append_only",
+              "relation": "otc_contract_lifecycle_events",
+              "schema": "security_master",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER otc_contract_lifecycle_no_truncate BEFORE TRUNCATE ON security_master.otc_contract_lifecycle_events FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_otc_contract_lifecycle_mutation()",
+              "definition_hash": "867b4795cd6c519d717ddc09c6f17df7b5494537947efdbfce2cd415d42e39d8",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "a622fe6ad637dbaa064f152bb8b7c45bb97b979c04eb3977be05a53d9be55d66",
+              "function_schema": "security_master",
+              "function_signature": "reject_otc_contract_lifecycle_mutation()",
+              "level": "statement",
+              "name": "otc_contract_lifecycle_no_truncate",
+              "relation": "otc_contract_lifecycle_events",
+              "schema": "security_master",
+              "timing": "before"
+            }
+          ]
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
               "fingerprint": "c15e12825281d110301aa15fe3d2ed1b1fac6407b20744a5d041c58f79d31088",
               "generated": null,
               "generated_expression": null,
@@ -200798,7 +202692,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "c4225b87cd14a0ddbe08bb8d8354596c782aedc745510f4e6caff8cae05dbddb",
+          "fingerprint": "e4d1cb31dacbde6ac06dab448ddb84bfad2a088c56a2275d94a4a71063dbeec5",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -200904,7 +202798,25 @@
           "schema": "security_master",
           "security_labels": [],
           "sequence": null,
-          "triggers": []
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE CONSTRAINT TRIGGER otc_contract_lifecycle_version_guard AFTER UPDATE ON security_master.otc_contracts DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION security_master.require_otc_contract_lifecycle_version()",
+              "definition_hash": "333d80bd0f3c296c7dc55045644a35a3d72b39ef71646a51909b4f376375acc8",
+              "enabled": "origin",
+              "events": [
+                "update"
+              ],
+              "fingerprint": "fdf44fd554356bef84f295c55e2c9dbd744eba00ca96c53ba42fedaf95784a42",
+              "function_schema": "security_master",
+              "function_signature": "require_otc_contract_lifecycle_version()",
+              "level": "row",
+              "name": "otc_contract_lifecycle_version_guard",
+              "relation": "otc_contracts",
+              "schema": "security_master",
+              "timing": "after"
+            }
+          ]
         },
         {
           "acl": [
@@ -213822,6 +215734,316 @@
             {
               "collation": null,
               "comment": null,
+              "data_type": "boolean",
+              "default": null,
+              "fingerprint": "8d029729661efaf07d4893a213599fcc159635ac4d10974e50a42623b8bd8195",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "singleton",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "bool",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "cacb0d5c54d0a0a0d701a185f9efeb76c5083df1a5794ed40e8d1c421abd3682",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "minimum_declared_mapping_version",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "49ecaddc3c251627bff79e3cee0e48d733f3734e646cec2e34784f466cc4611b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "minimum_kernel_version",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "52db1899b01b60d2afb609484657a707860c337a90f4ee0d780000ceefd064a2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "change_record",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "bab802b59229fc4cf21c9adb00addf513b092b81fd38e35525c2f95349c3ca39",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_by",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "94818421b32ecba400a2687ca9ad3d4a20675613d7e2fd642626f69fd3be2693",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_at",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "One reviewed minimum declared-mapping/kernel capability floor for configured Security Master writers. Empty during 5b-1; activated only after the fleet inventory and data gates, before 5b-2. Server and WPF writer startup refuse unknown/newer active floors. Does not enable declared terms or authorize deployment.",
+          "constraints": [
+            {
+              "columns": [
+                "minimum_declared_mapping_version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (length(TRIM(BOTH FROM minimum_declared_mapping_version)) > 0)",
+              "delete_action": null,
+              "fingerprint": "5acbd046229482cdf96bd12520b843b07e1a84204ba2e701c59c4e9b955cd23f",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_master_terms_capabi_minimum_declared_mapping_ver_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "minimum_kernel_version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (length(TRIM(BOTH FROM minimum_kernel_version)) > 0)",
+              "delete_action": null,
+              "fingerprint": "b4e3073b5204be02b5342ebbb2fd05cf5ff3d1dc60297ba367a5d6a2ab67dcc9",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_master_terms_capability_f_minimum_kernel_version_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "change_record"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (length(TRIM(BOTH FROM change_record)) > 0)",
+              "delete_action": null,
+              "fingerprint": "ed35f42470cfd764d9e095ebfa1cd0015887035821ed9899412f470d236f444f",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_master_terms_capability_floor_change_record_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "singleton"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (singleton)",
+              "delete_action": null,
+              "fingerprint": "39620f705b754adf7dbc16200e26742c5100d33ccde1523ed63fac98789fc3d3",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_master_terms_capability_floor_singleton_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "updated_by"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (length(TRIM(BOTH FROM updated_by)) > 0)",
+              "delete_action": null,
+              "fingerprint": "926842d07909cc3de7ace0b2aa39655a4311a5a56f27b7977ce2680b5c34c23b",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_master_terms_capability_floor_updated_by_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "singleton"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (singleton)",
+              "delete_action": null,
+              "fingerprint": "d98bf2a11dc7beb45f200dd37e5557ec214bdfd1afbccc83040e35489f2b880d",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_master_terms_capability_floor_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "684a3b598f82cfcad60d5cc79daae3fcf3d18d3db83491bbced01ffd78807065",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX security_master_terms_capability_floor_pkey ON security_master.security_master_terms_capability_floor USING btree (singleton)",
+              "expression": null,
+              "fingerprint": "43856fd9155d0822f88bd7f035ddc678337914870269f9c1fe983f081dd00e74",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "singleton"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "security_master_terms_capability_floor_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "security_master_terms_capability_floor",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
               "data_type": "uuid",
               "default": null,
               "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
@@ -222158,6 +224380,58 @@
         }
       ],
       "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER otc_contract_lifecycle_append_only BEFORE DELETE OR UPDATE ON security_master.otc_contract_lifecycle_events FOR EACH ROW EXECUTE FUNCTION security_master.reject_otc_contract_lifecycle_mutation()",
+          "definition_hash": "671c45a6c598fe453b6c6e443325e96e3cc00f7b7715b00b06300ea342456421",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "55f97ace58093c707a4cbcdf062c7e28034d8605ffdbc4c8e433b45acf410731",
+          "function_schema": "security_master",
+          "function_signature": "reject_otc_contract_lifecycle_mutation()",
+          "level": "row",
+          "name": "otc_contract_lifecycle_append_only",
+          "relation": "otc_contract_lifecycle_events",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER otc_contract_lifecycle_no_truncate BEFORE TRUNCATE ON security_master.otc_contract_lifecycle_events FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_otc_contract_lifecycle_mutation()",
+          "definition_hash": "867b4795cd6c519d717ddc09c6f17df7b5494537947efdbfce2cd415d42e39d8",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "a622fe6ad637dbaa064f152bb8b7c45bb97b979c04eb3977be05a53d9be55d66",
+          "function_schema": "security_master",
+          "function_signature": "reject_otc_contract_lifecycle_mutation()",
+          "level": "statement",
+          "name": "otc_contract_lifecycle_no_truncate",
+          "relation": "otc_contract_lifecycle_events",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE CONSTRAINT TRIGGER otc_contract_lifecycle_version_guard AFTER UPDATE ON security_master.otc_contracts DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION security_master.require_otc_contract_lifecycle_version()",
+          "definition_hash": "333d80bd0f3c296c7dc55045644a35a3d72b39ef71646a51909b4f376375acc8",
+          "enabled": "origin",
+          "events": [
+            "update"
+          ],
+          "fingerprint": "fdf44fd554356bef84f295c55e2c9dbd744eba00ca96c53ba42fedaf95784a42",
+          "function_schema": "security_master",
+          "function_signature": "require_otc_contract_lifecycle_version()",
+          "level": "row",
+          "name": "otc_contract_lifecycle_version_guard",
+          "relation": "otc_contracts",
+          "schema": "security_master",
+          "timing": "after"
+        },
         {
           "comment": null,
           "definition": "CREATE TRIGGER otc_exposure_snapshots_append_only BEFORE DELETE OR UPDATE ON security_master.otc_exposure_snapshots FOR EACH ROW EXECUTE FUNCTION security_master.reject_otc_exposure_snapshot_mutation()",

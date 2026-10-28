@@ -1,5 +1,9 @@
 # Security asset-pack admission
 
+**Status:** active guidance
+**Owner:** core-team
+**Reviewed:** 2026-10-28
+
 The asset-pack registry participates in canonical Security Master create and amend commands.
 `SecurityAssetPackAdmission` first resolves a modeled class to its registered packs. Every matching
 pack must carry that class's current writable contract, derived from `SecurityAssetTermsSchema`:
