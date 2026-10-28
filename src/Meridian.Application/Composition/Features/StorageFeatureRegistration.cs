@@ -22,6 +22,8 @@ using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.SecurityMaster.CashFlow;
+using Meridian.Application.SecurityMaster.Curves;
+using Meridian.Application.SecurityMaster.Valuation;
 using Meridian.Application.Tenancy;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
@@ -299,6 +301,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 sp.GetService<ILedgerBookService>()));
             services.AddSingleton<ISecurityMasterSnapshotStore, PostgresSecurityMasterSnapshotStore>();
             services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
+            services.AddSingleton<ISecurityUnderlyingGraphStore, PostgresSecurityUnderlyingGraphStore>();
+            services.AddSingleton<IOtcContractStore, PostgresOtcContractStore>();
+            services.AddSingleton<IOtcCollateralStore, PostgresOtcCollateralStore>();
             services.AddSingleton<IBondReferenceProjectionStore, PostgresBondReferenceProjectionStore>();
             services.AddSingleton<IOptionReferenceProjectionStore, PostgresOptionReferenceProjectionStore>();
             services.AddSingleton<IEquityReferenceProjectionStore, PostgresEquityReferenceProjectionStore>();
@@ -339,8 +344,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterService, SecurityMasterService>();
             services.AddSingleton<ISecurityMasterAmender>(sp => (ISecurityMasterAmender)sp.GetRequiredService<ISecurityMasterService>());
             services.AddSingleton<SecurityMasterQueryService>();
-            services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
-            services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
+            services.AddSingleton<ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
             services.AddSingleton<ISecurityMasterCorporateActionCommandService, SecurityMasterCorporateActionCommandService>();
             services.AddSingleton<ISecurityValidationService, SecurityValidationService>();
             services.AddSingleton<ICorporateActionCommandService, CorporateActionCommandService>();
@@ -388,12 +392,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
             services.AddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());
 
-            // Migrate-on-read upcaster pipeline for asset-specific-terms payloads, shared by the
-            // projection store (queryable schema_version column + read normalization). Registering the
-            // composed pipeline (v0 stamping + cross-family economic-terms v2 -> v1 flattening) rather
-            // than the bare v0->current upcaster keeps the store's schema_version promotion consistent
-            // with the mapping guard: a v2 economic-terms document is flattened to the accepted legacy
-            // version instead of being promoted as an unsupported version the guard would reject.
+            // The composed migrate-on-read pipeline (v0 stamping + cross-family economic-terms v2 -> v1 flattening)
+            // for callers that resolve upcasters through the ISchemaUpcaster<T> seam; nothing in this composition
+            // resolves it today. The projection store derives schema_version from the stored blob
+            // (PostgresSecurityMasterStore.UpsertProjectionAsync) and readers call SecurityAssetSpecificTermsUpcasterChain
+            // directly. Per-class terms-version upgrades belong to SecurityAssetClassTermsUpgrader, not this pipeline.
             services.AddSingleton<
                 Meridian.Contracts.Schema.ISchemaUpcaster<Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms>,
                 Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline>();
@@ -404,7 +407,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterConflictService, PostgresSecurityMasterConflictService>();
             services.AddSingleton<ISecurityMasterRevisionStore, PostgresSecurityMasterRevisionStore>();
 
-            // Clearwater-model extensions: pricing hierarchy, cash flow, entitlements, data quality
+            // Reference-data governance extensions: pricing hierarchy, cash flow, entitlements, data quality
             services.AddSingleton<ISecurityMasterPricingStore, PostgresSecurityMasterPricingStore>();
             services.AddSingleton<ISecurityMasterCashFlowStore, PostgresSecurityMasterCashFlowStore>();
             services.AddSingleton<IDataVendorEntitlementStore, PostgresDataVendorEntitlementStore>();
@@ -412,11 +415,21 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterPricingService, SecurityMasterPricingService>();
             services.AddSingleton<IStructuredCashFlowLedgerBridge, StructuredCashFlowLedgerBridge>();
             services.AddSingleton<ISecurityMasterAmortizationLedgerBridge, SecurityMasterAmortizationLedgerBridge>();
-            services.TryAddSingleton<InMemorySecurityForwardCurveProvider>();
-            services.TryAddSingleton<ISecurityForwardCurveProvider>(static sp => sp.GetRequiredService<InMemorySecurityForwardCurveProvider>());
+            // Stored, versioned curves (migrations 052/053) feed floating-leg projection and the
+            // valuation seam; both models dispatch on the catalog's DefaultValuationModel fact.
+            services.AddSingleton<ISecurityCurveStore, PostgresSecurityCurveStore>();
+            services.AddSingleton<ISecurityForwardCurveProvider, StoredSecurityForwardCurveProvider>();
+            // OTC exposure: the observed-price mark is the default valuation source; a host that
+            // registers its own IOtcContractValuationSource first keeps it.
+            services.TryAddSingleton<IOtcContractValuationSource, Meridian.Application.SecurityMaster.Otc.PricingStoreOtcContractValuationSource>();
+            services.AddSingleton<IOtcExposureService, Meridian.Application.SecurityMaster.Otc.OtcExposureService>();
             services.AddSingleton<ISecurityMasterCashFlowService, SecurityMasterCashFlowService>();
+            services.AddSingleton<ISecurityValuationModel, QuotedPriceValuationModel>();
+            services.AddSingleton<ISecurityValuationModel, DiscountedCashFlowValuationModel>();
+            services.AddSingleton<ISecurityValuationService, SecurityValuationService>();
             services.AddSingleton<IDataVendorEntitlementService, DataVendorEntitlementService>();
             services.AddSingleton<ISecurityMasterDataQualityService, SecurityMasterDataQualityService>();
+            services.AddSingleton<ISecurityMasterStructuredCreditReclassificationService, SecurityMasterStructuredCreditReclassificationService>();
 
             // Coverage sweep: symbols active in platform surfaces but missing from the master
             // feed RC001 RefreshControl violations, which the exception-casework loop cases.
@@ -455,8 +468,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         // Register null/stub implementations as fallbacks when Security Master is not configured.
         // These ensure that ASP.NET Core Minimal API routing initialises correctly (unregistered
         // service parameters cause startup crashes) while returning sensible empty / error responses.
-        services.TryAddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService, NullSecurityMasterQueryService>();
-        services.TryAddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService, NullSecurityMasterQueryService>();
+        services.TryAddSingleton<ISecurityMasterQueryService, NullSecurityMasterQueryService>();
         services.TryAddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterService, NullSecurityMasterService>();
         services.TryAddSingleton<ISecurityMasterCorporateActionCommandService, NullSecurityMasterCorporateActionCommandService>();
         services.TryAddSingleton<IBondReferenceService, NullBondReferenceService>();
@@ -489,6 +501,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityMasterCashFlowService, NullSecurityMasterCashFlowService>();
         services.TryAddSingleton<IDataVendorEntitlementService, NullDataVendorEntitlementService>();
         services.TryAddSingleton<ISecurityMasterDataQualityService, NullSecurityMasterDataQualityService>();
+        services.TryAddSingleton<ISecurityMasterStructuredCreditReclassificationService, NullSecurityMasterStructuredCreditReclassificationService>();
         services.TryAddSingleton<IUflProjectionRebuilder, NullUflProjectionRebuilder>();
         // Passport Workbench conflict-authority policy is storage-independent (pure precedence logic).
         services.TryAddSingleton<ISecurityMasterConflictAuthorityPolicy, SecurityMasterConflictAuthorityPolicy>();

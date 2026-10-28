@@ -2,9 +2,9 @@
 
 # `security_master` schema
 
-- Relations: 96
-- Functions/procedures: 7
-- Triggers: 15
+- Relations: 125
+- Functions/procedures: 9
+- Triggers: 20
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -83,6 +83,35 @@ erDiagram
         numeric floating_spread_bps
         bigint version
     }
+    security_master_cap_floor_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text cap_floor_type
+        text reference_index
+        numeric_18_10_ cap_strike
+        numeric_18_10_ floor_strike
+        numeric_28_10_ notional
+        date effective_date
+        date maturity_date
+        text reset_frequency
+        text day_count
+        numeric_28_10_ premium_amount
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_cash_sweep_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text program_name
+        text sweep_vehicle_type
+        text sweep_frequency
+        text target_account_type
+        numeric_18_8_ yield_rate
+        text primary_identifier_value
+        bigint version
+    }
     security_master_cash_transaction {
         uuid cash_transaction_id PK
         uuid loan_id FK
@@ -107,6 +136,50 @@ erDiagram
         numeric_12_6_ coupon_rate
         date callable_date
         text day_count
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_cfd_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text underlying_asset_class
+        text underlying_description
+        numeric_18_8_ leverage
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_commercial_paper_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text issuer_name
+        date maturity_date
+        numeric_18_8_ discount_rate
+        text day_count
+        boolean is_asset_backed
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_commitment_guarantee_covenant_projection {
+        uuid security_id PK,FK
+        integer ordinal PK
+        text covenant_type
+        text threshold
+        text notes
+    }
+    security_master_commitment_guarantee_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text counterparty
+        text beneficiary
+        numeric_28_10_ committed_amount
+        numeric_28_10_ unfunded_amount
+        date effective_date
+        date expiry_date
+        numeric_18_8_ fee_rate
+        text collateral
         text primary_identifier_value
         bigint version
     }
@@ -354,6 +427,27 @@ erDiagram
         integer payload_schema_version
         character_64_ economic_fingerprint
     }
+    security_master_credit_default_swap_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text reference_entity
+        text reference_obligation
+        text protection_side
+        numeric_28_10_ notional
+        numeric_18_8_ fixed_coupon_bps
+        date effective_date
+        date maturity_date
+        text payment_frequency
+        text day_count
+        text seniority
+        text restructuring_clause
+        numeric_18_8_ upfront_points
+        numeric_18_10_ recovery_rate_assumption
+        text index_name
+        text primary_identifier_value
+        bigint version
+    }
     security_master_crypto_projection {
         uuid security_id PK
         text display_name
@@ -483,12 +577,39 @@ erDiagram
         text primary_identifier_value
         bigint version
     }
+    security_master_fx_forward_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text base_currency
+        text quote_currency
+        numeric_28_10_ notional
+        numeric_28_10_ forward_rate
+        date trade_date
+        date value_date
+        text settlement_type
+        text primary_identifier_value
+        bigint version
+    }
     security_master_fxspot_projection {
         uuid security_id PK,FK
         text display_name
         text base_currency
         text quote_currency
         text pair_code
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_investment_fund_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text fund_type
+        text fund_family
+        text nav_currency
+        text distribution_policy
+        boolean is_stable_nav
+        text pricing_source
         text primary_identifier_value
         bigint version
     }
@@ -627,6 +748,21 @@ erDiagram
         text primary_identifier_value
         bigint version
     }
+    security_master_ndf_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text base_currency
+        text quote_currency
+        text settlement_currency
+        numeric_28_10_ notional
+        numeric_28_10_ forward_rate
+        date fixing_date
+        date value_date
+        text fixing_source
+        text primary_identifier_value
+        bigint version
+    }
     security_master_operations_workflow_audit {
         uuid audit_id PK
         timestamp_with_time_zone occurred_at_utc
@@ -696,6 +832,138 @@ erDiagram
         numeric strike
         text put_call
     }
+    security_master_otc_collateral_agreements {
+        uuid collateral_agreement_id PK
+        uuid master_agreement_id FK
+        text currency
+        numeric_28_10_ threshold_ours
+        numeric_28_10_ threshold_theirs
+        numeric_28_10_ minimum_transfer_amount
+        numeric_28_10_ independent_amount
+        numeric_28_10_ rounding_amount
+        text valuation_frequency
+        jsonb eligible_collateral
+        date effective_date
+        date termination_date
+        text notes
+        bigint version
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
+    security_master_otc_collateral_balances {
+        uuid balance_id PK
+        uuid collateral_agreement_id FK
+        text direction
+        text kind
+        text eligible_collateral_description
+        uuid security_id FK
+        text currency
+        numeric_28_10_ quantity
+        numeric_28_10_ unit_value
+        numeric_28_10_ valued_amount
+        numeric_28_10_ haircut_percent
+        date valued_as_of
+        text reference
+        text notes
+        bigint version
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
+    security_master_otc_contracts {
+        uuid contract_id PK
+        uuid security_id FK
+        uuid netting_set_id FK
+        text external_trade_id
+        text direction
+        numeric_28_10_ notional
+        text notional_currency
+        date trade_date
+        date effective_date
+        date termination_date
+        text status
+        text confirmation_reference
+        text notes
+        bigint version
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
+    security_master_otc_exposure_snapshots {
+        uuid snapshot_id PK
+        uuid netting_set_id FK
+        uuid collateral_agreement_id FK
+        date as_of_date
+        integer version
+        text rule_version
+        text currency
+        text netting_basis
+        text status
+        text provenance
+        numeric_28_10_ net_exposure
+        numeric_28_10_ gross_positive
+        numeric_28_10_ gross_negative
+        jsonb payload
+        integer payload_version
+        text payload_sha256
+        text computed_by
+        timestamp_with_time_zone computed_at
+    }
+    security_master_otc_margin_calls {
+        uuid call_id PK
+        uuid netting_set_id FK
+        uuid collateral_agreement_id FK
+        uuid snapshot_id FK
+        text movement_kind
+        text mover
+        text currency
+        numeric_28_10_ amount_called
+        numeric_28_10_ amount_agreed
+        text status
+        date issued_on
+        date due_on
+        text dispute_reason
+        date settled_on
+        numeric_28_10_ settled_amount
+        text notes
+        bigint version
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
+    security_master_otc_master_agreements {
+        uuid agreement_id PK
+        text counterparty
+        text counterparty_lei
+        text our_entity
+        uuid our_entity_id
+        text agreement_type
+        date agreement_date
+        text governing_law
+        text notes
+        bigint version
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
+    security_master_otc_netting_sets {
+        uuid netting_set_id PK
+        uuid master_agreement_id FK
+        uuid collateral_agreement_id FK
+        text name
+        text notes
+        bigint version
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
+    security_master_other_security_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text category
+        text sub_type
+        date maturity_date
+        text issuer_name
+        text settlement_type
+        text primary_identifier_value
+        bigint version
+    }
     security_master_outbox_message {
         uuid outbox_message_id PK
         text topic
@@ -719,6 +987,35 @@ erDiagram
         text allocation_rule
         uuid source_event_id FK
         timestamp_with_time_zone created_at
+    }
+    security_master_private_company_equity_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text issuer
+        text share_class
+        text round
+        numeric_18_8_ ownership_percent
+        numeric_28_10_ cost_basis
+        numeric_28_10_ latest_valuation
+        text transfer_restrictions
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_private_fund_interest_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text gp_sponsor
+        text strategy
+        integer vintage
+        numeric_28_10_ commitment
+        numeric_28_10_ funded_amount
+        numeric_28_10_ unfunded_amount
+        date nav_date
+        text lockup
+        text primary_identifier_value
+        bigint version
     }
     security_master_projected_cash_flow {
         uuid projected_flow_id PK
@@ -765,6 +1062,20 @@ erDiagram
         text status
         text details
     }
+    security_master_real_estate_holding_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text property_type
+        text address_or_market
+        numeric_18_8_ ownership_percent
+        numeric_28_10_ appraisal_value
+        date valuation_date
+        text debt_stack
+        text sponsor
+        text primary_identifier_value
+        bigint version
+    }
     security_master_reconciliation_exception {
         uuid exception_id PK
         uuid reconciliation_result_id FK
@@ -802,6 +1113,19 @@ erDiagram
         timestamp_with_time_zone completed_at
         text status
     }
+    security_master_repo_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text counterparty
+        date start_date
+        date end_date
+        numeric_18_8_ repo_rate
+        text collateral_type
+        numeric_18_8_ haircut
+        text primary_identifier_value
+        bigint version
+    }
     security_master_schema_migrations {
         integer ordinal
         text filename PK
@@ -831,6 +1155,7 @@ erDiagram
         text normalized_primary_identifier_value
         integer schema_version
         text terms_format
+        text listing_mic
     }
     security_master_security_alias_revisions {
         uuid alias_id PK
@@ -891,6 +1216,34 @@ erDiagram
         text payload
         character_64_ payload_sha256
         timestamp_with_time_zone recorded_at
+    }
+    security_master_security_curve_versions {
+        uuid curve_version_id PK
+        uuid curve_id FK
+        bigint version
+        date as_of
+        timestamp_with_time_zone sourced_at
+        timestamp_with_time_zone recorded_at
+        text published_by
+        text source
+        jsonb points
+        integer point_count
+        character_64_ content_sha256
+        integer payload_version
+    }
+    security_master_security_curves {
+        uuid curve_id PK
+        text curve_key
+        text kind
+        text currency
+        text index_name
+        text tenor
+        text day_count
+        text interpolation
+        text source
+        text description
+        text created_by
+        timestamp_with_time_zone created_at
     }
     security_master_security_events {
         bigint global_sequence PK
@@ -1036,6 +1389,20 @@ erDiagram
         bigint version
         timestamp_with_time_zone snapshot_timestamp
         jsonb payload
+    }
+    security_master_security_underlying_links {
+        uuid link_id PK
+        uuid security_id FK
+        text role
+        uuid underlying_security_id
+        text reference_text
+        numeric_28_10_ weight
+        timestamp_with_time_zone valid_from
+        timestamp_with_time_zone valid_to
+        text source
+        text notes
+        text created_by
+        timestamp_with_time_zone created_at
     }
     security_master_security_workbench_generations {
         uuid security_id PK
@@ -1219,6 +1586,33 @@ erDiagram
         date maturity_date
         text primary_identifier_value
         bigint version
+        text structured_credit_kind
+        text seniority
+        numeric_18_10_ attachment_point
+        numeric_18_10_ detachment_point
+        numeric_18_10_ weighted_average_coupon
+        integer weighted_average_maturity_months
+        integer weighted_average_loan_age_months
+        date reinvestment_period_end
+        date non_call_period_end
+    }
+    security_master_structured_note_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text issuer_name
+        text underlying_description
+        date maturity_date
+        date issue_date
+        numeric_28_10_ denomination
+        numeric_18_10_ principal_protection_pct
+        numeric_18_10_ participation_rate
+        numeric_18_10_ return_cap
+        numeric_18_10_ coupon_rate
+        text payment_frequency
+        numeric_18_10_ barrier_level
+        text primary_identifier_value
+        bigint version
     }
     security_master_swap_projection {
         uuid security_id PK
@@ -1231,8 +1625,50 @@ erDiagram
         text primary_identifier_value
         bigint version
     }
+    security_master_swaption_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text payer_receiver
+        text exercise_style
+        numeric_18_10_ strike_rate
+        date expiry_date
+        date underlying_effective_date
+        date underlying_maturity_date
+        numeric_28_10_ notional
+        text floating_index
+        text fixed_leg_payment_frequency
+        text fixed_leg_day_count
+        text settlement_type
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_treasury_bill_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        date maturity_date
+        date auction_date
+        text cusip
+        numeric_18_8_ discount_rate
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_warrant_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        uuid underlying_id
+        text warrant_type
+        numeric_28_10_ strike
+        date expiry_date
+        numeric_18_8_ multiplier
+        text primary_identifier_value
+        bigint version
+    }
     security_master_cash_transaction ||--o{ security_master_payment_allocation : "payment_allocation_cash_transaction_id_fkey"
     security_master_cash_transaction ||--o{ security_master_reconciliation_result : "reconciliation_result_cash_transaction_id_fkey"
+    security_master_commitment_guarantee_projection ||--o{ security_master_commitment_guarantee_covenant_projection : "commitment_guarantee_covenant_projection_security_id_fkey"
     security_master_corporate_action_case_accounting_approvals ||--o{ security_master_corporate_action_case_accounting_postings : "corporate_action_case_accounting_postings_approval_id_fkey"
     security_master_corporate_action_case_accounting_projections ||--o{ security_master_corporate_action_case_accounting_approvals : "corporate_action_case_accounting_approvals_projection_id_fkey"
     security_master_corporate_action_case_accounting_projections ||--o{ security_master_corporate_action_case_accounting_postings : "corporate_action_case_accounting_postings_projection_id_fkey"
@@ -1274,6 +1710,16 @@ erDiagram
     security_master_option_contract_projection ||--o{ security_master_option_alias_projection : "option_alias_projection_contract_symbol_fkey"
     security_master_option_contract_projection ||--o{ security_master_option_lifecycle_projection : "option_lifecycle_projection_contract_symbol_fkey"
     security_master_option_contract_projection ||--o{ security_master_option_series_projection : "option_series_projection_contract_symbol_fkey"
+    security_master_otc_collateral_agreements ||--o{ security_master_otc_collateral_balances : "otc_collateral_balances_collateral_agreement_id_fkey"
+    security_master_otc_collateral_agreements ||--o{ security_master_otc_exposure_snapshots : "otc_exposure_snapshots_collateral_agreement_id_fkey"
+    security_master_otc_collateral_agreements ||--o{ security_master_otc_margin_calls : "otc_margin_calls_collateral_agreement_id_fkey"
+    security_master_otc_collateral_agreements ||--o{ security_master_otc_netting_sets : "otc_netting_sets_collateral_agreement_id_fkey"
+    security_master_otc_exposure_snapshots ||--o{ security_master_otc_margin_calls : "otc_margin_calls_snapshot_id_fkey"
+    security_master_otc_master_agreements ||--o{ security_master_otc_collateral_agreements : "otc_collateral_agreements_master_agreement_id_fkey"
+    security_master_otc_master_agreements ||--o{ security_master_otc_netting_sets : "otc_netting_sets_master_agreement_id_fkey"
+    security_master_otc_netting_sets ||--o{ security_master_otc_contracts : "otc_contracts_netting_set_id_fkey"
+    security_master_otc_netting_sets ||--o{ security_master_otc_exposure_snapshots : "otc_exposure_snapshots_netting_set_id_fkey"
+    security_master_otc_netting_sets ||--o{ security_master_otc_margin_calls : "otc_margin_calls_netting_set_id_fkey"
     security_master_projected_cash_flow ||--o{ security_master_reconciliation_result : "reconciliation_result_projected_flow_id_fkey"
     security_master_projection_run ||--o{ security_master_projected_cash_flow : "projected_cash_flow_projection_run_id_fkey"
     security_master_projection_run ||--o{ security_master_projection_run : "projection_run_supersedes_projection_run_id_fkey"
@@ -1292,6 +1738,8 @@ erDiagram
     security_master_securities ||--o{ security_master_fxspot_projection : "fxspot_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_option_contract_projection : "option_contract_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_option_contract_projection : "option_contract_projection_underlying_security_id_fkey"
+    security_master_securities ||--o{ security_master_otc_collateral_balances : "otc_collateral_balances_security_id_fkey"
+    security_master_securities ||--o{ security_master_otc_contracts : "otc_contracts_security_id_fkey"
     security_master_securities ||--o{ security_master_security_alias_revisions : "security_alias_revisions_security_id_fkey"
     security_master_securities ||--o{ security_master_security_aliases : "security_aliases_security_id_fkey"
     security_master_securities ||--o{ security_master_security_cashflow_source_assignments : "security_cashflow_source_assignments_security_id_fkey"
@@ -1301,8 +1749,10 @@ erDiagram
     security_master_securities ||--o{ security_master_security_pricing_hierarchy : "security_pricing_hierarchy_security_id_fkey"
     security_master_securities ||--o{ security_master_security_pricing_hierarchy_history : "security_pricing_hierarchy_history_security_id_fkey"
     security_master_securities ||--o{ security_master_security_raw_prices : "security_raw_prices_security_id_fkey"
+    security_master_securities ||--o{ security_master_security_underlying_links : "security_underlying_links_security_id_fkey"
     security_master_security_close_price_snapshots ||--o{ security_master_security_close_price_approvals : "security_close_price_approvals_snapshot_id_fkey"
     security_master_security_close_price_snapshots ||--o{ security_master_security_close_price_snapshots : "security_close_price_snapshot_corrects_snapshot_id_account_fkey"
+    security_master_security_curves ||--o{ security_master_security_curve_versions : "security_curve_versions_curve_id_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_position_report_line : "servicer_position_report_line_servicer_report_batch_id_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_statement_import_batch : "servicer_statement_import_batch_servicer_report_batch_id_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_transaction_report_line : "servicer_transaction_report_line_servicer_report_batch_id_fkey"
@@ -1321,8 +1771,14 @@ erDiagram
 | `bond_issuer_projection` | table | 8 | `security_id` | 1 | 2 | - |
 | `bond_lifecycle_projection` | table | 13 | `security_id` | 1 | 1 | - |
 | `bond_projection` | table | 11 | `security_id` | 1 | 2 | - |
+| `cap_floor_projection` | table | 15 | `security_id` | 0 | 3 | Relational projection of CapFloor asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
+| `cash_sweep_projection` | table | 10 | `security_id` | 0 | 1 | Relational projection of CashSweep asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `cash_transaction` | table | 13 | `cash_transaction_id` | 2 | 5 | - |
 | `certificate_of_deposit_projection` | table | 10 | `security_id` | 0 | 3 | - |
+| `cfd_projection` | table | 8 | `security_id` | 0 | 1 | Relational projection of Cfd asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
+| `commercial_paper_projection` | table | 10 | `security_id` | 0 | 3 | Relational projection of CommercialPaper asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. |
+| `commitment_guarantee_covenant_projection` | table | 5 | `security_id`, `ordinal` | 1 | 1 | Covenants declared by a projected commitment guarantee, in terms-document order (ordinal). Threshold is text because the canonical covenant term is written prose. |
+| `commitment_guarantee_projection` | table | 13 | `security_id` | 0 | 3 | Relational projection of CommitmentGuarantee terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `commodity_projection` | table | 10 | `security_id` | 0 | 3 | - |
 | `corporate_action_canonical_sources` | table | 6 | `corp_act_id`, `proposal_id` | 2 | 3 | - |
 | `corporate_action_case_accounting_approvals` | table | 11 | `approval_id` | 2 | 3 | - |
@@ -1337,6 +1793,7 @@ erDiagram
 | `corporate_action_restatement_obligations` | table | 10 | `obligation_id` | 2 | 4 | - |
 | `corporate_action_source_proposals` | table | 29 | `proposal_id` | 4 | 7 | - |
 | `corporate_actions` | table | 22 | `corp_act_id` | 2 | 5 | - |
+| `credit_default_swap_projection` | table | 19 | `security_id` | 0 | 3 | Relational projection of CreditDefaultSwap asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `crypto_projection` | table | 7 | `security_id` | 0 | 3 | - |
 | `data_vendor_entitlements` | table | 21 | `entitlement_id` | 0 | 4 | - |
 | `deposit_projection` | table | 11 | `security_id` | 0 | 3 | - |
@@ -1348,7 +1805,9 @@ erDiagram
 | `equity_projection` | table | 11 | `security_id` | 1 | 3 | - |
 | `fee_balance` | table | 9 | `fee_balance_id` | 2 | 2 | - |
 | `future_projection` | table | 17 | `security_id` | 1 | 3 | - |
+| `fx_forward_projection` | table | 12 | `security_id` | 0 | 3 | Relational projection of FxForward asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `fxspot_projection` | table | 7 | `security_id` | 1 | 4 | - |
+| `investment_fund_projection` | table | 11 | `security_id` | 0 | 2 | Relational projection of InvestmentFund asset-specific terms, keyed by security_id. Every term is optional, so a row exists for every record of the class. |
 | `journal_entry` | table | 11 | `journal_entry_id` | 2 | 3 | - |
 | `journal_line` | table | 9 | `journal_line_id` | 1 | 2 | - |
 | `loan_contract` | table | 13 | `loan_id` | 0 | 3 | - |
@@ -1360,31 +1819,46 @@ erDiagram
 | `loan_state` | table | 6 | `loan_id` | 0 | 1 | - |
 | `loan_terms_version` | table | 28 | `loan_id`, `terms_version` | 0 | 2 | - |
 | `money_market_fund_projection` | table | 9 | `security_id` | 0 | 3 | - |
+| `ndf_projection` | table | 13 | `security_id` | 0 | 3 | Relational projection of NonDeliverableForward asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `operations_workflow_audit` | table | 28 | `audit_id` | 0 | 5 | - |
 | `option_alias_projection` | table | 5 | `contract_symbol`, `alias_kind`, `alias_value`, `provider` | 1 | 2 | - |
 | `option_contract_projection` | table | 14 | `contract_symbol` | 2 | 4 | - |
 | `option_lifecycle_projection` | table | 6 | `contract_symbol` | 1 | 1 | - |
 | `option_series_projection` | table | 6 | `option_chain_id`, `contract_symbol` | 1 | 1 | - |
+| `otc_collateral_agreements` | table | 16 | `collateral_agreement_id` | 1 | 2 | Credit support annexes under a master agreement: thresholds, minimum transfer amount, independent amount, rounding, valuation cadence and eligible collateral with haircuts. |
+| `otc_collateral_balances` | table | 17 | `balance_id` | 2 | 2 | Collateral posted by the fund or received from the counterparty under a collateral agreement: eligible-collateral line, quantity, unit value, valued amount, the haircut copied from the agreement and the valuation date. A zero quantity is a fully returned line. |
+| `otc_contracts` | table | 16 | `contract_id` | 2 | 4 | Bilateral contracts: one trade against a counterparty on a Security Master instrument, in a netting set, with its notional, direction, dates and lifecycle status. Many contracts share one instrument. |
+| `otc_exposure_snapshots` | table | 18 | `snapshot_id` | 2 | 3 | Append-only exposure and credit support snapshots of one netting set on one date: valued contracts, netting basis, gross and net exposure, collateral held and the movement each side implies. Recomputing a date appends the next version. |
+| `otc_margin_calls` | table | 19 | `call_id` | 3 | 4 | Margin calls issued from an exposure snapshot: one movement (delivery or return, by the fund or the counterparty) with its called, agreed and settled amounts and its lifecycle status. At most one call per netting set, mover and movement kind is open at a time. |
+| `otc_master_agreements` | table | 12 | `agreement_id` | 0 | 2 | Master agreements (ISDA, GMRA, GMSLA) between a fund legal entity and a counterparty. Every bilateral contract hangs off one through its netting set. |
+| `otc_netting_sets` | table | 8 | `netting_set_id` | 2 | 2 | Sets of contracts under one master agreement whose exposures net on close-out, optionally margined under one collateral agreement. |
+| `other_security_projection` | table | 10 | `security_id` | 0 | 2 | Relational projection of OtherSecurity asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `outbox_message` | table | 10 | `outbox_message_id` | 0 | 4 | - |
 | `payment_allocation` | table | 10 | `allocation_id` | 3 | 3 | - |
+| `private_company_equity_projection` | table | 12 | `security_id` | 0 | 2 | Relational projection of PrivateCompanyEquity terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
+| `private_fund_interest_projection` | table | 13 | `security_id` | 0 | 3 | Relational projection of PrivateFundInterest terms (commitment, funded and unfunded amounts, NAV date), keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `projected_cash_flow` | table | 15 | `projected_flow_id` | 2 | 3 | - |
 | `projection_checkpoint` | table | 3 | `projection_name` | 0 | 1 | - |
 | `projection_run` | table | 13 | `projection_run_id` | 3 | 3 | - |
 | `read_model_checkpoint` | table | 6 | `projection_name` | 0 | 1 | - |
+| `real_estate_holding_projection` | table | 12 | `security_id` | 0 | 2 | Relational projection of RealEstateHolding terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `reconciliation_exception` | table | 9 | `exception_id` | 1 | 2 | - |
 | `reconciliation_result` | table | 16 | `reconciliation_result_id` | 4 | 2 | - |
 | `reconciliation_run` | table | 6 | `reconciliation_run_id` | 2 | 1 | - |
+| `repo_projection` | table | 11 | `security_id` | 0 | 3 | Relational projection of Repo asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `schema_migrations` | table | 4 | `filename` | 0 | 1 | - |
-| `securities` | table | 22 | `security_id` | 0 | 5 | - |
+| `securities` | table | 23 | `security_id` | 0 | 6 | - |
 | `security_alias_revisions` | table | 17 | `alias_id`, `revision` | 1 | 2 | Append-only Security Master alias revisions. Recorded-as-of reads select the latest available revision at or before the cutoff. Pre-migration current-row baselines retain their creation metadata but are available only from history_available_from; earlier alias history is unknown. |
 | `security_aliases` | table | 14 | `alias_id` | 1 | 3 | - |
 | `security_cashflow_source_assignments` | table | 6 | `security_id` | 1 | 2 | - |
 | `security_close_price_approvals` | table | 4 | `snapshot_id` | 1 | 1 | Immutable independent review receipt bound to the exact close price snapshot SHA-256. |
 | `security_close_price_snapshots` | table | 9 | `snapshot_id` | 1 | 4 | Immutable exact account/book/date price-set versions retaining selected receipts, quote units, overrides, source rows and blockers. |
+| `security_curve_versions` | table | 12 | `curve_version_id` | 1 | 5 | Append-only, immutable published versions of a stored curve: economic as-of, knowledge time, actor, dated points and a canonical content hash. |
+| `security_curves` | table | 12 | `curve_id` | 0 | 3 | Write-once identity of a stored market curve (discount, forward or inflation): key, kind, currency, index, tenor, day count, interpolation and source. |
 | `security_events` | table | 12 | `global_sequence` | 0 | 4 | - |
 | `security_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
 | `security_field_provenance` | table | 10 | `security_id`, `field_path`, `origin` | 0 | 2 | - |
-| `security_governance_events` | table | 8 | `global_sequence` | 0 | 3 | Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds), written in the same transaction as the state change. |
+| `security_governance_events` | table | 8 | `global_sequence` | 0 | 3 | Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds, declared underlying-graph links, stored curves, OTC exposure snapshots, collateral balances and margin calls), written in the same transaction as the state change. |
 | `security_governance_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
 | `security_identifiers` | table | 12 | `security_id`, `identifier_kind`, `identifier_value`, `valid_from` | 1 | 3 | - |
 | `security_master_conflicts` | table | 14 | `conflict_id` | 0 | 2 | - |
@@ -1397,6 +1871,7 @@ erDiagram
 | `security_pricing_hierarchy_history` | table | 6 | `security_id`, `account_id`, `as_of` | 1 | 1 | Dated account-specific pricing hierarchy evidence, retaining source priorities, effective timestamp, author, and recording timestamp for historical price selection. |
 | `security_raw_prices` | table | 7 | `security_id`, `source_id`, `price_as_of` | 1 | 2 | - |
 | `security_snapshots` | table | 4 | `security_id` | 0 | 1 | - |
+| `security_underlying_links` | table | 12 | `link_id` | 1 | 3 | The underlying graph: one edge per row from an instrument to the security or named reference it depends on, in a stated role, with its validity window. Derived rows follow the terms; declared rows are governed through the graph API. |
 | `security_workbench_generations` | table | 2 | `security_id` | 0 | 1 | - |
 | `servicer_position_report_line` | table | 14 | `servicer_report_line_id` | 2 | 2 | - |
 | `servicer_report_batch` | table | 12 | `servicer_report_batch_id` | 0 | 1 | - |
@@ -1409,5 +1884,9 @@ erDiagram
 | `servicing_revision_projection` | table | 6 | `loan_id`, `revision_number` | 0 | 2 | - |
 | `servicing_revision_source` | table | 4 | `loan_id`, `servicing_revision`, `servicer_report_batch_id` | 1 | 1 | - |
 | `structured_credit_factor_schedule_projection` | table | 4 | `security_id`, `ordinal` | 1 | 2 | Dated pool-factor points of a projected structured-credit tranche, in terms-document order (ordinal). Serves the factor-as-of lookup used by amortization. |
-| `structured_credit_projection` | table | 13 | `security_id` | 0 | 3 | Relational projection of StructuredCredit tranche terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. factor_schedule_reference is the free-text trustee-report pointer, never factor data. |
+| `structured_credit_projection` | table | 22 | `security_id` | 0 | 4 | Relational projection of StructuredCredit tranche terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. factor_schedule_reference is the free-text trustee-report pointer, never factor data. |
+| `structured_note_projection` | table | 16 | `security_id` | 0 | 3 | Relational projection of StructuredNote asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `swap_projection` | table | 9 | `security_id` | 0 | 3 | - |
+| `swaption_projection` | table | 16 | `security_id` | 0 | 2 | Relational projection of Swaption asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
+| `treasury_bill_projection` | table | 9 | `security_id` | 0 | 2 | Relational projection of TreasuryBill asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
+| `warrant_projection` | table | 10 | `security_id` | 0 | 3 | Relational projection of Warrant asset-specific terms, keyed by security_id. underlying_id is the underlying security identity, deliberately not a foreign key. |

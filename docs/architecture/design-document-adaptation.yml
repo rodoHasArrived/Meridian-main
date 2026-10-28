@@ -5,7 +5,7 @@ schema:
 
 design_source:
   path: docs/product/meridian-design-document.md
-  version: "1.0"
+  version: "1.5"
   sections:
     - "7. Bounded Context Map"
     - "8. Context Ownership Matrix"
@@ -61,7 +61,7 @@ product_baseline:
 
 module_requirements:
   architecture_style: modular monolith with strict bounded-context boundaries
-  design_rule: Other modules may read through published APIs, views, or events, but they should not directly write another module's owned records.
+  design_rule: Other modules may read through published APIs, views, or events, but they must not directly write another module's owned records.
   required_facets:
     - Domain model
     - Application services

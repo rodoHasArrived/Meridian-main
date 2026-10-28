@@ -202,10 +202,10 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
 
         if (!_channel.Writer.TryWrite(new CoveredCallCommand.Start(runId)))
         {
-            state.Phase = RunPhase.PersistenceDegraded;
             state.Failure =
                 "Backtest service is shutting down or its queue is closed; the run was not queued and no durable lifecycle entry was recorded.";
             state.EndedAt = _timeProvider.GetUtcNow();
+            state.Phase = RunPhase.PersistenceDegraded;
             runCts.Dispose();
             _logger.LogWarning(
                 "Covered-call run {RunId} could not be queued and has no durable lifecycle entry",
@@ -686,9 +686,9 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
             // Publish successful state and cache only after the terminal evidence append succeeds.
             // The durable repository is the authority for whether a result may be exposed.
             TryCacheResult(state.Scope, runId, result);
-            state.Phase = RunPhase.Completed;
             state.Percent = 1.0;
             state.EndedAt = _timeProvider.GetUtcNow();
+            state.Phase = RunPhase.Completed;
 
             _logger.LogInformation(
                 "Covered-call run {RunId} completed: {Trades} trades, sharpe={Sharpe:F2}",
@@ -714,13 +714,13 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
                 _logger.LogWarning(persistEx, "Failed to persist cancelled run {RunId}", runId);
             }
 
-            state.Phase = terminalPersistenceFailure is null
-                ? RunPhase.Cancelled
-                : RunPhase.PersistenceDegraded;
             state.Failure = terminalPersistenceFailure is null
                 ? null
                 : $"Cancellation was observed locally, but the durable Cancelled lifecycle append failed: {terminalPersistenceFailure.Message}";
             state.EndedAt = _timeProvider.GetUtcNow();
+            state.Phase = terminalPersistenceFailure is null
+                ? RunPhase.Cancelled
+                : RunPhase.PersistenceDegraded;
             if (terminalPersistenceFailure is null)
             {
                 _logger.LogInformation("Covered-call run {RunId} cancelled", runId);
@@ -746,13 +746,13 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
                 _logger.LogWarning(persistEx, "Failed to persist failed run {RunId}", runId);
             }
 
-            state.Phase = terminalPersistenceFailure is null
-                ? RunPhase.Failed
-                : RunPhase.PersistenceDegraded;
             state.Failure = terminalPersistenceFailure is null
                 ? ex.Message
                 : $"The run stopped after '{ex.Message}', but the durable Failed lifecycle append also failed: {terminalPersistenceFailure.Message}";
             state.EndedAt = _timeProvider.GetUtcNow();
+            state.Phase = terminalPersistenceFailure is null
+                ? RunPhase.Failed
+                : RunPhase.PersistenceDegraded;
         }
         finally
         {
@@ -1090,7 +1090,14 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
         public required CoveredCallRunScope Scope { get; init; }
         public required CancellationTokenSource Cts { get; init; }
         public DateTimeOffset QueuedAt { get; init; }
-        public RunPhase Phase { get; set; } = RunPhase.Queued;
+        private volatile RunPhase _phase = RunPhase.Queued;
+
+        /// <summary>
+        /// Written last on every transition and read first by <c>GetStatusAsync</c>: the
+        /// volatile write publishes the failure, percent and end time assigned before it, so a
+        /// status reader that sees a terminal phase also sees its message.
+        /// </summary>
+        public RunPhase Phase { get => _phase; set => _phase = value; }
         public double Percent { get; set; }
         public DateOnly? CurrentDate { get; set; }
         public string? Failure { get; set; }

@@ -18,7 +18,7 @@ do_not_edit: true
 
 # Roadmap Summary
 
-Snapshot date: 2026-10-14
+Snapshot date: 2026-10-28
 
 | ID | Title | Status | Health | Priority | Owner lane |
 | --- | --- | --- | --- | --- | --- |
@@ -47,10 +47,10 @@ Snapshot date: 2026-10-14
 | W9-REPORT-005 | Client-grade PDF/XLSX exports and partners-capital statement | accepted | green | high | Accounting and Ledger |
 | W9-NAV-006 | Unitized NAV and real fee, waterfall, and capital-call economics | accepted | green | high | Accounting and Ledger |
 | W9-SAFETY-007 | Kill-switch cancel-all and fat-finger, notional, and collar rules | accepted | green | high | Execution and Fund Accounts |
-| W9-GOV-008 | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit | in_progress | green | high | Platform Security and Governance |
-| W9-INGEST-009 | Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher | in_progress | green | high | Accounting and Ledger |
+| W9-GOV-008 | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit | accepted | green | high | Platform Security and Governance |
+| W9-INGEST-009 | Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher | accepted | green | high | Accounting and Ledger |
 | W9-ASSET-010 | Asset Accounting Event Spine and atomic lot posting | done | green | critical | Accounting and Ledger |
-| W9-CORPACT-011 | Durable corporate action case processing and accounting projection | ready_for_acceptance | green | high | Accounting and Ledger |
+| W9-CORPACT-011 | Durable corporate action case processing and accounting projection | accepted | green | high | Accounting and Ledger |
 | W10-DEBT-001 | God-file burn-down against the file-size ratchet | planned | green | medium | Workstation Shell and UX |
 | W10-MARK-001 | Fail-closed stale-mark policy and mark-age surfacing | in_progress | green | high | Accounting and Ledger |
 | W10-RECON-001 | Durable break lineage identity and run-over-run break diff | planned | green | high | Accounting and Ledger |
@@ -72,6 +72,6 @@ Snapshot date: 2026-10-14
 | W11-EXEC-001 | Trading and Execution bounded-context ownership | planned | green | low | Execution and Fund Accounts |
 | W12-BOOK-001 | Accounting book, basis, and FX control workbench | planned | green | medium | Accounting and Ledger |
 | W12-CAPITAL-001 | Governed investor capital and allocation lifecycle | planned | green | medium | Accounting and Ledger |
-| W12-YEND-001 | Fiscal year-end close and opening-balance roll-forward | planned | green | medium | Accounting and Ledger |
-| W12-FINRPT-001 | Ledger-backed financial statement control pack | planned | green | medium | Accounting and Ledger |
 | W12-CREDIT-001 | DirectLoan operations and evidence reconciliation | planned | green | medium | Accounting and Ledger |
+| W12-FINRPT-001 | Ledger-backed financial statement control pack | planned | green | medium | Accounting and Ledger |
+| W12-YEND-001 | Fiscal year-end close and opening-balance roll-forward | planned | green | medium | Accounting and Ledger |

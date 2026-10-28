@@ -8,10 +8,6 @@ namespace Meridian.Storage.SecurityMaster;
 
 public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
 {
-    private const string BondProjectionTable = "bond_projection";
-    private const string BondLifecycleProjectionTable = "bond_lifecycle_projection";
-    private const string BondAccrualConventionProjectionTable = "bond_accrual_convention_projection";
-    private const string BondIssuerProjectionTable = "bond_issuer_projection";
     private const string OptionContractProjectionTable = "option_contract_projection";
     private const string OptionSeriesProjectionTable = "option_series_projection";
     private const string OptionLifecycleProjectionTable = "option_lifecycle_projection";
@@ -26,17 +22,15 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         Func<PostgresSecurityMasterStore, NpgsqlConnection, NpgsqlTransaction, SecurityProjectionRecord, CancellationToken, Task> WriteAsync);
 
     /// <summary>
-    /// The projection writers that predate <see cref="SecurityTermsProjectionRegistry"/>: classes
-    /// whose projection needs real decisions rather than a column list — a derived lifecycle state,
-    /// a swap type scanned out of legs, a concatenated pair code, a legacy nested-coupon fallback,
-    /// columns sourced from common terms, or (Commodity) terms the terms schema does not declare.
-    /// CryptoCurrency, Deposit, MoneyMarketFund and CertificateOfDeposit were migrated onto the
-    /// registry behind a database-backed parity guard; the rest stay hand-written until each is
-    /// migrated behind its own.
+    /// The projection writers that predate <see cref="SecurityTermsProjectionRegistry"/> and have
+    /// not moved onto it. Every other class — including Bond, whose three sibling tables are now
+    /// registry satellites — is a descriptor. Option stays here because its tables are keyed by
+    /// contract symbol rather than security, its alias table fans out from the record's aliases, its
+    /// lifecycle row has an insert-only <c>listed_at</c>, and
+    /// <see cref="PostgresOptionReferenceProjectionStore"/> writes the same tables from quotes.
     /// </summary>
     private static readonly IReadOnlyList<AssetProjectionWriter> HandWrittenProjectionWriters =
     [
-        new("Bond", static (store, c, t, r, ct) => store.UpsertBondProjectionTablesAsync(c, t, r, ct)),
         new("Option", static (store, c, t, r, ct) => store.UpsertOptionProjectionTablesAsync(c, t, r, ct)),
     ];
 
@@ -69,6 +63,35 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
     /// <summary>The asset classes that have a dedicated relational projection, in fan-out order.</summary>
     internal static IReadOnlyList<string> ProjectedAssetClasses { get; } =
         ProjectionWriters.Select(static writer => writer.AssetClass).ToArray();
+
+    /// <summary>
+    /// The writers an upsert runs, by the asset class the <c>securities</c> row held before the
+    /// write and the class it holds now. A projection row for class X can only exist while the
+    /// security's stored class is X (every write path goes through <see cref="UpsertProjectionCoreAsync"/>,
+    /// which clears X's rows the moment the class moves on), so a write has to visit at most two
+    /// writers: the current class's, which upserts or clears its own rows depending on the gates,
+    /// and the prior class's when the class changed, which clears the rows it left behind. Every
+    /// other writer would delete rows that cannot be there. Returned in registry order, so a class
+    /// change clears the old projection before the new one is published when the old writer is
+    /// registered first.
+    /// </summary>
+    internal static IReadOnlyList<string> ProjectionWritersFor(string? priorAssetClass, string currentAssetClass)
+    {
+        ArgumentNullException.ThrowIfNull(currentAssetClass);
+
+        var classChanged = priorAssetClass is not null
+            && !string.Equals(priorAssetClass, currentAssetClass, StringComparison.OrdinalIgnoreCase);
+
+        return ProjectionWriters
+            .Where(writer =>
+                string.Equals(writer.AssetClass, currentAssetClass, StringComparison.OrdinalIgnoreCase)
+                || (classChanged && string.Equals(writer.AssetClass, priorAssetClass, StringComparison.OrdinalIgnoreCase)))
+            .Select(static writer => writer.AssetClass)
+            .ToArray();
+    }
+
+    private static readonly IReadOnlyDictionary<string, AssetProjectionWriter> ProjectionWritersByAssetClass =
+        ProjectionWriters.ToDictionary(static writer => writer.AssetClass, StringComparer.OrdinalIgnoreCase);
 
     private readonly SecurityMasterOptions _options;
     private readonly SecurityMasterNodeIdentity _nodeIdentity;
@@ -381,6 +404,12 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         SecurityProjectionRecord record,
         CancellationToken ct)
     {
+        // The class the row held before this write decides which stale projection, if any, has to
+        // be cleared below. Read under a per-security advisory lock plus the row lock the upsert is
+        // about to take anyway, so a competing writer cannot change the class — or create the row
+        // — between this read and the upsert's own ON CONFLICT recheck.
+        var priorAssetClass = await ReadAssetClassForUpdateAsync(connection, transaction, record.SecurityId, ct).ConfigureAwait(false);
+
         await using (var command = connection.CreateCommand())
         {
             command.Transaction = transaction;
@@ -388,13 +417,13 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                 $"""
                 insert into {Qualified("securities")} as retained (
                     security_id, asset_class, status, display_name, currency, country_of_risk, issuer_name,
-                    exchange_code, lot_size, tick_size, primary_identifier_kind, primary_identifier_value,
+                    exchange_code, listing_mic, lot_size, tick_size, primary_identifier_kind, primary_identifier_value,
                     normalized_primary_identifier_value,
                     common_terms, asset_specific_terms, provenance, version, schema_version, terms_format,
                     effective_from, effective_to)
                 values (
                     @security_id, @asset_class, @status, @display_name, @currency, @country_of_risk, @issuer_name,
-                    @exchange_code, @lot_size, @tick_size, @primary_identifier_kind, @primary_identifier_value,
+                    @exchange_code, @listing_mic, @lot_size, @tick_size, @primary_identifier_kind, @primary_identifier_value,
                     @normalized_primary_identifier_value,
                     @common_terms::jsonb, @asset_specific_terms::jsonb, @provenance::jsonb, @version, @schema_version,
                     @terms_format, @effective_from, @effective_to)
@@ -406,6 +435,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                     country_of_risk = excluded.country_of_risk,
                     issuer_name = excluded.issuer_name,
                     exchange_code = excluded.exchange_code,
+                    listing_mic = excluded.listing_mic,
                     lot_size = excluded.lot_size,
                     tick_size = excluded.tick_size,
                     primary_identifier_kind = excluded.primary_identifier_kind,
@@ -442,6 +472,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             command.Parameters.AddWithValue("country_of_risk", (object?)GetOptionalString(record.CommonTerms, "countryOfRisk") ?? DBNull.Value);
             command.Parameters.AddWithValue("issuer_name", (object?)GetOptionalString(record.CommonTerms, "issuerName") ?? DBNull.Value);
             command.Parameters.AddWithValue("exchange_code", (object?)GetOptionalString(record.CommonTerms, "exchange") ?? DBNull.Value);
+            command.Parameters.AddWithValue("listing_mic", (object?)ResolveListingMic(record.CommonTerms) ?? DBNull.Value);
             command.Parameters.AddWithValue("lot_size", (object?)GetOptionalDecimal(record.CommonTerms, "lotSize") ?? DBNull.Value);
             command.Parameters.AddWithValue("tick_size", (object?)GetOptionalDecimal(record.CommonTerms, "tickSize") ?? DBNull.Value);
             command.Parameters.AddWithValue("primary_identifier_kind", record.PrimaryIdentifierKind);
@@ -480,35 +511,58 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             await ReplaceAliasesAsync(connection, transaction, record.SecurityId, record.Aliases, ct).ConfigureAwait(false);
         }
 
-        // Fan out to every registered per-asset-class projection writer. Each writer upserts its own
-        // projection when the record matches its asset class and deletes any stale row otherwise, so
-        // every writer runs for every record (class changes clean up the previous projection). Adding a
-        // projected asset class is a single additive registration in ProjectionWriters plus its writer.
-        foreach (var writer in ProjectionWriters)
+        // Fan out to the per-asset-class projection writers this write can affect: the current
+        // class's writer upserts its projection (or clears it when a gate fails), and when the class
+        // changed, the prior class's writer runs against the non-matching record and clears the rows
+        // it left behind. Running every registered writer here used to cost one delete per table
+        // for rows that cannot exist (N6 in the extensibility review); ProjectionWritersFor states
+        // the invariant that makes the narrower visit sufficient. Adding a projected asset class is
+        // still a single additive registration in ProjectionWriters.
+        foreach (var assetClass in ProjectionWritersFor(priorAssetClass, record.AssetClass))
         {
-            await writer.WriteAsync(this, connection, transaction, record, ct).ConfigureAwait(false);
+            await ProjectionWritersByAssetClass[assetClass].WriteAsync(this, connection, transaction, record, ct).ConfigureAwait(false);
         }
+
+        // The underlying graph follows the terms: the derived edges are rewritten with every
+        // projection write, in the same transaction, so the graph never shows a dependency the
+        // terms no longer state. Declared edges are owned by the graph store and left alone.
+        await SecurityUnderlyingLinkWriter.ReplaceDerivedAsync(connection, transaction, _options.Schema, record, ct).ConfigureAwait(false);
 
         return true;
     }
 
-    private async Task UpsertBondProjectionTablesAsync(
+    /// <summary>
+    /// The asset class the <c>securities</c> row currently holds, locked for the rest of the
+    /// transaction, or <see langword="null"/> when the security has never been projected.
+    /// <para>
+    /// A row lock cannot serialize an absent key: two transactions creating the same security for
+    /// the first time would both read "no row", both skip the prior-class cleanup, and the one that
+    /// loses the ON CONFLICT race would leave its projection beside the winner's. The per-security
+    /// advisory lock taken first serializes those first writes too, so a null here means the row
+    /// did not exist and no concurrent writer can create it before this transaction's upsert.
+    /// The lock is transaction-scoped and released at commit.
+    /// </para>
+    /// </summary>
+    private async Task<string?> ReadAssetClassForUpdateAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
-        SecurityProjectionRecord record,
+        Guid securityId,
         CancellationToken ct)
     {
-        if (!string.Equals(record.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase) ||
-            !TryBuildBondProjection(record, out var projection))
+        await using (var lockCommand = connection.CreateCommand())
         {
-            await DeleteBondProjectionTablesAsync(connection, transaction, record.SecurityId, ct).ConfigureAwait(false);
-            return;
+            lockCommand.Transaction = transaction;
+            lockCommand.CommandText = "select pg_advisory_xact_lock(hashtextextended(@lock_scope, 0));";
+            lockCommand.Parameters.AddWithValue("lock_scope", $"{_options.Schema}.securities:{securityId:N}");
+            await lockCommand.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
 
-        await UpsertBondProjectionAsync(connection, transaction, projection, ct).ConfigureAwait(false);
-        await UpsertBondLifecycleProjectionAsync(connection, transaction, projection, ct).ConfigureAwait(false);
-        await UpsertBondAccrualProjectionAsync(connection, transaction, projection, ct).ConfigureAwait(false);
-        await UpsertBondIssuerProjectionAsync(connection, transaction, projection, record, ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = $"select asset_class from {Qualified("securities")} where security_id = @security_id for update;";
+        command.Parameters.AddWithValue("security_id", securityId);
+        var result = await command.ExecuteScalarAsync(ct).ConfigureAwait(false);
+        return result is string assetClass ? assetClass : null;
     }
 
     private async Task UpsertOptionProjectionTablesAsync(
@@ -517,7 +571,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         SecurityProjectionRecord record,
         CancellationToken ct)
     {
-        if (!string.Equals(record.AssetClass, "Option", StringComparison.OrdinalIgnoreCase) ||
+        if (SecurityAssetClassCatalog.GetOrDefault(record.AssetClass).ProjectionKind != SecurityTermsProjectionKind.Specialized ||
             !TryBuildOptionProjection(record, out var projection))
         {
             await DeleteOptionProjectionTablesAsync(connection, transaction, record.SecurityId, ct).ConfigureAwait(false);
@@ -599,28 +653,6 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         command.Parameters.AddWithValue("last_global_sequence", lastGlobalSequence);
         command.Parameters.AddWithValue("updated_at", DateTime.UtcNow);
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-    }
-
-    private async Task DeleteBondProjectionTablesAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
-        Guid securityId,
-        CancellationToken ct)
-    {
-        foreach (var table in new[]
-                 {
-                     BondProjectionTable,
-                     BondLifecycleProjectionTable,
-                     BondAccrualConventionProjectionTable,
-                     BondIssuerProjectionTable
-                 })
-        {
-            await using var command = connection.CreateCommand();
-            command.Transaction = transaction;
-            command.CommandText = $"delete from {Qualified(table)} where security_id = @security_id;";
-            command.Parameters.AddWithValue("security_id", securityId);
-            await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-        }
     }
 
     private async Task DeleteOptionProjectionTablesAsync(
@@ -809,7 +841,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
               and i.valid_from <= @as_of
               and (i.valid_to is null or i.valid_to > @as_of)
               and (@include_inactive = true or s.status = 'Active')
-            order by i.is_primary desc
+            order by i.is_primary desc, i.valid_from desc, i.security_id
             limit 1;
             """,
             $"""
@@ -823,6 +855,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
               and (a.valid_to is null or a.valid_to > @as_of)
               and a.is_enabled = true
               and (@include_inactive = true or s.status = 'Active')
+            order by a.valid_from desc, a.security_id
             limit 1;
             """,
             $"""
@@ -838,6 +871,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                     and i.identifier_kind = @identifier_kind
                     and i.normalized_identifier_value = @normalized_identifier_value)
               and (@include_inactive = true or s.status = 'Active')
+            order by s.security_id
             limit 1;
             """
         })
@@ -873,245 +907,6 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
     }
 
     private string Qualified(string table) => $"{_options.Schema}.{table}";
-
-    private async Task UpsertBondProjectionAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
-        BondProjectionWriteModel projection,
-        CancellationToken ct)
-    {
-        await using var command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText =
-            $"""
-            insert into {Qualified(BondProjectionTable)} (
-                security_id, issuer_name, seniority, subclass, issue_date, maturity_date,
-                coupon_kind, fixed_coupon_rate, floating_rate_index, floating_spread_bps, version)
-            values (
-                @security_id, @issuer_name, @seniority, @subclass, @issue_date, @maturity_date,
-                @coupon_kind, @fixed_coupon_rate, @floating_rate_index, @floating_spread_bps, @version)
-            on conflict (security_id) do update set
-                issuer_name = excluded.issuer_name,
-                seniority = excluded.seniority,
-                subclass = excluded.subclass,
-                issue_date = excluded.issue_date,
-                maturity_date = excluded.maturity_date,
-                coupon_kind = excluded.coupon_kind,
-                fixed_coupon_rate = excluded.fixed_coupon_rate,
-                floating_rate_index = excluded.floating_rate_index,
-                floating_spread_bps = excluded.floating_spread_bps,
-                version = excluded.version;
-            """;
-        AddBondProjectionParameters(command, projection);
-        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-    }
-
-    private async Task UpsertBondLifecycleProjectionAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
-        BondProjectionWriteModel projection,
-        CancellationToken ct)
-    {
-        await using var command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText =
-            $"""
-            insert into {Qualified(BondLifecycleProjectionTable)} (
-                security_id, lifecycle_stat, issue_date, call_date, maturity_date, is_callable, version,
-                subclass, par, payment_frequency, legal_final_maturity, pre_refund_date, mandatory_put_date)
-            values (
-                @security_id, @lifecycle_stat, @issue_date, @call_date, @maturity_date, @is_callable, @version,
-                @subclass, @par, @payment_frequency, @legal_final_maturity, @pre_refund_date, @mandatory_put_date)
-            on conflict (security_id) do update set
-                lifecycle_stat = excluded.lifecycle_stat,
-                issue_date = excluded.issue_date,
-                call_date = excluded.call_date,
-                maturity_date = excluded.maturity_date,
-                is_callable = excluded.is_callable,
-                version = excluded.version,
-                subclass = excluded.subclass,
-                par = excluded.par,
-                payment_frequency = excluded.payment_frequency,
-                legal_final_maturity = excluded.legal_final_maturity,
-                pre_refund_date = excluded.pre_refund_date,
-                mandatory_put_date = excluded.mandatory_put_date;
-            """;
-        command.Parameters.AddWithValue("security_id", projection.SecurityId);
-        command.Parameters.AddWithValue("lifecycle_stat", projection.LifecycleStat);
-        command.Parameters.AddWithValue("issue_date", (object?)projection.IssueDate?.ToDateTime(TimeOnly.MinValue) ?? DBNull.Value);
-        command.Parameters.AddWithValue("call_date", (object?)projection.CallDate?.ToDateTime(TimeOnly.MinValue) ?? DBNull.Value);
-        command.Parameters.AddWithValue("maturity_date", projection.MaturityDate.ToDateTime(TimeOnly.MinValue));
-        command.Parameters.AddWithValue("is_callable", projection.IsCallable);
-        command.Parameters.AddWithValue("version", projection.Version);
-        command.Parameters.AddWithValue("subclass", (object?)projection.Subclass ?? DBNull.Value);
-        command.Parameters.AddWithValue("par", (object?)projection.Par ?? DBNull.Value);
-        command.Parameters.AddWithValue("payment_frequency", (object?)projection.PaymentFrequency ?? DBNull.Value);
-        command.Parameters.AddWithValue("legal_final_maturity", (object?)projection.LegalFinalMaturity?.ToDateTime(TimeOnly.MinValue) ?? DBNull.Value);
-        command.Parameters.AddWithValue("pre_refund_date", (object?)projection.PreRefundDate?.ToDateTime(TimeOnly.MinValue) ?? DBNull.Value);
-        command.Parameters.AddWithValue("mandatory_put_date", (object?)projection.MandatoryPutDate?.ToDateTime(TimeOnly.MinValue) ?? DBNull.Value);
-        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-    }
-
-    private async Task UpsertBondAccrualProjectionAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
-        BondProjectionWriteModel projection,
-        CancellationToken ct)
-    {
-        await using var command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText =
-            $"""
-            insert into {Qualified(BondAccrualConventionProjectionTable)} (
-                security_id, day_count_convention, settlement_cycle_days, holiday_calendar_id,
-                coupon_kind, fixed_coupon_rate, floating_rate_index, floating_spread_bps, version)
-            values (
-                @security_id, @day_count_convention, @settlement_cycle_days, @holiday_calendar_id,
-                @coupon_kind, @fixed_coupon_rate, @floating_rate_index, @floating_spread_bps, @version)
-            on conflict (security_id) do update set
-                day_count_convention = excluded.day_count_convention,
-                settlement_cycle_days = excluded.settlement_cycle_days,
-                holiday_calendar_id = excluded.holiday_calendar_id,
-                coupon_kind = excluded.coupon_kind,
-                fixed_coupon_rate = excluded.fixed_coupon_rate,
-                floating_rate_index = excluded.floating_rate_index,
-                floating_spread_bps = excluded.floating_spread_bps,
-                version = excluded.version;
-            """;
-        command.Parameters.AddWithValue("security_id", projection.SecurityId);
-        command.Parameters.AddWithValue("day_count_convention", (object?)projection.DayCountConvention ?? DBNull.Value);
-        command.Parameters.AddWithValue("settlement_cycle_days", (object?)projection.SettlementCycleDays ?? DBNull.Value);
-        command.Parameters.AddWithValue("holiday_calendar_id", (object?)projection.HolidayCalendarId ?? DBNull.Value);
-        command.Parameters.AddWithValue("coupon_kind", (object?)projection.CouponKind ?? DBNull.Value);
-        command.Parameters.AddWithValue("fixed_coupon_rate", (object?)projection.FixedCouponRate ?? DBNull.Value);
-        command.Parameters.AddWithValue("floating_rate_index", (object?)projection.FloatingRateIndex ?? DBNull.Value);
-        command.Parameters.AddWithValue("floating_spread_bps", (object?)projection.FloatingSpreadBps ?? DBNull.Value);
-        command.Parameters.AddWithValue("version", projection.Version);
-        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-    }
-
-    private async Task UpsertBondIssuerProjectionAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
-        BondProjectionWriteModel projection,
-        SecurityProjectionRecord record,
-        CancellationToken ct)
-    {
-        if (string.IsNullOrWhiteSpace(projection.IssuerName))
-        {
-            await using var delete = connection.CreateCommand();
-            delete.Transaction = transaction;
-            delete.CommandText = $"delete from {Qualified(BondIssuerProjectionTable)} where security_id = @security_id;";
-            delete.Parameters.AddWithValue("security_id", projection.SecurityId);
-            await delete.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-            return;
-        }
-
-        await using var command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText =
-            $"""
-            insert into {Qualified(BondIssuerProjectionTable)} (
-                security_id, issuer_name, display_name, primary_identifier_value, currency, maturity_date, seniority, version)
-            values (
-                @security_id, @issuer_name, @display_name, @primary_identifier_value, @currency, @maturity_date, @seniority, @version)
-            on conflict (security_id) do update set
-                issuer_name = excluded.issuer_name,
-                display_name = excluded.display_name,
-                primary_identifier_value = excluded.primary_identifier_value,
-                currency = excluded.currency,
-                maturity_date = excluded.maturity_date,
-                seniority = excluded.seniority,
-                version = excluded.version;
-            """;
-        command.Parameters.AddWithValue("security_id", projection.SecurityId);
-        command.Parameters.AddWithValue("issuer_name", projection.IssuerName!);
-        command.Parameters.AddWithValue("display_name", record.DisplayName);
-        command.Parameters.AddWithValue("primary_identifier_value", record.PrimaryIdentifierValue);
-        command.Parameters.AddWithValue("currency", record.Currency);
-        command.Parameters.AddWithValue("maturity_date", projection.MaturityDate.ToDateTime(TimeOnly.MinValue));
-        command.Parameters.AddWithValue("seniority", (object?)projection.Seniority ?? DBNull.Value);
-        command.Parameters.AddWithValue("version", projection.Version);
-        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-    }
-
-    private static void AddBondProjectionParameters(NpgsqlCommand command, BondProjectionWriteModel projection)
-    {
-        command.Parameters.AddWithValue("security_id", projection.SecurityId);
-        command.Parameters.AddWithValue("issuer_name", (object?)projection.IssuerName ?? DBNull.Value);
-        command.Parameters.AddWithValue("seniority", (object?)projection.Seniority ?? DBNull.Value);
-        command.Parameters.AddWithValue("subclass", (object?)projection.Subclass ?? DBNull.Value);
-        command.Parameters.AddWithValue("issue_date", (object?)projection.IssueDate?.ToDateTime(TimeOnly.MinValue) ?? DBNull.Value);
-        command.Parameters.AddWithValue("maturity_date", projection.MaturityDate.ToDateTime(TimeOnly.MinValue));
-        command.Parameters.AddWithValue("coupon_kind", (object?)projection.CouponKind ?? DBNull.Value);
-        command.Parameters.AddWithValue("fixed_coupon_rate", (object?)projection.FixedCouponRate ?? DBNull.Value);
-        command.Parameters.AddWithValue("floating_rate_index", (object?)projection.FloatingRateIndex ?? DBNull.Value);
-        command.Parameters.AddWithValue("floating_spread_bps", (object?)projection.FloatingSpreadBps ?? DBNull.Value);
-        command.Parameters.AddWithValue("version", projection.Version);
-    }
-
-    internal static bool TryBuildBondProjection(SecurityProjectionRecord record, out BondProjectionWriteModel projection)
-    {
-        if (!TryGetOptionalDateOnly(record.AssetSpecificTerms, "maturity", out var maturityDate) || maturityDate is null)
-        {
-            projection = default!;
-            return false;
-        }
-
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var issueDate = GetOptionalDateOnly(record.AssetSpecificTerms, "issueDate");
-        var callDate = GetOptionalDateOnly(record.AssetSpecificTerms, "callDate");
-        var isCallable = GetOptionalBool(record.AssetSpecificTerms, "isCallable") ?? false;
-
-        // The serializer (Interop.SecurityMaster.assetSpecificTermsJson) writes the coupon flat, per the
-        // Bond entry in SecurityAssetTermsSchema: couponType/couponRate/floatingIndex/spreadBps/dayCount.
-        // Reading a nested "coupon" object here previously left every coupon column null for canonically
-        // serialized bonds (silent data loss); read the flat shape first and fall back to the legacy
-        // nested object only for externally-authored payloads that still use it.
-        var coupon = GetOptionalObject(record.AssetSpecificTerms, "coupon");
-        var couponKind = GetOptionalString(record.AssetSpecificTerms, "couponType")
-            ?? (coupon.HasValue ? GetOptionalString(coupon.Value, "kind") : null);
-        var fixedCouponRate = GetOptionalDecimal(record.AssetSpecificTerms, "couponRate")
-            ?? (coupon.HasValue ? GetOptionalDecimal(coupon.Value, "rate") : null);
-        var floatingRateIndex = GetOptionalString(record.AssetSpecificTerms, "floatingIndex")
-            ?? (coupon.HasValue ? GetOptionalString(coupon.Value, "index") : null);
-        var floatingSpreadBps = GetOptionalDecimal(record.AssetSpecificTerms, "spreadBps")
-            ?? (coupon.HasValue ? GetOptionalDecimal(coupon.Value, "spreadBps") : null);
-        var dayCountConvention = GetOptionalString(record.AssetSpecificTerms, "dayCount")
-            ?? (coupon.HasValue ? GetOptionalString(coupon.Value, "dayCountConvention") : null);
-
-        var lifecycleStat =
-            record.EffectiveTo.HasValue ? "Retired" :
-            maturityDate.Value < today ? "Matured" :
-            isCallable && callDate.HasValue && callDate.Value <= today ? "Callable" :
-            issueDate.HasValue && issueDate.Value > today ? "WhenIssued" :
-            "Active";
-
-        projection = new BondProjectionWriteModel(
-            record.SecurityId,
-            GetOptionalString(record.AssetSpecificTerms, "issuerName") ?? GetOptionalString(record.CommonTerms, "issuerName"),
-            GetOptionalString(record.AssetSpecificTerms, "seniority"),
-            GetOptionalString(record.AssetSpecificTerms, "subclass"),
-            issueDate,
-            maturityDate.Value,
-            callDate,
-            isCallable,
-            lifecycleStat,
-            couponKind,
-            fixedCouponRate,
-            floatingRateIndex,
-            floatingSpreadBps,
-            dayCountConvention,
-            GetOptionalInt(record.CommonTerms, "settlementCycleDays"),
-            GetOptionalString(record.CommonTerms, "holidayCalendarId"),
-            record.Version,
-            GetOptionalDecimal(record.AssetSpecificTerms, "par"),
-            GetOptionalString(record.AssetSpecificTerms, "paymentFrequency"),
-            GetOptionalDateOnly(record.AssetSpecificTerms, "legalFinalMaturity"),
-            GetOptionalDateOnly(record.AssetSpecificTerms, "preRefundDate"),
-            GetOptionalDateOnly(record.AssetSpecificTerms, "mandatoryPutDate"));
-        return true;
-    }
 
     private async Task UpsertOptionContractProjectionAsync(
         NpgsqlConnection connection,
@@ -1406,6 +1201,23 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
     }
 
 
+    /// <summary>
+    /// The ISO 10383 MIC of the primary listing: a well-formed <c>primaryListingMic</c> wins,
+    /// otherwise <c>exchange</c> resolves through <see cref="Meridian.Contracts.Domain.MicReference"/>.
+    /// Migration 048 backfills existing rows with the same rule.
+    /// </summary>
+    internal static string? ResolveListingMic(JsonElement commonTerms)
+    {
+        if (Meridian.Contracts.Domain.Mic.TryParse(GetOptionalString(commonTerms, "primaryListingMic"), out var primary))
+        {
+            return primary.Value;
+        }
+
+        return Meridian.Contracts.Domain.MicReference.TryResolve(GetOptionalString(commonTerms, "exchange"), out var resolved)
+            ? resolved.Value
+            : null;
+    }
+
     internal static string? GetOptionalString(JsonElement json, string propertyName)
         => json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
@@ -1470,7 +1282,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             ? value.GetBoolean()
             : null;
 
-    private static JsonElement? GetOptionalObject(JsonElement json, string propertyName)
+    internal static JsonElement? GetOptionalObject(JsonElement json, string propertyName)
         => json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.Object
             ? value
             : null;
@@ -1491,31 +1303,6 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         value = null;
         return false;
     }
-
-    internal sealed record BondProjectionWriteModel(
-        Guid SecurityId,
-        string? IssuerName,
-        string? Seniority,
-        string? Subclass,
-        DateOnly? IssueDate,
-        DateOnly MaturityDate,
-        DateOnly? CallDate,
-        bool IsCallable,
-        string LifecycleStat,
-        string? CouponKind,
-        decimal? FixedCouponRate,
-        string? FloatingRateIndex,
-        decimal? FloatingSpreadBps,
-        string? DayCountConvention,
-        int? SettlementCycleDays,
-        string? HolidayCalendarId,
-        long Version,
-        // Clearwater extended lifecycle fields.
-        decimal? Par,
-        string? PaymentFrequency,
-        DateOnly? LegalFinalMaturity,
-        DateOnly? PreRefundDate,
-        DateOnly? MandatoryPutDate);
 
     private sealed record OptionProjectionWriteModel(
         string ContractSymbol,

@@ -141,7 +141,6 @@ public sealed class StrategyFeatureModule : IDesktopFeatureModule
             services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterAmender>(sp =>
                 (Meridian.Contracts.SecurityMaster.ISecurityMasterAmender)sp.GetRequiredService<Meridian.Contracts.SecurityMaster.ISecurityMasterService>());
             services.AddSingleton<SecurityMasterQueryService>();
-            services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
             services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
             services.AddSingleton<ISecurityMasterRuntimeStatus>(_ => new WpfServices.SecurityMasterRuntimeStatusService(
                 isAvailable: true,
@@ -162,8 +161,6 @@ public sealed class StrategyFeatureModule : IDesktopFeatureModule
             services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterAmender>(sp =>
                 (Meridian.Contracts.SecurityMaster.ISecurityMasterAmender)sp.GetRequiredService<Meridian.Contracts.SecurityMaster.ISecurityMasterService>());
             services.AddSingleton<NullSecurityMasterQueryService>();
-            services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp =>
-                sp.GetRequiredService<NullSecurityMasterQueryService>());
             services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp =>
                 sp.GetRequiredService<NullSecurityMasterQueryService>());
             services.AddSingleton<ISecurityMasterRuntimeStatus>(sp =>

@@ -39,6 +39,13 @@ public sealed class FileBrokerageOrderRecoveryStore
                 || order.State.FilledQuantity < 0m || order.State.FilledQuantity > order.State.Quantity
                 || !_orders.TryAdd(order.State.OrderId, order))
                 throw new InvalidDataException("Brokerage order recovery snapshot contains missing or duplicate order identities.");
+            if (order.PendingAmendment is { } pending &&
+                (pending.Original is null || pending.Proposed is null
+                    || pending.Original.OrderId != order.State.OrderId || pending.Proposed.OrderId != order.State.OrderId
+                    || pending.Original.Symbol != order.State.Symbol || pending.Proposed.Symbol != order.State.Symbol
+                    || pending.Original.Side != order.State.Side || pending.Proposed.Side != order.State.Side
+                    || pending.Original.Quantity <= 0m || pending.Proposed.Quantity <= 0m))
+                throw new InvalidDataException("Retained amendment terms do not belong to their order.");
         }
         foreach (var tombstone in snapshot.Tombstones ?? [])
         {
@@ -105,13 +112,14 @@ public sealed class FileBrokerageOrderRecoveryStore
         ArgumentException.ThrowIfNullOrWhiteSpace(orderId);
         lock (_sync)
         {
-            if (!_orders.TryGetValue(orderId, out var order) || order.RequiresRecovery
+            if (!_orders.TryGetValue(orderId, out var order) || order.RequiresRecovery || order.PendingAmendment is not null
                 || !IsCompactableTerminalState(order.State.Status, order.State.Quantity, order.State.FilledQuantity)
                 || (order.State.Status == OrderStatus.Rejected && !string.IsNullOrWhiteSpace(order.BrokerOrderId)))
                 return false;
 
             var state = order.State;
-            var tombstone = new BrokerageOrderTombstone(state.OrderId, state.Status, state.Quantity, state.FilledQuantity);
+            var tombstone = new BrokerageOrderTombstone(state.OrderId, state.Status, state.Quantity, state.FilledQuantity)
+            { BrokerOrderAliases = order.BrokerOrderAliases };
             var nextOrders = new Dictionary<string, RetainedBrokerageOrder>(_orders, StringComparer.Ordinal);
             nextOrders.Remove(orderId);
             var nextTombstones = new Dictionary<string, BrokerageOrderTombstone>(_tombstones, StringComparer.Ordinal)
@@ -154,10 +162,22 @@ public sealed class FileBrokerageOrderRecoveryStore
             || (status == OrderStatus.Rejected && filledQuantity == 0m));
 }
 
-public sealed record RetainedBrokerageOrder(OrderState State, string? BrokerOrderId, bool RequiresRecovery);
+public sealed record RetainedBrokerageOrder(OrderState State, string? BrokerOrderId, bool RequiresRecovery)
+{
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public PendingOrderAmendment? PendingAmendment { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    public bool RequiresAmendmentRecovery { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string[]? BrokerOrderAliases { get; init; }
+}
 
 /// <summary>Minimal terminal identity that permanently reserves a dispatched client order id.</summary>
-public sealed record BrokerageOrderTombstone(string OrderId, OrderStatus Status, decimal Quantity, decimal FilledQuantity);
+public sealed record BrokerageOrderTombstone(string OrderId, OrderStatus Status, decimal Quantity, decimal FilledQuantity)
+{
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string[]? BrokerOrderAliases { get; init; }
+}
 
 internal sealed record BrokerageOrderRecoverySnapshot(
     int Version,

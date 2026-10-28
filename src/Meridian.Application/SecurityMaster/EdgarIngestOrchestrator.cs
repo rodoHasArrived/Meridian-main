@@ -403,14 +403,15 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
         IReadOnlyList<SecurityIdentifierDto> identifiers,
         DateTimeOffset now)
     {
-        var assetClass = IsMutualFundAssociation(association) ? "OtherSecurity" : "Equity";
-        var assetTerms = assetClass == "OtherSecurity"
+        var isMutualFund = IsMutualFundAssociation(association);
+        var assetClass = isMutualFund ? "OtherSecurity" : "Equity";
+        var assetTerms = isMutualFund
             ? JsonSerializer.SerializeToElement(
                 new Dictionary<string, object?>
                 {
                     ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
                     [SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.Flat,
-                    [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion,
+                    [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetTermsVersion(assetClass),
                     ["category"] = "MutualFund",
                     ["subType"] = association.SecurityType,
                     ["issuerName"] = association.Name ?? filer?.Name
@@ -421,7 +422,7 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
                 {
                     ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
                     [SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.Flat,
-                    [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion,
+                    [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetTermsVersion(assetClass),
                     ["classification"] = "Common",
                     ["shareClass"] = snapshot?.Security12bTitle?.RawValue
                 },

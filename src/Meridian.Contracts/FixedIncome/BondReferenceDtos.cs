@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Contracts.FixedIncome;
 
@@ -37,14 +38,22 @@ public sealed record BondLifecycleDto(
     DateOnly MaturityDate,
     bool IsCallable,
     long Version,
-    // --- Clearwater extended lifecycle fields ---
+    // --- Extended lifecycle fields (migration 017) ---
     /// <summary>Face/par value; used in market-value calculation: Par × Factor × Price / 100.</summary>
     decimal? Par = null,
     string? BondSubclass = null,
     string? PaymentFrequency = null,
     DateOnly? LegalFinalMaturity = null,
     DateOnly? PreRefundDate = null,
-    DateOnly? MandatoryPutDate = null);
+    DateOnly? MandatoryPutDate = null)
+{
+    /// <summary>
+    /// <see cref="PaymentFrequency"/> as a typed cadence, or null when the stored text is absent or
+    /// names no recognized frequency. The raw text stays on <see cref="PaymentFrequency"/>.
+    /// </summary>
+    public SecurityPaymentFrequency? PaymentCadence
+        => SecurityTermConventions.TryParsePaymentFrequency(PaymentFrequency, out var frequency) ? frequency : null;
+}
 
 public sealed record BondAccrualConventionDto(
     Guid SecurityId,
@@ -55,7 +64,15 @@ public sealed record BondAccrualConventionDto(
     decimal? FixedCouponRate,
     string? FloatingRateIndex,
     decimal? FloatingSpreadBps,
-    long Version);
+    long Version)
+{
+    /// <summary>
+    /// <see cref="DayCountConvention"/> as a typed basis, or null when the stored text is absent or
+    /// names no recognized convention. The raw text stays on <see cref="DayCountConvention"/>.
+    /// </summary>
+    public Meridian.Contracts.SecurityMaster.DayCountConvention? DayCount
+        => DayCountConventions.TryParse(DayCountConvention, out var convention) ? convention : null;
+}
 
 /// A single instalment in a sinking fund or scheduled principal amortisation schedule.
 public sealed record BondSinkingFundEntryDto(
@@ -68,7 +85,15 @@ public sealed record BondSinkingFundDto(
     IReadOnlyList<BondSinkingFundEntryDto> Schedule,
     string? SinkFrequency,
     bool IsProRata,
-    long Version);
+    long Version)
+{
+    /// <summary>
+    /// <see cref="SinkFrequency"/> as a typed cadence, or null when the stored text is absent or
+    /// names no recognized frequency. The raw text stays on <see cref="SinkFrequency"/>.
+    /// </summary>
+    public SecurityPaymentFrequency? SinkCadence
+        => SecurityTermConventions.TryParsePaymentFrequency(SinkFrequency, out var frequency) ? frequency : null;
+}
 
 /// Inflation index and factor data for TIPS, index-linked GILTs, and similar instruments.
 public sealed record BondInflationLinkedDto(

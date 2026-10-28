@@ -379,6 +379,123 @@
       "sha256": "eeff3142bc3d4d27d0cd1646b0ea1075662b4734f478eca80af27499287debf4"
     },
     {
+      "filename": "043_security_master_close_price_approval_null_guards.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 43,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/043_security_master_close_price_approval_null_guards.sql",
+      "schema": "security_master",
+      "sha256": "ab8fd15279bc3bd00bf79684ab7c0f1dda45faf51a62e8462236cfbd1098011d"
+    },
+    {
+      "filename": "044_security_master_declarative_terms_projections.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 44,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/044_security_master_declarative_terms_projections.sql",
+      "schema": "security_master",
+      "sha256": "7867f1b439cdd565b1d985b919e33298a35e3354d43118c91f7cbab35100ecda"
+    },
+    {
+      "filename": "045_structured_credit_typed_tranche_terms.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 45,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/045_structured_credit_typed_tranche_terms.sql",
+      "schema": "security_master",
+      "sha256": "1fb66821530cfe45f4f3fb1e758afda590a1f441a821e4356e8dfaff58a1e47a"
+    },
+    {
+      "filename": "046_otc_derivative_terms_projections.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 46,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/046_otc_derivative_terms_projections.sql",
+      "schema": "security_master",
+      "sha256": "d57b4debc4cfe52704cc1b8b308503b6056b83baca188f64a19cd60d8bbb8255"
+    },
+    {
+      "filename": "047_rate_option_and_note_terms_projections.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 47,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/047_rate_option_and_note_terms_projections.sql",
+      "schema": "security_master",
+      "sha256": "461582114ea7236c04ddac61d53b5de7f9754243f6c744697c290bfbe0981f6f"
+    },
+    {
+      "filename": "048_security_master_listing_mic.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 48,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/048_security_master_listing_mic.sql",
+      "schema": "security_master",
+      "sha256": "fd13dfeb586f441379d8d7951348fcf9be1cd33a6a6d4501345aa61780429d1b"
+    },
+    {
+      "filename": "049_security_underlying_links.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 49,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/049_security_underlying_links.sql",
+      "schema": "security_master",
+      "sha256": "d628168aba3747a5b34fb3febb4f0256f0c656964b2b5060877707e5c4768f74"
+    },
+    {
+      "filename": "050_otc_contracts.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 50,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/050_otc_contracts.sql",
+      "schema": "security_master",
+      "sha256": "3ab9a5ba45a2e61baf9a3097ac28c881a87f497781e1b2f0173fdc25e4c26511"
+    },
+    {
+      "filename": "051_security_governance_events_underlying_graph_stream.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 51,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/051_security_governance_events_underlying_graph_stream.sql",
+      "schema": "security_master",
+      "sha256": "31343269ee38438787542d6d6845c1f9874b479d0375cf7764a6d2f87dc761be"
+    },
+    {
+      "filename": "052_security_curves.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 52,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/052_security_curves.sql",
+      "schema": "security_master",
+      "sha256": "57a63d7e579e326d80dddb8eee93afa380401551da16a5500c507060d8eaf24a"
+    },
+    {
+      "filename": "053_security_governance_events_curves_stream.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 53,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/053_security_governance_events_curves_stream.sql",
+      "schema": "security_master",
+      "sha256": "3dc37e9dbfbb53fbf034ddca975668e63fbba5ea52b335dbd13c117b23df891e"
+    },
+    {
+      "filename": "054_otc_exposure_and_collateral.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 54,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/054_otc_exposure_and_collateral.sql",
+      "schema": "security_master",
+      "sha256": "01ed35acaa8ef128edff4a782a0d39df2e4efcba26e2611d7f122e414b86fcf3"
+    },
+    {
+      "filename": "055_security_governance_events_otc_collateral_stream.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 55,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/055_security_governance_events_otc_collateral_stream.sql",
+      "schema": "security_master",
+      "sha256": "d048f44b2107e03d26dd2873738226faf1733d87d728d7cff1e407ee6a9de9f0"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -946,6 +1063,33 @@
       "sha256": "3272428a8a2b030ec3a72fd8bffdfe720f26f61d431a4edcbd9d62601503edb6"
     },
     {
+      "filename": "V_ledger_051__tax_lot_account_case_insensitive_keys.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_051__tax_lot_account_case_insensitive_keys.sql",
+      "schema": "ledger",
+      "sha256": "1b14d6af17e68f8fcde80cfdacbf1323e1a60ccc210354811054c22a0a8dc8c9"
+    },
+    {
+      "filename": "V_ledger_052__tax_lot_current_factor.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_052__tax_lot_current_factor.sql",
+      "schema": "ledger",
+      "sha256": "3f792a5b2327dd2f861349ef0cda00034a3ca8fd91d63f5dd5a6478879aee020"
+    },
+    {
+      "filename": "V_ledger_053__atomic_lot_factor_paydown.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_053__atomic_lot_factor_paydown.sql",
+      "schema": "ledger",
+      "sha256": "b9c89bdcb138c7de59d9b2e89e2f504a1be8d5102a31378796bbce7b59e8c32a"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1190,7 +1334,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "88412413d73080ca673f3bb9f9a7c14f082e9beb58790a21f15cd1cc32ba2394",
+  "fingerprint": "987642a3076d920bbfafcc2281407c2ff5286503526c44b4f9181487d4c88b42",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1428,9 +1572,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 132,
+    "files": 148,
     "migration_sets": 10,
-    "waivers": 19,
+    "waivers": 25,
     "warnings": 0
   },
   "waivers": [
@@ -1520,6 +1664,20 @@
     },
     {
       "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_051__tax_lot_account_case_insensitive_keys.sql",
+      "reason": "Requires independent human schema/storage review. DROP INDEX IF EXISTS immediately precedes CREATE INDEX for the same three tax_lots/tax_lot_policies index names in one transaction, replacing coalesce(financial_account_id, '') with lower(coalesce(financial_account_id, '')) so storage uniqueness and lookups agree with LedgerAccount's case-insensitive FinancialAccountId equality. No table, column, row or value is removed or rewritten; a leading DO block raises before any DDL when retained rows already collide under the case-insensitive key, naming the conflicting group and row counts for operator resolution. Follows the ledger set's drop/recreate reapply idiom (drift policy: reapply). Hosted PostgreSQL execution of the duplicate-label, cross-case lookup and populated pre-check tests is required before release.",
+      "review_after": "2027-04-17",
+      "rule_id": "migration-drop-object"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_053__atomic_lot_factor_paydown.sql",
+      "reason": "Requires independent human schema/storage review. Transactionally replaces five existing named CHECK constraints (ck_atomic_tax_lot_batch_kind, ck_tax_lot_mutations_kind, ck_tax_lot_mutations_quantities, ck_tax_lot_mutations_cost from V_ledger_050 and ck_tax_lots_current_factor from V_ledger_052) with strict supersets admitting the governed FactorPaydown mutation and a current factor of zero for a fully paid-down, closed lot, and replaces the new instruction constraint on explicit reapply. Every previously valid row stays valid; no table, column, row, acquisition fact, retained instruction or paydown factor is removed. The nullable factor_paydown_instruction is required only for new FactorPaydown batches. protect_open_lot_current_factor is tightened by create or replace, not dropped. Populated through-052 upgrade, retained history, explicit reapply/restart and injected post-drop DDL failure tests are included; hosted PostgreSQL execution is required before release. This permits failed-upgrade rollback, not a downgrade that discards retained paydown instructions or factors.",
+      "review_after": "2027-04-25",
+      "rule_id": "migration-drop-table-member"
+    },
+    {
+      "category": "destructive_changes",
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/032_security_master_normalized_primary_identifier_uniqueness.sql",
       "reason": "The migration drops only the superseded raw-value unique index and normalized non-unique index after its deterministic collision preflight succeeds, then immediately creates the normalized unique index. No table data or identifier history is removed.",
       "review_after": "2027-02-28",
@@ -1559,6 +1717,34 @@
       "reason": "Requires human schema/storage review. Authorized by the repository owner on 2026-10-16. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only Security Master governance event log; no data is truncated. PostgreSQL regression coverage attempts update, delete and truncate and verifies the events are retained.",
       "review_after": "2027-04-16",
       "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/051_security_governance_events_underlying_graph_stream.sql",
+      "reason": "Requires human schema/storage review. Replaces only security_governance_events_stream_check with a wider check that keeps every existing stream ('OperatorOverrides', 'Aliases', 'ProjectionRebuild') and admits 'UnderlyingGraph', so declared underlying-graph links can be recorded in the append-only governance log. No row, column or trigger is removed, and the drop and re-add run in the migration runner's single transaction, so a failure leaves the original constraint in place. A reverse migration must not narrow the check while 'UnderlyingGraph' rows exist.",
+      "review_after": "2027-04-22",
+      "rule_id": "migration-drop-table-member"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/052_security_curves.sql",
+      "reason": "Requires human schema/storage review. The lexical TRUNCATE matches declare BEFORE TRUNCATE triggers that reject truncation of the write-once security_curves table and the append-only, immutable security_curve_versions table; no data is truncated and the migration creates only new tables, indexes, a function and triggers. PostgreSQL regression coverage attempts update, delete and truncate on both tables and verifies that every curve definition and published curve version is retained.",
+      "review_after": "2027-04-25",
+      "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/053_security_governance_events_curves_stream.sql",
+      "reason": "Requires human schema/storage review. Replaces only security_governance_events_stream_check with a wider check that keeps every existing stream ('OperatorOverrides', 'Aliases', 'ProjectionRebuild', 'UnderlyingGraph') and admits 'Curves', so stored-curve definitions and published versions can be recorded in the append-only governance log. No row, column or trigger is removed, and the drop and re-add run in the migration runner's single transaction, so a failure leaves the original constraint in place. A reverse migration must not narrow the check while 'Curves' rows exist.",
+      "review_after": "2027-04-25",
+      "rule_id": "migration-drop-table-member"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/055_security_governance_events_otc_collateral_stream.sql",
+      "reason": "Requires human schema/storage review. Replaces only security_governance_events_stream_check with a wider check that keeps every existing stream ('OperatorOverrides', 'Aliases', 'ProjectionRebuild', 'UnderlyingGraph', 'Curves') and admits 'OtcCollateral', so OTC exposure snapshots, collateral balances and margin calls can be recorded in the append-only governance log. No row, column or trigger is removed, and the drop and re-add run in the migration runner's single transaction, so a failure leaves the original constraint in place. A reverse migration must not narrow the check while 'OtcCollateral' rows exist.",
+      "review_after": "2027-04-25",
+      "rule_id": "migration-drop-table-member"
     },
     {
       "category": "removed_migrations",

@@ -142,19 +142,6 @@ public static class ServiceCompositionRoot
     }
 
     /// <summary>
-    /// Initializes the circuit breaker callback router with the built service provider.
-    /// Call this once after the DI container is built (i.e., after <c>WebApplication.Build()</c>
-    /// or <c>ServiceCollection.BuildServiceProvider()</c>) to connect Polly state-change
-    /// callbacks to <see cref="CircuitBreakerStatusService"/>.
-    /// </summary>
-    public static void InitializeCircuitBreakerCallbackRouter(IServiceProvider sp)
-    {
-        var cbService = sp.GetService<CircuitBreakerStatusService>();
-        if (cbService != null)
-            CircuitBreakerCallbackRouter.Initialize(cbService);
-    }
-
-    /// <summary>
     /// Locates the singleton feature module instance of type <typeparamref name="T"/>
     /// from the static module array and invokes its registration.
     /// </summary>

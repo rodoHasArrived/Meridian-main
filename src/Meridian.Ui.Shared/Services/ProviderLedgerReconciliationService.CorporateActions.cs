@@ -63,8 +63,14 @@ public sealed partial class ProviderLedgerReconciliationService
 
         var positions = providerProjection.Positions;
         var corporateActionEvents = providerProjection.CorporateActions ?? [];
-        var equityPositionCount = positions.Count(static position => IsEquityAssetClass(position.AssetClass));
-        var fixedIncomeOrStructuredPositionCount = positions.Count(static position => IsFixedIncomeOrStructuredAssetClass(position.AssetClass));
+        var passportsBySymbol = securityMasterPassports
+            .Where(static passport => !string.IsNullOrWhiteSpace(passport.Symbol))
+            .GroupBy(static passport => NormalizeSymbol(passport.Symbol), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(static group => group.Key, static group => group.First(), StringComparer.OrdinalIgnoreCase);
+        ProviderSecurityMasterPassportDto? PassportFor(FundAccountBrokeragePositionDto position)
+            => passportsBySymbol.TryGetValue(NormalizeSymbol(position.Symbol), out var passport) ? passport : null;
+        var equityPositionCount = positions.Count(position => IsEquityAssetClass(position, PassportFor(position)));
+        var fixedIncomeOrStructuredPositionCount = positions.Count(position => IsFixedIncomeOrStructuredAssetClass(position, PassportFor(position)));
         var incomeCashTransactionCount = providerProjection.CashTransactions.Count(static transaction => IsIncomeTransaction(transaction.TransactionType));
         var dividendCashTransactionCount = providerProjection.CashTransactions.Count(static transaction => IsDividendTransaction(transaction.TransactionType));
         var interestCashTransactionCount = providerProjection.CashTransactions.Count(static transaction => IsInterestTransaction(transaction.TransactionType));
@@ -118,10 +124,6 @@ public sealed partial class ProviderLedgerReconciliationService
         var warnings = new List<string>();
         var lines = new List<ProviderCorporateActionReadinessLineDto>();
         var evidenceCandidates = new List<ProviderCorporateActionEvidenceCandidateDto>();
-        var passportsBySymbol = securityMasterPassports
-            .Where(static passport => !string.IsNullOrWhiteSpace(passport.Symbol))
-            .GroupBy(static passport => NormalizeSymbol(passport.Symbol), StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(static group => group.Key, static group => group.First(), StringComparer.OrdinalIgnoreCase);
 
         if (equityPositionCount > 0)
         {
@@ -276,8 +278,13 @@ public sealed partial class ProviderLedgerReconciliationService
             warnings.Add("No corporate-action-sensitive positions, provider corporate-action events, income transactions, or principal cash movements were present in the provider projection.");
         }
 
+        // A position whose provider label names no catalog class and whose Security Master identity
+        // is unresolved is not a candidate (nothing says what evidence it owes), but it is not
+        // matched either: the missing identity stays a break until it resolves and classifies.
         var status = candidateCount == 0
-            ? ProviderLedgerReconciliationCheckStatusDto.Matched
+            ? unresolvedSecurityCount == 0
+                ? ProviderLedgerReconciliationCheckStatusDto.Matched
+                : ProviderLedgerReconciliationCheckStatusDto.Break
             : !hasRequiredCorporateActionCapabilityEvidence || !hasRequiredFactorScheduleCapabilityEvidence
                 ? ProviderLedgerReconciliationCheckStatusDto.Blocked
                 : requiredProviderCapabilitiesRoutable && unresolvedSecurityCount == 0
@@ -286,14 +293,14 @@ public sealed partial class ProviderLedgerReconciliationService
 
         foreach (var position in positions)
         {
-            if (!IsEquityAssetClass(position.AssetClass) &&
-                !IsFixedIncomeOrStructuredAssetClass(position.AssetClass))
+            var passport = PassportFor(position);
+            if (!IsEquityAssetClass(position, passport) &&
+                !IsFixedIncomeOrStructuredAssetClass(position, passport))
             {
                 continue;
             }
 
-            passportsBySymbol.TryGetValue(NormalizeSymbol(position.Symbol), out var passport);
-            var candidateType = IsFixedIncomeOrStructuredAssetClass(position.AssetClass)
+            var candidateType = IsFixedIncomeOrStructuredAssetClass(position, passport)
                 ? "FactorScheduleCandidate"
                 : "EquityCorporateActionCandidate";
             var requiredFeed = candidateType == "FactorScheduleCandidate"
@@ -1070,25 +1077,52 @@ public sealed partial class ProviderLedgerReconciliationService
             : "provider-corporate-actions";
     }
 
-    private static bool IsEquityAssetClass(string assetClass)
-        => !string.IsNullOrWhiteSpace(assetClass) &&
-           (assetClass.Contains("equity", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("stock", StringComparison.OrdinalIgnoreCase));
+    /// <summary>
+    /// Which corporate-action evidence a provider position owes is a fact about its asset class,
+    /// read from two catalogs rather than from the label's spelling: the provider label resolved
+    /// through the asset class catalog's names and aliases, else the position's resolved Security
+    /// Master class, then the corporate-action types the type catalog declares for that class.
+    /// Split-posting types mark the classes that owe split and dividend evidence; factor-paydown and
+    /// redemption postings mark the classes that owe factor and coupon schedules. The provider label
+    /// is consulted first because it describes the instrument as the broker holds it, whereas the
+    /// resolved reference may be a symbol-level (Inferred) match; the reference only classifies a
+    /// position whose label names no catalog class ("Common Stock"). Substring-matching the label
+    /// ("equity", "loan", "mortgage") classified whatever a provider happened to call a position,
+    /// and nothing the catalog spelled differently.
+    /// </summary>
+    private static bool IsEquityAssetClass(FundAccountBrokeragePositionDto position, ProviderSecurityMasterPassportDto? passport)
+        => OwesCorporateActionPosting(position, passport, CorporateActionLedgerPostingKind.SplitMemo);
 
-    private static bool IsFixedIncomeOrStructuredAssetClass(string assetClass)
+    private static bool IsFixedIncomeOrStructuredAssetClass(FundAccountBrokeragePositionDto position, ProviderSecurityMasterPassportDto? passport)
+        => OwesCorporateActionPosting(
+            position,
+            passport,
+            CorporateActionLedgerPostingKind.FactorPaydown,
+            CorporateActionLedgerPostingKind.RedemptionMemo);
+
+    private static bool OwesCorporateActionPosting(
+        FundAccountBrokeragePositionDto position,
+        ProviderSecurityMasterPassportDto? passport,
+        params CorporateActionLedgerPostingKind[] postingKinds)
     {
-        if (string.IsNullOrWhiteSpace(assetClass))
+        // An ambiguous label ("Equity Option") is not an unknown one: the catalog has said it cannot
+        // pick, so the resolved reference — possibly an inferred symbol match to the underlying —
+        // must not pick for it. Only a label that names no class defers to the reference: the one
+        // the retained projection carries, else the one this reconciliation run resolved (a record
+        // created between sync and reconciliation reaches the passport before the projection).
+        var resolution = SecurityAssetClassCatalog.ResolveLabel(position.AssetClass, out var descriptor);
+        if (resolution == SecurityAssetClassLabelResolution.Ambiguous)
         {
             return false;
         }
 
-        return assetClass.Contains("bond", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("fixed", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("treasury", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("mbs", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("abs", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("loan", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("structured", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("mortgage", StringComparison.OrdinalIgnoreCase);
+        if (resolution == SecurityAssetClassLabelResolution.Unresolved &&
+            !SecurityAssetClassCatalog.TryGet(position.Security?.AssetClass ?? passport?.ResolvedAssetClass, out descriptor))
+        {
+            return false;
+        }
+
+        return CorporateActionTypeDescriptorCatalog.FindByAssetClass(descriptor.AssetClass)
+            .Any(type => type.ValidSecurityMasterAssetClasses.Count > 0 && postingKinds.Contains(type.LedgerPostingKind));
     }
 }

@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
@@ -71,6 +72,65 @@ public sealed class AlphaVantageHistoricalDataProviderTests
           "Information": "Thank you for using Alpha Vantage! Our standard API call frequency is 5 calls per minute and 100 calls per day."
         }
         """;
+
+    [Theory]
+    [InlineData("25", "4", "0", "20", "30", "15")]
+    [InlineData("1000", "0.1", "0", "800", "1200", "600")]
+    [InlineData("99", "1", "1", "79.2", "118.8", "59.4")]
+    [InlineData("100", "4", "0", "80", "120", "60")]
+    [InlineData("99.995", "1", "0.005", "79.996", "119.994", "59.997")]
+    public async Task GetAdjustedDailyBarsAsync_SeparatesPriceAdjustmentFromSplitEvent(
+        string adjustedClose,
+        string splitCoefficient,
+        string dividend,
+        string adjustedOpen,
+        string adjustedHigh,
+        string adjustedLow)
+    {
+        var response = JsonSerializer.Serialize(new Dictionary<string, object>
+        {
+            ["Time Series (Daily)"] = new Dictionary<string, object>
+            {
+                ["2024-01-02"] = new Dictionary<string, string>
+                {
+                    ["1. open"] = "80",
+                    ["2. high"] = "120",
+                    ["3. low"] = "60",
+                    ["4. close"] = "100",
+                    ["5. adjusted close"] = adjustedClose,
+                    ["6. volume"] = "1000",
+                    ["7. dividend amount"] = dividend,
+                    ["8. split coefficient"] = splitCoefficient
+                }
+            }
+        });
+        using var handler = new StubHttpMessageHandler(_ => JsonResponse(response));
+        using var httpClient = new HttpClient(handler);
+        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient);
+
+        var bars = await provider.GetAdjustedDailyBarsAsync("AAPL", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 2));
+
+        var bar = bars.Should().ContainSingle().Subject;
+        bar.Open.Should().Be(80m);
+        bar.High.Should().Be(120m);
+        bar.Low.Should().Be(60m);
+        bar.Close.Should().Be(100m);
+        bar.AdjustedOpen.Should().Be(decimal.Parse(adjustedOpen, CultureInfo.InvariantCulture));
+        bar.AdjustedHigh.Should().Be(decimal.Parse(adjustedHigh, CultureInfo.InvariantCulture));
+        bar.AdjustedLow.Should().Be(decimal.Parse(adjustedLow, CultureInfo.InvariantCulture));
+        bar.AdjustedClose.Should().Be(decimal.Parse(adjustedClose, CultureInfo.InvariantCulture));
+        var expectedSplit = decimal.Parse(splitCoefficient, CultureInfo.InvariantCulture);
+        bar.SplitFactor.Should().Be(expectedSplit == 1m ? null : expectedSplit);
+        var expectedDividend = decimal.Parse(dividend, CultureInfo.InvariantCulture);
+        bar.DividendAmount.Should().Be(expectedDividend == 0m ? null : expectedDividend);
+
+        var historicalBar = bar.ToHistoricalBar(preferAdjusted: true);
+        historicalBar.Open.Should().Be(bar.AdjustedOpen);
+        historicalBar.High.Should().Be(bar.AdjustedHigh);
+        historicalBar.Low.Should().Be(bar.AdjustedLow);
+        historicalBar.Close.Should().Be(bar.AdjustedClose);
+        historicalBar.Volume.Should().Be(1000);
+    }
 
     [Fact]
     public async Task GetIntradayBarsAsync_NormalSessionOpen_ParsesFiltersAndRequestShape()

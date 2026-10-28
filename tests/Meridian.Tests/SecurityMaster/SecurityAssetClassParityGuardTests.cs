@@ -54,9 +54,11 @@ public sealed class SecurityAssetClassParityGuardTests
     {
         // The claimed set was trimmed to real classes; the business vocabulary it used to carry is
         // retained rather than dropped, so the readiness surface can still say what is coming.
+        // "Forward" left the planned vocabulary when FxForward and NonDeliverableForward were modeled.
         SecurityAssetPackRegistry.All
             .SelectMany(static pack => pack.PlannedAssetClasses)
-            .Should().Contain(new[] { "Cash", "BankAccount", "Mortgage", "Forward", "ExchangeTradedFund" });
+            .Should().Contain(new[] { "Cash", "BankAccount", "Mortgage", "ExchangeTradedFund" })
+            .And.NotContain("Forward");
     }
 
     [Fact]

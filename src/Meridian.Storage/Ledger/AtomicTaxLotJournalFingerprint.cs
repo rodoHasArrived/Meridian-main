@@ -55,7 +55,8 @@ public static class AtomicTaxLotJournalFingerprint
             command.CorporateAction,
             command.CapitalReturn,
             command.Direction,
-            command.ReferenceVersions);
+            command.ReferenceVersions,
+            command.FactorPaydown);
 
         var element = JsonSerializer.SerializeToElement(payload, SerializerOptions);
         using var stream = new MemoryStream();
@@ -182,5 +183,9 @@ public static class AtomicTaxLotJournalFingerprint
         [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         OpenLotDirection Direction,
         [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        AtomicLotReferenceVersions? ReferenceVersions);
+        AtomicLotReferenceVersions? ReferenceVersions,
+        // Joins the digest only when present, exactly like CapitalReturn: every retained batch of
+        // another kind keeps its fingerprint and FingerprintVersion stays 1.
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown);
 }

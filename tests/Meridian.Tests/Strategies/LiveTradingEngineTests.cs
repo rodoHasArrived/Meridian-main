@@ -79,6 +79,7 @@ public sealed class LiveTradingEngineTests
                 NullLogger<ExecutionAuditTrailService>.Instance);
             await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
                 brokerageConfiguration: brokerage, liveOrderReadinessGate: gate, auditTrail: auditTrail);
+            await oms.StartAsync();
             await using var engine = CreateEngine(repository, hub, cache, oms,
                 options: new LiveTradingEngineOptions { AllowLiveRuns = true }, brokerageConfiguration: brokerage);
 
@@ -177,6 +178,7 @@ public sealed class LiveTradingEngineTests
         await using var oms = new OrderManagementSystem(
             executionGateway,
             NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
         await using var engine = CreateEngine(repository, hub, cache, oms);
         var run = CreatePaperRun(
             strategyId: BuyAndHoldLiveStrategy.CatalogId,
@@ -416,6 +418,7 @@ public sealed class LiveTradingEngineTests
         await using var oms = new OrderManagementSystem(
             gateway,
             NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
         await using var engine = CreateEngine(repository, hub, cache, oms, catalog);
         var retiredRun = CreatePaperRun(
             retiredStrategy.StrategyId,
@@ -469,6 +472,7 @@ public sealed class LiveTradingEngineTests
         await using var oms = new OrderManagementSystem(
             gateway,
             NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
         await using var engine = CreateEngine(
             repository,
             hub,
@@ -537,6 +541,7 @@ public sealed class LiveTradingEngineTests
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             tradeEventPublisher: handoff);
+        await oms.StartAsync();
         await using var engine = CreateEngine(repository, hub, cache, oms, catalog);
         var run = CreatePaperRun(
             strategy.StrategyId,

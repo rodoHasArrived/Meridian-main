@@ -114,6 +114,39 @@ public sealed class BrokerageExecutionAdmissionLimitTests
         fixture.Broker.Submissions.Should().ContainSingle();
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RegisteredOms_RetainedReplacementAliases_OverlapOnlyOneLocalSlot(bool includeCurrentBrokerRow)
+    {
+        await using var fixture = new Fixture(config => config.MaxOpenOrders = 2);
+        (await fixture.Oms.PlaceOrderAsync(Request("first"))).Success.Should().BeTrue();
+        fixture.Broker.ModificationResponse = new ExecutionReport
+        {
+            OrderId = "broker-first-replacement",
+            GatewayOrderId = "broker-first-replacement",
+            ClientOrderId = "replacement-client",
+            ReplacesOrderId = "broker-first",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            ReportType = ExecutionReportType.Modified,
+            OrderStatus = OrderStatus.Accepted,
+            OrderQuantity = 1m
+        };
+        (await fixture.Oms.ModifyOrderAsync("first", new OrderModification { NewLimitPrice = 1m })).Success.Should().BeTrue();
+        fixture.Broker.OpenOrders = includeCurrentBrokerRow
+            ? [BrokerOrder("first", "broker-first"), BrokerOrder("replacement-client", "broker-first-replacement")]
+            : [BrokerOrder("first", "broker-first")];
+
+        var second = await fixture.Oms.PlaceOrderAsync(Request("second"));
+
+        second.Success.Should().Be(!includeCurrentBrokerRow,
+            "a stale predecessor overlaps its working replacement, while two live broker rows consume two slots");
+        fixture.Broker.Submissions.Should().HaveCount(includeCurrentBrokerRow ? 1 : 2);
+        if (includeCurrentBrokerRow)
+            second.ErrorMessage.Should().Contain("Open order count");
+    }
+
     [Fact]
     public async Task RegisteredOms_ReservesOpenOrderSlotWhileBrokerAcknowledgementIsPending()
     {
@@ -243,6 +276,7 @@ public sealed class BrokerageExecutionAdmissionLimitTests
             });
             _provider = services.BuildServiceProvider();
             Oms = _provider.GetRequiredService<IOrderManager>();
+            ((IOrderManagementLifecycle)Oms).StartAsync().GetAwaiter().GetResult();
         }
 
         public async ValueTask DisposeAsync()
@@ -273,6 +307,7 @@ public sealed class BrokerageExecutionAdmissionLimitTests
         public bool FailOpenOrderQuery { get; set; }
         public OrderStatus SubmissionStatus { get; set; } = OrderStatus.Accepted;
         public int ModifyCount { get; private set; }
+        public ExecutionReport? ModificationResponse { get; set; }
         public string GatewayId => "alpaca";
         public string BrokerDisplayName => "Recording admission broker";
         public BrokerageCapabilities BrokerageCapabilities => BrokerageCapabilities.UsEquity();
@@ -314,7 +349,7 @@ public sealed class BrokerageExecutionAdmissionLimitTests
         public Task<ExecutionReport> ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default)
         {
             ModifyCount++;
-            throw new NotSupportedException();
+            return Task.FromResult(ModificationResponse ?? throw new NotSupportedException());
         }
         public Task<AccountInfo> GetAccountInfoAsync(CancellationToken ct = default) => throw new NotSupportedException();
         public Task<IReadOnlyList<BrokerPosition>> GetPositionsAsync(CancellationToken ct = default) => throw new NotSupportedException();

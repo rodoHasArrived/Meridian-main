@@ -747,6 +747,7 @@ public sealed class EventDrivenDecouplingTests
                     new ImmediateFillGateway(),
                     NullLogger<OrderManagementSystem>.Instance,
                     tradeEventPublisher: consumer);
+                await oms.StartAsync();
 
                 var result = await oms.PlaceOrderAsync(new OrderRequest
                 {
@@ -823,6 +824,7 @@ public sealed class EventDrivenDecouplingTests
                     NullLogger<OrderManagementSystem>.Instance,
                     tradeEventPublisher: consumer,
                     tradeFillHandoffFailureStore: failureStore);
+                await oms.StartAsync();
 
                 var result = await oms.PlaceOrderAsync(new OrderRequest
                 {
@@ -859,6 +861,7 @@ public sealed class EventDrivenDecouplingTests
                 NullLogger<OrderManagementSystem>.Instance,
                 tradeEventPublisher: recoveredConsumer,
                 tradeFillHandoffFailureStore: recoveredFailureStore);
+            await recoveredOms.StartAsync();
 
             await WaitForNoHandoffFailuresAsync(recoveredOms);
             await recoveredConsumer.DisposeAsync();
@@ -1201,6 +1204,7 @@ public sealed class EventDrivenDecouplingTests
                 NullLogger<OrderManagementSystem>.Instance,
                 tradeEventPublisher: new ScopedTradeEventPublisher(TestPostingScope),
                 tradeFillHandoffFailureStore: failureStore);
+            await oms.StartAsync();
 
             oms.Should().NotBeNull();
         }

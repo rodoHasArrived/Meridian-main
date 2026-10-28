@@ -6,7 +6,8 @@ namespace Meridian.FinancialOperations.Reconciliation.Connectors;
 /// Culture- and format-aware value parsing shared by the statement connectors. Profiles
 /// supply date-format and culture hints; parsing falls back progressively so common
 /// real-world statements (US/EU decimals, parenthesized negatives, timestamped dates)
-/// import without operator intervention.
+/// import without operator intervention. Structured connectors require invariant ungrouped
+/// decimals regardless of profile culture; localized parsing is reserved for configurable CSV.
 /// </summary>
 internal static class StatementValueParser
 {
@@ -15,7 +16,8 @@ internal static class StatementValueParser
 
     private static readonly char[] DateTimeSeparators = [';', 'T', ' '];
 
-    public static bool TryParseDecimal(string? value, StatementMappingProfileDocument profile, out decimal result)
+    public static bool TryParseDecimal(
+        string? value, StatementMappingProfileDocument profile, out decimal result, bool requireInvariantNumbers = false)
     {
         result = 0m;
         if (string.IsNullOrWhiteSpace(value))
@@ -24,7 +26,8 @@ internal static class StatementValueParser
         }
 
         var trimmed = value.Trim();
-        if (string.Equals(profile.ProfileId, StatementMappingProfileRegistry.CanonicalCsvV1ProfileId, StringComparison.OrdinalIgnoreCase))
+        if (requireInvariantNumbers
+            || string.Equals(profile.ProfileId, StatementMappingProfileRegistry.CanonicalCsvV1ProfileId, StringComparison.OrdinalIgnoreCase))
         {
             return decimal.TryParse(trimmed, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint,
                 CultureInfo.InvariantCulture, out result);

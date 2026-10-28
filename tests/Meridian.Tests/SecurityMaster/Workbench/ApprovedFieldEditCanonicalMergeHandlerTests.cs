@@ -17,7 +17,7 @@ namespace Meridian.Tests.SecurityMaster.Workbench;
 /// value-less revisions stay overlay-only; a retried publish whose merge already landed detects the
 /// no-op instead of appending a duplicate event.
 /// </summary>
-public sealed class ApprovedFieldEditCanonicalMergeHandlerTests
+public sealed partial class ApprovedFieldEditCanonicalMergeHandlerTests
 {
     private static readonly Guid SecurityId = Guid.Parse("22222222-2222-2222-2222-222222222222");
 

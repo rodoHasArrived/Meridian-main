@@ -289,25 +289,17 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
     }
 
     /// <summary>
-    /// The gate for this first accounting slice. The canonical producer
-    /// (<c>SecurityMasterAccountingEventSourceAdapter</c>) now emits only the declared
-    /// <see cref="SecurityAccountingInstrumentClasses"/> values, resolved from the catalog rather
-    /// than inferred from classification prose; the remaining spellings stay accepted as read
-    /// tolerance for securities supplied by other adapters or by older callers.
+    /// The gate for this first accounting slice: a security is inside it when the catalog resolves
+    /// its declared class — canonical name, registered vendor alias (MBS, ABS, CertificateOfDeposit…)
+    /// or the coarse FixedIncome taxonomy — to one of the <see cref="SecurityAccountingInstrumentClasses"/>.
+    /// The canonical producer (<c>SecurityMasterAccountingEventSourceAdapter</c>) already emits only
+    /// those values; asking the same catalog here keeps the read tolerance for other adapters'
+    /// spellings without a second list of names that can drift from it. A class the catalog leaves
+    /// outside the slice (DirectLoan, whatever its alias) is reported as unsupported rather than
+    /// accrued as if it were a bond.
     /// </summary>
     private static bool IsFixedIncome(string assetClass) =>
-        assetClass.Equals(SecurityAccountingInstrumentClasses.Bond, StringComparison.OrdinalIgnoreCase) ||
-        assetClass.Equals(SecurityAccountingInstrumentClasses.AssetBackedSecurity, StringComparison.OrdinalIgnoreCase) ||
-        assetClass.Equals("CertificateOfDeposit", StringComparison.OrdinalIgnoreCase) ||
-        assetClass.Equals("CommercialPaper", StringComparison.OrdinalIgnoreCase) ||
-        assetClass.Equals("TreasuryBill", StringComparison.OrdinalIgnoreCase) ||
-        assetClass.Equals("MortgageBacked", StringComparison.OrdinalIgnoreCase) ||
-        assetClass.Equals("MortgageBackedSecurity", StringComparison.OrdinalIgnoreCase) ||
-        assetClass.Equals("Mbs", StringComparison.OrdinalIgnoreCase) ||
-        assetClass.Equals("AssetBacked", StringComparison.OrdinalIgnoreCase) ||
-        assetClass.Equals("Abs", StringComparison.OrdinalIgnoreCase) ||
-        assetClass.Equals("Loan", StringComparison.OrdinalIgnoreCase) ||
-        assetClass.Equals("AmortizingLoan", StringComparison.OrdinalIgnoreCase);
+        SecurityAssetClassCatalog.ResolveAccountingInstrumentClass(assetClass) is not null;
 
     private static bool RequiresFactorSchedule(SecurityMasterAccountingSecurity security)
     {
