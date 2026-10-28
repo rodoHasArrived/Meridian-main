@@ -2,7 +2,7 @@
 
 # `asset-operations-contracts` data objects - page 1 of 2
 
-Objects 1-80 of 127. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 128. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -276,7 +276,7 @@ classDiagram
         +OpenLotDirection Direction
         +decimal? DisposalSalePrice
         +IReadOnlyList~AssetDisposalLotSelectionDto~ DisposalSelections
-        +AssetLotMutationIntentDto Intent
+        +Meridian_Contracts_Accounting_Lots_OpenLotFactorPaydownInstructionDto? FactorPaydown
     }
     class Meridian_Contracts_AssetOperations_AssetLotMutationInstructionValidator["AssetLotMutationInstructionValidator"] {
     }

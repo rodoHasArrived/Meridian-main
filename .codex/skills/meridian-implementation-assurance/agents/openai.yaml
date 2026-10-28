@@ -1,4 +1,4 @@
 interface:
   display_name: "Ship With Evidence"
-  short_description: "Ship Meridian changes with evidence gates"
-  default_prompt: "Use $meridian-implementation-assurance to implement and verify this Meridian change with narrow validation, explicit evidence, performance review, and docs sync."
+  short_description: "Verify Meridian changes against acceptance evidence"
+  default_prompt: "Use $meridian-implementation-assurance to implement and verify this Meridian change against acceptance criteria with risk-based checks, docs sync, and explicit verified, unverified, or blocked outcomes. Treat fixture checks separately from agent behavior evidence."

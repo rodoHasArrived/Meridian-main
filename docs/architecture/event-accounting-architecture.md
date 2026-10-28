@@ -132,6 +132,15 @@ lot selection is an idempotency collision rather than a replay.
 The existing factor-paydown calculator remains one source-specific projection producer; it no longer
 defines the boundary for other asset accounting event kinds. Compatibility bridges and backtesting
 adjusters may call projection calculators, but they do not establish production posting authority.
+A factor paydown posts as the canonical `AssetAccounting.CorporateAction` event carrying the
+governed `FactorPaydown` lot mutation: the projector's event is retyped to the canonical kind, and
+so is the trigger of the lineage it carries, which keeps the model key `mbs-factor-paydown` (the
+model's own `MbsFactorPaydown` event type stays on the projector's output and the persisted Asset
+Operations projection lineage, not on the spine event or its lineage), the per-lot
+instruction sets each open lot's current factor, relieves its basis pro rata to the principal repaid
+and recognises the difference as realized gain or loss, and Rules Studio resolves the journal's
+cash, carrying-relief and realized lines from the instruction's `LotMutationComponent` values rather
+than the event amount. A factor journal without that lot mutation is not posting authority.
 Consistent with that boundary, the shared instrument-to-journal proof
 (`FinancialRecordExplorerReadService.InstrumentJournalProof.cs`) reconstructs the source-event ->
 role/position -> projection -> posting-candidate -> approval -> immutable-journal chain for any
@@ -201,6 +210,8 @@ Focused coverage lives in:
 - `LedgerIntegrationTests.AutomatedJournalDraftProjector_PreservesEventAccountingMetadataAndTypedEvidence`
 - `FactorPaydownProjectionServiceTests.Project_ShouldCalculateGoldenMbsPrincipalAndTypedLineage`
 - `AccountingPostingCandidateServiceTests.BuildCandidateAsync_MbsFactorPaydown_RecalculatesPersistedProjectionBeforeDrafting`
+- `AccountingPostingCandidateServiceTests.BuildCandidateAsync_MbsFactorPaydown_PremiumLotRelievesProRataBasisAndBooksTheLoss`
+- `AssetAccountingEventSpineServiceTests.FactorPaydown_RequiresRetainedInstructionAndIndependentApproval_ThenPostsAtomicallyAndReplays`
 - `AssetAccountingEventSpineServiceTests` (projection across all eight kinds, drafting authority
   resolution, evidence-only lifecycle-stage restrictions, positive-event-amount gates)
 - `AssetAccountingEventSpineContractTests` (lifecycle contract plus acquisition, disposal, and

@@ -3,6 +3,7 @@ using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.SecurityMaster.Schedules;
 
 namespace Meridian.Instruments.AssetOperations;
 
@@ -921,36 +922,38 @@ public sealed class AssetObligationProjectionService
         return primary is null ? null : $"{primary.Kind}:{primary.Value}";
     }
 
+    // The obligation steps take the contractual schedule kernel's month step (ADR-025), which clamps
+    // the day to the target month and throws ArgumentOutOfRangeException past 9999-12-31, as the
+    // legacy month arithmetic did (SCH-DEF-011).
     private static DateOnly NextMonthlyDate(DateOnly asOf)
     {
         var monthStart = new DateOnly(asOf.Year, asOf.Month, 1);
-        return monthStart.AddMonths(1);
+        return ScheduleTenor.Months(1).Advance(monthStart, 1);
     }
 
     private static DateOnly NextQuarterDate(DateOnly asOf)
     {
+        // The as-of always falls inside the quarter that starts here, so one step reaches the next.
         var quarterStartMonth = (((asOf.Month - 1) / 3) * 3) + 1;
-        var next = new DateOnly(asOf.Year, quarterStartMonth, 1);
-        while (next <= asOf)
-        {
-            next = next.AddMonths(3);
-        }
-
-        return next;
+        var quarterStart = new DateOnly(asOf.Year, quarterStartMonth, 1);
+        return ScheduleTenor.Months(3).Advance(quarterStart, 1);
     }
 
     private static DateOnly NextFrequencyDate(DateOnly asOf, string? paymentFrequency)
     {
         var months = NormalizeFrequencyMonths(paymentFrequency);
-        return asOf.AddMonths(months);
+        return ScheduleTenor.Months(months).Advance(asOf, 1);
     }
 
+    // The first date after the as-of on the grid compounded from the anchor, so a month-end anchor
+    // drifts; an anchor already after the as-of is returned unchanged. The only caller passes 3.
     private static DateOnly AdvanceAfter(DateOnly anchor, DateOnly asOf, int months)
     {
+        var tenor = ScheduleTenor.Months(months);
         var next = anchor;
         while (next <= asOf)
         {
-            next = next.AddMonths(months);
+            next = tenor.Advance(next, 1);
         }
 
         return next;

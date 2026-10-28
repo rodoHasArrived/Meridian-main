@@ -1,3 +1,6 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
+
 namespace Meridian.Contracts.SecurityMaster;
 
 /// <summary>
@@ -195,7 +198,13 @@ public sealed record SecurityAssetTermField(
     /// introduced this field; 1 for every field the class carried before per-class versioning. A
     /// payload stamped with an earlier version never carries it. The committed manifests under
     /// <c>tests/fixtures/security-master/terms-versions</c> are checked against it: a field must first
-    /// appear in the manifest of this version.
+    /// appear in the manifest of this version. A field above the class's write version is readable
+    /// but not writable (<see cref="SecurityAssetClassDescriptor.ReadsTermsThrough"/>): a node decodes
+    /// it from payloads stamped at or above this version and refuses it on every write path. A class
+    /// may read several versions ahead of what it writes, each introduced by its own top-level fields
+    /// (Bond: <c>scheduleConventions</c> at 2, <c>callSchedule</c> and <c>putSchedule</c> at 3). The
+    /// members of a container introduced above version 1 are frozen with it: a later member needs a
+    /// new container key.
     /// </summary>
     public int SinceTermsVersion { get; init; } = SecurityTermsEnvelope.DefaultAssetClassTermsVersion;
 
@@ -348,7 +357,14 @@ public static class SecurityAssetTermsSchema
                 Opt("mandatoryPutDate", SecurityAssetTermFieldType.Date),
                 // Contractual principal instalments ({paymentDate, amount}) for sinking-fund and
                 // other scheduled-principal subclasses; empty for bullet bonds.
-                Opt("principalSchedule", SecurityAssetTermFieldType.Array)
+                Opt("principalSchedule", SecurityAssetTermFieldType.Array),
+                // How the schedule kernel builds the coupon periods (asset-class terms version 2,
+                // readable before writable: ADR-024). Inner shape: ScheduleConventionFields.
+                Opt("scheduleConventions", SecurityAssetTermFieldType.Object).Since(2),
+                // Declared call and put schedules (asset-class terms version 3, readable before
+                // writable: ADR-024). Entry shapes: CallScheduleEntryFields, PutScheduleEntryFields.
+                Opt("callSchedule", SecurityAssetTermFieldType.Array).Since(3),
+                Opt("putSchedule", SecurityAssetTermFieldType.Array).Since(3)
             ],
             ["FxSpot"] =
             [
@@ -377,7 +393,13 @@ public static class SecurityAssetTermsSchema
                 Req("maturity", SecurityAssetTermFieldType.Date),
                 Opt("couponRate", SecurityAssetTermFieldType.Decimal),
                 Opt("callableDate", SecurityAssetTermFieldType.Date),
-                Opt("dayCount", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.DayCount)
+                Opt("dayCount", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.DayCount),
+                // Asset-class terms version 2, readable before writable (ADR-024).
+                Opt("scheduleConventions", SecurityAssetTermFieldType.Object).Since(2),
+                // Declared call and put schedules (asset-class terms version 3, readable before
+                // writable: ADR-024). Entry shapes: CallScheduleEntryFields, PutScheduleEntryFields.
+                Opt("callSchedule", SecurityAssetTermFieldType.Array).Since(3),
+                Opt("putSchedule", SecurityAssetTermFieldType.Array).Since(3)
             ],
             ["CommercialPaper"] =
             [
@@ -483,7 +505,13 @@ public static class SecurityAssetTermsSchema
                 Opt("weightedAverageMaturityMonths", SecurityAssetTermFieldType.Integer).Since(2),
                 Opt("weightedAverageLoanAgeMonths", SecurityAssetTermFieldType.Integer).Since(2),
                 Opt("reinvestmentPeriodEnd", SecurityAssetTermFieldType.Date).Since(2),
-                Opt("nonCallPeriodEnd", SecurityAssetTermFieldType.Date).Since(2)
+                Opt("nonCallPeriodEnd", SecurityAssetTermFieldType.Date).Since(2),
+                // Asset-class terms version 3, readable before writable (ADR-024).
+                Opt("scheduleConventions", SecurityAssetTermFieldType.Object).Since(3),
+                // Declared call and put schedules (asset-class terms version 4, readable before
+                // writable: ADR-024). Entry shapes: CallScheduleEntryFields, PutScheduleEntryFields.
+                Opt("callSchedule", SecurityAssetTermFieldType.Array).Since(4),
+                Opt("putSchedule", SecurityAssetTermFieldType.Array).Since(4)
             ],
             ["PrivateFundInterest"] =
             [
@@ -644,6 +672,71 @@ public static class SecurityAssetTermsSchema
             ]
         };
 
+    // The scheduleConventions block: how the contractual schedule kernel (ADR-025) builds an
+    // instrument's periods. Every member is optional and Since 1 within the block, which carries the
+    // class's terms version itself; a member added later needs a new readable version. It must be
+    // declared above ElementFieldsByPath, which reads it while the type initializes.
+    private static readonly IReadOnlyList<SecurityAssetTermField> ScheduleConventionFields =
+    [
+        Opt("businessDayConvention", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.BusinessDayConvention),
+        Opt("accrualAdjusted", SecurityAssetTermFieldType.Boolean),
+        Opt("paymentCalendars", SecurityAssetTermFieldType.Array),
+        Opt("paymentLagBusinessDays", SecurityAssetTermFieldType.Integer),
+        Opt("rollConvention", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.RollConvention),
+        Opt("endOfMonthRule", SecurityAssetTermFieldType.Boolean),
+        Opt("firstRegularDate", SecurityAssetTermFieldType.Date),
+        Opt("lastRegularDate", SecurityAssetTermFieldType.Date),
+        OptOneOf("direction", "Forward", "Backward").WithVerbatimUndeclaredValue(),
+        Opt("stubPolicy", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.StubPolicy),
+        OptOneOf("couponRateUnit", "Percent", "Fraction").WithVerbatimUndeclaredValue(),
+        OptOneOf("couponCashBasis", "Level", "DayCount").WithVerbatimUndeclaredValue()
+    ];
+
+    // Notice terms shared by call and put entries (ADR-025 Applications, increment 4b): how many days
+    // before the exercise date notice (or a holder's put election) is due, at the latest and the
+    // earliest, and whether the counts are business or calendar days.
+    private static readonly IReadOnlyList<SecurityAssetTermField> NoticeFields =
+    [
+        Opt("minimumNoticeDays", SecurityAssetTermFieldType.Integer),
+        Opt("maximumNoticeDays", SecurityAssetTermFieldType.Integer),
+        OptOneOf("noticeDayType", "Business", "Calendar").WithVerbatimUndeclaredValue()
+    ];
+
+    // One entry of a declared call schedule (asset-class terms version 3 on Bond and
+    // CertificateOfDeposit, 4 on StructuredCredit; readable before writable, ADR-024). Meanings are
+    // frozen in ADR-025 Applications. The date is required in meaning but optional here, because a
+    // versioned container's members are untagged and optional: the reader drops an undated entry and
+    // the contract step refuses it on write. The shape is frozen once readable
+    // (terms-element-shapes/versioned-containers.json): a member added later needs a new container key
+    // at a new readable version, so a later class-wide term belongs at the top level instead. Both
+    // entry lists are declared above ElementFieldsByPath, which reads them while the type initializes.
+    private static readonly IReadOnlyList<SecurityAssetTermField> CallScheduleEntryFields =
+    [
+        Opt("callDate", SecurityAssetTermFieldType.Date),
+        Opt("callEndDate", SecurityAssetTermFieldType.Date),
+        OptOneOf("exerciseStyle", "European", "American", "Bermudan").WithVerbatimUndeclaredValue(),
+        Opt("exerciseFrequency", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.CouponFrequency),
+        Opt("callPrice", SecurityAssetTermFieldType.Decimal),
+        OptOneOf("priceBasis", "PercentOfPar", "PercentOfAccretedValue").WithVerbatimUndeclaredValue(),
+        OptOneOf("priceType", "Fixed", "MakeWhole").WithVerbatimUndeclaredValue(),
+        Opt("makeWholeSpreadBps", SecurityAssetTermFieldType.Decimal),
+        OptOneOf("partialRedemption", "WholeOnly", "ProRata", "ByLot").WithVerbatimUndeclaredValue(),
+        .. NoticeFields
+    ];
+
+    // One entry of a declared put schedule: a holder-elective put (a mandatory tender stays
+    // mandatoryPutDate). The same version and freezing rules as the call entry.
+    private static readonly IReadOnlyList<SecurityAssetTermField> PutScheduleEntryFields =
+    [
+        Opt("putDate", SecurityAssetTermFieldType.Date),
+        Opt("putEndDate", SecurityAssetTermFieldType.Date),
+        OptOneOf("exerciseStyle", "European", "American", "Bermudan").WithVerbatimUndeclaredValue(),
+        Opt("exerciseFrequency", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.CouponFrequency),
+        Opt("putPrice", SecurityAssetTermFieldType.Decimal),
+        OptOneOf("priceBasis", "PercentOfPar", "PercentOfAccretedValue").WithVerbatimUndeclaredValue(),
+        .. NoticeFields
+    ];
+
     private static readonly IReadOnlyDictionary<string, IReadOnlyList<SecurityAssetTermField>> ElementFieldsByPath =
         new Dictionary<string, IReadOnlyList<SecurityAssetTermField>>(StringComparer.OrdinalIgnoreCase)
         {
@@ -664,8 +757,21 @@ public static class SecurityAssetTermsSchema
                 // Dated {effectiveDate, notional} steps of an amortizing or accreting leg.
                 Opt("notionalSchedule", SecurityAssetTermFieldType.Array, "amortizationSchedule"),
                 // Dated {resetDate, fixingRate} resets of a floating leg, with the fixing once observed.
-                Opt("resetSchedule", SecurityAssetTermFieldType.Array, "fixings")
+                Opt("resetSchedule", SecurityAssetTermFieldType.Array, "fixings"),
+                // The leg's own schedule conventions (asset-class terms version 2, readable before
+                // writable: ADR-024).
+                Opt("scheduleConventions", SecurityAssetTermFieldType.Object).Since(2)
             ],
+            ["Swap.legs.scheduleConventions"] = ScheduleConventionFields,
+            ["Bond.scheduleConventions"] = ScheduleConventionFields,
+            ["CertificateOfDeposit.scheduleConventions"] = ScheduleConventionFields,
+            ["StructuredCredit.scheduleConventions"] = ScheduleConventionFields,
+            ["Bond.callSchedule"] = CallScheduleEntryFields,
+            ["Bond.putSchedule"] = PutScheduleEntryFields,
+            ["CertificateOfDeposit.callSchedule"] = CallScheduleEntryFields,
+            ["CertificateOfDeposit.putSchedule"] = PutScheduleEntryFields,
+            ["StructuredCredit.callSchedule"] = CallScheduleEntryFields,
+            ["StructuredCredit.putSchedule"] = PutScheduleEntryFields,
             // The conversion terms a convertible or convertible-preferred equity carries (the F#
             // ConvertibleTerms record): the security it converts into, and at what ratio.
             ["Equity.convertibleTerms"] =
@@ -722,5 +828,217 @@ public static class SecurityAssetTermsSchema
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// The declared fields of <paramref name="assetClass"/> a node writes: those introduced at or below
+    /// its write version (<see cref="SecurityAssetClassCatalog.GetTermsVersion"/>). Authoring surfaces
+    /// (the asset-class registry, term blocks, the field-edit validator) offer these, never a field
+    /// the node only reads.
+    /// </summary>
+    public static IReadOnlyList<SecurityAssetTermField> WritableFields(string assetClass)
+    {
+        var writes = SecurityAssetClassCatalog.GetTermsVersion(assetClass);
+        return Fields(assetClass).Where(field => field.SinceTermsVersion <= writes).ToArray();
+    }
+
+    /// <summary>
+    /// The registered inner-shape paths (<c>Class.key</c>, or <c>Class.container.key</c> for a shape
+    /// inside an element), so guards can check every registered shape.
+    /// </summary>
+    public static IReadOnlyCollection<string> ElementFieldPaths => ElementFieldsByPath.Keys.ToArray();
+
+    /// <summary>
+    /// Whether a term value is populated. An absent or null value is not, and an array or object is
+    /// populated only when an element or member is; every other value is, including <c>false</c>,
+    /// <c>0</c> and the empty string. Absent, null, <c>[]</c> and an all-null object therefore all mean
+    /// the term is unset (ADR-024).
+    /// </summary>
+    public static bool IsPopulatedTermValue(JsonElement value)
+        => value.ValueKind switch
+        {
+            JsonValueKind.Undefined or JsonValueKind.Null => false,
+            JsonValueKind.Array => value.EnumerateArray().Any(IsPopulatedTermValue),
+            JsonValueKind.Object => value.EnumerateObject().Any(static member => IsPopulatedTermValue(member.Value)),
+            _ => true
+        };
+
+    /// <summary>
+    /// The populated terms of a flat payload that were introduced above <paramref name="termsVersion"/>:
+    /// top-level fields, and fields inside a declared object or array element (a swap leg's
+    /// <c>legs[1].scheduleConventions</c>). Keys and aliases match case-insensitively, as the readers
+    /// do. A profile-governed payload (<see cref="SecurityTermsEnvelope.IsProfileGovernedPayload"/>)
+    /// has no versioned class terms and yields nothing.
+    /// </summary>
+    public static IReadOnlyList<(string Path, SecurityAssetTermField Field)> PopulatedTermsAbove(
+        string assetClass,
+        JsonElement payload,
+        int termsVersion)
+        => VersionedTermsAbove(assetClass, payload, termsVersion, int.MaxValue)
+            .Where(static term => IsPopulatedTermValue(term.Value))
+            .Select(static term => (term.Path, term.Field))
+            .ToArray();
+
+    /// <summary>
+    /// The terms of a flat payload introduced above <paramref name="termsVersion"/>, keyed by canonical
+    /// path (<c>scheduleConventions</c>, <c>legs[1].scheduleConventions</c>) with every null member,
+    /// <c>[]</c> and <c>{}</c> removed, so two payloads that carry the same versioned content compare
+    /// equal however they spelled its absence. A path more than one spelling populates is reported in
+    /// <paramref name="conflictingPaths"/>. A profile-governed payload yields an empty object.
+    /// </summary>
+    public static JsonObject NormalizedTermsAbove(
+        string assetClass,
+        JsonElement payload,
+        int termsVersion,
+        out IReadOnlyList<string> conflictingPaths)
+        => NormalizedTermsAbove(assetClass, payload, termsVersion, int.MaxValue, out conflictingPaths);
+
+    /// <summary>
+    /// <see cref="NormalizedTermsAbove(string, JsonElement, int, out IReadOnlyList{string})"/> bounded
+    /// above: only the terms introduced after <paramref name="termsVersion"/> and at or before
+    /// <paramref name="throughVersion"/>. The round-trip guard bounds it by a row's own stamp, because a
+    /// term above the stamp is an undeclared key of that row, which no reader decodes.
+    /// </summary>
+    public static JsonObject NormalizedTermsAbove(
+        string assetClass,
+        JsonElement payload,
+        int termsVersion,
+        int throughVersion,
+        out IReadOnlyList<string> conflictingPaths)
+    {
+        var normalized = new JsonObject();
+        var conflicts = new List<string>();
+        foreach (var term in VersionedTermsAbove(assetClass, payload, termsVersion, throughVersion))
+        {
+            if (NormalizeTermValue(JsonNode.Parse(term.Value.GetRawText())) is not { } value)
+            {
+                continue;
+            }
+
+            if (normalized.ContainsKey(term.CanonicalPath))
+            {
+                conflicts.Add(term.CanonicalPath);
+                continue;
+            }
+
+            normalized[term.CanonicalPath] = value;
+        }
+
+        conflictingPaths = conflicts;
+        return normalized;
+    }
+
+    private static IEnumerable<(string Path, string CanonicalPath, SecurityAssetTermField Field, JsonElement Value)> VersionedTermsAbove(
+        string assetClass,
+        JsonElement payload,
+        int termsVersion,
+        int throughVersion)
+    {
+        if (payload.ValueKind != JsonValueKind.Object || SecurityTermsEnvelope.IsProfileGovernedPayload(assetClass, payload))
+        {
+            yield break;
+        }
+
+        foreach (var field in Fields(assetClass))
+        {
+            if (field.SinceTermsVersion > throughVersion)
+            {
+                continue;
+            }
+
+            foreach (var property in MatchingProperties(payload, field))
+            {
+                if (field.SinceTermsVersion > termsVersion)
+                {
+                    yield return (property.Name, field.Key, field, property.Value);
+                    continue;
+                }
+
+                var inner = ElementFields(assetClass, field.Key)
+                    .Where(innerField => innerField.SinceTermsVersion > termsVersion && innerField.SinceTermsVersion <= throughVersion)
+                    .ToArray();
+                if (inner.Length == 0)
+                {
+                    continue;
+                }
+
+                if (field.Type == SecurityAssetTermFieldType.Object && property.Value.ValueKind == JsonValueKind.Object)
+                {
+                    foreach (var term in InnerTerms(property.Value, property.Name, field.Key, inner))
+                    {
+                        yield return term;
+                    }
+                }
+                else if (field.Type == SecurityAssetTermFieldType.Array && property.Value.ValueKind == JsonValueKind.Array)
+                {
+                    var index = 0;
+                    foreach (var element in property.Value.EnumerateArray())
+                    {
+                        if (element.ValueKind == JsonValueKind.Object)
+                        {
+                            foreach (var term in InnerTerms(element, $"{property.Name}[{index}]", $"{field.Key}[{index}]", inner))
+                            {
+                                yield return term;
+                            }
+                        }
+
+                        index++;
+                    }
+                }
+            }
+        }
+    }
+
+    private static IEnumerable<(string Path, string CanonicalPath, SecurityAssetTermField Field, JsonElement Value)> InnerTerms(
+        JsonElement container,
+        string path,
+        string canonicalPath,
+        IReadOnlyList<SecurityAssetTermField> fields)
+    {
+        foreach (var field in fields)
+        {
+            foreach (var property in MatchingProperties(container, field))
+            {
+                yield return ($"{path}.{property.Name}", $"{canonicalPath}.{field.Key}", field, property.Value);
+            }
+        }
+    }
+
+    private static IEnumerable<JsonProperty> MatchingProperties(JsonElement container, SecurityAssetTermField field)
+        => container.EnumerateObject().Where(property =>
+            string.Equals(property.Name, field.Key, StringComparison.OrdinalIgnoreCase)
+            || field.Aliases.Any(alias => string.Equals(property.Name, alias, StringComparison.OrdinalIgnoreCase)));
+
+    private static JsonNode? NormalizeTermValue(JsonNode? value)
+    {
+        switch (value)
+        {
+            case null:
+                return null;
+            case JsonObject members:
+                var normalizedObject = new JsonObject();
+                foreach (var (key, member) in members)
+                {
+                    if (NormalizeTermValue(member) is { } normalizedMember)
+                    {
+                        normalizedObject[key] = normalizedMember;
+                    }
+                }
+
+                return normalizedObject.Count == 0 ? null : normalizedObject;
+            case JsonArray elements:
+                var normalizedArray = new JsonArray();
+                foreach (var element in elements)
+                {
+                    if (NormalizeTermValue(element) is { } normalizedElement)
+                    {
+                        normalizedArray.Add(normalizedElement);
+                    }
+                }
+
+                return normalizedArray.Count == 0 ? null : normalizedArray;
+            default:
+                return value.GetValueKind() == JsonValueKind.Null ? null : value.DeepClone();
+        }
     }
 }
