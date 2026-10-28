@@ -63,6 +63,27 @@ cross-blueprint contracts that stop two independently written designs from colli
 
 Prefer the narrowest proof lane for the files you change.
 
+For a short edit/test loop, use the read-only recommendations and launcher diagnostics:
+
+```powershell
+python build/python/cli/buildctl.py recommend-validation
+npm run dev:doctor
+# Fixture mode checks only Node/Vite prerequisites and the browser port:
+npm run dev:fixtures -- --doctor
+```
+
+Recommendations explain the selected checks and any uncertain coverage; they do not run tests.
+Use `recommend-validation --base origin/main` to include committed branch changes as well as
+working-tree changes, or repeat `--changed-file <path>` to preview an explicit scope. The npm
+shortcut is `npm run checks:recommend -- --base origin/main`. See the
+[focused validation guide](../ai/tooling/throughput-pilot.md#recommend-focused-validation) and
+[browser diagnostics](web-development.md) for details. The required full gate below still applies.
+
+Shared assistant context already has a canonical generator. Edit the marked section in
+`.claude/skills/_shared/project-context.md`, run `npm run guidance:sync`, then
+`npm run guidance:check`. Only the marked sections in the Codex and Agents mirrors are updated;
+host-specific instructions remain separate. See [shared guidance generation](../ai/tooling/throughput-pilot.md#generate-shared-guidance).
+
 Enable the [staged-source Git hook](../development/git-hooks.md) with
 `./scripts/dev/install-git-hooks.sh` or `make install-hooks`, including in linked worktrees.
 The hook checks an isolated snapshot of staged C#/VB whitespace and skips .NET for commits

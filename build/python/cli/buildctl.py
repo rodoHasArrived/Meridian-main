@@ -1840,6 +1840,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_recommend.add_argument("--root", type=Path, default=REPO_ROOT)
     p_recommend.add_argument("--changed-file", action="append", default=[])
     p_recommend.add_argument("--from-git", action="store_true", help="Include staged, unstaged and untracked changes")
+    p_recommend.add_argument("--base", help="Include committed changes since the merge base with REF, plus local changes")
     p_recommend.add_argument("--json", action="store_true", help="Emit structured JSON instead of text")
     p_recommend.add_argument("--output", type=Path)
 

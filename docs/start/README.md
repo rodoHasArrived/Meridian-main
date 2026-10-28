@@ -79,6 +79,10 @@ npm ci
 npm --prefix src/Meridian.Ui/dashboard ci
 ```
 
+Before launching, run `npm run dev:doctor` for backend-connected prerequisites and port checks,
+or `npm run dev:fixtures -- --doctor` for fixture-only prerequisites. These commands report
+problems and suggested fixes without installing dependencies or starting services.
+
 Use `npm run dev` for the seeded backend and Vite together, or `npm run dev:fixtures` for Vite
 with labelled sample responses and no backend. Each launcher stays running until Ctrl+C.
 The backend-connected launcher creates its own configuration; neither mode needs `--quickstart`.

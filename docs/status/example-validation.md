@@ -8,17 +8,17 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 1142 |
-| Valid | 663 |
+| Total code blocks | 1144 |
+| Valid | 664 |
 | Invalid | 0 |
-| Skipped | 479 |
+| Skipped | 480 |
 
 ## Summary by Language
 
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 121 | 0 | 0 | 121 |
-| `bash` | 256 | 256 | 0 | 0 |
+| `bash` | 257 | 257 | 0 | 0 |
 | `cpp` | 1 | 0 | 0 | 1 |
 | `csharp` | 307 | 307 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
@@ -30,7 +30,7 @@
 | `markdown` | 6 | 0 | 0 | 6 |
 | `md` | 10 | 0 | 0 | 10 |
 | `mermaid` | 43 | 0 | 0 | 43 |
-| `powershell` | 104 | 0 | 0 | 104 |
+| `powershell` | 105 | 0 | 0 | 105 |
 | `python` | 4 | 4 | 0 | 0 |
 | `sql` | 16 | 0 | 0 | 16 |
 | `text` | 81 | 0 | 0 | 81 |
@@ -133,7 +133,7 @@ No invalid code examples found.
 | `docs/engineering/plans/god-file-burn-down-plan.md` | 6 |
 | `docs/engineering/plans/wpf-web-ui-alignment-plan.md` | 1 |
 | `docs/engineering/production-certification-evidence-chain.md` | 2 |
-| `docs/engineering/web-development.md` | 4 |
+| `docs/engineering/web-development.md` | 5 |
 | `docs/examples/agent-improvement-loop/README.md` | 1 |
 | `docs/generated/README.md` | 1 |
 | `docs/integrations/fsharp-integration.md` | 7 |

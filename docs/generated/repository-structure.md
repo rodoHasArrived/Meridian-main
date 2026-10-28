@@ -3967,6 +3967,8 @@ Meridian-main
 │   │   ├── validate_workstation_cockpit_acceptance_matrix.py
 │   │   ├── web-dev.mjs
 │   │   ├── web-dev.test.mjs
+│   │   ├── web-doctor.mjs
+│   │   ├── web-doctor.test.mjs
 │   │   ├── web-screenshot-fixtures.json
 │   │   └── web-screenshot-routes.json
 │   ├── lib
