@@ -70,10 +70,12 @@
         "docs/status/docs-automation-summary.md",
         "docs/status/docs-automation-summary.json",
         "docs/status/todo-scan-results.json",
-        "artifacts/ci-summary/"
+        "artifacts/ci-summary/",
+        "artifacts/docs/",
+        "artifacts/maintained-generation/"
       ],
-      "timeoutMinutes": 25,
-      "pathTriggerNotes": "Covers docs delivery claims, status staleness, AI contract drift, lane vocabulary, roadmap registry, source READMEs, TODO scans, and generated roadmap/source drift.",
+      "timeoutMinutes": 35,
+      "pathTriggerNotes": "Covers docs delivery claims, status staleness, AI contract drift, lane vocabulary, roadmap registry, source READMEs, TODO scans, and the shared bounded documentation/diagram generation and complete freshness check.",
       "requiredCheckRole": "evidence"
     },
     {

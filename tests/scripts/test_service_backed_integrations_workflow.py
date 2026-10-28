@@ -49,7 +49,8 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
 
     def test_disposable_postgres_configuration_matches_certification(self):
         service = self.job["services"]["postgres"]
-        self.assertEqual(service["image"], "postgres:17")
+        self.assertRegex(service["image"], r"^postgres:17@sha256:[0-9a-f]{64}$")
+        self.assertEqual(service["image"], self.production["jobs"]["recovery-drill"]["services"]["postgres"]["image"])
         self.assertEqual(service["env"], {"POSTGRES_USER": "postgres", "POSTGRES_PASSWORD": "meridian-certification", "POSTGRES_DB": "meridian"})
         self.assertEqual(service["ports"], ["5432:5432"])
         self.assertNotIn("volumes", service)
@@ -100,6 +101,39 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
         self.assertNotIn("continue-on-error", gate)
         self.assertEqual(self.ci["jobs"]["quality-gate"]["needs"],
                          ["verify-dotnet", "verify-browser", "verify-docs", "verify-workflows"])
+
+    def test_reuse_requires_explicit_producer_outputs_and_validated_bytes(self):
+        inputs = self.shared["on"]["workflow_call"]["inputs"]
+        fields = ("artifact-id", "artifact-name", "receipt-sha256", "result")
+        for field in fields:
+            self.assertEqual(inputs[f"reuse-{field}"]["default"], "")
+            self.assertIn(f"inputs.reuse-{field} == ''", self.job["if"])
+        reuse = self.shared["jobs"]["reuse-integrations"]
+        for field in fields:
+            self.assertIn(f"inputs.reuse-{field} != ''", reuse["if"])
+        download = next(step for step in reuse["steps"]
+                        if step.get("uses", "").startswith("actions/download-artifact@"))
+        self.assertEqual(download["with"]["artifact-ids"], "${{ inputs.reuse-artifact-id }}")
+        self.assertNotIn("run-id", download["with"], "Reuse is restricted to this coordinated run.")
+        validate = next(step for step in reuse["steps"] if step.get("id") == "receipt")
+        self.assertIn("integration_evidence.py reuse", validate["run"])
+        upload = next(step for step in reuse["steps"] if step.get("id") == "upload")
+        self.assertNotIn("if", upload, "Never retain unvalidated evidence as a passing certification.")
+        self.assertEqual(upload["with"]["retention-days"], "${{ inputs.retention-days }}")
+        receipt = next(step for step in self.steps if step.get("id") == "receipt")
+        self.assertNotIn("if", receipt, "Only create passing receipts after all test/schema steps succeed.")
+
+    def test_standalone_certification_remains_fresh_and_release_passes_receipt(self):
+        inputs = self.production["on"]["workflow_call"]["inputs"]
+        for field in ("artifact-id", "artifact-name", "receipt-sha256", "result"):
+            self.assertEqual(inputs[f"integration-{field}"]["default"], "")
+        coordinator = load_workflow("desktop-installer-packaging.yml")
+        production = coordinator["jobs"]["production"]
+        self.assertIn("ci", production["needs"])
+        for field in ("artifact-id", "artifact-name", "receipt-sha256"):
+            self.assertEqual(production["with"][f"integration-{field}"],
+                             "${{ needs.ci.outputs.integration-" + field + " }}")
+        self.assertEqual(production["with"]["integration-result"], "${{ needs.ci.result }}")
 
 
 if __name__ == "__main__":

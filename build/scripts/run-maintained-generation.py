@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Regenerate the maintained browser/docs outputs to a bounded fixed point.
 
-The documentation workflow owns discovery; the adjacent output policy only
-authorizes writes. This local command does not stage, commit, or publish files.
+The explicit catalog below owns generation for CI, Documentation Automation, and
+isolated repair. The adjacent output policy only authorizes writes. This command
+does not stage, commit, or publish files.
 """
 
 from __future__ import annotations
@@ -28,69 +29,52 @@ class Step:
     optional: bool = False
 
 
-WORKFLOW = ".github/workflows/documentation.yml"
 POLICY = "build/scripts/maintained-generation-outputs.json"
 REPORT = "artifacts/maintained-generation/report.json"
+# Docker Hub's official PlantUML manifest: registry-1.docker.io/v2/plantuml/plantuml/manifests/latest
+# Verified Docker-Content-Digest against SHA-256(response body) on 2026-10-20.
+PLANTUML_IMAGE = "plantuml/plantuml@sha256:9b5071ab56a4192aac458ab4b0d42261c22c8109695894ae5be6013c3be6cac1"
+
+BROWSER_STEPS = (
+    Step("Generate UI API routes", ("python3", "build/scripts/generate-ui-api-routes-ts.py")),
+    Step("Generate workspace catalog", ("python3", "build/scripts/generate-workspace-catalog-ts.py")),
+    Step("Build browser workstation", ("npm", "--prefix", "src/Meridian.Ui/dashboard", "run", "build")),
+)
+
+# Add producers here, not as extra workflow commands. All callers then share the
+# same required steps, ordering, bounded convergence, and write protection.
+# The core profile includes generate-workflow-manifest; do not run it twice.
+DOCS_STEPS = (
+    Step("Validate roadmap registry", ("python3", "build/scripts/docs/validate-roadmap-registry.py", "--summary")),
+    Step("Validate source READMEs", ("python3", "build/scripts/docs/validate-source-readmes.py", "--summary")),
+    Step("Scan source TODOs", ("python3", "build/scripts/docs/scan-source-todos.py", "--summary")),
+    Step("Render adapter readiness", ("python3", "build/scripts/docs/render-adapter-readiness.py")),
+    Step("Render roadmap docs", ("python3", "build/scripts/docs/render-roadmap-docs.py", "--summary")),
+    Step("Render source docs", ("python3", "build/scripts/docs/render-source-docs.py", "--summary")),
+    Step("Render roadmap diagrams", ("python3", "build/scripts/docs/render-roadmap-diagrams.py", "--summary")),
+    Step("Render source diagrams", ("python3", "build/scripts/docs/render-source-diagrams.py", "--summary")),
+    Step("Render WPF UI diagrams", ("npm", "run", "generate-diagrams")),
+    Step("Render UML diagrams", ("bash", "-e", "-c",
+        f'docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/docs/diagrams/uml:/data" {PLANTUML_IMAGE} -tpng /data/*.puml\n'
+        f'docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/docs/diagrams/uml:/data" {PLANTUML_IMAGE} -tsvg /data/*.puml'), True),
+    Step("Refresh workflow overview", (
+        "python3", "build/scripts/docs/generate-structure-docs.py",
+        "--workflows-only", "--output", "docs/generated/workflows-overview.md")),
+    Step("Run docs automation profile", (
+        "python3", "build/scripts/docs/run-docs-automation.py", "--profile", "core",
+        "--summary-output", "docs/status/docs-automation-summary.md",
+        "--json-output", "docs/status/docs-automation-summary.json")),
+)
 
 
 def discover_steps(root: Path, *, docs_only: bool = False) -> list[Step]:
-    """Read all generation steps, rejecting unfamiliar workflow commands.
+    """Return the reviewed catalog without interpreting workflow shell commands.
 
-    Setup and CI comparison steps are deliberately excluded. New generation run
-    steps are automatically included; unsupported shell syntax requires review.
+    Keep this API for isolated repair and existing local callers. The root is
+    intentionally not used for executable discovery: a workflow is a consumer of
+    the catalog, and cannot recursively add itself or an unrelated shell command.
     """
-    browser_steps = [
-        Step("Generate UI API routes", ("python3", "build/scripts/generate-ui-api-routes-ts.py")),
-        Step("Generate workspace catalog", ("python3", "build/scripts/generate-workspace-catalog-ts.py")),
-        Step("Build browser workstation", ("npm", "--prefix", "src/Meridian.Ui/dashboard", "run", "build")),
-    ]
-    steps = ([] if docs_only else browser_steps) + [
-        Step("Render adapter readiness", ("python3", "build/scripts/docs/render-adapter-readiness.py")),
-        Step("Render roadmap docs", ("python3", "build/scripts/docs/render-roadmap-docs.py", "--summary")),
-        Step("Render source docs", ("python3", "build/scripts/docs/render-source-docs.py", "--summary")),
-    ]
-    job = yaml.safe_load((root / WORKFLOW).read_text(encoding="utf-8"))["jobs"]["regenerate-docs"]
-    excluded = {
-        "Install docs script dependencies", "Install diagram dependencies",
-        "Compare dashboard readiness deltas vs previous commit",
-        "Check generated docs are current", "Check whitespace",
-        "Converge maintained documentation",
-    }
-    found_core = False
-    for item in job["steps"]:
-        if "run" not in item or item.get("name") in excluded:
-            continue
-        name = item["name"]
-        optional = item.get("continue-on-error", False)
-        if not isinstance(optional, bool):
-            raise ValueError(f"Unsupported continue-on-error expression: {name}")
-        script = item["run"].replace("\\\n", " ").strip()
-        if item.get("shell", "bash") != "bash":
-            raise ValueError(f"Unsupported generation shell: {name}")
-        if script.startswith("docker "):
-            if not optional:
-                raise ValueError("UML rendering must retain the workflow's advisory status")
-            steps.append(Step(name, ("bash", "-e", "-c", script), True))
-            continue
-        for index, line in enumerate(script.splitlines(), 1):
-            command = tuple(shlex.split(line))
-            if not command:
-                continue
-            python_generator = (
-                command[0] in {"python", "python3"} and len(command) > 1
-                and command[1].startswith("build/scripts/docs/")
-                and command[1].endswith(".py")
-            )
-            npm_generator = command[:3] == ("npm", "run", "generate-diagrams")
-            if (not (python_generator or npm_generator)
-                    or any(token in {"&&", "||", ";", "|", ">", "<"} for token in command)
-                    or any("${{" in token for token in command)):
-                raise ValueError(f"Unsupported generation command in {name}: {line}")
-            found_core |= "build/scripts/docs/run-docs-automation.py" in command
-            steps.append(Step(f"{name} ({index})", command, optional))
-    if not found_core:
-        raise ValueError("The maintained workflow no longer contains its docs automation profile")
-    return steps
+    return list(DOCS_STEPS if docs_only else BROWSER_STEPS + DOCS_STEPS)
 
 
 def load_policy(root: Path) -> dict:
@@ -237,7 +221,7 @@ def run_generation(root: Path, steps: list[Step], policy: dict, max_passes: int 
         iteration = {"number": number, "steps": [], "changed_outputs": {}}
         report["passes"].append(iteration)
         for step in steps:
-            # Workflow-excluded UML binaries are advisory and need only one attempt.
+            # Freshness-excluded UML binaries are advisory and need only one attempt.
             if step.optional and step.name in optional_done:
                 continue
             print(f"Pass {number}: {step.name}", flush=True)
@@ -294,7 +278,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", type=Path, default=Path(__file__).resolve().parents[2])
     parser.add_argument("--max-passes", type=int, default=3, choices=range(1, 11), metavar="1..10")
-    parser.add_argument("--dry-run", action="store_true", help="Show the discovered sequence without writing anything")
+    parser.add_argument("--dry-run", action="store_true", help="Show the maintained catalog without writing anything")
     parser.add_argument("--docs-only", action="store_true", help="Run source/roadmap and workflow documentation generators; browser validation remains in its own lane")
     parser.add_argument("--report", type=Path, default=Path(REPORT), help="JSON report under ignored artifacts/")
     args = parser.parse_args()

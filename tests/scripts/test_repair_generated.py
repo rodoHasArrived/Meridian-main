@@ -8,6 +8,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 
 SCRIPT = Path(__file__).resolve().parents[2] / "build/scripts/repair-generated.py"
 SPEC = importlib.util.spec_from_file_location("repair_generated_under_test", SCRIPT)
@@ -221,6 +222,61 @@ class RepairGeneratedTests(unittest.TestCase):
         report = self.run_repair(generator)
         self.assertTrue(report["successful"], report)
         self.assertEqual(report["changed_paths"], [DOC])
+
+    def prepare_coverage_parents(self, conflicting_prose):
+        path = "docs/status/coverage-report.md"
+        marker = b"<!-- auto-sync:coverage -->\n"
+        self.write(self.repo, path, b"base output\n" + marker + b"original prose\n")
+        self.commit("shared coverage report")
+        ancestor = self.git("rev-parse", "HEAD").decode().strip()
+        self.write(self.repo, path, b"feature output\n" + marker + b"feature prose\n")
+        self.commit("feature coverage report")
+        self.head = self.git("rev-parse", "HEAD").decode().strip()
+        self.git("switch", "-C", "main", ancestor)
+        prose = b"main prose\n" if conflicting_prose else b"original prose\n"
+        self.write(self.repo, path, b"main output\n" + marker + prose)
+        self.write(self.repo, "incoming.txt", b"main handwritten source\n")
+        self.commit("main coverage report")
+        self.base = self.git("rev-parse", "HEAD").decode().strip()
+        self.git("switch", "feature")
+        return path
+
+    def test_protected_suffix_conflicts_stop_local_repair_before_generation(self):
+        path = self.prepare_coverage_parents(conflicting_prose=True)
+        before = (self.git("rev-parse", "HEAD"), self.git("status", "--porcelain", "-z"),
+                  (self.repo / path).read_bytes())
+        report = self.run_repair()
+        self.assertEqual(report["status"], "review_required")
+        self.assertEqual(report["conflicts"], [path])
+        self.assertFalse(self.calls)
+        self.assertFalse((self.output / "repair.patch").exists())
+        self.assertEqual(before, (self.git("rev-parse", "HEAD"), self.git("status", "--porcelain", "-z"),
+                                  (self.repo / path).read_bytes()))
+
+    def test_protected_suffix_merge_survives_local_generation(self):
+        path = self.prepare_coverage_parents(conflicting_prose=False)
+        def generator(root, output, max_passes):
+            self.assertEqual((root / path).read_bytes(),
+                             b"main output\n<!-- auto-sync:coverage -->\nfeature prose\n")
+            return self.generator(root, output, max_passes)
+        report = self.run_repair(generator)
+        self.assertTrue(report["successful"], report)
+        contents = self.git("show", f"{report['final_tree_sha']}:{path}")
+        self.assertIn(b"feature prose", contents)
+
+    def test_trusted_publisher_reconstruction_rejects_protected_suffix_conflicts(self):
+        self.prepare_coverage_parents(conflicting_prose=True)
+        publisher_path = SCRIPT.parent / "ci/generated_repair.py"
+        spec = importlib.util.spec_from_file_location("publisher_protected_suffix_test", publisher_path)
+        publisher = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(publisher)
+        # Use the real trusted helper from this checkout. The disposable fixture
+        # holds candidate source only, just as the publisher's merge worktree does.
+        with mock.patch.object(publisher, "import_trusted", return_value=repair):
+            with self.assertRaisesRegex(publisher.RepairError, "Trusted merge requires review"):
+                publisher.recreate_merge(self.repo, self.head, self.base)
+        self.assertEqual(self.git("rev-parse", "HEAD").decode().strip(), self.head)
+        self.assertFalse(self.git("status", "--porcelain", "-z"))
 
 
 if __name__ == "__main__":

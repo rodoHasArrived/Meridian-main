@@ -4,17 +4,19 @@
 
 This inventory is generated from `.github/workflows/*.yml` and `.github/workflows/*.yaml` on disk.
 
-- Workflow count: `36`
+- Workflow count: `38`
 
 | Workflow File | Name | Triggers |
 |---|---|---|
 | `.github/workflows/ai-navigation-refresh.yml` | AI Navigation Refresh | schedule, workflow_dispatch |
 | `.github/workflows/branch-cleanup.yml` | Branch Cleanup | workflow_dispatch |
 | `.github/workflows/ci-concurrency-benchmark.yml` | CI Concurrency Benchmark | workflow_dispatch |
+| `.github/workflows/ci-metrics.yml` | CI Operational Metrics | schedule, workflow_dispatch |
 | `.github/workflows/ci.yml` | CI | workflow_call, pull_request, merge_group, push, schedule, workflow_dispatch |
 | `.github/workflows/codeql.yml` | CodeQL | workflow_call, pull_request, merge_group, push, schedule, workflow_dispatch |
 | `.github/workflows/copilot-setup-steps.yml` | Copilot Setup Steps | workflow_dispatch, push, pull_request |
 | `.github/workflows/demo-smoke.yml` | Demo Smoke | pull_request, push, workflow_dispatch |
+| `.github/workflows/dependency-locks.yml` | Dependency Lock Candidates | pull_request, workflow_dispatch |
 | `.github/workflows/desktop-evaluation-prerelease.yml` | Desktop Evaluation Prerelease | workflow_dispatch |
 | `.github/workflows/desktop-installer-packaging.yml` | Desktop Installer Release | schedule, push, workflow_dispatch |
 | `.github/workflows/desktop-screenshot-capture.yml` | Desktop Screenshot Capture | workflow_dispatch |

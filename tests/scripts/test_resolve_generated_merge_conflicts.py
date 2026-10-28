@@ -16,6 +16,8 @@ DOC = "docs/generated/repository-structure.md"
 EXAMPLE_VALIDATION = "docs/status/example-validation.md"
 SOURCE = "src/Example/Example.cs"
 README = "src/Example/README.md"
+COVERAGE = "docs/status/coverage-report.md"
+MARKER = "<!-- auto-sync:coverage -->"
 
 
 class GeneratedMergeRecoveryTests(unittest.TestCase):
@@ -233,6 +235,125 @@ class GeneratedMergeRecoveryTests(unittest.TestCase):
         result = self.run_recovery("--apply")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(before, self.snapshot())
+
+    def coverage_conflict(self, ancestor: str, head: str, incoming: str) -> None:
+        self.write(COVERAGE, ancestor)
+        self.commit("coverage ancestor")
+        self.git("switch", "-c", "feature")
+        self.write(COVERAGE, head)
+        self.commit("coverage feature")
+        self.git("switch", "main")
+        self.write(COVERAGE, incoming)
+        self.commit("coverage main")
+        self.merge()
+
+    def test_conflicting_handwritten_suffix_keeps_both_sides_unresolved(self) -> None:
+        self.coverage_conflict(
+            f"base output\n{MARKER}\nbase prose\n",
+            f"feature output\n{MARKER}\nfeature prose\n",
+            f"main output\n{MARKER}\nmain prose\n",
+        )
+        before = self.snapshot()
+        result = self.run_recovery("--apply")
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("Handwritten suffix has conflicts", result.stdout)
+        self.assertEqual(before, self.snapshot())
+        self.assertIn(b"feature prose", (self.repo / COVERAGE).read_bytes())
+        self.assertIn(b"main prose", (self.repo / COVERAGE).read_bytes())
+        self.assertTrue(self.git("ls-files", "--unmerged", "--", COVERAGE).stdout)
+
+    def test_generated_prefix_conflict_preserves_independent_handwritten_edits(self) -> None:
+        suffix = f"{MARKER}\nfirst\n" + "unchanged\n" * 12 + "last\n"
+        self.coverage_conflict(
+            "base output\n" + suffix,
+            "feature output\n" + suffix.replace("first\n", "feature first\n"),
+            "main output\n" + suffix.replace("last\n", "main last\n"),
+        )
+        before = self.snapshot()
+        preview = self.run_recovery()
+        self.assertEqual(preview.returncode, 0, preview.stderr)
+        self.assertEqual(before, self.snapshot())
+        result = self.run_recovery("--apply")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        merged = (self.repo / COVERAGE).read_text()
+        self.assertTrue(merged.startswith("main output\n" + MARKER))
+        self.assertIn("feature first\n", merged)
+        self.assertIn("main last\n", merged)
+        self.assertFalse(self.git("ls-files", "--unmerged").stdout)
+
+    def test_generated_only_coverage_conflict_reuses_identical_prose(self) -> None:
+        suffix = f"{MARKER}\nkeep this handwritten guidance\n"
+        self.coverage_conflict("base\n" + suffix, "feature\n" + suffix, "incoming\n" + suffix)
+        result = self.run_recovery("--apply")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual((self.repo / COVERAGE).read_text(), "incoming\n" + suffix)
+        self.assertFalse(self.git("ls-files", "--unmerged").stdout)
+
+    def test_missing_duplicate_and_embedded_suffix_markers_refuse_without_mutation(self) -> None:
+        # Each malformed parent must fail even if selecting the other parent's
+        # bytes would appear to fix the output.
+        for malformed in ("missing marker\n", f"{MARKER}\n{MARKER}\n", f"inline {MARKER}\n"):
+            with self.subTest(marker=malformed), tempfile.TemporaryDirectory() as temporary:
+                original = self.repo
+                self.repo = Path(temporary)
+                try:
+                    self.git("init", "--initial-branch=main")
+                    self.git("config", "user.name", "Merge recovery test")
+                    self.git("config", "user.email", "merge-test@example.invalid")
+                    self.git("config", "commit.gpgsign", "false")
+                    self.coverage_conflict(f"base\n{MARKER}\nprose\n", "feature\n" + malformed,
+                                           f"incoming\n{MARKER}\nprose\n")
+                    before = self.snapshot()
+                    result = self.run_recovery("--apply")
+                    self.assertEqual(result.returncode, 1, result.stderr)
+                    self.assertEqual(before, self.snapshot())
+                    self.assertTrue(self.git("ls-files", "--unmerged").stdout)
+                finally:
+                    self.repo = original
+
+    def test_every_declared_whole_output_conflict_has_a_resolution_fixture(self) -> None:
+        policy = json.loads(SCRIPT.with_name("maintained-generation-outputs.json").read_text())
+        paths = tuple(path for path, record in policy["conflict_recovery"]["files"].items()
+                      if record["strategy"] == "regenerate")
+        self.assertIn("src/Meridian.Ui/dashboard/src/lib/ui-api-routes.generated.ts", paths)
+        self.assertIn("docs/source/generated/adapter-readiness-matrix.md", paths)
+        self.start_conflict(paths)
+        result = self.run_recovery("--apply")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertFalse(self.git("ls-files", "--unmerged").stdout)
+        for path in paths:
+            with self.subTest(path=path):
+                self.assertEqual((self.repo / path).read_text(), "incoming\n")
+
+    def test_candidate_policy_cannot_authorize_handwritten_conflicts(self) -> None:
+        self.start_conflict((SOURCE,))
+        candidate_policy = {"schema_version": 1, "whole_files": [SOURCE],
+                            "conflict_recovery": {"default_strategy": "manual", "files": {
+                                SOURCE: {"strategy": "regenerate", "generator": "malicious.py", "required": True}},
+                                "trees": {}}}
+        self.write("build/scripts/maintained-generation-outputs.json", json.dumps(candidate_policy))
+        before = self.snapshot()
+        result = self.run_recovery("--apply")
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertEqual(before, self.snapshot())
+
+    def test_protected_suffix_does_not_follow_worktree_symlinks(self) -> None:
+        suffix = f"{MARKER}\nkeep prose\n"
+        self.coverage_conflict("base\n" + suffix, "feature\n" + suffix, "incoming\n" + suffix)
+        target = self.repo / "unrelated.txt"
+        target.write_text("unrelated user content\n")
+        destination = self.repo / COVERAGE
+        destination.unlink()
+        try:
+            destination.symlink_to(target)
+        except OSError:
+            self.skipTest("This host cannot create symbolic links")
+        before = self.git("ls-files", "--stage", "-z").stdout
+        result = self.run_recovery("--apply")
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertEqual(before, self.git("ls-files", "--stage", "-z").stdout)
+        self.assertTrue(destination.is_symlink())
+        self.assertEqual(target.read_text(), "unrelated user content\n")
 
 
 if __name__ == "__main__":

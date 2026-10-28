@@ -109,12 +109,14 @@ def run_module(module_name: str, start_dir: str, verbosity: int, expected_ids: l
         if os.environ.get("GITHUB_STEP_SUMMARY"):
             os.environ["GITHUB_STEP_SUMMARY"] = str(Path(temporary) / "summary.md")
         with redirect_stdout(output), redirect_stderr(output):
-            suite = unittest.TestLoader().discover(start_dir=start_dir, pattern=f"{module_name}.py")
+            loader = unittest.TestLoader()
+            suite = loader.discover(start_dir=start_dir, pattern=f"{module_name}.py")
             discovered_ids = sorted(test.id() for test in iter_tests(suite))
             if discovered_ids != expected_ids:
                 raise RuntimeError(
                     f"Test discovery changed for {module_name}: "
                     f"expected {len(expected_ids)} tests, found {len(discovered_ids)}"
+                    + ("\nDiscovery import errors:\n" + "\n".join(loader.errors) if loader.errors else "")
                 )
             result = unittest.TextTestRunner(stream=output, verbosity=verbosity, buffer=True).run(suite)
     return {

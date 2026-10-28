@@ -379,6 +379,7 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
             await Task.Delay(5);
             observed = condition();
         }
+        // A scheduled timer may be replaced after it was observed; retain that successful observation.
         observed.Should().BeTrue("the asynchronous validity worker should complete after manual time advances");
     }
 
