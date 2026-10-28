@@ -252,6 +252,11 @@ account, and does not recreate routing or bindings. Its result reports the canon
 the connection ID as separate identities, and it fails unless the resulting scoped status is usable
 (Configured, Verified, or NotRequired for a provider without credentials). Credential verification
 remains a separate step.
+Scoped setup takes the shared configuration lease before strictly loading ownership and holds it
+through the scoped vault write and status read. A concurrent connection removal waits for that
+operation; setup waiting behind a removal rechecks the committed ownership and refuses before
+touching the vault. Cancellation while waiting also leaves the vault untouched. The lock order is
+configuration then vault; scoped vault operations must not reenter configuration persistence.
 
 `ProviderFeatureRegistration` uses the shared `AddProviderServices` composition path. The
 Infrastructure descriptor catalog supplies built-in factories for streaming, historical backfill,
