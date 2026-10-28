@@ -483,6 +483,7 @@ public sealed class CsvStatementEvidenceTests : IDisposable
     [InlineData("currency-missing")]
     [InlineData("currency-blank")]
     [InlineData("currency-invalid")]
+    [InlineData("currency-unrecognized")]
     [InlineData("quantity-comma")]
     [InlineData("price-comma")]
     [InlineData("cash-comma")]
@@ -504,6 +505,9 @@ public sealed class CsvStatementEvidenceTests : IDisposable
                 break;
             case "currency-invalid":
                 values[8] = "???";
+                break;
+            case "currency-unrecognized":
+                values[8] = "ZZZ";
                 break;
             case "quantity-comma":
                 values[2] = "1,25";
