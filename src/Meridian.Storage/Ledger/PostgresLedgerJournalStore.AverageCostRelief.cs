@@ -19,7 +19,7 @@ public sealed partial class PostgresLedgerJournalStore
         lot_id, acquired_date, original_quantity, open_quantity, unit_cost, currency, source_journal_entry_id,
         evidence_ref, version, originating_mutation_batch_id, last_mutation_batch_id, created_at, updated_at,
         security_id, book_position_id, original_face, booked_factor, par_basis, acquisition_terms,
-        basis_adjustment
+        basis_adjustment, current_factor
         """;
 
     private static void AddBasisAdjustmentParameter(NpgsqlCommand command, OpenLotBasisAdjustmentDto? adjustment)

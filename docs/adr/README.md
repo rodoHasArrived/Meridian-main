@@ -33,6 +33,7 @@ record at its stated date.
 | [023: Host-Wide Provider Credential Ownership](023-host-wide-provider-credential-ownership.md) | Proposed; implementation plan |
 | [024: Terms Payload Format and Version Policy](024-terms-payload-format-and-version-policy.md) | Accepted; per-class terms upgrade hook implemented 2026-10-23; readable-before-writable expand step implemented 2026-10-25 for `scheduleConventions` (increment 4a) and `callSchedule` and `putSchedule` (increment 4b); shape-rule retirement pending backfill evidence |
 | [025: Contractual Schedule Kernel and Business-Day Calendar Seam](025-contractual-schedule-kernel.md) | Proposed; kernel and calendar seam implemented; Security Master, asset-operations, obligation-timeline and fund-structure generators moved onto it (increments 1 and 3); direct-lending and `FaceValueLot` moves planned; `scheduleConventions` (increment 4a) and `callSchedule` and `putSchedule` (increment 4b) readable ahead of write |
+| [026: Stored Curves and the Valuation Seam](026-stored-curves-and-valuation-seam.md) | Proposed; first increment implemented (stored curves, the `Curves` governance stream, the store-backed forward provider, the valuation interface with the quoted-price and discounted-cash-flow models); mark-lane wiring and a persisted valuation receipt planned |
 
 Use the [ADR template](_template.md) to author a new decision, retain its approval status, and
 separate existing implementation evidence from planned work.
