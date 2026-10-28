@@ -49,6 +49,7 @@ public sealed class ProductionStartupPolicySmokeTests
             act.Should().Throw<InvalidOperationException>()
                 .Where(ex =>
                     ex.Message.Contains("non-production DI registrations", StringComparison.OrdinalIgnoreCase) ||
+                    ex.Message.Contains("rejected the host platform", StringComparison.OrdinalIgnoreCase) ||
                     ex.Message.Contains("production-safe startup requires persistence-backed governance domain services", StringComparison.OrdinalIgnoreCase));
         }
         finally

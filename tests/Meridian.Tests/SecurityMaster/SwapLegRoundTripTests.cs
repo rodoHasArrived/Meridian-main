@@ -74,7 +74,10 @@ public sealed class SwapLegRoundTripTests
         floatingLeg.DayCountConvention.Should().Be("ACT/360");
         floatingLeg.ExchangesPrincipal.Should().BeFalse();
 
-        var declared = SecurityAssetTermsSchema.ElementFields("Swap", "legs");
+        // A leg written at the class's write version carries the element fields that version declares;
+        // a field the node only reads (ADR-024) is absent until a node writes its version.
+        var writes = SecurityAssetClassCatalog.GetTermsVersion("Swap");
+        var declared = SecurityAssetTermsSchema.ElementFields("Swap", "legs").Where(field => field.SinceTermsVersion <= writes).ToArray();
         declared.Should().NotBeEmpty();
         foreach (var emittedLeg in projection.AssetSpecificTerms.GetProperty("legs").EnumerateArray())
         {
@@ -95,6 +98,9 @@ public sealed class SwapLegRoundTripTests
                     SecurityAssetTermFieldType.Decimal => value.ValueKind == JsonValueKind.Number,
                     SecurityAssetTermFieldType.Boolean => value.ValueKind is JsonValueKind.True or JsonValueKind.False,
                     SecurityAssetTermFieldType.Array => value.ValueKind == JsonValueKind.Array,
+                    SecurityAssetTermFieldType.Object => value.ValueKind == JsonValueKind.Object,
+                    SecurityAssetTermFieldType.Integer => value.ValueKind == JsonValueKind.Number,
+                    SecurityAssetTermFieldType.Date => value.ValueKind == JsonValueKind.String,
                     _ => false
                 };
                 shapeMatches.Should().BeTrue($"swap leg field '{field.Key}' must serialize as its declared {field.Type} shape");

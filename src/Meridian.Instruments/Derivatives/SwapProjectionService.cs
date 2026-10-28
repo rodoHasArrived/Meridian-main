@@ -21,7 +21,7 @@ public sealed class SwapProjectionService : ISwapReferenceService
     public async Task<SwapReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)
     {
         var security = await _securityMasterStore.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
-        if (security is null || !string.Equals(security.AssetClass, "Swap", StringComparison.OrdinalIgnoreCase))
+        if (security is null || SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CashFlowBehavior != SecurityCashFlowBehavior.SwapLegs)
         {
             return null;
         }
@@ -61,7 +61,7 @@ public sealed class SwapProjectionService : ISwapReferenceService
         {
             var security = await _securityMasterStore.GetProjectionAsync(row.SecurityId, ct).ConfigureAwait(false);
             var terms = security is not null &&
-                string.Equals(security.AssetClass, "Swap", StringComparison.OrdinalIgnoreCase)
+                SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CashFlowBehavior == SecurityCashFlowBehavior.SwapLegs
                     ? security.AssetSpecificTerms
                     : default;
             results.Add(MapRow(row, terms));

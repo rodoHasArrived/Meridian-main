@@ -8,7 +8,7 @@ using NSubstitute;
 
 namespace Meridian.Tests.SecurityMaster;
 
-public sealed class SecurityMasterServiceSnapshotTests
+public sealed partial class SecurityMasterServiceSnapshotTests
 {
     [Fact]
     public async Task CreateAsync_SavesCanonicalEconomicSnapshotPayload()
@@ -251,7 +251,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "deactivate")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*classification 'TrackingStock'*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -278,7 +278,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "deactivate")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*couponType 'floating'*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -297,7 +297,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var (eventStore, service) = CreateBondCouponHarness(securityId, "floating");
 
         await service.Invoking(s => s.AmendTermsAsync(TermsAmendRequest(securityId, assetSpecificTermsPatch: null)))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*couponType 'floating'*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -325,7 +325,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                     isCallable = false,
                     subclass = "FloatingRate"
                 }))))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*couponType 'floating'*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -413,7 +413,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "deactivate")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*coupon.kind and coupon.index and coupon.spreadBps*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -471,7 +471,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "deactivate")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*coupon.spreadBps*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -581,7 +581,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "deactivate")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*floatingIndex and spreadBps*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -621,7 +621,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "deactivate")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*coupon.spreadBps*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -690,7 +690,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                     ["isCallable"] = false,
                     ["subclass"] = "FloatingRate"
                 }))))
-            .Should().ThrowAsync<InvalidOperationException>();
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>();
 
         await eventStore.DidNotReceive().AppendAsync(
             Arg.Any<Guid>(),
@@ -730,7 +730,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "deactivate")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*coupon.rate*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -765,7 +765,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "deactivate")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*CouponType*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -799,7 +799,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "deactivate")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*inflationBaseIndexValue and inflationIndexRatio*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -833,7 +833,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "deactivate")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*floatingIndex and spreadBps*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -910,7 +910,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "deactivate")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*floatingIndex and spreadBps*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -951,7 +951,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "deactivate")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*couponRate*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -1025,7 +1025,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "deactivate")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*coupon.rate*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -1098,7 +1098,7 @@ public sealed class SecurityMasterServiceSnapshotTests
             ["subclass"] = "StepRate"
         });
 
-        var thrown = await Assert.ThrowsAsync<InvalidOperationException>(() => service.DeactivateAsync(
+        var thrown = await Assert.ThrowsAsync<SecurityMasterWriteRefusedException>(() => service.DeactivateAsync(
             new DeactivateSecurityRequest(
                 securityId,
                 2,
@@ -1151,7 +1151,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                     ["isCallable"] = false,
                     ["subclass"] = "FloatingRate"
                 }))))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*coupon.spreadBps*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -1182,7 +1182,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                     ["isCallable"] = false,
                     ["subclass"] = "FloatingRate"
                 }))))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*couponType 'floating'*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -1258,7 +1258,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                     ["classification"] = "Common",
                     ["preferredTerms"] = PreferredTerms()
                 }))))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*preferredTerms*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -1339,7 +1339,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "deactivate")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*carries PutCall where*loads with putCall 'Put'*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -1380,7 +1380,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "deactivate")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<InvalidOperationException>()
             .WithMessage("*Missing required string 'putCall'*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -1423,7 +1423,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "deactivate")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*ExerciseStyle*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -1465,7 +1465,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "deactivate")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*ExerciseStyle*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -1503,7 +1503,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                     ["classification"] = "Common",
                     ["preferredTerms"] = "6.25% cumulative, senior 2x"
                 }))))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*preferredTerms*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -1540,7 +1540,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "deactivate")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*spreadBps*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -1578,7 +1578,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                     ["classification"] = "Common",
                     ["otherClassification"] = "LegacyPreferred"
                 }))))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*Commmon*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -1625,7 +1625,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                     ["ExerciseStyle"] = "European",
                     ["isAdjusted"] = false
                 }))))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*exerciseStyle 'Asian'*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -1709,7 +1709,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "deactivate")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*exerciseStyle*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -1995,7 +1995,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "deactivate")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*without a profile envelope*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -2065,7 +2065,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 UpdatedBy: "codex",
                 SourceRecordId: null,
                 Reason: "amend")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*without a profile envelope*");
 
         // The full-envelope migration amendment persists and reclassifies.
@@ -2155,7 +2155,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "create")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*fails catalog validation*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -2209,7 +2209,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "create")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*customProfileId*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -2331,7 +2331,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "create")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*'principalSchedule' must be a JSON array*");
     }
 
@@ -2345,7 +2345,7 @@ public sealed class SecurityMasterServiceSnapshotTests
             conflictRecordingFails: true);
 
         await service.Invoking(s => s.AmendTermsAsync(BuildConflictingAmend(securityId)))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<InvalidOperationException>()
             .WithMessage("*conflict store down*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -2437,7 +2437,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 UpdatedBy: "codex",
                 SourceRecordId: null,
                 Reason: "amend")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*profile-backed*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -2794,7 +2794,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "create")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*belongs to 'StructuredCredit'*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -2934,8 +2934,78 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "create")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*domain invariants*private_fund_commitment_invalid*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CreateAsync_ReclassifiedRecordWhoseSubmittedFieldsTheResolvedKindCannotRead_RefusesTheWrite()
+    {
+        // A CustomAsset create maps only the envelope, and the profile does not declare
+        // factorScheduleEntries, so the first decode of the submitted fields as the resolved
+        // StructuredCredit kind is the invariant re-check. Its failure is about the submitted
+        // document, so it is a refusal rather than a stored-row fault.
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = CreateDurableProjectionStore();
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            new SecurityMasterAggregateRebuilder(eventStore, snapshotStore),
+            new SecurityMasterOptions
+            {
+                SnapshotIntervalVersions = 50,
+                ResolveInactiveByDefault = true
+            },
+            NullLogger<SecurityMasterService>.Instance,
+            assetProfileCatalog: Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault());
+
+        await service.Invoking(s => s.CreateAsync(new CreateSecurityRequest(
+                securityId,
+                "CustomAsset",
+                JsonSerializer.SerializeToElement(new { displayName = "Strip With A Text Factor Schedule", currency = "USD" }),
+                JsonSerializer.SerializeToElement(new
+                {
+                    customProfileId = "structured-credit-io-po",
+                    profileVersion = 1,
+                    profileFields = new
+                    {
+                        tranche = "A-1",
+                        poolId = "POOL-1",
+                        currentFactor = 0.8m,
+                        originalFace = 1_000_000m,
+                        couponOrIndex = "SOFR+250",
+                        factorSchedule = "trustee-report",
+                        collateralType = "CLO",
+                        factorScheduleEntries = "see trustee report"
+                    },
+                    profileApproval = new
+                    {
+                        approvedBy = "Meridian",
+                        approvedAtUtc = "2026-05-29T00:00:00Z",
+                        approvalReference = "MERIDIAN-SEED-APPROVAL"
+                    }
+                }),
+                new[]
+                {
+                    new SecurityIdentifierDto(SecurityIdentifierKind.Cusip, "88160R1014", true, DateTimeOffset.UtcNow.AddDays(-1), null, null),
+                    new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "SC-TEXT-SCHEDULE", false, DateTimeOffset.UtcNow.AddDays(-1), null, null)
+                },
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "create")))
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
+            .WithMessage("Property 'factorScheduleEntries' must be a JSON array when present, but was String.");
 
         await eventStore.DidNotReceive().AppendAsync(
             Arg.Any<Guid>(),
@@ -3074,7 +3144,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "create")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*SM_CUSTOM_PROFILE_VERSION_NOT_EFFECTIVE*");
 
         await eventStore.DidNotReceive().AppendAsync(
@@ -3143,7 +3213,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "create")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*SM_CUSTOM_PROFILE_APPROVAL_METADATA_MISMATCH*");
 
         // A forged approval REFERENCE alone — approver and timestamp copied from the catalog —
@@ -3183,7 +3253,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 "codex",
                 null,
                 "create")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage("*SM_CUSTOM_PROFILE_APPROVAL_METADATA_MISMATCH*");
     }
 

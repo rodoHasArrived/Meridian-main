@@ -329,7 +329,7 @@ public sealed class SecurityMasterQueryService :
     public async Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default)
     {
         var projection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
-        if (projection is null || !string.Equals(projection.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase))
+        if (projection is null || !SecurityAssetClassCatalog.GetOrDefault(projection.AssetClass).SupportsEquityClassification)
             return null;
 
         if (!projection.AssetSpecificTerms.TryGetProperty("preferredTerms", out var pt) ||
@@ -361,7 +361,7 @@ public sealed class SecurityMasterQueryService :
     public async Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default)
     {
         var projection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
-        if (projection is null || !string.Equals(projection.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase))
+        if (projection is null || !SecurityAssetClassCatalog.GetOrDefault(projection.AssetClass).SupportsEquityClassification)
             return null;
 
         if (!projection.AssetSpecificTerms.TryGetProperty("convertibleTerms", out var convertibleTermsEl) ||

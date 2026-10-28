@@ -171,7 +171,7 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             PostedJournalImpact: null,
             TaxLotMutationBatchId: null,
             Correction: request.Correction,
-            CorporateAction: request.CorporateAction, CapitalReturn: request.CapitalReturn);
+            CorporateAction: request.CorporateAction, CapitalReturn: request.CapitalReturn, FactorPaydown: request.FactorPaydown);
         var projectedSpine = expectedSpine with
         {
             SpineVersion = 2,
@@ -393,6 +393,8 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             "A retained successor projection requires the exact canonical lot instruction; it cannot be omitted or replaced.");
         RequireAssertion(PayloadEquals(source.CapitalReturn, request.LotMutation?.CapitalReturn),
             "A retained capital-return projection requires the exact canonical lot instruction; it cannot be omitted or replaced.");
+        RequireAssertion(PayloadEquals(source.FactorPaydown, request.LotMutation?.FactorPaydown),
+            "A retained factor-paydown projection requires the exact canonical lot instruction; it cannot be omitted or replaced.");
         await ResolveCorrectionAuthorityAsync(source, ct).ConfigureAwait(false);
 
         await ResolveAuthoritativeSecurityAsync(source, request.AccountingTimestamp, ct, request.LotMutation?.CorporateAction,
@@ -419,6 +421,9 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
         if (request.LotMutation?.CapitalReturn is { } reviewedCapitalReturn)
             RequireAssertion(reviewedCapitalReturn.Projection.AccountingScope!.ExpectedPeriodVersion == request.ExpectedPeriodVersion,
                 "Capital-return projection period version must match the requested candidate.");
+        if (request.LotMutation?.FactorPaydown is { } reviewedFactorPaydown)
+            RequireAssertion(reviewedFactorPaydown.ExpectedPeriodVersion == request.ExpectedPeriodVersion,
+                "Factor-paydown instruction period version must match the requested candidate.");
         var authoritativeLotMutation = await ResolveAuthoritativeLotMutationAsync(
                 request.LotMutation,
                 source,
@@ -469,7 +474,10 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
                     InstrumentSymbol: null,
                     CorrelationId: source.EconomicEvent.CorrelationId?.ToString("D"),
                     TenantId: source.Scope.TenantId,
-                    CompanyId: source.Scope.CompanyId),
+                    CompanyId: source.Scope.CompanyId,
+                    LotMutationComponents: source.FactorPaydown is { } factorPaydownComponents
+                        ? OpenLotFactorPaydown.Components(factorPaydownComponents)
+                        : null),
                 ct)
             .ConfigureAwait(false);
         var selectedRule = ResolveSelectedRule(source, dryRun, rulePack);
@@ -874,6 +882,20 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
                 && (security.EffectiveTo is null || source.EconomicEvent.EffectiveDate <= DateOnly.FromDateTime(security.EffectiveTo.Value.UtcDateTime)),
                 "Source Security Master record is not effective on the capital-return date.");
         }
+        if (source.FactorPaydown is { } factorPaydown)
+        {
+            OpenLotFactorPaydown.Project(factorPaydown);
+            RequireAssertion(corporateAction is null && source.CapitalReturn is null
+                && source.EventKind == AssetAccountingEventKindDto.CorporateAction
+                && PayloadEquals(factorPaydown.EconomicEvent, source.EconomicEvent)
+                && factorPaydown.Scope.SecurityId == security.SecurityId
+                && factorPaydown.Scope.ExpectedSecurityVersion == security.Version
+                && string.Equals(factorPaydown.Currency, source.Currency, StringComparison.Ordinal),
+                "Factor-paydown currency authority must bind the exact source security and canonical event.");
+            RequireAssertion(DateOnly.FromDateTime(security.EffectiveFrom.UtcDateTime) <= source.EconomicEvent.EffectiveDate
+                && (security.EffectiveTo is null || source.EconomicEvent.EffectiveDate <= DateOnly.FromDateTime(security.EffectiveTo.Value.UtcDateTime)),
+                "Source Security Master record is not effective on the factor-paydown date.");
+        }
         if (corporateAction is not null)
         {
             OpenLotSuccessors.Validate(corporateAction);
@@ -1036,6 +1058,41 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
                 && assetLines[0].Debit == Math.Max(projection.FunctionalMovement, 0m)
                 && assetLines[0].Credit == Math.Max(-projection.FunctionalMovement, 0m),
                 "Amortization projected accounting must contain the exact reviewed asset carrying-value movement.");
+            return requested;
+        }
+
+        if (source.EventKind == AssetAccountingEventKindDto.CorporateAction && requested?.FactorPaydown is { } factorPaydown)
+        {
+            OpenLotFactorPaydown.Project(factorPaydown);
+            RequireAssertion(!string.IsNullOrWhiteSpace(requested.AssetAccountId)
+                && factorPaydown.Scope.SecurityId == source.Scope.SecurityId
+                && factorPaydown.Scope.BookPositionId == position.PositionId
+                && factorPaydown.Scope.LedgerBookId == book.LedgerBookId
+                && factorPaydown.Scope.ExpectedSecurityVersion == source.Scope.ExpectedSecurityVersion
+                && factorPaydown.Scope.ExpectedBookPositionVersion == position.Version
+                && factorPaydown.Scope.PeriodId == source.Scope.PeriodId
+                && factorPaydown.Scope.AccountingBasis == source.Scope.AccountingBasis
+                && PayloadEquals(factorPaydown.EconomicEvent, source.EconomicEvent)
+                && PayloadEquals(factorPaydown.Lineage, source.ProjectionLineage)
+                && factorPaydown.PrincipalPaydown == source.EventAmount
+                && string.Equals(factorPaydown.Currency, source.Currency, StringComparison.Ordinal),
+                "Factor-paydown inputs must match the exact governed event, projection, book, position, period and carrying account.");
+            var lotIds = factorPaydown.Lots.Select(static lot => lot.ExpectedLot.TaxLotRecordId).ToArray();
+            var retainedLots = await _journalStore.GetTaxLotsByIdsAsync(book.LedgerBookId, lotIds, ct).ConfigureAwait(false);
+            RequireAssertion(retainedLots.Count == lotIds.Length,
+                "A reviewed paid-down lot is missing from its authoritative book.");
+            var retainedById = retainedLots.ToDictionary(static lot => lot.TaxLotRecordId);
+            RequireAssertion(factorPaydown.Lots.All(lot => retainedById.TryGetValue(lot.ExpectedLot.TaxLotRecordId, out var retainedLot)
+                    && retainedLot.Account.AccountType == LedgerAccountType.Asset
+                    && PayloadEquals(retainedLot.ToOpenLot(), lot.ExpectedLot))
+                && retainedLots.Select(static lot => lot.Account).Distinct().Count() == 1,
+                "The reviewed paid-down lots' version, quantity, factor or basis changed, or they span carrying accounts; rebuild the instruction.");
+            var relieved = OpenLotFactorPaydown.BasisRelieved(factorPaydown).Functional;
+            var carryingLines = source.ProjectedEffect!.Lines.Where(line => line.AccountId == requested.AssetAccountId).ToArray();
+            RequireAssertion(relieved == 0m
+                    ? carryingLines.Length == 0
+                    : carryingLines.Length == 1 && carryingLines[0].Debit == 0m && carryingLines[0].Credit == relieved,
+                "Factor-paydown projected accounting must contain the exact reviewed carrying-account credit for the basis relieved.");
             return requested;
         }
 

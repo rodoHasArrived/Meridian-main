@@ -26,12 +26,14 @@ record at its stated date.
 | --- | --- |
 | [017: Modular Operational Monolith](017-modular-operational-monolith.md) | Accepted |
 | [018: Declarative Statement Mapping Profiles](018-declarative-statement-mapping-profiles.md) | Accepted |
-| [019: Production Support Matrix and Typed Deployment Posture](019-production-support-matrix-and-deployment-posture.md) | Proposed; core-team sign-off pending |
-| [020: Local Lifecycle Control Plane](020-lifecycle-control-plane.md) | Proposed |
+| [019: Production Support Matrix and Typed Deployment Posture](019-production-support-matrix-and-deployment-posture.md) | Accepted (core-team sign-off 2026-10-20) |
+| [020: Local Lifecycle Control Plane](020-lifecycle-control-plane.md) | Accepted (core-team sign-off 2026-10-20) |
 | [021: Verified Operation Outcomes and Operational Case History](021-verified-operation-outcomes-and-case-history.md) | Proposed |
 | [022: Canonical Asset-Class Homes](022-canonical-asset-class-homes.md) | Accepted |
 | [023: Host-Wide Provider Credential Ownership](023-host-wide-provider-credential-ownership.md) | Proposed; implementation plan |
-| [024: Terms Payload Format and Version Policy](024-terms-payload-format-and-version-policy.md) | Accepted; shape-rule retirement pending backfill evidence |
+| [024: Terms Payload Format and Version Policy](024-terms-payload-format-and-version-policy.md) | Accepted; per-class terms upgrade hook implemented 2026-10-23; readable-before-writable expand step implemented 2026-10-25 for `scheduleConventions` (increment 4a) and `callSchedule` and `putSchedule` (increment 4b); shape-rule retirement pending backfill evidence |
+| [025: Contractual Schedule Kernel and Business-Day Calendar Seam](025-contractual-schedule-kernel.md) | Proposed; kernel and calendar seam implemented; Security Master, asset-operations, obligation-timeline and fund-structure generators moved onto it (increments 1 and 3); direct-lending and `FaceValueLot` moves planned; `scheduleConventions` (increment 4a) and `callSchedule` and `putSchedule` (increment 4b) readable ahead of write |
+| [026: Stored Curves and the Valuation Seam](026-stored-curves-and-valuation-seam.md) | Proposed; first increment implemented (stored curves, the `Curves` governance stream, the store-backed forward provider, the valuation interface with the quoted-price and discounted-cash-flow models); mark-lane wiring and a persisted valuation receipt planned |
 
 Use the [ADR template](_template.md) to author a new decision, retain its approval status, and
 separate existing implementation evidence from planned work.

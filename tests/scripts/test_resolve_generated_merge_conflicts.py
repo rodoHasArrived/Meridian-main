@@ -13,6 +13,7 @@ from pathlib import Path
 SCRIPT = Path(__file__).resolve().parents[2] / "build/scripts/resolve-generated-merge-conflicts.py"
 ASSET = "src/Meridian.Ui/wwwroot/workstation/assets/app [old].js"
 DOC = "docs/generated/repository-structure.md"
+EXAMPLE_VALIDATION = "docs/status/example-validation.md"
 SOURCE = "src/Example/Example.cs"
 README = "src/Example/README.md"
 COVERAGE = "docs/status/coverage-report.md"
@@ -97,6 +98,18 @@ class GeneratedMergeRecoveryTests(unittest.TestCase):
             self.assertEqual((self.repo / path).read_bytes(), before)
             self.assertTrue(self.git("ls-files", "--unmerged", "--", path).stdout)
         self.assertEqual((self.repo / "untracked.txt").read_text(), "keep untracked work\n")
+
+    def test_example_validation_report_is_resolved_as_generated_output(self) -> None:
+        # docs/status/example-validation.md is rewritten whole by validate-examples.py through
+        # run-docs-automation.py; it conflicted on 11 of 32 open PRs while absent from GENERATED_FILES.
+        self.start_conflict((EXAMPLE_VALIDATION, SOURCE))
+        result = self.run_recovery("--apply")
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("1 conflict(s) require review", result.stdout)
+        self.assertEqual((self.repo / EXAMPLE_VALIDATION).read_text(), "incoming\n")
+        self.assertEqual(self.git("show", f":{EXAMPLE_VALIDATION}").stdout, b"incoming\n")
+        self.assertFalse(self.git("ls-files", "--unmerged", "--", EXAMPLE_VALIDATION).stdout)
+        self.assertTrue(self.git("ls-files", "--unmerged", "--", SOURCE).stdout)
 
     def test_modify_delete_removes_output_deleted_on_main(self) -> None:
         self.write(ASSET, "base\n")

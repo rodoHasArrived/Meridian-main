@@ -15,9 +15,10 @@ internal static class SecurityEconomicDefinitionAdapter
 
         // A projection rebuilt from an economic event that predates retained flat terms carries the
         // original economic document under retainedEconomicTerms. Fold it back so modules and fields
-        // the flat family cannot express (call and put schedules, redemption, issuer identity, fund
-        // and structured-product detail) are written into the next economic event instead of being
-        // erased by it. Values the flat revision does express always win.
+        // the flat family cannot express (call and put schedules a row does not declare, redemption,
+        // issuer identity, fund and structured-product detail) are written into the next economic
+        // event instead of being erased by it. Values the flat revision does express always win, so a
+        // declared, non-empty call or put list replaces the retained one.
         var economicTerms = BuildEconomicTermsJson(definition);
         if (SecurityTermsEnvelope.TryGetRetainedEconomicTerms(projection.AssetSpecificTerms, out var retained))
         {
@@ -63,9 +64,9 @@ internal static class SecurityEconomicDefinitionAdapter
 
         if (economic.LegacyAssetSpecificTerms is null
             && (HasPreferredClassification(economic)
-                || string.Equals(legacyAssetClass, "Equity", StringComparison.OrdinalIgnoreCase)
-                || (string.Equals(economic.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase)
-                    && !string.Equals(legacyAssetClass, "PrivateCompanyEquity", StringComparison.OrdinalIgnoreCase))))
+                || SecurityAssetClassCatalog.GetOrDefault(legacyAssetClass).SupportsEquityClassification
+                || (SecurityAssetClassCatalog.GetOrDefault(economic.AssetClass).SupportsEquityClassification
+                    && !SecurityAssetClassCatalog.GetOrDefault(legacyAssetClass).SupportsProfileBackedTerms)))
         {
             // Structural Common metadata cannot establish the original equity classification, even
             // when every preferred module is absent. Also refuse incomplete imported equity whose
@@ -89,8 +90,11 @@ internal static class SecurityEconomicDefinitionAdapter
         // legs, a bond's subclass (SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys)
         // — so the payload is stamped with FlattenedFromMarkerProperty and a projection rebuilt
         // through this route stays distinguishable from one whose flat terms were always present.
-        var assetSpecificTerms = economic.LegacyAssetSpecificTerms?.Clone()
-            ?? SecurityAssetSpecificTermsUpcasterChain.Normalize(economic.EconomicTerms, legacyAssetClass).Payload;
+        // Retained flat terms are read at the class's current terms version (ADR-024); the flattened
+        // branch is already stamped at it.
+        var assetSpecificTerms = economic.LegacyAssetSpecificTerms is { } legacyTerms
+            ? SecurityAssetClassTermsUpgrader.UpgradeForRead(legacyAssetClass, legacyTerms.Clone())
+            : SecurityAssetSpecificTermsUpcasterChain.Normalize(economic.EconomicTerms, legacyAssetClass).Payload;
         var primaryIdentifier = economic.Identifiers.FirstOrDefault(identifier => identifier.IsPrimary);
 
         return new SecurityProjectionRecord(

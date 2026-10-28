@@ -21,8 +21,8 @@ public sealed partial class OrderManagementSystem
                 _operatorControls.WorkingReductionQuantityProbe = ResolveWorkingReductionQuantity;
 
             _reportPumpTask = Task.Run(() => PumpGatewayExecutionReportsAsync(_reportPumpCts.Token));
-            _handoffRecoveryTask = _tradeEventPublisher is not null && _tradeFillHandoffFailureStore is not null
-                ? Task.Run(() => ReplayRetainedAccountingHandoffsAsync(_reportPumpCts.Token))
+            _handoffRecoveryTask = _accountingHandoff.CanReplay
+                ? Task.Run(() => _accountingHandoff.ReplayPendingAsync(_reportPumpCts.Token))
                 : Task.CompletedTask;
             _started = true;
         }

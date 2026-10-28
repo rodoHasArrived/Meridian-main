@@ -37,8 +37,12 @@ public sealed class AssetClassValidatorRegistry
     public static AssetClassValidatorRegistry CreateDefault()
         => CreateDefault(StaticSecurityAssetProfileCatalog.CreateDefault());
 
+    /// <summary>
+    /// The default registry: every class's hand-written semantic rules composed with the rules
+    /// generated from its term schema (<see cref="SchemaTermsAssetClassValidator"/>).
+    /// </summary>
     public static AssetClassValidatorRegistry CreateDefault(ISecurityAssetProfileCatalog assetProfileCatalog)
-        => new(DefaultAssetClassValidators.Create(assetProfileCatalog));
+        => new(SchemaBackedAssetClassValidator.WrapAll(DefaultAssetClassValidators.Create(assetProfileCatalog)));
 }
 
 internal static class SecurityValidationIssueFactory

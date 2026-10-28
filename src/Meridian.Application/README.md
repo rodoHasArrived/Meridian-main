@@ -93,6 +93,17 @@ which refuses payload types or versions newer than this build understands. Amend
 carry the stored economic terms that a flat rebuild cannot express (`retainedEconomicTerms`), so a
 newer-to-older terms conversion keeps the data rather than silently dropping it.
 
+A Security Master create or term amendment that a write guard, the Write-mode mapping or the F#
+validator refuses, whether for the terms it submits or for the state of the stored record (a
+round-trip or ahead-of-write guard it trips, or `security_inactive`), raises
+`SecurityMasterWriteRefusedException`, an `InvalidOperationException` subtype whose message is
+written for the caller (deactivation shares the guards and raises it too). Request errors raised as
+`ArgumentException`, such as a term block of the wrong JSON kind or an unsupported identifier kind,
+are not this type. A stored row this node cannot decode (amend and deactivate decode it before every
+write guard except the unrecognized-class check), a missing security, an F# rejection
+carrying `version_conflict`, `missing_state` or `security_id_mismatch` (even beside request errors)
+and a store failure are not refusals and keep their existing exception types.
+
 `SecurityMasterStructuredCreditReclassificationService` builds the ADR-022 reclassification report:
 it maps every active record through the read-tolerant mapper, asks the F# domain for a
 StructuredCredit proposal, and returns ready proposals (the exact stamped terms document the write
@@ -174,9 +185,18 @@ configuration cannot be replaced by an empty default ownership model. Failed rea
 Connection and binding upsert/deletion and preset application use `ConfigStore.UpdateRequiredAsync` to hold a shared sidecar file
 lock across the required read, ownership validation and atomic write. Separate store instances cannot
 lose each other's connection additions or deletions. Waiting operations honor cancellation and re-read
-ownership after acquiring the lock. Whole-configuration saves and capability override writes take the
-same lock; callers that prepare whole-configuration snapshots before acquisition still need conversion
-to transactional updates to prevent stale snapshot replacement. External editors do not honor this lock.
+ownership after acquiring the lock. Every section-level configuration mutation (config, provider,
+failover, symbol, subscription and provider-extended endpoints; the subscription services; provider
+module setup) uses `ConfigStore.UpdateAsync`, which loads the document inside that lock, applies the
+synchronous mutator and writes atomically, so concurrent writers editing different sections cannot drop
+each other's change (PRD-002 "concurrent configuration writes"). An edit through `UpdateAsync` fails
+closed on a corrupt or JSON-null file instead of replacing it with defaults. `ConfigStore.SaveAsync`
+remains whole-document replacement, last writer wins, reserved for callers that own the entire document:
+the CLI `SaveConfigAsync` path and the setup wizard's generated output. Capability override writes take
+the same lock, and so does the WPF shell: `ConfigServiceBase` runs every section-level mutation through a
+locked read-modify-write whose lease the shell's `ConfigService` takes from `ConfigStore.AcquireWriteLeaseAsync`,
+so the installed two-process workstation shares one lock across both clients. External editors do not honor
+this lock.
 Certification persistence re-reads configuration inside the transaction after the runner completes.
 Deleted, ambiguous or changed connections and results naming another connection are refused without
 writing certification state. Unrelated concurrent connection changes are retained. This compares the
@@ -243,6 +263,11 @@ account, and does not recreate routing or bindings. Its result reports the canon
 the connection ID as separate identities, and it fails unless the resulting scoped status is usable
 (Configured, Verified, or NotRequired for a provider without credentials). Credential verification
 remains a separate step.
+Scoped setup takes the shared configuration lease before strictly loading ownership and holds it
+through the scoped vault write and status read. A concurrent connection removal waits for that
+operation; setup waiting behind a removal rechecks the committed ownership and refuses before
+touching the vault. Cancellation while waiting also leaves the vault untouched. The lock order is
+configuration then vault; scoped vault operations must not reenter configuration persistence.
 
 `ProviderFeatureRegistration` uses the shared `AddProviderServices` composition path. The
 Infrastructure descriptor catalog supplies built-in factories for streaming, historical backfill,
@@ -385,8 +410,15 @@ Core workstation host. Do not introduce a second listener or independent monitor
   Both encrypted generations retain the import before the source is renamed and erased; interrupted cleanup
   resumes without parsing erased bytes. Failed initialization can be retried on the same service instance,
   and a failed refresh-loop start can be stopped and restarted. Unreadable evidence fails closed. After an audit failure the cache
-  reloads the committed token or evicts it if recovery is unavailable. Disposal never rewrites a cached
-  token snapshot. Non-Windows key protection and credential scoping remain open PRD-002 requirements.
+  reloads the committed token or evicts it if recovery is unavailable; that failure is now
+  `ProviderCredentialAuditDeferredException` (an `IOException` whose `VaultCommitted` is true); a remote
+  refresh whose only failure is that deferred audit is reported as `Success` with `AuditDeferred` set, so
+  callers never retry a rotation the provider already honoured, and the
+  owed audit record is journaled in the vault's `provider-credentials.audit.pending.jsonl` for replay by
+  `ProviderCredentialAuditReplayHostedService` at startup or by the next vault mutation. Disposal never
+  rewrites a cached token snapshot. Production postures fail closed off Windows (ADR-019 platform guard),
+  so the non-Windows local key file is a scope-out rather than an open PRD-002 clause; browser, WPF,
+  setup and default-runtime credential ownership remain open PRD-002 requirements.
   Provider plugin assembly loading and `DataSourceRegistry` discovery now live in
   ProviderSdk; Application and WPF consume the loader instead of keeping reflection-based provider
   discovery in Application services. Default provider setup handlers are registered through one
@@ -670,7 +702,16 @@ Core workstation host. Do not introduce a second listener or independent monitor
   instrument-kind mapping, the profile catalog contract,
   and seeded approved custom/private asset profile templates are owned by
   `Meridian.ReferenceData.SecurityMaster`; this folder consumes those reference-data contracts for
-  validation, governance, readiness, projection rebuilds, and endpoint composition. Profile-backed
+  validation, governance, readiness, projection rebuilds, and endpoint composition.
+  `SecurityMaster/Otc/` holds `OtcExposureService` (refuses a default as-of date, reads a netting
+  set, its agreement's balances and the netting sets that share the agreement, values each open
+  contract through `IOtcContractValuationSource` at one knowledge time, the request's or else the
+  computation instant, applies `OtcExposureRules.Compute` and appends the snapshot) and
+  `PricingStoreOtcContractValuationSource`, the default source, which marks a
+  contract from its instrument's percent-of-par golden-copy price as `sign(direction) × notional ×
+  price / 100` and reports a missing, stale, differently quoted or differently denominated price
+  as a named blocker; `StorageFeatureRegistration` registers it with `TryAddSingleton` so a host
+  can supply another source first. Profile-backed
   validation rules still enforce approved profile-version pinning, typed no-code field values,
   profile approval metadata, and identifier coverage. The C# to F# identifier seam preserves
   optional provider/source metadata without changing standard-identifier identity; a
@@ -848,7 +889,14 @@ Core workstation host. Do not introduce a second listener or independent monitor
   application down -- so a governance refusal raised as a bare `InvalidOperationException` is
   indistinguishable from it and gets swallowed by the same tolerance. `ProductionRegistrationGuardService`
   and `ProductionServiceRegistrationPolicy` raise this type for every ADR-019 refusal, including the
-  unconstructible-factory case found during final-graph validation. It derives from
+  unconstructible-factory case found during final-graph validation and the platform fail-closed: a
+  production composition, or a packaged/customer `LocalWorkstation` composition (the shipped
+  topology), on a non-Windows host is refused by the descriptor-only half with a diagnostic
+  naming the posture, the detected OS and architecture, and the platform-bound bindings (`dpapi-current-user`
+  to `local-aes-gcm` vault protection, the lifecycle protected secret store) that would otherwise
+  silently degrade. Architecture and Windows version are reported, not refused (PRD-014 certifies x64 and ARM64; the
+  Windows 11 row is enforced by the installer lane, not this guard). Tests pin the platform through the
+  internal `DeclareMeridianHostPlatform` declaration. It derives from
   `InvalidOperationException`, so existing catches and assertions naming that type keep matching; the
   added type only lets a host that wants to escalate do so. Hosts decide through
   `Meridian.Ui.Shared.Services.HostStartupEscalation.IsRefusal`.
@@ -997,6 +1045,29 @@ node that could apply the change, so without that exit the row would be permanen
 Verify this lane with `SecurityMasterServiceSnapshotTests` and
 `SecurityAssetTermsSchemaRoundTripTests`.
 
+Terms a class reads but does not yet write (ADR-024, readable before writable) follow the mapping's
+mode. `SecurityMasterMapping.ToSecurityKind` passes its mode to the terms-version guard: in Write
+mode (every create, amend, import, term-block amend and approved field-edit merge) a payload stamped
+above the class's write version is refused with a reason naming the class, the stamp and the versions
+this node reads and writes, and one populating a term introduced above it with a reason naming the
+term, the class, the term's version and the write version; in Read mode such a term is decoded once the payload's
+own stamp reaches its version, and profile envelopes are decoded at the write version. The
+`callSchedule` and `putSchedule` readers are tolerant: they keep stored order, drop an entry that is
+not an object or lacks a parseable date (`callDate`, `putDate`), and read any other member that does
+not parse as unset. Deactivate and
+patch-less amend re-serialize a row stamped above the write version only when the re-serialized terms
+reproduce its versioned content up to the row's own stamp (`SecurityAssetTermsSchema.NormalizedTermsAbove`);
+otherwise they are refused before anything is appended, so any content those readers drop blocks the
+write instead of vanishing (an array element with no non-null content, such as a `null` or an
+all-null entry, is compacted away). A term introduced above the row's stamp is an undeclared key of
+that row, which the decode and validator gates already ignore, and is dropped as a node that reads
+no further would drop it. The workbench refuses a field or profile-field edit at
+submission when the record's or the edited terms are readable but not writable, including a root edit
+of a profile envelope stamped above the write version, so it does not stage a draft the merge would
+refuse for that reason, and the schema-terms validator checks a versioned field only when the payload's stamp reaches it.
+Element conventions are enforced on write only for array terms the class writes (`WritableFields`),
+and never on an array introduced above version 1 inside a profile envelope.
+
 The file-based Security Master bulk ingest (`--security-master-ingest <file.csv|file.json>`) is
 fail-closed on caller identity: the import runs only when a registered
 `ISecurityMasterCliImportAuthority` resolves a validated operator or workload actor for the
@@ -1018,12 +1089,39 @@ lots with multiplier 100. Writes reject non-canonical values for typed term conv
 (day count, settlement method, option right).
 
 `SecurityMasterCashFlowService` projects floating legs from an `ISecurityForwardCurveProvider` when
-one is registered (the default is the in-process `InMemorySecurityForwardCurveProvider`): each
-future reset reads the index curve at its accrual start, the period already reset keeps the
-retained fixing, and each leg schedule records its `RateSource`. Without a curve, legs stay flat
-forward. `SecurityMasterService.AmendTermBlockAsync` replaces one registry-declared nested term
-block (preferred terms, call schedules, swap legs) through the normal amend path and records
-`TermBlockAmended`.
+one is registered: each future reset reads the index curve at its accrual start, the period already
+reset keeps the retained fixing, and each leg schedule records its `RateSource`. Without a curve,
+legs stay flat forward. The registered provider is `SecurityMaster/Curves/StoredSecurityForwardCurveProvider`,
+which reads the one stored Forward definition for the index (trimmed, ignoring case) at its latest
+version dated on or before the projection date and carries the curve key, version and hash prefix
+into `RateSource`; several definitions for one index are logged and leave the leg flat forward.
+`GetProjectionAsOfAsync` projects as of a requested date and reads curves as of that date;
+`GetProjectionAsync` is that method at `UtcNow`, so existing callers are unchanged.
+`SecurityMaster/Valuation/` holds the valuation seam: `SecurityValuationService` loads the security
+and dispatches to the registered `ISecurityValuationModel` whose kind the request names or the
+catalog's `DefaultValuationModel` declares; `QuotedPriceValuationModel` composes the golden-copy
+as-of read (retaining a selection receipt, as that read does), reports its staleness verdict as a
+diagnostic and picks the market-value function by the price's quote unit, scaling a percent-of-par
+quote by the same opening outstanding principal used by calculated cash flows. Dated factors
+include only payments through their evidence date; later contractual payments completed before
+the valuation date reduce the balance. Without an applicable factor, all completed in-window
+contractual principal payments reduce it; an undated scalar is assumed current and is not reduced
+twice. Payments on the valuation date remain payable, and a future-dated scalar does not apply yet.
+Quotations retain decimal factor precision until holding valuation; calculated schedules keep their
+existing four-place cash rounding.
+`DiscountedCashFlowValuationModel` discounts
+the base-scenario projection as of the valuation date on a stored Discount curve (pinned on the
+request by id and optionally by version id, or the one definition in the security's currency),
+refuses to extrapolate past the curve, quotes face-value lots per 100 of the outstanding face the
+projection repays from the valuation date, reports the oldest of the discount and forward curves'
+as-of dates as `ObservedAsOf`, reports a stale or undated cash-flow source and a pinned version
+dated after the valuation date or recorded after the knowledge cutoff as diagnostics, and names the
+curve version, hash, forward provenance and terms version in its inputs. Market values use the F#
+`SecurityCalculations` functions, with the paydown factor applied once.
+`SecurityMasterService.AmendTermBlockAsync` replaces one registry-declared nested term
+block (preferred terms, step and principal schedules, swap legs) through the normal amend path and
+records `TermBlockAmended`. A block the class only reads (`scheduleConventions`, `callSchedule`,
+`putSchedule`) is refused with the not-yet-writable reason.
 
 ## API contract notes
 

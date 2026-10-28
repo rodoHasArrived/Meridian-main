@@ -22,6 +22,8 @@ using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.SecurityMaster.CashFlow;
+using Meridian.Application.SecurityMaster.Curves;
+using Meridian.Application.SecurityMaster.Valuation;
 using Meridian.Application.Tenancy;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
@@ -299,6 +301,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 sp.GetService<ILedgerBookService>()));
             services.AddSingleton<ISecurityMasterSnapshotStore, PostgresSecurityMasterSnapshotStore>();
             services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
+            services.AddSingleton<ISecurityUnderlyingGraphStore, PostgresSecurityUnderlyingGraphStore>();
+            services.AddSingleton<IOtcContractStore, PostgresOtcContractStore>();
+            services.AddSingleton<IOtcCollateralStore, PostgresOtcCollateralStore>();
             services.AddSingleton<IBondReferenceProjectionStore, PostgresBondReferenceProjectionStore>();
             services.AddSingleton<IOptionReferenceProjectionStore, PostgresOptionReferenceProjectionStore>();
             services.AddSingleton<IEquityReferenceProjectionStore, PostgresEquityReferenceProjectionStore>();
@@ -387,12 +392,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
             services.AddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());
 
-            // Migrate-on-read upcaster pipeline for asset-specific-terms payloads, shared by the
-            // projection store (queryable schema_version column + read normalization). Registering the
-            // composed pipeline (v0 stamping + cross-family economic-terms v2 -> v1 flattening) rather
-            // than the bare v0->current upcaster keeps the store's schema_version promotion consistent
-            // with the mapping guard: a v2 economic-terms document is flattened to the accepted legacy
-            // version instead of being promoted as an unsupported version the guard would reject.
+            // The composed migrate-on-read pipeline (v0 stamping + cross-family economic-terms v2 -> v1 flattening)
+            // for callers that resolve upcasters through the ISchemaUpcaster<T> seam; nothing in this composition
+            // resolves it today. The projection store derives schema_version from the stored blob
+            // (PostgresSecurityMasterStore.UpsertProjectionAsync) and readers call SecurityAssetSpecificTermsUpcasterChain
+            // directly. Per-class terms-version upgrades belong to SecurityAssetClassTermsUpgrader, not this pipeline.
             services.AddSingleton<
                 Meridian.Contracts.Schema.ISchemaUpcaster<Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms>,
                 Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline>();
@@ -411,9 +415,18 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterPricingService, SecurityMasterPricingService>();
             services.AddSingleton<IStructuredCashFlowLedgerBridge, StructuredCashFlowLedgerBridge>();
             services.AddSingleton<ISecurityMasterAmortizationLedgerBridge, SecurityMasterAmortizationLedgerBridge>();
-            services.TryAddSingleton<InMemorySecurityForwardCurveProvider>();
-            services.TryAddSingleton<ISecurityForwardCurveProvider>(static sp => sp.GetRequiredService<InMemorySecurityForwardCurveProvider>());
+            // Stored, versioned curves (migrations 052/053) feed floating-leg projection and the
+            // valuation seam; both models dispatch on the catalog's DefaultValuationModel fact.
+            services.AddSingleton<ISecurityCurveStore, PostgresSecurityCurveStore>();
+            services.AddSingleton<ISecurityForwardCurveProvider, StoredSecurityForwardCurveProvider>();
+            // OTC exposure: the observed-price mark is the default valuation source; a host that
+            // registers its own IOtcContractValuationSource first keeps it.
+            services.TryAddSingleton<IOtcContractValuationSource, Meridian.Application.SecurityMaster.Otc.PricingStoreOtcContractValuationSource>();
+            services.AddSingleton<IOtcExposureService, Meridian.Application.SecurityMaster.Otc.OtcExposureService>();
             services.AddSingleton<ISecurityMasterCashFlowService, SecurityMasterCashFlowService>();
+            services.AddSingleton<ISecurityValuationModel, QuotedPriceValuationModel>();
+            services.AddSingleton<ISecurityValuationModel, DiscountedCashFlowValuationModel>();
+            services.AddSingleton<ISecurityValuationService, SecurityValuationService>();
             services.AddSingleton<IDataVendorEntitlementService, DataVendorEntitlementService>();
             services.AddSingleton<ISecurityMasterDataQualityService, SecurityMasterDataQualityService>();
             services.AddSingleton<ISecurityMasterStructuredCreditReclassificationService, SecurityMasterStructuredCreditReclassificationService>();
