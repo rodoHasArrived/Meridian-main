@@ -384,7 +384,20 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         }
 
         self.assertEqual("Close Cockpit", captures["W03"].get("waitForText"))
-        self.assertEqual("Reconciliation Casework", captures["W03A"].get("waitForText"))
+        reconciliation = captures["W03A"]
+        self.assertEqual("Reconciliation break queue", reconciliation.get("waitForText"))
+        self.assertIn("Reconciliation run", reconciliation.get("waitForTexts", []))
+        self.assertIn("Cash variance over tolerance.", reconciliation.get("waitForTexts", []))
+        self.assertEqual(
+            [
+                'select:has(option[value="run-42"]:checked)',
+                '#reconciliation-break-queue tr[data-dense-row-id="run-42:cash"][aria-selected="true"]',
+                '#reconciliation-break-detail-panel [aria-label="Reconciliation break detail for run-42:cash"]',
+            ],
+            reconciliation.get("waitForSelectors"),
+            "Reconciliation readiness must prove the loaded run, selected queue row, and corresponding inspector",
+        )
+        self.assertIn("Loading reconciliation break queue...", reconciliation.get("waitForAbsentTexts", []))
         self.assertEqual("Approval queue and audit gate", captures["W03C"].get("waitForText"))
         self.assertEqual("External GL Reconciliation", captures["W03D"].get("waitForText"))
         self.assertIn("Read-only import ready", captures["W03D"].get("waitForTexts", []))
@@ -536,6 +549,20 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         # the real Vite loader in web-screenshot-scenarios.test.mjs.
         self.assertNotIn("/api/workstation/accounting", fixture_route_names)
         fixture_route_names.add("/api/workstation/accounting")
+        # The independently fetched break queue is also owned by the typed
+        # accounting scenario. Verify its registration and endpoint binding here;
+        # the Node/Vite resolver tests prove response bodies, status, and delays.
+        dashboard_source = REPO_ROOT / "src" / "Meridian.Ui" / "dashboard" / "src"
+        scenario_source = (dashboard_source / "scenarios" / "accounting.ts").read_text(encoding="utf-8")
+        endpoint_source = (dashboard_source / "lib" / "workstation-endpoints.ts").read_text(encoding="utf-8")
+        api_routes_source = (dashboard_source / "lib" / "ui-api-routes.generated.ts").read_text(encoding="utf-8")
+        self.assertRegex(scenario_source, r'method:\s*"GET",\s*path:\s*RECONCILIATION_API_ENDPOINTS\.breakQueue')
+        self.assertRegex(endpoint_source, r'breakQueue:\s*UI_API_ROUTES\.ReconciliationBreakQueue\b')
+        queue_path = re.search(r'ReconciliationBreakQueue:\s*"([^"]+)"', api_routes_source)
+        self.assertIsNotNone(queue_path, "The typed break-queue endpoint must resolve to its shared API route")
+        self.assertEqual("/api/workstation/reconciliation/break-queue", queue_path.group(1))
+        self.assertNotIn(queue_path.group(1), fixture_route_names, "Typed queue data must not be duplicated in JSON fixtures")
+        fixture_route_names.add(queue_path.group(1))
 
         self.assertGreater(len(captures), 0)
         for capture in captures:
