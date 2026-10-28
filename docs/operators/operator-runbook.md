@@ -108,9 +108,8 @@ The process is up and scraping, but it is discarding more than 5% of events — 
 critical threshold that [High drop rate](#high-drop-rate) pages on. This is a degradation, not an
 outage, but it is losing data.
 
-This alert reads `mdc_drop_rate_percent`, not a composite health score: the SLA gauges have no
-writer, so a score-based trigger would fire permanently. See
-[Objectives awaiting instrumentation](./service-level-objectives.md#objectives-awaiting-instrumentation).
+This alert reads `mdc_drop_rate_percent`; symbol freshness is monitored separately by the
+[freshness SLA alert](#freshness-sla-violation).
 
 **Probable causes:** storage sink blocking; pipeline backpressure; a provider burst exceeding
 processing capacity; dependency timeout.
@@ -274,7 +273,20 @@ Alert: `MeridianDataFreshnessViolation` — severity critical, priority P1, obje
 [SLO-DF-001](./service-level-objectives.md#slo-df-001).
 
 One or more symbols have exceeded their freshness threshold. Downstream valuation and reporting
-read stale prices until this clears.
+read stale prices until this clears. Live market-data receipt refreshes each symbol even if storage
+rejects the event; historical backfill and heartbeats do not. Snapshots continue every 10 seconds
+by default when a feed stalls, and the alert fires after five minutes of sustained violation,
+including when the freshness score reaches zero. Resumed events clear the gauge on the next check.
+Enabled configured feeds are monitored before their first event: startup grace lasts one freshness
+threshold, starting no earlier than the current session open. Missing first events then violate
+like stalled streams. Subscription hot reload removes disabled or removed feeds from monitoring;
+late callbacks cannot recreate those alerts. Subscriptions leased to another process are excluded
+when the local orchestrator applies ownership.
+
+The default market-hours policy skips weekends and uses the configured UTC window (13:30–20:00
+by default); it does not calculate exchange holidays or daylight-saving changes. Closed sessions
+export zero active violations and freshness score 100. Check the configured session before treating
+that score as evidence of live delivery.
 
 **Probable causes:** provider stream stalled; subscription dropped; processing pipeline blocked.
 

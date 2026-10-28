@@ -13,6 +13,8 @@ last_reviewed: 2026-10-14
 
 All six shipped statement connectors capture executed mapping semantics at parse time. Display labels and review notes do not change that fingerprint; fields, activity mappings, culture, date formats and CSV options do. The retained import supplies comparison proof on replay. Legacy artifact upgrade verifies the original shape and adopts retained bytes without inventing mapping evidence.
 
+Configured reconciliation assignment ranks every available tolerated dimension by its own allowed variance: quantities, cash or market value, observed price, and settlement distance. Missing one-sided prices remain unavailable. Rule-list precedence and retained applied-rule evidence are unchanged.
+
 `AccountCashReconciliationService` adds a bounded two-source cash-balance continuity aggregate.
 Exact tenant/company/account/book, source identities and currency determine a stable case;
 amounts, row IDs and tolerance versions remain observation evidence. Corrected sources change
@@ -236,6 +238,15 @@ mapping, including income-year classification and retained earnings. Export revi
 uses its selected profile at every boundary. Ambiguous many-to-one mappings and
 collisions are rejected. Meridian period-close journals and their reversals are
 excluded from provider-basis balances and gross export activity.
+
+Statement matching requires compatible transaction currencies even when a security or external ID
+is present, including every split leg. Explicit FX conversion normalizes amount and observed price
+before matching; missing rates retain source currencies. Configured rules use their complete existing
+quantity, amount, basis-point, settlement-window and price evaluators. Exact pairs precede exact splits;
+then declared rule order controls matching, with pairs before splits within each transaction rule.
+Matched groups retain the actual configured rule ID. Prices constrain matching when observed on
+both sides; quantity-only positions stay quantity-only, and net cash including fees is never
+invented as an execution price. Position prices may derive from observed market value and quantity.
 
 Statement matching retains exact tolerance rules/version and matcher revision with population
 availability. Missing/failed internal populations and empty statements cannot certify source clearing;

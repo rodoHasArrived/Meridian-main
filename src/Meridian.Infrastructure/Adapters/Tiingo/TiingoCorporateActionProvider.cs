@@ -38,15 +38,18 @@ public sealed partial class TiingoCorporateActionProvider : ICorporateActionProv
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
+    private readonly ICredentialContext? _credentials;
     private readonly ILogger<TiingoCorporateActionProvider> _logger;
 
     public TiingoCorporateActionProvider(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
-        ILogger<TiingoCorporateActionProvider> logger)
+        ILogger<TiingoCorporateActionProvider> logger,
+        ICredentialContext? credentials = null)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _credentials = credentials;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -166,6 +169,9 @@ public sealed partial class TiingoCorporateActionProvider : ICorporateActionProv
 
     private string? ResolveApiToken()
     {
+        if (_credentials is not null)
+            return _credentials.Get("TIINGO_API_TOKEN");
+
         return FirstNonEmpty(
             _configuration["TIINGO_API_TOKEN"],
             _configuration["TIINGO__TOKEN"],

@@ -24,6 +24,21 @@ Focused coverage lives in `reporting-retained-amounts.test.tsx` and `report-amou
 
 The reconciliation queue shows source observation and retained occurrence age directly. Clearing is labeled Source cleared and never implies case resolution. Legacy rows explicitly show identity/age unavailable. Queue refresh compares lineage metadata; inspector details include business and comparison scopes.
 
+Accounting payment approvals provides an explicit entity-ID selection on the ordinary unscoped route. Unapplied scope edits disable decisions; applying a new entity clears the old review session. Cash Ladder retains the same-account scenario catalog through loading and errors while continuing to withhold stale balances and drill evidence.
+
+
+Payment approvals forward the selected entity on pending-payment, bank-evidence, approval, and
+rejection requests. Removing or changing entity scope clears the queue, decision notes and pending
+confirmation; aborted reads or decisions cannot restore the previous entity's state. No entity
+means no payment request. Fetch-level coverage lives in `banking-payments.api.test.ts`, alongside
+scope-switch coverage in `accounting-screen.payment-approvals.test.tsx`.
+
+Cash Ladder treats each account as a separate projection session. Account changes clear projection
+balances, scenario, threshold edits, and drill selection immediately. Results and drill selections
+also belong to the exact scenario/threshold request, so delayed or failed reads cannot present an
+old projection as current evidence. `cash-ladder-screen.test.tsx` covers delayed switches, failures,
+account round trips, and return to aggregate scope.
+
 Historical price charts require a complete successful historical query before showing prices
 or indicators. Failed and partial queries show an explicit incomplete state with failed source
 paths and Retry; incomplete comparison series are withheld and named in an alert. The shared

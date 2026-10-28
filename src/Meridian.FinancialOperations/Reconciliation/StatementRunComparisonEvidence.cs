@@ -10,7 +10,7 @@ internal static class StatementRunComparisonEvidence
 {
     // Changes to matching/normalization semantics must advance this token before comparisons can
     // be used to establish clearing across runs produced by the new implementation.
-    private const string MatcherRevision = "statement-run-matcher-v1";
+    private const string MatcherRevision = "statement-run-matcher-v2";
 
     internal static string LegacyPolicyFingerprint(StatementToleranceProfile tolerance)
         => Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new { MatcherRevision, Tolerance = tolerance }));

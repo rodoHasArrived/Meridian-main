@@ -220,6 +220,15 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   depth-buffer integrity self-tests and deterministic sample market-event generation used by
   Application diagnostics adapters.
 
+Freshness monitoring uses receipt time from the composed live publisher and emits a snapshot on
+its check timer, including during silent feeds and closed market sessions. Application composition
+exports these snapshots to Prometheus. Historical backfill and heartbeats do not refresh live price
+evidence. Enabled configured subscriptions receive one threshold of startup grace (starting no
+earlier than the current UTC market open); a missing first event then violates the SLA. Managed
+scope synchronization preserves retained symbols and rejects late events for removed subscriptions.
+The monitor accepts a `TimeProvider` so ingress-to-alert recovery and UTC market hours can be
+verified without wall-clock waits.
+
 ## Important workflows
 
 Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes.

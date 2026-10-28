@@ -40,9 +40,7 @@ groups:
           rollback_criteria: "Health endpoint returns 200 within 30 seconds of restart"
 
       # Sustained proportional loss while the process is still scraping.
-      # NOT mdc_sla_freshness_score: nothing calls PrometheusMetrics.UpdateSlaMetrics, so that
-      # gauge sits at its default 0 and a `< 50` threshold would fire permanently on a healthy
-      # instance. See "Objectives awaiting instrumentation" in the SLO document.
+      # Freshness has separate symbol-level SLA alerts; process health tracks pipeline drops.
       - alert: MeridianUnhealthy
         expr: mdc_drop_rate_percent > 5
         for: 2m
@@ -206,13 +204,10 @@ groups:
   - name: mdc_sla
     rules:
       # One or more symbols outside their freshness threshold.
-      # DISABLED PENDING INSTRUMENTATION: nothing calls PrometheusMetrics.UpdateSlaMetrics or
-      # RecordSlaFreshness, so mdc_sla_violation_symbols is always 0 and this rule can never
-      # fire. Kept here, evaluated against a condition that is honestly always false, so the
-      # runbook and SLO linkage survive until DataFreshnessSlaMonitor is wired into the
-      # periodic exporter. Re-point at mdc_sla_violation_symbols > 0 at that time.
+      # Periodic SLA snapshots continue advancing while a feed is silent. A zero
+      # freshness score is a severe stall, so it must not suppress this alert.
       - alert: MeridianDataFreshnessViolation
-        expr: mdc_sla_violation_symbols > 0 and mdc_sla_freshness_score > 0
+        expr: mdc_sla_violation_symbols > 0
         for: 5m
         labels:
           severity: critical
@@ -226,11 +221,10 @@ groups:
           rollback_criteria: "mdc_sla_violation_symbols returns to 0"
 
       # Composite freshness score below the 95 compliance target.
-      # DISABLED PENDING INSTRUMENTATION: mdc_sla_freshness_score has no writer, so a bare
-      # `< 95` fires permanently on a healthy instance. The `> 0` guard suppresses the rule
-      # until the SLA monitor is wired; remove the guard at that time.
+      # Uninitialized or unmonitored instances have no applicable symbols. Closed
+      # market sessions export score 100 and zero violations from the monitor.
       - alert: MeridianSlaComplianceLow
-        expr: mdc_sla_freshness_score < 95 and mdc_sla_freshness_score > 0
+        expr: mdc_sla_freshness_score < 95 and mdc_sla_monitored_symbols > 0
         for: 30m
         labels:
           severity: warning

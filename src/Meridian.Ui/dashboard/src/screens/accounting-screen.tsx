@@ -2441,7 +2441,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
       ) : null}
 
       {sectionVisibility.showApprovals ? (
-        <BankingPaymentApprovalsPanel />
+        <BankingPaymentApprovalsPanel entityId={closeWorkflowQuery.entityId} />
       ) : null}
 
       {sectionVisibility.showExceptionWorkbench ? (

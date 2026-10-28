@@ -11,6 +11,13 @@ last_reviewed: 2026-10-21
 
 # src/Meridian.Application
 
+Freshness monitoring begins with live ingress or collector subscription attempts, not configured symbols in an idle workstation. An unused UI monitor does not publish empty snapshots over an active collector's process-wide metrics. Internal reconciliation retains observed `tradeFill.price` only for the single-currency share movement, never a commission leg or a price inferred from fee-inclusive net cash.
+
+
+`StoredProviderCredentialResolver` marks retained records as authoritative and carries their
+credential environment into provider construction. Missing scoped records retain the authorized
+scope's environment and cannot select global, module, configuration or environment credentials.
+
 `SecurityMasterPricingService.ClosePrices` builds independently reviewed immutable close-price
 sets through the existing hierarchy and retained selection receipts. Exact account/book/UTC
 valuation date, quote units, source observations, override support and blocker assessments are
@@ -874,7 +881,14 @@ Core workstation host. Do not introduce a second listener or independent monitor
   Reconciliation governance exception classification now lives in
   `Meridian.Strategies.Services.GovernanceExceptionService`. Report-pack generation and NAV
   attribution live in `Meridian.Reporting` rather than Application-local services.
-- `Monitoring/` - application monitoring adapters and status server support. The default
+- `Monitoring/` - application monitoring adapters and status server support. Shared pipeline
+  composition records live price/order-book ingress in `DataFreshnessSlaMonitor`, independent of
+  storage acceptance and the bounded quality-sample queue. Configured enabled symbols start with
+  one freshness threshold of grace; missing first events then violate the SLA. Subscription
+  hot reload synchronizes the monitored scope, so removed symbols and late callbacks cannot
+  recreate alerts. Its periodic snapshots update the Prometheus SLA instruments even when feeds
+  stall; market closure suppresses active violations.
+  The default
   static-backed implementation of the contracts-owned event metrics interface lives in
   `Meridian.Platform.Tracing`. Stored
   market-event schema compatibility checks, clock-skew estimation, spread monitoring, data-loss

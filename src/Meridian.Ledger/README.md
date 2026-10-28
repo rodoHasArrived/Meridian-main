@@ -11,6 +11,9 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Ledger
 
+Cash-flow reversal remaps accepted retained attribution tags case-insensitively, matching the attribution reader after serialization and line reordering. Unsupported or incomplete attribution still blocks reporting.
+
+
 `OpenLotReliefService` treats explicit long/short direction as part of the pool scope. It never
 nets the two directions, and it allocates positive quantity and both retained currency bases for
 a homogeneous pool. This calculation does not authorize short journals or infer short-sale tax
@@ -72,7 +75,23 @@ income-statement and balance-sheet rows with net-income and accounting-equation 
 investing / financing, reconciled to beginning and ending cash) and a
 `LedgerPartnersCapitalStatement` roll-forward (beginning capital, contributions, distributions,
 allocated result, ending capital per equity account) from the period's journal activity. The
-allocated result is additionally decomposed into `IncomeGainAllocations`, `ExpenseAllocations`, and
+cash-flow classification retains each attributable scoped counterpart's credit-minus-debit amount.
+`LedgerCashFlowAttribution.WithGroups` records a draft's independently balanced economic activities
+in the existing immutable metadata tags (`cash-flow.group.v1.<line-id>`). Supply one group per line,
+based on retained transaction evidence before approval/posting: cash transfers, independent accruals
+or reclassifications, and cash-related transactions must have separate groups. A group is an explicit
+accounting assertion of attribution, not a conclusion inferred from matching amounts. A genuinely
+net-settled cash transaction may retain opposing noncash counterparts in one reviewed group.
+Grouping preserves legitimate zero-net operating/investing/financing activity while excluding
+noncash groups. Line-ID binding survives storage ordering; reversal remaps it to the new line IDs.
+Untagged simple cash journals and pure cash transfers remain supported. Untagged cash journals with
+opposing noncash legs are ambiguous (even with nonzero net cash) and fail closed instead of producing
+invented cash flows. Missing, unknown-version, foreign-line, or unbalanced grouping evidence and
+incomplete cash-related report scopes also fail before a report pack/export can be produced.
+Do not amend posted metadata to retrofit attribution; use governed reversal/rebook and retain
+independent Accounting and Ledger review. This does not change the existing account-type category
+policy or cash-account identification rule. Journals without scoped cash activity remain excluded.
+The allocated result is additionally decomposed into `IncomeGainAllocations`, `ExpenseAllocations`, and
 `FeeAllocations` (management and performance fees, identified by
 `LedgerAccounts.IsFundFeeExpenseAccount`) so a client-grade partners' capital statement reports the
 income/expense/fee drivers a fund accountant delivers rather than one lumped figure; the split holds

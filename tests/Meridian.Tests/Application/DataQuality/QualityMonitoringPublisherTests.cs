@@ -62,9 +62,12 @@ public sealed class QualityMonitoringPublisherTests
     {
         await using var quality = new DataQualityMonitoringService();
         var inner = new RecordingPublisher { Result = false };
-        await using var sut = new QualityMonitoringPublisher(inner, quality);
+        using var freshness = new DataFreshnessSlaMonitor(new SlaConfig { SkipOutsideMarketHours = false });
+        await using var sut = new QualityMonitoringPublisher(inner, quality, freshness: freshness);
 
         sut.TryPublish(CreateTradeEvent("SPY", sequence: 1)).Should().BeFalse();
+        freshness.GetSymbolStatus("SPY")!.State.Should().Be(SlaState.Healthy,
+            "freshness must record receipt synchronously even when storage rejects the event");
 
         // Feed quality describes what the provider delivered, not what storage accepted.
         await WaitUntilAsync(() => sut.TradesObserved == 1);

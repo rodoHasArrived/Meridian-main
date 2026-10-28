@@ -48,13 +48,14 @@ public static class StatementRunMatchingService
                         row.TradeDate,
                         row.Quantity,
                         PositionMarketValue(row),
-                        reference));
+                        reference)
+                    { Price = row.Price == 0m ? null : row.Price });
                     break;
                 case StatementItemKind.Cash:
                     statementCash.Add(new NormalizedStatementCashBalance(
                         reference,
                         row.Account,
-                        UnknownCurrency,
+                        row.Currency,
                         row.CashAmount,
                         reference,
                         row.TradeDate));
@@ -65,13 +66,14 @@ public static class StatementRunMatchingService
                         ExternalTransactionId: null,
                         row.Account,
                         NormalizeOptional(row.Symbol),
-                        Currency: null,
+                        Currency: row.Currency,
                         row.TradeDate,
-                        row.TradeDate,
+                        row.SettlementDate ?? row.TradeDate,
                         row.ActivityType,
                         row.Quantity,
                         row.CashAmount,
-                        reference));
+                        reference)
+                    { Price = row.Price == 0m ? null : row.Price });
                     break;
             }
         }
@@ -178,8 +180,6 @@ public static class StatementRunMatchingService
         return new StatementRunMatchingResult(breaks, outcomes);
     }
 
-    private const string UnknownCurrency = "";
-
     private static string BuildRowReference(string importId, int sourceRowNumber)
         => $"{importId}:{sourceRowNumber.ToString(CultureInfo.InvariantCulture)}";
 
@@ -203,17 +203,7 @@ public static class StatementRunMatchingService
         => row.Price != 0m ? row.Quantity * row.Price : row.CashAmount;
 
     private static StatementMatchingToleranceProfile ToEngineTolerance(StatementToleranceProfile profile)
-    {
-        var positionRule = profile.PositionRules.FirstOrDefault();
-        var cashRule = profile.CashRules.FirstOrDefault();
-        var transactionRule = profile.TransactionRules.FirstOrDefault();
-        return new StatementMatchingToleranceProfile(
-            PositionQuantity: positionRule?.QuantityTolerance ?? 0m,
-            PositionMarketValue: positionRule?.MarketValueTolerance ?? 0m,
-            CashBalance: cashRule?.AbsoluteCashTolerance ?? 0m,
-            TransactionQuantity: 0m,
-            TransactionNetAmount: transactionRule?.AbsoluteCashTolerance ?? 0m);
-    }
+        => StatementMatchingToleranceProfile.FromProfile(profile);
 
     private static decimal ToleranceForKind(StatementMatchKind kind, StatementMatchingToleranceProfile tolerance)
         => kind switch

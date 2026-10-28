@@ -1829,6 +1829,7 @@ Meridian-main
 │   │   ├── actions-workflow-report-2026-10-15.json.gz
 │   │   ├── actions-workflow-source-2026-10-15.json.gz
 │   │   ├── ci-cd-optimization.md
+│   │   ├── contract-type-parity.md
 │   │   ├── dead-code-inventory.md
 │   │   ├── docs-regeneration-automation-design.md
 │   │   ├── etl-execution-ownership.md
@@ -2932,7 +2933,8 @@ Meridian-main
 │   │   ├── w10-mark-seam-operator-acceptance.md
 │   │   ├── wave2-cockpit-reliability-evidence-runbook.md
 │   │   ├── WAVE2_ACCEPTANCE_GATE_CHECKLIST.md
-│   │   └── WAVE2_ACCEPTANCE_TESTS.md
+│   │   ├── WAVE2_ACCEPTANCE_TESTS.md
+│   │   └── workflow-consolidation-2026-10-28.md
 │   ├── DEPENDENCIES.md
 │   ├── documentation-inventory.md
 │   ├── documentation-ownership.md
@@ -5484,6 +5486,7 @@ Meridian-main
 │   │   │   ├── ReconciliationServiceRegistration.cs
 │   │   │   ├── StatementBreakClassifier.cs
 │   │   │   ├── StatementMappingProfiles.cs
+│   │   │   ├── StatementMatchingEngine.ConfiguredRules.cs
 │   │   │   ├── StatementMatchingEngine.cs
 │   │   │   ├── StatementReconciliationContextAdapter.cs
 │   │   │   ├── StatementReconciliationOrchestrator.cs
@@ -5969,6 +5972,7 @@ Meridian-main
 │   │   ├── LedgerAccountType.cs
 │   │   ├── LedgerBalancePoint.cs
 │   │   ├── LedgerBookKey.cs
+│   │   ├── LedgerCashFlowAttribution.cs
 │   │   ├── LedgerCashFlowStatement.cs
 │   │   ├── LedgerChartBalance.cs
 │   │   ├── LedgerCurrencyExposure.cs
@@ -7341,6 +7345,7 @@ Meridian-main
 │   │   │   │   │   │   ├── accounting-onboarding.api.ts
 │   │   │   │   │   │   ├── archive-maintenance.api.ts
 │   │   │   │   │   │   ├── audit-integrity.api.ts
+│   │   │   │   │   │   ├── banking-payments.api.test.ts
 │   │   │   │   │   │   ├── banking-payments.api.ts
 │   │   │   │   │   │   ├── break-audit-rebuild.api.ts
 │   │   │   │   │   │   ├── capital-call-issuance.api.ts
@@ -7658,6 +7663,7 @@ Meridian-main
 │   │   │   │   │   ├── capital-call-issuance-screen.tsx
 │   │   │   │   │   ├── capital-call-issuance-screen.view-model.test.ts
 │   │   │   │   │   ├── capital-call-issuance-screen.view-model.ts
+│   │   │   │   │   ├── cash-ladder-screen.test.tsx
 │   │   │   │   │   ├── cash-ladder-screen.tsx
 │   │   │   │   │   ├── cash-ladder-screen.view-model.test.ts
 │   │   │   │   │   ├── cash-ladder-screen.view-model.ts
@@ -10392,6 +10398,7 @@ Meridian-main
 │   │   │   ├── Logging
 │   │   │   │   └── LoggingSetupTests.cs
 │   │   │   ├── Monitoring
+│   │   │   │   ├── FreshnessMonitoringWorkflowTests.cs
 │   │   │   │   ├── PrometheusExporterTests.cs
 │   │   │   │   ├── PrometheusMetricsTests.cs
 │   │   │   │   ├── PrometheusResettableTotalCollection.cs
@@ -10467,6 +10474,7 @@ Meridian-main
 │   │   │   ├── Ui
 │   │   │   │   ├── ConfigStoreTests.cs
 │   │   │   │   ├── ProviderCredentialStoreTests.cs
+│   │   │   │   ├── ProviderModuleCredentialSelectionTests.cs
 │   │   │   │   └── ProviderModuleSetupServiceTests.cs
 │   │   │   ├── Wizard
 │   │   │   │   └── WizardConfigurationStepTests.cs
@@ -10967,6 +10975,7 @@ Meridian-main
 │   │   │   │   ├── PolygonTimestampIntegrityTests.cs
 │   │   │   │   ├── ProviderDataQualityValidatorTests.cs
 │   │   │   │   ├── ProviderFactoryCredentialContextTests.cs
+│   │   │   │   ├── ProviderFactoryCredentialIsolationTests.cs
 │   │   │   │   ├── ProviderHealthTrackerTests.cs
 │   │   │   │   ├── ProviderMarketDataCapabilityTests.cs
 │   │   │   │   ├── ProviderRateLimitTrackerTests.cs
@@ -11094,6 +11103,10 @@ Meridian-main
 │   │   │   ├── LedgerAccountIdentityTests.cs
 │   │   │   ├── LedgerAccountTypeOrdinalContractTests.cs
 │   │   │   ├── LedgerAverageCostWashSaleRoundingTests.cs
+│   │   │   ├── LedgerCashFlowAttributionEvidenceTests.cs
+│   │   │   ├── LedgerCashFlowAttributionTests.cs
+│   │   │   ├── LedgerCashFlowExportTests.cs
+│   │   │   ├── LedgerCashFlowTestData.cs
 │   │   │   ├── LedgerEntryCurrencyTests.cs
 │   │   │   ├── LedgerImmutabilityTests.cs
 │   │   │   ├── LedgerIntegrationTests.cs
@@ -11212,6 +11225,7 @@ Meridian-main
 │   │   │   ├── FileStatementToleranceProfileProviderTests.cs
 │   │   │   ├── IbFlexStatementServiceTests.cs
 │   │   │   ├── LedgerJournalInternalTransactionSourceTests.cs
+│   │   │   ├── LedgerJournalInternalTransactionSourceTests.Price.cs
 │   │   │   ├── ReconciliationCaseServiceTests.cs
 │   │   │   ├── ReconciliationContractsTests.cs
 │   │   │   ├── RetainedInternalReconciliationPopulationProviderTests.cs
@@ -11225,7 +11239,8 @@ Meridian-main
 │   │   │   ├── StatementRunMatcherGroupTests.cs
 │   │   │   ├── StatementRunMatchingServiceTests.cs
 │   │   │   ├── StatementRunRecoveryTests.cs
-│   │   │   └── StatementRunWorkflowServiceTests.cs
+│   │   │   ├── StatementRunWorkflowServiceTests.cs
+│   │   │   └── StatementRunWorkflowServiceTests.MatchingPolicy.cs
 │   │   ├── ReferenceData
 │   │   │   └── SecurityMaster
 │   │   │       └── SecurityKindMappingTests.cs
