@@ -125,6 +125,24 @@ so the accrual start equals the unadjusted start and the payment date equals the
 
 ## Future Expansion Notes
 
+The internal Application `ScheduleSpecFactory` is a tested preparation for increment 5a. It maps
+the decoded F# `ScheduleConventions` to a kernel spec without changing any consumer. An empty
+block refuses with an instruction to retain the legacy path. For a declaring block, omitted
+schedule members map to forward, anchored, anchor-day, short-stub, unadjusted payment and
+unadjusted accrual, with no lag. Recognized payment frequencies map to their actual day, week,
+month or term tenor; missing and irregular cadences refuse. Explicit payment calendars take
+precedence over the security-level calendar; a common calendar is used only when none are named.
+Any unresolved selected calendar refuses, even on an unadjusted schedule. Adjustment or lag
+without a calendar refuses. `endOfMonthRule=true` selects an end-of-month roll; contradictory
+explicit roll and month-end terms refuse. The kernel validates the resulting grid. Coupon rate
+units and cash basis remain amount inputs for the future consumer integration.
+
+This adapter does not finish 5a: file-backed calendars, descriptor-driven consumer routing,
+declared coupon amounts and day-count context, and production integration are still required.
+Write versions remain unchanged; the amortization refusals remain in force. The later 5b write
+validation and version raise, direct-lending migration and the other extensibility priorities
+remain open.
+
 Planned in sequence, each behind its own proof:
 
 - Schedule terms declared on Bond, CertificateOfDeposit, StructuredCredit and swap legs arrive

@@ -11,6 +11,14 @@ last_reviewed: 2026-10-21
 
 # src/Meridian.Application
 
+`SecurityMaster/CashFlow/ScheduleSpecFactory` prepares the declared-schedule integration by mapping
+decoded F# conventions to the Contracts kernel. It refuses unresolved calendars, unknown cadence
+and contradictory roll terms, while leaving grid validation to the kernel. Its tests cover calendar
+precedence, joint holidays, payment lag, accrual adjustment and exact cadence mapping. The adapter
+is not yet called by projections; production still follows the existing paths. See the
+[contractual schedule rollout](../../docs/domain/contractual-schedule.md#future-expansion-notes)
+for the remaining 5a and 5b work.
+
 Freshness monitoring begins with live ingress or collector subscription attempts, not configured symbols in an idle workstation. An unused UI monitor does not publish empty snapshots over an active collector's process-wide metrics. Internal reconciliation retains observed `tradeFill.price` only for the single-currency share movement, never a commission leg or a price inferred from fee-inclusive net cash.
 
 
