@@ -931,6 +931,17 @@ public sealed partial class IBBrokerageGateway :
             ?? Array.Empty<AccountScopedBrokerPosition>());
     }
 
+    private static bool CanObserveOwnedOpenOrder(
+        SubmittedOrderContext? context, IBOpenOrderUpdate update, int epoch, IReadOnlySet<string> verifiedAccounts)
+        => context is not null && !string.IsNullOrWhiteSpace(update.Account)
+            && verifiedAccounts.Contains(update.Account.Trim())
+            && (context.SubmissionEpoch == epoch || context.RecoveredFromSnapshot && context.RecoveryEpoch == epoch)
+            && (context.BrokerAccountId is null || string.Equals(context.BrokerAccountId, update.Account.Trim(), StringComparison.Ordinal))
+            && string.Equals(update.ClientOrderId, context.ClientOrderId, StringComparison.Ordinal)
+            && string.Equals(update.Symbol, context.Symbol, StringComparison.OrdinalIgnoreCase)
+            && IBCanonicalPayloadMapper.TryParseKnownSide(update.Action, out var side) && side == context.Side
+            && IBCanonicalPayloadMapper.TryParseKnownOrderType(update.OrderType, out var type) && type == context.Type;
+
     private void OnOpenOrderReceived(object? sender, IBOpenOrderUpdate update)
     {
         var callbackEpoch = Volatile.Read(ref _connectionEpoch);
@@ -944,20 +955,14 @@ public sealed partial class IBBrokerageGateway :
             _logger.LogWarning("IB open-order callback refused because its external account differs from the owned order acknowledgement.");
             return;
         }
-        var ownedAccountObservation = context is not null && !string.IsNullOrWhiteSpace(update.Account)
-            && _verifiedAccounts.Contains(update.Account.Trim())
-            && (context.SubmissionEpoch == callbackEpoch || context.RecoveredFromSnapshot && context.RecoveryEpoch == callbackEpoch)
-            && string.Equals(update.ClientOrderId, context.ClientOrderId, StringComparison.Ordinal)
-            && string.Equals(update.Symbol, context.Symbol, StringComparison.OrdinalIgnoreCase)
-            && IBCanonicalPayloadMapper.ParseSide(update.Action, update.Metadata) == context.Side
-            && IBCanonicalPayloadMapper.ParseOrderType(update.OrderType, update.Metadata) == context.Type;
+        var ownedAccountObservation = CanObserveOwnedOpenOrder(context, update, callbackEpoch, _verifiedAccounts);
         // A late observation that cannot prove its owned reference/account must not populate
         // the account or order caches: a later account-less status callback consumes those caches.
         if (context is not null && pending is null && amendment is null && !ownedAccountObservation)
             return;
         if (context is { BrokerAccountId: null } && ownedAccountObservation)
         {
-            var owned = context with { BrokerAccountId = update.Account.Trim() };
+            var owned = context with { BrokerAccountId = update.Account!.Trim() };
             if (!_submittedOrders.TryUpdate(gatewayOrderId, owned, context))
                 return;
             context = owned;

@@ -285,31 +285,60 @@ public sealed partial class IBBrokerageGatewayTests
     [InlineData("DU2", "AAPL", "BUY")]
     [InlineData("DU1", "TSLA", "BUY")]
     [InlineData("DU1", "AAPL", "SELL")]
+    [InlineData("DU1", "AAPL", "UNKNOWN")]
     public async Task LateInvalidAccountObservation_DoesNotClaimTheContextBeforeValidAcknowledgement(
         string account, string symbol, string side)
     {
-        var client = CreateAcknowledgingClient();
-        client.ManagedAccounts = "DU1";
-        client.OnPlaceOrder = (c, id, _) => c.RaiseOrderStatus(Status(id, "Submitted"));
-        await using var gateway = new IBBrokerageGateway(DefaultOptions(), NullLogger<IBBrokerageGateway>.Instance, client);
-        await gateway.ConnectAsync();
-        await gateway.SubmitOrderAsync(WorkingOrder());
-        client.RaiseOpenOrder(OpenOrder(11001, WorkingOrder()) with { Account = account, Symbol = symbol, Action = side });
-        client.RaiseOrderStatus(Status(11001, "Submitted"));
-        client.RaiseOpenOrder(OpenOrder(11001, WorkingOrder()));
-
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        await foreach (var report in gateway.StreamExecutionReportsAsync(timeout.Token))
+        var directory = Path.Combine(Path.GetTempPath(), $"ib-invalid-late-account-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
         {
-            report.BrokerAccountId.Should().NotBe("DU2", "rejected late observations must not taint a later status report");
-            if (report.BrokerAccountId is null)
-                continue;
-            report.BrokerAccountId.Should().Be("DU1");
-            report.Symbol.Should().Be("AAPL");
-            report.Side.Should().Be(OrderSide.Buy);
-            report.FilledQuantity.Should().Be(0m);
-            return;
+            var client = CreateAcknowledgingClient();
+            client.ManagedAccounts = "DU1";
+            client.OnPlaceOrder = (c, id, _) => c.RaiseOrderStatus(Status(id, "Submitted"));
+            await using var gateway = new IBBrokerageGateway(DefaultOptions(), NullLogger<IBBrokerageGateway>.Instance, client);
+            await gateway.ConnectAsync();
+            var path = Path.Combine(directory, "orders.json");
+            var store = new FileBrokerageOrderRecoveryStore(path, "ibkr");
+            var portfolio = new PaperTradingPortfolio(100_000m);
+            var publisher = new AmendmentRacePublisher();
+            await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
+                recoveryStore: store, portfolioState: portfolio, tradeEventPublisher: publisher);
+            await oms.StartAsync();
+            (await oms.PlaceOrderAsync(WorkingOrder())).Success.Should().BeTrue();
+            var pendingBefore = oms.GetPendingAmendmentForRecovery("working-order");
+            var aliasesBefore = store.Load().Single().BrokerOrderAliases!.ToArray();
+            client.RaiseOpenOrder(OpenOrder(11001, WorkingOrder()) with { Account = account, Symbol = symbol, Action = side });
+            var barrier = Status(11001, "Submitted");
+            client.RaiseOrderStatus(barrier);
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            ExecutionReport observed;
+            do
+            {
+                observed = await oms.ExecutionReports.ReadAsync(timeout.Token);
+                observed.BrokerAccountId.Should().NotBe("DU2", "inadmissible observations cannot taint later statuses");
+            } while (observed.Timestamp != barrier.ReceivedAt);
+
+            var beforeValid = oms.GetOrder("working-order")!;
+            beforeValid.BrokerAccountId.Should().BeNull();
+            beforeValid.FilledQuantity.Should().Be(0m);
+            oms.GetPendingAmendmentForRecovery("working-order").Should().BeSameAs(pendingBefore);
+            portfolio.Positions.Should().BeEmpty();
+            publisher.Events.Should().BeEmpty();
+            var durable = new FileBrokerageOrderRecoveryStore(path, "ibkr").Load().Single();
+            durable.State.Should().Be(beforeValid);
+            durable.BrokerOrderAliases.Should().Equal(aliasesBefore);
+
+            client.RaiseOpenOrder(OpenOrder(11001, WorkingOrder()));
+            while ((await oms.ExecutionReports.ReadAsync(timeout.Token)).BrokerAccountId != "DU1") { }
+            var afterValid = oms.GetOrder("working-order")!;
+            afterValid.Should().Be(beforeValid with { BrokerAccountId = "DU1" });
+            publisher.Events.Should().BeEmpty();
+            new FileBrokerageOrderRecoveryStore(path, "ibkr").Load().Single().State.Should().Be(afterValid);
         }
-        throw new InvalidOperationException("The valid broker account observation was not published.");
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
     }
 }
