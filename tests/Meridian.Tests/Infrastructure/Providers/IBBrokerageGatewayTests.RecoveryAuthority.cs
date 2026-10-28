@@ -295,11 +295,13 @@ public sealed partial class IBBrokerageGatewayTests
         await gateway.ConnectAsync();
         await gateway.SubmitOrderAsync(WorkingOrder());
         client.RaiseOpenOrder(OpenOrder(11001, WorkingOrder()) with { Account = account, Symbol = symbol, Action = side });
+        client.RaiseOrderStatus(Status(11001, "Submitted"));
         client.RaiseOpenOrder(OpenOrder(11001, WorkingOrder()));
 
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         await foreach (var report in gateway.StreamExecutionReportsAsync(timeout.Token))
         {
+            report.BrokerAccountId.Should().NotBe("DU2", "rejected late observations must not taint a later status report");
             if (report.BrokerAccountId is null)
                 continue;
             report.BrokerAccountId.Should().Be("DU1");

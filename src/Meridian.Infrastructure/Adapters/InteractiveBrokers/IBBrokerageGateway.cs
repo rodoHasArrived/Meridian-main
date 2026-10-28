@@ -936,6 +936,8 @@ public sealed partial class IBBrokerageGateway :
         var callbackEpoch = Volatile.Read(ref _connectionEpoch);
         var gatewayOrderId = update.OrderId;
         var context = TrackedContext(gatewayOrderId);
+        _pendingOrderOperations.TryGetValue(gatewayOrderId, out var pending);
+        _unconfirmedAmendments.TryGetValue(gatewayOrderId, out var amendment);
         if (context?.BrokerAccountId is { } knownAccount && !string.IsNullOrWhiteSpace(update.Account)
             && !string.Equals(knownAccount, update.Account.Trim(), StringComparison.Ordinal))
         {
@@ -949,6 +951,10 @@ public sealed partial class IBBrokerageGateway :
             && string.Equals(update.Symbol, context.Symbol, StringComparison.OrdinalIgnoreCase)
             && IBCanonicalPayloadMapper.ParseSide(update.Action, update.Metadata) == context.Side
             && IBCanonicalPayloadMapper.ParseOrderType(update.OrderType, update.Metadata) == context.Type;
+        // A late observation that cannot prove its owned reference/account must not populate
+        // the account or order caches: a later account-less status callback consumes those caches.
+        if (context is not null && pending is null && amendment is null && !ownedAccountObservation)
+            return;
         if (context is { BrokerAccountId: null } && ownedAccountObservation)
         {
             var owned = context with { BrokerAccountId = update.Account.Trim() };
@@ -968,8 +974,6 @@ public sealed partial class IBBrokerageGateway :
         }
         _openOrderSecurityTypes[gatewayOrderId] = update.SecurityType ?? string.Empty;
 
-        _pendingOrderOperations.TryGetValue(gatewayOrderId, out var pending);
-        _unconfirmedAmendments.TryGetValue(gatewayOrderId, out var amendment);
         var latest = CurrentSessionReport(gatewayOrderId, context);
         var status = IBCanonicalPayloadMapper.MapOrderStatus(update.Status, update.FilledQuantity,
             Math.Max(update.Quantity - update.FilledQuantity, 0m), update.RejectReason, update.Metadata);
