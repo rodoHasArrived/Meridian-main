@@ -2,10 +2,24 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { deleteProviderCredentials, getProviderConnections, putProviderCredentials, verifyProviderConnection } from "./api";
 import { credentialOwnershipKey, ownedCredentialConnections, providerConnectionScopeEndpoint } from "./provider-credential-scope";
 import type { ProviderRoutingConnection } from "@/types";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 
 const connection = (id: string): ProviderRoutingConnection => ({ connectionId: id, providerFamilyId: "alpaca", displayName: id, tenantId: "tenant-a", externalAccountId: "account-a", credentialEnvironment: "paper", enabled: true } as ProviderRoutingConnection);
+// Vitest may expose an HTTP import.meta.url. Locate the repository source from an
+// actual filesystem cwd so the contract check works at the root or dashboard runner.
+function readServerProviderIdentity(): string {
+  let directory = resolve(process.cwd());
+  for (let depth = 0; depth < 8; depth++) {
+    const candidate = join(directory, "src", "Meridian.ProviderSdk", "ProviderIdentity.cs");
+    if (existsSync(candidate)) return readFileSync(candidate, "utf8");
+    const parent = dirname(directory);
+    if (parent === directory) break;
+    directory = parent;
+  }
+  throw new Error("Cannot locate the repository ProviderIdentity source for the alias contract check.");
+}
+
 describe("credential connection scope", () => {
   const fetchMock = vi.fn();
   beforeEach(() => {
@@ -58,7 +72,7 @@ describe("credential connection scope", () => {
   });
 
   it("matches the authoritative shared provider alias catalog", () => {
-    const source = readFileSync(resolve(process.cwd(), "../../Meridian.ProviderSdk/ProviderIdentity.cs"), "utf8");
+    const source = readServerProviderIdentity();
     const aliases = Array.from(source.matchAll(/\["([^"]+)"\]\s*=\s*"([^"]+)"/g), match => [match[1], match[2]]);
     expect(aliases.length).toBeGreaterThan(30);
     for (const [alias, canonical] of aliases) {

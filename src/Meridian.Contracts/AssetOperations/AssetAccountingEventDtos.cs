@@ -208,12 +208,13 @@ public sealed record AssetAccountingEventSpineDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null)
 {
+    // Keep the populated recovery payload's original order for retained canonical fingerprints.
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AssetAccountingPreparationRevisionDto? PreparationRevision { get; init; }
+
     public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = RetainedEvidence ?? [];
 
     public IReadOnlyList<AssetAccountingStageEvidenceDto> Stages { get; init; } = Stages ?? [];
-
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public AssetAccountingPreparationRevisionDto? PreparationRevision { get; init; }
 }
 
 /// <summary>
