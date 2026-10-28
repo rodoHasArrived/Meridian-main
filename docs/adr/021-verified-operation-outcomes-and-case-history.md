@@ -96,7 +96,7 @@ launch gate. Preflight failures are `Blocked`; timeout, early process exit, and 
 | Case-history contract | `src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs` | Durable event, assignment, retry, approval, exception, and recovery schema |
 | Case-history port | `src/Meridian.Contracts/Operations/IOperationalCaseHistoryStore.cs` | Shared append/replay boundary |
 | File history | `src/Meridian.Storage/Operations/FileOperationalCaseHistoryStore.cs` | Atomic, cross-process, tamper-evident persistence |
-| Contract tests | `tests/Meridian.Tests/Contracts/VerifiedOperationOutcomeTests.cs` | Terminal-state and serialization invariants |
+| Contract tests | `tests/Meridian.Contracts.UnitTests/Contracts/VerifiedOperationOutcomeTests.cs` | Terminal-state and serialization invariants |
 | Persistence tests | `tests/Meridian.Tests/Storage/Operations/FileOperationalCaseHistoryStoreTests.cs` | Restart, duplicate, concurrency, and corruption behavior |
 
 ## Rationale

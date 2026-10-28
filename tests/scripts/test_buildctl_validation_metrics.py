@@ -30,6 +30,52 @@ def receipt(run_id="run", **updates):
 
 
 class ValidationMetricsTests(unittest.TestCase):
+    def test_warm_cohort_requires_observed_profile_state_and_explicit_edit_start(self):
+        records = [receipt("warm", command="test", cacheState="profile-warm", feedbackSeconds=20,
+                           editStartedAt="2026-10-27T23:59:50Z", warmEditToResultSeconds=30),
+                   receipt("first", command="test", cacheState="profile-cold", feedbackSeconds=100,
+                           warmEditToResultSeconds=110),
+                   receipt("reuse", command="test", cacheState="explicit-output-reuse", feedbackSeconds=5),
+                   receipt("legacy", feedbackSeconds=50),
+                   receipt("no-edit", command="test", cacheState="profile-warm", feedbackSeconds=10)]
+        report = metrics.summarize(records)
+        self.assertEqual(report["metrics"]["warmFeedbackSeconds"],
+                         {"samples": 2, "missing": 3, "median": 15, "p95": 20})
+        self.assertEqual(report["metrics"]["warmEditToResultSeconds"],
+                         {"samples": 1, "missing": 4, "median": 30, "p95": 30})
+
+    def test_warm_cohort_keeps_failed_attempts_and_rejects_unfinished_or_invalid_values(self):
+        record = receipt(command="test", cacheState="profile-warm", feedbackSeconds=10,
+                         editStartedAt="2026-10-28T00:00:00Z", warmEditToResultSeconds=12, status="failed")
+        self.assertEqual(metrics.warm_edit_to_result_seconds(record), 12)
+        for updates in ({"status": "started"}, {"editStartedAt": None}, {"editStartedAt": "invalid"},
+                        {"editStartedAt": "2026-10-29T00:00:00Z"}, {"startedAt": None}, {"finishedAt": None},
+                        {"warmEditToResultSeconds": 9}, {"warmEditToResultSeconds": -1}, {"warmEditToResultSeconds": True}):
+            with self.subTest(updates=updates):
+                self.assertIsNone(metrics.warm_edit_to_result_seconds({**record, **updates}))
+
+    def test_cold_full_gate_requires_fresh_outputs_and_complete_observed_lane_roster(self):
+        record = receipt(command="quality-gate", cacheState="cold-isolated", freshBuildOutputs=True,
+                         completedLanes=sorted(metrics.FULL_GATE_LANES), coldFullGateSeconds=100)
+        self.assertEqual(metrics.cold_full_gate_seconds(record), 100)
+        self.assertEqual(metrics.cold_full_gate_seconds({**record, "status": "failed"}), 100)
+        for updates in ({"command": "verify-fast"}, {"freshBuildOutputs": None}, {"cacheState": None},
+                        {"status": "blocked"}, {"status": "interrupted"}, {"completedLanes": []},
+                        {"completedLanes": sorted(metrics.FULL_GATE_LANES) + ["verify-docs"]},
+                        {"coldFullGateSeconds": None}, {"coldFullGateSeconds": True}):
+            with self.subTest(updates=updates):
+                self.assertIsNone(metrics.cold_full_gate_seconds({**record, **updates}))
+        report = metrics.summarize([record, {**record, "status": "started"}])
+        self.assertEqual(report["metrics"]["coldFullGateSeconds"],
+                         {"samples": 1, "missing": 1, "median": 100, "p95": 100})
+
+    def test_warm_edit_timing_preserves_subsecond_timestamp_ordering(self):
+        record = receipt(command="test", cacheState="profile-warm", feedbackSeconds=.15,
+                         startedAt="2026-10-28T00:00:00.500000Z", finishedAt="2026-10-28T00:00:00.650000Z",
+                         editStartedAt="2026-10-28T00:00:00.499000Z", warmEditToResultSeconds=.151)
+        self.assertEqual(metrics.warm_edit_to_result_seconds(record), .151)
+        self.assertIsNone(metrics.warm_edit_to_result_seconds({**record, "editStartedAt": "2026-10-28T00:00:00.501000Z"}))
+
     def test_empty_observations_are_null_not_zero(self):
         report = metrics.summarize([])
         self.assertEqual(report["runs"], 0)

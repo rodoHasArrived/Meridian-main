@@ -1267,17 +1267,47 @@ def cmd_validation_status(args: argparse.Namespace) -> int:
     return 1 if blocked and getattr(args, "fail_on_active", False) else 0
 
 
+def _edit_start(value: str | None, invocation: datetime) -> datetime | None:
+    """An explicit observation, never a source mtime or inferred editing duration."""
+    if value is None:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            raise ValueError("missing timezone")
+        parsed = parsed.astimezone(timezone.utc)
+    except (ValueError, TypeError, AttributeError, OverflowError) as exc:
+        raise ValueError("--edit-started-at requires an ISO 8601 timestamp with a timezone.") from exc
+    if parsed > invocation:
+        raise ValueError("--edit-started-at must not be later than invocation time.")
+    return parsed
+
+
+def _test_cache_state(args: argparse.Namespace, profile: dict | None, isolation_key: str | None) -> str:
+    if getattr(args, "no_build", False):
+        return "explicit-output-reuse"
+    if profile is not None:
+        outputs = [REPO_ROOT / "artifacts" / root / isolation_key for root in ("bin", "obj")]
+        return "profile-warm" if profile.get("built") is True and all(path.is_dir() for path in outputs) else "profile-cold"
+    if _uses_auto_isolation(args):
+        return "fresh-isolated"
+    return "shared-output" if isolation_key is None else "explicit-output"
+
+
 def cmd_test(args: argparse.Namespace) -> int:
     if getattr(args, "lane", "dotnet") != "dotnet":
         print("Only lane=dotnet is currently supported by buildctl test.", file=sys.stderr)
         return 2
 
+    invocation = datetime.now(timezone.utc)
+    feedback_started = time.monotonic()
     project: str = getattr(args, "project", "tests/Meridian.Tests/Meridian.Tests.csproj")
     configuration: str = getattr(args, "configuration", "Release")
     verbosity: str = getattr(args, "verbosity", os.environ.get("BUILD_VERBOSITY", "normal"))
     no_build = getattr(args, "no_build", False)
     run_id = getattr(args, "run_id", None) or _new_run_id(f"test-{Path(project).stem}")
     try:
+        edit_start = _edit_start(getattr(args, "edit_started_at", None), invocation)
         _validate_output_options(args)
         _validate_output_name(run_id, "run ID")
         if getattr(args, "task_id", None) is not None:
@@ -1313,23 +1343,30 @@ def cmd_test(args: argparse.Namespace) -> int:
         "runtime": getattr(args, "runtime", None),
         "isolationKey": isolation_key,
         "profile": getattr(args, "profile", None),
-        "startedAt": _utc_now(),
+        "cacheState": None,
+        "editStartedAt": edit_start.isoformat() if edit_start is not None else None,
+        "warmEditToResultSeconds": None,
+        "startedAt": invocation.isoformat(),
         "status": "started",
         "steps": [],
     }
-    queue_started = time.monotonic()
-    feedback_started = queue_started
+    queue_started = feedback_started
     execution_started: float | None = None
     phase = "queue"
 
     def finish_run(**updates: object) -> None:
         now = time.monotonic()
+        feedback = round(max(0, now - feedback_started), 3)
         if execution_started is None:
             run_payload["queueSeconds"] = round(max(0, now - queue_started), 3)
         _record_validation_run(
             run_path, run_payload,
-            finishedAt=_utc_now(),
-            feedbackSeconds=round(max(0, now - feedback_started), 3),
+            finishedAt=datetime.now(timezone.utc).isoformat(),
+            feedbackSeconds=feedback,
+            warmEditToResultSeconds=(
+                round((invocation - edit_start).total_seconds() + feedback, 3)
+                if run_payload.get("cacheState") == "profile-warm" and edit_start is not None else None
+            ),
             executionSeconds=round(max(0, now - execution_started), 3) if execution_started is not None else None,
             failurePhase=phase if updates.get("status") != "passed" else None,
             **updates,
@@ -1386,7 +1423,8 @@ def cmd_test(args: argparse.Namespace) -> int:
         _record_validation_run(run_path, run_payload, queueSeconds=round(max(0, execution_started - queue_started), 3))
         effective_args, profile = _prepare_outputs(args, run_id)
         isolation_key = effective_args.isolation_key
-        _record_validation_run(run_path, run_payload, isolationKey=isolation_key)
+        _record_validation_run(run_path, run_payload, isolationKey=isolation_key,
+                               cacheState=_test_cache_state(args, profile, isolation_key))
         _prune_for_isolation(args, isolation_key)
         msbuild_args = _build_serialized_msbuild_args(effective_args)
         results_directory = Path(getattr(args, "results_directory", "") or (REPO_ROOT / ".ai/test-results")) / run_id
@@ -1888,6 +1926,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_recommend.add_argument("--base", help="Include committed changes since the merge base with REF, plus local changes")
     p_recommend.add_argument("--json", action="store_true", help="Emit structured JSON instead of text")
     p_recommend.add_argument("--output", type=Path)
+    p_recommend.add_argument("--fresh", action="store_true", help="Recommend fresh .NET outputs instead of incremental session profiles.")
 
     # doctor
     p_doctor = sub.add_parser("doctor", help="Run environment health check")
@@ -1975,6 +2014,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_test.add_argument("--queue-timeout-seconds", type=int, default=300)
     p_test.add_argument("--run-id")
     p_test.add_argument("--task-id", help="Explicit task identity for observed validation attempts; use a unique ID per task.")
+    p_test.add_argument("--edit-started-at", help="Observed edit start as an ISO 8601 timestamp with timezone; warm edit-to-result timing is unavailable when omitted.")
     p_test.add_argument("--isolation-key", default="auto")
     test_output = p_test.add_mutually_exclusive_group()
     test_output.add_argument("--profile", help="Persistent worktree or session:<name> build outputs.")

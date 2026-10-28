@@ -12,10 +12,15 @@ export DOTNET_SKIP_FIRST_TIME_EXPERIENCE="${DOTNET_SKIP_FIRST_TIME_EXPERIENCE:-1
 export MERIDIAN_DISABLE_DOCKER_TESTS="${MERIDIAN_DISABLE_DOCKER_TESTS:-true}"
 
 selected_lane="quality-gate"
+local_jobs="auto"
+cold_outputs=false
 
 usage() {
   cat <<'EOF'
-Usage: bash scripts/ci.sh [--lane <lane>]
+Usage: bash scripts/ci.sh [--lane <lane>] [--jobs <auto|1|2>] [--cold]
+
+Local aggregate lanes overlap .NET/browser when resources permit.
+--jobs 1 serializes them; --cold uses fresh .NET build outputs (dependency caches remain).
 
 Lanes:
   quality-gate      Run the full local PR gate (default).
@@ -36,6 +41,18 @@ while [[ $# -gt 0 ]]; do
       fi
       selected_lane="$2"
       shift 2
+      ;;
+    --jobs)
+      if [[ $# -lt 2 || ! "$2" =~ ^(auto|1|2)$ ]]; then
+        echo "--jobs requires auto, 1, or 2." >&2
+        exit 2
+      fi
+      local_jobs="$2"
+      shift 2
+      ;;
+    --cold)
+      cold_outputs=true
+      shift
       ;;
     -h|--help)
       usage
@@ -70,13 +87,38 @@ if [[ -z "$python_cmd" ]]; then
   exit 127
 fi
 
-ci_summary_dir="artifacts/ci-summary/${selected_lane}"
+# Composite runs own their children and evidence roots. Hosted leaf lanes retain
+# their existing artifact paths and commands.
+if [[ "$selected_lane" == "quality-gate" || "$selected_lane" == "verify-fast" ]]; then
+  export MERIDIAN_CI_PYTHON="$python_cmd"
+  aggregate_args=(--lane "$selected_lane" --jobs "$local_jobs")
+  if [[ "$cold_outputs" == true ]]; then
+    aggregate_args+=(--cold)
+  fi
+  exec "$python_cmd" build/scripts/ci/local_gate.py "${aggregate_args[@]}"
+fi
+if [[ "$local_jobs" != auto || "$cold_outputs" == true ]]; then
+  echo "--jobs and --cold apply only to quality-gate and verify-fast." >&2
+  exit 2
+fi
+
+export MERIDIAN_CI_ARTIFACT_ROOT="${MERIDIAN_CI_ARTIFACT_ROOT:-artifacts}"
+if [[ -n "${MERIDIAN_CI_ISOLATION_KEY:-}" ]]; then
+  # MSBuild imports these environment properties, including during dotnet format.
+  # Use Meridian's layout so the QuantScript sidecar resolves the same outputs.
+  export UseArtifactsOutput=false
+  export MeridianBuildIsolationKey="$MERIDIAN_CI_ISOLATION_KEY"
+fi
+if [[ -z "${MERIDIAN_BROWSER_RESULTS_DIR:-}" ]]; then
+  export MERIDIAN_BROWSER_RESULTS_DIR="$MERIDIAN_CI_ARTIFACT_ROOT/test-results/browser"
+fi
+ci_summary_dir="${MERIDIAN_CI_ARTIFACT_ROOT}/ci-summary/${selected_lane}"
 ci_steps_tsv="${ci_summary_dir}/steps.tsv"
 ci_summary_md="${ci_summary_dir}/summary.md"
 handoff_summary_json="${ci_summary_dir}/ai-handoff-docs-automation-summary.json"
 handoff_summary_md="${ci_summary_dir}/ai-handoff-docs-automation-summary.md"
-mkdir -p "$ci_summary_dir" artifacts/build-logs artifacts/test-results/dotnet
-rm -f artifacts/build-logs/*.log artifacts/test-results/dotnet/ci-dotnet-test-summary.json
+mkdir -p "$ci_summary_dir" "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs" "${MERIDIAN_CI_ARTIFACT_ROOT}/test-results/dotnet"
+rm -f "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/"*.log "${MERIDIAN_CI_ARTIFACT_ROOT}/test-results/dotnet/ci-dotnet-test-summary.json"
 : > "$ci_steps_tsv"
 
 write_ci_summary() {
@@ -87,9 +129,9 @@ write_ci_summary() {
     --exit-code "$status"
     --steps-tsv "$ci_steps_tsv"
     --output "$ci_summary_md"
-    --dotnet-summary-json artifacts/test-results/dotnet/ci-dotnet-test-summary.json
+    --dotnet-summary-json "${MERIDIAN_CI_ARTIFACT_ROOT}/test-results/dotnet/ci-dotnet-test-summary.json"
   )
-  for log_path in artifacts/build-logs/*.log; do
+  for log_path in "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/"*.log; do
     if [[ -f "$log_path" ]]; then
       summary_args+=(--build-log "$log_path")
     fi
@@ -175,15 +217,19 @@ verify_dotnet() {
     "$python_cmd" build/scripts/ci/check-ledger-dimension-coverage.py
 
   run_step "Build web workstation .NET lane" \
-    bash -c 'set -euo pipefail; dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore -p:EnableWindowsTargeting=true -p:UseAppHost=false 2>&1 | tee artifacts/build-logs/web-workstation-build.log'
+    bash -c 'set -euo pipefail; dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore -p:EnableWindowsTargeting=true -p:UseAppHost=false 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/web-workstation-build.log"'
 
+  local test_output_args=()
+  if [[ -n "${MERIDIAN_CI_ISOLATION_KEY:-}" ]]; then
+    test_output_args+=(--isolation-key "$MERIDIAN_CI_ISOLATION_KEY")
+  fi
   run_step "Run .NET non-integration test projects" \
     "$python_cmd" build/scripts/ci/run-dotnet-ci-tests.py \
       --configuration Release \
       --filter "Category!=Integration&Category!=Performance" \
-      --results-dir artifacts/test-results/dotnet \
-      --summary-output artifacts/test-results/dotnet/ci-dotnet-test-summary.md \
-      --json-output artifacts/test-results/dotnet/ci-dotnet-test-summary.json
+      --results-dir "${MERIDIAN_CI_ARTIFACT_ROOT}/test-results/dotnet" \
+      --summary-output "${MERIDIAN_CI_ARTIFACT_ROOT}/test-results/dotnet/ci-dotnet-test-summary.md" \
+      --json-output "${MERIDIAN_CI_ARTIFACT_ROOT}/test-results/dotnet/ci-dotnet-test-summary.json" "${test_output_args[@]}"
 }
 
 verify_browser() {
@@ -191,22 +237,26 @@ verify_browser() {
   verify_toolchain_browser
 
   run_step "Install dashboard dependencies from lockfile" \
-    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard ci --include=optional 2>&1 | tee artifacts/build-logs/dashboard-install.log'
+    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard ci --include=optional 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-install.log"'
 
   run_step "Generated UI contract drift gate" \
-    bash -c 'set -euo pipefail; "$0" build/scripts/generate-ui-api-routes-ts.py --check 2>&1 | tee artifacts/build-logs/ui-api-routes-check.log; "$0" build/scripts/generate-workspace-catalog-ts.py --check 2>&1 | tee artifacts/build-logs/workspace-catalog-check.log' "$python_cmd"
+    bash -c 'set -euo pipefail; "$0" build/scripts/generate-ui-api-routes-ts.py --check 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/ui-api-routes-check.log"; "$0" build/scripts/generate-workspace-catalog-ts.py --check 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/workspace-catalog-check.log"' "$python_cmd"
 
   run_step "Lint dashboard source" \
-    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run lint 2>&1 | tee artifacts/build-logs/dashboard-lint.log'
+    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run lint 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-lint.log"'
 
   run_step "Enforce strictNullChecks on dashboard source" \
-    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run typecheck:strict 2>&1 | tee artifacts/build-logs/dashboard-typecheck-strict.log'
+    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run typecheck:strict 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-typecheck-strict.log"'
 
   run_step "Run dashboard tests" \
-    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run test 2>&1 | tee artifacts/build-logs/dashboard-test.log'
+    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run test 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-test.log"'
 
+  if [[ -n "${MERIDIAN_CI_BROWSER_BUILD_BARRIER:-}" ]]; then
+    run_step "Wait for .NET browser-asset reads" \
+      "$python_cmd" build/scripts/ci/local_gate.py --wait-for-dotnet "$MERIDIAN_CI_BROWSER_BUILD_BARRIER"
+  fi
   run_step "Build dashboard bundle" \
-    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run build 2>&1 | tee artifacts/build-logs/dashboard-build.log'
+    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run build 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-build.log"'
 
   # PRD-018 freshness gate: the tracked canonical bundle must match what the current dashboard
   # source builds, so the repo-launch demo can never serve stale assets.
@@ -310,11 +360,11 @@ verify_docs() {
   run_step "Verify documentation Node.js" node --version
   run_step "Verify documentation npm" npm --version
   run_step "Install documentation diagram dependencies from lockfile" \
-    bash -c 'set -euo pipefail; npm ci --no-fund --no-audit 2>&1 | tee artifacts/build-logs/docs-install.log'
+    bash -c 'set -euo pipefail; npm ci --no-fund --no-audit 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/docs-install.log"'
 
   run_step "Reject whole-repo generated documentation drift" \
     "$python_cmd" build/scripts/run-maintained-generation.py \
-      --docs-only --report artifacts/docs/generation.json
+      --docs-only --report "${MERIDIAN_CI_ARTIFACT_ROOT}/docs/generation.json"
 
   run_step "Verify whole-repo generated documentation is committed" \
     "$python_cmd" build/scripts/ci/check-generated-output.py
@@ -348,7 +398,7 @@ verify_workflows() {
     "$python_cmd" build/scripts/docs/check-known-lanes.py
 
   run_step "Validate workflow hygiene" \
-    bash -c 'set -euo pipefail; "$0" build/scripts/ci/check-workflow-hygiene.py 2>&1 | tee artifacts/build-logs/workflow-hygiene.log' "$python_cmd"
+    bash -c 'set -euo pipefail; "$0" build/scripts/ci/check-workflow-hygiene.py 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/workflow-hygiene.log"' "$python_cmd"
 
   # A skipped test reports the same green as a passing one, so every skip must name an
   # owner, a category, and a review date that expires.
@@ -362,30 +412,12 @@ verify_workflows() {
     "$python_cmd" build/scripts/ci/run-script-tests.py
 }
 
-verify_fast() {
-  verify_dotnet
-  verify_browser
-}
-
-quality_gate() {
-  verify_dotnet
-  verify_browser
-  verify_docs
-  verify_workflows
-}
-
 # Check the whole selected lane before its first restore, build, or dependency install.
 # Doctor and setup use this same definition, including supported versions and package fixes.
 run_step "Check shared prerequisites" \
   "$python_cmd" build/python/prerequisites.py --lane "$selected_lane"
 
 case "$selected_lane" in
-  quality-gate)
-    quality_gate
-    ;;
-  verify-fast)
-    verify_fast
-    ;;
   verify-dotnet)
     verify_dotnet
     ;;

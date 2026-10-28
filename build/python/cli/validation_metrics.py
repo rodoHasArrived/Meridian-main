@@ -14,6 +14,7 @@ from statistics import median
 TERMINAL = frozenset({"passed", "failed", "blocked", "interrupted"})
 STATUSES = ("started", "passed", "failed", "blocked", "interrupted")
 SCOPE_FIELDS = ("project", "filter", "configuration", "framework", "runtime")
+FULL_GATE_LANES = frozenset({"verify-dotnet", "verify-browser", "verify-docs", "verify-workflows"})
 
 
 def number(value: object) -> float | None:
@@ -58,6 +59,33 @@ def feedback_seconds(record: dict) -> float | None:
     if "feedbackSeconds" in record:
         return number(record["feedbackSeconds"])
     return elapsed(record.get("startedAt"), record.get("finishedAt"))
+
+
+def warm_feedback_seconds(record: dict) -> float | None:
+    if record.get("command") != "test" or record.get("cacheState") != "profile-warm":
+        return None
+    return feedback_seconds(record)
+
+
+def warm_edit_to_result_seconds(record: dict) -> float | None:
+    feedback = warm_feedback_seconds(record)
+    edit_start, invocation, finish = (timestamp(record.get(name)) for name in ("editStartedAt", "startedAt", "finishedAt"))
+    observed = number(record.get("warmEditToResultSeconds"))
+    if (feedback is None or edit_start is None or invocation is None or finish is None
+            or not edit_start <= invocation <= finish or observed is None or observed < feedback):
+        return None
+    return observed
+
+
+def cold_full_gate_seconds(record: dict) -> float | None:
+    if (record.get("command") != "quality-gate" or record.get("cacheState") != "cold-isolated"
+            or record.get("freshBuildOutputs") is not True or record.get("status") not in {"passed", "failed"}):
+        return None
+    completed = record.get("completedLanes")
+    if (not isinstance(completed, list) or any(not isinstance(lane, str) for lane in completed)
+            or len(completed) != len(FULL_GATE_LANES) or set(completed) != FULL_GATE_LANES):
+        return None
+    return number(record.get("coldFullGateSeconds"))
 
 
 def scope(record: dict) -> tuple | None:
@@ -143,6 +171,9 @@ def summarize(records: list[dict], warnings: list[str] | None = None) -> dict:
             "feedbackSeconds": distribution([feedback_seconds(item) for item in records]),
             "queueSeconds": distribution([item.get("queueSeconds") for item in records]),
             "executionSeconds": distribution([item.get("executionSeconds") for item in records]),
+            "warmFeedbackSeconds": distribution([warm_feedback_seconds(item) for item in records]),
+            "warmEditToResultSeconds": distribution([warm_edit_to_result_seconds(item) for item in records]),
+            "coldFullGateSeconds": distribution([cold_full_gate_seconds(item) for item in records]),
         },
         "steps": {name: distribution(values) for name, values in sorted(steps.items())},
         "failurePhases": dict(sorted(phases.items())),
@@ -151,6 +182,9 @@ def summarize(records: list[dict], warnings: list[str] | None = None) -> dict:
             "feedbackSeconds": "Explicit monotonic terminal latency including waiting; legacy receipts use valid startedAt-to-finishedAt timestamps. Invalid explicit values and unfinished runs are unavailable.",
             "queueSeconds": "Explicit measured waiting only; unavailable for legacy receipts. Never inferred from step totals.",
             "executionSeconds": "Explicit measured execution only; unavailable when not captured by the runner.",
+            "warmFeedbackSeconds": "Feedback from test invocations with a previously successful compatible profile and existing output directories; first profile builds, explicit no-build reuse, and legacy receipts are excluded.",
+            "warmEditToResultSeconds": "Explicit observed edit start to terminal result for warm profile test invocations, including queue and execution. Missing edit starts remain unavailable; feedback duration alone is not editing time.",
+            "coldFullGateSeconds": "Monotonic full-gate latency with explicitly fresh build outputs and all four completed lanes. Includes failed complete attempts; blocked, interrupted and partial gates are unavailable. Dependency download caches need not be empty.",
             "steps": "Distributions cover recorded occurrences of each phase; phases not executed are excluded, invalid durations are missing.",
             "timeToFirstPassSeconds": "Earliest observed task/scope start to first valid observed pass; not task creation-to-completion or developer work time.",
             "repeatedAttemptFeedbackSeconds": "Sum of terminal feedback durations after the first observed attempt in an explicit task/scope group; not defect attribution, labor time, or a wall-clock union.",

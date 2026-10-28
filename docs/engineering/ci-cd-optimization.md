@@ -60,6 +60,21 @@ Administrators may add `integration-gate` as a required companion check after hu
 review and a successful PR/merge-group rollout. This change does not alter repository rulesets
 or replace the existing `quality-gate` requirement.
 
+## Local verification execution
+
+The local aggregate `scripts/ci.sh` schedules .NET and browser verification with at most two
+concurrent lanes and a resource-aware serial fallback; `--jobs 1` selects serial execution.
+Docs generation and workflow/script tests run after both lanes, preserving their shared-file
+ordering. Each aggregate invocation owns separate artifact roots and records every required lane
+result. Hosted leaf lanes and the four canonical check identities retain their existing behavior.
+
+`--cold` measures a full gate with independent .NET build outputs while keeping dependency caches.
+Warm-profile recommendations and explicit edit-start timing are documented in
+[build observability](../development/build-observability.md#local-feedback-latency-and-observed-retries).
+The canonical .NET roster includes `Meridian.Contracts.UnitTests` and `Meridian.Core.UnitTests`;
+the moved cases retain their namespaces and assertions, and host-dependent tests remain in
+`Meridian.Tests`. These execution changes require human governance review before merge.
+
 ## Measurement and promotion
 
 The October 20 implementation adds policy-driven generated conflict recovery and version 2

@@ -250,7 +250,7 @@ at every migrated site except where a divergence was itself the defect (noted pe
   - Robustness fixes riding along: `BaseBrokerageGateway` reconnect delays are now capped (60 s) and jittered; `DailySummaryWebhook` retries are capped (2 min); `ExponentialBackoffRetry` uses `Random.Shared` instead of a private `Random`; the IB reconnect loop passes its cancellation token into the backoff wait; integer-overflow on high attempt counts is guarded.
 - **Key files:**
   - `src/Meridian.Core/Resilience/Backoff.cs`
-  - `tests/Meridian.Tests/Core/BackoffTests.cs`
+  - `tests/Meridian.Core.UnitTests/Core/BackoffTests.cs`
 - **Follow-up:** the three hand-rolled circuit breakers (`AutoResubscribePolicy`, `CompositeSink`, Polly pipelines) remain separate implementations; `IngestionJob.NextDelay` lives in Contracts and cannot reference Core.
 
 ### Step 8.3 — Shared guarded-endpoint helper ✅
@@ -320,7 +320,7 @@ Second consolidation pass closing out the Phase 8 follow-up queue.
 - **Key files:** `src/Meridian.Core/Resilience/CircuitBreaker.cs`,
   `src/Meridian.Storage/Sinks/CompositeSink.cs`,
   `src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs`,
-  `tests/Meridian.Tests/Core/CircuitBreakerTests.cs`.
+  `tests/Meridian.Core.UnitTests/Core/CircuitBreakerTests.cs`.
 
 ### Step 9.4 — Remaining non-atomic JSON writers ✅
 - **What was done:** `WindowStateStore` (WPF window layout) and the per-record

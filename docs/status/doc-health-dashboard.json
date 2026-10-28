@@ -1,11 +1,11 @@
 {
-  "total_files": 776,
-  "total_lines": 178499,
+  "total_files": 778,
+  "total_lines": 178665,
   "orphaned_count": 260,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 315,
-  "average_lines": 230.0,
+  "average_lines": 229.6,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -432,7 +432,7 @@
   "all_files": [
     {
       "path": ".agents/skills/_shared/project-context.md",
-      "line_count": 254,
+      "line_count": 262,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1000,7 +1000,7 @@
     },
     {
       "path": "CLAUDE.md",
-      "line_count": 220,
+      "line_count": 228,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1264,7 +1264,7 @@
     },
     {
       "path": "docs/ai/codex/quickstart.md",
-      "line_count": 286,
+      "line_count": 293,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1432,7 +1432,7 @@
     },
     {
       "path": "docs/ai/tooling/throughput-pilot.md",
-      "line_count": 252,
+      "line_count": 256,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1784,7 +1784,7 @@
     },
     {
       "path": "docs/development/build-observability.md",
-      "line_count": 245,
+      "line_count": 303,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2424,7 +2424,7 @@
     },
     {
       "path": "docs/engineering/ci-cd-optimization.md",
-      "line_count": 629,
+      "line_count": 644,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2568,7 +2568,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 543,
+      "line_count": 559,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2984,7 +2984,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12930,
+      "line_count": 12942,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4256,7 +4256,7 @@
     },
     {
       "path": "docs/start/README.md",
-      "line_count": 344,
+      "line_count": 350,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6481,6 +6481,22 @@
     {
       "path": "tests/fixtures/schedules/KNOWN-DEFECTS.md",
       "line_count": 49,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "tests/Meridian.Contracts.UnitTests/README.md",
+      "line_count": 16,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "tests/Meridian.Core.UnitTests/README.md",
+      "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
