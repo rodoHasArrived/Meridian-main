@@ -315,6 +315,28 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
     }
 
     [Fact]
+    public async Task PostProjectedCashFlowsAsync_WithDeclaredSchedule_PostsNothing()
+    {
+        // A schedule generated from declared conventions (ADR-025) is analysis only until journal
+        // identity keys on schedule period identity.
+        var projection = Projection(Period(2026, 6, 30, interest: 30m)) with
+        {
+            ScheduleEvidence = new StructuredCashFlowScheduleEvidence(
+                "contractual-schedule-kernel-v1",
+                ScheduleSpecFactory.DeclaredMappingVersion,
+                [],
+                [])
+        };
+        var bridge = BuildBridge(CashFlowServiceWith(projection));
+        var ledger = new DomainLedger();
+
+        var posted = await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger);
+
+        posted.Should().Be(0);
+        ledger.Journal.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task PostProjectedCashFlowsAsync_WithNonBaseScenario_PostsNothing()
     {
         // Rate-shocked what-if projections are analytics only and must never reach the ledger.

@@ -249,15 +249,49 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
             $"'{twinName}' declares nothing, so it projects exactly as '{cleanName}'");
     }
 
-    private static async Task<JsonObject> ProjectAsync(string caseName)
+    [Fact]
+    public async Task DeclaredProjection_AddsExactlyScheduleEvidence()
+    {
+        // A Bond stamped at its scheduleConventions version with a minimal block declares a schedule.
+        var projection = await ProjectAsync(
+            "Bond.declared",
+            "Bond",
+            StructuredCashFlowSourceKind.CalculatedBullet,
+            WithBlock(Stamped(FixedBond(IssueDate, "SemiAnnual"), 2), """{"accrualAdjusted":false}"""));
+
+        projection["blockedReason"].Should().BeNull();
+        projection["schedule"]!.AsArray().Count.Should().BePositive("the declared bond projects rows");
+        projection.Select(static member => member.Key).Should().Equal(
+            TopLevelMembers.Append("scheduleEvidence"),
+            "a declared projection keeps the twelve members and adds only scheduleEvidence");
+        projection["scheduleEvidence"].Should().BeOfType<JsonObject>()
+            .Which.Select(static member => member.Key).Should().Equal(
+                "kernelVersion",
+                "declaredMappingVersion",
+                "calendars",
+                "coverageGaps");
+        projection["termsUsed"].Should().BeOfType<JsonObject>()
+            .Which.Select(static member => member.Key).Should().BeEquivalentTo(TermsUsedMembers);
+    }
+
+    private static Task<JsonObject> ProjectAsync(string caseName)
     {
         var (assetClass, sourceKind, buildTerms) = Cases[caseName];
+        return ProjectAsync(caseName, assetClass, sourceKind, buildTerms(IssueDate));
+    }
+
+    private static async Task<JsonObject> ProjectAsync(
+        string caseName,
+        string assetClass,
+        StructuredCashFlowSourceKind sourceKind,
+        JsonObject terms)
+    {
         var store = Substitute.For<ISecurityMasterCashFlowStore>();
         store.GetSourceAsync(SecurityId, Arg.Any<CancellationToken>())
             .Returns(new SecurityCashFlowSourceDto(SecurityId, sourceKind, SourceLastUpdatedUtc, false, null, null));
         var query = Substitute.For<SecurityMasterQueryContract>();
         query.GetByIdAsync(SecurityId, Arg.Any<CancellationToken>())
-            .Returns(Security(assetClass, IssueDate, JsonSerializer.SerializeToElement(buildTerms(IssueDate))));
+            .Returns(Security(assetClass, IssueDate, JsonSerializer.SerializeToElement(terms)));
         var service = new SecurityMasterCashFlowService(
             store,
             Array.Empty<IStructuredCashFlowProvider>(),

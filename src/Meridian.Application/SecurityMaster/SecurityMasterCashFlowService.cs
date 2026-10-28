@@ -21,9 +21,11 @@ namespace Meridian.Application.SecurityMaster;
 /// <see cref="StructuredCashFlowTermsResolver"/> rather than probed inline; source freshness is
 /// surfaced as a typed <see cref="StructuredCashFlowStaleness"/> on every projection; and a fresh
 /// base-scenario projection can be routed to the ledger through
-/// <see cref="IStructuredCashFlowLedgerBridge"/> instead of being display-only.
+/// <see cref="IStructuredCashFlowLedgerBridge"/> instead of being display-only. A record that declares
+/// schedule conventions (ADR-025) projects through the schedule kernel instead of the legacy coupon
+/// walk (SecurityMasterCashFlowService.DeclaredConventions.cs).
 /// </remarks>
-public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowService
+public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashFlowService
 {
     private readonly ISecurityMasterCashFlowStore _store;
     private readonly IReadOnlyList<IStructuredCashFlowProvider> _providers;
@@ -129,7 +131,19 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         {
             var forwardCurves = await LoadForwardCurvesAsync(security, ct).ConfigureAwait(false);
             var projection = BuildCalculatedProjection(
-                security, assignment.SourceKind, scenario, staleness, assignment.LastUpdatedUtc, forwardCurves);
+                security, assignment.SourceKind, scenario, staleness, assignment.LastUpdatedUtc, _calendars, forwardCurves);
+            if (projection.ScheduleEvidence is { CoverageGaps.Count: > 0 } evidence)
+            {
+                // Coverage gaps are informational (ADR-025 decision 2): the schedule still projects.
+                var firstGap = evidence.CoverageGaps[0];
+                _logger.LogDebug(
+                    "Declared schedule for {SecurityId} used calendar dates outside coverage: {CoverageGapCount} calendar(s), first {FirstCalendarId} from {FirstDate}",
+                    securityId,
+                    evidence.CoverageGaps.Count,
+                    firstGap.CalendarId,
+                    firstGap.FirstDate);
+            }
+
             var terms = projection.TermsUsed!;
             var usesNormalizedBasis = terms.PrincipalFace is not > 0m
                 && (!terms.HasLegs || terms.Legs!.Any(leg => leg.Notional is not > 0m));
@@ -261,6 +275,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         StructuredCashFlowScenario scenario,
         StructuredCashFlowStaleness staleness,
         DateTimeOffset? sourceLastUpdatedUtc,
+        IBusinessDayCalendarSource? calendars,
         IReadOnlyDictionary<string, SecurityForwardCurve>? forwardCurves = null)
     {
         var asOf = DateTimeOffset.UtcNow;
@@ -276,6 +291,15 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         if (terms.MaturityDate is not DateOnly maturity)
         {
             return Empty("Maturity is missing; no calculated cash flows may post.");
+        }
+
+        // Declared schedule conventions (ADR-025) are resolved before the issue-date fallback below, so
+        // a declaring record without its issue date is refused with the reason rather than anchored on
+        // its effective-from date. An undeclared record takes every step below exactly as before.
+        var declared = ScheduleSpecFactory.Resolve(security, terms, calendars);
+        if (declared.Status == DeclaredScheduleStatus.Refused)
+        {
+            return Empty(declared.Refusal!.Message);
         }
 
         var issueDate = terms.IssueDate ?? DateOnly.FromDateTime(security.EffectiveFrom.UtcDateTime.Date);
@@ -375,6 +399,17 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
             // Undated scalar factor: assumed to already reflect every completed payment — reducing
             // again would double-count.
         }
+
+        // A declared schedule shares the principal basis and factor seeding above and replaces the
+        // coupon walk below.
+        if (declared.IsDeclared)
+        {
+            return BuildDeclaredProjection(
+                security, sourceKind, scenario, staleness, sourceLastUpdatedUtc, asOf, asOfDate, terms,
+                declared, principalBasis, outstanding, contractualPrincipal.Length > 0,
+                hasAssertedPrincipalSchedule && inWindowContractual.Length == 0);
+        }
+
         var annualRate = NormalizeAnnualRate(terms.CouponRate.Value) + ScenarioRateShift(scenario);
         if (annualRate < 0m)
         {
