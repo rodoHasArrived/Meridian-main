@@ -147,9 +147,9 @@ publisher too.
 uses the projection version read at publish time, while `SecurityMasterRevisionRecord` carries no
 draft base version. Capture a draft base or field-level predecessor and reject/reopen an approval
 whose field changed. Preserve concurrent changes to unrelated fields. **Attribution correction to
-#3263 I2:** the canonical event already links to the revision through `SourceRecordId`; maker and
-checker history is recoverable through that link. `UpdatedBy` names the publisher. Any requirement
-for explicit role fields must preserve that lineage. Unsupported merge shapes currently produce an
+#3263 I2:** canonical events already link to the revision through `SourceRecordId`; retain that
+link. `UpdatedBy` names the publisher. Recovering maker/checker identities needs separate history
+proof because revision transitions overwrite the current actor. Unsupported merge shapes produce an
 Information log; expose the canonical-merge outcome to the operator before calling it complete.
 
 [SecurityAssetProfileGovernanceService](../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs)
