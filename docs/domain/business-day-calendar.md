@@ -2,7 +2,7 @@
 
 **Status:** active guidance
 **Owner:** core-team
-**Reviewed:** 2026-10-23
+**Reviewed:** 2026-10-28
 
 ## Definition
 
@@ -79,21 +79,66 @@ coverage, `IsBusinessDay`), `HolidayBusinessDayCalendar`, `JointBusinessDayCalen
   `TEST-A+TEST-B` in either order and rolls both holidays forward under `Following`, to 2025-11-28
   and 2025-12-29. `TEST-A` alone treats 2025-12-26 as a business day.
 
+## File-backed source
+
+`FileBusinessDayCalendarSource` (`Meridian.Storage.Calendars`) is the source every host registers,
+through `AddSecurityMasterTermsCapability`: servers over their storage root, and the WPF desktop
+over the data root its configuration store reports. The Security Master engine resolves declared
+`paymentCalendars` against it ([ADR-025](../adr/025-contractual-schedule-kernel.md#applications)),
+and the operator procedure is
+[Business-Day Calendar Files](../operators/business-day-calendar-files.md).
+
+- **One calendar per file.** A calendar is `<dataRoot>/calendars/{ID}.json`, holding exactly
+  `calendarId`, `version`, `weekendDays`, `coverage` (`from` and `to`) and `holidays`, read through
+  a strict source-generated JSON context that refuses unknown and repeated members.
+- **Canonical ids.** An id is an uppercase ASCII letter followed by 1 to 15 uppercase ASCII letters
+  or digits (`^[A-Z][A-Z0-9]{1,15}$`), so it cannot carry the `+` that joins a joint id, and it must
+  equal its file name stem exactly. The content hash includes the id as written and a joint id sorts
+  its members ordinally, so `usny` and `USNY` would otherwise give two hashes and two joint ids for
+  the same data.
+- **Weekend days** are exact English day names, `Monday` to `Sunday`. A number, an abbreviation or
+  another casing is refused, and at least one day must be a working day.
+- **Coverage is an attestation.** Both bounds are required. They are the data owner's statement
+  that the holiday list is complete over that range; outside it the calendar still answers from its
+  weekend mask and the holidays it lists, and a schedule reports the dates as coverage gaps.
+- **`WEEKENDS` is reserved.** A file cannot define it, and the built-in calendar always resolves.
+- **No weekends fallback.** A refused file is logged with its reason and loads nothing; nothing is
+  substituted for it. Each id it names (its `calendarId` and its file name, which can differ) stays
+  unresolvable unless another file that loads defines it, or it is `WEEKENDS`, and the warning says
+  which. A missing `calendars` directory loads only `WEEKENDS`, with no warning, and so, with a
+  warning, do a `calendars` path that is a file and a directory that cannot be listed. Two files
+  that pass every other check and resolve to one id are both refused.
+- **Loaded once.** Files are read at host start in ordinal file-name order. There is no hot reload;
+  a changed file takes effect when the host restarts. At start the host logs one line per loaded
+  calendar (id, version, hash and coverage) and the Security Master terms capability line, which
+  lists every loaded id with its version and hash.
+- **Versions.** Any change to a file's content ships under a higher `version`. The hash covers the
+  version, so two nodes that report one id and version with different hashes hold different data.
+- **Governance (decided 2026-10-28).** Ids are FpML business-centre codes in the canonical grammar;
+  exchange codes are not used for payment calendars. Coverage is the data owner's completeness
+  attestation, and any change bumps the version. A named operations owner must be recorded before
+  any real calendar file is installed; no holiday file ships in the repository.
+- **Retention.** No retention is needed while declared projections are not persisted and cannot
+  post: the ledger gate refuses them. A discounted-cash-flow valuation of a declaring record, also
+  computed on request, names each calendar's id, purpose and content hash among its inputs. Lifting
+  the ledger gate needs a decision on retaining calendar evidence, together with journal identity
+  keyed on schedule period identity.
+
 ## Future Expansion Notes
 
-A file-backed source (`<dataRoot>/calendars/{id}.json`, read through a source-generated JSON
-context) is planned and will be registered in DI then; today no source is registered. Calendar data
-governance is open: the identifier scheme (business-centre codes for payment calendars, exchange
-codes reserved for exchange calendars), who maintains holiday files, and whether a calendar's hash
-and evidence must be retained before a projection may use it. Whether the reconciliation and
-close-preparation calendars converge on this seam is to be decided with their owners.
+Whether the reconciliation and close-preparation calendars converge on this seam is to be decided
+with their owners. A diagnostics endpoint listing each node's calendars is optional; the startup
+lines are the verification today. Calendar evidence retention must be decided before declared
+projections may post.
 
 ## Implementation and regression references
 
 - [Calendar contract](../../src/Meridian.Contracts/Calendars/IBusinessDayCalendar.cs)
 - [Built-in calendar, joint calendars and business-day operations](../../src/Meridian.Contracts/Calendars/BusinessDayCalendars.cs)
-- Regression scope: `BusinessDayCalendarTests`, `BusinessDayAdjustmentTests` and
-  `ScheduleAdjustmentTests`.
+- [File-backed source](../../src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs)
+- Regression scope: `BusinessDayCalendarTests`, `BusinessDayAdjustmentTests`,
+  `ScheduleAdjustmentTests`, `FileBusinessDayCalendarSourceTests`,
+  `BusinessDayCalendarSourceCompositionTests` and `SecurityMasterTermsCapabilityStartupTests`.
 
 These references identify the implementation and its regression scope. The pull request carries
 actual validation results.

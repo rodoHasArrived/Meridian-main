@@ -11,13 +11,14 @@ last_reviewed: 2026-10-21
 
 # src/Meridian.Application
 
-`SecurityMaster/CashFlow/ScheduleSpecFactory` prepares the declared-schedule integration by mapping
-decoded F# conventions to the Contracts kernel. It refuses unresolved calendars, unknown cadence
-and contradictory roll terms, while leaving grid validation to the kernel. Its tests cover calendar
-precedence, joint holidays, payment lag, accrual adjustment and exact cadence mapping. The adapter
-is not yet called by projections; production still follows the existing paths. See the
+The internal `SecurityMaster/CashFlow/ScheduleSpecFactory` remains a preparatory adapter over decoded
+F# conventions, with its broader day/week cadence and explicit common-calendar fallback tests.
+Production projections explicitly use `Meridian.Contracts.SecurityMaster.ScheduleSpecFactory`:
+that versioned record reader follows the descriptor, requires monthly-or-longer coupon cadences or
+AtMaturity, and resolves only the declaring block's calendars. The prototype is not a production
+fallback; both factories retain their separate refusal and calendar tests. See the
 [contractual schedule rollout](../../docs/domain/contractual-schedule.md#future-expansion-notes)
-for the remaining 5a and 5b work.
+for the declared engine and remaining 5b work.
 
 Freshness monitoring begins with live ingress or collector subscription attempts, not configured symbols in an idle workstation. An unused UI monitor does not publish empty snapshots over an active collector's process-wide metrics. Internal reconciliation retains observed `tradeFill.price` only for the single-currency share movement, never a commission leg or a price inferred from fee-inclusive net cash.
 
@@ -1098,7 +1099,11 @@ mode (every create, amend, import, term-block amend and approved field-edit merg
 above the class's write version is refused with a reason naming the class, the stamp and the versions
 this node reads and writes, and one populating a term introduced above it with a reason naming the
 term, the class, the term's version and the write version; in Read mode such a term is decoded once the payload's
-own stamp reaches its version, and profile envelopes are decoded at the write version. The
+own stamp reaches its version, and a profile envelope decodes none. The mapping, the schema-terms
+validator and the cash-flow engine decide this through one predicate,
+`SecurityVersionedTerms.Decoding`. The mapping and the engine also read the block through one
+shared reader; the validator reads none of its members and checks the container only as a schema
+field, by its JSON type. The
 `callSchedule` and `putSchedule` readers are tolerant: they keep stored order, drop an entry that is
 not an object or lacks a parseable date (`callDate`, `putDate`), and read any other member that does
 not parse as unset. Deactivate and
@@ -1163,12 +1168,55 @@ refuses to extrapolate past the curve, quotes face-value lots per 100 of the out
 projection repays from the valuation date, reports the oldest of the discount and forward curves'
 as-of dates as `ObservedAsOf`, reports a stale or undated cash-flow source and a pinned version
 dated after the valuation date or recorded after the knowledge cutoff as diagnostics, and names the
-curve version, hash, forward provenance and terms version in its inputs. Market values use the F#
+curve version, hash, forward provenance and terms version in its inputs. For a schedule generated
+from declared conventions it also names the kernel and declared-mapping versions and each calendar
+with its content hash (`ScheduleKernel`, `DeclaredScheduleMapping`, `BusinessDayCalendar`), and
+reports each coverage gap as a `CalendarCoverageGap` diagnostic. Market values use the F#
 `SecurityCalculations` functions, with the paydown factor applied once.
 `SecurityMasterService.AmendTermBlockAsync` replaces one registry-declared nested term
 block (preferred terms, step and principal schedules, swap legs) through the normal amend path and
 records `TermBlockAmended`. A block the class only reads (`scheduleConventions`, `callSchedule`,
 `putSchedule`) is refused with the not-yet-writable reason.
+
+`SecurityMasterCashFlowService` follows a record's declared `scheduleConventions` block (ADR-025).
+After the unsupported-class and missing-maturity checks, and before the legacy issue-date fallback,
+it resolves `Meridian.Contracts.SecurityMaster.ScheduleSpecFactory.Resolve` with the node's
+`IBusinessDayCalendarSource`. The exact legacy six-argument constructor remains available to compiled
+hosts; the calendar-aware overload requires the source first, avoiding ambiguity in legacy positional
+null calls. Dependency injection selects that seven-argument overload when a source is registered.
+A refusal blocks the projection with its reason. A record that
+declares nothing takes every legacy step unchanged, except that a Bond, CertificateOfDeposit,
+StructuredCredit or Swap row stamped outside 1 to its class's `ReadsTermsThrough` is refused with
+the read guard's reason whether or not it carries a block. A declaring record branches before the
+legacy coupon walk into `BuildDeclaredProjection`
+(`SecurityMasterCashFlowService.DeclaredConventions.cs`): the kernel's periods dated on their
+payment dates (those paying before the projection's as-of date dropped), interest over adjusted
+accrual dates through `ScheduleDayCount`, the declared coupon unit and cash basis, the legacy
+bullet, sinker and asserted-bullet principal rules, a block for contractual principal schedules, and
+`ScheduleEvidence`. Coverage gaps are logged at Debug and never block.
+`StructuredCashFlowLedgerGate` refuses any projection that carries `ScheduleEvidence`, after its own
+`BlockedReason`. No write path can store a declaring block before increment 5b-2, so this branch is
+dormant in production. Verify
+this lane with the declared-conventions partial of `SecurityMasterCashFlowServiceTests`,
+`ScheduleSpecFactoryTests` and `SecurityMasterCashFlowProjectionShapeTests`.
+
+`AddSecurityMasterTermsCapability(services, dataRoot)` (in `Meridian.Application.Composition`)
+registers `FileBusinessDayCalendarSource` over `<dataRoot>/calendars` with `TryAddSingleton` and
+the internal `SecurityMasterTermsCapabilityHostedService`. `StorageFeatureRegistration` calls it
+over `StorageOptions.RootPath`; the WPF desktop calls it from its own composition root. At host
+start the hosted service loads the calendars and logs one Information line, "Security Master terms
+capability: declared mapping {DeclaredMappingVersion}, schedule kernel {KernelVersion}, terms
+versions {TermsVersions}, business-day calendars {CalendarCount}: {Calendars}", so every node's
+build and calendar set are visible without a projection request (the rollout inventory in
+`docs/operators/security-master-terms-contract-rollout.md`). A `HostStartup` graph logs through
+Serilog, whose file sink writes `<dataRoot>/_logs/meridian-<yyyyMMdd>.log`. `UiServer` keeps its
+default providers' Warning minimum, unless a configured `Logging` level lowers it (the container
+deployments set `Logging__LogLevel__Default`, and the default console provider then repeats these
+lines beside Serilog's console sink), and sends only the hosted service's and the calendar source's
+categories (`UiServer.StartupInventoryLogCategories`) to that Serilog logger, from Information, so a
+workstation-mode host writes these lines to the same file. Verify it with
+`SecurityMasterTermsCapabilityStartupTests`, `BusinessDayCalendarSourceCompositionTests` and
+`UiServerLoggingTests`.
 
 ## API contract notes
 

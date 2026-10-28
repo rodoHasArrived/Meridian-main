@@ -1,4 +1,5 @@
 using Meridian.Application.SecurityMaster.CashFlow;
+using Meridian.Contracts.Calendars;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.SecurityMaster.Schedules;
 using Meridian.Storage.SecurityMaster;
@@ -19,9 +20,11 @@ namespace Meridian.Application.SecurityMaster;
 /// <see cref="StructuredCashFlowTermsResolver"/> rather than probed inline; source freshness is
 /// surfaced as a typed <see cref="StructuredCashFlowStaleness"/> on every projection; and a fresh
 /// base-scenario projection can be routed to the ledger through
-/// <see cref="IStructuredCashFlowLedgerBridge"/> instead of being display-only.
+/// <see cref="IStructuredCashFlowLedgerBridge"/> instead of being display-only. A record that declares
+/// schedule conventions (ADR-025) projects through the schedule kernel instead of the legacy coupon
+/// walk (SecurityMasterCashFlowService.DeclaredConventions.cs).
 /// </remarks>
-public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowService
+public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashFlowService
 {
     private readonly ISecurityMasterCashFlowStore _store;
     private readonly IReadOnlyList<IStructuredCashFlowProvider> _providers;
@@ -29,10 +32,24 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
     private readonly IStructuredCashFlowLedgerBridge _ledgerBridge;
     private readonly ILogger<SecurityMasterCashFlowService> _logger;
     private readonly ISecurityForwardCurveProvider? _forwardCurves;
+    private readonly IBusinessDayCalendarSource? _calendars;
 
     private static readonly TimeSpan StalenessThreshold = TimeSpan.FromDays(7);
 
     public SecurityMasterCashFlowService(
+        ISecurityMasterCashFlowStore store,
+        IEnumerable<IStructuredCashFlowProvider> providers,
+        ISecurityMasterQueryService queryService,
+        ILogger<SecurityMasterCashFlowService> logger,
+        IStructuredCashFlowLedgerBridge? ledgerBridge = null,
+        ISecurityForwardCurveProvider? forwardCurves = null)
+        : this(null, store, providers, queryService, logger, ledgerBridge, forwardCurves)
+    {
+    }
+
+    /// <summary>Composes declared schedules with the host's explicit calendar source.</summary>
+    public SecurityMasterCashFlowService(
+        IBusinessDayCalendarSource? calendars,
         ISecurityMasterCashFlowStore store,
         IEnumerable<IStructuredCashFlowProvider> providers,
         ISecurityMasterQueryService queryService,
@@ -46,7 +63,14 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         _logger = logger;
         _ledgerBridge = ledgerBridge ?? new StructuredCashFlowLedgerBridge();
         _forwardCurves = forwardCurves;
+        _calendars = calendars;
     }
+
+    /// <summary>
+    /// The business-day calendars declared schedule conventions resolve against (ADR-025), or null when
+    /// the host composed none; an unknown calendar id never falls back to weekends only.
+    /// </summary>
+    internal IBusinessDayCalendarSource? CalendarSource => _calendars;
 
     public Task<SecurityCashFlowSourceDto?> GetCashFlowSourceAsync(Guid securityId, CancellationToken ct = default)
         => _store.GetSourceAsync(securityId, ct);
@@ -124,7 +148,19 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
             // another date projects floating legs from the curve in force on that date.
             var forwardCurves = await LoadForwardCurvesAsync(security, DateOnly.FromDateTime(asOf.UtcDateTime.Date), ct).ConfigureAwait(false);
             var projection = BuildCalculatedProjection(
-                security, assignment.SourceKind, scenario, staleness, assignment.LastUpdatedUtc, asOf, forwardCurves);
+                security, assignment.SourceKind, scenario, staleness, assignment.LastUpdatedUtc, asOf, _calendars, forwardCurves);
+            if (projection.ScheduleEvidence is { CoverageGaps.Count: > 0 } evidence)
+            {
+                // Coverage gaps are informational (ADR-025 decision 2): the schedule still projects.
+                var firstGap = evidence.CoverageGaps[0];
+                _logger.LogDebug(
+                    "Declared schedule for {SecurityId} used calendar dates outside coverage: {CoverageGapCount} calendar(s), first {FirstCalendarId} from {FirstDate}",
+                    securityId,
+                    evidence.CoverageGaps.Count,
+                    firstGap.CalendarId,
+                    firstGap.FirstDate);
+            }
+
             var terms = projection.TermsUsed!;
             var usesNormalizedBasis = terms.PrincipalFace is not > 0m
                 && (!terms.HasLegs || terms.Legs!.Any(leg => leg.Notional is not > 0m));
@@ -256,6 +292,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         StructuredCashFlowStaleness staleness,
         DateTimeOffset? sourceLastUpdatedUtc,
         DateTimeOffset asOf,
+        IBusinessDayCalendarSource? calendars,
         IReadOnlyDictionary<string, SecurityForwardCurve>? forwardCurves = null)
     {
         var terms = StructuredCashFlowTermsResolver.Resolve(security);
@@ -270,6 +307,15 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         if (terms.MaturityDate is not DateOnly maturity)
         {
             return Empty("Maturity is missing; no calculated cash flows may post.");
+        }
+
+        // Declared schedule conventions (ADR-025) are resolved before the issue-date fallback below, so
+        // a declaring record without its issue date is refused with the reason rather than anchored on
+        // its effective-from date. An undeclared record takes every step below exactly as before.
+        var declared = Meridian.Contracts.SecurityMaster.ScheduleSpecFactory.Resolve(security, terms, calendars);
+        if (declared.Status == DeclaredScheduleStatus.Refused)
+        {
+            return Empty(declared.Refusal!.Message);
         }
 
         var issueDate = terms.IssueDate ?? DateOnly.FromDateTime(security.EffectiveFrom.UtcDateTime.Date);
@@ -316,6 +362,17 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
             : [];
         var contractualPrincipal = terms.PrincipalFace is > 0m ? inWindowContractual : [];
         var outstanding = SecurityPrincipalBalance.OpeningOutstanding(security, terms, asOfDate);
+
+        // A declared schedule shares the principal basis and opening balance above and replaces the
+        // coupon walk below.
+        if (declared.IsDeclared)
+        {
+            return BuildDeclaredProjection(
+                security, sourceKind, scenario, staleness, sourceLastUpdatedUtc, asOf, asOfDate, terms,
+                declared, principalBasis, outstanding, contractualPrincipal.Length > 0,
+                hasAssertedPrincipalSchedule && inWindowContractual.Length == 0);
+        }
+
         var annualRate = NormalizeAnnualRate(terms.CouponRate.Value) + ScenarioRateShift(scenario);
         if (annualRate < 0m)
         {

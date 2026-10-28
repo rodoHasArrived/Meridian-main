@@ -6304,16 +6304,41 @@ PostgreSQL 16, with the governance-event and Security Master suites.
    CertificateOfDeposit and version 4 of StructuredCredit (landed 2026-10-25, see below). The
    fail-closed amortization refusal of declared call and put schedules ships beneath 4b in its
    stack (PR #3272).
-5. Schedule terms, contract step: the terms versions rise, a file-backed calendar source is
-   registered, one `ScheduleSpecFactory` maps resolved terms to specs by descriptor fact, and the
-   Security Master engine follows declared conventions for declaring records. An unresolvable
-   calendar blocks the projection. It also takes the write side that 4b leaves open: write
-   validation of call and put entries and their vocabularies, enforcing the window-end and notice
-   rules frozen in ADR-025; consistency between the scalar call terms and the schedules;
-   `ClassFlattenings` for the block and the arrays; and lifting both StructuredCredit
-   reclassification blockers by mapping the terms. The Write-mode element-convention walk must
-   keep skipping a versioned container of a profile envelope. Deploy precondition: every node runs
-   increments 4a and 4b first, and with them the amortization refusal beneath 4b (PR #3272).
+5. Schedule terms, contract step, in four parts, each deployed to every node before the next
+   one's gates are checked. Deploy precondition: every node runs increments 4a and 4b first, and
+   with them the amortization refusal beneath 4b (PR #3272).
+   - **5a-0** (landed 2026-10-28, see below): `OpenLotAmortization` refuses a populated
+     `scheduleConventions` and reads the call, put and conventions terms in every source and
+     casing. Deploy gate: AQ1 and AQ2 find nothing in each environment.
+   - **5a** (landed 2026-10-28, see below): one decode predicate and one shared block reader; a
+     file-backed calendar source, loaded eagerly at host start with a startup capability line;
+     `ScheduleSpecFactory`, which maps declared terms to specs by descriptor and schema fact; the
+     Security Master engine follows declared conventions for declaring records, with schedule
+     evidence, and an unresolvable calendar blocks the projection; and the ledger gate refuses
+     declared projections. No terms version changes and no write path can store a block yet.
+   - **5b-1**, neutral until the raise: write validation of the block and of call and put entries
+     and their vocabularies, enforcing the window-end and notice rules frozen in ADR-025;
+     consistency between the scalar call terms and the schedules; the amend-path refusal of stray
+     containers; field-edit, term-block and workbench parity; conflict detection over versioned
+     containers; reclassification that maps the call and put schedules and lifts the
+     StructuredCredit call and put blocker; the economic-replay refusal; and a capability floor
+     every node checks at startup. The Write-mode element-convention walk keeps skipping a
+     versioned container of a profile envelope.
+   - **5b-2**, the raise: Bond and CertificateOfDeposit write terms version 3 and StructuredCredit
+     version 4, under stamp model S2 (the stamp describes the document, ADR-024). Its gates:
+     every node, desktops included, runs 5a; AQ1, AQ2, Q1, Q1b and QR find nothing; and every node
+     that serves projections loads the same calendars.
+   - **Owner-approved deviations** from this item as first written (decisions 3 and 4 of the
+     increment 5a resolution pass below). Only the StructuredCredit call and put reclassification
+     blocker is lifted, not both: the conventions blocker stays, re-worded, and 5b-1 refuses a
+     populated `scheduleConventions` on a class whose schema declares no top-level `issueDate` or
+     `paymentFrequency` (CertificateOfDeposit and StructuredCredit), because its declared schedule
+     could not be generated; a later expand and contract adds those terms. And there are no
+     `ClassFlattenings` for the block and the arrays: they stay in `UnrecoverableKeys`, because the
+     economic lists drop window ends, frequencies and notice terms, so a reconstruction would widen
+     exercise windows undetectably. 5b-1 instead makes an economic-only replay refuse when the
+     retained economic document shows a declared schedule, and no asset-class rebuild runs while
+     nodes run different builds.
 6. Asset-operations fixed-income flows of issue-dated bonds get stable ids from `SchedulePeriodId`
    and the `fixed-income-cash-flow-projection-v2` stamp, and declaring records get declared conventions in
    the cash ladder.
@@ -7437,3 +7462,236 @@ the date is not counted), and from a replay; a future date refused at computatio
 future-dated snapshot neither blocking the call from the latest real one nor callable; and balance
 and contract writes and an issue waiting for each other's locks) against a disposable PostgreSQL 16, with the existing OTC
 contract, behaviour-facts, ratchet, layer-boundary and workstation collateral suites.
+
+## Resolution pass — 2026-10-28 (priority 5, increment 5a: the declared schedule engine and the file-backed calendar source)
+
+Increment 5a follows declared schedule conventions before any node can write them. It is built on
+5a-0 (PR #3283) and changes no terms version, so no write path can store a declaring block until
+5b-2 raises the write versions; everything below that concerns declaring records is dormant in
+production until then. The plan was revised against two independent critiques before any code was
+written, and the owner took its open decisions on 2026-10-28; they are listed at the end.
+
+| Finding | What landed |
+| --- | --- |
+| The mapping and the schema validator each computed which versioned containers a row decodes, from the write version, and the raise would have changed their answers | `SecurityVersionedTerms` (Contracts) holds the container keys, `IsVersionedContainer` (an object or array term introduced above version 1: the block and the call and put arrays of Bond, CertificateOfDeposit and StructuredCredit, and the Swap leg block) and one predicate, `Decoding(assetClass, payload, writeMode).Decodes(field)`. A read decodes a container at or below the row's own stamp, a write at or below the class's write version, and a profile envelope none. The mapping (the block, the arrays, the leg blocks and the Write-mode element-convention walk) and the schema-terms validator decide through it. It is neutral today, because every container's `Since` is above its class's write version. Under the old ceiling, the higher of the write version and the stamp, the raise would have made StructuredCredit profile envelopes decode their root block and arrays, against ADR-024 decision 3, and turned stray keys on rows stamped 1 or 2 into declared terms. |
+| The block had one private reader in the mapping, and a second consumer would have needed a second | `SecurityVersionedTerms.ReadScheduleConventions` is a verbatim port of the mapping's reader (exact-case keys, string tokens only with blanks kept, `true` and `false` only, `Int32` only, current-culture dates, whitespace-only calendars dropped and the rest untrimmed), returning `ScheduleConventionTerms`, which mirrors the F# record; the mapping now reads through it. `ReadDeclaredScheduleConventions` and `ReadDeclaredLegScheduleConventions` return `None`, `Declared` or `Unreadable`, decided exactly as the mapping decodes, with leg selection that mirrors `GetSwapLegItems`. `SecurityTermsEnvelope.TryGetReadRefusal` returns the read guard's refusal without throwing. `VersionedContainerKeyLiteralRatchetTests` keeps the quoted keys in C# under `src/` to the schema and `SecurityVersionedTerms`; `OpenLotAmortization` and the mapping read the constants. A golden of 1,065 decode cases, committed on the base before any of this, is unchanged. |
+| No business-day calendar source was registered, so a declared calendar could never resolve | `FileBusinessDayCalendarSource` (Storage) reads `<dataRoot>/calendars/{ID}.json`, one calendar per file, once at host start in ordinal file-name order, through a strict source-generated context (camelCase, unknown and repeated members refused). A file is refused, with a Warning naming it and the reason, when it is malformed or misses a member, has a version below 1, an id outside `^[A-Z][A-Z0-9]{1,15}$` or not equal to its file stem exactly, the reserved `WEEKENDS`, a weekend day that is not exactly an English day name, no working day, inverted coverage, data `HolidayBusinessDayCalendar` rejects, or an id another file that passes these checks also defines (both are refused). A refused file loads nothing, and its Warning says whether each id it names (its `calendarId` and its file stem, which can differ) still resolves, from another file that loaded or as the built-in `WEEKENDS`; any other id stays unresolvable, the Warning names it when another id the file names still resolves, and it is never replaced by weekends only. A missing directory loads only `WEEKENDS`; a `calendars` path that is a file, or a directory that cannot be listed (access denied is not read as an empty directory), does too, with a Warning. Ids are canonical because the content hash includes the id as written and joint ids sort ordinally. No holiday data ships. |
+| Nothing showed which terms build a node runs, so "every node runs 5a" could not be checked | `AddSecurityMasterTermsCapability(services, dataRoot)` registers the source and `SecurityMasterTermsCapabilityHostedService` on every host: servers through `StorageFeatureRegistration` over `StorageOptions.RootPath`, and the WPF desktop from `App.ConfigureServices` over `ConfigStore.GetDataRoot()`, because the desktop composes its own graph and can still write Security Master terms in-process. At host start the hosted service loads the calendars, so their lines appear when the node starts rather than on the first projection request, and logs one capability line naming the declared-mapping and kernel versions, each class whose read and write terms versions differ, and the loaded calendars with version and hash. `UiServer`, whose default providers stop below Warning unless a configured `Logging` level lowers them (the container deployments set `Logging__LogLevel__Default`, and their console then also shows these lines from the default console provider), sends the hosted service's and the calendar source's categories alone (`UiServer.StartupInventoryLogCategories`) to the process's Serilog logger from Information, so a workstation-mode server, the mode the lifecycle supervisor starts, writes them to `<dataRoot>/_logs/meridian-<yyyyMMdd>.log` as a `HostStartup` graph already did; `UiServerLoggingTests` pins it. |
+| Declared conventions had no mapping to a kernel spec (ADR-025 decision 8) | `ScheduleSpecFactory.Resolve(security, terms, calendars)` maps a declared block to a `ScheduleSpec` or a typed `DeclaredScheduleRefusal` (twelve `DeclaredScheduleRefusalCode` values). It dispatches on `CashFlowBehavior` and schema facts, reads the anchors (`issueDate`, `maturity`, `paymentFrequency`) by exact key at the payload root where the schema declares them, refuses a disagreement with the cash-flow resolver (including a root anchor of a kind its exact getters do not read, with its own text), a spelling it does not recognize, conflicting members and the combinations ADR-025 lists as having no effect (not every member without effect: a `Term` tenor ignores the roll), and never falls back to `EffectiveFrom`, an annual cadence, `commonTerms.holidayCalendarId` or `WEEKENDS`. `ResolveShape` applies the same rules without calendars and runs the kernel, for 5b-1's write rules. Both are pure, deterministic and total. `DeclaredMappingVersion` aliases the one literal, `security-master-declared-schedule-v1`. Every rule and text is frozen in [ADR-025](../adr/025-contractual-schedule-kernel.md#applications). |
+| The Security Master engine ignored a declared block (G5), so SCH-DEF-001, 003, 004 and 010 had no fix even for records that declare conventions | `SecurityMasterCashFlowService` is partial and resolves the factory after the maturity check and before the legacy issue-date fallback, so a declaring record without its issue date is refused with the reason instead of anchored on its effective-from date. A declaring record branches before the legacy coupon walk into `BuildDeclaredProjection`: the kernel's periods dated on their payment dates, those paying before the projection's as-of date dropped, interest over adjusted accrual dates through `ScheduleDayCount`, the declared coupon unit and cash basis, the legacy bullet, sinker and asserted-bullet principal rules, and a block for contractual principal schedules. A kernel failure blocks and never throws. The four defect targets are reached for declaring records ([registry](../../tests/fixtures/schedules/KNOWN-DEFECTS.md)); the undeclared pins are unchanged. `BuildPaymentPeriods` keeps its name, signature and SCH-DEF-010 re-evaluation. |
+| A declared schedule would not say how it was generated or which calendar data it used | `StructuredCashFlowProjectionDto` gains a trailing optional `ScheduleEvidence`, omitted from JSON when null: the kernel and declared-mapping versions, each calendar's id, content hash and purpose (with a `DayCount` row for the calendar Business/252 counted on, which the kernel does not record), and one coverage-gap row per calendar with the first and last date asked outside its coverage. Coverage gaps are logged at Debug and never block. The discounted-cash-flow valuation, which reads the projection as of its valuation date through `GetProjectionAsOfAsync`, names the same evidence among its inputs (`ScheduleKernel`, `DeclaredScheduleMapping` and one `BusinessDayCalendar` input per calendar, `{id}:{purpose}` with its content hash) and adds one `CalendarCoverageGap` diagnostic per gap; an undeclared valuation is unchanged. |
+| A declared projection could post under journal ids keyed on payment dates, which a calendar change moves | `StructuredCashFlowLedgerGate` refuses a projection that carries `ScheduleEvidence`, after its own `BlockedReason` and before the normalized-basis check: "Declared-schedule projections are not postable until journal identity keys on schedule period identity and calendar evidence retention is decided." Both bridges consult the gate. |
+
+**Corrections to the plan.**
+
+- **The split.** The draft's single contract increment is four: 5a-0, 5a, 5b-1 and 5b-2. The
+  draft's 5c, an economic-only replay of the block and the arrays, is dropped (decision 4), and the
+  continuation equivalence the plan carried in 5a for stamp model S1 is dropped with S2
+  (decision 2).
+- **Option B.** Read mode decodes a container by the row's own stamp, not by the higher of the
+  stamp and the write version; the two differ only once a write version is raised. Write mode
+  still decodes through the write version after the raise, which would promote a stray container
+  on an unrelated amend, so 5b-1 refuses such an amend and Q1 and Q1b are hard 5b-2 gates.
+- **The factory mirrors the mapping's gates.** The draft's factory checked for the flat format,
+  left open what a row stamped above the node's read version gets, selected swap legs by its own
+  rule and read the anchors through the alias resolver. It now has no format rule (an untagged
+  Bond carrying `customProfileId` and `profileFields` declares its root block, as the mapping
+  decodes it), refuses an unreadable stamp with the read guard's reason (fail closed), selects
+  legs as `GetSwapLegItems` does, and reads the anchors by schema fact with a `TermsAmbiguous`
+  refusal. It refuses the conflicting and no-effect combinations ADR-025 lists instead of ignoring
+  them; a member a `Term` tenor ignores, such as the roll, is accepted.
+- **Anchor refusal order.** The plan ordered the anchor refusals as effective date, cadence, then
+  ambiguity. The code refuses a missing issue date first, then an ambiguous anchor, then a missing
+  maturity or one not after the issue date, then the cadence, so no later check runs on a value the
+  resolver disagrees with.
+- **Classes that cannot be generated.** CertificateOfDeposit and StructuredCredit schemas declare no
+  top-level `issueDate` or `paymentFrequency`, so a declaring row of either class is blocked with
+  that schema fact, and 5b-1 refuses to write such a block (decision 3).
+- **The gate block.** A declared projection is kept off the ledger outright, not only by the
+  freshness and scenario gates, until journal identity keys on `SchedulePeriodId` and calendar
+  evidence retention is decided.
+- **Eager calendar loading.** The draft logged the calendars when the source was first resolved,
+  which, with the lazily resolved cash-flow singleton as its only consumer, meant the first
+  projection request; nodes that serve none would never have logged. A hosted service now loads
+  the source at host start. The plan also assumed the WPF desktop composes the storage feature;
+  it composes its own graph, so the source and the hosted service register through one extension
+  that both call, and a desktop logs through the generic host's default providers only.
+- **The key-literal ratchet allows two files, not three.** The mapping's private keys alias the
+  constants, so the mapping left the allowed set together with `OpenLotAmortization`.
+- **Evidence is written only for a generated schedule with a remaining period.** A projection the
+  factory refuses or the declared walk blocks carries none, and neither does a declaring record
+  with no period paying on or after the projection's as-of date (today for `GetProjectionAsync`,
+  the requested date for `GetProjectionAsOfAsync`). The normalized-per-100 wrapper keeps the
+  evidence of a generated schedule while it blocks it, so a declaring record with no par or face
+  is blocked and still carries evidence. The `DayCount` row appears only when Business/252
+  interest was computed.
+
+**Behaviour changes.**
+
+- **Records that declare nothing: none, apart from one fail-closed block.** Written terms, stamps,
+  economic terms, registry DTOs, term-block keys and validation reports are unchanged, and the
+  164-entry write golden is untouched. The decode golden is unchanged. Projections are unchanged in
+  rows, amounts, `BlockedReason` and JSON property set
+  (`SecurityMasterCashFlowProjectionShapeTests`, the 25 existing
+  `SecurityMasterCashFlowServiceTests` and the characterization pins). Amortization and ledger
+  outcomes are unchanged for them beyond 5a-0's refusals, and no TypeScript or WPF screen changes.
+- **The one exception.** A Bond, CertificateOfDeposit, StructuredCredit or Swap row stamped outside
+  1 to its class's `ReadsTermsThrough` is now blocked with "Declared schedule conventions cannot be
+  read: {read-guard reason}" instead of projecting legacy output, whether or not it carries a block.
+  Only a newer writer can produce such a row, every other read path already refuses it, and without
+  the block its legacy projection could have posted.
+- **Declaring records** (none can exist before 5b-2, and Q1 is to confirm it): the projection
+  follows the kernel or is blocked with one of the reasons frozen in ADR-025, carries schedule
+  evidence when generated, and cannot post; a discounted-cash-flow valuation of one names that
+  evidence among its inputs.
+- **Startup.** Every host logs one Information line per loaded calendar file, one Warning per
+  refused file and the capability line, once per service graph that registers the capability (twice
+  on a `--mode desktop` server). A missing `calendars` directory logs no warning; one that cannot be
+  listed does. On a `UiServer` host the capability and calendar categories now also reach the
+  Serilog file sink from Information; every other category's routing is unchanged.
+- **Composition.** `IBusinessDayCalendarSource` and the hosted service are registered on every host
+  with `TryAdd`. `SecurityMasterCashFlowService` is partial and retains its exact legacy six-argument
+  constructor, forwarding to a calendar-aware overload with a required first `IBusinessDayCalendarSource`.
+  This preserves positional null calls and lets dependency injection select the longer overload when
+  calendars are registered; `NullSecurityMasterCashFlowService` is unaffected.
+- **Contracts: additive.** New public types (`SecurityVersionedTerms`,
+  `SecurityVersionedTermDecoding`, `SecurityDeclaredConventionsRead`,
+  `SecurityDeclaredConventionsStatus`, `ScheduleConventionTerms`, `ScheduleSpecFactory`,
+  `DeclaredScheduleResolution`, `DeclaredScheduleStatus`, `DeclaredScheduleRefusal`,
+  `DeclaredScheduleRefusalCode`, `StructuredCashFlowScheduleEvidence`,
+  `StructuredCashFlowCalendarEvidence` and `StructuredCashFlowCoverageGap`), the public
+  `SecurityTermsEnvelope.TryGetReadRefusal`, and a nonpositional optional init property on
+  `StructuredCashFlowProjectionDto`, preserving its twelve-argument CLR constructor and twelve-output
+  deconstruction while the JSON is unchanged when it is null. Storage adds `FileBusinessDayCalendarSource` and
+  `BusinessDayCalendarFileRefusal`. There is no migration and no `schema_version` or `terms_format`
+  change; the schema-control contracts manifest and its generated pages list the thirteen new
+  public Contracts types.
+
+**Deploy and rollback floor.** 5a writes nothing differently, so it rolls forward and back freely
+until 5b-2's first declaring write. From that write on, no node, desktops included, may run below
+5a: a 4b node would ignore the block in projections, let them post and amortize a block-only
+declaring Bond on the bullet grid, and a 5a-0 node would refuse the amortization but project and
+post the legacy dates. Each node's capability line shows whether it runs 5a, and 5b-1's capability
+floor is to enforce it. Nothing new needs counting before 5a deploys: 5a is built on 5a-0, whose
+AQ1 and AQ2 results cover it, and the fail-closed exception concerns rows only a newer writer can
+produce. No calendar files need installing; a node without them resolves only `WEEKENDS`, and
+installing real ones waits on decision 10's named owner. The fleet procedure, with the inventory
+gate, the 5b gates, edit routing and the floors for 4a, 4b, 5a and 5b-2, is the
+[terms contract rollout](../operators/security-master-terms-contract-rollout.md); the calendar
+procedure is [Business-Day Calendar Files](../operators/business-day-calendar-files.md).
+
+**The 5b gate queries.** The rollout writes out Q1, Q1b and QR, which the plan required of this
+increment, and states how a desktop's capability line is captured. The queries follow AQ1's
+conventions: class names resolved as `SecurityAssetClassCatalog.GetOrDefault` resolves them,
+aliases included, keys folded under the C collation, and a refusal of any encoding but UTF8.
+Populated means what `SecurityAssetTermsSchema.IsPopulatedTermValue` means, and a profile envelope
+what `SecurityTermsEnvelope.IsProfileGovernedPayload` decides. They were run, as written there, on
+PostgreSQL 16 against synthetic rows, in a UTF8 database with the C collation and in one whose
+default collation is ICU Turkish, with the same counts in both. Q1 counted populated blocks and
+arrays, case-variant keys holding `null` or `[]`, aliased and padded class names, a Bond carrying a
+profile id, and StructuredCredit rows whose `customProfileId` is blank or not a string or whose
+`profileFields` is not an object. It skipped unset spellings (`null`, `{"paymentCalendars": []}`,
+`[{}]`), StructuredCredit profile envelopes, Equity and Swap root blocks, non-object terms and a
+near-miss key. Q1b counted populated and case-variant leg blocks in each leg container, and skipped
+unset blocks, a container that is not an array and a Bond's legs. QR counted economic-only events
+showing each signal, including one whose class comes from `typeName` because `legacyAssetClass`
+is blank, and skipped unset signals, events with retained flat terms, legacy projection payloads,
+Equity and Swap events, payloads and modules that are not objects. Over the near misses alone, in
+the ICU Turkish database, all three returned no rows, and a SQL_ASCII database was refused.
+
+**The owner decisions taken (2026-10-28).** The owner answered "Go with the recommendations" to
+every open decision of the increment-5 plan:
+
+- **Decision 1, the split:** 5a-0, 5a, 5b-1 and 5b-2, with 5a stacked on 5a-0.
+- **Decision 2, stamp model S2:** the stamp describes the document, the highest `Since` among the
+  versioned terms held, floored at the class's pre-contract version (raised by any later transform
+  step), so records that declare nothing keep their stamp. It amends ADR-024 decision 1 and
+  redefines the BEHIND notice, both recorded in ADR-024's increment 5a entry and implemented in
+  5b-2. For 5a it drops the continuation equivalence and its tests.
+- **Decision 3, option (a), a deviation from item 5 approved by the owner.** 5b-1 refuses a
+  populated `scheduleConventions` on a class whose schema declares no `issueDate` or
+  `paymentFrequency` (CertificateOfDeposit and StructuredCredit). The StructuredCredit conventions
+  reclassification blocker stays, re-worded, and only the call and put blocker is lifted, where item
+  5 lifted both.
+- **Decision 4, 5c dropped, a deviation from item 5 approved by the owner.** The block and both
+  arrays stay in `UnrecoverableKeys`, where item 5 had `ClassFlattenings` for them. 5b-1 adds the
+  narrow refusal of an economic-only replay whose economic document shows a declared schedule, and
+  no asset-class rebuild runs while nodes run different builds.
+- **Decision 5, `accrualAdjusted` required** whenever a business-day convention other than
+  `Unadjusted` is declared. The factory refuses an absent value now, and 5b-1's write rules will
+  too.
+- **Decisions 6 to 9, 12 to 14 and 16, confirmed as written:** anchors read by schema fact with no
+  fallback and `TermsAmbiguous` (6); an absent coupon unit keeps the legacy reading, an absent
+  cash basis means `DayCount`, and `Level` is refused on a `Term` period (7); the defaults and
+  conflicts (8); a record declares through a non-empty decoded block, and call and put arrays
+  alone do not (9); unknown and case-variant members refused on write (12); scalar consistency
+  for declaring rows (13); a price plausibility floor of 10 (14); and evidence on the DTO with
+  posting blocked (16). With them the declared semantics are frozen as
+  `security-master-declared-schedule-v1`.
+- **Decision 10, calendar governance:** FpML business-centre ids in the canonical grammar, with
+  no exchange codes; coverage as the data owner's completeness attestation; a version bump on any
+  change; a named operations owner, to be named before any real file is installed; no calendar
+  evidence retention while projections are not persisted and posting is blocked, and a retention
+  decision before the ledger gate lifts; a diagnostics endpoint stays optional.
+- **Decision 11, a capability floor** in 5b-1: a one-row minimum-capability table that every
+  node, desktops included, checks at startup.
+- **Decision 15, `exerciseStyle` required** on every written call and put entry, in 5b-1.
+- **Decision 17, conflict detection** for versioned containers, in 5b-1.
+- **Decision 18, inherited:** registry exposure of readable-only fields becomes moot after 5b-2;
+  a payload with `profileFields` but no `customProfileId` stays a profile envelope, as the
+  predicate encodes; restamping versus the downgrade remains open for Swap only.
+
+**Not yet landed.** 5b-1 and 5b-2, then increments 6 to 12 of this priority, as listed in the
+first-increment section above.
+
+**Validation.** The characterization pins were committed on the base before any 5a code: the decode
+golden (1,065 cases through `SecurityMasterMapping.ToRecord`) and the projection-shape pin are
+unchanged by every later commit. New suites: `SecurityVersionedTermsTests`,
+`ScheduleSpecFactoryTests`, `FileBusinessDayCalendarSourceTests`,
+`BusinessDayCalendarSourceCompositionTests`, `SecurityMasterTermsCapabilityStartupTests`,
+`VersionedContainerKeyLiteralRatchetTests`, `UiServerLoggingTests` and the
+`SecurityMasterCashFlowServiceTests.DeclaredConventions` partial, with declared cases added to the
+projection-shape, ledger-bridge and discounted-cash-flow valuation suites. The plan's 5a filter,
+with the 400-change endpoint suite, the resolver, opening-balance, valuation and logging suites and
+`Category=KnownDefect` added, passed 1,950 with one skip: the unreadable-directory test, which runs
+only as a non-root user on Unix and is registered as environment-gated; the same path was exercised
+with a privilege-dropped probe. The final tree, merged with main at `a6ad3fe15`, passes the same
+filter with the same counts, and the whole `Meridian.Tests` suite ran on it with 23,126 passed, 653
+skipped and 2 failed: the isolated QuantScript worker behind one strategy-design test, which fails
+alone too and has failed in every full run in this container since increment 3, and an allocation
+budget that 5a does not touch, which passed alone three times out of three. The full run before that
+merge had 22,395 passed, 634 skipped and the same two failures plus a timing-sensitive identifier
+validity test, which also passed alone three times out of three. The whole `Meridian.FSharp.Tests`
+suite passed (525). Eleven planned mutations each failed the test named for them (the profile rule,
+option B, untrimmed calendars, a factory-only format check, the leg selector, an `EffectiveFrom`
+fallback, the resolve order, the ledger gate, the `DayCount` evidence row, the hosted logger and a
+lowercase calendar id); the plan named the decode golden as one tripwire for the factory-only format
+check, but only `AnUntaggedBondCarryingAProfileShape_IsDeclared` catches it, because the golden
+decodes through the mapping. Each review fix was mutation-checked the same way. The format,
+file-size, inline SHA-256, duplicate-helper, test-skip, warning-suppression, endpoint-cancellation
+and contract-type-parity guards pass, schema-control `verify` reproduces the refreshed manifests,
+maintained generation converges with `check-generated-output` clean, `validate-doc-hashes` is clean,
+the `verify-docs` lane passes and the generated-output repair pre-check against main reports ready
+with an empty patch.
+
+Each of the five code lanes and the documentation was critiqued by an independent reviewer and its
+findings fixed before the next lane began. The branch was then merged with main, which had moved the
+cash-flow service onto a caller-supplied as-of and a shared opening balance, and the merged change
+went through an adversarial review: five lenses, with two skeptics trying to refute each finding. Of
+23 findings, 15 were confirmed and 8 refuted. The confirmed ones changed the code in five places:
+`UiServer` now sends the capability and calendar lines to the host's Serilog file log, without which
+a workstation-mode server would have looked below 5a to the inventory gate; the discounted-cash-flow
+valuation names a declared schedule's evidence among its inputs; a calendars directory that cannot
+be listed logs its Warning instead of loading as empty; a refused calendar file's Warning says which
+of its ids still resolve; and `TermsAmbiguous` and `EffectiveDateMissing` name a root anchor that is
+present but not of the kind the factory reads, instead of calling it another key or absent. The rest
+corrected documentation and doc comments. The refuted findings included an unbounded payment lag,
+which the kernel's period limit and the calendar walk already bound, and an end-of-month roll
+spelled as day 31, which the roll grammar reads as a fixed day. The branch was then merged with main
+again at `a6ad3fe15`, 355 commits that include the consolidated October review above, and that merge
+was reviewed adversarially through three lenses (posting and evidence loss, host composition, and
+claims the merge made false), with two skeptics per finding. It found that no path main added reads
+or posts a cash-flow projection, that the cash-flow service is still registered by type so the
+calendar source reaches its constructor on every host, and that `UiServer`'s log routing is
+unchanged. Its one finding, that this record still gave the counts from before that merge as the
+final ones, is fixed here.

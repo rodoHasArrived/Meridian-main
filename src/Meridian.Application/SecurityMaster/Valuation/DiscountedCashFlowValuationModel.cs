@@ -10,7 +10,8 @@ namespace Meridian.Application.SecurityMaster.Valuation;
 /// Discount curve. The curve comes from the request (pinned by id, optionally by version) or, when
 /// none is pinned, from the one Discount definition in the security's currency; ambiguity and
 /// missing inputs block, and zero is never substituted. The value is dirty: it includes the full
-/// next coupon.
+/// next coupon. A schedule generated from declared conventions also names its kernel, mapping and
+/// calendars as inputs.
 /// </summary>
 public sealed class DiscountedCashFlowValuationModel : ISecurityValuationModel
 {
@@ -105,6 +106,30 @@ public sealed class DiscountedCashFlowValuationModel : ISecurityValuationModel
         }
 
         inputs.Add(new SecurityValuationInputDto("SecurityTerms", security.Version.ToString(), security.SecurityId, security.Version));
+
+        // A schedule generated from declared conventions (ADR-025) also depends on the kernel, the
+        // mapping and each calendar's content, which the terms version does not name; a date a calendar
+        // was asked about outside its coverage is reported, not re-decided. Undeclared projections carry
+        // no evidence, so their inputs and diagnostics are unchanged.
+        if (projection.ScheduleEvidence is { } evidence)
+        {
+            inputs.Add(new SecurityValuationInputDto("ScheduleKernel", evidence.KernelVersion));
+            inputs.Add(new SecurityValuationInputDto("DeclaredScheduleMapping", evidence.DeclaredMappingVersion));
+            foreach (var calendar in evidence.Calendars)
+            {
+                inputs.Add(new SecurityValuationInputDto(
+                    "BusinessDayCalendar",
+                    $"{calendar.CalendarId}:{calendar.Purpose}",
+                    ContentSha256: calendar.ContentHash));
+            }
+
+            foreach (var gap in evidence.CoverageGaps)
+            {
+                diagnostics.Add(string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"CalendarCoverageGap: calendar '{gap.CalendarId}' was asked about {gap.FirstDate:yyyy-MM-dd} to {gap.LastDate:yyyy-MM-dd}, outside its declared coverage; a holiday on those dates may be missing from the calendar data the schedule used."));
+            }
+        }
 
         // 3. Where each floating leg's rates came from. The observed as-of is the oldest market input:
         //    the discount curve's as-of, or an older forward curve's.

@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.SecurityMaster.CashFlow;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.SecurityMaster.Schedules;
 
 namespace Meridian.Tests.Application;
 
@@ -33,6 +34,28 @@ public sealed class StructuredCashFlowLedgerBridgeTests
         result.IsPostable.Should().BeFalse();
         result.BlockedReason.Should().Contain("normalized");
         result.Postings.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void DeclaredScheduleProjection_IsBlocked_AfterAnyBlockedReason()
+    {
+        var evidence = new StructuredCashFlowScheduleEvidence(
+            ScheduleGenerator.KernelVersion,
+            Meridian.Contracts.SecurityMaster.ScheduleSpecFactory.DeclaredMappingVersion,
+            [],
+            []);
+        var declared = BuildProjection() with { ScheduleEvidence = evidence };
+        var bridge = new StructuredCashFlowLedgerBridge();
+
+        var result = bridge.BuildCouponAccrualPostings(declared, "ABC");
+
+        result.IsPostable.Should().BeFalse("a fresh base projection generated from declared conventions is not postable yet");
+        result.BlockedReason.Should().Be(
+            "Declared-schedule projections are not postable until journal identity keys on schedule period identity and calendar evidence retention is decided.");
+        result.Postings.Should().BeEmpty();
+
+        var blocked = bridge.BuildCouponAccrualPostings(declared with { BlockedReason = "Upstream reason." }, "ABC");
+        blocked.BlockedReason.Should().Be("Upstream reason.", "a projection's own blocked reason is reported first");
     }
 
     [Fact]
