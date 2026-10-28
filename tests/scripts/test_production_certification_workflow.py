@@ -44,7 +44,11 @@ class ProductionCertificationWorkflowTests(unittest.TestCase):
         workflow = yaml.load(self.workflow, Loader=yaml.BaseLoader)
         caller = workflow["jobs"]["deterministic-integrations"]
         self.assertEqual(caller["uses"], "./.github/workflows/service-backed-integrations.yml")
-        self.assertEqual(caller["with"], {"artifact-name": "production-certification", "retention-days": "90"})
+        self.assertEqual(caller["with"], {
+            "artifact-name": "production-certification", "retention-days": "90",
+            **{f"reuse-{key}": "${{ inputs.integration-" + key + " || '' }}"
+               for key in ("artifact-id", "artifact-name", "receipt-sha256", "result")},
+        })
         self.assertIn("image: postgres:17", self.integrations)
         self.assertIn('MERIDIAN_DISABLE_DOCKER_TESTS: "false"', self.integrations)
         self.assertEqual(self.integrations.count('--collect:"XPlat Code Coverage"'), 2)
@@ -187,7 +191,7 @@ class ProductionCertificationCheckpointTests(unittest.TestCase):
         self.assertEqual(hashlib.sha256(b"encrypted-vault-probe").hexdigest(), checkpoint["vaultSha256"])
         outputs = (self.root / "outputs").read_text()
         self.assertIn("point=" + self.point, outputs)
-        self.assertIn("/actions/runs/1234/attempts/2#production-recovery-drill-1234/source-data/recovery-checkpoint.json", outputs)
+        self.assertIn("/actions/runs/1234/attempts/2#production-recovery-drill-1234-2/source-data/recovery-checkpoint.json", outputs)
         self.assertIn("sha256=" + hashlib.sha256(checkpoint_path.read_bytes()).hexdigest(), outputs)
         calls = [json.loads(line) for line in (self.root / "calls.jsonl").read_text().splitlines()]
         self.assertIn("clock_timestamp()", calls[0][-1])

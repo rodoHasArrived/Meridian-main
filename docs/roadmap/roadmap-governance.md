@@ -8,6 +8,10 @@ Roadmap/source-doc pull requests must declare a phase (`PR0`…`PR9`) through on
 2. **PR label** formatted as `phase:PRx` (example: `phase:PR3`).
 3. **PR body marker** comment: `<!-- phase:PRx -->`.
 
+Roadmap Source Docs starts a fresh check when the PR description or labels change, so correcting
+a declaration does not require a source commit. Rerunning an older failed attempt can retain its
+original event payload; use the new metadata-triggered run to validate the corrected declaration.
+
 The CI scope gate (`tools/roadmap/enforce_phase_scope.py`) resolves declarations in this order:
 
 1. Explicit `--phase` (internal/manual override)

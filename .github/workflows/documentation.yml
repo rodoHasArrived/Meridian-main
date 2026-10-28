@@ -21,8 +21,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: documentation-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: documentation-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'latest' }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 env:
   PYTHONUNBUFFERED: "1"
@@ -38,7 +38,7 @@ jobs:
           fetch-depth: 1
 
       - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
           cache: pip
@@ -88,7 +88,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
           cache: pip
@@ -109,35 +109,9 @@ jobs:
       - name: Install diagram dependencies
         run: npm ci --no-fund --no-audit
 
-      - name: Run docs automation profile
-        run: |
-          python3 build/scripts/docs/run-docs-automation.py \
-            --profile core \
-            --summary-output docs/status/docs-automation-summary.md \
-            --json-output docs/status/docs-automation-summary.json
-
-      - name: Render Mermaid diagrams
-        run: |
-          python3 build/scripts/docs/render-roadmap-diagrams.py --summary
-          python3 build/scripts/docs/render-source-diagrams.py --summary
-
-      - name: Render WPF UI diagrams
-        run: npm run generate-diagrams
-
-      - name: Render UML diagrams
-        continue-on-error: true
-        run: |
-          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/docs/diagrams/uml:/data" plantuml/plantuml -tpng /data/*.puml
-          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/docs/diagrams/uml:/data" plantuml/plantuml -tsvg /data/*.puml
-
-      - name: Refresh workflow overview
-        run: python3 build/scripts/docs/generate-structure-docs.py --workflows-only --output docs/generated/workflows-overview.md
-
-      - name: Refresh workflow manifest outputs
-        run: python3 build/scripts/docs/generate-workflow-manifest.py
-
-      # Later generators update markdown consumed by earlier health/structure reports.
-      # The runner discovers the steps above and excludes this orchestration step.
+      # One catalog owns required producers and advisory UML rendering for this
+      # workflow, scripts/ci.sh, and isolated repair. Its bounded passes account for
+      # generated markdown consumed by health/structure reports.
       - name: Converge maintained documentation
         run: python3 build/scripts/run-maintained-generation.py --docs-only --report artifacts/docs/generation.json
 
