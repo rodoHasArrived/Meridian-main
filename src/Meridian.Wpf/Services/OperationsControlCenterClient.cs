@@ -4,6 +4,9 @@ using Meridian.Ui.Services;
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Defines shared approval-policy, close-calendar, continuity-workflow, and close-readiness queries.
+/// </summary>
 public interface IOperationsControlCenterClient
 {
     Task<OperationsApprovalPolicyMatrixDto?> GetApprovalPolicyMatrixAsync(CancellationToken ct = default);
@@ -27,6 +30,9 @@ public interface IOperationsControlCenterClient
         => Task.FromResult<FinancialOperationsCommandCenterDto?>(null);
 }
 
+/// <summary>
+/// Loads approval policies, close calendars, continuity workflows, and close-readiness state through the shared workstation client.
+/// </summary>
 public sealed class OperationsControlCenterClient : IOperationsControlCenterClient
 {
     private readonly ApiClientService _apiClient;

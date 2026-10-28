@@ -3,6 +3,9 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Instruments.Futures;
 
+/// <summary>
+/// Reads futures reference projections and combines them with canonical Security Master data.
+/// </summary>
 public sealed class FutureProjectionService
     : InstrumentProjectionServiceBase<FutureProjectionRow, FutureReferenceDto>, IFutureReferenceService
 {
@@ -66,6 +69,9 @@ public sealed class FutureProjectionService
     }
 }
 
+/// <summary>
+/// Returns absent or empty futures reference data when the reference service is unavailable.
+/// </summary>
 public sealed class NullFutureReferenceService : IFutureReferenceService
 {
     public Task<FutureReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)

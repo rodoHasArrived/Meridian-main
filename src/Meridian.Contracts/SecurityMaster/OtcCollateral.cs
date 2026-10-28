@@ -514,6 +514,9 @@ public static class OtcMarginCallRules
     };
 }
 
+/// <summary>
+/// Provides source-generated JSON metadata for OTC collateral contracts.
+/// </summary>
 [JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Metadata)]
 [JsonSerializable(typeof(OtcExposureSnapshotDto))]
 public sealed partial class OtcCollateralJsonContext : JsonSerializerContext;

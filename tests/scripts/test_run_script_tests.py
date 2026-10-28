@@ -7,6 +7,7 @@ import tempfile
 import textwrap
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 SCRIPT_PATH = Path(__file__).resolve().parents[2] / "build" / "scripts" / "ci" / "run-script-tests.py"
 SPEC = importlib.util.spec_from_file_location("run_script_tests", SCRIPT_PATH)
@@ -239,6 +240,67 @@ class RunScriptTestsTests(unittest.TestCase):
                 output,
             )
 
+    def test_workers_prioritize_repository_packages_after_parent_path_changes(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            fixture_dir = Path(temp_dir)
+            repo_root = SCRIPT_PATH.parents[3]
+            ai_scripts = repo_root / "build" / "scripts" / "ai"
+            (fixture_dir / "test_repository_import.py").write_text(
+                textwrap.dedent(
+                    f"""\
+                    import unittest
+                    from pathlib import Path
+                    from tests.scripts import workflow_assertions
+
+                    class RepositoryImportTests(unittest.TestCase):
+                        def test_repository_package(self):
+                            self.assertEqual(
+                                Path(workflow_assertions.__file__).resolve(),
+                                Path({str(repo_root / 'tests/scripts/workflow_assertions.py')!r}),
+                            )
+                    """
+                ),
+                encoding="utf-8",
+            )
+            (fixture_dir / "test_z_parent_path.py").write_text(
+                textwrap.dedent(
+                    f"""\
+                    import multiprocessing
+                    import sys
+                    import unittest
+                    from pathlib import Path
+
+                    # Full parent discovery imports unrelated suites that prepend
+                    # this directory, which contains its own 'tests' package.
+                    if multiprocessing.current_process().name == "MainProcess":
+                        sys.path.insert(0, {str(ai_scripts)!r})
+                        Path(__file__).with_suffix(".path").write_text(
+                            "\\n".join(sys.path), encoding="utf-8"
+                        )
+
+                    class ParentPathTests(unittest.TestCase):
+                        def test_kept_in_discovery(self):
+                            pass
+                    """
+                ),
+                encoding="utf-8",
+            )
+
+            result = self.run_fixture(fixture_dir, "--workers", "1")
+            output = result.stdout + result.stderr
+            parent_path = (fixture_dir / "test_z_parent_path.path").read_text(
+                encoding="utf-8"
+            ).splitlines()
+
+            self.assertEqual(parent_path[0], str(ai_scripts), output)
+            self.assertGreater(parent_path.index(str(repo_root)), 0, output)
+            self.assertEqual(result.returncode, 0, output)
+            self.assertIn(
+                "Script-test lane: ran 2 tests, 0 module(s) quarantined, "
+                "failures=0, errors=0, skipped=0.",
+                output,
+            )
+
     def test_fixture_summary_writes_do_not_pollute_the_job_summary(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             fixture_dir = Path(temp_dir)
@@ -313,6 +375,95 @@ class RunScriptTestsTests(unittest.TestCase):
                 "failures=0, errors=1, skipped=0.",
                 output,
             )
+
+    def test_spawned_modules_keep_repository_imports_ahead_of_ai_test_package(self):
+        root = SCRIPT_PATH.parents[3]
+        ai_scripts = root / "build/scripts/ai"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            fixture_dir = Path(temp_dir)
+            (fixture_dir / "test_a_pollute.py").write_text(textwrap.dedent(f"""\
+                import sys
+                import unittest
+                from tests.scripts import workflow_assertions
+
+                # Parent discovery imports the repository helper, then inherits
+                # this path order into fresh spawn interpreters without its cache.
+                sys.path.insert(0, {str(ai_scripts)!r})
+
+                class PollutingTests(unittest.TestCase):
+                    def test_helper(self):
+                        self.assertEqual(workflow_assertions.__file__, {str(root / 'tests/scripts/workflow_assertions.py')!r})
+                """), encoding="utf-8")
+            (fixture_dir / "test_z_consume.py").write_text(textwrap.dedent("""\
+                import unittest
+                from tests.scripts.workflow_assertions import assert_pinned_action
+
+                class ConsumerTests(unittest.TestCase):
+                    def test_first(self):
+                        self.assertTrue(callable(assert_pinned_action))
+
+                    def test_second(self):
+                        self.assertEqual(assert_pinned_action.__module__, "tests.scripts.workflow_assertions")
+                """), encoding="utf-8")
+            result = self.run_fixture(fixture_dir, "--verbosity", "2", env_overrides={
+                "PYTHONPATH": os.pathsep.join((str(ai_scripts), str(root))),
+                "PYTHONDONTWRITEBYTECODE": "1",
+            })
+            output = result.stdout + result.stderr
+            self.assertEqual(result.returncode, 0, output)
+            for test_id in ("test_a_pollute.PollutingTests.test_helper",
+                            "test_z_consume.ConsumerTests.test_first", "test_z_consume.ConsumerTests.test_second"):
+                self.assertIn(test_id, output)
+            self.assertIn("Script-test lane: ran 3 tests, 0 module(s) quarantined, failures=0, errors=0, skipped=0.", output)
+
+    def test_worker_entry_repairs_path_order_before_discovering_a_module(self):
+        root = SCRIPT_PATH.parents[3]
+        module_name = "test_worker_repository_import_fixture"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            fixture_dir = Path(temp_dir)
+            (fixture_dir / f"{module_name}.py").write_text(textwrap.dedent(f"""\
+                import sys
+                import unittest
+                from importlib.machinery import PathFinder
+                origin = PathFinder.find_spec("tests", sys.path).origin
+                if origin != {str(root / 'tests/__init__.py')!r}:
+                    raise ImportError("repository package is shadowed: " + str(origin))
+                from tests.scripts.workflow_assertions import assert_pinned_action
+
+                class WorkerTests(unittest.TestCase):
+                    def test_helper(self):
+                        self.assertTrue(callable(assert_pinned_action))
+                """), encoding="utf-8")
+            self.addCleanup(sys.modules.pop, module_name, None)
+            with patch.object(sys, "path", [str(root / "build/scripts/ai"), *sys.path]):
+                result = MODULE.run_module(module_name, str(fixture_dir), 1,
+                                           [f"{module_name}.WorkerTests.test_helper"])
+            self.assertTrue(result["successful"], result["output"])
+            self.assertEqual(result["testsRun"], 1)
+
+    def test_worker_import_failure_reports_original_error_without_relaxing_ids(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            fixture_dir = Path(temp_dir)
+            (fixture_dir / "test_worker_import.py").write_text(textwrap.dedent("""\
+                import multiprocessing
+                import unittest
+                if multiprocessing.current_process().name != "MainProcess":
+                    raise ImportError("synthetic worker-only missing dependency")
+
+                class ImportTests(unittest.TestCase):
+                    def test_first(self):
+                        pass
+
+                    def test_second(self):
+                        pass
+                """), encoding="utf-8")
+            result = self.run_fixture(fixture_dir)
+            output = result.stdout + result.stderr
+            self.assertEqual(result.returncode, 1, output)
+            self.assertIn("Test discovery changed for test_worker_import: expected 2 tests, found 1", output)
+            self.assertIn("Discovery import errors:", output)
+            self.assertIn("synthetic worker-only missing dependency", output)
+            self.assertIn("failures=0, errors=1, skipped=0.", output)
 
     def test_abrupt_worker_exit_fails_with_a_useful_diagnostic(self):
         with tempfile.TemporaryDirectory() as temp_dir:

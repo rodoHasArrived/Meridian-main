@@ -25,9 +25,17 @@ agent orchestration, prompt routing, repository navigation artifacts, or AI-main
 | Refresh repo-navigation artifacts | `build/scripts/docs/generate-ai-navigation.py` | `python build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --recent-changes-output docs/ai/generated/recent-changes.md --summary` |
 | Validate only AI-doc lifecycle metadata without repo-wide docs noise | `build/scripts/docs/validate-docs-structure.py` | `python build/scripts/docs/validate-docs-structure.py --top-level ai --summary` |
 | Run local .NET tests without parallel-output collisions | `build/python/cli/buildctl.py test` | `python build/python/cli/buildctl.py test --project <project> --filter "<filter>" --queue` |
+| Check or restore a reproducible development profile | `build/python/cli/buildctl.py environment` | See [browser development setup](../../engineering/web-development.md#install-and-choose-a-mode) |
+| Measure local validation feedback, queue time, and explicit task retries | `build/python/cli/buildctl.py validation-metrics` | See [local feedback measurements](../../development/build-observability.md#local-feedback-latency-and-observed-retries) |
 | Run tests on GitHub when local capacity blocks proof | `.github/workflows/targeted-test.yml` | `gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=<project> -f dotnet_filter="<filter>"` |
 | Apply deterministic scoped text edits | `build/scripts/ai/ai-edit-tool.py` | Preview with `plan`, then apply the saved plan |
 | Build token-capped orientation packs | `build/scripts/ai/context-budget.py` | `python build/scripts/ai/context-budget.py --task "<task>" --target-file <path> --summary` |
+| Assemble hash-bound task context and check freshness | `build/scripts/ai/task-context.py` | See [task context and throughput pilot](throughput-pilot.md) |
+| Describe a task by observable outcomes and explicit ownership | `build/scripts/ai/task-context.py --brief-file <json>` | See [task briefs](throughput-pilot.md#describe-the-observable-outcome) |
+| Recommend focused checks from changed files and project dependencies | `build/python/cli/buildctl.py recommend-validation` | See [focused validation](throughput-pilot.md#recommend-focused-validation) |
+| Synchronize shared project guidance, preserving host-specific sections | `build/scripts/ai/generate-guidance.py` | `python build/scripts/ai/generate-guidance.py --check --summary` |
+| Diagnose browser launcher prerequisites and port conflicts without starting services | `scripts/dev/web-dev.mjs --doctor` | `npm run dev:doctor` or `npm run dev:fixtures -- --doctor` |
+| Record task events and compare matched pilot trials | `build/scripts/ai/throughput-metrics.py` | See [metric definitions and pilot procedure](throughput-pilot.md) |
 | Generate read-only Promptfoo eval artifacts | `build/scripts/ai/promptfoo-adapter.py` | `python build/scripts/ai/promptfoo-adapter.py --eval-id 1 --summary` |
 | Run broader AI maintenance audits | `build/scripts/ai-repo-updater.py`, `make/ai.mk`, `scripts/ai/*.sh` | Pick the narrowest `audit`, `verify`, or maintenance lane |
 | Run Codex-specific desktop quality scans | `tools/codex/*.ps1` | Use the nearest focused PowerShell tool, then report exact command/results |

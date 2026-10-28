@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 namespace Meridian.Ui.Services.Services;
 
 
+/// <summary>
+/// Describes backend installation, process, and health state at the last check.
+/// </summary>
 public sealed class BackendServiceStatus
 {
     public bool IsInstalled { get; init; }
@@ -19,6 +22,9 @@ public sealed class BackendServiceStatus
     public string StatusMessage { get; init; } = string.Empty;
 }
 
+/// <summary>
+/// Reports whether a backend lifecycle operation succeeded and its explanatory message.
+/// </summary>
 public sealed class BackendServiceOperationResult
 {
     public bool Success { get; init; }
@@ -28,12 +34,18 @@ public sealed class BackendServiceOperationResult
     public static BackendServiceOperationResult Failed(string message) => new() { Success = false, Message = message };
 }
 
+/// <summary>
+/// Records the installed backend executable and installation time.
+/// </summary>
 public sealed class BackendInstallationInfo
 {
     public string ExecutablePath { get; init; } = string.Empty;
     public DateTime InstalledAtUtc { get; init; }
 }
 
+/// <summary>
+/// Records backend process identity, launch arguments, working directory, and shutdown token.
+/// </summary>
 public sealed class BackendRuntimeInfo
 {
     public int ProcessId { get; init; }

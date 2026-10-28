@@ -11,6 +11,110 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Storage
 
+Atomic writes retain the existing flushed-temp-then-publish sequence. On Windows, if the rename
+is denied while an existing destination is open, publication uses `File.Replace` with a temporary
+backup. Sync and async overwrite publication share bounded gates within this process, keyed by
+the normalized, case-insensitive destination path; temporary-file writes and flushes
+remain concurrent. This prevents competing replacements and their recovery steps from overlapping.
+Readers that share deletion keep their old generation while fresh readers see the complete
+replacement. A failed replacement restores the old generation only when the destination is absent;
+an unrestored `.atomic-recovery.<id>.tmp` backup is retained beside the destination for recovery.
+The recovery error log identifies that generated backup name and the error code without logging
+caller-controlled paths or exception text. Backup cleanup after successful publication is best
+effort. Transient Windows sharing/access failures use the existing ten-attempt, growing 20 ms
+backoff, including when a brief deletion-denying handle coexists with a retained snapshot reader.
+Async waits release the thread. A retained backup that could not be restored ends retries so later
+attempts cannot overwrite the recovery evidence. A handle that stays open still fails publication,
+and permission failures remain visible.
+`AtomicFileWriterTests` covers the seven overwrite surfaces, concurrent publishers, and failure
+retention, including coordinated publishers using equivalent path spellings. These locks do not
+coordinate separate processes, add a Windows power-loss guarantee, or make concurrent appends transactional.
+
+Fund Accounts migrations `005` and `006` retain reconciliation replacement/resolution links and
+canonical sync-attempt correlation identity. Reconciliation append and supersession share one
+account/date advisory-locked transaction; original outcomes remain available. Scoped sync upserts
+use a partial unique index and return the retained row while refusing outcome regression. Existing
+duplicate attempts stay retained under explicit supersession links; migration `006` keeps current the
+attempt the runtime upsert would keep (higher status rank, then later completion, then the newest attempt). Deploy after draining old
+fund-account writers so every writer uses the new upsert and lifecycle contract.
+
+
+Fund-account migration 007 retains bank-statement header revision and nullable source line sequence.
+Bank statement reads hydrate header authority with every line. Replays cannot change retained
+statement authority or line economics; corrected batches preserve original evidence. Historical
+line order remains unknown where no source sequence was retained.
+
+Migration 008 upgrades a retained complete batch to a transaction feed only when every line and
+the complete batch reproduce Plaid's historical deterministic identities, with matching account
+and count, no running balances, and unique ASCII references whose ordering is unambiguous. A bank
+name or actor alone does not prove feed provenance. Balance-free operator imports, missing or
+partial identity evidence, case-fold ties, and unsupported references remain complete statements
+pending explicit review.
+
+Archive repair completes all required backups before changing any source; a backup failure
+aborts the mutation phase. Backups retain source sidecars and distinguish source paths and repair
+attempts. Rejected JSONL lines also receive distinct recovery files, exposed by
+`RepairResult.RecoveryCopies` and retained in scheduled repair logs. Files with multiple issues
+are processed once. Unsupported strategies, unchanged blockers, and failed health readback remain
+unresolved instead of counting as repaired; `FilesChanged` separately reports transformations,
+and changing compression alone cannot resolve damaged source evidence. Scheduled repair requires
+an enabled truncation strategy and never substitutes index rebuilding. Focused regressions are `FileMaintenanceServiceTests` and
+`ScheduledArchiveMaintenanceServiceTests`.
+
+Scheduled compression uses `CompressAsync` and its compression-specific result, separately from
+repair completion. It selects healthy plain JSONL files within the requested paths, completes all
+required backups before mutation, and verifies decompressed bytes against the unchanged source
+before publishing a create-only gzip destination and deleting the original. Under the writer fence
+it also requires each file's backup to match the source it is about to compress, so a late write
+between the backup pass and that file's turn refuses compression rather than leaving a stale
+recovery copy. Successful encoding
+changes report compressed files and bytes saved with zero repaired issues. `JsonlStorageSink` holds a shared
+`JsonlWriteFence` lease while its append stream is open and compression takes the path
+exclusively, so an open file is refused and a reopening sink waits until the source is gone. The
+sink also holds a shared `JsonlWriterLock` (an open handle on `<source>.write-lock`), for append-stream and copy-on-write writes to a plain source alike, and
+compression holds it exclusively for the whole verify-publish-delete window, which extends that
+exclusion to writers in other processes sharing the data root. A sink that waited out another
+process's compression then appends to the published archive. Readers take neither lock, so a
+replay keeps reading a source while it is compressed. The lock file is never deleted, carries no
+state, and is not a data extension, so storage scanners ignore it.
+Compression selects only files whose partition period (the date or hour encoded in the path) has
+closed, so the live append target stays plain. Canonical `yyyy/MM/dd` directories own the daily
+period even when a source, instrument or filename contains another date. Open-period and quiet-period files are reported in `FileCompressionResult.Deferred`
+as informational entries, not errors, so a live day does not fail the run. A late write to a compressed closed period appends
+a gzip member to the published archive instead of recreating the plain file, so each archive keeps
+one representation; that copy-on-write append costs a full archive copy, which is acceptable only
+because such writes are rare. Each copy-on-write append to an archive holds a per-path exclusive append lease
+(`JsonlWriteFence.EnterArchiveAppendAsync`) shared by every sink instance in the process, across
+copy, replace and checksum republication, so concurrent sinks never drop each other's members. Its checksum sidecar is republished best-effort after the append
+commits: a failure leaves the archive without a sidecar and never reports the committed write as
+failed. A partition written directly as gzip (`StorageOptions.Compress`) is itself such an archive:
+each append takes the same append lease and the cross-process `ArchiveAppendLock`, retires its
+sidecar before the bytes change and republishes it after. Health checks hold that lock while they
+read a `.gz` archive and its sidecar, and skip an archive that is being appended at that moment;
+compression holds the same lock from publishing an archive until its sidecar exists. Retention
+deletes a file only while holding the lock its writer takes (without creating one) and only when
+the file is unchanged since it was selected, so it never removes bytes a late append just committed.
+Before either archive append path retires a retained checksum, it verifies the existing bytes
+against that checksum under the append lock. A mismatch refuses the append and preserves the
+checksum evidence. Retention subtracts bytes from its budget only after deletion succeeds, so a
+writer-held oldest file does not prevent consideration of other eligible files.
+Compression also retires a source checksum orphaned by an interrupted cleanup. The
+`RecompressOptimal` repair strategy never re-encodes a file with unresolved health issues: changing
+encoding cannot repair content, and re-signing damaged bytes would make the damage read as healthy.
+Scheduled runs also defer files written
+within the last five minutes, and every run refuses to delete a source whose length or timestamp
+changed after verification, withdrawing the new archive instead. Every published gzip archive
+gets its own checksum sidecar before the source (and any source sidecar) is removed, whether or not
+the source had one, so health checks detect a later truncated or corrupted archive. A sink write
+that finds both equal representations left by a crash between publication and source deletion
+first completes that cleanup (`JsonlArchiveFiles.TryRetireEqualSourceAsync`, under the write fence
+and archive append lease) and then extends the archive; unequal representations fail closed.
+Sink retention removes a data file's checksum sidecar with it (sidecar first) and counts sidecar
+bytes in the `MaxTotalBytes` budget, so no checksum outlives the archive it covers. Unhealthy sources,
+failed backups, destination collisions and incomplete transformations remain explicit failures;
+their recovery copies are retained in execution history. `FileMaintenanceService.Compression.cs`
+owns this operation and the backup helper shared with repair.
+
 Tier migration decodes compressed input with the production JSONL replay decoder before applying an explicitly requested output codec. An unspecified codec preserves source bytes; `None` emits uncompressed bytes with the compression suffix removed. Gzip rollover therefore produces one gzip layer. Deleting a source always requires equal logical-payload checksums through that decoder, including when optional copy verification is disabled; regression coverage also replays migrated events through `JsonlReplayer`.
 
 `PostgresSecurityMasterPricingStore.ClosePrices` extends retained pricing receipts with immutable
@@ -300,14 +404,22 @@ Reporting governance supports bounded run-ID batches within one tenant transacti
 audit reads preserve the same checksum, row binding, audit-chain, and restatement verification as
 individual reads, avoiding a separate transaction for every retained comparison candidate.
 
+`ILedgerReportingSnapshotSource` captures the requested accounting period, scoped journal entries and retained disposal lots,
+average-cost pools, acquisition backfills, wash-sale deferrals and corporate-action successor batches in one PostgreSQL repeatable-read,
+read-only transaction. Strict tenant ownership is verified from that same snapshot without mutation
+locks. Certified reporting retains this population for balances, period activity, checkpoint evidence,
+and replay; later journal or history commits appear only in a later capture.
+`AtomicTaxLotJournalStoreTests.ReportingSnapshot` controls a concurrent period reopen, posting and
+history commit between the journal and history reads and verifies that all use the earlier population.
+
 `Archival/AtomicFileWriterAdapter.cs`, `EtlStagingStore` in `Etl/EtlStores.cs`, and `Backfill/JsonlBackfillBarWriter.cs`
 implement lower-level persistence ports consumed by Infrastructure. Application/host composition
 owns their construction; atomic durability, staging and JSONL naming policies remain in Storage.
-`AtomicFileWriter` commits every write by renaming a fsynced temp file over the destination. On
-Windows every rename it performs, including `ReplaceAsync`'s backup and restore moves, is retried
-briefly (ten attempts, growing from 20 ms) when another handle without delete sharing, such as an
-antivirus or indexer scan, still holds the file; a handle that never closes still fails the write
-and removes the temp file. POSIX renames never wait.
+`AtomicFileWriter` retains the fsynced-temp publication and Windows overwrite/recovery behavior
+described above. `ReplaceAsync`'s backup, final and restore moves retain the same bounded Windows
+sharing retries. POSIX renames never wait. The core atomic-writer suite is also linked into the
+Windows-only workstation test build, so its platform-specific handle, ACL and publication cases
+execute on the existing hosted Windows lane.
 
 `LedgerAccountTaxLotPolicyRecord.EffectiveWashSalePolicy` carries the existing `PolicyId` revision
 into wash-sale projection evidence together with the configured window, scope and activation date.
@@ -729,7 +841,15 @@ lookup paths, and evidence trails those layers rely on.
 - `Etl/` - ETL staging, audit, reject, and local JSON job-definition stores.
 - `Interfaces/` and `Sinks/` - contracts and implementations that receive data to be saved.
 - `Store/`, `Policies/`, and `Replay/` - JSONL market-data storage, rules for using it, and readers
-  that can play saved data back. `JsonFileIBDataResultStore` requires tenant/company scope on writes
+  that can play saved data back. `JsonlReplayer` external-sorts physical partitions by full UTC
+  timestamp with ordinal file and physical-line tie-breakers, or explicit symbol ranks for grouped
+  backtests. Every source event requires a valid persisted envelope and a payload matching its event
+  type before symbol filtering. Replay
+  takes an exclusive closed-capture lease; active writers report unavailable input instead of false
+  corruption at a partial tail. Same-process readers of a source serialize preparation. Owner-only
+  Unix spools retain one final run, read in bounded UTF-8 pages by offset without duplicate page
+  files. Handles and admission close before each public yield. Atomic preparation admission keeps
+  merge reader/writer use bounded. Sorting still scans the capture before first yield. `JsonFileIBDataResultStore` requires tenant/company scope on writes
   and queries, keys matching result identities by that scope, and excludes unscoped legacy rows
   during restart hydration.
 - `Services/CanonicalSymbolRegistry.cs` - storage-backed canonical symbol resolver implementing
@@ -833,7 +953,9 @@ fails the operation. Scheduled, running, and terminal maintenance transitions ar
 retained through the same case-history spine when a durable history store is configured. Quality
 maintenance distinguishes complete success, partial `CompletedWithWarnings`, total failure, and
 no-input blocking from attempted/succeeded/failed input counts; cancelled work is not converted to
-a false terminal failure.
+a false terminal failure. Scheduled archive maintenance also honours the task result's own
+`Success` verdict, so a blocked task that counts no issues (for example a repair schedule with no
+enabled strategy) is recorded as `CompletedWithWarnings`, never as a clean completion.
 
 Archive-maintenance schedule mutations persist a validated candidate snapshot before publishing it
 to readers under an in-process gate and a cross-process file lease; revision-aware replacements
@@ -1047,6 +1169,11 @@ Approved typed posting commands stamp command, approval, source-event, Security 
 position, projection model/run/event, and selected rule-pack/rule identities into normalized journal
 metadata while retaining typed evidence and line dimensions. Conflicting pre-existing command-owned
 tags fail before append.
+`RetainedPostingEquivalence` validates supported cash-flow attribution before comparing its exact
+versions, group membership, and category values through the existing ordered line correspondence.
+Fresh draft GUIDs can replay the same posting without excluding attribution from comparison.
+Unknown, malformed, partial, or changed evidence refuses replay; all unrelated metadata, ordered
+economics, and posting scope retain their existing checks. Retained IDs and journal bytes do not change.
 `LedgerJournalStoreHydrationExtensions` rebuilds an in-memory `Meridian.Ledger.Ledger` from that
 durable journal-read seam, including an as-of helper that scopes by ledger book and upper occurrence
 timestamp so restart, close, and reporting projections can hydrate from the stored spine before

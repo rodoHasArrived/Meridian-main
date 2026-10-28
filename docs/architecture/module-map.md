@@ -71,9 +71,11 @@ flowchart LR
   hardcoding workflow state in React components.
 - Browser workstation work and WPF desktop workstation work are two active co-equal operator UI lanes over shared contracts; WPF's current focus is web-UI parity (`W8-WPF-PARITY-001`).
 - Browser surfaces and retained WPF compatibility should consume shared DTOs, services, and route definitions for accounting, reporting, private-capital, and identity workflows instead of duplicating business rules.
-- Security Master query and command contracts are owned by `Meridian.Contracts.SecurityMaster`.
-  Application implementations, host registration, and workstation callers use that single contract;
-  Application does not declare a parallel query interface.
+- Security Master query, command, resolver and live-position adjustment contracts are owned by
+  `Meridian.Contracts.SecurityMaster`. Execution and Backtesting have no Application project
+  reference. Identity, trading parameters and corporate actions have narrow query interfaces;
+  the aggregate query inherits them for existing callers. Application owns implementations and
+  deprecated compatibility bridges, with no parallel query interface.
 - Typed schedule generation lives in `src/Meridian.Contracts/SecurityMaster/Schedules/`;
   open-lot factor-paydown contracts live in `src/Meridian.Contracts/Accounting/Lots/`.
   `src/Meridian.Instruments/AssetOperations/FactorPaydownProjectionService.cs` projects the economics,
@@ -85,7 +87,8 @@ flowchart LR
 
 ## OMS Runtime Ownership and Lifecycle
 
-`OrderManagementSystem` implements `IOrderManagementLifecycle`. Construction restores retained
+`OrderManagementSystem` implements `IOrderManagementLifecycle` through its internal
+`OrderManagementLifecycleCoordinator`. Construction restores retained
 identity evidence without starting background work. `StartAsync` starts gateway-report intake and
 retained accounting-handoff replay once; order operations require startup. `StopAsync` closes
 admission and shares the existing asynchronous disposal drain, including admitted operations and
@@ -98,12 +101,17 @@ or accounting dependencies.
 
 Internal collaborators under `Meridian.Execution/OrderManagement` now own bounded parts of the
 runtime. The facade retains public commands, live order state and sidecars, the shared broker-report
-and pre-trade admission gates, and command/risk-reservation/amendment/cancellation/kill-switch
-coordination.
+and pre-trade reservation gates, and command/risk-reservation/amendment/cancellation/kill-switch
+coordination. The lifecycle coordinator owns operation and subscription admission, worker lifetime,
+and the shared shutdown drain.
 
 ```mermaid
 flowchart LR
-  OMS["OMS facade and lifecycle"] --> Policy["OrderAdmissionPolicy / OrderRiskSizingPolicy"]
+  OMS["OMS command and lifecycle facade"] --> Lifecycle["OrderManagementLifecycleCoordinator"]
+  OMS --> Policy["OrderAdmissionPolicy / OrderRiskSizingPolicy"]
+  OMS --> Amendments["OrderAmendmentBook"]
+  OMS --> Dispatch["OrderDispatchRegistry / BrokerOrderSweep"]
+  OMS --> Approvals["OrderApprovalReservations"]
   OMS --> Recovery["OrderBrokerIdentityIndex / BrokerageOrderRecoveryJournal"]
   OMS --> Fills["OrderFillProcessor"]
   Fills --> Context["OrderFillContext: read-only state access"]
@@ -111,9 +119,19 @@ flowchart LR
   Fills --> Reports["ExecutionReportHub"]
   Fills --> Audit["OrderExecutionAudit / OrderAuditMetadata"]
   Reports --> Failure["ExecutionFailureState"]
+  Lifecycle --> Failure
   OMS --> Failure
   OMS --> Audit
 ```
+
+The amendment book owns pending attempts, restored provenance, broker outcome evidence, and
+exposure projections over the live order view. The facade applies its prepared transitions and
+removes resolved attempts after fill processing succeeds. The dispatch registry owns in-flight
+submission leases and bounded waits for a sweep's initial dispatch snapshot. The broker sweep
+owns broker-book snapshots, cancellation-ID matching, residual cancellations, and their audit
+evidence; tracked cancellations, concurrency, and final sweep outcomes stay with the facade.
+Approval reservations own parked client identities and their escalation checks, rearming, and
+withdrawal; the facade retains order/session effects and risk-capacity settlement.
 
 The recovery journal owns durable checkpoints, permanent dispatched identities, tombstones, and
 the recovery-version lock; the identity index owns active broker IDs and replacement aliases.
@@ -123,12 +141,14 @@ subscriber delivery and observer publication belong to the report hub. Admission
 share the first terminal consumer failure. Audit helpers consume explicit snapshots.
 
 The facade's shared report gate still protects live reports, recovery, amendment resolution, and
-retention. The journal's guarded compaction persists the tombstone and performs expected-state
-removal under one recovery lock; the facade then removes sidecars. Existing APIs, persistence
-formats, alias and fill identity rules, effect ordering, and shutdown drain semantics are
-preserved. These are scoped ownership boundaries, with command coordination still in the facade;
-see the [execution module README](../../src/Meridian.Execution/README.md#oms-ownership) for the
-detailed ownership map.
+retention. Recovery checkpoint evidence still reads the pending flag and snapshot separately
+inside the journal lock. The journal's guarded compaction persists the tombstone and performs
+expected-state removal under one recovery lock; the facade then removes sidecars. Existing APIs,
+persistence formats, alias and fill identity rules, and shutdown drain semantics are preserved.
+Fill effects retain their order: portfolio application, accounting acceptance, session persistence,
+authoritative delivery, then observer publication. These scoped ownership boundaries retain command
+coordination in the facade. See the
+[execution module README](../../src/Meridian.Execution/README.md#oms-ownership) for the detailed map.
 
 ## Operational Record Boundaries
 
@@ -179,3 +199,12 @@ The current product direction is the W1-W5 operational record baseline: data con
   - Validation/policy: account status policy (`EnsureAllowed`) and request invariants.
   - Workflow orchestration: account lifecycle sequencing around reconciliation and synchronization state.
   - Storage concerns: snapshot capture/load/save and in-memory aggregate persistence.
+
+## Shared outstanding-principal calculation
+
+`Meridian.Application/SecurityMaster/CashFlow/SecurityPrincipalBalance.cs` owns the
+opening outstanding face used by calculated cash flows and quoted-price valuation.
+Dated factors absorb principal through their evidence date; later completed principal
+payments reduce the balance. Future-dated scalar factors do not price an earlier date,
+and an undated current factor is not reduced twice. This calculation is separate from
+posting a lot-factor paydown and does not activate its operator route.

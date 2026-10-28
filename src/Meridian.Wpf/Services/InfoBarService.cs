@@ -29,6 +29,9 @@ public sealed class InfoBarService
 
     private InfoBarService() { }
 
+    /// <summary>
+    /// Defines default notification display durations by severity, including persistent critical alerts.
+    /// </summary>
     public static class Durations
     {
         public const int Info = InfoBarConstants.InfoDurationMs;
@@ -141,6 +144,9 @@ public sealed class InfoBarService
     }
 }
 
+/// <summary>
+/// Carries notification severity, title, message, display duration, and open state.
+/// </summary>
 public sealed class InfoBarNotificationEventArgs : EventArgs
 {
     public InfoBarSeverity Severity { get; init; }
@@ -150,6 +156,9 @@ public sealed class InfoBarNotificationEventArgs : EventArgs
     public bool IsOpen { get; init; }
 }
 
+/// <summary>
+/// Describes an error with context, suggested remedy, severity, and formatted display text.
+/// </summary>
 public sealed class ErrorDetails
 {
     public string Title { get; set; } = "Error";

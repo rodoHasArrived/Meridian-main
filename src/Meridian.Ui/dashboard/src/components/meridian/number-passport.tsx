@@ -106,13 +106,15 @@ export function buildLedgerAmountPassportItems(proof: LedgerAmountProof): Number
   const { scope } = proof;
   const retained = proof.evidence.filter((item) => item.retainedAt && Number.isFinite(Date.parse(item.retainedAt)) && Date.parse(item.retainedAt) <= Date.now() && item.status === "Ready");
   return [
-    { label: "Source", value: proof.subjectId, detail: "Immutable posted journal line and debit or credit side." },
+    { label: "Source", value: proof.subjectId, detail: proof.subjectId.startsWith("report:")
+      ? "Generated report amount bound to its retained ledger population."
+      : "Immutable posted journal line and debit or credit side." },
     { label: "Amount", value: `${proof.amount} ${proof.currency}`, detail: "Selected amount from the shared evidence payload." },
     { label: "Tenant", value: scope.tenantId, detail: "Authenticated evidence scope." },
     { label: "Company", value: scope.companyId, detail: "Authenticated evidence scope." },
     { label: "Fund", value: scope.fundProfileId, detail: "Exact retained fund identity." },
-    { label: "Ledger book", value: scope.ledgerBookId, detail: "Exact posted book identity." },
-    { label: "Period", value: scope.periodId, detail: "Exact posted period identity." },
+    { label: "Ledger book", value: scope.ledgerBookId, detail: "Exact retained ledger book identity." },
+    { label: "Period", value: scope.periodId, detail: "Exact retained period identity." },
     { label: "Freshness", value: retained.length ? retained.map((item) => item.retainedAt).join("; ") : "Review required: no current retained evidence", detail: "Retention timestamps supplied by the evidence service." },
     { label: "Blockers", value: proof.warnings.length ? proof.warnings.join("; ") : proof.status === "Ready" ? "No blocker reported" : "Evidence review required", detail: "Shared evidence validation result." }
   ];

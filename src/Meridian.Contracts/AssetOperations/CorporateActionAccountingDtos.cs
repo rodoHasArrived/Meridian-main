@@ -328,6 +328,9 @@ public sealed record CorporateActionLotMutationSetDto(
         CorporateActionLotMutationPlanValidator.Validate(Mutations).Count == 0;
 }
 
+/// <summary>
+/// Reports blockers in the individual lot mutations proposed by a corporate action.
+/// </summary>
 public static class CorporateActionLotMutationPlanValidator
 {
     public static IReadOnlyList<CorporateActionProjectionBlockerDto> Validate(

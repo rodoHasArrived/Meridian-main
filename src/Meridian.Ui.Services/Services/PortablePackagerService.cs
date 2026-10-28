@@ -841,6 +841,9 @@ public enum PackageFormat : byte
     SevenZip
 }
 
+/// <summary>
+/// Describes a recently created portable package's location, size, and creation time.
+/// </summary>
 public sealed class RecentPackageInfo
 {
     public string Name { get; set; } = string.Empty;
@@ -849,6 +852,9 @@ public sealed class RecentPackageInfo
     public DateTime CreatedAt { get; set; }
 }
 
+/// <summary>
+/// Selects portable-package data, date range, metadata, checksums, and compression.
+/// </summary>
 public sealed class PackageCreationOptions
 {
     public string Name { get; set; } = string.Empty;
@@ -865,6 +871,9 @@ public sealed class PackageCreationOptions
     public string Compression { get; set; } = "zstd";
 }
 
+/// <summary>
+/// Reports portable-package creation success, artifact path, and any error.
+/// </summary>
 public sealed class PackageCreationResult
 {
     public bool Success { get; set; }
@@ -872,6 +881,9 @@ public sealed class PackageCreationResult
     public string? Error { get; set; }
 }
 
+/// <summary>
+/// Selects a portable package and controls validation and overwrite behavior during import.
+/// </summary>
 public sealed class PackageImportOptions
 {
     public string PackagePath { get; set; } = string.Empty;
@@ -879,6 +891,9 @@ public sealed class PackageImportOptions
     public bool OverwriteExisting { get; set; }
 }
 
+/// <summary>
+/// Reports package-import success, the number of imported files, and any error.
+/// </summary>
 public sealed class PackageImportResult
 {
     public bool Success { get; set; }
@@ -886,6 +901,9 @@ public sealed class PackageImportResult
     public string? Error { get; set; }
 }
 
+/// <summary>
+/// Summarizes portable-package file validity, missing files, total bytes, and validation issues.
+/// </summary>
 public sealed class PackageValidationResult
 {
     public bool IsValid { get; set; }
@@ -896,12 +914,18 @@ public sealed class PackageValidationResult
     public List<ValidationIssue> Issues { get; set; } = new();
 }
 
+/// <summary>
+/// Describes a portable-package validation finding and its severity.
+/// </summary>
 public sealed class ValidationIssue
 {
     public string Message { get; set; } = string.Empty;
     public string Severity { get; set; } = "Warning";
 }
 
+/// <summary>
+/// Summarizes a portable package's date coverage, symbol count, file count, and size.
+/// </summary>
 public sealed class PackageInfo
 {
     public string Name { get; set; } = string.Empty;

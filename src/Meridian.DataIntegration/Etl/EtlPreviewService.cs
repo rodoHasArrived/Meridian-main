@@ -3,6 +3,7 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.DataIntegration.Etl;
 
+/// <summary>Reads and parses ETL source samples against partner schemas for pre-run inspection.</summary>
 public sealed class EtlPreviewService
 {
     private readonly IEnumerable<IEtlSourceReader> _sourceReaders;

@@ -54,6 +54,11 @@ Snapshot date: 2026-10-28
 | W11-SHADOW-001 | W11 | Shadow-mode onboarding with opening-balance reconciliation | Data; Accounting | planned | green | medium | Data Confidence and Validation | planned_evidence | 2026-10-16 |
 | W11-PACK-001 | W11 | Governed contract-pack lifecycle on the Security Master asset-class registry | Data; Accounting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-10-16 |
 | W11-EXEC-001 | W11 | Trading and Execution bounded-context ownership | Trading; Strategy | planned | green | low | Execution and Fund Accounts | planned_evidence | 2026-10-16 |
+| W12-BOOK-001 | W12 | Accounting book, basis, and FX control workbench | Accounting; Settings | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-10-17 |
+| W12-CAPITAL-001 | W12 | Governed investor capital and allocation lifecycle | Accounting; Reporting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-10-17 |
+| W12-CREDIT-001 | W12 | DirectLoan operations and evidence reconciliation | Portfolio; Accounting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-10-17 |
+| W12-FINRPT-001 | W12 | Ledger-backed financial statement control pack | Reporting; Accounting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-10-17 |
+| W12-YEND-001 | W12 | Fiscal year-end close and opening-balance roll-forward | Accounting; Reporting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-10-17 |
 
 ## Source Contract
 

@@ -144,5 +144,225 @@
         "<!-- END AUTO-GENERATED: WORKFLOW-MANIFEST-DEV -->"
       ]
     ]
+  },
+  "conflict_recovery": {
+    "default_strategy": "manual",
+    "files": {
+      "docs/HELP.md": {
+        "strategy": "manual",
+        "reason": "Resolve handwritten prose before regenerating the declared blocks."
+      },
+      "docs/development/documentation-automation.md": {
+        "strategy": "manual",
+        "reason": "Resolve handwritten prose before regenerating the declared blocks."
+      },
+      "docs/generated/repository-structure.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/generate-structure-docs.py",
+        "required": true
+      },
+      "docs/generated/workflow-command-reference.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/generate-workflow-manifest.py",
+        "required": true
+      },
+      "docs/generated/workflows-overview.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/generate-structure-docs.py",
+        "required": true
+      },
+      "docs/roadmap/generated/MANIFEST.json": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/render-roadmap-docs.py",
+        "required": true
+      },
+      "docs/roadmap/generated/ROADMAP_SUMMARY.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/render-roadmap-docs.py",
+        "required": true
+      },
+      "docs/roadmap/generated/roadmap-register.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/render-roadmap-docs.py",
+        "required": true
+      },
+      "docs/source/generated/MANIFEST.json": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/render-source-docs.py",
+        "required": true
+      },
+      "docs/source/generated/adapter-readiness-matrix.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/render-adapter-readiness.py",
+        "required": true
+      },
+      "docs/source/generated/source-hash-manifest.json": {
+        "strategy": "reviewed-hashes",
+        "generator": "build/scripts/merge-reviewed-doc-hashes.py",
+        "reason": "Reuse reviewed parent entries only when they match the merged module; never mint review evidence."
+      },
+      "docs/source/generated/source-module-index.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/render-source-docs.py",
+        "required": true
+      },
+      "docs/source/generated/source-roadmap-traceability.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/render-source-docs.py",
+        "required": true
+      },
+      "docs/source/generated/source-todo-checklist.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/render-source-docs.py",
+        "required": true
+      },
+      "docs/status/ROADMAP_SUMMARY.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/render-roadmap-docs.py",
+        "required": true
+      },
+      "docs/status/TODO.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/scan-todos.py",
+        "required": true
+      },
+      "docs/status/ai-handoff-checklist-report.json": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/check-ai-handoff.py",
+        "required": true
+      },
+      "docs/status/ai-handoff-checklist-report.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/check-ai-handoff.py",
+        "required": true
+      },
+      "docs/status/ai-handoff-packet.json": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/handoff-packet-generator.py",
+        "required": true
+      },
+      "docs/status/ai-handoff-packet.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/handoff-packet-generator.py",
+        "required": true
+      },
+      "docs/status/ai-inventory-report.json": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/check-ai-inventory.py",
+        "required": true
+      },
+      "docs/status/ai-inventory-report.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/check-ai-inventory.py",
+        "required": true
+      },
+      "docs/status/api-contract-coverage-dashboard.json": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/generate-api-contract-coverage-dashboard.py",
+        "required": true
+      },
+      "docs/status/api-contract-coverage-dashboard.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/generate-api-contract-coverage-dashboard.py",
+        "required": true
+      },
+      "docs/status/coverage-report.md": {
+        "strategy": "protected-suffix",
+        "generator": "build/scripts/docs/generate-coverage.py",
+        "required": true
+      },
+      "docs/status/doc-health-dashboard.json": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/generate-health-dashboard.py",
+        "required": true
+      },
+      "docs/status/doc-health-dashboard.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/generate-health-dashboard.py",
+        "required": true
+      },
+      "docs/status/docs-automation-summary.json": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/run-docs-automation.py",
+        "required": true
+      },
+      "docs/status/docs-automation-summary.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/run-docs-automation.py",
+        "required": true
+      },
+      "docs/status/evidence-continuity-dashboard.json": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/generate-evidence-continuity-dashboard.py",
+        "required": true
+      },
+      "docs/status/evidence-continuity-dashboard.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/generate-evidence-continuity-dashboard.py",
+        "required": true
+      },
+      "docs/status/example-validation.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/validate-examples.py",
+        "required": true
+      },
+      "docs/status/governance-readiness-dashboard.json": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/generate-governance-readiness-dashboard.py",
+        "required": true
+      },
+      "docs/status/governance-readiness-dashboard.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/generate-governance-readiness-dashboard.py",
+        "required": true
+      },
+      "docs/status/paper-replay-reliability-dashboard.json": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/generate-paper-replay-reliability-dashboard.py",
+        "required": true
+      },
+      "docs/status/paper-replay-reliability-dashboard.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/generate-paper-replay-reliability-dashboard.py",
+        "required": true
+      },
+      "docs/status/prompt-route-lint-report.json": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/prompt-route-linter.py",
+        "required": true
+      },
+      "docs/status/todo-scan-results.json": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/scan-todos.py",
+        "required": true
+      },
+      "docs/status/workflow-drift-report.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/generate-workflow-manifest.py",
+        "required": true
+      },
+      "docs/status/workflow-validation-summary.json": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/generate-workflow-manifest.py",
+        "required": true
+      },
+      "src/Meridian.Ui/dashboard/src/lib/ui-api-routes.generated.ts": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/generate-ui-api-routes-ts.py",
+        "required": true
+      },
+      "src/Meridian.Ui/dashboard/src/lib/workspace-catalog.generated.ts": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/generate-workspace-catalog-ts.py",
+        "required": true
+      }
+    },
+    "trees": {
+      "src/Meridian.Ui/wwwroot/workstation": {
+        "strategy": "regenerate",
+        "generator": "src/Meridian.Ui/dashboard/package.json#scripts.build",
+        "required": true
+      }
+    }
   }
 }

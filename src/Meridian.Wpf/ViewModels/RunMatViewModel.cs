@@ -9,6 +9,9 @@ using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Exposes bindable state and commands to configure and run strategy scripts for custom analysis.
+/// </summary>
 public sealed class RunMatViewModel : BindableBase, IDisposable
 {
     private readonly RunMatService _runMatService;

@@ -6,6 +6,9 @@ using Npgsql;
 
 namespace Meridian.Storage.DirectLending;
 
+/// <summary>
+/// Persists direct lending state, operational projections, publication, and workflow audit data in PostgreSQL.
+/// </summary>
 public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStateStore, IDirectLendingOperationsStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);

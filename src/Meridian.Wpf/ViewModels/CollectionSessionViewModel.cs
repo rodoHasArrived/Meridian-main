@@ -13,6 +13,9 @@ using NotificationService = Meridian.Wpf.Services.NotificationService;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Defines collection-session discovery, daily-session creation, pause, stop, and summary operations.
+/// </summary>
 public interface ICollectionSessionClient
 {
     Task<CollectionSession?> GetActiveSessionAsync(CancellationToken ct = default);
@@ -28,6 +31,9 @@ public interface ICollectionSessionClient
     string GenerateSessionSummary(CollectionSession session);
 }
 
+/// <summary>
+/// Adapts the collection-session service for desktop session management.
+/// </summary>
 public sealed class CollectionSessionServiceClient : ICollectionSessionClient
 {
     private readonly CollectionSessionService _sessionService;
@@ -61,6 +67,9 @@ public sealed class CollectionSessionServiceClient : ICollectionSessionClient
         => _sessionService.GenerateSessionSummary(session);
 }
 
+/// <summary>
+/// Abstracts the success, information, and error notifications used by collection-session workflows.
+/// </summary>
 public interface ICollectionSessionNotifier
 {
     void Success(string title, string message);
@@ -70,6 +79,9 @@ public interface ICollectionSessionNotifier
     void Error(string title, string message);
 }
 
+/// <summary>
+/// Routes collection-session notifications to the desktop notification service.
+/// </summary>
 public sealed class CollectionSessionNotifier : ICollectionSessionNotifier
 {
     private readonly NotificationService _notificationService;

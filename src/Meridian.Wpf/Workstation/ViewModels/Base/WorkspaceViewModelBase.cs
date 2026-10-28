@@ -5,6 +5,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Workstation.ViewModels.Base;
 
+/// <summary>
+/// Provides observable shell context, command descriptors, and region state for desktop workspaces.
+/// </summary>
 public abstract class WorkspaceViewModelBase : BindableBase
 {
     private static readonly WorkspaceShellContext EmptyShellContext = new();

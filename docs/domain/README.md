@@ -2,7 +2,7 @@
 
 **Status:** active guidance  
 **Owner:** core-team  
-**Reviewed:** 2026-06-16
+**Reviewed:** 2026-10-28
 
 This directory contains Meridian's domain dictionary for AI-assisted and human development.
 Start with the [Meridian Domain Model](../architecture/meridian-domain-model.md) for shared scope,
@@ -22,6 +22,7 @@ Start with:
 - [Fund Event](fund-event.md)
 - [Operational Evidence Graph](operational-evidence-graph.md)
 - [Account Oversight Evidence](account-oversight-evidence.md)
+- [Account and Book Scopes](account-and-book-scopes.md)
 - [Intercompany Consolidation](intercompany-consolidation.md)
 - [Recurring Journal](recurring-journal.md)
 - [Security](security.md)

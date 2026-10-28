@@ -6,6 +6,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Controls;
 
+/// <summary>
+/// Provides standard empty-state copy and tones for missing providers, records, and other workstation prerequisites.
+/// </summary>
 public static class EmptyStateMessages
 {
     public static readonly EmptyStateMessage NoProviderConfigured = new(
@@ -53,6 +56,9 @@ public static class EmptyStateMessages
 
 public sealed record EmptyStateMessage(string Title, string Description, string Severity = "", string SeverityTone = WorkspaceTone.Neutral);
 
+/// <summary>
+/// Displays an empty-state title, explanation, and optional primary and secondary actions.
+/// </summary>
 public partial class EmptyStatePanel : UserControl
 {
     public static readonly DependencyProperty TitleProperty =

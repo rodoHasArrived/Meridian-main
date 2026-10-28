@@ -11,6 +11,9 @@ public enum WorkstationRegionStatus
     Warning
 }
 
+/// <summary>
+/// Provides observable region status, explanatory text, and optional recovery action identity.
+/// </summary>
 public sealed class WorkstationRegionState : BindableBase
 {
     private WorkstationRegionStatus _status;

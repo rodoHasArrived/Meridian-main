@@ -3,6 +3,9 @@ using System.Windows.Controls;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Hosts the workspace header and global refresh, notification, and command-palette actions.
+/// </summary>
 public partial class WorkspaceCommandSurfaceControl : UserControl
 {
     public static readonly DependencyProperty SurfaceAutomationIdProperty =

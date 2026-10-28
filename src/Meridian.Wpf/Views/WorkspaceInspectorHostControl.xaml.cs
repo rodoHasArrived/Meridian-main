@@ -11,6 +11,9 @@ public enum WorkspaceInspectorState
     Error
 }
 
+/// <summary>
+/// Carries the action identity selected in a workspace inspector.
+/// </summary>
 public sealed class WorkspaceInspectorActionInvokedEventArgs : EventArgs
 {
     public WorkspaceInspectorActionInvokedEventArgs(string actionId)
@@ -19,6 +22,9 @@ public sealed class WorkspaceInspectorActionInvokedEventArgs : EventArgs
     public string ActionId { get; }
 }
 
+/// <summary>
+/// Displays inspector selection, loading, empty, and error states and dispatches inspector actions.
+/// </summary>
 public partial class WorkspaceInspectorHostControl : UserControl
 {
     public static readonly DependencyProperty InspectorStateProperty =

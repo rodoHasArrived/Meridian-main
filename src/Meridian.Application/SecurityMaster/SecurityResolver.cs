@@ -3,7 +3,12 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Application.SecurityMaster;
 
+#pragma warning disable CS0618 // Native resolver also supports legacy host registrations.
+/// <summary>
+/// Resolves security identifiers against canonical Security Master records.
+/// </summary>
 public sealed class SecurityResolver : ISecurityResolver
+#pragma warning restore CS0618
 {
     private readonly ISecurityMasterStore _store;
 

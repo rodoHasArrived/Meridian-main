@@ -5,6 +5,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Controls;
 
+/// <summary>
+/// Displays an as-of value and freshness detail using the configured status tone.
+/// </summary>
 public partial class FreshnessIndicator : UserControl
 {
     public static readonly DependencyProperty LabelProperty =

@@ -1,5 +1,8 @@
 namespace Meridian.Mcp.Tools;
 
+/// <summary>
+/// Provides MCP access to coding conventions and related repository guidance.
+/// </summary>
 [McpServerToolType]
 public sealed class ConventionTools(RepoPathService repo)
 {

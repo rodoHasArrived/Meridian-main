@@ -2,6 +2,9 @@ using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Queries cryptocurrency reference projections by security, network, and base currency.
+/// </summary>
 public interface ICryptoReferenceProjectionStore
 {
     Task<CryptoProjectionRow?> GetCryptoAsync(Guid securityId, CancellationToken ct = default);

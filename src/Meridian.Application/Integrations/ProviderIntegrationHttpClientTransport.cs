@@ -8,6 +8,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
+/// <summary>
+/// Sends integration HTTP requests through the configured host resolver and transport safeguards.
+/// </summary>
 public sealed class ProviderIntegrationHttpClientTransport : IProviderIntegrationHttpTransport
 {
     /// <summary>Creates the production client with connection-time DNS validation and address pinning.</summary>
@@ -280,6 +283,9 @@ public sealed class ProviderIntegrationHttpClientTransport : IProviderIntegratio
         };
 }
 
+/// <summary>
+/// Resolves integration endpoint host names to IP addresses for transport validation.
+/// </summary>
 public interface IProviderIntegrationHostResolver
 {
     ValueTask<IReadOnlyList<IPAddress>> ResolveAsync(string host, CancellationToken ct = default);

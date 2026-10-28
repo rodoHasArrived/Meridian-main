@@ -1,5 +1,8 @@
 namespace Meridian.Wpf.Workstation.ViewModels.Base;
 
+/// <summary>
+/// Adds selected-item and inspector visibility state to workspace view models.
+/// </summary>
 public abstract class DetailWorkspaceViewModelBase<TItem> : WorkspaceViewModelBase
 {
     private TItem? _selectedItem;

@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-15
+**Reviewed:** 2026-10-20
 
 Use this procedure when merging current `origin/main` into a feature branch leaves conflicts in
 the tracked browser bundle or generated documentation. The canonical workstation tree remains
@@ -47,9 +47,14 @@ stale evidence after either revision changes. Fork contributors use this same lo
 
 ## Hosted PR repair
 
-`Generated Repair` prepares read-only evidence on PR open, synchronize and reopen. A separate
-`Generated Repair Publisher` validates it with trusted base tooling and can push a repair to an
-eligible same-repository branch. The push uses a repository-scoped GitHub App so fresh required
+`Generated Repair` accepts read-only requests on PR open, synchronize and reopen, including
+conflicted PRs. With the repository App variable configured, an eligible same-repository request
+is handed to the publisher for a default-branch generation dispatch. The publisher accepts a
+candidate for writing only from that dispatch, after checking its server-bound execution revision
+and trusted workflow bytes independently of the requested PR head/base. Target-event candidates
+remain artifact-only; forks and requests without the App variable still generate those artifacts.
+A separate `Generated Repair Publisher` validates the candidate with trusted base tooling and can
+push a repair to an eligible same-repository branch. The push uses a repository-scoped GitHub App so fresh required
 checks run on the resulting revision. See [activation and configuration](ci-cd-optimization.md#generated-repair-and-maintenance-activation).
 
 Hosted dependencies and generators execute inside a restricted Docker container containing a
@@ -94,8 +99,11 @@ Exit status 0 is not proof of a fresh build or a completed merge.
 On an older branch where the script has not landed yet, invoke a reviewed copy from another
 checkout and pass `--repo <feature-checkout>`. Avoid running a conflicted copy of the script.
 
-The fixed allowlist covers the workstation output tree and named whole-file documentation
-outputs. Every other conflicted path remains unresolved for review. In particular:
+The `conflict_recovery` section of `build/scripts/maintained-generation-outputs.json` declares
+named outputs, conflict strategies, and required owning generators independently of write
+authorization. The resolver loads its trusted tooling's policy, not the candidate checkout's
+policy. Every undeclared, mixed-content, or advisory-only output remains unresolved for review.
+In particular:
 
 - `src/*/README.md` contains hand-written prose as well as generated blocks. Preserve and merge
   the prose, then let the source renderer replace its generated blocks.
@@ -107,6 +115,10 @@ outputs. Every other conflicted path remains unresolved for review. In particula
   requires the [source documentation workflow](../source/README.md); never create new review hashes
   merely to clear a merge.
 - Database manifests and diagram images need their owning schema/diagram generation lanes.
+- The handwritten suffix in `docs/status/coverage-report.md`, beginning at
+  `<!-- auto-sync:coverage -->`, is merged with Git's three-way text merge. Conflicting prose or
+  malformed markers remain unresolved; the generated prefix can be seeded only after that
+  protected merge succeeds. The publisher reconstructs its baseline through this same rule.
 
 Resolve all remaining source and test conflicts before running generators. Keep new assertions
 from main when integrating older fixtures; a branch's old setup is not authority to remove later
@@ -122,11 +134,11 @@ git diff --check
 git status --short
 ```
 
-The runner generates the browser contract mirrors before building the workstation, then renders
-adapter readiness and roadmap/source docs. It discovers the remaining generation commands from
-the documentation workflow's `regenerate-docs` job, including Mermaid, WPF, UML, workflow overview,
-and workflow manifest outputs. Dependency installation and CI comparison steps remain separate.
-Use `--dry-run` to inspect the discovered commands without changing files.
+The runner's explicit maintained command catalog generates browser contract mirrors before building
+the workstation, then adapter readiness, roadmap/source docs, Mermaid, WPF, UML, workflow overview,
+and workflow manifest outputs. Canonical `verify-docs`, Documentation Automation, manual roadmap
+validation, and repair share this catalog. Dependency installation and CI comparison steps remain
+separate. Use `--dry-run` to inspect the required and advisory commands without changing files.
 `--docs-only` runs the documentation prerequisites and discovered documentation steps without
 browser contract/build work; Documentation Automation uses it to converge its own outputs.
 Use the default full mode for a browser/source merge repair.
@@ -154,8 +166,11 @@ removed hashes appear as deleted outputs. The runner does not refresh the review
 baseline, rewrite unmarked prose, enable the operational pilot-readiness report, or create issues.
 If a new generator emits an unlisted path, review its ownership and update the output policy.
 
-The isolated repair command checks reviewed module hashes again after generation, because generated
-README blocks participate in the existing fingerprint rules. For an explicit merge, use
+The isolated repair command checks reviewed module hashes again after generation. Version 1
+fingerprints cover the full README; version 2 fingerprints cover handwritten content with
+independent generated-block freshness checks. Use the explicit migration procedure in
+[the source documentation workflow](../source/README.md) for older accepted baselines.
+For an explicit merge, use
 `merge-reviewed-doc-hashes.py --ancestor <merge-base-sha> --head <pre-merge-head-sha>
 --base <incoming-base-sha>` to inspect the same three-way decisions; add `--apply` only after a
 successful result to stage the reconciled manifest. It never invents a new reviewed entry. A novel

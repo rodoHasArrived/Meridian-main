@@ -4,6 +4,9 @@ using System.ComponentModel;
 
 namespace Meridian.Wpf.Workstation.ViewModels.Base;
 
+/// <summary>
+/// Replaces collection contents while batching notifications into a single reset.
+/// </summary>
 public sealed class BatchedObservableCollection<T> : ObservableCollection<T>
 {
     private bool _suppressNotifications;

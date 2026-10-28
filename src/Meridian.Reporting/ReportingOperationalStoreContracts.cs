@@ -7,6 +7,7 @@ public sealed record ReportingScheduleExecutionLease(
     DateTimeOffset LeaseExpiresAtUtc,
     long LeaseVersion);
 
+/// <summary>Indicates that a tenant/company reporting schedule execution lease could not be used.</summary>
 public sealed class ReportingScheduleExecutionLeaseException(
     string tenantId,
     string companyId,
@@ -240,6 +241,7 @@ public interface IReportingScheduleStore
         && string.Equals(schedule.ScheduleId.Trim(), scheduleId, StringComparison.OrdinalIgnoreCase);
 }
 
+/// <summary>Reports a reporting schedule update conflict with its expected and actual update timestamps.</summary>
 public sealed class ReportingScheduleConcurrencyException : InvalidOperationException
 {
     private ReportingScheduleConcurrencyException(

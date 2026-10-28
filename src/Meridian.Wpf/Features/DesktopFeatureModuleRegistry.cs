@@ -5,6 +5,9 @@ using Meridian.Wpf.Shell.Services;
 
 namespace Meridian.Wpf.Features;
 
+/// <summary>
+/// Registers the desktop feature modules and aggregates their declared capabilities.
+/// </summary>
 public static class DesktopFeatureModuleRegistry
 {
     private static readonly IDesktopFeatureModule[] Modules =

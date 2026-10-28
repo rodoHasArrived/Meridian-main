@@ -8,6 +8,9 @@ using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Presents a strategy run's trial balance and journal with selected-line inspection.
+/// </summary>
 public sealed class StrategyRunLedgerViewModel : BindableBase
 {
     private readonly StrategyRunWorkspaceService _runService;

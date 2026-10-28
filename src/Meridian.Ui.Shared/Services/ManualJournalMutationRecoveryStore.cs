@@ -40,6 +40,9 @@ public interface IManualJournalMutationRecoveryStore
     Task<IManualJournalMutationSession> OpenSessionAsync(CancellationToken ct = default);
 }
 
+/// <summary>
+/// Retains and completes manual-journal mutation intents within a recovery session.
+/// </summary>
 public interface IManualJournalMutationSession : IAsyncDisposable
 {
     Task<ManualJournalMutationIntent?> GetAsync(string commandKey, CancellationToken ct);

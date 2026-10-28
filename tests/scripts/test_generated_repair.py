@@ -13,6 +13,7 @@ import subprocess
 import tempfile
 import unittest
 import zipfile
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest import mock
 
@@ -40,11 +41,18 @@ def pull(**updates):
     return value
 
 
+def run_title(workflow_sha=BASE, execution_ref="refs/heads/main", **updates):
+    values = request(**updates)
+    return (f"generated-repair-v2 pr={values['pr_number']} head={values['head_sha']} "
+            f"base={values['base_sha']} attempt={values['attempt']} root={values['root_sha']} "
+            f"workflow_sha={workflow_sha} ref={execution_ref}")
+
+
 def source_run(**updates):
     value = {"id": 99, "run_attempt": 1, "path": repair.WORKFLOW, "status": "completed",
-             "conclusion": "success", "event": "pull_request_target", "head_sha": BASE, "head_branch": "main",
+             "conclusion": "success", "event": "workflow_dispatch", "head_sha": BASE, "head_branch": "main",
              "repository": {"full_name": REPOSITORY}, "head_repository": {"full_name": REPOSITORY},
-             "display_title": f"generated-repair pr=7 head={HEAD} base={BASE} attempt=0 root={HEAD}"}
+             "display_title": run_title()}
     value.update(updates)
     return value
 
@@ -57,9 +65,15 @@ class MetadataTests(unittest.TestCase):
             with self.subTest(key=key), self.assertRaises(repair.RepairError):
                 repair.verify_source_run(source_run(**{key: value}), 99, 1, REPOSITORY, "main")
 
-    def test_fork_target_metadata_is_eligible_for_manual_fallback(self):
-        run = source_run(head_repository={"full_name": "contributor/fork"})
-        self.assertEqual(repair.verify_source_run(run, 99, 1, REPOSITORY, "main"), request())
+    def test_target_metadata_can_identify_request_but_never_authorize_candidate(self):
+        # Hosted REST target runs use PR head_sha. Neither that form nor the
+        # formerly assumed base_sha form proves workflow execution provenance.
+        for sha in (HEAD, BASE):
+            run = source_run(event="pull_request_target", head_sha=sha,
+                             head_branch="topic", head_repository={"full_name": "contributor/fork"})
+            self.assertEqual(repair.verify_run_identity(run, 99, 1, REPOSITORY), request())
+            with self.assertRaisesRegex(repair.RepairError, "cannot authorize"):
+                repair.verify_source_run(run, 99, 1, REPOSITORY, "main")
 
     def test_dispatch_must_originate_from_default_branch(self):
         for field, value in [("head_branch", "evil"), ("head_repository", {"full_name": "attacker/repo"})]:
@@ -73,6 +87,36 @@ class MetadataTests(unittest.TestCase):
                       title.replace(HEAD, "--upload-pack=evil"), title.replace("pr=7", "pr=../7")]:
             with self.subTest(value=value), self.assertRaises(repair.RepairError):
                 repair.parse_request(value)
+
+    def test_old_title_requires_explicit_workflow_upgrade(self):
+        with self.assertRaisesRegex(repair.RepairError, "upgrading the workflow"):
+            repair.parse_request(f"generated-repair pr=7 head={HEAD} base={BASE} attempt=0 root={HEAD}")
+
+    def test_execution_identity_is_separate_from_five_dispatch_inputs(self):
+        title = run_title(workflow_sha=NEW)
+        self.assertEqual(repair.parse_request(title), request())
+        self.assertEqual(repair.parse_run_metadata(title)["workflow_execution_sha"], NEW)
+        self.assertEqual(repair.verify_source_run(source_run(head_sha=NEW, display_title=title),
+                                                 99, 1, REPOSITORY, "main"), request())
+        api = mock.Mock()
+        repair.dispatch_retry(api, repair.parse_request(title), "main")
+        self.assertEqual(set(api.request.call_args.args[2]["inputs"]), set(repair.DISPATCH_INPUTS))
+        with self.assertRaisesRegex(repair.RepairError, "exactly the five"):
+            repair.dispatch_retry(api, dict(request(), workflow_execution_sha=NEW), "main")
+
+    def test_spoofed_execution_sha_and_ref_are_rejected(self):
+        for title in (run_title(workflow_sha=HEAD),
+                      run_title(execution_ref="refs/heads/topic"),
+                      run_title(execution_ref="refs/heads/main/../topic"),
+                      run_title(execution_ref="refs/tags/main"),
+                      run_title() + " workflow_sha=" + HEAD):
+            with self.subTest(title=title), self.assertRaises(repair.RepairError):
+                repair.verify_source_run(source_run(display_title=title), 99, 1, REPOSITORY, "main")
+
+    def test_tag_named_main_cannot_impersonate_default_branch_dispatch(self):
+        run = source_run(head_branch="main", display_title=run_title(execution_ref="refs/tags/main"))
+        with self.assertRaisesRegex(repair.RepairError, "default-branch workflow execution"):
+            repair.verify_source_run(run, 99, 1, REPOSITORY, "main")
 
     def test_both_head_and_base_must_match_open_default_branch_pr(self):
         self.assertTrue(repair.request_current(pull(), request(), REPOSITORY, "main"))
@@ -271,6 +315,32 @@ class PublishTests(unittest.TestCase):
         self.assertEqual(result["status"], "retry")
         self.assertEqual(self.api.request.call_args.args[2]["inputs"]["attempt"], "1")
 
+    def test_initial_trusted_dispatch_uses_current_refs_without_spending_retry_budget(self):
+        self.pr["head"]["sha"], self.pr["base"]["sha"] = NEW, "4" * 40
+        prepared = {"status": "retry", "outcome": "trusted-generation-requested",
+                    "request": request()}
+        with mock.patch.object(repair, "git") as git:
+            result = repair.publish(Path("."), self.api, prepared, "main")
+        git.assert_not_called()
+        sent = self.api.request.call_args.args[2]
+        self.assertEqual(sent["ref"], "main")
+        self.assertEqual(sent["inputs"], {"pr_number": "7", "head_sha": NEW,
+                                         "base_sha": "4" * 40, "attempt": "0", "root_sha": NEW})
+        self.assertEqual(result["outcome"], "trusted-generation-requested")
+        self.assertIn("Dispatched", result["reason"])
+
+    def test_initial_trusted_dispatch_refuses_retargeted_or_fork_request(self):
+        prepared = {"status": "retry", "outcome": "trusted-generation-requested",
+                    "request": request()}
+        for section, key, value in (("base", "ref", "topic"), ("head", "repo", {"full_name": "other/fork"})):
+            self.pr = pull()
+            self.pr[section][key] = value
+            with self.subTest(section=section), mock.patch.object(repair, "git") as git:
+                result = repair.publish(Path("."), self.api, prepared, "main")
+            self.assertEqual(result["outcome"], "ineligible")
+            git.assert_not_called()
+        self.api.request.assert_not_called()
+
     def test_base_advance_in_push_window_requeues_actual_new_head(self):
         def push_advance(root, *args, **kwargs):
             result = self.fake_git(root, *args, **kwargs)
@@ -299,9 +369,9 @@ class PublishTests(unittest.TestCase):
     def test_refresh_bounded_fanout_and_duplicate_pair_suppression(self):
         pulls = []
         for number in range(1, 14):
-            pr = pull(number=number)
+            pr = pull(number=number, created_at="2020-01-01T00:00:00Z")
             pulls.append(pr)
-        existing = source_run(display_title=f"generated-repair pr=1 head={HEAD} base={BASE} attempt=0 root={HEAD}")
+        existing = source_run(display_title=run_title(pr_number=1))
         def get(path):
             if path.startswith("/branches/"):
                 return {"commit": {"sha": BASE}}
@@ -311,12 +381,40 @@ class PublishTests(unittest.TestCase):
                 return pulls
             return {"merge_base_commit": {"sha": "7" * 40}}
         self.api.get.side_effect = get
-        result = repair.refresh(self.api, "main")
+        with mock.patch.object(repair, "datetime") as clock:
+            clock.now.return_value = datetime(2026, 10, 20, 12, 34, 56, tzinfo=timezone.utc)
+            result = repair.refresh(self.api, "main")
+            clock.now.assert_called_once_with(timezone.utc)
         self.assertEqual(result["dispatched"], 10)
         self.assertEqual(result["backlog"], 2)
         numbers = [call.args[2]["inputs"]["pr_number"] for call in self.api.request.call_args_list]
         self.assertNotIn("1", numbers)
         self.assertEqual(len(numbers), 10)
+        self.assertEqual(result["observed_at"], "2026-10-20T12:34:56Z")
+        self.assertEqual(result["waiting_requests"], [
+            {"pr_number": number, "head_sha": HEAD, "base_sha": BASE} for number in (12, 13)])
+        self.assertEqual(result["backlog"], len(result["waiting_requests"]))
+        self.assertNotIn("created_at", json.dumps(result))
+        for call in self.api.request.call_args_list:
+            self.assertEqual(set(call.args[2]["inputs"]), set(repair.DISPATCH_INPUTS))
+
+    def test_refresh_empty_backlog_has_no_waiting_requests(self):
+        def get(path):
+            if path.startswith("/branches/"):
+                return {"commit": {"sha": BASE}}
+            if path.startswith("/actions/"):
+                return {"workflow_runs": []}
+            if path.startswith("/pulls?"):
+                return [pull()]
+            return {"merge_base_commit": {"sha": "7" * 40}}
+        self.api.get.side_effect = get
+        with mock.patch.object(repair, "datetime") as clock:
+            clock.now.return_value = datetime(2026, 10, 20, 12, 34, 56, tzinfo=timezone.utc)
+            result = repair.refresh(self.api, "main")
+        self.assertEqual(result["dispatched"], 1)
+        self.assertEqual(result["backlog"], 0)
+        self.assertEqual(result["waiting_requests"], [])
+        self.assertEqual(result["observed_at"], "2026-10-20T12:34:56Z")
 
 
 class InspectIntegrationTests(unittest.TestCase):
@@ -350,7 +448,8 @@ class InspectIntegrationTests(unittest.TestCase):
         self.report = {"successful": True, "head_sha": self.head, "base_sha": self.base,
                        "patch_sha256": hashlib.sha256(self.patch).hexdigest()}
         self.run = source_run(head_sha=self.base,
-            display_title=f"generated-repair pr=7 head={self.head} base={self.base} attempt=0 root={self.head}")
+            display_title=run_title(head_sha=self.head, base_sha=self.base, root_sha=self.head,
+                                   workflow_sha=self.base))
         self.pr = pull()
         self.pr["head"]["sha"], self.pr["base"]["sha"] = self.head, self.base
         self.artifact = {"id": 5, "name": "generated-repair-99-1", "expired": False, "size_in_bytes": 4096,
@@ -384,6 +483,9 @@ class InspectIntegrationTests(unittest.TestCase):
         result = self.inspect()
         self.assertEqual(result["status"], "ready")
         self.assertEqual(result["tree_sha"], self.candidate)
+        self.assertEqual(result["execution_ref"], "refs/heads/main")
+        self.assertEqual(result["workflow_ref"], f"{REPOSITORY}/{repair.WORKFLOW}@refs/heads/main")
+        self.assertTrue(result["workflow_ref_derived"])
         self.assertEqual(self.git("show", f"{self.candidate}:src/base.py"), b"legitimate merged main source\n")
         self.assertIn(b"Reviewed head prose", self.git("show", f"{self.candidate}:docs/HELP.md"))
         self.assertEqual(self.git("rev-parse", "HEAD").decode().strip(), self.base)

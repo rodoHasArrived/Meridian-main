@@ -11,6 +11,9 @@ public sealed record DirectLendingEventWriteMetadata(
     string? SourceSystem,
     bool ReplayFlag);
 
+/// <summary>
+/// Loads direct lending projections and retains the event and state data used to rebuild them.
+/// </summary>
 public interface IDirectLendingStateStore
 {
     Task<LoanContractDetailDto?> LoadContractProjectionAsync(Guid loanId, CancellationToken ct = default);

@@ -8,7 +8,8 @@ Its repository-wide concurrency group lets the active benchmark finish before an
 starts. GitHub retains only the latest pending dispatch, not a FIFO queue.
 
 Legacy `CI` separates PR, push, merge-group, scheduled and manual concurrency groups,
-so main pushes cannot cancel scheduled/manual coverage. `Targeted Test` and
+so main pushes cannot cancel scheduled/manual coverage. Meridian CI and Documentation
+Automation also isolate manual runs from ordinary push cancellation. `Targeted Test` and
 `Roadmap Tools (Manual)` hash the exact ref, commit and full input selection to group
 duplicate expensive jobs while keeping distinct selections independent. Running jobs
 finish; only the latest pending duplicate is retained. See
@@ -25,14 +26,31 @@ Meridian CI also calls `service-backed-integrations.yml` on pull requests (inclu
 merge groups, main pushes and manual/reusable runs. Its always-reported `integration-gate`
 companion requires a successful PostgreSQL run; the four canonical `scripts/ci.sh` lanes and
 their `quality-gate` remain unchanged. Production Certification calls the same implementation.
+Within the release coordinator it consumes CI's immutable integration artifact and revalidates
+the exact commit/run/attempt, producer workflow, suite results, coverage and file digests.
+Standalone certification executes the tests itself. Reuse retains both the original receipt and
+the 90-day certification artifact; a partial rerun cannot reuse an earlier attempt's evidence.
 Both projects restore and execute independently, then TRX validation always rejects failed,
 skipped, missing or zero-discovery results. Each run uses a disposable `postgres:17` service
-with the certification connection settings, a read-only token and no production secrets.
+with the certification connection settings, a read-only token and no production secrets. The
+PostgreSQL image is pinned by digest.
 
 `Secret Scan` supports merge groups and release tags through the same pinned Gitleaks scanner
 used by ordinary CI. These events scan the exact checkout and reachable history directly because
 the upstream action rejects merge groups and can skip empty tag-push payloads. SARIF evidence
 is retained under `commit-secret-scan-<run>-<attempt>`.
+
+`ci-metrics.yml` collects the previous complete UTC day's Actions attempts and structured
+generated-repair outcomes with read-only permissions. Missing access, incomplete collection and
+unavailable receipts remain visible; the report makes no comparison or savings claim without
+matched historical evidence. `dependency-locks.yml` produces isolated, native OS/RID NuGet lock
+candidates and proves locked restore before any profile can be adopted. Neither workflow pushes
+changes or modifies repository rules.
+
+Documentation Automation and canonical `verify-docs` share the maintained generation catalog and
+comprehensive freshness checker. Generated conflict recovery has a separate explicit policy;
+protected prose and reviewed hashes retain their own merge and review rules. See the
+[recovery guide](../../docs/engineering/generated-merge-recovery.md).
 
 Meridian keeps the Actions surface scoped to the current .NET 10 solution, browser workstation,
 retained Windows desktop shell, provider smoke checks, safe publish output, release packaging, and
@@ -52,6 +70,11 @@ The browser lane prefers cached npm tarballs while retaining `npm ci`, optional 
 lockfile integrity checks, and npm's normal audit behavior. The docs and workflow lanes share
 pip download caches keyed by the docs and CI requirements files; both install their pinned
 requirements on every run. The workflow lane also installs Pillow to run screenshot validation.
+
+Browser CI reads its supported Node version from `.nvmrc`, which the doctor prerequisite checker
+also uses. Every local CI lane runs the shared `build/python/prerequisites.py` preflight before
+restore, build, or npm installation. See [prerequisite profiles](../../docs/engineering/README.md#prerequisite-checks)
+for required tools, pinned Python packages, and remediation commands.
 
 Publish Smoke installs Node.js and restores npm's cache
 only for `web-workstation`, the publish path that actually builds the browser bundle;
@@ -73,7 +96,7 @@ before claiming an end-to-end speedup.
 | `quality-gate` | `Meridian CI` (`meridian-ci.yml`) fans out parallel evidence lanes and finishes with one stable `quality-gate` aggregator that should be the required status check for `main`. |
 | `verify-dotnet` | `Meridian CI` .NET lane plus local `bash scripts/ci.sh --lane verify-dotnet`. |
 | `verify-browser` | `Meridian CI` browser lane plus local `bash scripts/ci.sh --lane verify-browser`. |
-| `verify-docs` | `Meridian CI` docs/source/AI lane and maintained whole-repository generation; Documentation Automation retains its complete diagram/rules sequence, and Roadmap Source Docs retains phase scope/schema/diagram checks. |
+| `verify-docs` | `Meridian CI` docs/source/AI lane and shared maintained generation; Documentation Automation retains diagram/rules validation, and Roadmap Source Docs retains phase scope/schema checks plus standalone manual generation. |
 | `verify-workflows` | `Meridian CI` workflow hygiene lane plus lane manifest validation. |
 | `verify-fast` | Local aggregate of `verify-dotnet` and `verify-browser`. |
 | `targeted-test` | `Targeted Test` (`targeted-test.yml`) for manually dispatched GitHub-hosted curated lanes. |
@@ -114,19 +137,21 @@ hosted job and shard timings separately from runner queue delays before claiming
 | Meridian CI | `meridian-ci.yml` | Pull requests to `main`, pushes to `main`, merge queue groups, manual | Runs `.NET`, browser workstation, docs/source/AI, and workflow-hygiene lanes in parallel, then reports the stable `quality-gate` aggregator. Calls shared PostgreSQL integrations and always reports their separate `integration-gate` companion. Required-check changes need administrator rollout and human review. | Lane summaries, build logs, TRX summaries, docs outputs, workflow-hygiene and PostgreSQL integration evidence |
 | Service-backed Integrations | `service-backed-integrations.yml` | Reusable calls from Meridian CI and Production Certification | Runs both deterministic integration projects independently against disposable PostgreSQL, validates every TRX and both required prefixes, and retains coverage plus schema evidence. Fork PRs use the event commit and read-only permissions without production secrets. | TRX/Cobertura/skip evidence, PostgreSQL schema dump and table/migration-ledger inventories |
 | CI | `ci.yml` | Pull requests, pushes to `main`, merge groups, nightly, manual | Runs Secret Scan on PRs, main pushes and merge groups. Nightly/manual `main` runs retain full coverage and scenario evidence; canonical Meridian CI owns .NET/browser/docs checks. | Secret scan SARIF/evidence and nightly coverage artifacts |
-| CodeQL | `codeql.yml` | Pull requests, pushes to `main`, weekly schedule, manual | Runs GitHub CodeQL static analysis for C# and JavaScript/TypeScript. C# uses an explicit .NET 10 restore/build (`build-mode: manual`); JavaScript/TypeScript uses `build-mode: none`. | CodeQL security alerts surfaced in the repository Security tab |
+| CodeQL | `codeql.yml` | Pull requests, pushes to `main`, weekly schedule, manual, reusable release gate | Runs GitHub CodeQL static analysis for C# and JavaScript/TypeScript. C# uses an explicit .NET 10 restore/build (`build-mode: manual`); JavaScript/TypeScript uses `build-mode: none`. | Security alerts and retained SARIF evidence |
 | Targeted Test | `targeted-test.yml` | Manual only | Runs a whitelisted hosted validation mode when local machine capacity, locks, or long-running suites make local validation impractical. Modes include filtered .NET, browser workstation, docs/source, WPF dev loop, WPF route, and desktop smoke. | Targeted TRX, browser bundle, docs/source, WPF validation, or desktop smoke artifacts |
 | Golden Path Validation | `golden-path-validation.yml` | Golden-path contract, browser W4, WPF W4, or manual changes | Runs browser `test:w4`, Windows `Category=W4Acceptance`, and the pilot harness/dashboard checks in parallel. The stable `Pilot Acceptance Evidence` gate requires all three jobs to succeed; diagnostic evidence remains available on failure. | `pilot-acceptance-evidence`, `wpf-w4-acceptance-evidence` |
 | Demo Smoke | `demo-smoke.yml` | Demo seed/CLI/onboarding changes or manual | Seeds the isolated demo workspace and boots the workstation on it, asserting the reconciliation and strategy screens render populated (HTTP 200, not empty, not 501), that seeded records survive a restart with `Seeded` provenance, and that `--reset-demo` refuses any non-demo root. A broken first-run fails here instead of a first evaluation. | `demo-smoke-evidence` |
 | Windows Desktop Build | `windows-desktop-build.yml` | WPF or WPF dependency changes, pushes to `main`, manual | Restores and builds one isolated Windows graph, then runs full WPF, dev-loop, both routes, supervisor and setup slices with separate TRX files and aggregate failure reporting. Desktop smoke publish runs on `main`, manual request, or PR changes to the WPF/publish graph. | WPF validation bundle and optional desktop smoke publish output |
 | WPF Dev Loop Validation | `wpf-dev-validation.yml` | Manual only | Calls the shared Windows runner for the dev-loop slice, with optional filter/build-only input. | WPF dev-loop evidence |
 | WPF Route Validation | `wpf-route-validation.yml` | Manual only | Calls the shared Windows runner for both retained route filters, reusing one build. | Route validation evidence |
-| Documentation Automation | `documentation.yml` | All pull requests, pushes to `main`, merge groups, manual | Retains docs rules/examples/AI and memory checks, regenerates core docs, Mermaid/UI diagrams, advisory UML, and workflow outputs, then converges docs-only maintained generation before freshness validation. Unrestricted triggers cover every tracked-file input. UML binaries remain outside the required freshness delta; severe dashboard regressions still fail when a baseline exists. | Dashboard delta, generated-repair patch/drift report, maintained-generation report and logs |
+| Documentation Automation | `documentation.yml` | All pull requests, pushes to `main`, merge groups, manual | Retains docs rules/examples/AI and memory checks, and converges the shared docs-only catalog covering core docs, Mermaid/UI diagrams, advisory UML, and workflow outputs before freshness validation. Unrestricted triggers cover every tracked-file input. UML binaries remain outside the required freshness delta; severe dashboard regressions still fail when a baseline exists. | Dashboard delta, generated-repair patch/drift report, maintained-generation report and logs |
 | PostgreSQL Schema Control | `schema-control.yml` | PostgreSQL migrations, public contracts, schema-control registry/policies/tooling, generated database docs, or manual | Applies all registered SQL migrations to disposable PostgreSQL 16, extracts `pg_catalog`, inventories public C# data objects, evaluates policy and migration safety rules, and rejects stale deterministic manifests or diagrams. PRs compare against the event's base SHA; manual runs require `baseline_ref`. Manual `snapshot` mode uploads refresh candidates without writing to the repository. | Candidate manifests, generated docs/diagrams, policy report, schema diff, resolved baseline/candidate SHAs, and run summary |
-| Roadmap Source Docs | `roadmap-source-docs.yml` | Roadmap/source/status/architecture/source-README changes or manual | Enforces PR phase scope for roadmap/source-doc changes, validates roadmap and source registries, renders generated outputs, and checks for drift. | None |
+| Roadmap Source Docs | `roadmap-source-docs.yml` | Roadmap/source/status/architecture/source-README changes, PR description/label corrections, or manual | Enforces PR phase scope and validates roadmap/source registries. Metadata edits receive a fresh scope check. Automatic rendering belongs to Documentation Automation; manual runs use the shared catalog and freshness checker. | Manual generation evidence |
 | Roadmap Tools (Manual) | `roadmap-tools-manual.yml` | Manual only | Runs individual roadmap tooling operations on demand — fixture-enum validation, roadmap evidence-file validation, normalized render, or phase-scope enforcement — selected through the `script` dispatch input. | Normalized roadmap render output when `render`/`all` is selected |
 | Maintenance | `maintenance.yml` | Workflow/docs/tooling changes, weekly schedule, manual | Validates tooling metadata and its distinct actionlint configuration. Canonical lanes own duplicate hygiene/AI contract/navigation checks on PR/push; weekly/manual Maintenance repeats those checks. Schedule/manual runs cannot be cancelled by ordinary pushes. | None |
-| Generated Repair | `generated-repair.yml` | PR open/synchronize/reopen through read-only `pull_request_target`, manual retry | Runs dependencies and generators in a restricted container with a disposable clone and output mount, excluding host runtime/cache credentials and Docker socket. Trusted host tooling exports bounded regular files only. Forks and unsupported changes retain artifacts or review reasons. | Repair report, patches and generation logs when produced |
+| Dependency Lock Candidates | `dependency-locks.yml` | Restore-input PRs, manual | Generates and verifies isolated Linux portable and Windows portable/x64/ARM64 NuGet lock profiles. Adoption remains explicit after native proof and review; ordinary restores retain their defaults. | Candidate lockfiles, input fingerprints, inventory and restore logs |
+| CI Operational Metrics | `ci-metrics.yml` | Daily 04:43 UTC, manual | Collects all attempts from the previous complete UTC day, reports runner/check timing and verified repair outcomes, and distinguishes missing evidence from success. Read-only; no check, protection or queue changes. | Raw API snapshot, descriptive metrics, repair causes/success cohort/backlog observations |
+| Generated Repair | `generated-repair.yml` | PR open/synchronize/reopen through read-only `pull_request_target`, default-branch dispatch | Configured same-repository requests hand off to trusted default-branch generation; target candidates remain artifact-only. Runs dependencies and generators in a restricted container with a disposable clone and output mount, excluding host runtime/cache credentials and Docker socket. Trusted host tooling exports bounded regular files only. Forks and unconfigured requests retain artifacts; unsupported changes retain review reasons. | Repair report, patches, request metadata and generation logs when produced |
 | Generated Repair Publisher | `generated-repair-publish.yml` | Completed Generated Repair workflow; main pushes, daily 05:23 UTC, manual refresh | Validates provenance, refs, paths, generated blocks and a reproduced merge before an App writes an eligible PR branch. Per-source-run concurrency and bounded stale-ref retries preserve independent repairs. Refresh scans request at most ten newly stale same-repository PR head/base pairs, deduplicate prior requests and report backlog; API pagination fails at its 1,000-item bound. No protected-main writes. | Publisher outcome, refresh backlog and workflow summary |
 | AI Navigation Refresh | `ai-navigation-refresh.yml` | Weekly, manual on the default ref | Coordinates navigation/recent changes, structure/workflow overview and documentation health; retains the 14-day freshness check. A separate trusted publisher opens or updates `automation/ai-navigation-refresh` using an App token so checks run. | Maintenance patch/report and ordinary refresh PR |
 | Provider Validation | `provider-validation.yml` | Weekly or manual | Runs Wave 1 validation and prepares the DK1 review packet plus pending operator sign-off template. Final DK1 exit evidence remains fail-closed until the required owners sign and validate the template. | Provider validation review evidence |

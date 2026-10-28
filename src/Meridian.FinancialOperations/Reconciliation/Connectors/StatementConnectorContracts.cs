@@ -128,6 +128,9 @@ public sealed record StatementParseResult(
     IReadOnlyList<BrokerageTaxLotSnapshotDto>? TaxLots = null,
     IReadOnlyList<BrokerageBorrowPositionSnapshotDto>? BorrowPositions = null)
 {
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ExecutedMappingFingerprint { get; init; }
+
     public bool HasErrors => Issues.Any(static issue =>
         string.Equals(issue.Severity, StatementParseIssue.ErrorSeverity, StringComparison.OrdinalIgnoreCase));
 
@@ -169,6 +172,9 @@ public sealed record StatementCanonicalEvidenceArtifact(
     IReadOnlyList<BrokerageTaxLotSnapshotDto> TaxLots,
     IReadOnlyList<BrokerageBorrowPositionSnapshotDto> BorrowPositions);
 
+/// <summary>
+/// Parses a source statement document into normalized statement entities and parse issues.
+/// </summary>
 public interface IStatementConnector
 {
     StatementConnectorDescriptor Descriptor { get; }

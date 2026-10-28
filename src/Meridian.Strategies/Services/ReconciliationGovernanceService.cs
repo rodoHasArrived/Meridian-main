@@ -53,11 +53,13 @@ public sealed record ReconciliationGateEvaluation(
     public DateTimeOffset? OldestOpenBreakFirstObservedAt { get; init; }
 }
 
+/// <summary>Appends reconciliation gate evaluations to an audit store.</summary>
 public interface IReconciliationGovernanceAuditStore
 {
     Task AppendAsync(ReconciliationGateEvaluation evaluation, CancellationToken ct = default);
 }
 
+/// <summary>Appends reconciliation governance evaluations as serialized JSON Lines under a mutation lock.</summary>
 public sealed class JsonlReconciliationGovernanceAuditStore : IReconciliationGovernanceAuditStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
@@ -210,6 +212,7 @@ public sealed class JsonlReconciliationGovernanceAuditStore : IReconciliationGov
     }
 }
 
+/// <summary>Evaluates reconciliation governance gates against retained run evidence and records audit evaluations.</summary>
 public sealed class ReconciliationGovernanceService
 {
     private static readonly JsonSerializerOptions FingerprintJsonOptions =

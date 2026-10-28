@@ -15,6 +15,9 @@ using DomainAggregateTimeframe = Meridian.Domain.Models.AggregateTimeframe;
 
 namespace Meridian.Infrastructure.Adapters.YahooFinance;
 
+/// <summary>
+/// Retrieves historical OHLCV data from the Yahoo Finance chart API.
+/// </summary>
 [DataSource("yahoo", "Yahoo Finance (free)", DataSourceType.Historical, DataSourceCategory.Free,
     Priority = 22, Description = "Free daily and intraday OHLCV via Yahoo Finance unofficial API")]
 [ImplementsAdr("ADR-001", "Yahoo Finance historical data provider implementation")]

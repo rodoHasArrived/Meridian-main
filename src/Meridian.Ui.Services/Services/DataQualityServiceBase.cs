@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 namespace Meridian.Ui.Services.Services;
 
 
+/// <summary>
+/// Summarizes file health, alerts, and per-symbol quality at the last check.
+/// </summary>
 public sealed class DataQualitySummary
 {
     public double OverallScore { get; set; }
@@ -19,6 +22,9 @@ public sealed class DataQualitySummary
     public List<SymbolQualitySummary> SymbolSummaries { get; set; } = new();
 }
 
+/// <summary>
+/// Describes a symbol's quality score, status, event count, and detected gaps.
+/// </summary>
 public sealed class SymbolQualitySummary
 {
     public string Symbol { get; set; } = string.Empty;
@@ -29,6 +35,9 @@ public sealed class SymbolQualitySummary
     public DateTime LastUpdate { get; set; }
 }
 
+/// <summary>
+/// Describes a data file's quality grade, record defects, coverage dates, and analysis time.
+/// </summary>
 public sealed class QualityScoreEntry
 {
     public string Path { get; set; } = string.Empty;
@@ -45,6 +54,9 @@ public sealed class QualityScoreEntry
     public DateTime LastAnalyzed { get; set; }
 }
 
+/// <summary>
+/// Groups a symbol's quality scores, issues, gaps, and completeness breakdown.
+/// </summary>
 public sealed class SymbolQualityReport
 {
     public string Symbol { get; set; } = string.Empty;
@@ -55,6 +67,9 @@ public sealed class SymbolQualityReport
     public QualityCompletenessReport Completeness { get; set; } = new();
 }
 
+/// <summary>
+/// Describes a detected quality problem, its severity, and the affected path.
+/// </summary>
 public sealed class QualityIssue
 {
     public string Type { get; set; } = string.Empty;
@@ -64,6 +79,9 @@ public sealed class QualityIssue
     public string AffectedPath { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Describes a missing-data interval, event type, and estimated missing record count.
+/// </summary>
 public sealed class QualityDataGap
 {
     public DateTime Start { get; set; }
@@ -73,6 +91,9 @@ public sealed class QualityDataGap
     public int MissingRecords { get; set; }
 }
 
+/// <summary>
+/// Groups overall completeness with breakdowns by data type and date.
+/// </summary>
 public sealed class QualityCompletenessReport
 {
     public double OverallCompleteness { get; set; }
@@ -80,6 +101,9 @@ public sealed class QualityCompletenessReport
     public Dictionary<string, double> ByDate { get; set; } = new();
 }
 
+/// <summary>
+/// Tracks a symbol quality alert, its severity, and acknowledgement details.
+/// </summary>
 public sealed class QualityAlert
 {
     public string Id { get; set; } = string.Empty;
@@ -94,12 +118,18 @@ public sealed class QualityAlert
     public string? AcknowledgedBy { get; set; }
 }
 
+/// <summary>
+/// Carries the API outcome and message for acknowledging a quality alert.
+/// </summary>
 public sealed class AcknowledgeResponse
 {
     public bool Success { get; set; }
     public string Message { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Ranks a source using its quality score, latency, and completeness.
+/// </summary>
 public sealed class SourceRanking
 {
     public string Source { get; set; } = string.Empty;
@@ -110,6 +140,9 @@ public sealed class SourceRanking
     public int Rank { get; set; }
 }
 
+/// <summary>
+/// Groups overall and symbol-specific quality trends for a time window.
+/// </summary>
 public sealed class QualityTrendData
 {
     public List<TrendDataPoint> OverallTrend { get; set; } = new();
@@ -119,6 +152,9 @@ public sealed class QualityTrendData
     public double TrendDirection { get; set; }
 }
 
+/// <summary>
+/// Records a timestamped quality score with event and alert counts.
+/// </summary>
 public sealed class TrendDataPoint
 {
     public DateTime Timestamp { get; set; }
@@ -127,6 +163,9 @@ public sealed class TrendDataPoint
     public int AlertCount { get; set; }
 }
 
+/// <summary>
+/// Describes a detected symbol anomaly with severity and structured diagnostic details.
+/// </summary>
 public sealed class AnomalyEvent
 {
     public string Id { get; set; } = string.Empty;
@@ -138,6 +177,9 @@ public sealed class AnomalyEvent
     public Dictionary<string, object> Details { get; set; } = new();
 }
 
+/// <summary>
+/// Reports a quality check's score, issues, recommendations, and execution time.
+/// </summary>
 public sealed class QualityCheckResult
 {
     public bool Success { get; set; }
@@ -147,6 +189,9 @@ public sealed class QualityCheckResult
     public DateTime CheckedAt { get; set; }
 }
 
+/// <summary>
+/// Describes a missing-bar date interval and the number of absent bars.
+/// </summary>
 public sealed class DataGapInfo
 {
     public DateTime StartDate { get; set; }
@@ -154,6 +199,9 @@ public sealed class DataGapInfo
     public int MissingBars { get; set; }
 }
 
+/// <summary>
+/// Reports data integrity validity, score, issues, and recommended remediation.
+/// </summary>
 public sealed class IntegrityVerificationResult
 {
     public bool IsValid { get; set; }

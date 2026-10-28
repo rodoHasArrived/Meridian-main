@@ -33,6 +33,12 @@ public sealed record ProviderModuleContext
         = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
+    /// Whether a credential record was selected, even if it contains no values. An empty
+    /// selected record must not fall through to another provider credential source.
+    /// </summary>
+    public bool CredentialsAreAuthoritative { get; init; }
+
+    /// <summary>
     /// Optional provider-specific settings (connection strings, timeouts, feature flags, etc.).
     /// Keys are lower-camel-case strings; values are JSON-compatible primitives.
     /// </summary>
@@ -69,5 +75,5 @@ public sealed record ProviderModuleContext
         IReadOnlyDictionary<string, string?> credentials,
         bool enabled = true,
         int priority = 100)
-        => new() { Enabled = enabled, Priority = priority, Credentials = credentials };
+        => new() { Enabled = enabled, Priority = priority, Credentials = credentials, CredentialsAreAuthoritative = true };
 }

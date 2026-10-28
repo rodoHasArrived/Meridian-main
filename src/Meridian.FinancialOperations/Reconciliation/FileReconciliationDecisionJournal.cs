@@ -3,6 +3,9 @@ using Meridian.Storage.Archival;
 
 namespace Meridian.FinancialOperations.Reconciliation;
 
+/// <summary>
+/// Retains reconciliation decisions and resolution history in local files.
+/// </summary>
 public sealed class FileReconciliationDecisionJournal : IReconciliationDecisionJournal
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web) { WriteIndented = false };

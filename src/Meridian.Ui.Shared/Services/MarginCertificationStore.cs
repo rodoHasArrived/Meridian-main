@@ -4,6 +4,9 @@ using Meridian.Storage.Archival;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Lists and persists margin certification results.
+/// </summary>
 public sealed class MarginCertificationStore(string dataRoot)
 {
     private readonly string _path = Path.Combine(dataRoot, "accounting", "margin-certifications.json");

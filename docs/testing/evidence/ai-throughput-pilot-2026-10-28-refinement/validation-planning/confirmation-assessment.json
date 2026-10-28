@@ -1,0 +1,113 @@
+{
+  "result": "threshold-met",
+  "allTwelveAccepted": true,
+  "eligiblePairs": 6,
+  "pairsAtLeast10PercentFaster": 6,
+  "medianPairedReductionFraction": 0.7143615734745049,
+  "noTreatmentCorrectionRegression": true,
+  "rows": [
+    {
+      "pair": "vc-pair-1",
+      "baselineSeconds": 98.822349,
+      "treatmentSeconds": 12.902736,
+      "reductionFraction": 0.8694350404481884,
+      "baselineCorrections": 1,
+      "treatmentCorrections": 0,
+      "baselineValidations": {
+        "pass": 1,
+        "fail": 1
+      },
+      "treatmentValidations": {
+        "pass": 1,
+        "fail": 0
+      }
+    },
+    {
+      "pair": "vc-pair-2",
+      "baselineSeconds": 69.421566,
+      "treatmentSeconds": 13.250388,
+      "reductionFraction": 0.8091315312593208,
+      "baselineCorrections": 1,
+      "treatmentCorrections": 0,
+      "baselineValidations": {
+        "pass": 1,
+        "fail": 1
+      },
+      "treatmentValidations": {
+        "pass": 1,
+        "fail": 0
+      }
+    },
+    {
+      "pair": "vc-pair-3",
+      "baselineSeconds": 20.532168,
+      "treatmentSeconds": 8.963506,
+      "reductionFraction": 0.5634408407334286,
+      "baselineCorrections": 0,
+      "treatmentCorrections": 0,
+      "baselineValidations": {
+        "pass": 1,
+        "fail": 0
+      },
+      "treatmentValidations": {
+        "pass": 1,
+        "fail": 0
+      }
+    },
+    {
+      "pair": "vc-pair-4",
+      "baselineSeconds": 36.764145,
+      "treatmentSeconds": 13.985389,
+      "reductionFraction": 0.619591615689689,
+      "baselineCorrections": 0,
+      "treatmentCorrections": 0,
+      "baselineValidations": {
+        "pass": 1,
+        "fail": 0
+      },
+      "treatmentValidations": {
+        "pass": 1,
+        "fail": 0
+      }
+    },
+    {
+      "pair": "vc-pair-5",
+      "baselineSeconds": 22.537508,
+      "treatmentSeconds": 14.403946,
+      "reductionFraction": 0.3608900327400882,
+      "baselineCorrections": 0,
+      "treatmentCorrections": 0,
+      "baselineValidations": {
+        "pass": 1,
+        "fail": 0
+      },
+      "treatmentValidations": {
+        "pass": 1,
+        "fail": 0
+      }
+    },
+    {
+      "pair": "vc-pair-6",
+      "baselineSeconds": 175.26964,
+      "treatmentSeconds": 31.878864,
+      "reductionFraction": 0.8181153107862834,
+      "baselineCorrections": 1,
+      "treatmentCorrections": 0,
+      "baselineValidations": {
+        "pass": 1,
+        "fail": 1
+      },
+      "treatmentValidations": {
+        "pass": 1,
+        "fail": 0
+      }
+    }
+  ],
+  "interpretation": "Only local validation-planning time, not code implementation or passing PR time. All failed attempts and repair times retained.",
+  "capacityInterruption": "vc-pair-4-baseline resumed same agent/log after capacity error; see sensitivity below.",
+  "sensitivityWithoutCapacityPair": {
+    "pairs": 5,
+    "pairsAtLeast10PercentFaster": 5,
+    "medianPairedReductionFraction": 0.8091315312593208
+  }
+}

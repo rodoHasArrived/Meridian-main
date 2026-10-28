@@ -2,6 +2,9 @@ using System.Diagnostics;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Issues a desktop launch ticket and attempts to open the desktop workstation.
+/// </summary>
 public sealed class DesktopWorkstationLaunchService(DesktopLaunchTicketService tickets)
 {
     private static readonly HashSet<string> AllowedPages = new(StringComparer.OrdinalIgnoreCase)

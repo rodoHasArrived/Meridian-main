@@ -208,6 +208,9 @@ public sealed record ExtensibilityCatalogDto(
     IReadOnlyList<GovernedFoundationContractDto> GovernedFoundations,
     IReadOnlyList<ExtensibilityRegistrationDto> Registrations);
 
+/// <summary>
+/// Publishes the stable core object, extension layer, and governed foundation contracts for extensibility.
+/// </summary>
 public static class CoreExtensibilityCatalog
 {
     public const string SchemaVersion = "core-extensibility.v1";

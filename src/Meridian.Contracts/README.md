@@ -6,17 +6,33 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-21
 ---
 
 # src/Meridian.Contracts
 
-`SecurityMaster/ISecurityMasterQueryService.cs` is the single query contract for application,
-browser, WPF, reporting, and QuantScript consumers. The former Application interface has been
-removed; source consumers must import `Meridian.Contracts.SecurityMaster`. Configured and
-unconfigured hosts register this same contract once, so caller-supplied implementations also reach
-application validation and pricing consumers. Query signatures, retained-history semantics, and
-serialized payloads are unchanged.
+`ReportLedgerAmountBindingDtos` retains generated trial-balance amounts with exact accounting scope
+and journal/line identities. Generated amount source evidence additionally carries its original
+`SourceScope` and `SourceSubjectId`, so historical opening-balance support preserves its own posted
+period while the shared proof drawer and guarded source route remain bound to the selected report.
+
+The source-lineage contract separates optional `IdentityScopeId` (business identity) from
+`ComparisonScopeId` (executed comparison policy). Presence preserves an occurrence across policy
+changes; absence clears only its current comparison policy. Verified legacy receipts preserve
+original lineage IDs, reject changed replays, and refuse ambiguous historical forks. Optional fields
+are omitted from legacy JSON. Source clearing never resolves governed casework.
+
+`Meridian.Contracts.SecurityMaster` owns `ISecurityResolver`, the identity, trading-parameter and
+corporate-action query interfaces, and `ILivePositionCorporateActionAdjuster` with its result record.
+Execution and Backtesting consume these contracts without referencing Application. The aggregate
+`ISecurityMasterQueryService` inherits the three query interfaces, so existing query implementations
+continue to serve callers that need the full surface. The former Application query interface remains
+removed. Query signatures, retained-history semantics, and serialized payloads are unchanged.
+
+Configured and unconfigured Application hosts expose their aggregate query through the narrow
+interfaces while preserving caller-supplied registrations. Deprecated Application resolver and
+position-adjuster contracts bridge older hosts and custom implementations to these canonical types;
+new consumers should import `Meridian.Contracts.SecurityMaster`.
 
 `LoanPortfolioSummaryDto.CurrencyTotals` carries separately denominated lending and collateral
 balances. `TotalCurrency` identifies a single-currency scalar summary; mixed-currency legacy
@@ -174,6 +190,14 @@ income-statement year start, income account codes and retained-earnings identity
 It is distinct from the requested journal period. Reconciliation rows optionally
 retain gross `PeriodDebit`/`PeriodCredit` for export review, independently of report
 balances. These additive fields are omitted when absent to preserve legacy payloads.
+
+Bank-statement lines retain optional source `LineSequence`, header `StatementRevision`, and
+`StatementAsOfDate`; absent historical metadata stays omitted from JSON. Ingestion requests
+declare a positive statement revision (default 1), and corrected statements use a new batch identity
+and higher revision. These fields preserve financial authority independently of arrival time and UUIDs.
+`StatementDate` exposes the retained header date, with the legacy value-date fallback. Banking and
+governance forecast current/closing cash balances are nullable when independent evidence is unavailable;
+aggregate forecast balances remain unavailable if any account lacks a supported current balance.
 
 Reconciliation queue items optionally retain `Lineage`: a stable source identity, occurrence identity,
 first/last observation and successful-run clearing evidence. This metadata is omitted when absent
@@ -1269,6 +1293,10 @@ rationale, actor, approval-reference, and correlation metadata so Data, Settings
 endpoint tests share the same governed profile lifecycle contract.
 
 Strategy run comparison and diff contracts live in `Workstation/StrategyRunReadModels.cs`.
+`RunComparisonDto` preserves the SDK's named JSON values for `SortinoRatio` and `ProfitFactor`
+(`"Infinity"`) and unavailable `Xirr` (`"NaN"`). `EquityCurveSummary.SortinoRatio` follows the same
+contract, including nested comparison curves and portfolio drawdown profiles. Handling stays scoped
+to those properties; unrelated metrics and endpoint JSON options remain strict.
 Run diff payloads include base/target mode and engine plus final-equity, drawdown, Sharpe,
 return, fill-count, net-P&L deltas, strategy id/version metadata, lineage relation,
 compatibility level, artifact completeness, and warnings so browser, WPF, and service tests can
@@ -1954,6 +1982,7 @@ on the lot.
 ## Validation
 
 ```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~SecurityMasterContractAdapterTests|FullyQualifiedName~StorageFeatureRegistrationTests" --logger "console;verbosity=normal"
 dotnet build src/Meridian.Contracts/Meridian.Contracts.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderCatalogCompositionTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~LeaseManagerTests|FullyQualifiedName~ClusterCoordinatorServiceTests|FullyQualifiedName~SplitBrainDetectorTests|FullyQualifiedName~SubscriptionOrchestratorCoordinationTests|FullyQualifiedName~IngestionJobServiceCoordinationTests|FullyQualifiedName~DiagnosticsEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
@@ -2004,3 +2033,9 @@ it. The dated `factorScheduleEntries` array is the schedule; a pointer with no e
 `CustomAsset` row with a `Ready` or `Blocked` disposition, the proposed `structuredCreditKind`, the
 derived asset-specific terms and the blocker codes the operator must clear. The report never applies
 a proposal.
+
+The former Application resolver/adjuster interfaces and adjustment result retain their fully qualified
+names under `SecurityMaster/Compatibility/` in this assembly. Application forwards those type
+identities so compiled clients continue to load. Their namespaces remain deprecated; new code uses
+`Meridian.Contracts.SecurityMaster`. Legacy adjustment methods and constructor overloads preserve
+existing binaries while the new canonical contracts remove the Application assembly dependency.

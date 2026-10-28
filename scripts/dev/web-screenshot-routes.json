@@ -144,7 +144,7 @@
       "name": "web-portfolio-asset-detail",
       "path": "/portfolio/asset-detail?symbol=AAPL",
       "docLabel": "Portfolio \u2014 Asset Detail",
-      "waitForText": "Asset Detail",
+      "waitForText": "Apple Inc.",
       "requiredApiRoutes": [
         "/api/workstation/security-master/securities",
         "/api/workstation/security-master/securities/sec-dev-001",
@@ -280,7 +280,7 @@
       "name": "web-accounting-asset-detail",
       "path": "/accounting/security-master/detail?symbol=AAPL",
       "docLabel": "Accounting \u2014 Asset Detail",
-      "waitForText": "Asset Detail",
+      "waitForText": "Apple Inc.",
       "requiredApiRoutes": [
         "/api/workstation/accounting",
         "/api/workstation/security-master/securities",

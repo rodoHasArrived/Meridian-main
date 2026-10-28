@@ -2,6 +2,9 @@ using Meridian.Contracts.DirectLending;
 
 namespace Meridian.Application.DirectLending;
 
+/// <summary>
+/// Combines loan lifecycle commands with servicing, accounting, and history queries.
+/// </summary>
 public interface IDirectLendingService
 {
     Task<LoanContractDetailDto> CreateLoanAsync(CreateLoanRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);

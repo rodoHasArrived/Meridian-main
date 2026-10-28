@@ -1,5 +1,8 @@
 namespace Meridian.Mcp.Resources;
 
+/// <summary>
+/// Exposes repository coding conventions, known errors, and development guides as MCP resources.
+/// </summary>
 [McpServerResourceType]
 public sealed class ConventionResources(RepoPathService repo)
 {

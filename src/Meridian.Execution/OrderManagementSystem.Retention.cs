@@ -57,9 +57,9 @@ public sealed partial class OrderManagementSystem
             // state makes CancelOrderAsync answer "order not found", stranding an approval
             // the submitter can no longer withdraw. Retain it until the escalation
             // resolves, which is exactly when its reservation is dropped.
-            .Where(order => !_parkedOrderIds.ContainsKey(order.OrderId))
+            .Where(order => !_approvalReservations.Contains(order.OrderId))
             .Where(order => !_brokerageSubmittingOrderIds.ContainsKey(order.OrderId))
-            .Where(order => !_inFlightDispatches.ContainsKey(order.OrderId))
+            .Where(order => !_dispatchRegistry.Contains(order.OrderId))
             .Where(order => !_recoveryJournal.RequiresRecovery(order.OrderId))
             .Where(order => !pendingFillOrderIds.Contains(order.OrderId))
             .OrderBy(static order => order.LastUpdatedAt ?? order.CreatedAt)

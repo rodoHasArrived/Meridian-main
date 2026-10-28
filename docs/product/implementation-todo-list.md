@@ -12,6 +12,17 @@ This is Meridian's single active implementation list for turning the existing pr
 
 The original implementation audit covered the modular-monolith host, contracts and shared services, accounting and financial operations, portfolio and reference data, execution and strategy, providers and ingestion, storage and audit, browser and WPF workstations, tests, release workflows, deployment manifests, security material, operator guidance, generated status output, and tracked duplicate/deprecation candidates. The current refresh reconciles bounded source progress and remaining work; the historical certification baseline and acceptance decisions retain their recorded scope.
 
+### Latest merged-source follow-up (2026-10-28)
+
+Reviewed against `62215f9194`, including merged PR #3284: quoted percent-of-par
+valuation and projected cash flows now share the outstanding-principal calculation,
+including completed principal after dated factor evidence and refusal to apply a
+future-dated scalar factor early. Regression sources live in
+`tests/Meridian.Tests/SecurityMaster/QuotedPriceValuationModelTests.cs`.
+This records implementation progress, not a new test run or release acceptance.
+Factor-paydown operator activation and the existing frozen-release evidence gates
+remain open.
+
 ## Production Definition
 
 Meridian may be called production-ready only when all of the following are true:
@@ -155,7 +166,7 @@ actually missing so the band has a plan rather than a label.
 
 | Row | Change |
 | --- | --- |
-| `PRD-109` | **Closed.** Its own remainder was "representative C#/TypeScript serialization parity beyond one fixture". `build/scripts/ci/check-contract-type-parity.py` now compares an enumerated registry on member sets, nullability and collection shape, wired into the docs lane. Of 136 name-matched record/interface pairs, 98 agree and are enforced; 38 already diverge and are recorded as a ratchet that fails once a listed pair is repaired but not promoted. |
+| `PRD-109` | **Historical closure claim; scope clarified 2026-10-15.** `build/scripts/ci/check-contract-type-parity.py` compares an enumerated registry on member sets, nullability and collection shape, wired into the docs lane. The array-parser repair and [exemption reassessment](../engineering/contract-type-parity.md) leave 103 enforced pairs and 37 review candidates. Findings include parser limitations and optional/default semantics, so the exemptions are not 37 proven contract defects, and structural checks alone do not establish serialization parity. |
 | `PRD-113` | **Advanced.** The overdue KV-2026-001 DotNetZip acceptance is retired with evidence (the package is absent from the tracked build, and the certification NuGet scan, which ignores suppressions, reports nothing), and the CC8 control source no longer cites a deleted workflow. Remaining: the SOC 2 readiness assessment itself, control owners, and the evidence calendar. |
 | `PRD-103` | **Confirmed closed.** Re-read against source; the tracker's evidence text is accurate. |
 

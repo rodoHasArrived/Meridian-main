@@ -10,6 +10,9 @@ using StatusProviderInfoModel = Meridian.Ui.Services.Services.StatusProviderInfo
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Projects data-workspace snapshots into context badges, commands, workflow steps, and queue presentation.
+/// </summary>
 public static class DataWorkspacePresentationBuilder
 {
     internal const string ProvidersUnavailableSummary = "No providers";
@@ -1006,6 +1009,9 @@ public static class DataWorkspacePresentationBuilder
     private static DateTimeOffset ToOffset(DateTime value) => value.Kind == DateTimeKind.Utc ? new DateTimeOffset(value) : new DateTimeOffset(DateTime.SpecifyKind(value, DateTimeKind.Local));
 }
 
+/// <summary>
+/// Collects environment, scope, provider, notification, and operational data used to build the data workspace.
+/// </summary>
 public sealed class DataWorkspaceData
 {
     public FixtureModeKind EnvironmentMode { get; init; } = FixtureModeKind.Live;
@@ -1028,6 +1034,9 @@ public sealed class DataWorkspaceData
     public IReadOnlyList<ExportJob> ExportJobs { get; init; } = Array.Empty<ExportJob>();
 }
 
+/// <summary>
+/// Carries the data workspace context, commands, overview metrics, workflow steps, and queue presentation.
+/// </summary>
 public sealed class DataWorkspacePresentation
 {
     public WorkspaceShellContextInput Context { get; init; } = new();
@@ -1054,6 +1063,9 @@ public sealed class DataWorkspacePresentation
     public WorkspaceQueueRegionState StorageQueueState { get; init; } = WorkspaceQueueRegionState.None;
 }
 
+/// <summary>
+/// Carries the data workspace overview text, status badge, handoff detail, and primary and secondary actions.
+/// </summary>
 public sealed class DataHeroState
 {
     public string FocusText { get; init; } = "Operational posture";
@@ -1088,6 +1100,9 @@ public sealed class DataHeroState
         };
 }
 
+/// <summary>
+/// Carries an overview metric label, value, detail, tone, and accessible description.
+/// </summary>
 public sealed class DataHeroMetric
 {
     public string Label { get; init; } = string.Empty;
@@ -1147,6 +1162,9 @@ public sealed class DataHeroMetric
     ];
 }
 
+/// <summary>
+/// Defines the presentation status labels for complete, current, and pending workflow steps.
+/// </summary>
 public static class WorkflowStepStatus
 {
     public const string Complete = "Complete";
@@ -1154,6 +1172,9 @@ public static class WorkflowStepStatus
     public const string Pending = "Pending";
 }
 
+/// <summary>
+/// Describes an integration step, its status presentation, and its action target.
+/// </summary>
 public sealed class DataIntegrationWorkflowStep
 {
     public string Id { get; init; } = string.Empty;

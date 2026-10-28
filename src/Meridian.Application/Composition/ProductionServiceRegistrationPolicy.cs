@@ -5,6 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Application.Composition;
 
+/// <summary>
+/// Marks an implementation that the production composition policy must reject.
+/// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = false)]
 public sealed class NonProductionOnlyImplementationAttribute : Attribute;
 
@@ -22,6 +25,9 @@ public sealed class ProductionSafeImplementationAttribute(string justification) 
     public string Justification { get; } = justification;
 }
 
+/// <summary>
+/// Marks services whose implementations are prohibited in production compositions.
+/// </summary>
 public interface INonProductionOnlyService;
 
 /// <summary>

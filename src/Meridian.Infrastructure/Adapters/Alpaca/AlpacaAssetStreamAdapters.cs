@@ -22,6 +22,9 @@ public interface IAlpacaMarketDataRouter
     bool TryResolve(MarketDataAssetClass assetClass, out IAlpacaAssetStream? stream);
 }
 
+/// <summary>
+/// Resolves an available Alpaca market data stream for a requested asset class.
+/// </summary>
 public sealed class AlpacaMarketDataRouter(IEnumerable<IAlpacaAssetStream> streams) : IAlpacaMarketDataRouter
 {
     private readonly IReadOnlyDictionary<MarketDataAssetClass, IAlpacaAssetStream> _streams = streams
@@ -47,6 +50,9 @@ public sealed record AlpacaNewsEvent(
     string Id, string Headline, string Summary, string Url, string Source,
     DateTimeOffset Timestamp, IReadOnlyList<string> Symbols);
 
+/// <summary>
+/// Accepts normalized news events received from Alpaca.
+/// </summary>
 public interface IAlpacaNewsEventSink
 {
     void Publish(AlpacaNewsEvent newsEvent);
@@ -70,6 +76,9 @@ public sealed class AlpacaNewsEventBuffer : IAlpacaNewsEventSink
     }
 }
 
+/// <summary>
+/// Subscribes to and unsubscribes from Alpaca news for configured symbols.
+/// </summary>
 public interface IAlpacaNewsSubscriptionClient
 {
     int SubscribeNews(SymbolConfig cfg);

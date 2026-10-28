@@ -2,14 +2,16 @@
 
 # `security-master-contracts` data objects - page 3 of 6
 
-Objects 161-240 of 450. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 443. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
-    class Meridian_Contracts_SecurityMaster_ISecurityMasterService["ISecurityMasterService"] {
-    }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterStructuredCreditReclassificationService["ISecurityMasterStructuredCreditReclassificationService"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ISecurityResolver["ISecurityResolver"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ISecurityTradingParametersQueryService["ISecurityTradingParametersQueryService"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityUnderlyingGraphStore["ISecurityUnderlyingGraphStore"] {
     }
@@ -322,6 +324,15 @@ classDiagram
         +string EventType
         +JsonElement? Payload
     }
+    class Meridian_Contracts_SecurityMaster_PositionCorporateActionAdjustment["PositionCorporateActionAdjustment"] {
+        +int ActionCount
+        +decimal AdjustedCostBasis
+        +decimal AdjustedQuantity
+        +decimal? AdjustedTotalCostBasis
+        +decimal OriginalCostBasis
+        +decimal OriginalQuantity
+        +string Ticker
+    }
     class Meridian_Contracts_SecurityMaster_PostCorporateActionCaseAccountingRequestDto["PostCorporateActionCaseAccountingRequestDto"] {
         +string Actor
         +Guid ApprovalId
@@ -451,22 +462,6 @@ classDiagram
         +SecurityIdentifierKind IdentifierKind
         +string IdentifierValue
         +string? Provider
-    }
-    class Meridian_Contracts_SecurityMaster_ScheduleConventionTerms["ScheduleConventionTerms"] {
-        +bool? AccrualAdjusted
-        +string? BusinessDayConvention
-        +string? CouponCashBasis
-        +string? CouponRateUnit
-        +string? Direction
-        +ScheduleConventionTerms Empty
-        +bool? EndOfMonthRule
-        +DateOnly? FirstRegularDate
-        +DateOnly? LastRegularDate
-        +IReadOnlyList~string~ PaymentCalendars
-        +int? PaymentLagBusinessDays
-        +string? RollConvention
-    }
-    class Meridian_Contracts_SecurityMaster_ScheduleSpecFactory["ScheduleSpecFactory"] {
     }
     class Meridian_Contracts_SecurityMaster_Schedules_ScheduleAnchorMode["ScheduleAnchorMode"] {
     }

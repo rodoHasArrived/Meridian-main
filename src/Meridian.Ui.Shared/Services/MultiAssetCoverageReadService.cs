@@ -5,6 +5,9 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Provides a multi-asset coverage summary for the requested scope.
+/// </summary>
 public interface IMultiAssetCoverageReadService
 {
     Task<MultiAssetCoverageSummaryDto> GetCoverageAsync(
@@ -15,6 +18,9 @@ public interface IMultiAssetCoverageReadService
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Builds multi-asset coverage summaries from declared instruments and supporting services.
+/// </summary>
 public sealed class MultiAssetCoverageReadService : IMultiAssetCoverageReadService
 {
     private readonly ISecurityMasterOperationalReadinessService _readinessService;

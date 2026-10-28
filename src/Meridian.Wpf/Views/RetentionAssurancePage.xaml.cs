@@ -167,6 +167,9 @@ public partial class RetentionAssurancePage : Page
         };
     }
 
+    /// <summary>
+    /// Presents a legal hold's identity, reason, covered symbols, and creation date.
+    /// </summary>
     public sealed class LegalHoldItem
     {
         public string Id { get; set; } = string.Empty;
@@ -176,6 +179,9 @@ public partial class RetentionAssurancePage : Page
         public string CreatedText { get; set; } = string.Empty;
     }
 
+    /// <summary>
+    /// Presents a retention audit report's outcome, summary, retained size, and timestamp.
+    /// </summary>
     public sealed class AuditReportItem
     {
         public string StatusText { get; set; } = string.Empty;

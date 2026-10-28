@@ -227,6 +227,7 @@ public interface IReportingArtifactAuditStore
         CancellationToken cancellationToken = default);
 }
 
+/// <summary>Indicates that retained reporting artifact catalog data failed an integrity check.</summary>
 public sealed class ReportingArtifactCatalogIntegrityException : IOException
 {
     public ReportingArtifactCatalogIntegrityException(string message) : base(message)
@@ -234,6 +235,7 @@ public sealed class ReportingArtifactCatalogIntegrityException : IOException
     }
 }
 
+/// <summary>Indicates that retained reporting artifact access-audit data failed an integrity check.</summary>
 public sealed class ReportingArtifactAuditIntegrityException : IOException
 {
     public ReportingArtifactAuditIntegrityException(string message) : base(message)

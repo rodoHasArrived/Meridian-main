@@ -41,7 +41,7 @@ public sealed partial class OrderManagementSystem
         // the escalation so only that escalation's own release can reuse it.
         if (riskResult.EscalationId is { } escalationId)
         {
-            _parkedOrderIds[orderId] = escalationId;
+            _approvalReservations.Reserve(orderId, escalationId);
         }
         if (_orders.TryAdd(orderId, parkedState))
         {
@@ -124,7 +124,7 @@ public sealed partial class OrderManagementSystem
     {
         var reserving = new List<OrderState>(GetOpenOrders());
         var amendments = GetAmendmentExposureReservations();
-        reserving.RemoveAll(order => _pendingModificationOrderIds.ContainsKey(order.OrderId));
+        reserving.RemoveAll(order => _amendmentBook.Contains(order.OrderId));
         reserving.AddRange(amendments);
 
         reserving.AddRange(_fillProcessor.GetExposureReservations());
@@ -140,33 +140,7 @@ public sealed partial class OrderManagementSystem
     /// second execution under the same id — two orders sharing one order's audit history.
     /// </summary>
     private void RehydrateParkedOrderReservations()
-    {
-        if (_escalationQueue is null)
-        {
-            return;
-        }
-
-        var reclaimed = 0;
-        foreach (var entry in _escalationQueue.GetUnresolved())
-        {
-            if (entry.Request.ClientOrderId is not { Length: > 0 } clientOrderId)
-            {
-                continue;
-            }
-
-            if (_parkedOrderIds.TryAdd(clientOrderId, entry.EscalationId))
-            {
-                reclaimed++;
-            }
-        }
-
-        if (reclaimed > 0)
-        {
-            _logger.LogInformation(
-                "Reserved {Count} client order id(s) held by governed approvals that outlived the previous host",
-                reclaimed);
-        }
-    }
+        => _approvalReservations.RehydrateParkedOrderReservations();
 
     /// <summary>
     /// Frees the client-order-id reservation an escalation held, once its released order is
@@ -175,30 +149,11 @@ public sealed partial class OrderManagementSystem
     /// gate between the duplicate check and registration can still refuse the release while
     /// the approval remains armed.
     /// </summary>
-    private void ReleaseParkedOrderReservation(string orderId) => _parkedOrderIds.TryRemove(orderId, out _);
+    private void ReleaseParkedOrderReservation(string orderId) => _approvalReservations.Release(orderId);
 
     /// <inheritdoc />
     public bool WasRiskApprovalDeclined(string orderId)
-    {
-        if (!_parkedOrderIds.TryGetValue(orderId, out var escalationId))
-        {
-            // Never parked, or the escalation's own release already reclaimed the id — in
-            // which case the order routed and the report stream owns it from here.
-            return false;
-        }
-
-        var entry = _escalationQueue?.TryGet(escalationId);
-        if (entry is not null && entry.Status is not RiskEscalationStatus.Denied)
-        {
-            return false;
-        }
-
-        // A denied escalation can never be released, so the reservation on this client
-        // order id is dead too; drop it here rather than waiting for the next placement
-        // to clear it lazily.
-        _parkedOrderIds.TryRemove(orderId, out _);
-        return true;
-    }
+        => _approvalReservations.WasRiskApprovalDeclined(orderId);
 
     /// <summary>
     /// Cancels an order awaiting governed approval: the escalation is withdrawn so no
@@ -234,36 +189,8 @@ public sealed partial class OrderManagementSystem
     /// </summary>
     private OrderState? TryWithdrawParkedEscalation(string orderId)
     {
-        if (!_parkedOrderIds.TryGetValue(orderId, out var escalationId) || _escalationQueue is null)
-        {
+        if (_approvalReservations.TryWithdrawEscalation(orderId) is not { } escalationId)
             return null;
-        }
-
-        var entry = _escalationQueue.TryGet(escalationId);
-        if (entry is null || entry.Status is not RiskEscalationStatus.PendingApproval and not RiskEscalationStatus.Approved)
-        {
-            // Already resolved: nothing to withdraw, and the id is free.
-            _parkedOrderIds.TryRemove(orderId, out _);
-            return null;
-        }
-
-        // Withdraw, not Deny: an operator may already have approved without releasing, and
-        // a plain denial only resolves pending entries. Fail closed on the result — if the
-        // entry survives, the escalation can still route, so this cancellation must not
-        // report success or drop the reservation that keeps its client order id.
-        if (_escalationQueue.Withdraw(
-                escalationId,
-                actor: "order-management-system",
-                reason: "The submitter cancelled the order while it awaited governed approval.") is null)
-        {
-            _logger.LogWarning(
-                "Order {OrderId} could not be cancelled: escalation {EscalationId} could not be withdrawn",
-                LogSanitizer.Sanitize(orderId),
-                escalationId);
-            return null;
-        }
-
-        _parkedOrderIds.TryRemove(orderId, out _);
 
         if (!_orders.TryGetValue(orderId, out var state))
         {
@@ -290,38 +217,7 @@ public sealed partial class OrderManagementSystem
     /// whose escalation is no longer actionable (denied, or already released) is cleared.
     /// </summary>
     private bool IsReservedByLiveEscalation(string orderId, OrderRequest request)
-    {
-        if (!_parkedOrderIds.TryGetValue(orderId, out var escalationId))
-        {
-            return false;
-        }
-
-        var entry = _escalationQueue?.TryGet(escalationId);
-        if (entry is null ||
-            entry.Status is RiskEscalationStatus.Denied or RiskEscalationStatus.Released)
-        {
-            _parkedOrderIds.TryRemove(orderId, out _);
-            return false;
-        }
-
-        // Only an APPROVED escalation's release may pass. The token is just the escalation
-        // id, which the submitter already received in their own parked response; honouring
-        // it while the entry is still pending would let them resubmit, and if the market or
-        // the configured threshold had since moved so the rule no longer escalates, the
-        // order would route with no operator decision behind it at all.
-        //
-        // The reservation is NOT dropped here. Several gates still stand between this check
-        // and the approval actually being consumed — placement, live readiness, operator
-        // controls, security master — and any of them can refuse the release while the
-        // approval stays armed. Freeing the id now would let a tokenless retry take it and
-        // execute, after which the original approval could still release a second order
-        // under the same id. ReleaseParkedOrderReservation clears it once the order is
-        // registered, and the live order itself guards the id from then on.
-        return entry.Status != RiskEscalationStatus.Approved ||
-            request.Metadata is null ||
-            !request.Metadata.TryGetValue(RiskEscalationQueueService.ApprovalMetadataKey, out var tokens) ||
-            !RiskEscalationQueueService.SplitTokens(tokens).Contains(escalationId, StringComparer.OrdinalIgnoreCase);
-    }
+        => _approvalReservations.IsReservedByLiveEscalation(orderId, request);
 
     /// <summary>
     /// Re-arms every governed approval consumed by a validation whose order never routed.
@@ -338,28 +234,7 @@ public sealed partial class OrderManagementSystem
     /// ordinary cancel path owns it and a parked reservation would wrongly intercept.
     /// </param>
     private void RestoreConsumedApprovals(string? consumedApprovalId, string cause, string? rearmedOrderId = null)
-    {
-        if (consumedApprovalId is null || _escalationQueue is null)
-        {
-            return;
-        }
-
-        foreach (var escalationId in RiskEscalationQueueService.SplitTokens(consumedApprovalId))
-        {
-            if (_escalationQueue.TryRestoreApproval(escalationId))
-            {
-                if (rearmedOrderId is not null)
-                {
-                    _parkedOrderIds[rearmedOrderId] = escalationId;
-                }
-
-                _logger.LogInformation(
-                    "Governed approval {EscalationId} re-armed after {Cause}",
-                    escalationId,
-                    cause);
-            }
-        }
-    }
+        => _approvalReservations.RestoreConsumedApprovals(consumedApprovalId, cause, rearmedOrderId);
 
     /// <summary>
     /// Outcome of revalidating a risk-increasing amendment: either a <paramref name="Refusal"/>

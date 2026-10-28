@@ -2,6 +2,9 @@ using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Retains EDGAR ticker associations, filer records, and reference data for subsequent lookup.
+/// </summary>
 public interface IEdgarReferenceDataStore
 {
     Task SaveTickerAssociationsAsync(IReadOnlyList<EdgarTickerAssociation> associations, CancellationToken ct = default);

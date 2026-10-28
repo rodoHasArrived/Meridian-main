@@ -8,6 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps brokerage connection setup and lifecycle operations within the workstation tenant scope.
+/// </summary>
 public static class BrokerageConnectionEndpoints
 {
     public static void MapBrokerageConnectionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)

@@ -2,7 +2,6 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Channels;
-using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
@@ -534,12 +533,15 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
                     throw new OperationCanceledException("Ledger posting consumer is shutting down.", ct);
             }
 
-            var write = BuildDurableWrite(evt, expectedJournal);
+            var write = AccountingPostingCommandValidator.NormalizeAndValidate(BuildDurableWrite(evt, expectedJournal));
             var confirmation = await _postingTarget
                 .PostAndConfirmAsync(write, ct)
                 .ConfigureAwait(false);
+            var comparisonJournal = confirmation.WasAppended ? write.Entry
+                : TradeFillCashFlowReplayCompatibility.SelectCandidate(write.Entry, confirmation.RetainedRecord.Entry);
+            DurableLedgerPostingTarget.VerifyRetainedEntry(confirmation.RetainedRecord, write with { Entry = comparisonJournal });
             EnsureCanonicalJournalMatches(
-                expectedJournal,
+                comparisonJournal,
                 confirmation.RetainedRecord.Entry,
                 evt.FillId,
                 expectedJournal.Metadata.ActivityType ?? "unknown");
@@ -550,7 +552,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
             {
                 if (_postingDisabled || ct.IsCancellationRequested)
                     throw new OperationCanceledException("Ledger posting consumer is shutting down.", ct);
-                UpdateProjection(expectedJournal, evt.FillId);
+                UpdateProjection(confirmation.RetainedRecord.Entry, evt.FillId);
             }
         }
 
@@ -680,7 +682,10 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
                 description))
             .ToArray();
         var metadata = BuildPostingMetadata(evt, securityGate, activityType, lines);
-        return new JournalEntry(journalId, evt.OccurredAt, description, lines, metadata);
+        var entry = new JournalEntry(journalId, evt.OccurredAt, description, lines, metadata);
+        return activityType == TradeFillActivityType
+            ? LedgerCashFlowAttribution.WithClassifiedActivity(entry, LedgerCashFlowCategory.Investing, "Security trade")
+            : entry;
     }
 
     private LedgerJournalEntryWrite BuildDurableWrite(

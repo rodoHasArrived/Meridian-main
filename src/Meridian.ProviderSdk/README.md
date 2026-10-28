@@ -24,6 +24,11 @@ replacement without exposing credential values to operator responses.
 
 ## Purpose
 
+`ICredentialContext.IsAuthoritative` marks complete selected credential records: absent fields
+must remain absent through factory construction. `CredentialEnvironment` carries the environment
+bound to that record. Module contexts also distinguish an empty selected record from an omitted
+credential source with `CredentialsAreAuthoritative`.
+
 ProviderSdk defines provider-facing abstractions for streaming, historical, symbol-search, backfill
 job descriptors, dynamic provider plugin discovery, accounting-system integrations, and provenance-complete provider trading-calendar data.
 

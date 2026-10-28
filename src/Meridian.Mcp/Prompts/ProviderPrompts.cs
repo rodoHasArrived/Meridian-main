@@ -1,5 +1,8 @@
 namespace Meridian.Mcp.Prompts;
 
+/// <summary>
+/// Builds MCP provider-implementation prompts with templates, required ADRs, and implementation guidance.
+/// </summary>
 [McpServerPromptType]
 public sealed class ProviderPrompts(RepoPathService repo)
 {

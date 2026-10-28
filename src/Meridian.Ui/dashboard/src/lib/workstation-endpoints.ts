@@ -222,12 +222,23 @@ export const BANKING_API_ENDPOINTS = {
   transactions: "/api/banking/transactions"
 } as const;
 
-export function bankingPaymentApproveEndpoint(pendingPaymentId: string): string {
-  return routeWithParam(BANKING_API_ENDPOINTS.paymentApprove, "pendingPaymentId", pendingPaymentId);
+export function bankingPendingPaymentsEndpoint(entityId: string): string {
+  return `${BANKING_API_ENDPOINTS.pendingPayments}${bankingEntityQuery(entityId)}`;
 }
 
-export function bankingPaymentRejectEndpoint(pendingPaymentId: string): string {
-  return routeWithParam(BANKING_API_ENDPOINTS.paymentReject, "pendingPaymentId", pendingPaymentId);
+export function bankingPaymentApproveEndpoint(pendingPaymentId: string, entityId: string): string {
+  return `${routeWithParam(BANKING_API_ENDPOINTS.paymentApprove, "pendingPaymentId", pendingPaymentId)}${bankingEntityQuery(entityId)}`;
+}
+
+export function bankingPaymentRejectEndpoint(pendingPaymentId: string, entityId: string): string {
+  return `${routeWithParam(BANKING_API_ENDPOINTS.paymentReject, "pendingPaymentId", pendingPaymentId)}${bankingEntityQuery(entityId)}`;
+}
+
+function bankingEntityQuery(entityId: string): string {
+  if (!entityId.trim()) {
+    throw new Error("Select an entity before reviewing payments.");
+  }
+  return queryString({ entityId: entityId.trim() });
 }
 
 export function bankingTransactionsEndpoint(entityId?: string): string {

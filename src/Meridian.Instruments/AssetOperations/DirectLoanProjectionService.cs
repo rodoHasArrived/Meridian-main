@@ -3,6 +3,9 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Instruments.AssetOperations;
 
+/// <summary>
+/// Reads direct-loan reference projections and combines them with canonical Security Master data.
+/// </summary>
 public sealed class DirectLoanProjectionService
     : InstrumentProjectionServiceBase<DirectLoanProjectionRow, DirectLoanReferenceDto>, IDirectLoanReferenceService
 {
@@ -84,6 +87,9 @@ public sealed class DirectLoanProjectionService
             .ToArray();
 }
 
+/// <summary>
+/// Returns absent or empty direct-loan reference data when the reference service is unavailable.
+/// </summary>
 public sealed class NullDirectLoanReferenceService : IDirectLoanReferenceService
 {
     public Task<DirectLoanReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)

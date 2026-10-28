@@ -11,8 +11,11 @@ namespace Meridian.DataIntegration.AccountingSystem;
 
 /// <summary>Accrual accounting-line evidence for one NetSuite subsidiary and accounting book.</summary>
 public sealed class NetSuiteAccountingProvider(IProviderCredentialStore store, HttpClient client)
-    : CredentialedAccountingProvider(store, client)
+    : CredentialedAccountingProvider(store, client), IConnectionBoundAccountingProvider
 {
+    public IAccountingSystemConnectionVerifier BindCredentials(IProviderCredentialStore credentialStore)
+        => new NetSuiteAccountingProvider(credentialStore, Client);
+
     public const string Id = "netsuite";
     public override string ProviderId => Id;
     public override string DisplayName => "NetSuite";

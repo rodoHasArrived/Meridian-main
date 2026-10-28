@@ -15,7 +15,8 @@ public sealed partial class IBBrokerageGatewayTests
         => new(Host: "127.0.0.1", Port: paper ? 7497 : 7496, ClientId: 1, UsePaperTrading: paper);
 
     private static IBBrokerageGateway CreateSut(FakeIbBrokerageClient client, bool paper = true)
-        => new(DefaultOptions(paper), NullLogger<IBBrokerageGateway>.Instance, client);
+        => new(DefaultOptions(paper), NullLogger<IBBrokerageGateway>.Instance, client,
+            recoveryAccountId: paper ? "DU123456" : "U123456");
 
     [Fact]
     public void Gateway_Metadata_DeclaresIbAndFixedIncomeSupport()
@@ -500,10 +501,18 @@ public sealed partial class IBBrokerageGatewayTests
         public event EventHandler<IBAccountSummaryUpdate>? AccountSummaryReceived;
         public event EventHandler<int>? AccountSummaryCompleted;
         public event EventHandler<IBApiError>? ErrorOccurred;
+        public event EventHandler<IReadOnlyList<string>>? ManagedAccountsReceived;
+        public event EventHandler? ConnectionLost;
+        public event EventHandler? ConnectionRestored;
+
+        /// <summary>Accounts reported during the connect handshake, as TWS does; null reports none.</summary>
+        public string? ManagedAccounts { get; set; } = "DU123456";
 
         public Task ConnectAsync(CancellationToken ct = default)
         {
             IsConnected = true;
+            if (ManagedAccounts is not null)
+                RaiseManagedAccounts(ManagedAccounts);
             return Task.CompletedTask;
         }
 
@@ -554,6 +563,17 @@ public sealed partial class IBBrokerageGatewayTests
         public void RaiseAccountSummary(IBAccountSummaryUpdate update) => AccountSummaryReceived?.Invoke(this, update);
         public void RaiseAccountSummaryCompleted(int requestId) => AccountSummaryCompleted?.Invoke(this, requestId);
         public void RaiseError(IBApiError error) => ErrorOccurred?.Invoke(this, error);
+        public void RaiseManagedAccounts(string accounts) =>
+            ManagedAccountsReceived?.Invoke(this, accounts.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+        public void RaiseConnectionLost() => ConnectionLost?.Invoke(this, EventArgs.Empty);
+
+        // A loss the client does not restore on its own: the transport is down until reconnected.
+        public void DropTransport()
+        {
+            IsConnected = false;
+            RaiseConnectionLost();
+        }
+        public void RaiseConnectionRestored() => ConnectionRestored?.Invoke(this, EventArgs.Empty);
 
         public void Dispose()
         {

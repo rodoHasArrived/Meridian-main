@@ -9,6 +9,9 @@ using Meridian.Storage.Ledger;
 
 namespace Meridian.FinancialOperations.AccountingClose;
 
+/// <summary>
+/// Captures versioned close templates and previews and creates prepared close workflows.
+/// </summary>
 public interface IAccountingClosePreparationService
 {
     Task<ClosePlanTemplateDto> CaptureTemplateAsync(CaptureClosePlanTemplateRequestDto request, string actor,
@@ -22,7 +25,13 @@ public interface IAccountingClosePreparationService
         string tenantId, string companyId, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Indicates that close-preparation authority changed after the reviewed preview was created.
+/// </summary>
 public sealed class ClosePreparationPreviewStaleException(string message) : InvalidOperationException(message);
+/// <summary>
+/// Indicates an interrupted close-preparation operation requires explicit recovery.
+/// </summary>
 public sealed class ClosePreparationRecoveryRequiredException(string message) : InvalidOperationException(message);
 
 /// <summary>

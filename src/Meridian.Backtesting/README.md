@@ -6,20 +6,31 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-10-14
+last_reviewed: 2026-10-21
 ---
 
 # src/Meridian.Backtesting
 
 ## Purpose
 
-Multi-symbol replay protects stream initialization and attempts disposal of every opened enumerator, including after initialization or cleanup failures. When both initialization and disposal fail, the aggregate preserves the initialization error alongside every cleanup error.
+Multi-symbol replay compares full UTC ticks and preserves requested-symbol order for equal instants,
+including mixed flat and per-symbol storage layouts. Stream initialization and cancellation attempt
+disposal of every opened enumerator. When initialization and disposal both fail, the aggregate
+preserves the initialization error alongside every cleanup error.
 
 Backtesting contains runtime support for historical strategy simulation and replay-oriented research workflows.
 
 ## Layer responsibility
 
 This layer should keep simulation behavior isolated from live execution while producing evidence that can flow into research and paper validation.
+
+Security Master dependencies come from `Meridian.Contracts.SecurityMaster`, with no Application
+project reference. The engine accepts separate identity and trading-parameter query services;
+`CorporateActionAdjustmentService` requires only the resolver and corporate-action query interface
+and implements the canonical live-position adjuster. Existing aggregate query callers retain the
+identity fallback, while hosts can compose the narrow services independently.
+The original aggregate-query constructor remains available with its original CLR signature and
+optional arguments for existing compiled callers.
 
 ## Key folders and files
 
@@ -53,9 +64,10 @@ subtract projected principal before a display unit quote is derived. The old ove
 implementers remain compatible, with the absent exact-total field omitted from JSON. Existing
 compatibility merger economics are unchanged; this API is not a governed corporate-action journal.
 
-Corporate-action-adjusted engine runs capture the exact symbol/date-filtered JSONL event window,
-prepare one immutable adjustment plan from its complete bar history and one Security Master query
-snapshot, and execute from that captured window. `BacktestRequest.To` is the economic cutoff for
+Corporate-action-adjusted engine runs capture the exact symbol/date-filtered JSONL event window
+once per shared storage root, prepare one immutable adjustment plan per symbol from its complete bar
+history and one Security Master query snapshot, and execute from that captured window. Every symbol
+sharing a source is captured before any of those plans is prepared. `BacktestRequest.To` is the economic cutoff for
 effective actions; it is not a transaction-time Security Master revision boundary. Only confirmed
 (or legacy confirmed-by-default), non-cancelled actions effective by that cutoff are eligible.
 
@@ -68,8 +80,19 @@ retain operator text and replace generated composite summaries with only the cur
 lineage; a single-component successor no longer claims the prior composite's contributors. Cash-in-lieu
 disposals relieve the remaining fractional securities basis or short payable and recognize the
 resulting account-scoped gain or loss in both the ledger and asset-event cash-flow evidence, including
-when no successor position remains. Canonical symbol attribution is still fill-derived: it neither
-replays corporate-action quantity/basis changes before later fills nor includes cash-in-lieu P&L. A
+when no successor position remains. Metrics consume the final account snapshots' booked closures
+and retained cash-in-lieu disposal evidence. Attribution uses exact relieved basis and account
+positions, preserving successor economics and offsetting account positions. Realized symbol
+attribution also includes booked per-share corporate-action consideration, income, and fees under
+the source symbol; cash-in-lieu principal is excluded while its retained disposal gain is included.
+Completed outcomes are
+counted per account, symbol, and closing order; partial fills and lot slices of one closing order
+remain one outcome, breakeven outcomes count, and each fractional disposal adds one outcome.
+Win rate and profit factor deduct the acquisition and closing fees allocated to those disposals.
+Acquisition fees follow component entitlements through transformations and stay separate from
+securities basis. Older snapshots without retained closures cannot certify trade outcomes; metrics
+do not reconstruct missing accounting evidence from fills. External summary imports retain their
+own declared coverage instead of invoking this native calculation. A
 source-to-destination collision with opposite position directions fails before mutation because it
 requires explicit close/cover economics. Short lots preserve explicit direction in position,
 account, and aggregate snapshots. Legacy adjustment services that cannot enforce the engine's
@@ -158,13 +181,17 @@ execution and the ledger (`IUnitizedLot`).
 
 ## Benchmarks and performance
 
-- `MultiSymbolMergeEnumerator` uses a heap for multi-symbol replay and a single-stream fast path
-  for one-symbol runs, avoiding per-event heap churn on large historical windows while preserving
-  cancellation and enumerator disposal.
+- `BacktestEngine` opens one replay per distinct resolved storage root. Symbols using the flat or
+  provider/date fallback share one external sort, which includes only their selected events rather
+  than copying the full data root for each symbol. Per-symbol directories remain scoped sources.
+- `MultiSymbolMergeEnumerator` uses a heap across replay sources and a single-stream fast path
+  when all symbols share one source, avoiding per-event heap churn on large historical windows
+  while preserving cancellation, full timestamp precision, symbol ties, and enumerator disposal.
 - Corporate-action adjustment in `BacktestEngine` uses a two-pass path: it persists the exact
   filtered mixed-event stream to a temporary JSONL snapshot while retaining its historical bars for
   plan preparation, then streams execution from that snapshot. This prevents preparation/execution
-  drift without retaining non-bar market events in memory.
+  drift without retaining non-bar market events in memory. Unix snapshot files are created with
+  owner-only read/write permissions and are removed on completion, failure, or cancellation.
 
 ## Diagrams
 
@@ -190,6 +217,8 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 ## Validation
 
 ```bash
+dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj --filter "FullyQualifiedName~CorporateActionAdjustmentServiceTests" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj --filter "FullyQualifiedName~BacktestPreflightServiceTests|FullyQualifiedName~MeridianNativeBacktestStudioEngineTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~BacktestStudioRunOrchestratorTests" --logger "console;verbosity=normal"

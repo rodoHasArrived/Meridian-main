@@ -6,6 +6,9 @@ namespace Meridian.Ui.Services;
 // DTO classes for storage API responses
 // Shared across desktop applications.
 
+/// <summary>
+/// Summarizes storage capacity, utilization, files, symbols, and retained date coverage.
+/// </summary>
 public sealed class StorageStatsSummary
 {
     public long TotalSizeBytes { get; set; }
@@ -18,6 +21,9 @@ public sealed class StorageStatsSummary
     public DateTime NewestData { get; set; }
 }
 
+/// <summary>
+/// Describes a storage category's file count, size, and share of overall usage.
+/// </summary>
 public sealed class StorageCategory
 {
     public string Name { get; set; } = string.Empty;
@@ -27,6 +33,9 @@ public sealed class StorageCategory
     public double Percentage { get; set; }
 }
 
+/// <summary>
+/// Describes a symbol's stored data types, provider, subscription state, and timestamp coverage.
+/// </summary>
 public sealed class SymbolStorageInfo
 {
     public string Symbol { get; set; } = string.Empty;
@@ -38,6 +47,9 @@ public sealed class SymbolStorageInfo
     public List<string> DataTypes { get; set; } = new();
 }
 
+/// <summary>
+/// Summarizes a symbol's stored bytes, events, files, quality, and per-type usage.
+/// </summary>
 public sealed class SymbolStorageStats
 {
     public string Symbol { get; set; } = string.Empty;
@@ -50,6 +62,9 @@ public sealed class SymbolStorageStats
     public Dictionary<string, long> EventsByType { get; set; } = new();
 }
 
+/// <summary>
+/// Describes a stored symbol file's type, size, modification time, records, and compression.
+/// </summary>
 public sealed class SymbolFileDto
 {
     public string FileName { get; set; } = string.Empty;
@@ -60,12 +75,18 @@ public sealed class SymbolFileDto
     public string? CompressionType { get; set; }
 }
 
+/// <summary>
+/// Carries the API storage-folder path for a symbol.
+/// </summary>
 public sealed class SymbolPathResponse
 {
     public string Symbol { get; set; } = string.Empty;
     public string FolderPath { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Summarizes storage health, detected issues, recommendations, and the check timestamp.
+/// </summary>
 public sealed class StorageHealthReport
 {
     public string Status { get; set; } = string.Empty;
@@ -75,6 +96,9 @@ public sealed class StorageHealthReport
     public DateTime CheckedAt { get; set; }
 }
 
+/// <summary>
+/// Describes a storage problem's type, severity, explanation, and affected path.
+/// </summary>
 public sealed class StorageIssue
 {
     public string Type { get; set; } = string.Empty;
@@ -83,6 +107,9 @@ public sealed class StorageIssue
     public string? AffectedPath { get; set; }
 }
 
+/// <summary>
+/// Identifies a file proposed for cleanup with its size, last access, and selection reason.
+/// </summary>
 public sealed class CleanupCandidate
 {
     public string Path { get; set; } = string.Empty;
@@ -91,6 +118,9 @@ public sealed class CleanupCandidate
     public string Reason { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Reports cleanup success, removed files, reclaimed bytes, and encountered errors.
+/// </summary>
 public sealed class CleanupResult
 {
     public bool Success { get; set; }
@@ -99,6 +129,9 @@ public sealed class CleanupResult
     public List<string> Errors { get; set; } = new();
 }
 
+/// <summary>
+/// Summarizes archive counts, size, compression, and oldest and newest archive dates.
+/// </summary>
 public sealed class ArchiveStats
 {
     public int TotalArchives { get; set; }

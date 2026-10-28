@@ -10,6 +10,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import re
 from collections import Counter
@@ -858,75 +859,54 @@ def check_compact_assistant_guides(root: Path) -> list[Finding]:
     return findings
 
 
-SHARED_CONTEXT_CANONICAL = ".claude/skills/_shared/project-context.md"
-SHARED_CONTEXT_MIRRORS = (
-    ".codex/skills/_shared/project-context.md",
-    ".agents/skills/_shared/project-context.md",
+# Load the generator from the checkout, not the root being inspected (which may be a fixture).
+# Both entry points therefore enforce the same UTF-8, marker, and file-safety rules.
+_GUIDANCE_SPEC = importlib.util.spec_from_file_location(
+    "meridian_shared_guidance", REPO_ROOT / "build/scripts/ai/generate_guidance.py"
 )
-SHARED_CONTEXT_BEGIN = "<!-- shared-context:begin"
-SHARED_CONTEXT_END = "<!-- shared-context:end -->"
-
-
-def extract_shared_context(text: str) -> str | None:
-    """Return the marker-delimited shared section, or None when either marker is missing."""
-    start = text.find(SHARED_CONTEXT_BEGIN)
-    end = text.find(SHARED_CONTEXT_END)
-    if start < 0 or end < start:
-        return None
-    return text[start : end + len(SHARED_CONTEXT_END)]
+if _GUIDANCE_SPEC is None or _GUIDANCE_SPEC.loader is None:
+    raise RuntimeError("Unable to load the shared guidance generator")
+_GUIDANCE = importlib.util.module_from_spec(_GUIDANCE_SPEC)
+_GUIDANCE_SPEC.loader.exec_module(_GUIDANCE)
+SHARED_CONTEXT_CANONICAL = _GUIDANCE.CANONICAL
+SHARED_CONTEXT_MIRRORS = _GUIDANCE.MIRRORS
 
 
 def check_shared_project_context(root: Path) -> list[Finding]:
-    """Report missing host copies or shared sections that drift from the canonical copy."""
-    canonical_path = root / SHARED_CONTEXT_CANONICAL
-    if not canonical_path.is_file():
-        return []
-
-    canonical = extract_shared_context(
-        canonical_path.read_text(encoding="utf-8", errors="replace").replace("\r\n", "\n")
-    )
-    if canonical is None:
-        # The markers opt the copies into this check; without them there is no shared section to compare.
-        return []
-
+    """Apply the generator's strict parsing to canonical and mirrored shared sections."""
+    root = root.resolve()
     findings: list[Finding] = []
-    for rel_path in SHARED_CONTEXT_MIRRORS:
-        path = root / rel_path
-        if not path.is_file():
-            findings.append(
-                Finding(
-                    severity="drift",
-                    surface="agent-skills-compatible-hosts",
-                    kind="shared-project-context",
-                    name=path.name,
-                    path=rel_path,
-                    expected_doc=SHARED_CONTEXT_CANONICAL,
-                    message=(
-                        f"{rel_path} is missing; restore the required mirror with the shared section "
-                        f"from {SHARED_CONTEXT_CANONICAL}."
-                    ),
-                )
-            )
-            continue
-        mirror = extract_shared_context(path.read_text(encoding="utf-8", errors="replace").replace("\r\n", "\n"))
-        if mirror == canonical:
-            continue
-        reason = "is missing its shared-context markers" if mirror is None else "has a shared section that differs"
+
+    def report(rel_path: str, reason: str) -> None:
         findings.append(
             Finding(
                 severity="drift",
                 surface="agent-skills-compatible-hosts",
                 kind="shared-project-context",
-                name=path.name,
+                name=Path(rel_path).name,
                 path=rel_path,
                 expected_doc=SHARED_CONTEXT_CANONICAL,
                 message=(
-                    f"{rel_path} {reason} from {SHARED_CONTEXT_CANONICAL}; copy the canonical shared "
-                    "section and keep host-specific guidance after the end marker."
+                    f"{rel_path} {reason}; restore missing or malformed files/markers, then run "
+                    "python build/scripts/ai/generate-guidance.py --write. "
+                    "Host-specific guidance is preserved outside the shared section."
                 ),
             )
         )
 
+    sections: dict[str, bytes] = {}
+    for rel_path in (SHARED_CONTEXT_CANONICAL, *SHARED_CONTEXT_MIRRORS):
+        try:
+            path = _GUIDANCE.guidance_path(root, rel_path)
+            _, sections[rel_path], _ = _GUIDANCE.split_context(path.read_bytes(), rel_path)
+        except (OSError, ValueError) as exc:
+            report(rel_path, f"is missing or invalid ({exc})")
+
+    canonical = sections.get(SHARED_CONTEXT_CANONICAL)
+    if canonical is not None:
+        for rel_path in SHARED_CONTEXT_MIRRORS:
+            if rel_path in sections and sections[rel_path] != canonical:
+                report(rel_path, f"has a shared section that differs from {SHARED_CONTEXT_CANONICAL}")
     return findings
 
 

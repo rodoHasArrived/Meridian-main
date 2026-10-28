@@ -14,6 +14,9 @@ using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Provides the desktop page to review ledger, cash, reconciliation, trial balance, and audit workflows.
+/// </summary>
 public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPageBase
 {
     private readonly FundContextService _fundContextService;

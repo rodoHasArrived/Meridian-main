@@ -12,7 +12,7 @@ namespace Meridian.Tests.Reconciliation;
 /// engine (positions, cash, and transactions) and FX normalization — replacing the previous
 /// self-referential matcher that fabricated matches and hard-coded every break as tolerance-breached.
 /// </summary>
-public sealed class StatementRunWorkflowServiceTests : IDisposable
+public sealed partial class StatementRunWorkflowServiceTests : IDisposable
 {
     private const string CanonicalHeader =
         "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId";

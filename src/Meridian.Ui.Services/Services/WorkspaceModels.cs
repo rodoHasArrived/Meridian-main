@@ -50,6 +50,9 @@ public enum WorkspaceCategory : byte
     Governance = Accounting
 }
 
+/// <summary>
+/// Maps persisted workspace categories to canonical operator-facing workspace names.
+/// </summary>
 public static class WorkspaceCategoryExtensions
 {
     public static string ToDisplayName(this WorkspaceCategory category)

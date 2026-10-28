@@ -4,6 +4,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
+/// <summary>
+/// Evaluates whether a configured provider integration satisfies activation requirements.
+/// </summary>
 public sealed class ProviderIntegrationActivationReadinessService
 {
     private static readonly ProviderCapabilityKindDto[] CertifiedAdapterCapabilities =

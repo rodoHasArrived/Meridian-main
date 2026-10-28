@@ -3,6 +3,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Builds reporting decision queues and command groups from reporting readiness and governance state.
+/// </summary>
 public static class ReportingWorkspaceShellPresentationService
 {
     public static IReadOnlyList<WorkspaceQueueItem> BuildFallbackDecisionItems() =>

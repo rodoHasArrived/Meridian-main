@@ -4,6 +4,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Workstation.Commands;
 
+/// <summary>
+/// Combines command identity, label, styling, availability, and executable behavior for desktop binding.
+/// </summary>
 public sealed class CommandViewModel : BindableBase
 {
     private string _id = string.Empty;

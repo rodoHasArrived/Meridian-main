@@ -3,6 +3,9 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.PrivateCapital;
 
+/// <summary>
+/// Builds payment-intent evidence for private-capital fund events and subledger views.
+/// </summary>
 public static class PrivateCapitalPaymentIntentEvidenceBuilder
 {
     private static readonly string[] CashEvidenceKeywords =

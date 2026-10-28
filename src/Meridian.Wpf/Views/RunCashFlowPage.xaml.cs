@@ -6,6 +6,9 @@ using WpfNavigationService = Meridian.Wpf.Services.NavigationService;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Provides the desktop page to review simulated cash, financing, and funding impacts.
+/// </summary>
 public partial class RunCashFlowPage : Page
 {
     public RunCashFlowPage()

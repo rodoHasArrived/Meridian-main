@@ -1,5 +1,8 @@
 namespace Meridian.Mcp.Tools;
 
+/// <summary>
+/// Provides MCP access to known error patterns and their prevention guidance.
+/// </summary>
 [McpServerToolType]
 public sealed class KnownErrorTools(RepoPathService repo)
 {

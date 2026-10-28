@@ -8,6 +8,9 @@ using Meridian.Infrastructure.DataSources;
 
 namespace Meridian.Infrastructure.Adapters.Synthetic;
 
+/// <summary>
+/// Generates deterministic historical market data and corporate actions for offline development.
+/// </summary>
 public sealed class SyntheticHistoricalDataProvider : IHistoricalDataProvider, ICorporateActionSource
 {
     private readonly SyntheticMarketDataConfig _config;

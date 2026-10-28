@@ -3,6 +3,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Groups symbol and watchlist collections with search and subscription and exchange filter state.
+/// </summary>
 public sealed class SymbolsPageSectionViewModel : BindableBase
 {
     private string _searchText = string.Empty;

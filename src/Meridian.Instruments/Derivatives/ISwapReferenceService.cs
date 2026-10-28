@@ -2,6 +2,9 @@ using Meridian.Contracts.Derivatives;
 
 namespace Meridian.Instruments.Derivatives;
 
+/// <summary>
+/// Queries swap reference data by security identifier and supported asset-specific filters.
+/// </summary>
 public interface ISwapReferenceService
 {
     /// <summary>

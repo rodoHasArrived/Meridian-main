@@ -12,12 +12,12 @@ namespace Meridian.Application.SecurityMaster;
 /// </summary>
 public sealed class SecurityMasterHistoricalSymbolTimelineResolver : IHistoricalSymbolTimelineResolver
 {
-    private readonly ISecurityResolver _securityResolver;
+    private readonly Meridian.Contracts.SecurityMaster.ISecurityResolver _securityResolver;
     private readonly ISecurityMasterStore _store;
     private readonly ILogger<SecurityMasterHistoricalSymbolTimelineResolver> _logger;
 
     public SecurityMasterHistoricalSymbolTimelineResolver(
-        ISecurityResolver securityResolver,
+        Meridian.Contracts.SecurityMaster.ISecurityResolver securityResolver,
         ISecurityMasterStore store,
         ILogger<SecurityMasterHistoricalSymbolTimelineResolver> logger)
     {

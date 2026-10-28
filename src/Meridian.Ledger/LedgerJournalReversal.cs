@@ -49,7 +49,8 @@ public static class LedgerJournalReversal
                 line.Dimensions))
             .ToList();
 
-        return new JournalEntry(reversalJournalId, reversedAt, description, lines, BuildReversalMetadata(original, normalizedReason));
+        var reversal = new JournalEntry(reversalJournalId, reversedAt, description, lines, BuildReversalMetadata(original, normalizedReason));
+        return LedgerCashFlowAttribution.RemapReversal(original, reversal);
     }
 
     private static JournalEntryMetadata BuildReversalMetadata(JournalEntry original, string? reason)

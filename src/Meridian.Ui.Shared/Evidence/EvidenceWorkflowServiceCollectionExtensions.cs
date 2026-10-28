@@ -11,6 +11,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Evidence;
 
+/// <summary>
+/// Registers evidence artifact storage and the services that assemble workflow evidence.
+/// </summary>
 public static class EvidenceWorkflowServiceCollectionExtensions
 {
     /// <summary>Registers the shared evidence store and host-configured storage limits for browser and desktop hosts.</summary>
@@ -46,6 +49,9 @@ public static class EvidenceWorkflowServiceCollectionExtensions
             sp.GetService<Meridian.Contracts.Ledger.ILedgerBookService>(),
             sp.GetService<Meridian.Contracts.Tenancy.IFundProfileTenancyRegistry>(),
             sp.GetService<IEvidenceArtifactStore>()));
+        services.TryAddSingleton(sp => new ReportLedgerAmountProvenanceService(
+            sp.GetService<IReportingRunStore>(),
+            sp.GetRequiredService<PostedLedgerAmountProvenanceService>()));
         services.TryAddSingleton<IEvidenceDocumentExtractor, ManualEvidenceDocumentExtractor>();
         var hasKnownDurableStatementAuthority =
             HasKnownDurableStatementAuthority(services);

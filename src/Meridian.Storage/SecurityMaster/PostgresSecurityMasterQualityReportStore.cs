@@ -4,6 +4,9 @@ using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Stores Security Master quality reports in PostgreSQL and retrieves the latest report.
+/// </summary>
 public sealed class PostgresSecurityMasterQualityReportStore : ISecurityMasterQualityReportStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new()

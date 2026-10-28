@@ -2,6 +2,9 @@ using Meridian.Contracts.AccountingSystem;
 
 namespace Meridian.ProviderSdk.AccountingSystem;
 
+/// <summary>
+/// Defines provider capabilities and canonical imports from an external accounting system.
+/// </summary>
 public interface IAccountingSystemProvider
 {
     string ProviderId { get; }
@@ -15,11 +18,17 @@ public interface IAccountingSystemProvider
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Retrieves metadata describing the external accounting-system connection.
+/// </summary>
 public interface IAccountingSystemConnectionMetadataProvider
 {
     Task<AccountingSystemConnectionMetadataDto> GetConnectionMetadataAsync(CancellationToken ct = default);
 }
 
+/// <summary>
+/// Verifies an external accounting-system connection and returns its observed verification result.
+/// </summary>
 public interface IAccountingSystemConnectionVerifier
 {
     Task<AccountingSystemConnectionVerificationResult> VerifyConnectionAsync(CancellationToken ct = default);

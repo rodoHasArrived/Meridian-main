@@ -144,6 +144,9 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         services.Should().ContainSingle(descriptor => descriptor.ServiceType == typeof(ISecurityMasterQueryService));
         var query = provider.GetRequiredService<ISecurityMasterQueryService>();
         provider.GetServices<ISecurityMasterQueryService>().Should().ContainSingle().Which.Should().BeSameAs(query);
+        provider.GetRequiredService<ISecurityIdentityQueryService>().Should().BeSameAs(query);
+        provider.GetRequiredService<ISecurityTradingParametersQueryService>().Should().BeSameAs(query);
+        provider.GetRequiredService<ISecurityCorporateActionsQueryService>().Should().BeSameAs(query);
         if (configured)
         {
             query.Should().BeSameAs(provider.GetRequiredService<SecurityMasterQueryService>());
@@ -152,6 +155,32 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         {
             query.Should().BeOfType<NullSecurityMasterQueryService>();
         }
+    }
+
+    [Fact]
+    public void Register_PreservesCallerSuppliedConsumerQueryContracts()
+    {
+        var services = new ServiceCollection();
+        var identity = Substitute.For<ISecurityIdentityQueryService>();
+        var trading = Substitute.For<ISecurityTradingParametersQueryService>();
+        var corporateActions = Substitute.For<ISecurityCorporateActionsQueryService>();
+        services.AddSingleton(identity);
+        services.AddSingleton(trading);
+        services.AddSingleton(corporateActions);
+        services.AddLogging();
+        new StorageFeatureRegistration().Register(services, CompositionOptions.Minimal with
+        {
+            Configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["DOTNET_ENVIRONMENT"] = "Test",
+                ["MERIDIAN_USE_INMEMORY_GOVERNANCE"] = "true"
+            }).Build()
+        });
+        using var provider = services.BuildServiceProvider();
+
+        provider.GetRequiredService<ISecurityIdentityQueryService>().Should().BeSameAs(identity);
+        provider.GetRequiredService<ISecurityTradingParametersQueryService>().Should().BeSameAs(trading);
+        provider.GetRequiredService<ISecurityCorporateActionsQueryService>().Should().BeSameAs(corporateActions);
     }
 
     [Fact]

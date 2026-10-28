@@ -4,7 +4,7 @@ import { axe } from "jest-axe";
 import { LedgerAmountProofDrawer } from "@/components/meridian/proof-drawer";
 import { getLedgerAmountProof } from "@/lib/ledger-amount-proof-api";
 import type { EvidencePacket } from "@/types";
-import { createLedgerAmountProofPacket as packet, ledgerAmountSelection as selection } from "@/test/ledger-amount-proof-fixtures";
+import { createLedgerAmountProofPacket as packet, createReportAmountProofPacket, ledgerAmountSelection as selection } from "@/test/ledger-amount-proof-fixtures";
 
 vi.mock("@/lib/ledger-amount-proof-api", () => ({ getLedgerAmountProof: vi.fn() }));
 
@@ -33,6 +33,57 @@ describe("scoped ledger amount proof drawer", () => {
     render(<LedgerAmountProofDrawer selection={special} onClose={vi.fn()} />);
     expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
   });
+
+  const reportSelection = { ...selection, subjectId: "report:retained-run:cash-account", label: "Cash report balance",
+    tenantId: "tenant-1", companyId: "company-1",
+    journalEntryIds: ["22222222-2222-2222-2222-222222222222"], ledgerEntryIds: ["33333333-3333-3333-3333-333333333333"] };
+
+  it("verifies an opening balance against its original retained posting period and exact contributor IDs", async () => {
+    const response = createReportAmountProofPacket(reportSelection);
+    response.ledgerAmount!.evidence[0]!.sourceScope!.periodId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+    response.nodes[0]!.artifactRefs[0]!.canonicalSubjectId = response.nodes[0]!.artifactRefs[0]!.canonicalSubjectId!
+      .replace("11111111-1111-1111-1111-111111111111", "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+    vi.mocked(getLedgerAmountProof).mockResolvedValue(response);
+    render(<LedgerAmountProofDrawer selection={reportSelection} onClose={vi.fn()} />);
+    expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Cash report balance Number Passport" }))
+      .toHaveTextContent("Generated report amount bound to its retained ledger population.");
+  });
+
+  it.each(["missing-source-scope", "missing-source-subject", "foreign-source-tenant", "foreign-source-company", "foreign-source-fund",
+    "foreign-source-book", "invalid-source-period", "invalid-source-subject", "substituted-journal", "substituted-entry",
+    "invented-report-canonical", "altered-source-period", "foreign-source-node", "source-period-route", "missing-binding", "foreign-report-tenant", "foreign-report-company"])(
+    "blocks generated report evidence with %s", async (condition) => {
+      const response = createReportAmountProofPacket(reportSelection);
+      const item = response.ledgerAmount!.evidence[0]!;
+      const artifact = response.nodes[0]!.artifactRefs[0]!;
+      if (condition === "missing-source-scope") item.sourceScope = null;
+      if (condition === "missing-source-subject") item.sourceSubjectId = null;
+      if (condition === "foreign-source-tenant") item.sourceScope!.tenantId = "foreign";
+      if (condition === "foreign-source-company") item.sourceScope!.companyId = "foreign";
+      if (condition === "foreign-source-fund") item.sourceScope!.fundProfileId = "foreign";
+      if (condition === "foreign-source-book") item.sourceScope!.ledgerBookId = "foreign";
+      if (condition === "foreign-report-tenant") { item.sourceScope!.tenantId = "foreign"; response.ledgerAmount!.scope.tenantId = "foreign"; }
+      if (condition === "foreign-report-company") { item.sourceScope!.companyId = "foreign"; response.ledgerAmount!.scope.companyId = "foreign"; }
+      if (condition === "invalid-source-period") item.sourceScope!.periodId = "inferred-current-period";
+      if (condition === "invalid-source-subject") item.sourceSubjectId = "cash:symbol:debit";
+      if (condition === "substituted-journal") item.sourceSubjectId = item.sourceSubjectId!.replace(reportSelection.journalEntryIds[0]!, "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+      if (condition === "substituted-entry") item.sourceSubjectId = item.sourceSubjectId!.replace(reportSelection.ledgerEntryIds[0]!, "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+      if (condition === "invented-report-canonical") artifact.canonicalSubjectId = `fund-1:${selection.ledgerBookId}:${selection.periodId}:${reportSelection.subjectId}`;
+      if (condition === "altered-source-period") item.sourceScope!.periodId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+      if (condition === "foreign-source-node") response.nodes[0]!.subject.subjectId = reportSelection.subjectId;
+      if (condition === "source-period-route") {
+        const url = new URL(item.route!, "https://meridian.invalid");
+        url.searchParams.set("periodId", "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        item.route = `${url.pathname}${url.search}`;
+        artifact.route = item.route;
+      }
+      vi.mocked(getLedgerAmountProof).mockResolvedValue(response);
+      render(<LedgerAmountProofDrawer selection={condition === "missing-binding" ? { ...reportSelection, journalEntryIds: undefined } : reportSelection} onClose={vi.fn()} />);
+      expect(await screen.findByRole("alert")).toHaveTextContent("Blocked:");
+      expect(screen.queryByRole("link")).not.toBeInTheDocument();
+      expect(screen.queryByText("Retained journal line")).not.toBeInTheDocument();
+    });
 
   it.each(["fundProfileId", "ledgerBookId", "periodId"] as const)("blocks a same-name same-symbol packet from a foreign %s", async (field) => {
     const response = packet();

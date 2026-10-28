@@ -6,6 +6,9 @@ using Meridian.Ui.Shared.Services;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Exposes bindable state and commands to create fund-structure entities, ownership links, and account handoff drafts.
+/// </summary>
 public sealed class FundStructureSetupViewModel : BindableBase
 {
     private readonly FundStructureSetupWorkflowService _workflowService;

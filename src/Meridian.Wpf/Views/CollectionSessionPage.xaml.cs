@@ -6,6 +6,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Hosts collection-session monitoring and session lifecycle commands.
+/// </summary>
 public partial class CollectionSessionPage : Page
 {
     private readonly CollectionSessionViewModel _viewModel;

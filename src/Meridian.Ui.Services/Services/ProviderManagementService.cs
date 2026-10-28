@@ -431,6 +431,9 @@ public sealed class ProviderManagementService
 }
 
 
+/// <summary>
+/// Reports provider-status query success, the active provider, and individual provider states.
+/// </summary>
 public sealed class AllProvidersStatusResult
 {
     public bool Success { get; set; }
@@ -439,12 +442,18 @@ public sealed class AllProvidersStatusResult
     public List<ProviderStatusInfo> Providers { get; set; } = new();
 }
 
+/// <summary>
+/// Carries API provider states and the currently active provider.
+/// </summary>
 public sealed class AllProvidersStatusResponse
 {
     public string? ActiveProvider { get; set; }
     public List<ProviderStatusInfo>? Providers { get; set; }
 }
 
+/// <summary>
+/// Describes provider configuration, connection lifecycle, recent failures, subscriptions, and event activity.
+/// </summary>
 public sealed class ProviderStatusInfo
 {
     public string Name { get; set; } = string.Empty;
@@ -469,6 +478,9 @@ public sealed class ProviderStatusInfo
     public long EventsReceived { get; set; }
 }
 
+/// <summary>
+/// Reports provider-detail query success and the returned provider description.
+/// </summary>
 public sealed class ProviderDetailResult
 {
     public bool Success { get; set; }
@@ -476,6 +488,9 @@ public sealed class ProviderDetailResult
     public ProviderDetailResponse? Provider { get; set; }
 }
 
+/// <summary>
+/// Carries API provider metadata, enabled state, capabilities, rate limits, and statistics.
+/// </summary>
 public sealed class ProviderDetailResponse
 {
     public string Name { get; set; } = string.Empty;
@@ -489,6 +504,9 @@ public sealed class ProviderDetailResponse
     public ProviderStatistics? Statistics { get; set; }
 }
 
+/// <summary>
+/// Summarizes received market events, errors, latency, uptime, and reconnection count for a provider.
+/// </summary>
 public sealed class ProviderStatistics
 {
     public long TotalEventsReceived { get; set; }
@@ -500,6 +518,9 @@ public sealed class ProviderStatistics
     public int ReconnectCount { get; set; }
 }
 
+/// <summary>
+/// Reports failover-query success with retry settings, provider priority, current primary, and history.
+/// </summary>
 public sealed class FailoverConfigResult
 {
     public bool Success { get; set; }
@@ -512,6 +533,9 @@ public sealed class FailoverConfigResult
     public List<FailoverEvent> FailoverHistory { get; set; } = new();
 }
 
+/// <summary>
+/// Carries API failover settings, provider priority, selected primary, and historical transitions.
+/// </summary>
 public sealed class FailoverConfigResponse
 {
     public bool Enabled { get; set; }
@@ -522,6 +546,9 @@ public sealed class FailoverConfigResponse
     public List<FailoverEvent>? FailoverHistory { get; set; }
 }
 
+/// <summary>
+/// Describes a provider transition, its reason, timestamp, and success state.
+/// </summary>
 public sealed class FailoverEvent
 {
     public DateTime Timestamp { get; set; }
@@ -531,6 +558,9 @@ public sealed class FailoverEvent
     public bool Success { get; set; }
 }
 
+/// <summary>
+/// Reports a failover attempt's success, previous and replacement providers, and any error.
+/// </summary>
 public sealed class FailoverResult
 {
     public bool Success { get; set; }
@@ -540,6 +570,9 @@ public sealed class FailoverResult
     public string? Message { get; set; }
 }
 
+/// <summary>
+/// Carries API failover success, provider transition, and an explanatory message.
+/// </summary>
 public sealed class FailoverResponse
 {
     public bool Success { get; set; }
@@ -548,6 +581,9 @@ public sealed class FailoverResponse
     public string? Message { get; set; }
 }
 
+/// <summary>
+/// Reports rate-limit query success and each provider's request budgets.
+/// </summary>
 public sealed class RateLimitsResult
 {
     public bool Success { get; set; }
@@ -555,11 +591,17 @@ public sealed class RateLimitsResult
     public List<ProviderRateLimit> Providers { get; set; } = new();
 }
 
+/// <summary>
+/// Carries API request-budget usage and limits grouped by provider.
+/// </summary>
 public sealed class RateLimitsResponse
 {
     public List<ProviderRateLimit>? Providers { get; set; }
 }
 
+/// <summary>
+/// Describes minute and hourly request budgets, usage, reset times, and throttling state.
+/// </summary>
 public sealed class ProviderRateLimit
 {
     public string Provider { get; set; } = string.Empty;
@@ -577,6 +619,9 @@ public sealed class ProviderRateLimit
     public string Status { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Reports rate-limit history query success and timestamped usage observations.
+/// </summary>
 public sealed class RateLimitHistoryResult
 {
     public bool Success { get; set; }
@@ -584,11 +629,17 @@ public sealed class RateLimitHistoryResult
     public List<RateLimitDataPoint> History { get; set; } = new();
 }
 
+/// <summary>
+/// Carries API historical request-budget usage observations.
+/// </summary>
 public sealed class RateLimitHistoryResponse
 {
     public List<RateLimitDataPoint>? History { get; set; }
 }
 
+/// <summary>
+/// Records request usage, usage percentage, and throttling at a point in time.
+/// </summary>
 public sealed class RateLimitDataPoint
 {
     public DateTime Timestamp { get; set; }
@@ -597,6 +648,9 @@ public sealed class RateLimitDataPoint
     public bool WasThrottled { get; set; }
 }
 
+/// <summary>
+/// Reports capability-query success and the capabilities advertised by providers.
+/// </summary>
 public sealed class ProviderCapabilitiesResult
 {
     public bool Success { get; set; }
@@ -604,11 +658,17 @@ public sealed class ProviderCapabilitiesResult
     public List<ProviderCapabilities> Providers { get; set; } = new();
 }
 
+/// <summary>
+/// Carries API capabilities advertised by each provider.
+/// </summary>
 public sealed class ProviderCapabilitiesResponse
 {
     public List<ProviderCapabilities>? Providers { get; set; }
 }
 
+/// <summary>
+/// Describes supported market-data types, asset classes, venues, intervals, and subscription limits.
+/// </summary>
 public sealed class ProviderCapabilities
 {
     public string Provider { get; set; } = string.Empty;
@@ -627,6 +687,9 @@ public sealed class ProviderCapabilities
     public int MaxDepthLevels { get; set; }
 }
 
+/// <summary>
+/// Reports a provider-switch attempt's success, transition, message, and any error.
+/// </summary>
 public sealed class SwitchProviderResult
 {
     public bool Success { get; set; }
@@ -636,6 +699,9 @@ public sealed class SwitchProviderResult
     public string? Message { get; set; }
 }
 
+/// <summary>
+/// Carries API provider-switch success, previous and new providers, and an explanatory message.
+/// </summary>
 public sealed class SwitchProviderResponse
 {
     public bool Success { get; set; }
@@ -644,6 +710,9 @@ public sealed class SwitchProviderResponse
     public string? Message { get; set; }
 }
 
+/// <summary>
+/// Reports a named provider test's connectivity, latency, version, and error.
+/// </summary>
 public sealed class ProviderManagementTestResult
 {
     public bool Success { get; set; }
@@ -653,6 +722,9 @@ public sealed class ProviderManagementTestResult
     public string? Error { get; set; }
 }
 
+/// <summary>
+/// Carries API provider-test success, measured latency, version, and error.
+/// </summary>
 public sealed class ProviderTestResponse
 {
     public bool Success { get; set; }

@@ -6,6 +6,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Controls;
 
+/// <summary>
+/// Displays an evidence reference with source and timestamp details and an optional navigation command.
+/// </summary>
 public partial class EvidenceLinkChip : UserControl
 {
     public static readonly DependencyProperty LabelProperty =

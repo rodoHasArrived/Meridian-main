@@ -196,18 +196,15 @@ tests:
               probable_causes: "All providers disconnected, market closed (check TradingCalendar), subscription failure, network outage"
               immediate_mitigation: "1. Check market hours first — outside session hours this is expected. 2. Check /api/providers/status for connection state. 3. Test provider connectivity."
 
-  # --- Rules awaiting instrumentation ---------------------------------------
-  # Nothing calls PrometheusMetrics.UpdateSlaMetrics or RecordSlaFreshness, so
-  # these gauges sit at their default 0. A bare `< 95` would page permanently on
-  # a healthy instance. The `> 0` guards keep the runbook and SLO linkage in
-  # place while the rules stay honestly silent; these tests fail the moment a
-  # guard is removed without the writer being wired.
+  # --- Freshness SLA ---------------------------------------------------------
   - interval: 1m
-    name: SLA rules stay silent while their gauges have no writer
+    name: SLA rules stay silent before any symbol is monitored
     input_series:
       - series: "mdc_sla_freshness_score"
         values: "0+0x60"
       - series: "mdc_sla_violation_symbols"
+        values: "0+0x60"
+      - series: "mdc_sla_monitored_symbols"
         values: "0+0x60"
     alert_rule_test:
       - eval_time: 45m
@@ -218,10 +215,83 @@ tests:
         exp_alerts: []
 
   - interval: 1m
+    name: A fully stalled feed fires the freshness alert and resumed events clear it
+    input_series:
+      - series: "mdc_sla_freshness_score"
+        values: "100 0+0x7 100+0x5"
+      - series: "mdc_sla_violation_symbols"
+        values: "0 1+0x7 0+0x5"
+      - series: "mdc_sla_monitored_symbols"
+        values: "1+0x14"
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: MeridianDataFreshnessViolation
+        exp_alerts: []
+      - eval_time: 7m
+        alertname: MeridianDataFreshnessViolation
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              incident_priority: P1
+            exp_annotations:
+              summary: "Data freshness SLA violation (1 symbols)"
+              description: "1 symbol(s) have exceeded their data freshness threshold for 5 minutes."
+              runbook_url: "docs/operators/operator-runbook.md#freshness-sla-violation"
+              probable_causes: "Provider stream stalled, subscription dropped, processing pipeline blocked"
+              immediate_mitigation: "1. Check /api/sla/violations for affected symbols. 2. Check provider connection status. 3. Verify subscription is active. 4. Re-subscribe if needed."
+              rollback_criteria: "mdc_sla_violation_symbols returns to 0"
+      - eval_time: 10m
+        alertname: MeridianDataFreshnessViolation
+        exp_alerts: []
+
+  - interval: 1m
+    name: Market closure suppresses SLA alerts despite registered symbols
+    input_series:
+      - series: "mdc_sla_freshness_score"
+        values: "100+0x60"
+      - series: "mdc_sla_violation_symbols"
+        values: "0+0x60"
+      - series: "mdc_sla_monitored_symbols"
+        values: "1+0x60"
+    alert_rule_test:
+      - eval_time: 45m
+        alertname: MeridianSlaComplianceLow
+        exp_alerts: []
+      - eval_time: 45m
+        alertname: MeridianDataFreshnessViolation
+        exp_alerts: []
+
+  - interval: 1m
+    name: Zero freshness score triggers compliance until recovery
+    input_series:
+      - series: "mdc_sla_freshness_score"
+        values: "0+0x39 100+0x20"
+      - series: "mdc_sla_monitored_symbols"
+        values: "1+0x60"
+    alert_rule_test:
+      - eval_time: 35m
+        alertname: MeridianSlaComplianceLow
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              incident_priority: P2
+            exp_annotations:
+              summary: "SLA compliance below 95%"
+              description: "The composite data freshness score has dropped to 0."
+              runbook_url: "docs/operators/operator-runbook.md#sla-compliance"
+              probable_causes: "Multiple provider degradations, systematic processing delays, infrastructure issues"
+              immediate_mitigation: "1. Review /api/sla/violations for affected symbols. 2. Check /api/sla/metrics for trends. 3. Evaluate provider health across all active providers."
+      - eval_time: 45m
+        alertname: MeridianSlaComplianceLow
+        exp_alerts: []
+
+  - interval: 1m
     name: MeridianSlaComplianceLow fires once the freshness score is written
     input_series:
       - series: "mdc_sla_freshness_score"
         values: "80+0x60"
+      - series: "mdc_sla_monitored_symbols"
+        values: "1+0x60"
     alert_rule_test:
       - eval_time: 45m
         alertname: MeridianSlaComplianceLow

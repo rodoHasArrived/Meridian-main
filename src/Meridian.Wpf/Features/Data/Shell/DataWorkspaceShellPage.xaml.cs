@@ -6,6 +6,9 @@ using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Features.Data.Shell;
 
+/// <summary>
+/// Hosts the data workspace overview, integration steps, and operational queues.
+/// </summary>
 public partial class DataWorkspaceShellPage : DataWorkspaceShellPageBase
 {
     private readonly FundContextService _fundContextService;

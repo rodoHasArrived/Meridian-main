@@ -7,6 +7,9 @@ using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Persists Security Master pricing hierarchy, observations, selections, and close price evidence in PostgreSQL.
+/// </summary>
 public sealed partial class PostgresSecurityMasterPricingStore : ISecurityMasterPricingStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new()

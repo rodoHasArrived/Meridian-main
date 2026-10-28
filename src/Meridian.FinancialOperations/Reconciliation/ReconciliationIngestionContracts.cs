@@ -2,6 +2,9 @@ using Meridian.Domain.Reconciliation;
 
 namespace Meridian.FinancialOperations.Reconciliation;
 
+/// <summary>
+/// Captures a reconciliation source snapshot for a supplied ingestion request.
+/// </summary>
 public interface IReconciliationSourceAdapter
 {
     ReconciliationSourceType SourceType { get; }
@@ -9,6 +12,9 @@ public interface IReconciliationSourceAdapter
     Task<DataSourceSnapshot> CaptureSnapshotAsync(ReconciliationIngestionRequest request, CancellationToken ct);
 }
 
+/// <summary>
+/// Captures source snapshots across the requested reconciliation ingestion work.
+/// </summary>
 public interface IReconciliationIngestionScheduler
 {
     Task<IReadOnlyList<DataSourceSnapshot>> CaptureAsync(
@@ -23,6 +29,9 @@ public sealed record ReconciliationIngestionRequest(
     string BaseCurrency,
     int SnapshotVersion);
 
+/// <summary>
+/// Resolves source instrument identifiers for reconciliation matching.
+/// </summary>
 public interface IInstrumentMappingService
 {
     string ResolveCanonicalId(string? cusip, string? isin, string? ticker, string? internalId);

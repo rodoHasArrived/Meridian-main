@@ -13,6 +13,9 @@ public enum SettingsWorkspaceShellActionKind
     Refresh
 }
 
+/// <summary>
+/// Carries a settings workspace action request, including its action kind, identity, and optional dock action.
+/// </summary>
 public sealed class SettingsWorkspaceShellActionRequestedEventArgs : EventArgs
 {
     public SettingsWorkspaceShellActionRequestedEventArgs(
@@ -32,6 +35,9 @@ public sealed class SettingsWorkspaceShellActionRequestedEventArgs : EventArgs
     public PaneDropAction DockAction { get; }
 }
 
+/// <summary>
+/// Coordinates settings readiness, credential counts, shell preferences, and settings navigation actions.
+/// </summary>
 public sealed class SettingsWorkspaceShellViewModel : WorkspaceShellViewModelBase
 {
     private readonly ISettingsWorkspaceShellSnapshotService? _snapshotService;

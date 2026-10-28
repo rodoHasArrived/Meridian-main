@@ -49,6 +49,9 @@ public interface IFundStructureTenantBackfillSession : IAsyncDisposable
             : throw new NotSupportedException("This store does not support reviewed quarantine resolution.");
 }
 
+/// <summary>
+/// Provides transactional backfill sessions and retained receipts for fund structure tenant assignment.
+/// </summary>
 public interface IFundStructureTenantBackfillStore
 {
     /// <summary>Reads a committed receipt without opening source connections or mutation locks.</summary>

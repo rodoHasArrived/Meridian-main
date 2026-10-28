@@ -2,6 +2,7 @@ using Meridian.Contracts.Coordination;
 
 namespace Meridian.Platform.Coordination;
 
+/// <summary>Uses resource leases to coordinate ownership of market-data subscriptions.</summary>
 public sealed class SubscriptionOwnershipService : ISubscriptionOwnershipService
 {
     private readonly ILeaseManager _leaseManager;

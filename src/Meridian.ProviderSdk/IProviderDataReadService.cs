@@ -279,11 +279,17 @@ public sealed record ProviderDataAvailability(
         : this(providerFamily, isAvailable, connectionState, observedAt, entitlement, detail, ProviderDataProvenance.Unattributed(observedAt)) { }
 }
 
+/// <summary>
+/// Exposes current provider availability and connection-state observations.
+/// </summary>
 public interface IProviderDataAvailabilityReadService
 {
     IReadOnlyList<ProviderDataAvailability> GetAvailability();
 }
 
+/// <summary>
+/// Exposes a provider news snapshot and an asynchronous stream of news updates.
+/// </summary>
 public interface IProviderNewsReadService
 {
     string ProviderFamily { get; }
@@ -291,6 +297,9 @@ public interface IProviderNewsReadService
     IAsyncEnumerable<ProviderNewsItem> WatchNewsAsync(CancellationToken cancellationToken = default);
 }
 
+/// <summary>
+/// Exposes provider calendar events as a snapshot and an asynchronous update stream.
+/// </summary>
 public interface IProviderCalendarReadService
 {
     string ProviderFamily { get; }
@@ -298,6 +307,9 @@ public interface IProviderCalendarReadService
     IAsyncEnumerable<ProviderCalendarEvent> WatchCalendarEventsAsync(CancellationToken cancellationToken = default);
 }
 
+/// <summary>
+/// Exposes discovered provider instruments as a snapshot and an asynchronous update stream.
+/// </summary>
 public interface IProviderInstrumentDiscoveryReadService
 {
     string ProviderFamily { get; }

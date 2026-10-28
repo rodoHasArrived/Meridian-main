@@ -22,6 +22,12 @@ public static partial class AtomicFileWriter
     // sidecar) with U+FEFF, which token-splitting readers must not see as part of the content.
     private static readonly UTF8Encoding Utf8NoBom = new(encoderShouldEmitUTF8Identifier: false);
 
+    // Share the same bounded publication gates between sync and async overwrite surfaces.
+    // Temp-file creation and fsync stay concurrent; only Windows publication/recovery is serialized.
+    private static readonly SemaphoreSlim[] WindowsPublicationLocks = Enumerable.Range(0, 64)
+        .Select(static _ => new SemaphoreSlim(1, 1))
+        .ToArray();
+
     /// <summary>
     /// Atomically writes content to a file.
     /// Uses a temporary file with rename to ensure atomicity.
@@ -599,10 +605,121 @@ public static partial class AtomicFileWriter
                 || (exception is IOException io && (io.HResult & 0xffff) is 32 or 33));
 
     private static void MoveIntoPlace(string tempPath, string destinationPath)
-        => MoveWithRetry(tempPath, destinationPath, overwrite: true);
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            MoveWithRetry(tempPath, destinationPath, overwrite: true);
+            return;
+        }
+        var destination = Path.GetFullPath(destinationPath);
+        var gate = WindowsPublicationGate(destination);
+        gate.Wait();
+        try
+        {
+            for (var attempt = 1; ; attempt++)
+            {
+                var retrySafe = true;
+                try
+                {
+                    PublishWindowsTempFile(tempPath, destination, out retrySafe);
+                    return;
+                }
+                catch (Exception exception) when (attempt < ReplaceAttempts && retrySafe && IsTransientReplaceFailure(exception))
+                {
+                    Thread.Sleep(ReplaceRetryDelay * attempt);
+                }
+            }
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
 
-    private static Task MoveIntoPlaceAsync(string tempPath, string destinationPath)
-        => MoveWithRetryAsync(tempPath, destinationPath, overwrite: true);
+    private static async Task MoveIntoPlaceAsync(string tempPath, string destinationPath)
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            await MoveWithRetryAsync(tempPath, destinationPath, overwrite: true).ConfigureAwait(false);
+            return;
+        }
+        var destination = Path.GetFullPath(destinationPath);
+        var gate = WindowsPublicationGate(destination);
+        // The complete temp file has passed the commit decision; cancellation cannot interrupt
+        // publication or turn a committed replacement into a reported cancellation.
+        await gate.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            for (var attempt = 1; ; attempt++)
+            {
+                var retrySafe = true;
+                try
+                {
+                    PublishWindowsTempFile(tempPath, destination, out retrySafe);
+                    return;
+                }
+                catch (Exception exception) when (attempt < ReplaceAttempts && retrySafe && IsTransientReplaceFailure(exception))
+                {
+                    await Task.Delay(ReplaceRetryDelay * attempt).ConfigureAwait(false);
+                }
+            }
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
+    private static SemaphoreSlim WindowsPublicationGate(string destinationPath)
+        => WindowsPublicationLocks[(StringComparer.OrdinalIgnoreCase.GetHashCode(destinationPath) & int.MaxValue)
+            % WindowsPublicationLocks.Length];
+
+    // One publication attempt: File.Replace immediately supports a retained deletion-sharing
+    // reader. A temporary reader denying deletion still gets the bounded outer retry. Never
+    // retry after a partial replacement leaves a retained backup that could not be restored.
+    private static void PublishWindowsTempFile(string tempPath, string destinationPath, out bool retrySafe)
+    {
+        retrySafe = true;
+        try
+        {
+            File.Move(tempPath, destinationPath, overwrite: true);
+        }
+        catch (UnauthorizedAccessException) when (File.Exists(destinationPath))
+        {
+            var backupName = $".atomic-recovery.{Guid.NewGuid():N}.tmp";
+            var backupPath = Path.Combine(Path.GetDirectoryName(destinationPath)!, backupName);
+            try
+            {
+                File.Replace(tempPath, destinationPath, backupPath);
+            }
+            catch
+            {
+                if (File.Exists(backupPath))
+                {
+                    retrySafe = false;
+                    if (!File.Exists(destinationPath))
+                    {
+                        try
+                        {
+                            // Preserve a generation another process may already have published.
+                            MoveWithRetry(backupPath, destinationPath, overwrite: false);
+                            retrySafe = true;
+                        }
+                        catch (Exception restoreException)
+                        {
+                            Log.Error(
+                                "Failed to restore interrupted atomic publication (error {ErrorCode}); " +
+                                "its previous generation is retained in {BackupName}",
+                                restoreException.HResult, backupName);
+                        }
+                    }
+                }
+                throw;
+            }
+            // Publication committed; best-effort cleanup cannot turn success into failure.
+            TryDeleteFile(backupPath);
+        }
+    }
 
     private static void MoveWithRetry(string sourcePath, string destinationPath, bool overwrite)
     {
@@ -621,7 +738,7 @@ public static partial class AtomicFileWriter
     }
 
     // Post-commit-decision step: the temp file is complete and durable, so a caller cancellation is
-    // deliberately not observed here; the lock timeout and the bounded attempt count limit the wait.
+    // deliberately not observed here; the bounded attempt count limits retry backoff.
     private static async Task MoveWithRetryAsync(string sourcePath, string destinationPath, bool overwrite)
     {
         for (var attempt = 1; ; attempt++)

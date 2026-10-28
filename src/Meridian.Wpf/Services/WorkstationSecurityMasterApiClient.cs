@@ -5,6 +5,9 @@ using Meridian.Ui.Services;
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Defines security trust and passport queries and governed override, conflict, and field-edit operations.
+/// </summary>
 public interface IWorkstationSecurityMasterApiClient
 {
     // ── Operator overrides (shared-contract parity with the browser workstation) ──────────────
@@ -56,6 +59,9 @@ public interface IWorkstationSecurityMasterApiClient
         => Task.FromResult<SecurityAssetClassDefinitionDto?>(null);
 }
 
+/// <summary>
+/// Adapts shared security-master trust, passport, override, conflict, and field-edit APIs for desktop workflows.
+/// </summary>
 public sealed class WorkstationSecurityMasterApiClient : IWorkstationSecurityMasterApiClient
 {
     private readonly ApiClientService _apiClient;

@@ -5,6 +5,7 @@ using Meridian.Domain.Models;
 
 namespace Meridian.DataIntegration.Testing;
 
+/// <summary>Runs deterministic depth-buffer checks for updates, deletions, and stale sequence-gap handling.</summary>
 public static class DepthBufferSelfTests
 {
     public static void Run()

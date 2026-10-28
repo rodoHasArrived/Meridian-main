@@ -6,6 +6,9 @@ using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Loads trading workspace summaries for the active fund, paper and live runs, and portfolio metrics.
+/// </summary>
 public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
 {
     private readonly TradingWorkspaceShellPresentationService? _presentationService;

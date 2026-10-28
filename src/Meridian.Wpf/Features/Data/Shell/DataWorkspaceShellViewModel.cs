@@ -12,6 +12,9 @@ public enum DataWorkspaceShellActionKind
     SwitchContext
 }
 
+/// <summary>
+/// Carries a data workspace action request, including its action kind, identity, and optional dock action.
+/// </summary>
 public sealed class DataWorkspaceShellActionRequestedEventArgs : EventArgs
 {
     public DataWorkspaceShellActionRequestedEventArgs(
@@ -29,6 +32,9 @@ public sealed class DataWorkspaceShellActionRequestedEventArgs : EventArgs
     public PaneDropAction DockAction { get; }
 }
 
+/// <summary>
+/// Coordinates data workspace loading, overview metrics, integration workflow steps, and shell actions.
+/// </summary>
 public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase
 {
     private readonly IDataWorkspaceShellSnapshotService? _snapshotService;

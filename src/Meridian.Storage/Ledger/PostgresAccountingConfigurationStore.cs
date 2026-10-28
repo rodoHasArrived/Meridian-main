@@ -9,6 +9,9 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Storage.Ledger;
 
+/// <summary>
+/// Persists scoped accounting configuration workspaces in PostgreSQL.
+/// </summary>
 public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurationStore, IAccountingActionAuditStore, IAccountingAuditChainVerifier
 {
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();

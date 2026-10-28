@@ -6,6 +6,9 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.FinancialOperations.OperationsContinuity;
 
+/// <summary>
+/// Creates audit hashes and validates operations workflow timelines and hash chains.
+/// </summary>
 public static class OperationsWorkflowAuditHashing
 {
     public static OperationsWorkflowAuditDto Create(

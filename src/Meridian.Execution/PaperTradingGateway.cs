@@ -67,18 +67,31 @@ public sealed class PaperTradingGateway :
         public bool Completed { get; set; }
     }
 
+    /// <summary>Retains the aggregate-query constructor used by compiled consumers.</summary>
     public PaperTradingGateway(
         ILogger<PaperTradingGateway> logger,
         ISecurityMasterQueryService? securityMaster = null,
         Adapters.PaperTradingGatewayOptions? options = null,
         Interfaces.ILiveFeedAdapter? liveFeed = null,
         PaperTradingCostOptions? costOptions = null)
+        : this(logger, (ISecurityTradingParametersQueryService?)securityMaster, options, liveFeed, costOptions, securityMaster)
+    {
+    }
+
+    public PaperTradingGateway(
+        ILogger<PaperTradingGateway> logger,
+        ISecurityTradingParametersQueryService? securityMaster,
+        Adapters.PaperTradingGatewayOptions? options = null,
+        Interfaces.ILiveFeedAdapter? liveFeed = null,
+        PaperTradingCostOptions? costOptions = null,
+        ISecurityIdentityQueryService? securityIdentity = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _tradingParameters = new Adapters.PaperTradingGatewayTradingParameters(
             _logger,
             securityMaster,
-            LogLevel.Warning);
+            LogLevel.Warning,
+            securityIdentity);
         _scaffoldMarketFillPrice = Adapters.PaperTradingGatewayScaffoldPricing.ResolveScaffoldMarketFillPrice(options);
         _allowScaffoldMarketFills = Adapters.PaperTradingGatewayScaffoldPricing.ResolveAllowScaffoldMarketFills(options);
         _liveFeed = liveFeed;

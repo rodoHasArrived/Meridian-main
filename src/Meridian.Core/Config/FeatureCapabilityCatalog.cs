@@ -1,5 +1,8 @@
 namespace Meridian.Core.Config;
 
+/// <summary>
+/// Lists the declared workstation feature capabilities and their default enablement metadata.
+/// </summary>
 public static class FeatureCapabilityCatalog
 {
     public static IReadOnlyList<FeatureCapabilityDescriptor> Trading { get; } =

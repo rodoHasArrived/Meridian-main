@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps option-chain queries to the shared HTTP API.
+/// </summary>
 public static class OptionChainEndpoints
 {
     public static void MapOptionChainEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)

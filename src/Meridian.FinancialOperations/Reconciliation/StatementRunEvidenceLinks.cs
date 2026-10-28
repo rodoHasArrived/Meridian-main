@@ -36,6 +36,9 @@ public sealed record StatementRunEvidenceLink(
     string ReconciledBy,
     DateTimeOffset ReconciledAtUtc);
 
+/// <summary>
+/// Builds versioned evidence links from retained statement-run metadata.
+/// </summary>
 public static class StatementRunEvidenceLinkFactory
 {
     public const int DefaultMappingProfileVersion = 1;

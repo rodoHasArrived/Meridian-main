@@ -59,6 +59,13 @@ class MeridianCiWorkflowTests(unittest.TestCase):
         self.assertIn('--summary-json "$handoff_summary_json"', ci_script)
         self.assertNotIn("--json-output docs/status/docs-automation-summary.json", ci_script)
 
+    def test_promtool_checksum_is_verified_before_extracting_or_running_download(self) -> None:
+        install = self.workflow.split("      - name: Install promtool\n", 1)[1].split("      - name:", 1)[0]
+        self.assertIn('PROMETHEUS_VERSION: "3.1.0"', install)
+        self.assertIn("9a9d1e115d1745826b13aec3f1409780b9fcf1d4206746cb4faee46ca5add70c", install)
+        self.assertLess(install.index("sha256sum --check"), install.index("tar -xzf"))
+        self.assertIn("set -euo pipefail", install)
+
 
 if __name__ == "__main__":
     unittest.main()

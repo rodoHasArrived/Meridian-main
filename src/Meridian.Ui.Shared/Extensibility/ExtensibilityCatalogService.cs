@@ -2,6 +2,9 @@ using Meridian.Contracts.Extensibility;
 
 namespace Meridian.Ui.Shared.Extensibility;
 
+/// <summary>
+/// Combines extension providers into the workstation extensibility catalog.
+/// </summary>
 public sealed class ExtensibilityCatalogService
 {
     private readonly IReadOnlyList<IExtensibilityCatalogProvider> _providers;

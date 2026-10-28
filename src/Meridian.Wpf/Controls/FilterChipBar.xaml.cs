@@ -6,6 +6,9 @@ using System.Windows.Input;
 
 namespace Meridian.Wpf.Controls;
 
+/// <summary>
+/// Displays active filters and a result summary, with commands to remove individual filters or clear them all.
+/// </summary>
 public partial class FilterChipBar : UserControl
 {
     public static readonly DependencyProperty ItemsSourceProperty =

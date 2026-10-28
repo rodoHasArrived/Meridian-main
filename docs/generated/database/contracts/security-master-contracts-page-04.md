@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 4 of 6
 
-Objects 241-320 of 450. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 443. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -465,13 +465,24 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityCurvesJsonContext["SecurityCurvesJsonContext"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityDeclaredConventionsRead["SecurityDeclaredConventionsRead"] {
-        +ScheduleConventionTerms Block
-        +IReadOnlyList~ScheduleConventionTerms~ ElementBlocks
-        +SecurityDeclaredConventionsStatus Status
-        +string? UnreadableReason
+    class Meridian_Contracts_SecurityMaster_SecurityDetailDto["SecurityDetailDto"] {
+        +IReadOnlyList~SecurityAliasDto~ Aliases
+        +string AssetClass
+        +JsonElement AssetSpecificTerms
+        +JsonElement CommonTerms
+        +string Currency
+        +string DisplayName
+        +DateTimeOffset EffectiveFrom
+        +DateTimeOffset? EffectiveTo
+        +IReadOnlyList~SecurityIdentifierDto~ Identifiers
+        +Guid SecurityId
+        +SecurityStatusDto Status
+        +long Version
     }
-    class Meridian_Contracts_SecurityMaster_SecurityDeclaredConventionsStatus["SecurityDeclaredConventionsStatus"] {
+    class Meridian_Contracts_SecurityMaster_SecurityDistributionCorporateActionTerms["SecurityDistributionCorporateActionTerms"] {
+        +Guid? DistributedSecurityId
+        +string EventType
+        +decimal? UnitsPerHeldUnit
     }
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriod
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec
@@ -527,5 +538,5 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveInterpolation
     Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveKind
     Meridian_Contracts_SecurityMaster_SecurityCurveVersionDto --> Meridian_Contracts_SecurityMaster_SecurityCurvePointDto
-    Meridian_Contracts_SecurityMaster_SecurityDeclaredConventionsRead --> Meridian_Contracts_SecurityMaster_SecurityDeclaredConventionsStatus
+    Meridian_Contracts_SecurityMaster_SecurityDetailDto --> Meridian_Contracts_SecurityMaster_SecurityAliasDto
 ```
