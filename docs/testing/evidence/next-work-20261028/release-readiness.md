@@ -348,3 +348,26 @@ test-source cross-compilation: zero errors and 275 warnings from the fresh depen
 It includes the original input-preservation tests and four added redundant-selection cases.
 This remains compilation proof; the repaired commit still needs native Windows execution and
 its complete candidate-bound local/hosted gates.
+
+## Accepted-order audit cancellation follow-up
+
+The repaired `a12c99a2` candidate passed all 1,381 hosted PostgreSQL tests and the complete native
+Windows suite (2,567 passed, zero failed, one registered skip), including all original credential
+input regressions. Its ordinary hosted .NET lane exposed one existing intermittent execution issue:
+`ResumePendingRunsAsync_RetainsAccountThroughRealOmsReadinessAndBrokerDispatch(true)` found no
+`OrderSubmitted` audit after stopping a run whose gateway had accepted its order. All other hosted
+workflows passed. The local ordinary .NET shards passed 25,010 tests with five registered skips;
+that incomplete full run was superseded to correct the actual cancellation boundary.
+
+The OMS previously passed the strategy caller token to the audit append after broker acceptance.
+Stopping the strategy could cancel the WAL append while OMS still returned the accepted outcome.
+Only that authoritative post-acknowledgement audit now ignores caller cancellation, consistent
+with the existing fill handoff. Pre-dispatch cancellation, auxiliary session-update behavior and
+actual I/O failure handling are unchanged.
+
+A deterministic real-engine/gateway barrier waits for the stop token to cancel, then returns the
+accepted acknowledgement and checks the actual reopened audit WAL after awaited stop. With the
+original token the new regression failed with the same empty audit; its pre-dispatch companion
+passed. Restoring the correction passed both cases and the full **184-test** live-engine/OMS/audit
+packet, including both original hosted account-scope variants. No test deadline was widened and
+no sleep was added. Final candidate-bound full local and hosted checks remain required.

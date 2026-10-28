@@ -11835,6 +11835,7 @@ Meridian-main
 │   │   │   ├── LiveStrategyBaseTests.cs
 │   │   │   ├── LiveStrategyCatalogFallbackTests.cs
 │   │   │   ├── LiveStrategyRunSessionCompletionTests.cs
+│   │   │   ├── LiveTradingEngineTests.AuditCancellation.cs
 │   │   │   ├── LiveTradingEngineTests.cs
 │   │   │   ├── PortfolioReadServiceTests.cs
 │   │   │   ├── PromotionServiceLiveGovernanceTests.cs

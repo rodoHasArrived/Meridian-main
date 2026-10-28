@@ -39,7 +39,7 @@ namespace Meridian.Tests.Strategies;
 /// flow back into the strategy and the run's recorded metrics. It also protects the terminal
 /// cleanup path when a market-data feed completes without an operator stop request.
 /// </summary>
-public sealed class LiveTradingEngineTests
+public sealed partial class LiveTradingEngineTests
 {
     private const string CanonicalPromotionVaultReference =
         "evidence://evidence-vault/ev-0123456789abcdef01234567";
