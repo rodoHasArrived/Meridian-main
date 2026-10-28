@@ -216,10 +216,63 @@ class LocalGateTests(unittest.TestCase):
         time.sleep(1.6)
         self.assertFalse((self.root / "orphan-write").exists())
 
-    def test_auto_budget_is_bounded_and_unknown_memory_is_sequential(self):
-        with patch.object(gate.os, "cpu_count", return_value=1):
-            self.assertEqual(gate.automatic_jobs(), 1)
-        self.assertIn(gate.automatic_jobs(), (1, 2))
+    def memory_files(self, *, available_gib=16, limit_gib=16, used_gib=12, inactive_gib=8):
+        gib = 1024**3
+        return {"/proc/meminfo": f"MemFree: 524288 kB\nMemAvailable: {available_gib * 1024**2} kB\n",
+                "/sys/fs/cgroup/memory.max": str(limit_gib * gib),
+                "/sys/fs/cgroup/memory.current": str(used_gib * gib),
+                "/sys/fs/cgroup/memory.stat": f"anon 157286400\ninactive_file {inactive_gib * gib}\n",
+                "/sys/fs/cgroup/cpu.max": "400000 100000"}
+
+    def auto_budget(self, files):
+        def read(path, *args, **kwargs):
+            if str(path) not in files:
+                raise FileNotFoundError(str(path))
+            return files[str(path)]
+        with patch.object(gate.sys, "platform", "linux"), patch.object(gate.os, "cpu_count", return_value=8), \
+                patch.object(gate.Path, "read_text", read), patch.object(gate.os, "sysconf", side_effect=OSError):
+            return gate.automatic_jobs(), gate.available_memory()
+
+    def test_file_cache_warming_preserves_two_worker_budget(self):
+        jobs, memory = self.auto_budget(self.memory_files())
+        self.assertEqual(memory, 12 * 1024**3)
+        self.assertEqual(jobs, 2)
+
+    def test_genuinely_low_available_memory_remains_sequential(self):
+        self.assertEqual(self.auto_budget(self.memory_files(inactive_gib=1))[0], 1)
+        self.assertEqual(self.auto_budget(self.memory_files(available_gib=4))[0], 1)
+
+    def test_reclaimable_cache_is_clamped_to_usage_and_container_limit(self):
+        jobs, memory = self.auto_budget(self.memory_files(used_gib=1, inactive_gib=32))
+        self.assertEqual(memory, 16 * 1024**3)
+        self.assertEqual(jobs, 2)
+
+    def test_unknown_memory_and_missing_cache_stat_are_conservative(self):
+        self.assertEqual(self.auto_budget({})[0], 1)
+        files = self.memory_files()
+        files.pop("/sys/fs/cgroup/memory.stat")
+        self.assertEqual(self.auto_budget(files), (1, 4 * 1024**3))
+
+    def test_low_cpu_quota_still_serializes_with_available_memory(self):
+        files = self.memory_files()
+        files["/sys/fs/cgroup/cpu.max"] = "200000 100000"
+        self.assertEqual(self.auto_budget(files)[0], 1)
+
+    def test_windows_uses_native_available_physical_memory(self):
+        import ctypes
+        from unittest.mock import Mock
+        def query(pointer):
+            self.assertEqual(pointer._obj.length, 64)
+            pointer._obj.availablePhysical = 12 * 1024**3
+            return 1
+        library = Mock()
+        library.GlobalMemoryStatusEx = Mock(side_effect=query)
+        with patch.object(gate.sys, "platform", "win32"), \
+                patch.object(ctypes, "WinDLL", return_value=library, create=True):
+            self.assertEqual(gate.available_memory(), 12 * 1024**3)
+            library.GlobalMemoryStatusEx.return_value = 0
+            library.GlobalMemoryStatusEx.side_effect = None
+            self.assertIsNone(gate.available_memory())
 
 
 if __name__ == "__main__":

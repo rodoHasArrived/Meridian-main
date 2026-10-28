@@ -132,7 +132,10 @@ blocked profile preparation, and explicit output-only reuse do not contribute wa
 Failed terminal warm attempts remain observable alongside successful attempts.
 
 The complete local gate overlaps only .NET and browser verification, using at most two lanes when
-the CPU/memory budget permits. Docs generation and workflow tests run afterward in order. Select
+the CPU/memory budget permits. Automatic memory budgeting uses Linux available memory and
+reclaimable inactive file cache within container limits, or Windows available physical memory;
+unknown capacity falls back to serial execution. Docs generation and workflow tests run afterward
+in order. Select
 `--jobs 1` for serial execution or `--jobs 2` to request bounded overlap. All required lane results
 are joined; a failed lane fails the aggregate. Unique evidence roots are under
 `artifacts/local-gates/<run-id>/`, with separate lane logs, results, and summaries, plus the
