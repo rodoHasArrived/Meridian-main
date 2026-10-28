@@ -86,9 +86,11 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
             ?? throw new InvalidOperationException($"Security '{request.SecurityId}' was not found.");
 
         var currentProjection = SecurityEconomicDefinitionAdapter.ToProjection(current, aliasProjection?.Aliases);
-        // Decode the stored row before the write guards. A row this node cannot decode is a fault, and
-        // no amendment can succeed here; a guard that tripped first would report it as a refusal whose
-        // repair fails at this decode.
+        // An unrecognized class is refused before the decode: its repair is on a node that supports the
+        // class, whose terms this node may not decode. The other guards' repair is an amendment here, so
+        // they run after the decode; a row this node cannot decode is a fault, and no amendment can
+        // succeed here.
+        EnsureAssetClassIsRecognizedHere(currentProjection);
         var currentRecord = SecurityMasterMapping.ToRecord(currentProjection);
         EnsureAssetClassRoundTripsSafely(currentProjection, request.AssetSpecificTermsPatch);
         // The SUBMITTED envelope's profile decides which kind parses the patch: a record already
@@ -321,7 +323,8 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
             ?? throw new InvalidOperationException($"Security '{request.SecurityId}' was not found.");
 
         var currentProjection = SecurityEconomicDefinitionAdapter.ToProjection(current, aliasProjection?.Aliases);
-        // Decoded before the guards, as in an amendment, so an undecodable row stays a fault.
+        // Ordered as in an amendment: the class check, the decode, then the round-trip guards.
+        EnsureAssetClassIsRecognizedHere(currentProjection);
         var currentRecord = SecurityMasterMapping.ToRecord(currentProjection);
         EnsureAssetClassRoundTripsSafely(currentProjection);
         var result = SecurityMasterCommandFacade.Deactivate(currentRecord, SecurityMasterMapping.ToDeactivateCommand(request));
@@ -926,9 +929,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     /// write instead — the record stays readable, and the change must come from a node that
     /// supports the class.
     /// </summary>
-    private static void EnsureAssetClassRoundTripsSafely(
-        SecurityProjectionRecord projection,
-        JsonElement? assetSpecificTermsPatch = null)
+    private static void EnsureAssetClassIsRecognizedHere(SecurityProjectionRecord projection)
     {
         if (!SecurityAssetClassCatalog.AssetClasses.Contains(projection.AssetClass, StringComparer.OrdinalIgnoreCase))
         {
@@ -937,7 +938,16 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
                 "Amending or deactivating it here would re-serialize the record through the OtherSecurity fallback and rewrite its " +
                 "asset class, so the write is refused. Apply the change from a node that supports this asset class.");
         }
+    }
 
+    /// <summary>
+    /// The guards whose repair is an amendment on this node, run on a stored row that decodes: values
+    /// and structure the codec would drop or rewrite when it re-serializes the record.
+    /// </summary>
+    private static void EnsureAssetClassRoundTripsSafely(
+        SecurityProjectionRecord projection,
+        JsonElement? assetSpecificTermsPatch = null)
+    {
         EnsureDeclaredVocabulariesRoundTripSafely(projection, assetSpecificTermsPatch);
         EnsureBondCouponPayloadRoundTripsSafely(projection, assetSpecificTermsPatch);
         EnsureCustomAssetEnvelopeRoundTripsSafely(projection, assetSpecificTermsPatch);

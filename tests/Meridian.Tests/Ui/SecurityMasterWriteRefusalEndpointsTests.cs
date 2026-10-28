@@ -77,6 +77,21 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
             ["subclass"] = "StepRate"
         });
 
+    // A profile-backed envelope of a class a newer node registered: this node reads an unknown class
+    // only as a flat payload at schemaVersion 1 or 2, so it cannot decode the row.
+    private static readonly JsonElement NewerNodeProfileEnvelope = JsonSerializer.SerializeToElement(new
+    {
+        schemaVersion = 3,
+        customProfileId = "infrastructure-holding",
+        profileVersion = 1,
+        profileFields = new { sponsor = "Meridian Infrastructure" }
+    });
+
+    private static string UnrecognizedClassReason(Guid securityId)
+        => $"Security '{securityId:D}' has asset class 'InfrastructureHolding', which this node does not recognize. " +
+           "Amending or deactivating it here would re-serialize the record through the OtherSecurity fallback and rewrite its " +
+           "asset class, so the write is refused. Apply the change from a node that supports this asset class.";
+
     private static string StrayFloatingIndexRepairReason(Guid securityId)
         => $"Security '{securityId:D}' is a bond carrying floatingIndex that the canonical codec does not read for the " +
            "coupon structure the record resolves to, so re-serializing it here would drop that structure. The write is " +
@@ -243,9 +258,9 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
     [Fact]
     public async Task AmendWithoutAPatch_OfAStoredEventStampedAboveTheWriteVersionThisNodeCannotDecode_Returns500()
     {
-        // A patch-less amend of a row stamped above the write version reaches the ahead-of-write
-        // round-trip guard, which decodes the stored row to compare what re-serializing it would write.
-        // The amendment decodes it before any guard runs, so the decode fault answers first.
+        // A patch-less amend of a row stamped above the write version would reach the ahead-of-write
+        // round-trip guard, which decodes the stored row itself. The amendment's own decode of the
+        // stored row runs before that guard, and it is the one that faults.
         var securityId = Guid.NewGuid();
         var stampedWithoutMaturity = JsonNode.Parse(AheadOfWriteFixtures.BondTerms(stamp: 2, withBlock: false).GetRawText())!.AsObject();
         stampedWithoutMaturity.Remove("maturity");
@@ -294,6 +309,29 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
         var fault = await AssertServerFaultAsync(response, handlerLog, undisclosed: "floatingIndex");
         fault.Should().BeOfType<InvalidOperationException>()
             .Which.Message.Should().Be("Missing required date 'maturity'.");
+        await harness.AssertNothingWrittenAsync();
+    }
+
+    [Fact]
+    public async Task AmendWithoutAPatch_OfAStoredEventOfAClassThisNodeDoesNotRecognizeOrDecode_Returns400WithTheClassReason()
+    {
+        // The unrecognized-class refusal runs before the stored row is decoded: its repair is on a node
+        // that supports the class, so it holds even when this node cannot decode the row.
+        var securityId = Guid.NewGuid();
+        using var harness = new CanonicalServiceHarness();
+        harness.SeedEventStream(
+            securityId,
+            "FxSpot",
+            FxSpotTerms("EUR", "USD"),
+            stored => stored with { LegacyAssetClass = "InfrastructureHolding", LegacyAssetSpecificTerms = NewerNodeProfileEnvelope });
+        await using var app = await CreateAppAsync(Substitute.For<ISecurityMasterQueryService>(), harness.Service);
+
+        using var response = await app.GetTestClient().PostAsJsonAsync(
+            "/api/security-master/amend",
+            AmendRequest(securityId, expectedVersion: 2, assetSpecificTermsPatch: null),
+            WebJson);
+
+        await AssertRefusedAsync(response, UnrecognizedClassReason(securityId));
         await harness.AssertNothingWrittenAsync();
     }
 
@@ -485,6 +523,31 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
         var fault = await AssertServerFaultAsync(response, handlerLog, undisclosed: "floatingIndex");
         fault.Should().BeOfType<InvalidOperationException>()
             .Which.Message.Should().Be("Missing required date 'maturity'.");
+        await harness.AssertNothingWrittenAsync();
+    }
+
+    [Fact]
+    public async Task Deactivate_OfAStoredEventOfAClassThisNodeDoesNotRecognizeOrDecode_FaultsWithTheClassRefusal()
+    {
+        // Deactivation checks the class before the decode too; its route keeps the 500.
+        var securityId = Guid.NewGuid();
+        using var harness = new CanonicalServiceHarness();
+        harness.SeedEventStream(
+            securityId,
+            "FxSpot",
+            FxSpotTerms("EUR", "USD"),
+            stored => stored with { LegacyAssetClass = "InfrastructureHolding", LegacyAssetSpecificTerms = NewerNodeProfileEnvelope });
+        var handlerLog = new RecordingLogger<MeridianApiExceptionHandler>();
+        await using var app = await CreateAppAsync(Substitute.For<ISecurityMasterQueryService>(), harness.Service, handlerLog);
+
+        using var response = await app.GetTestClient().PostAsJsonAsync(
+            "/api/security-master/deactivate",
+            new DeactivateSecurityRequest(securityId, 2, DateTimeOffset.UtcNow, "test", "codex", null, "deactivate"),
+            WebJson);
+
+        var fault = await AssertServerFaultAsync(response, handlerLog, undisclosed: "InfrastructureHolding");
+        fault.Should().BeOfType<SecurityMasterWriteRefusedException>()
+            .Which.Message.Should().Be(UnrecognizedClassReason(securityId));
         await harness.AssertNothingWrittenAsync();
     }
 

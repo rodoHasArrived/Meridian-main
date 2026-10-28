@@ -2744,7 +2744,8 @@ patch from the stored row. Only `SecurityMasterWriteRefusedException` is transla
 applied per route (`SecurityMasterEndpoints.WriteRefusals.cs`). Undecodable stored rows, unknown
 securities, stale versions the F# validator rejects, duplicate creates and store failures keep their
 responses; `/amend` compares the version only there, so a stale amend whose patch is refused earlier
-answers 400 with that refusal. Deactivate refusals still answer 500; no read route changes.
+answers 400 with that refusal. An unrecognized stored asset class answers 400 even when this node
+cannot decode the row, because the change belongs on a node that supports the class. Deactivate refusals still answer 500; no read route changes.
 
 `POST /api/security-master/structured-credit-reclassification/report` (AdminMaintenance) builds the
 ADR-022 report of active securitised `Bond` and `CustomAsset` rows with their proposed

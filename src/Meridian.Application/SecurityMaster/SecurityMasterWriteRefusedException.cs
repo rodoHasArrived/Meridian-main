@@ -9,10 +9,12 @@ namespace Meridian.Application.SecurityMaster;
 /// </summary>
 /// <remarks>
 /// Derives from <see cref="InvalidOperationException"/>, which these refusals were raised as, so existing
-/// handlers, ingest classification and subclass-tolerant assertions keep working. It is never raised for
-/// a stored row this node cannot decode, a missing security, a stale version or a store failure. Do not
-/// map it in <c>MeridianApiExceptionHandler</c>: deactivate and workbench publish also raise it and keep
-/// their responses.
+/// handlers, ingest classification and subclass-tolerant assertions keep working. It is never raised
+/// because a stored row cannot be decoded, a security is missing, the expected version is stale (an F#
+/// <c>version_conflict</c> stays a plain <see cref="InvalidOperationException"/>) or the store failed.
+/// A stale amendment whose request mapping or round-trip guard refuses it does raise it, for that
+/// refusal, because the version is compared later. Do not map it in <c>MeridianApiExceptionHandler</c>:
+/// deactivate and workbench publish also raise it and keep their responses.
 /// </remarks>
 public sealed class SecurityMasterWriteRefusedException : InvalidOperationException
 {

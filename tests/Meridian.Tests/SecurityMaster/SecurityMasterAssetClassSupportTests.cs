@@ -109,7 +109,7 @@ public sealed class SecurityMasterAssetClassSupportTests
     public async Task CreateAsync_UnrecognizedAssetClass_IsRefusedInsteadOfPersistingAsOtherSecurity(string assetClass)
     {
         // Read tolerance must not become write tolerance. Amend and deactivate refuse an
-        // unrecognized class through EnsureAssetClassRoundTripsSafely; create had no guard, so the
+        // unrecognized class through EnsureAssetClassIsRecognizedHere; create had no guard, so the
         // request degraded through the OtherSecurity read fallback and persisted silently — and
         // because OtherSecurity IS a catalog class, every later amend passed the guard and the
         // misclassification was permanent.

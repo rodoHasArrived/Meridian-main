@@ -99,8 +99,8 @@ round-trip or ahead-of-write guard it trips, or `security_inactive`), raises
 `SecurityMasterWriteRefusedException`, an `InvalidOperationException` subtype whose message is
 written for the caller (deactivation shares the guards and raises it too). Request errors raised as
 `ArgumentException`, such as a term block of the wrong JSON kind or an unsupported identifier kind,
-are not this type. A stored row this node cannot decode (amend and deactivate decode it before the
-write guards run), a missing security, an F# rejection
+are not this type. A stored row this node cannot decode (amend and deactivate decode it before every
+write guard except the unrecognized-class check), a missing security, an F# rejection
 carrying `version_conflict`, `missing_state` or `security_id_mismatch` (even beside request errors)
 and a store failure are not refusals and keep their existing exception types.
 
