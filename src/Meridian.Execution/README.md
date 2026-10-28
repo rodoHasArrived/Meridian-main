@@ -42,7 +42,9 @@ members reported as open still consume separate slots.
 Broker-dispatched client IDs, run/account ownership and processed fill watermarks are retained by
 `FileBrokerageOrderRecoveryStore` before dispatch. Broker acknowledgement accounts are retained as
 `OrderState.BrokerAccountId`; later reports
-cannot replace an established external account. IB recovery requires that exact account, or an
+cannot replace an established external account. Matching late acknowledgement evidence can fill
+an unknown account after an order becomes terminal while preserving its lifecycle, economics and
+timestamp; account enrichment books no additional fill. IB recovery requires that exact account, or an
 explicit trusted-host pin for legacy rows whose broker account was never retained. Unknown legacy
 ownership stays unresolved. An ambiguous acknowledgement keeps exposure
 reserved and requires authoritative lookup; the ID cannot be reused after restart or a terminal

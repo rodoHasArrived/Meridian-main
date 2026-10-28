@@ -243,17 +243,17 @@ public sealed partial class IBBrokerageGatewayTests
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             if (filled > 0)
             {
-                while ((await oms.ExecutionReports.ReadAsync(timeout.Token)).FilledQuantity != filled)
-                { }
+                await WaitForRecoveryCheckpointAsync(store,
+                    state => state.FilledQuantity == filled, timeout.Token);
             }
+            var beforeAccount = oms.GetOrder("working-order")!;
             client.RaiseOpenOrder(OpenOrder(11001, WorkingOrder()));
-            if (!executionFill)
-            {
-                while ((await oms.ExecutionReports.ReadAsync(timeout.Token)).BrokerAccountId != "DU1")
-                { }
-            }
+            await WaitForRecoveryCheckpointAsync(store,
+                state => state.BrokerAccountId == "DU1" && state.FilledQuantity == filled, timeout.Token);
 
             var state = oms.GetOrder("working-order")!;
+            state.Should().Be(beforeAccount with { BrokerAccountId = "DU1" },
+                "late ownership evidence must preserve all retained terms, economics and timestamps");
             state.BrokerAccountId.Should().Be("DU1");
             state.FilledQuantity.Should().Be(filled);
             state.Status.Should().Be(filled == 10 ? OrderStatus.Filled : filled > 0 ? OrderStatus.PartiallyFilled : OrderStatus.Accepted);
@@ -290,11 +290,14 @@ public sealed partial class IBBrokerageGatewayTests
 
             client.RaiseExecution(new(11001, "AAPL", "BOT", 1m, 100d, 1m, 100d,
                 "foreign-fill", "DU2", "NYSE", 1L, null, DateTimeOffset.UtcNow));
-            var barrier = Status(11001, "Submitted");
+            var barrier = Status(11001, "Submitted") with
+            {
+                ReceivedAt = oms.GetOrder("working-order")!.LastUpdatedAt!.Value.AddTicks(1)
+            };
             client.RaiseOrderStatus(barrier);
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-            while ((await oms.ExecutionReports.ReadAsync(timeout.Token)).Timestamp != barrier.ReceivedAt)
-            { }
+            await WaitForRecoveryCheckpointAsync(store,
+                state => state.LastUpdatedAt == barrier.ReceivedAt, timeout.Token);
 
             var state = oms.GetOrder("working-order")!;
             state.FilledQuantity.Should().Be(0m);
@@ -338,15 +341,15 @@ public sealed partial class IBBrokerageGatewayTests
             var pendingBefore = oms.GetPendingAmendmentForRecovery("working-order");
             var aliasesBefore = store.Load().Single().BrokerOrderAliases!.ToArray();
             client.RaiseOpenOrder(OpenOrder(11001, WorkingOrder()) with { Account = account, Symbol = symbol, Action = side });
-            var barrier = Status(11001, "Submitted");
+            var barrier = Status(11001, "Submitted") with
+            {
+                ReceivedAt = oms.GetOrder("working-order")!.LastUpdatedAt!.Value.AddTicks(1)
+            };
             client.RaiseOrderStatus(barrier);
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-            ExecutionReport observed;
-            do
-            {
-                observed = await oms.ExecutionReports.ReadAsync(timeout.Token);
-                observed.BrokerAccountId.Should().NotBe("DU2", "inadmissible observations cannot taint later statuses");
-            } while (observed.Timestamp != barrier.ReceivedAt);
+            var observed = await WaitForRecoveryCheckpointAsync(store,
+                state => state.LastUpdatedAt == barrier.ReceivedAt, timeout.Token);
+            observed.BrokerAccountId.Should().NotBe("DU2", "inadmissible observations cannot taint later statuses");
 
             var beforeValid = oms.GetOrder("working-order")!;
             beforeValid.BrokerAccountId.Should().BeNull();
@@ -359,8 +362,8 @@ public sealed partial class IBBrokerageGatewayTests
             durable.BrokerOrderAliases.Should().Equal(aliasesBefore);
 
             client.RaiseOpenOrder(OpenOrder(11001, WorkingOrder()));
-            while ((await oms.ExecutionReports.ReadAsync(timeout.Token)).BrokerAccountId != "DU1")
-            { }
+            await WaitForRecoveryCheckpointAsync(store,
+                state => state.BrokerAccountId == "DU1", timeout.Token);
             var afterValid = oms.GetOrder("working-order")!;
             afterValid.Should().Be(beforeValid with { BrokerAccountId = "DU1" });
             publisher.Events.Should().BeEmpty();
@@ -369,6 +372,22 @@ public sealed partial class IBBrokerageGatewayTests
         finally
         {
             Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    private static async Task<OrderState> WaitForRecoveryCheckpointAsync(
+        FileBrokerageOrderRecoveryStore store, Func<OrderState, bool> condition, CancellationToken ct)
+    {
+        // The OMS observer publishes fill increments only, before the recovery checkpoint.
+        // Store.Load takes Save's lock, so observing this exact checkpoint proves processing
+        // and its durable write completed; metadata-only reports need no observer emission.
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            var state = store.Load().Single().State;
+            if (condition(state))
+                return state;
+            await Task.Delay(TimeSpan.FromMilliseconds(10), ct);
         }
     }
 

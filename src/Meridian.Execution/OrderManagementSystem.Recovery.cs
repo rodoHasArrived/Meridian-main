@@ -29,11 +29,17 @@ public sealed partial class OrderManagementSystem
         // state unless authoritative cumulative execution advances; never reopen or resize.
         if (IsTerminal(current.Status))
         {
-            if (report.FilledQuantity <= current.FilledQuantity
-                || report.FillPrice is not > 0m
-                || !string.Equals(current.Symbol, report.Symbol, StringComparison.OrdinalIgnoreCase)
+            if (!string.Equals(current.Symbol, report.Symbol, StringComparison.OrdinalIgnoreCase)
                 || current.Side != report.Side)
                 return current;
+            if (report.FilledQuantity <= current.FilledQuantity || report.FillPrice is not > 0m)
+            {
+                // IB may report the actual account only after a status-only terminal fill.
+                // Validated identity evidence can enrich ownership without reopening the
+                // order, changing its economics/timestamp, or publishing another fill.
+                return current.BrokerAccountId == brokerAccount
+                    ? current : current with { BrokerAccountId = brokerAccount };
+            }
             var terminalQuantity = pendingExecutionLimit is > 0m
                 ? Math.Max(current.Quantity, Math.Min(pendingExecutionLimit.Value, report.FilledQuantity)) : current.Quantity;
             var filled = Math.Min(terminalQuantity, report.FilledQuantity);
