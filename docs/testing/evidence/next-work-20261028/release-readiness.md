@@ -1,9 +1,9 @@
 # Next-work release evidence — 2026-10-28
 
-**Status:** observed prerequisites; not release certification  
-**Owner:** core-team  
-**Observed:** 2026-10-28 08:40 UTC  
-**Hosted conclusions refreshed:** 2026-10-28 08:54 UTC, same source baseline only  
+**Status:** observed prerequisites; not release certification
+**Owner:** core-team
+**Observed:** 2026-10-28 08:40 UTC
+**Hosted conclusions refreshed:** 2026-10-28 08:54 UTC, same source baseline only
 **Source baseline:** `af7f0c6a91ea3c3bea25befbd8d1a98ac0fbe76f`
 
 This receipt records read-only GitHub API and source inspection during implementation of the

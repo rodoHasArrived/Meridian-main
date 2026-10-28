@@ -268,8 +268,8 @@
       "id": "SRC-UI-DASHBOARD",
       "path": "src/Meridian.Ui/dashboard",
       "readme": "src/Meridian.Ui/dashboard/README.md",
-      "readme_hash": "8daa8e601fa67497976e49fdc621f686864b1d948975759555699d2d3b3da3f5",
-      "source_hash": "1f234c41344873922f9c24127d53ddd00eda5b6f4e4520329199882f0f747671"
+      "readme_hash": "2c78293f2b8b63df5f20307a910914cef617fb1ea1447a647e0b9f04486942f7",
+      "source_hash": "101062870e9f33560730bd8bb2a3daac9702ec0f83cf2511fb985666edee157b"
     },
     {
       "id": "SRC-UI-SERVICES",
