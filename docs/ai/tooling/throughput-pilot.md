@@ -104,6 +104,10 @@ python build/python/cli/buildctl.py recommend-validation \
   --changed-file src/Meridian.Ui.Services/Meridian.Ui.Services.csproj --json
 ```
 
+For .NET iteration, recommendations select a deterministic session profile per test project.
+Use `recommend-validation --fresh` to request fresh isolated builds instead; this does not run
+checks or change their final validation requirements.
+
 Recommendations contain command argument arrays, affected paths, selection reasons, input hashes,
 consumer impact, unknown-coverage warnings, and retained final-check requirements. They use
 path-based proof selection and the reverse .NET project-reference graph. A shared contract or

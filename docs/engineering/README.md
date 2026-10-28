@@ -73,6 +73,9 @@ npm run dev:fixtures -- --doctor
 ```
 
 Recommendations explain the selected checks and any uncertain coverage; they do not run tests.
+.NET recommendations use a stable, project-specific session profile for incremental iteration.
+Build-definition changes select a new profile automatically; ordinary source edits keep it warm.
+Add `--fresh` to recommend independent outputs for handoff; required final checks are retained.
 Use `recommend-validation --base origin/main` to include committed branch changes as well as
 working-tree changes, or repeat `--changed-file <path>` to preview an explicit scope. The npm
 shortcut is `npm run checks:recommend -- --base origin/main`. See the
@@ -130,6 +133,13 @@ For completed PR-ready work, run the full canonical repository gate after the fo
 bash scripts/ci.sh
 ```
 
+The local aggregate overlaps .NET and browser verification when resources permit, then runs docs
+and workflow verification serially. Use `--jobs 1` for serial execution or `--jobs 2` to request
+bounded overlap. Each invocation retains its own lane evidence and waits for all required results.
+`bash scripts/ci.sh --cold` measures a full gate with fresh .NET build outputs while retaining
+dependency caches. See [local feedback measurements](../development/build-observability.md#local-feedback-latency-and-observed-retries)
+for receipts, warm edit-to-result timing, and the exact meaning of cold.
+
 Focused checks and environment diagnostics do not replace this gate or the required hosted checks.
 
 GitHub Actions `Meridian CI / quality-gate` is the authoritative merge result. Local work may
@@ -156,6 +166,12 @@ See [repair and fallback details](generated-merge-recovery.md) and
 [hosted activation](ci-cd-optimization.md#generated-repair-and-maintenance-activation).
 Merge-group freshness checks still fail when combined output is stale; refresh the affected
 branches and rebuild the group.
+
+Pure contract tests live in `tests/Meridian.Contracts.UnitTests/`; core configuration and
+resilience tests live in `tests/Meridian.Core.UnitTests/`. These projects have narrow production
+references and retain their original test namespaces. Host-dependent cases remain in
+`Meridian.Tests`; the canonical roster includes all three assemblies. A filter for a moved core
+or contract test must target its new project.
 
 The .NET lane builds the web host, then all unique default test projects in one generated
 solution-filter build for the standard `Release` configuration. The filter follows shared

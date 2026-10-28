@@ -250,6 +250,11 @@ npm --prefix src/Meridian.Ui/dashboard run build
 pwsh ./scripts/dev/run-local-quality.ps1 -IncludePlaywrightSmoke
 ```
 
+Local aggregate verification supports `bash scripts/ci.sh --jobs 1` (serial) and `--jobs 2`
+(bounded .NET/browser overlap), with docs/workflows afterward. `--cold` uses fresh .NET build
+outputs and retains dependency caches. Hosted leaf lanes keep their artifact locations and check
+identities. See [local measurement definitions](../../docs/development/build-observability.md#local-feedback-latency-and-observed-retries).
+
 Golden-path pilot acceptance:
 
 ```powershell

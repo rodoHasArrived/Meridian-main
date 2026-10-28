@@ -135,6 +135,8 @@ DEFAULT_TEST_PROJECTS = [
         "tests/Meridian.Tests/Meridian.Tests.csproj",
         "FullyQualifiedName~Meridian.Tests.Reporting",
     ),
+    ("contracts-unit", "tests/Meridian.Contracts.UnitTests/Meridian.Contracts.UnitTests.csproj", None),
+    ("core-unit", "tests/Meridian.Core.UnitTests/Meridian.Core.UnitTests.csproj", None),
     ("fsharp", "tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj", None),
     ("ui", "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj", None),
     ("backtesting", "tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj", None),
@@ -235,9 +237,21 @@ def positive_integer(value: str) -> int:
     return parsed
 
 
+def portable_isolation_key(value: str) -> str:
+    reserved = {"con", "prn", "aux", "nul"}
+    reserved.update(f"{prefix}{number}" for prefix in ("com", "lpt") for number in range(1, 10))
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,79}", value) or value.casefold() in reserved:
+        raise argparse.ArgumentTypeError("isolation key must be a portable name of 1-80 letters, digits, '-' or '_'")
+    return value
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run Meridian .NET CI test projects with aggregate reporting.")
     parser.add_argument("--configuration", default="Release", help="dotnet test configuration.")
+    parser.add_argument(
+        "--isolation-key", type=portable_isolation_key,
+        help="Use this portable build-isolation key for every build and test invocation.",
+    )
     parser.add_argument(
         "--max-parallel",
         type=positive_integer,
@@ -323,6 +337,7 @@ def build_dotnet_test_command(
     configuration: str,
     test_filter: str,
     results_dir: Path,
+    isolation_key: str | None = None,
 ) -> list[str]:
     combined_filter = combine_filters(test_filter, project.filter_expression)
     return [
@@ -347,13 +362,21 @@ def build_dotnet_test_command(
         "--results-directory",
         str(results_dir),
         "/p:EnableWindowsTargeting=true",
+        *build_isolation_properties(isolation_key),
     ]
+
+
+def build_isolation_properties(isolation_key: str | None) -> list[str]:
+    if isolation_key is None:
+        return []
+    return [f"/p:MeridianBuildIsolationKey={portable_isolation_key(isolation_key)}"]
 
 
 def build_dotnet_build_command(
     project: TestProject,
     *,
     configuration: str,
+    isolation_key: str | None = None,
 ) -> list[str]:
     return [
         "dotnet",
@@ -363,6 +386,7 @@ def build_dotnet_build_command(
         configuration,
         "--no-restore",
         "/p:EnableWindowsTargeting=true",
+        *build_isolation_properties(isolation_key),
     ]
 
 
@@ -423,13 +447,13 @@ def write_build_solution_filter(
 
 def run_default_build(
     projects: Sequence[TestProject], *, repo_root: Path, configuration: str,
-    results_dir: Path, dry_run: bool,
+    results_dir: Path, dry_run: bool, isolation_key: str | None = None,
 ) -> TestResult:
     """Build all default roots once, streaming output to a persistent log."""
     filter_path = results_dir.resolve() / "ci-dotnet-test-build.slnf"
     log_path = filter_path.parent / "dotnet-build.log"
     project = TestProject("default-roster", str(filter_path))
-    command = build_dotnet_build_command(project, configuration=configuration)
+    command = build_dotnet_build_command(project, configuration=configuration, isolation_key=isolation_key)
     print(f"Starting default test build; log: {log_path}", flush=True)
     print(" ".join(command), flush=True)
     started = time.perf_counter()
@@ -471,10 +495,11 @@ def run_builds(
     *,
     configuration: str,
     dry_run: bool,
+    isolation_key: str | None = None,
 ) -> list[TestResult]:
     results: list[TestResult] = []
     for project in get_unique_build_projects(projects):
-        command = build_dotnet_build_command(project, configuration=configuration)
+        command = build_dotnet_build_command(project, configuration=configuration, isolation_key=isolation_key)
         print(f"::group::dotnet build {project.path}", flush=True)
         print(" ".join(command), flush=True)
         started = time.perf_counter()
@@ -504,6 +529,7 @@ def run_tests(
     dry_run: bool,
     max_parallel: int = 1,
     properties: Sequence[str] = (),
+    isolation_key: str | None = None,
 ) -> list[TestResult]:
     if max_parallel < 1:
         raise ValueError("max_parallel must be a positive integer")
@@ -518,6 +544,7 @@ def run_tests(
             configuration=configuration,
             test_filter=test_filter,
             results_dir=shard_dir,
+            isolation_key=isolation_key,
         )
         command.extend(properties)
         filter_index = command.index("--filter") if "--filter" in command else -1
@@ -710,17 +737,20 @@ def main() -> int:
     use_group_build = not args.project and args.configuration == "Release"
     if not use_group_build:
         # Overrides may target projects or configurations absent from Meridian.sln.
-        build_results = run_builds(projects, configuration=args.configuration, dry_run=args.dry_run)
+        build_results = run_builds(projects, configuration=args.configuration, dry_run=args.dry_run,
+                                   isolation_key=getattr(args, "isolation_key", None))
     else:
         group_result = run_default_build(
             projects, repo_root=repo_root, configuration=args.configuration,
             results_dir=results_dir, dry_run=args.dry_run,
+            isolation_key=getattr(args, "isolation_key", None),
         )
         build_results = [group_result]
         if group_result.exit_code != 0:
             print("Default test build failed; building each project once for diagnostics.", file=sys.stderr)
             # Diagnostic retries cannot turn the original failure green or permit tests.
-            build_results.extend(run_builds(projects, configuration=args.configuration, dry_run=args.dry_run))
+            build_results.extend(run_builds(projects, configuration=args.configuration, dry_run=args.dry_run,
+                                            isolation_key=getattr(args, "isolation_key", None)))
     build_failures = [result for result in build_results if result.exit_code != 0]
     if build_failures:
         write_summaries(build_results, summary_output=Path(args.summary_output), json_output=Path(args.json_output))
@@ -737,6 +767,7 @@ def main() -> int:
         results_dir=results_dir,
         dry_run=args.dry_run,
         max_parallel=args.max_parallel,
+        isolation_key=getattr(args, "isolation_key", None),
     )
     write_summaries(
         results, summary_output=Path(args.summary_output), json_output=Path(args.json_output),

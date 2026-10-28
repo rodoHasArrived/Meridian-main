@@ -78,6 +78,14 @@ nothing, use the direct `dotnet`, `npm`, `pwsh`, and `python` commands above ins
 For completed PR-ready work, `bash scripts/ci.sh` is the canonical local/Codex verification
 command; the GitHub-hosted `quality-gate` check remains authoritative before merge.
 
+For incremental .NET iteration, `buildctl.py recommend-validation` selects a stable session profile
+per test project; add `--fresh` for independent-output recommendations. The local full gate overlaps
+the .NET/browser pair within a bounded resource budget and runs docs/workflows afterward; `--jobs 1`
+selects serial execution. `bash scripts/ci.sh --cold` measures fresh build outputs with dependency
+caches retained. Warm edit-to-result timing requires an explicit edit-start timestamp. See
+`docs/development/build-observability.md` for measurement definitions and retained evidence.
+
+
 When local machine limits, restore failures, or MSBuild locks make validation unreliable, push the
 branch and use the manual GitHub-hosted `Targeted Test` workflow instead of repeatedly retrying
 broad local scripts. Select a whitelisted `mode`; the .NET lane uses `mode=dotnet-filtered` with a

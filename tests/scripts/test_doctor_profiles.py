@@ -437,11 +437,14 @@ class CiPrerequisitePreflightTests(unittest.TestCase):
         self.log = self.root / "tool-calls.log"
         self.bash = shutil.which("bash")
         self.assertIsNotNone(self.bash, "The CI entrypoint requires Bash")
-        for relative in ("scripts/ci.sh", "scripts/ai/setup.sh", "README.md", "build/python/prerequisites.py", ".nvmrc", "global.json", "Meridian.sln", "Directory.Build.props", "Directory.Packages.props", "build/scripts/ci/requirements.txt", "build/scripts/docs/requirements.txt", "src/Meridian.Ui/dashboard/package.json", "src/Meridian.Ui/dashboard/package-lock.json"):
+        for relative in ("scripts/ci.sh", "build/scripts/ci/local_gate.py", "build/python/cli/buildctl.py", "build/python/cli/build_profiles.py", "scripts/ai/setup.sh", "README.md", "build/python/prerequisites.py", ".nvmrc", "global.json", "Meridian.sln", "Directory.Build.props", "Directory.Packages.props", "build/scripts/ci/requirements.txt", "build/scripts/docs/requirements.txt", "src/Meridian.Ui/dashboard/package.json", "src/Meridian.Ui/dashboard/package-lock.json"):
             target = self.root / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(REPO_ROOT / relative, target)
         self.python_shim_source = f'''case "$1" in
+  build/scripts/ci/local_gate.py|*/build/scripts/ci/local_gate.py)
+    exec {shlex.quote(sys.executable)} "$@"
+    ;;
   build/python/prerequisites.py|*/build/python/prerequisites.py)
     printf 'preflight %s\\n' "$*" >> "$DOCTOR_TEST_LOG"
     exec {shlex.quote(sys.executable)} {shlex.quote(str(self.root / "run-preflight.py"))} "$@"
