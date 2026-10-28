@@ -1086,7 +1086,8 @@ and dispatches to the registered `ISecurityValuationModel` whose kind the reques
 catalog's `DefaultValuationModel` declares; `QuotedPriceValuationModel` composes the golden-copy
 as-of read (retaining a selection receipt, as that read does), reports its staleness verdict as a
 diagnostic and picks the market-value function by the price's quote unit, scaling a percent-of-par
-quote by the factor in effect on the valuation date; `DiscountedCashFlowValuationModel` discounts
+quote by the factor in effect on the valuation date (the factor the projection selects, so a scalar
+current factor dated after the valuation date does not apply yet); `DiscountedCashFlowValuationModel` discounts
 the base-scenario projection as of the valuation date on a stored Discount curve (pinned on the
 request by id and optionally by version id, or the one definition in the security's currency),
 refuses to extrapolate past the curve, quotes face-value lots per 100 of the outstanding face the

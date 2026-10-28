@@ -66,6 +66,27 @@ public sealed class QuotedPriceValuationModelTests
     }
 
     [Fact]
+    public async Task AScalarFactorDatedAfterTheValuationDate_DoesNotReduceTheFaceUntilItsDate()
+    {
+        // The scalar 0.8 is effective from 2026-02-01 and there is no schedule: on 2026-01-01 the face
+        // is unfactored, as the cash-flow projection reads it; from 2026-02-01 the factor applies.
+        var factorDate = new DateOnly(2026, 2, 1);
+        var bond = ValuationTestSecurities.DatedFactorBond(0.8m, factorDate);
+        var pricing = Pricing(bond, new SecurityPriceGoldenCopyDto(
+            bond.SecurityId, 100m, SecurityPriceKind.MarketGoldenCopy, "BLOOMBERG", PriceAsOf, false, 1, [],
+            SecurityPriceUnit.PercentOfPar, ValuationTestSecurities.AsOf, PriceAsOf, KnownAt, Guid.NewGuid()));
+        var model = new QuotedPriceValuationModel(pricing);
+
+        var before = await model.ValueAsync(
+            new SecurityValuationRequest(bond.SecurityId, ValuationTestSecurities.AsOf, Quantity: 500_000m), bond, CancellationToken.None);
+        var onTheDate = await model.ValueAsync(
+            new SecurityValuationRequest(bond.SecurityId, new DateTimeOffset(factorDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero), Quantity: 500_000m), bond, CancellationToken.None);
+
+        before.MarketValue.Should().Be(500_000.00m, "the 0.8 factor is not yet in effect: 500,000 par x 1 x 100 / 100");
+        onTheDate.MarketValue.Should().Be(400_000.00m, "from its date the factor applies: 500,000 par x 0.8 x 100 / 100");
+    }
+
+    [Fact]
     public async Task AQuoteWithoutAUnit_HasNoMarketValue_AndSaysSo()
     {
         var bond = ValuationTestSecurities.Bond();

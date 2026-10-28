@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "bccbde559fda3840e887a6be7fd86744aaedb6e85da4fc62e42381ae061e9888",
+  "database_fingerprint": "23c6f8a784afcf35d3e3c37ff938fc9690f3b0875a2590deebe6ea843b76339b",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -28849,6 +28849,10 @@
       "object": "index:security_master.otc_margin_calls_one_open_per_side_idx"
     },
     {
+      "fingerprint": "1c843a6368ba3e906af3485ccb878916d975e46cc229974a34351a1c0b76e0e7",
+      "object": "index:security_master.otc_margin_calls_one_per_snapshot_movement_idx"
+    },
+    {
       "fingerprint": "fce355e82e3e6a5ba7194ec3360d96d588e12898a511e529ddf59ec46e5bc8fc",
       "object": "index:security_master.otc_margin_calls_pkey"
     },
@@ -30253,7 +30257,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "9743ceb6af8422ae1901cf6913024010b8273b6c112874b03b5eac282d5cb107",
+      "fingerprint": "5c48b456066145161350fb5a43ccbbce3de995bd8c8610adf28c7e7668213188",
       "object": "schema:security_master"
     },
     {
@@ -30953,7 +30957,7 @@
       "object": "table:security_master.otc_exposure_snapshots"
     },
     {
-      "fingerprint": "5b12669fbf5191796c475f27b9aac1f6934c7d9fa51d86941b1b793a55026455",
+      "fingerprint": "a6c136bf019b0b1f66e63d0ffeab382fbc22aedd5ee0b7bd3fa9a80f16516207",
       "object": "table:security_master.otc_margin_calls"
     },
     {
@@ -130217,7 +130221,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "9743ceb6af8422ae1901cf6913024010b8273b6c112874b03b5eac282d5cb107",
+      "fingerprint": "5c48b456066145161350fb5a43ccbbce3de995bd8c8610adf28c7e7668213188",
       "foreign_tables": [],
       "functions": [
         {
@@ -155263,7 +155267,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "5b12669fbf5191796c475f27b9aac1f6934c7d9fa51d86941b1b793a55026455",
+          "fingerprint": "a6c136bf019b0b1f66e63d0ffeab382fbc22aedd5ee0b7bd3fa9a80f16516207",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -155285,6 +155289,30 @@
               "options": [],
               "owner": "meridian",
               "predicate": "status = ANY (ARRAY['Issued'::text, 'Agreed'::text, 'Disputed'::text])",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX otc_margin_calls_one_per_snapshot_movement_idx ON security_master.otc_margin_calls USING btree (snapshot_id, mover, movement_kind) WHERE (status <> 'Cancelled'::text)",
+              "expression": null,
+              "fingerprint": "1c843a6368ba3e906af3485ccb878916d975e46cc229974a34351a1c0b76e0e7",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "snapshot_id",
+                "mover",
+                "movement_kind"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_margin_calls_one_per_snapshot_movement_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "status <> 'Cancelled'::text",
               "primary": false,
               "ready": true,
               "security_labels": [],
@@ -201343,7 +201371,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "5b12669fbf5191796c475f27b9aac1f6934c7d9fa51d86941b1b793a55026455",
+          "fingerprint": "a6c136bf019b0b1f66e63d0ffeab382fbc22aedd5ee0b7bd3fa9a80f16516207",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -201365,6 +201393,30 @@
               "options": [],
               "owner": "meridian",
               "predicate": "status = ANY (ARRAY['Issued'::text, 'Agreed'::text, 'Disputed'::text])",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX otc_margin_calls_one_per_snapshot_movement_idx ON security_master.otc_margin_calls USING btree (snapshot_id, mover, movement_kind) WHERE (status <> 'Cancelled'::text)",
+              "expression": null,
+              "fingerprint": "1c843a6368ba3e906af3485ccb878916d975e46cc229974a34351a1c0b76e0e7",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "snapshot_id",
+                "mover",
+                "movement_kind"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_margin_calls_one_per_snapshot_movement_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "status <> 'Cancelled'::text",
               "primary": false,
               "ready": true,
               "security_labels": [],

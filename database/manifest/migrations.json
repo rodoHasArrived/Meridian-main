@@ -484,7 +484,7 @@
       "ordinal": 54,
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/054_otc_exposure_and_collateral.sql",
       "schema": "security_master",
-      "sha256": "48ff7b25729844166716cd3eae41d1bb0caebb035adc1ed9238e2066a70bab9e"
+      "sha256": "01ed35acaa8ef128edff4a782a0d39df2e4efcba26e2611d7f122e414b86fcf3"
     },
     {
       "filename": "055_security_governance_events_otc_collateral_stream.sql",
@@ -1334,7 +1334,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "b800c22cd0404a8ecd28c594377e80bbf9ef9a73bbdf43e7cf1169ce4993ab53",
+  "fingerprint": "987642a3076d920bbfafcc2281407c2ff5286503526c44b4f9181487d4c88b42",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {

@@ -99,6 +99,12 @@ public static class OtcValuationBlockerCodes
 
     /// <summary>A collateral balance's description is no longer an eligible-collateral line of the agreement, so no haircut applies to it.</summary>
     public const string IneligibleCollateral = "IneligibleCollateral";
+
+    /// <summary>
+    /// A positive collateral balance is held in a currency other than the computation currency (for
+    /// example after the agreement's currency was amended); this increment does no FX.
+    /// </summary>
+    public const string CollateralCurrencyMismatch = "CollateralCurrencyMismatch";
 }
 
 /// <summary>How the contracts in a netting set are combined into one exposure.</summary>
@@ -408,6 +414,14 @@ public static class OtcExposureRules
                 if (balance.ValuedAsOf > asOfDate)
                 {
                     blockers.Add(new OtcValuationBlockerDto(OtcValuationBlockerCodes.CollateralValuationAfterAsOf, $"Collateral balance {balance.BalanceId:D} ({balance.EligibleCollateralDescription}) is valued as of {balance.ValuedAsOf:yyyy-MM-dd}, after {asOfDate:yyyy-MM-dd}; what was held on {asOfDate:yyyy-MM-dd} is not recorded."));
+                    continue;
+                }
+
+                // A balance written under the agreement's earlier currency cannot be credited in the
+                // current one without FX, which this increment does not do.
+                if (!string.Equals(balance.Currency, currency, StringComparison.OrdinalIgnoreCase))
+                {
+                    blockers.Add(new OtcValuationBlockerDto(OtcValuationBlockerCodes.CollateralCurrencyMismatch, $"Collateral balance {balance.BalanceId:D} ({balance.EligibleCollateralDescription}) is held in {balance.Currency}; the exposure is computed in {currency} and this increment does no FX."));
                     continue;
                 }
 

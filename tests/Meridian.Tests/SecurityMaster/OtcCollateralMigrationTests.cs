@@ -46,6 +46,9 @@ public sealed class OtcCollateralMigrationTests
         sql.Should().Contain("create unique index if not exists otc_margin_calls_one_open_per_side_idx");
         sql.Should().Contain("on __SCHEMA__.otc_margin_calls (netting_set_id, mover, movement_kind)", "one open call per netting set, mover and movement kind: a delivery and a return by the same party are distinct obligations");
         sql.Should().Contain("where status in ('Issued', 'Agreed', 'Disputed')", "only open calls are unique");
+        sql.Should().Contain("create unique index if not exists otc_margin_calls_one_per_snapshot_movement_idx");
+        sql.Should().Contain("on __SCHEMA__.otc_margin_calls (snapshot_id, mover, movement_kind)", "a snapshot's movement is called once");
+        sql.Should().Contain("where status <> 'Cancelled'", "a cancelled call leaves the movement uncalled");
         sql.Should().Contain("before update or delete on __SCHEMA__.otc_exposure_snapshots", "snapshots are append-only");
         sql.Should().Contain("errcode = '23514'");
         sql.Should().NotContain("drop ");

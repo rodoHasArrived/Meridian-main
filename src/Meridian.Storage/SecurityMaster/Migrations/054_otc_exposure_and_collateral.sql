@@ -140,5 +140,11 @@ create unique index if not exists otc_margin_calls_one_open_per_side_idx
     on __SCHEMA__.otc_margin_calls (netting_set_id, mover, movement_kind)
     where status in ('Issued', 'Agreed', 'Disputed');
 
+-- A snapshot's movement is called at most once unless that call was cancelled, so a retried issue
+-- after settlement cannot raise a duplicate collateral demand from the same snapshot.
+create unique index if not exists otc_margin_calls_one_per_snapshot_movement_idx
+    on __SCHEMA__.otc_margin_calls (snapshot_id, mover, movement_kind)
+    where status <> 'Cancelled';
+
 comment on table __SCHEMA__.otc_margin_calls is
     'Margin calls issued from an exposure snapshot: one movement (delivery or return, by the fund or the counterparty) with its called, agreed and settled amounts and its lifecycle status. At most one call per netting set, mover and movement kind is open at a time.';

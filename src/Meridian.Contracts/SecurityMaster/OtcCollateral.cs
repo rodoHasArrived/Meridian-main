@@ -246,9 +246,10 @@ public static class OtcCollateralRules
 
 /// <summary>
 /// The margin call lifecycle as pure functions. A call is issued from a complete, real snapshot
-/// (the store also requires it to be the latest version for its date and computed under the
-/// netting set's current, unshared collateral agreement version) and copies the movement's amount;
-/// it then moves Issued → Agreed | Disputed | Cancelled,
+/// whose movement has not already been called (a cancelled call aside); the store also requires
+/// the snapshot to be the latest version for its date and computed under the netting set's current
+/// master agreement version and current, unshared collateral agreement version. It copies the
+/// movement's amount and then moves Issued → Agreed | Disputed | Cancelled,
 /// Disputed → Agreed | Cancelled, Agreed → Settled | Cancelled, and Settled and Cancelled are
 /// terminal. Settlement does not move a balance; the operator records the resulting balance.
 /// </summary>
@@ -258,12 +259,16 @@ public static class OtcMarginCallRules
     public static bool IsOpen(OtcMarginCallStatus status)
         => status is OtcMarginCallStatus.Issued or OtcMarginCallStatus.Agreed or OtcMarginCallStatus.Disputed;
 
-    /// <summary>The call a request issues from a snapshot, given the netting set's calls that are still open.</summary>
-    public static OtcMarginCallDto Issue(OtcExposureSnapshotDto snapshot, IssueOtcMarginCallRequest request, IEnumerable<OtcMarginCallDto> openCalls, DateTimeOffset issuedAt)
+    /// <summary>
+    /// The call a request issues from a snapshot, given the netting set's existing calls: at least
+    /// every call still open and every call already issued from this snapshot.
+    /// </summary>
+    public static OtcMarginCallDto Issue(OtcExposureSnapshotDto snapshot, IssueOtcMarginCallRequest request, IEnumerable<OtcMarginCallDto> existingCalls, DateTimeOffset issuedAt)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(request);
-        ArgumentNullException.ThrowIfNull(openCalls);
+        ArgumentNullException.ThrowIfNull(existingCalls);
+        var calls = existingCalls.ToArray();
         var actor = OtcCollateralRules.RequireActor(request.UpdatedBy);
         if (request.SnapshotId != snapshot.SnapshotId)
             throw new ArgumentException("The call names a different snapshot than the one supplied.", nameof(request));
@@ -284,8 +289,13 @@ public static class OtcMarginCallRules
         // One open call per obligation: a mover's delivery and its return are distinct movements (both
         // arise when an independent amount is in play), so each may be open at once; a second call for
         // the same kind and mover is a duplicate.
-        if (openCalls.Any(call => call.NettingSetId == snapshot.NettingSetId && call.Mover == request.Mover && call.Kind == request.Kind && IsOpen(call.Status)))
+        if (calls.Any(call => call.NettingSetId == snapshot.NettingSetId && call.Mover == request.Mover && call.Kind == request.Kind && IsOpen(call.Status)))
             throw new ArgumentException($"Netting set {snapshot.NettingSetId:D} already has an open {request.Kind} call for the {request.Mover}; settle or cancel it first.", nameof(request));
+        // A snapshot's movement is one obligation: once called it is not called again from the same
+        // snapshot unless that call was cancelled. A settled movement is a new obligation only after a
+        // recompute, so a retry cannot raise a duplicate collateral demand.
+        if (calls.FirstOrDefault(call => call.SnapshotId == snapshot.SnapshotId && call.Mover == request.Mover && call.Kind == request.Kind && call.Status != OtcMarginCallStatus.Cancelled) is { } prior)
+            throw new ArgumentException($"Snapshot {snapshot.SnapshotId:D}'s {request.Kind} by the {request.Mover} was already called (call {prior.CallId:D}, {prior.Status}); recompute the snapshot to call it again.", nameof(request));
 
         return new OtcMarginCallDto(
             Guid.NewGuid(),

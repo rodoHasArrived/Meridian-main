@@ -52,6 +52,23 @@ internal static class ValuationTestSecurities
         }, new SecurityIdentifierDto(SecurityIdentifierKind.Cusip, "123456780", true, AsOf.AddYears(-1)));
 
     /// <summary>
+    /// The golden bond with a scalar current factor dated <paramref name="factorDate"/> and no factor
+    /// schedule: before that date the scalar does not describe the outstanding face.
+    /// </summary>
+    public static SecurityDetailDto DatedFactorBond(decimal currentFactor, DateOnly factorDate, Guid? securityId = null)
+        => Detail(securityId ?? Guid.NewGuid(), "Bond", "Dated-factor bond", "USD", new
+        {
+            issueDate = AsOfDate,
+            maturityDate = new DateOnly(2028, 1, 1),
+            par = 1_000_000m,
+            couponRate = 5m,
+            paymentFrequency = "Annual",
+            dayCountConvention = "30/360",
+            currentFactor,
+            factorDate
+        }, new SecurityIdentifierDto(SecurityIdentifierKind.Cusip, "123456782", true, AsOf.AddYears(-1)));
+
+    /// <summary>
     /// The golden bond with a dated factor schedule that disagrees with its undated scalar: 0.6 from
     /// 2025-06-01, 0.5 from 2025-12-01 and 0.4 from 2026-06-01, against a scalar current factor of
     /// 0.8. On the 2026-01-01 valuation date the factor in effect is 0.5.

@@ -308,8 +308,16 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
             throw new ArgumentException($"Exposure snapshot {snapshot.SnapshotId:D} (version {snapshot.Version}) has been superseded by version {latest} for {snapshot.AsOfDate:yyyy-MM-dd}; issue the call from the latest snapshot.", nameof(request));
         await RequireCurrentTermsAsync(connection, transaction, snapshot, ct).ConfigureAwait(false);
 
-        var openCalls = await ReadCallsAsync(connection, transaction, $"where netting_set_id = @id and status in {OpenCallStatuses}", ("id", snapshot.NettingSetId), ct).ConfigureAwait(false);
-        var call = OtcMarginCallRules.Issue(snapshot, request with { UpdatedBy = actor }, openCalls, DateTimeOffset.UtcNow);
+        // The open calls of the netting set and every call already issued from this snapshot, so the
+        // rule can refuse both a second open call and a repeat of a movement already called.
+        var existingCalls = await ReadCallsAsync(
+            connection,
+            transaction,
+            $"where netting_set_id = @id and (status in {OpenCallStatuses} or snapshot_id = @snapshot_id)",
+            ct,
+            ("id", snapshot.NettingSetId),
+            ("snapshot_id", snapshot.SnapshotId)).ConfigureAwait(false);
+        var call = OtcMarginCallRules.Issue(snapshot, request with { UpdatedBy = actor }, existingCalls, DateTimeOffset.UtcNow);
 
         await using (var command = connection.CreateCommand())
         {
@@ -551,14 +559,35 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
     private async Task RequireCurrentTermsAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, OtcExposureSnapshotDto snapshot, CancellationToken ct)
     {
         Guid? currentAgreementId;
+        Guid currentMasterId;
         await using (var command = connection.CreateCommand())
         {
             command.Transaction = transaction;
-            command.CommandText = $"select collateral_agreement_id from {_options.Schema}.otc_netting_sets where netting_set_id = @id for share;";
+            command.CommandText = $"select collateral_agreement_id, master_agreement_id from {_options.Schema}.otc_netting_sets where netting_set_id = @id for share;";
             command.Parameters.AddWithValue("id", snapshot.NettingSetId);
-            var value = await command.ExecuteScalarAsync(ct).ConfigureAwait(false)
-                ?? throw new ArgumentException($"The netting set {snapshot.NettingSetId:D} does not exist.");
-            currentAgreementId = value is Guid id ? id : null;
+            await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+            if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+                throw new ArgumentException($"The netting set {snapshot.NettingSetId:D} does not exist.");
+            currentAgreementId = reader.IsDBNull(0) ? null : reader.GetGuid(0);
+            currentMasterId = reader.GetGuid(1);
+        }
+
+        // The master agreement decides close-out netting versus gross exposure, so an amendment of it
+        // (or a re-pointed netting set) changes the amount a call may demand.
+        long? currentMasterVersion;
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText = $"select version from {_options.Schema}.otc_master_agreements where agreement_id = @id for share;";
+            command.Parameters.AddWithValue("id", currentMasterId);
+            currentMasterVersion = await command.ExecuteScalarAsync(ct).ConfigureAwait(false) is long version ? version : null;
+        }
+
+        if (currentMasterId != snapshot.MasterAgreementId || currentMasterVersion != snapshot.MasterAgreementVersion)
+        {
+            throw new ArgumentException(
+                $"Exposure snapshot {snapshot.SnapshotId:D} was computed under master agreement {snapshot.MasterAgreementId:D} version {snapshot.MasterAgreementVersion.ToString(System.Globalization.CultureInfo.InvariantCulture)}; " +
+                $"netting set {snapshot.NettingSetId:D} is now under master agreement {currentMasterId:D} version {currentMasterVersion?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "unknown"}. Recompute the snapshot before issuing a call.");
         }
 
         long? currentAgreementVersion = null;
@@ -689,8 +718,16 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
         return rows;
     }
 
-    private async Task<IReadOnlyList<OtcMarginCallDto>> ReadCallsAsync(
+    private Task<IReadOnlyList<OtcMarginCallDto>> ReadCallsAsync(
         NpgsqlConnection connection, NpgsqlTransaction? transaction, string whereClause, (string Name, object Value) parameter, CancellationToken ct, bool forUpdate = false)
+        => ReadCallsAsync(connection, transaction, whereClause, [parameter], forUpdate, ct);
+
+    private Task<IReadOnlyList<OtcMarginCallDto>> ReadCallsAsync(
+        NpgsqlConnection connection, NpgsqlTransaction? transaction, string whereClause, CancellationToken ct, params (string Name, object Value)[] parameters)
+        => ReadCallsAsync(connection, transaction, whereClause, parameters, forUpdate: false, ct);
+
+    private async Task<IReadOnlyList<OtcMarginCallDto>> ReadCallsAsync(
+        NpgsqlConnection connection, NpgsqlTransaction? transaction, string whereClause, IReadOnlyList<(string Name, object Value)> parameters, bool forUpdate, CancellationToken ct)
     {
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
@@ -701,7 +738,8 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
             {whereClause}
             order by issued_on, call_id{(forUpdate ? " for update" : string.Empty)};
             """;
-        command.Parameters.AddWithValue(parameter.Name, parameter.Value);
+        foreach (var (name, value) in parameters)
+            command.Parameters.AddWithValue(name, value);
 
         var rows = new List<OtcMarginCallDto>();
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);

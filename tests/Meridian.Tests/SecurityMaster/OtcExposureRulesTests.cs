@@ -359,6 +359,31 @@ public sealed class OtcExposureRulesTests
     }
 
     [Fact]
+    public void ABalanceInAnotherCurrency_IsABlocker_AndIsNotCreditedWithoutFx()
+    {
+        // The agreement's currency was amended to EUR after the balances were recorded in USD.
+        var view = View(OtcMasterAgreementType.Isda2002);
+        view = view with
+        {
+            CollateralAgreement = view.CollateralAgreement! with { Currency = "EUR" },
+            Contracts = view.Contracts.Select(contract => contract with { NotionalCurrency = "EUR" }).ToArray()
+        };
+        var balances = Balances(400_000m);
+
+        var snapshot = OtcExposureRules.Compute(
+            view,
+            view.Contracts.Select(contract => Valued(contract, 1.25m) with { Currency = "EUR" }).ToArray(),
+            balances, NotShared, AsOf, "casey", DateTimeOffset.UtcNow);
+
+        snapshot.Currency.Should().Be("EUR");
+        snapshot.Status.Should().Be(OtcExposureSnapshotStatus.Incomplete);
+        snapshot.Blockers.Where(b => b.Code == OtcValuationBlockerCodes.CollateralCurrencyMismatch).Should().HaveCount(2)
+            .And.OnlyContain(b => b.Reason.Contains("held in USD") && b.Reason.Contains("computed in EUR"));
+        snapshot.CollateralHeld.Should().BeEmpty("a USD balance is never credited as EUR");
+        snapshot.Movements.Should().BeEmpty();
+    }
+
+    [Fact]
     public void AValuedMark_ForAnotherDateOrAnotherInstrument_IsUnvalued()
     {
         var view = View(OtcMasterAgreementType.Isda2002);

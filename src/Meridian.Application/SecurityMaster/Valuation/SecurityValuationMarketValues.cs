@@ -12,13 +12,22 @@ internal static class SecurityValuationMarketValues
 {
     /// <summary>
     /// The paydown factor in effect on <paramref name="asOfDate"/>: the latest dated factor-schedule
-    /// point on or before it, else the resolved terms' scalar current factor, else 1
-    /// (<see cref="StructuredCashFlowTerms.FactorAsOf"/>).
+    /// point on or before it (<see cref="StructuredCashFlowTerms.FactorAsOf"/>), else the resolved
+    /// terms' scalar current factor unless its retained factor date is after
+    /// <paramref name="asOfDate"/>, else 1. This is the factor the cash-flow projection selects, so
+    /// quoted and discounted valuations scale the same outstanding face.
     /// </summary>
     public static decimal FactorAsOf(SecurityDetailDto security, DateOnly asOfDate)
     {
         ArgumentNullException.ThrowIfNull(security);
-        return StructuredCashFlowTermsResolver.Resolve(security).FactorAsOf(asOfDate) ?? 1m;
+        var terms = StructuredCashFlowTermsResolver.Resolve(security);
+        var scheduled = terms.FactorSchedule.Any(entry => entry.AsOfDate <= asOfDate);
+        if (!scheduled && SecurityMasterCashFlowService.ReadScalarFactorDate(security) is { } scalarFactorDate && scalarFactorDate > asOfDate)
+        {
+            return 1m;
+        }
+
+        return terms.FactorAsOf(asOfDate) ?? 1m;
     }
 
     /// <summary>

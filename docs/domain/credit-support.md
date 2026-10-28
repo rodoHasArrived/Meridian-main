@@ -80,7 +80,9 @@ Security Master governance log on the `OtcCollateral` stream in the same transac
   after the as-of date (`CollateralValuationAfterAsOf`): balances are current-state records, so what
   was held on an earlier date is not known, and a back-dated computation is not callable once a
   balance has been revalued. So does a positive balance whose description is no longer one of the
-  agreement's eligible lines (`IneligibleCollateral`); it is not counted as held. With no collateral
+  agreement's eligible lines (`IneligibleCollateral`); it is not counted as held. So does a positive
+  balance held in a currency other than the computation currency, for example after the agreement's
+  currency was amended (`CollateralCurrencyMismatch`); it is never credited without FX. With no collateral
   agreement the snapshot reports exposures only: both credit support sides are null rather than
   filled from zero thresholds. A snapshot is never more real than its least-real input; its
   provenance is reported, and a call is issued only from a `Complete`, real snapshot.
@@ -92,9 +94,11 @@ Security Master governance log on the `OtcCollateral` stream in the same transac
 - **Calls.** A call copies the amount and currency of the snapshot's movement for its kind and
   mover, is issued on or after the snapshot date, falls due on or after it is issued, and is
   refused while the netting set has another open call of the same kind for the same mover (a
-  party's delivery and its return are distinct obligations and may both be open), when the
-  snapshot has been superseded by a later version for its date, or when the netting set's
-  collateral agreement is no longer the one, at the version, the snapshot was computed under, or is
+  party's delivery and its return are distinct obligations and may both be open), when that
+  snapshot's movement was already called and the call was not cancelled (a settled movement is
+  called again only from a recomputed snapshot), when the snapshot has been superseded by a later
+  version for its date, or when the netting set's master agreement or collateral agreement is no
+  longer the one, at the version, the snapshot was computed under, or the collateral agreement is
   now shared with another netting set (recompute the snapshot first). Issued → Agreed | Disputed | Cancelled;
   Disputed → Agreed | Cancelled; Agreed → Settled | Cancelled; Settled and Cancelled are terminal.
   Agreement defaults to the called amount, settlement to the agreed amount; a dispute or a

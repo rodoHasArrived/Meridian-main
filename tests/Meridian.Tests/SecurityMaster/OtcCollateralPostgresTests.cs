@@ -156,7 +156,11 @@ public sealed class OtcCollateralPostgresTests : IClassFixture<SecurityMasterDat
             .Should().ThrowAsync<ArgumentException>().WithMessage("*margin call*does not exist*");
         (await collateral.ListMarginCallsAsync(nettingSet.NettingSetId)).Should().ContainSingle().Which.Status.Should().Be(OtcMarginCallStatus.Settled);
 
-        // Once the call is settled, a second one for the fund may be issued; an incomplete snapshot refuses it.
+        // A retried issue from the same snapshot after settlement would demand the movement twice: refused.
+        await collateral.Invoking(s => s.IssueMarginCallAsync(new IssueOtcMarginCallRequest(second.SnapshotId, OtcMovementKind.Delivery, OtcMovementParty.Fund, AsOf, null, null, "casey")))
+            .Should().ThrowAsync<ArgumentException>().WithMessage($"*{call.CallId:D}*Settled*recompute the snapshot*");
+
+        // Once the call is settled, a second one for the fund needs a recomputed snapshot; an incomplete one refuses it.
         var incomplete = (await new OtcExposureService(contracts, collateral, new FixedPriceValuationSource(c => c.Direction == OtcContractDirection.Buy ? 1.25m : null), NullLogger<OtcExposureService>.Instance)
             .ComputeAsync(nettingSet.NettingSetId, AsOf, "casey"))!;
         incomplete.Version.Should().Be(3);
@@ -218,10 +222,21 @@ public sealed class OtcCollateralPostgresTests : IClassFixture<SecurityMasterDat
         underAmendedTerms.CounterpartyAsSecuredParty!.Held.Should().Be(590_237.5m);
         underAmendedTerms.Movements.Should().ContainSingle().Which.Amount.Should().Be(340_000m);
 
+        // The master agreement is amended (it decides netting versus gross): that snapshot can no longer be called either.
+        var master = await contracts.GetMasterAgreementAsync(csa.MasterAgreementId);
+        var amendedMaster = await contracts.UpsertMasterAgreementAsync(new UpsertOtcMasterAgreementRequest(
+            master!.AgreementId, master.Counterparty, master.CounterpartyLei, master.OurEntity, master.OurEntityId,
+            master.AgreementType, master.AgreementDate, "English", "governing law amended", "casey"));
+        amendedMaster.Version.Should().Be(master.Version + 1);
+        await collateral.Invoking(s => s.IssueMarginCallAsync(new IssueOtcMarginCallRequest(underAmendedTerms.SnapshotId, OtcMovementKind.Delivery, OtcMovementParty.Fund, AsOf, null, null, "casey")))
+            .Should().ThrowAsync<ArgumentException>().WithMessage($"*master agreement*version {master.Version}*now under*version {amendedMaster.Version}*Recompute the snapshot*");
+        var underAmendedMaster = (await service.ComputeAsync(nettingSet.NettingSetId, AsOf, "casey"))!;
+        underAmendedMaster.MasterAgreementVersion.Should().Be(amendedMaster.Version);
+
         // A second netting set now references the same agreement: the call is refused and a recompute is blocked.
         var sibling = await contracts.UpsertNettingSetAsync(new UpsertOtcNettingSetRequest(null, csa.MasterAgreementId, csa.CollateralAgreementId, "Big Bank ISDA (second set)", null, "casey"));
         (await collateral.ListNettingSetsUnderCollateralAgreementAsync(csa.CollateralAgreementId)).Should().BeEquivalentTo(new[] { nettingSet.NettingSetId, sibling.NettingSetId });
-        await collateral.Invoking(s => s.IssueMarginCallAsync(new IssueOtcMarginCallRequest(underAmendedTerms.SnapshotId, OtcMovementKind.Delivery, OtcMovementParty.Fund, AsOf, null, null, "casey")))
+        await collateral.Invoking(s => s.IssueMarginCallAsync(new IssueOtcMarginCallRequest(underAmendedMaster.SnapshotId, OtcMovementKind.Delivery, OtcMovementParty.Fund, AsOf, null, null, "casey")))
             .Should().ThrowAsync<ArgumentException>().WithMessage($"*{sibling.NettingSetId:D}*not allocated across netting sets*");
         var shared = (await service.ComputeAsync(nettingSet.NettingSetId, AsOf, "casey"))!;
         shared.Status.Should().Be(OtcExposureSnapshotStatus.Incomplete);

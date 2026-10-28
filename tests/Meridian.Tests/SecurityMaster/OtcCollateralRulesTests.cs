@@ -150,10 +150,14 @@ public sealed class OtcCollateralRulesTests
             .Should().Throw<ArgumentException>().WithMessage("*already has an open Delivery call for the Fund*");
         FluentActions.Invoking(() => OtcMarginCallRules.Issue(snapshot, Request(), [open with { Status = OtcMarginCallStatus.Agreed }], DateTimeOffset.UtcNow))
             .Should().Throw<ArgumentException>("an agreed call is still open");
-        OtcMarginCallRules.Issue(snapshot, Request(), [open with { Status = OtcMarginCallStatus.Settled }], DateTimeOffset.UtcNow).Should().NotBeNull("a settled call is closed");
+        FluentActions.Invoking(() => OtcMarginCallRules.Issue(snapshot, Request(), [open with { Status = OtcMarginCallStatus.Settled }], DateTimeOffset.UtcNow))
+            .Should().Throw<ArgumentException>("the snapshot's movement was already called and settled; a retry must not demand it twice")
+            .WithMessage($"*{open.CallId:D}*Settled*recompute the snapshot*");
+        OtcMarginCallRules.Issue(snapshot, Request(), [open with { Status = OtcMarginCallStatus.Cancelled }], DateTimeOffset.UtcNow).Should().NotBeNull("a cancelled call leaves the snapshot's movement uncalled");
+        OtcMarginCallRules.Issue(snapshot, Request(), [open with { Status = OtcMarginCallStatus.Settled, SnapshotId = Guid.NewGuid() }], DateTimeOffset.UtcNow).Should().NotBeNull("a settled call from an earlier snapshot is closed");
         OtcMarginCallRules.Issue(snapshot, Request(), [open with { Mover = OtcMovementParty.Counterparty }], DateTimeOffset.UtcNow).Should().NotBeNull("the other mover's call does not block");
         OtcMarginCallRules.Issue(snapshot, Request(), [open with { Kind = OtcMovementKind.Return }], DateTimeOffset.UtcNow).Should().NotBeNull("the same mover's open return is a distinct obligation and does not block its delivery");
-        OtcMarginCallRules.Issue(snapshot, Request(), [open with { NettingSetId = Guid.NewGuid() }], DateTimeOffset.UtcNow).Should().NotBeNull("another netting set's call does not block");
+        OtcMarginCallRules.Issue(snapshot, Request(), [open with { NettingSetId = Guid.NewGuid(), SnapshotId = Guid.NewGuid() }], DateTimeOffset.UtcNow).Should().NotBeNull("another netting set's call, issued from its own snapshot, does not block");
     }
 
     [Theory]

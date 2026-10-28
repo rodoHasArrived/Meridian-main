@@ -335,9 +335,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         // row) by 20%. Only an undated scalar, or one dated on or before the projection as-of,
         // may seed the balance; a future-dated scalar leaves the latest eligible schedule point
         // (already resolved above) or the unfactored walk in charge.
-        var scalarFactorDate = SecurityTermReader.ReadDate(
-            EnumerateFactorDateSources(SecurityAssetClassTermsUpgrader.UpgradeForRead(security.AssetClass, security.AssetSpecificTerms)),
-            ["factorDate", "currentFactorDate"]);
+        var scalarFactorDate = ReadScalarFactorDate(security);
         var scalarFactorApplies = scalarFactorDate is not DateOnly scalarAsOf || scalarAsOf <= asOfDate;
         var scheduledFactor = appliedFactorEntry?.Factor ?? (scalarFactorApplies ? terms.CurrentFactor : null);
         var hasAuthoritativeFactor = scheduledFactor is >= 0m;
@@ -766,6 +764,17 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
 
     private static DateTimeOffset ToUtcDateTimeOffset(DateOnly date)
         => new(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+
+    /// <summary>
+    /// The date the security's scalar current factor is effective from, when its terms retain one
+    /// (<c>factorDate</c> or <c>currentFactorDate</c>). A scalar dated after a valuation or
+    /// projection date does not describe that date's balance; the valuation models apply the same
+    /// rule so quoted and projected values read one factor.
+    /// </summary>
+    internal static DateOnly? ReadScalarFactorDate(SecurityDetailDto security)
+        => SecurityTermReader.ReadDate(
+            EnumerateFactorDateSources(SecurityAssetClassTermsUpgrader.UpgradeForRead(security.AssetClass, security.AssetSpecificTerms)),
+            ["factorDate", "currentFactorDate"]);
 
     /// <summary>
     /// Term sources for the scalar factor-date lookup, in the SAME nested-first precedence
