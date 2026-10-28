@@ -95,8 +95,7 @@ public sealed class JsonlMarketDataStore : IMarketDataStore
 
     private IEnumerable<string> EnumerateCandidateFiles(MarketDataQuery query)
     {
-        var allFiles = Directory.EnumerateFiles(_root, "*.jsonl*", SearchOption.AllDirectories)
-            .OrderBy(f => f, StringComparer.OrdinalIgnoreCase);
+        var allFiles = JsonlArchiveFiles.Enumerate(_root);
 
         if (!query.Symbol.HasValue)
             return allFiles;
@@ -125,11 +124,10 @@ public sealed class JsonlMarketDataStore : IMarketDataStore
     {
         // ReadWrite|Delete sharing: the sink holds a persistent append handle on the active
         // day file, and retention may delete files mid-enumeration; neither should fail reads.
-        await using var fs = new FileStream(
-            file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 64 * 1024, useAsync: true);
+        await using var fs = await JsonlArchiveFiles.OpenReadAsync(file, ct);
         // Shared codec detection (magic bytes, extension fallback) so this store decodes every
         // compression suffix the storage policy can emit (.gz/.gzip/.zst/.lz4/.br), not only .gz.
-        Stream stream = CompressedJsonlStream.Decompress(fs, file);
+        Stream stream = CompressedJsonlStream.Decompress(fs, fs.Name);
 
         using var reader = new StreamReader(stream);
         var lineNumber = 0;

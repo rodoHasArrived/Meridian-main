@@ -315,6 +315,7 @@ public sealed class StatementImportService(
         {
             CanonicalSourcePath = canonicalPath,
             CanonicalArtifactHash = canonicalHash,
+            ExecutedMappingFingerprint = parse.ExecutedMappingFingerprint,
             AccountingScope = request.AccountingScope
         };
 

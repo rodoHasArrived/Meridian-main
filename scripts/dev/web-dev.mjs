@@ -1,22 +1,26 @@
 #!/usr/bin/env node
 
-import { access, mkdir, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import http from "node:http";
-import net from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { setTimeout as delay } from "node:timers/promises";
 import { startOwnedProcess } from "./owned-process.mjs";
+import { assertDashboardDependencies, assertPortAvailable, diagnoseWeb, formatDiagnosis } from "./web-doctor.mjs";
+export { assertPortAvailable } from "./web-doctor.mjs";
 
 const defaultRepoRoot = fileURLToPath(new URL("../../", import.meta.url));
 const help = `Meridian web development launcher (Node.js 22.12+ and .NET 10 for backend mode)
 
   npm run dev                         Seeded backend + dotnet watch + Vite
   npm run dev:fixtures                Vite with fixture-only API responses
+  npm run dev:doctor                  Check backend-connected launcher prerequisites
   node scripts/dev/web-dev.mjs --mode backend-connected|fixture-only [options]
 
 Options:
+  --doctor                          Diagnose selected mode without launching services
+  --json                            Machine-readable diagnostics (requires --doctor)
   --port <port>                      Vite loopback port (default 5173)
   --backend-port <port>              Seeded host loopback port (default 8080)
   --data-dir <directory>             Retained demo parent (default artifacts/dev-web)
@@ -35,6 +39,12 @@ export function parseOptions(argv) {
   for (let index = 0; index < argv.length; index++) {
     const [flag, inline] = argv[index].split(/=(.*)/s);
     if (flag === "--help" || flag === "-h") return { help: true };
+    if (["--doctor", "--json"].includes(flag)) {
+      if (inline !== undefined || seen.has(flag)) throw new Error(`Unknown or repeated option: ${flag}`);
+      seen.add(flag);
+      options[flag.slice(2)] = true;
+      continue;
+    }
     const name = names.get(flag);
     if (!name || seen.has(name)) throw new Error(`Unknown or repeated option: ${flag}`);
     seen.add(name);
@@ -45,6 +55,7 @@ export function parseOptions(argv) {
   if (!["fixture-only", "backend-connected"].includes(options.mode)) {
     throw new Error("Choose --mode fixture-only or --mode backend-connected (or use npm run dev).");
   }
+  if (options.json && !options.doctor) throw new Error("--json requires --doctor.");
   for (const name of ["port", "backendPort", "timeoutMs"]) {
     const value = Number(options[name]);
     if (!/^\d+$/.test(String(options[name])) || !Number.isSafeInteger(value) || value < 1 ||
@@ -57,19 +68,6 @@ export function parseOptions(argv) {
     throw new Error("Vite and the backend must use different ports.");
   }
   return options;
-}
-
-export async function assertPortAvailable(port, { label = "port" } = {}) {
-  for (const host of ["127.0.0.1", "::1"]) {
-    await new Promise((resolve, reject) => {
-      const server = net.createServer();
-      server.once("error", (error) => {
-        if (host === "::1" && ["EAFNOSUPPORT", "EADDRNOTAVAIL"].includes(error.code)) return resolve();
-        reject(new Error(`${label} ${host}:${port} is unavailable (${error.code}). Choose another port; no existing process was stopped.`));
-      });
-      server.listen({ host, port, exclusive: true }, () => server.close(resolve));
-    });
-  }
 }
 
 export async function waitForHttp(url, { timeoutMs, signal, expectedHeader }) {
@@ -150,7 +148,7 @@ export async function runDev(options, { repoRoot = defaultRepoRoot, spawnProcess
     });
   };
   try {
-    await access(vitePath).catch(() => { throw new Error("Install dashboard dependencies first: npm --prefix src/Meridian.Ui/dashboard ci"); });
+    await assertDashboardDependencies(dashboard);
     await assertPortAvailable(options.port, { label: "Vite port" });
     if (options.mode === "backend-connected") {
       await assertPortAvailable(options.backendPort, { label: "Backend port" });
@@ -215,6 +213,11 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   try {
     const options = parseOptions(process.argv.slice(2));
     if (options.help) console.log(help);
+    else if (options.doctor) {
+      const report = await diagnoseWeb(options, { repoRoot: defaultRepoRoot });
+      console.log(options.json ? JSON.stringify(report, null, 2) : formatDiagnosis(report));
+      process.exitCode = report.ok ? 0 : 1;
+    }
     else await runDev(options);
   } catch (error) {
     console.error(`[dev] ${error.message}`);

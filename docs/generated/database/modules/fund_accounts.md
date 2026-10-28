@@ -98,6 +98,8 @@ erDiagram
         numeric_24_6_ actual_amount
         numeric_24_6_ variance
         text reason
+        uuid superseded_by_result_id FK
+        timestamp_with_time_zone resolved_at
     }
     fund_accounts_account_reconciliation_run {
         uuid reconciliation_run_id PK
@@ -131,6 +133,7 @@ erDiagram
         text projection_evidence_path
         integer security_missing_count
         jsonb warnings
+        uuid superseded_by_sync_history_id FK
     }
     fund_accounts_bank_statement_batch {
         uuid batch_id PK
@@ -141,6 +144,8 @@ erDiagram
         integer line_count
         timestamp_with_time_zone ingested_at
         text loaded_by
+        integer statement_revision
+        boolean transaction_feed
     }
     fund_accounts_bank_statement_line {
         uuid statement_line_id PK
@@ -154,6 +159,7 @@ erDiagram
         text description
         text external_reference
         numeric_24_6_ running_balance
+        integer line_sequence
     }
     fund_accounts_custodian_position_line {
         uuid position_line_id PK
@@ -199,7 +205,9 @@ erDiagram
     fund_accounts_account_definition ||--o{ fund_accounts_bank_statement_line : "bank_statement_line_account_id_fkey"
     fund_accounts_account_definition ||--o{ fund_accounts_custodian_position_line : "custodian_position_line_account_id_fkey"
     fund_accounts_account_definition ||--o{ fund_accounts_custodian_statement_batch : "custodian_statement_batch_account_id_fkey"
+    fund_accounts_account_reconciliation_breaks ||--o{ fund_accounts_account_reconciliation_breaks : "account_reconciliation_breaks_superseded_by_result_id_fkey"
     fund_accounts_account_reconciliation_run ||--o{ fund_accounts_account_reconciliation_breaks : "account_reconciliation_breaks_reconciliation_run_id_fkey"
+    fund_accounts_account_sync_history ||--o{ fund_accounts_account_sync_history : "account_sync_history_superseded_by_sync_history_id_fkey"
     fund_accounts_bank_statement_batch ||--o{ fund_accounts_bank_statement_line : "bank_statement_line_batch_id_fkey"
     fund_accounts_custodian_statement_batch ||--o{ fund_accounts_custodian_position_line : "custodian_position_line_batch_id_fkey"
 ```
@@ -209,11 +217,11 @@ erDiagram
 | `account_balance_snapshot` | table | 14 | `snapshot_id` | 1 | 2 | - |
 | `account_definition` | table | 23 | `account_id` | 0 | 6 | - |
 | `account_margin_snapshot` | table | 32 | `margin_snapshot_id` | 1 | 3 | - |
-| `account_reconciliation_breaks` | table | 11 | `result_id` | 1 | 2 | - |
+| `account_reconciliation_breaks` | table | 13 | `result_id` | 2 | 3 | - |
 | `account_reconciliation_run` | table | 11 | `reconciliation_run_id` | 1 | 2 | - |
-| `account_sync_history` | table | 18 | `sync_history_id` | 1 | 2 | - |
-| `bank_statement_batch` | table | 8 | `batch_id` | 1 | 1 | - |
-| `bank_statement_line` | table | 11 | `statement_line_id` | 2 | 2 | - |
+| `account_sync_history` | table | 19 | `sync_history_id` | 2 | 3 | - |
+| `bank_statement_batch` | table | 10 | `batch_id` | 1 | 1 | - |
+| `bank_statement_line` | table | 12 | `statement_line_id` | 2 | 3 | - |
 | `custodian_position_line` | table | 13 | `position_line_id` | 2 | 2 | - |
 | `custodian_statement_batch` | table | 9 | `batch_id` | 1 | 1 | - |
 | `fund_account_legacy_import_receipt` | table | 3 | `source_hash` | 0 | 1 | - |

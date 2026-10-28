@@ -94,6 +94,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 
 | Document | Use it when you need to... |
 | --- | --- |
+| [Shared browser scenarios](browser-scenarios.md) | use one typed payload across URL previews, Vitest, and strict Playwright screenshot capture |
 | [Web UI Structural Improvement Proposal](web-ui-structural-improvement-proposal.md) | review the browser workstation's screenshot-evidenced UX findings and the proposed structural changes (route-scoped views, master–detail cockpit, shell de-noising) |
 | [Web UI Structural Mockups](mockups/web-ui/README.md) | view static HTML mockups of the proposed workspace layouts before implementation |
 

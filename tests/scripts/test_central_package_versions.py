@@ -23,7 +23,19 @@ class CentralPackageVersionTests(unittest.TestCase):
             for item in root.findall(".//PackageVersion")
         }
 
-    def test_microsoft_extensions_pins_match_hosting_transitives(self) -> None:
+    def test_microsoft_extensions_pins_keep_reviewed_compatible_patch_overrides(self) -> None:
+        # Hosting remains on 10.0.7. These exact, reviewed overrides meet its
+        # minimum dependency versions without permitting unreviewed major/minor drift.
+        # Configuration/DI abstractions/logging abstractions/options move together:
+        # the 10.0.14 packages depend on the matching abstraction patch floor.
+        approved_patch_overrides = {
+            "Microsoft.Extensions.Configuration": "10.0.14",
+            "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.14",
+            "Microsoft.Extensions.Hosting.Abstractions": "10.0.12",
+            "Microsoft.Extensions.Caching.Memory": "10.0.12",
+            "Microsoft.Extensions.Logging.Abstractions": "10.0.14",
+            "Microsoft.Extensions.Options": "10.0.14",
+        }
         packages = [
             "Microsoft.Extensions.Configuration",
             "Microsoft.Extensions.Configuration.Json",
@@ -44,17 +56,10 @@ class CentralPackageVersionTests(unittest.TestCase):
 
         for package in packages:
             with self.subTest(package=package):
-                expected = "10.0.12" if package in {
-                    "Microsoft.Extensions.Caching.Memory",
-                    "Microsoft.Extensions.Configuration",
-                    "Microsoft.Extensions.DependencyInjection.Abstractions",
-                    "Microsoft.Extensions.Hosting.Abstractions",
-                    "Microsoft.Extensions.Logging.Abstractions",
-                    "Microsoft.Extensions.Options",
-                } else "10.0.7"
+                expected = approved_patch_overrides.get(package, "10.0.7")
                 self.assertEqual(self.versions[package], expected)
 
-        self.assertEqual(self.versions["Microsoft.Extensions.ObjectPool"], "10.0.12")
+        self.assertEqual(self.versions["Microsoft.Extensions.ObjectPool"], "10.0.14")
 
     def test_json_stack_pins_match_system_text_json_transitives(self) -> None:
         self.assertEqual(self.versions["System.Text.Json"], "10.0.7")

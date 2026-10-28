@@ -40,6 +40,18 @@ This layer should hold reusable execution contracts without binding them to one 
 
 ## Important workflows
 
+New OMS submissions follow `OrderRequest` → `ValidatedOrder` → `GatewayResolvedOrder` before
+pre-trade risk. `ValidatedOrder.TryCreate` freezes metadata and legs and returns structured
+field errors for blank symbols, undefined order enums, missing price limbs, or conflicting /
+non-positive trailing specifications. Closed pricing variants retain required prices; auxiliary
+paper price hints remain available. Quantity, leg, and instrument-specific price policies remain
+with the existing gateway and risk checks; zero or negative prices are not universally rejected.
+`GatewayResolvedOrder.TryResolve` asks the active gateway for sizing authority and represents
+quantity, broker-native notional, or face value priced as percentage of par as distinct cases.
+`ToRiskRequest` is the compatibility boundary for existing risk rules: it stamps resolved sizing
+on a copy, never on the submitted gateway request. Neither typed object permits construction with
+arbitrary caller-asserted sizing. Amendments and recovery retain their existing contracts.
+
 Use this module when execution integration contracts need to be shared by multiple execution implementations.
 `BrokerageOrderPlacementGate` is the shared pre-submit safety gate for HTTP endpoints and the OMS:
 non-paper gateways must have a matching `BrokerageConfiguration`, while the paper gateway keeps
@@ -70,8 +82,15 @@ publishing accounting fills. Optional replacement and average fields preserve le
 when absent.
 `IBrokerageOrderRecoveryGateway` adds authoritative lookup by retained client ID, including terminal
 orders. A null result means unresolved state and cannot authorize resubmission.
+`IBrokerageRetainedOrderRecoveryGateway` extends it with the retained order's identity for gateways
+that match by a client-supplied reference, so a different instrument, side or type under the same
+reference is refused before any route is installed for the match.
 `IBrokerageConnectionState` exposes an opaque connection generation and verified account/environment
 scope so synchronization and durable recovery revoke evidence when the active connection changes.
+`ExecutionReport.BrokerAccountId` carries the external account actually reported by the broker.
+The OMS retains it in `OrderState.BrokerAccountId` for exact account-qualified restart recovery;
+it is distinct from internal `FundAccountId` and cannot be supplied through caller routing metadata.
+Both fields are omitted when null, so old recovery snapshots remain readable without inventing ownership.
 Brokerage activity fill snapshots can carry explicit provider-reported realized P&L when a broker
 or custodian supplies it; callers should leave the field null rather than infer it from fill
 notional. Activity snapshots can also carry provider corporate-action/factor events such as
@@ -93,7 +112,8 @@ first non-blank alias, matching the gateway's own precedence, so a value the gat
 means the order is quantity-sized rather than falling through to a later alias.
 Because another broker can use the same asset-class label with different unit semantics,
 `IFaceValueOrderSizingGateway` makes the active gateway resolve the actual route. The OMS then
-carries that server-owned fact through `OrderSizingMetadata` and `OrderState`; risk and working
+carries that server-owned fact through `GatewayResolvedOrder`, the legacy risk adapter's
+`OrderSizingMetadata`, and `OrderState`; risk and working
 reserves value those orders as `abs(quantity) * price / 100`, and broker-notional metadata does not
 override routed face value.
 `IPosition.ExactQuantity` carries the unrounded signed size beside the whole-share `Quantity`;
@@ -130,7 +150,9 @@ dotnet build src/Meridian.Execution.Sdk/Meridian.Execution.Sdk.csproj /p:EnableW
 
 ## Change rules
 
-Keep SDK contracts stable and broker-neutral. Implementation logic belongs in execution or infrastructure projects.
+Keep SDK contracts stable and broker-neutral. Validated/resolved order factories construct shared
+contracts and query broker-neutral capabilities; routing, policy orchestration, and lifecycle
+implementation belong in execution or infrastructure projects.
 
 ## Related docs
 

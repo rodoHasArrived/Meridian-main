@@ -212,6 +212,96 @@ public sealed class BrokerageExecutionReconciliationServiceTests
     }
 
     [Fact]
+    public async Task RecoverOrdersAsync_ConnectionChangesAfterScopeBinding_RefusesTheLookupsEvidence()
+    {
+        var accountId = Guid.NewGuid();
+        await using var context = new RecoveryContext([
+            CreateLocalOrder("ord-1") with { FundAccountId = accountId, Status = OrderStatus.PendingNew }
+        ]);
+        var generation = 1L;
+        ((IBrokerageConnectionState)context.Gateway).ConnectionGeneration.Returns(_ => generation);
+        context.RecoveryGateway.GetOrderForRecoveryAsync("ord-1", Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                generation++; // the broker reconnected under another session while the lookup ran
+                return Task.FromResult<ExecutionReport?>(CreateRecoveryReport("ord-1"));
+            });
+
+        var recover = () => CreateService().RecoverOrdersAsync(context.Gateway, context.OrderManager, accountId);
+
+        await recover.Should().ThrowAsync<InvalidOperationException>();
+        context.OrderManager.GetRecoveryOrders(accountId).Should().ContainSingle("evidence from another session is never applied");
+        context.OrderManager.GetOrder("ord-1")!.Status.Should().Be(OrderStatus.PendingNew);
+    }
+
+    [Fact]
+    public async Task RecoverOrdersAsync_ConnectionChangesWhileTheScopeIsBound_RefusesBeforeLookup()
+    {
+        var accountId = Guid.NewGuid();
+        await using var context = new RecoveryContext([
+            CreateLocalOrder("ord-1") with { FundAccountId = accountId, Status = OrderStatus.PendingNew }
+        ], retainedRecovery: true);
+        var generation = 7L;
+        var connection = (IBrokerageConnectionState)context.Gateway;
+        connection.ConnectionGeneration.Returns(_ => generation);
+        var scopeReads = 0;
+        connection.ScopeIdentity.Returns(_ =>
+        {
+            // The broker logs in again while the OMS binds the recovery scope.
+            if (++scopeReads == 2)
+                generation++;
+            return "alpaca:paper:test-account";
+        });
+        var scoped = (IBrokerageRetainedOrderRecoveryGateway)context.Gateway;
+
+        var recover = () => CreateService().RecoverOrdersAsync(context.Gateway, context.OrderManager, accountId);
+
+        await recover.Should().ThrowAsync<InvalidOperationException>();
+        await scoped.DidNotReceive().GetOrderForRecoveryAsync(Arg.Any<string>(), Arg.Any<OrderState>(), Arg.Any<long>(),
+            Arg.Any<CancellationToken>());
+        context.OrderManager.GetRecoveryOrders(accountId).Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task RecoverOrdersAsync_BrokerIdRetainedForAnotherOrder_IsNotBookedAgainstIt()
+    {
+        var accountId = Guid.NewGuid();
+        await using var context = new RecoveryContext([
+            CreateLocalOrder("ord-A") with { FundAccountId = accountId, Status = OrderStatus.PendingNew },
+            CreateLocalOrder("ord-B") with { FundAccountId = accountId, Status = OrderStatus.PendingNew }
+        ]);
+        // A later session reused ord-A's retained broker id for ord-B, which then filled.
+        context.RecoveryGateway.GetOrderForRecoveryAsync("ord-B", Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<ExecutionReport?>(CreateRecoveryReport("ord-B") with { GatewayOrderId = "broker-ord-A" }));
+
+        var recover = () => CreateService().RecoverOrdersAsync(context.Gateway, context.OrderManager, accountId);
+
+        await recover.Should().ThrowAsync<InvalidDataException>();
+        context.OrderManager.GetOrder("ord-A")!.FilledQuantity.Should().Be(0m, "ord-B's fill is not ord-A's");
+        context.OrderManager.GetOrder("ord-B")!.FilledQuantity.Should().Be(0m);
+        context.Portfolio.Positions.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task RecoverOrdersAsync_ReferenceMatchingGateway_ReceivesTheBoundGenerationWithTheLookup()
+    {
+        var accountId = Guid.NewGuid();
+        await using var context = new RecoveryContext([
+            CreateLocalOrder("ord-1") with { FundAccountId = accountId, Status = OrderStatus.PendingNew }
+        ], retainedRecovery: true);
+        ((IBrokerageConnectionState)context.Gateway).ConnectionGeneration.Returns(7L);
+        var scoped = (IBrokerageRetainedOrderRecoveryGateway)context.Gateway;
+        scoped.GetOrderForRecoveryAsync("ord-1", Arg.Any<OrderState>(), 7L, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<ExecutionReport?>(CreateRecoveryReport("ord-1")));
+
+        await CreateService().RecoverOrdersAsync(context.Gateway, context.OrderManager, accountId);
+
+        await scoped.Received(1).GetOrderForRecoveryAsync("ord-1", Arg.Is<OrderState>(o => o.OrderId == "ord-1"), 7L, Arg.Any<CancellationToken>());
+        await scoped.DidNotReceive().GetOrderForRecoveryAsync("ord-1", Arg.Any<CancellationToken>());
+        context.OrderManager.GetRecoveryOrders(accountId).Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task RecoverOrdersAsync_ChangedBrokerScope_RefusesBeforeLookup()
     {
         var accountId = Guid.NewGuid();
@@ -527,9 +617,11 @@ public sealed class BrokerageExecutionReconciliationServiceTests
     {
         private readonly string _directory = Path.Combine(Path.GetTempPath(), $"meridian-recovery-reconcile-{Guid.NewGuid():N}");
 
-        public RecoveryContext(IReadOnlyList<OrderState> retainedOrders)
+        public RecoveryContext(IReadOnlyList<OrderState> retainedOrders, bool retainedRecovery = false)
         {
-            Gateway = Substitute.For<IBrokerageGateway, IBrokerageOrderRecoveryGateway, IBrokerageConnectionState>();
+            Gateway = retainedRecovery
+                ? Substitute.For<IBrokerageGateway, IBrokerageRetainedOrderRecoveryGateway, IBrokerageConnectionState>()
+                : Substitute.For<IBrokerageGateway, IBrokerageOrderRecoveryGateway, IBrokerageConnectionState>();
             Gateway.GatewayId.Returns("alpaca");
             ((IBrokerageConnectionState)Gateway).ScopeIdentity.Returns("alpaca:paper:test-account");
             var reports = Channel.CreateUnbounded<ExecutionReport>();

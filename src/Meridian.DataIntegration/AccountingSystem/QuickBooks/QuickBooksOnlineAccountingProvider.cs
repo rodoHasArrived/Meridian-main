@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.AccountingSystem;
+using Meridian.DataIntegration.Credentials;
 using Meridian.ProviderSdk.AccountingSystem;
 
 namespace Meridian.DataIntegration.AccountingSystem.QuickBooks;
@@ -11,12 +12,14 @@ namespace Meridian.DataIntegration.AccountingSystem.QuickBooks;
 public sealed class QuickBooksOnlineAccountingProvider :
     IAccountingSystemProvider,
     IAccountingSystemConnectionMetadataProvider,
-    IAccountingSystemConnectionVerifier
+    IAccountingSystemConnectionVerifier,
+    IConnectionBoundAccountingProvider
 {
     public const string Id = "quickbooks";
 
     private readonly IQuickBooksOnlineConnectionStore _connectionStore;
     private readonly IQuickBooksOnlineClient _client;
+    private readonly SemaphoreSlim _verificationGate = new(1, 1);
 
     public QuickBooksOnlineAccountingProvider(
         IQuickBooksOnlineConnectionStore connectionStore,
@@ -27,6 +30,9 @@ public sealed class QuickBooksOnlineAccountingProvider :
     }
 
     public string ProviderId => Id;
+
+    public IAccountingSystemConnectionVerifier BindCredentials(IProviderCredentialStore credentialStore)
+        => new QuickBooksOnlineAccountingProvider(new QuickBooksOnlineProviderCredentialConnectionStore(credentialStore), _client);
 
     public string DisplayName => "QuickBooks Online";
 
@@ -48,48 +54,45 @@ public sealed class QuickBooksOnlineAccountingProvider :
 
     public async Task<AccountingSystemConnectionVerificationResult> VerifyConnectionAsync(CancellationToken ct = default)
     {
+        await _verificationGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        { return await VerifyConnectionCoreAsync(ct).ConfigureAwait(false); }
+        finally { _verificationGate.Release(); }
+    }
+
+    private async Task<AccountingSystemConnectionVerificationResult> VerifyConnectionCoreAsync(CancellationToken ct)
+    {
         var connection = await RequireConnectionAsync(ct).ConfigureAwait(false);
+        var generation = connection.CredentialSnapshot?.CredentialGeneration;
 
         try
         {
             var token = await _client.RefreshAccessTokenAsync(connection, ct).ConfigureAwait(false);
-            if (!string.IsNullOrWhiteSpace(token.RefreshToken))
-            {
-                await _connectionStore.SaveRefreshTokenAsync(token.RefreshToken, ct).ConfigureAwait(false);
-            }
-
+            // A remote rotation must survive caller cancellation, and cannot replace newer operator credentials.
+            generation = await _connectionStore.SaveRefreshTokenAsync(token.RefreshToken, connection, CancellationToken.None).ConfigureAwait(false);
+            await _client.VerifyCompanyAsync(connection, token.AccessToken, ct).ConfigureAwait(false);
             var verifiedAt = DateTimeOffset.UtcNow;
-            await _connectionStore.RecordConnectionAsync(
-                success: true,
-                externalCompanyId: connection.RealmId,
-                error: null,
-                occurredAtUtc: verifiedAt,
-                ct).ConfigureAwait(false);
-
+            // The lifecycle records this result once, with the authenticated requesting actor.
             return new AccountingSystemConnectionVerificationResult(
                 Success: true,
                 ExternalCompanyId: connection.RealmId,
                 LastError: null,
                 VerifiedAtUtc: verifiedAt,
-                Warnings: BuildReadOnlyWarnings(connection, token.Warnings));
+                Warnings: BuildReadOnlyWarnings(connection, token.Warnings))
+            { ExpectedCredentialGeneration = generation };
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             var verifiedAt = DateTimeOffset.UtcNow;
-            var message = $"QuickBooks Online token exchange failed: {ex.Message}";
-            await _connectionStore.RecordConnectionAsync(
-                success: false,
-                externalCompanyId: connection.RealmId,
-                error: message,
-                occurredAtUtc: verifiedAt,
-                ct).ConfigureAwait(false);
+            const string message = "QuickBooks Online verification failed. Check credentials, selected company realm, permissions and availability.";
 
             return new AccountingSystemConnectionVerificationResult(
                 Success: false,
-                ExternalCompanyId: connection.RealmId,
+                ExternalCompanyId: null,
                 LastError: message,
                 VerifiedAtUtc: verifiedAt,
-                Warnings: ["QuickBooks Online remains unavailable until OAuth credentials and the selected company realm are repaired."]);
+                Warnings: ["QuickBooks Online remains unavailable until OAuth credentials and the selected company realm are repaired."])
+            { ExpectedCredentialGeneration = generation };
         }
     }
 
@@ -212,6 +215,9 @@ public interface IQuickBooksOnlineConnectionStore
 
     Task SaveRefreshTokenAsync(string refreshToken, CancellationToken ct = default);
 
+    Task<string> SaveRefreshTokenAsync(string? refreshToken, QuickBooksOnlineConnection expectedConnection, CancellationToken ct = default)
+        => throw new NotSupportedException("This QuickBooks connection store cannot conditionally retain rotated credentials.");
+
     Task RecordConnectionAsync(
         bool success,
         string? externalCompanyId,
@@ -226,11 +232,17 @@ public sealed record QuickBooksOnlineConnection(
     string RefreshToken,
     string RealmId,
     string Environment,
-    string? CompanyName);
+    string? CompanyName)
+{
+    public ProviderCredentialReadResult? CredentialSnapshot { get; init; }
+}
 
 /// <summary>Exchanges QuickBooks OAuth tokens and retrieves accounting evidence through the provider API.</summary>
 public interface IQuickBooksOnlineClient
 {
+    Task VerifyCompanyAsync(QuickBooksOnlineConnection connection, string accessToken, CancellationToken ct = default)
+        => throw new NotSupportedException("This QuickBooks client cannot verify the selected company.");
+
     Task<QuickBooksOnlineTokenExchangeResult> ExchangeAuthorizationCodeAsync(
         QuickBooksOnlineAuthorizationCodeRequest request,
         CancellationToken ct = default);
@@ -282,6 +294,17 @@ public sealed class QuickBooksOnlineHttpClient : IQuickBooksOnlineClient
     public QuickBooksOnlineHttpClient(HttpClient httpClient)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+    }
+
+    public async Task VerifyCompanyAsync(QuickBooksOnlineConnection connection, string accessToken, CancellationToken ct = default)
+    {
+        var realm = Uri.EscapeDataString(connection.RealmId);
+        using var document = await GetJsonAsync(new Uri($"{AccountingBaseUrl(connection)}/v3/company/{realm}/companyinfo/{realm}"), accessToken, ct).ConfigureAwait(false);
+        // Authorization of this realm-specific read proves company access. CompanyInfo.Id is a
+        // company-local entity ID (commonly "1"), not the OAuth realm ID in the request path.
+        if (!TryGetProperty(document.RootElement, "CompanyInfo", out var company) ||
+            string.IsNullOrWhiteSpace(ReadString(company, "Id")))
+            throw new InvalidOperationException("QuickBooks did not return the selected company information.");
     }
 
     public async Task<QuickBooksOnlineTokenExchangeResult> RefreshAccessTokenAsync(

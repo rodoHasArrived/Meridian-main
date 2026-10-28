@@ -15,6 +15,7 @@ export * from "./types/canonical-symbol";
 export * from "./types/consolidation";
 export * from "./types/provider-accounting";
 export * from "./types/provider-integration-provenance";
+export * from "./types/report-amount-proof";
 export * from "./types/reporting-governance";
 export * from "./types/reporting-income-comparison";
 export * from "./types/workstation-1";

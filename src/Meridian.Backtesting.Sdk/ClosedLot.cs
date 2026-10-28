@@ -19,6 +19,15 @@ public sealed record ClosedLot(
     string? AccountId = null,
     bool IsShort = false) : IUnitizedLot
 {
+    /// <summary>Exact booked basis; absent on legacy records that only retain an entry quote.</summary>
+    public decimal? CostBasis { get; init; }
+
+    /// <summary>Acquisition commission allocated to this disposal.</summary>
+    public decimal EntryCommission { get; init; }
+
+    /// <summary>Closing commission allocated to this disposal.</summary>
+    public decimal ExitCommission { get; init; }
+
     /// <summary>What one unit of <see cref="Quantity"/> measures; shares unless stated.</summary>
     public SecurityLotUnitKind UnitKind { get; init; } = SecurityLotUnitKind.Shares;
 
@@ -26,7 +35,9 @@ public sealed record ClosedLot(
     public decimal Multiplier { get; init; } = 1m;
 
     /// <summary>Total realised profit or loss for this lot.</summary>
-    public decimal RealizedPnl => (IsShort ? EntryPrice - ClosePrice : ClosePrice - EntryPrice) * Quantity;
+    public decimal RealizedPnl => IsShort
+        ? (CostBasis ?? EntryPrice * Quantity) - ClosePrice * Quantity
+        : ClosePrice * Quantity - (CostBasis ?? EntryPrice * Quantity);
 
     /// <summary>Total holding duration from open to close.</summary>
     public TimeSpan HoldingPeriod => ClosedAt - OpenedAt;
@@ -38,5 +49,5 @@ public sealed record ClosedLot(
     public bool IsLongTerm => HoldingPeriod >= TimeSpan.FromDays(365);
 
     /// <summary>Per-share realised P&amp;L (close price minus entry price).</summary>
-    public decimal RealizedPnlPerShare => IsShort ? EntryPrice - ClosePrice : ClosePrice - EntryPrice;
+    public decimal RealizedPnlPerShare => Quantity == 0 ? 0m : RealizedPnl / Quantity;
 }

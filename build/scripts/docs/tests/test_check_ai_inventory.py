@@ -61,6 +61,23 @@ def write_ui_platform_policy_docs(root: Path, body: str | None = None) -> None:
         write(root / rel_path, policy)
 
 
+def write_shared_project_context(root: Path) -> None:
+    shared = (
+        "<!-- shared-context:begin -->\nShared facts.\n"
+        "No mobile development lane\n"
+        "do not create mobile applications, mobile-specific product surfaces, native iOS/Android clients, "
+        "MAUI clients, React Native clients, Flutter clients, or mobile-first workflows\n"
+        "<!-- shared-context:end -->\n"
+    )
+    for rel_path in (
+        check_ai_inventory.SHARED_CONTEXT_CANONICAL,
+        *check_ai_inventory.SHARED_CONTEXT_MIRRORS,
+    ):
+        path = root / rel_path
+        header = path.read_text(encoding="utf-8") if path.is_file() else ""
+        write(path, header + shared)
+
+
 class CheckAiInventoryTests(unittest.TestCase):
     def test_collect_inventory_discovers_supported_ai_surfaces(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -374,7 +391,9 @@ class CheckAiInventoryTests(unittest.TestCase):
                     ".cursor/rules/meridian.mdc",
                 ]
             )
+            indexed += "\nAgent Skills-compatible hosts .agents/skills/ open-agent-skills-v1 .claude/plugins/"
             write_required_docs(root, indexed)
+            write_shared_project_context(root)
 
             inventory = check_ai_inventory.collect_inventory(root)
             findings = check_ai_inventory.check_catalog_drift(root, inventory)
@@ -446,7 +465,9 @@ class CheckAiInventoryTests(unittest.TestCase):
                     "Local AI maintenance tooling scripts/ai/ tools/codex/",
                 ]
             )
+            indexed += "\nAgent Skills-compatible hosts .agents/skills/ open-agent-skills-v1 .claude/plugins/"
             write_required_docs(root, indexed)
+            write_shared_project_context(root)
 
             inventory = check_ai_inventory.collect_inventory(root)
             findings = check_ai_inventory.check_catalog_drift(root, inventory)
@@ -534,13 +555,44 @@ class CheckAiInventoryTests(unittest.TestCase):
             self.assertEqual({codex, agents}, {finding.path for finding in findings})
             self.assertTrue(all(finding.kind == "shared-project-context" for finding in findings))
 
-    def test_shared_project_context_is_skipped_without_canonical_markers(self) -> None:
+    def test_shared_project_context_reports_invalid_canonical_and_mirror_markers(self) -> None:
+        valid = b"<!-- shared-context:begin -->\nShared facts.\n<!-- shared-context:end -->\n"
+        invalid_sections = (
+            b"No markers.",
+            valid + valid,
+            b"<!-- shared-context:end -->\n<!-- shared-context:begin -->",
+            b"<!-- shared-context:begin malformed\n<!-- shared-context:end -->",
+            b"\xff" + valid,
+        )
+        for name in (check_ai_inventory.SHARED_CONTEXT_CANONICAL, *check_ai_inventory.SHARED_CONTEXT_MIRRORS):
+            for invalid in invalid_sections:
+                with self.subTest(path=name, invalid=invalid), tempfile.TemporaryDirectory() as tmp:
+                    root = Path(tmp)
+                    write_shared_project_context(root)
+                    (root / name).write_bytes(invalid)
+                    findings = check_ai_inventory.check_shared_project_context(root)
+                    self.assertEqual([name], [finding.path for finding in findings])
+                    self.assertIn("invalid", findings[0].message)
+                    self.assertIn("--write", findings[0].message)
+
+    def test_shared_project_context_reports_missing_canonical(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            write(root / check_ai_inventory.SHARED_CONTEXT_CANONICAL, "No markers.\n")
-            write(root / check_ai_inventory.SHARED_CONTEXT_MIRRORS[0], "Different text.\n")
+            write_shared_project_context(root)
+            (root / check_ai_inventory.SHARED_CONTEXT_CANONICAL).unlink()
+            findings = check_ai_inventory.check_shared_project_context(root)
+            self.assertEqual([check_ai_inventory.SHARED_CONTEXT_CANONICAL], [f.path for f in findings])
+            self.assertIn("missing", findings[0].message)
 
-            self.assertEqual([], check_ai_inventory.check_shared_project_context(root))
+    def test_shared_project_context_checks_same_bytes_as_generator(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_shared_project_context(root)
+            name = check_ai_inventory.SHARED_CONTEXT_MIRRORS[0]
+            path = root / name
+            path.write_bytes(path.read_bytes().replace(b"\n", b"\r\n"))
+            findings = check_ai_inventory.check_shared_project_context(root)
+            self.assertEqual([name], [finding.path for finding in findings])
 
     def test_shared_project_context_reports_deleted_or_renamed_mirror(self) -> None:
         for rel_path in check_ai_inventory.SHARED_CONTEXT_MIRRORS:

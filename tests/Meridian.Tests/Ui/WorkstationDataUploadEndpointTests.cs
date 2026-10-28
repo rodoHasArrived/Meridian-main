@@ -152,9 +152,9 @@ public sealed partial class WorkstationEndpointsTests
                 account.AccountId,
                 "JPMorgan",
                 """
-                transaction_date,value_date,amount,currency,transaction_type,description,reference,closing_balance
-                2026-06-01,2026-06-03,-50000.00,USD,Wire,Payment to broker,WIRE-20260601-001,950000.00
-                2026-06-02,,1250.25,usd,Interest,Deposit interest,INT-20260602,951250.25
+                transaction_date,value_date,amount,currency,transaction_type,description,reference,closing_balance,line_sequence,statement_revision
+                2026-06-01,2026-06-03,-50000.00,USD,Wire,Payment to broker,WIRE-20260601-001,950000.00,10,2
+                2026-06-02,,1250.25,usd,Interest,Deposit interest,INT-20260602,951250.25,20,2
                 """,
                 statementDate: "2026-06-30");
 
@@ -175,6 +175,8 @@ public sealed partial class WorkstationEndpointsTests
 
             var stored = await accountService.GetBankStatementLinesAsync(account.AccountId);
             stored.Should().HaveCount(2);
+            stored.Should().OnlyContain(line => line.StatementRevision == 2 && line.StatementAsOfDate == new DateOnly(2026, 6, 30));
+            stored.Single(line => line.Amount == 1250.25m).LineSequence.Should().Be(20);
             stored.Should().Contain(line =>
                 line.Amount == -50000m &&
                 line.Currency == "USD" &&

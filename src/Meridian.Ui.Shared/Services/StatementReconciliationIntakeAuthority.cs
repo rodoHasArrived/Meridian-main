@@ -74,6 +74,7 @@ public sealed class StatementReconciliationIntakeAuthorityException(
 /// </summary>
 public sealed partial class StatementReconciliationIntakeAuthority : IStatementReconciliationIntakeAuthority
 {
+    private readonly IStatementRunRecoveryRepository? _runRecovery;
     private readonly IAccountQueryService? _accounts;
     private readonly IFundProfileTenancyRegistry? _tenancy;
     private readonly ILedgerBookService? _ledgerBooks;
@@ -93,8 +94,10 @@ public sealed partial class StatementReconciliationIntakeAuthority : IStatementR
         IReconciliationApiService? reconciliation,
         IReconciliationBreakQueueRepository? breakQueue,
         Meridian.Infrastructure.Reconciliation.ICanonicalStatementStore? canonicalStatements = null,
-        Meridian.Infrastructure.Reconciliation.IStatementRunMatchArtifactStore? matchArtifacts = null)
+        Meridian.Infrastructure.Reconciliation.IStatementRunMatchArtifactStore? matchArtifacts = null,
+        IStatementRunRecoveryRepository? runRecovery = null)
     {
+        _runRecovery = runRecovery;
         _accounts = accounts;
         _tenancy = tenancy;
         _ledgerBooks = ledgerBooks;

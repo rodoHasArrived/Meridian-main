@@ -54,6 +54,11 @@ Conditional token saves compare the complete expected connection while holding t
 vault writer lock and return a new opaque credential generation. Import and lifecycle
 verification results must still match that generation when persisted. A concurrent
 operator replacement is preserved and the stale operation cannot verify it.
+Retained Xero, NetSuite and QuickBooks connections bind verification to a store scoped by
+tenant, connection, external account and environment. Token rotation conditionally replaces
+only that connection and retains its replacement in recovery storage. QuickBooks verification
+reads the selected company identity after token exchange; the lifecycle records the result
+once with the requesting operator and current credential generation.
 
 ## OAuth token ownership
 
@@ -107,7 +112,10 @@ documented scope-out, not a production path. This does not certify PRD-002.
 Scoped token records retain and validate their provider and ownership context; legacy token enumeration
 cannot return scoped tokens. `OAuthTokenRefreshService` accepts trusted `ownershipScope` for loading,
 saving, refresh rotation and deletion. Scoped services never claim or erase an unassigned legacy OAuth
-sidecar. Host callers must supply authorized scope; the default service remains a legacy compatibility path.
+sidecar or interrupted `.migrated` artifact, but do restrict both to owner-only access on Unix.
+Scoped startup propagates permission failures and verifies the resulting mode before continuing.
+Host callers must supply
+authorized scope; the default service remains a legacy compatibility path.
 
 ## Credential migration recovery
 
@@ -216,6 +224,15 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Testing/DepthBufferSelfTests.cs` and `Testing/SampleDataGenerator.cs` - built-in
   depth-buffer integrity self-tests and deterministic sample market-event generation used by
   Application diagnostics adapters.
+
+Freshness monitoring uses receipt time from the composed live publisher and emits a snapshot on
+its check timer, including during silent feeds and closed market sessions. Application composition
+exports these snapshots to Prometheus. Historical backfill and heartbeats do not refresh live price
+evidence. Enabled configured subscriptions receive one threshold of startup grace (starting no
+earlier than the current UTC market open); a missing first event then violates the SLA. Managed
+scope synchronization preserves retained symbols and rejects late events for removed subscriptions.
+The monitor accepts a `TimeProvider` so ingress-to-alert recovery and UTC market hours can be
+verified without wall-clock waits.
 
 ## Important workflows
 

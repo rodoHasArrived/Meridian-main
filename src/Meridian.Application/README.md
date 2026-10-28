@@ -6,10 +6,23 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-21
 ---
 
 # src/Meridian.Application
+
+Freshness monitoring begins with live ingress or collector subscription attempts, not configured symbols in an idle workstation. An unused UI monitor does not publish empty snapshots over an active collector's process-wide metrics. Internal reconciliation retains observed `tradeFill.price` only for the single-currency share movement, never a commission leg or a price inferred from fee-inclusive net cash.
+
+
+`StoredProviderCredentialResolver` marks retained records as authoritative and carries their
+credential environment into provider construction. Missing scoped records retain the authorized
+scope's environment and cannot select global, module, configuration or environment credentials.
+
+Governance cash forecasts share retained bank statement revision and source-sequence authority with
+account reconciliation. Corrected full statements contribute cash flows once; current balances remain
+nullable when evidence is unavailable. Relevant competing statement batches raise
+`BankStatementEvidenceUnavailableException`, surfaced as HTTP 409 by the cash-flow endpoint. Future
+headers and statement evidence outside the requested value-date/currency window cannot block its flows.
 
 `SecurityMasterPricingService.ClosePrices` builds independently reviewed immutable close-price
 sets through the existing hierarchy and retained selection receipts. Exact account/book/UTC
@@ -29,10 +42,19 @@ normalized command after a lost response or restart returns its retained observa
 before reading live prices. Changed commands conflict; concurrent identical captures converge on
 the committed snapshot. Callers without an identity retain the existing new-command behavior.
 
-`ILivePositionCorporateActionAdjuster` exposes an additive overload for retained total carrying
-basis. Native paper-execution adjustments use it to avoid rebuilding basis from rounded unit
-quotes. Legacy implementers retain their original overload; a null `AdjustedTotalCostBasis`
-explicitly identifies that compatibility result and remains absent from serialized output.
+Security Master resolver, query and live-position adjustment contracts belong to
+`Meridian.Contracts.SecurityMaster`; Application owns their implementations and deprecated
+compatibility bridges. Its former interface/result type identities are forwarded to Contracts,
+which retains their legacy namespaces for compiled consumers. Storage composition exposes one aggregate query through the narrow identity,
+trading-parameter and corporate-action interfaces and preserves host-supplied registrations.
+Hosts composing these services directly can call `AddSecurityMasterContractAdapters()` after
+registering their query, resolver and position adjuster to expose the compatibility aliases.
+Aliases retain the last unkeyed host registration's singleton, scoped or transient lifetime; scoped
+host services are never captured by a singleton compatibility bridge.
+`LivePositionCorporateActionAdjusterAdapter` lets legacy hosts use a canonical adjuster, retaining
+its exact total carrying basis. Existing Application-contract implementers also satisfy the canonical
+adjuster contract. The retained-basis overload avoids rebuilding basis from rounded unit quotes;
+a null `AdjustedTotalCostBasis` identifies a legacy result and remains absent from serialized output.
 
 Security Master governed edits now validate and stage the overlay and draft in one PostgreSQL
 transaction guarded by a durable per-security generation. Competing instances receive a conflict
@@ -251,7 +273,9 @@ this constructor alone does not establish end-to-end tenant isolation.
 
 `OAuthTokenRefreshService` also accepts trusted `ownershipScope`. Scoped instances load and persist
 only that owner's OAuth tokens, including refresh responses and cache recovery after audit failure,
-and leave unassigned legacy sidecars alone. Initialization is asynchronous in both ownership modes;
+and leave unassigned legacy sidecar and interrupted `.migrated` contents alone while restricting
+their Unix permissions to the owner. Scoped initialization refuses a failed or unverified permission
+change rather than continuing with exposed credentials. Initialization is asynchronous in both ownership modes;
 completed remote rotations commit independently of lifecycle cancellation while preserving scope.
 Default host registration still needs connection ownership propagation before scoped services replace
 the provider-wide OAuth runtime.
@@ -315,6 +339,8 @@ One-shot command dispatch uses the same Portfolio Records registration as runtim
 fund-account PostgreSQL persistence remains authoritative for command reconciliation reads, and
 local command reads pass through the same migration gate. Account query, management, and fund-account
 ports resolve to one shared service instance.
+The local tenant guard forwards batched account reconciliation reads through the same gate, so
+local and desktop hosts do not fall through to the unsupported default.
 Command reconciliation resolves account authority when reading retained populations, keeping help
 and configuration diagnostics available even when account tenant configuration requires repair.
 
@@ -863,7 +889,14 @@ Core workstation host. Do not introduce a second listener or independent monitor
   Reconciliation governance exception classification now lives in
   `Meridian.Strategies.Services.GovernanceExceptionService`. Report-pack generation and NAV
   attribution live in `Meridian.Reporting` rather than Application-local services.
-- `Monitoring/` - application monitoring adapters and status server support. The default
+- `Monitoring/` - application monitoring adapters and status server support. Shared pipeline
+  composition records live price/order-book ingress in `DataFreshnessSlaMonitor`, independent of
+  storage acceptance and the bounded quality-sample queue. Configured enabled symbols start with
+  one freshness threshold of grace; missing first events then violate the SLA. Subscription
+  hot reload synchronizes the monitored scope, so removed symbols and late callbacks cannot
+  recreate alerts. Its periodic snapshots update the Prometheus SLA instruments even when feeds
+  stall; market closure suppresses active violations.
+  The default
   static-backed implementation of the contracts-owned event metrics interface lives in
   `Meridian.Platform.Tracing`. Stored
   market-event schema compatibility checks, clock-skew estimation, spread monitoring, data-loss
@@ -1160,6 +1193,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 ## Validation
 
 ```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~SecurityMasterContractAdapterTests|FullyQualifiedName~StorageFeatureRegistrationTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~TracingIntegrationTests|FullyQualifiedName~EventPipelineTracePropagationTests" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderCompositionTests|FullyQualifiedName~ProviderCatalogCompositionTests|FullyQualifiedName~ProviderModuleCompositionTests" --logger "console;verbosity=normal"

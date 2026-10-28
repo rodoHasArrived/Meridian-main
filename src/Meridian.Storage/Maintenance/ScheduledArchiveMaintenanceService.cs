@@ -486,7 +486,10 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
             execution.BytesProcessed = result.TotalBytesScanned;
             execution.BytesSaved = result.BytesSaved;
 
-            execution.Status = result.IssuesFound > result.IssuesResolved
+            // Honour the task's own verdict as well as the issue counts: a blocked task (for
+            // example a repair with no enabled strategy) reports Success=false with no issues
+            // counted, and must not be recorded as a clean completion.
+            execution.Status = !result.Success || result.IssuesFound > result.IssuesResolved
                 ? MaintenanceExecutionStatus.CompletedWithWarnings
                 : MaintenanceExecutionStatus.Completed;
 
@@ -947,35 +950,45 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
         return !isOpen;
     }
 
+    // Well beyond JsonlStorageSink's idle-handle close (two flush intervals).
+    internal static readonly TimeSpan ScheduledCompressionQuietPeriod = TimeSpan.FromMinutes(5);
+
     private async Task<MaintenanceResult> RunCompressionAsync(
         MaintenanceTaskOptions options,
         string[] targetPaths,
         MaintenanceExecution execution,
         CancellationToken ct)
     {
-        // This would use CompressionProfileManager for actual compression
-        // For now, use repair with recompress strategy
-        var repairOptions = new RepairOptions(
-            Strategy: RepairStrategy.RecompressOptimal,
+        var compressionOptions = new FileCompressionOptions(
             DryRun: options.DryRun,
-            BackupBeforeRepair: options.BackupBeforeRepair,
-            BackupPath: options.BackupPath
+            BackupBeforeCompression: options.BackupBeforeRepair,
+            BackupPath: options.BackupPath,
+            Paths: targetPaths,
+            // Scheduled runs sweep every healthy file, including ones a sink may still append to.
+            MinimumQuietPeriod: ScheduledCompressionQuietPeriod
         );
 
-        var result = await _fileMaintenanceService.RepairAsync(repairOptions, ct);
+        var result = await _fileMaintenanceService.CompressAsync(compressionOptions, ct);
+        execution.LogMessages.AddRange(result.Errors.Take(10).Select(error => $"Error: {error}"));
+        execution.LogMessages.AddRange(result.RecoveryCopies.Select(path => $"Recovery copy: {path}"));
+        execution.LogMessages.AddRange(result.Deferred.Select(file => $"Deferred: {file}"));
+        if (result.DryRun && result.PlannedActions is not null)
+            execution.LogMessages.AddRange(result.PlannedActions.Select(action => $"[DRY RUN] {action}"));
 
         return new MaintenanceResult
         {
-            Success = result.Errors.Count == 0,
-            Summary = $"Compression: processed {result.FilesProcessed} files, recompressed {result.FilesRepaired}",
-            TotalFiles = result.FilesProcessed,
+            Success = result.Success,
+            Summary = result.DryRun
+                ? $"Compression dry run: planned {result.PlannedActions?.Count ?? 0} files; no files changed"
+                : $"Compression: compressed {result.FilesCompressed}/{result.FilesProcessed} files; {result.FilesUncompressed} uncompressed; {result.Deferred.Count} deferred",
+            TotalFiles = result.FilesProcessed + result.Deferred.Count,
             FilesProcessed = result.FilesProcessed,
-            FilesSkipped = result.FilesProcessed - result.FilesRepaired,
-            FilesFailed = result.Errors.Count,
-            TotalBytesScanned = 0,
-            BytesSaved = 0,
-            IssuesFound = result.FilesProcessed - result.FilesRepaired,
-            IssuesResolved = result.FilesRepaired
+            FilesSkipped = (result.DryRun ? result.FilesProcessed : 0) + result.Deferred.Count,
+            FilesFailed = result.DryRun ? result.Errors.Count : Math.Max(result.FilesUncompressed, result.Errors.Count),
+            TotalBytesScanned = result.BytesBefore,
+            BytesSaved = result.BytesBefore - result.BytesAfter,
+            IssuesFound = result.Errors.Count,
+            IssuesResolved = 0
         };
     }
 
@@ -984,12 +997,15 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
         MaintenanceExecution execution,
         CancellationToken ct)
     {
-        var strategy = options.TruncateCorrupted
-            ? RepairStrategy.TruncateCorrupted
-            : RepairStrategy.RebuildIndex;
+        if (!options.TruncateCorrupted)
+        {
+            const string message = "Repair blocked: no supported repair strategy is enabled. Enable TruncateCorrupted for plain JSONL salvage or use an explicit restore/re-ingest workflow.";
+            execution.LogMessages.Add(message);
+            return new MaintenanceResult { Success = false, Summary = message };
+        }
 
         var repairOptions = new RepairOptions(
-            Strategy: strategy,
+            Strategy: RepairStrategy.TruncateCorrupted,
             DryRun: options.DryRun,
             BackupBeforeRepair: options.BackupBeforeRepair,
             BackupPath: options.BackupPath
@@ -1002,15 +1018,20 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
         {
             execution.LogMessages.AddRange(result.Errors.Take(10).Select(e => $"Error: {e}"));
         }
+        execution.LogMessages.AddRange(result.RecoveryCopies.Select(path => $"Recovery copy: {path}"));
+        if (result.DryRun && result.PlannedActions is not null)
+            execution.LogMessages.AddRange(result.PlannedActions.Select(action => $"[DRY RUN] {action}"));
 
         return new MaintenanceResult
         {
-            Success = result.Errors.Count == 0,
-            Summary = $"Repair: repaired {result.FilesRepaired}/{result.FilesProcessed} files",
+            Success = result.Errors.Count == 0 && (result.DryRun || result.FilesUnresolved == 0),
+            Summary = result.DryRun
+                ? $"Repair dry run: planned {result.FilesProcessed} files; no files changed"
+                : $"Repair: repaired {result.FilesRepaired}/{result.FilesProcessed} files; {result.FilesUnresolved} unresolved",
             TotalFiles = result.FilesProcessed,
             FilesProcessed = result.FilesProcessed,
-            FilesSkipped = 0,
-            FilesFailed = result.Errors.Count,
+            FilesSkipped = result.DryRun ? result.FilesProcessed : 0,
+            FilesFailed = result.DryRun ? 0 : Math.Max(result.FilesUnresolved, result.Errors.Count),
             TotalBytesScanned = 0,
             BytesSaved = 0,
             IssuesFound = result.FilesProcessed,

@@ -29,7 +29,7 @@ For the current product framing and capability thesis, use the [Meridian Design 
 - .NET SDK pinned by [global.json](../../global.json)
 - Windows and PowerShell 7 for WPF desktop development and its helper scripts; non-Windows
   builds compile a stub and do not validate WPF behavior
-- Node.js 24 and npm for browser development, matching the dev container and browser CI
+- Node.js 24 and npm for browser development, pinned by [.nvmrc](../../.nvmrc) and browser CI
 - Python 3.11 or newer for build and documentation automation
 - Git
 - Bash for the canonical `scripts/ci.sh` validation lanes (Git Bash or WSL on Windows)
@@ -44,6 +44,20 @@ PostgreSQL 16; database-backed integration checks use the version specified by t
 The database-less demo does not need PostgreSQL.
 
 ## First Local Setup
+
+Check the prerequisites for the work you plan to run before restoring or building:
+
+```powershell
+python build/python/cli/buildctl.py doctor --profile unit-test
+python build/python/cli/buildctl.py doctor --profile browser
+python build/python/cli/buildctl.py doctor --profile desktop
+python build/python/cli/buildctl.py doctor --profile full-quality-gate
+```
+
+These profiles only inspect prerequisites and print fixes. Unit-test checks do not require provider
+credentials or running services. Desktop checks require Windows and PowerShell 7. The full gate also
+checks the pinned Python packages, actionlint, and PowerShell needed by the script suite. See
+[engineering prerequisite checks](../engineering/README.md#prerequisite-checks) for details.
 
 ### .NET setup
 
@@ -78,6 +92,10 @@ For browser source development, install both lockfiles, then choose a mode:
 npm ci
 npm --prefix src/Meridian.Ui/dashboard ci
 ```
+
+Before launching, run `npm run dev:doctor` for backend-connected prerequisites and port checks,
+or `npm run dev:fixtures -- --doctor` for fixture-only prerequisites. These commands report
+problems and suggested fixes without installing dependencies or starting services.
 
 Use `npm run dev` for the seeded backend and Vite together, or `npm run dev:fixtures` for Vite
 with labelled sample responses and no backend. Each launcher stays running until Ctrl+C.

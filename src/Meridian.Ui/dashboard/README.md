@@ -6,10 +6,38 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-11
+last_reviewed: 2026-10-28
 ---
 
 # src/Meridian.Ui/dashboard
+
+Report Run Detail exposes retained trial-balance account balances from the exact run's ledger
+checkpoint through `/api/fund-structure/reporting/runs/{runId}/amounts`. Each balance opens the
+shared `LedgerAmountProofDrawer` with its immutable `report:{runId}:{amountId}` subject and
+retained fund/book/period. The panel validates tenant, company, fund, book, period and checkpoint
+identity before exposing amounts; absent, ambiguous or foreign bindings remain blocked.
+Exact journal-entry and ledger-entry IDs remain inspectable beside each amount. The drawer verifies
+retained source digests and guarded scope links, and hides missing, altered or foreign evidence.
+Run or scope changes abort prior requests and discard the previous selection. Reads prohibit
+development fallback and never calculate support from current Accounting scope or live balances.
+Focused coverage lives in `reporting-retained-amounts.test.tsx` and `report-amount-proof-api.test.ts`.
+
+The reconciliation queue shows source observation and retained occurrence age directly. Clearing is labeled Source cleared and never implies case resolution. Legacy rows explicitly show identity/age unavailable. Queue refresh compares lineage metadata; inspector details include business and comparison scopes.
+
+Accounting payment approvals provides an explicit entity-ID selection on the ordinary unscoped route. Unapplied scope edits disable decisions; applying a new entity clears the old review session. Cash Ladder retains the same-account scenario catalog through loading and errors while continuing to withhold stale balances and drill evidence.
+
+
+Payment approvals forward the selected entity on pending-payment, bank-evidence, approval, and
+rejection requests. Removing or changing entity scope clears the queue, decision notes and pending
+confirmation; aborted reads or decisions cannot restore the previous entity's state. No entity
+means no payment request. Fetch-level coverage lives in `banking-payments.api.test.ts`, alongside
+scope-switch coverage in `accounting-screen.payment-approvals.test.tsx`.
+
+Cash Ladder treats each account as a separate projection session. Account changes clear projection
+balances, scenario, threshold edits, and drill selection immediately. Results and drill selections
+also belong to the exact scenario/threshold request, so delayed or failed reads cannot present an
+old projection as current evidence. `cash-ladder-screen.test.tsx` covers delayed switches, failures,
+account round trips, and return to aggregate scope.
 
 Historical price charts require a complete successful historical query before showing prices
 or indicators. Failed and partial queries show an explicit incomplete state with failed source
@@ -127,6 +155,10 @@ lineage, occurrence and successful-run clearing independently of governed casewo
 The build lockfile resolves Browserslist 4.28.9, removing the high-severity cache-growth and
 custom-stats parsing advisories reported by the September 6 production-certification scan.
 
+Tailwind 4 uses its matching `@tailwindcss/postcss` adapter. The main stylesheet explicitly loads
+the existing `tailwind.config.ts` so Meridian's semantic colors, typography, shadows and utility
+sources remain part of generated CSS. The lockfile retains patched `source-map-js` 1.2.2.
+
 First launch is browser-primary. `/setup` renders the first-run concierge while the
 shared first-run API remains the source of truth for starter kits, sample safety labels,
 recommendations, and completed activation outcomes. Sample mode stays offline-capable
@@ -138,6 +170,12 @@ every outcome the host tracks and routes to the surface that completes the next 
 reported by the surface that did the work -- statement import commit, reconciliation break
 resolution, report run, and analysis export each call `recordActivationOutcome` in
 `src/lib/first-run/activation.ts` -- so the count never advances on a page visit alone.
+
+Quant Lab plots preserve the worker's calculated series, including fractional cumulative returns
+and drawdowns, without repeating financial transformations in the browser. Notebook execution
+forwards the selected symbol, date range and interval using the worker's `context.*` parameters;
+cell outputs retain emitted charts and trades alongside console, metrics and diagnostics. The
+server-shaped regression fixture lives in `src/test/fixtures/quant-run-response.json`.
 
 ## Shared close and lot convergence
 
@@ -218,6 +256,8 @@ instead of introducing one-off screen styling.
 - `src/assets/` - browser-bundled brand and icon copies from the `Meridian Design System/assets/` source package, including the app icon and PNG tile.
 - `src/types.ts` - compatibility barrel for browser DTO mirrors. Add new domain-specific DTO mirrors under `src/types/` and re-export them from this file instead of growing the barrel directly.
 - `src/lib/dev-fixtures.ts` - compatibility facade for no-host fixtures. Add new screen or domain fixture payloads under `src/lib/dev-fixtures/` and register them through the resolver map instead of adding another large block to the facade.
+- `src/scenarios/` - typed response scenarios shared by URL previews, Vitest, and Playwright screenshots. `accounting-payload.ts` owns the accounting payload; `accounting.ts` owns its normal, empty, delayed, forbidden, and failed variants.
+- `src/test/scenarios.ts` - strict scenario installation and request coverage assertions for Vitest.
 - `package.json` - dashboard build, test, and tooling commands.
 - Test files - browser workflow and component coverage.
 
@@ -260,6 +300,15 @@ hot reload, or `npm run dev:fixtures` for explicit fixture-only responses withou
 Backend-connected errors never fall back to fixtures. See the
 [browser development launcher](../../../docs/engineering/web-development.md) for prerequisites,
 port options, readiness, shutdown, and manual acceptance checks.
+
+For a deterministic accounting preview, open
+`http://127.0.0.1:5173/workstation/accounting/reconciliation?scenario=accounting.normal`
+in a fixture-only session. The [shared browser scenario guide](../../../docs/development/browser-scenarios.md)
+lists all five selectors and explicit HTTP statuses, strict test behavior, and screenshot commands.
+Changing the first reconciliation queue row's `strategyName` in `src/scenarios/accounting-payload.ts`
+updates the preview, production-component Vitest expectations, and screenshot readiness from one edit.
+Screenshot scenario selection keeps the selected route's headings and selector checks; populated
+Approval Inbox captures keep approval readiness instead of waiting for reconciliation strategy names.
 
 The browser workstation exposes `/accounting/entity-setup` for the shared fund-structure setup wizard. The feature posts drafts to `/api/fund-structure/setup-drafts/validate` for validation and preview, then `/api/fund-structure/setup-drafts/create` for review-and-create instead of reimplementing setup orchestration in React.
 
@@ -1180,6 +1229,13 @@ Strategy wording while retained `Research*` DTO and component names remain compa
 Strategy Builder promotion-review warnings use risk/control wording in the browser view model,
 matching the shared strategy-service validation copy while retained cell kinds remain compatibility
 inputs.
+Quant Lab treats runtime-parameter extraction as a launch prerequisite for the exact editor source.
+While extraction is pending or unavailable, Run stays disabled; a failed refresh may retain the
+last usable descriptors and overrides for reference, but those values cannot be submitted for the
+new source. Successful refresh replaces removed descriptors and preserves only matching overrides.
+This fail-closed behavior and deterministic replay hardening support
+[`PRD-106`](../../../docs/product/implementation-todo-list.md) without changing the bounded
+`W6-BTSTUDIO-001` Covered Call evidence-loop completion claim.
 The host-composed W6 browser path is the Covered Call form in
 `covered-call-screen.view-model.ts`. Before calling the Covered Call API it requires operator
 acceptance text as a future review requirement and at least one bounded, strict
@@ -1564,6 +1620,12 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 Launcher/process ownership coverage runs from the repository root with
 `node --test scripts/dev/web-dev.test.mjs`. Focused Vite/API mode coverage is in
 `src/vite-config.test.ts` and `src/lib/api.development-modes.test.ts`.
+Shared scenario coverage runs with:
+
+```bash
+npm --prefix src/Meridian.Ui/dashboard run test:vitest -- src/scenarios/scenarios.test.tsx src/vite-config.scenarios.test.ts
+node --test scripts/dev/web-screenshot-scenarios.test.mjs
+```
 
 ```bash
 npm --prefix src/Meridian.Ui/dashboard run lint

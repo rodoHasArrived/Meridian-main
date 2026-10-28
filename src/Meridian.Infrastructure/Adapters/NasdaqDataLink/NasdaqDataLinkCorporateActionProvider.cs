@@ -35,15 +35,18 @@ public sealed partial class NasdaqDataLinkCorporateActionProvider : ICorporateAc
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
+    private readonly ICredentialContext? _credentials;
     private readonly ILogger<NasdaqDataLinkCorporateActionProvider> _logger;
 
     public NasdaqDataLinkCorporateActionProvider(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
-        ILogger<NasdaqDataLinkCorporateActionProvider> logger)
+        ILogger<NasdaqDataLinkCorporateActionProvider> logger,
+        ICredentialContext? credentials = null)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _credentials = credentials;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -178,6 +181,9 @@ public sealed partial class NasdaqDataLinkCorporateActionProvider : ICorporateAc
 
     private string? ResolveApiKey()
     {
+        if (_credentials is not null)
+            return _credentials.Get("NASDAQ_DATA_LINK_API_KEY");
+
         return FirstNonEmpty(
             _configuration["NASDAQ_DATA_LINK_API_KEY"],
             _configuration["NASDAQ__APIKEY"],
