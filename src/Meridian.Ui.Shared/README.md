@@ -41,6 +41,20 @@ Security Master override PATCH and decision endpoints return HTTP 409 when anoth
 advances the durable workbench generation. The governed workbench endpoints use their existing
 conflict response for the same condition. Operators must reload before retrying the edit or review.
 
+The OTC contract model is served by two `SecurityMasterEndpoints` partials.
+`SecurityMasterEndpoints.OtcContracts.cs` maps master agreements, collateral agreements, netting
+sets and contracts; `SecurityMasterEndpoints.OtcCollateral.cs` maps exposure snapshots (compute
+and append under `/otc/netting-sets/{id}/exposure-snapshots`, list and read), collateral balances
+and margin calls (issue, and one `/transition` route with an action enum for agree, dispute, settle
+and cancel). The collateral routes map only when `IOtcCollateralStore` and `IOtcExposureService`
+are registered, so a host without the Security Master database leaves them unavailable. Reads need
+`ViewSecurityMaster` and answer 404 for an unknown snapshot or call; writes need
+`ModifySecurityMaster`, pass the mutation rate limit, stamp the session actor over any body
+`UpdatedBy` and answer 400 on a rule failure. Computing a snapshot for an unknown netting set is a
+404; issuing from an unknown snapshot or transitioning an unknown call is a 400, because the store
+refuses it as a rule failure. No browser or WPF screen consumes these routes yet; the workstation
+collateral exposure read model is unchanged.
+
 Trading readiness includes every supplied acceptance gate in aggregate status and evidence
 summaries, including broker execution reconciliation and portfolio recovery. Every non-ready
 acceptance gate contributes a live-operation blocker independently of aggregate status, so new
@@ -603,7 +617,17 @@ override account scope; other callers require account-scoped `ManageDirectLendin
 `SecurityMasterWorkbenchQueryService` is published under
 `Meridian.Ui.Shared.Services` and composes Application Security Master services into the shared
 workstation drill-in projection. The Security Master alias upsert route accepts corrections to an
-existing alias ID as a new revision; re-pointing an alias at a different security returns 409. `FamilyOfficeReadService` composes the family-office
+existing alias ID as a new revision; re-pointing an alias at a different security returns 409.
+`SecurityMasterEndpoints.Curves.cs` maps the stored-curve routes (`/api/security-master/curves`,
+`/curves/{curveId}`, `/curves/{curveId}/versions`, where `asOf` with an optional `knownAt` returns
+the single latest match and `knownAt` alone every version recorded on or before it, and
+`/curves/{curveId}/versions/{version}`) only when an `ISecurityCurveStore` is registered, and
+`POST /api/security-master/{securityId}/valuation` only when an `ISecurityValuationService` is;
+definitions and versions are written with the session actor under Modify permission and the
+mutation rate limit (a rule failure is 400, publishing to an unknown curve 404, a write-once key
+conflict 409), reads and valuation need View, valuation also takes the mutation rate limit because
+a quoted-price evaluation retains a selection receipt, a route/body id mismatch is 400, an unknown
+security 404, and a blocked valuation is 200 with its blockers. `FamilyOfficeReadService` composes the family-office
 workstation overview from fund-structure, fund-account, reconciliation, and strategy-run read
 services, and emits degraded guidance when linked accounts cannot provide balances, liabilities,
 reconciliation state, or evidence completeness. Workstation endpoint registration is split by domain through

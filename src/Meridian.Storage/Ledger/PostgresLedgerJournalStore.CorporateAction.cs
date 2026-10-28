@@ -304,7 +304,10 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
             Version: target.Version, OriginatingMutationBatchId: command.MutationBatchId,
             SecurityId: target.SecurityId, BookPositionId: target.BookPositionId,
             OriginalFace: face ? target.OriginalQuantity : null, BookedFactor: target.Acquisition.FaceValueTerms?.BookedFactor,
-            ParBasis: target.Acquisition.FaceValueTerms?.ParBasis, Acquisition: target.Acquisition, BasisAdjustment: adjustment);
+            ParBasis: target.Acquisition.FaceValueTerms?.ParBasis, Acquisition: target.Acquisition, BasisAdjustment: adjustment,
+            // A successor inherits the paydown factor its predecessor holds; OpenLotSuccessors.Validate
+            // requires the reviewed target to state it, and the trigger admits it on a successor's birth.
+            CurrentFactor: target.CurrentFactor);
         if (!JsonElement.DeepEquals(JsonSerializer.SerializeToElement(result.ToOpenLot()), JsonSerializer.SerializeToElement(target)))
             throw new LedgerValidationException("Successor canonical target snapshot cannot be preserved exactly in the lot of record.");
         return result;

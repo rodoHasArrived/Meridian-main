@@ -348,7 +348,8 @@ public static partial class LedgerEndpoints
                     {
                         TenantId = tenantContext.TenantId,
                         CompanyId = tenantContext.CompanyId
-                    }
+                    },
+                    FactorPaydown = WithTenantScope(request.FactorPaydown, tenantContext)
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions, statusCode: result.WasReplay
                     ? StatusCodes.Status200OK
@@ -448,7 +449,10 @@ public static partial class LedgerEndpoints
                         {
                             TenantId = tenantContext.TenantId,
                             CompanyId = tenantContext.CompanyId
-                        }
+                        },
+                        LotMutation = request.LotMutation is { FactorPaydown: { } factorPaydown } lotMutation
+                            ? lotMutation with { FactorPaydown = WithTenantScope(factorPaydown, tenantContext) }
+                            : request.LotMutation
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -679,6 +683,18 @@ public static partial class LedgerEndpoints
 
         MapAuditIntegrityEndpoint(app, jsonOptions);
     }
+
+    // A factor-paydown instruction carries its own copy of the event scope, which the spine requires
+    // payload-equal to the request scope and the atomic store binds to the caller's tenant, so it takes
+    // the same server-resolved tenant and company. A capital-return or successor projection is not
+    // rewritten: its scope is the reviewed corporate-action case's, and the spine's comparison against
+    // the rewritten request scope is what refuses a case from another tenant.
+    private static Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? WithTenantScope(
+        Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? instruction,
+        WorkstationTenantContext tenantContext)
+        => instruction?.Scope is { } scope
+            ? instruction with { Scope = scope with { TenantId = tenantContext.TenantId, CompanyId = tenantContext.CompanyId } }
+            : instruction;
 
     // The six WithAccessContext overloads live here rather than in LedgerEndpoints.cs
     // because every one of their call sites is in this file, and LedgerEndpoints.cs sits at

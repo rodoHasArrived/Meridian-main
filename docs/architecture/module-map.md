@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-10-07
+**Reviewed:** 2026-10-28 (bounded source-owner and Security Master seam refresh)
 
 This map gives maintainers a quick layer-oriented view of Meridian.
 
@@ -27,6 +27,9 @@ flowchart LR
   Application --> Providers["Provider adapters"]
   Application --> Execution["Execution and risk"]
   Application --> Ledger["Ledger and accounting records"]
+  Application --> FinancialOperations["Financial Operations workflows"]
+  Application --> Instruments["Instrument economics and projections"]
+  Application --> ReferenceData["Reference-data catalogs and classification"]
   Application --> Reporting["Reporting and report packs"]
   Application --> Identity["Identity and scoped access"]
   Application --> UiServices["UI services and shared endpoints"]
@@ -49,6 +52,9 @@ flowchart LR
 | Storage | `src/Meridian.Storage` | Preserve WAL and atomic-write durability expectations |
 | Execution/Risk | `src/Meridian.Execution*`, `src/Meridian.Risk` | Isolate broker gateways, paper/live controls, and pre-trade validation |
 | Accounting and Ledger | `src/Meridian.Ledger`, `src/Meridian.FSharp.Ledger` | Own ledger behavior, private-capital fund-event reconstruction, capital-account subledger impact, treasury ledger metadata, and accounting-record boundaries |
+| Financial Operations | `src/Meridian.FinancialOperations` | Own close, reconciliation, accounting-basis workflows, and preparation of governed ledger instructions |
+| Instruments | `src/Meridian.Instruments` | Own instrument economics, Security Master-keyed Asset Operations, cash-flow projections, and factor-paydown projections |
+| Reference Data | `src/Meridian.ReferenceData` | Own asset-class/instrument-kind mapping, profile catalog contracts, and seeded approved asset-profile templates |
 | Reporting | `src/Meridian.Reporting` | Own governed report-pack behavior, report-writer grids, filters, formulas, lineage, publication, restatement, and report-generation semantics |
 | Identity and Access | `src/Meridian.Identity` | Own sessions, role profiles, scoped access, fund/account traversal authorization, and company-scoped user account/profile state |
 | Strategy/Backtesting | `src/Meridian.Strategies`, `src/Meridian.Backtesting*`, `src/Meridian.QuantScript` | Keep strategy lifecycle, replay, and scripting reusable outside UI |
@@ -68,6 +74,12 @@ flowchart LR
 - Security Master query and command contracts are owned by `Meridian.Contracts.SecurityMaster`.
   Application implementations, host registration, and workstation callers use that single contract;
   Application does not declare a parallel query interface.
+- Typed schedule generation lives in `src/Meridian.Contracts/SecurityMaster/Schedules/`;
+  open-lot factor-paydown contracts live in `src/Meridian.Contracts/Accounting/Lots/`.
+  `src/Meridian.Instruments/AssetOperations/FactorPaydownProjectionService.cs` projects the economics,
+  and `src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs` prepares the
+  ledger and lot instructions. Application composition registers this preparation service, but no
+  operator route calls it yet; composition does not establish workstation activation.
 - Design tokens and shared UI patterns should come from the Meridian Design
   System or local shared dashboard primitives, not one-off screen styling.
 
