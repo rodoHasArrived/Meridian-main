@@ -321,7 +321,7 @@ public sealed partial class IBBrokerageGateway
                 return null;
             // A route recovered in an earlier session is refreshed; a context this process submitted
             // is never replaced by snapshot terms.
-            var recovered = context with { RecoveryEpoch = epoch };
+            var recovered = context with { RecoveryEpoch = epoch, BrokerAccountId = orderAccount };
             _staleRecoveredIds.TryRemove(gatewayOrderId, out _);
             var installed = _submittedOrders.AddOrUpdate(gatewayOrderId, recovered, (_, existing) =>
             {

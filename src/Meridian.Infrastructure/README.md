@@ -43,6 +43,10 @@ requires retained or pinned exact-account evidence. Host/port configuration is n
 See [IB's paper-account identification](https://www.interactivebrokers.co.jp/en/support/customer-service.php?p=contact)
 and [TradeStation Global's IB live/paper account guide](https://www.tradestation-international.com/global/simulated-trading/).
 These references ground the narrow supported convention; other account classes require separate broker evidence.
+Broker execution callbacks retain their explicit external account and cannot advance a different owned
+account's cumulative cache. When `orderStatus` precedes `openOrder`, the later account observation enriches
+the latest owned-session report without changing its lifecycle, cumulative fills or prices. Account
+evidence reused by status/cancel/error reports is scoped to the callback session.
 Its connection generation also advances when the client loses or automatically restores the
 transport, and cancellation routes are installed only for evidence from the current session.
 Recovery stays unresolved for a fill price that is not confirmed cumulative, for any amendment that

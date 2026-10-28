@@ -52,6 +52,7 @@ public sealed partial class IBBrokerageGateway :
     // reader never pairs one session's epoch with another session's report; see CurrentSessionReport.
     private readonly ConcurrentDictionary<int, LatestOrderReport> _latestOrderReports = new();
     private readonly ConcurrentDictionary<int, string> _openOrderAccounts = new();
+    private readonly ConcurrentDictionary<int, int> _openOrderAccountEpochs = new();
     private readonly ConcurrentDictionary<int, string> _openOrderSecurityTypes = new();
     private readonly ConcurrentDictionary<string, IBExecutionUpdate> _executions = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<int, PendingOrderOperation> _pendingOrderOperations = new();
@@ -225,7 +226,10 @@ public sealed partial class IBBrokerageGateway :
 
         var gatewayOrderId = ReserveGatewayOrderId();
         var meridianOrderId = request.ClientOrderId ?? $"IB-{gatewayOrderId}";
-        var context = SubmittedOrderContext.FromRequest(gatewayOrderId, meridianOrderId, request);
+        var context = SubmittedOrderContext.FromRequest(gatewayOrderId, meridianOrderId, request) with
+        {
+            SubmissionEpoch = Volatile.Read(ref _connectionEpoch)
+        };
         var pendingOperation = RegisterPendingOrderOperation(gatewayOrderId, PendingOrderOperationKind.Submit);
 
         _submittedOrders[gatewayOrderId] = context;
@@ -778,6 +782,10 @@ public sealed partial class IBBrokerageGateway :
     {
         if (!_latestOrderReports.TryGetValue(gatewayOrderId, out var latest))
             return null;
+        if (context?.BrokerAccountId is { } owner
+            && (latest.Report.BrokerAccountId is { } reported && !string.Equals(owner, reported, StringComparison.Ordinal)
+                || latest.Report.BrokerAccountId is null && latest.Epoch != context.SubmissionEpoch))
+            return null;
         if (context is { RecoveredFromSnapshot: false })
             return latest.Report;
         return latest.Epoch == Volatile.Read(ref _connectionEpoch) ? latest.Report : null;
@@ -927,13 +935,34 @@ public sealed partial class IBBrokerageGateway :
     {
         var callbackEpoch = Volatile.Read(ref _connectionEpoch);
         var gatewayOrderId = update.OrderId;
+        var context = TrackedContext(gatewayOrderId);
+        if (context?.BrokerAccountId is { } knownAccount && !string.IsNullOrWhiteSpace(update.Account)
+            && !string.Equals(knownAccount, update.Account.Trim(), StringComparison.Ordinal))
+        {
+            _logger.LogWarning("IB open-order callback refused because its external account differs from the owned order acknowledgement.");
+            return;
+        }
+        if (context is { BrokerAccountId: null } && !string.IsNullOrWhiteSpace(update.Account)
+            && context.SubmissionEpoch == callbackEpoch
+            && string.Equals(update.ClientOrderId, context.ClientOrderId, StringComparison.Ordinal))
+        {
+            var owned = context with { BrokerAccountId = update.Account.Trim() };
+            if (!_submittedOrders.TryUpdate(gatewayOrderId, owned, context))
+                return;
+            context = owned;
+        }
         if (string.IsNullOrWhiteSpace(update.Account))
+        {
             _openOrderAccounts.TryRemove(gatewayOrderId, out _);
+            _openOrderAccountEpochs.TryRemove(gatewayOrderId, out _);
+        }
         else
+        {
             _openOrderAccounts[gatewayOrderId] = update.Account.Trim();
+            _openOrderAccountEpochs[gatewayOrderId] = callbackEpoch;
+        }
         _openOrderSecurityTypes[gatewayOrderId] = update.SecurityType ?? string.Empty;
 
-        var context = TrackedContext(gatewayOrderId);
         _pendingOrderOperations.TryGetValue(gatewayOrderId, out var pending);
         _unconfirmedAmendments.TryGetValue(gatewayOrderId, out var amendment);
         var latest = CurrentSessionReport(gatewayOrderId, context);
@@ -966,7 +995,7 @@ public sealed partial class IBBrokerageGateway :
             amendment.ProposedContext is { } proposed && MatchesAmendment(update, proposed);
         if (amendmentConfirmed)
         {
-            context = amendment!.ProposedContext;
+            context = amendment!.ProposedContext! with { BrokerAccountId = context?.BrokerAccountId };
             _submittedOrders[gatewayOrderId] = context!;
             if (Math.Max(update.FilledQuantity, latest?.FilledQuantity ?? 0m) >= context!.Quantity)
                 status = OrderStatus.Filled;
@@ -1002,8 +1031,24 @@ public sealed partial class IBBrokerageGateway :
         // An id this session does not track (or tracks only through a route from an earlier
         // session) can describe another login's order: it feeds the snapshot above, never an
         // operation still pending for the id. That operation is refused or times out instead.
-        if (context is null || pending is null && amendment is null)
+        if (context is null)
             return;
+        if (pending is null && amendment is null)
+        {
+            // orderStatus may settle Submit before openOrder reports its actual account. Enrich
+            // only this session's owned client reference, using the latest report unchanged so
+            // a late acknowledgement cannot roll back fills, prices or terminal lifecycle state.
+            var ownsSession = context.SubmissionEpoch == callbackEpoch
+                || context.RecoveredFromSnapshot && context.RecoveryEpoch == callbackEpoch;
+            if (ownsSession && latest is { BrokerAccountId: null }
+                && !string.IsNullOrWhiteSpace(update.Account)
+                && _verifiedAccounts.Contains(update.Account.Trim())
+                && string.Equals(update.ClientOrderId, context.ClientOrderId, StringComparison.Ordinal)
+                && string.Equals(update.Symbol, context.Symbol, StringComparison.OrdinalIgnoreCase)
+                && IBCanonicalPayloadMapper.ParseSide(update.Action, update.Metadata) == context.Side)
+                PublishReport(latest with { BrokerAccountId = update.Account.Trim() }, callbackEpoch);
+            return;
+        }
         if (!amendmentConfirmed && pending?.Kind == PendingOrderOperationKind.Cancel)
         {
             // openOrder can also deliver the terminal state while cancellation is pending.
@@ -1216,6 +1261,13 @@ public sealed partial class IBBrokerageGateway :
 
         var gatewayOrderId = update.OrderId;
         var context = TrackedContext(gatewayOrderId);
+        if (!string.IsNullOrWhiteSpace(update.Account)
+            && (context?.BrokerAccountId ?? CurrentBrokerAccount(gatewayOrderId, callbackEpoch)) is { } knownAccount
+            && !string.Equals(knownAccount, update.Account.Trim(), StringComparison.Ordinal))
+        {
+            _logger.LogWarning("IB execution callback refused because its external account differs from the current order acknowledgement.");
+            return;
+        }
         // The execution belongs to whatever order the reused id now names; recovery in the current
         // session reads its fills from the snapshot and status evidence, not from this stream.
         if (context is null && IsStaleRecoveredId(gatewayOrderId))
@@ -1265,7 +1317,11 @@ public sealed partial class IBBrokerageGateway :
             null,
             null,
             update.ExecutedAt,
-            staleFill ? latest!.FillPriceIsCumulativeAverage : update.AveragePrice > 0);
+            staleFill ? latest!.FillPriceIsCumulativeAverage : update.AveragePrice > 0) with
+        {
+            BrokerAccountId = string.IsNullOrWhiteSpace(update.Account)
+                ? CurrentBrokerAccount(gatewayOrderId, callbackEpoch) : update.Account.Trim()
+        };
 
         if (_openOrders.TryGetValue(gatewayOrderId, out var openOrder))
         {
@@ -1453,7 +1509,11 @@ public sealed partial class IBBrokerageGateway :
         amendment.Completion.TrySetResult(report);
     }
 
-    private static ExecutionReport BuildExecutionReport(
+    private string? CurrentBrokerAccount(int gatewayOrderId, int epoch)
+        => _openOrderAccountEpochs.TryGetValue(gatewayOrderId, out var observedEpoch) && observedEpoch == epoch
+            && _openOrderAccounts.TryGetValue(gatewayOrderId, out var account) ? account : null;
+
+    private ExecutionReport BuildExecutionReport(
         int gatewayOrderId,
         ExecutionReportType reportType,
         OrderStatus orderStatus,
@@ -1486,6 +1546,7 @@ public sealed partial class IBBrokerageGateway :
             Commission = commission,
             RejectReason = rejectReason,
             GatewayOrderId = gatewayOrderId.ToString(),
+            BrokerAccountId = CurrentBrokerAccount(gatewayOrderId, Volatile.Read(ref _connectionEpoch)),
             Timestamp = timestamp,
             Legs = context?.Legs,
             OptionContract = optionContract,
@@ -1613,6 +1674,9 @@ public sealed partial class IBBrokerageGateway :
         bool RecoveredFromSnapshot = false,
         int RecoveryEpoch = 0)
     {
+        public int? SubmissionEpoch { get; init; }
+        public string? BrokerAccountId { get; init; }
+
         public static SubmittedOrderContext FromRequest(int gatewayOrderId, string meridianOrderId, OrderRequest request)
             => new(
                 gatewayOrderId,

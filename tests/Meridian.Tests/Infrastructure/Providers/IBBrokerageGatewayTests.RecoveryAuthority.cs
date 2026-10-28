@@ -180,4 +180,104 @@ public sealed partial class IBBrokerageGatewayTests
             Directory.Delete(directory, recursive: true);
         }
     }
+
+    [Theory]
+    [InlineData(0, false)]
+    [InlineData(1, false)]
+    [InlineData(10, false)]
+    [InlineData(1, true)]
+    public async Task LateOpenOrder_RetainsAccountWithoutRegressingOrRebookingEarlierFills(int filled, bool executionFill)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"ib-late-account-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var client = CreateAcknowledgingClient();
+            client.ManagedAccounts = "DU1";
+            client.OnPlaceOrder = (c, id, _) => c.RaiseOrderStatus(Status(id, "Submitted"));
+            await using var gateway = new IBBrokerageGateway(DefaultOptions(), NullLogger<IBBrokerageGateway>.Instance, client);
+            await gateway.ConnectAsync();
+            var path = Path.Combine(directory, "orders.json");
+            var store = new FileBrokerageOrderRecoveryStore(path, "ibkr");
+            var portfolio = new PaperTradingPortfolio(100_000m);
+            var publisher = new AmendmentRacePublisher();
+            await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
+                recoveryStore: store, portfolioState: portfolio, tradeEventPublisher: publisher);
+            await oms.StartAsync();
+            (await oms.PlaceOrderAsync(WorkingOrder())).Success.Should().BeTrue();
+            if (filled > 0)
+            {
+                if (executionFill)
+                    client.RaiseExecution(new(11001, "AAPL", "BOT", filled, 100d, filled, 100d,
+                        "owned-fill", "DU1", "NYSE", 1L, null, DateTimeOffset.UtcNow));
+                else
+                    client.RaiseOrderStatus(new(11001, filled == 10 ? "Filled" : "Submitted", filled, 10 - filled,
+                        100d, 100d, 1L, 1, null, null, DateTimeOffset.UtcNow));
+            }
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            if (filled > 0)
+            {
+                while ((await oms.ExecutionReports.ReadAsync(timeout.Token)).FilledQuantity != filled) { }
+            }
+            client.RaiseOpenOrder(OpenOrder(11001, WorkingOrder()));
+            if (!executionFill)
+            {
+                while ((await oms.ExecutionReports.ReadAsync(timeout.Token)).BrokerAccountId != "DU1") { }
+            }
+
+            var state = oms.GetOrder("working-order")!;
+            state.BrokerAccountId.Should().Be("DU1");
+            state.FilledQuantity.Should().Be(filled);
+            state.Status.Should().Be(filled == 10 ? OrderStatus.Filled : filled > 0 ? OrderStatus.PartiallyFilled : OrderStatus.Accepted);
+            (portfolio.Positions.GetValueOrDefault("AAPL")?.Quantity ?? 0L).Should().Be(filled);
+            publisher.Events.Count.Should().Be(filled > 0 ? 1 : 0, "account enrichment must not repeat accounting handoff");
+            new FileBrokerageOrderRecoveryStore(path, "ibkr").Load().Should().ContainSingle()
+                .Which.State.Should().Be(state);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task ForeignAccountExecution_DoesNotPoisonCurrentFillsOrDurableState()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"ib-foreign-execution-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var client = CreateAcknowledgingClient();
+            client.ManagedAccounts = "DU1";
+            await using var gateway = new IBBrokerageGateway(DefaultOptions(), NullLogger<IBBrokerageGateway>.Instance, client);
+            await gateway.ConnectAsync();
+            var path = Path.Combine(directory, "orders.json");
+            var store = new FileBrokerageOrderRecoveryStore(path, "ibkr");
+            var portfolio = new PaperTradingPortfolio(100_000m);
+            var publisher = new AmendmentRacePublisher();
+            await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
+                recoveryStore: store, portfolioState: portfolio, tradeEventPublisher: publisher);
+            await oms.StartAsync();
+            (await oms.PlaceOrderAsync(WorkingOrder())).Success.Should().BeTrue();
+
+            client.RaiseExecution(new(11001, "AAPL", "BOT", 1m, 100d, 1m, 100d,
+                "foreign-fill", "DU2", "NYSE", 1L, null, DateTimeOffset.UtcNow));
+            var barrier = Status(11001, "Submitted");
+            client.RaiseOrderStatus(barrier);
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            while ((await oms.ExecutionReports.ReadAsync(timeout.Token)).Timestamp != barrier.ReceivedAt) { }
+
+            var state = oms.GetOrder("working-order")!;
+            state.FilledQuantity.Should().Be(0m);
+            state.BrokerAccountId.Should().Be("DU1");
+            portfolio.Positions.Should().BeEmpty();
+            publisher.Events.Should().BeEmpty();
+            new FileBrokerageOrderRecoveryStore(path, "ibkr").Load().Should().ContainSingle()
+                .Which.State.Should().Be(state);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
 }

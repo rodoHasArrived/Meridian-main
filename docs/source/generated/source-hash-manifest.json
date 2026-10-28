@@ -191,8 +191,8 @@
       "id": "SRC-INFRASTRUCTURE",
       "path": "src/Meridian.Infrastructure",
       "readme": "src/Meridian.Infrastructure/README.md",
-      "readme_hash": "5881826745e51b9ab05a22691a6aa16e1aa41def1f493e1175d701a0ad354d1f",
-      "source_hash": "d7757e0bce4ac65e7326c070ab8c6d6ff67e4caaf640670ba5d381cb3459dce1"
+      "readme_hash": "9bf23fa6e82590a167074da63dd475cde13eb7e051dfe69e769500106cc71a4b",
+      "source_hash": "7438d7bb1b649ff3245bae691e5988f08c53aec8e6ed69c1dd92f858e7400429"
     },
     {
       "id": "SRC-LAUNCHER",
