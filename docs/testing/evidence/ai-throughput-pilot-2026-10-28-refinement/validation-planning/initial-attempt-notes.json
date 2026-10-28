@@ -1,0 +1,7 @@
+{
+  "status": "aborted-before-full-launch",
+  "reason": "The first baseline failed exact-set verification. The initial runner incorrectly made failed validation terminal instead of allowing normal repair; root also logged treatment start well before its dispatch while reviewing the verifier. This attempt is not timing-comparable and is retained, not replaced or claimed as a speedup.",
+  "initialBaseline": "vp-pair-1-baseline",
+  "initialTreatment": "vp-pair-1-treatment",
+  "nextExperiment": "Same frozen six tasks, fresh copies/agents, common first-tool start boundary, up to three validation attempts with all repair time retained."
+}

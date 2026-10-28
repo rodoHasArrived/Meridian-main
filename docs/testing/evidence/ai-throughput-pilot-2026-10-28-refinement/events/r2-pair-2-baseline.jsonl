@@ -1,0 +1,10 @@
+{"cohort": "baseline", "event": "task_started", "pair": "r2-pair-2", "timestamp": "2026-10-28T07:23:10.493351+00:00", "trial": "r2-pair-2-baseline"}
+{"event": "file_read", "path": "AGENTS.md", "sha256": "784de27235a4f58bc1991409d7b9781d843aac6fb1845eb1ec2da1c599034d9a", "timestamp": "2026-10-28T07:23:28.546424+00:00", "trial": "r2-pair-2-baseline"}
+{"event": "file_read", "path": "task.json", "sha256": "b725f47bfb61eb96bf8687d2a192ff2052b05fc79a73402e89cf7183cf749b44", "timestamp": "2026-10-28T07:23:28.591732+00:00", "trial": "r2-pair-2-baseline"}
+{"event": "file_read", "path": ".claude/skills/_shared/project-context.md", "sha256": "a5655d379c48de8c6919f3086cafbb7144f62bc4bacbac6624df772695613c92", "timestamp": "2026-10-28T07:23:37.141574+00:00", "trial": "r2-pair-2-baseline"}
+{"event": "file_read", "path": ".codex/skills/_shared/project-context.md", "sha256": "8f733a1f19d01c99a3b66976dd94ce67bddd17e2111abc36e17644a65277f990", "timestamp": "2026-10-28T07:23:37.187627+00:00", "trial": "r2-pair-2-baseline"}
+{"event": "file_read", "path": ".agents/skills/_shared/project-context.md", "sha256": "e573414b6bea3dfd7badac09f6f198d4e4e7889eb7a998aa01aacf48293b93c9", "timestamp": "2026-10-28T07:23:37.232409+00:00", "trial": "r2-pair-2-baseline"}
+{"event": "useful_edit", "path": ".claude/skills/_shared/project-context.md", "sha256": "f330ce04832ce543f6e66819babd1137f900449da0a0210a84241b0707277574", "timestamp": "2026-10-28T07:23:49.432249+00:00", "trial": "r2-pair-2-baseline"}
+{"event": "validation_started", "timestamp": "2026-10-28T07:23:49.485242+00:00", "trial": "r2-pair-2-baseline", "validationId": "final"}
+{"event": "validation_finished", "result": "pass", "timestamp": "2026-10-28T07:24:14.217941+00:00", "trial": "r2-pair-2-baseline", "validationId": "final"}
+{"event": "task_finished", "instrumentationComplete": true, "timestamp": "2026-10-28T07:24:14.260891+00:00", "trial": "r2-pair-2-baseline"}

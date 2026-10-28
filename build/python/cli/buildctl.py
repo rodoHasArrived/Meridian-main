@@ -9,6 +9,8 @@ Usage:
     python3 build/python/cli/buildctl.py build --project <path> --configuration <cfg>
     python3 build/python/cli/buildctl.py test --project <path> [--filter <expr>]
     python3 build/python/cli/buildctl.py validation-status
+    python3 build/python/cli/buildctl.py environment --profile fixture-only [--restore]
+    python3 build/python/cli/buildctl.py validation-metrics [--summary]
     python3 build/python/cli/buildctl.py collect-debug --project <path> --configuration <cfg>
     python3 build/python/cli/buildctl.py build-profile
     python3 build/python/cli/buildctl.py validate-data --directory <dir>
@@ -1278,6 +1280,8 @@ def cmd_test(args: argparse.Namespace) -> int:
     try:
         _validate_output_options(args)
         _validate_output_name(run_id, "run ID")
+        if getattr(args, "task_id", None) is not None:
+            _validate_output_name(args.task_id, "task ID")
         isolation_key = None if getattr(args, "profile", None) else _resolve_isolation_key(
             getattr(args, "isolation_key", "auto"), run_id=run_id,
             disabled=getattr(args, "no_isolation", False),
@@ -1297,18 +1301,39 @@ def cmd_test(args: argparse.Namespace) -> int:
 
     run_path = _validation_runs_dir() / f"{run_id}.json"
     run_payload: dict = {
+        "schemaVersion": 2,
         "runId": run_id,
+        "taskId": getattr(args, "task_id", None),
         "command": "test",
         "lane": "dotnet",
         "project": project,
         "filter": getattr(args, "filter", ""),
         "configuration": configuration,
+        "framework": getattr(args, "framework", None),
+        "runtime": getattr(args, "runtime", None),
         "isolationKey": isolation_key,
         "profile": getattr(args, "profile", None),
         "startedAt": _utc_now(),
         "status": "started",
         "steps": [],
     }
+    queue_started = time.monotonic()
+    feedback_started = queue_started
+    execution_started: float | None = None
+    phase = "queue"
+
+    def finish_run(**updates: object) -> None:
+        now = time.monotonic()
+        if execution_started is None:
+            run_payload["queueSeconds"] = round(max(0, now - queue_started), 3)
+        _record_validation_run(
+            run_path, run_payload,
+            finishedAt=_utc_now(),
+            feedbackSeconds=round(max(0, now - feedback_started), 3),
+            executionSeconds=round(max(0, now - execution_started), 3) if execution_started is not None else None,
+            failurePhase=phase if updates.get("status") != "passed" else None,
+            **updates,
+        )
     try:
         run_path.parent.mkdir(parents=True, exist_ok=True)
         # Reserve the evidence ID atomically, including explicitly supplied IDs.
@@ -1318,38 +1343,29 @@ def cmd_test(args: argparse.Namespace) -> int:
         print(f"Run ID already exists: {run_id}; choose a new --run-id.", file=sys.stderr)
         return 2
 
-    lock_acquired = _acquire_validation_lock(
-        REPO_ROOT,
-        run_id=run_id,
-        command=f"buildctl test --project {project}",
-        queue=getattr(args, "queue", False),
-        timeout_seconds=getattr(args, "queue_timeout_seconds", 300),
-    )
-    if not lock_acquired:
-        lock = _read_validation_lock()
-        _record_validation_run(
-            run_path,
-            run_payload,
-            status="blocked",
-            finishedAt=_utc_now(),
-            blockReason="validation lock is held by another run",
-            lock=lock,
-        )
-        print("Build outputs are locked; rerun with --queue to wait.", file=sys.stderr)
-        if lock:
-            print(json.dumps(lock, indent=2, sort_keys=True), file=sys.stderr)
-        return 3
-
+    lock_acquired = False
     try:
+        lock_acquired = _acquire_validation_lock(
+            REPO_ROOT,
+            run_id=run_id,
+            command=f"buildctl test --project {project}",
+            queue=getattr(args, "queue", False),
+            timeout_seconds=getattr(args, "queue_timeout_seconds", 300),
+        )
+        if not lock_acquired:
+            lock = _read_validation_lock()
+            finish_run(status="blocked", blockReason="validation lock is held by another run", lock=lock)
+            print("Build outputs are locked; rerun with --queue to wait.", file=sys.stderr)
+            if lock:
+                print(json.dumps(lock, indent=2, sort_keys=True), file=sys.stderr)
+            return 3
+
         active_processes = _wait_for_no_active_repo_build_processes(
             getattr(args, "queue_timeout_seconds", 300) if getattr(args, "queue", False) else 0
         )
         if active_processes and not getattr(args, "allow_concurrent", False):
-            _record_validation_run(
-                run_path,
-                run_payload,
+            finish_run(
                 status="blocked",
-                finishedAt=_utc_now(),
                 blockReason="repo-owned build/test/compiler processes are already active",
                 activeRepoBuildProcesses=active_processes,
             )
@@ -1365,6 +1381,9 @@ def cmd_test(args: argparse.Namespace) -> int:
                 )
             return 3
 
+        execution_started = time.monotonic()
+        phase = "prepare"
+        _record_validation_run(run_path, run_payload, queueSeconds=round(max(0, execution_started - queue_started), 3))
         effective_args, profile = _prepare_outputs(args, run_id)
         isolation_key = effective_args.isolation_key
         _record_validation_run(run_path, run_payload, isolationKey=isolation_key)
@@ -1379,6 +1398,8 @@ def cmd_test(args: argparse.Namespace) -> int:
         step_results: list[dict[str, object]] = []
 
         def run_step(name: str, command: list[str]) -> int:
+            nonlocal phase
+            phase = name
             print(f"{name}: {' '.join(command)}")
             started = time.monotonic()
             code = _run_passthrough(command)
@@ -1396,7 +1417,7 @@ def cmd_test(args: argparse.Namespace) -> int:
         if getattr(args, "shutdown_build_servers", False):
             shutdown_code = run_step("shutdown-build-servers", ["dotnet", "build-server", "shutdown"])
             if shutdown_code != 0:
-                _record_validation_run(run_path, run_payload, status="failed", finishedAt=_utc_now(), exitCode=shutdown_code)
+                finish_run(status="failed", exitCode=shutdown_code)
                 return shutdown_code
 
         if profile and not no_build:
@@ -1404,7 +1425,7 @@ def cmd_test(args: argparse.Namespace) -> int:
         if not no_build and not getattr(args, "skip_restore", False):
             restore_code = run_step("restore", ["dotnet", "restore", project, "--verbosity", verbosity, f"/p:Configuration={configuration}", *msbuild_args])
             if restore_code != 0:
-                _record_validation_run(run_path, run_payload, status="failed", finishedAt=_utc_now(), exitCode=restore_code)
+                finish_run(status="failed", exitCode=restore_code)
                 return restore_code
 
         if not no_build:
@@ -1424,7 +1445,7 @@ def cmd_test(args: argparse.Namespace) -> int:
                 ],
             )
             if build_code != 0:
-                _record_validation_run(run_path, run_payload, status="failed", finishedAt=_utc_now(), exitCode=build_code)
+                finish_run(status="failed", exitCode=build_code)
                 return build_code
             if profile:
                 mark_profile_built(profile)
@@ -1462,22 +1483,19 @@ def cmd_test(args: argparse.Namespace) -> int:
                 file=sys.stderr,
             )
         status = "passed" if test_code == 0 else "failed"
-        _record_validation_run(
-            run_path,
-            run_payload,
+        finish_run(
             status=status,
-            finishedAt=_utc_now(),
             exitCode=test_code,
             resultsDirectory=str(results_directory),
         )
         print(f"Validation run artifact: {run_path}")
         return test_code
     except (ValueError, OSError) as exc:
-        _record_validation_run(run_path, run_payload, status="failed", finishedAt=_utc_now(), exitCode=2, error=str(exc))
+        finish_run(status="failed", exitCode=2, error=str(exc))
         print(str(exc), file=sys.stderr)
         return 2
     except KeyboardInterrupt:
-        _record_validation_run(run_path, run_payload, status="interrupted", finishedAt=_utc_now(), exitCode=130)
+        finish_run(status="interrupted", exitCode=130)
         return 130
     finally:
         if lock_acquired:
@@ -1862,6 +1880,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
+    # read-only focused validation recommendations
+    p_recommend = sub.add_parser("recommend-validation", help="Recommend focused checks without running them")
+    p_recommend.add_argument("--root", type=Path, default=REPO_ROOT)
+    p_recommend.add_argument("--changed-file", action="append", default=[])
+    p_recommend.add_argument("--from-git", action="store_true", help="Include staged, unstaged and untracked changes")
+    p_recommend.add_argument("--json", action="store_true", help="Emit structured JSON instead of text")
+    p_recommend.add_argument("--output", type=Path)
+
     # doctor
     p_doctor = sub.add_parser("doctor", help="Run environment health check")
     p_doctor.add_argument("--quick", action="store_true", help="Skip dotnet restore")
@@ -1947,6 +1973,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_test.add_argument("--queue", action="store_true", help="Wait for the validation lock and active repo build processes.")
     p_test.add_argument("--queue-timeout-seconds", type=int, default=300)
     p_test.add_argument("--run-id")
+    p_test.add_argument("--task-id", help="Explicit task identity for observed validation attempts; use a unique ID per task.")
     p_test.add_argument("--isolation-key", default="auto")
     test_output = p_test.add_mutually_exclusive_group()
     test_output.add_argument("--profile", help="Persistent worktree or session:<name> build outputs.")
@@ -2028,6 +2055,11 @@ def build_parser() -> argparse.ArgumentParser:
     # history
     sub.add_parser("history", help="Show build history summary")
 
+    from dev_environment import add_parser as add_environment_parser
+    from validation_metrics import add_parser as add_validation_metrics_parser
+    add_environment_parser(sub)
+    add_validation_metrics_parser(sub)
+
     return parser
 
 
@@ -2035,7 +2067,13 @@ def build_parser() -> argparse.ArgumentParser:
 # Entry point
 # ---------------------------------------------------------------------------
 
+def cmd_recommend_validation(args: argparse.Namespace) -> int:
+    from validation_plan import run_cli
+    return run_cli(args)
+
+
 _COMMANDS = {
+    "recommend-validation": cmd_recommend_validation,
     "doctor": cmd_doctor,
     "build": cmd_build,
     "test": cmd_test,
@@ -2058,6 +2096,12 @@ _COMMANDS = {
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
+    if args.command == "environment":
+        from dev_environment import cmd_environment
+        return cmd_environment(args, REPO_ROOT)
+    if args.command == "validation-metrics":
+        from validation_metrics import cmd_validation_metrics
+        return cmd_validation_metrics(args, REPO_ROOT)
     handler = _COMMANDS.get(args.command)
     if handler is None:
         print(f"Unknown command: {args.command}", file=sys.stderr)

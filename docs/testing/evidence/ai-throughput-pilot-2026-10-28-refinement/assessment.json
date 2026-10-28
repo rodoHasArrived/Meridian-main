@@ -1,0 +1,16 @@
+{
+  "result": "threshold-not-met",
+  "eligiblePairs": 5,
+  "pairsAtLeast10PercentFaster": 2,
+  "medianPairedReductionFraction": 0.05776611878283936,
+  "pairedReductions": {
+    "r2-pair-1": 0.05776611878283936,
+    "r2-pair-2": 0.34521204675607686,
+    "r2-pair-3": 0.38797712808272594,
+    "r2-pair-4": -0.20715279929598066,
+    "r2-pair-5": -0.009249392593795392
+  },
+  "allTwelveAccepted": false,
+  "runnerFailure": "r2-pair-6-baseline used nonexistent /usr/local/bin/python, failed synchronization acceptance, then agent hit model capacity. Root recorded observed final failure and incomplete finish; no replacement run.",
+  "note": "Original observations retained. End-to-end results include solver dispatch/queue time."
+}

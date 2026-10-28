@@ -10,16 +10,39 @@ Run the following commands from the repository root.
 
 ## Install and choose a mode
 
-Use Node.js 24 and npm to match the dev container and browser CI. Backend-connected mode also
-requires the .NET SDK selected by [global.json](../../global.json) on `PATH`; fixture-only mode
-does not need .NET or a database. Windows uses the built-in Windows
+Use Python 3.11 or newer for the environment command, Node.js 24, and npm to match the
+devcontainer and browser CI. Backend-connected mode also requires the .NET SDK selected by
+[global.json](../../global.json) on `PATH`; fixture-only mode does not need .NET or a database.
+Windows uses the built-in Windows
 PowerShell to establish process ownership before starting a service.
 
 ```sh
-npm ci
-npm --prefix src/Meridian.Ui/dashboard ci
+python build/python/cli/buildctl.py environment --profile backend-connected --restore --json-output .ai/environment.json
 npm run dev
 ```
+
+For fixture-only work, restore the same two npm lockfiles without requiring .NET or a database:
+
+```sh
+python build/python/cli/buildctl.py environment --profile fixture-only --restore --json-output .ai/environment.json
+npm run dev:fixtures
+```
+
+Omit `--restore` for a read-only prerequisite and dependency-availability check. Restore uses
+`npm ci --include=optional` in both package roots and, for backend-connected mode, restores the
+host project. It stops on the first failed install. The report records tool versions, input
+hashes, and restore step timings; it never captures environment variables or raw package-manager
+output. A successful check establishes availability, not that an existing dependency tree matches
+the lockfile. Use `--restore` after dependency changes to establish a fresh install.
+
+The fingerprint combines dependency, launcher, and fixture input hashes with tool versions and
+platform information for comparing sessions.
+It does not claim bit-for-bit identical builds: `global.json` retains its SDK roll-forward policy
+and runtime versions are also reported individually. Restore does not seed, reset, or delete workspace
+data; the existing launcher owns seeding. Install toolchains separately when preflight reports
+them missing. Python script/CI dependencies are separate from browser runtime dependencies; install
+`build/scripts/ci/requirements.txt` into a virtual environment when running those checks. The
+devcontainer installs that pinned dependency set automatically.
 
 Open the URL printed after `[dev] Ready`, normally `http://127.0.0.1:5173/workstation/`.
 The launcher does not open a browser automatically.
