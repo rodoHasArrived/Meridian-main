@@ -981,7 +981,8 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel>
-                                        <TextBlock Text="{Binding ManualJournalEntryHeadingText}" Style="{StaticResource CardHeaderStyle}" />
+                                        <TextBlock Text="MANUAL JOURNAL ENTRY - BALANCED DOUBLE-ENTRY" Style="{StaticResource CardHeaderStyle}" Visibility="{Binding CanEditManualJournalDraft, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                        <TextBlock Text="{Binding ManualJournalEntryHeadingText}" Style="{StaticResource CardHeaderStyle}" Visibility="{Binding IsAssetAccountingDraft, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                         <TextBlock Text="{Binding ManualJournalStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
                                         <TextBlock Text="{Binding AssetAccountingDraftRestrictionText}" TextWrapping="Wrap" Margin="0,6,0,0" AutomationProperties.AutomationId="AssetAccountingDraftRestriction" />
                                     </StackPanel>
