@@ -59,8 +59,11 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
             "- name: Validate web screenshot captures", 1
         )[0]
         self.assertNotIn("continue-on-error: true", capture_step)
-        self.assertIn("continue-on-error: true", self.web_workflow)
-        self.assertEqual(pull_request.get("if"), "${{ steps.capture_web.outcome == 'success' }}")
+        self.assertNotIn("continue-on-error: true", self.web_workflow)
+        self.assertEqual(
+            pull_request.get("if"),
+            "${{ success() && inputs.create_pr && steps.validate_web.outcome == 'success' }}",
+        )
         self.assertEqual(pull_request.get("with", {}).get("branch"), "automation/web-screenshot-capture")
         self.assertEqual(pull_request.get("with", {}).get("base"), "${{ github.event.repository.default_branch }}")
         self.assertEqual(pull_request.get("with", {}).get("title"), "chore: refresh web workstation screenshot catalog")
@@ -691,22 +694,76 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertNotIn("throw error;", capture_loop)
 
     def test_web_screenshot_workflow_uploads_partial_catalog_on_failure(self) -> None:
-        upload_step = self.web_workflow.split("- name: Upload screenshot artifacts", 1)[1].split(
-            "- name:", 1
-        )[0]
-        self.assertIn("if: ${{ always() }}", upload_step)
-        self.assertIn("if-no-files-found: ignore", upload_step)
+        workflow = yaml.load(self.web_workflow, Loader=yaml.BaseLoader)
+        self.assertEqual(workflow["env"]["CAPTURE_DIR"], "artifacts/web-screenshots/captures")
+        for job in workflow["jobs"].values():
+            steps = job["steps"]
+            capture = next(step for step in steps if step.get("id") == "capture_web")
+            validate = next(step for step in steps if step.get("id") == "validate_web")
+            uploads = [step for step in steps if step.get("uses", "").startswith("actions/upload-artifact@")]
+            self.assertEqual(len(uploads), 1, "Each run should retain one complete evidence archive")
+            upload = uploads[0]
+            self.assertEqual(upload["if"], "${{ always() }}")
+            self.assertEqual(upload["with"]["path"], "artifacts/web-screenshots/")
+            self.assertEqual(upload["with"]["retention-days"], "14")
+            self.assertIn("github.run_attempt", upload["with"]["name"])
+            # Setup failure cannot upload old tracked catalog PNGs as fresh evidence.
+            self.assertEqual(capture["env"]["OUTPUT_DIR"], "${{ env.CAPTURE_DIR }}")
+            self.assertEqual(validate["env"]["OUTPUT_DIR"], capture["env"]["OUTPUT_DIR"])
+            self.assertEqual(validate["env"]["ROUTES_CONFIG"], capture["env"]["ROUTES_CONFIG"])
+            self.assertNotIn("docs/screenshots/web", upload["with"]["path"])
 
     def test_web_screenshot_workflow_uploads_capture_manifest_for_diagnostics(self) -> None:
-        # The run manifest (per-route status, render errors, dev-server log tail)
-        # must be uploaded on every run so a failed capture can be diagnosed
-        # without re-running the workflow.
-        manifest_step = self.web_workflow.split("- name: Upload capture manifest", 1)
-        self.assertEqual(2, len(manifest_step), "Upload capture manifest step is missing")
-        manifest_step = manifest_step[1].split("- name:", 1)[0]
-        self.assertIn("if: ${{ always() }}", manifest_step)
-        self.assertIn("artifacts/web-screenshots/manifest.json", manifest_step)
-        self.assertIn("if-no-files-found: warn", manifest_step)
+        workflow = yaml.load(self.web_workflow, Loader=yaml.BaseLoader)
+        for job in workflow["jobs"].values():
+            steps = job["steps"]
+            summary = next(step for step in steps if step.get("name") == "Summarize web screenshot run")
+            upload = next(step for step in steps if step.get("uses", "").startswith("actions/upload-artifact@"))
+            self.assertEqual(summary["if"], "${{ always() }}")
+            self.assertIn("scripts/dev/summarize-web-screenshots.py", summary["run"])
+            self.assertIn('"$GITHUB_STEP_SUMMARY"', summary["run"])
+            self.assertEqual(summary["env"]["SOURCE_SHA"], "${{ steps.checkout.outputs.commit }}")
+            self.assertLess(steps.index(summary), steps.index(upload))
+            self.assertEqual(upload["with"]["path"], "artifacts/web-screenshots/")
+
+    def test_web_screenshot_publication_requires_validated_capture_and_opt_in(self) -> None:
+        workflow = yaml.load(self.web_workflow, Loader=yaml.BaseLoader)
+        self.assertEqual(workflow["permissions"], {"contents": "read"})
+        self.assertEqual(workflow["on"]["workflow_dispatch"]["inputs"]["create_pr"]["type"], "boolean")
+        self.assertEqual(workflow["on"]["workflow_dispatch"]["inputs"]["create_pr"]["default"], "true")
+        dispatch = workflow["jobs"]["capture-web-screenshots"]
+        self.assertEqual(dispatch["permissions"], {"contents": "write", "pull-requests": "write"})
+        steps = dispatch["steps"]
+        stage = next(step for step in steps if step.get("name") == "Stage validated catalog refresh")
+        publish = next(step for step in steps if step.get("id") == "refresh_pr")
+        validate = next(step for step in steps if step.get("id") == "validate_web")
+        self.assertEqual(stage["if"], publish["if"])
+        self.assertIn("steps.validate_web.outcome == 'success'", publish["if"])
+        self.assertIn("success() && inputs.create_pr", publish["if"])
+        self.assertNotIn("continue-on-error", publish)
+        self.assertLess(steps.index(validate), steps.index(stage))
+        self.assertLess(steps.index(stage), steps.index(publish))
+        self.assertIn('cp "$CAPTURE_DIR"/*.png "$OUTPUT_DIR/"', stage["run"])
+        pr = workflow["jobs"]["validate-pull-request-screenshots"]
+        self.assertEqual(pr["permissions"], {"contents": "read"})
+        self.assertFalse(any(step.get("id") == "refresh_pr" for step in pr["steps"]))
+
+    def test_web_screenshot_trigger_covers_capture_dependencies(self) -> None:
+        workflow = yaml.load(self.web_workflow, Loader=yaml.BaseLoader)
+        paths = workflow["on"]["pull_request"]["paths"]
+        for dependency in (
+            "scripts/dev/web-screenshot-scenarios.mjs",
+            "scripts/dev/validate-screenshot-captures.py",
+            "scripts/dev/summarize-web-screenshots.py",
+        ):
+            self.assertIn(dependency, paths)
+        for job in workflow["jobs"].values():
+            steps = job["steps"]
+            tests = next(step for step in steps if step.get("name") == "Test screenshot harness")
+            capture = next(step for step in steps if step.get("id") == "capture_web")
+            self.assertIn("scripts/dev/capture-web-screenshots.test.mjs", tests["run"])
+            self.assertIn("scripts/dev/web-screenshot-scenarios.test.mjs", tests["run"])
+            self.assertLess(steps.index(tests), steps.index(capture))
 
     def test_web_screenshot_capture_script_retries_transient_route_failures(self) -> None:
         # A single flaky render must not fail the whole catalog: each route is

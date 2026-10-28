@@ -3953,6 +3953,7 @@ Meridian-main
 │   │   ├── build-ibapi-vendor.ps1
 │   │   ├── capture-desktop-screenshots.ps1
 │   │   ├── capture-web-screenshots.mjs
+│   │   ├── capture-web-screenshots.test.mjs
 │   │   ├── check-meridian-process-lifecycle.ps1
 │   │   ├── cleanup-generated.ps1
 │   │   ├── desktop-dev.ps1
@@ -3981,6 +3982,7 @@ Meridian-main
 │   │   ├── SharedPreflight.ps1
 │   │   ├── SharedWorkflowProfiles.ps1
 │   │   ├── summarize-desktop-workflow-bundle.ps1
+│   │   ├── summarize-web-screenshots.py
 │   │   ├── validate-operator-inbox-route.ps1
 │   │   ├── validate-position-blotter-route.ps1
 │   │   ├── validate-screenshot-captures.py
@@ -12805,6 +12807,7 @@ Meridian-main
 │   │   ├── test_shared_build_retention.py
 │   │   ├── test_shared_checkpoint.py
 │   │   ├── test_summarize_desktop_workflow_bundle.py
+│   │   ├── test_summarize_web_screenshots.py
 │   │   ├── test_targeted_test_dispatcher.py
 │   │   ├── test_targeted_test_workflow.py
 │   │   ├── test_task_brief.py
