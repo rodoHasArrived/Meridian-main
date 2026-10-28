@@ -2,11 +2,17 @@
 
 # `security-master-contracts` data objects - page 2 of 6
 
-Objects 81-160 of 456. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 460. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_CorporateActionPermissionDeniedException["CorporateActionPermissionDeniedException"] {
+        +string RequiredAuthority
+        +string TargetState
+    }
+    class Meridian_Contracts_SecurityMaster_CorporateActionPersistenceUnavailableException["CorporateActionPersistenceUnavailableException"] {
+    }
     class Meridian_Contracts_SecurityMaster_CorporateActionProblemCodes["CorporateActionProblemCodes"] {
     }
     class Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto["CorporateActionProcessingCaseDto"] {
@@ -449,10 +455,6 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_ISecurityMasterCashFlowService["ISecurityMasterCashFlowService"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterCorporateActionCommandService["ISecurityMasterCorporateActionCommandService"] {
-    }
-    class Meridian_Contracts_SecurityMaster_ISecurityMasterDataQualityService["ISecurityMasterDataQualityService"] {
-    }
-    class Meridian_Contracts_SecurityMaster_ISecurityMasterPricingService["ISecurityMasterPricingService"] {
     }
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionDto
