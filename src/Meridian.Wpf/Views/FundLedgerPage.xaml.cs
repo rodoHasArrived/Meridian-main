@@ -7,6 +7,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Provides the desktop page to review journal, account, and accounting readiness in one view.
+/// </summary>
 public partial class FundLedgerPage : Page
 {
     private readonly FundLedgerViewModel _viewModel;

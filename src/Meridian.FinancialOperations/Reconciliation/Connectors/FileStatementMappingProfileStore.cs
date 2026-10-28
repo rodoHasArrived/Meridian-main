@@ -5,6 +5,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors;
 
+/// <summary>
+/// Lists, saves, and deletes versioned statement mapping profile documents.
+/// </summary>
 public interface IStatementMappingProfileStore
 {
     Task<IReadOnlyList<StatementMappingProfileDocument>> ListAsync(CancellationToken ct = default);

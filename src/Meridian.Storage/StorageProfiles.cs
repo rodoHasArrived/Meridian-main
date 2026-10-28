@@ -18,6 +18,9 @@ public sealed record StorageProfilePreset(
     string Description,
     Func<StorageOptions, StorageOptions> Apply);
 
+/// <summary>
+/// Defines the default storage profile and the available preset storage configurations.
+/// </summary>
 public static class StorageProfilePresets
 {
     /// <summary>

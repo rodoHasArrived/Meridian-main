@@ -1,5 +1,8 @@
 namespace Meridian.Wpf.Workstation.ViewModels.Base;
 
+/// <summary>
+/// Maintains all table rows and filters the displayed collection when the filter query changes.
+/// </summary>
 public sealed class FilterableTableViewModel<TRow> : TableViewModel<TRow>
 {
     private readonly List<TRow> _allRows = [];

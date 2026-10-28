@@ -174,6 +174,9 @@ public sealed record WorkstationCommandModel(
     public string AutomationId => WorkspaceCommandAutomation.ResolveId("WorkstationCommand", Id, Label);
 }
 
+/// <summary>
+/// Carries primary and secondary command presentation for workstation command bars.
+/// </summary>
 public sealed class WorkstationCommandGroupModel
 {
     public IReadOnlyList<WorkstationCommandModel> PrimaryCommands { get; init; } = Array.Empty<WorkstationCommandModel>();
@@ -181,6 +184,9 @@ public sealed class WorkstationCommandGroupModel
     public IReadOnlyList<WorkstationCommandModel> SecondaryCommands { get; init; } = Array.Empty<WorkstationCommandModel>();
 }
 
+/// <summary>
+/// Projects workspace command metadata and availability into workstation command presentation models.
+/// </summary>
 public static class WorkstationCommandMapper
 {
     public static WorkstationCommandModel FromWorkspaceCommand(WorkspaceCommandItem command)
@@ -249,6 +255,9 @@ public sealed record WorkstationTableColumnModel(
     double Width = 120,
     string StringFormat = "");
 
+/// <summary>
+/// Carries table column definitions, rows, title, and empty-state copy for workstation grids.
+/// </summary>
 public class WorkstationTableModel
 {
     public string Title { get; init; } = string.Empty;
@@ -262,6 +271,9 @@ public class WorkstationTableModel
     public IEnumerable Rows { get; init; } = Array.Empty<object>();
 }
 
+/// <summary>
+/// Adds strongly typed row enumeration to the workstation table presentation model.
+/// </summary>
 public sealed class WorkstationTableModel<TRecord> : WorkstationTableModel
 {
     public new IEnumerable<TRecord> Rows { get; init; } = Array.Empty<TRecord>();
@@ -287,6 +299,9 @@ public sealed class WorkstationTableModel<TRecord> : WorkstationTableModel
     }
 }
 
+/// <summary>
+/// Carries search text, scope text, and active filter labels for workstation tables.
+/// </summary>
 public sealed class WorkstationFilterModel
 {
     public string SearchText { get; init; } = string.Empty;
@@ -296,6 +311,9 @@ public sealed class WorkstationFilterModel
     public IReadOnlyList<string> ActiveFilters { get; init; } = Array.Empty<string>();
 }
 
+/// <summary>
+/// Carries selected-record title, supporting detail, badge, and facts for a workstation inspector.
+/// </summary>
 public sealed class InspectorPanelModel
 {
     public string Title { get; init; } = "No selection";
@@ -315,6 +333,9 @@ public sealed record KeyValueFactModel(
     string Detail = "",
     string Tone = WorkspaceTone.Neutral);
 
+/// <summary>
+/// Carries a diagnostics heading, explanatory detail, and checklist items.
+/// </summary>
 public sealed class DiagnosticsChecklistModel
 {
     public string Title { get; init; } = "Diagnostics";
@@ -330,6 +351,9 @@ public sealed record DiagnosticsChecklistItemModel(
     string Detail,
     string Tone = WorkspaceTone.Neutral);
 
+/// <summary>
+/// Carries an observable audit timeline with heading and empty-state copy.
+/// </summary>
 public sealed class AuditTimelineModel
 {
     public string Title { get; init; } = "Activity";
@@ -345,6 +369,9 @@ public sealed record AuditTimelineEntryModel(
     string TimeText,
     string Tone = WorkspaceTone.Neutral);
 
+/// <summary>
+/// Carries a data-quality heading, explanatory detail, and supporting facts.
+/// </summary>
 public sealed class DataQualitySummaryModel
 {
     public string Title { get; init; } = "Data quality";
@@ -354,6 +381,9 @@ public sealed class DataQualitySummaryModel
     public IReadOnlyList<KeyValueFactModel> Facts { get; init; } = Array.Empty<KeyValueFactModel>();
 }
 
+/// <summary>
+/// Carries workflow routing rows with a heading and explanatory detail.
+/// </summary>
 public sealed class RoutingMatrixModel
 {
     public string Title { get; init; } = "Routing";

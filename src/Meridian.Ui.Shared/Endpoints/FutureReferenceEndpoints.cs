@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps futures reference queries with Security Master permission checks.
+/// </summary>
 public static class FutureReferenceEndpoints
 {
     public static void MapFutureReferenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)

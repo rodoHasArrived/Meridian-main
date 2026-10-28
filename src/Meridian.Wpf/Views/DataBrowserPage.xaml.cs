@@ -6,6 +6,9 @@ using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Hosts paged market-record browsing and filtering.
+/// </summary>
 public partial class DataBrowserPage : Page
 {
     private const string PageTag = "DataBrowser";

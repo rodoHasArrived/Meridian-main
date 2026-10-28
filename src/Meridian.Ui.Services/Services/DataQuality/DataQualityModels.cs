@@ -4,6 +4,9 @@ using Meridian.Contracts.Api.Quality;
 
 namespace Meridian.Ui.Services.DataQuality;
 
+/// <summary>
+/// Groups formatted dashboard quality metrics and rows with availability, partial-state, and version information.
+/// </summary>
 public sealed class DataQualityPresentationSnapshot
 {
     public bool IsAvailable { get; init; }
@@ -47,6 +50,9 @@ public sealed class DataQualityPresentationSnapshot
     public IReadOnlyList<DataQualityAnomalyPresentation> Anomalies { get; init; } = Array.Empty<DataQualityAnomalyPresentation>();
 }
 
+/// <summary>
+/// Presents a symbol's quality grade, coverage, freshness, component scores, and issue details.
+/// </summary>
 public sealed class DataQualitySymbolPresentation
 {
     public string Symbol { get; init; } = string.Empty;
@@ -65,6 +71,9 @@ public sealed class DataQualitySymbolPresentation
     public IReadOnlyList<string> IssueDetails { get; init; } = Array.Empty<string>();
 }
 
+/// <summary>
+/// Presents a versioned data gap with repair eligibility and any disabled-action reason.
+/// </summary>
 public sealed class DataQualityGapPresentation
 {
     public string GapId { get; init; } = string.Empty;
@@ -77,6 +86,9 @@ public sealed class DataQualityGapPresentation
     public string? DisabledReason { get; init; }
 }
 
+/// <summary>
+/// Presents a symbol quality alert with its severity and semantic visual tone.
+/// </summary>
 public sealed class DataQualityAlertPresentation
 {
     public string Id { get; init; } = string.Empty;
@@ -87,6 +99,9 @@ public sealed class DataQualityAlertPresentation
     public string SeverityTone { get; init; } = DataQualityVisualTones.Info;
 }
 
+/// <summary>
+/// Presents an anomaly's symbol, description, time, category, and semantic severity tone.
+/// </summary>
 public sealed class DataQualityAnomalyPresentation
 {
     public string Symbol { get; init; } = string.Empty;
@@ -96,12 +111,18 @@ public sealed class DataQualityAnomalyPresentation
     public string SeverityTone { get; init; } = DataQualityVisualTones.Info;
 }
 
+/// <summary>
+/// Groups provider quality-comparison rows for one symbol.
+/// </summary>
 public sealed class DataQualityProviderComparisonPresentation
 {
     public string Symbol { get; init; } = string.Empty;
     public IReadOnlyList<DataQualityProviderComparisonItem> Providers { get; init; } = Array.Empty<DataQualityProviderComparisonItem>();
 }
 
+/// <summary>
+/// Presents a provider's completeness, latency, freshness, and status for comparison.
+/// </summary>
 public sealed class DataQualityProviderComparisonItem
 {
     public string Name { get; init; } = string.Empty;
@@ -111,6 +132,9 @@ public sealed class DataQualityProviderComparisonItem
     public string Status { get; init; } = string.Empty;
 }
 
+/// <summary>
+/// Groups a symbol's detailed quality metrics, heatmap cells, and issue rows for display.
+/// </summary>
 public sealed class DataQualitySymbolDrilldownPresentation
 {
     public string HeaderText { get; init; } = string.Empty;
@@ -124,6 +148,9 @@ public sealed class DataQualitySymbolDrilldownPresentation
     public IReadOnlyList<DataQualityDrilldownIssuePresentation> Issues { get; init; } = Array.Empty<DataQualityDrilldownIssuePresentation>();
 }
 
+/// <summary>
+/// Presents one labeled quality heatmap cell with a score, visual tone, and tooltip.
+/// </summary>
 public sealed class DataQualityHeatmapCellPresentation
 {
     public string Label { get; init; } = string.Empty;
@@ -132,6 +159,9 @@ public sealed class DataQualityHeatmapCellPresentation
     public string Tooltip { get; init; } = string.Empty;
 }
 
+/// <summary>
+/// Presents a timestamped quality issue with its semantic visual tone.
+/// </summary>
 public sealed class DataQualityDrilldownIssuePresentation
 {
     public string Description { get; init; } = string.Empty;
@@ -139,6 +169,9 @@ public sealed class DataQualityDrilldownIssuePresentation
     public string Tone { get; init; } = DataQualityVisualTones.Info;
 }
 
+/// <summary>
+/// Defines semantic tone names shared by data-quality presentation models.
+/// </summary>
 public static class DataQualityVisualTones
 {
     public const string Success = "Success";

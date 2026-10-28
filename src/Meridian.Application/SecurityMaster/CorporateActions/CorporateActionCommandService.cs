@@ -4,6 +4,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.SecurityMaster.CorporateActions;
 
+/// <summary>
+/// Defines validated append of corporate actions to a security's retained history.
+/// </summary>
 public interface ICorporateActionCommandService
 {
     Task<CorporateActionAppendResult> AppendAsync(Guid securityId, CorporateActionDto action, string? actor, string source, CancellationToken ct = default);
@@ -24,6 +27,9 @@ public sealed record CorporateActionAppendResult(
     public static CorporateActionAppendResult Invalid(string validationError) => new(false, validationError);
 }
 
+/// <summary>
+/// Validates corporate-action input and appends accepted actions to Security Master history.
+/// </summary>
 public sealed class CorporateActionCommandService : ICorporateActionCommandService
 {
     private readonly ISecurityMasterEventStore _eventStore;

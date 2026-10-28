@@ -2,6 +2,9 @@ using System.Windows.Input;
 
 namespace Meridian.Wpf.Workstation.Controls;
 
+/// <summary>
+/// Defines routed keyboard commands for filtering, detail inspection, related records, and grid selection.
+/// </summary>
 public static class DenseGridKeyboardCommands
 {
     public static readonly RoutedUICommand FocusFilter = new(

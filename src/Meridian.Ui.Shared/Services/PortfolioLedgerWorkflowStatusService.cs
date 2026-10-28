@@ -2,6 +2,9 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Builds portfolio and ledger workflow status from readiness gates and operator work items.
+/// </summary>
 public static class PortfolioLedgerWorkflowStatusService
 {
     public static PortfolioLedgerWorkflowStatusSnapshotDto Compute(

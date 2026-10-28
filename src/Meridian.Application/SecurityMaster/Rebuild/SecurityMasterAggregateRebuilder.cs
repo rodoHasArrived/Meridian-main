@@ -3,6 +3,9 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Application.SecurityMaster.Rebuild;
 
+/// <summary>
+/// Reconstructs security economic definitions and corporate actions from retained events.
+/// </summary>
 public sealed class SecurityMasterAggregateRebuilder
 {
     private readonly ISecurityMasterEventStore _eventStore;

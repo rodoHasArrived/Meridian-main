@@ -21,6 +21,9 @@ public sealed record WorkstationTenantContext(
     public bool HasTenantScope => TenantReadPredicate.IsResolvedTenant(TenantId);
 }
 
+/// <summary>
+/// Resolves the current authenticated workstation tenant and company scope.
+/// </summary>
 public interface IWorkstationTenantContextAccessor
 {
     bool TryGetCurrent(out WorkstationTenantContext context);
@@ -28,6 +31,9 @@ public interface IWorkstationTenantContextAccessor
     WorkstationTenantContext GetRequired();
 }
 
+/// <summary>
+/// Reads workstation tenant and company scope from the current HTTP request identity.
+/// </summary>
 public sealed class HttpContextWorkstationTenantContextAccessor : IWorkstationTenantContextAccessor
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
@@ -125,8 +131,14 @@ public sealed class WorkstationFundScopeTenantAccessor : IFundScopeTenantAccesso
     }
 }
 
+/// <summary>
+/// Marks endpoints that require an authenticated workstation tenant scope.
+/// </summary>
 public sealed class WorkstationTenantScopeMetadata;
 
+/// <summary>
+/// Adds tenant-scope metadata and request filters to route groups and individual endpoints.
+/// </summary>
 public static class WorkstationTenantScopeEndpointFilters
 {
     private const string MissingTenantScopeMessage = "A tenant-scoped workstation request context is required.";

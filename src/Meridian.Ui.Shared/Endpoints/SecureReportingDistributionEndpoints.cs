@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Defines shared HTTP route patterns for secure reporting delivery, access grants, and artifact downloads.
+/// </summary>
 public static class SecureReportingDistributionRoutes
 {
     public const string QueueDelivery = "/api/fund-structure/reporting/distribution/deliveries";

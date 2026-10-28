@@ -36,6 +36,9 @@ internal sealed class ReportingStarterKitScopeComparer : IEqualityComparer<Repor
             StringComparer.Ordinal.GetHashCode(obj.CompanyId));
 }
 
+/// <summary>
+/// Loads and saves reporting starter-kit state within a tenant and company scope.
+/// </summary>
 public interface IReportingStarterKitStore
 {
     ReportingStarterKitStateDto? Load(string tenantId, string companyId);
@@ -43,6 +46,9 @@ public interface IReportingStarterKitStore
     void Save(string tenantId, string companyId, ReportingStarterKitStateDto state);
 }
 
+/// <summary>
+/// Persists tenant and company reporting starter-kit state to disk.
+/// </summary>
 public sealed class FileReportingStarterKitStore : IReportingStarterKitStore
 {
     private readonly ReportingStarterKitStoreOptions _options;
@@ -158,6 +164,9 @@ public sealed class FileReportingStarterKitStore : IReportingStarterKitStore
         ReportingStarterKitStateDto State);
 }
 
+/// <summary>
+/// Lists reporting starter kits and provisions their scoped templates and seed schedules.
+/// </summary>
 public sealed class ReportingStarterKitService
 {
     private static readonly ReportingStarterKitStateDto EmptyState = new(

@@ -6,6 +6,9 @@ using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Exposes bindable state and commands to monitor strategy priorities, review watchlists, and open run workflows.
+/// </summary>
 public sealed class StrategyWorkspaceShellViewModel : WorkspaceShellViewModelBase
 {
     private readonly StrategyWorkspaceShellPresentationService? _presentationService;

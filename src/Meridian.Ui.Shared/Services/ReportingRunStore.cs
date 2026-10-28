@@ -63,6 +63,9 @@ public sealed class ReportingLegacyStateRequiresArchiveException : InvalidOperat
     public int RecordCount { get; }
 }
 
+/// <summary>
+/// Persists reporting run snapshots, output manifests, revisions, and audit history to disk.
+/// </summary>
 public sealed class FileReportingRunStore : IReportingRunStore, INonProductionOnlyService
 {
     private const string SnapshotFileName = "reporting-runs.json";

@@ -7,6 +7,7 @@ using Meridian.Storage.Packaging;
 
 namespace Meridian.DataIntegration.Etl;
 
+/// <summary>Stages and publishes normalized extracts and portable packages to configured ETL delivery destinations.</summary>
 public sealed class EtlExportService : IEtlExportService
 {
     private static readonly object DirectoryPublicationLock = new();

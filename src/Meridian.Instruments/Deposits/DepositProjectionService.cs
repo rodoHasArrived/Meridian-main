@@ -3,6 +3,9 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Instruments.Deposits;
 
+/// <summary>
+/// Reads deposit reference projections and combines them with canonical Security Master data.
+/// </summary>
 public sealed class DepositProjectionService
     : InstrumentProjectionServiceBase<DepositProjectionRow, DepositReferenceDto>, IDepositReferenceService
 {
@@ -45,6 +48,9 @@ public sealed class DepositProjectionService
             row.Version);
 }
 
+/// <summary>
+/// Returns absent or empty deposit reference data when the reference service is unavailable.
+/// </summary>
 public sealed class NullDepositReferenceService : IDepositReferenceService
 {
     public Task<DepositReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)

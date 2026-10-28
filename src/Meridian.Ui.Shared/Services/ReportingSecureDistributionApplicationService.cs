@@ -158,6 +158,9 @@ public interface IReportingRecipientDestinationResolver
         CancellationToken cancellationToken = default);
 }
 
+/// <summary>
+/// Refuses recipient destination resolution when no configured resolver is available.
+/// </summary>
 public sealed class RejectingReportingRecipientDestinationResolver : IReportingRecipientDestinationResolver
 {
     public bool IsConfigured => false;
@@ -336,6 +339,9 @@ public sealed record SecureReportingDistributionOptions(
         ExternalGrantTransportIds: new HashSet<string>(["http-relay"], StringComparer.OrdinalIgnoreCase));
 }
 
+/// <summary>
+/// Carries the validation status that denied access through a secure reporting grant.
+/// </summary>
 public sealed class SecureReportingAccessGrantDeniedException : UnauthorizedAccessException
 {
     public SecureReportingAccessGrantDeniedException(ReportingAccessGrantValidationStatus status)

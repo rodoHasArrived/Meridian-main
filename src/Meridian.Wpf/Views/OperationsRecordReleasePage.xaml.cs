@@ -5,6 +5,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Provides the desktop page to follow the release path from source data through accounting record to report pack.
+/// </summary>
 public partial class OperationsRecordReleasePage : Page
 {
     private readonly OperationsRecordReleaseViewModel _viewModel;

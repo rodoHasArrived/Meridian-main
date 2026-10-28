@@ -10,6 +10,9 @@ using Meridian.Storage.AssetOperations;
 
 namespace Meridian.Instruments.AssetOperations;
 
+/// <summary>
+/// Reads asset operations projections and their retained lifecycle evidence.
+/// </summary>
 public sealed class AssetOperationsReadService : IAssetOperationsQueryService
 {
     private readonly IAssetOperationsProjectionStore? _projectionStore;
@@ -149,6 +152,9 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
     }
 }
 
+/// <summary>
+/// Writes asset operations projections through the configured projection store.
+/// </summary>
 public sealed class AssetOperationsProjectionCommandService : IAssetOperationsCommandService
 {
     private readonly IAssetOperationsProjectionStore _projectionStore;
@@ -169,6 +175,9 @@ public sealed class AssetOperationsProjectionCommandService : IAssetOperationsCo
     }
 }
 
+/// <summary>
+/// Builds asset operations projection records from instrument and lifecycle inputs.
+/// </summary>
 public static class AssetOperationsProjectionBuilder
 {
     private const string TimelineEngineVersion = "asset-terms-obligations-timeline-v1";

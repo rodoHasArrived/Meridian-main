@@ -6,6 +6,9 @@ using Meridian.Wpf.ViewModels.Accounting;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Provides the desktop page to review books, chart, rules, manual journals, GL evidence, validation, audit readiness.
+/// </summary>
 public partial class AccountingConfigurePage : Page
 {
     private readonly AccountingConfigureViewModel _viewModel;

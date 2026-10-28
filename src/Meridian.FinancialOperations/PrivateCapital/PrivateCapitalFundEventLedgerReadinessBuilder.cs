@@ -9,6 +9,9 @@ public sealed record PrivateCapitalFundEventLedgerReadinessProjection(
     string NextAction,
     string? NextActionRoute);
 
+/// <summary>
+/// Derives ledger readiness for a private-capital fund event from its retained evidence.
+/// </summary>
 public static class PrivateCapitalFundEventLedgerReadinessBuilder
 {
     public static PrivateCapitalFundEventLedgerReadinessProjection Build(

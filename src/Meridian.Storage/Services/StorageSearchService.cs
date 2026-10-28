@@ -903,6 +903,9 @@ public sealed record StorageQuery(
     long? MinVolume
 );
 
+/// <summary>
+/// Builds a storage query from symbol, event type, date range, and minimum volume filters.
+/// </summary>
 public sealed class StorageQueryBuilder
 {
     private readonly List<string> _symbols = new();

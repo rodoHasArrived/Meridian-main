@@ -3,6 +3,9 @@ using Meridian.Contracts.Ledger;
 
 namespace Meridian.Instruments.AssetOperations;
 
+/// <summary>
+/// Projects factor paydowns and their accounting evidence for supported instruments.
+/// </summary>
 public interface IFactorPaydownProjectionService
 {
     FactorPaydownProjectionResult Project(FactorPaydownProjectionRequest request);
@@ -53,6 +56,9 @@ public sealed record FactorPaydownProjectionResult(
         Status == FactorPaydownProjectionStatus.Projected && PrincipalPaydown is > 0m;
 }
 
+/// <summary>
+/// Builds factor-paydown projections from retained instrument and position evidence.
+/// </summary>
 public sealed class FactorPaydownProjectionService : IFactorPaydownProjectionService
 {
     public const string EventType = FactorPaydownProjectionIdentity.EventType;

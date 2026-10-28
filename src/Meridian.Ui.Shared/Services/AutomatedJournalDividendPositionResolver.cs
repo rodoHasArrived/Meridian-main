@@ -17,6 +17,9 @@ public sealed record AutomatedJournalDividendPositionResolution(
     public bool IsReady => Blockers.Count == 0 && EvidenceLinks.Count > 0;
 }
 
+/// <summary>
+/// Resolves authoritative positions used to prepare automated dividend journals.
+/// </summary>
 public interface IAutomatedJournalDividendPositionResolver
 {
     Task<AutomatedJournalDividendPositionResolution> ResolveAsync(

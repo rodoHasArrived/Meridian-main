@@ -170,6 +170,9 @@ public sealed record ReportingRestatementCertificationInput(
     ReportingRunReadinessDto Readiness,
     ReportAccessQueryContext AccessContext);
 
+/// <summary>
+/// Resolves authoritative certification inputs for a reporting restatement.
+/// </summary>
 public interface IReportingRestatementCertificationInputProvider
 {
     ValueTask<ReportingRestatementCertificationInput> ResolveAsync(

@@ -1,5 +1,8 @@
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Queries commodity reference projections by security, commodity type, and exchange.
+/// </summary>
 public interface ICommodityReferenceProjectionStore
 {
     Task<CommodityProjectionRow?> GetCommodityAsync(Guid securityId, CancellationToken ct = default);

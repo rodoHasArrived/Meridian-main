@@ -81,6 +81,9 @@ public sealed record FinancialOperationsQueueRowDto(
         EvidenceLinks ?? [];
 }
 
+/// <summary>
+/// Builds the scoped Financial Operations command center read model.
+/// </summary>
 public interface IFinancialOperationsCommandCenterReadService
 {
     Task<FinancialOperationsCommandCenterDto> GetCommandCenterAsync(

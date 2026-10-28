@@ -2,6 +2,10 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.Application.SecurityMaster;
 
+/// <summary>
+/// Supplies trust, passport, and operating-model views and bulk conflict resolution for the
+/// workbench.
+/// </summary>
 public interface ISecurityMasterWorkbenchQueryService
 {
     Task<SecurityMasterTrustSnapshotDto?> GetTrustSnapshotAsync(

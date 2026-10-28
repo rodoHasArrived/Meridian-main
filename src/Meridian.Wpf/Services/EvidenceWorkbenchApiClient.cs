@@ -45,6 +45,9 @@ public interface IEvidenceWorkbenchApiClient
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Adapts shared evidence subject, packet, validation, document, and request-list APIs for the desktop workbench.
+/// </summary>
 public sealed class EvidenceWorkbenchApiClient : IEvidenceWorkbenchApiClient
 {
     private readonly ApiClientService _apiClient;

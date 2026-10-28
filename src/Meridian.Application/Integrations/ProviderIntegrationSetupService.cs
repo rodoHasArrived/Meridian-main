@@ -4,6 +4,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
+/// <summary>
+/// Validates and saves draft provider integration manifests.
+/// </summary>
 public sealed class ProviderIntegrationSetupService
 {
     private readonly ILogger<ProviderIntegrationSetupService> logger;

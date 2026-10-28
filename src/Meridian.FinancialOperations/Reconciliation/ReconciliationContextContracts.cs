@@ -13,6 +13,9 @@ public sealed record StatementReconciliationValidationRequest(
     string SourcePath,
     string? MappingProfileId);
 
+/// <summary>
+/// Validates a statement source before it enters the reconciliation workflow.
+/// </summary>
 public interface IStatementReconciliationValidationService
 {
     Task<string> ValidateAsync(
@@ -26,6 +29,9 @@ public sealed record DataIntegrationIngestionResult(
     string SourcePath,
     int ImportedRowCount);
 
+/// <summary>
+/// Ingests source data into normalized reconciliation input.
+/// </summary>
 public interface IDataIntegrationIngestionService
 {
     Task<DataIntegrationIngestionResult> IngestAsync(
@@ -46,6 +52,9 @@ public sealed record ReconciliationCaseIntakeResult(
     int MatchCount,
     IReadOnlyList<ReconciliationCase> Cases);
 
+/// <summary>
+/// Creates reconciliation casework from normalized intake requests and evidence.
+/// </summary>
 public interface IReconciliationCaseIntakeService
 {
     Task<ReconciliationCaseIntakeResult> IntakeAsync(
@@ -58,6 +67,9 @@ public sealed record StatementRunWorkflowResult(
     IReadOnlyList<ReconciliationBreakRecord> Breaks,
     IReadOnlyList<ReconciliationCase> Cases);
 
+/// <summary>
+/// Defines statement-run creation, inspection, open breaks, and reconciliation casework operations.
+/// </summary>
 public interface IStatementRunWorkflowService
 {
     Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(CancellationToken cancellationToken = default);

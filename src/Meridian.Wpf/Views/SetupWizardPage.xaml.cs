@@ -4,6 +4,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Hosts initial provider, storage, and backend configuration steps.
+/// </summary>
 public partial class SetupWizardPage : Page
 {
     public SetupWizardPage()

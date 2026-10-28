@@ -3,6 +3,9 @@ using Meridian.Contracts.Options;
 
 namespace Meridian.Instruments.Options;
 
+/// <summary>
+/// Imports an option-chain snapshot and returns its normalized projected representation.
+/// </summary>
 public interface IOptionChainImportService
 {
     /// <summary>

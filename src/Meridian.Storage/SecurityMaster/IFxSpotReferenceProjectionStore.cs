@@ -1,5 +1,8 @@
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Queries spot foreign exchange reference projections by security, currency pair, and currency.
+/// </summary>
 public interface IFxSpotReferenceProjectionStore
 {
     Task<FxSpotProjectionRow?> GetFxSpotAsync(Guid securityId, CancellationToken ct = default);

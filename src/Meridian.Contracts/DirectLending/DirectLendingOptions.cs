@@ -1,5 +1,8 @@
 namespace Meridian.Contracts.DirectLending;
 
+/// <summary>
+/// Configures direct lending persistence, projection versioning, replay, and outbox processing.
+/// </summary>
 public sealed class DirectLendingOptions
 {
     public string ConnectionString { get; set; } = string.Empty;

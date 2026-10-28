@@ -60,6 +60,9 @@ public sealed record BankFeedTransportRunResult(
             Errors: [reason]);
 }
 
+/// <summary>
+/// Runs scheduled bank-feed transport and parses received statements into import batches.
+/// </summary>
 public sealed class BankFeedTransportService
 {
     private readonly IFundAccountService _fundAccountService;

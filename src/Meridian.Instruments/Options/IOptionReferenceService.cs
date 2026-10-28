@@ -2,6 +2,9 @@ using Meridian.Contracts.Options;
 
 namespace Meridian.Instruments.Options;
 
+/// <summary>
+/// Queries option contracts, series, chain snapshots, and underlying linkage.
+/// </summary>
 public interface IOptionReferenceService
 {
     /// <summary>

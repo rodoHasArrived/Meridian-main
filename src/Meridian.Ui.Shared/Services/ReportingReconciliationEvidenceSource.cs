@@ -6,6 +6,9 @@ using Meridian.Strategies.Services;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Resolves retained reconciliation evidence receipts for reporting certification.
+/// </summary>
 public interface IReportingReconciliationEvidenceSource
 {
     ValueTask<ReportingReconciliationEvidenceReceipt> ResolveAsync(
@@ -27,6 +30,9 @@ public class ReportingReconciliationReadinessException :
     }
 }
 
+/// <summary>
+/// Indicates that required retained reconciliation evidence is missing.
+/// </summary>
 public sealed class ReportingReconciliationEvidenceMissingException :
     ReportingReconciliationReadinessException
 {
@@ -35,6 +41,9 @@ public sealed class ReportingReconciliationEvidenceMissingException :
     }
 }
 
+/// <summary>
+/// Indicates invalid reporting reconciliation evidence and retains its evidence references.
+/// </summary>
 public sealed class ReportingReconciliationEvidenceInvalidException :
     ReportingReconciliationReadinessException
 {

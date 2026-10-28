@@ -4,6 +4,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
+/// <summary>
+/// Reads quarantined integration rows and records their review resolutions.
+/// </summary>
 public sealed class ProviderIntegrationQuarantineReviewService
 {
     private const int DefaultRecentRunLimit = 10;

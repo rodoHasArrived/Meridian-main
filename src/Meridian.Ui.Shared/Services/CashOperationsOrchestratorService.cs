@@ -16,6 +16,9 @@ using StpProcessingState = Meridian.Contracts.Workstation.StpProcessingState;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Builds cash synchronization windows, validation decisions, approval requirements, forecasts, and settlement trails.
+/// </summary>
 public sealed class CashOperationsOrchestratorService
 {
     public IReadOnlyList<CashSyncWindow> BuildDailySyncWindows(

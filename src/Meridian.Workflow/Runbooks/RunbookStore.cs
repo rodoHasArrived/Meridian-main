@@ -3,6 +3,9 @@ using Meridian.Storage.Store;
 
 namespace Meridian.Workflow.Runbooks;
 
+/// <summary>
+/// Lists, retrieves, and saves reusable runbook definitions.
+/// </summary>
 public interface IRunbookStore
 {
     Task<IReadOnlyList<RunbookDefinition>> ListAsync(CancellationToken ct = default);
@@ -10,6 +13,9 @@ public interface IRunbookStore
     Task SaveAsync(RunbookDefinition definition, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Persists runbook definitions in a JSON snapshot beneath the configured data root.
+/// </summary>
 public sealed class JsonRunbookStore : JsonFileSnapshotStore<Dictionary<string, RunbookDefinition>>, IRunbookStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web) { WriteIndented = true };

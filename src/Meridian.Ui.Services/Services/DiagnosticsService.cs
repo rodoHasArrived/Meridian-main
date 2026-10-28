@@ -444,6 +444,9 @@ public sealed class DiagnosticsService
 }
 
 
+/// <summary>
+/// Reports readiness checks for configuration, credentials, storage, providers, and symbols.
+/// </summary>
 public sealed class DryRunResult
 {
     public bool Success { get; set; }
@@ -457,6 +460,9 @@ public sealed class DryRunResult
     public List<ValidationDetail> ValidationDetails { get; set; } = new();
 }
 
+/// <summary>
+/// Describes one categorized readiness validation item and its outcome.
+/// </summary>
 public sealed class ValidationDetail
 {
     public string Category { get; set; } = string.Empty;
@@ -465,6 +471,9 @@ public sealed class ValidationDetail
     public string? Message { get; set; }
 }
 
+/// <summary>
+/// Groups preflight checks with passed and failed totals.
+/// </summary>
 public sealed class PreflightResult
 {
     public bool Success { get; set; }
@@ -473,6 +482,9 @@ public sealed class PreflightResult
     public List<PreflightCheck> Checks { get; set; } = new();
 }
 
+/// <summary>
+/// Describes a categorized preflight check with its outcome, message, and severity.
+/// </summary>
 public sealed class PreflightCheck
 {
     public string Name { get; set; } = string.Empty;
@@ -489,6 +501,9 @@ public enum CheckSeverity : byte
     Critical
 }
 
+/// <summary>
+/// Selects diagnostic bundle contents, log retention range, and secret-redaction behavior.
+/// </summary>
 public sealed class DiagnosticBundleOptions
 {
     public bool IncludeLogs { get; set; } = true;
@@ -499,6 +514,9 @@ public sealed class DiagnosticBundleOptions
     public bool RedactSecrets { get; set; } = true;
 }
 
+/// <summary>
+/// Reports diagnostic bundle creation success, artifact location, size, and included files.
+/// </summary>
 public sealed class DiagnosticBundleResult
 {
     public bool Success { get; set; }
@@ -508,6 +526,9 @@ public sealed class DiagnosticBundleResult
     public List<string> IncludedFiles { get; set; } = new();
 }
 
+/// <summary>
+/// Captures resource usage, connection counts, event throughput, and uptime for diagnostics.
+/// </summary>
 public sealed class DiagnosticSystemMetrics
 {
     public double CpuUsagePercent { get; set; }
@@ -521,6 +542,9 @@ public sealed class DiagnosticSystemMetrics
     public TimeSpan Uptime { get; set; }
 }
 
+/// <summary>
+/// Describes a validation outcome with an optional error and corrective suggestion.
+/// </summary>
 public sealed class ValidationResult
 {
     public bool Valid { get; set; }
@@ -528,6 +552,9 @@ public sealed class ValidationResult
     public string? Suggestion { get; set; }
 }
 
+/// <summary>
+/// Reports a provider diagnostic test's connectivity, latency, version, and capabilities.
+/// </summary>
 public sealed class DiagnosticProviderTestResult
 {
     public bool Success { get; set; }
@@ -539,6 +566,9 @@ public sealed class DiagnosticProviderTestResult
 
 
 
+/// <summary>
+/// Carries API readiness checks, validated symbol count, warnings, and errors.
+/// </summary>
 public sealed class DryRunResponse
 {
     public bool Success { get; set; }
@@ -552,11 +582,17 @@ public sealed class DryRunResponse
     public List<ValidationDetail>? ValidationDetails { get; set; }
 }
 
+/// <summary>
+/// Carries API provider availability and enabled-state information.
+/// </summary>
 public sealed class ProviderStatusResponse
 {
     public List<ProviderInfo>? Providers { get; set; }
 }
 
+/// <summary>
+/// Describes a provider's enabled and available states with any availability error.
+/// </summary>
 public sealed class ProviderInfo
 {
     public string Name { get; set; } = string.Empty;
@@ -565,6 +601,9 @@ public sealed class ProviderInfo
     public string? Error { get; set; }
 }
 
+/// <summary>
+/// Carries API storage-path existence, writability, and free-space diagnostics.
+/// </summary>
 public sealed class StorageStatusResponse
 {
     public string Path { get; set; } = string.Empty;
@@ -573,6 +612,9 @@ public sealed class StorageStatusResponse
     public double FreeSpaceGb { get; set; }
 }
 
+/// <summary>
+/// Carries API configuration-file presence, path, and configured symbol count.
+/// </summary>
 public sealed class ConfigStatusResponse
 {
     public bool FileExists { get; set; }
@@ -580,6 +622,9 @@ public sealed class ConfigStatusResponse
     public int SymbolCount { get; set; }
 }
 
+/// <summary>
+/// Carries API diagnostic bundle location, size, and included files.
+/// </summary>
 public sealed class DiagnosticBundleResponse
 {
     public string? BundlePath { get; set; }
@@ -588,6 +633,9 @@ public sealed class DiagnosticBundleResponse
 }
 
 // Quick Check
+/// <summary>
+/// Reports a quick diagnostic check's success, overall status, and component findings.
+/// </summary>
 public sealed class QuickCheckResult
 {
     public bool Success { get; set; }
@@ -596,12 +644,18 @@ public sealed class QuickCheckResult
     public List<QuickCheckItem> Checks { get; set; } = new();
 }
 
+/// <summary>
+/// Carries API overall quick-check status and individual findings.
+/// </summary>
 public sealed class QuickCheckResponse
 {
     public string Overall { get; set; } = string.Empty;
     public List<QuickCheckItem>? Checks { get; set; }
 }
 
+/// <summary>
+/// Describes a named quick-check status with optional supporting details.
+/// </summary>
 public sealed class QuickCheckItem
 {
     public string Name { get; set; } = string.Empty;
@@ -610,6 +664,9 @@ public sealed class QuickCheckItem
 }
 
 // Show Config
+/// <summary>
+/// Reports configuration-query success and the resulting configuration sections.
+/// </summary>
 public sealed class ShowConfigResult
 {
     public bool Success { get; set; }
@@ -617,17 +674,26 @@ public sealed class ShowConfigResult
     public List<ConfigSection> Sections { get; set; } = new();
 }
 
+/// <summary>
+/// Carries API configuration sections for diagnostic display.
+/// </summary>
 public sealed class ShowConfigResponse
 {
     public List<ConfigSection>? Sections { get; set; }
 }
 
+/// <summary>
+/// Groups diagnostic configuration items under a section name.
+/// </summary>
 public sealed class ConfigSection
 {
     public string Name { get; set; } = string.Empty;
     public List<ConfigItem> Items { get; set; } = new();
 }
 
+/// <summary>
+/// Describes a configuration key, its value and source, and whether it is sensitive.
+/// </summary>
 public sealed class ConfigItem
 {
     public string Key { get; set; } = string.Empty;
@@ -637,6 +703,9 @@ public sealed class ConfigItem
 }
 
 // Error Codes
+/// <summary>
+/// Reports error-catalog query success and the available error descriptions.
+/// </summary>
 public sealed class ErrorCodesResult
 {
     public bool Success { get; set; }
@@ -644,11 +713,17 @@ public sealed class ErrorCodesResult
     public List<ErrorCodeInfo> ErrorCodes { get; set; } = new();
 }
 
+/// <summary>
+/// Carries the API error-code catalog for diagnostic lookup.
+/// </summary>
 public sealed class ErrorCodesResponse
 {
     public List<ErrorCodeInfo>? ErrorCodes { get; set; }
 }
 
+/// <summary>
+/// Explains an error code's category, severity, meaning, and optional resolution.
+/// </summary>
 public sealed class ErrorCodeInfo
 {
     public string Code { get; set; } = string.Empty;
@@ -659,6 +734,9 @@ public sealed class ErrorCodeInfo
 }
 
 // Self Test
+/// <summary>
+/// Selects storage, provider, configuration, and network checks for a diagnostic self-test.
+/// </summary>
 public sealed class SelfTestOptions
 {
     public bool TestStorage { get; set; } = true;
@@ -667,6 +745,9 @@ public sealed class SelfTestOptions
     public bool TestNetwork { get; set; } = true;
 }
 
+/// <summary>
+/// Reports self-test success with individual checks and passed, failed, and skipped totals.
+/// </summary>
 public sealed class SelfTestResult
 {
     public bool Success { get; set; }
@@ -677,6 +758,9 @@ public sealed class SelfTestResult
     public int SkippedCount { get; set; }
 }
 
+/// <summary>
+/// Carries API self-test checks and aggregate outcome counts.
+/// </summary>
 public sealed class SelfTestResponse
 {
     public bool AllPassed { get; set; }
@@ -686,6 +770,9 @@ public sealed class SelfTestResponse
     public int SkippedCount { get; set; }
 }
 
+/// <summary>
+/// Describes a categorized self-test's status, message, and duration in milliseconds.
+/// </summary>
 public sealed class SelfTestItem
 {
     public string Name { get; set; } = string.Empty;
@@ -696,6 +783,9 @@ public sealed class SelfTestItem
 }
 
 // Credential Validation
+/// <summary>
+/// Reports credential-validation query success and per-provider validation states.
+/// </summary>
 public sealed class CredentialValidationResult
 {
     public bool Success { get; set; }
@@ -703,11 +793,17 @@ public sealed class CredentialValidationResult
     public List<ProviderCredentialStatus> Results { get; set; } = new();
 }
 
+/// <summary>
+/// Carries API credential-validation states grouped by provider.
+/// </summary>
 public sealed class CredentialValidationResponse
 {
     public List<ProviderCredentialStatus>? Results { get; set; }
 }
 
+/// <summary>
+/// Describes a provider credential's validity, status, error, and optional expiry time.
+/// </summary>
 public sealed class ProviderCredentialStatus
 {
     public string Provider { get; set; } = string.Empty;
@@ -718,6 +814,9 @@ public sealed class ProviderCredentialStatus
 }
 
 // All Providers Test
+/// <summary>
+/// Reports provider-test query success, aggregate connectivity, and per-provider outcomes.
+/// </summary>
 public sealed class AllProvidersTestResult
 {
     public bool Success { get; set; }
@@ -726,12 +825,18 @@ public sealed class AllProvidersTestResult
     public List<ProviderConnectivityResult> Results { get; set; } = new();
 }
 
+/// <summary>
+/// Carries API aggregate connectivity and individual provider-test outcomes.
+/// </summary>
 public sealed class AllProvidersTestResponse
 {
     public bool AllConnected { get; set; }
     public List<ProviderConnectivityResult>? Results { get; set; }
 }
 
+/// <summary>
+/// Describes a provider connection test's result, latency, version, and error.
+/// </summary>
 public sealed class ProviderConnectivityResult
 {
     public string Provider { get; set; } = string.Empty;
@@ -742,6 +847,9 @@ public sealed class ProviderConnectivityResult
 }
 
 // Config Validation
+/// <summary>
+/// Reports configuration-validation success, validity, detected issues, and warnings.
+/// </summary>
 public sealed class DiagnosticConfigValidationResult
 {
     public bool Success { get; set; }
@@ -751,6 +859,9 @@ public sealed class DiagnosticConfigValidationResult
     public List<string> Warnings { get; set; } = new();
 }
 
+/// <summary>
+/// Carries API configuration validity, detected issues, and warnings.
+/// </summary>
 public sealed class ConfigValidationResponse
 {
     public bool IsValid { get; set; }
@@ -758,6 +869,9 @@ public sealed class ConfigValidationResponse
     public List<string>? Warnings { get; set; }
 }
 
+/// <summary>
+/// Describes a configuration problem by section and key with severity and a suggested correction.
+/// </summary>
 public sealed class ConfigIssue
 {
     public string Section { get; set; } = string.Empty;

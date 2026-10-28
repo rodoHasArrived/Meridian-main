@@ -3,6 +3,9 @@ using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Reads equity reference projections from PostgreSQL by security, exchange, and issuer.
+/// </summary>
 public sealed class PostgresEquityReferenceProjectionStore : IEquityReferenceProjectionStore
 {
     internal const string AssetClass = "Equity";

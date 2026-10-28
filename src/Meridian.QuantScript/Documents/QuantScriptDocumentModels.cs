@@ -16,6 +16,9 @@ public sealed record QuantScriptNotebookCellDocument(
     string Source,
     bool Collapsed = false);
 
+/// <summary>
+/// Represents a versioned QuantScript notebook with its title, metadata, and ordered cells.
+/// </summary>
 public sealed class QuantScriptNotebookDocument
 {
     public const int CurrentVersion = 1;

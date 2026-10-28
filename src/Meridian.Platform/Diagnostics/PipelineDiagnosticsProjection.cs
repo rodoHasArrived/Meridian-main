@@ -31,6 +31,7 @@ public sealed record PipelineHealthDiagnosticSnapshot(
     bool IsDeduplicationEnabled,
     DateTimeOffset? Timestamp);
 
+/// <summary>Projects pipeline health measurements into shared diagnostic snapshots, including unavailable states.</summary>
 public static class PipelineDiagnosticsProjection
 {
     public static PipelineHealthDiagnosticSnapshot Unavailable(string queueName = "market-data") => new(

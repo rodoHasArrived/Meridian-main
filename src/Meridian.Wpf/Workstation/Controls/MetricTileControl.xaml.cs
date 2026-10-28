@@ -4,6 +4,9 @@ using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.Workstation.Controls;
 
+/// <summary>
+/// Displays a metric tile through its bound presentation model.
+/// </summary>
 public partial class MetricTileControl : UserControl
 {
     public static readonly DependencyProperty MetricProperty =

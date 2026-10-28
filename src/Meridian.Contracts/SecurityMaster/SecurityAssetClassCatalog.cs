@@ -1106,6 +1106,9 @@ public static class SecurityAccountingInstrumentClasses
     public const string AssetBackedSecurity = "AssetBackedSecurity";
 }
 
+/// <summary>
+/// Groups the operational capabilities supported by different asset profiles.
+/// </summary>
 public static class AssetOperationsCapabilitySet
 {
     public static readonly IReadOnlyList<string> IdentityOnly =

@@ -2,6 +2,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Provides the loaded fund-profile catalog and selection, with operations to load, save, and delete profiles.
+/// </summary>
 public interface IFundProfileCatalog
 {
     IReadOnlyList<FundProfileDetail> Profiles { get; }

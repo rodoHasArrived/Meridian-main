@@ -10,6 +10,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Aggregates provider configuration, connection, and account evidence into readiness summaries.
+/// </summary>
 public sealed class ProviderReadinessService
 {
     private const double DegradedScoreThreshold = 0.70;

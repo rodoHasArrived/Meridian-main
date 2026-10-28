@@ -8,6 +8,9 @@ using Meridian.Storage.DirectLending;
 
 namespace Meridian.Application.DirectLending;
 
+/// <summary>
+/// Executes loan lifecycle commands against durable state and operations stores.
+/// </summary>
 public sealed partial class PostgresDirectLendingCommandService : IDirectLendingCommandService
 {
     private readonly IDirectLendingStateStore _stateStore;

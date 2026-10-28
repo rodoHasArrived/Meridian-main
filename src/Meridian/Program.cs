@@ -2,6 +2,9 @@ using Meridian.Application.Composition.Startup;
 
 namespace Meridian;
 
+/// <summary>
+/// Dispatches host startup and demo-workspace commands through the shared application bootstrapper.
+/// </summary>
 public partial class Program
 {
     public static Task<int> Main(string[] args)

@@ -28,6 +28,9 @@ public interface IReportingDeliveryGrantCredentialDeriver
     ReportingDerivedAccessGrantCredential Derive(string bindingKey);
 }
 
+/// <summary>
+/// Derives repeatable reporting delivery access credentials from a binding key using HMAC.
+/// </summary>
 public sealed class HmacReportingDeliveryGrantCredentialDeriver : IReportingDeliveryGrantCredentialDeriver
 {
     private const int MinimumKeyBytes = 32;
@@ -59,6 +62,9 @@ public sealed class HmacReportingDeliveryGrantCredentialDeriver : IReportingDeli
     }
 }
 
+/// <summary>
+/// Issues, validates, and revokes reporting access grants and builds recipient access links.
+/// </summary>
 public sealed class ReportingAccessGrantService
 {
     private const int TokenByteCount = 32;

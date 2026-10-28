@@ -4,6 +4,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Hosts operating-context and fund-profile selection before entering the desktop workstation.
+/// </summary>
 public partial class FundProfileSelectionPage : Page
 {
     private readonly FundProfileSelectionViewModel _viewModel;

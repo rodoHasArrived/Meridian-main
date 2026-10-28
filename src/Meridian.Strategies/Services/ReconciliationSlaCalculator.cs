@@ -2,6 +2,7 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.Strategies.Services;
 
+/// <summary>Computes reconciliation case deadlines and escalation status from the configured SLA policy.</summary>
 public static class ReconciliationSlaCalculator
 {
     public static ReconciliationSlaComputationResult Compute(

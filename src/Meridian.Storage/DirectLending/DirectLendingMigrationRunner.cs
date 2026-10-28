@@ -3,6 +3,9 @@ using Meridian.Storage.Migrations;
 
 namespace Meridian.Storage.DirectLending;
 
+/// <summary>
+/// Applies the PostgreSQL schema migrations used by direct lending.
+/// </summary>
 public sealed class DirectLendingMigrationRunner
 {
     private readonly PostgresMigrationRunner _runner;

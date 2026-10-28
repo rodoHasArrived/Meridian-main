@@ -28,6 +28,9 @@ public static class BrokerAdapterTemplate
     }
 }
 
+/// <summary>
+/// Provides the template adapter's broker session creation seam over its HTTP client.
+/// </summary>
 public sealed class TemplateBrokerSessionService
 {
     private readonly TemplateBrokerHttpClient _http;
@@ -38,6 +41,9 @@ public sealed class TemplateBrokerSessionService
         _http.PostJsonAsync<TemplateBrokerSessionRequest, TemplateBrokerSession>("/session/open", new(), ct);
 }
 
+/// <summary>
+/// Posts JSON requests and deserializes responses for the template broker adapter.
+/// </summary>
 public sealed class TemplateBrokerHttpClient
 {
     private readonly HttpClient _httpClient;
@@ -53,11 +59,17 @@ public sealed class TemplateBrokerHttpClient
     }
 }
 
+/// <summary>
+/// Defines asynchronous streaming and disposal for the template broker adapter.
+/// </summary>
 public interface ITemplateBrokerStreamingClient : IAsyncDisposable
 {
     IAsyncEnumerable<TemplateBrokerStreamMessage> StreamAsync(CancellationToken ct = default);
 }
 
+/// <summary>
+/// Provides an empty stream for template adapters without a streaming implementation.
+/// </summary>
 public sealed class TemplateBrokerNoopStreamingClient : ITemplateBrokerStreamingClient
 {
     public async IAsyncEnumerable<TemplateBrokerStreamMessage> StreamAsync([EnumeratorCancellation] CancellationToken ct = default)
@@ -70,6 +82,9 @@ public sealed class TemplateBrokerNoopStreamingClient : ITemplateBrokerStreaming
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }
 
+/// <summary>
+/// Maps template broker order and status payloads to canonical orders and execution reports.
+/// </summary>
 public sealed class TemplateBrokerMapper
 {
     public OrderRequest ToCanonicalOrderRequest(TemplateBrokerOrderPayload payload) => new()
@@ -112,6 +127,9 @@ public sealed class TemplateBrokerMapper
     };
 }
 
+/// <summary>
+/// Maps template broker health payloads to canonical broker health status.
+/// </summary>
 public sealed class TemplateBrokerHealthReporter
 {
     public BrokerHealthStatus MapHealth(TemplateBrokerHealthPayload payload)
@@ -126,6 +144,9 @@ public sealed class TemplateBrokerHealthReporter
     }
 }
 
+/// <summary>
+/// Provides placeholder order submission and polling behavior for a broker adapter template.
+/// </summary>
 public sealed class TemplateBrokerOrderExtensions
 {
     public Task<ExecutionReport> PlaceOrderAsync(OrderRequest order, CancellationToken ct = default) =>
@@ -144,6 +165,9 @@ public sealed class TemplateBrokerOrderExtensions
         Task.FromResult<IReadOnlyList<ExecutionReport>>(Array.Empty<ExecutionReport>());
 }
 
+/// <summary>
+/// Provides template execution reconciliation by returning the supplied local execution log.
+/// </summary>
 public sealed class TemplateBrokerExecutionExtensions
 {
     public Task<IReadOnlyList<ExecutionReport>> ReconcileExecutionsAsync(
@@ -155,6 +179,9 @@ public sealed class TemplateBrokerExecutionExtensions
     }
 }
 
+/// <summary>
+/// Provides the placeholder market data ingestion seam for the broker adapter template.
+/// </summary>
 public sealed class TemplateBrokerMarketDataExtensions
 {
     public Task IngestMarketDataAsync(IAsyncEnumerable<TemplateBrokerMarketDataPayload> feed, CancellationToken ct = default)

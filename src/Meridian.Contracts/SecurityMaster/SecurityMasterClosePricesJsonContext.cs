@@ -2,6 +2,9 @@ using System.Text.Json.Serialization;
 
 namespace Meridian.Contracts.SecurityMaster;
 
+/// <summary>
+/// Provides source-generated JSON metadata for retained close price snapshots and their approval evidence.
+/// </summary>
 [JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Metadata)]
 [JsonSerializable(typeof(SecurityClosePriceSnapshotDto))]
 [JsonSerializable(typeof(SecurityClosePriceApprovalDto))]

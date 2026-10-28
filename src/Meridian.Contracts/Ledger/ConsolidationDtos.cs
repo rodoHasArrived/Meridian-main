@@ -22,6 +22,9 @@ public sealed record ConsolidationEvidenceDto(
     IReadOnlyList<OwnershipLinkDto>? OwnershipEvidence = null,
     IReadOnlyList<ConsolidationSourceDto>? Sources = null);
 
+/// <summary>
+/// Checks that a consolidation draft's source authority is still current before it proceeds.
+/// </summary>
 public interface IConsolidationDraftGuard
 {
     Task ValidateCurrentAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default);

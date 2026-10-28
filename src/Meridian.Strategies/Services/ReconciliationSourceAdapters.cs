@@ -41,16 +41,19 @@ public sealed record ReconciliationNormalizedInputs(
     IReadOnlyList<ReconciliationCashMovementInput> InternalCashMovements,
     IReadOnlyList<ReconciliationExternalStatementInput> ExternalStatementRows);
 
+/// <summary>Projects a strategy run's ledger snapshot into normalized reconciliation input.</summary>
 public interface IStrategyLedgerReconciliationSourceAdapter
 {
     ReconciliationLedgerInput? Adapt(StrategyRunDetail detail);
 }
 
+/// <summary>Projects a strategy run's portfolio snapshot into normalized reconciliation input.</summary>
 public interface IStrategyPortfolioReconciliationSourceAdapter
 {
     ReconciliationPortfolioInput? Adapt(StrategyRunDetail detail);
 }
 
+/// <summary>Retrieves internal cash movements for a requested reconciliation scope.</summary>
 public interface IInternalCashReconciliationSourceAdapter
 {
     Task<IReadOnlyList<ReconciliationCashMovementInput>> GetCashMovementsAsync(
@@ -58,6 +61,7 @@ public interface IInternalCashReconciliationSourceAdapter
         CancellationToken ct = default);
 }
 
+/// <summary>Retrieves external statement rows for a requested reconciliation scope.</summary>
 public interface IExternalStatementSource
 {
     Task<IReadOnlyList<ReconciliationExternalStatementInput>> GetStatementRowsAsync(
@@ -65,6 +69,7 @@ public interface IExternalStatementSource
         CancellationToken ct = default);
 }
 
+/// <summary>Provides normalized external statement rows to a reconciliation run.</summary>
 public interface IExternalStatementReconciliationSourceAdapter
 {
     Task<IReadOnlyList<ReconciliationExternalStatementInput>> GetStatementRowsAsync(
@@ -72,6 +77,7 @@ public interface IExternalStatementReconciliationSourceAdapter
         CancellationToken ct = default);
 }
 
+/// <summary>Maps retained strategy ledger snapshots into reconciliation ledger inputs.</summary>
 public sealed class StrategyLedgerReconciliationSourceAdapter : IStrategyLedgerReconciliationSourceAdapter
 {
     public ReconciliationLedgerInput? Adapt(StrategyRunDetail detail)
@@ -94,6 +100,7 @@ public sealed class StrategyLedgerReconciliationSourceAdapter : IStrategyLedgerR
     }
 }
 
+/// <summary>Maps retained strategy portfolio snapshots into reconciliation portfolio inputs.</summary>
 public sealed class StrategyPortfolioReconciliationSourceAdapter : IStrategyPortfolioReconciliationSourceAdapter
 {
     public ReconciliationPortfolioInput? Adapt(StrategyRunDetail detail)
@@ -117,6 +124,7 @@ public sealed class StrategyPortfolioReconciliationSourceAdapter : IStrategyPort
     }
 }
 
+/// <summary>Maps available bank transactions into internal cash movements for reconciliation.</summary>
 public sealed class BankInternalCashReconciliationSourceAdapter : IInternalCashReconciliationSourceAdapter
 {
     private readonly IBankTransactionSource? _bankTransactionSource;
@@ -153,6 +161,7 @@ public sealed class BankInternalCashReconciliationSourceAdapter : IInternalCashR
     }
 }
 
+/// <summary>Delegates reconciliation statement retrieval to the configured external statement source.</summary>
 public sealed class ExternalStatementReconciliationSourceAdapter : IExternalStatementReconciliationSourceAdapter
 {
     private readonly IExternalStatementSource _externalStatementSource;
@@ -174,6 +183,7 @@ internal sealed class ProductionSafeImplementationAttribute(string justification
     public string Justification { get; } = justification;
 }
 
+/// <summary>Supplies an empty external statement population when no statement provider is configured.</summary>
 [ProductionSafeImplementation(
     "External statement input is optional; an absent provider contributes no statement rows and does not replace durable run storage.")]
 public sealed class NullExternalStatementSource : IExternalStatementSource

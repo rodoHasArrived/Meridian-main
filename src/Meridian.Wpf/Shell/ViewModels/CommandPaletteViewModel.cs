@@ -8,6 +8,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Shell.ViewModels;
 
+/// <summary>
+/// Filters registered shell pages by query and exposes selection, visibility, and empty-result state.
+/// </summary>
 public sealed class CommandPaletteViewModel : BindableBase
 {
     private readonly ObservableCollection<ShellCommandPaletteEntry> _pages = [];

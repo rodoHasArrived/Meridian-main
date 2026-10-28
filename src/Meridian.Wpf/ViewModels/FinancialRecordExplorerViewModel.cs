@@ -9,6 +9,9 @@ using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Exposes bindable state and commands to inspect ledger rows, proof actions, report usage, and audit relationships.
+/// </summary>
 public sealed class FinancialRecordExplorerViewModel : BindableBase, IDisposable
 {
     private readonly ApiClientService _apiClient;
@@ -640,6 +643,9 @@ public sealed class FinancialRecordExplorerViewModel : BindableBase, IDisposable
 
     private sealed record FinancialRecordExplorerEmptyState(string Title, string Detail);
 
+    /// <summary>
+    /// Presents a financial record's identity, type, source, status, and inspection detail.
+    /// </summary>
     public sealed class FinancialRecordExplorerRowModel
     {
         private FinancialRecordExplorerRowModel(

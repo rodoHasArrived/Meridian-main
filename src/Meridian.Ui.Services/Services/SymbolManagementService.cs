@@ -482,6 +482,9 @@ public sealed class SymbolManagementService
 }
 
 
+/// <summary>
+/// Reports symbol-query success, symbol rows, total count, and whether local configuration supplied them.
+/// </summary>
 public sealed class SymbolListResult
 {
     public bool Success { get; set; }
@@ -491,6 +494,9 @@ public sealed class SymbolListResult
     public bool FromLocalConfig { get; set; }
 }
 
+/// <summary>
+/// Describes a symbol's contract identity, subscription settings, monitoring, and collected-data activity.
+/// </summary>
 public sealed class SymbolInfo
 {
     public string Symbol { get; set; } = string.Empty;
@@ -509,6 +515,9 @@ public sealed class SymbolInfo
     public long TotalQuotes { get; set; }
 }
 
+/// <summary>
+/// Combines a symbol's subscriptions, runtime activity, archive coverage, quality, and provider mapping.
+/// </summary>
 public sealed class SymbolDetailedStatus
 {
     public string Symbol { get; set; } = string.Empty;
@@ -550,6 +559,9 @@ public sealed class SymbolDetailedStatus
     public string? MappedProviderSymbol { get; set; }
 }
 
+/// <summary>
+/// Reports an operation's success for one symbol with an optional message and error.
+/// </summary>
 public sealed class SymbolOperationResult
 {
     public bool Success { get; set; }
@@ -558,6 +570,9 @@ public sealed class SymbolOperationResult
     public string? Error { get; set; }
 }
 
+/// <summary>
+/// Reports a bulk symbol operation with separate successful and failed symbol collections.
+/// </summary>
 public sealed class BulkSymbolOperationResult
 {
     public bool Success { get; set; }
@@ -567,6 +582,9 @@ public sealed class BulkSymbolOperationResult
     public List<string> FailedSymbols { get; set; } = new();
 }
 
+/// <summary>
+/// Summarizes configured and monitored symbols, enabled subscriptions, and collected-event totals.
+/// </summary>
 public sealed class SymbolStatistics
 {
     public int TotalConfigured { get; set; }
@@ -580,6 +598,9 @@ public sealed class SymbolStatistics
     public DateTime? LastUpdateTime { get; set; }
 }
 
+/// <summary>
+/// Reports symbol validity, normalization, suggested contract details, and trading availability.
+/// </summary>
 public sealed class SymbolValidationResult
 {
     public string Symbol { get; set; } = string.Empty;
@@ -591,6 +612,9 @@ public sealed class SymbolValidationResult
     public bool IsAvailableForTrading { get; set; }
 }
 
+/// <summary>
+/// Describes a symbol's retained archive coverage, file totals, size, and individual files.
+/// </summary>
 public sealed class SymbolArchiveInfo
 {
     public string Symbol { get; set; } = string.Empty;
@@ -603,6 +627,9 @@ public sealed class SymbolArchiveInfo
     public List<ArchiveFileInfo> Files { get; set; } = new();
 }
 
+/// <summary>
+/// Describes a dated symbol archive file's location, event type, size, and record count.
+/// </summary>
 public sealed class ArchiveFileInfo
 {
     public string FileName { get; set; } = string.Empty;
@@ -615,6 +642,9 @@ public sealed class ArchiveFileInfo
 
 
 
+/// <summary>
+/// Defines a symbol's contract identity and requested trade and depth subscriptions.
+/// </summary>
 public sealed class AddSymbolRequest
 {
     public string Symbol { get; set; } = string.Empty;
@@ -626,12 +656,18 @@ public sealed class AddSymbolRequest
     public string Currency { get; set; } = "USD";
 }
 
+/// <summary>
+/// Carries API symbol rows and their total count.
+/// </summary>
 public sealed class SymbolListResponse
 {
     public SymbolInfo[]? Symbols { get; set; }
     public int TotalCount { get; set; }
 }
 
+/// <summary>
+/// Carries API single-symbol operation success, message, and error.
+/// </summary>
 public sealed class SymbolOperationResponse
 {
     public bool Success { get; set; }
@@ -639,6 +675,9 @@ public sealed class SymbolOperationResponse
     public string? Error { get; set; }
 }
 
+/// <summary>
+/// Carries API bulk-operation totals and successful and failed symbol collections.
+/// </summary>
 public sealed class BulkSymbolOperationResponse
 {
     public bool Success { get; set; }

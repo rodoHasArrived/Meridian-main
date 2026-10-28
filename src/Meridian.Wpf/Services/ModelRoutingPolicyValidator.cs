@@ -2,6 +2,9 @@ using System.Text.Json;
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Validates model-routing policy fields and reports configuration issues for desktop editing.
+/// </summary>
 public sealed class ModelRoutingPolicyValidator
 {
     private static readonly string[] RequiredTelemetrySignals =

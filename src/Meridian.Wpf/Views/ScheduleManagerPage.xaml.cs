@@ -6,6 +6,9 @@ using ScheduleManagerService = Meridian.Ui.Services.ScheduleManagerService;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Hosts backfill and maintenance scheduling and cron validation.
+/// </summary>
 public partial class ScheduleManagerPage : Page
 {
     private readonly ScheduleManagerViewModel _viewModel;

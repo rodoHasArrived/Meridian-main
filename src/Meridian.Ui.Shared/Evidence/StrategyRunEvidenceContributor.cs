@@ -11,6 +11,9 @@ using static Meridian.Ui.Shared.Evidence.EvidenceContributionHelpers;
 
 namespace Meridian.Ui.Shared.Evidence;
 
+/// <summary>
+/// Adds strategy-run provenance and supporting execution evidence to an evidence graph.
+/// </summary>
 public sealed class StrategyRunEvidenceContributor : IEvidenceContributor
 {
     private const string WorkstationTenantParameterKey = "workstationTenantId";

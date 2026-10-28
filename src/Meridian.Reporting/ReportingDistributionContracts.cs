@@ -92,6 +92,7 @@ public sealed record ReportingAccessGrantValidationResult(
     public bool IsValid => Status == ReportingAccessGrantValidationStatus.Valid;
 }
 
+/// <summary>Persists report access grants and their versioned updates for controlled package access.</summary>
 public interface IReportingAccessGrantStore
 {
     Task<ReportingAccessGrantRecord?> GetAsync(string grantId, CancellationToken ct = default);
@@ -182,6 +183,7 @@ public sealed record ReportingReleaseAuthorizationResult(
     string Code,
     string? Detail = null);
 
+/// <summary>Verifies retained release authorization before a reporting delivery proceeds.</summary>
 public interface IReportingReleaseAuthorizationVerifier
 {
     Task<ReportingReleaseAuthorizationResult> VerifyAsync(
@@ -315,6 +317,7 @@ public sealed record ReportingDeliveryTransportResult(
         new(ReportingDeliveryTransportOutcome.PermanentFailure, code, detail);
 }
 
+/// <summary>Delivers a reporting package through a named transport and returns its delivery result.</summary>
 public interface IReportingDeliveryTransport
 {
     string TransportId { get; }
@@ -334,6 +337,7 @@ public interface IReportingDeliveryAttemptBindingProvider
     string ResolveAccessGrantId(ReportingDeliveryTransportRequest request);
 }
 
+/// <summary>Persists reporting delivery jobs, idempotency identities, leases, and delivery receipts.</summary>
 public interface IReportingDeliveryStore
 {
     Task<ReportingDeliveryJobRecord?> GetAsync(string jobId, CancellationToken ct = default);
@@ -458,6 +462,7 @@ public sealed record ReportingHttpRelayResult(
     string? ProviderMessageId = null,
     string? Detail = null);
 
+/// <summary>Sends reporting delivery messages through an HTTP relay and returns the relay result.</summary>
 public interface IReportingHttpRelayClient
 {
     Task<ReportingHttpRelayResult> SendAsync(

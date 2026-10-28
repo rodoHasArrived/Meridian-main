@@ -8,6 +8,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Reads and updates tenant accounting administration profiles.
+/// </summary>
 public interface IAccountingTenantAdministrationProfileStore
 {
     Task<AccountingTenantAdministrationProfileDto?> GetAsync(
@@ -20,6 +23,9 @@ public interface IAccountingTenantAdministrationProfileStore
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Stores tenant accounting administration profiles in process memory.
+/// </summary>
 public sealed class InMemoryAccountingTenantAdministrationProfileStore : IAccountingTenantAdministrationProfileStore
 {
     private readonly Dictionary<string, AccountingTenantAdministrationProfileDto> _profiles = new(StringComparer.OrdinalIgnoreCase);
@@ -48,6 +54,9 @@ public sealed class InMemoryAccountingTenantAdministrationProfileStore : IAccoun
         => FileAccountingTenantAdministrationProfileStore.BuildKey(tenantId, companyId);
 }
 
+/// <summary>
+/// Persists tenant accounting administration profiles and validates their retained evidence.
+/// </summary>
 public sealed class FileAccountingTenantAdministrationProfileStore :
     JsonFileSnapshotStore<FileAccountingTenantAdministrationProfileStore.AccountingTenantAdministrationProfileSnapshot>,
     IAccountingTenantAdministrationProfileStore

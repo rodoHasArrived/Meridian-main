@@ -10,6 +10,9 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.Application.Integrations;
 
+/// <summary>
+/// Replays retained quarantined integration rows through the current mapping and validation path.
+/// </summary>
 public sealed partial class ProviderIntegrationQuarantineReplayService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
