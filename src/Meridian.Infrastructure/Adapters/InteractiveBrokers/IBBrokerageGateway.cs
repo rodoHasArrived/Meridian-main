@@ -935,7 +935,8 @@ public sealed partial class IBBrokerageGateway :
         SubmittedOrderContext? context, IBOpenOrderUpdate update, int epoch, IReadOnlySet<string> verifiedAccounts)
         => context is not null && !string.IsNullOrWhiteSpace(update.Account)
             && verifiedAccounts.Contains(update.Account.Trim())
-            && (context.SubmissionEpoch == epoch || context.RecoveredFromSnapshot && context.RecoveryEpoch == epoch)
+            && (context.SubmissionEpoch == epoch || context.RecoveredFromSnapshot && context.RecoveryEpoch == epoch
+                || !context.RecoveredFromSnapshot && context.BrokerAccountId is not null)
             && (context.BrokerAccountId is null || string.Equals(context.BrokerAccountId, update.Account.Trim(), StringComparison.Ordinal))
             && string.Equals(update.ClientOrderId, context.ClientOrderId, StringComparison.Ordinal)
             && string.Equals(update.Symbol, context.Symbol, StringComparison.OrdinalIgnoreCase)

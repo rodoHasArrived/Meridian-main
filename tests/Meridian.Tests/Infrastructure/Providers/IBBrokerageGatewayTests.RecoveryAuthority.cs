@@ -341,4 +341,33 @@ public sealed partial class IBBrokerageGatewayTests
             Directory.Delete(directory, recursive: true);
         }
     }
+
+    [Fact]
+    public async Task ReconnectedSubmittedOrder_WithTheSameRetainedOwner_RemainsInTheBrokerSnapshot()
+    {
+        var client = CreateAcknowledgingClient();
+        client.ManagedAccounts = "DU1";
+        await using var gateway = new IBBrokerageGateway(DefaultOptions(), NullLogger<IBBrokerageGateway>.Instance, client);
+        await gateway.ConnectAsync();
+        await gateway.SubmitOrderAsync(WorkingOrder());
+        client.RaiseConnectionLost();
+        client.RaiseConnectionRestored();
+        client.RaiseManagedAccounts("DU1");
+        client.OnRequestOpenOrders = c =>
+        {
+            c.RaiseOpenOrder(OpenOrder(11001, WorkingOrder()));
+            c.RaiseOpenOrdersCompleted();
+        };
+
+        var open = await gateway.GetOpenOrdersAsync();
+
+        open.Should().ContainSingle().Which.ClientOrderId.Should().Be("working-order");
+        var retained = RecoveryOriginal with
+        {
+            OrderId = "working-order", BrokerAccountId = "DU1", FilledQuantity = 0m,
+            AverageFillPrice = null, Status = OrderStatus.Accepted
+        };
+        (await gateway.GetOrderForRecoveryAsync("working-order", retained)).Should().NotBeNull(
+            "verified same-owner rows remain available for reconciliation after reconnect");
+    }
 }
