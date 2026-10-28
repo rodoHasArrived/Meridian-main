@@ -7359,7 +7359,8 @@ written, and the owner took its open decisions on 2026-10-28; they are listed at
   `StructuredCashFlowProjectionDto`, so in-solution callers recompile while the JSON is unchanged
   when it is null. Storage adds `FileBusinessDayCalendarSource` and
   `BusinessDayCalendarFileRefusal`. There is no migration and no `schema_version` or `terms_format`
-  change; the schema-control contracts manifest is to be refreshed for the new public types.
+  change; the schema-control contracts manifest and its generated pages list the thirteen new
+  public Contracts types.
 
 **Deploy and rollback floor.** 5a writes nothing differently, so it rolls forward and back freely
 until 5b-2's first declaring write. From that write on, no node, desktops included, may run below
@@ -7438,4 +7439,44 @@ every open decision of the increment-5 plan:
 **Not yet landed.** 5b-1 and 5b-2, then increments 6 to 12 of this priority, as listed in the
 first-increment section above.
 
-<!-- sm5a-validation-results -->
+**Validation.** The characterization pins were committed on the base before any 5a code: the decode
+golden (1,065 cases through `SecurityMasterMapping.ToRecord`) and the projection-shape pin are
+unchanged by every later commit. New suites: `SecurityVersionedTermsTests`,
+`ScheduleSpecFactoryTests`, `FileBusinessDayCalendarSourceTests`,
+`BusinessDayCalendarSourceCompositionTests`, `SecurityMasterTermsCapabilityStartupTests`,
+`VersionedContainerKeyLiteralRatchetTests`, `UiServerLoggingTests` and the
+`SecurityMasterCashFlowServiceTests.DeclaredConventions` partial, with declared cases added to the
+projection-shape, ledger-bridge and discounted-cash-flow valuation suites. The plan's 5a filter,
+with the 400-change endpoint suite, the resolver, opening-balance, valuation and logging suites and
+`Category=KnownDefect` added, passed 1,950 with one skip: the unreadable-directory test, which runs
+only as a non-root user on Unix and is registered as environment-gated; the same path was exercised
+with a privilege-dropped probe. The whole `Meridian.Tests` suite ran on the final code with 22,395
+passed, 634 skipped and 3 failed: the isolated QuantScript worker behind one strategy-design test,
+which has failed in every full run in this container since increment 3, and two timing-sensitive
+tests that 5a does not touch (an allocation budget and an identifier validity worker with a
+five-second wait), which passed alone three times out of three; the run before the review fixes had
+only the QuantScript failure. The whole `Meridian.FSharp.Tests` suite passed (525). Eleven planned
+mutations each failed the test named for them (the profile rule, option B, untrimmed calendars, a
+factory-only format check, the leg selector, an `EffectiveFrom` fallback, the resolve order, the
+ledger gate, the `DayCount` evidence row, the hosted logger and a lowercase calendar id); the plan
+named the decode golden as one tripwire for the factory-only format check, but only
+`AnUntaggedBondCarryingAProfileShape_IsDeclared` catches it, because the golden decodes through the
+mapping. Each review fix was mutation-checked the same way. The format, file-size, inline SHA-256,
+duplicate-helper, test-skip, warning-suppression and endpoint-cancellation guards pass,
+schema-control `verify` reproduces the refreshed manifests, `validate-doc-hashes` is clean and the
+`verify-docs` lane passes.
+
+Each of the five code lanes and the documentation was critiqued by an independent reviewer and its
+findings fixed before the next lane began. The branch was then merged with main, which had moved the
+cash-flow service onto a caller-supplied as-of and a shared opening balance, and the merged change
+went through an adversarial review: five lenses, with two skeptics trying to refute each finding. Of
+23 findings, 15 were confirmed and 8 refuted. The confirmed ones changed the code in five places:
+`UiServer` now sends the capability and calendar lines to the host's Serilog file log, without which
+a workstation-mode server would have looked below 5a to the inventory gate; the discounted-cash-flow
+valuation names a declared schedule's evidence among its inputs; a calendars directory that cannot
+be listed logs its Warning instead of loading as empty; a refused calendar file's Warning says which
+of its ids still resolve; and `TermsAmbiguous` and `EffectiveDateMissing` name a root anchor that is
+present but not of the kind the factory reads, instead of calling it another key or absent. The rest
+corrected documentation and doc comments. The refuted findings included an unbounded payment lag,
+which the kernel's period limit and the calendar walk already bound, and an end-of-month roll
+spelled as day 31, which the roll grammar reads as a fixed day.

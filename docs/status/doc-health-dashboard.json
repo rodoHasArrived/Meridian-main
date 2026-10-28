@@ -1,11 +1,11 @@
 {
-  "total_files": 753,
-  "total_lines": 170940,
+  "total_files": 755,
+  "total_lines": 172488,
   "orphaned_count": 250,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 309,
-  "average_lines": 227.0,
+  "average_lines": 228.5,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1062,7 +1062,7 @@
     },
     {
       "path": "docs/adr/024-terms-payload-format-and-version-policy.md",
-      "line_count": 473,
+      "line_count": 584,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1070,7 +1070,7 @@
     },
     {
       "path": "docs/adr/025-contractual-schedule-kernel.md",
-      "line_count": 483,
+      "line_count": 788,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1534,7 +1534,7 @@
     },
     {
       "path": "docs/architecture/ledger-architecture.md",
-      "line_count": 638,
+      "line_count": 643,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1654,7 +1654,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 7236,
+      "line_count": 7482,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2150,7 +2150,7 @@
     },
     {
       "path": "docs/domain/business-day-calendar.md",
-      "line_count": 99,
+      "line_count": 144,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2158,7 +2158,7 @@
     },
     {
       "path": "docs/domain/contractual-schedule.md",
-      "line_count": 200,
+      "line_count": 219,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2718,7 +2718,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-02.md",
-      "line_count": 473,
+      "line_count": 482,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2726,7 +2726,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-03.md",
-      "line_count": 542,
+      "line_count": 534,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2734,7 +2734,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-04.md",
-      "line_count": 559,
+      "line_count": 531,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2742,7 +2742,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-05.md",
-      "line_count": 460,
+      "line_count": 482,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2750,7 +2750,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-06.md",
-      "line_count": 345,
+      "line_count": 422,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2910,7 +2910,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12513,
+      "line_count": 12535,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3031,6 +3031,14 @@
     {
       "path": "docs/operators/browser-workstation-installer.md",
       "line_count": 128,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/business-day-calendar-files.md",
+      "line_count": 244,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3158,7 +3166,7 @@
     },
     {
       "path": "docs/operators/README.md",
-      "line_count": 187,
+      "line_count": 189,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3191,6 +3199,14 @@
     {
       "path": "docs/operators/security-master-normalized-identifier-migration.md",
       "line_count": 107,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/security-master-terms-contract-rollout.md",
+      "line_count": 388,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5902,7 +5918,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 1196,
+      "line_count": 1240,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5934,7 +5950,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1986,
+      "line_count": 2006,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6166,7 +6182,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 1324,
+      "line_count": 1340,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6246,7 +6262,7 @@
     },
     {
       "path": "src/Meridian.Wpf/README.md",
-      "line_count": 1005,
+      "line_count": 1014,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

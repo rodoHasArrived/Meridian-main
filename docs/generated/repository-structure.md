@@ -1948,6 +1948,7 @@ Meridian-main
 │   ├── operators
 │   │   ├── account-oversight.md
 │   │   ├── browser-workstation-installer.md
+│   │   ├── business-day-calendar-files.md
 │   │   ├── deployment-packaging.md
 │   │   ├── distributed-tracing.md
 │   │   ├── external-gl-providers.md
@@ -1968,6 +1969,7 @@ Meridian-main
 │   │   ├── runbook-template.md
 │   │   ├── security-master-governed-edit-rollout.md
 │   │   ├── security-master-normalized-identifier-migration.md
+│   │   ├── security-master-terms-contract-rollout.md
 │   │   ├── service-level-objectives.md
 │   │   ├── statement-reconciliation-report-operations.md
 │   │   └── verified-outcome-recovery.md
@@ -4024,6 +4026,7 @@ Meridian-main
 │   │   │   ├── ProductionRegistrationGuardService.cs
 │   │   │   ├── ProductionServiceRegistrationPolicy.cs
 │   │   │   ├── SecurityMasterStartup.cs
+│   │   │   ├── SecurityMasterTermsCapabilityHostedService.cs
 │   │   │   ├── ServiceCompositionRoot.cs
 │   │   │   ├── StartupRefusedException.cs
 │   │   │   ├── TenantCutoverGuardService.cs
@@ -4212,6 +4215,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterAmortizationLedgerBridge.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedService.cs
 │   │   │   ├── SecurityMasterCashFlowService.cs
+│   │   │   ├── SecurityMasterCashFlowService.DeclaredConventions.cs
 │   │   │   ├── SecurityMasterConcurrencyException.cs
 │   │   │   ├── SecurityMasterConflictAuthorityPolicy.cs
 │   │   │   ├── SecurityMasterConflictDetection.cs
@@ -4731,6 +4735,8 @@ Meridian-main
 │   │   │   ├── OtcCollateral.cs
 │   │   │   ├── OtcContracts.cs
 │   │   │   ├── OtcExposure.cs
+│   │   │   ├── ScheduleConventionTerms.cs
+│   │   │   ├── ScheduleSpecFactory.cs
 │   │   │   ├── SecurityAssetClassCatalog.cs
 │   │   │   ├── SecurityAssetClassRegistry.cs
 │   │   │   ├── SecurityAssetClassTermsUpgrade.cs
@@ -4771,6 +4777,7 @@ Meridian-main
 │   │   │   ├── SecurityUnderlyingGraph.cs
 │   │   │   ├── SecurityValidationDtos.cs
 │   │   │   ├── SecurityValuation.cs
+│   │   │   ├── SecurityVersionedTerms.cs
 │   │   │   ├── StructuredCashFlowTerms.cs
 │   │   │   └── StructuredCashFlowTermsResolver.cs
 │   │   ├── Services
@@ -6334,6 +6341,10 @@ Meridian-main
 │   │   │   ├── BankingStoreOptions.cs
 │   │   │   ├── IBankingStore.cs
 │   │   │   └── PostgresBankingStore.cs
+│   │   ├── Calendars
+│   │   │   ├── BusinessDayCalendarFileDocument.cs
+│   │   │   ├── BusinessDayCalendarFileRefusal.cs
+│   │   │   └── FileBusinessDayCalendarSource.cs
 │   │   ├── Config
 │   │   │   └── StorageConfigExtensions.cs
 │   │   ├── Coordination
@@ -9432,6 +9443,7 @@ Meridian-main
 │   │   │   ├── terms-element-shapes
 │   │   │   │   └── versioned-containers.json
 │   │   │   ├── terms-golden
+│   │   │   │   ├── schedule-conventions-decode-golden.json
 │   │   │   │   └── security-terms-write-golden.json
 │   │   │   └── terms-versions
 │   │   │       ├── Bond.json
@@ -10222,6 +10234,7 @@ Meridian-main
 │   │   │   │   │   │   └── CommandModeRunnerTests.cs
 │   │   │   │   │   └── SharedStartupBootstrapperTests.cs
 │   │   │   │   ├── BackfillFeatureRegistrationTests.cs
+│   │   │   │   ├── BusinessDayCalendarSourceCompositionTests.cs
 │   │   │   │   ├── CanonicalLotAmortizationCompositionTests.cs
 │   │   │   │   ├── ConsolidationPostingAuthorityCompositionTests.cs
 │   │   │   │   ├── DiagnosticsFeatureRegistrationTests.cs
@@ -10247,6 +10260,7 @@ Meridian-main
 │   │   │   │   ├── ProviderFeatureRegistrationTests.cs
 │   │   │   │   ├── ProviderModuleCompositionTests.cs
 │   │   │   │   ├── SecurityMasterStartupTests.cs
+│   │   │   │   ├── SecurityMasterTermsCapabilityStartupTests.cs
 │   │   │   │   ├── StartupRefusalPreflightTests.cs
 │   │   │   │   ├── StorageFeatureRegistrationTests.cs
 │   │   │   │   ├── TenantCutoverConfigurationTests.cs
@@ -10401,8 +10415,10 @@ Meridian-main
 │   │   │   ├── OperationsContinuityWorkflowServiceTests.PreparedStart.cs
 │   │   │   ├── ReconciliationGovernanceServiceTests.cs
 │   │   │   ├── ReconciliationRunServiceTests.cs
+│   │   │   ├── SecurityMasterCashFlowProjectionShapeTests.cs
 │   │   │   ├── SecurityMasterCashFlowServiceTests.AsOf.cs
 │   │   │   ├── SecurityMasterCashFlowServiceTests.cs
+│   │   │   ├── SecurityMasterCashFlowServiceTests.DeclaredConventions.cs
 │   │   │   ├── SecurityMasterCashFlowServiceTests.ScheduleCharacterization.cs
 │   │   │   ├── StructuredCashFlowLedgerBridgeTests.cs
 │   │   │   └── StructuredCashFlowTermsResolverTests.cs
@@ -10416,7 +10432,8 @@ Meridian-main
 │   │   │   ├── SecurityAssetClassComparisonRatchetTests.cs
 │   │   │   ├── SecurityAssetClassLiteralRatchetTests.cs
 │   │   │   ├── SecurityMasterContractOwnershipTests.cs
-│   │   │   └── VendorNeutralDomainTests.cs
+│   │   │   ├── VendorNeutralDomainTests.cs
+│   │   │   └── VersionedContainerKeyLiteralRatchetTests.cs
 │   │   ├── AssetOperations
 │   │   │   ├── AccountCashForecastTests.cs
 │   │   │   ├── AcquisitionTermsCompletionTests.cs
@@ -10458,7 +10475,8 @@ Meridian-main
 │   │   │   └── PluginBacktestStrategyLiveSourceTests.cs
 │   │   ├── Calendars
 │   │   │   ├── BusinessDayAdjustmentTests.cs
-│   │   │   └── BusinessDayCalendarTests.cs
+│   │   │   ├── BusinessDayCalendarTests.cs
+│   │   │   └── FileBusinessDayCalendarSourceTests.cs
 │   │   ├── CertificatesOfDeposit
 │   │   │   └── CertificateOfDepositProjectionServiceTests.cs
 │   │   ├── Commodities
@@ -11180,7 +11198,8 @@ Meridian-main
 │   │   │   │   ├── ScheduleGeneratorTests.RollsAndEdges.cs
 │   │   │   │   ├── ScheduleKernelLegacyParityTests.cs
 │   │   │   │   ├── ScheduleParityGrids.cs
-│   │   │   │   └── SchedulePeriodIdTests.cs
+│   │   │   │   ├── SchedulePeriodIdTests.cs
+│   │   │   │   └── ScheduleSpecFactoryTests.cs
 │   │   │   ├── Workbench
 │   │   │   │   ├── AheadOfWriteWorkbenchFixtures.cs
 │   │   │   │   ├── ApprovedFieldEditCanonicalMergeHandlerTests.AheadOfWrite.cs
@@ -11255,6 +11274,7 @@ Meridian-main
 │   │   │   ├── ProjectionFanOutTests.cs
 │   │   │   ├── QuotedPriceValuationModelTests.cs
 │   │   │   ├── RegistryMigratedProjectionGoldenTests.cs
+│   │   │   ├── ScheduleConventionsDecodeGoldenTests.cs
 │   │   │   ├── SchemaTermsValidationTests.cs
 │   │   │   ├── SecurityAccountingInstrumentClassTests.cs
 │   │   │   ├── SecurityAssetClassBehaviorFactsTests.cs
@@ -11354,6 +11374,7 @@ Meridian-main
 │   │   │   ├── SecurityValidationGateServiceTests.cs
 │   │   │   ├── SecurityValidationServiceTests.cs
 │   │   │   ├── SecurityValuationServiceTests.cs
+│   │   │   ├── SecurityVersionedTermsTests.cs
 │   │   │   ├── SpecializedProjectionGoldenTests.cs
 │   │   │   ├── SwapLegRoundTripTests.cs
 │   │   │   ├── UnitizedLotTests.cs
@@ -11847,6 +11868,7 @@ Meridian-main
 │   │   │   ├── TradingOperatorLiveOrderReadinessGateTests.cs
 │   │   │   ├── TradingOperatorReadinessAggregationTests.cs
 │   │   │   ├── TradingOperatorReadinessServiceTests.cs
+│   │   │   ├── UiServerLoggingTests.cs
 │   │   │   ├── Wave2OperatorInboxAcceptanceTests.cs
 │   │   │   ├── Wave2PaperTradingCockpitAcceptanceTests.cs
 │   │   │   ├── WorkflowLibraryEndpointTests.cs
