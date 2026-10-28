@@ -11,15 +11,18 @@
   // Lifecycle hooks
   // -------------------------------------------------------------------------
 
-  // Restore NuGet and both npm lockfiles when the container is first created.
-  // Vite needs the dashboard's platform-specific optional dependencies.
-  "onCreateCommand": "dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal && npm ci --silent && npm --prefix src/Meridian.Ui/dashboard ci --include=optional",
+  // Install pinned script dependencies in a venv, restore both npm locks through
+  // the same profile-aware command as local development, then restore the solution.
+  "onCreateCommand": "python3 -m venv .ai/python-venv && .ai/python-venv/bin/python -m pip install -r build/scripts/ci/requirements.txt && .ai/python-venv/bin/python build/python/cli/buildctl.py environment --profile fixture-only --restore --json-output .ai/environment.json && dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal",
 
   // Rebuild and copy sample config when the repo content changes.
   "updateContentCommand": "cp -n config/appsettings.sample.json config/appsettings.json 2>/dev/null || true && mkdir -p data logs && dotnet build Meridian.sln -c Debug --no-restore /p:EnableWindowsTargeting=true --verbosity quiet",
 
-  // Install git hooks and run make doctor so contributors see green checks.
-  "postCreateCommand": "./build/scripts/hooks/install-hooks.sh && make doctor",
+  // Install git hooks and verify the backend profile without optional provider credentials.
+  "postCreateCommand": "./build/scripts/hooks/install-hooks.sh && .ai/python-venv/bin/python build/python/cli/buildctl.py environment --profile backend-connected --summary",
+  "remoteEnv": {
+    "PATH": "${containerWorkspaceFolder}/.ai/python-venv/bin:${containerEnv:PATH}"
+  },
 
   // -------------------------------------------------------------------------
   // Ports

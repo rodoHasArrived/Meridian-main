@@ -51,6 +51,8 @@ These paths/behaviors follow `build/python/cli/buildctl.py` and the current work
 | --- | --- |
 | `build --isolation-key <key>` | Build stdout/stderr and isolated `artifacts/bin/<key>/`, `artifacts/obj/<key>/` outputs |
 | `test` | `.ai/validation-runs/` JSON receipts plus the result/log paths printed for that run |
+| `environment` | Profile-specific prerequisite checks, dependency/fixture input fingerprint, and optional JSON report; `--restore` explicitly installs dependencies |
+| `validation-metrics` | Read-only feedback/queue/execution and observed task-attempt summaries from local test receipts, with optional JSON output |
 | `collect-debug` | `debug-bundle/debug-info.json`, containing tool/platform/checkout metadata |
 | `fingerprint` | Tool/checkout fingerprint printed to stdout |
 | `build-profile` | A new timed build; it does not analyze a previous build |
@@ -65,6 +67,35 @@ command. Consult the invoked command's output before looking for artifacts.
 
 Use `python build/python/cli/buildctl.py --help` and subcommand `--help` for current options.
 Review captured diagnostics before sharing them outside the repository's normal review process.
+
+## Local feedback latency and observed retries
+
+Give related validation attempts an explicit task ID, using a different ID for each development
+task. Project, filter, configuration, framework, and runtime also separate comparable attempts:
+
+```sh
+python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ExampleTests" --task-id provider-fix-123 --profile worktree --queue
+python build/python/cli/buildctl.py validation-metrics --summary
+python build/python/cli/buildctl.py validation-metrics --task-id provider-fix-123 --json-output .ai/validation-metrics.json
+```
+
+The report includes sample/missing counts, median and nearest-rank p95 feedback latency,
+measured queue and execution durations, per-step durations, outcomes, and failure phases.
+Feedback latency spans invocation to terminal receipt, measured monotonically in new receipts
+and from timestamps in legacy receipts. Queue time includes lock and active-process
+waiting; execution covers preparation and executed steps after that wait. New test receipts
+record these durations with a monotonic clock, schema version 2, optional `taskId`, and the failure
+phase. Interrupted queue waits are retained. Legacy receipts can supply timestamp-based feedback
+and step durations, but their queue/execution measurements remain unavailable rather than being
+inferred from unexplained overhead.
+
+Explicit task groups show time to the first observed pass and repeated-attempt effort. These
+are local validation observations: failed attempts do not establish a code defect, and retry
+duration is not human implementation or review time. Attempts without a task ID do not contribute
+to task metrics. Missing, unfinished, and malformed records are surfaced; an empty report has no
+baseline. The report reads receipts without modifying them and sends no telemetry externally.
+It covers `buildctl test` receipts, not raw `dotnet`/npm commands, the standalone `build` command,
+review revisions, or escaped defects. Keep hosted CI measurements separate.
 
 ## Hosted CI evidence
 
