@@ -1,4 +1,5 @@
 using Meridian.Contracts.Accounting.Lots;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 
 namespace Meridian.Storage.Ledger;
@@ -97,7 +98,12 @@ public static class CanonicalDisposalHistoryProjector
         var saleDate = entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(entry.Timestamp.UtcDateTime);
         var lots = history.Select((lot, index) => new LedgerTaxLot(lot.LotId, lot.AcquiredDate,
             lot.Quantity, lot.UnitCost, canonical[index].SecurityId,
-            lot.HoldingPeriodStart < lot.AcquiredDate ? lot.HoldingPeriodStart : null)).ToArray();
+            lot.HoldingPeriodStart < lot.AcquiredDate ? lot.HoldingPeriodStart : null)
+        {
+            UnitKind = canonical[index].Acquisition.QuantityBasis == LotQuantityBasis.Face
+                    ? SecurityLotUnitKind.FaceValue : SecurityLotUnitKind.Units,
+            Multiplier = 1m
+        }).ToArray();
         var input = new LedgerTaxLotReliefInput(disposal.Account, saleDate, quantity, salePrice,
             disposal.ReliefMethod, lots, financialAccountId: disposal.Account.FinancialAccountId,
             specificLotIds: disposal.ReliefMethod == LedgerTaxLotReliefMethod.SpecificId

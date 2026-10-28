@@ -1,4 +1,5 @@
 using Meridian.Execution.Sdk;
+using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Execution.TaxLotAccounting;
 
@@ -16,13 +17,13 @@ public sealed record RelievedLot(
 {
     /// <summary>Realized gain/(loss) for this specific lot parcel.</summary>
     public decimal RealizedPnl =>
-        (ClosePrice - Lot.CostBasis) * RelievedQuantity * (Lot.IsShort ? -1m : 1m);
+        (Proceeds - CostRelieved) * (Lot.IsShort ? -1m : 1m);
 
     /// <summary>Proceeds received for the relieved quantity.</summary>
-    public decimal Proceeds => RelievedQuantity * ClosePrice;
+    public decimal Proceeds => new LotQuantity(RelievedQuantity, Lot.UnitKind, Lot.Multiplier).ValueAtPrice(ClosePrice);
 
     /// <summary>Cost basis of the relieved quantity.</summary>
-    public decimal CostRelieved => RelievedQuantity * Lot.CostBasis;
+    public decimal CostRelieved => new LotQuantity(RelievedQuantity, Lot.UnitKind, Lot.Multiplier).ValueAtPrice(Lot.CostBasis);
 }
 
 /// <summary>

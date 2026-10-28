@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
@@ -173,8 +174,8 @@ public sealed class OpenLotConvergenceTests
         var record = Lot(1);
         var canonical = record.ToOpenLot();
         var openedAt = new DateTimeOffset(record.AcquiredDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
-        var execution = new TaxLot(record.TaxLotRecordId, "OLD", 10, 100m, openedAt);
-        var simulation = new OpenLot(record.TaxLotRecordId, "NEW", 10, 100m, openedAt, Guid.NewGuid());
+        var execution = new TaxLot(record.TaxLotRecordId, "OLD", 10, 100m, openedAt) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m };
+        var simulation = new OpenLot(record.TaxLotRecordId, "NEW", 10, 100m, openedAt, Guid.NewGuid()) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m };
         execution.BindCanonical(canonical).Should().BeSameAs(canonical);
         simulation.BindCanonical(canonical).Should().BeSameAs(canonical);
         var changed = () => (execution with { Quantity = 9 }).BindCanonical(canonical);

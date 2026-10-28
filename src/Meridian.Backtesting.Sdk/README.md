@@ -83,9 +83,14 @@ Use this module when a backtesting contract must be shared across runtime and st
 
 ## Unitized lots
 
-`OpenLot` and `ClosedLot` hold `decimal` quantities and implement `IUnitizedLot`: `UnitKind`
-defaults to `Shares` and `Multiplier` to 1, so existing share lots are unchanged.
-`LotQuantity.EconomicUnits` gives quantity × multiplier.
+`OpenLot` and `ClosedLot` hold `decimal` quantities and implement `IUnitizedLot`. Their
+`UnitKind` and positive `Multiplier` are required init properties; callers must explicitly
+supply `Shares` and `1` for equity lots or the security definition's denomination and scale.
+JSON missing either convention is rejected. `LotQuantity.EconomicUnits` gives quantity × multiplier.
+This required-field migration prevents omitted conventions from becoming share economics.
+Generic execution and backtesting lot prices are raw quotes: debt is priced as percent of par,
+and contract quotes are scaled by the declared multiplier. Cost, value, and P&L methods apply
+those conventions; retained exact monetary basis is never scaled again.
 
 ## Diagrams
 

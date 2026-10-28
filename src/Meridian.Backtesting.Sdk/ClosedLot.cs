@@ -19,6 +19,9 @@ public sealed record ClosedLot(
     string? AccountId = null,
     bool IsShort = false) : IUnitizedLot
 {
+    private SecurityLotUnitKind _unitKind;
+    private decimal _multiplier;
+
     /// <summary>Exact booked basis; absent on legacy records that only retain an entry quote.</summary>
     public decimal? CostBasis { get; init; }
 
@@ -28,16 +31,35 @@ public sealed record ClosedLot(
     /// <summary>Closing commission allocated to this disposal.</summary>
     public decimal ExitCommission { get; init; }
 
-    /// <summary>What one unit of <see cref="Quantity"/> measures; shares unless stated.</summary>
-    public SecurityLotUnitKind UnitKind { get; init; } = SecurityLotUnitKind.Shares;
+    /// <summary>What one unit of <see cref="Quantity"/> measures. Must be supplied explicitly.</summary>
+    public required SecurityLotUnitKind UnitKind
+    {
+        get => _unitKind;
+        init => _unitKind = Enum.IsDefined(value)
+            ? value
+            : throw new ArgumentOutOfRangeException(nameof(UnitKind), value, "A defined lot unit is required.");
+    }
 
-    /// <summary>Contract multiplier scaling one unit to economic exposure; 1 unless stated.</summary>
-    public decimal Multiplier { get; init; } = 1m;
+    /// <summary>Positive contract multiplier scaling one unit to economic exposure. Supply 1 for unscaled units.</summary>
+    public required decimal Multiplier
+    {
+        get => _multiplier;
+        init => _multiplier = value > 0m
+            ? value
+            : throw new ArgumentOutOfRangeException(nameof(Multiplier), value, "A positive lot multiplier is required.");
+    }
 
     /// <summary>Total realised profit or loss for this lot.</summary>
-    public decimal RealizedPnl => IsShort
-        ? (CostBasis ?? EntryPrice * Quantity) - ClosePrice * Quantity
-        : ClosePrice * Quantity - (CostBasis ?? EntryPrice * Quantity);
+    public decimal RealizedPnl
+    {
+        get
+        {
+            var quantity = new LotQuantity(Quantity, UnitKind, Multiplier);
+            var basis = CostBasis ?? quantity.ValueAtPrice(EntryPrice);
+            var proceeds = quantity.ValueAtPrice(ClosePrice);
+            return IsShort ? basis - proceeds : proceeds - basis;
+        }
+    }
 
     /// <summary>Total holding duration from open to close.</summary>
     public TimeSpan HoldingPeriod => ClosedAt - OpenedAt;

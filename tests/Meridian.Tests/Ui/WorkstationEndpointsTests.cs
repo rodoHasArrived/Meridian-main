@@ -8946,6 +8946,8 @@ public sealed partial class WorkstationEndpointsTests
             AccountId: accountId,
             Notes: "Trust remittance carry lot")
         {
+            UnitKind = SecurityLotUnitKind.Shares,
+            Multiplier = 1m,
             IsShort = isShort && !legacyLotWithoutDirection,
             BasisComponents = basisComponents ?? []
         };

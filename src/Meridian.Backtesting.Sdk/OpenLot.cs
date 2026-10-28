@@ -19,8 +19,7 @@ public sealed record OpenLotBasisComponent(
 }
 
 /// <summary>
-/// Represents an open (unrealised) tax lot — a block of units (shares by default; see
-/// <see cref="UnitKind"/>) acquired in a single fill.
+/// Represents an open (unrealised) tax lot — a block of explicitly denominated units acquired in a single fill.
 /// Lots are always positive-quantity records. <see cref="IsShort"/> carries direction explicitly
 /// when a short lot leaves the portfolio's internal short-lot collection in a snapshot.
 /// </summary>
@@ -34,11 +33,26 @@ public sealed record OpenLot(
     string? AccountId = null,
     string? Notes = null) : IUnitizedLot
 {
-    /// <summary>What one unit of <see cref="Quantity"/> measures; shares unless stated.</summary>
-    public SecurityLotUnitKind UnitKind { get; init; } = SecurityLotUnitKind.Shares;
+    private SecurityLotUnitKind _unitKind;
+    private decimal _multiplier;
 
-    /// <summary>Contract multiplier scaling one unit to economic exposure; 1 unless stated.</summary>
-    public decimal Multiplier { get; init; } = 1m;
+    /// <summary>What one unit of <see cref="Quantity"/> measures. Must be supplied explicitly.</summary>
+    public required SecurityLotUnitKind UnitKind
+    {
+        get => _unitKind;
+        init => _unitKind = Enum.IsDefined(value)
+            ? value
+            : throw new ArgumentOutOfRangeException(nameof(UnitKind), value, "A defined lot unit is required.");
+    }
+
+    /// <summary>Positive contract multiplier scaling one unit to economic exposure. Supply 1 for unscaled units.</summary>
+    public required decimal Multiplier
+    {
+        get => _multiplier;
+        init => _multiplier = value > 0m
+            ? value
+            : throw new ArgumentOutOfRangeException(nameof(Multiplier), value, "A positive lot multiplier is required.");
+    }
 
     private BasisComponentCollection _basisComponents = BasisComponentCollection.Empty;
 
@@ -66,17 +80,17 @@ public sealed record OpenLot(
     public decimal CostBasis() =>
         BasisComponents is { Count: > 0 }
             ? BasisComponents.Sum(static component => component.AllocatedBasis)
-            : Quantity * EntryPrice;
+            : new LotQuantity(Quantity, UnitKind, Multiplier).ValueAtPrice(EntryPrice);
 
     /// <summary>Mark-to-market unrealised P&amp;L for this lot at the given price.</summary>
     public decimal UnrealizedPnl(decimal currentPrice) =>
         IsShort
-            ? CostBasis() - (currentPrice * Quantity)
-            : (currentPrice * Quantity) - CostBasis();
+            ? CostBasis() - NotionalValue(currentPrice)
+            : NotionalValue(currentPrice) - CostBasis();
 
     /// <summary>Current notional value of this lot at the given price.</summary>
     public decimal NotionalValue(decimal currentPrice) =>
-        Quantity * currentPrice;
+        new LotQuantity(Quantity, UnitKind, Multiplier).ValueAtPrice(currentPrice);
 
     /// <summary>
     /// How long the newest basis component has been open as of the given point in time. Using the

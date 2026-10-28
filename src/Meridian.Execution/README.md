@@ -11,6 +11,11 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.Execution
 
+Paper fills retain security-definition lot units and multipliers in execution reports, so fund units
+and contracts with multiplier one preserve their denomination after session replay. Legacy reports
+without class or lot metadata retain the existing share assumption. Contradictory units on an open
+position are refused before booking.
+
 OMS amendments resolve explicit broker/client identifiers, retain replacement broker aliases under
 the original client identity, and process cumulative fills through the shared fill funnel.
 Refused cancellations and amendments fail the operation while preserving observed order state;

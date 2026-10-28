@@ -7,6 +7,9 @@ namespace Meridian.Ledger;
 /// </summary>
 public sealed record LedgerTaxLot : IUnitizedLot
 {
+    private SecurityLotUnitKind _unitKind;
+    private decimal _multiplier;
+
     public LedgerTaxLot(
         string lotId,
         DateOnly acquiredDate,
@@ -50,14 +53,26 @@ public sealed record LedgerTaxLot : IUnitizedLot
     public decimal UnitCost { get; }
 
     /// <summary>
-    /// What one unit of <see cref="Quantity"/> measures. Defaults to shares; face-denominated debt
+    /// What one unit of <see cref="Quantity"/> measures. Must be supplied explicitly; face-denominated debt
     /// lots (bonds, CDs, bills, loans, structured credit) carry <see cref="SecurityLotUnitKind.FaceValue"/>,
     /// whose <see cref="UnitCost"/> is a price per 100 of par.
     /// </summary>
-    public SecurityLotUnitKind UnitKind { get; init; } = SecurityLotUnitKind.Shares;
+    public required SecurityLotUnitKind UnitKind
+    {
+        get => _unitKind;
+        init => _unitKind = Enum.IsDefined(value)
+            ? value
+            : throw new ArgumentOutOfRangeException(nameof(UnitKind), value, "A defined lot unit is required.");
+    }
 
-    /// <summary>Contract multiplier scaling one unit to economic exposure; 1 unless stated.</summary>
-    public decimal Multiplier { get; init; } = 1m;
+    /// <summary>Positive contract multiplier scaling one unit to economic exposure. Supply 1 for unscaled units.</summary>
+    public required decimal Multiplier
+    {
+        get => _multiplier;
+        init => _multiplier = value > 0m
+            ? value
+            : throw new ArgumentOutOfRangeException(nameof(Multiplier), value, "A positive lot multiplier is required.");
+    }
 
     /// <summary>
     /// Exact current basis of the whole lot, when it is known rather than implied by

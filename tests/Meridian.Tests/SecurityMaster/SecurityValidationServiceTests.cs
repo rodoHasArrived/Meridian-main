@@ -240,6 +240,12 @@ public sealed class SecurityValidationServiceTests
     [InlineData("MortgageBacked")]
     [InlineData("AssetBacked")]
     [InlineData("InterestOnly")]
+    [InlineData("MBS")]
+    [InlineData("ABS")]
+    [InlineData("CMBS")]
+    [InlineData(" cLo ")]
+    [InlineData("Mortgage Backed Security")]
+    [InlineData("Agency MBS")]
     public void Scenario_BondWithSecuritizedSubclass_IsRejectedAsNonCanonical(string subclass)
     {
         // ADR-022: StructuredCredit is the one canonical home for securitized products; a Bond
@@ -301,6 +307,36 @@ public sealed class SecurityValidationServiceTests
     }
 
     [Fact]
+    public void Scenario_BondWithBankLoanSubclass_IsRejectedAsNonCanonical()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(), "Bond",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "LOAN-001", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new { maturity = "2031-06-15", subclass = "BankLoan" }));
+        var report = new SecurityValidationService(Substitute.For<ISecurityMasterStore>(), AssetClassValidatorRegistry.CreateDefault())
+            .ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().ContainSingle(issue => issue.Code == "SM_BOND_BANK_LOAN_SUBCLASS_NONCANONICAL")
+            .Which.Severity.Should().Be(SecurityValidationSeverityDto.Error);
+    }
+
+    [Theory]
+    [InlineData("CLO")]
+    [InlineData("MortgageBacked")]
+    public void Scenario_OtherSecurityCannotBypassStructuredCreditHome(string category)
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(), "OtherSecurity",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "STRUCT-001", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new { category }));
+        var report = new SecurityValidationService(Substitute.For<ISecurityMasterStore>(), AssetClassValidatorRegistry.CreateDefault())
+            .ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().ContainSingle(issue => issue.Code == "SM_OTHER_SECURITY_SECURITIZED_NONCANONICAL")
+            .Which.Severity.Should().Be(SecurityValidationSeverityDto.Error);
+    }
+
+    [Fact]
     public void Scenario_StableNavInvestmentFund_IsSteeredTowardMoneyMarketFund()
     {
         // ADR-022: MoneyMarketFund is the canonical home for stable-NAV vehicles. Warning severity:
@@ -332,7 +368,7 @@ public sealed class SecurityValidationServiceTests
     }
 
     [Fact]
-    public void Scenario_CustomAssetWithSecuritizedCategory_IsSteeredTowardStructuredCredit()
+    public void Scenario_CustomAssetWithSecuritizedCategory_IsRejectedAsNonCanonical()
     {
         var record = CreateProjection(
             Guid.NewGuid(),
@@ -353,8 +389,22 @@ public sealed class SecurityValidationServiceTests
         var issue = report.Issues.Should()
             .ContainSingle(static item => item.Code == "SM_CUSTOM_ASSET_SECURITIZED_NONCANONICAL")
             .Which;
-        issue.Severity.Should().Be(SecurityValidationSeverityDto.Warning);
+        issue.Severity.Should().Be(SecurityValidationSeverityDto.Error);
         issue.SuggestedAction.Should().Contain("StructuredCredit");
+    }
+
+    [Fact]
+    public void Scenario_CustomAssetWithSecuritizedAccountingClassification_IsRejectedAsNonCanonical()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(), "CustomAsset",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "STRUCT-ACCOUNTING", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new { category = "Private", accountingClassification = "Agency MBS" }));
+        var report = new SecurityValidationService(Substitute.For<ISecurityMasterStore>(), AssetClassValidatorRegistry.CreateDefault())
+            .ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().ContainSingle(issue => issue.Code == "SM_CUSTOM_ASSET_SECURITIZED_NONCANONICAL")
+            .Which.Severity.Should().Be(SecurityValidationSeverityDto.Error);
     }
 
     [Fact]

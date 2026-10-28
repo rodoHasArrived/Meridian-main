@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using FluentAssertions;
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.FixedIncome;
@@ -142,7 +143,7 @@ public sealed partial class CanonicalOpenLotConsumerTests
         // silently change which retained lot reported the gain.
         var current = LedgerTaxLotReliefProjector.Project(new LedgerTaxLotReliefInput(
             lots[0].Account, new DateOnly(2026, 3, 1), 5m, 0.014m, LedgerTaxLotReliefMethod.Fifo,
-            lots.Select(static lot => new LedgerTaxLot(lot.LotId, lot.AcquiredDate, 1m, lot.UnitCost)).ToArray()));
+            lots.Select(static lot => new LedgerTaxLot(lot.LotId, lot.AcquiredDate, 1m, lot.UnitCost) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }).ToArray()));
         current.Selections.Select(static selection => selection.Proceeds)
             .Should().Equal(0.01m, 0.01m, 0.01m, 0.02m, 0.02m);
 

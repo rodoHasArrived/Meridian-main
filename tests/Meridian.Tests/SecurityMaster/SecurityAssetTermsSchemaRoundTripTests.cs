@@ -108,7 +108,7 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
             callDate = "2030-06-15",
             issuerName = "Meridian Capital Corp",
             seniority = "SeniorSecured",
-            subclass = "Clo",
+            subclass = "Corporate",
             par = 1000m,
             paymentFrequency = "Quarterly",
             legalFinalMaturity = "2036-06-15",

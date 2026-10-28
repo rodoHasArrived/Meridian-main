@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
@@ -115,8 +116,8 @@ public sealed class OpenLotDirectionTests
         var lot = OpenLotConvergenceTests.Lot(1).ToOpenLot();
         lot = lot with { Acquisition = lot.Acquisition with { Direction = OpenLotDirection.Short } };
         var openedAt = new DateTimeOffset(lot.AcquiredDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
-        var execution = new TaxLot(lot.TaxLotRecordId, "OLD", 10, 100m, openedAt);
-        var simulation = new OpenLot(lot.TaxLotRecordId, "NEW", 10, 100m, openedAt, Guid.NewGuid());
+        var execution = new TaxLot(lot.TaxLotRecordId, "OLD", 10, 100m, openedAt) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m };
+        var simulation = new OpenLot(lot.TaxLotRecordId, "NEW", 10, 100m, openedAt, Guid.NewGuid()) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m };
 
         var bindExecution = () => execution.BindCanonical(lot);
         var bindSimulation = () => simulation.BindCanonical(lot);

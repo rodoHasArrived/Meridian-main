@@ -22,10 +22,22 @@ public interface IUnitizedLot
 }
 
 /// <summary>A unitized lot quantity value.</summary>
-public readonly record struct LotQuantity(decimal Amount, SecurityLotUnitKind UnitKind, decimal Multiplier = 1m)
+public readonly record struct LotQuantity(decimal Amount, SecurityLotUnitKind UnitKind, decimal Multiplier)
 {
     /// <summary>The quantity scaled by its multiplier: shares, face, notional or contract exposure units.</summary>
     public decimal EconomicUnits => Amount * Multiplier;
+
+    /// <summary>
+    /// Value at a raw unit quote. Debt quotes are percentages of par; listed contracts
+    /// scale the quote by their contract multiplier. Exact retained monetary basis must
+    /// not pass through this conversion a second time.
+    /// </summary>
+    public decimal ValueAtPrice(decimal price)
+    {
+        if (!Enum.IsDefined(UnitKind) || Multiplier <= 0m)
+            throw new InvalidOperationException("A defined lot unit and positive multiplier are required for pricing.");
+        return EconomicUnits * price / (UnitKind == SecurityLotUnitKind.FaceValue ? 100m : 1m);
+    }
 
     /// <summary>The unitized quantity of any lot.</summary>
     public static LotQuantity Of(IUnitizedLot lot)
@@ -37,21 +49,24 @@ public readonly record struct LotQuantity(decimal Amount, SecurityLotUnitKind Un
     /// <summary>
     /// The lot unit and multiplier an asset class's lots carry, read from the asset-class registry:
     /// the class's <see cref="SecurityAssetClassDescriptor.LotUnit"/> and, when it declares a
-    /// <see cref="SecurityAssetClassDescriptor.LotMultiplierTermKey"/>, that term's value from
-    /// <paramref name="assetSpecificTerms"/> (1 when absent or not positive).
+    /// <see cref="SecurityAssetClassDescriptor.LotMultiplierTermKey"/>, that term's positive value from
+    /// <paramref name="assetSpecificTerms"/>. Unknown classes and missing or invalid contract multipliers are rejected.
     /// </summary>
     public static (SecurityLotUnitKind UnitKind, decimal Multiplier) UnitFor(string? assetClass, JsonElement? assetSpecificTerms = null)
     {
-        var descriptor = SecurityAssetClassCatalog.GetOrDefault(assetClass);
+        if (!SecurityAssetClassCatalog.TryGet(assetClass, out var descriptor))
+            throw new ArgumentException("A registered asset class is required to determine lot units.", nameof(assetClass));
         var multiplier = 1m;
-        if (descriptor.LotMultiplierTermKey is { } key
-            && assetSpecificTerms is { ValueKind: JsonValueKind.Object } terms
-            && terms.TryGetProperty(key, out var value)
-            && value.ValueKind == JsonValueKind.Number
-            && value.TryGetDecimal(out var parsed)
-            && parsed > 0m)
+        if (descriptor.LotMultiplierTermKey is { } key)
         {
-            multiplier = parsed;
+            if (assetSpecificTerms is not { ValueKind: JsonValueKind.Object } terms
+                || !terms.TryGetProperty(key, out var value)
+                || value.ValueKind != JsonValueKind.Number
+                || !value.TryGetDecimal(out multiplier)
+                || multiplier <= 0m)
+            {
+                throw new ArgumentException($"Asset class '{descriptor.AssetClass}' requires a positive '{key}' term to open a lot.", nameof(assetSpecificTerms));
+            }
         }
 
         return (descriptor.LotUnit, multiplier);

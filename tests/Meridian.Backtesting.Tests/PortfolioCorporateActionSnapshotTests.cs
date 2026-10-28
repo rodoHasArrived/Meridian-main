@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using FluentAssertions;
 using Meridian.Backtesting.Portfolio;
 using System.Text.Json;
@@ -59,10 +60,14 @@ public sealed class PortfolioCorporateActionSnapshotTests
         };
         var first = new OpenLot(lotId, "XYZ", 1L, 100m, OpenedAt, openFillId)
         {
+            UnitKind = SecurityLotUnitKind.Shares,
+            Multiplier = 1m,
             BasisComponents = components
         };
         var second = new OpenLot(lotId, "XYZ", 1L, 100m, OpenedAt, openFillId)
         {
+            UnitKind = SecurityLotUnitKind.Shares,
+            Multiplier = 1m,
             BasisComponents = components.ToList()
         };
 

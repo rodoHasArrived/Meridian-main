@@ -34,6 +34,9 @@ This proof preserves original/current currency bases, acquisition dates/FX and i
 
 ## Shared close and lot convergence
 
+`LedgerTaxLot` requires explicit `UnitKind` and a positive `Multiplier`. Adapters preserve
+source lot conventions; constructors and JSON cannot omit them and receive share defaults.
+
 `OpenLotReliefService` uses the shared decimal consumption walk for canonical FIFO/LIFO/HIFO/SpecificId/AverageCost selection and retains transaction and functional basis separately. It refuses mixed security, position, book, quantity-basis, and currency scopes. The durable disposal writer and reporting capture consume the canonical evidence contract. Durable AverageCost posting restates the surviving pool atomically; discrete relief subsequently consumes that current basis and retains exact remaining basis. Acquisition facts stay immutable, and Reporting reproduces the certified posted result.
 
 `LotBasisRelief` owns exact proportional basis allocation for canonical relief and Backtesting's

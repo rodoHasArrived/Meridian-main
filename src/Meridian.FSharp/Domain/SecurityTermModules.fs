@@ -13,12 +13,7 @@ type PaymentFrequency =
     | OtherFrequency of string
 
 /// Day-count basis for accrual calculations.
-type DayCountConvention =
-    | Actual360
-    | Actual365
-    | Thirty360
-    | Business252
-    | OtherDayCount of string
+type DayCountConvention = Meridian.Contracts.SecurityMaster.DayCountConvention
 
 /// Coupon style for interest-bearing instruments.
 type CouponKind =
@@ -497,12 +492,8 @@ module PaymentFrequency =
 module DayCountConvention =
 
     [<CompiledName("Label")>]
-    let label = function
-        | Actual360 -> "Actual360"
-        | Actual365 -> "Actual365"
-        | Thirty360 -> "Thirty360"
-        | Business252 -> "Business252"
-        | OtherDayCount other -> other
+    let label (convention: DayCountConvention) =
+        Meridian.Contracts.SecurityMaster.DayCountConventions.TermLabel(convention)
 
 [<RequireQualifiedAccess>]
 module CouponKind =

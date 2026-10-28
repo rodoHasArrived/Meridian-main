@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using System.Globalization;
 using FluentAssertions;
 using Meridian.Ledger;
@@ -46,7 +47,7 @@ public sealed class LedgerTaxCharacterTests
             quantitySold: 100m,
             salePrice: 150m,
             LedgerTaxLotReliefMethod.Fifo,
-            [new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 100m, 100m, SecurityId)]));
+            [new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 100m, 100m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }]));
 
         var selection = projection.Selections.Single();
         selection.TaxCharacter.Should().Be(TaxCharacter.ShortTerm);
@@ -67,8 +68,8 @@ public sealed class LedgerTaxCharacterTests
             salePrice: 150m,
             LedgerTaxLotReliefMethod.Fifo,
             [
-                new LedgerTaxLot("lot-old", new DateOnly(2024, 1, 1), 100m, 100m, SecurityId),
-                new LedgerTaxLot("lot-new", new DateOnly(2026, 2, 1), 100m, 140m, SecurityId),
+                new LedgerTaxLot("lot-old", new DateOnly(2024, 1, 1), 100m, 100m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
+                new LedgerTaxLot("lot-new", new DateOnly(2026, 2, 1), 100m, 140m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
             ]));
 
         projection.Selections.Should().HaveCount(2);
@@ -97,9 +98,9 @@ public sealed class LedgerTaxCharacterTests
             salePrice: 100m / 3m,
             LedgerTaxLotReliefMethod.Fifo,
             [
-                new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 1m, 10m, SecurityId),
-                new LedgerTaxLot("lot-b", new DateOnly(2026, 1, 2), 1m, 10m, SecurityId),
-                new LedgerTaxLot("lot-c", new DateOnly(2026, 1, 3), 1m, 10m, SecurityId),
+                new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 1m, 10m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
+                new LedgerTaxLot("lot-b", new DateOnly(2026, 1, 2), 1m, 10m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
+                new LedgerTaxLot("lot-c", new DateOnly(2026, 1, 3), 1m, 10m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
             ]));
 
         projection.Selections.Sum(selection => selection.Proceeds).Should().Be(projection.Proceeds);
@@ -118,7 +119,8 @@ public sealed class LedgerTaxCharacterTests
             100m,
             100m,
             SecurityId,
-            holdingPeriodStartDate: new DateOnly(2024, 1, 1));
+            holdingPeriodStartDate: new DateOnly(2024, 1, 1))
+        { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m };
 
         var projection = LedgerTaxLotReliefProjector.Project(new LedgerTaxLotReliefInput(
             Account,
@@ -157,7 +159,7 @@ public sealed class LedgerTaxCharacterTests
             // Acquired *after* the deferral's sale date — the symmetric §1091 window means a
             // replacement is frequently forward of the sale, which the reference-data
             // acquired-before-effective-date guard would otherwise reject.
-            [new LedgerTaxLot("lot-rep", new DateOnly(2026, 2, 1), 100m, 100m, SecurityId)],
+            [new LedgerTaxLot("lot-rep", new DateOnly(2026, 2, 1), 100m, 100m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }],
             basisAdjustments: [deferral]));
 
         // Basis rose from 10,000 to 12,000, so the gain is 3,000 rather than 5,000.
@@ -191,7 +193,8 @@ public sealed class LedgerTaxCharacterTests
             100m,
             100m,
             SecurityId,
-            holdingPeriodStartDate: new DateOnly(2026, 2, 1));
+            holdingPeriodStartDate: new DateOnly(2026, 2, 1))
+        { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m };
 
         act.Should().Throw<ArgumentOutOfRangeException>();
     }

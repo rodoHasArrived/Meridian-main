@@ -82,6 +82,42 @@ public static class DayCountConventions
     private const decimal DaysPerYear36525 = 365.25m;
     private const decimal BusinessDaysPerYear = 252m;
 
+    /// <summary>Parses the declared terms vocabulary without the analytics parser's heuristic fallback.</summary>
+    public static bool TryParseTerm(string? raw, out DayCountConvention convention)
+    {
+        convention = NormalizeToken(raw) switch
+        {
+            "ACT360" or "ACTUAL360" => DayCountConvention.Actual360,
+            "ACT365" or "ACTUAL365" or "ACT365F" or "ACTUAL365F" or "ACT365FIXED" or "ACTUAL365FIXED" => DayCountConvention.Actual365,
+            "30360" or "30360US" or "THIRTY360" or "BONDBASIS" => DayCountConvention.Thirty360,
+            "BUS252" or "BUSINESS252" => DayCountConvention.Business252,
+            "ACTACT" or "ACTUALACTUAL" or "ACTACTISDA" or "ACTUALACTUALISDA" => DayCountConvention.ActualActualIsda,
+            "30E360" or "THIRTYE360" or "EUROBOND" or "EUROBONDBASIS" => DayCountConvention.ThirtyE360,
+            "30E360ISDA" or "THIRTYE360ISDA" or "30360GERMAN" or "GERMAN" => DayCountConvention.ThirtyE360Isda,
+            "ACTACTICMA" or "ACTUALACTUALICMA" or "ACTACTISMA" or "ACTUALACTUALISMA" => DayCountConvention.ActualActualIcma,
+            "NL365" or "365NL" or "ACT365NOLEAP" or "ACTUAL365NOLEAP" => DayCountConvention.Nl365,
+            "ACT36525" or "ACTUAL36525" => DayCountConvention.Actual36525,
+            _ => DayCountConvention.Unknown
+        };
+        return convention != DayCountConvention.Unknown;
+    }
+
+    /// <summary>Canonical flat-term spelling; enum values are never serialized as numeric economics.</summary>
+    public static string TermLabel(DayCountConvention convention) => convention switch
+    {
+        DayCountConvention.Actual360 => "ACT/360",
+        DayCountConvention.Actual365 => "ACT/365",
+        DayCountConvention.Thirty360 => "30/360",
+        DayCountConvention.Business252 => "BUS/252",
+        DayCountConvention.ActualActualIsda => "ACT/ACT",
+        DayCountConvention.ThirtyE360 => "30E/360",
+        DayCountConvention.ThirtyE360Isda => "30E/360 ISDA",
+        DayCountConvention.ActualActualIcma => "ACT/ACT ICMA",
+        DayCountConvention.Nl365 => "NL/365",
+        DayCountConvention.Actual36525 => "ACT/365.25",
+        _ => "Unknown"
+    };
+
     // ── Parsing ─────────────────────────────────────────────────────────────────────────────────
 
     /// <summary>

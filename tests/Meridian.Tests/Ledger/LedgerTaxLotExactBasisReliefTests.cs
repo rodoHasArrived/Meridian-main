@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using FluentAssertions;
 using Meridian.Ledger;
 using Xunit;
@@ -19,7 +20,7 @@ public sealed class LedgerTaxLotExactBasisReliefTests
             quantitySold: 2m,
             salePrice: 1m,
             LedgerTaxLotReliefMethod.Fifo,
-            [new LedgerTaxLot("lot-a", new DateOnly(2026, 5, 1), 2m, 0.001m, costBasis: 0.0025m)]);
+            [new LedgerTaxLot("lot-a", new DateOnly(2026, 5, 1), 2m, 0.001m, costBasis: 0.0025m) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }]);
 
         var projection = LedgerTaxLotReliefProjector.Project(input);
 
@@ -37,7 +38,7 @@ public sealed class LedgerTaxLotExactBasisReliefTests
             quantitySold: 1m,
             salePrice: 150m,
             LedgerTaxLotReliefMethod.Fifo,
-            [new LedgerTaxLot("lot-a", new DateOnly(2026, 5, 1), 2m, 100m, costBasis: 250m)]);
+            [new LedgerTaxLot("lot-a", new DateOnly(2026, 5, 1), 2m, 100m, costBasis: 250m) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }]);
 
         var projection = LedgerTaxLotReliefProjector.Project(input);
 

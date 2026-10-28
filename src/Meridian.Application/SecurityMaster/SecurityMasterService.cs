@@ -377,11 +377,13 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
 
     private async Task<SecurityDetailDto> ExecuteCreateAsync(CreateSecurityRequest request, CancellationToken ct)
     {
+        // Resolve the submitted profile and refuse contradictory metadata before domain mapping.
+        var assetClassOverride = GetProfileBackedAssetClassOverride(request.AssetClass, request.AssetSpecificTerms);
         var result = SecurityMasterCommandFacade.Create(MapRequestOrRefuse(() => SecurityMasterMapping.ToCreateCommand(request)));
         var projection = CreateProjectionFromResult(
             result,
             aliases: null,
-            GetProfileBackedAssetClassOverride(request.AssetClass, request.AssetSpecificTerms),
+            assetClassOverride,
             GetProfileBackedAssetSpecificTermsOverride(request.AssetSpecificTerms));
         EnsureProfileBackedTermsAreCatalogValid(projection, request.EffectiveFrom);
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
@@ -948,6 +950,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         SecurityProjectionRecord projection,
         JsonElement? assetSpecificTermsPatch = null)
     {
+        SecurityDayCountWriteGuard.EnsureRoundTrip(projection, assetSpecificTermsPatch);
         EnsureDeclaredVocabulariesRoundTripSafely(projection, assetSpecificTermsPatch);
         EnsureBondCouponPayloadRoundTripsSafely(projection, assetSpecificTermsPatch);
         EnsureCustomAssetEnvelopeRoundTripsSafely(projection, assetSpecificTermsPatch);
@@ -1863,33 +1866,6 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
            && customProfileId.ValueKind == System.Text.Json.JsonValueKind.String
            && !string.IsNullOrWhiteSpace(customProfileId.GetString());
 
-    /// <summary>
-    /// The asset class a known profile id resolves to. The PROFILE is the identity of a
-    /// profile-backed record, so reclassification derives from this map alone — caller-supplied
-    /// category/subType/accountingClassification metadata may corroborate but never decide, or a
-    /// mislabeled envelope would route a record into the wrong class's validators and projections.
-    /// </summary>
-    private static readonly IReadOnlyDictionary<string, string> KnownProfileAssetClasses =
-        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["structured-credit-io-po"] = "StructuredCredit",
-            ["private-fund-interest"] = "PrivateFundInterest",
-            ["private-company-equity"] = "PrivateCompanyEquity",
-            ["real-estate-holding"] = "RealEstateHolding",
-            ["commitment-guarantee"] = "CommitmentGuarantee",
-        };
-
-    /// <summary>Classification keywords each resolved class accepts in envelope metadata.</summary>
-    private static readonly IReadOnlyDictionary<string, string[]> AssetClassMetadataKeywords =
-        new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["StructuredCredit"] = ["StructuredCredit", "MBS", "ABS", "CLO", "CMBS"],
-            ["PrivateFundInterest"] = ["PrivateFunds", "PartnershipInterest", "PrivateFund", "PrivateFundInterest"],
-            ["PrivateCompanyEquity"] = ["PrivateEquity", "PrivateCompanyEquity"],
-            ["RealEstateHolding"] = ["RealEstate", "RealEstateInterest", "RealEstateHolding"],
-            ["CommitmentGuarantee"] = ["CommitmentGuarantee", "UnfundedCommitment", "Guarantee"],
-        };
-
     private static bool TryResolveProfileBackedAlternativeAssetClass(JsonElement assetSpecificTerms, out string assetClass)
     {
         var profileId = GetString(assetSpecificTerms, "customProfileId");
@@ -1899,7 +1875,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         // payload pinned to an unrelated profile (which validates against THAT profile's rules)
         // spoof its way into another class's validators and projection behavior. A profile id
         // outside this map keeps the record a CustomAsset.
-        if (profileId is null || !KnownProfileAssetClasses.TryGetValue(profileId, out var resolvedClass))
+        if (profileId is null || !SecurityAssetPackRegistry.ProfileAssetClasses.TryGetValue(profileId, out var resolvedClass))
         {
             assetClass = string.Empty;
             return false;
@@ -1908,20 +1884,29 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         // Envelope metadata that names a DIFFERENT class's keyword is refused rather than
         // resolved: silently preferring the profile would hide the contradiction from the caller
         // who asserted it.
-        var category = GetString(assetSpecificTerms, "category");
-        var subType = GetString(assetSpecificTerms, "subType");
-        var accountingClassification = GetString(assetSpecificTerms, "accountingClassification");
-        foreach (var (candidateClass, keywords) in AssetClassMetadataKeywords)
+        var classificationValues = new List<string?>
+        {
+            GetString(assetSpecificTerms, "category"),
+            GetString(assetSpecificTerms, "subType"),
+            GetString(assetSpecificTerms, "accountingClassification")
+        };
+        if (assetSpecificTerms.TryGetProperty("profileFields", out var profileFields)
+            && profileFields.ValueKind == JsonValueKind.Object)
+        {
+            classificationValues.Add(GetString(profileFields, "category"));
+            classificationValues.Add(GetString(profileFields, "subType"));
+            classificationValues.Add(GetString(profileFields, "accountingClassification"));
+        }
+
+        foreach (var (candidateClass, keywords) in SecurityAssetPackRegistry.ProfileClassificationKeywords)
         {
             if (string.Equals(candidateClass, resolvedClass, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
 
-            var conflicting = keywords.FirstOrDefault(keyword =>
-                string.Equals(category, keyword, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(subType, keyword, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(accountingClassification, keyword, StringComparison.OrdinalIgnoreCase));
+            var conflicting = keywords.FirstOrDefault(keyword => classificationValues.Any(value =>
+                SecurityAssetPackRegistry.MatchesProfileClassificationKeyword(value, keyword)));
             if (conflicting is not null)
             {
                 throw new SecurityMasterWriteRefusedException(

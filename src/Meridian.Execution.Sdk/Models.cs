@@ -183,6 +183,14 @@ public sealed record ExecutionReport
         Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public string? AssetClass { get; init; }
 
+    /// <summary>Security-definition lot denomination retained for paper fill replay; absent on legacy reports.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.SecurityMaster.SecurityLotUnitKind? LotUnitKind { get; init; }
+
+    /// <summary>Positive security-definition multiplier retained alongside the lot denomination.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? LotMultiplier { get; init; }
+
     /// <summary>Regulatory/exchange fees for this fill, when the gateway models them.</summary>
     public decimal? Fees { get; init; }
 

@@ -73,6 +73,19 @@ internal sealed class PaperTradingGatewayTradingParameters
         return rounded;
     }
 
+    public async Task<(string AssetClass, SecurityLotUnitKind UnitKind, decimal Multiplier)?> ResolveLotConventionAsync(
+        string symbol, CancellationToken ct)
+    {
+        if (_securityIdentity is null)
+            return null;
+        var detail = await _securityIdentity.GetByIdentifierAsync(
+            SecurityIdentifierKind.Ticker, symbol, provider: null, ct).ConfigureAwait(false);
+        if (detail is null)
+            return null;
+        var (unitKind, multiplier) = LotQuantity.UnitFor(detail.AssetClass, detail.AssetSpecificTerms);
+        return (detail.AssetClass, unitKind, multiplier);
+    }
+
     private async Task<TradingParametersDto?> TryGetTradingParamsAsync(string symbol, CancellationToken ct)
     {
         if (_securityMaster is null || _securityIdentity is null)

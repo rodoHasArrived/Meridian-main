@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
@@ -346,7 +347,8 @@ public sealed partial class CanonicalOpenLotConsumerTests
         retained.TaxLotRecordId, "DISPLAY", (long)retained.OpenQuantity,
         retained.OpenTransactionCostBasis / retained.OpenQuantity,
         new DateTimeOffset(retained.AcquiredDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
-        Guid.NewGuid());
+        Guid.NewGuid())
+    { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m };
 
     private static OpenLotBasisComponent[] BacktestingComponents(OpenLotDto retained, decimal first, decimal second,
         decimal firstQuantity = 1m, decimal secondQuantity = 2m)

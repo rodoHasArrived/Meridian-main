@@ -78,6 +78,44 @@ public sealed class SecurityMasterMappingInteropTests
         terms.GetProperty("lastTradingDt").GetString().Should().Be("2026-12-17");
     }
 
+    [Theory]
+    [InlineData("Clo")]
+    [InlineData("MortgageBacked")]
+    [InlineData("AgencyMbs")]
+    [InlineData("BankLoan")]
+    public void BondTerms_LegacySubclassLabel_RoundTripsWithoutNamedDomainCase(string subclass)
+    {
+        // Persisted legacy rows take the read mapper; constructing a new security must refuse
+        // these labels even though historical reconstruction retains them verbatim.
+        var projection = SecurityMasterMapping.ToProjection(CreateSnapshotWrapper()) with
+        {
+            AssetClass = "Bond",
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+            {
+                maturity = "2031-06-15",
+                couponType = "Fixed",
+                couponRate = 5m,
+                subclass
+            })
+        };
+        var record = SecurityMasterMapping.ToRecord(projection);
+        var bond = record.Kind.Should().BeOfType<SecurityKind.Bond>().Subject;
+        bond.Item.Subclass.Should().Be(BondSubclass.NewOther(subclass));
+
+        var serialized = new SecurityMasterSnapshotWrapper(record).AssetSpecificTermsJson;
+        using var json = JsonDocument.Parse(serialized);
+        json.RootElement.GetProperty("subclass").GetString().Should().Be(subclass);
+
+        var reread = SecurityMasterMapping.ToRecord(projection with { AssetSpecificTerms = json.RootElement.Clone() });
+        new SecurityMasterSnapshotWrapper(reread).AssetSpecificTermsJson.Should().Be(serialized);
+
+        var create = SecurityMasterCommandFacade.Create(new CreateSecurity(
+            record.SecurityId, record.Common, record.Identifiers, record.Kind, record.EffectiveFrom, record.Provenance));
+        create.IsSuccess.Should().BeFalse();
+        create.ErrorDetails.Should().ContainSingle(error => error.Code ==
+            (subclass == "BankLoan" ? "bond_bank_loan_subclass_noncanonical" : "bond_securitized_subclass_noncanonical"));
+    }
+
     [Fact]
     public void FutureTerms_SerializeDeserialize_PreservesAllReadableFields()
     {
