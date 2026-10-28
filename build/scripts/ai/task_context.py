@@ -94,11 +94,17 @@ class Sources:
         return result
 
 
+def context_directory(root: Path, target: str) -> PurePosixPath:
+    """Include an owned directory's own guidance as well as its ancestors."""
+    path = PurePosixPath(target)
+    return path if local_path(root, target).is_dir() else path.parent
+
+
 def instruction_paths(root: Path, targets: list[str]) -> list[str]:
     names = {"AGENTS.md", "AGENTS.override.md", "CLAUDE.md", ".codex/skills/_shared/project-context.md",
              ".codex/skills/_shared/codex-execution-contract.md"}
     for target in targets:
-        parent = PurePosixPath(target).parent
+        parent = context_directory(root, target)
         while str(parent) != ".":
             for filename in ("AGENTS.md", "AGENTS.override.md"):
                 name = (parent / filename).as_posix()
@@ -109,7 +115,7 @@ def instruction_paths(root: Path, targets: list[str]) -> list[str]:
 
 
 def nearest_readme(root: Path, target: str) -> str | None:
-    parent = PurePosixPath(target).parent
+    parent = context_directory(root, target)
     while str(parent) != ".":
         name = (parent / "README.md").as_posix()
         if local_path(root, name).is_file():

@@ -83,6 +83,9 @@ enforcement mechanism. Browser/WPF briefs must identify `sharedContract`: the sh
 service seam to use, or an explicit `none: <reason>` for a presentation-only change. This makes
 the shared-state decision visible before either surface starts implementing.
 
+An existing owned directory contributes its own nearest README and applicable instruction files,
+as well as ancestor instructions. Changing or adding those instructions invalidates the packet.
+
 The brief is a hashed input: changing acceptance, ownership, exclusions, or validation makes its
 packet stale. `--brief-file` and `--task` are alternatives. Plain `--task` remains supported for
 orientation and tasks that do not need a structured brief.
