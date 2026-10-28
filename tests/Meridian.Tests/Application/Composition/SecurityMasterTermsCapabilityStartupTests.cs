@@ -5,6 +5,7 @@ using Meridian.Application.Composition.Features;
 using Meridian.Contracts.Calendars;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage;
+using Meridian.Storage.Calendars;
 using Meridian.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,11 +17,12 @@ using NSubstitute;
 namespace Meridian.Tests.Application.Composition;
 
 /// <summary>
-/// Pins the eager Security Master terms capability line (ADR-025): the storage feature's hosted
-/// service loads the business-day calendar source at host start, so every node logs its calendar
-/// lines and one capability line naming the declared-mapping version, the schedule kernel version,
-/// the classes it reads ahead of what it writes, and the loaded calendars, without any projection
-/// request resolving the cash-flow service.
+/// Pins the eager Security Master terms capability line (ADR-025): the hosted service that
+/// <c>AddSecurityMasterTermsCapability</c> registers, for the storage feature and for the WPF desktop's
+/// own graph alike, loads the business-day calendar source at host start, so every node logs its
+/// calendar lines and one capability line naming the declared-mapping version, the schedule kernel
+/// version, the classes it reads ahead of what it writes, and the loaded calendars, without any
+/// projection request resolving the cash-flow service.
 /// </summary>
 [Collection("Sequential")]
 public sealed class SecurityMasterTermsCapabilityStartupTests : IDisposable
@@ -102,6 +104,34 @@ public sealed class SecurityMasterTermsCapabilityStartupTests : IDisposable
             && descriptor.ImplementationType != null
             && descriptor.ImplementationType.Name == HostedServiceName);
         services.Should().ContainSingle(static descriptor => descriptor.ServiceType == typeof(IBusinessDayCalendarSource));
+    }
+
+    [Fact]
+    public async Task AddSecurityMasterTermsCapability_WithoutTheStorageFeature_LogsTheCapabilityLineOverTheGivenRoot()
+    {
+        // The WPF desktop composes its own graph and never runs StorageFeatureRegistration, so it calls
+        // the extension directly with its own data root. A second call keeps the first registration.
+        var logs = new CapturingLoggerProvider();
+        var services = new ServiceCollection();
+        services.AddLogging(builder => builder.SetMinimumLevel(LogLevel.Trace).AddProvider(logs));
+        services.AddSecurityMasterTermsCapability(_ => _artifacts.RootPath);
+        services.AddSecurityMasterTermsCapability(static _ => throw new InvalidOperationException("The first registration must win."));
+
+        services.Should().ContainSingle(static descriptor => descriptor.ServiceType == typeof(IHostedService)
+            && descriptor.ImplementationType != null
+            && descriptor.ImplementationType.Name == HostedServiceName);
+        services.Should().ContainSingle(static descriptor => descriptor.ServiceType == typeof(IBusinessDayCalendarSource));
+        await using var provider = services.BuildServiceProvider();
+
+        await StartCapabilityServiceAsync(provider);
+
+        provider.GetRequiredService<IBusinessDayCalendarSource>().Should().BeOfType<FileBusinessDayCalendarSource>()
+            .Which.CalendarDirectory.Should().Be(Path.Combine(_artifacts.RootPath, FileBusinessDayCalendarSource.DirectoryName));
+        logs.Entries.Should().ContainSingle(static entry => entry.Message.StartsWith(CapabilityPrefix, StringComparison.Ordinal))
+            .Which.Message.Should().Be(
+                CapabilityPrefix
+                + "declared mapping security-master-declared-schedule-v1, schedule kernel contractual-schedule-kernel-v1, "
+                + "terms versions " + ExpectedTermsVersions + ", business-day calendars 0: none");
     }
 
     private (ServiceProvider Provider, CapturingLoggerProvider Logs, ResolutionCounter CashFlowResolutions) BuildHost()

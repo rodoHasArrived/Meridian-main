@@ -1,15 +1,20 @@
+using System.Collections.Concurrent;
 using System.Reflection;
 using Meridian.Application.Composition;
 using Meridian.Application.Tenancy;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.Calendars;
 using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Identity;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Storage.Calendars;
 using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Contracts;
@@ -308,6 +313,71 @@ public sealed class AppServiceRegistrationTests
             "the guard runs as a hosted service, first in the chain");
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ConfigureServices_ShouldLogTheSecurityMasterTermsCapabilityLineFromTheDesktopDataRoot(bool securityMasterConfigured)
+    {
+        // Increment 5a. Server hosts get this line from StorageFeatureRegistration, which this desktop
+        // never runs, yet StrategyFeatureModule composes an in-process Security Master writer here
+        // whenever the connection string is set. The rollout's inventory gate and rollback floor read a
+        // desktop's terms build from this line, so the desktop graph has to carry it, with calendars
+        // read from the desktop's own data root.
+        var root = Path.Combine(Path.GetTempPath(), "wpf-terms-capability-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            WpfTestThread.Run(async () =>
+            {
+                using var env = new EnvironmentVariableScope()
+                    .Set(
+                        "MERIDIAN_SECURITY_MASTER_CONNECTION_STRING",
+                        securityMasterConfigured ? "Host=localhost;Database=meridian;Username=test;Password=test" : null)
+                    .Set("POLYGON_API_KEY", null);
+
+                // No settings file under root, so the data root is the default one beside it.
+                var configStore = new Meridian.Application.UI.ConfigStore(Path.Combine(root, "appsettings.json"));
+                var calendarDirectory = Path.Combine(configStore.GetDataRoot(), FileBusinessDayCalendarSource.DirectoryName);
+                Directory.CreateDirectory(calendarDirectory);
+                File.WriteAllText(Path.Combine(calendarDirectory, "ZZTEST.json"), """
+                    { "calendarId": "ZZTEST", "version": 1, "weekendDays": ["Saturday","Sunday"],
+                      "coverage": { "from": "2026-01-01", "to": "2026-12-31" }, "holidays": ["2026-01-02"] }
+                    """);
+
+                var services = BuildServiceCollection();
+                var capability = services.Should().ContainSingle(
+                    static descriptor => descriptor.ServiceType == typeof(IHostedService)
+                        && descriptor.ImplementationType != null
+                        && descriptor.ImplementationType.Name == "SecurityMasterTermsCapabilityHostedService",
+                    "the desktop composes its own graph and must still log its terms build").Subject;
+
+                var logs = new CapturingLoggerProvider();
+                services.Replace(ServiceDescriptor.Singleton(configStore));
+                services.AddLogging(builder => builder.SetMinimumLevel(LogLevel.Information).AddProvider(logs));
+                await using var serviceProvider = services.BuildServiceProvider();
+
+                serviceProvider.GetRequiredService<IBusinessDayCalendarSource>()
+                    .Should().BeOfType<FileBusinessDayCalendarSource>()
+                    .Which.CalendarDirectory.Should().Be(calendarDirectory);
+
+                // Started on its own, as host start does, without starting the desktop's other workers.
+                var hosted = (IHostedService)ActivatorUtilities.CreateInstance(serviceProvider, capability.ImplementationType!);
+                await hosted.StartAsync(CancellationToken.None);
+
+                logs.Messages.Should().ContainSingle(
+                        static message => message.StartsWith("Security Master terms capability: ", StringComparison.Ordinal))
+                    .Which.Should().StartWith(
+                        "Security Master terms capability: declared mapping security-master-declared-schedule-v1, "
+                        + "schedule kernel contractual-schedule-kernel-v1, ")
+                    .And.Contain("business-day calendars 1: ZZTEST v1 ");
+            });
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     [Fact]
     public void AppStartup_ShouldRunRefusalGuardsBeforeShowingTheMainWindow()
     {
@@ -366,6 +436,29 @@ public sealed class AppServiceRegistrationTests
 
     private static T ResolveRequired<T>(IServiceProvider serviceProvider) where T : notnull
         => serviceProvider.GetRequiredService<T>();
+
+    private sealed class CapturingLoggerProvider : ILoggerProvider
+    {
+        private readonly ConcurrentQueue<string> _messages = new();
+
+        public IReadOnlyCollection<string> Messages => _messages;
+
+        public ILogger CreateLogger(string categoryName) => new CapturingLogger(_messages);
+
+        public void Dispose()
+        {
+        }
+
+        private sealed class CapturingLogger(ConcurrentQueue<string> messages) : ILogger
+        {
+            public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+            public bool IsEnabled(LogLevel logLevel) => true;
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+                => messages.Enqueue(formatter(state, exception));
+        }
+    }
 
     private sealed class EnvironmentVariableScope : IDisposable
     {
