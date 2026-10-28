@@ -59,6 +59,12 @@ Focused regression coverage includes `app.test.tsx`, `workspace-header.test.tsx`
 `workspace-views-menu.test.tsx`, `workflow-continuity-dock.test.tsx`, `scope-picker.test.tsx`,
 `workspace-nav.test.tsx`, and `layout-switcher.test.tsx`.
 
+React, React DOM, and their type packages are upgraded together. Runtime support uses the floating
+Node major in `.nvmrc` and the minimum declared in this dashboard's `engines.node`; both prerequisite
+doctors enforce that minimum. Account names, tab counts, and provider badges retain explicit text
+separators so accessible names do not depend on CSS layout. StrictMode regression fixtures enable
+the boundary at the rendering root and retain stale-response and financial-command assertions.
+
 Report Run Detail exposes retained trial-balance account balances from the exact run's ledger
 checkpoint through `/api/fund-structure/reporting/runs/{runId}/amounts`. Each balance opens the
 shared `LedgerAmountProofDrawer` with its immutable `report:{runId}:{amountId}` subject and

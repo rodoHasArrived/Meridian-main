@@ -1599,7 +1599,7 @@ describe("OperationsContinuityScreen", () => {
     renderScreen();
 
     const workflowApprovalHistory = await screen.findByRole("table", { name: "Operations continuity workflow approval history" });
-    expect(within(workflowApprovalHistory).getByText("Close workflow has unresolved ledger blockers.")).toBeInTheDocument();
+    expect(await within(workflowApprovalHistory).findByText("Close workflow has unresolved ledger blockers.")).toBeInTheDocument();
     const rejectButton = within(workflowApprovalHistory).getByRole("button", { name: "Reject workflow approval approval-close-2026-05" });
     expect(rejectButton).toBeEnabled();
     await user.click(rejectButton);
@@ -1881,6 +1881,7 @@ describe("OperationsContinuityScreen", () => {
     const user = userEvent.setup();
     renderScreen();
 
+    const reopen = await screen.findByRole("button", { name: "Reopen governed period for 2026-05" });
     fireEvent.change(await screen.findByLabelText("Incident id"), {
       target: { value: "incident-2026-05-close-restatement" }
     });
@@ -1893,7 +1894,7 @@ describe("OperationsContinuityScreen", () => {
     fireEvent.change(screen.getByLabelText("Impact summary"), {
       target: { value: "Ledger and report package will be regenerated with retained evidence." }
     });
-    await user.click(screen.getByRole("button", { name: "Reopen governed period for 2026-05" }));
+    await user.click(reopen);
 
     await waitFor(() => {
       expect(reopenOperationsContinuityWorkflow).toHaveBeenCalledWith(

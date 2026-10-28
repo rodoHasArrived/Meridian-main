@@ -1,7 +1,7 @@
 // Meridian money primitive — a single right-aligned mono amount. Encodes sign, currency, fixed
 // decimals, accounting parentheses for negatives, zero-as-dash, and an optional P&L color tone
 // (negative red / positive green). The atom every accounting table is built from.
-import type { CSSProperties } from "react";
+import type { CSSProperties, JSX } from "react";
 import { createElement } from "react";
 import { formatMoney, toNumber } from "./money";
 
