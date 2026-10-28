@@ -83,7 +83,7 @@
   </ItemGroup>
 
   <ItemGroup Label="Validation">
-    <PackageVersion Include="FluentValidation" Version="12.1.1" />
+    <PackageVersion Include="FluentValidation" Version="12.2.0" />
   </ItemGroup>
 
   <ItemGroup Label="JSON Serialization">
