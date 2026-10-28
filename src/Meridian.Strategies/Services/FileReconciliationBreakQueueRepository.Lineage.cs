@@ -253,7 +253,8 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
     private bool SubjectUpgradeReplayMatches(ReconciliationBreakQueueAuditEvent receipt,
         ReconciliationCompletedRunObservation requested, bool legacyScope)
     {
-        if (receipt.AfterPayload is null)
+        if (receipt.AfterPayload is null || requested.Breaks.Any(item =>
+                StatementBusinessSubject(item.SourceSubjectId) != item.SourceSubjectId))
             return false;
         var original = JsonSerializer.Deserialize<ReconciliationCompletedRunObservation>(receipt.AfterPayload, _jsonOptions);
         if (original?.Breaks is null
@@ -272,7 +273,7 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
         // Preserve the original receipt. Only a subject representation change is compatible;
         // run, time, policy, access/accounting scope and break membership still compare exactly.
         return JsonSerializer.Serialize(Normalize(original), _jsonOptions)
-            == JsonSerializer.Serialize(Normalize(compatibleRequest), _jsonOptions);
+            == JsonSerializer.Serialize(compatibleRequest, _jsonOptions);
     }
 
     private bool HasVerifiedSourceReceipt(ReconciliationBreakQueueAuditEvent receipt, ReconciliationCompletedRunObservation run)

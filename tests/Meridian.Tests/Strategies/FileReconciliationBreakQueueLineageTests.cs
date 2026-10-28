@@ -221,10 +221,28 @@ public sealed class FileReconciliationBreakQueueLineageTests : IDisposable
             Breaks = [new ReconciliationBreakObservation("legacy-subject", System.Text.Json.JsonSerializer.Serialize(currentParts))]
         };
         await Repository().ObserveCompletedRunAsync(upgradedReplay);
+        await Repository().ObserveCompletedRunAsync(legacy);
         await Assert.ThrowsAsync<InvalidOperationException>(() => Repository().ObserveCompletedRunAsync(
             upgradedReplay with { ObservedAt = _start.AddDays(3) }));
         await Assert.ThrowsAsync<InvalidOperationException>(() => Repository().ObserveCompletedRunAsync(
             upgradedReplay with { Breaks = [new ReconciliationBreakObservation("legacy-subject", "different-source")] }));
+        var changedClassification = System.Text.Json.JsonSerializer.Serialize(new[]
+        {
+            System.Text.Json.JsonSerializer.Serialize(oldParts), "CHANGED_CLASSIFICATION"
+        });
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Repository().ObserveCompletedRunAsync(
+            upgradedReplay with { Breaks = [new ReconciliationBreakObservation("legacy-subject", changedClassification)] }));
+        if (kind == "transaction")
+        {
+            var changedMapping = (string[])oldParts.Clone();
+            changedMapping[4] = "EUR";
+            var changedCurrency = System.Text.Json.JsonSerializer.Serialize(new[]
+            {
+                System.Text.Json.JsonSerializer.Serialize(changedMapping), "TRANSACTION_UNMATCHED"
+            });
+            await Assert.ThrowsAsync<InvalidOperationException>(() => Repository().ObserveCompletedRunAsync(
+                upgradedReplay with { Breaks = [new ReconciliationBreakObservation("legacy-subject", changedCurrency)] }));
+        }
     }
 
     [Fact]
