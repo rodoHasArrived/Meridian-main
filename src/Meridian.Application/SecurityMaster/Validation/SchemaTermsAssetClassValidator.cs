@@ -44,16 +44,21 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
 
         // A field above the class's write version (ADR-024, readable before writable) is checked only
         // where the decoder reads it: a flat payload stamped at or above its version. A stray key of
-        // that name on an older or profile-governed payload is not a term of the class.
+        // that name on an older or profile-governed payload is not a term of the class. Versioned
+        // containers are gated by the predicate the mapping decodes them with
+        // (SecurityVersionedTermDecoding); later scalar terms keep the stamp ceiling below.
         var writes = SecurityAssetClassCatalog.GetTermsVersion(AssetClass);
         var decodesThrough = SecurityTermsEnvelope.IsProfileGovernedPayload(AssetClass, terms)
             ? writes
             : Math.Max(writes, SecurityTermsEnvelope.ResolveAssetClassTermsVersion(terms));
+        var versionedTerms = SecurityVersionedTerms.Decoding(AssetClass, terms, writeMode: false);
 
         var issues = new List<SecurityValidationIssueDto>();
         foreach (var field in _fields)
         {
-            if (field.SinceTermsVersion > decodesThrough)
+            if (SecurityVersionedTerms.IsVersionedContainer(field)
+                    ? !versionedTerms.Decodes(field)
+                    : field.SinceTermsVersion > decodesThrough)
             {
                 continue;
             }

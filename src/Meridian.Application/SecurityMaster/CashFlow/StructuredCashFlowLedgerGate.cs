@@ -6,8 +6,9 @@ namespace Meridian.Application.SecurityMaster.CashFlow;
 /// Shared postability gate for routing a structured cash flow projection to the ledger. Both the
 /// preview bridge (<see cref="StructuredCashFlowLedgerBridge"/>) and the posting bridge
 /// (<c>SecurityMasterAmortizationLedgerBridge</c>) consult this single gate so a source without
-/// verified freshness, a stale source, or a rate-shocked what-if scenario can never reach the
-/// general ledger through either path.
+/// verified freshness, a stale source, a rate-shocked what-if scenario, or a schedule generated from
+/// declared schedule conventions (one carrying <see cref="StructuredCashFlowProjectionDto.ScheduleEvidence"/>)
+/// can never reach the general ledger through either path.
 /// </summary>
 public static class StructuredCashFlowLedgerGate
 {
@@ -23,6 +24,11 @@ public static class StructuredCashFlowLedgerGate
 
         if (projection.BlockedReason is { Length: > 0 } blockedReason)
             return blockedReason;
+
+        // A declared schedule (ADR-025) stays off the ledger until journal identity keys on schedule
+        // period identity and a retention decision covers its calendar evidence.
+        if (projection.ScheduleEvidence is not null)
+            return "Declared-schedule projections are not postable until journal identity keys on schedule period identity and calendar evidence retention is decided.";
 
         if (projection.IsNormalizedPer100)
             return "A normalized per-100 analytical schedule cannot be posted without actual principal or notional.";

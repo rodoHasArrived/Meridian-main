@@ -469,6 +469,15 @@ public partial class App : System.Windows.Application
         // declared, which is the point. Its eager factory validation runs inside
         // StartHostServicesAsync, behind the shell, which is where that work belongs.
         services.AddProductionRegistrationGuard();
+
+        // ADR-025's Security Master terms capability line, here for the same reason: on servers
+        // StorageFeatureRegistration adds it, and this desktop never runs that registration, yet
+        // StrategyFeatureModule composes an in-process Security Master writer whenever
+        // MERIDIAN_SECURITY_MASTER_CONNECTION_STRING is set. Without it a desktop's logs could not
+        // say which terms build it runs. Calendars load from <dataRoot>/calendars under the root
+        // ConfigStore reports, the root a server's StorageOptions is built from.
+        services.AddSecurityMasterTermsCapability(static sp =>
+            sp.GetRequiredService<Meridian.Application.UI.ConfigStore>().GetDataRoot());
         services.AddSingleton<LoginSessionService>();
         services.AddSingleton<WpfServices.DesktopAuthenticationSession>();
         services.AddTransient<StartupWindowViewModel>();

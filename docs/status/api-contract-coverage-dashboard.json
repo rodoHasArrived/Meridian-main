@@ -17,25 +17,25 @@
     {
       "method": "GET",
       "path": "/api/system/lifecycle",
-      "source": "src/Meridian/UiServer.cs:661",
+      "source": "src/Meridian/UiServer.cs:662",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/system/shutdown",
-      "source": "src/Meridian/UiServer.cs:695",
+      "source": "src/Meridian/UiServer.cs:696",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/system/shutdown/{operationId}",
-      "source": "src/Meridian/UiServer.cs:749",
+      "source": "src/Meridian/UiServer.cs:750",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/system/shutdown/receipts/latest",
-      "source": "src/Meridian/UiServer.cs:770",
+      "source": "src/Meridian/UiServer.cs:771",
       "documented": true
     },
     {

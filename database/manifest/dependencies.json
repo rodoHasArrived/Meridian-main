@@ -9874,6 +9874,30 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.DeclaredScheduleRefusal"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.DeclaredScheduleRefusalCode"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.DeclaredScheduleResolution"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.DeclaredScheduleStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.DefineSecurityCurveRequest"
     },
     {
@@ -10558,6 +10582,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ScheduleConventionTerms"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ScheduleSpecFactory"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleAnchorMode"
     },
     {
@@ -11069,6 +11105,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCurvesJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityDeclaredConventionsRead"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityDeclaredConventionsStatus"
     },
     {
       "kind": "contract-set-member",
@@ -11614,7 +11662,31 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityVersionedTermDecoding"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityVersionedTerms"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SplitCorporateActionTerms"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowCalendarEvidence"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap"
     },
     {
       "kind": "contract-set-member",
@@ -11675,6 +11747,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEntry"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEvidence"
     },
     {
       "kind": "contract-set-member",
@@ -23578,6 +23656,30 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.DeclaredScheduleRefusal"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.DeclaredScheduleRefusalCode"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.DeclaredScheduleResolution"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.DeclaredScheduleStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.DefineSecurityCurveRequest"
     },
     {
@@ -24262,6 +24364,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ScheduleConventionTerms"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ScheduleSpecFactory"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleAnchorMode"
     },
     {
@@ -24773,6 +24887,18 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCurvesJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityDeclaredConventionsRead"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityDeclaredConventionsStatus"
     },
     {
       "kind": "contract-set-member",
@@ -25318,7 +25444,31 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityVersionedTermDecoding"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityVersionedTerms"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SplitCorporateActionTerms"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowCalendarEvidence"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap"
     },
     {
       "kind": "contract-set-member",
@@ -25379,6 +25529,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEntry"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEvidence"
     },
     {
       "kind": "contract-set-member",
@@ -36207,6 +36363,36 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.DeclaredScheduleRefusal",
+      "target": "contract:Meridian.Contracts.SecurityMaster.DeclaredScheduleRefusalCode"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.DeclaredScheduleResolution",
+      "target": "contract:Meridian.Contracts.SecurityMaster.DeclaredScheduleRefusal"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.DeclaredScheduleResolution",
+      "target": "contract:Meridian.Contracts.SecurityMaster.DeclaredScheduleStatus"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.DeclaredScheduleResolution",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ScheduleConventionTerms"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.DeclaredScheduleResolution",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleSpec"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.DefineSecurityCurveRequest",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCurveInterpolation"
     },
@@ -37209,6 +37395,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityDeclaredConventionsRead",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ScheduleConventionTerms"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityDeclaredConventionsRead",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityDeclaredConventionsStatus"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityDetailDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAliasDto"
     },
@@ -37654,6 +37852,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowProjectionDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEvidence"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowProjectionDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowSourceKind"
     },
     {
@@ -37673,6 +37877,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowProjectionDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredFactorScheduleEntry"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEvidence",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowCalendarEvidence"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEvidence",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap"
     },
     {
       "kind": "contract-reference",
@@ -53901,7 +54117,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "05b34e200034319f72915503d439761a66dbc704350734f44b06f5fbd1264201",
+  "fingerprint": "5d23dee0ccc31d0b117a4cdecf711155d3fe9febd912bf883567e19f040111fe",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -63825,6 +64041,30 @@
       "label": "Meridian.Contracts.SecurityMaster.DeclareSecurityUnderlyingLinkRequest"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.DeclaredScheduleRefusal",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.DeclaredScheduleRefusal"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.DeclaredScheduleRefusalCode",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.DeclaredScheduleRefusalCode"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.DeclaredScheduleResolution",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.DeclaredScheduleResolution"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.DeclaredScheduleStatus",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.DeclaredScheduleStatus"
+    },
+    {
       "classification": "request",
       "id": "contract:Meridian.Contracts.SecurityMaster.DefineSecurityCurveRequest",
       "kind": "contract-type",
@@ -64509,6 +64749,18 @@
       "label": "Meridian.Contracts.SecurityMaster.ResolveSecurityRequest"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ScheduleConventionTerms",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ScheduleConventionTerms"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ScheduleSpecFactory",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ScheduleSpecFactory"
+    },
+    {
       "classification": "enum",
       "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleAnchorMode",
       "kind": "contract-type",
@@ -65023,6 +65275,18 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityCurvesJsonContext",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityCurvesJsonContext"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityDeclaredConventionsRead",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityDeclaredConventionsRead"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityDeclaredConventionsStatus",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityDeclaredConventionsStatus"
     },
     {
       "classification": "dto",
@@ -65565,10 +65829,34 @@
       "label": "Meridian.Contracts.SecurityMaster.SecurityValuationResult"
     },
     {
+      "classification": "record_struct",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityVersionedTermDecoding",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityVersionedTermDecoding"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityVersionedTerms",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityVersionedTerms"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.SecurityMaster.SplitCorporateActionTerms",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SplitCorporateActionTerms"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowCalendarEvidence",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowCalendarEvidence"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap"
     },
     {
       "classification": "record",
@@ -65629,6 +65917,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEntry",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEntry"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEvidence",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEvidence"
     },
     {
       "classification": "enum",
@@ -78859,11 +79153,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3449,
-    "contract_set_memberships": 4254,
-    "edges": 8955,
+    "contract_references": 3459,
+    "contract_set_memberships": 4280,
+    "edges": 8991,
     "foreign_keys": 154,
     "logical_references": 6,
-    "nodes": 4331
+    "nodes": 4344
   }
 }

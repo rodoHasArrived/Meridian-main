@@ -387,7 +387,12 @@ cash flow projection path now closes those gaps:
   coupon accrual plus straight-line premium/discount when a position is supplied — and a separate
   principal-paydown entry, into a live ledger. Both bridges consult a single
   `StructuredCashFlowLedgerGate`, so neither the preview nor the posting path can route a stale source
-  or a rate-shocked what-if scenario to the general ledger. `ISecurityMasterCashFlowService.BuildLedgerPostingsAsync`
+  or a rate-shocked what-if scenario to the general ledger. In order, the gate refuses a projection
+  that carries its own `BlockedReason`; one generated from declared schedule conventions (it
+  carries `ScheduleEvidence`, ADR-025), until journal identity keys on schedule period identity and
+  calendar evidence retention is decided, because journal ids key on payment dates, which a
+  calendar change moves; a normalized per-100 schedule; a source whose freshness is unknown or
+  stale; and any scenario other than base. `ISecurityMasterCashFlowService.BuildLedgerPostingsAsync`
   is the reachable preview entry point; both bridges are registered in the Security Master service
   graph and are the production callers for the coupon-accrual projector path.
 
