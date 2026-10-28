@@ -58,6 +58,9 @@ public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient, II
     public event EventHandler<IBAccountSummaryUpdate>? AccountSummaryReceived;
     public event EventHandler<int>? AccountSummaryCompleted;
     public event EventHandler<IBApiError>? ErrorOccurred;
+    public event EventHandler<IReadOnlyList<string>>? ManagedAccountsReceived;
+    public event EventHandler? ConnectionLost;
+    public event EventHandler? ConnectionRestored;
     public event EventHandler<IBMarketDataTypeUpdate>? MarketDataTypeReceived;
     public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderContractDetails Details)>? ContractDetailsReceived;
     public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderOptionChainDefinition Definition)>? OptionChainDefinitionReceived;

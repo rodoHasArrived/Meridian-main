@@ -30,7 +30,37 @@ that cancellation publishes its cumulative fills through the replacement chain f
 amendment recovery refuse evidence read across a connection change, rechecked before every report, and `accepted_for_bidding` is a valid provisional
 snapshot state. Durable trade-update hashes omit derived metadata
 while serialized pending reports retain it, preserving replay identities across upgrades.
-Interactive Brokers retains uncertain amendment context for late acknowledgements, sizes execution
+Interactive Brokers implements order and amendment restart recovery from its authoritative
+open-order snapshot, matched by orderRef: echoed terms select the amendment outcome, absent or
+ambiguous orders stay unresolved, evidence read across a reconnect is refused, and recovered
+orders can be cancelled but not amended. The gateway exposes `IBrokerageConnectionState`: its
+scope is the trading environment plus the accounts IB reports via `managedAccounts` for the current
+login. Recovery requires the exact external account retained from the order's broker acknowledgement,
+or an explicitly host-pinned `recoveryAccountId` for legacy records. Membership in the login's managed
+account set never substitutes for order ownership. Unknown ownership stays unresolved before lookup.
+The bounded environment policy supports numeric `DU` paper and `U` live individual accounts, verified
+from broker callbacks and checked against `UsePaperTrading`. Unknown/advisor prefixes, mixed environments,
+and configured-environment contradictions leave the recovery scope unavailable. Multi-account recovery
+requires retained or pinned exact-account evidence. Host/port configuration is not environment proof.
+See [IB's paper-account identification](https://www.interactivebrokers.co.jp/en/support/customer-service.php?p=contact)
+and [TradeStation Global's IB live/paper account guide](https://www.tradestation-international.com/global/simulated-trading/).
+These references ground the narrow supported convention; other account classes require separate broker evidence.
+Broker execution callbacks retain their explicit external account and cannot advance a different owned
+account's cumulative cache. When `orderStatus` precedes `openOrder`, the later account observation enriches
+the latest owned-session report without changing its lifecycle, cumulative fills or prices. Account
+evidence reused by status/cancel/error reports is scoped to the callback session.
+Its connection generation also advances when the client loses or automatically restores the
+transport, and cancellation routes are installed only for evidence from the current session.
+Recovery stays unresolved for a fill price that is not confirmed cumulative, for any amendment that
+requested a trail (the snapshot carries no trailing term), and for an order whose contract is not a
+reported stock. A route recovered from a snapshot is valid only in the session that read it; after a
+session change it is dropped and refused until reconciliation recovers the order again. Cancel and
+modify check the session and send under the same gate as every session change, so a session-scoped
+order id is never sent into a later session, and stale-route cleanup removes only the exact stale
+context it found. An open-orders request abandoned before its `openOrderEnd` (which carries no request
+id) leaves that end owed, so it is drained rather than completing the next request early. Status
+echoes that the open-order snapshot produces for orders this session does not track are kept as
+recovery evidence rather than published as live reports. Interactive Brokers retains uncertain amendment context for late acknowledgements, sizes execution
 fills against pending exposure, keeps cancellation available, and keys
 positions by account plus qualified contract identity. Robinhood replacement submits only after
 confirmed cancellation with cumulative fill evidence, for the intended total less chain fills.

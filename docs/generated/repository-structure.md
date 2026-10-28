@@ -5298,6 +5298,7 @@ Meridian-main
 │   │   ├── IBrokerageOrderAmendmentRecoveryGateway.cs
 │   │   ├── IBrokerageOrderRecoveryGateway.cs
 │   │   ├── IBrokeragePositionSync.cs
+│   │   ├── IBrokerageRetainedOrderRecoveryGateway.cs
 │   │   ├── IExecutionGateway.cs
 │   │   ├── IExecutionGatewayModeProvider.cs
 │   │   ├── IExplicitOrderCancellationGateway.cs
@@ -5717,6 +5718,7 @@ Meridian-main
 │   │   │   │   ├── IBApiLimits.cs
 │   │   │   │   ├── IBApiVersionValidator.cs
 │   │   │   │   ├── IBBrokerageGateway.cs
+│   │   │   │   ├── IBBrokerageGateway.Recovery.cs
 │   │   │   │   ├── IBBrokerageInterop.cs
 │   │   │   │   ├── IBBuildGuidance.cs
 │   │   │   │   ├── IBCallbackRouter.cs
@@ -10943,6 +10945,13 @@ Meridian-main
 │   │   │   │   ├── IBBrokerageGatewayTests.Operations.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.PositionIdentity.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.PreDispatch.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.Recovery.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.RecoveryAuthority.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.RecoveryEvidence.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.RecoveryIdentity.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.RecoveryScope.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.SessionFences.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.SessionRaces.cs
 │   │   │   │   ├── IBDataServicesTests.cs
 │   │   │   │   ├── IBHistoricalProviderContractTests.cs
 │   │   │   │   ├── IBMarketDataClientContractTests.cs

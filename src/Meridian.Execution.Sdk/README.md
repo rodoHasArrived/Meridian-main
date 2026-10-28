@@ -70,8 +70,15 @@ publishing accounting fills. Optional replacement and average fields preserve le
 when absent.
 `IBrokerageOrderRecoveryGateway` adds authoritative lookup by retained client ID, including terminal
 orders. A null result means unresolved state and cannot authorize resubmission.
+`IBrokerageRetainedOrderRecoveryGateway` extends it with the retained order's identity for gateways
+that match by a client-supplied reference, so a different instrument, side or type under the same
+reference is refused before any route is installed for the match.
 `IBrokerageConnectionState` exposes an opaque connection generation and verified account/environment
 scope so synchronization and durable recovery revoke evidence when the active connection changes.
+`ExecutionReport.BrokerAccountId` carries the external account actually reported by the broker.
+The OMS retains it in `OrderState.BrokerAccountId` for exact account-qualified restart recovery;
+it is distinct from internal `FundAccountId` and cannot be supplied through caller routing metadata.
+Both fields are omitted when null, so old recovery snapshots remain readable without inventing ownership.
 Brokerage activity fill snapshots can carry explicit provider-reported realized P&L when a broker
 or custodian supplies it; callers should leave the field null rather than infer it from fill
 notional. Activity snapshots can also carry provider corporate-action/factor events such as

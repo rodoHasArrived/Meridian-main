@@ -40,7 +40,11 @@ Open-order limits recognize a working order's prior broker IDs in stale snapshot
 members reported as open still consume separate slots.
 
 Broker-dispatched client IDs, run/account ownership and processed fill watermarks are retained by
-`FileBrokerageOrderRecoveryStore` before dispatch. An ambiguous acknowledgement keeps exposure
+`FileBrokerageOrderRecoveryStore` before dispatch. Broker acknowledgement accounts are retained as
+`OrderState.BrokerAccountId`; later reports
+cannot replace an established external account. IB recovery requires that exact account, or an
+explicit trusted-host pin for legacy rows whose broker account was never retained. Unknown legacy
+ownership stays unresolved. An ambiguous acknowledgement keeps exposure
 reserved and requires authoritative lookup; the ID cannot be reused after restart or a terminal
 outcome. `BrokerageExecutionReconciliationService.RecoverOrdersAsync` applies working and uncertain
 order snapshots through the serialized OMS fill path, including cumulative partial-fill pricing.

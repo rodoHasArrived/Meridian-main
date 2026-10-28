@@ -445,6 +445,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
             dispatchAttempted = true;
             var report = await _gateway.SubmitOrderAsync(safeRequest with { ClientOrderId = orderId }, ct)
                 .ConfigureAwait(false);
+            if (_orders.TryGetValue(orderId, out var accountState))
+                ValidateBrokerAccountEvidence(accountState, report);
             RememberBrokerOrderId(orderId, report);
 
             // Merge against the latest tracked state: the async report pump may already
@@ -895,6 +897,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
     {
         report = NormalizeBrokerOrderIdentity(report);
         var orderId = report.ClientOrderId ?? report.OrderId;
+        if (_orders.TryGetValue(orderId, out var accountState))
+            ValidateBrokerAccountEvidence(accountState, report);
         if (IsCompactedBrokerageReport(report))
             return;
         if (report.ReportType is ExecutionReportType.ModificationPending && !_amendmentBook.Contains(orderId))

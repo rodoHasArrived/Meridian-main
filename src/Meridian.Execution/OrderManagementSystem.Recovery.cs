@@ -17,6 +17,8 @@ public sealed partial class OrderManagementSystem
         decimal? locallyAuthorizedModifiedQuantity = null,
         decimal? pendingExecutionLimit = null)
     {
+        ValidateBrokerAccountEvidence(current, report);
+        var brokerAccount = current.BrokerAccountId ?? report.BrokerAccountId;
         var authorizedQuantity = report.ReportType is ExecutionReportType.Modified
             && report.OrderStatus is not OrderStatus.Rejected
             && locallyAuthorizedModifiedQuantity is > 0m
@@ -41,6 +43,7 @@ public sealed partial class OrderManagementSystem
                 FilledQuantity = filled,
                 AverageFillPrice = ComputeAverageFillPrice(current, filled, report.FillPrice),
                 Status = filled >= terminalQuantity ? OrderStatus.Filled : current.Status,
+                BrokerAccountId = brokerAccount,
                 LastUpdatedAt = report.Timestamp
             };
         }
@@ -53,12 +56,20 @@ public sealed partial class OrderManagementSystem
         return current with
         {
             Status = report.OrderStatus,
+            BrokerAccountId = brokerAccount,
             Quantity = authorizedQuantity,
             FilledQuantity = Math.Min(authorizedQuantity, Math.Max(report.FilledQuantity, current.FilledQuantity)),
             AverageFillPrice = ComputeAverageFillPrice(current,
                 Math.Min(authorizedQuantity, Math.Max(report.FilledQuantity, current.FilledQuantity)), report.FillPrice),
             LastUpdatedAt = report.Timestamp
         };
+    }
+
+    private static void ValidateBrokerAccountEvidence(OrderState current, ExecutionReport report)
+    {
+        if (current.BrokerAccountId is { } retainedAccount && report.BrokerAccountId is { } reportedAccount
+            && !string.Equals(retainedAccount, reportedAccount, StringComparison.Ordinal))
+            throw new InvalidDataException("Broker order evidence names a different external account.");
     }
 
     private static decimal? ComputeAverageFillPrice(OrderState current, decimal filledQuantity, decimal? incrementPrice)
@@ -165,6 +176,11 @@ public sealed partial class OrderManagementSystem
     }
 
     /// <summary>Applies broker-proven recovery evidence through the ordinary idempotent fill path.</summary>
+    private bool RetainedForAnotherOrder(string? brokerOrderId, string orderId)
+        => brokerOrderId is { Length: > 0 }
+            && _brokerIdentities.TryResolveAlias(brokerOrderId, out var owner)
+            && !string.Equals(owner, orderId, StringComparison.Ordinal);
+
     public async Task ReconcileRecoveryOrderAsync(ExecutionReport report, CancellationToken ct = default)
     {
         using var operation = EnterOperation();
@@ -173,8 +189,16 @@ public sealed partial class OrderManagementSystem
         try
         {
             var orderId = report.ClientOrderId ?? report.OrderId;
+            if (_orders.TryGetValue(orderId, out var retainedAccountState))
+                ValidateBrokerAccountEvidence(retainedAccountState, report);
             if (_dispatchRegistry.Contains(orderId))
                 throw new InvalidOperationException("Order submission is still in progress; broker recovery must wait for its outcome.");
+            // Processing normalizes a report to the order its broker id is retained for. A later
+            // session can reuse a broker id still retained for another order, and the evidence
+            // validated here for this order would then be booked against that one.
+            if (RetainedForAnotherOrder(report.GatewayOrderId ?? report.OrderId, orderId)
+                || RetainedForAnotherOrder(report.ReplacesOrderId, orderId))
+                throw new InvalidDataException("Broker recovery evidence names a broker order id retained for another order.");
             if (report.ReportType is ExecutionReportType.ModificationPending)
             {
                 // A pending outcome can still book fills, so it must prove the same identity and
