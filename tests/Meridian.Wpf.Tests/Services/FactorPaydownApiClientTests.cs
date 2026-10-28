@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
@@ -54,6 +55,39 @@ public sealed class FactorPaydownApiClientTests
         paths.Should().Equal($"/api/ledger/books/{request.Request.LedgerBookId:D}/factor-paydowns/draft");
         result.Candidate.TotalDebits.Should().Be(100.1234m);
         result.Candidate.CanSubmitForApproval.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task RetainedDraftReadAndSubmitUseOnlyScopedServerWorkbenchRoutes()
+    {
+        var book = Guid.NewGuid();
+        var draft = new ManualJournalEntryDraftDto(Guid.NewGuid(), ManualJournalEntryStatusDto.Draft,
+            "fund-a", book, default, new(2026, 10, 28), Guid.NewGuid().ToString("D"), null, null, "USD", "Factor paydown",
+            "operator", DateTimeOffset.UnixEpoch, DateTimeOffset.UnixEpoch, 7, [], [], [])
+            { AssetAccountingDraft = new(null!, null!) };
+        var workbench = new ManualJournalEntryWorkbenchDto("fund-a", book, DateTimeOffset.UnixEpoch, [], [], [draft], []);
+        var paths = new List<string>();
+        using var api = new ApiClientService(new Factory(new Handler(message =>
+        {
+            paths.Add(message.RequestUri!.AbsolutePath);
+            if (message.Method == HttpMethod.Get)
+            {
+                message.RequestUri.Query.Should().Contain("fundProfileId=fund-a").And.Contain($"ledgerBookId={book:D}");
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                { Content = new StringContent(JsonSerializer.Serialize(workbench, DesktopJsonOptions.Api), Encoding.UTF8, "application/json") };
+            }
+            message.Method.Should().Be(HttpMethod.Post);
+            return Json(draft with { Status = ManualJournalEntryStatusDto.Submitted, Version = 8 });
+        })));
+        var client = new FactorPaydownApiClient(api);
+        var loaded = await client.GetRetainedDraftsAsync("fund-a", book, default);
+        var retained = loaded.Drafts.Single();
+        var submitted = await client.SubmitForReviewAsync(new(retained.JournalEntryId, retained.FundProfileId,
+            "operator", retained.Version, LedgerBookId: retained.LedgerBookId), default);
+        submitted.Version.Should().Be(8);
+        submitted.Status.Should().Be(ManualJournalEntryStatusDto.Submitted);
+        submitted.AssetAccountingDraft.Should().NotBeNull();
+        paths.Should().Equal(UiApiRoutes.LedgerManualJournalEntryWorkbench, UiApiRoutes.LedgerManualJournalEntrySubmitApproval);
     }
 
     [Theory]

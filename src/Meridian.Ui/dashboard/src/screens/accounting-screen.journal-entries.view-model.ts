@@ -79,6 +79,7 @@ const defaultManualJournalEntryWorkbenchServices: ManualJournalEntryWorkbenchSer
   applyLifecycleAction: (request) => applyManualJournalEntryLifecycleAction(request)
 };
 
+const ASSET_REVIEW_ONLY_REASON = "Asset accounting drafts require retained approval evidence through the governed asset workflow; generic approval, posting and corrections are unavailable.";
 const MANUAL_JOURNAL_AUTOSAVE_DELAY_MS = 1_200;
 
 export function useManualJournalEntryWorkbenchViewModel(
@@ -113,47 +114,68 @@ export function useManualJournalEntryWorkbenchViewModel(
   const draftRef = useRef(draft);
   const saveBusyRef = useRef(false);
   const query = useMemo(() => parseManualJournalEntryWorkbenchQuery(search), [search]);
+  const queryKey = JSON.stringify(query);
+  const queryKeyRef = useRef(queryKey);
+  queryKeyRef.current = queryKey;
+  const refreshGeneration = useRef(0);
+  const savedSignatureRef = useRef(savedDraftSignature);
+  savedSignatureRef.current = savedDraftSignature;
+  const [loadedQueryKey, setLoadedQueryKey] = useState<string | null>(null);
+
+  const openRetainedDraft = useCallback((selected: ManualJournalEntryDraft, exactRecovery = false) => {
+    const recovered = readManualJournalRecoverySnapshot(selected, exactRecovery);
+    const openedDraft = recovered?.draft ?? selected;
+    setDraft(openedDraft);
+    setSelectedLineId(openedDraft.lines[0]?.lineId ?? "line-1");
+    setValidatedDraftSignature(null);
+    setSavedDraftSignature(buildManualJournalEditableSignature(selected));
+    setLastSavedAtUtc(selected.updatedAtUtc);
+    setRecoveryBaseline(recovered ? selected : null);
+    setRecoveryStatusText(recovered
+      ? `Recovered unsaved changes captured ${formatDateTimeLabel(recovered.capturedAtUtc)}.` : null);
+    setSaveState(recovered ? "recovered" : "saved");
+  }, []);
 
   useEffect(() => {
     draftRef.current = draft;
   }, [draft]);
 
   const refresh = useCallback(async () => {
+    const generation = ++refreshGeneration.current;
     setLoading(true);
     setError(null);
     setValidatedDraftSignature(null);
     try {
       const next = await services.getWorkbench(query);
+      if (generation !== refreshGeneration.current || queryKeyRef.current !== queryKey) return;
+      const targeted = !!query.journalEntryId;
+      const selected = targeted
+        ? next.drafts.find((item) => item.journalEntryId.toLowerCase() === query.journalEntryId!.toLowerCase()
+          && !!query.fundProfileId && next.fundProfileId === query.fundProfileId && item.fundProfileId === query.fundProfileId
+          && !!query.ledgerBookId && next.ledgerBookId?.toLowerCase() === query.ledgerBookId.toLowerCase() && item.ledgerBookId?.toLowerCase() === query.ledgerBookId.toLowerCase()
+          && !!query.periodId && item.periodId?.toLowerCase() === query.periodId.toLowerCase())
+        : ensureManualJournalDraftScope(
+          next.drafts[0] ?? createManualJournalEntryDraft(next.fundProfileId || query.fundProfileId || "default-fund", next.ledgerBookId ?? query.ledgerBookId ?? null), next, query);
+      if (!selected) throw new Error("The requested journal draft is unavailable in the selected fund, book and period.");
+      const current = draftRef.current;
+      if (savedSignatureRef.current !== null && buildManualJournalEditableSignature(current) !== savedSignatureRef.current) {
+        writeManualJournalRecoverySnapshot(current);
+      }
       setWorkbench(next);
-      const selected = ensureManualJournalDraftScope(
-        next.drafts[0] ?? createManualJournalEntryDraft(next.fundProfileId || query.fundProfileId || "default-fund", next.ledgerBookId ?? query.ledgerBookId ?? null),
-        next,
-        query
-      );
-      const recovered = readManualJournalRecoverySnapshot(selected);
-      const openedDraft = recovered?.draft ?? selected;
-      setDraft(openedDraft);
-      setSelectedLineId(openedDraft.lines[0]?.lineId ?? "line-1");
-      setSavedDraftSignature(buildManualJournalEditableSignature(selected));
-      setLastSavedAtUtc(selected.updatedAtUtc);
-      setRecoveryBaseline(recovered ? selected : null);
-      setRecoveryStatusText(recovered
-        ? `Recovered unsaved changes captured ${formatDateTimeLabel(recovered.capturedAtUtc)}.`
-        : null);
-      setSaveState(recovered ? "recovered" : "saved");
+      setLoadedQueryKey(queryKey);
+      openRetainedDraft(selected, targeted);
     } catch (err) {
+      if (generation !== refreshGeneration.current || queryKeyRef.current !== queryKey) return;
+      setWorkbench(null);
       setError(describeApiError(err, "Manual journal entry workbench could not load."));
     } finally {
-      setLoading(false);
+      if (generation === refreshGeneration.current && queryKeyRef.current === queryKey) setLoading(false);
     }
-  }, [query, services]);
+  }, [openRetainedDraft, query, queryKey, services]);
 
   useEffect(() => {
-    if (!active) {
-      return;
-    }
-
-    void refresh();
+    if (active) void refresh();
+    return () => { refreshGeneration.current += 1; };
   }, [active, refresh]);
 
   const accountOptions = useMemo(
@@ -218,12 +240,14 @@ export function useManualJournalEntryWorkbenchViewModel(
   }, [selectedLineId]);
 
   const updateHeader = useCallback<ManualJournalEntryWorkbenchViewModel["updateHeader"]>((field, value) => {
+    if (draftRef.current.assetAccountingDraft) return;
     setValidatedDraftSignature(null);
     setSaveState("unsaved");
     setDraft((current) => ({ ...current, [field]: value }));
   }, []);
 
   const updateLine = useCallback<ManualJournalEntryWorkbenchViewModel["updateLine"]>((lineId, patch) => {
+    if (draftRef.current.assetAccountingDraft) return;
     setValidatedDraftSignature(null);
     setSaveState("unsaved");
     setDraft((current) => ({
@@ -235,6 +259,7 @@ export function useManualJournalEntryWorkbenchViewModel(
   }, []);
 
   const updateDraftDimensions = useCallback<ManualJournalEntryWorkbenchViewModel["updateDraftDimensions"]>((patch) => {
+    if (draftRef.current.assetAccountingDraft) return;
     setValidatedDraftSignature(null);
     setSaveState("unsaved");
     setDraft((current) => ({
@@ -283,6 +308,7 @@ export function useManualJournalEntryWorkbenchViewModel(
   }, [updateLine]);
 
   const addLine = useCallback((side: AccountingTemplateLineSide) => {
+    if (draftRef.current.assetAccountingDraft) return;
     const line = createManualJournalEntryLine(side, draft.currency, accountOptions[0]?.value ?? "");
     setValidatedDraftSignature(null);
     setSaveState("unsaved");
@@ -291,6 +317,7 @@ export function useManualJournalEntryWorkbenchViewModel(
   }, [accountOptions, draft.currency]);
 
   const insertLineAfter = useCallback<ManualJournalEntryWorkbenchViewModel["insertLineAfter"]>((lineId, side) => {
+    if (draftRef.current.assetAccountingDraft) return lineId;
     const currentDraft = draftRef.current;
     const sourceIndex = currentDraft.lines.findIndex((line) => line.lineId === lineId);
     const source = sourceIndex >= 0 ? currentDraft.lines[sourceIndex] : null;
@@ -313,6 +340,7 @@ export function useManualJournalEntryWorkbenchViewModel(
   }, [accountOptions]);
 
   const duplicateLine = useCallback<ManualJournalEntryWorkbenchViewModel["duplicateLine"]>((lineId) => {
+    if (draftRef.current.assetAccountingDraft) return null;
     const source = draftRef.current.lines.find((line) => line.lineId === lineId);
     if (!source) {
       return null;
@@ -336,6 +364,7 @@ export function useManualJournalEntryWorkbenchViewModel(
   }, []);
 
   const removeLine = useCallback<ManualJournalEntryWorkbenchViewModel["removeLine"]>((lineId) => {
+    if (draftRef.current.assetAccountingDraft) return;
     setDraft((current) => {
       if (current.lines.length <= 2) {
         return current;
@@ -403,6 +432,7 @@ export function useManualJournalEntryWorkbenchViewModel(
   }, [applyServerDraft, attachmentDraft, draft, query.ledgerBookId, services]);
 
   const removeAttachment = useCallback<ManualJournalEntryWorkbenchViewModel["removeAttachment"]>((attachmentId) => {
+    if (draftRef.current.assetAccountingDraft) return;
     setDraft((current) => {
       const nextAttachments = (current.evidenceAttachments ?? []).filter((item) => item.attachmentId !== attachmentId);
       if (nextAttachments.length === (current.evidenceAttachments ?? []).length) {
@@ -432,15 +462,8 @@ export function useManualJournalEntryWorkbenchViewModel(
       writeManualJournalRecoverySnapshot(current);
     }
 
-    setDraft(selected);
-    setValidatedDraftSignature(null);
-    setSavedDraftSignature(buildManualJournalEditableSignature(selected));
-    setLastSavedAtUtc(selected.updatedAtUtc);
-    setSaveState("saved");
-    setRecoveryBaseline(null);
-    setRecoveryStatusText(null);
-    setSelectedLineId(selected.lines[0]?.lineId ?? selectedLineId);
-  }, [savedDraftSignature, selectedLineId, workbench?.drafts]);
+    openRetainedDraft(selected, true);
+  }, [openRetainedDraft, savedDraftSignature, workbench?.drafts]);
 
   const validate = useCallback(async () => {
     setValidateBusy(true);
@@ -465,7 +488,7 @@ export function useManualJournalEntryWorkbenchViewModel(
     candidate: ManualJournalEntryDraft,
     cause: "manual" | "autosave"
   ) => {
-    if (saveBusyRef.current || !isManualJournalEditable(candidate.status)) {
+    if (candidate.assetAccountingDraft || saveBusyRef.current || !isManualJournalEditable(candidate.status)) {
       return;
     }
 
@@ -486,6 +509,7 @@ export function useManualJournalEntryWorkbenchViewModel(
         ledgerBookId: draftForSave.ledgerBookId ?? query.ledgerBookId ?? null
       });
       const latest = draftRef.current;
+      if (latest.journalEntryId !== draftForSave.journalEntryId || queryKeyRef.current !== queryKey) return;
       if (buildManualJournalEditableSignature(latest) === candidateSignature) {
         applyServerDraft(saved);
       } else {
@@ -510,6 +534,7 @@ export function useManualJournalEntryWorkbenchViewModel(
           : current);
       }
     } catch (err) {
+      if (draftRef.current.journalEntryId !== draftForSave.journalEntryId || queryKeyRef.current !== queryKey) return;
       const errorDisplay = describeApiError(err, cause === "autosave"
         ? "Manual journal autosave failed. Your changes remain available for recovery."
         : "Manual journal entry draft could not be saved.");
@@ -523,7 +548,7 @@ export function useManualJournalEntryWorkbenchViewModel(
       saveBusyRef.current = false;
       setSaveBusy(false);
     }
-  }, [applyServerDraft, query.ledgerBookId, services]);
+  }, [applyServerDraft, query.ledgerBookId, queryKey, services]);
 
   const save = useCallback(async () => {
     await persistDraft(draftRef.current, "manual");
@@ -552,7 +577,7 @@ export function useManualJournalEntryWorkbenchViewModel(
   );
 
   useEffect(() => {
-    if (!active || workbench === null || !isManualJournalEditable(draft.status)) {
+    if (!active || workbench === null || loadedQueryKey !== queryKey || draft.assetAccountingDraft || !isManualJournalEditable(draft.status)) {
       return;
     }
 
@@ -572,7 +597,7 @@ export function useManualJournalEntryWorkbenchViewModel(
     }, MANUAL_JOURNAL_AUTOSAVE_DELAY_MS);
 
     return () => window.clearTimeout(timer);
-  }, [active, draft, editableDraftSignature, persistDraft, saveState, savedDraftSignature, workbench]);
+  }, [active, draft, editableDraftSignature, loadedQueryKey, persistDraft, queryKey, saveState, savedDraftSignature, workbench]);
 
   const submit = useCallback(async () => {
     const draftForSubmit = withManualJournalTotals(draft);
@@ -603,6 +628,10 @@ export function useManualJournalEntryWorkbenchViewModel(
   }, [applyServerDraft, draft, query.ledgerBookId, services, validatedDraftSignature]);
 
   const applyLifecycleAction = useCallback<ManualJournalEntryWorkbenchViewModel["applyLifecycleAction"]>(async (action) => {
+    if (draft.assetAccountingDraft && !["Validate", "Submit", "Reject"].includes(action)) {
+      setLifecycleStatusText(ASSET_REVIEW_ONLY_REASON);
+      return;
+    }
     if (lifecycleBusyAction) {
       return;
     }
@@ -683,7 +712,7 @@ export function useManualJournalEntryWorkbenchViewModel(
   const blockingIssueCount = draft.validationIssues.filter((issue) => issue.severity === "Critical").length;
   const warningIssueCount = draft.validationIssues.filter((issue) => issue.severity === "Warning").length;
   const balanceStatusLabel = Math.abs(balancedDraft.imbalance) === 0 ? "Balanced" : "Out by " + formatCurrency(Math.abs(balancedDraft.imbalance));
-  const saveStatusLabel = saveState === "saving"
+  const saveStatusLabel = draft.assetAccountingDraft ? "Retained source draft" : saveState === "saving"
     ? "Saving draft"
     : saveState === "unsaved"
       ? "Unsaved changes"
@@ -726,7 +755,7 @@ export function useManualJournalEntryWorkbenchViewModel(
   return {
     title: "Manual journal entry workbench",
     description: "Author controller-owned journal entries with GL account picks, line-level Security Master attribution, balancing validation, draft save, and approval submission.",
-    available: workbench !== null,
+    available: workbench !== null && loadedQueryKey === queryKey,
     loading,
     errorText: error?.summary ?? null,
     statusLabel: `${draft.status} v${draft.version}`,
@@ -800,7 +829,11 @@ function parseManualJournalEntryWorkbenchQuery(search: string): ManualJournalEnt
   const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
   return {
     fundProfileId: normalizeQueryValue(params.get("fundProfileId")),
-    ledgerBookId: normalizeQueryValue(params.get("ledgerBookId"))
+    ledgerBookId: normalizeQueryValue(params.get("ledgerBookId")),
+    ...(normalizeQueryValue(params.get("journalEntryId")) ? {
+      journalEntryId: normalizeQueryValue(params.get("journalEntryId")),
+      periodId: normalizeQueryValue(params.get("periodId"))
+    } : {})
   };
 }
 
@@ -816,9 +849,10 @@ function manualJournalRecoveryStorageKey(draft: ManualJournalEntryDraft): string
 }
 
 function readManualJournalRecoverySnapshot(
-  serverDraft: ManualJournalEntryDraft
+  serverDraft: ManualJournalEntryDraft,
+  exactDraft = false
 ): ManualJournalRecoverySnapshot | null {
-  if (typeof window === "undefined") {
+  if (typeof window === "undefined" || serverDraft.assetAccountingDraft) {
     return null;
   }
 
@@ -838,6 +872,9 @@ function readManualJournalRecoverySnapshot(
         (snapshot.draft.ledgerBookId ?? null) !== (serverDraft.ledgerBookId ?? null)) {
       return null;
     }
+
+    if (exactDraft && (snapshot.draft.journalEntryId !== serverDraft.journalEntryId ||
+        (snapshot.draft.periodId ?? null) !== (serverDraft.periodId ?? null))) return null;
 
     if (snapshot.draft.journalEntryId === serverDraft.journalEntryId &&
         snapshot.draft.version < serverDraft.version) {
@@ -1720,7 +1757,8 @@ function buildManualJournalLifecycleCommands(
     lifecycleCommand("Reverse", "Reverse", "Generate a separate reversal draft for a posted journal entry.", draft.status === "Posted" ? commonBlocker : `Requires Posted status; current status is ${draft.status}.`, "warning", busyAction),
     lifecycleCommand("Rebook", "Rebook", "Generate a separate rebook draft using the current posted lines.", draft.status === "Posted" ? commonBlocker : `Requires Posted status; current status is ${draft.status}.`, "warning", busyAction),
     lifecycleCommand("LockAfterClose", "Lock after close", "Lock a posted journal entry after close.", draft.status === "Posted" ? commonBlocker : `Requires Posted status; current status is ${draft.status}.`, "default", busyAction)
-  ];
+  ].map((command) => draft.assetAccountingDraft && command.action !== "Reject"
+    ? { ...command, disabledReason: ASSET_REVIEW_ONLY_REASON } : command);
 }
 
 function buildManualJournalLifecycleChecklist(

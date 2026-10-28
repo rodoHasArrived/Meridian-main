@@ -22,8 +22,12 @@ fresh valuation assessment before approval or posting.
 `LedgerEndpoints.FactorPaydown` prepares exact-decimal previews from authoritative open lots and
 book/period ownership. Creating a draft requires the reviewed preview fingerprint, rechecks source
 and lot versions, then uses the existing Asset Accounting Event Spine projection and candidate
-builder. Interrupted projection-to-draft handoffs resume from the retained lineage; exact draft
-retries return the retained candidate. These routes never approve or post journal/lot changes.
+builder and persists the same journal identity in the manual review workbench. Interrupted handoffs
+resume from retained lineage; retries repair a missing workbench mirror without duplicating it.
+The immutable `AssetAccountingDraft` context preserves source fingerprints, lot instructions and
+evidence through review submission. Generic manual edits, approval, posting and corrections refuse
+these drafts: the typed retained approval-evidence bridge remains an implementation gap. These
+routes never approve or post journal/lot changes.
 
 `LedgerEndpoints.AccountOversight` provides shared account-owned ledger-book routes for durable
 cash cases, retained replay/assignment, independently approved close-price sets and cash forecasts.

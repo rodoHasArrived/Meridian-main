@@ -290,6 +290,10 @@ actor or tenant fields. `FactorPaydownPreparationDto` binds the exact lot/accoun
 fingerprint; `CreateFactorPaydownDraftRequestDto` requires that fingerprint before server-side
 repreparation and governed candidate creation. Component and nested decimal response values are
 exact strings on these HTTP routes, and factor input fields accept decimal strings.
+`ManualJournalEntryDraftDto.AssetAccountingDraft` retains the exact typed asset candidate and source
+fingerprints in the review queue. It is omitted on historical manual drafts and cannot be introduced,
+removed or edited by a client. Submission preserves it; generic approval/posting/corrections remain
+blocked pending the governed typed approval-evidence bridge.
 
 ## Purpose
 

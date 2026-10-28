@@ -291,8 +291,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/close-price-sets/{valuationDate}/{snapshotId:guid}/approval` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:155` |
 | `GET` | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/oversight/context` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:39` |
 | `POST` | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/oversight/provision` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:52` |
-| `POST` | `/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/draft` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:40` |
-| `POST` | `/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/prepare` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:24` |
+| `POST` | `/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/draft` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:41` |
+| `POST` | `/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/prepare` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:25` |
 | `POST` | `/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/apply` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.OpenLotBackfill.cs:112` |
 | `POST` | `/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/evidence` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.OpenLotBackfill.cs:73` |
 | `GET` | `/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/evidence/{evidenceRecordId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.OpenLotBackfill.cs:51` |

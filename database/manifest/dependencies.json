@@ -33856,6 +33856,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.ManualJournalEntryDraftDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ManualJournalEntryDraftDto",
       "target": "contract:Meridian.Contracts.Ledger.AccountingBasisKindDto"
     },
     {
@@ -53653,7 +53659,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "ba7bc7c404067e98ff6269b955c584fd0a5cabb84b8e4a3fd16992610a251306",
+  "fingerprint": "38ae60619181716a91055a094f6cdee06c2c54ab14f8caec28d378de1fe91d2e",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -78501,9 +78507,9 @@
     }
   ],
   "summary": {
-    "contract_references": 3435,
+    "contract_references": 3436,
     "contract_set_memberships": 4235,
-    "edges": 8914,
+    "edges": 8915,
     "foreign_keys": 152,
     "logical_references": 6,
     "nodes": 4311

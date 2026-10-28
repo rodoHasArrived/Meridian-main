@@ -26,8 +26,45 @@ public sealed class FactorPaydownViewModelTests
         view.CanCreateDraft.Should().BeTrue();
         await view.CreateDraftCommand.ExecuteAsync(null);
         client.Drafts.Should().ContainSingle().Which.ExpectedPreparationFingerprint.Should().Be("review-fingerprint");
-        view.StatusText.Should().Contain("Retained candidate").And.Contain("Nothing has posted");
+        view.StatusText.Should().Contain("Draft ").And.Contain("submit for review").And.Contain("Typed approval and posting are unavailable").And.Contain("Nothing has posted");
         view.CanCreateDraft.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RetainedServerDraft_SubmitsExactReturnedIdentityAndVersionWithoutPosting()
+    {
+        var client = new Client();
+        var view = Create(client);
+        await view.PrepareCommand.ExecuteAsync(null);
+        view.Confirmed = true;
+        await view.CreateDraftCommand.ExecuteAsync(null);
+        view.RetainedDrafts.Should().ContainSingle();
+        var selected = view.SelectedRetainedDraft!;
+        selected.Version.Should().Be(7);
+        view.CanSubmitRetainedDraft.Should().BeTrue();
+        await view.SubmitRetainedDraftCommand.ExecuteAsync(null);
+        var submission = client.Submissions.Should().ContainSingle().Which;
+        submission.JournalEntryId.Should().Be(selected.JournalEntryId);
+        submission.Version.Should().Be(7);
+        submission.LedgerBookId.Should().Be(BookId);
+        view.SelectedRetainedDraft!.Status.Should().Be(ManualJournalEntryStatusDto.Submitted);
+        view.CanSubmitRetainedDraft.Should().BeFalse();
+        view.StatusText.Should().Contain("does not approve or post");
+    }
+
+    [Fact]
+    public async Task RetainedDraftReload_DiscardsLateResponseAfterFundSwitch()
+    {
+        var pending = new TaskCompletionSource<ManualJournalEntryWorkbenchDto>();
+        var client = new Client { ReadDrafts = (_, _, _) => pending.Task };
+        var view = Create(client);
+        var load = view.ReloadRetainedDraftsCommand.ExecuteAsync(null);
+        view.SetScope("foreign", Guid.NewGuid());
+        pending.SetResult(new ManualJournalEntryWorkbenchDto("fund-a", BookId, DateTimeOffset.UnixEpoch, [], [], [], []));
+        await load;
+        view.RetainedDrafts.Should().BeEmpty();
+        view.SelectedRetainedDraft.Should().BeNull();
+        view.CanSubmitRetainedDraft.Should().BeFalse();
     }
 
     [Fact]
@@ -168,6 +205,20 @@ public sealed class FactorPaydownViewModelTests
         public int Preparations { get; private set; }
         public bool FailDraftOnce { get; set; }
         public List<CreateFactorPaydownDraftRequestDto> Drafts { get; } = [];
+        public List<ManualJournalEntryDraftDto> ServerDrafts { get; } = [];
+        public List<SubmitManualJournalEntryApprovalRequest> Submissions { get; } = [];
+        public Func<string, Guid, CancellationToken, Task<ManualJournalEntryWorkbenchDto>>? ReadDrafts { get; set; }
+        public Task<ManualJournalEntryWorkbenchDto> GetRetainedDraftsAsync(string fundProfileId, Guid bookId, CancellationToken ct)
+            => ReadDrafts?.Invoke(fundProfileId, bookId, ct) ?? Task.FromResult(new ManualJournalEntryWorkbenchDto(
+                fundProfileId, bookId, DateTimeOffset.UnixEpoch, [], [], ServerDrafts, []));
+        public Task<ManualJournalEntryDraftDto> SubmitForReviewAsync(SubmitManualJournalEntryApprovalRequest request, CancellationToken ct)
+        {
+            Submissions.Add(request);
+            var index = ServerDrafts.FindIndex(draft => draft.JournalEntryId == request.JournalEntryId);
+            var submitted = ServerDrafts[index] with { Status = ManualJournalEntryStatusDto.Submitted, Version = request.Version + 1 };
+            ServerDrafts[index] = submitted;
+            return Task.FromResult(submitted);
+        }
         public Task<FactorPaydownPreparationDto> PrepareAsync(PrepareFactorPaydownRequestDto request, CancellationToken ct)
         {
             Preparations++;
@@ -177,10 +228,15 @@ public sealed class FactorPaydownViewModelTests
         {
             Drafts.Add(request);
             if (FailDraftOnce && Drafts.Count == 1) throw new IOException("Connection interrupted");
-            var spine = new AssetAccountingEventSpineDto(Guid.NewGuid(), default, 1, 1, new(2026, 10, 28), 100m, "USD", Scope(), null!, null!);
+            var spine = new AssetAccountingEventSpineDto(Guid.NewGuid(), default, 1, 1, new(2026, 10, 28), 100m, "USD", Scope(), null!, null!)
+                { FactorPaydown = Preview().Instruction };
             var candidate = new PostingRuleJournalCandidateResultDto(null!, "rule", "1", [], null, Guid.NewGuid(),
                 100m, 100m, 0m, true, false, true, false, [], []);
-            return Task.FromResult(new AssetAccountingPostingCandidateDto(spine, candidate));
+            var authority = new AssetAccountingPostingCandidateDto(spine, candidate);
+            ServerDrafts.Add(new ManualJournalEntryDraftDto(candidate.JournalEntryId!.Value, ManualJournalEntryStatusDto.Draft,
+                "fund-a", BookId, default, new(2026, 10, 28), PeriodId.ToString("D"), null, null, "USD", "Factor paydown",
+                "operator", DateTimeOffset.UnixEpoch, DateTimeOffset.UnixEpoch, 7, [], [], []) { AssetAccountingDraft = authority });
+            return Task.FromResult(authority);
         }
     }
 }

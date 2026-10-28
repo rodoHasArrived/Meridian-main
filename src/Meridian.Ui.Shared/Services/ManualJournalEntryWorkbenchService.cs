@@ -296,6 +296,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         {
             throw new InvalidOperationException("Consolidation drafts require authoritative consolidation intake; rerun consolidation to prepare an elimination.");
         }
+        EnsureAssetAccountingSaveAuthority(request.Draft, existing, trustedAutomatedIntake);
         var normalizedDraft = await NormalizeAndValidateAsync(request.Draft with
         {
             TenantId = requestedTenantId,
@@ -421,6 +422,16 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         var companyId = NormalizeOptional(request.CompanyId) ?? NormalizeOptional(request.Draft.CompanyId);
         var existing = await _draftStore.GetAsync(request.Draft.FundProfileId, request.Draft.JournalEntryId,
             ct, tenantId, companyId).ConfigureAwait(false);
+        if (existing?.AssetAccountingDraft is not null)
+        {
+            EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, existing, requireScopeForBookScopedDraft: true);
+            if (request.Draft.Version != existing.Version)
+                throw new InvalidOperationException("Asset accounting review draft version is stale.");
+            return await NormalizeAndValidateAsync(existing, allowIncomplete: false, ct,
+                periodIsLocked: request.PeriodIsLocked).ConfigureAwait(false);
+        }
+        if (request.Draft.AssetAccountingDraft is not null)
+            throw new InvalidOperationException("Asset accounting authority must resolve from a retained workbench draft.");
         return await NormalizeAndValidateAsync(request.Draft with
         {
             TenantId = tenantId,
@@ -646,6 +657,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             throw new InvalidOperationException("Manual journal entry lifecycle action is blocked because the accounting period is locked after close.");
         }
 
+        EnsureAssetAccountingLifecycleAuthority(draft, request.Action);
         var validated = await NormalizeAndValidateAsync(
             draft,
             allowIncomplete: false,

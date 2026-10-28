@@ -15,7 +15,10 @@ Accounting Ledger Explorer includes a governed factor-paydown workbench. Exact f
 existing retained evidence identities go to the shared preparation endpoint; the server supplies
 principal, basis relief, realized results and per-lot allocation as exact decimal strings. Creating
 a review draft requires an explicit description and confirmation of the preview. The shared draft
-adapter rechecks its fingerprint and retains the existing accounting-event candidate; the browser
+adapter rechecks its fingerprint and retains the accounting-event candidate plus its exact journal
+workbench draft. The scoped link selects that exact draft for validation and review submission.
+Asset-linked drafts are immutable: editing, Save, generic approval, posting and corrections remain
+unavailable until the governed asset workflow supports retained approval evidence. The browser
 never posts, approves, calculates financial amounts or roundtrips numeric lot instructions. Book,
 period and tab changes discard preparation, stale responses are ignored, and uncertain writes keep
 the same reviewed request for retry. Focused tests are in

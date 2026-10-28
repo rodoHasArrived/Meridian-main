@@ -1468,6 +1468,148 @@ describe("accounting-screen journal-entry view model", () => {
     }));
   });
 
+  it("selects an exact scoped linked draft instead of the first returned draft", async () => {
+    const target = { ...manualJournalDraft, journalEntryId: "created-paydown" };
+    const services = createJournalServices({ getWorkbench: vi.fn().mockResolvedValue({ ...manualJournalWorkbench, drafts: [manualJournalDraft, target] }) });
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services,
+      "?fundProfileId=fund-alpha&ledgerBookId=book-alpha&periodId=2026-06&journalEntryId=created-paydown"));
+    await waitFor(() => expect(result.current.available).toBe(true));
+    expect(result.current.draft.journalEntryId).toBe("created-paydown");
+    expect(result.current.selectedLineId).toBe(target.lines[0].lineId);
+  });
+
+  it.each([
+    { fundProfileId: "foreign" }, { ledgerBookId: "foreign" }, { periodId: "foreign" },
+    { journalEntryId: "missing" }
+  ])("refuses a linked draft with mismatched or absent scope (%j)", async (mismatch) => {
+    const target = { ...manualJournalDraft, journalEntryId: "created-paydown", ...mismatch };
+    const services = createJournalServices({ getWorkbench: vi.fn().mockResolvedValue({ ...manualJournalWorkbench, drafts: [manualJournalDraft, target] }) });
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services,
+      "?fundProfileId=fund-alpha&ledgerBookId=book-alpha&periodId=2026-06&journalEntryId=created-paydown"));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.available).toBe(false);
+    expect(result.current.errorText).toContain("requested journal draft is unavailable");
+  });
+
+  it.each(["fundProfileId", "ledgerBookId"])("refuses linked selection from a foreign workbench %s", async (field) => {
+    const services = createJournalServices({ getWorkbench: vi.fn().mockResolvedValue({ ...manualJournalWorkbench, [field]: "foreign" }) });
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services,
+      "?fundProfileId=fund-alpha&ledgerBookId=book-alpha&periodId=2026-06&journalEntryId=manual-je-1"));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.available).toBe(false);
+    expect(result.current.errorText).toContain("requested journal draft is unavailable");
+  });
+
+  it("requires an explicit period for exact linked selection", async () => {
+    const services = createJournalServices();
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services,
+      "?fundProfileId=fund-alpha&ledgerBookId=book-alpha&journalEntryId=manual-je-1"));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.available).toBe(false);
+  });
+
+  it("does not recover another draft over a linked selection and preserves its unsaved snapshot", async () => {
+    const target = { ...manualJournalDraft, journalEntryId: "created-paydown" };
+    const services = createJournalServices({ getWorkbench: vi.fn().mockResolvedValue({ ...manualJournalWorkbench, drafts: [manualJournalDraft, target] }) });
+    const view = renderHook(({ search }) => useManualJournalEntryWorkbenchViewModel(true, services, search), { initialProps: { search: "" } });
+    await waitFor(() => expect(view.result.current.available).toBe(true));
+    act(() => view.result.current.updateHeader("memo", "Unsaved original draft"));
+    view.rerender({ search: "?fundProfileId=fund-alpha&ledgerBookId=book-alpha&periodId=2026-06&journalEntryId=created-paydown" });
+    await waitFor(() => expect(view.result.current.draft.journalEntryId).toBe("created-paydown"));
+    expect(view.result.current.draft.memo).toBe("Manual close adjustment");
+    const snapshot = JSON.parse(window.localStorage.getItem("meridian.manual-journal-recovery.v1:fund-alpha:book-alpha")!);
+    expect(snapshot.draft.memo).toBe("Unsaved original draft");
+    expect(snapshot.draft.journalEntryId).toBe("manual-je-1");
+  });
+
+  it("discards late linked-workbench reads after navigating to a different exact draft", async () => {
+    const a = { ...manualJournalDraft, journalEntryId: "paydown-a" };
+    const b = { ...manualJournalDraft, journalEntryId: "paydown-b" };
+    let resolveA!: (value: ManualJournalEntryWorkbench) => void;
+    const services = createJournalServices({ getWorkbench: vi.fn().mockReturnValueOnce(new Promise((resolve) => { resolveA = resolve; }))
+      .mockResolvedValueOnce({ ...manualJournalWorkbench, drafts: [b] }) });
+    const search = (id: string) => `?fundProfileId=fund-alpha&ledgerBookId=book-alpha&periodId=2026-06&journalEntryId=${id}`;
+    const view = renderHook(({ query }) => useManualJournalEntryWorkbenchViewModel(true, services, query), { initialProps: { query: search(a.journalEntryId) } });
+    view.rerender({ query: search(b.journalEntryId) });
+    await waitFor(() => expect(view.result.current.draft.journalEntryId).toBe("paydown-b"));
+    await act(async () => resolveA({ ...manualJournalWorkbench, drafts: [a] }));
+    expect(view.result.current.draft.journalEntryId).toBe("paydown-b");
+  });
+
+  it("does not apply a late save receipt to the newly linked draft", async () => {
+    const target = { ...manualJournalDraft, journalEntryId: "created-paydown" };
+    let resolveSave!: (value: ManualJournalEntryDraft) => void;
+    const services = createJournalServices({
+      getWorkbench: vi.fn().mockResolvedValue({ ...manualJournalWorkbench, drafts: [manualJournalDraft, target] }),
+      saveDraft: vi.fn().mockReturnValue(new Promise((resolve) => { resolveSave = resolve; }))
+    });
+    const search = (id: string) => `?fundProfileId=fund-alpha&ledgerBookId=book-alpha&periodId=2026-06&journalEntryId=${id}`;
+    const view = renderHook(({ query }) => useManualJournalEntryWorkbenchViewModel(true, services, query), { initialProps: { query: search("manual-je-1") } });
+    await waitFor(() => expect(view.result.current.available).toBe(true));
+    act(() => view.result.current.updateHeader("memo", "Save original draft"));
+    let pendingSave!: Promise<void>;
+    act(() => { pendingSave = view.result.current.save(); });
+    view.rerender({ query: search("created-paydown") });
+    await waitFor(() => expect(view.result.current.draft.journalEntryId).toBe("created-paydown"));
+    await act(async () => { resolveSave({ ...manualJournalDraft, version: 22, memo: "Save original draft" }); await pendingSave; });
+    expect(view.result.current.draft.journalEntryId).toBe("created-paydown");
+    expect(view.result.current.draft.version).toBe(1);
+    expect(view.result.current.draft.memo).toBe("Manual close adjustment");
+  });
+
+  it("recovers only the exact linked draft in its retained period", async () => {
+    const target = { ...manualJournalDraft, journalEntryId: "created-paydown" };
+    window.localStorage.setItem("meridian.manual-journal-recovery.v1:fund-alpha:book-alpha", JSON.stringify({
+      capturedAtUtc: "2026-06-30T00:00:00Z", draft: { ...target, memo: "Recovered paydown memo" }
+    }));
+    const services = createJournalServices({ getWorkbench: vi.fn().mockResolvedValue({ ...manualJournalWorkbench, drafts: [target] }) });
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services,
+      "?fundProfileId=fund-alpha&ledgerBookId=book-alpha&periodId=2026-06&journalEntryId=created-paydown"));
+    await waitFor(() => expect(result.current.available).toBe(true));
+    expect(result.current.draft.memo).toBe("Recovered paydown memo");
+    expect(result.current.saveState).toBe("recovered");
+    act(() => result.current.discardRecoveredDraft());
+    expect(result.current.draft.memo).toBe("Manual close adjustment");
+  });
+
+  it("keeps retained asset drafts immutable and blocks unsupported lifecycle requests", async () => {
+    const assetDraft = { ...manualJournalDraft, validationIssues: [], evidenceLinks: ["evidence://retained"], assetAccountingDraft: { spine: { eventId: "asset-event" }, candidate: {} } };
+    const services = createJournalServices({ getWorkbench: vi.fn().mockResolvedValue({ ...manualJournalWorkbench, drafts: [assetDraft] }) });
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
+    await waitFor(() => expect(result.current.available).toBe(true));
+    act(() => {
+      result.current.updateHeader("memo", "Unreviewed mutation");
+      result.current.updateLine("line-debit", { amount: 999 });
+      result.current.updateDraftDimensions({ entityId: "foreign" });
+      result.current.addLine("Debit");
+      result.current.removeLine("line-debit");
+    });
+    await act(async () => { await result.current.save(); await result.current.applyLifecycleAction("Approve"); await result.current.applyLifecycleAction("Post"); });
+    expect(result.current.draft.memo).toBe(assetDraft.memo);
+    expect(result.current.draft.lines).toEqual(assetDraft.lines);
+    expect(services.saveDraft).not.toHaveBeenCalled();
+    expect(services.applyLifecycleAction).not.toHaveBeenCalled();
+    for (const action of ["Approve", "Post", "Reverse", "Rebook", "LockAfterClose"]) {
+      expect(result.current.lifecycleCommands.find((command) => command.action === action)?.disabledReason).toContain("governed asset workflow");
+    }
+    expect(result.current.lifecycleStatusText).toContain("generic approval, posting and corrections are unavailable");
+  });
+
+  it("allows a retained asset draft to validate and submit for review without enabling approval", async () => {
+    const assetDraft = { ...manualJournalDraft, validationIssues: [], evidenceLinks: ["evidence://retained"], assetAccountingDraft: { spine: { eventId: "asset-event" }, candidate: {} } };
+    const services = createJournalServices({ getWorkbench: vi.fn().mockResolvedValue({ ...manualJournalWorkbench, drafts: [assetDraft] }),
+      submitApproval: vi.fn().mockResolvedValue({ ...assetDraft, status: "Submitted", version: 2 }) });
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
+    await waitFor(() => expect(result.current.available).toBe(true));
+    await act(async () => { await result.current.validate(); });
+    expect(result.current.canSubmit).toBe(true);
+    await act(async () => { await result.current.submit(); });
+    expect(services.submitApproval).toHaveBeenCalledTimes(1);
+    expect(result.current.draft.status).toBe("Submitted");
+    expect(result.current.lifecycleCommands.find((command) => command.action === "Approve")?.disabledReason).toContain("governed asset workflow");
+    expect(result.current.lifecycleCommands.find((command) => command.action === "Reject")?.disabledReason).toBeNull();
+  });
+
   it("autosaves editable changes and reports saved health after the debounce", async () => {
     const services = createJournalServices();
     const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));

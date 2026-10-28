@@ -817,6 +817,10 @@ public sealed record ManualJournalEntryDraftDto(
 {
     public IReadOnlyList<JournalEntryLifecycleTransitionDto> LifecycleTransitions { get; init; } =
         LifecycleTransitions ?? [];
+
+    /// <summary>Server-retained asset candidate authority; absent from historical manual drafts.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AssetAccountingPostingCandidateDto? AssetAccountingDraft { get; init; }
 }
 
 public sealed record RuleDryRunRequestDto(

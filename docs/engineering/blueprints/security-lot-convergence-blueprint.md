@@ -890,8 +890,12 @@ reading anything). The operator preparation and draft routes resolve authenticat
 and the current open period before preparation. Browser Ledger Explorer and WPF Accounting
 Configuration review exact amounts and a fingerprint bound to the retained lots, factors, source
 evidence and proposed accounts. Draft creation re-prepares and checks that fingerprint, then uses
-the existing spine projection and candidate lifecycle; it cannot approve or post. A matching
-retained draft can be returned on retry. The candidate service accepts a
+the existing spine projection and candidate lifecycle, then retains an immutable mirror in the
+manual journal review queue under the same journal ID. Missing mirrors are repaired on exact
+retry; validation uses server-retained authority and submission preserves it. Generic approval,
+posting and corrections refuse this source until a typed retained-approval bridge is implemented.
+The WPF factor-paydown panel alone reads/submits these shared server records; legacy desktop
+local drafts remain visible in their existing lane. The candidate service accepts a
 factor-paydown candidate only under spine authority and only with the governed lot instruction,
 recomputing held face, principal and the allocation from the lots, and feeds the instruction's
 components to the rule only under the `FactorPaydown` intent; the spine service rereads every lot

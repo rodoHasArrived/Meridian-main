@@ -4,7 +4,7 @@
              AutomationProperties.AutomationId="FactorPaydownReview">
     <StackPanel>
         <TextBlock Text="Factor paydown" Style="{StaticResource CardHeaderStyle}" />
-        <TextBlock Text="Prepare principal and basis relief from retained lots. Creating a draft does not approve or post a journal."
+        <TextBlock Text="Prepare principal and basis relief from retained lots. Drafts may be submitted for review. Typed approval and atomic lot posting remain unavailable."
                    TextWrapping="Wrap" Margin="0,6,0,0" />
         <TextBlock Text="{Binding ScopeText}" TextWrapping="Wrap" Margin="0,6,0,0" />
         <Expander Header="Factor observation and retained support" Margin="0,12,0,0">
@@ -37,6 +37,23 @@
                   IsChecked="{Binding Confirmed}" Margin="0,12,0,8" />
         <Button Content="Create governed draft" Command="{Binding CreateDraftCommand}" HorizontalAlignment="Left"
                 Style="{StaticResource SecondaryButtonStyle}" AutomationProperties.AutomationId="CreateFactorPaydownDraftButton" />
+        <TextBlock Text="Retained server drafts" Style="{StaticResource CardHeaderStyle}" Margin="0,16,0,0" />
+        <Button Content="Reload retained drafts" Command="{Binding ReloadRetainedDraftsCommand}" HorizontalAlignment="Left" Margin="0,8,0,8"
+                Style="{StaticResource SecondaryButtonStyle}" AutomationProperties.AutomationId="ReloadFactorPaydownDraftsButton" />
+        <ComboBox ItemsSource="{Binding RetainedDrafts}" SelectedItem="{Binding SelectedRetainedDraft}" DisplayMemberPath="JournalEntryId" IsEnabled="{Binding CanSelectRetainedDraft}"
+                  AutomationProperties.Name="Retained server factor-paydown draft" />
+        <TextBlock Text="{Binding RetainedDraftStatusText}" TextWrapping="Wrap" Margin="0,8,0,0" />
+        <DataGrid ItemsSource="{Binding RetainedDraftLines}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
+                  Margin="0,8,0,8" AutomationProperties.AutomationId="RetainedFactorPaydownDraftLines">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Account" Binding="{Binding AccountPath}" Width="*" />
+                <DataGridTextColumn Header="Side" Binding="{Binding Side}" Width="80" />
+                <DataGridTextColumn Header="Amount" Binding="{Binding Amount}" Width="120" />
+                <DataGridTextColumn Header="Currency" Binding="{Binding Currency}" Width="70" />
+            </DataGrid.Columns>
+        </DataGrid>
+        <Button Content="Submit selected draft for review" Command="{Binding SubmitRetainedDraftCommand}" HorizontalAlignment="Left"
+                Style="{StaticResource SecondaryButtonStyle}" AutomationProperties.AutomationId="SubmitFactorPaydownDraftButton" />
         <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap" Margin="0,10,0,0"
                    AutomationProperties.AutomationId="FactorPaydownStatus" />
     </StackPanel>

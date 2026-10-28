@@ -14,6 +14,7 @@ using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Tests.AssetOperations;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -135,10 +136,12 @@ public sealed partial class WorkstationEndpointsTests
     {
         var fixture = FactorPreparationFixture();
         var spine = Substitute.For<IAssetAccountingEventSpineService>();
+        AssetAccountingEventSpineDto? projected = null;
         spine.ProjectAsync(Arg.Any<ProjectAssetAccountingEventRequestDto>(), Arg.Any<CancellationToken>())
-            .Returns(call => new AssetAccountingEventSpineAppendResultDto(FactorProjectedSpine(call.Arg<ProjectAssetAccountingEventRequestDto>()), false));
+            .Returns(call => new AssetAccountingEventSpineAppendResultDto(projected = FactorProjectedSpine(call.Arg<ProjectAssetAccountingEventRequestDto>()), false));
         spine.BuildPostingCandidateAsync(Arg.Any<AssetAccountingPostingCandidateRequestDto>(), Arg.Any<CancellationToken>())
-            .Returns(new AssetAccountingPostingCandidateDto(null!, null!));
+            .Returns(call => FactorDraftedCandidate(projected!, call.Arg<AssetAccountingPostingCandidateRequestDto>().Actor,
+                call.Arg<AssetAccountingPostingCandidateRequestDto>().Description));
         await using var app = await CreateAppAsync(services =>
         {
             fixture.Register(services);
@@ -175,7 +178,7 @@ public sealed partial class WorkstationEndpointsTests
         spine.BuildPostingCandidateAsync(Arg.Any<AssetAccountingPostingCandidateRequestDto>(), Arg.Any<CancellationToken>()).Returns(_ =>
             ++attempts == 1
                 ? Task.FromException<AssetAccountingPostingCandidateDto>(new InvalidOperationException("Interrupted candidate creation"))
-                : Task.FromResult(new AssetAccountingPostingCandidateDto(retained!, null!)));
+                : Task.FromResult(FactorDraftedCandidate(retained!, "ops-user", "Reviewed paydown")));
         await using var app = await CreateAppAsync(services =>
         {
             fixture.Register(services);
@@ -240,17 +243,9 @@ public sealed partial class WorkstationEndpointsTests
             fixture.Request.SourceContentHash, fixture.Request.OccurredAtUtc, fixture.Request.FactorEvidence,
             fixture.Request.CashAccountPath, fixture.Request.CarryingAccountPath, fixture.Request.RealizedGainAccountPath,
             fixture.Request.RealizedLossAccountPath, "company-alpha", "company-alpha"), "ops-user", DateTimeOffset.UtcNow);
-        var candidate = new PostingRuleJournalCandidateResultDto(null!, null, null, [], null, null,
-            50_750m, 50_750m, 0m, true, false, true, false, [], []);
-        var retained = FactorProjectedSpine(preparation.ProjectRequest) with
-        {
-            SpineVersion = 3,
-            DraftedCandidate = new PostingRuleJournalCandidateRequestDto(fixture.Request.FundProfileId,
-                preparation.ProjectRequest.EconomicEvent.EventType, 50_000m, "USD", fixture.Request.EffectiveDate,
-                scenario == "actor" ? "another-user" : "ops-user", fixture.Request.LedgerBookId, fixture.Request.PeriodId,
-                DateTimeOffset.UtcNow, scenario == "description" ? "Different draft" : "Reviewed paydown"),
-            DraftedCandidateResult = candidate
-        };
+        var drafted = FactorDraftedCandidate(FactorProjectedSpine(preparation.ProjectRequest),
+            scenario == "actor" ? "another-user" : "ops-user", scenario == "description" ? "Different draft" : "Reviewed paydown");
+        var retained = drafted.Spine;
         spine.GetLatestAsync(Arg.Any<Guid>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(retained);
         await using var app = await CreateAppAsync(services =>
         {
@@ -275,6 +270,35 @@ public sealed partial class WorkstationEndpointsTests
             request.EconomicEvent.EffectiveDate, request.EventAmount, request.Currency, request.Scope,
             request.EconomicEvent, request.ProjectionLineage, request.RetainedEvidence,
             ProjectedEffect: request.ProjectedEffect, FactorPaydown: request.FactorPaydown);
+
+    private static AssetAccountingPostingCandidateDto FactorDraftedCandidate(AssetAccountingEventSpineDto projected,
+        string actor, string description)
+    {
+        var scope = projected.Scope;
+        var generated = projected.ProjectedEffect!.Lines.Select((line, i) => new GeneratedPostingLineDto(
+            $"factor-{i}", line.AccountId, line.Debit > 0m ? AccountingTemplateLineSideDto.Debit : AccountingTemplateLineSideDto.Credit,
+            "factor", line.Debit > 0m ? line.Debit : line.Credit, line.Currency, line.Dimensions, line.Description)).ToArray();
+        var candidate = new PostingRuleJournalCandidateResultDto(null!, "factor", "1", generated, null, Guid.NewGuid(),
+            projected.ProjectedEffect.TotalDebits, projected.ProjectedEffect.TotalCredits, 0m, true, false, true, false,
+            projected.RetainedEvidence.Select(e => e.EvidenceUri).ToArray(), []);
+        var mutation = new AssetLotMutationInstructionDto(AssetLotMutationIntentDto.FactorPaydown,
+            AssetAccountId: "Assets:Investment", FactorPaydown: projected.FactorPaydown);
+        var source = new PostingRuleJournalCandidateRequestDto(scope.FundProfileId, projected.EconomicEvent.EventType,
+            projected.EventAmount, projected.Currency, projected.EffectiveDate, actor, scope.LedgerBookId,
+            scope.PeriodId, DateTimeOffset.UtcNow, description, scope.AccountingBasis, scope.LedgerBookId,
+            scope.Dimensions, TenantId: scope.TenantId, CompanyId: scope.CompanyId)
+        { AssetLotMutation = mutation, RetainedEvidence = projected.RetainedEvidence };
+        return new(projected with
+        {
+            SpineVersion = 3,
+            DraftedCandidate = source,
+            DraftedCandidateResult = candidate,
+            DraftedLotMutation = mutation,
+            DraftedCandidateFingerprint = AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(source),
+            DraftedCandidateResultFingerprint = AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(candidate),
+            DraftedLotMutationFingerprint = AssetLotMutationInstructionValidator.Fingerprint(mutation)
+        }, candidate);
+    }
 
     private static string FactorPreparationRoute(PrepareFactorPaydownRequestDto request)
         => UiApiRoutes.WithParam(UiApiRoutes.LedgerFactorPaydownPreparation, "ledgerBookId", request.LedgerBookId.ToString("D"));
@@ -306,7 +330,8 @@ public sealed partial class WorkstationEndpointsTests
             lot.SecurityId, "Bond", SecurityStatusDto.Active, "MBS pool", "USD", "ISIN", "TESTMBS", empty, empty, empty, 1, now, null, [], []));
         positions.GetBookPositionAsync(lot.BookPositionId, Arg.Any<CancellationToken>()).Returns(new BookPositionDto(lot.BookPositionId,
             lot.SecurityId, Guid.NewGuid(), new AccountingBookContextDto(lot.LedgerBookId, "fund-alpha", ownerId,
-                FundStructureNodeKindDto.Fund, "GAAP", "USD", AccountingBasisKindDto.Gaap, "policy", "1", request.PeriodId),
+                FundStructureNodeKindDto.Fund, "GAAP", "USD", AccountingBasisKindDto.Gaap, "policy", "1", request.PeriodId,
+                new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: ownerId.ToString("D"))),
             BookPositionSides.Long, "Active", new(2026, 1, 1)));
         periods.ListOpenTaxLotsByAssetScopeAsync(lot.LedgerBookId, lot.SecurityId, lot.BookPositionId, request.EffectiveDate,
             Arg.Any<CancellationToken>()).Returns([FactorPaydownTestData.LotRecord(lot, new Meridian.Ledger.LedgerAccount("Assets:Investment", Meridian.Ledger.LedgerAccountType.Asset), now)]);
@@ -321,6 +346,15 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton(Books);
             services.AddSingleton(Periods);
             services.AddSingleton(Service);
+            var configuration = Substitute.For<IAccountingConfigurationService>();
+            var chart = new[] { "Assets:Cash", "Assets:Investment", "Income:Realized Gain", "Expense:Realized Loss" }
+                .Select(path => new ChartOfAccountsNodeDto(path, path, path, "Asset")).ToArray();
+            configuration.GetWorkspaceAsync(Arg.Any<string>(), Arg.Any<Guid?>(), Arg.Any<CancellationToken>(), Arg.Any<string?>(), Arg.Any<string?>())
+                .Returns(new AccountingConfigurationWorkspaceDto(Request.FundProfileId, Request.LedgerBookId,
+                    AccountingConfigurationStatusDto.Draft, "test", DateTimeOffset.UtcNow, [], chart, [], [], [], []));
+            services.AddSingleton(configuration);
+            services.AddSingleton<IManualJournalEntryDraftStore>(new InMemoryManualJournalEntryDraftStore());
+            services.AddSingleton<IAccountingActionAuditStore>(new InMemoryAccountingActionAuditStore());
         }
     }
 }

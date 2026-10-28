@@ -151,8 +151,10 @@ read-side increment authorizes a write-version promotion or a production-readine
 The current implementation adds governed factor-paydown preparation and draft routes, consumed by
 browser Ledger Explorer and WPF Accounting Configuration. The server resolves ownership and
 period authority, derives exact amounts from retained lots, and binds draft creation to the
-reviewed preparation fingerprint. Existing spine/candidate controls retain the draft; submission,
-approval and posting remain in the governed journal workflow. This is a bounded LOT activation
+reviewed preparation fingerprint. The existing spine/candidate controls retain the source candidate, and the adapter mirrors it
+into the real manual journal review queue under the same journal ID. The immutable source context
+survives restart, retry, validation and submission for review. Generic editing, approval, posting
+and corrections are refused until the typed retained-approval bridge exists. This is a bounded LOT activation
 increment, not LOT closure, live shadow-operation acceptance or release certification.
 
 Legacy provider setup now refuses provider-wide credential operations for retained owned or

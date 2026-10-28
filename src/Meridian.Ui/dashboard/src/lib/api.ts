@@ -1958,6 +1958,9 @@ export function createLedgerBook(
 export interface ManualJournalEntryWorkbenchQuery {
   fundProfileId?: string | null;
   ledgerBookId?: string | null;
+  /** Client selection only; authoritative drafts still come from the scoped workbench. */
+  journalEntryId?: string | null;
+  periodId?: string | null;
 }
 
 export function getManualJournalEntryWorkbench(
@@ -1976,7 +1979,7 @@ export function getManualJournalEntryWorkbench(
   const suffix = params.toString();
   return getJson<ManualJournalEntryWorkbench>(
     `${WORKSTATION_API_ENDPOINTS.manualJournalEntryWorkbench}${suffix ? `?${suffix}` : ""}`,
-    options
+    query.journalEntryId ? { ...options, allowDevelopmentFallback: false } : options
   );
 }
 

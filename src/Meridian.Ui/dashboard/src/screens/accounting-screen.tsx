@@ -4549,6 +4549,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
         </div>
       ) : null}
 
+      {view.draft.assetAccountingDraft ? <p role="status" className="rounded border border-warning/30 bg-warning/10 p-3 text-sm">This is an immutable asset accounting review draft. Validate and submit it for review here. Approval, posting and corrections require retained approval evidence through the governed asset workflow and remain unavailable in this workbench.</p> : null}
       <ManualJournalHealthBar view={view} hasInvalidAmountEdits={hasInvalidAmountEdits} invalidAmountReason={invalidAmountReason} />
 
       <div className="grid gap-4 xl:grid-cols-[minmax(14rem,0.28fr)_minmax(0,1fr)]">
@@ -4590,6 +4591,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
 
         <div className="space-y-4">
           <section className="accounting-reference-panel accounting-journal-panel" data-appearance="light" aria-label="Manual journal entry - balanced double-entry">
+            <fieldset disabled={Boolean(view.draft.assetAccountingDraft)} className="min-w-0" aria-label="Journal source fields">
             <div className="accounting-reference-heading">
               <div className="min-w-0">
                 <p className="accounting-reference-kicker">Manual journal entry - balanced double-entry</p>
@@ -4657,7 +4659,8 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
               Keyboard: Arrow Up or Down and Enter move within a column; Ctrl+Enter inserts a line beneath the current row.
             </p>
 
-            <div className="accounting-journal-table-wrap">
+            </fieldset>
+            <div className="accounting-journal-table-wrap" tabIndex={view.draft.assetAccountingDraft ? 0 : undefined} role="region" aria-label="Journal source lines">
               <table className="accounting-journal-table">
                 <thead>
                   <tr>
@@ -4680,7 +4683,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
                         tabIndex={-1}
                       >
                         <td>
-                          <select
+                          <select disabled={Boolean(view.draft.assetAccountingDraft)}
                             id={`manual-je-account-${line.lineId}`}
                             value={line.accountPath}
                             onChange={(event) => view.updateLine(line.lineId, { accountPath: event.target.value })}
@@ -4699,7 +4702,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
                           {badges.length > 0 ? <ManualJournalLineBadges badges={badges} /> : null}
                         </td>
                         <td>
-                          <input
+                          <input disabled={Boolean(view.draft.assetAccountingDraft)}
                             id={`manual-je-debit-${line.lineId}`}
                             aria-label={`Debit amount for line ${line.lineId}`}
                             aria-describedby="manual-je-keyboard-hint"
@@ -4717,7 +4720,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
                           ) : null}
                         </td>
                         <td>
-                          <input
+                          <input disabled={Boolean(view.draft.assetAccountingDraft)}
                             id={`manual-je-credit-${line.lineId}`}
                             aria-label={`Credit amount for line ${line.lineId}`}
                             aria-describedby={`${line.lineId}:Credit` in amountDrafts ? `manual-je-keyboard-hint manual-je-credit-error-${line.lineId}` : "manual-je-keyboard-hint"}
@@ -4740,10 +4743,10 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
                             className="accounting-journal-support-button"
                             onClick={() => view.selectLine(line.lineId)}
                           >
-                            <span className="block truncate font-semibold text-foreground">{line.securityDisplayName || "Choose security"}</span>
+                            <span className="block truncate font-semibold text-foreground">{line.securityDisplayName || (view.draft.assetAccountingDraft ? "Inspect line attribution" : "Choose security")}</span>
                             <span className="block truncate font-mono text-[11px] text-muted-foreground">{line.securityId || "No Security Master reference"}</span>
                           </button>
-                          <input
+                          <input disabled={Boolean(view.draft.assetAccountingDraft)}
                             id={`manual-je-description-${line.lineId}`}
                             className="mt-2"
                             aria-label={`Description for line ${line.lineId}`}
@@ -4759,7 +4762,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
                             <Button
                               size="icon"
                               variant="ghost"
-                              aria-label={`Duplicate journal line ${line.lineId}`}
+                              disabled={Boolean(view.draft.assetAccountingDraft)} aria-label={`Duplicate journal line ${line.lineId}`}
                               onClick={() => {
                                 const duplicateId = view.duplicateLine(line.lineId);
                                 if (duplicateId) {
@@ -4773,7 +4776,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
                               size="icon"
                               variant="ghost"
                               aria-label={`Remove journal line ${line.lineId}`}
-                              disabled={view.draft.lines.length <= 2}
+                              disabled={Boolean(view.draft.assetAccountingDraft) || view.draft.lines.length <= 2}
                               disabledReason={view.draft.lines.length <= 2 ? "A balanced journal entry needs at least two lines." : null}
                               onClick={() => view.removeLine(line.lineId)}
                             >
@@ -4795,7 +4798,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
             </div>
 
             <div className="accounting-journal-footer">
-              <Button size="sm" variant="outline" onClick={() => view.addLine(nextLineSide)}>
+              <Button size="sm" variant="outline" disabled={Boolean(view.draft.assetAccountingDraft)} onClick={() => view.addLine(nextLineSide)}>
                 + Add line
               </Button>
               <div className={cn("accounting-reference-balance-badge", view.balanceStatusTone === "success" ? "is-balanced" : "is-out")}>
@@ -4803,6 +4806,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
                 {view.balanceStatusLabel}
               </div>
             </div>
+
           </section>
 
           <section className="rounded-md border border-border/70 bg-secondary/20 p-3" aria-labelledby="manual-je-balance-impact-heading">
@@ -4817,7 +4821,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
                 {view.balanceImpactRows.length} account{view.balanceImpactRows.length === 1 ? "" : "s"}
               </Badge>
             </div>
-            <div className="mt-3 overflow-x-auto">
+            <div className="mt-3 overflow-x-auto" tabIndex={view.draft.assetAccountingDraft ? 0 : undefined} role="region" aria-label="Journal balance impact">
               {view.balanceImpactRows.length > 0 ? (
                 <table className="accounting-journal-table">
                   <thead>
@@ -4924,7 +4928,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
                         <div><span className="text-muted-foreground">Source system</span><div className="mt-1 break-all font-mono text-foreground">{attachment.sourceSystem}</div></div>
                       </TechnicalDetails>
                     </div>
-                    <Button size="icon" variant="ghost" aria-label={`Remove evidence ${attachment.displayName}`} onClick={() => view.removeAttachment(attachment.attachmentId)}>
+                    <Button size="icon" variant="ghost" aria-label={`Remove evidence ${attachment.displayName}`} disabled={Boolean(view.draft.assetAccountingDraft)} disabledReason={view.draft.assetAccountingDraft ? "Evidence retained on an asset source draft cannot be removed here." : null} onClick={() => view.removeAttachment(attachment.attachmentId)}>
                       <X className="h-3.5 w-3.5" aria-hidden="true" />
                     </Button>
                   </div>
@@ -5036,7 +5040,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,0.55fr)_minmax(0,0.45fr)]">
             <ManualJournalValidationNavigator view={view} />
-            <ManualJournalDimensionsInspector view={view} />
+            <fieldset disabled={Boolean(view.draft.assetAccountingDraft)} className="min-w-0" aria-label="Journal attribution"><ManualJournalDimensionsInspector view={view} /></fieldset>
           </div>
         </div>
       </div>

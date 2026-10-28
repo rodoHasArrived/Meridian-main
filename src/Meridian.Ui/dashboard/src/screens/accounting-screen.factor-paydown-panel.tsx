@@ -95,7 +95,7 @@ function FactorPaydownScopePanel({ bookId, periodId, periodVersion, fundProfileI
         description.trim(), { signal: requestController.signal });
       if (!requestController.signal.aborted) {
         setDraft(result); setUncertain(false);
-        setMessage(result.candidate.journalEntryId ? "Review draft retained. Submit and approve it through the existing journal workflow. No posting was requested."
+        setMessage(result.candidate.journalEntryId ? "Review draft retained. Submit it for review in the journal workbench. Approval and posting require the governed asset workflow and remain unavailable here."
           : "The server did not retain an eligible draft. Inspect its blockers before preparing again.");
       }
     } catch (cause) {
@@ -115,7 +115,7 @@ function FactorPaydownScopePanel({ bookId, periodId, periodVersion, fundProfileI
   }
   const locked = busy === "draft" || uncertain || !!draft?.candidate.journalEntryId;
   return <Card className="panel-surface min-w-0" role="region" aria-label="Factor paydown">
-    <CardHeader><CardTitle>Factor paydown</CardTitle><CardDescription>Prepare principal repayment and lot basis relief from a retained factor observation. Same-currency active long positions only; drafts require the existing journal review and approval workflow.</CardDescription></CardHeader>
+    <CardHeader><CardTitle>Factor paydown</CardTitle><CardDescription>Prepare principal repayment and lot basis relief from a retained factor observation. Same-currency active long positions only. Retained drafts support validation and review submission; generic approval and posting remain unavailable.</CardDescription></CardHeader>
     <CardContent className="space-y-4">
       {!bookId || !periodId || periodVersion === null || !fundProfileId ? <p role="status">Select a ledger book and period to prepare a factor paydown.</p> : <>
         <p className="break-all text-xs text-muted-foreground">Book {bookId} · Period {periodId} · {accountingBasis}</p>
@@ -145,7 +145,7 @@ function FactorPaydownScopePanel({ bookId, periodId, periodVersion, fundProfileI
       {message ? <p role="status" aria-live="polite" className="text-sm text-muted-foreground">{message}</p> : null}
       {error ? <p role="alert" className="text-sm text-danger">{error}</p> : null}
       {draft?.candidate.issues?.length ? <ul aria-label="Paydown draft blockers" className="list-disc pl-5 text-sm">{draft.candidate.issues.map((issue, index) => <li key={index}>{issue.message}</li>)}</ul> : null}
-      {draft?.candidate.journalEntryId ? <div className="space-y-2 text-sm"><p>Review draft: <span className="font-mono">{draft.candidate.journalEntryId}</span></p><Link className="text-primary underline" to={`/accounting/journal-entries?${new URLSearchParams({ fundProfileId, ledgerBookId: bookId, periodId: periodId ?? "", journalEntryId: draft.candidate.journalEntryId })}`}>Open paydown journal approval workflow</Link></div> : null}
+      {draft?.candidate.journalEntryId ? <div className="space-y-2 text-sm"><p>Review draft: <span className="font-mono">{draft.candidate.journalEntryId}</span></p><Link className="text-primary underline" to={`/accounting/journal-entries?${new URLSearchParams({ fundProfileId, ledgerBookId: bookId, periodId: periodId ?? "", journalEntryId: draft.candidate.journalEntryId })}`}>Open paydown journal review</Link></div> : null}
     </CardContent>
   </Card>;
 }

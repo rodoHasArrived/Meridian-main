@@ -11,6 +11,8 @@ public interface IFactorPaydownApiClient
 {
     Task<FactorPaydownPreparationDto> PrepareAsync(PrepareFactorPaydownRequestDto request, CancellationToken ct);
     Task<AssetAccountingPostingCandidateDto> CreateDraftAsync(CreateFactorPaydownDraftRequestDto request, CancellationToken ct);
+    Task<ManualJournalEntryWorkbenchDto> GetRetainedDraftsAsync(string fundProfileId, Guid ledgerBookId, CancellationToken ct);
+    Task<ManualJournalEntryDraftDto> SubmitForReviewAsync(SubmitManualJournalEntryApprovalRequest request, CancellationToken ct);
 }
 
 /// <summary>Uses governed preparation and candidate intake; never approves or posts.</summary>
@@ -30,6 +32,18 @@ public sealed class FactorPaydownApiClient(ApiClientService apiClient) : IFactor
     public Task<AssetAccountingPostingCandidateDto> CreateDraftAsync(CreateFactorPaydownDraftRequestDto request, CancellationToken ct)
         => PostAsync<AssetAccountingPostingCandidateDto>(UiApiRoutes.LedgerFactorPaydownDrafts
             .Replace("{ledgerBookId:guid}", request.Request.LedgerBookId.ToString("D")), request, ct);
+
+    public async Task<ManualJournalEntryWorkbenchDto> GetRetainedDraftsAsync(string fundProfileId, Guid ledgerBookId, CancellationToken ct)
+    {
+        var response = await apiClient.GetWithResponseAsync<ManualJournalEntryWorkbenchDto>(
+            UiApiRoutes.LedgerManualJournalEntryWorkbench + "?fundProfileId=" + Uri.EscapeDataString(fundProfileId)
+            + "&ledgerBookId=" + ledgerBookId.ToString("D"), ct).ConfigureAwait(false);
+        return response.Success && response.Data is { } data ? data
+            : throw new InvalidOperationException(response.ErrorMessage ?? "Retained server drafts are unavailable.");
+    }
+
+    public Task<ManualJournalEntryDraftDto> SubmitForReviewAsync(SubmitManualJournalEntryApprovalRequest request, CancellationToken ct)
+        => PostAsync<ManualJournalEntryDraftDto>(UiApiRoutes.LedgerManualJournalEntrySubmitApproval, request, ct);
 
     private async Task<T> PostAsync<T>(string route, object request, CancellationToken ct) where T : class
     {

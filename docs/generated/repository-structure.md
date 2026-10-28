@@ -7476,6 +7476,7 @@ Meridian-main
 │   │   │   │   │   ├── api.development-modes.test.ts
 │   │   │   │   │   ├── api.extensibility.test.ts
 │   │   │   │   │   ├── api.historical-integrity.test.ts
+│   │   │   │   │   ├── api.manual-journal-selection.test.ts
 │   │   │   │   │   ├── api.operations-continuity.test.ts
 │   │   │   │   │   ├── api.private-capital.test.ts
 │   │   │   │   │   ├── api.reconciliation.test.ts
@@ -8540,6 +8541,7 @@ Meridian-main
 │   │   │   ├── LiveBrokeragePortfolioSyncService.cs
 │   │   │   ├── ManualJournalEntryDraftStores.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.AccountingCloseReceipts.cs
+│   │   │   ├── ManualJournalEntryWorkbenchService.AssetAccounting.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.Consolidation.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.Lifecycle.cs
@@ -9067,10 +9069,12 @@ Meridian-main
 │   │   │   │   ├── AccountingCloseViewModel.EvidenceRequests.cs
 │   │   │   │   ├── AccountingCloseViewModel.MutationAuthority.cs
 │   │   │   │   ├── AccountingCloseViewModel.WorkflowSelection.cs
+│   │   │   │   ├── AccountingConfigureViewModel.AssetDrafts.cs
 │   │   │   │   ├── AccountingConfigureViewModel.cs
 │   │   │   │   ├── AccountingConfigureViewModel.GovernedQueues.cs
 │   │   │   │   ├── AuditChainIntegrityViewModel.cs
 │   │   │   │   ├── FactorPaydownViewModel.cs
+│   │   │   │   ├── FactorPaydownViewModel.RetainedDrafts.cs
 │   │   │   │   └── RecurringJournalQueueViewModel.cs
 │   │   │   ├── AccountPortfolioViewModel.cs
 │   │   │   ├── ActivityLogViewModel.cs
@@ -11983,6 +11987,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.Extensibility.cs
 │   │   │   ├── WorkstationEndpointsTests.FactorPaydown.cs
 │   │   │   ├── WorkstationEndpointsTests.FactorPaydownPreparation.cs
+│   │   │   ├── WorkstationEndpointsTests.FactorPaydownWorkbench.cs
 │   │   │   ├── WorkstationEndpointsTests.IBResults.cs
 │   │   │   ├── WorkstationEndpointsTests.Infrastructure.cs
 │   │   │   ├── WorkstationEndpointsTests.JournalAutomation.cs

@@ -10,7 +10,7 @@ using Meridian.Wpf.Services;
 namespace Meridian.Wpf.ViewModels.Accounting;
 
 /// <summary>Review preparation and request a governed candidate. Financial calculations remain server owned.</summary>
-public sealed class FactorPaydownViewModel : BindableBase
+public sealed partial class FactorPaydownViewModel : BindableBase
 {
     private readonly IFactorPaydownApiClient? _client;
     private string? _fundProfileId;
@@ -39,6 +39,8 @@ public sealed class FactorPaydownViewModel : BindableBase
             field.PropertyChanged += (_, _) => Invalidate("Inputs changed. Prepare again to review the current paydown.");
         PrepareCommand = new AsyncRelayCommand(PrepareAsync, () => !IsBusy && _client is not null && _bookId.HasValue);
         CreateDraftCommand = new AsyncRelayCommand(CreateDraftAsync, () => CanCreateDraft);
+        ReloadRetainedDraftsCommand = new AsyncRelayCommand(ReloadRetainedDraftsAsync, () => !IsBusy && _client is not null && _bookId.HasValue);
+        SubmitRetainedDraftCommand = new AsyncRelayCommand(SubmitRetainedDraftAsync, () => CanSubmitRetainedDraft);
     }
 
     public ObservableCollection<FactorPaydownInput> Fields { get; }
@@ -64,12 +66,17 @@ public sealed class FactorPaydownViewModel : BindableBase
         {
             _fundProfileId = fundProfileId;
             _bookId = bookId is { } id && id != Guid.Empty && !string.IsNullOrWhiteSpace(fundProfileId) ? id : null;
+            ClearRetainedDraftSelection();
             Invalidate("Scope refreshed. Prepare the paydown against the selected fund and book.");
             RaisePropertyChanged(nameof(ScopeText));
         });
     }
 
-    public void Cancel() => Publish(() => Invalidate("Paydown review cancelled. Prepare again before creating a draft."));
+    public void Cancel() => Publish(() =>
+    {
+        ClearRetainedDraftSelection();
+        Invalidate("Paydown review cancelled. Prepare again before creating a draft.");
+    });
 
     private async Task PrepareAsync()
     {
@@ -118,7 +125,15 @@ public sealed class FactorPaydownViewModel : BindableBase
             RaisePropertyChanged(nameof(PreviewText));
             StatusText = result.Candidate.HasBlockingIssues
                 ? "Candidate blocked: " + string.Join("; ", result.Candidate.Issues.Select(issue => issue.Message))
-                : $"Retained candidate for event {result.Spine.EventId:D}. Complete the governed approval workflow before posting. Nothing has posted.";
+                : $"Draft {result.Candidate.JournalEntryId:D} retained for event {result.Spine.EventId:D}. Reload retained server drafts below and select it to submit for review. Typed approval and posting are unavailable; generic approval, posting and corrections are blocked. Nothing has posted.";
+            if (!result.Candidate.HasBlockingIssues)
+            {
+                try { await LoadRetainedDraftsCoreAsync(generation, result.Candidate.JournalEntryId, operation.Token); }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    if (generation == _generation) StatusText += $" Retained draft reload failed: {ex.Message}";
+                }
+            }
         }
         catch (OperationCanceledException) { if (generation == _generation) StatusText = "Draft request cancelled. Check retained history before retrying."; }
         catch (Exception ex) { if (generation == _generation) StatusText = $"Draft request blocked: {ex.Message}. Check retained history before retrying."; }
@@ -154,7 +169,7 @@ public sealed class FactorPaydownViewModel : BindableBase
 
     private void Invalidate(string status)
     {
-        if (_busy && _preview is not null)
+        if (_busy && (_preview is not null || _submittingRetainedDraft))
             status += " A draft request may have reached the server. Check retained history before retrying.";
         Interlocked.Increment(ref _generation);
         _operation?.Cancel();
@@ -175,6 +190,10 @@ public sealed class FactorPaydownViewModel : BindableBase
         RaisePropertyChanged(nameof(CanCreateDraft));
         PrepareCommand?.NotifyCanExecuteChanged();
         CreateDraftCommand?.NotifyCanExecuteChanged();
+        ReloadRetainedDraftsCommand?.NotifyCanExecuteChanged();
+        SubmitRetainedDraftCommand?.NotifyCanExecuteChanged();
+        RaisePropertyChanged(nameof(CanSubmitRetainedDraft));
+        RaisePropertyChanged(nameof(CanSelectRetainedDraft));
     }
 
     private static void Publish(Action action)

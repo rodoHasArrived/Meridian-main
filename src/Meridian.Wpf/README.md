@@ -989,8 +989,12 @@ Accounting Configure includes a modular factor-paydown review over the governed 
 and draft-intake routes. Operators supply the factor observation, exact retained evidence identities
 and chart paths; the server derives lots, principal, basis relief and realized amounts. Any input,
 book/fund refresh or navigation invalidates the preview and explicit confirmation. Draft intake binds
-the reviewed preparation fingerprint and preserves the existing candidate, approval and posting gates;
-the desktop never posts from this review panel. Refusals remain visible and uncertain draft requests
+the reviewed preparation fingerprint and retains the real workbench draft with immutable asset context.
+The factor-paydown panel alone reloads retained drafts and submits the exact selected server version
+through authenticated HTTP. Existing desktop-local journal workbench records remain available in their
+original lane. The server draft can be selected and submitted for review; its lines and context cannot be edited through the
+manual editor. Generic approval, posting and corrections remain blocked until typed retained approval
+and atomic asset posting are supported. The desktop never posts from this review panel. Refusals remain visible and uncertain draft requests
 instruct the operator to inspect retained history before retrying. Windows runtime proof is required
 before claiming live desktop acceptance.
 

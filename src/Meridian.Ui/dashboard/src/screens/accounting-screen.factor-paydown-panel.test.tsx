@@ -49,8 +49,8 @@ describe("Factor-paydown operator workflow", () => {
     confirm(); fireEvent.click(screen.getByRole("button", { name: "Create paydown review draft" }));
     await screen.findByText("draft-1");
     expect(createFactorPaydownDraft).toHaveBeenCalledWith(expect.objectContaining({ priorFactor: "0.9876543210987654321098765432" }), "reviewed-hash", "Reviewed October principal repayment", expect.any(Object));
-    expect(screen.getByRole("link", { name: "Open paydown journal approval workflow" })).toHaveAttribute("href", "/accounting/journal-entries?fundProfileId=fund-1&ledgerBookId=book-1&periodId=period-1&journalEntryId=draft-1");
-    expect(screen.getByRole("status")).toHaveTextContent("No posting was requested");
+    expect(screen.getByRole("link", { name: "Open paydown journal review" })).toHaveAttribute("href", "/accounting/journal-entries?fundProfileId=fund-1&ledgerBookId=book-1&periodId=period-1&journalEntryId=draft-1");
+    expect(screen.getByRole("status")).toHaveTextContent("Approval and posting require the governed asset workflow and remain unavailable here");
     expect(screen.getByRole("button", { name: "Create paydown review draft" })).toBeDisabled();
     expect((await axe(container)).violations).toEqual([]);
   });

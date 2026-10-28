@@ -171,3 +171,44 @@ The selected .NET filter was `FactorPaydown`, `ProviderSetupOwnershipTests`,
 `PrivateCapitalCloseCockpitServiceTests`, `EndpointAuthorization` and `EndpointReadDeclaration`
 joined with `FullyQualifiedName~` alternatives. No category exclusion was used, so the paydown
 PostgreSQL tests were executed rather than silently skipped.
+
+## Corrected durable review intake
+
+Review found that retaining an asset-spine candidate did not create a manual journal queue draft.
+The corrected adapter now persists an immutable source-linked mirror using the candidate journal
+ID. A real file-store/workbench test proves discovery after restart, one-ID retry, server-retained
+validation and source-preserving submission. Generic edits, approval, posting and corrections are
+explicitly refused; no approval evidence is fabricated. The typed retained-approval bridge is
+remaining implementation work, not an acceptance checkbox.
+
+The corrected working-tree candidate passed **370 focused .NET tests** and **115 browser tests**.
+The updated full Windows WPF application/XAML and test-project sources cross-compiled with zero
+errors and 18 warnings. Earlier hosted Windows proof on head `427ba30701` passed all 15 original
+factor-paydown tests (full suite 2,456 passed, zero failed, one registered skip); that historical
+run does not certify these later corrective edits. The factor panel alone uses shared server
+review reads and submission; existing desktop-local journal records keep their original lane.
+
+Dependencies were reinstalled from the dashboard lockfile before bundling. Two consecutive locked
+builds had identical paths and SHA-256 digests for all 128 outputs. The factor types are exported
+through the shared barrel. Draft deep links select only the exact returned fund/book/period/ID,
+preserve unrelated unsaved recovery and reject late or foreign responses.
+
+The broad clean local .NET run before this correction passed 24,173 tests with five registered
+skips and failed four unrelated MCP cleanup tests because the container's PID 1 did not reap
+orphan processes. All seven MCP runner tests then passed unchanged under `docker-init -s`.
+Final full-gate results for the corrected source belong to the PR checks and validation report;
+these earlier runs are not a complete gate pass or production certification. Andrew Rowden was
+identified by the user as signing owner; an accessible Windows live-acceptance target remains
+unspecified.
+
+The final mocked Chromium review flow selected the second returned journal draft by exact scope
+and ID, validated and submitted version 7, and rendered submitted version 8 with approval still
+blocked. Both read-only table scroll regions were keyboard reachable and scrollable. Factor-panel
+axe found no violations; the manual review view retained 17 contrast findings also present in the
+normal-draft baseline and introduced no additional findings. These are mocked rendering results,
+not live Windows operator acceptance. The separate unchanged recovery test that timed out under
+hosted load passed locally without widening its 30-second subprocess timeout.
+
+The mirror retains the full generated dimension lineage and typed source candidate. Structured
+posting-account identities not exposed by `GeneratedPostingLineDto` are not reconstructed from
+labels; this review surface is not a complete posting-account projection.

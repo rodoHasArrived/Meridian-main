@@ -9,6 +9,7 @@ using Meridian.FinancialOperations.Ledger;
 using Meridian.Identity.Auth;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,6 +47,8 @@ public static partial class LedgerEndpoints
                 var fingerprint = FactorPaydownPreviewFingerprint(prepared.Instruction, prepared.ProjectRequest.ProjectedEffect);
                 if (!string.Equals(fingerprint, request.ExpectedPreparationFingerprint, StringComparison.Ordinal))
                     return Results.Conflict(new { error = "Factor paydown preparation changed. Prepare and review it again.", code = "FACTOR_PAYDOWN_PREVIEW_STALE" });
+                if (ResolveManualJournalEntryWorkbenchService(context) is not ManualJournalEntryWorkbenchService workbench)
+                    return ServiceUnavailable("The durable manual-journal review workbench is required for factor draft intake.");
                 var spine = ResolveAssetAccountingEventSpineService(context);
                 if (spine is null)
                     return ServiceUnavailable("Asset accounting event spine service is not registered.");
@@ -77,10 +80,14 @@ public static partial class LedgerEndpoints
                     if (retained.PostedJournalImpact is not null || retained.Stages.Any(static stage => stage.Stage == AssetAccountingLifecycleStageDto.Posted))
                         return Results.Conflict(new { error = "The factor event is already posted." });
                     if (retained.DraftedCandidate is { } drafted && retained.DraftedCandidateResult is { } candidate)
-                        return string.Equals(drafted.Description, request.Description.Trim(), StringComparison.Ordinal)
-                            && string.Equals(drafted.Actor, actor, StringComparison.Ordinal)
-                            ? Results.Json(new AssetAccountingPostingCandidateDto(retained, candidate), jsonOptions)
-                            : Results.Conflict(new { error = "The factor event already has a different reviewed draft." });
+                    {
+                        if (!string.Equals(drafted.Description, request.Description.Trim(), StringComparison.Ordinal) ||
+                            !string.Equals(drafted.Actor, actor, StringComparison.Ordinal))
+                            return Results.Conflict(new { error = "The factor event already has a different reviewed draft." });
+                        var retainedDraft = new AssetAccountingPostingCandidateDto(retained, candidate);
+                        await workbench.SaveAssetAccountingDraftAsync(retainedDraft, actor, context.RequestAborted).ConfigureAwait(false);
+                        return Results.Json(retainedDraft, jsonOptions);
+                    }
                     // Resume after a retained projection using its exact lineage, including generation time.
                     project = project with
                     {
@@ -100,6 +107,7 @@ public static partial class LedgerEndpoints
                     project.ExpectedPeriodVersion, project.RetainedEvidence,
                     prepared.LotMutation with { FactorPaydown = project.FactorPaydown }, project.EconomicEvent.CorrelationId),
                     context.RequestAborted).ConfigureAwait(false);
+                await workbench.SaveAssetAccountingDraftAsync(result, actor, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }).ConfigureAwait(false))
             .WithName("CreateLedgerFactorPaydownDraft")
