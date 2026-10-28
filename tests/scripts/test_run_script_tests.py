@@ -239,6 +239,67 @@ class RunScriptTestsTests(unittest.TestCase):
                 output,
             )
 
+    def test_workers_prioritize_repository_packages_after_parent_path_changes(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            fixture_dir = Path(temp_dir)
+            repo_root = SCRIPT_PATH.parents[3]
+            ai_scripts = repo_root / "build" / "scripts" / "ai"
+            (fixture_dir / "test_repository_import.py").write_text(
+                textwrap.dedent(
+                    f"""\
+                    import unittest
+                    from pathlib import Path
+                    from tests.scripts import workflow_assertions
+
+                    class RepositoryImportTests(unittest.TestCase):
+                        def test_repository_package(self):
+                            self.assertEqual(
+                                Path(workflow_assertions.__file__).resolve(),
+                                Path({str(repo_root / 'tests/scripts/workflow_assertions.py')!r}),
+                            )
+                    """
+                ),
+                encoding="utf-8",
+            )
+            (fixture_dir / "test_z_parent_path.py").write_text(
+                textwrap.dedent(
+                    f"""\
+                    import multiprocessing
+                    import sys
+                    import unittest
+                    from pathlib import Path
+
+                    # Full parent discovery imports unrelated suites that prepend
+                    # this directory, which contains its own 'tests' package.
+                    if multiprocessing.current_process().name == "MainProcess":
+                        sys.path.insert(0, {str(ai_scripts)!r})
+                        Path(__file__).with_suffix(".path").write_text(
+                            "\\n".join(sys.path), encoding="utf-8"
+                        )
+
+                    class ParentPathTests(unittest.TestCase):
+                        def test_kept_in_discovery(self):
+                            pass
+                    """
+                ),
+                encoding="utf-8",
+            )
+
+            result = self.run_fixture(fixture_dir, "--workers", "1")
+            output = result.stdout + result.stderr
+            parent_path = (fixture_dir / "test_z_parent_path.path").read_text(
+                encoding="utf-8"
+            ).splitlines()
+
+            self.assertEqual(parent_path[0], str(ai_scripts), output)
+            self.assertGreater(parent_path.index(str(repo_root)), 0, output)
+            self.assertEqual(result.returncode, 0, output)
+            self.assertIn(
+                "Script-test lane: ran 2 tests, 0 module(s) quarantined, "
+                "failures=0, errors=0, skipped=0.",
+                output,
+            )
+
     def test_fixture_summary_writes_do_not_pollute_the_job_summary(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             fixture_dir = Path(temp_dir)
