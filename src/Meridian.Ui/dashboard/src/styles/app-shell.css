@@ -474,6 +474,9 @@ a.workstation-trust-item:focus-visible {
 }
 
 .workbench-scroll {
+  /* Keep absolute accessibility text, including off-screen table captions,
+     inside this scrollport instead of extending the outer document. */
+  position: relative;
   min-width: 0;
   min-height: 0;
   height: 100%;

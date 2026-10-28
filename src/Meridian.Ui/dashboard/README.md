@@ -347,6 +347,11 @@ owner-assignment, outcome, and compatibility-derived provenance visible, with op
 SLA tier and deadline. Live provider-attempt progress remains a separate bounded projection so a
 dropped transient notification cannot erase the retained execution/SLA record.
 
+The workbench owns its scrollport and the containing block for absolute accessibility text.
+Off-screen table captions stay available to assistive technology without expanding the outer
+document into a blank page. Desktop workstations retain internal scrolling; the existing zoom
+layout retains page scrolling.
+
 ## Important workflows
 
 From the repository root, use `npm run dev` for the seeded backend with watch/restarts and Vite
