@@ -1,11 +1,11 @@
 {
   "total_files": 748,
-  "total_lines": 168458,
+  "total_lines": 168528,
   "orphaned_count": 250,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 307,
-  "average_lines": 225.2,
+  "average_lines": 225.3,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1646,7 +1646,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 6743,
+      "line_count": 6803,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5862,7 +5862,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 1155,
+      "line_count": 1156,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5894,7 +5894,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1921,
+      "line_count": 1922,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6150,7 +6150,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2834,
+      "line_count": 2842,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

@@ -6766,4 +6766,38 @@ on an updated node and 500 on an older one. Rolling back restores the 500s.
   profile-backed create whose catalog records its own approval reference is refused, and now
   receives a 400 with the catalog-validation reason instead of a 500.
 
-<!-- sm400-validation-results -->
+**Validation.** `SecurityMasterWriteRefusalEndpointsTests` (new) drives the six routes behind the
+shared Problem Details writer and exception handler a deployed host registers, mostly through the
+real service over substitute stores. It pins each 400 with its detail and each 500 with the
+exception the handler logs, so a 500 cannot pass for the wrong fault. The 400 cases cover a
+write-version refusal, a missing term, a non-flat `termsFormat`, an F# domain error,
+`security_inactive` (on `/amend` and both preferred routes), a round-trip guard, a term-block row
+stamped above the write version, an unrecognized class rebuilt from events, and a stale amend whose
+patch the mapping refuses. The 500 cases cover undecodable rows (projection, event, a row a guard
+would also refuse, and a projection-only row of an unrecognized class), stored rows lacking the
+terms the preferred and convertible patch builders read, a term-block row whose event cannot be
+replayed, a stale version, a stream naming another security, a duplicate create, an unknown security
+and deactivate. The whole `Meridian.Tests` suite ran on the code before the last test-only commit
+with 21,648 passed, 609 skipped and 2 failed: the isolated QuantScript worker behind one
+strategy-design test, which has failed in every full run in this container since increment 3, and an
+allocation-budget test that measured allocations while other builds ran and passed alone (9 of 9).
+The Security Master, corporate-action, amortization and import filter passed (4,905), and the
+endpoint and versioning classes passed after the last commit (198). Four ordering mutations each
+failed only the test written for them: running the round-trip guards before the decode, on amend and
+on deactivate, and running the class check after it, on amend and on deactivate. The format,
+file-size, inline SHA-256, duplicate-helper, test-skip, warning-suppression and
+endpoint-cancellation guards pass, schema-control `verify` reproduces the committed manifests,
+`validate-doc-hashes` is clean and the `verify-docs` lane passes.
+
+The change went through three adversarial reviews, with two skeptics trying to refute each finding.
+They changed the code in three places: amend and deactivate decode the stored row before the
+round-trip guards, so a row this node cannot decode is never reported as a refusal whose repair
+fails at that decode; the unrecognized-class check runs before the decode, because its repair is on
+another node; and a write that declares a non-flat `termsFormat` is told what to submit instead of
+the read guard's server-side instruction, which reached callers once refusals answered 400. They
+also added the real-service route cases above and narrowed the stale-amend ordering, the
+compatibility-matrix entry, the exception remarks and the reach of the class refusal to what the
+code does. Two findings were refuted by both skeptics: that the 400 should declare a Problem Details
+schema (the file declares its 400s without one, as the term-block route did), and that the
+term-block route's write-version reason names a stamp the route cannot carry, which the behaviour
+list now explains instead.
