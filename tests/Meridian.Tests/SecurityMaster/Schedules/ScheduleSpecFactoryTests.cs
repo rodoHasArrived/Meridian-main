@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Calendars;
@@ -194,6 +195,19 @@ public sealed class ScheduleSpecFactoryTests
 
         spec.Roll.Should().Be(ScheduleRoll.EndOfMonth);
         spec.FirstRegularDate.Should().Be(D(2026, 4, 30));
+    }
+
+    [Theory]
+    [InlineData("2027-02-15", "2026-11-30", "EndOfMonth")]
+    [InlineData("2027-02-28", "2026-11-15", "FixedDay(15)")]
+    public void EndOfMonthRule_AnchorsOnTheLastRegularDate_GoingBackward(string maturity, string lastRegularDate, string roll)
+    {
+        var spec = DeclaredSpec(Resolve(Bond(
+            $$"""{"accrualAdjusted":false,"endOfMonthRule":true,"direction":"Backward","lastRegularDate":"{{lastRegularDate}}"}""",
+            body: BondWith(issue: "2026-01-15", maturity: maturity))));
+
+        spec.Roll.ToString().Should().Be(roll);
+        spec.LastRegularDate.Should().Be(DateOnly.Parse(lastRegularDate, CultureInfo.InvariantCulture));
     }
 
     [Theory]
