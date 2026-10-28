@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Meridian.Execution.Sdk;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 
