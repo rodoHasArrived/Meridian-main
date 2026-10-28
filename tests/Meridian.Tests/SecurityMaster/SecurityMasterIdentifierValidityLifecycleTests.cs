@@ -36,7 +36,7 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
         host.Registry.ResolveToCanonical("RENEWED").Should().BeNull();
         host.Registry.TryResolveWithProvider("VENDOR.RENEWED", "vendor").Should().BeNull();
 
-        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await host.AdvanceAndWaitForSeedAsync(TimeSpan.FromSeconds(10));
 
         await UntilAsync(() => host.Registry.ResolveToCanonical("RENEWED") == "VALIDITY");
         host.Registry.TryResolveWithProvider("VENDOR.RENEWED", "vendor").Should().Be("VALIDITY");
@@ -45,7 +45,7 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
             alias.Alias == "RENEWED" && alias.IsActive && alias.ValidFrom == T0.AddSeconds(10) && alias.ValidTo == T0.AddSeconds(20));
         await host.WaitForTimerAsync(T0.AddSeconds(20));
 
-        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await host.AdvanceAndWaitForSeedAsync(TimeSpan.FromSeconds(10));
 
         await UntilAsync(() => host.Registry.ResolveToCanonical("RENEWED") is null
             && host.Registry.GetProviderSymbol("VALIDITY", "vendor") is null);
@@ -78,7 +78,7 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
         host.Clock.Advance(TimeSpan.FromSeconds(10) - TimeSpan.FromTicks(1));
         host.Registry.ResolveToCanonical("GENERIC").Should().BeNull("ValidFrom is not active before its exact boundary");
 
-        host.Clock.Advance(TimeSpan.FromTicks(1));
+        await host.AdvanceAndWaitForSeedAsync(TimeSpan.FromTicks(1));
         await UntilAsync(() => host.Registry.GetProviderSymbol("VALIDITY", "vendor") == "VENDOR.A");
         foreach (var value in new[] { "GENERIC", "US0000000001", "123456789", "BBG000VALID", "1234567" })
             host.Registry.ResolveToCanonical(value).Should().Be("VALIDITY");
@@ -89,7 +89,7 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
         active.Sedol.Should().Be("1234567");
         await host.WaitForTimerAsync(T0.AddSeconds(20));
 
-        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await host.AdvanceAndWaitForSeedAsync(TimeSpan.FromSeconds(10));
         // The seed publishes its next boundary after every registry index has refreshed.
         await UntilAsync(() => host.Seed.NextValidityTransitionUtc is null);
         host.Registry.GetProviderSymbol("VALIDITY", "vendor").Should().BeNull();
@@ -118,7 +118,7 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
         host.Record = host.Record with { Aliases = [Alias(host.Id, "EARLIER", T0.AddSeconds(10))] };
         await host.Seed.SeedAsync();
         await host.WaitForTimerAsync(T0.AddSeconds(10));
-        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await host.AdvanceAndWaitForSeedAsync(TimeSpan.FromSeconds(10));
 
         await UntilAsync(() => host.Registry.ResolveToCanonical("EARLIER") == "VALIDITY");
         host.Registry.ResolveToCanonical("LATER").Should().BeNull();
@@ -202,14 +202,14 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
         host.Seed.TryGetSecurityId("EARLY").Should().Be(host.Id);
         host.Seed.TryGetSecurityId("LATER").Should().BeNull();
 
-        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await host.AdvanceAndWaitForSeedAsync(TimeSpan.FromSeconds(10));
         await UntilAsync(() => host.Registry.ResolveToCanonical("LATER") == "LATER"
             && host.Seed.TryGetSecurityId("LATER") == host.Id);
         host.Registry.ResolveToCanonical("EARLY").Should().BeNull();
         host.Seed.TryGetSecurityId("EARLY").Should().BeNull();
         await host.WaitForTimerAsync(T0.AddSeconds(20));
 
-        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await host.AdvanceAndWaitForSeedAsync(TimeSpan.FromSeconds(10));
         await UntilAsync(() => host.Seed.TryGetSecurityId("LATER") is null
             && host.Registry.ResolveToCanonical("LATER") is null);
         host.Reads.Should().Be(3);
@@ -232,12 +232,12 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
         host.Seed.TryGetSecurityId("FUTURE").Should().BeNull();
         host.Seed.NextValidityTransitionUtc.Should().Be(T0.AddSeconds(10));
 
-        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await host.AdvanceAndWaitForSeedAsync(TimeSpan.FromSeconds(10));
         await UntilAsync(() => host.Registry.ResolveToCanonical("FUTURE") == "FUTURE"
             && host.Seed.TryGetSecurityId("FUTURE") == host.Id);
         await host.WaitForTimerAsync(T0.AddSeconds(20));
 
-        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await host.AdvanceAndWaitForSeedAsync(TimeSpan.FromSeconds(10));
         await UntilAsync(() => host.Registry.ResolveToCanonical("FUTURE") is null
             && host.Seed.TryGetSecurityId("FUTURE") is null);
         host.Reads.Should().Be(3);
@@ -268,7 +268,7 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
         await host.WaitForTimerAsync(T0.AddSeconds(10));
         host.Registry.ResolveToCanonical("EARLY").Should().Be("EARLY");
 
-        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await host.AdvanceAndWaitForSeedAsync(TimeSpan.FromSeconds(10));
         await UntilAsync(() => host.Seed.TryGetSecurityId("EARLY") is null
             && host.Registry.ResolveToCanonical("EARLY") is null);
         host.Registry.ResolveToCanonical("NEXT").Should().BeNull();
@@ -279,7 +279,7 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
         host.Registry.ResolveToCanonical("MANUAL").Should().NotBeNull();
         await host.WaitForTimerAsync(T0.AddSeconds(20));
 
-        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await host.AdvanceAndWaitForSeedAsync(TimeSpan.FromSeconds(10));
         await UntilAsync(() => host.Registry.ResolveToCanonical("NEXT") == "NEXT"
             && host.Seed.TryGetSecurityId("NEXT") == host.Id);
         host.Registry.ResolveToCanonical("LIVE_ALIAS").Should().Be("NEXT");
@@ -287,13 +287,13 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
         host.Registry.ResolveToCanonical("MANUAL").Should().Be("NEXT");
         await host.WaitForTimerAsync(T0.AddSeconds(30));
 
-        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await host.AdvanceAndWaitForSeedAsync(TimeSpan.FromSeconds(10));
         await UntilAsync(() => host.Registry.ResolveToCanonical("NEXT") is null
             && host.Seed.TryGetSecurityId("NEXT") is null);
         host.Registry.ResolveToCanonical("LIVE_ALIAS").Should().NotBeNull();
         await host.WaitForTimerAsync(T0.AddSeconds(40));
 
-        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await host.AdvanceAndWaitForSeedAsync(TimeSpan.FromSeconds(10));
         await UntilAsync(() => host.Registry.ResolveToCanonical("LIVE_ALIAS") is null
             && host.Registry.TryResolveWithProvider("LIVE.VENDOR", "vendor") is null
             && host.Registry.ResolveToCanonical("US0000000099") is null);
@@ -327,7 +327,7 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
         host.Seed.TryGetSecurityId(early).Should().Be(host.Id);
         host.Registry.ResolveToCanonical(overlap).Should().BeNull();
 
-        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await host.AdvanceAndWaitForSeedAsync(TimeSpan.FromSeconds(10));
         await UntilAsync(() => host.Registry.ResolveToCanonical(early) is null
             && host.Seed.TryGetSecurityId(early) is null);
         host.Registry.ResolveToCanonical(overlap).Should().BeNull();
@@ -343,7 +343,7 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
         }
         await host.WaitForTimerAsync(T0.AddSeconds(20));
 
-        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await host.AdvanceAndWaitForSeedAsync(TimeSpan.FromSeconds(10));
         await UntilAsync(() => host.Registry.ResolveToCanonical(early) == early
             && host.Seed.TryGetSecurityId(early) == host.Id);
         host.Registry.ResolveToCanonical(overlap).Should().BeNull();
@@ -358,12 +358,28 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
     private static SecurityAliasDto Alias(Guid id, string value, DateTimeOffset from, DateTimeOffset? to = null, string? provider = null)
         => new(Guid.NewGuid(), id, "Ticker", value, provider, SecurityAliasScope.Operations, null, "test", T0, from, to, true);
 
+    [Fact]
+    public async Task UntilAsync_AcceptsTheFirstSuccessfulObservationWithoutReadingItAgain()
+    {
+        var observations = 0;
+
+        // Timer readiness can disappear when the worker consumes its queued schedule change.
+        // Observing it successfully must not be followed by a second, racing assertion read.
+        await UntilAsync(() => ++observations == 1);
+
+        observations.Should().Be(1);
+    }
+
     private static async Task UntilAsync(Func<bool> condition)
     {
         var deadline = DateTime.UtcNow.AddSeconds(5);
-        while (!condition() && DateTime.UtcNow < deadline)
+        var observed = condition();
+        while (!observed && DateTime.UtcNow < deadline)
+        {
             await Task.Delay(5);
-        condition().Should().BeTrue("the asynchronous validity worker should complete after manual time advances");
+            observed = condition();
+        }
+        observed.Should().BeTrue("the asynchronous validity worker should complete after manual time advances");
     }
 
     private sealed class Host : IAsyncDisposable
@@ -413,6 +429,25 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
 
         public Task StartAsync() => Warmup.StartAsync(CancellationToken.None);
         public Task WaitForTimerAsync(DateTimeOffset due) => UntilAsync(() => Clock.HasTimerAt(due));
+
+        public async Task AdvanceAndWaitForSeedAsync(TimeSpan elapsed)
+        {
+            // The notification follows publication of both the registry and reverse lookup.
+            // Subscribe before advancing so a fast worker cannot complete before we observe it.
+            var published = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            void OnPublished() => published.TrySetResult();
+            Seed.ValidityScheduleChanged += OnPublished;
+            try
+            {
+                Clock.Advance(elapsed);
+                await published.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            }
+            finally
+            {
+                Seed.ValidityScheduleChanged -= OnPublished;
+            }
+        }
+
         public async ValueTask DisposeAsync()
         {
             await Warmup.StopAsync(CancellationToken.None);
