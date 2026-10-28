@@ -382,7 +382,7 @@ public sealed class DemoWorkspaceSmokeTests : IAsyncLifetime
         }
         if (services.GetService<SecurityMasterMigrationRunner>() is not null)
         {
-            var securityMaster = services.GetRequiredService<SecurityMasterOptions>();
+            var securityMaster = services.GetRequiredService<Meridian.Contracts.SecurityMaster.SecurityMasterOptions>();
             var scope = _databaseSchemaScopes.Single(item =>
                 string.Equals(item.Schema, securityMaster.Schema, StringComparison.Ordinal));
             await scope.InitializeOwnedSchemaAsync(
