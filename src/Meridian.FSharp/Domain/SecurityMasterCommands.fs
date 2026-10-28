@@ -58,7 +58,7 @@ module SecurityMaster =
         @ requireNotBlank "source_system_required" "SourceSystem" provenance.SourceSystem
         @ requireNotBlank "updated_by_required" "UpdatedBy" provenance.UpdatedBy
 
-    let private validateKind (kind: SecurityKind) =
+    let private validateKindTerms (kind: SecurityKind) =
         match kind with
         | SecurityKind.Equity _ -> []
         | SecurityKind.Option terms ->
@@ -77,6 +77,10 @@ module SecurityMaster =
             @ require (terms.Multiplier > 0m) (error "future_multiplier_invalid" "Future multiplier must be greater than zero.")
         | SecurityKind.Bond terms ->
             []
+            @ require (not (Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes.IsSecuritizedLabel(BondSubclass.label terms.Subclass)))
+                (error "bond_securitized_subclass_noncanonical" "Securitized products must be modeled as StructuredCredit, not Bond.")
+            @ require (not (Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes.IsBankLoanLabel(BondSubclass.label terms.Subclass)))
+                (error "bond_bank_loan_subclass_noncanonical" "Bank loans must be modeled as DirectLoan, not Bond.")
             @ require (BondTerms.couponRate terms |> Option.forall (fun rate -> rate >= 0m))
                 (error "bond_coupon_invalid" "Bond coupon rate must be zero or greater when present.")
             @ require (terms.PrincipalSchedule |> List.forall (fun entry -> entry.Amount > 0m))
@@ -199,6 +203,8 @@ module SecurityMaster =
         | SecurityKind.OtherSecurity terms ->
             []
             @ requireNotBlank "other_security_category_required" "Category" terms.Category
+            @ require (not (Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes.IsSecuritizedLabel terms.Category))
+                (error "other_security_securitized_noncanonical" "Securitized products must be modeled as StructuredCredit, not OtherSecurity.")
         | SecurityKind.Swap terms ->
             []
             @ require (terms.EffectiveDate <= terms.MaturityDate)
@@ -480,6 +486,25 @@ module SecurityMaster =
                             [ error "custom_asset_terms_invalid" "CustomAsset terms must be a JSON object." ]
                         else
                             []
+                            @ (let namesSecuritizedProduct (element: JsonElement) =
+                                   [ "category"; "subType"; "accountingClassification" ]
+                                   |> List.exists (fun key ->
+                                       match element.TryGetProperty key with
+                                       | true, value when value.ValueKind = JsonValueKind.String ->
+                                           Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes.IsSecuritizedLabel(value.GetString())
+                                       | _ -> false)
+                               let noncanonical =
+                                   namesSecuritizedProduct root
+                                   || (match root.TryGetProperty "profileFields" with
+                                       | true, fields when fields.ValueKind = JsonValueKind.Object -> namesSecuritizedProduct fields
+                                       | _ -> false)
+                               let resolvesToStructuredCredit =
+                                   not (String.IsNullOrWhiteSpace terms.CustomProfileId)
+                                   && (match Meridian.Contracts.SecurityMaster.SecurityAssetPackRegistry.ProfileAssetClasses.TryGetValue terms.CustomProfileId with
+                                       | true, assetClass -> assetClass = "StructuredCredit"
+                                       | _ -> false)
+                               require (not noncanonical || resolvesToStructuredCredit)
+                                   (error "custom_asset_securitized_noncanonical" "Securitized products must resolve to StructuredCredit through a reclassifying profile or a first-class StructuredCredit definition."))
                             @ (match root.TryGetProperty "profileVersion" with
                                | true, value when value.ValueKind = JsonValueKind.Number ->
                                    // A JSON number is not enough: a fractional value such as 1.5
@@ -505,6 +530,24 @@ module SecurityMaster =
                 (error "custom_asset_profile_version_invalid" "CustomAsset ProfileVersion must be greater than zero.")
             @ requireNotBlank "custom_asset_terms_required" "TermsJson" terms.TermsJson
             @ envelopeErrors
+
+    let private validateKind (kind: SecurityKind) =
+        let dayCounts =
+            match kind with
+            | SecurityKind.Bond terms -> [ BondTerms.dayCount terms ]
+            | SecurityKind.Deposit terms -> [ terms.DayCount ]
+            | SecurityKind.CertificateOfDeposit terms -> [ terms.DayCount ]
+            | SecurityKind.CommercialPaper terms -> [ terms.DayCount ]
+            | SecurityKind.Swap terms -> terms.Legs |> List.map (fun leg -> leg.DayCount)
+            | SecurityKind.CreditDefaultSwap terms -> [ terms.DayCount ]
+            | SecurityKind.Swaption terms -> [ terms.FixedLegDayCount ]
+            | SecurityKind.CapFloor terms -> [ terms.DayCount ]
+            | _ -> []
+        validateKindTerms kind
+        @ require
+            (dayCounts |> List.forall (Option.forall (fun value ->
+                Enum.IsDefined value && value <> Meridian.Contracts.SecurityMaster.DayCountConvention.Unknown)))
+            (error "day_count_invalid" "Supplied day-count conventions must name a supported convention.")
 
     let private validateIdentifier (identifier: Identifier) =
         []

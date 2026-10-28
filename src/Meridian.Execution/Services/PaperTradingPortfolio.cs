@@ -492,6 +492,17 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         // a restart, when no caller is left to supply the classification.
         var faceValueSizing = usesFaceValuePercentageOfPar || report.UsesFaceValuePercentageOfPar;
 
+        var multiplier = report.LotMultiplier ?? contractMultiplier;
+        if (multiplier <= 0m)
+            throw new ArgumentOutOfRangeException(nameof(contractMultiplier), "Lot multiplier must be positive.");
+        var lotUnit = report.LotUnitKind
+            ?? (faceValueSizing ? SecurityLotUnitKind.FaceValue
+                : SecurityAssetClassCatalog.TryResolveLabel(report.AssetClass, out var descriptor) ? descriptor.LotUnit
+                : report.OptionContract is not null || multiplier != 1m ? SecurityLotUnitKind.Contracts
+                : SecurityLotUnitKind.Shares); // Legacy symbol-only reports explicitly assume shares.
+        if (!Enum.IsDefined(lotUnit))
+            throw new ArgumentOutOfRangeException(nameof(report), "Lot denomination must be a defined unit.");
+
         // A percentage of par is a fraction of par: convert once here so every downstream
         // lot, cost-basis, cash, and ledger computation shares one per-unit dollar price.
         var fillPrice = faceValueSizing
@@ -505,7 +516,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
             ApplyFillToAccount(account, report.Symbol, signedQty, fillPrice,
                 explicitCosts, report.Timestamp, report.OrderId,
-                ownerAccountId, contractMultiplier, faceValueSizing);
+                ownerAccountId, multiplier, faceValueSizing, lotUnit);
         }
     }
 
@@ -650,12 +661,17 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         string orderId,
         string? ownerAccountId = null,
         decimal contractMultiplier = 1m,
-        bool usesFaceValuePricing = false)
+        bool usesFaceValuePricing = false,
+        SecurityLotUnitKind lotUnit = SecurityLotUnitKind.Shares)
     {
         if (!account.Positions.TryGetValue(symbol, out var pos))
         {
-            pos = new PaperPosition(symbol, price);
+            pos = new PaperPosition(symbol, price) { LotUnit = lotUnit };
             account.Positions[symbol] = pos;
+        }
+        else if (pos.LotUnit != lotUnit)
+        {
+            throw new InvalidOperationException($"Fill lot denomination {lotUnit} does not match the open {pos.LotUnit} position for '{symbol}'.");
         }
 
         // Once a face-value fill touches the position, its cost basis and market price are
@@ -1149,12 +1165,10 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     public bool UsesFaceValuePricing { get; set; }
 
     /// <summary>
-    /// What one unit of this position's lots measures, from how its fills were quoted: face for
-    /// par-priced debt, contracts when a multiplier was recorded, otherwise shares.
+    /// What one unit of this position's lots measures, retained from resolved fill metadata.
+    /// Symbol-only legacy reports retain the explicit shares assumption.
     /// </summary>
-    public SecurityLotUnitKind LotUnit => UsesFaceValuePricing
-        ? SecurityLotUnitKind.FaceValue
-        : ContractMultiplier != 1m ? SecurityLotUnitKind.Contracts : SecurityLotUnitKind.Shares;
+    public SecurityLotUnitKind LotUnit { get; init; } = SecurityLotUnitKind.Shares;
 
     /// <summary>The open lot book in the shared lot shape.</summary>
     public IReadOnlyList<IUnitizedLot> UnitizedLots => _lots;

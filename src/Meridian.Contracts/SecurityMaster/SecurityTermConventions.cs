@@ -189,7 +189,7 @@ public static class SecurityTermConventions
     public static bool IsRecognized(SecurityTermConventionKind kind, string? raw)
         => kind switch
         {
-            SecurityTermConventionKind.DayCount => DayCountConventions.TryParse(raw, out _),
+            SecurityTermConventionKind.DayCount => DayCountConventions.TryParseTerm(raw, out _),
             SecurityTermConventionKind.SettlementMethod => TryParseSettlementMethod(raw, out _),
             SecurityTermConventionKind.PaymentFrequency => TryParsePaymentFrequency(raw, out _),
             SecurityTermConventionKind.CouponFrequency => TryParsePaymentFrequency(raw, out var frequency) && IsSchedulableCoupon(frequency),

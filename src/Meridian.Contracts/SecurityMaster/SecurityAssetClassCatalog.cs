@@ -360,7 +360,7 @@ public static class SecurityAssetClassCatalog
             ],
             AssetOperationsCapabilities: AssetOperationsCapabilitySet.DirectLending,
             AmortizesTowardPar: true,
-            Aliases: ["Loan", "AmortizingLoan"]),
+            Aliases: ["Loan", "AmortizingLoan", "BankLoan"]),
         new(
             AssetClass: "StructuredCredit",
             AssetPackIds: ["fixed-income"],
@@ -401,7 +401,7 @@ public static class SecurityAssetClassCatalog
             ],
             ReadableTermsVersion: null,
             SupportsProfileBackedTerms: true,
-            Aliases: ["MortgageBacked", "MortgageBackedSecurity", "MBS", "AssetBacked", "AssetBackedSecurity", "ABS"],
+            Aliases: [.. SecurityCanonicalAssetHomes.SecuritizedLabels.Where(static label => label != "StructuredCredit")],
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.AssetBackedSecurity) { StampFloor = 2 },
         new(
             AssetClass: "PrivateFundInterest",
@@ -420,7 +420,7 @@ public static class SecurityAssetClassCatalog
             SupportsProfileBackedTerms: true,
             // Spellings the private-fund pack planned and Asset Operations used to accept by name;
             // existing subjects carrying them keep resolving to this class.
-            Aliases: ["PrivateFund", "PartnershipInterest"]),
+            Aliases: ["PrivateFund", "PartnershipInterest", "LimitedPartnershipInterest"]),
         new(
             AssetClass: "PrivateCompanyEquity",
             AssetPackIds: ["private-fund-partnership"],

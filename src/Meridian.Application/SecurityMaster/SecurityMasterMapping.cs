@@ -314,7 +314,7 @@ internal static class SecurityMasterMapping
                 GetRequiredString(json, "institutionName"),
                 ToOption(GetOptionalDateOnly(json, "maturity")),
                 ToOption(GetOptionalDecimal(json, "interestRate")),
-                ToOption(GetOptionalString(json, "dayCount")),
+                ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode),
                 GetOptionalBoolean(json, "isCallable") ?? false)),
             "MoneyMarketFund" => SecurityKind.NewMoneyMarketFund(new MoneyMarketFundTerms(
                 ToOption(GetOptionalString(json, "fundFamily")),
@@ -326,14 +326,14 @@ internal static class SecurityMasterMapping
                 GetRequiredDateOnly(json, "maturity"),
                 ToOption(GetOptionalDecimal(json, "couponRate")),
                 ToOption(GetOptionalDateOnly(json, "callableDate")),
-                ToOption(GetOptionalString(json, "dayCount")),
+                ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode),
                 ReadScheduleConventions(json, assetClass, versionedTerms),
                 ReadCallPutSchedules(json, assetClass, versionedTerms))),
             "CommercialPaper" => SecurityKind.NewCommercialPaper(new CommercialPaperTerms(
                 GetRequiredString(json, "issuerName"),
                 GetRequiredDateOnly(json, "maturity"),
                 ToOption(GetOptionalDecimal(json, "discountRate")),
-                ToOption(GetOptionalString(json, "dayCount")),
+                ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode),
                 GetOptionalBoolean(json, "isAssetBacked") ?? false)),
             "TreasuryBill" => SecurityKind.NewTreasuryBill(new TreasuryBillTerms(
                 GetRequiredDateOnly(json, "maturity"),
@@ -363,7 +363,7 @@ internal static class SecurityMasterMapping
             "Swap" => SecurityKind.NewSwap(new SwapTerms(
                 GetRequiredDateOnly(json, "effectiveDate"),
                 GetRequiredDateOnly(json, "maturityDate"),
-                ToFSharpList(GetSwapLegItems(json).Select(leg => ToSwapLeg(leg, ReadLegScheduleConventions(leg, assetClass, versionedTerms)))))),
+                ToFSharpList(GetSwapLegItems(json).Select(leg => ToSwapLeg(leg, ReadLegScheduleConventions(leg, assetClass, versionedTerms), mode))))),
             "DirectLoan" => SecurityKind.NewDirectLoan(new DirectLoanTerms(
                 GetRequiredString(json, "borrower"),
                 ToOption(GetOptionalDateOnly(json, "maturity")),
@@ -480,7 +480,7 @@ internal static class SecurityMasterMapping
                 GetRequiredDateOnly(json, "effectiveDate"),
                 GetRequiredDateOnly(json, "maturityDate"),
                 ToOption(GetOptionalString(json, "paymentFrequency", mode)),
-                ToOption(GetOptionalString(json, "dayCount", mode)),
+                ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode),
                 ToOption(GetOptionalString(json, "seniority", mode)),
                 ToOption(GetOptionalString(json, "restructuringClause", mode)),
                 ToOption(GetOptionalDecimal(json, "upfrontPoints", mode)),
@@ -496,7 +496,7 @@ internal static class SecurityMasterMapping
                 GetRequiredDecimal(json, "notional"),
                 ToOption(GetOptionalString(json, "floatingIndex", mode)),
                 ToOption(GetOptionalString(json, "fixedLegPaymentFrequency", mode)),
-                ToOption(GetOptionalString(json, "fixedLegDayCount", mode)),
+                ToDayCountOption(GetOptionalString(json, "fixedLegDayCount", mode), mode, "fixedLegDayCount"),
                 ToOption(GetOptionalString(json, "settlementType", mode)))),
             "CapFloor" => SecurityKind.NewCapFloor(new CapFloorTerms(
                 GetRequiredString(json, "capFloorType"),
@@ -507,7 +507,7 @@ internal static class SecurityMasterMapping
                 GetRequiredDateOnly(json, "effectiveDate"),
                 GetRequiredDateOnly(json, "maturityDate"),
                 ToOption(GetOptionalString(json, "resetFrequency", mode)),
-                ToOption(GetOptionalString(json, "dayCount", mode)),
+                ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode),
                 ToOption(GetOptionalDecimal(json, "premiumAmount", mode)))),
             "StructuredNote" => SecurityKind.NewStructuredNote(new StructuredNoteTerms(
                 GetRequiredString(json, "issuerName"),
@@ -599,8 +599,8 @@ internal static class SecurityMasterMapping
             throw new InvalidOperationException(UndeclaredDiscriminantValue(assetClass, field.Key, raw));
         }
 
-        // Typed conventions (day count, settlement method) keep their text verbatim, but a write
-        // must name a value the convention can type: an unparseable day count would otherwise be
+        // Typed conventions must name a value their parser recognizes. Day counts normalize to
+        // canonical market labels; an unparseable day count would otherwise be
         // persisted and silently read as Unknown by every accrual and cash-flow calculation.
         foreach (var field in SecurityAssetTermsSchema.Fields(assetClass)
                      .Where(static field => field.Convention != SecurityTermConventionKind.None))
@@ -742,17 +742,6 @@ internal static class SecurityMasterMapping
         "FixedToFloat" => BondSubclass.FixedToFloat,
         "Vrdn" => BondSubclass.Vrdn,
         "AuctionRate" => BondSubclass.AuctionRate,
-        "BankLoan" => BondSubclass.BankLoan,
-        "AssetBacked" => BondSubclass.AssetBacked,
-        "MortgageBacked" => BondSubclass.MortgageBacked,
-        "AgencyMbs" => BondSubclass.AgencyMbs,
-        "CommercialMbs" => BondSubclass.CommercialMbs,
-        "Cmo" => BondSubclass.Cmo,
-        "Clo" => BondSubclass.Clo,
-        "Cdo" => BondSubclass.Cdo,
-        "PrincipalOnly" => BondSubclass.PrincipalOnly,
-        "InterestOnly" => BondSubclass.InterestOnly,
-        "InverseInterestOnly" => BondSubclass.InverseInterestOnly,
         "Corporate" => BondSubclass.Corporate,
         null or "" => BondSubclass.Corporate,
         var other => BondSubclass.NewOther(other)
@@ -782,11 +771,11 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalDecimal(json, "spreadBps")),
                 ToOption(GetOptionalDecimal(json, "capRate")),
                 ToOption(GetOptionalDecimal(json, "floorRate")),
-                ToOption(GetOptionalString(json, "dayCount"))),
+                ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode)),
             "ZeroCoupon" => BondCouponStructure.ZeroCoupon,
             "Step" => BondCouponStructure.NewStep(
                 ToFSharpList(GetOptionalArrayItemsStrict(json, "stepSchedule").Select(ToStepCouponEntry)),
-                ToOption(GetOptionalString(json, "dayCount"))),
+                ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode)),
             // The scalar couponRate slot carries the inflation-linked REAL rate; couponType
             // discriminates, so a fixed-coupon read can never pick up an indexed rate.
             "InflationLinked" => BondCouponStructure.NewInflationLinked(
@@ -794,10 +783,10 @@ internal static class SecurityMasterMapping
                 GetRequiredString(json, "inflationIndex"),
                 ToOption(GetOptionalDecimal(json, "inflationBaseIndexValue")),
                 ToOption(GetOptionalDecimal(json, "inflationIndexRatio")),
-                ToOption(GetOptionalString(json, "dayCount"))),
+                ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode)),
             "Fixed" => BondCouponStructure.NewFixed(
                 GetOptionalDecimal(json, "couponRate") ?? 0m,
-                ToOption(GetOptionalString(json, "dayCount"))),
+                ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode)),
             // A WRITE fails closed on an unrecognized coupon type: silently persisting a typo
             // ("Floter") as a fixed coupon would change the bond's economics and drop the fields
             // the named structure owns.
@@ -806,7 +795,7 @@ internal static class SecurityMasterMapping
             // Read tolerance: an unrecognized coupon type must not fail every read of the row.
             _ => BondCouponStructure.NewFixed(
                 GetOptionalDecimal(json, "couponRate") ?? 0m,
-                ToOption(GetOptionalString(json, "dayCount")))
+                ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode))
         };
         return new BondTerms(
             GetRequiredDateOnly(json, "maturity"),
@@ -942,7 +931,7 @@ internal static class SecurityMasterMapping
 
     // Match the cash-flow resolver's alias priority, while refusing malformed supplied economics
     // instead of persisting them as absent. The pre-widening four-field leg remains readable.
-    private static SwapLeg ToSwapLeg(JsonElement json, ScheduleConventions scheduleConventions)
+    private static SwapLeg ToSwapLeg(JsonElement json, ScheduleConventions scheduleConventions, SecurityKindMappingMode mode)
     {
         if (json.ValueKind != JsonValueKind.Object)
         {
@@ -962,7 +951,7 @@ internal static class SecurityMasterMapping
             ToOption(ReadSwapLegDecimal(json, "currentIndexRate", "lastFixing", "currentRate", "indexRate")),
             ToOption(ReadSwapLegDecimal(json, "notional", "notionalAmount", "faceAmount", "principal")),
             ToOption(ReadSwapLegString(json, "paymentFrequency", "frequency")),
-            ToOption(ReadSwapLegString(json, "dayCountConvention", "dayCount", "dayCountBasis")),
+            ToSwapLegDayCountOption(json, mode),
             ReadSwapLegPrincipalExchange(json),
             ToFSharpList(ReadSwapLegNotionalSchedule(json)),
             ToFSharpList(ReadSwapLegResetSchedule(json)),
@@ -1189,6 +1178,35 @@ internal static class SecurityMasterMapping
             "Bermudan" => FSharpOption<ExerciseStyle>.Some(ExerciseStyle.Bermudan),
             _ => FSharpOption<ExerciseStyle>.None
         };
+
+    private static FSharpOption<Meridian.Contracts.SecurityMaster.DayCountConvention> ToSwapLegDayCountOption(
+        JsonElement json, SecurityKindMappingMode mode)
+    {
+        string[] aliases = ["dayCountConvention", "dayCount", "dayCountBasis"];
+        if (mode == SecurityKindMappingMode.Write)
+        {
+            foreach (var alias in aliases)
+            {
+                if (!HasNonNullProperty(json, alias))
+                    continue;
+                var raw = ReadSwapLegString(json, alias);
+                if (!string.IsNullOrWhiteSpace(raw) && !DayCountConventions.TryParseTerm(raw, out _))
+                    throw new InvalidOperationException(SecurityTermConventions.DescribeUnrecognized(
+                        SecurityTermConventionKind.DayCount, "Swap", $"legs[].{alias}", raw));
+            }
+        }
+        return ToDayCountOption(ReadSwapLegString(json, aliases), mode);
+    }
+
+    private static FSharpOption<Meridian.Contracts.SecurityMaster.DayCountConvention> ToDayCountOption(
+        string? value, SecurityKindMappingMode mode, string field = "dayCount")
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return FSharpOption<Meridian.Contracts.SecurityMaster.DayCountConvention>.None;
+        if (!DayCountConventions.TryParseTerm(value, out var convention) && mode == SecurityKindMappingMode.Write)
+            throw new InvalidOperationException($"Invalid {field} '{value}'. Supply a supported day-count convention.");
+        return FSharpOption<Meridian.Contracts.SecurityMaster.DayCountConvention>.Some(convention);
+    }
 
     private static FSharpOption<string> ToOption(string? value)
         => string.IsNullOrWhiteSpace(value) ? FSharpOption<string>.None : FSharpOption<string>.Some(value);
@@ -1444,8 +1462,6 @@ internal static class SecurityMasterMapping
             "Sovereign" => FSharpOption<BondSubclass>.Some(BondSubclass.Sovereign),
             "Municipal" => FSharpOption<BondSubclass>.Some(BondSubclass.Municipal),
             "Convertible" => FSharpOption<BondSubclass>.Some(BondSubclass.Convertible),
-            "AssetBacked" => FSharpOption<BondSubclass>.Some(BondSubclass.AssetBacked),
-            "MortgageBacked" => FSharpOption<BondSubclass>.Some(BondSubclass.MortgageBacked),
             not null => FSharpOption<BondSubclass>.Some(BondSubclass.NewOther(raw)),
             null => FSharpOption<BondSubclass>.None
         };

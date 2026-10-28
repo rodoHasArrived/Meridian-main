@@ -2,11 +2,36 @@
 
 # `security-master-contracts` data objects - page 6 of 6
 
-Objects 401-470 of 470. References crossing pages remain available in the dependency manifest.
+Objects 401-474 of 474. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityRawPriceDto["SecurityRawPriceDto"] {
+        +decimal Price
+        +DateTimeOffset PriceAsOf
+        +string SourceId
+        +SecurityPriceUnit Unit
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityRecordProvenance["SecurityRecordProvenance"] {
+        +DateTimeOffset? AsOf
+        +string? Reason
+        +string? SourceRecordId
+        +string SourceSystem
+        +string? UpdatedBy
+    }
+    class Meridian_Contracts_SecurityMaster_SecuritySearchRequest["SecuritySearchRequest"] {
+        +bool ActiveOnly
+        +string? CustomProfileId
+        +string? ProfileFieldKey
+        +string? ProfileFieldValue
+        +int? ProfileVersion
+        +string Query
+        +int Skip
+        +int Take
+    }
+    class Meridian_Contracts_SecurityMaster_SecuritySettlementMethod["SecuritySettlementMethod"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecuritySnapshotRecord["SecuritySnapshotRecord"] {
         +JsonElement Payload
         +Guid SecurityId

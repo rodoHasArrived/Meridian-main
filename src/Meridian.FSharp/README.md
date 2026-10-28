@@ -34,6 +34,12 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
 
 ## API contract notes
 
+- Flat Security Master day-count fields, including bond coupon structures and swap legs, use the
+  shared `Meridian.Contracts.SecurityMaster.DayCountConvention` enum. JSON accepts declared market
+  spellings and enum names, writes canonical market labels, and refuses unsupported supplied values
+  before saving. Invalid historical values remain readable as `Unknown`; common-only amendments and
+  deactivations require an explicit complete terms repair so the original raw text is not erased.
+
 - Security Master swap legs retain optional identifiers, pay/receive directions, spreads, index
   fixings, notionals, payment frequencies, and day-count conventions through serialization, plus
   the principal-exchange flag. Legacy legs may omit these terms. Supplied notionals must be
@@ -102,6 +108,11 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   `factorSchedule` pointer as evidence lineage. The legacy upgrade no longer writes that pointer into
   the coupon payment frequency or the floating-rate reset frequency; both read `None` for
   structured credit until a typed term supplies them.
+- `BondSubclass` excludes securitized products and bank loans. Historical flat labels reconstruct
+  through `Other` without losing their spelling; create/amend invariants reject these labels and
+  vendor aliases. Securitized instruments belong in `StructuredCredit`, bank loans in `DirectLoan`.
+  Custom profile metadata naming securitized products must resolve through a registered
+  StructuredCredit profile. Generic custom profiles cannot save this classification.
 - `SecurityMasterLegacyUpgrade.proposeStructuredCreditReclassification` builds the report-first
   StructuredCredit proposal for a legacy securitised row (ADR-022): a Bond in a securitised
   subclass, a CustomAsset whose `category` names a securitised product, or an envelope-less legacy

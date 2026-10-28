@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 1 of 6
 
-Objects 1-80 of 470. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 474. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -112,6 +112,19 @@ classDiagram
         +string Reviewer
         +Guid SnapshotId
         +DateOnly ValuationDate
+    }
+    class Meridian_Contracts_SecurityMaster_AssetClassDepthRouteKind["AssetClassDepthRouteKind"] {
+    }
+    class Meridian_Contracts_SecurityMaster_AssetClassDepthTargetSpec["AssetClassDepthTargetSpec"] {
+        +string EvidenceCategory
+        +bool FallbackEvidenceToProvider
+        +string KeySuffix
+        +string Label
+        +string RequirementCategory
+        +AssetClassDepthRouteKind RouteKind
+        +string Source
+        +string TargetType
+        +bool UseCloseEvidenceStatus
     }
     class Meridian_Contracts_SecurityMaster_AssetOperationsCapabilitySet["AssetOperationsCapabilitySet"] {
     }
@@ -526,14 +539,11 @@ classDiagram
         +IReadOnlyList~CorporateActionPayloadFieldDescriptor~ Fields
         +int Version
     }
-    class Meridian_Contracts_SecurityMaster_CorporateActionPayloadValueType["CorporateActionPayloadValueType"] {
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionPayloads["CorporateActionPayloads"] {
-    }
     Meridian_Contracts_SecurityMaster_AcceptCorporateActionSourceProposalRequestDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseScopeDto
     Meridian_Contracts_SecurityMaster_AddCorporateActionEvidenceRequestDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseScopeDto
     Meridian_Contracts_SecurityMaster_ApproveCorporateActionCaseAccountingRequestDto --> Meridian_Contracts_SecurityMaster_CorporateActionAccountingDecisionAuthorityDto
     Meridian_Contracts_SecurityMaster_ApproveCorporateActionCaseAccountingRequestDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseScopeDto
+    Meridian_Contracts_SecurityMaster_AssetClassDepthTargetSpec --> Meridian_Contracts_SecurityMaster_AssetClassDepthRouteKind
     Meridian_Contracts_SecurityMaster_AssetPackAccountingRules --> Meridian_Contracts_SecurityMaster_AssetPackJournalTemplateRule
     Meridian_Contracts_SecurityMaster_AssetPackContractSchema --> Meridian_Contracts_SecurityMaster_AssetPackClassTermsSchema
     Meridian_Contracts_SecurityMaster_AssetPackRegistryValidationResult --> Meridian_Contracts_SecurityMaster_AssetPackRegistryValidationIssue
@@ -559,6 +569,5 @@ classDiagram
     Meridian_Contracts_SecurityMaster_CorporateActionEvidenceMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionEvidenceDto
     Meridian_Contracts_SecurityMaster_CorporateActionIdempotencyConflictException --> Meridian_Contracts_SecurityMaster_CorporateActionOperationException
     Meridian_Contracts_SecurityMaster_CorporateActionNotFoundException --> Meridian_Contracts_SecurityMaster_CorporateActionOperationException
-    Meridian_Contracts_SecurityMaster_CorporateActionPayloadFieldDescriptor --> Meridian_Contracts_SecurityMaster_CorporateActionPayloadValueType
     Meridian_Contracts_SecurityMaster_CorporateActionPayloadSchemaDescriptor --> Meridian_Contracts_SecurityMaster_CorporateActionPayloadFieldDescriptor
 ```

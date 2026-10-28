@@ -2,11 +2,31 @@
 
 # `security-master-contracts` data objects - page 4 of 6
 
-Objects 241-320 of 470. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 474. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_PricingHierarchyEntryDto["PricingHierarchyEntryDto"] {
+        +int MaxDaysStale
+        +int Priority
+        +string SourceDisplayName
+        +string SourceId
+    }
+    class Meridian_Contracts_SecurityMaster_PrincipalPaydownCorporateActionTerms["PrincipalPaydownCorporateActionTerms"] {
+        +string EventType
+        +decimal? PaydownRatio
+        +decimal? PostPaydownFactor
+        +decimal? PrincipalAmount
+    }
+    class Meridian_Contracts_SecurityMaster_PublishSecurityCurveVersionRequest["PublishSecurityCurveVersionRequest"] {
+        +DateOnly AsOf
+        +Guid CurveId
+        +IReadOnlyList~SecurityCurvePointDto~ Points
+        +string? PublishedBy
+        +string Source
+        +DateTimeOffset? SourcedAt
+    }
     class Meridian_Contracts_SecurityMaster_RecordCorporateActionConflictRequestDto["RecordCorporateActionConflictRequestDto"] {
         +string Actor
         +IReadOnlyList~CorporateActionConflictCandidateDto~ Candidates
@@ -279,6 +299,8 @@ classDiagram
         +AssetPackReportingTaxonomy ReportingTaxonomy
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetPackRegistry["SecurityAssetPackRegistry"] {
+        +IReadOnlyDictionary~string__string~ ProfileAssetClasses
+        +IReadOnlyDictionary~string__IReadOnlyList~string~~ ProfileClassificationKeywords
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetProfileAccountingImpactHintDto["SecurityAssetProfileAccountingImpactHintDto"] {
     }
@@ -477,13 +499,6 @@ classDiagram
         +string LabelKey
         +string Value
     }
-    class Meridian_Contracts_SecurityMaster_SecurityAssetTermsFieldEditValidator["SecurityAssetTermsFieldEditValidator"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityAssetTermsSchema["SecurityAssetTermsSchema"] {
-        +IReadOnlyCollection~string~ AssetClasses
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityCashFlowBehavior["SecurityCashFlowBehavior"] {
-    }
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarUsage --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarPurpose
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnostic --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnosticCode
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailure --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailureCode
@@ -505,9 +520,7 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetTermField
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetTermUiHint
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldDefinitionDto
-    Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCashFlowBehavior
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor --> Meridian_Contracts_SecurityMaster_SecurityAssetClassTermsUpgrade
-    Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor --> Meridian_Contracts_SecurityMaster_SecurityCashFlowBehavior
     Meridian_Contracts_SecurityMaster_SecurityAssetClassRegistry --> Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileAccountingImpactHintDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileDateOrderRuleDto

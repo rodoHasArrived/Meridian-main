@@ -117,12 +117,20 @@ internal static class DefaultAssetClassValidators
                     // second modeling route reporting/risk/reconciliation cannot partition against.
                     DisallowedStringValuesRule.Create(
                         "subclass",
-                        ["AssetBacked", "MortgageBacked", "AgencyMbs", "CommercialMbs", "Cmo", "Clo", "Cdo", "PrincipalOnly", "InterestOnly", "InverseInterestOnly"],
+                        SecurityCanonicalAssetHomes.SecuritizedLabels,
                         SecurityValidationSeverityDto.Error,
                         "SM_BOND_SECURITIZED_SUBCLASS_NONCANONICAL",
                         "Securitized products must be modeled as StructuredCredit",
                         "Bond subclass '{0}' models a securitized product; StructuredCredit is the canonical home for MBS/ABS/CLO/CMBS/CDO tranches and IO/PO strips (ADR-022).",
-                        "Re-model the instrument as StructuredCredit (tranche, pool, factor schedule) through a governed amendment so downstream cash-flow, amortization, and reconciliation pipelines can act on its economics.")
+                        "Re-model the instrument as StructuredCredit (tranche, pool, factor schedule) through a governed amendment so downstream cash-flow, amortization, and reconciliation pipelines can act on its economics."),
+                    DisallowedStringValuesRule.Create(
+                        "subclass",
+                        ["BankLoan"],
+                        SecurityValidationSeverityDto.Error,
+                        "SM_BOND_BANK_LOAN_SUBCLASS_NONCANONICAL",
+                        "Bank loans must be modeled as DirectLoan",
+                        "Bond subclass '{0}' models a bank loan; DirectLoan is its canonical home.",
+                        "Re-model the loan as DirectLoan with its borrower, commitment, repayment and covenant terms through a governed amendment.")
                 ]),
             new JsonAssetClassValidator(
                 "FxSpot",
@@ -174,6 +182,14 @@ internal static class DefaultAssetClassValidators
                     new JsonAssetClassValidator(
                         "OtherSecurity",
                         [
+                            DisallowedStringValuesRule.Create(
+                                "category",
+                                SecurityCanonicalAssetHomes.SecuritizedLabels,
+                                SecurityValidationSeverityDto.Error,
+                                "SM_OTHER_SECURITY_SECURITIZED_NONCANONICAL",
+                                "Securitized products must be modeled as StructuredCredit",
+                                "OtherSecurity category '{0}' names a securitized product whose canonical home is StructuredCredit.",
+                                "Re-model the instrument as StructuredCredit through a governed amendment.")
                         ]),
                     optionalProfileValidator
                 ]),
@@ -349,18 +365,26 @@ internal static class DefaultAssetClassValidators
                     // securitized product should resolve to StructuredCredit via a registered
                     // reclassifying profile (e.g. structured-credit-io-po), not stay a generic
                     // custom asset — CustomAsset remains the home for private/other assets with no
-                    // first-class kind. Warning: the profile map, not metadata, decides identity.
+                    // first-class kind. Errors block the alternate home; the profile map decides identity.
                     new JsonAssetClassValidator(
                         "CustomAsset",
                         [
                             DisallowedStringValuesRule.Create(
                                 "category",
-                                ["MBS", "ABS", "CLO", "CMBS", "StructuredCredit"],
-                                SecurityValidationSeverityDto.Warning,
+                                SecurityCanonicalAssetHomes.SecuritizedLabels,
+                                SecurityValidationSeverityDto.Error,
                                 "SM_CUSTOM_ASSET_SECURITIZED_NONCANONICAL",
                                 "Securitized products belong in StructuredCredit",
                                 "CustomAsset category '{0}' names a securitized product; StructuredCredit is the canonical home for MBS/ABS/CLO/CMBS tranches (ADR-022).",
-                                "Pin the record to a profile that resolves to StructuredCredit (e.g. structured-credit-io-po) or re-model it as a first-class StructuredCredit record.")
+                                "Pin the record to a profile that resolves to StructuredCredit (e.g. structured-credit-io-po) or re-model it as a first-class StructuredCredit record."),
+                            DisallowedStringValuesRule.Create(
+                                "accountingClassification",
+                                SecurityCanonicalAssetHomes.SecuritizedLabels,
+                                SecurityValidationSeverityDto.Error,
+                                "SM_CUSTOM_ASSET_SECURITIZED_NONCANONICAL",
+                                "Securitized products belong in StructuredCredit",
+                                "CustomAsset accounting classification '{0}' names a securitized product whose canonical home is StructuredCredit.",
+                                "Select a profile that resolves to StructuredCredit or a first-class StructuredCredit definition.")
                         ])
                 ])
         ];
@@ -1039,7 +1063,7 @@ internal sealed record DisallowedStringValuesRule(
         }
 
         var disallowed = DisallowedValues.FirstOrDefault(
-            candidate => string.Equals(candidate, value, StringComparison.OrdinalIgnoreCase));
+            candidate => SecurityCanonicalAssetHomes.NormalizeLabel(candidate) == SecurityCanonicalAssetHomes.NormalizeLabel(value));
         if (disallowed is null)
         {
             return null;

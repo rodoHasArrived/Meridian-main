@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using FluentAssertions;
 using Meridian.Ledger;
 using Xunit;
@@ -88,7 +89,7 @@ public sealed class LedgerWashSaleActivationTests
             quantitySold: 100m,
             salePrice: 80m,
             LedgerTaxLotReliefMethod.Fifo,
-            [new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 100m, 100m, SecurityId)],
+            [new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 100m, 100m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }],
             washSalePolicy: WashSalePolicy.UnitedStates,
             replacementAcquisitions:
             [
@@ -123,7 +124,7 @@ public sealed class LedgerWashSaleActivationTests
                     100m,
                     100m,
                     SecurityId,
-                    holdingPeriodStartDate: new DateOnly(2023, 5, 4)),
+                    holdingPeriodStartDate: new DateOnly(2023, 5, 4)) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
             ],
             washSalePolicy: WashSalePolicy.UnitedStates,
             replacementAcquisitions:
@@ -229,7 +230,7 @@ public sealed class LedgerWashSaleActivationTests
             quantitySold: 100m,
             salePrice: 80m, // 100 @ cost 100 sold at 80 -> 2,000 loss
             LedgerTaxLotReliefMethod.Fifo,
-            [new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 100m, 100m, SecurityId)],
+            [new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 100m, 100m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }],
             washSalePolicy: policy,
             replacementAcquisitions:
             [

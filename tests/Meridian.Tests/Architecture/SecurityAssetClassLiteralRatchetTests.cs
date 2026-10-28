@@ -26,14 +26,16 @@ public sealed class SecurityAssetClassLiteralRatchetTests
     // Repository-relative, forward-slash paths. Each entry dispatches on asset class by design and
     // is held to the catalog elsewhere (SecurityAssetClassRegistryCoverageTests,
     // SecurityAssetClassParityGuardTests, SecurityAssetClassSurfaceParityTests, SecurityKindMappingTests).
+    // The asset-pack registry's readiness and profile dispatch are held to every domain kind and
+    // canonical profile target by SecurityAssetClassOperationalWiringTests.
     private static readonly string[] KnownDispatchSites =
     [
         "src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs",
-        "src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs",
-        "src/Meridian.Application/SecurityMaster/SecurityMasterService.cs",
         "src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs",
         "src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs",
         "src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs",
+        "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Profiles.cs",
+        "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs",
         "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs",
         "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs",
         "src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs",

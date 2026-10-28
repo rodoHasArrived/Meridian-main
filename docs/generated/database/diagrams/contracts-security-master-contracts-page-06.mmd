@@ -1,5 +1,30 @@
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityRawPriceDto["SecurityRawPriceDto"] {
+        +decimal Price
+        +DateTimeOffset PriceAsOf
+        +string SourceId
+        +SecurityPriceUnit Unit
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityRecordProvenance["SecurityRecordProvenance"] {
+        +DateTimeOffset? AsOf
+        +string? Reason
+        +string? SourceRecordId
+        +string SourceSystem
+        +string? UpdatedBy
+    }
+    class Meridian_Contracts_SecurityMaster_SecuritySearchRequest["SecuritySearchRequest"] {
+        +bool ActiveOnly
+        +string? CustomProfileId
+        +string? ProfileFieldKey
+        +string? ProfileFieldValue
+        +int? ProfileVersion
+        +string Query
+        +int Skip
+        +int Take
+    }
+    class Meridian_Contracts_SecurityMaster_SecuritySettlementMethod["SecuritySettlementMethod"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecuritySnapshotRecord["SecuritySnapshotRecord"] {
         +JsonElement Payload
         +Guid SecurityId

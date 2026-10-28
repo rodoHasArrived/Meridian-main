@@ -43,6 +43,9 @@ public sealed class SecurityAssetClassCatalogTests
     [InlineData("Private Credit Loan", "DirectLoan")]
     [InlineData("Corporate Bond", "Bond")]
     [InlineData("mbs", "StructuredCredit")]
+    [InlineData("CLO", "StructuredCredit")]
+    [InlineData("CMBS", "StructuredCredit")]
+    [InlineData("BankLoan", "DirectLoan")]
     public void TryResolveLabel_ResolvesProviderLabelsThroughCatalogNamesAndAliases(string label, string expected)
     {
         SecurityAssetClassCatalog.TryResolveLabel(label, out var descriptor).Should().BeTrue();
@@ -54,8 +57,8 @@ public sealed class SecurityAssetClassCatalogTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    [InlineData("Common Stock")]
     [InlineData("Fixed Income")]
+    [InlineData("Common Stock")]
     [InlineData("stockbroker")]
     [InlineData("Equity Option")]
     public void TryResolveLabel_LeavesUnknownAndAmbiguousLabelsUnresolved(string? label)

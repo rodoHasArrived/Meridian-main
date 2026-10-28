@@ -120,8 +120,13 @@ override routed face value.
 fund-ownership attribution is decimal, so deriving an unattributed remainder from the rounded value
 invents a contribution the book never held.
 
-`TaxLot` quantity is `decimal` and carries `UnitKind` (default `Shares`) and `Multiplier`
-(default 1) through `IUnitizedLot`, matching backtesting and ledger lots.
+`TaxLot` quantity is `decimal`; its `UnitKind` and positive `Multiplier` are required init
+properties. Callers must supply the security definition's denomination and scale explicitly,
+including `Shares` and `1` for equities. JSON missing either field is rejected. The same
+contract applies to backtesting and ledger lots.
+Generic execution and backtesting lot prices are raw quotes: debt is priced as percent of par,
+and contract quotes are scaled by the declared multiplier. Cost, value, and P&L methods apply
+those conventions; retained exact monetary basis is never scaled again.
 
 ## Diagrams
 

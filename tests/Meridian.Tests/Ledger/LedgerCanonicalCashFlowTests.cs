@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using FluentAssertions;
 using Meridian.Ledger;
 using Xunit;
@@ -12,7 +13,7 @@ public sealed class LedgerCanonicalCashFlowTests
         var account = LedgerAccounts.Securities("AAPL", "broker-a");
         var projection = LedgerTaxLotReliefProjector.Project(new LedgerTaxLotReliefInput(account,
             new(2026, 1, 2), 1m, 100m, LedgerTaxLotReliefMethod.Fifo,
-            [new LedgerTaxLot("lot", new(2025, 1, 1), 1m, 110m)]));
+            [new LedgerTaxLot("lot", new(2025, 1, 1), 1m, 110m) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }]));
         var dimensions = new LedgerLineDimensionSet(FundId: "fund-a");
         var entry = projection.ToJournalEntry(Guid.NewGuid(), CanonicalCashFlowTestData.Start.AddDays(1),
             "Scoped disposal", lineDimensions: dimensions);
@@ -35,7 +36,7 @@ public sealed class LedgerCanonicalCashFlowTests
         var account = LedgerAccounts.Securities("AAPL");
         var projection = LedgerTaxLotReliefProjector.Project(new LedgerTaxLotReliefInput(account,
             new(2026, 1, 2), 1m, 100m, LedgerTaxLotReliefMethod.Fifo,
-            [new LedgerTaxLot("lot", new(2025, 1, 1), 1m, basis)]));
+            [new LedgerTaxLot("lot", new(2025, 1, 1), 1m, basis) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }]));
         var ledger = new Meridian.Ledger.Ledger();
         ledger.PostLines(CanonicalCashFlowTestData.Start, "opening holding",
             [(account, basis, 0m), (LedgerAccounts.RetainedEarnings, 0m, basis)]);

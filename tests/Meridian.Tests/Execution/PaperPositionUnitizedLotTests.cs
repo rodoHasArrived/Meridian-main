@@ -30,7 +30,7 @@ public sealed class PaperPositionUnitizedLotTests
     [Fact]
     public void ContractMultiplier_RecordedAfterTheLotOpened_IsNotStaleOnTheLot()
     {
-        var position = new PaperPosition("ESZ6");
+        var position = new PaperPosition("ESZ6") { LotUnit = SecurityLotUnitKind.Contracts };
         position.AddLot(2m, 4_000m, OpenedAt);
 
         position.AttributeFill("fund-a", 2m, contractMultiplier: 50m);
@@ -44,7 +44,7 @@ public sealed class PaperPositionUnitizedLotTests
     [Fact]
     public void FaceValuePricing_MakesTheLotsFaceDenominated()
     {
-        var position = new PaperPosition("T 4.5 2036") { UsesFaceValuePricing = true };
+        var position = new PaperPosition("T 4.5 2036") { UsesFaceValuePricing = true, LotUnit = SecurityLotUnitKind.FaceValue };
 
         position.AddLot(250_000m, 1.0125m, OpenedAt);
 

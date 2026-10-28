@@ -155,14 +155,14 @@ open Meridian.FSharp.Domain
 [<Fact>]
 let ``BondTerms fixedRate factory sets coupon correctly`` () =
     let maturity = DateOnly(2030, 6, 15)
-    let terms = BondTerms.fixedRate maturity 5.25m (Some "30/360") (Some "Acme Corp")
+    let terms = BondTerms.fixedRate maturity 5.25m (Some Meridian.Contracts.SecurityMaster.DayCountConvention.Thirty360) (Some "Acme Corp")
     terms.Maturity |> should equal maturity
     terms.IsCallable |> should equal false
     terms.IssuerName |> should equal (Some "Acme Corp")
     match terms.Coupon with
     | BondCouponStructure.Fixed(rate, dc) ->
         rate |> should equal 5.25m
-        dc |> should equal (Some "30/360")
+        dc |> should equal (Some Meridian.Contracts.SecurityMaster.DayCountConvention.Thirty360)
     | _ -> failwith "Expected Fixed coupon"
 
 [<Fact>]
@@ -199,7 +199,7 @@ let ``BondTerms callable bond preserves callDate`` () =
     let terms = {
         Maturity = maturity
         IssueDate = Some (DateOnly(2020, 6, 1))
-        Coupon = BondCouponStructure.Fixed(4.0m, Some "Act/360")
+        Coupon = BondCouponStructure.Fixed(4.0m, Some Meridian.Contracts.SecurityMaster.DayCountConvention.Actual360)
         IsCallable = true
         CallDate = Some callDate
         IssuerName = Some "Corp A"
@@ -292,10 +292,10 @@ let ``CorpActEvent.eventType returns correct string for each case`` () =
 // ---------------------------------------------------------------------------
 
 [<Fact>]
-let ``BondSubclass MortgageBacked sets correct subclass on BondTerms`` () =
-    let terms = BondTerms.fixedRate (DateOnly(2050, 1, 1)) 4.5m (Some "Act/360") (Some "Freddie Mac")
-    let mbs = { terms with Subclass = BondSubclass.MortgageBacked }
-    mbs.Subclass |> should equal BondSubclass.MortgageBacked
+let ``Legacy MortgageBacked labels remain readable through Other on BondTerms`` () =
+    let terms = BondTerms.fixedRate (DateOnly(2050, 1, 1)) 4.5m (Some Meridian.Contracts.SecurityMaster.DayCountConvention.Actual360) (Some "Freddie Mac")
+    let mbs = { terms with Subclass = (BondSubclass.Other "MortgageBacked") }
+    mbs.Subclass |> should equal (BondSubclass.Other "MortgageBacked")
     mbs.IsCallable |> should equal false
 
 [<Fact>]
@@ -628,7 +628,7 @@ let ``SecurityMasterSnapshotWrapper serializes full swap leg economics`` () =
             Direction = Some "Pay"
             Notional = Some 25_000_000m
             PaymentFrequency = Some "SemiAnnual"
-            DayCount = Some "30/360"
+            DayCount = Some Meridian.Contracts.SecurityMaster.DayCountConvention.Thirty360
     }
     let floatingLeg = {
         legacySwapLeg with
@@ -643,7 +643,7 @@ let ``SecurityMasterSnapshotWrapper serializes full swap leg economics`` () =
             CurrentIndexRate = Some 0.0312m
             Notional = Some 23_000_000m
             PaymentFrequency = Some "Quarterly"
-            DayCount = Some "ACT/360"
+            DayCount = Some Meridian.Contracts.SecurityMaster.DayCountConvention.Actual360
             ExchangesPrincipal = true
     }
     let wrapper = createSwapSnapshot [ fixedLeg; floatingLeg ]
@@ -772,7 +772,7 @@ let ``SecurityMasterSnapshotWrapper serializes floating bond coupon details`` ()
     let bondTerms = {
         Maturity = maturity
         IssueDate = Some (DateOnly(2024, 9, 15))
-        Coupon = BondCouponStructure.Floating("SOFR", Some 150m, Some 7.25m, Some 0.75m, Some "ACT/360")
+        Coupon = BondCouponStructure.Floating("SOFR", Some 150m, Some 7.25m, Some 0.75m, Some Meridian.Contracts.SecurityMaster.DayCountConvention.Actual360)
         IsCallable = true
         CallDate = Some (DateOnly(2030, 9, 15))
         IssuerName = Some "Meridian Capital"
@@ -814,7 +814,7 @@ let private stepBondTerms = {
         BondCouponStructure.Step(
             [ { EffectiveDate = DateOnly(2026, 6, 30); Rate = 3.0m }
               { EffectiveDate = DateOnly(2028, 6, 30); Rate = 4.0m } ],
-            Some "30/360")
+            Some Meridian.Contracts.SecurityMaster.DayCountConvention.Thirty360)
     IsCallable = false
     CallDate = None
     IssuerName = Some "Step Issuer"
@@ -863,7 +863,7 @@ let ``SecurityMasterSnapshotWrapper serializes step coupon schedules`` () =
 
 [<Fact>]
 let ``SecurityMaster.create rejects an empty step-coupon schedule`` () =
-    let emptyStep = { stepBondTerms with Coupon = BondCouponStructure.Step([], Some "30/360") }
+    let emptyStep = { stepBondTerms with Coupon = BondCouponStructure.Step([], Some Meridian.Contracts.SecurityMaster.DayCountConvention.Thirty360) }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.Bond emptyStep }
 
@@ -876,7 +876,7 @@ let ``SecurityMaster.create rejects an empty step-coupon schedule`` () =
 let ``SecurityMasterSnapshotWrapper serializes inflation-linked coupon terms`` () =
     let linkerTerms = {
         stepBondTerms with
-            Coupon = BondCouponStructure.InflationLinked(1.25m, "CPI-U", Some 305.109m, Some 1.0432m, Some "ACT/ACT")
+            Coupon = BondCouponStructure.InflationLinked(1.25m, "CPI-U", Some 305.109m, Some 1.0432m, Some Meridian.Contracts.SecurityMaster.DayCountConvention.ActualActualIsda)
             Subclass = BondSubclass.InflationLinked
     }
     let equityCommand = createEquityCreateCommand None
@@ -1628,7 +1628,7 @@ let private validationErrorCodes kind =
 let ``Bond principal schedule dates outside the bond term are rejected`` () =
     let maturity = DateOnly(2030, 6, 15)
     let baseTerms =
-        { BondTerms.fixedRate maturity 4.5m (Some "30/360") (Some "ACME") with
+        { BondTerms.fixedRate maturity 4.5m (Some Meridian.Contracts.SecurityMaster.DayCountConvention.Thirty360) (Some "ACME") with
             IssueDate = Some (DateOnly(2024, 6, 15)) }
 
     validationErrorCodes (SecurityKind.Bond { baseTerms with PrincipalSchedule = [ { PaymentDate = DateOnly(2031, 1, 1); Amount = 10m } ] })
@@ -1644,7 +1644,7 @@ let ``Bond principal schedule dates outside the bond term are rejected`` () =
 let ``Bond principal schedules summing to more than Par are rejected`` () =
     let maturity = DateOnly(2030, 6, 15)
     let baseTerms =
-        { BondTerms.fixedRate maturity 4.5m (Some "30/360") (Some "ACME") with
+        { BondTerms.fixedRate maturity 4.5m (Some Meridian.Contracts.SecurityMaster.DayCountConvention.Thirty360) (Some "ACME") with
             Par = Some 100m }
 
     // Two 60s against a 100-par bond: projections would cap the second at 40, silently
@@ -1932,13 +1932,67 @@ let private securitizedBond subclass coupon par =
         CallPutSchedules = CallPutSchedules.empty
     }
 
+[<Theory>]
+[<InlineData("Clo")>]
+[<InlineData("MBS")>]
+[<InlineData("MortgageBacked")>]
+[<InlineData(" CMBS ")>]
+[<InlineData("Mortgage Backed Security")>]
+[<InlineData("Agency MBS")>]
+let ``Legacy securitized bond labels cannot be saved through Other`` label =
+    securitizedBond (BondSubclass.Other label) BondCouponStructure.ZeroCoupon None
+    |> SecurityMaster.validateKindInvariants
+    |> List.exists (fun issue -> issue.Code = "bond_securitized_subclass_noncanonical")
+    |> should equal true
+
+[<Theory>]
+[<InlineData("BankLoan")>]
+[<InlineData("Bank Loan")>]
+let ``Legacy BankLoan label cannot be saved through Other`` label =
+    securitizedBond (BondSubclass.Other label) BondCouponStructure.ZeroCoupon None
+    |> SecurityMaster.validateKindInvariants
+    |> List.exists (fun issue -> issue.Code = "bond_bank_loan_subclass_noncanonical")
+    |> should equal true
+
+[<Theory>]
+[<InlineData("MBS")>]
+[<InlineData("CLO")>]
+[<InlineData("MortgageBackedSecurity")>]
+[<InlineData(" cMo ")>]
+let ``Generic custom profiles cannot save securitized categories`` label =
+    for nested in [ false; true ] do
+        let json =
+            if nested then
+                JsonSerializer.Serialize {| customProfileId = "private-asset"; profileVersion = 1; category = "Private"; profileFields = {| category = label |} |}
+            else
+                JsonSerializer.Serialize {| customProfileId = "private-asset"; profileVersion = 1; category = label; profileFields = {| description = "Terms" |} |}
+        SecurityKind.CustomAsset { CustomProfileId = "private-asset"; ProfileVersion = 1; TermsJson = json }
+        |> SecurityMaster.validateKindInvariants
+        |> List.exists (fun issue -> issue.Code = "custom_asset_securitized_noncanonical")
+        |> should equal true
+
+[<Theory>]
+[<InlineData("CLO")>]
+[<InlineData("Agency MBS")>]
+let ``Generic custom profiles cannot save securitized accounting classifications`` label =
+    for nested in [ false; true ] do
+        let json =
+            if nested then
+                JsonSerializer.Serialize {| customProfileId = "private-asset"; profileVersion = 1; category = "Private"; profileFields = {| accountingClassification = label |} |}
+            else
+                JsonSerializer.Serialize {| customProfileId = "private-asset"; profileVersion = 1; category = "Private"; accountingClassification = label; profileFields = {| description = "Terms" |} |}
+        SecurityKind.CustomAsset { CustomProfileId = "private-asset"; ProfileVersion = 1; TermsJson = json }
+        |> SecurityMaster.validateKindInvariants
+        |> List.exists (fun issue -> issue.Code = "custom_asset_securitized_noncanonical")
+        |> should equal true
+
 let private blockerCodes (proposal: SecurityMasterLegacyUpgrade.StructuredCreditReclassificationProposal) =
     proposal.Blockers |> List.map (fun blocker -> blocker.Code)
 
 [<Fact>]
 let ``Reclassification proposal carries bond par, coupon, maturity and kind but blocks on tranche and collateral`` () =
     let proposal =
-        reclassificationFor (securitizedBond BondSubclass.AgencyMbs (BondCouponStructure.Fixed(5.5m, None)) (Some 1000m))
+        reclassificationFor (securitizedBond (BondSubclass.Other "AgencyMbs") (BondCouponStructure.Fixed(5.5m, None)) (Some 1000m))
         |> Option.defaultWith (fun () -> failwith "Expected a securitised bond to be a reclassification candidate")
 
     proposal.SourceLabel |> should equal "AgencyMbs"
@@ -1953,7 +2007,7 @@ let ``Reclassification proposal carries bond par, coupon, maturity and kind but 
 [<Fact>]
 let ``Reclassification proposal takes the floating index as couponOrIndex`` () =
     let proposal =
-        reclassificationFor (securitizedBond BondSubclass.Clo (BondCouponStructure.Floating("SOFR", Some 250m, None, None, None)) None)
+        reclassificationFor (securitizedBond (BondSubclass.Other "Clo") (BondCouponStructure.Floating("SOFR", Some 250m, None, None, None)) None)
         |> Option.defaultWith (fun () -> failwith "Expected a CLO bond to be a reclassification candidate")
 
     proposal.Draft.CouponOrIndex |> should equal (Some "SOFR")
@@ -1963,7 +2017,7 @@ let ``Reclassification proposal takes the floating index as couponOrIndex`` () =
 [<Fact>]
 let ``Reclassification proposal never guesses between agency and non-agency MBS`` () =
     let proposal =
-        reclassificationFor (securitizedBond BondSubclass.MortgageBacked BondCouponStructure.ZeroCoupon (Some 500m))
+        reclassificationFor (securitizedBond (BondSubclass.Other "MortgageBacked") BondCouponStructure.ZeroCoupon (Some 500m))
         |> Option.defaultWith (fun () -> failwith "Expected a mortgage-backed bond to be a reclassification candidate")
 
     proposal.Draft.Kind |> should equal None
@@ -1973,14 +2027,14 @@ let ``Reclassification proposal never guesses between agency and non-agency MBS`
 [<Fact>]
 let ``Reclassification proposal blocks on kinds and coupon structures StructuredCredit cannot represent`` () =
     let inverseIo =
-        reclassificationFor (securitizedBond BondSubclass.InverseInterestOnly BondCouponStructure.ZeroCoupon None)
+        reclassificationFor (securitizedBond (BondSubclass.Other "InverseInterestOnly") BondCouponStructure.ZeroCoupon None)
         |> Option.defaultWith (fun () -> failwith "Expected an inverse IO bond to be a reclassification candidate")
     blockerCodes inverseIo |> should contain "structured_credit_kind_unrepresentable"
 
     let stepCoupon =
         BondCouponStructure.Step([ ({ EffectiveDate = DateOnly(2027, 1, 1); Rate = 4m } : StepCouponEntry) ], None)
     let step =
-        reclassificationFor (securitizedBond BondSubclass.Cdo stepCoupon None)
+        reclassificationFor (securitizedBond (BondSubclass.Other "Cdo") stepCoupon None)
         |> Option.defaultWith (fun () -> failwith "Expected a CDO bond to be a reclassification candidate")
     step.Draft.CouponOrIndex |> should equal None
     blockerCodes step |> should contain "structured_credit_coupon_structure_unrepresentable"
@@ -2083,7 +2137,7 @@ let private declaredConventionsJson =
     """{"accrualAdjusted":false,"businessDayConvention":"ModifiedFollowing","couponCashBasis":"Level","couponRateUnit":"Percent","direction":"Backward","endOfMonthRule":false,"firstRegularDate":"2026-12-15","lastRegularDate":"2034-06-15","paymentCalendars":["USNY","GBLO"],"paymentLagBusinessDays":2,"rollConvention":"15","stubPolicy":"Short"}"""
 
 let private scheduleBond conventions =
-    SecurityKind.Bond { BondTerms.fixedRate (DateOnly(2034, 6, 15)) 4.5m (Some "30/360") (Some "ACME") with ScheduleConventions = conventions }
+    SecurityKind.Bond { BondTerms.fixedRate (DateOnly(2034, 6, 15)) 4.5m (Some Meridian.Contracts.SecurityMaster.DayCountConvention.Thirty360) (Some "ACME") with ScheduleConventions = conventions }
 
 let private scheduleDeposit conventions =
     SecurityKind.CertificateOfDeposit ({
@@ -2091,7 +2145,7 @@ let private scheduleDeposit conventions =
         Maturity = DateOnly(2028, 3, 15)
         CouponRate = Some 4.1m
         CallableDate = None
-        DayCount = Some "ACT/360"
+        DayCount = Some Meridian.Contracts.SecurityMaster.DayCountConvention.Actual360
         ScheduleConventions = conventions
         CallPutSchedules = CallPutSchedules.empty
     } : CertificateOfDepositTerms)
@@ -2302,7 +2356,7 @@ let ``Economic accrual fills from declared conventions on bonds, deposits and st
 [<Fact>]
 let ``Reclassification proposal blocks a bond that declares schedule conventions`` () =
     let agencyBond conventions =
-        match securitizedBond BondSubclass.AgencyMbs (BondCouponStructure.Fixed(5.5m, None)) (Some 1000m) with
+        match securitizedBond (BondSubclass.Other "AgencyMbs") (BondCouponStructure.Fixed(5.5m, None)) (Some 1000m) with
         | SecurityKind.Bond terms -> SecurityKind.Bond { terms with ScheduleConventions = conventions }
         | other -> other
 
@@ -2363,7 +2417,7 @@ let private economicPutEntry date price = ({ PutDt = date; PutPx = price } : Put
 /// A bond with the call scalars and the declared schedules.
 let private callableBond isCallable callDate schedules =
     SecurityKind.Bond
-        { BondTerms.fixedRate (DateOnly(2034, 6, 15)) 4.5m (Some "30/360") (Some "ACME") with
+        { BondTerms.fixedRate (DateOnly(2034, 6, 15)) 4.5m (Some Meridian.Contracts.SecurityMaster.DayCountConvention.Thirty360) (Some "ACME") with
             IsCallable = isCallable
             CallDate = callDate
             CallPutSchedules = schedules }
@@ -2650,7 +2704,7 @@ let ``Economic call fill reproduces the scalar-only call terms exactly when no s
 [<Fact>]
 let ``Reclassification proposal retains the conventions blocker after call and put schedules become writable`` () =
     let agencyBond conventions schedules =
-        match securitizedBond BondSubclass.AgencyMbs (BondCouponStructure.Fixed(5.5m, None)) (Some 1000m) with
+        match securitizedBond (BondSubclass.Other "AgencyMbs") (BondCouponStructure.Fixed(5.5m, None)) (Some 1000m) with
         | SecurityKind.Bond terms -> SecurityKind.Bond { terms with ScheduleConventions = conventions; CallPutSchedules = schedules }
         | other -> other
     let proposalFor conventions schedules =
@@ -2683,3 +2737,23 @@ let ``Reclassification proposal retains the conventions blocker after call and p
 
     let plain = proposalFor ScheduleConventions.empty CallPutSchedules.empty
     blockerCodes plain |> should equal [ "structured_credit_tranche_required"; "structured_credit_collateral_type_required" ]
+
+[<Theory>]
+[<InlineData(-1)>]
+[<InlineData(10)>] // Unknown is a read-tolerance value, never a saved contract.
+let ``Security terms reject unknown and undefined day count enum values`` (value: int) =
+    let dayCount = enum<Meridian.Contracts.SecurityMaster.DayCountConvention> value
+    let kind =
+        BondTerms.fixedRate (DateOnly(2030, 1, 1)) 0.05m (Some dayCount) None
+        |> SecurityKind.Bond
+    SecurityMaster.validateKindInvariants kind
+    |> List.exists (fun error -> error.Code = "day_count_invalid")
+    |> should equal true
+
+[<Fact>]
+let ``Every typed day count uses the canonical calculation engine`` () =
+    let startDate = DateOnly(2024, 1, 31)
+    let endDate = DateOnly(2024, 8, 31)
+    for convention in Enum.GetValues<Meridian.Contracts.SecurityMaster.DayCountConvention>() do
+        Meridian.FSharp.Calculations.DayCount.fractionFor convention startDate endDate
+        |> should equal (Meridian.Contracts.SecurityMaster.DayCountConventions.Fraction(convention, startDate, endDate))

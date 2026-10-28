@@ -2743,8 +2743,11 @@ public sealed partial class SecurityMasterServiceSnapshotTests
             Arg.Any<CancellationToken>());
     }
 
-    [Fact]
-    public async Task CreateAsync_ProfileMetadataContradictsResolvedClass_RefusesTheWrite()
+    [Theory]
+    [InlineData("MBS", false)]
+    [InlineData("CLO", true)]
+    [InlineData("AgencyMbs", true)]
+    public async Task CreateAsync_ProfileMetadataContradictsResolvedClass_RefusesTheWrite(string category, bool nested)
     {
         // The profile is the identity of a profile-backed record: a registered profile id decides
         // the resolved class by itself, and envelope metadata naming a DIFFERENT class's keyword is
@@ -2776,9 +2779,10 @@ public sealed partial class SecurityMasterServiceSnapshotTests
                 {
                     customProfileId = "private-fund-interest",
                     profileVersion = 1,
-                    category = "MBS",
+                    category = nested ? "PrivateFunds" : category,
                     profileFields = new
                     {
+                        category = nested ? category : null,
                         gpSponsor = "Meridian Growth Partners",
                         strategy = "Buyout",
                         vintage = 2024,
@@ -2807,14 +2811,18 @@ public sealed partial class SecurityMasterServiceSnapshotTests
             Arg.Any<CancellationToken>());
     }
 
-    [Fact]
-    public async Task CreateAsync_UnmappedProfileWithSpoofedClassMetadata_StaysCustomAsset()
+    [Theory]
+    [InlineData("Private", false, false, false)]
+    [InlineData("StructuredCredit", true, false, false)]
+    [InlineData("CLO", true, false, false)]
+    [InlineData("Agency MBS", true, false, false)]
+    [InlineData("CLO", true, true, false)]
+    [InlineData("Agency MBS", true, true, true)]
+    public async Task CreateAsync_UnmappedProfileWithStructuredFields_EnforcesCanonicalMetadata(
+        string category, bool refused, bool accountingOnly, bool nested)
     {
-        // Field names and classification metadata are caller-controlled: a payload pinned to the
-        // approved co-invest-spv profile that ALSO carries structured-credit field names and
-        // category = "StructuredCredit" satisfies the co-invest profile's own rules, so it must
-        // stay a CustomAsset — reclassifying on the spoofed shape would hand it StructuredCredit
-        // validators and projection behavior its profile never granted.
+        // Field names do not grant another class's identity. Explicit securitized metadata
+        // requires its canonical home; unrelated metadata remains on the approved custom profile.
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
@@ -2834,7 +2842,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
             NullLogger<SecurityMasterService>.Instance,
             assetProfileCatalog: Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault());
 
-        var detail = await service.CreateAsync(new CreateSecurityRequest(
+        var create = () => service.CreateAsync(new CreateSecurityRequest(
             securityId,
             "CustomAsset",
             JsonSerializer.SerializeToElement(new { displayName = "Spoofed SPV", currency = "USD" }),
@@ -2842,9 +2850,11 @@ public sealed partial class SecurityMasterServiceSnapshotTests
             {
                 customProfileId = "co-invest-spv",
                 profileVersion = 1,
-                category = "StructuredCredit",
+                category = accountingOnly ? "Private" : category,
+                accountingClassification = accountingOnly && !nested ? category : null,
                 profileFields = new
                 {
+                    accountingClassification = accountingOnly && nested ? category : null,
                     vehicle = "Meridian Co-Invest I",
                     underlyingCompanyOrSecurity = "Acme Holdings",
                     sponsor = "Meridian Growth Partners",
@@ -2873,8 +2883,18 @@ public sealed partial class SecurityMasterServiceSnapshotTests
             null,
             "create"));
 
-        detail.AssetClass.Should().Be("CustomAsset",
-            "an unmapped profile id must never reclassify, whatever field names or metadata the envelope carries");
+        if (refused)
+        {
+            await create.Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
+                .WithMessage("*custom_asset_securitized_noncanonical*");
+            await eventStore.DidNotReceive().AppendAsync(
+                Arg.Any<Guid>(), Arg.Any<long>(), Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(), Arg.Any<CancellationToken>());
+        }
+        else
+        {
+            (await create()).AssetClass.Should().Be("CustomAsset",
+                "an unmapped profile id must not reclassify from structured field names alone");
+        }
     }
 
     [Fact]

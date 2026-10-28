@@ -10,11 +10,13 @@ public sealed partial class SecurityMasterService
     private async Task<SecurityDetailDto> ExecuteCreateAsync(CreateSecurityRequest request, CancellationToken ct)
     {
         await _termsCapabilityVerifier.VerifyAsync(ct).ConfigureAwait(false);
+        // Resolve the submitted profile and refuse contradictory metadata before domain mapping.
+        var assetClassOverride = GetProfileBackedAssetClassOverride(request.AssetClass, request.AssetSpecificTerms);
         var result = SecurityMasterCommandFacade.Create(MapRequestOrRefuse(() => SecurityMasterMapping.ToCreateCommand(request)));
         var projection = CreateProjectionFromResult(
             result,
             aliases: null,
-            GetProfileBackedAssetClassOverride(request.AssetClass, request.AssetSpecificTerms),
+            assetClassOverride,
             GetProfileBackedAssetSpecificTermsOverride(request.AssetSpecificTerms));
         EnsureProfileBackedTermsAreCatalogValid(projection, request.EffectiveFrom);
         SecurityAssetPackAdmission.EnsureAdmitted(projection, request.EffectiveFrom);

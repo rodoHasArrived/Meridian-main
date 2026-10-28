@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Ledger;
 
@@ -153,7 +154,12 @@ public static class LedgerTaxLotReliefHistoryProjector
                         : null,
                     // Versioned rows certify the exact retained basis; legacy rows keep their
                     // original unit-cost recalculation.
-                    costBasis: history.ProceedsAllocationVersion is null ? null : lot.CostBasis))
+                    costBasis: history.ProceedsAllocationVersion is null ? null : lot.CostBasis)
+                {
+                    // Historical disposal rows retain normalized quantity/cost, without asset-class metadata.
+                    UnitKind = SecurityLotUnitKind.Units,
+                    Multiplier = 1m
+                })
                 .ToArray(),
             financialAccountId: history.Account.FinancialAccountId,
             // Every retained lot is fully consumed by this disposal, so lot-discrete methods all

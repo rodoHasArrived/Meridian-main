@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
@@ -346,7 +347,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var price = washSale ? 80m : precisePrice ? 0.0051m : 0.014m;
         var projection = LedgerTaxLotReliefProjector.Project(new(account, new(2026, 5, 12),
             lots.Sum(static lot => lot.OpenQuantity), price, LedgerTaxLotReliefMethod.Fifo,
-            lots.Select(static lot => new LedgerTaxLot(lot.LotId, lot.AcquiredDate, lot.OpenQuantity, lot.UnitCost)).ToArray()));
+            lots.Select(static lot => new LedgerTaxLot(lot.LotId, lot.AcquiredDate, lot.OpenQuantity, lot.UnitCost) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }).ToArray()));
         var sourceEventId = Guid.NewGuid();
         var journal = BuildJournalWrite(bookId, period.PeriodId, sourceEventId, "proceeds-disposal");
         journal = journal with

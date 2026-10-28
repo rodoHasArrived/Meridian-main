@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Ledger;
@@ -94,7 +95,7 @@ public sealed class LedgerCashFlowCategoryEvidenceTests
     {
         var projection = LedgerTaxLotReliefProjector.Project(new LedgerTaxLotReliefInput(LedgerAccounts.Securities("AAPL"),
             new(2026, 1, 2), 1m, 100m, LedgerTaxLotReliefMethod.Fifo,
-            [new LedgerTaxLot("lot", new(2025, 1, 1), 1m, 110m)]));
+            [new LedgerTaxLot("lot", new(2025, 1, 1), 1m, 110m) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }]));
         return projection.ToJournalEntry(Guid.NewGuid(), CanonicalCashFlowTestData.Start.AddDays(1), "Disposal");
     }
 }

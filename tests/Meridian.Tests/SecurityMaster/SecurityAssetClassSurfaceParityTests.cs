@@ -96,20 +96,15 @@ public sealed class SecurityAssetClassSurfaceParityTests
     }
 
     [Fact]
-    public void ReadinessRows_NameOnlyCatalogClasses_Once_AndCoverTheDeliberateSet()
+    public void ReadinessRows_CoverEveryCatalogClassExactlyOnce()
     {
         var rows = SecurityMasterOperationalReadinessService.Specifications
             .Select(static specification => specification.AssetClass)
             .ToArray();
 
         rows.Should().OnlyHaveUniqueItems();
-        rows.Should().BeSubsetOf(SecurityAssetClassCatalog.AssetClasses);
-        // The readiness surface lists the classes that carry operational prose today. Adding a
-        // catalog class does not add a row automatically; changing this set is a reviewed decision.
-        rows.Should().BeEquivalentTo(
-            "Equity", "Option", "Future", "FxSpot", "Bond", "DirectLoan", "StructuredCredit",
-            "PrivateFundInterest", "PrivateCompanyEquity", "RealEstateHolding", "CommitmentGuarantee",
-            "CustomAsset", "OtherSecurity");
+        rows.Should().BeEquivalentTo(SecurityAssetClassCatalog.AssetClasses,
+            "every catalog class must appear even when its operational profile still requires review");
     }
 
     [Fact]

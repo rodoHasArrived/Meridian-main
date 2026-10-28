@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using FluentAssertions;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.TaxLotAccounting;
@@ -16,7 +17,7 @@ public sealed class TaxLotAccountingTests
     private static readonly DateTimeOffset T2 = new(2024, 1, 12, 9, 30, 0, TimeSpan.Zero);
 
     private static TaxLot MakeLot(long qty, decimal cost, DateTimeOffset? openedAt = null) =>
-        new(Guid.NewGuid(), "AAPL", qty, cost, openedAt ?? T0);
+        new(Guid.NewGuid(), "AAPL", qty, cost, openedAt ?? T0) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m };
 
     // -------------------------------------------------------------------------
     // TaxLot record

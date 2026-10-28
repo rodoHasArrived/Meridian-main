@@ -110,7 +110,7 @@ public sealed class BacktestEngine(
         // 1b. Pre-flight Security Master validation — resolve all universe symbols before the
         //     event loop begins so bad symbol lists surface immediately. Missing and inactive
         //     symbols feed the bias-disclosure report attached to the result.
-        var (missingSecurityMasterSymbols, inactiveSecurityMasterSymbols) =
+        var (missingSecurityMasterSymbols, inactiveSecurityMasterSymbols, lotConventions) =
             await PreResolveUniverseAsync(universe, request, ct).ConfigureAwait(false);
 
         // 2. Resolve per-symbol tick sizes from Security Master (best-effort; missing symbols are silently skipped).
@@ -122,7 +122,7 @@ public sealed class BacktestEngine(
         var ledger = new BacktestLedger();
         var startTimestamp = new DateTimeOffset(request.From.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var accounts = request.ResolveAccounts();
-        var portfolio = new SimulatedPortfolio(accounts, request.DefaultBrokerageAccountId, commissionModel, ledger, startTimestamp);
+        var portfolio = new SimulatedPortfolio(accounts, request.DefaultBrokerageAccountId, commissionModel, ledger, startTimestamp, lotConventions);
         var ctx = new BacktestContext(portfolio, universe, ledger, request.DefaultBrokerageAccountId);
         var orderBookFillModel = new OrderBookFillModel(
             commissionModel,
@@ -1047,13 +1047,15 @@ public sealed class BacktestEngine(
     /// When <see langword="false"/> (default), logs a warning and continues.
     /// Returns the lists of missing and Inactive symbols for the bias-disclosure report.
     /// </summary>
-    private async Task<(IReadOnlyList<string> Missing, IReadOnlyList<string> Inactive)> PreResolveUniverseAsync(
+    private async Task<(IReadOnlyList<string> Missing, IReadOnlyList<string> Inactive,
+        IReadOnlyDictionary<string, (SecurityLotUnitKind UnitKind, decimal Multiplier)> LotConventions)> PreResolveUniverseAsync(
         IReadOnlySet<string> universe,
         BacktestRequest request,
         CancellationToken ct)
     {
+        var definitions = new Dictionary<string, SecurityDetailDto>(StringComparer.OrdinalIgnoreCase);
         if (_securityIdentity is null || universe.Count == 0)
-            return ([], []);
+            return ([], [], ResolveLotConventions(definitions));
 
         var missing = new List<string>();
         var inactive = new List<string>();
@@ -1077,13 +1079,17 @@ public sealed class BacktestEngine(
                         "Price adjustments and tick-size resolution will be unavailable for this symbol.",
                         symbol);
                 }
-                else if (detail.Status == SecurityStatusDto.Inactive)
+                else
                 {
-                    inactive.Add(symbol);
-                    logger.LogWarning(
-                        "Backtest symbol {Symbol} (SecurityId={SecurityId}) is marked Inactive in the Security Master. " +
-                        "It may represent a delisted or renamed instrument.",
-                        symbol, detail.SecurityId);
+                    definitions[symbol] = detail;
+                    if (detail.Status == SecurityStatusDto.Inactive)
+                    {
+                        inactive.Add(symbol);
+                        logger.LogWarning(
+                            "Backtest symbol {Symbol} (SecurityId={SecurityId}) is marked Inactive in the Security Master. " +
+                            "It may represent a delisted or renamed instrument.",
+                            symbol, detail.SecurityId);
+                    }
                 }
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
@@ -1101,7 +1107,28 @@ public sealed class BacktestEngine(
                 "Import the securities via POST /api/security-master/import or set FailOnUnknownSymbols=false to warn and continue.");
         }
 
-        return (missing, inactive);
+        return (missing, inactive, ResolveLotConventions(definitions));
+    }
+
+    // Native replay currently values a position as quantity * unit price. Resolve definitions
+    // before replay and refuse conventions requiring par or contract pricing, rather than opening
+    // a share lot and silently applying share economics. Symbol-only runs retain their explicit
+    // legacy equity assumption; known fund definitions carry their own Units denomination.
+    internal static IReadOnlyDictionary<string, (SecurityLotUnitKind UnitKind, decimal Multiplier)> ResolveLotConventions(
+        IReadOnlyDictionary<string, SecurityDetailDto> definitions)
+    {
+        var result = new Dictionary<string, (SecurityLotUnitKind UnitKind, decimal Multiplier)>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (symbol, security) in definitions)
+        {
+            var convention = LotQuantity.UnitFor(security.AssetClass, security.AssetSpecificTerms);
+            if (convention.UnitKind is not (SecurityLotUnitKind.Shares or SecurityLotUnitKind.Units)
+                || convention.Multiplier != 1m)
+            {
+                throw new NotSupportedException($"Native backtesting cannot price '{symbol}' ({security.AssetClass}) with lot unit {convention.UnitKind} and multiplier {convention.Multiplier}. A compatible asset pricing model is required.");
+            }
+            result[symbol] = convention;
+        }
+        return result;
     }
 
     /// <summary>

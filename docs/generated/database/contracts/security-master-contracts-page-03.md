@@ -2,11 +2,15 @@
 
 # `security-master-contracts` data objects - page 3 of 6
 
-Objects 161-240 of 470. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 474. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_ISecurityMasterCashFlowService["ISecurityMasterCashFlowService"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ISecurityMasterCorporateActionCommandService["ISecurityMasterCorporateActionCommandService"] {
+    }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterDataQualityService["ISecurityMasterDataQualityService"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterPricingService["ISecurityMasterPricingService"] {
@@ -78,6 +82,18 @@ classDiagram
         +decimal Amount
         +decimal Multiplier
         +SecurityLotUnitKind UnitKind
+    }
+    class Meridian_Contracts_SecurityMaster_MultiAssetCoverageSpecification["MultiAssetCoverageSpecification"] {
+        +string AssetClass
+        +string DisplayName
+        +IReadOnlyList~string~ EconomicTerms
+        +bool HardBlocker
+        +string LedgerClassification
+        +IReadOnlyList~string~ ProviderFeeds
+        +IReadOnlyList~string~ ReconciliationSignals
+        +IReadOnlyList~string~ RequiredIdentifiers
+        +bool RequiresOperationalProfileReview
+        +string Summary
     }
     class Meridian_Contracts_SecurityMaster_NotionalLot["NotionalLot"] {
         +decimal CurrentNotional
@@ -429,26 +445,6 @@ classDiagram
         +DateOnly? RedemptionDate
         +decimal? RedemptionPrice
         +Guid SecurityId
-    }
-    class Meridian_Contracts_SecurityMaster_PricingHierarchyEntryDto["PricingHierarchyEntryDto"] {
-        +int MaxDaysStale
-        +int Priority
-        +string SourceDisplayName
-        +string SourceId
-    }
-    class Meridian_Contracts_SecurityMaster_PrincipalPaydownCorporateActionTerms["PrincipalPaydownCorporateActionTerms"] {
-        +string EventType
-        +decimal? PaydownRatio
-        +decimal? PostPaydownFactor
-        +decimal? PrincipalAmount
-    }
-    class Meridian_Contracts_SecurityMaster_PublishSecurityCurveVersionRequest["PublishSecurityCurveVersionRequest"] {
-        +DateOnly AsOf
-        +Guid CurveId
-        +IReadOnlyList~SecurityCurvePointDto~ Points
-        +string? PublishedBy
-        +string Source
-        +DateTimeOffset? SourcedAt
     }
     Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService --> Meridian_Contracts_SecurityMaster_ISecurityTradingParametersQueryService
     Meridian_Contracts_SecurityMaster_IssueOtcMarginCallRequest --> Meridian_Contracts_SecurityMaster_OtcMovementKind

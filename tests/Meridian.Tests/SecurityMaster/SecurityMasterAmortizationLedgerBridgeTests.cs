@@ -54,7 +54,7 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
         => StructuredCashFlowTerms.Empty with { MaturityDate = maturity, DayCountConvention = dayCount };
 
     private static LedgerTaxLot Lot(decimal quantity, decimal unitCost, int year = 2026, int month = 1, int day = 1)
-        => new("lot-1", new DateOnly(year, month, day), quantity, unitCost, SecurityId);
+        => new("lot-1", new DateOnly(year, month, day), quantity, unitCost, SecurityId) { UnitKind = SecurityLotUnitKind.FaceValue, Multiplier = 100m };
 
     private static StructuredCashFlowProjectionDto ScenarioProjection(
         StructuredCashFlowScenario scenario,

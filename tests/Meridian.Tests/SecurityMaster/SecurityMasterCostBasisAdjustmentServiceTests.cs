@@ -84,7 +84,7 @@ public sealed class SecurityMasterCostBasisAdjustmentServiceTests
         var service = BuildService(queryService);
 
         var adjustments = await service.BuildAdjustmentsAsync(
-            SecurityId, Lots(new LedgerTaxLot("lot-a", new DateOnly(2024, 1, 1), 10m, 90m, SecurityId)), new DateOnly(2025, 1, 1));
+            SecurityId, Lots(new LedgerTaxLot("lot-a", new DateOnly(2024, 1, 1), 10m, 90m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }), new DateOnly(2025, 1, 1));
 
         adjustments.Should().ContainSingle();
         adjustments[0].Kind.Should().Be(LedgerTaxLotBasisAdjustmentKind.Split);
@@ -100,7 +100,7 @@ public sealed class SecurityMasterCostBasisAdjustmentServiceTests
         var service = BuildService(queryService);
 
         var adjustments = await service.BuildAdjustmentsAsync(
-            SecurityId, Lots(new LedgerTaxLot("lot-a", new DateOnly(2024, 1, 1), 10m, 50m, SecurityId)), new DateOnly(2025, 1, 1));
+            SecurityId, Lots(new LedgerTaxLot("lot-a", new DateOnly(2024, 1, 1), 10m, 50m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }), new DateOnly(2025, 1, 1));
 
         adjustments.Should().ContainSingle();
         adjustments[0].Kind.Should().Be(LedgerTaxLotBasisAdjustmentKind.ReturnOfCapital);
@@ -117,7 +117,7 @@ public sealed class SecurityMasterCostBasisAdjustmentServiceTests
         var service = BuildService(queryService);
 
         var adjustments = await service.BuildAdjustmentsAsync(
-            SecurityId, Lots(new LedgerTaxLot("lot-a", new DateOnly(2024, 1, 1), 10m, 90m, SecurityId)), new DateOnly(2025, 1, 1));
+            SecurityId, Lots(new LedgerTaxLot("lot-a", new DateOnly(2024, 1, 1), 10m, 90m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }), new DateOnly(2025, 1, 1));
 
         adjustments.Should().BeEmpty();
     }
@@ -129,7 +129,7 @@ public sealed class SecurityMasterCostBasisAdjustmentServiceTests
         var service = BuildService(queryService);
 
         var adjustments = await service.BuildAdjustmentsAsync(
-            SecurityId, Lots(new LedgerTaxLot("lot-a", new DateOnly(2024, 1, 1), 10m, 90m, SecurityId)), new DateOnly(2025, 1, 1));
+            SecurityId, Lots(new LedgerTaxLot("lot-a", new DateOnly(2024, 1, 1), 10m, 90m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }), new DateOnly(2025, 1, 1));
 
         adjustments.Should().BeEmpty();
     }
@@ -141,7 +141,7 @@ public sealed class SecurityMasterCostBasisAdjustmentServiceTests
         var service = BuildService(queryService);
 
         var adjustments = await service.BuildAdjustmentsAsync(
-            SecurityId, Lots(new LedgerTaxLot("lot-a", new DateOnly(2024, 1, 1), 100m, 100m, SecurityId)), new DateOnly(2025, 1, 1));
+            SecurityId, Lots(new LedgerTaxLot("lot-a", new DateOnly(2024, 1, 1), 100m, 100m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }), new DateOnly(2025, 1, 1));
 
         adjustments.Should().ContainSingle();
         adjustments[0].Kind.Should().Be(LedgerTaxLotBasisAdjustmentKind.Factor);
@@ -155,7 +155,7 @@ public sealed class SecurityMasterCostBasisAdjustmentServiceTests
         var service = BuildService(queryService);
 
         var adjustments = await service.BuildAdjustmentsAsync(
-            SecurityId, Lots(new LedgerTaxLot("lot-a", new DateOnly(2024, 1, 1), 100m, 100m, SecurityId)), new DateOnly(2025, 1, 1));
+            SecurityId, Lots(new LedgerTaxLot("lot-a", new DateOnly(2024, 1, 1), 100m, 100m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }), new DateOnly(2025, 1, 1));
 
         adjustments.Should().BeEmpty();
     }
@@ -178,7 +178,7 @@ public sealed class SecurityMasterCostBasisAdjustmentServiceTests
         var service = BuildService(queryService);
 
         var adjustments = await service.BuildAdjustmentsAsync(
-            SecurityId, Lots(new LedgerTaxLot("lot-a", new DateOnly(2024, 1, 1), 100m, 100m, SecurityId)), new DateOnly(2025, 1, 1));
+            SecurityId, Lots(new LedgerTaxLot("lot-a", new DateOnly(2024, 1, 1), 100m, 100m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }), new DateOnly(2025, 1, 1));
 
         adjustments.Should().ContainSingle();
         adjustments[0].Kind.Should().Be(LedgerTaxLotBasisAdjustmentKind.Factor);
@@ -200,7 +200,7 @@ public sealed class SecurityMasterCostBasisAdjustmentServiceTests
 
         var adjustments = await service.BuildAdjustmentsAsync(
             SecurityId,
-            Lots(new LedgerTaxLot("lot-a", new DateOnly(2025, 1, 1), 10m, 110m, SecurityId)),
+            Lots(new LedgerTaxLot("lot-a", new DateOnly(2025, 1, 1), 10m, 110m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }),
             new DateOnly(2027, 1, 1));
 
         adjustments.Should().ContainSingle(adjustment =>
@@ -220,7 +220,7 @@ public sealed class SecurityMasterCostBasisAdjustmentServiceTests
 
         // Lot bought at 110 (10-point premium), 5 of 10 years elapsed -> half the premium amortized.
         var adjustments = await service.BuildAdjustmentsAsync(
-            SecurityId, Lots(new LedgerTaxLot("lot-a", new DateOnly(2020, 1, 1), 100m, 110m, SecurityId)), new DateOnly(2025, 1, 1));
+            SecurityId, Lots(new LedgerTaxLot("lot-a", new DateOnly(2020, 1, 1), 100m, 110m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }), new DateOnly(2025, 1, 1));
 
         adjustments.Should().ContainSingle();
         adjustments[0].Kind.Should().Be(LedgerTaxLotBasisAdjustmentKind.Amortization);
@@ -235,7 +235,7 @@ public sealed class SecurityMasterCostBasisAdjustmentServiceTests
         var service = BuildService(queryService);
 
         var adjustments = await service.BuildAdjustmentsAsync(
-            SecurityId, Lots(new LedgerTaxLot("lot-a", new DateOnly(2020, 1, 1), 100m, 110m, SecurityId)), new DateOnly(2025, 1, 1));
+            SecurityId, Lots(new LedgerTaxLot("lot-a", new DateOnly(2020, 1, 1), 100m, 110m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }), new DateOnly(2025, 1, 1));
 
         adjustments.Should().BeEmpty();
     }
@@ -253,7 +253,7 @@ public sealed class SecurityMasterCostBasisAdjustmentServiceTests
             quantitySold: 12m,
             salePrice: 50m,
             LedgerTaxLotReliefMethod.Fifo,
-            [new LedgerTaxLot("lot-a", new DateOnly(2024, 1, 1), 10m, 90m, SecurityId)]);
+            [new LedgerTaxLot("lot-a", new DateOnly(2024, 1, 1), 10m, 90m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }]);
 
         var projection = await service.ProjectReliefAsync(baseInput, SecurityId);
 
@@ -277,7 +277,7 @@ public sealed class SecurityMasterCostBasisAdjustmentServiceTests
             quantitySold: 5m,
             salePrice: 120m,
             LedgerTaxLotReliefMethod.Fifo,
-            [new LedgerTaxLot("lot-a", new DateOnly(2024, 1, 1), 10m, 100m, SecurityId)]);
+            [new LedgerTaxLot("lot-a", new DateOnly(2024, 1, 1), 10m, 100m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }]);
 
         var projection = await service.ProjectReliefAsync(baseInput, SecurityId);
 

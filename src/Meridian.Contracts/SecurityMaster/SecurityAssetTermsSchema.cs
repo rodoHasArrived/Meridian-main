@@ -162,7 +162,8 @@ public sealed record SecurityAssetTermField(
     /// <summary>
     /// The typed convention this string field carries, or <see cref="SecurityTermConventionKind.None"/>.
     /// Unlike a closed vocabulary, a convention accepts every spelling its parser recognizes and
-    /// stores the text verbatim; it rejects only values the parser cannot type.
+    /// preserves its meaning; day counts serialize as canonical market labels, while other conventions
+    /// retain their original spelling. It rejects values the parser cannot type.
     /// </summary>
     public SecurityTermConventionKind Convention { get; init; }
 
@@ -254,8 +255,9 @@ public sealed record SecurityAssetTermField(
 /// free-text labels the domain carries verbatim (<c>seniority</c>, <c>depositType</c>, and the
 /// rest). Constraining those would reject values that persist and read back losslessly today.
 /// Between the two sit the typed CONVENTIONS (<c>dayCount</c>, <c>settlementType</c>,
-/// <c>paymentFrequency</c>, <c>resetFrequency</c>, <c>sweepFrequency</c>): the text is still stored
-/// verbatim and every stored value still reads, but a write must name a spelling the convention's
+/// <c>paymentFrequency</c>, <c>resetFrequency</c>, <c>sweepFrequency</c>): day counts use the shared typed enum and
+/// canonical market labels; the other conventions retain their spelling. Every stored value still
+/// reads, but a write must name a spelling the convention's
 /// parser (<see cref="SecurityTermConventions"/>) can type, so no value is accepted that every
 /// cash-flow and accrual consumer would then read as an unknown cadence or basis.</para>
 /// </remarks>
