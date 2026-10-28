@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Contracts.Configuration;
+using Meridian.Storage.Archival;
 using Meridian.Ui.Services;
 using System.Collections.Concurrent;
 using System.Text.Json;
@@ -503,6 +504,30 @@ public sealed class ActivityFeedServiceTests : IAsyncLifetime
 
         received.Should().NotBeNull();
         received!.Id.Should().Be(id);
+    }
+
+    [Fact]
+    public async Task OpenActivityLogSnapshot_AllowsPublicationWhileRetainingTheOpenedGeneration()
+    {
+        using var fixture = new PathFixture("mdc-activity-snapshot-reader");
+        var directory = Path.Combine(fixture.RootPath, "retained-data", "_logs");
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "activity_log.json");
+        const string previous = "[{\"id\":\"previous\",\"title\":\"Previous snapshot\"}]";
+        const string replacement = "[{\"id\":\"replacement\",\"title\":\"Replacement snapshot\"}]";
+        await File.WriteAllTextAsync(path, previous);
+
+        using var retainedReader = new StreamReader(ActivityFeedService.OpenActivityLogSnapshot(path));
+        await AtomicFileWriter.WriteAsync(path, replacement);
+
+        (await retainedReader.ReadToEndAsync()).Should().Be(previous);
+        (await File.ReadAllTextAsync(path)).Should().Be(replacement);
+        await using var service = new ActivityFeedService(new FixedConfigService(
+            fixture.ConfigPath, new AppConfigDto { DataRoot = "retained-data" }));
+        await service.Initialization;
+        service.Activities.Should().ContainSingle().Which.Id.Should().Be("replacement");
+        await service.LogActivityAsync(ActivityType.Info, "After publication");
+        service.LastPersistenceError.Should().BeNull();
     }
 
     [Fact]

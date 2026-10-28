@@ -11,6 +11,25 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Storage
 
+Atomic writes retain the existing flushed-temp-then-publish sequence. On Windows, if the rename
+is denied while an existing destination is open, publication uses `File.Replace` with a temporary
+backup. Sync and async overwrite publication share bounded gates within this process, keyed by
+the normalized, case-insensitive destination path; temporary-file writes and flushes
+remain concurrent. This prevents competing replacements and their recovery steps from overlapping.
+Readers that share deletion keep their old generation while fresh readers see the complete
+replacement. A failed replacement restores the old generation only when the destination is absent;
+an unrestored `.atomic-recovery.<id>.tmp` backup is retained beside the destination for recovery.
+The recovery error log identifies that generated backup name and the error code without logging
+caller-controlled paths or exception text. Backup cleanup after successful publication is best
+effort. Transient Windows sharing/access failures use the existing ten-attempt, growing 20 ms
+backoff, including when a brief deletion-denying handle coexists with a retained snapshot reader.
+Async waits release the thread. A retained backup that could not be restored ends retries so later
+attempts cannot overwrite the recovery evidence. A handle that stays open still fails publication,
+and permission failures remain visible.
+`AtomicFileWriterTests` covers the seven overwrite surfaces, concurrent publishers, and failure
+retention, including coordinated publishers using equivalent path spellings. These locks do not
+coordinate separate processes, add a Windows power-loss guarantee, or make concurrent appends transactional.
+
 Tier migration decodes compressed input with the production JSONL replay decoder before applying an explicitly requested output codec. An unspecified codec preserves source bytes; `None` emits uncompressed bytes with the compression suffix removed. Gzip rollover therefore produces one gzip layer. Deleting a source always requires equal logical-payload checksums through that decoder, including when optional copy verification is disabled; regression coverage also replays migrated events through `JsonlReplayer`.
 
 `PostgresSecurityMasterPricingStore.ClosePrices` extends retained pricing receipts with immutable
@@ -311,11 +330,11 @@ history commit between the journal and history reads and verifies that all use t
 `Archival/AtomicFileWriterAdapter.cs`, `EtlStagingStore` in `Etl/EtlStores.cs`, and `Backfill/JsonlBackfillBarWriter.cs`
 implement lower-level persistence ports consumed by Infrastructure. Application/host composition
 owns their construction; atomic durability, staging and JSONL naming policies remain in Storage.
-`AtomicFileWriter` commits every write by renaming a fsynced temp file over the destination. On
-Windows every rename it performs, including `ReplaceAsync`'s backup and restore moves, is retried
-briefly (ten attempts, growing from 20 ms) when another handle without delete sharing, such as an
-antivirus or indexer scan, still holds the file; a handle that never closes still fails the write
-and removes the temp file. POSIX renames never wait.
+`AtomicFileWriter` retains the fsynced-temp publication and Windows overwrite/recovery behavior
+described above. `ReplaceAsync`'s backup, final and restore moves retain the same bounded Windows
+sharing retries. POSIX renames never wait. The core atomic-writer suite is also linked into the
+Windows-only workstation test build, so its platform-specific handle, ACL and publication cases
+execute on the existing hosted Windows lane.
 
 `LedgerAccountTaxLotPolicyRecord.EffectiveWashSalePolicy` carries the existing `PolicyId` revision
 into wash-sale projection evidence together with the configured window, scope and activation date.
