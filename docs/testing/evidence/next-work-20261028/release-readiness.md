@@ -427,3 +427,93 @@ The disposable test database was removed after this packet. Schema control again
 contract objects. Only contract/dependency inventories changed; physical schema, migration and
 policy manifests remain unchanged. Full candidate-bound local and hosted results are recorded
 in the PR separately from this focused proof.
+
+## Integration with reviewed main 62a6147c
+
+Recovery commit `84266616d5ee09669ad25bdfe6612ad979be591d` passed every authoritative hosted
+check against tested PR merge `5e5c3be836c0bf900c5c4d3fe2b277c38ed12b28` and base `79e6994f`.
+Meridian CI run `40730003430` passed its quality and integration gates; native Windows run
+`40730003397` passed. Actual verified results were 25,320 ordinary .NET tests (zero failed,
+five registered skips), 4,103 browser tests, 1,382 PostgreSQL tests and 2,569 native WPF tests
+(zero failed, one registered skip). All three HTTP recovery/CAS regressions, the new real
+PostgreSQL recovery/post/restart case and both accepted-order audit barriers passed.
+
+| Verified artifact | ID | ZIP SHA-256 |
+| --- | --- | --- |
+| Ordinary .NET | `12836232248` | `79a4ec01d5c21ed5f50d255483754828df80a680f1a13c76358f036be79802d1` |
+| Browser | `12835133723` | `0908580b55520dfde9fd642a794cf8163e7cb9ddb409bfe5bc354fe50735a60e` |
+| PostgreSQL | `12836900673` | `11c30cb88e6e8cb1b2b96b90e70ca36be35e49a9f800300bcbbaaf89d3a73842` |
+| Native Windows | `12836635579` | `083e23c6a655cca6b155f2decbb6f046353381fab3de14db23ed6fa3fb8e94c6` |
+
+These results precede the subsequent `62a6147c` main integration. Its local full run was
+intentionally stopped after 3,015 application/endpoint tests passed, when main advancement made
+the PR conflicted. Incoming application source merged cleanly. The dashboard README retains both
+authored additions; generated schema/docs/browser conflicts were resolved through their owning
+generators. Independent source reviews found no semantic conflict with factor recovery, canonical
+posting, lazy manual composition, owned credentials or retained report proof. Incoming exported
+report payload sanitization, bank authority guards, canonical corporate-action constructor selection,
+declared-schedule compatibility and module-owned FRED capabilities remain intact.
+
+Combined browser validation uses the incoming React 19, Vitest 5, jsdom 30 and Node 24 lockfile.
+It also corrects a valid-owned-provider-alias gap: family comparison mirrors the server's 51 explicit
+aliases while preserving every raw connection/tenant/account/environment identity. Unknown suffixes,
+foreign families, incomplete ownership and ambiguous IDs remain refused. All 202 focused browser
+tests, strict types, lint (zero errors, 104 existing warnings), routes, barrel/parity and file-size
+checks passed. Both canonical builds matched all 131 output paths and bytes. Mocked workflows at
+1920/1440/1366 passed approval/interrupted-post recovery and owned credential operations with zero
+overflow, axe findings or unexpected errors; the one post 503 was intentional. Full candidate-bound
+checks remain separate from these focused and rendering results.
+
+Schema control applied all 152 migrations against `62a6147c`, with zero migration/policy errors,
+3,080 contract objects and unchanged physical/migration/policy manifests. Temporary schema reports
+were moved outside the checkout before documentation refresh. An initial combined .NET build
+collided with concurrent browser asset regeneration while copying old chunk paths. Asset generation
+was frozen and .NET validation rerun; no project copy guard or test deadline was changed.
+
+## Preserve concurrent integration and retained-payload compatibility
+
+While local integration was being validated, the shared feature branch advanced to
+`e2dde28b28f07902326d42629347504356ee8e0e`, which also integrates `62a6147c` and the recovery
+commit. A human merged PR #3296 at 17:57:50 UTC, producing main
+`23f0800e8bae428136e24153339d38fd3d0aab12`. The remaining populated-payload compatibility
+fix is prepared as a follow-up from that merged main. Local integration checkpoints are preserved;
+no shared history was overwritten.
+
+The concurrent commit restores the original 25-argument spine constructor and deconstructor by
+making `PreparationRevision` an optional, non-positional init property. The final property order
+also preserves the previously retained populated-revision JSON: the revision precedes the explicit
+evidence/stages properties. Compatibility tests pin both the original CLR signatures and actual
+captured canonical bytes. The pre-recovery null-link fixture remains 4,883 bytes with SHA-256
+`fcfacbfb7ac49bd54789c49b4529d9a992ed8d3fd24a4ab22d606a9ced0eddf6`. A populated snapshot
+captured from the earlier positional assembly remains 20,907 bytes with SHA-256
+`7a9a78475015f9d20b1f2432c7f6a09bec33cd45ccc2bd529f9d9e9f756a84f8`. The new codec
+deserializes and serializes that original payload byte-for-byte, independently confirmed by the
+scratch replay oracle. The test embeds the captured payload as deterministic compressed data;
+it does not regenerate the fixture's random identities or update the expected hash.
+
+The corrected final no-database packet passed all 590 unit, contract, factor, recovery/CAS, store,
+candidate, manual-journal, approval and lazy-composition cases, with zero failures or skips.
+Receipt: `/workspace/scratch/meridian-e2-abi-factor-unit-final.log`. An earlier draft of the new
+golden test incorrectly regenerated random fixture identities and failed; replacing that input with
+the actual captured bytes corrected the test without changing the retained hash or production code.
+
+The concurrent private 51-alias provider helper and all identity/unknown-suffix parity checks are
+preserved. Only the bounded source-file locator is adapted for Vitest 5's HTTP module URLs.
+Live/production acknowledgement trims and folds case for the acknowledgement decision alone;
+retained connection, environment, tenant and account identity and submitted payload stay exact.
+All 220 final focused browser cases, strict types and lint passed (zero errors, 104 existing
+warnings); canonical rebuilds again matched all 131 output paths and bytes. The earlier standalone
+full browser stream ended without a final summary, so its partial successes are not a full-suite
+receipt. Full candidate-bound local and hosted gates remain separate.
+
+Final schema control applied all 152 migrations against the reviewed main baseline with zero
+migration/policy errors, 10 schemas, 233 relations and 3,080 public contract objects. Physical,
+migration and policy manifests remain unchanged; only the public contract inventory changes.
+
+All three final real PostgreSQL proofs passed, with zero failures or skips: preparation recovery
+through approval/post/restart/exact replay; the original approval bridge through one canonical
+journal and atomic lot mutation after restart retry; and Reporting startup/migration gating with
+its original deadline. Receipt: `/workspace/scratch/meridian-e2-abi-pg-proofs.log`. These used the
+same frozen Release outputs as the final 590-case packet, with database environment supplied only
+to the three service-backed tests. The disposable database and ephemeral environment files were
+removed after validation. This is automated proof, not installed Windows/live acceptance.
