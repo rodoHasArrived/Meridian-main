@@ -57,7 +57,9 @@ Symlinks are rejected. Replacements are atomic per file, not a transaction acros
 rerun the check after an interrupted write. Default mode is read-only.
 
 The existing AI inventory check still enforces shared-block equality and now points to this repair
-command. Other policy mirrors and host-specific guidance remain separately maintained. No CI
+command. It uses the generator's strict UTF-8, marker, and file-safety checks, so missing or
+malformed canonical files and mirrors fail the inventory gate too. Other policy mirrors and
+host-specific guidance remain separately maintained. No CI
 workflow or protected governance file is changed by this pilot.
 
 ## Describe The Observable Outcome
@@ -95,6 +97,8 @@ orientation and tasks that do not need a structured brief.
 ```bash
 # Inspect staged, unstaged, deleted, and untracked nonignored paths:
 python build/python/cli/buildctl.py recommend-validation
+# Include committed branch changes since the merge base, plus local changes:
+python build/python/cli/buildctl.py recommend-validation --base origin/main
 # Preview a chosen scope without executing validation:
 python build/python/cli/buildctl.py recommend-validation \
   --changed-file src/Meridian.Ui.Services/Meridian.Ui.Services.csproj --json
@@ -103,8 +107,11 @@ python build/python/cli/buildctl.py recommend-validation \
 Recommendations contain command argument arrays, affected paths, selection reasons, input hashes,
 consumer impact, unknown-coverage warnings, and retained final-check requirements. They use
 path-based proof selection and the reverse .NET project-reference graph. A shared contract or
-workstation-service change includes both browser and WPF consumers. Known script-test and browser
-test paths select focused checks; uncertain mappings stay visible for manual review rather than
+workstation-service change includes both browser and WPF consumers. Known Python, development
+launcher, and browser test paths select focused checks; documentation and workflow changes also
+recommend their maintained lanes. Renames include both old and new paths so a move across
+subsystems retains both scopes. An invalid or unavailable `--base` fails with an error; fetch
+the reference before retrying. Uncertain mappings stay visible for manual review rather than
 being reported as covered. Recommendations do not execute arbitrary brief or registry commands.
 
 Context packets include the same validation plan and bind its consulted inputs to freshness
