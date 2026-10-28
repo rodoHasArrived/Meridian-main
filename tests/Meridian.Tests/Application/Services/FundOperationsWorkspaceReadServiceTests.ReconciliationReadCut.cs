@@ -1,5 +1,6 @@
 using System.Reflection;
 using FluentAssertions;
+using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
 using Meridian.PortfolioRecords.FundAccounts;

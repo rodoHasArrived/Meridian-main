@@ -17,7 +17,7 @@ public sealed class SecurityMasterConstructorCompatibilityTests
     public void FormerApplicationContracts_ResolveThroughTheirOriginalAssemblyQualifiedNames(Type legacyType)
     {
         Type.GetType($"{legacyType.FullName}, Meridian.Application", throwOnError: true).Should().BeSameAs(legacyType);
-        legacyType.Assembly.Should().Be(typeof(ISecurityMasterQueryService).Assembly);
+        legacyType.Assembly.Should().BeSameAs(typeof(ISecurityMasterQueryService).Assembly);
     }
 
     [Fact]
@@ -54,7 +54,7 @@ public sealed class SecurityMasterConstructorCompatibilityTests
         var logger = typeof(ILogger<>).MakeGenericType(runtimeType);
         var parameterTypes = runtimeType == typeof(BacktestEngine)
             ? new[] { logger, typeof(StorageCatalogService), typeof(ISecurityMasterQueryService),
-                typeof(Meridian.Backtesting.ICorporateActionAdjustmentService), typeof(Meridian.Backtesting.IBacktestPreflightService) }
+                typeof(Meridian.Backtesting.ICorporateActionAdjustmentService), typeof(Meridian.Contracts.Services.IBacktestPreflightService) }
             : [logger, typeof(ISecurityMasterQueryService), typeof(Meridian.Execution.Adapters.PaperTradingGatewayOptions),
                 typeof(Meridian.Execution.Interfaces.ILiveFeedAdapter), typeof(PaperTradingCostOptions)];
 

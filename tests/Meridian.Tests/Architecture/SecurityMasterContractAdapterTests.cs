@@ -23,7 +23,7 @@ public sealed class SecurityMasterContractAdapterTests
     [InlineData(ServiceLifetime.Transient, true)]
     public void CompatibilityAliases_PreserveHostLifetimesAcrossScopes(ServiceLifetime lifetime, bool registerLegacy)
     {
-        var services = new ServiceCollection();
+        IServiceCollection services = new ServiceCollection();
         services.Add(new ServiceDescriptor(typeof(ISecurityMasterQueryService),
             _ => NSubstitute.Substitute.For<ISecurityMasterQueryService>(), lifetime));
         if (registerLegacy)
