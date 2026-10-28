@@ -12236,6 +12236,8 @@ Meridian-main
 │   │   ├── test_git_hooks.py
 │   │   ├── test_golden_path_validation_workflow.py
 │   │   ├── test_ibapi_smoke_workflow.py
+│   │   ├── test_implementation_assurance_runner.py
+│   │   ├── test_implementation_assurance_scoring.py
 │   │   ├── test_lane_manifest.py
 │   │   ├── test_live_execution_controls_route_consistency.py
 │   │   ├── test_maintenance_full_workflow.py
