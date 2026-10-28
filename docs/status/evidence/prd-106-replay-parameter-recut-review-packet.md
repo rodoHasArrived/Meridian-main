@@ -4,8 +4,10 @@
 
 **Owner:** Backtesting + Strategy Analytics
 
-**Reviewed:** 2026-10-05
-**Candidate branch:** `codex/replay-parameter-fail-closed`
+**Reviewed:** 2026-10-28
+**Candidate branch:** `codex/pr2896-round2`
+
+**Reviewed source commit:** `0842cf7548f6b18afee79bfb4df2f73f85787e7e`
 
 ## Scope and claim boundary
 
@@ -43,18 +45,60 @@ reopens that row nor broadens it into a general Backtesting Studio completion cl
   reference data, but it cannot submit them or silently fall back to inline defaults. A successful
   refresh replaces removed descriptors and retains only matching overrides.
 
-## Required focused human review
+## Independent technical review
 
-Two independent approvals are required on the exact re-cut head. The author cannot satisfy either
-approval, and one generic review does not satisfy both lanes.
+The owner-directed PR review uses two independent technical lanes. These are agent source reviews;
+no human approval, production acceptance, or release certification is claimed. Required repository
+reviews, branch protections, and authoritative hosted checks remain unchanged.
 
-| Review lane | Required focus | Result to record on the pull request |
+| Technical review lane | Reviewer | Disposition |
 | --- | --- | --- |
-| Backtesting / Strategy Analytics | Multi-pass chronology; equal-timestamp ties; multi-symbol priming and concurrent batch liveness; cancellation; early disposal; spool cleanup; exact-source parameter/run coupling | Named reviewer, approval state, reviewed commit SHA, and link to review |
-| Accounting and Ledger | No silent input loss or default substitution; replay ordering preserves auditable event causality; malformed evidence blocks downstream consumption; scope excludes lot and corporate-action accounting changes | Named reviewer, approval state, reviewed commit SHA, and link to review |
+| Backtesting / Strategy Analytics | `review_dependencies/review_parameter_slice`, with replay-engine review by `review_dependencies` | Parameter completeness P1 addressed; full-tick ordering, shared-root grouping and stable ties retained. Source review clear; backend execution awaits the composed integration gate. |
+| Accounting and Ledger | `review_dependencies/governance_evidence` | Strict envelope validation, immutable replay spools, source-position evidence and snapshot economics reviewed. Identified sidecar discovery defect corrected with regressions. Shared archive/capture composition reviewed separately below. |
 
-Any code change after either approval invalidates that approval until the reviewer confirms the new
-head. Unresolved P1 findings block merge.
+The composed tree preserves original #2896 head `68f3485235b9b9acfb9821df201e3a850dbcb6ff`, main
+`6bcc7a0262`, and ready #3175 source tip `25fd42ffa7` as ancestors. #3175's portfolio, reconciliation,
+and notebook behavior retains its separate review scope; this packet covers their replay-reader
+intersection. Canonical archive discovery excludes checksum/recovery/staging files and deduplicates
+plain/gzip representations. Replay opens both representations with the closed-capture share mode;
+other archive readers retain their original shared-open overload. Plain/gzip aliases share one
+bounded reader gate. Conflicting representations still fail without deleting evidence.
+
+### Review-thread coverage ledger
+
+GitHub thread disposition is separate from this technical evidence; no thread was silently treated
+as resolved merely because it became outdated.
+
+| Finding / thread suffix | Preserved behavior and regression evidence |
+| --- | --- |
+| P1 replay materialization (`eoW7c`) | One final private run, bounded byte-offset pages, no duplicate page files, shared roots prepared once. `PagesOnePrivateRunWithoutDuplication_AndCleansOnEarlyDisposal`; `BuildSymbolStreamsAsync_SharedFlatRoot_EnumeratesPhysicalSourceOnce`. |
+| Parse exception mapping (`eoW7j`) | Empty malformed preview with physical source/line detail. `Preview_MalformedCapture_ReturnsExplicitEmptyErrorResponse`. |
+| Primed-reader disposal (`eoW7v`) | Every created enumerator is disposed on initialization failure/cancellation; disposal errors retain the original cause. `MergeAsync_PrimingFailure_DisposesEveryEnumeratorCreatedSoFar` and cancellation/disposal cases. |
+| P1 incomplete parameter scan (`eoW7z`) | Semantic discovery handles inferred/named/constant calls; unsupported mixed references reject the whole scan with HTTP 400 and no partial descriptors. Compiler/endpoint completeness tests and exact-source UI regressions. |
+| P1 timestamp precision (`eoW77`) | Both merges use full UTC ticks, then requested-symbol ranks and stable source ties. `MergeAsync_SubMillisecondEvents_UsesFullUtcTicksBeforeStreamOrder`; shared/mixed-root tie cases. |
+| Spool permissions (`eoW8A`) | Unix owner-only directory/file modes and early cleanup asserted by the private-run regression. |
+| Concurrent source mutation (`eoc6Y`) | Active writers are refused before parsing; later replay reads the private spool. Open-writer, parallel-reader and post-preparation source replacement cases. |
+| Incomplete persisted envelope (`eoc6u`) | Required fields, schema/type and typed payload compatibility validated before filtering/spooling. Missing-field, invalid-envelope, empty-object and JSON-null cases retain physical positions. |
+| Concurrent partial tail (`otmVc`) | Complete and partial active captures report unavailable, not malformed. `ReadEventsAsync_OpenCaptureWriter_RefusesUntilWriterCloses`; preview unavailable-response case. |
+
+New composition regressions cover either member of an equal plain/gzip pair being written, sidecar
+exclusion, exactly one replayed logical event after closure, and parallel explicit plain/gzip aliases.
+The preview test host now registers the same `ReplayScanLifetime` singleton and hosted-service alias
+as production; its shutdown regression proves cancellation and cleanup draining.
+
+### Local validation and remaining execution
+
+- Quant Lab component/view-model suites: 34 passed, zero failures.
+- Chromium fixture capture at 1440×1100 passed. A 1440×900 interaction run verified that source edits
+  immediately disable Run, failed metadata keeps it disabled, and recovery enables it only after a
+  successful scan for the current editor text. No browser runtime errors were observed.
+- Whitespace and merge-marker checks passed. Relevant module hashes and maintained documentation
+  are refreshed from the composed source.
+- No .NET build or test execution is claimed for this local refresh. Root integration owns the single
+  canonical `bash scripts/ci.sh` run and fresh hosted validation of all combined changes. Focused
+  backend coverage includes `JsonlReplayerTests`, `ArchiveCompressionCrashTests`,
+  `ReplayPreviewEndpointsTests`, `MultiSymbolMergeEnumeratorTests`, `BacktestEngineIntegrationTests`,
+  `RoslynScriptCompilerTests`, and `QuantLabParameterExtractionEndpointTests`.
 
 ## Required fresh hosted gates
 
@@ -73,9 +117,27 @@ change. A result from an earlier #2789 head or a superseded re-cut SHA is not re
 The pull request must link each hosted run and record the tested head SHA. Skipped, cancelled,
 neutral, or pending checks do not count as fresh green evidence.
 
-## Merge guard
+## Merge readiness
 
-This packet is a review contract, not evidence that its conditions already passed. Merge remains
-blocked until both focused human approvals and every fresh hosted gate above are recorded against
-the same current head. The pull request must continue to describe this work as PRD-106 hardening
-while preserving the bounded `W6-BTSTUDIO-001` completion claim.
+Source review is clear after the bounded corrections above. Merge remains dependent on the final
+composed head passing the required local and hosted checks and any backend-enforced review rules.
+The work remains PRD-106 hardening; the bounded `W6-BTSTUDIO-001` completion claim is unchanged.
+Production operator evidence, broader PRD-106 acceptance and release certification remain open.
+
+### Reviewed source identities
+
+These Git blob identities let the final integration reviewer detect a later source change without
+mistaking a documentation-only descendant for new code validation.
+
+| Source | Git blob |
+| --- | --- |
+| `src/Meridian.Backtesting/Engine/BacktestEngine.cs` | `3828ced6f7444f716e28d02a526d3c2f52b9ab4d` |
+| `src/Meridian.Backtesting/Engine/MultiSymbolMergeEnumerator.cs` | `98e9996018b963780763bc227527a62938477111` |
+| `src/Meridian.Storage/Replay/JsonlReplayer.cs` | `b31119b3b379c73dc582da9e40e6ed6356f68364` |
+| `src/Meridian.Storage/Replay/JsonlArchiveFiles.cs` | `3d16ad695f95620bad8e0fd77608966a97abf84d` |
+| `src/Meridian.QuantScript/Compilation/IQuantScriptCompiler.cs` | `aa0b1b7674b30ee15ee1d32c61e4ac9bbe91ca34` |
+| `src/Meridian.QuantScript/Compilation/RoslynScriptCompiler.cs` | `e836961679dd44d512a978dd8ed7e1ad681abc20` |
+| `src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs` | `d163a642c7d86d1fd84141f04323b0e066129f22` |
+| `src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs` | `4023fb3e3a67e78d295aaf16b9495781bcdd2185` |
+| `src/Meridian.Ui/dashboard/src/screens/quant-lab-screen.tsx` | `21275f7b47da3cf4bbedc1cf56c0072b4b84c67d` |
+| `src/Meridian.Ui/dashboard/src/screens/quant-lab-screen.view-model.ts` | `fde5f0e414cf433c66cc2e2b0cb4de5085ff7d0f` |
