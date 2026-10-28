@@ -91,6 +91,10 @@ Their `cash-flow.group.v2.<line-id>` memberships require complete, matching
 separate cash movements. Missing, unknown, mixed, or partial category evidence refuses reporting.
 Reversals retain the category under their new line IDs. Existing v1 groups keep their signed
 counterpart treatment for activities whose gross cash legs are independently attributable.
+`GetComparisonTokens` validates the complete supported evidence before representing its exact
+versions, group names, and categories by ordered line position for retry comparison. New draft
+canonicalization uses `RemapForRebuiltLines` to carry that evidence onto its already-selected IDs
+only when the ordered line economics are unchanged; retained journals are never rewritten.
 Untagged simple cash journals and pure cash transfers remain supported. Untagged cash journals with
 opposing noncash legs are ambiguous (even with nonzero net cash) and fail closed instead of producing
 invented cash flows. Missing, unknown-version, foreign-line, or unbalanced grouping evidence and

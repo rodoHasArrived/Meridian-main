@@ -1153,6 +1153,11 @@ Approved typed posting commands stamp command, approval, source-event, Security 
 position, projection model/run/event, and selected rule-pack/rule identities into normalized journal
 metadata while retaining typed evidence and line dimensions. Conflicting pre-existing command-owned
 tags fail before append.
+`RetainedPostingEquivalence` validates supported cash-flow attribution before comparing its exact
+versions, group membership, and category values through the existing ordered line correspondence.
+Fresh draft GUIDs can replay the same posting without excluding attribution from comparison.
+Unknown, malformed, partial, or changed evidence refuses replay; all unrelated metadata, ordered
+economics, and posting scope retain their existing checks. Retained IDs and journal bytes do not change.
 `LedgerJournalStoreHydrationExtensions` rebuilds an in-memory `Meridian.Ledger.Ledger` from that
 durable journal-read seam, including an as-of helper that scopes by ledger book and upper occurrence
 timestamp so restart, close, and reporting projections can hydrate from the stored spine before

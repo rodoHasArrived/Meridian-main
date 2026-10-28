@@ -64,12 +64,12 @@ internal static class AssetAccountingCandidateCanonicalizer
                 pair => RewriteLineDimensionTag(pair.Key, idMap),
                 static pair => pair.Value,
                 StringComparer.OrdinalIgnoreCase);
-        var entry = new JournalEntry(
+        var entry = LedgerCashFlowAttribution.RemapForRebuiltLines(write.Entry, new JournalEntry(
             journalId,
             write.Entry.Timestamp,
             write.Entry.Description,
             lines,
-            write.Entry.Metadata with { Tags = tags });
+            write.Entry.Metadata with { Tags = tags }));
         var canonicalWrite = write with { Entry = entry };
         var canonicalCandidate = result.Candidate with
         {

@@ -339,6 +339,10 @@ and retains the instruction as `LotFactorPaydown`.
 The governed candidate also retains its Investing cash-flow category against every immutable
 journal line ID before approval. Reports classify the actual principal received; premium/discount
 realization and relieved basis do not become separate cash movements. Reversal remaps this evidence.
+`AssetAccountingCandidateCanonicalizer` remaps validated line-bound cash-flow evidence when it
+assigns deterministic IDs to a new draft. Rebuilding the same disposal or factor-paydown request
+therefore preserves its approved attribution and exact atomic receipt; changed group/category,
+ordered economics, or scope remains a collision. Original drafts and retained journals stay immutable.
 The spine service rereads every paid-down lot
 and its carrying credit before drafting; posting dispatches a `FactorPaydown` batch to the atomic
 journal/lot store. A plain factor journal without the lot mutation is not posting authority.
