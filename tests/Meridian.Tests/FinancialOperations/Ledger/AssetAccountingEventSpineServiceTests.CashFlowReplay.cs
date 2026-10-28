@@ -73,7 +73,9 @@ public sealed partial class AssetAccountingEventSpineServiceTests
 
         var retry = () => harness.PostService.PostCandidateAsync(request);
 
-        await retry.Should().ThrowAsync<Exception>().Where(exception => exception is LedgerValidationException or InvalidOperationException);
+        await retry.Should().ThrowAsync<Exception>().Where(exception =>
+            typeof(LedgerValidationException).IsAssignableFrom(exception.GetType())
+            || typeof(InvalidOperationException).IsAssignableFrom(exception.GetType()));
         JsonSerializer.Serialize(harness.CommittedCommand).Should().Be(original);
         harness.Retained.Should().HaveCount(5);
         await harness.Ledger.DidNotReceiveWithAnyArgs().AppendAsync(default!, default);
