@@ -245,18 +245,26 @@
       "name": "web-accounting-reconciliation",
       "path": "/accounting/reconciliation",
       "docLabel": "Accounting \u2014 Reconciliation",
-      "waitForText": "Reconciliation Casework",
+      "waitForText": "Reconciliation break queue",
       "requiredApiRoutes": [
         "/api/workstation/accounting",
+        "/api/workstation/reconciliation/break-queue",
         "/api/accounting-system/providers",
         "/api/accounting-system/import/latest",
         "/api/accounting-system/reconciliation/latest"
       ],
       "waitForTexts": [
-        "Open breaks",
-        "Intraday Vol Carry",
-        "Statement runs",
-        "Reconciliation Casework"
+        "Reconciliation run",
+        "Paper Index Mean Reversion",
+        "Cash variance over tolerance."
+      ],
+      "waitForSelectors": [
+        "select:has(option[value=\"run-42\"]:checked)",
+        "#reconciliation-break-queue tr[data-dense-row-id=\"run-42:cash\"][aria-selected=\"true\"]",
+        "#reconciliation-break-detail-panel [aria-label=\"Reconciliation break detail for run-42:cash\"]"
+      ],
+      "waitForAbsentTexts": [
+        "Loading reconciliation break queue..."
       ]
     },
     {

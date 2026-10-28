@@ -7327,6 +7327,8 @@ Meridian-main
 │   │   │   │   │   │   ├── workspace-nav.view-model.ts
 │   │   │   │   │   │   ├── workspace-primitives.test.tsx
 │   │   │   │   │   │   ├── workspace-primitives.tsx
+│   │   │   │   │   │   ├── workspace-status.test.tsx
+│   │   │   │   │   │   ├── workspace-status.tsx
 │   │   │   │   │   │   ├── workspace-views-menu.test.tsx
 │   │   │   │   │   │   ├── workspace-views-menu.tsx
 │   │   │   │   │   │   ├── workspace-workbench-shell.test.tsx
@@ -7791,12 +7793,16 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.prepare-next-period.test-fixtures.ts
 │   │   │   │   │   ├── accounting-screen.prepare-next-period.test.tsx
 │   │   │   │   │   ├── accounting-screen.prepare-next-period.tsx
+│   │   │   │   │   ├── accounting-screen.reconciliation-continuity.test.ts
 │   │   │   │   │   ├── accounting-screen.reconciliation-panels.tsx
 │   │   │   │   │   ├── accounting-screen.reconciliation-queue-utils.ts
 │   │   │   │   │   ├── accounting-screen.reconciliation-readiness.test.tsx
 │   │   │   │   │   ├── accounting-screen.reconciliation-readiness.tsx
 │   │   │   │   │   ├── accounting-screen.reconciliation-readiness.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.reconciliation-readiness.view-model.ts
+│   │   │   │   │   ├── accounting-screen.reconciliation-resolve-dialog.ts
+│   │   │   │   │   ├── accounting-screen.reconciliation-workbench.test.tsx
+│   │   │   │   │   ├── accounting-screen.reconciliation-workbench.tsx
 │   │   │   │   │   ├── accounting-screen.reconciliation.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.reconciliation.view-model.ts
 │   │   │   │   │   ├── accounting-screen.security-master-detail-panels.tsx
@@ -7970,6 +7976,8 @@ Meridian-main
 │   │   │   │   │   ├── reconciliation-casework-outcome.ts
 │   │   │   │   │   ├── reconciliation-source-observation.test.ts
 │   │   │   │   │   ├── reconciliation-source-observation.ts
+│   │   │   │   │   ├── reconciliation-view-state.test.tsx
+│   │   │   │   │   ├── reconciliation-view-state.ts
 │   │   │   │   │   ├── report-library-screen.test.tsx
 │   │   │   │   │   ├── report-library-screen.tsx
 │   │   │   │   │   ├── report-run-governance-client-package.ts
@@ -8102,6 +8110,7 @@ Meridian-main
 │   │   │   │   │   ├── companion-pane.css
 │   │   │   │   │   ├── dense-row-detail-accessibility.css
 │   │   │   │   │   ├── index.css
+│   │   │   │   │   ├── reconciliation-workbench.css
 │   │   │   │   │   ├── ui-kit-primitives.css
 │   │   │   │   │   ├── workflow-continuity-dock.css
 │   │   │   │   │   ├── workspace-nav.css

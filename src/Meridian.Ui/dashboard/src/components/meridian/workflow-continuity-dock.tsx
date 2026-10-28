@@ -17,9 +17,11 @@ export function WorkflowContinuityDock({
 }) {
   const decision = viewModel.decisionBrief;
   const routePathLabel = viewModel.routeLabel.split(/[?#]/, 1)[0] || "/";
-  const scopeSummary = viewModel.operatingScope.items.map((item) => `${item.label} ${item.value}`).join(", ");
   const isDimensionInEffect = (id: string) =>
     !scopeDimensionsInEffect || scopeDimensionsInEffect.includes(id as AppShellOperatingScopeQueryKey);
+  const appliedScope = viewModel.operatingScope.items.filter((item) => isDimensionInEffect(item.id));
+  const retainedScope = viewModel.operatingScope.items.filter((item) => !isDimensionInEffect(item.id));
+  const describeScope = (items: typeof appliedScope) => items.map((item) => `${item.label} ${item.value}`).join(", ");
   const [operatorFlowOpen, setOperatorFlowOpen] = useState(false);
   const toggleOperatorFlow = () => setOperatorFlowOpen((isOpen) => !isOpen);
 
@@ -50,7 +52,12 @@ export function WorkflowContinuityDock({
           ) : null}
           {!viewModel.operatingScope.hasScope ? <span className="text-xs text-muted-foreground">No scope selected</span> : null}
         </div>
-        {scopeSummary ? <p className="sr-only">Operating scope: {scopeSummary}.</p> : null}
+        {viewModel.operatingScope.hasScope ? (
+          <p className="sr-only">
+            {appliedScope.length > 0 ? `Applied on this screen: ${describeScope(appliedScope)}.` : "No selected scope dimensions apply on this screen."}
+            {retainedScope.length > 0 ? ` Retained for other screens: ${describeScope(retainedScope)}.` : ""}
+          </p>
+        ) : null}
         {viewModel.operatingScope.items.length > 0 ? (
           <dl className="workflow-continuity-scope" aria-label={viewModel.operatingScope.label}>
             {viewModel.operatingScope.items.map((item) => {

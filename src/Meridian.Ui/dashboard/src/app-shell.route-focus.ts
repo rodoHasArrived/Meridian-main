@@ -36,12 +36,20 @@ function routeFocusSearch(pathname: string, search: string): string {
   const normalizedPath = pathname.replace(/\/$/, "").toLowerCase();
   const isReporting = normalizedPath === WORKSTATION_ROUTE_CATALOG.reporting;
   const isPortfolio = normalizedPath === WORKSTATION_ROUTE_CATALOG.portfolio;
-  if (!isReporting && !isPortfolio) return search;
+  const isReconciliation = normalizedPath === WORKSTATION_ROUTE_CATALOG.accountingReconciliation
+    || normalizedPath === WORKSTATION_ROUTE_CATALOG.accountingExceptions;
+  if (!isReporting && !isPortfolio && !isReconciliation) return search;
 
-  // Queue selection and Portfolio table controls stay in their current workbench.
+  // Queue selection, search, and table controls stay in their current workbench.
   // Treating screen-local URL state as navigation would steal the control/row focus.
   const params = new URLSearchParams(search);
-  params.delete(isReporting ? REPORTING_WORK_SELECTION_PARAM : VIEW_STATE_QUERY_KEY);
+  if (isReconciliation) {
+    for (const key of ["reconciliationRun", "reconciliationBreak", "reconciliationSearch", "reconciliationStatus", "reconciliationSort"]) {
+      params.delete(key);
+    }
+  } else {
+    params.delete(isReporting ? REPORTING_WORK_SELECTION_PARAM : VIEW_STATE_QUERY_KEY);
+  }
   const focusSearch = params.toString();
   return focusSearch ? `?${focusSearch}` : "";
 }

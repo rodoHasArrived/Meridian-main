@@ -166,3 +166,26 @@ describe("WorkflowContinuityDock", () => {
     );
   });
 });
+
+it("distinguishes applied scope from retained scope in its accessible summary", () => {
+  render(
+    <MemoryRouter>
+      <WorkflowContinuityDock
+        viewModel={{
+          ...workflowViewModel,
+          operatingScope: {
+            ...workflowViewModel.operatingScope,
+            items: [
+              { id: "fundAccountId", label: "Account", value: "Desk A", ariaLabel: "Account Desk A" },
+              { id: "provider", label: "Provider", value: "Source B", ariaLabel: "Provider Source B" }
+            ]
+          }
+        }}
+        scopeDimensionsInEffect={["fundAccountId"]}
+      />
+    </MemoryRouter>
+  );
+  expect(screen.getByText(/Applied on this screen: Account Desk A/)).toHaveTextContent("Retained for other screens: Provider Source B.");
+  expect(screen.getByLabelText("Account Desk A")).toHaveTextContent("Applied here");
+  expect(screen.getByLabelText("Provider Source B. Retained for other screens.")).toHaveTextContent("Retained");
+});
