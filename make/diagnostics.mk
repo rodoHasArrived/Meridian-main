@@ -3,6 +3,7 @@
 # =============================================================================
 
 .PHONY: doctor doctor-ci doctor-quick doctor-fix verify-setup \
+        doctor-unit-test doctor-browser doctor-desktop doctor-full-quality-gate \
         diagnose diagnose-build \
         collect-debug collect-debug-minimal \
         build-profile build-binlog \
@@ -12,23 +13,36 @@
         metrics history \
         health status app-metrics version
 
-doctor: ## Run environment health check
-	@$(BUILDCTL) doctor
+doctor: ## Run environment health check (PROFILE selects workflow prerequisites)
+	@$(BUILDCTL) doctor $(if $(PROFILE),--profile $(PROFILE),)
 
 doctor-ci: ## Run environment health check for CI (warnings don't fail)
-	@$(BUILDCTL) doctor --no-fail-on-warn
+	@$(BUILDCTL) doctor --no-fail-on-warn $(if $(PROFILE),--profile $(PROFILE),)
 
 doctor-quick: ## Run quick environment check
-	@$(BUILDCTL) doctor --quick
+	@$(BUILDCTL) doctor --quick $(if $(PROFILE),--profile $(PROFILE),)
+
+doctor-unit-test: ## Check .NET unit-test prerequisites without restoring or building
+	@$(BUILDCTL) doctor --profile unit-test
+
+doctor-browser: ## Check browser workstation prerequisites without restoring or building
+	@$(BUILDCTL) doctor --profile browser
+
+doctor-desktop: ## Check desktop workstation prerequisites without restoring or building
+	@$(BUILDCTL) doctor --profile desktop
+
+doctor-full-quality-gate: ## Check full CI quality-gate prerequisites without restoring or building
+	@$(BUILDCTL) doctor --profile full-quality-gate
 
 doctor-fix: ## Run environment check and auto-fix issues
 	@echo "$(YELLOW)Auto-fix not yet implemented in buildctl doctor$(NC)"
-	@$(BUILDCTL) doctor
+	@$(BUILDCTL) doctor $(if $(PROFILE),--profile $(PROFILE),)
 
 verify-setup: ## Verify the development environment is correctly set up
 	@echo ""
 	@echo "$(BLUE)Verifying development setup...$(NC)"
 	@echo ""
+	@$(BUILDCTL) doctor --profile unit-test
 	@PASS=true; \
 	printf "  Restoring dependencies... "; \
 	if dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity quiet 2>&1; then \
