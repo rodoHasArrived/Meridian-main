@@ -81,22 +81,34 @@ if (-not $SkipWarningSuppressionCheck) {
 }
 
 if (-not [string]::IsNullOrWhiteSpace($DotnetTestFilter)) {
-    Invoke-QualityStep `
-        -Name "focused dotnet test" `
-        -Command "dotnet" `
-        -Arguments @(
-            "test",
-            $DotnetTestProject,
-            "-c",
-            "Release",
-            "--no-restore",
-            "--filter",
-            $DotnetTestFilter,
-            "--logger",
-            "console;verbosity=normal",
-            "/p:EnableWindowsTargeting=true",
-            "/p:NodeReuse=false"
+    # The default retains all tests that lived in Meridian.Tests before the
+    # focused assemblies were extracted. An explicit different project stays focused.
+    $dotnetTestProjects = @($DotnetTestProject)
+    if ($DotnetTestProject.Replace("\", "/") -eq "tests/Meridian.Tests/Meridian.Tests.csproj") {
+        $dotnetTestProjects += @(
+            "tests/Meridian.Contracts.UnitTests/Meridian.Contracts.UnitTests.csproj",
+            "tests/Meridian.Core.UnitTests/Meridian.Core.UnitTests.csproj"
         )
+    }
+
+    foreach ($project in $dotnetTestProjects) {
+        Invoke-QualityStep `
+            -Name "focused dotnet test ($project)" `
+            -Command "dotnet" `
+            -Arguments @(
+                "test",
+                $project,
+                "-c",
+                "Release",
+                "--no-restore",
+                "--filter",
+                $DotnetTestFilter,
+                "--logger",
+                "console;verbosity=normal",
+                "/p:EnableWindowsTargeting=true",
+                "/p:NodeReuse=false"
+            )
+    }
 }
 
 if (-not $SkipDashboardTests) {

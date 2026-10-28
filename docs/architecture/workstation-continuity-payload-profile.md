@@ -29,6 +29,6 @@ All parity tests use `JsonSerializerDefaults.Web` to validate shared JSON shape,
 When changing these contracts:
 
 1. Add new members only (non-breaking additive change).
-2. Update compatibility tests in `tests/Meridian.Tests/Contracts/LedgerReconciliationContractCompatibilityTests.cs`.
+2. Update compatibility tests in `tests/Meridian.Contracts.UnitTests/Contracts/LedgerReconciliationContractCompatibilityTests.cs`.
 3. Preserve required-field invariants used by readiness, accounting, and governance-control flows.
 4. Avoid per-surface DTO variants unless a deliberate, reviewed versioning strategy is introduced.

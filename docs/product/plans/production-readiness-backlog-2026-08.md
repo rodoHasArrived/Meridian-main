@@ -300,4 +300,4 @@ noted inline above:
   now matches colon-delimited segments across every structured evidence field
   (`AccountingPostingCommandValidator`), with regressions in
   `tests/Meridian.Tests/Storage/AssetAccountingPostingEvidenceValidatorTests.cs` and
-  `tests/Meridian.Tests/Contracts/DataProvenanceTests.cs`.
+  `tests/Meridian.Contracts.UnitTests/Contracts/DataProvenanceTests.cs`.

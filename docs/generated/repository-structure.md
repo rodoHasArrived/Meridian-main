@@ -1159,6 +1159,7 @@ Meridian-main
 │       │   ├── generated_repair_sandbox.py
 │       │   ├── inline-sha256-baseline.json
 │       │   ├── integration_evidence.py
+│       │   ├── local_gate.py
 │       │   ├── maintenance_refresh.py
 │       │   ├── publish-certified-release.py
 │       │   ├── release-preflight.py
@@ -9778,6 +9779,49 @@ Meridian-main
 │   │   ├── WalkForwardServiceTests.cs
 │   │   ├── XirrCalculatorTests.cs
 │   │   └── YahooFinanceBacktestIntegrationTests.cs
+│   ├── Meridian.Contracts.UnitTests
+│   │   ├── Contracts
+│   │   │   ├── Api
+│   │   │   │   └── UiApiClientTests.cs
+│   │   │   ├── Integrity
+│   │   │   │   └── Sha256DigestTests.cs
+│   │   │   ├── Ledger
+│   │   │   │   └── LedgerDimensionTagsTests.cs
+│   │   │   ├── Operations
+│   │   │   │   └── OperationsOriginGuardTests.cs
+│   │   │   ├── Text
+│   │   │   │   └── TextPrimitivesTests.cs
+│   │   │   ├── DataProvenanceTests.cs
+│   │   │   ├── FundStructureContractsJsonContextTests.cs
+│   │   │   ├── InstrumentJournalContractCompatibilityTests.cs
+│   │   │   ├── LedgerReconciliationContractCompatibilityTests.cs
+│   │   │   ├── OperationalFinanceContractTests.cs
+│   │   │   ├── ProviderIntegrationContractsTests.cs
+│   │   │   ├── ProviderIntegrationManifestIdentityTests.cs
+│   │   │   └── VerifiedOperationOutcomeTests.cs
+│   │   ├── GlobalUsings.cs
+│   │   ├── Meridian.Contracts.UnitTests.csproj
+│   │   └── README.md
+│   ├── Meridian.Core.UnitTests
+│   │   ├── Contracts
+│   │   │   └── AppConfigDtoRoundTripTests.cs
+│   │   ├── Core
+│   │   │   ├── Config
+│   │   │   │   ├── AppConfigJsonOptionsTests.cs
+│   │   │   │   ├── ConfigEnvironmentOverrideTests.cs
+│   │   │   │   ├── ConfigJsonSchemaGeneratorTests.cs
+│   │   │   │   ├── ConfigTemplateGeneratorTests.cs
+│   │   │   │   ├── ConfigValidationPipelineTests.cs
+│   │   │   │   ├── ConfigValidatorTests.cs
+│   │   │   │   ├── ConfigWatcherTests.cs
+│   │   │   │   ├── CredentialPlaceholderDetectorTests.cs
+│   │   │   │   ├── DataSourceKindConverterTests.cs
+│   │   │   │   └── DefaultConfigPathResolverTests.cs
+│   │   │   ├── BackoffTests.cs
+│   │   │   └── CircuitBreakerTests.cs
+│   │   ├── GlobalUsings.cs
+│   │   ├── Meridian.Core.UnitTests.csproj
+│   │   └── README.md
 │   ├── Meridian.DesignModules.Tests
 │   │   ├── DesignModulePhysicalConformanceTests.cs
 │   │   └── Meridian.DesignModules.Tests.csproj
@@ -12702,6 +12746,7 @@ Meridian-main
 │   │   ├── test_integration_evidence.py
 │   │   ├── test_lane_manifest.py
 │   │   ├── test_live_execution_controls_route_consistency.py
+│   │   ├── test_local_gate.py
 │   │   ├── test_maintenance_full_workflow.py
 │   │   ├── test_maintenance_refresh.py
 │   │   ├── test_merge_reviewed_doc_hashes.py

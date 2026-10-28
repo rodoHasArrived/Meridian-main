@@ -94,8 +94,66 @@ are local validation observations: failed attempts do not establish a code defec
 duration is not human implementation or review time. Attempts without a task ID do not contribute
 to task metrics. Missing, unfinished, and malformed records are surfaced; an empty report has no
 baseline. The report reads receipts without modifying them and sends no telemetry externally.
-It covers `buildctl test` receipts, not raw `dotnet`/npm commands, the standalone `build` command,
-review revisions, or escaped defects. Keep hosted CI measurements separate.
+It covers `buildctl test` and aggregate local-gate receipts, not raw `dotnet`/npm commands, the
+standalone `build` command, review revisions, or escaped defects. Keep hosted CI measurements separate.
+
+### Warm edit-to-result and cold full-gate measurements
+
+.NET recommendations now select a deterministic session profile per test project:
+
+```powershell
+python build/python/cli/buildctl.py recommend-validation --base origin/main
+python build/python/cli/buildctl.py recommend-validation --base origin/main --fresh
+```
+
+Profile names include the project and conservative build-definition fingerprints: ordinary source
+edits keep the same session, while changes to projects, solutions, props, or `global.json` select a
+new session automatically. SDK changes outside those definitions can still require a new session
+or the documented profile reset. The first invocation seeds a profile. Later compatible invocations with a previously successful
+build and existing output directories are recorded as `cacheState=profile-warm`; they still restore
+and compile incrementally. Explicit `--no-build` reuse is a separate state and never counts as a
+warm edit/build/test loop. A profile alone does not establish that the invocation was warm.
+
+Capture an edit-start observation immediately before the source edit, then pass it to the focused
+command. In PowerShell, for example:
+
+```powershell
+$editStartedAt = [DateTimeOffset]::UtcNow.ToString("o")
+# Make the source edit, then run the same already-seeded project/profile:
+python build/python/cli/buildctl.py test --project tests/Meridian.Core.UnitTests/Meridian.Core.UnitTests.csproj --profile session:core-loop --filter "FullyQualifiedName~ConfigValidatorTests" --edit-started-at $editStartedAt --task-id core-loop --queue
+python build/python/cli/buildctl.py validation-metrics --summary
+```
+
+`warmFeedbackSeconds` measures a warm invocation through its terminal result, including waiting.
+`warmEditToResultSeconds` additionally includes the explicitly observed interval before invocation;
+without a timezone-aware edit-start timestamp it remains unavailable. Do not substitute file mtimes
+or report feedback duration as editing time. First profile builds, unknown legacy cache state,
+blocked profile preparation, and explicit output-only reuse do not contribute warm samples.
+Failed terminal warm attempts remain observable alongside successful attempts.
+
+The complete local gate overlaps only .NET and browser verification, using at most two lanes when
+the CPU/memory budget permits. Docs generation and workflow tests run afterward in order. Select
+`--jobs 1` for serial execution or `--jobs 2` to request bounded overlap. All required lane results
+are joined; a failed lane fails the aggregate. Unique evidence roots are under
+`artifacts/local-gates/<run-id>/`, with separate lane logs, results, and summaries, plus the
+aggregate `summary.json` and `summary.md`. Hosted leaf lanes retain their established artifact paths.
+
+```powershell
+bash scripts/ci.sh --cold
+python build/python/cli/buildctl.py validation-metrics --summary --json-output .ai/validation-metrics.json
+```
+
+`--cold` selects a new .NET output root for restore, compilation, and test execution. NuGet/npm
+and SDK download caches remain available; this measures cold compiled outputs rather than an
+empty machine or cold network downloads. `coldFullGateSeconds` records monotonic aggregate
+latency only for fresh-output `quality-gate` attempts that finish all four required lanes.
+Failed complete gates remain in the observations; blocked prerequisites, interrupted/partial gates,
+and `verify-fast` runs do not establish a cold full-gate measurement. Their statuses and available
+feedback remain visible in `.ai/validation-runs/<run-id>.json`.
+
+Compare repeated warm runs of the same project, filter, SDK, configuration, runtime, and machine;
+keep full-gate samples separate. Report sample counts, outcomes, median/p95, and missing data.
+These tools track observations and do not establish a speedup without comparable baseline runs.
 
 ## Hosted CI evidence
 

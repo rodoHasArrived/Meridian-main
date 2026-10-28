@@ -70,9 +70,10 @@ class DocumentationWorkflowTests(unittest.TestCase):
         jobs = yaml.load(self.workflow, Loader=yaml.BaseLoader)["jobs"]
         steps = jobs["regenerate-docs"]["steps"]
         runs = "\n".join(step.get("run", "") for step in steps)
-        for consumer in (ci, runs):
+        for consumer, report in ((ci, '"${MERIDIAN_CI_ARTIFACT_ROOT}/docs/generation.json"'),
+                                 (runs, "artifacts/docs/generation.json")):
             self.assertEqual(1, consumer.count("build/scripts/run-maintained-generation.py"))
-            self.assertIn("--docs-only --report artifacts/docs/generation.json", consumer)
+            self.assertIn("--docs-only --report " + report, consumer)
             self.assertEqual(1, consumer.count("build/scripts/ci/check-generated-output.py"))
             self.assertNotIn("render-roadmap-docs.py", consumer)
             self.assertNotIn("render-source-docs.py", consumer)

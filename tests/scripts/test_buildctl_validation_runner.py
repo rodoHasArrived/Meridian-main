@@ -9,6 +9,7 @@ import sys
 import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
 
@@ -41,6 +42,66 @@ class ValidationRunnerTests(unittest.TestCase):
         self.assertIsNone(
             self.buildctl._resolve_isolation_key("custom", run_id="test-run", disabled=True)
         )
+
+    def test_edit_timestamp_requires_timezone_and_cannot_be_future(self) -> None:
+        now = datetime(2026, 10, 28, 12, tzinfo=timezone.utc)
+        self.assertEqual(self.buildctl._edit_start("2026-10-28T13:00:00+01:00", now), now)
+        for value in ("invalid", "2026-10-28T12:00:00", "2026-10-28T12:00:01Z", ""):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                self.buildctl._edit_start(value, now)
+        self.assertIsNone(self.buildctl._edit_start(None, now))
+
+    def test_bad_edit_timestamp_fails_before_evidence_or_execution(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
+                patch.object(self.buildctl, "_run_passthrough") as run, redirect_stderr(io.StringIO()):
+            self.assertEqual(self.buildctl.cmd_test(self._args(edit_started_at="not-a-timestamp")), 2)
+            self.assertFalse((Path(temp_dir) / ".ai").exists())
+        run.assert_not_called()
+
+    def test_cache_states_do_not_infer_warmth_from_named_profiles_or_keys(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)):
+            self.assertEqual(self.buildctl._test_cache_state(self._args(), None, "new"), "fresh-isolated")
+            self.assertEqual(self.buildctl._test_cache_state(self._args(isolation_key="named"), None, "named"), "explicit-output")
+            self.assertEqual(self.buildctl._test_cache_state(self._args(no_isolation=True), None, None), "shared-output")
+            args = self._args(profile="worktree")
+            self.assertEqual(self.buildctl._test_cache_state(args, {"built": True}, "profile-key"), "profile-cold")
+            for kind in ("bin", "obj"):
+                (Path(temp_dir) / "artifacts" / kind / "profile-key").mkdir(parents=True)
+            self.assertEqual(self.buildctl._test_cache_state(args, {"built": False}, "profile-key"), "profile-cold")
+            self.assertEqual(self.buildctl._test_cache_state(args, {"built": True}, "profile-key"), "profile-warm")
+            self.assertEqual(self.buildctl._test_cache_state(self._args(no_build=True), {"built": True}, "profile-key"), "explicit-output-reuse")
+
+    def test_profile_warm_edit_to_result_tracks_failures_without_skipping_compilation(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
+                patch.object(self.buildctl, "_run", return_value=subprocess.CompletedProcess([], 0, "10.0.100\n")), \
+                patch.object(self.buildctl, "_get_active_repo_build_processes", return_value=[]), \
+                redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+            root = Path(temp_dir)
+            (root / "Example.csproj").write_text("<Project />")
+            commands = []
+
+            def execute(command):
+                commands.append(command)
+                key = next(arg.split("=", 1)[1] for arg in command if arg.startswith("/p:MeridianBuildIsolationKey="))
+                for kind in ("bin", "obj"):
+                    (root / "artifacts" / kind / key).mkdir(parents=True, exist_ok=True)
+                return 1 if command[1] == "test" and len(commands) > 3 else 0
+
+            edit_start = (datetime.now(timezone.utc) - timedelta(seconds=5)).isoformat()
+            with patch.object(self.buildctl, "_run_passthrough", side_effect=execute):
+                for run_id, expected in (("first", 0), ("warm", 1)):
+                    self.assertEqual(self.buildctl.cmd_test(self._args(
+                        project="Example.csproj", profile="session:example", run_id=run_id,
+                        edit_started_at=edit_start,
+                    )), expected)
+            first = json.loads((root / ".ai/validation-runs/first.json").read_text())
+            warm = json.loads((root / ".ai/validation-runs/warm.json").read_text())
+            self.assertEqual(first["cacheState"], "profile-cold")
+            self.assertIsNone(first["warmEditToResultSeconds"])
+            self.assertEqual(warm["cacheState"], "profile-warm")
+            self.assertEqual(warm["status"], "failed")
+            self.assertGreaterEqual(warm["warmEditToResultSeconds"], 5)
+            self.assertEqual([command[1] for command in commands], ["restore", "build", "test"] * 2)
 
     def test_validation_lock_blocks_second_runner(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
