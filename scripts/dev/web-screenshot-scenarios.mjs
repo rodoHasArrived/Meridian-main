@@ -65,22 +65,27 @@ export function scenarioCapture(capture, scenario, module) {
   const fallbackTexts = sharedResponse?.status >= 400
     ? [payload?.detail ?? payload?.title]
     : scenario.id.endsWith(".empty")
-      ? ["Reconciliation Casework", "No reconciliation runs are available for this accounting scope."]
-      : ["Reconciliation Casework", "Open breaks", payload?.reconciliationQueue?.at(-1)?.strategyName];
+      ? ["Reconciliation break queue", "No reconciliation breaks in the current queue."]
+      : ["Reconciliation run", "Reconciliation break queue", payload?.breakQueue?.[0]?.strategyName, payload?.breakQueue?.[0]?.reason];
   // Scenario readiness describes its preview route. Other routes (for example the
   // Approval Inbox) have their own headings, payload rows and selector checks.
   const isPreviewRoute = url.pathname === new URL(scenario.previewPath, "http://meridian.local").pathname;
   const populated = sharedResponse?.status < 400 && !scenario.id.endsWith(".empty");
   const captureTexts = isPreviewRoute && !populated ? [] : capture.waitForTexts ?? [];
+  const previewTexts = scenario.waitForTexts ?? fallbackTexts.filter(Boolean);
   return {
     ...capture,
     path: `${url.pathname}${url.search}${url.hash}`,
     name: `${capture.name}-${scenario.id.replaceAll(".", "-")}`,
     scenario: scenario.id,
+    // Empty/error previews must prove their own state instead of waiting for the
+    // populated capture's selected row and inspector, which should not exist.
+    waitForText: isPreviewRoute && !populated ? previewTexts[0] : capture.waitForText,
+    waitForSelectors: isPreviewRoute && !populated ? [] : capture.waitForSelectors,
     previewUrl: module.scenarioPreviewUrl(scenario),
     waitForTexts: [...new Set([
       ...captureTexts,
-      ...(isPreviewRoute ? scenario.waitForTexts ?? fallbackTexts.filter(Boolean) : [])
+      ...(isPreviewRoute ? previewTexts : [])
     ])],
     waitForAbsentTexts: [...new Set([
       ...(capture.waitForAbsentTexts ?? []),

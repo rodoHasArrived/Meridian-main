@@ -151,7 +151,10 @@ test("populated scenarios preserve each selected route's readiness contract", as
     for (const text of [...reconciliation.waitForTexts, ...scenario.waitForTexts]) {
       assert.ok(selectedReconciliation.waitForTexts.includes(text), `Missing readiness text: ${text}`);
     }
-    assert.ok(selectedReconciliation.waitForTexts.includes("Statement runs"));
+    assert.ok(selectedReconciliation.waitForTexts.includes("Reconciliation run"));
+    assert.ok(selectedReconciliation.waitForTexts.includes(source.module.accountingPayload.breakQueue[0].reason));
+    assert.deepEqual(selectedReconciliation.waitForSelectors, reconciliation.waitForSelectors);
+    assert.ok(selectedReconciliation.requiredApiRoutes.includes("/api/workstation/reconciliation/break-queue"));
   }
 });
 
@@ -212,4 +215,44 @@ test("the Playwright adapter waits for the declared response delay", async () =>
   const result = await stub.request("http://localhost/api/delayed");
   assert.ok(Date.now() - started >= 35);
   assert.equal(result.fulfilled.status, 200);
+});
+
+
+test("reconciliation readiness proves the loaded selected queue row and inspector", async () => {
+  const routeConfig = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-routes.json"), "utf8"));
+  const capture = routeConfig.captures.find((item) => item.id === "W03A");
+  const selectedBreak = source.module.accountingPayload.breakQueue[0];
+  assert.equal(capture.waitForText, "Reconciliation break queue");
+  assert.ok(capture.waitForTexts.includes(selectedBreak.strategyName));
+  assert.ok(capture.waitForTexts.includes(selectedBreak.reason));
+  assert.ok(capture.waitForSelectors.some((selector) => selector.includes(`option[value="${selectedBreak.runId}"]:checked`)));
+  assert.ok(capture.waitForSelectors.some((selector) => selector.includes(`data-dense-row-id="${selectedBreak.breakId}"`) && selector.includes('aria-selected="true"')));
+  assert.ok(capture.waitForSelectors.some((selector) => selector.includes(`Reconciliation break detail for ${selectedBreak.breakId}`)));
+  assert.ok(capture.waitForAbsentTexts.includes("Loading reconciliation break queue..."));
+  for (const obsolete of ["Open breaks", "Intraday Vol Carry", "Statement runs", "Reconciliation Casework"]) {
+    assert.ok(!capture.waitForTexts.includes(obsolete), `Readiness must not wait for hidden supporting content: ${obsolete}`);
+  }
+});
+
+test("scenario fallback readiness waits for the selected break rather than an unselected run", () => {
+  for (const id of ["accounting.normal", "accounting.delayed"]) {
+    const scenario = { ...source.module.getScenario(id), waitForTexts: undefined };
+    const capture = scenarioCapture({ name: "reconciliation", path: "/accounting/reconciliation" }, scenario, source.module);
+    const selectedBreak = source.module.accountingPayload.breakQueue[0];
+    assert.deepEqual(capture.waitForTexts, ["Reconciliation run", "Reconciliation break queue", selectedBreak.strategyName, selectedBreak.reason]);
+  }
+});
+
+test("empty and failed previews replace populated readiness with their explicit state", async () => {
+  const routeConfig = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-routes.json"), "utf8"));
+  const capture = routeConfig.captures.find((item) => item.id === "W03A");
+  for (const id of ["accounting.empty", "accounting.forbidden", "accounting.failed"]) {
+    const scenario = source.module.getScenario(id);
+    const selected = scenarioCapture(capture, scenario, source.module);
+    assert.equal(selected.waitForText, scenario.waitForTexts[0]);
+    assert.deepEqual(selected.waitForTexts, scenario.waitForTexts);
+    assert.deepEqual(selected.waitForSelectors, []);
+    assert.deepEqual(selected.waitForAbsentTexts, capture.waitForAbsentTexts);
+    assert.ok(!selected.waitForTexts.includes(source.module.accountingPayload.breakQueue[0].reason));
+  }
 });

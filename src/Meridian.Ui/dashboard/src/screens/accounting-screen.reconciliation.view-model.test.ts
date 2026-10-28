@@ -94,6 +94,15 @@ const breakQueue: ReconciliationBreakQueueItem[] = [
 ];
 
 describe("accounting-screen reconciliation view model", () => {
+  it("does not silently replace an explicitly selected break that disappeared", () => {
+    const state = buildReconciliationBreakQueueState({
+      breakQueue, selectedBreakId: "missing-break", loading: false, loadError: null, action: null, actionError: null
+    });
+    expect(state.selectedBreakId).toBeNull();
+    expect(state.selectedDetail).toBeNull();
+    expect(state.rows.every((row) => !row.isSelected)).toBe(true);
+  });
+
   it("builds operational exception workbench state from reconciliation queues", () => {
     const breakRows = buildReconciliationBreakRows([
       {
@@ -327,7 +336,7 @@ describe("accounting-screen reconciliation view model", () => {
     expect(state.tabs.find((entry) => entry.id === "cash")?.badgeLabel).toBe("0");
   });
 
-  it("selects the first available statement run when the requested run is not in the statement list", () => {
+  it("keeps the statement inspector unselected when an explicit run is unavailable", () => {
     const state = buildReconciliationStatementRunsViewState({
       statementRuns: [
         {
@@ -353,10 +362,9 @@ describe("accounting-screen reconciliation view model", () => {
 
     expect(state.rows[0]).toMatchObject({
       runId: "statement-run-1",
-      isSelected: true
+      isSelected: false
     });
-    expect(state.tabs.every((tab) => !tab.disabled)).toBe(true);
-    expect(state.tabs[0].ariaLabel).toContain("statement run statement-run-1");
+    expect(state.tabs.every((tab) => tab.disabled)).toBe(true);
   });
 
   it("orders statement runs by the latest retained service timestamp", () => {

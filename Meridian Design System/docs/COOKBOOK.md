@@ -56,6 +56,29 @@ returns to its originating row. Keep the selected item's primary action before i
 facts. Bind shareable selection to immutable item identity and current financial scope; show
 unavailable selection explicitly after removal rather than substituting another item's proof.
 
+### Reconciliation queue–inspector pilot
+
+The browser adapter combines `WorkspaceWorkbenchShell`, `DenseDataTable` and
+`DenseRowDetailPanel`. Use `inspectorRole="region"` when the shell is nested inside another
+named region, avoiding a nested complementary landmark. Default shell consumers retain their
+existing complementary semantics.
+
+Keep selected-record commands before supporting facts, with disabled reasons and explicit
+rationale for resolution. Show discrepancy, owner, status, source observation and required
+sign-off; retain technical metadata in a disclosure. Search and status filters must never silently
+replace the selected evidence. Show filtered versus loaded counts, keep controls available in
+empty/no-match states, and distinguish unavailable selection from an empty queue.
+
+Persist view choices in scoped URLs and scroll in navigation state; restore after data loads.
+Enter/Space enters the selected inspector and Escape returns to its row. At constrained widths,
+use explicit Inspect/Back controls without discarding queue state. Wide tables scroll locally.
+Loading and failed reads must prevent stale commands; old-scope responses cannot repopulate the
+current inspector. Success comes from the authoritative operation result, never optimistic approval.
+
+Use the shell's `WorkspaceStatus` disclosure for affected-area recovery detail. Retain distinct
+warnings for distinct problems, disable repeated retry while refreshing, and keep operating scope
+applicability explicit. These patterns add no new tokens or business-state vocabulary.
+
 ## 2 · Validated form
 
 **Goal:** an operator form that blocks submit until valid and states errors inline — new

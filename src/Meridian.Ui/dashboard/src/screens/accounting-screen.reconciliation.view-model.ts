@@ -20,7 +20,6 @@ import type {
   ReconciliationBreakAction,
   ReconciliationBreakDetailViewModel,
   ReconciliationBreakQueueState,
-  ReconciliationBreakResolutionStatus,
   ReconciliationBreakRowViewModel,
   ReconciliationComparisonRowViewModel,
   ReconciliationComparisonViewState,
@@ -30,7 +29,6 @@ import type {
   ReconciliationLineItemViewModel,
   ReconciliationQueuePanelViewState,
   ReconciliationQueueRunTone,
-  ReconciliationResolveDialogState,
   ReconciliationRunDetailTabId,
   ReconciliationRunDetailTabViewModel,
   ReconciliationStatementRunRowViewModel,
@@ -419,8 +417,8 @@ function resolveStatementRunSelection(
   sourceRows: readonly StatementRunSummaryWithMetadata[],
   selectedRunId: string | null
 ): string | null {
-  return selectedRunId && sourceRows.some((run) => run.runId === selectedRunId)
-    ? selectedRunId
+  return selectedRunId
+    ? sourceRows.some((run) => run.runId === selectedRunId) ? selectedRunId : null
     : sourceRows[0]?.runId ?? null;
 }
 
@@ -607,8 +605,8 @@ export function buildReconciliationBreakQueueState({
   action: ReconciliationBreakAction | null;
   actionError: string | ApiErrorDisplay | null;
 }): ReconciliationBreakQueueState {
-  const effectiveSelectedBreakId = selectedBreakId && breakQueue.some((item) => item.breakId === selectedBreakId)
-    ? selectedBreakId
+  const effectiveSelectedBreakId = selectedBreakId
+    ? breakQueue.some((item) => item.breakId === selectedBreakId) ? selectedBreakId : null
     : breakQueue[0]?.breakId ?? null;
   const rows = buildReconciliationBreakRows(breakQueue, action, effectiveSelectedBreakId);
   const selectedRow = rows.find((row) => row.breakId === effectiveSelectedBreakId) ?? null;
@@ -725,36 +723,7 @@ export function buildOperationalExceptionWorkbenchState({
   };
 }
 
-export function buildReconciliationResolveDialogState(
-  breakId: string,
-  status: ReconciliationBreakResolutionStatus,
-  rationale: string
-): ReconciliationResolveDialogState {
-  const command = status === "Resolved" ? "resolve" : "dismiss";
-  const commandLabel = status === "Resolved" ? "Resolve" : "Dismiss";
-  const inputId = `rationale-${breakId}`;
-  const helpId = `rationale-help-${breakId}`;
-
-  return {
-    breakId,
-    status,
-    rationale,
-    inputId,
-    helpId,
-    formAriaLabel: `${commandLabel} reconciliation break ${breakId}`,
-    label: `${commandLabel} rationale`,
-    placeholder: `Describe why this break is being ${command === "resolve" ? "resolved" : "dismissed"}...`,
-    helpText: "A rationale is required before this queue action can be submitted.",
-    submitLabel: `Confirm ${command}`,
-    submitAriaLabel: `Confirm ${command} for reconciliation break ${breakId}`,
-    submitDisabledReason: rationale.trim()
-      ? null
-      : "Enter an operator rationale before confirming this queue action.",
-    cancelLabel: "Cancel",
-    cancelAriaLabel: `Cancel ${command} for reconciliation break ${breakId}`,
-    isSubmitDisabled: !rationale.trim()
-  };
-}
+export { buildReconciliationResolveDialogState } from "./accounting-screen.reconciliation-resolve-dialog";
 
 export function buildReconciliationBreakRows(
   breakQueue: ReconciliationBreakQueueItem[],

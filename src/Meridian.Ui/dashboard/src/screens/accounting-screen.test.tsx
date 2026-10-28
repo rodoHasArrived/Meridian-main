@@ -5588,10 +5588,12 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/reconciliation");
 
-    expect(await screen.findByRole("button", { name: "Assign reconciliation break run-42:resolved" }))
+    await user.click(await screen.findByRole("row", { name: "Inspect reconciliation break run-42:resolved" }));
+    expect(screen.getByRole("button", { name: "Assign reconciliation break run-42:resolved" }))
       .toHaveAttribute("title", "Only open breaks can be assigned; this break is Resolved.");
     expect(screen.getByRole("button", { name: "Resolve reconciliation break run-42:resolved" }))
       .toHaveAttribute("title", "This break is already resolved.");
+    await user.click(screen.getByRole("row", { name: "Inspect reconciliation break run-42:dismissed" }));
     expect(screen.getByRole("button", { name: "Dismiss reconciliation break run-42:dismissed" }))
       .toHaveAttribute("title", "This break is already dismissed.");
 
@@ -5600,6 +5602,7 @@ describe("AccountingScreen", () => {
     expect(resolvedDetail).toHaveTextContent("Decision captured; sign-off: Pending Signoff by Fund operations lead. Close approval remains blocked.");
     expect(resolvedDetail).toHaveTextContent("Matched ledger adjustment.");
 
+    await user.click(screen.getByRole("row", { name: "Inspect reconciliation break run-42:cash" }));
     await user.click(screen.getByRole("button", { name: "Resolve reconciliation break run-42:cash" }));
 
     expect(screen.getByRole("button", { name: "Resolve reconciliation break run-42:cash" }))
@@ -5608,7 +5611,7 @@ describe("AccountingScreen", () => {
       .toHaveAttribute("title", "Enter an operator rationale before confirming this queue action.");
   });
 
-  it("selects a reconciliation break before opening its queue action", async () => {
+  it("opens queue actions from the selected reconciliation break inspector", async () => {
     const user = userEvent.setup();
     const feeBreak = {
       ...data.breakQueue[0],
@@ -5630,6 +5633,9 @@ describe("AccountingScreen", () => {
     expect(await screen.findByRole("region", { name: "Reconciliation break detail for run-42:cash" }))
       .toHaveTextContent("Paper Index Mean Reversion - Cash variance needs review");
 
+    await user.click(screen.getByText("Readiness, source comparison, and run evidence"));
+    await user.click(screen.getByRole("row", { name: "Inspect reconciliation run Intraday Vol Carry" }));
+    await user.click(screen.getByRole("row", { name: "Inspect reconciliation break run-57:fees" }));
     await user.click(screen.getByRole("button", { name: "Resolve reconciliation break run-57:fees" }));
 
     expect(screen.getByRole("region", { name: "Reconciliation break detail for run-57:fees" }))

@@ -46,13 +46,15 @@ function accountingScenario(
   };
 }
 
-// Readiness follows the payload, so changing a strategy name needs only one edit.
-const populatedTexts = accountingPayload.reconciliationQueue.map((row) => row.strategyName);
+// Readiness follows the asynchronously loaded queue and selected inspector. Other
+// run names live in closed disclosures or select options and are not visible evidence.
+const selectedBreak = accountingPayload.breakQueue[0];
+const populatedTexts = ["Reconciliation run", "Reconciliation break queue", selectedBreak.strategyName, selectedBreak.reason];
 
 export const accountingScenarios = {
   "accounting.normal": accountingScenario("normal", { status: 200, body: accountingPayload }, populatedTexts),
   "accounting.empty": accountingScenario("empty", { status: 200, body: emptyAccountingPayload }, [
-    "No reconciliation runs are available for this accounting scope."
+    "No reconciliation breaks in the current queue."
   ]),
   "accounting.delayed": accountingScenario("delayed", { status: 200, body: accountingPayload, delayMs: 1500 }, populatedTexts),
   "accounting.forbidden": accountingScenario("forbidden", {

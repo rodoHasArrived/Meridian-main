@@ -10,8 +10,7 @@ import { meridianBrandAssets } from "@/design-system/assets";
 import {
   buildAppShellViewState,
   isAppShellEditableShortcutTarget,
-  resolveAppShellCommandPaletteShortcut,
-  type ShellStatusPanel
+  resolveAppShellCommandPaletteShortcut
 } from "@/app-shell.view-model";
 import {
   appendOperatingScopeToRoute,
@@ -35,6 +34,7 @@ import {
 import { WorkflowContinuityDock } from "@/components/meridian/workflow-continuity-dock";
 import { DecisionBriefPill } from "@/components/meridian/decision-brief-pill";
 import { WorkspaceViewsMenu } from "@/components/meridian/workspace-views-menu";
+import { WorkspaceStatus } from "@/components/meridian/workspace-status";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
 import { CompanionPaneWindow } from "@/components/meridian/companion-pane-window";
 import { LayoutSwitcher } from "@/components/meridian/layout-switcher";
@@ -88,7 +88,6 @@ import {
   reportWorkstationRouteError,
   type WorkstationRouteErrorContext
 } from "@/lib/route-error-telemetry";
-import { cn } from "@/lib/utils";
 import {
   DATA_WORKSTATION_SCREEN_ROUTES,
   SETTINGS_PROVIDER_SCREEN_ROUTE_PATTERNS,
@@ -782,7 +781,7 @@ function AppShell({
           />
 
           <div className="workbench-scroll px-4 py-4 lg:px-6 lg:py-5">
-            {shell.statusPanel ? <ShellStatus panel={shell.statusPanel} onRetry={refresh} /> : null}
+            {shell.statusPanel ? <WorkspaceStatus panel={shell.statusPanel} onRetry={refresh} refreshing={refreshStatus.inFlight} /> : null}
             {shell.canRenderRoutes ? (
               <RouteErrorBoundary routeKey={routeErrorContext.routeKey} context={routeErrorContext}>
                 <Suspense fallback={<WorkspaceRouteFallback title={`Loading ${shell.activeWorkspace.label}`} />}>
@@ -1183,96 +1182,4 @@ function focusElementById(targetElementId: string, fallbackElement: HTMLElement 
   }
 
   return true;
-}
-
-function ShellStatus({ panel, onRetry }: { panel: ShellStatusPanel; onRetry: () => void }) {
-  const Icon = panel.tone === "loading" ? LoaderCircle : AlertTriangle;
-  const itemSummary = panel.items.length > 0
-    ? `${panel.items.length} ${panel.items.length === 1 ? "detail" : "details"}`
-    : null;
-
-  return (
-    <section
-      id={panel.id}
-      role={panel.role}
-      aria-live={panel.ariaLive}
-      aria-labelledby={panel.titleId}
-      aria-describedby={panel.detailId}
-      aria-busy={panel.tone === "loading"}
-      className={cn(
-        "shell-status-strip",
-        `shell-status-strip-${panel.tone}`,
-        panel.tone === "loading" && "startup-status-panel"
-      )}
-    >
-      <div className="min-w-0">
-        <StatusBanner
-          tone={shellStatusToneToBannerTone(panel.tone)}
-          title={(
-            <span id={panel.titleId} className="inline-flex min-w-0 items-center gap-2">
-              <Icon aria-hidden="true" className={`h-4 w-4 shrink-0 ${panel.tone === "loading" ? "animate-spin" : ""}`} />
-              <span className="min-w-0 truncate">{panel.title}</span>
-              {itemSummary ? (
-                <span
-                  aria-hidden="true"
-                  className="rounded-sm border border-border/60 bg-background/45 px-1.5 py-0.5 font-mono text-[0.625rem] uppercase tracking-[0.12em] text-muted-foreground"
-                >
-                  {itemSummary}
-                </span>
-              ) : null}
-            </span>
-          )}
-          detail={<span id={panel.detailId}>{panel.detail}</span>}
-          className="shadow-none"
-        />
-        {panel.tone === "loading" ? (
-          <div className="startup-status-meter mt-2" aria-hidden="true">
-            <span />
-          </div>
-        ) : null}
-        {panel.items.length > 0 ? (
-          <ul aria-label={panel.itemListLabel} className="sr-only">
-            {panel.items.map((item) => (
-              <li key={item.key} aria-label={item.ariaLabel}>
-                {item.label}: {item.detail}
-              </li>
-            ))}
-          </ul>
-        ) : null}
-      </div>
-      {panel.actionLabel || panel.secondaryActionHref ? (
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
-          {panel.secondaryActionHref && panel.secondaryActionLabel ? (
-            <Button asChild variant="outline" size="sm">
-              <Link to={panel.secondaryActionHref} aria-label={panel.secondaryActionAriaLabel ?? panel.secondaryActionLabel}>
-                {panel.secondaryActionLabel}
-              </Link>
-            </Button>
-          ) : null}
-          {panel.actionLabel ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onRetry}
-              aria-label={panel.actionAriaLabel ?? panel.actionLabel}
-            >
-              {panel.actionLabel}
-            </Button>
-          ) : null}
-        </div>
-      ) : null}
-    </section>
-  );
-}
-
-function shellStatusToneToBannerTone(tone: ShellStatusPanel["tone"]): "danger" | "info" | "warning" {
-  switch (tone) {
-    case "danger":
-      return "danger";
-    case "warning":
-      return "warning";
-    case "loading":
-    default:
-      return "info";
-  }
 }
