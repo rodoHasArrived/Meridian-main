@@ -106,7 +106,8 @@ public sealed partial class SecurityMasterCashFlowService
             return Empty(DeclaredKernelReason + schedule.Failure.Message);
         }
 
-        // 6. Periods paid before today are dropped, on their payment dates.
+        // 6. Periods paying before the projection's as-of date (today for GetProjectionAsync) are
+        // dropped, on their payment dates.
         var periods = schedule.Periods
             .Where(period => period.PaymentDate >= asOfDate)
             .ToArray();

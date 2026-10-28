@@ -102,10 +102,12 @@ and the operator procedure is
   that the holiday list is complete over that range; outside it the calendar still answers from its
   weekend mask and the holidays it lists, and a schedule reports the dates as coverage gaps.
 - **`WEEKENDS` is reserved.** A file cannot define it, and the built-in calendar always resolves.
-- **No weekends fallback.** A refused file is logged with its reason and its id stays unresolvable;
-  nothing is substituted for it. A missing `calendars` directory loads only `WEEKENDS`, with no
-  warning, and so does a `calendars` path that is a file, with a warning. Two files that resolve to
-  one id are both refused.
+- **No weekends fallback.** A refused file is logged with its reason and loads nothing; nothing is
+  substituted for it. Its id stays unresolvable unless another file that loads defines it, or it is
+  `WEEKENDS`, and the warning says which. A missing `calendars` directory loads only `WEEKENDS`,
+  with no warning, and so, with a warning, do a `calendars` path that is a file and a directory
+  that cannot be listed. Two files that pass every other check and resolve to one id are both
+  refused.
 - **Loaded once.** Files are read at host start in ordinal file-name order. There is no hot reload;
   a changed file takes effect when the host restarts. At start the host logs one line per loaded
   calendar (id, version, hash and coverage) and the Security Master terms capability line, which
@@ -117,8 +119,10 @@ and the operator procedure is
   attestation, and any change bumps the version. A named operations owner must be recorded before
   any real calendar file is installed; no holiday file ships in the repository.
 - **Retention.** No retention is needed while declared projections are not persisted and cannot
-  post: the ledger gate refuses them. Lifting that gate needs a decision on retaining calendar
-  evidence, together with journal identity keyed on schedule period identity.
+  post: the ledger gate refuses them. A discounted-cash-flow valuation of a declaring record, also
+  computed on request, names each calendar's id, purpose and content hash among its inputs. Lifting
+  the ledger gate needs a decision on retaining calendar evidence, together with journal identity
+  keyed on schedule period identity.
 
 ## Future Expansion Notes
 

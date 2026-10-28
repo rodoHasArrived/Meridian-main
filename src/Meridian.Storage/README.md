@@ -713,10 +713,14 @@ lookup paths, and evidence trails those layers rely on.
   built-in `WEEKENDS`. A file is refused, with a Warning naming it and the reason, for malformed or
   missing members, a version below 1, an id outside `^[A-Z][A-Z0-9]{1,15}$` or not equal to its
   file stem, the reserved `WEEKENDS`, a weekend day that is not an exact English day name, no
-  working day, inverted coverage or an id another file also defines; its id stays unresolvable and
-  is never replaced by weekends only. A missing directory loads only `WEEKENDS`. `Calendars` and
-  `RefusedFiles` list what loaded and what did not. The Application composition registers it and
-  logs the terms capability line (`docs/operators/business-day-calendar-files.md`).
+  working day, inverted coverage or an id another file that passes these checks also defines (both
+  are refused). A refused file loads nothing, and its Warning says whether the id it names still
+  resolves, from another file or as the built-in `WEEKENDS`; otherwise the id stays unresolvable
+  and is never replaced by weekends only. A missing directory loads only `WEEKENDS`, and so, with a
+  Warning, do a `calendars` path that is a file and a directory that cannot be listed (access denied
+  is not read as an empty directory). `Calendars` and `RefusedFiles` list what loaded and what did
+  not. The Application composition registers it and logs the terms capability line
+  (`docs/operators/business-day-calendar-files.md`).
 - `Config/StorageConfigExtensions.cs` - Storage-owned mapping from shared `StorageConfig` values
   into `StorageOptions`, including naming convention, date partition, sink, and profile defaults.
 - `Coordination/` - file-backed shared-storage lease store implementation published under

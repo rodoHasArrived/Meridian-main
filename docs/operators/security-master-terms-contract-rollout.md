@@ -39,7 +39,10 @@ the [governed edit rollout](security-master-governed-edit-rollout.md).
   desktop install. Desktops matter even though they serve no projections: they post amortization
   in-process and, when `MERIDIAN_SECURITY_MASTER_CONNECTION_STRING` is set, write Security Master
   terms in-process, and their traffic cannot be routed.
-- Read access to each node's log from host start. A server's log goes to its configured sink. A
+- Read access to each node's log from host start. A server writes the lines below through Serilog
+  to its console and to `<dataRoot>/_logs/meridian-<yyyyMMdd>.log`, the `_logs` directory under
+  the same data root as `calendars` (the configuration file's `DataRoot`, which `MDC_DATA_ROOT`
+  does not move); a host the lifecycle supervisor starts keeps no console, so read the file. A
   desktop is a windowed program with no console and no log file: its `ILogger` output reaches only
   the generic host's default providers (console, debug and EventSource; the Windows event log takes
   warnings and above), because the desktop host adds no file logging provider
@@ -53,7 +56,8 @@ the [governed edit rollout](security-master-governed-edit-rollout.md).
 
 - Database checks: `psql` against the verified target database. Do not retain connection strings
   in the change record.
-- Log checks: a server's log sink; on a desktop, the capture file that
+- Log checks: a server's log file, `<dataRoot>/_logs/meridian-<yyyyMMdd>.log`, for the day it
+  started; on a desktop, the capture file that
   [Capturing a desktop's lines](#capturing-a-desktops-lines) produces. The lines below are written
   once, when the host starts, so a capture begun later never sees them. A desktop starts its host
   only after sign-in, once its main window is shown.
@@ -75,8 +79,12 @@ running build can still read and reverse it. 5a is built on 5a-0, so these resul
 ### 2. 5a on every node: the inventory gate
 
 Deploy 5a to every node in the inventory, desktops included. At host start each 5a node logs one
-Information line from `Meridian.Application.Composition.SecurityMasterTermsCapabilityHostedService`.
-With no calendar files installed, a 5a node logs exactly:
+Information line from `Meridian.Application.Composition.SecurityMasterTermsCapabilityHostedService`
+for each service graph that registers it (`AddSecurityMasterTermsCapability`): two on a server
+started with `--mode desktop`, as the container images are, which composes the storage feature in
+its UI server and in its collector, and one on every other node, including a server started with
+`--mode workstation` as the lifecycle supervisor starts it; on a `--mode desktop` server, record
+both copies. With no calendar files installed, a 5a node logs exactly:
 
 ```text
 Security Master terms capability: declared mapping security-master-declared-schedule-v1, schedule kernel contractual-schedule-kernel-v1, terms versions Bond r3/w1, CertificateOfDeposit r3/w1, StructuredCredit r4/w2, Swap r2/w1, business-day calendars 0: none
@@ -94,9 +102,26 @@ Before the capability line, the same start logs one line per loaded calendar fil
 {path}`) and one Warning per refused file. For each node, record its identity, kind (server or
 desktop), build, the full capability line and its timestamp.
 
+On a server, read the lines from the log file. Each entry there starts with its timestamp, level
+(`[INF]`, or `[WRN]` for a refused calendar file), thread and category:
+
+```bash
+grep -hi -e 'business-day calendar' -e 'Security Master terms capability:' -e 'Meridian startup beginning' <dataRoot>/_logs/meridian-*.log
+```
+
+```powershell
+Select-String -Path '<dataRoot>\_logs\meridian-*.log' -SimpleMatch 'business-day calendar', 'Security Master terms capability:', 'Meridian startup beginning' | ForEach-Object Line
+```
+
+`Meridian startup beginning` marks each host start. Of `UiServer`'s own `ILogger` output, only the
+capability and calendar categories reach this file, from Information. Its default providers
+(console, debug, EventSource and, on Windows, the event log) keep their Warning minimum, so a
+refused file's Warning shows twice on its console and once per graph in the file.
+
 A node that logs no capability line runs a build below 5a (4b or 5a-0), or its log was not captured
-from host start. A desktop whose line cannot be captured is recorded with its installed artifact
-identity and the reason, and counts as below 5a until its line is captured.
+from host start, or, on a server, `MDC_LOG_LEVEL` was set to `Warning` or above, which keeps
+Information lines out of the file. A desktop whose line cannot be captured is recorded with its
+installed artifact identity and the reason, and counts as below 5a until its line is captured.
 
 #### Capturing a desktop's lines
 
@@ -327,11 +352,11 @@ Each floor is observable from the capability line; 5b-1's capability floor is to
 | Symptom | Diagnostic | Safe next action |
 | --- | --- | --- |
 | AQ1 or AQ2 finds rows | The query output and the hit's source column | Hold the deploy; remediate as the 5a-0 resolution pass describes, then rerun |
-| A node logs no capability line | Its build identity; whether the capture began before host start | Upgrade the node, or capture again from a restart; hold 5b-2 until its line is recorded |
+| A node logs no capability line | Its build identity; whether the capture began before host start; on a server, the `Meridian startup beginning` line in its log file and the host's `MDC_LOG_LEVEL` | Upgrade the node, capture again from a restart, or restart it with `MDC_LOG_LEVEL` unset or at `Information` or below; hold 5b-2 until its line is recorded |
 | A desktop capture file is empty | Whether another desktop was still running: the new one hands its launch over and exits before its host is built | Close every desktop window and repeat [the capture](#capturing-a-desktops-lines) from action 1 |
 | A node's line differs from the one its build should log (another declared mapping or other terms versions) | The capability line and the node's build | Align the node's build with the fleet; hold 5b-2 |
 | Calendar lists differ between projection nodes | The capability lines; the per-calendar lines and Warnings | Align the files ([calendar procedure](business-day-calendar-files.md)), restart, and compare again |
-| A calendar file is refused at start | The Warning naming the file and the reason | Fix the file as the calendar procedure describes; its id stays unresolvable until then |
+| A calendar file is refused at start | The Warning naming the file, the reason and whether the id still resolves | Fix the file as the calendar procedure describes; until then its id stays unresolvable, unless the Warning says it still resolves from another file or to the built-in `WEEKENDS` |
 | Q1, Q1b or QR returns rows | The query output: class, key or container, and counts | Hold 5b-2, and 5b-1 for QR; follow the remediation the 5b pull requests add here |
 | A rollback below a floor is proposed | The floor table above | Do not roll back below it; roll forward or to an allowed build |
 

@@ -82,13 +82,14 @@ with diagnostics and the calendars it used. The decision record is
 - **Evidence.** Every result names the kernel version (`contractual-schedule-kernel-v1`) and each
   calendar it used, with the calendar's content hash and purpose. A Security Master projection
   generated in declared mode carries that evidence with the declared-mapping version, the calendar
-  Business/252 counted on, and the dates each calendar was asked about outside its coverage.
+  Business/252 counted on, and the dates each calendar was asked about outside its coverage, and a
+  discounted-cash-flow valuation of it names that evidence among its inputs.
 - **Day count refuses rather than degrades.** The period-context overload refuses Act/Act ICMA
-  without periods per year or without reference periods that cover the window, and Business/252
-  without a business-day predicate. Through a schedule, a window outside the period's accrual dates
-  is refused, and so is Act/Act ICMA on a schedule whose accrual dates were adjusted (ICMA is
-  defined on unadjusted coupon periods). The period-less `DayCountConventions` overloads keep their
-  existing behaviour.
+  without periods per year (a `Term` schedule has none) or without reference periods that cover the
+  window, and Business/252 without a business-day predicate. Through a schedule, a window outside
+  the period's accrual dates is refused, and so is Act/Act ICMA on a schedule whose accrual dates
+  were adjusted (ICMA is defined on unadjusted coupon periods). The period-less
+  `DayCountConventions` overloads keep their existing behaviour.
 - **Correction is opt-in.** Corrected conventions apply only to records that declare them. A record
   that declares nothing keeps the schedule its generator has always produced, and the known defects
   in that behaviour are pinned in the

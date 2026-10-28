@@ -23,10 +23,14 @@ holiday data. The fleet-wide parity gate it feeds is in the
 
 - The calendar data's operations owner, named in the change record before any real calendar file
   is installed (see [Governance](#governance)).
-- The node's data root. A server reads it as its storage root and the WPF desktop through its
-  configuration store; both start from `DataRoot` (`MDC_DATA_ROOT`, default `data`) in the
-  [environment variable reference](../reference/environment-variables.md#core-configuration). The
-  start-up line for each loaded file prints its path, which confirms the directory.
+- The node's data root: the `DataRoot` of the configuration file the host starts with, or the
+  legacy `Storage.BaseDirectory`, default `data`. A relative value resolves against the
+  configuration file's directory, or that directory's parent when it is named `config`. A server
+  uses it as its storage root and the WPF desktop reads it through its configuration store. The
+  `MDC_DATA_ROOT` environment variable does not move it, including the value the lifecycle
+  supervisor sets; to put the calendars under that directory, set `DataRoot` in the configuration
+  file. The start-up line for each loaded file prints its path, which confirms the directory once a
+  file loads.
 - Write access to `<dataRoot>/calendars` and the ability to restart the host through its
   controller or [lifecycle supervisor](../reference/lifecycle-control-plane.md).
 
@@ -34,10 +38,13 @@ holiday data. The fleet-wide parity gate it feeds is in the
 
 - Platform: the host's own operating system; any shell.
 - Working directory: `<dataRoot>/calendars` on the node. Create it if it does not exist.
-- Logs: the host's log from start. On a WPF desktop, `ILogger` output reaches only the generic
-  host's default providers ([WPF README](../../src/Meridian.Wpf/README.md)), none of which keeps
-  these Information lines without extra setup. Start the desktop with its console output kept in a
-  file, as
+- Logs: the host's log from start. A server writes these lines through Serilog to its console and
+  to `<dataRoot>/_logs/meridian-<yyyyMMdd>.log`, under the same data root as `calendars`; a host
+  the lifecycle supervisor starts keeps no console, so read the file. A host started with
+  `MDC_LOG_LEVEL` at `Warning` or above writes only the Warnings. On a WPF desktop, `ILogger`
+  output reaches only the generic host's default providers
+  ([WPF README](../../src/Meridian.Wpf/README.md)), none of which keeps these Information lines
+  without extra setup. Start the desktop with its console output kept in a file, as
   [Capturing a desktop's lines](security-master-terms-contract-rollout.md#capturing-a-desktops-lines)
   in the terms contract rollout describes, and keep that file. A desktop logs these lines only
   after sign-in, once its main window is shown.
@@ -89,7 +96,20 @@ reports it as a coverage gap in its evidence and logs it at Debug, without block
    Security Master terms capability: declared mapping security-master-declared-schedule-v1, schedule kernel contractual-schedule-kernel-v1, terms versions ..., business-day calendars 1: ZZTEST v1 <hash>
    ```
 
-   Any refused file is logged as a Warning instead (see the table below).
+   Any refused file is logged as a Warning instead (see the table below). In a server's log file
+   each entry starts with its timestamp, level (`[INF]` or `[WRN]`), thread and category
+   (`Meridian.Storage.Calendars.FileBusinessDayCalendarSource` for the calendar lines,
+   `Meridian.Application.Composition.SecurityMasterTermsCapabilityHostedService` for the capability
+   line). A `--mode desktop` server composes the storage feature in its UI server and in its
+   collector, so it logs each line twice. To list the lines:
+
+   ```bash
+   grep -hi -e 'business-day calendar' -e 'Security Master terms capability:' <dataRoot>/_logs/meridian-*.log
+   ```
+
+   ```powershell
+   Select-String -Path '<dataRoot>\_logs\meridian-*.log' -SimpleMatch 'business-day calendar', 'Security Master terms capability:' | ForEach-Object Line
+   ```
 5. **Verify the hash.** Compare the hash with the one the data owner recorded for this id and
    version, and with every other node that serves projections.
 6. **Record the result** as described under Evidence and Handoff.
@@ -114,15 +134,26 @@ To verify a calendar:
 
 ## Refusal Warnings and Fixes
 
-A refused file is logged once at start, as a Warning:
+A refused file is logged once at start, as a Warning in one of three forms:
 
 ```text
+Refused business-day calendar file {path}: {reason} Nothing from this file is loaded; calendar {id} still resolves, from {loaded path}.
+Refused business-day calendar file {path}: {reason} Nothing from this file is loaded; calendar WEEKENDS still resolves, to the built-in weekends-only calendar.
 Refused business-day calendar file {path}: {reason} The calendar it names stays unresolvable; no weekends-only calendar is substituted.
 ```
 
-The other files still load. A record that names the refused id is blocked with "Declared
-paymentCalendars name calendars this node has not loaded: '{id}'; a missing calendar is never
-replaced by weekends only." until the file is fixed and the host restarted.
+Nothing from a refused file is loaded, and the other files still load. The form depends on the id
+the refused file names: its `calendarId`, when it parsed with one, and then its file name stem,
+each compared ignoring case.
+
+- **Still resolves, from another file.** Another file that loaded defines that id, so records that
+  name it use that file's calendar, not the refused file's content. Check that the loaded file is
+  the one the data owner supplied, and fix or remove the refused one.
+- **Still resolves, to the built-in calendar.** The id is `WEEKENDS`, which always resolves to the
+  built-in calendar.
+- **Stays unresolvable.** No file that loaded defines the id. A record that names it is blocked with
+  "Declared paymentCalendars name calendars this node has not loaded: '{id}'; a missing calendar is
+  never replaced by weekends only." until the file is fixed and the host restarted.
 
 | Reason in the Warning | Fix |
 | --- | --- |
@@ -138,10 +169,11 @@ replaced by weekends only." until the file is fixed and the host restarted.
 | `every day of the week is a weekend day; a calendar needs at least one working day.` | Remove at least one day from `weekendDays`. |
 | `coverage from {from} is after coverage to {to}.` | Correct the coverage bounds. |
 | `the calendar data is invalid: {message}` | The calendar itself rejected the data; correct what the message names. |
-| `calendar id '{id}' is defined by more than one file ({files}).` | Both files are refused. Keep one file for the id (this happens only through the case of the `.json` extension on a case-sensitive file system). |
+| `calendar id '{id}' is defined by more than one file ({files}).` | Both files are refused. Only files that pass every other check count: a file refused for another reason is not a duplicate, and its Warning names the file the id still resolves from. Keep one file for the id (two files that pass can share an id only through the case of the `.json` extension on a case-sensitive file system). |
 
 Two Warnings concern the directory itself, and both leave only `WEEKENDS` loaded. The first means
-a file is in the directory's place, and the second that the directory could not be read:
+a file is in the directory's place, and the second that the directory could not be listed, for
+example because the host's account may not read it:
 
 ```text
 Business-day calendar path {path} is a file, not a directory; only the built-in WEEKENDS calendar is loaded.
@@ -161,14 +193,17 @@ Decided by the owner on 2026-10-28:
 - A named operations owner maintains the calendar files. The owner is to be named before any real
   file is installed; until then, install none.
 - Interim retention: no calendar evidence needs retaining while declared projections are not
-  persisted and cannot post, because the ledger gate refuses them. Lifting that gate needs a
-  retention decision, together with journal identity keyed on schedule period identity.
+  persisted and cannot post, because the ledger gate refuses them. A discounted-cash-flow valuation
+  of a declaring record, also computed on request, names each calendar's id, purpose and content
+  hash among its inputs. Lifting the ledger gate needs a retention decision, together with journal
+  identity keyed on schedule period identity.
 - A diagnostics endpoint listing each node's calendars stays optional; the start-up lines are the
   verification.
 
 ## Expected Results
 
-- Each installed file produces one `Loaded business-day calendar` line and no Warning.
+- Each installed file produces one `Loaded business-day calendar` line (two on a `--mode desktop`
+  server, one per graph) and no Warning.
 - The capability line lists every installed calendar with its version and hash, and the list is
   identical on every node that serves Security Master projections.
 
@@ -176,7 +211,8 @@ Decided by the owner on 2026-10-28:
 
 | Symptom | Diagnostic | Safe next action |
 | --- | --- | --- |
-| A file is refused | The Warning's reason | Fix the file per the table above, move it into place again and restart |
+| A file is refused | The Warning's reason and form | Fix the file per the table above, move it into place again and restart; when the Warning says the id still resolves from another file, confirm that file is the data owner's |
+| A file is installed but no `Loaded business-day calendar` line or Warning appears, and the capability line reads `business-day calendars 0: none` | The directory the node reads: `calendars` under the configuration file's `DataRoot`, which `MDC_DATA_ROOT` does not move | Move the file under that directory, or set `DataRoot` in the configuration file, then restart |
 | A projection is blocked naming an id | The node's capability line: is the id listed? | Install or fix the calendar, or correct the record's `paymentCalendars`; nothing falls back to weekends only |
 | Hashes differ between nodes for one id and version | The `Loaded business-day calendar` line on each node | Replace the divergent file with the data owner's file under a new version on every node, then restart and compare again |
 | A calendar was changed in error | The previous file and its version | Reinstall the previous content under a new, higher version on every node; never reuse a version for different content |

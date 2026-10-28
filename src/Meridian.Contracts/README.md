@@ -51,9 +51,9 @@ with its exact text, without throwing. `SecurityVersionedTerms` names the versio
 decides which of them a payload decodes (`Decoding`, `SecurityVersionedTermDecoding.Decodes`): a
 read decodes a container at or below the row's own stamp, a write at or below the class's write
 version, and a profile envelope none. It also holds the one block reader and the tri-state declared
-reads (`None`, `Declared`, `Unreadable`), so the mapping, the schema validator and the cash-flow
-engine agree on what a row declares; `ScheduleConventionTerms` mirrors the F# record. Economic
-modules a flat conversion cannot
+reads (`None`, `Declared`, `Unreadable`), so the mapping and the cash-flow engine agree on what a
+row declares (the schema validator only gates the container); `ScheduleConventionTerms` mirrors
+the F# record. Economic modules a flat conversion cannot
 express travel under the reserved `retainedEconomicTerms` key and fold back on the next economic
 rebuild. Reserved envelope keys are rejected as user-editable term fields.
 `SecurityMasterEventEnvelope` carries `PayloadType`/`PayloadVersion`;

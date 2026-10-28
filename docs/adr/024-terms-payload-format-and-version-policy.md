@@ -564,16 +564,18 @@ This command verifies referenced files and directories exist; it does not valida
     record that declares nothing keeps the stamp and the bytes it is written with today, and a
     declaring record is stamped at the version its declared terms need. Under decision 1 as first
     written (S1), every write after the raise would stamp at least the new write version and emit
-    the frozen unset forms. Every touched row's bytes would change and all 164 write-golden entries
-    with them; full-payload edits of every such row would be refused on 5a nodes, and desktops
-    cannot be routed; every legacy row would show the BEHIND notice; and a Reg S/144A continuation
-    whose successor differs from its predecessor only by the stamp and unset containers would be
-    refused unless the continuation comparison were relaxed. S2 confines all of this to declaring
-    rows, so 5a carries no continuation change and the raw-payload comparison in
-    `OpenLotAmortizationContinuation` stays as listed under the upgrade hook above. 5b-2 changes the
-    F# `effective` floor, `StampFlat`'s lower bound, `WriteFlatEnvelope` and the notice. Before the
-    raise the floor equals `TermsVersion`, so S1 and S2 write the same bytes, and 4b and 5a nodes
-    already write exactly the S2 bytes for records that declare nothing.
+    the frozen unset forms. Every touched row's bytes would change, and with them up to 43 of the
+    164 write-golden entries: the 42 that name Bond, CertificateOfDeposit or StructuredCredit, and
+    `registry.dtos`; the other classes' entries would not move. Full-payload edits of every such
+    row would be refused on 5a nodes, and desktops cannot be routed; every legacy row would show the
+    BEHIND notice; and a Reg S/144A continuation whose successor differs from its predecessor only
+    by the stamp and unset containers would be refused unless the continuation comparison were
+    relaxed. S2 confines all of this to declaring rows, so 5a carries no continuation change and the
+    raw-payload comparison in `OpenLotAmortizationContinuation` stays as listed under the upgrade
+    hook above. 5b-2 changes the F# `effective` floor, `StampFlat`'s lower bound,
+    `WriteFlatEnvelope` and the notice. Before the raise the floor equals `TermsVersion`, so S1 and
+    S2 write the same bytes, and 4b and 5a nodes already write exactly the S2 bytes for records that
+    declare nothing.
   - **BEHIND, redefined (with S2, in 5b-2).** `SM_ASSET_CLASS_TERMS_VERSION_BEHIND` (Info) is to
     report a flat row whose stamp is below what the node would write for the terms the row holds:
     the highest `Since` among the versioned terms it decodes, floored at the class's stamp floor. A

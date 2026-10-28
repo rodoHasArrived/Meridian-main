@@ -528,11 +528,12 @@ This command verifies referenced files and directories exist; it does not valida
     until a curve seam exists.
 - **Declared mode in the Security Master engine and the file-backed calendar source (increment
   5a) (2026-10-28).** The Security Master calculated projection
-  (`GET /api/security-master/{securityId}/cashflow-projections`) follows a record's declared
-  `scheduleConventions` block through the kernel, `ScheduleSpecFactory` (decision 8) maps the block
-  to a `ScheduleSpec`, and every host registers a file-backed calendar source. No terms version
-  changes and no write path can store a populated block until increment 5b-2 raises the write
-  versions, so decision 7's opt-in stays dormant in production until 5b-2's first declaring write.
+  (`GET /api/security-master/{securityId}/cashflow-projections`, and the discounted-cash-flow
+  valuation through `GetProjectionAsOfAsync`) follows a record's declared `scheduleConventions`
+  block through the kernel, `ScheduleSpecFactory` (decision 8) maps the block to a `ScheduleSpec`,
+  and every host registers a file-backed calendar source. No terms version changes and no write
+  path can store a populated block until increment 5b-2 raises the write versions, so decision 7's
+  opt-in stays dormant in production until 5b-2's first declaring write.
   The rules below are frozen as `security-master-declared-schedule-v1`. That is the one literal,
   `SecurityVersionedTerms.DeclaredScheduleMappingVersion`, which
   `ScheduleSpecFactory.DeclaredMappingVersion` aliases and which the startup capability line and
@@ -569,7 +570,9 @@ This command verifies referenced files and directories exist; it does not valida
     payload root, as the Bond mapping reads them, and only where the class schema declares that key
     with that type. There is no fallback to the record's `EffectiveFrom` or to an annual cadence. A
     root value that differs from what `StructuredCashFlowTermsResolver` resolves (it also reads
-    aliases, `profileFields` and the common terms) is refused as ambiguous. The cadence maps through
+    aliases, `profileFields` and the common terms) is refused as ambiguous, and so is a root value
+    of a kind the anchors do not read (a timestamp `maturity`, a numeric or boolean
+    `paymentFrequency`) when the resolver still resolves a value. The cadence maps through
     `SecurityTermConventions.TryParsePaymentFrequency`, `IsSchedulableCoupon` and
     `ScheduleTenor.TryFromPaymentFrequency`, so `AtMaturity` is one `Term` period (SCH-DEF-001)
     and a sub-monthly or irregular cadence is refused. The CertificateOfDeposit and StructuredCredit
@@ -585,7 +588,9 @@ This command verifies referenced files and directories exist; it does not valida
     `Unadjusted` with `accrualAdjusted` absent (decision 5 of the increment-5 plan: the block must
     say whether the convention reaches accrual dates); a convention other than `Unadjusted` with
     `accrualAdjusted: false` and a payment lag above 0, because the kernel counts a lag from the
-    unadjusted accrual end and applies no payment convention with it; and a negative lag.
+    unadjusted accrual end and applies no payment convention with it; and a negative lag. Other
+    members that change nothing are accepted: a `Term` tenor ignores the roll, yet a roll that
+    contradicts `endOfMonthRule` is refused there too.
   - **Defaults.** Forward generation, short stubs, the anchored grid, a 1,200-period limit
     (`ScheduleSpec.DefaultMaxPeriods`) and a lag of 0. The roll is the declared `rollConvention`;
     otherwise, with `endOfMonthRule: true`, `ScheduleRoll.ForAnchor(anchor, true)`, which is end of
@@ -621,11 +626,14 @@ This command verifies referenced files and directories exist; it does not valida
   - **Interest and dates.** Interest accrues on the balance outstanding at each period's start, over
     its adjusted accrual dates [`AccrualStart`, `AccrualEnd`), through
     `ScheduleDayCount.TryPeriodFraction`, so Act/Act ICMA and Business/252 get their period context
-    (SCH-DEF-004). A day-count refusal blocks the projection: ICMA on adjusted accrual dates, and
-    Business/252 without a calendar. A rate above 0 needs a recognized `dayCount`; Actual/365 is
-    never assumed. Each row is dated on its period's payment date, and periods whose payment date is
-    before today are dropped. A kernel failure blocks the projection and never throws, including
-    the period bound a far-dated maturity reaches (SCH-DEF-010).
+    (SCH-DEF-004). A day-count refusal blocks the projection: ICMA on adjusted accrual dates, ICMA
+    on a `Term` period (an `AtMaturity` cadence has no coupon periods per year), and Business/252
+    without a calendar. A rate above 0 needs a recognized `dayCount`; Actual/365 is never assumed.
+    Each row is dated on its period's payment date, and periods whose payment date is before the
+    projection's as-of date are dropped: today's UTC date for `GetProjectionAsync` (the projection
+    route and both ledger bridges) and the requested date for `GetProjectionAsOfAsync` (the
+    discounted-cash-flow valuation's date). A kernel failure blocks the projection and never throws,
+    including the period bound a far-dated maturity reaches (SCH-DEF-010).
   - **Principal, Swap and leg blocks.** The calculated bullet, the calculated sinker (equal
     principal per remaining period) and an asserted bullet (`principalSchedule: []`) are followed
     as on the legacy walk, after the same factor seeding. A non-empty, in-window contractual
@@ -639,7 +647,11 @@ This command verifies referenced files and directories exist; it does not valida
     its `TermsUsed` and no `LegSchedules`, and the normalized-per-100 wrapper keeps the declared
     reason. `{read-guard reason}` is "Unsupported assetClassTermsVersion '{stamp}' for asset class
     '{assetClass}'; this node reads versions 1 through {readsThrough}."; `{term}` is `issue date`,
-    `maturity` or `payment frequency`; dates are `yyyy-MM-dd`.
+    `maturity` or `payment frequency`; dates are `yyyy-MM-dd`. The first `TermsAmbiguous` text is
+    for a root key that is present and not null but not of the kind the anchors read: `{value}` is a
+    string in single quotes, a number or boolean as written, or `an object` or `an array`, and
+    `{kind}` is `date` for the maturity and `string` for the payment frequency. The second is for a
+    root key that is absent or null.
 
     | Refusal | Text |
     | --- | --- |
@@ -647,6 +659,7 @@ This command verifies referenced files and directories exist; it does not valida
     | `LegConventionsNotFollowed` | Declared schedule conventions are not yet followed on leg-based projections; the projection is blocked until per-leg declared schedules are supported. |
     | `EffectiveDateMissing` | Declared schedule conventions need the contractual issue date, and '{assetClass}' terms declare no issueDate; the record's effective-from date is not used as a schedule anchor. |
     | `EffectiveDateMissing` | Declared schedule conventions need the contractual issue date; the record carries no issueDate, and its effective-from date is not used as a schedule anchor. |
+    | `TermsAmbiguous` | Declared schedule conventions need one unambiguous {term}; the record's '{key}' is {value}, which is not a {kind} the schedule anchors read, but the cash-flow terms resolve '{resolved}'. |
     | `TermsAmbiguous` | Declared schedule conventions need one unambiguous {term}; the record carries no '{key}' but the cash-flow terms resolve '{resolved}' from another key or source. |
     | `TermsAmbiguous` | Declared schedule conventions need one unambiguous {term}; the record's '{key}' is '{root}' but the cash-flow terms resolve none. |
     | `TermsAmbiguous` | Declared schedule conventions need one unambiguous {term}; the record's '{key}' is '{root}' but the cash-flow terms resolve '{resolved}' from another key or source. |
@@ -681,8 +694,10 @@ This command verifies referenced files and directories exist; it does not valida
     plus a `DayCount` row for the calendar Business/252 counted business days on, which the kernel
     does not record. `coverageGaps` has one row per calendar, with the first and last date asked
     outside its coverage, both by the kernel (`CalendarCoverageExceeded`) and by a Business/252
-    accrual window. A refused or blocked projection carries no evidence, and neither does a
-    declaring record whose periods have all been paid.
+    accrual window. A projection the factory refuses or the declared walk blocks carries no
+    evidence, and neither does a declaring record with no period paying on or after the as-of date.
+    The normalized-per-100 wrapper keeps a generated schedule's evidence: a declaring record with no
+    par or face is generated, carries its evidence, and is blocked with the normalized-basis reason.
   - **Coverage gaps are the one named exception to "never guess" (decision 2).** A date outside a
     calendar's coverage is answered from the weekend mask and the holidays the calendar lists, so a
     holiday may be missing there. The gap is reported in the evidence and logged at Debug
@@ -696,7 +711,16 @@ This command verifies referenced files and directories exist; it does not valida
     which a calendar change moves. The block lifts only when both hold: journal identity keys on
     `SchedulePeriodId`, and calendar evidence retention is decided.
   - **Interim calendar retention.** None is needed while projections are not persisted and posting
-    is blocked: the evidence travels with each projection, which is computed on request.
+    is blocked: the evidence travels with each projection, which is computed on request. The
+    discounted-cash-flow valuation, also computed on request, carries it as inputs: after
+    `DiscountCurveVersion` and `SecurityTerms`, a `ScheduleKernel` and a `DeclaredScheduleMapping`
+    input, each referencing its version, and one `BusinessDayCalendar` input per calendar,
+    referencing `{CalendarId}:{Purpose}` with the content hash as its `ContentSha256`. Each coverage
+    gap adds the diagnostic "CalendarCoverageGap: calendar '{id}' was asked about {first} to {last},
+    outside its declared coverage; a holiday on those dates may be missing from the calendar data
+    the schedule used.", with `yyyy-MM-dd` dates. A valuation of a record that declares nothing is
+    unchanged. A valuation thus names the calendar content it used, and nothing retains that
+    content.
   - **Calendar files.** `FileBusinessDayCalendarSource` (`Meridian.Storage.Calendars`) reads
     `<dataRoot>/calendars/{ID}.json`, one calendar per file, once at host start in ordinal file-name
     order; a restart reloads them. Each file carries exactly `calendarId`, `version`, `weekendDays`,
@@ -705,9 +729,13 @@ This command verifies referenced files and directories exist; it does not valida
     malformed, misses a member, has a version below 1, an id outside `^[A-Z][A-Z0-9]{1,15}$` or not
     equal to its file stem exactly, the reserved id `WEEKENDS`, a weekend day that is not exactly an
     English day name, no working day, coverage that starts after it ends, data
-    `HolidayBusinessDayCalendar` rejects, or an id another file also defines. A refused file's id
-    stays unresolvable and is never replaced by weekends only; a missing directory loads only the
-    built-in `WEEKENDS`. Ids are canonical because the content hash includes the id as written and
+    `HolidayBusinessDayCalendar` rejects, or an id another file that passes these checks also
+    defines (both are refused). A refused file loads nothing. Its Warning says whether the id it
+    names (its `calendarId`, then its file name stem, ignoring case) still resolves, from another
+    file that loaded or as the built-in `WEEKENDS`; otherwise that id stays unresolvable and is
+    never replaced by weekends only. A missing directory loads only the built-in `WEEKENDS`, with no
+    Warning; a `calendars` path that is a file, or a directory that cannot be listed, does too, with
+    a Warning. Ids are canonical because the content hash includes the id as written and
     joint ids sort ordinally. Coverage is the data owner's attestation that the holiday list is
     complete over that range. See [Business-Day Calendar](../domain/business-day-calendar.md) and
     the [calendar file procedure](../operators/business-day-calendar-files.md).
@@ -719,7 +747,14 @@ This command verifies referenced files and directories exist; it does not valida
     "Security Master terms capability: declared mapping {DeclaredMappingVersion}, schedule kernel
     {KernelVersion}, terms versions {TermsVersions}, business-day calendars {CalendarCount}:
     {Calendars}", so a node's build and calendar set are visible before any record depends on them
-    ([terms contract rollout](../operators/security-master-terms-contract-rollout.md)).
+    ([terms contract rollout](../operators/security-master-terms-contract-rollout.md)). On a server
+    these lines reach the process's Serilog logger, whose file sink writes
+    `<dataRoot>/_logs/meridian-<yyyyMMdd>.log`: a `HostStartup` graph logs through Serilog from
+    Information, and `UiServer` (`--mode workstation`, which the lifecycle supervisor starts, and
+    the UI half of `--mode desktop`) leaves its default providers as before, at Warning unless a
+    configured `Logging` level lowers them, and sends these two categories alone to Serilog from
+    Information. A `--mode desktop` host composes both graphs, so it logs each line twice. The WPF
+    desktop logs them to the generic host's default providers only.
   - **`ResolveShape`.** It applies every factory rule above except calendar resolution, then runs
     the kernel over the spec with no adjustments and no lag; a kernel failure is `KernelRefused`,
     "Declared schedule could not be generated: {kernel failure message}". Increment 5b-1's write
@@ -729,11 +764,12 @@ This command verifies referenced files and directories exist; it does not valida
     (`BusinessDayAdjustmentFailed`, `AdjustedPeriodCollapsed`); step-coupon or inflation-linked
     terms and a missing coupon rate; and the declared walk's refusals: a contractual principal
     schedule, a missing or unrecognized `dayCount` with a rate above 0, `Level` on a `Term` period
-    with a rate above 0, and the day-count refusals (Act/Act ICMA on adjusted accrual dates,
-    Business/252 without a calendar). Bond's `couponRate` and `dayCount` are optional in its
-    schema, so a written block does not imply either. Of these, 5b-1's write rules are to refuse
-    only Business/252 without block calendars, ICMA with `accrualAdjusted: true` and `Level` with an
-    `AtMaturity` frequency; the others stay projection-time blocks unless a later change adds write
+    with a rate above 0, and the day-count refusals with a rate above 0 (Act/Act ICMA on adjusted
+    accrual dates or on a `Term` period, Business/252 without a calendar). Bond's `couponRate` and
+    `dayCount` are optional in its schema, so a written block does not imply either. Of these,
+    5b-1's write rules are to refuse only Business/252 without block calendars, ICMA with
+    `accrualAdjusted: true` and `Level` with an `AtMaturity` frequency; the others, ICMA with an
+    `AtMaturity` frequency among them, stay projection-time blocks unless a later change adds write
     rules for them.
   - **The increment-8 proposals, amended.** Bermudan exercise dates take the roll the factory
     resolves (a declared `rollConvention`, then `endOfMonthRule`, then `AnchorDay`), not
