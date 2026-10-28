@@ -931,7 +931,7 @@ public sealed partial class IBBrokerageGateway :
             ?? Array.Empty<AccountScopedBrokerPosition>());
     }
 
-    private static bool CanObserveOwnedOpenOrder(
+    private static bool CanCollectOwnedOpenOrder(
         SubmittedOrderContext? context, IBOpenOrderUpdate update, int epoch, IReadOnlySet<string> verifiedAccounts)
         => context is not null && !string.IsNullOrWhiteSpace(update.Account)
             && verifiedAccounts.Contains(update.Account.Trim())
@@ -956,12 +956,14 @@ public sealed partial class IBBrokerageGateway :
             _logger.LogWarning("IB open-order callback refused because its external account differs from the owned order acknowledgement.");
             return;
         }
-        var ownedAccountObservation = CanObserveOwnedOpenOrder(context, update, callbackEpoch, _verifiedAccounts);
+        var ownedAccountObservation = CanCollectOwnedOpenOrder(context, update, callbackEpoch, _verifiedAccounts);
+        var ownsLiveSession = context is not null && (context.SubmissionEpoch == callbackEpoch
+            || context.RecoveredFromSnapshot && context.RecoveryEpoch == callbackEpoch);
         // A late observation that cannot prove its owned reference/account must not populate
         // the account or order caches: a later account-less status callback consumes those caches.
         if (context is not null && pending is null && amendment is null && !ownedAccountObservation)
             return;
-        if (context is { BrokerAccountId: null } && ownedAccountObservation)
+        if (context is { BrokerAccountId: null } && ownsLiveSession && ownedAccountObservation)
         {
             var owned = context with { BrokerAccountId = update.Account!.Trim() };
             if (!_submittedOrders.TryUpdate(gatewayOrderId, owned, context))
@@ -1053,7 +1055,7 @@ public sealed partial class IBBrokerageGateway :
             // orderStatus may settle Submit before openOrder reports its actual account. Enrich
             // only this session's owned client reference, using the latest report unchanged so
             // a late acknowledgement cannot roll back fills, prices or terminal lifecycle state.
-            if (ownedAccountObservation && latest is { BrokerAccountId: null })
+            if (ownsLiveSession && ownedAccountObservation && latest is { BrokerAccountId: null })
                 PublishReport(latest with { BrokerAccountId = update.Account!.Trim() }, callbackEpoch);
             return;
         }
