@@ -302,7 +302,7 @@ checklist reflects finished work rather than page visits.
 ## Shared close and lot convergence
 
 `LedgerReportingAuthoritativeSource` reconciles corporate-action successor journals against the
-immutable batches returned by `ILedgerOpenLotSuccessorHistory`. It verifies predecessor closeout,
+immutable batches captured with them by the reporting snapshot, never a separate later read. It verifies predecessor closeout,
 every new lot, both allocated currency bases, acquisition FX, holding dates and the refunded-only
 `ScheduleD` tag against the approved instruction. Exact batch JSON, its SHA-256 hash and the
 instruction fingerprint become evidence columns on existing journal rows in the retained Reporting
@@ -437,7 +437,8 @@ after startup or activate strict reads automatically.
 Canonical Reporting verifies unified successor receipts against the complete journal and retained
 reviewed instruction. It preserves exact evidence JSON and fingerprints on certified journal rows
 and adds verified predecessor/successor snapshots to `corporate-action-lot-evidence.json` in the
-signed ledger report pack. Whole-unit split legs sharing a security and position remain separate
+signed ledger report pack. Those lot reports are retained in the ledger population, so replay
+renders the same evidence. Whole-unit split legs sharing a security and position remain separate
 through their reviewed lot labels; only refunded successors receive Schedule D treatment.
 
 ## Purpose
@@ -449,6 +450,20 @@ and desktop surfaces.
 tenant/company-scoped queue contract as production workflows. Seeded demo breaks carry the fixed
 `DemoTenantBlueprint` tenant and company identifiers; authenticated demo hosts must resolve that
 scope to read the cases, and legacy unscoped queue rows remain inaccessible.
+
+Certified reporting retains one complete as-of ledger population in its source checkpoint.
+The PostgreSQL adapter captures journals, accounting-period authority, and tax-lot history in one
+repeatable-read, read-only transaction. Period activity, opening balances, financial statements,
+and generated trial-balance amount bindings derive from that population. Primary-document rendering
+replays retained inputs after restart; release readiness separately revalidates current authorities.
+The retained content digest and source checkpoint are checked before replay or amount inspection.
+
+Generated trial-balance amounts on governed run details use the shared `ledger-amount` proof packet
+with exact `report:{runId}:{amountId}` identities. Report access, fund/book/period ownership,
+contributing journal lines, original posting-period source subjects, retained source bytes, digests,
+and human review must all verify. Incomplete or altered support blocks the entire amount and
+withholds source routes. Guarded manifest opening rechecks the complete report proof.
+See [amount provenance validation](../../docs/testing/w10-amount-provenance.md).
 
 ## Layer responsibility
 

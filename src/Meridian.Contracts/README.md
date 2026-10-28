@@ -11,6 +11,11 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Contracts
 
+`ReportLedgerAmountBindingDtos` retains generated trial-balance amounts with exact accounting scope
+and journal/line identities. Generated amount source evidence additionally carries its original
+`SourceScope` and `SourceSubjectId`, so historical opening-balance support preserves its own posted
+period while the shared proof drawer and guarded source route remain bound to the selected report.
+
 `SecurityMaster/ISecurityMasterQueryService.cs` is the single query contract for application,
 browser, WPF, reporting, and QuantScript consumers. The former Application interface has been
 removed; source consumers must import `Meridian.Contracts.SecurityMaster`. Configured and
