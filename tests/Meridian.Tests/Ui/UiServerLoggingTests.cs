@@ -1,8 +1,11 @@
 using System.Collections.Concurrent;
+using System.Reflection;
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Storage.Calendars;
 using Meridian.Testing;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -16,14 +19,17 @@ namespace Meridian.Tests.Ui;
 /// default providers, and the host-start inventory lines alone (the Security Master terms capability
 /// line and each loaded calendar's line) also reach the process's Serilog logger, from Information,
 /// so a workstation-mode host writes them to its log file. Nothing else reaches that logger, even
-/// when the configuration lowers the default level.
+/// when the configuration lowers the default level. Sequential because the host test swaps the
+/// process's Serilog logger and the host environment variables.
 /// </summary>
 [Trait("Category", "Unit")]
+[Collection("Sequential")]
 public sealed class UiServerLoggingTests : IDisposable
 {
     private const string HostedServiceName = "SecurityMasterTermsCapabilityHostedService";
     private const string CapabilityCategory = "Meridian.Application.Composition.SecurityMasterTermsCapabilityHostedService";
     private const string CalendarCategory = "Meridian.Storage.Calendars.FileBusinessDayCalendarSource";
+    private const string ProbeCategory = "Meridian.Tests.Ui.UiServerLoggingProbe";
 
     private readonly TestArtifactDirectory _artifacts = TestArtifactDirectory.Create(nameof(UiServerLoggingTests));
 
@@ -89,6 +95,44 @@ public sealed class UiServerLoggingTests : IDisposable
         defaults.Entries.Should().Contain(static entry => entry.Category == "Meridian.UiServer" && entry.Level == LogLevel.Information);
     }
 
+    [Fact]
+    public async Task TheUiServerConstructor_SendsTheInventoryLinesToTheProcessSerilogLogger()
+    {
+        // The real host, not ConfigureLogging alone: the constructor must hand the UiServer graph the
+        // process's Serilog logger, the one LoggingSetup gives the log file sink.
+        var dataRoot = Path.Combine(_artifacts.RootPath, "data");
+        WriteZzTestCalendar(dataRoot);
+        var configPath = WriteMinimalConfig(dataRoot);
+        var serilog = new CollectingSink();
+        var previous = Serilog.Log.Logger;
+        using var processLogger = new Serilog.LoggerConfiguration().MinimumLevel.Verbose().WriteTo.Sink(serilog).CreateLogger();
+        using var environment = DevelopmentEnvironmentScope.Enable();
+        Serilog.Log.Logger = processLogger;
+        try
+        {
+            await using var server = new UiServer(configPath, port: 0);
+            var services = GetServerApp(server).Services;
+
+            await StartCapabilityServiceAsync(services);
+            var other = services.GetRequiredService<ILoggerFactory>().CreateLogger(ProbeCategory);
+            other.LogInformation("Probe information");
+            other.LogWarning("Probe warning");
+
+            // UiServer also writes some lines to Serilog directly, so only these categories are pinned.
+            var inventory = serilog.Events.Where(static e => SourceContext(e) is CapabilityCategory or CalendarCategory).ToArray();
+            inventory.Select(static e => (SourceContext(e), e.Level)).Should().Equal(
+                (CalendarCategory, LogEventLevel.Information),
+                (CapabilityCategory, LogEventLevel.Information));
+            inventory[0].Properties["CalendarId"].Should().Be(new ScalarValue("ZZTEST"));
+            inventory[1].MessageTemplate.Text.Should().StartWith("Security Master terms capability: declared mapping {DeclaredMappingVersion}");
+            serilog.Events.Should().NotContain(static e => SourceContext(e) == ProbeCategory);
+        }
+        finally
+        {
+            Serilog.Log.Logger = previous;
+        }
+    }
+
     private ServiceProvider BuildHost(CollectingSink serilog, CapturingLoggerProvider defaults, IConfiguration? configuration)
     {
         var logger = new Serilog.LoggerConfiguration().MinimumLevel.Verbose().WriteTo.Sink(serilog).CreateLogger();
@@ -126,9 +170,11 @@ public sealed class UiServerLoggingTests : IDisposable
         await hosted.StopAsync(CancellationToken.None);
     }
 
-    private void WriteZzTestCalendar()
+    private void WriteZzTestCalendar() => WriteZzTestCalendar(_artifacts.RootPath);
+
+    private static void WriteZzTestCalendar(string dataRoot)
     {
-        var directory = Path.Combine(_artifacts.RootPath, FileBusinessDayCalendarSource.DirectoryName);
+        var directory = Path.Combine(dataRoot, FileBusinessDayCalendarSource.DirectoryName);
         Directory.CreateDirectory(directory);
         File.WriteAllText(Path.Combine(directory, "ZZTEST.json"), """
             { "calendarId": "ZZTEST", "version": 1, "weekendDays": ["Saturday","Sunday"],
@@ -136,10 +182,56 @@ public sealed class UiServerLoggingTests : IDisposable
             """);
     }
 
+    private string WriteMinimalConfig(string dataRoot)
+    {
+        var configPath = Path.Combine(_artifacts.RootPath, "appsettings.json");
+        File.WriteAllText(configPath, JsonSerializer.Serialize(new
+        {
+            DataRoot = dataRoot,
+            Compress = false,
+            DataSource = "Synthetic",
+            ApiHost = new { Urls = new[] { "http://127.0.0.1:0" }, ServeWorkstationAssets = false },
+            Storage = new { NamingConvention = "BySymbol", DatePartition = "Daily", IncludeProvider = false },
+            Backfill = new { Enabled = false, Provider = "stooq", Symbols = new[] { "SPY" } }
+        }));
+        return configPath;
+    }
+
+    private static WebApplication GetServerApp(UiServer server)
+    {
+        var field = typeof(UiServer).GetField("_app", BindingFlags.Instance | BindingFlags.NonPublic);
+        field.Should().NotBeNull();
+        return field!.GetValue(server).Should().BeOfType<WebApplication>().Subject;
+    }
+
     private static string? SourceContext(LogEvent logEvent)
         => logEvent.Properties.TryGetValue("SourceContext", out var value) && value is ScalarValue { Value: string category }
             ? category
             : null;
+
+    // The environment the other UiServer composition tests run under: in-memory governance, Development.
+    private sealed class DevelopmentEnvironmentScope : IDisposable
+    {
+        private static readonly string[] Names = ["MERIDIAN_USE_INMEMORY_GOVERNANCE", "ASPNETCORE_ENVIRONMENT", "DOTNET_ENVIRONMENT"];
+        private readonly string?[] _original = Names.Select(Environment.GetEnvironmentVariable).ToArray();
+
+        private DevelopmentEnvironmentScope()
+        {
+            Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", "true");
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", Environments.Development);
+            Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", Environments.Development);
+        }
+
+        public static DevelopmentEnvironmentScope Enable() => new();
+
+        public void Dispose()
+        {
+            for (var i = 0; i < Names.Length; i++)
+            {
+                Environment.SetEnvironmentVariable(Names[i], _original[i]);
+            }
+        }
+    }
 
     private sealed class CollectingSink : Serilog.Core.ILogEventSink
     {

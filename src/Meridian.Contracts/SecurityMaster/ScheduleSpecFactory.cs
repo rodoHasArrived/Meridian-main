@@ -390,10 +390,24 @@ public static class ScheduleSpecFactory
 
         if (SecurityVersionedTerms.ReadOptionalDate(root, issueField.Key) is not { } issueDate)
         {
-            resolution = Refuse(
-                DeclaredScheduleRefusalCode.EffectiveDateMissing,
-                $"Declared schedule conventions need the contractual issue date; the record carries no {IssueDateKey}, and its effective-from date is not used as a schedule anchor.",
-                block);
+            // A root issueDate that is present but not a date the anchors read is not absent: it is
+            // ambiguous, as the other anchors are, when the cash-flow terms still resolve a date, and
+            // is otherwise refused with its value named.
+            resolution = (TryGetPresentRootValue(root, issueField.Key, out var raw), terms.IssueDate) switch
+            {
+                (true, not null) => Refuse(
+                    DeclaredScheduleRefusalCode.TermsAmbiguous,
+                    DescribeAmbiguity(root, "issue date", issueField.Key, DateKind, rootValue: null, Format(terms.IssueDate)),
+                    block),
+                (true, null) => Refuse(
+                    DeclaredScheduleRefusalCode.EffectiveDateMissing,
+                    $"Declared schedule conventions need the contractual issue date; the record's '{issueField.Key}' is {DescribeRootValue(raw)}, which is not a {DateKind} the schedule anchors read, and its effective-from date is not used as a schedule anchor.",
+                    block),
+                _ => Refuse(
+                    DeclaredScheduleRefusalCode.EffectiveDateMissing,
+                    $"Declared schedule conventions need the contractual issue date; the record carries no {IssueDateKey}, and its effective-from date is not used as a schedule anchor.",
+                    block)
+            };
             return false;
         }
 
@@ -614,16 +628,24 @@ public static class ScheduleSpecFactory
     private static string DescribeAmbiguity(JsonElement root, string term, string key, string kind, string? rootValue, string? resolved)
         => (rootValue, resolved) switch
         {
-            (null, _) when root.ValueKind == JsonValueKind.Object
-                           && root.TryGetProperty(key, out var raw)
-                           && raw.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined)
+            (null, _) when TryGetPresentRootValue(root, key, out var raw)
                 => $"Declared schedule conventions need one unambiguous {term}; the record's '{key}' is {DescribeRootValue(raw)}, which is not a {kind} the schedule anchors read, but the cash-flow terms resolve '{resolved}'.",
             (null, _) => $"Declared schedule conventions need one unambiguous {term}; the record carries no '{key}' but the cash-flow terms resolve '{resolved}' from another key or source.",
             (_, null) => $"Declared schedule conventions need one unambiguous {term}; the record's '{key}' is '{rootValue}' but the cash-flow terms resolve none.",
             _ => $"Declared schedule conventions need one unambiguous {term}; the record's '{key}' is '{rootValue}' but the cash-flow terms resolve '{resolved}' from another key or source."
         };
 
-    // A root value as an ambiguity refusal quotes it: a string in quotes, a number or boolean as
+    // The root value at key when the key is present and not null, which an anchor getter that read
+    // nothing failed to read rather than found absent.
+    private static bool TryGetPresentRootValue(JsonElement root, string key, out JsonElement value)
+    {
+        value = default;
+        return root.ValueKind == JsonValueKind.Object
+            && root.TryGetProperty(key, out value)
+            && value.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined);
+    }
+
+    // A root value as an anchor refusal quotes it: a string in quotes, a number or boolean as
     // written, and only the kind of an object or array.
     private static string DescribeRootValue(JsonElement value)
         => value.ValueKind switch

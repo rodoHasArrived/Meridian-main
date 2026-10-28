@@ -1159,7 +1159,9 @@ versions {TermsVersions}, business-day calendars {CalendarCount}: {Calendars}", 
 build and calendar set are visible without a projection request (the rollout inventory in
 `docs/operators/security-master-terms-contract-rollout.md`). A `HostStartup` graph logs through
 Serilog, whose file sink writes `<dataRoot>/_logs/meridian-<yyyyMMdd>.log`. `UiServer` keeps its
-default providers' Warning minimum and sends only the hosted service's and the calendar source's
+default providers' Warning minimum, unless a configured `Logging` level lowers it (the container
+deployments set `Logging__LogLevel__Default`, and the default console provider then repeats these
+lines beside Serilog's console sink), and sends only the hosted service's and the calendar source's
 categories (`UiServer.StartupInventoryLogCategories`) to that Serilog logger, from Information, so a
 workstation-mode host writes these lines to the same file. Verify it with
 `SecurityMasterTermsCapabilityStartupTests`, `BusinessDayCalendarSourceCompositionTests` and

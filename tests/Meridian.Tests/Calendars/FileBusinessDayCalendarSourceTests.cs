@@ -228,6 +228,44 @@ public sealed class FileBusinessDayCalendarSourceTests : IDisposable
     }
 
     [Fact]
+    public void ARefusedFileWhoseIdAndStemDiffer_SaysWhichStillResolvesAndWhichStaysUnresolvable()
+    {
+        // ZZONE.json was copied from ZZTEST.json and edited without its calendarId: ZZTEST still resolves
+        // from ZZTEST.json, and ZZONE, the id its file name names, stays blocked.
+        WriteCalendar("ZZTEST.json", ValidZzTest);
+        WriteCalendar("ZZONE.json", ValidZzTest.Replace("\"2026-07-15\"", "\"2026-08-14\"", StringComparison.Ordinal));
+        var logger = new RecordingLogger<FileBusinessDayCalendarSource>();
+
+        var source = FileBusinessDayCalendarSource.Load(_artifacts.RootPath, logger);
+
+        source.RefusedFiles.Should().ContainSingle().Which.FileName.Should().Be("ZZONE.json");
+        source.TryGet("ZZTEST", out _).Should().BeTrue();
+        source.TryGet("ZZONE", out _).Should().BeFalse();
+        logger.Entries.Should().ContainSingle(static entry => entry.LogLevel == LogLevel.Warning)
+            .Which.Message.Should().Contain("calendarId 'ZZTEST' does not equal the file name stem 'ZZONE' exactly.")
+            .And.EndWith(
+                $"Nothing from this file is loaded; calendar ZZTEST still resolves, from {Path.Combine(_artifacts.RootPath, "calendars", "ZZTEST.json")}, " +
+                "but calendar ZZONE stays unresolvable; no weekends-only calendar is substituted.");
+    }
+
+    [Fact]
+    public void AWeekendsFileNamingAnotherId_SaysTheBuiltInStillResolvesAndTheOtherIdStaysUnresolvable()
+    {
+        WriteCalendar("WEEKENDS.json", Document("ZZONE"));
+        var logger = new RecordingLogger<FileBusinessDayCalendarSource>();
+
+        var source = FileBusinessDayCalendarSource.Load(_artifacts.RootPath, logger);
+
+        source.RefusedFiles.Should().ContainSingle().Which.Reason.Should().Be("calendarId 'ZZONE' does not equal the file name stem 'WEEKENDS' exactly.");
+        source.TryGet("WEEKENDS", out var weekends).Should().BeTrue();
+        weekends.Should().BeSameAs(BusinessDayCalendars.WeekendsOnly);
+        source.TryGet("ZZONE", out _).Should().BeFalse();
+        logger.Entries.Should().ContainSingle().Which.Message.Should().EndWith(
+            "Nothing from this file is loaded; calendar WEEKENDS still resolves, to the built-in weekends-only calendar, " +
+            "but calendar ZZONE stays unresolvable; no weekends-only calendar is substituted.");
+    }
+
+    [Fact]
     public void TheListing_RaisesAccessDeniedInsteadOfReadingAnEmptyDirectory()
     {
         // .NET skips an inaccessible directory silently unless told not to, which would read an

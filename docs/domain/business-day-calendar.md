@@ -103,11 +103,11 @@ and the operator procedure is
   weekend mask and the holidays it lists, and a schedule reports the dates as coverage gaps.
 - **`WEEKENDS` is reserved.** A file cannot define it, and the built-in calendar always resolves.
 - **No weekends fallback.** A refused file is logged with its reason and loads nothing; nothing is
-  substituted for it. Its id stays unresolvable unless another file that loads defines it, or it is
-  `WEEKENDS`, and the warning says which. A missing `calendars` directory loads only `WEEKENDS`,
-  with no warning, and so, with a warning, do a `calendars` path that is a file and a directory
-  that cannot be listed. Two files that pass every other check and resolve to one id are both
-  refused.
+  substituted for it. Each id it names (its `calendarId` and its file name, which can differ) stays
+  unresolvable unless another file that loads defines it, or it is `WEEKENDS`, and the warning says
+  which. A missing `calendars` directory loads only `WEEKENDS`, with no warning, and so, with a
+  warning, do a `calendars` path that is a file and a directory that cannot be listed. Two files
+  that pass every other check and resolve to one id are both refused.
 - **Loaded once.** Files are read at host start in ordinal file-name order. There is no hot reload;
   a changed file takes effect when the host restarts. At start the host logs one line per loaded
   calendar (id, version, hash and coverage) and the Security Master terms capability line, which

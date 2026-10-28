@@ -605,6 +605,10 @@ public sealed class ScheduleSpecFactoryTests
         {
             BondWith(maturity: null) + ",\"maturity\":\"2027-01-31T00:00:00Z\"",
             "Declared schedule conventions need one unambiguous maturity; the record's 'maturity' is '2027-01-31T00:00:00Z', which is not a date the schedule anchors read, but the cash-flow terms resolve '2027-01-31'."
+        },
+        {
+            BondWith(issue: null) + ",\"issueDate\":\"2026-01-31T00:00:00Z\"",
+            "Declared schedule conventions need one unambiguous issue date; the record's 'issueDate' is '2026-01-31T00:00:00Z', which is not a date the schedule anchors read, but the cash-flow terms resolve '2026-01-31'."
         }
     };
 
@@ -616,6 +620,18 @@ public sealed class ScheduleSpecFactoryTests
 
         ShouldRefuse(Resolve(security), DeclaredScheduleRefusalCode.TermsAmbiguous, message);
         ShouldRefuse(Shape(security), DeclaredScheduleRefusalCode.TermsAmbiguous, message);
+    }
+
+    [Fact]
+    public void ARootIssueDateNothingReads_IsRefusedNamingTheRecordsValue_NotAsAbsent()
+    {
+        var security = Bond("""{"accrualAdjusted":false}""", body: BondWith(issue: null) + ",\"issueDate\":20260131");
+        StructuredCashFlowTermsResolver.Resolve(security).IssueDate.Should().BeNull();
+        const string message =
+            "Declared schedule conventions need the contractual issue date; the record's 'issueDate' is 20260131, which is not a date the schedule anchors read, and its effective-from date is not used as a schedule anchor.";
+
+        ShouldRefuse(Resolve(security), DeclaredScheduleRefusalCode.EffectiveDateMissing, message);
+        ShouldRefuse(Shape(security), DeclaredScheduleRefusalCode.EffectiveDateMissing, message);
     }
 
     [Fact]

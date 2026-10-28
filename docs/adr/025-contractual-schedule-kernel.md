@@ -372,14 +372,18 @@ FileBusinessDayCalendarSource files = FileBusinessDayCalendarSource.Load(dataRoo
   selection, totality over malformed terms, `ResolveShape` and determinism.
 - `SecurityMasterCashFlowServiceTests`, declared-conventions partial (increment 5a) — the
   SCH-DEF-001, 003, 004 and 010 twins reach their targets for declaring records; adjusted and
-  lagged payment dates; calendar, principal, `Level`, day-count and precedence refusals; records
-  that declare nothing project exactly as their clean twins; and the Debug coverage-gap line.
+  lagged payment dates; calendar, principal, `Level`, day-count (ICMA on a `Term` period included)
+  and precedence refusals; the normalized-per-100 wrapper keeping a generated schedule's evidence;
+  records that declare nothing project exactly as their clean twins; and the Debug coverage-gap
+  line.
 - `SecurityMasterCashFlowProjectionShapeTests` (increment 5a) — an undeclared projection's JSON
   property set is unchanged, and a declared one adds exactly `scheduleEvidence`.
 - `FileBusinessDayCalendarSourceTests`, `BusinessDayCalendarSourceCompositionTests`,
   `SecurityMasterTermsCapabilityStartupTests` and the WPF `AppServiceRegistrationTests` (increment
-  5a) — file loading, every refusal, hashes independent of formatting, no fallback, and the
-  capability line on servers and desktops without a projection request.
+  5a) — file loading, every refusal (a file whose `calendarId` and stem name different ids
+  included), hashes independent of formatting, no fallback, and the capability line on servers and
+  desktops without a projection request; `UiServerLoggingTests` builds a real `UiServer` and reads
+  the inventory lines from the process's Serilog logger.
 - `StructuredCashFlowLedgerBridgeTests` and `SecurityMasterAmortizationLedgerBridgeTests`
   (increment 5a) — a declared projection is refused after any `BlockedReason` and posts nothing.
 - Verify paths in the Implementation Links table from the repository root:
@@ -571,8 +575,10 @@ This command verifies referenced files and directories exist; it does not valida
     with that type. There is no fallback to the record's `EffectiveFrom` or to an annual cadence. A
     root value that differs from what `StructuredCashFlowTermsResolver` resolves (it also reads
     aliases, `profileFields` and the common terms) is refused as ambiguous, and so is a root value
-    of a kind the anchors do not read (a timestamp `maturity`, a numeric or boolean
-    `paymentFrequency`) when the resolver still resolves a value. The cadence maps through
+    of a kind the anchors do not read (a timestamp `issueDate` or `maturity`, a numeric or boolean
+    `paymentFrequency`) when the resolver still resolves a value. A present `issueDate` the
+    resolver cannot read either is refused as `EffectiveDateMissing` with a text that names the
+    value rather than calling it absent. The cadence maps through
     `SecurityTermConventions.TryParsePaymentFrequency`, `IsSchedulableCoupon` and
     `ScheduleTenor.TryFromPaymentFrequency`, so `AtMaturity` is one `Term` period (SCH-DEF-001)
     and a sub-monthly or irregular cadence is refused. The CertificateOfDeposit and StructuredCredit
@@ -647,11 +653,12 @@ This command verifies referenced files and directories exist; it does not valida
     its `TermsUsed` and no `LegSchedules`, and the normalized-per-100 wrapper keeps the declared
     reason. `{read-guard reason}` is "Unsupported assetClassTermsVersion '{stamp}' for asset class
     '{assetClass}'; this node reads versions 1 through {readsThrough}."; `{term}` is `issue date`,
-    `maturity` or `payment frequency`; dates are `yyyy-MM-dd`. The first `TermsAmbiguous` text is
-    for a root key that is present and not null but not of the kind the anchors read: `{value}` is a
-    string in single quotes, a number or boolean as written, or `an object` or `an array`, and
-    `{kind}` is `date` for the maturity and `string` for the payment frequency. The second is for a
-    root key that is absent or null.
+    `maturity` or `payment frequency`; dates are `yyyy-MM-dd`. The third `EffectiveDateMissing`
+    text and the first `TermsAmbiguous` text are for a root key that is present and not null but
+    not of the kind the anchors read, the `EffectiveDateMissing` one when the cash-flow terms
+    resolve no issue date: `{value}` is a string in single quotes, a number or boolean as written, or `an object` or
+    `an array`, and `{kind}` is `date` for the issue date and the maturity and `string` for the
+    payment frequency. The second `TermsAmbiguous` text is for a root key that is absent or null.
 
     | Refusal | Text |
     | --- | --- |
@@ -659,6 +666,7 @@ This command verifies referenced files and directories exist; it does not valida
     | `LegConventionsNotFollowed` | Declared schedule conventions are not yet followed on leg-based projections; the projection is blocked until per-leg declared schedules are supported. |
     | `EffectiveDateMissing` | Declared schedule conventions need the contractual issue date, and '{assetClass}' terms declare no issueDate; the record's effective-from date is not used as a schedule anchor. |
     | `EffectiveDateMissing` | Declared schedule conventions need the contractual issue date; the record carries no issueDate, and its effective-from date is not used as a schedule anchor. |
+    | `EffectiveDateMissing` | Declared schedule conventions need the contractual issue date; the record's 'issueDate' is {value}, which is not a date the schedule anchors read, and its effective-from date is not used as a schedule anchor. |
     | `TermsAmbiguous` | Declared schedule conventions need one unambiguous {term}; the record's '{key}' is {value}, which is not a {kind} the schedule anchors read, but the cash-flow terms resolve '{resolved}'. |
     | `TermsAmbiguous` | Declared schedule conventions need one unambiguous {term}; the record carries no '{key}' but the cash-flow terms resolve '{resolved}' from another key or source. |
     | `TermsAmbiguous` | Declared schedule conventions need one unambiguous {term}; the record's '{key}' is '{root}' but the cash-flow terms resolve none. |
@@ -730,13 +738,14 @@ This command verifies referenced files and directories exist; it does not valida
     equal to its file stem exactly, the reserved id `WEEKENDS`, a weekend day that is not exactly an
     English day name, no working day, coverage that starts after it ends, data
     `HolidayBusinessDayCalendar` rejects, or an id another file that passes these checks also
-    defines (both are refused). A refused file loads nothing. Its Warning says whether the id it
-    names (its `calendarId`, then its file name stem, ignoring case) still resolves, from another
-    file that loaded or as the built-in `WEEKENDS`; otherwise that id stays unresolvable and is
-    never replaced by weekends only. A missing directory loads only the built-in `WEEKENDS`, with no
-    Warning; a `calendars` path that is a file, or a directory that cannot be listed, does too, with
-    a Warning. Ids are canonical because the content hash includes the id as written and
-    joint ids sort ordinally. Coverage is the data owner's attestation that the holiday list is
+    defines (both are refused). A refused file loads nothing. Its Warning says whether each id it
+    names (its `calendarId`, and its file name stem when some casing of it is a canonical id, both
+    ignoring case) still resolves, from another file that loaded or as the built-in `WEEKENDS`;
+    any other id stays unresolvable, is never replaced by weekends only, and is named as such when
+    another id the file names still resolves. A missing directory loads only the built-in
+    `WEEKENDS`, with no Warning; a `calendars` path that is a file, or a directory that cannot be
+    listed, does too, with a Warning. Ids are canonical because the content hash includes the id as
+    written and joint ids sort ordinally. Coverage is the data owner's attestation that the holiday list is
     complete over that range. See [Business-Day Calendar](../domain/business-day-calendar.md) and
     the [calendar file procedure](../operators/business-day-calendar-files.md).
   - **Startup capability line.** `AddSecurityMasterTermsCapability` registers the source and a

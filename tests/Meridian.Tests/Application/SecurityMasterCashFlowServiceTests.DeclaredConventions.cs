@@ -479,6 +479,40 @@ public sealed partial class SecurityMasterCashFlowServiceTests
     }
 
     [Fact]
+    public async Task DeclaredConventions_WithoutAParOrFace_AreGenerated_KeepTheirEvidence_AndAreBlockedOnTheNormalizedBasis()
+    {
+        var projection = await ProjectDeclaredAsync(
+            DeclaredBond(MinimalBlock, D(2041, 1, 31), D(2042, 1, 31), "Quarterly", par: null),
+            WeekendsSource);
+
+        projection.IsNormalizedPer100.Should().BeTrue();
+        projection.BlockedReason.Should().Be(
+            "Schedule is normalized per 100 units; retained principal or leg notional is required before ledger posting.");
+        projection.Schedule.Select(static row => ScheduleRowDate(row)).Should().Equal(
+            D(2041, 4, 30), D(2041, 7, 31), D(2041, 10, 31), D(2042, 1, 31));
+        projection.ScheduleEvidence.Should().NotBeNull("the wrapper keeps a generated schedule's evidence");
+        projection.ScheduleEvidence!.KernelVersion.Should().Be("contractual-schedule-kernel-v1");
+        projection.ScheduleEvidence.DeclaredMappingVersion.Should().Be("security-master-declared-schedule-v1");
+    }
+
+    [Fact]
+    public async Task DeclaredConventions_ActActIcmaOnAnAtMaturityTerm_IsBlockedWithTheDayCountText()
+    {
+        // AtMaturity is one Term period with no coupon periods per year, which ICMA needs; the factory
+        // and ResolveShape accept the record, so only the projection blocks it.
+        var terms = DeclaredBond(MinimalBlock, D(2041, 1, 31), D(2043, 1, 31), "AtMaturity", dayCount: "ACT/ACT ICMA");
+        var security = BuildSecurity(Guid.NewGuid(), "Bond", terms);
+        ScheduleSpecFactory.ResolveShape(security, StructuredCashFlowTermsResolver.Resolve(security))
+            .Status.Should().Be(DeclaredScheduleStatus.Declared);
+
+        var projection = await ProjectDeclaredAsync(terms, WeekendsSource);
+
+        ShouldBeBlocked(
+            projection,
+            "Declared schedule interest could not be computed: Actual/Actual (ICMA) requires a positive number of coupon periods per year.");
+    }
+
+    [Fact]
     public async Task DeclaredConventions_WithoutAnIssueDate_AreRefusedBeforeTheEffectiveFromFallback()
     {
         // EffectiveFrom lies after the maturity, so the legacy fallback would return an empty schedule

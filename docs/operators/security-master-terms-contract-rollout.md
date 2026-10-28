@@ -114,9 +114,16 @@ Select-String -Path '<dataRoot>\_logs\meridian-*.log' -SimpleMatch 'business-day
 ```
 
 `Meridian startup beginning` marks each host start. Of `UiServer`'s own `ILogger` output, only the
-capability and calendar categories reach this file, from Information. Its default providers
-(console, debug, EventSource and, on Windows, the event log) keep their Warning minimum, so a
-refused file's Warning shows twice on its console and once per graph in the file.
+capability and calendar categories reach this file, from Information, so each of these lines
+appears in the file once per graph. `UiServer`'s default providers (console, debug, EventSource
+and, on Windows, the event log) keep their Warning minimum unless a configured `Logging` level
+lowers it, as `Logging__LogLevel__Default` does in the container deployments (`Information` in
+`deploy/k8s/configmap.yaml`, `Debug` in `deploy/docker/docker-compose.override.yml`). The console
+repeats lines: Serilog's console sink writes each line once per graph, and the default console
+provider writes the `UiServer` graph's line once more when its level admits it, which a refused
+file's Warning always is and the Information lines are only under such a configured level. A
+`--mode desktop` container with that setting therefore shows each inventory line three times on
+its console. Count the lines in the file, not on the console.
 
 A node that logs no capability line runs a build below 5a (4b or 5a-0), or its log was not captured
 from host start, or, on a server, `MDC_LOG_LEVEL` was set to `Warning` or above, which keeps
@@ -356,7 +363,7 @@ Each floor is observable from the capability line; 5b-1's capability floor is to
 | A desktop capture file is empty | Whether another desktop was still running: the new one hands its launch over and exits before its host is built | Close every desktop window and repeat [the capture](#capturing-a-desktops-lines) from action 1 |
 | A node's line differs from the one its build should log (another declared mapping or other terms versions) | The capability line and the node's build | Align the node's build with the fleet; hold 5b-2 |
 | Calendar lists differ between projection nodes | The capability lines; the per-calendar lines and Warnings | Align the files ([calendar procedure](business-day-calendar-files.md)), restart, and compare again |
-| A calendar file is refused at start | The Warning naming the file, the reason and whether the id still resolves | Fix the file as the calendar procedure describes; until then its id stays unresolvable, unless the Warning says it still resolves from another file or to the built-in `WEEKENDS` |
+| A calendar file is refused at start | The Warning naming the file, the reason and whether each id it names still resolves | Fix the file as the calendar procedure describes; until then each id it names stays unresolvable, unless the Warning says that id still resolves from another file or to the built-in `WEEKENDS` |
 | Q1, Q1b or QR returns rows | The query output: class, key or container, and counts | Hold 5b-2, and 5b-1 for QR; follow the remediation the 5b pull requests add here |
 | A rollback below a floor is proposed | The floor table above | Do not roll back below it; roll forward or to an allowed build |
 

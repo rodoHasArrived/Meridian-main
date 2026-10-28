@@ -714,9 +714,10 @@ lookup paths, and evidence trails those layers rely on.
   missing members, a version below 1, an id outside `^[A-Z][A-Z0-9]{1,15}$` or not equal to its
   file stem, the reserved `WEEKENDS`, a weekend day that is not an exact English day name, no
   working day, inverted coverage or an id another file that passes these checks also defines (both
-  are refused). A refused file loads nothing, and its Warning says whether the id it names still
-  resolves, from another file or as the built-in `WEEKENDS`; otherwise the id stays unresolvable
-  and is never replaced by weekends only. A missing directory loads only `WEEKENDS`, and so, with a
+  are refused). A refused file loads nothing, and its Warning says whether each id it names (its
+  `calendarId` and its file stem, which can differ) still resolves, from another file or as the
+  built-in `WEEKENDS`; any other id stays unresolvable, the Warning says so, and it is never
+  replaced by weekends only. A missing directory loads only `WEEKENDS`, and so, with a
   Warning, do a `calendars` path that is a file and a directory that cannot be listed (access denied
   is not read as an empty directory). `Calendars` and `RefusedFiles` list what loaded and what did
   not. The Application composition registers it and logs the terms capability line

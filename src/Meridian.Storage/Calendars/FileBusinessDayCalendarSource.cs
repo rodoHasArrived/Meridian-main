@@ -24,9 +24,10 @@ namespace Meridian.Storage.Calendars;
 /// <para>
 /// There is no fallback: a refused file loads nothing, an id no loaded file defines stays
 /// unresolvable and is never replaced by weekends only, and loading never throws for file content.
-/// A refused file does not block an id another file loads; its Warning names that file. A missing
-/// directory loads only <c>WEEKENDS</c>; a <c>calendars</c> path that is a file, or a directory that
-/// cannot be listed, does too, with a Warning.
+/// A refused file does not block an id another file loads; its Warning names that file, and any other
+/// id the refused file names (its calendarId and its file name stem can differ) that stays
+/// unresolvable. A missing directory loads only <c>WEEKENDS</c>; a <c>calendars</c> path that is a
+/// file, or a directory that cannot be listed, does too, with a Warning.
 /// </para>
 /// <para>
 /// Ids are canonical because the content hash includes the id as written and joint ids sort their
@@ -136,7 +137,7 @@ public sealed class FileBusinessDayCalendarSource : IBusinessDayCalendarSource
                 StringComparer.OrdinalIgnoreCase);
 
         // The calendars that load, by id ignoring case as lookups resolve them, so a refused file's
-        // Warning can say whether the id it names still resolves from another file.
+        // Warning can say whether the ids it names still resolve from another file.
         var loaded = outcomes
             .Where(outcome => outcome.Calendar is { } calendar && !duplicateIds.ContainsKey(calendar.CalendarId))
             .ToDictionary(static outcome => outcome.Calendar!.CalendarId, StringComparer.OrdinalIgnoreCase);
@@ -195,48 +196,92 @@ public sealed class FileBusinessDayCalendarSource : IBusinessDayCalendarSource
         IgnoreInaccessible = false
     };
 
-    // One Warning per refused file, saying whether the id it names (its calendarId, then its file name
-    // stem) still resolves from another file or the built-in calendar, or stays unresolvable.
+    // One Warning per refused file, saying whether the ids it names (its calendarId, then its file name
+    // stem when some casing of it is a calendar id) still resolve, from another file or the built-in
+    // calendar, or stay unresolvable. A calendarId and a stem that name different ids can split, one
+    // still resolving while the other stays blocked, and the Warning then names both.
     private static void LogRefusal(
         ILogger log,
         FileOutcome outcome,
         string reason,
         IReadOnlyDictionary<string, FileOutcome> loaded)
     {
-        foreach (var named in new[] { outcome.CalendarId, Path.GetFileNameWithoutExtension(outcome.FileName) })
+        var named = new List<string>(2);
+        if (outcome.CalendarId?.Trim() is { Length: > 0 } calendarId)
         {
-            var calendarId = named?.Trim();
-            if (string.IsNullOrEmpty(calendarId))
-            {
-                continue;
-            }
+            named.Add(calendarId);
+        }
 
-            if (loaded.TryGetValue(calendarId, out var other))
-            {
-                log.LogWarning(
-                    "Refused business-day calendar file {CalendarFile}: {RefusalReason} Nothing from this file is loaded; calendar {CalendarId} still resolves, from {LoadedCalendarFile}.",
-                    outcome.FilePath,
-                    reason,
-                    other.Calendar!.CalendarId,
-                    other.FilePath);
-                return;
-            }
+        // A stem such as "ZZTEST - Copy" is no calendar id in any casing, so no record can name it.
+        var stem = Path.GetFileNameWithoutExtension(outcome.FileName).Trim();
+        if (IsCanonicalCalendarId(stem.ToUpperInvariant()) && !named.Contains(stem, StringComparer.OrdinalIgnoreCase))
+        {
+            named.Add(stem);
+        }
 
-            if (string.Equals(calendarId, BusinessDayCalendars.WeekendsOnlyId, StringComparison.OrdinalIgnoreCase))
+        // The first named id that resolves (from a loaded file, or to the built-in calendar when its
+        // file is null), and the first that does not.
+        (string CalendarId, string? LoadedFile)? resolves = null;
+        string? unresolvable = null;
+        foreach (var id in named)
+        {
+            if (loaded.TryGetValue(id, out var other))
             {
-                log.LogWarning(
-                    "Refused business-day calendar file {CalendarFile}: {RefusalReason} Nothing from this file is loaded; calendar {CalendarId} still resolves, to the built-in weekends-only calendar.",
-                    outcome.FilePath,
-                    reason,
-                    BusinessDayCalendars.WeekendsOnlyId);
-                return;
+                resolves ??= (other.Calendar!.CalendarId, other.FilePath);
+            }
+            else if (string.Equals(id, BusinessDayCalendars.WeekendsOnlyId, StringComparison.OrdinalIgnoreCase))
+            {
+                resolves ??= (BusinessDayCalendars.WeekendsOnlyId, null);
+            }
+            else
+            {
+                unresolvable ??= id;
             }
         }
 
-        log.LogWarning(
-            "Refused business-day calendar file {CalendarFile}: {RefusalReason} The calendar it names stays unresolvable; no weekends-only calendar is substituted.",
-            outcome.FilePath,
-            reason);
+        if (resolves is not { } still)
+        {
+            log.LogWarning(
+                "Refused business-day calendar file {CalendarFile}: {RefusalReason} The calendar it names stays unresolvable; no weekends-only calendar is substituted.",
+                outcome.FilePath,
+                reason);
+        }
+        else if (still.LoadedFile is { } loadedFile && unresolvable is null)
+        {
+            log.LogWarning(
+                "Refused business-day calendar file {CalendarFile}: {RefusalReason} Nothing from this file is loaded; calendar {CalendarId} still resolves, from {LoadedCalendarFile}.",
+                outcome.FilePath,
+                reason,
+                still.CalendarId,
+                loadedFile);
+        }
+        else if (still.LoadedFile is { } splitLoadedFile)
+        {
+            log.LogWarning(
+                "Refused business-day calendar file {CalendarFile}: {RefusalReason} Nothing from this file is loaded; calendar {CalendarId} still resolves, from {LoadedCalendarFile}, but calendar {UnresolvableCalendarId} stays unresolvable; no weekends-only calendar is substituted.",
+                outcome.FilePath,
+                reason,
+                still.CalendarId,
+                splitLoadedFile,
+                unresolvable);
+        }
+        else if (unresolvable is null)
+        {
+            log.LogWarning(
+                "Refused business-day calendar file {CalendarFile}: {RefusalReason} Nothing from this file is loaded; calendar {CalendarId} still resolves, to the built-in weekends-only calendar.",
+                outcome.FilePath,
+                reason,
+                still.CalendarId);
+        }
+        else
+        {
+            log.LogWarning(
+                "Refused business-day calendar file {CalendarFile}: {RefusalReason} Nothing from this file is loaded; calendar {CalendarId} still resolves, to the built-in weekends-only calendar, but calendar {UnresolvableCalendarId} stays unresolvable; no weekends-only calendar is substituted.",
+                outcome.FilePath,
+                reason,
+                still.CalendarId,
+                unresolvable);
+        }
     }
 
     private static FileOutcome ReadFile(string path)

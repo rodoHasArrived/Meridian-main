@@ -134,23 +134,31 @@ To verify a calendar:
 
 ## Refusal Warnings and Fixes
 
-A refused file is logged once at start, as a Warning in one of three forms:
+A refused file is logged once at start, as a Warning in one of five forms:
 
 ```text
 Refused business-day calendar file {path}: {reason} Nothing from this file is loaded; calendar {id} still resolves, from {loaded path}.
 Refused business-day calendar file {path}: {reason} Nothing from this file is loaded; calendar WEEKENDS still resolves, to the built-in weekends-only calendar.
+Refused business-day calendar file {path}: {reason} Nothing from this file is loaded; calendar {id} still resolves, from {loaded path}, but calendar {other id} stays unresolvable; no weekends-only calendar is substituted.
+Refused business-day calendar file {path}: {reason} Nothing from this file is loaded; calendar WEEKENDS still resolves, to the built-in weekends-only calendar, but calendar {other id} stays unresolvable; no weekends-only calendar is substituted.
 Refused business-day calendar file {path}: {reason} The calendar it names stays unresolvable; no weekends-only calendar is substituted.
 ```
 
-Nothing from a refused file is loaded, and the other files still load. The form depends on the id
-the refused file names: its `calendarId`, when it parsed with one, and then its file name stem,
-each compared ignoring case.
+Nothing from a refused file is loaded, and the other files still load. The form depends on the ids
+the refused file names: its `calendarId`, when it parsed with one, and its file name stem, when
+some casing of the stem is a canonical id (`ZZTEST - Copy` is not), each compared ignoring case.
 
-- **Still resolves, from another file.** Another file that loaded defines that id, so records that
-  name it use that file's calendar, not the refused file's content. Check that the loaded file is
-  the one the data owner supplied, and fix or remove the refused one.
+- **Still resolves, from another file.** Another file that loaded defines the id, and any other id
+  the file names also resolves, so records that name it use that file's calendar, not the refused
+  file's content. Check that the loaded file is the one the data owner supplied, and fix or remove
+  the refused one.
 - **Still resolves, to the built-in calendar.** The id is `WEEKENDS`, which always resolves to the
   built-in calendar.
+- **Still resolves, but another id stays unresolvable.** The `calendarId` and the file name name
+  different ids. `{id}` still resolves, from another file or to the built-in calendar, but no file
+  that loaded defines `{other id}`, so records that name it are blocked as below. The file often
+  holds data meant for one of the two ids, so do not remove it: ask the data owner which id it is
+  for, then correct its `calendarId` or rename it to match, and restart.
 - **Stays unresolvable.** No file that loaded defines the id. A record that names it is blocked with
   "Declared paymentCalendars name calendars this node has not loaded: '{id}'; a missing calendar is
   never replaced by weekends only." until the file is fixed and the host restarted.
@@ -163,7 +171,7 @@ each compared ignoring case.
 | `required member(s) missing: {members}.` | Add every listed member (`coverage.from` and `coverage.to` are listed separately). |
 | `version must be at least 1 (found {n}).` | Use a version of 1 or more, above the version the node last logged for that id. |
 | `calendarId '{id}' is not a canonical calendar id (an uppercase ASCII letter followed by 1 to 15 uppercase ASCII letters or digits).` | Use a canonical id: no lowercase letters, separators or `+`, starting with a letter, 2 to 16 characters. |
-| `calendarId '{id}' does not equal the file name stem '{stem}' exactly.` | Rename the file to `{calendarId}.json`, with the same case. |
+| `calendarId '{id}' does not equal the file name stem '{stem}' exactly.` | Rename the file to `{calendarId}.json`, with the same case, or, when the file holds the data for the id its name names, correct its `calendarId` instead. Never rename it over another file. |
 | `calendarId '{id}' is reserved for the built-in weekends-only calendar.` | Remove the file; `WEEKENDS` always resolves to the built-in calendar. |
 | `weekendDays entry '{name}' is not exactly one of the English day names Monday to Sunday.` | Spell each day in full with an initial capital, such as `Saturday`. |
 | `every day of the week is a weekend day; a calendar needs at least one working day.` | Remove at least one day from `weekendDays`. |
@@ -211,7 +219,7 @@ Decided by the owner on 2026-10-28:
 
 | Symptom | Diagnostic | Safe next action |
 | --- | --- | --- |
-| A file is refused | The Warning's reason and form | Fix the file per the table above, move it into place again and restart; when the Warning says the id still resolves from another file, confirm that file is the data owner's |
+| A file is refused | The Warning's reason and form | Fix the file per the table above, move it into place again and restart; when the Warning says an id still resolves from another file, confirm that file is the data owner's, and when it also names an id that stays unresolvable, keep the file until the data owner says which id it holds |
 | A file is installed but no `Loaded business-day calendar` line or Warning appears, and the capability line reads `business-day calendars 0: none` | The directory the node reads: `calendars` under the configuration file's `DataRoot`, which `MDC_DATA_ROOT` does not move | Move the file under that directory, or set `DataRoot` in the configuration file, then restart |
 | A projection is blocked naming an id | The node's capability line: is the id listed? | Install or fix the calendar, or correct the record's `paymentCalendars`; nothing falls back to weekends only |
 | Hashes differ between nodes for one id and version | The `Loaded business-day calendar` line on each node | Replace the divergent file with the data owner's file under a new version on every node, then restart and compare again |
