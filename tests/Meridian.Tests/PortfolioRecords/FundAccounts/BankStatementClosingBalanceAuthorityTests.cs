@@ -225,7 +225,7 @@ public sealed class BankStatementClosingBalanceAuthorityTests
 
         // The caller independently fences known statement headers by its actual observation/as-of date.
         BankStatementClosingBalanceAuthority.SelectAuthoritativeLines([statement, feed], "USD", activityDate, activityDate)
-            .Should().Equal(statement, "an activity window must not be mistaken for when the statement became known");
+            .Should().Equal(new[] { statement }, because: "an activity window must not be mistaken for when the statement became known");
     }
 
     [Fact]
