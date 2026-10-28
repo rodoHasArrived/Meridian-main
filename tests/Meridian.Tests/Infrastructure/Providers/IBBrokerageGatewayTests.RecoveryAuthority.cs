@@ -92,7 +92,10 @@ public sealed partial class IBBrokerageGatewayTests
         {
             var original = RecoveryOriginal with
             {
-                BrokerAccountId = "DU1", FilledQuantity = 0m, AverageFillPrice = null, Status = OrderStatus.Accepted,
+                BrokerAccountId = "DU1",
+                FilledQuantity = 0m,
+                AverageFillPrice = null,
+                Status = OrderStatus.Accepted,
                 CreatedAt = DateTimeOffset.UtcNow
             };
             var amendment = new PendingOrderAmendment(original, original with { Quantity = 20m, LimitPrice = 200m }, "7001")
@@ -102,7 +105,9 @@ public sealed partial class IBBrokerageGatewayTests
             store.BindScope("paper:DU1");
             store.Save(new(original, "7001", true)
             {
-                PendingAmendment = amendment, RequiresAmendmentRecovery = true, BrokerOrderAliases = ["7001"]
+                PendingAmendment = amendment,
+                RequiresAmendmentRecovery = true,
+                BrokerOrderAliases = ["7001"]
             });
             var other = original with { OrderId = "other-order" };
             store.Save(new(other, "8001", true) { BrokerOrderAliases = ["8001"] });
@@ -117,9 +122,18 @@ public sealed partial class IBBrokerageGatewayTests
             var durableBefore = await File.ReadAllTextAsync(path);
             var wrong = new ExecutionReport
             {
-                OrderId = original.OrderId, ClientOrderId = original.OrderId, GatewayOrderId = "7002", ReplacesOrderId = "7001",
-                BrokerAccountId = "DU2", ReportType = ExecutionReportType.Modified, Symbol = "AAPL", Side = OrderSide.Buy,
-                OrderStatus = OrderStatus.Accepted, OrderQuantity = 20m, OrderLimitPrice = 200m, HasOrderTerms = true
+                OrderId = original.OrderId,
+                ClientOrderId = original.OrderId,
+                GatewayOrderId = "7002",
+                ReplacesOrderId = "7001",
+                BrokerAccountId = "DU2",
+                ReportType = ExecutionReportType.Modified,
+                Symbol = "AAPL",
+                Side = OrderSide.Buy,
+                OrderStatus = OrderStatus.Accepted,
+                OrderQuantity = 20m,
+                OrderLimitPrice = 200m,
+                HasOrderTerms = true
             };
 
             await Assert.ThrowsAsync<InvalidDataException>(() => oms.ReconcileRecoveryOrderAsync(wrong));
@@ -132,8 +146,14 @@ public sealed partial class IBBrokerageGatewayTests
             // A different retained order's independently proven report may still use that id.
             await oms.ReconcileRecoveryOrderAsync(wrong with
             {
-                OrderId = other.OrderId, ClientOrderId = other.OrderId, ReplacesOrderId = null, BrokerAccountId = "DU1",
-                ReportType = ExecutionReportType.New, OrderQuantity = 10m, HasOrderTerms = false, OrderLimitPrice = null
+                OrderId = other.OrderId,
+                ClientOrderId = other.OrderId,
+                ReplacesOrderId = null,
+                BrokerAccountId = "DU1",
+                ReportType = ExecutionReportType.New,
+                OrderQuantity = 10m,
+                HasOrderTerms = false,
+                OrderLimitPrice = null
             });
             oms.GetOrder(other.OrderId)!.BrokerAccountId.Should().Be("DU1");
         }
@@ -168,9 +188,15 @@ public sealed partial class IBBrokerageGatewayTests
 
             var wrongAccount = new ExecutionReport
             {
-                OrderId = "working-order", ClientOrderId = "working-order", GatewayOrderId = "11001",
-                BrokerAccountId = "DU2", ReportType = ExecutionReportType.New, Symbol = "AAPL",
-                Side = OrderSide.Buy, OrderStatus = OrderStatus.Accepted, OrderQuantity = 10m
+                OrderId = "working-order",
+                ClientOrderId = "working-order",
+                GatewayOrderId = "11001",
+                BrokerAccountId = "DU2",
+                ReportType = ExecutionReportType.New,
+                Symbol = "AAPL",
+                Side = OrderSide.Buy,
+                OrderStatus = OrderStatus.Accepted,
+                OrderQuantity = 10m
             };
             await Assert.ThrowsAsync<InvalidDataException>(() => oms.ReconcileRecoveryOrderAsync(wrongAccount));
             oms.GetOrder("working-order")!.BrokerAccountId.Should().Be("DU1");
@@ -217,12 +243,14 @@ public sealed partial class IBBrokerageGatewayTests
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             if (filled > 0)
             {
-                while ((await oms.ExecutionReports.ReadAsync(timeout.Token)).FilledQuantity != filled) { }
+                while ((await oms.ExecutionReports.ReadAsync(timeout.Token)).FilledQuantity != filled)
+                { }
             }
             client.RaiseOpenOrder(OpenOrder(11001, WorkingOrder()));
             if (!executionFill)
             {
-                while ((await oms.ExecutionReports.ReadAsync(timeout.Token)).BrokerAccountId != "DU1") { }
+                while ((await oms.ExecutionReports.ReadAsync(timeout.Token)).BrokerAccountId != "DU1")
+                { }
             }
 
             var state = oms.GetOrder("working-order")!;
@@ -265,7 +293,8 @@ public sealed partial class IBBrokerageGatewayTests
             var barrier = Status(11001, "Submitted");
             client.RaiseOrderStatus(barrier);
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-            while ((await oms.ExecutionReports.ReadAsync(timeout.Token)).Timestamp != barrier.ReceivedAt) { }
+            while ((await oms.ExecutionReports.ReadAsync(timeout.Token)).Timestamp != barrier.ReceivedAt)
+            { }
 
             var state = oms.GetOrder("working-order")!;
             state.FilledQuantity.Should().Be(0m);
@@ -330,7 +359,8 @@ public sealed partial class IBBrokerageGatewayTests
             durable.BrokerOrderAliases.Should().Equal(aliasesBefore);
 
             client.RaiseOpenOrder(OpenOrder(11001, WorkingOrder()));
-            while ((await oms.ExecutionReports.ReadAsync(timeout.Token)).BrokerAccountId != "DU1") { }
+            while ((await oms.ExecutionReports.ReadAsync(timeout.Token)).BrokerAccountId != "DU1")
+            { }
             var afterValid = oms.GetOrder("working-order")!;
             afterValid.Should().Be(beforeValid with { BrokerAccountId = "DU1" });
             publisher.Events.Should().BeEmpty();
@@ -364,8 +394,11 @@ public sealed partial class IBBrokerageGatewayTests
         open.Should().ContainSingle().Which.ClientOrderId.Should().Be("working-order");
         var retained = RecoveryOriginal with
         {
-            OrderId = "working-order", BrokerAccountId = "DU1", FilledQuantity = 0m,
-            AverageFillPrice = null, Status = OrderStatus.Accepted
+            OrderId = "working-order",
+            BrokerAccountId = "DU1",
+            FilledQuantity = 0m,
+            AverageFillPrice = null,
+            Status = OrderStatus.Accepted
         };
         (await gateway.GetOrderForRecoveryAsync("working-order", retained)).Should().NotBeNull(
             "verified same-owner rows remain available for reconciliation after reconnect");
