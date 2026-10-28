@@ -34,7 +34,9 @@ positions by account plus qualified contract identity. Robinhood replacement sub
 confirmed cancellation with cumulative fill evidence, for the intended total less chain fills.
 Unconfirmed Robinhood replacement attempts retain their reference and reconcile exact broker
 history before further operations. Empty, incomplete, or ambiguous history remains unresolved;
-confirmed candidates restore replacement-chain routing and cumulative fill economics.
+confirmed candidates restore replacement-chain routing and cumulative fill economics. Robinhood
+submits replacements under the OMS-persisted reference, and restart recovery reads each earlier
+chain member's final fills so a predecessor fill the store never booked is attributed exactly.
 
 Running Robinhood read-only account, portfolio, and activity synchronization reads the current
 host-owned OAuth token for each request, including connection, rotation, and revocation. Polling
@@ -116,11 +118,14 @@ applies shared trade, quote, and aggregate quality validation. Source time remai
 receipt metadata on published events; receipt time never substitutes for missing source evidence.
 
 Canonical statement imports stream JSON to an exclusive temporary file, force its contents to
-disk, then publish with a no-overwrite rename and the host-supplied `IAtomicFileWriter`
-directory-sync policy. Caller
+disk, then acquire a persistent per-import exclusive file lock before checking existence, publishing
+with a no-overwrite rename, and completing the host-supplied `IAtomicFileWriter` directory-sync
+policy. The lock file stays in place so later writers reuse the same inode; process termination
+releases its open-handle claim. Caller
 cancellation is checked before publication and is not observed after the rename commits.
 Subprocess tests cover interrupted serialization, restart after acknowledged publication,
-and concurrent writers claiming one complete import. These are process-crash tests; they do
+termination while holding the publication claim during directory sync, and concurrent writers
+claiming one complete import. These are process-crash tests; they do
 not certify physical power-loss behavior on every filesystem or storage device.
 
 Backfill request admission captures the current activity context; queued worker execution restores

@@ -135,6 +135,12 @@ public sealed record OrderModification
     public decimal? NewLimitPrice { get; init; }
     public decimal? NewStopPrice { get; init; }
     public decimal? NewTrail { get; init; }
+
+    /// <summary>
+    /// Client reference for a replacement order, assigned and persisted by the caller before
+    /// dispatch. Honored only by gateways implementing <see cref="IPreassignedReplacementReferenceGateway"/>.
+    /// </summary>
+    public string? ReplacementClientOrderId { get; init; }
 }
 
 /// <summary>Report from the execution gateway about an order event.</summary>
