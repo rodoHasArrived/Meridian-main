@@ -36,8 +36,9 @@ namespace Meridian.Tests.Ui;
 /// a deployed host registers. The real service decides what is a refusal: terms this node reads but does
 /// not write, a missing term, an F# domain validation error and a round-trip guard naming its repair.
 /// A stored row this node cannot decode (even one a round-trip guard would also refuse; an unrecognized
-/// asset class is refused with 400 before the decode), a stale version the F# validator rejects, a
-/// stream naming another security, a duplicate create, an unknown security and a deactivate keep their 500, with the reason kept out of
+/// asset class rebuilt from its events is refused with 400 before the decode), a stale version the F#
+/// validator rejects, a stream naming another security, a duplicate create, an unknown security and a
+/// deactivate keep their 500, with the reason kept out of
 /// the body; each of those cases also pins, from the exception the shared handler logs, that the fault
 /// it means to reach is the one that answered.
 /// </summary>
@@ -586,6 +587,29 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
         var fault = await AssertServerFaultAsync(response, handlerLog, undisclosed: "floatingIndex");
         fault.Should().BeOfType<InvalidOperationException>()
             .Which.Message.Should().Be("Missing required date 'maturity'.");
+        await harness.AssertNothingWrittenAsync();
+    }
+
+    [Fact]
+    public async Task AmendWithoutAPatch_OfAProjectionOnlyRowOfAClassThisNodeDoesNotRecognizeOrDecode_Returns500()
+    {
+        // With no events or snapshot the rebuild falls back to the projection and decodes it, before
+        // the class check can run, so the class refusal is reached only for a security rebuilt from its
+        // events, as a newer node writes it.
+        var securityId = Guid.NewGuid();
+        using var harness = new CanonicalServiceHarness();
+        harness.Seed(securityId, "InfrastructureHolding", NewerNodeProfileEnvelope);
+        var handlerLog = new RecordingLogger<MeridianApiExceptionHandler>();
+        await using var app = await CreateAppAsync(Substitute.For<ISecurityMasterQueryService>(), harness.Service, handlerLog);
+
+        using var response = await app.GetTestClient().PostAsJsonAsync(
+            "/api/security-master/amend",
+            AmendRequest(securityId, expectedVersion: 2, assetSpecificTermsPatch: null),
+            WebJson);
+
+        var fault = await AssertServerFaultAsync(response, handlerLog, undisclosed: "InfrastructureHolding");
+        fault.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("Unsupported schemaVersion '3' for asset class 'InfrastructureHolding'.");
         await harness.AssertNothingWrittenAsync();
     }
 

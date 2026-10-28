@@ -636,7 +636,7 @@ public sealed class SecurityTermsVersioningTests
         // reason for the caller (EnsureWritable_RefusesANonFlatFormatWithWhatToSubmit).
         writeError?.GetType().Should().Be(readError?.GetType());
         (writeError is null).Should().Be(readError is null);
-        if (!payloadText.Contains(SecurityTermsEnvelope.FormatKey, StringComparison.Ordinal))
+        if (SecurityTermsEnvelope.GetDeclaredFormat(payload) is null or SecurityTermsFormats.Flat or SecurityTermsFormats.CustomProfile)
         {
             writeError?.Message.Should().Be(readError?.Message);
         }

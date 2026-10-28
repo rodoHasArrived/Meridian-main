@@ -6718,13 +6718,17 @@ wrapping a patch builder would fail them.
   and convertible routes and the legacy alias, stored terms the Write-mode mapping refuses, because
   those routes build the patch from the stored row. On the term-block route a Bond stamped 2 gets
   the write-version reason, whose "submit the terms at version 1" means a full-document `/amend`,
-  since a block request carries no stamp. `/amend` also refuses an unrecognized stored asset class,
-  and checks it before the stored row is decoded, because its repair is on a node that supports the
-  class, whose terms this node may not decode. The other routes do not reach that check: the
-  preferred, convertible and legacy routes answer 404, because their read-model probe finds no
-  equity terms, and the term-block route answers its pre-check's 400 that the class declares no such
-  block. 409 or 422 would also be defensible; 400 matches the term-block route. Their messages echo
-  stored values, to callers who already hold `ModifySecurityMaster`.
+  since a block request carries no stamp. A stored asset class that matches no catalog class name in
+  any casing is refused too, before the stored row is decoded, because its repair is on a node that
+  supports the class, whose terms this node may not decode. That holds for a security rebuilt from
+  its events or snapshot, as a newer node writes it; a projection-only security is decoded by the
+  rebuild itself, so an undecodable one answers 500. A class the catalog does not resolve at all
+  reaches the check only through `/amend`: the preferred, convertible and legacy routes answer it
+  404 at their read-model probe, and the term-block route answers its pre-check's 400 that the class
+  declares no such block. A class stored under an alias (`CorporateBond`) or with surrounding
+  whitespace passes those probes, which resolve it through the catalog, and then gets the class
+  refusal. 409 or 422 would also be defensible; 400 matches the term-block route. Their messages
+  echo stored values, to callers who already hold `ModifySecurityMaster`.
 - **A write that declares a non-flat `termsFormat` gets a caller-facing reason.**
   `EnsureWritableAsAssetSpecificTerms` now refuses it with what to submit (omit `termsFormat`, or set
   it to `flat` or `customProfile`) instead of the read guard's instruction to route the payload

@@ -2744,9 +2744,12 @@ patch from the stored row. Only `SecurityMasterWriteRefusedException` is transla
 applied per route (`SecurityMasterEndpoints.WriteRefusals.cs`). Undecodable stored rows, unknown
 securities, stale versions the F# validator rejects, duplicate creates and store failures keep their
 responses; `/amend` compares the version only there, so a stale amend whose patch is refused earlier
-answers 400 with that refusal. On `/amend` an unrecognized stored asset class answers 400 even when
-this node cannot decode the row, because the change belongs on a node that supports the class; the
-preferred, convertible and legacy routes answer such a row 404 at their read-model probe. A write
+answers 400 with that refusal. A stored asset class that matches no catalog class name in any casing
+answers 400 on `/amend` even when this node cannot decode the row, because the change belongs on a node that
+supports the class; that holds for a security rebuilt from its events, while a projection-only one
+the rebuild cannot decode answers 500. The preferred, convertible and legacy routes answer a class
+the catalog does not resolve 404 at their read-model probe, and the term-block route answers it with
+its pre-check's 400. A write
 that declares a non-flat `termsFormat` is told what to submit. Deactivate refusals still answer 500;
 no read route changes.
 
