@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-21
 ---
 
 # src/Meridian.Application
@@ -29,10 +29,19 @@ normalized command after a lost response or restart returns its retained observa
 before reading live prices. Changed commands conflict; concurrent identical captures converge on
 the committed snapshot. Callers without an identity retain the existing new-command behavior.
 
-`ILivePositionCorporateActionAdjuster` exposes an additive overload for retained total carrying
-basis. Native paper-execution adjustments use it to avoid rebuilding basis from rounded unit
-quotes. Legacy implementers retain their original overload; a null `AdjustedTotalCostBasis`
-explicitly identifies that compatibility result and remains absent from serialized output.
+Security Master resolver, query and live-position adjustment contracts belong to
+`Meridian.Contracts.SecurityMaster`; Application owns their implementations and deprecated
+compatibility bridges. Its former interface/result type identities are forwarded to Contracts,
+which retains their legacy namespaces for compiled consumers. Storage composition exposes one aggregate query through the narrow identity,
+trading-parameter and corporate-action interfaces and preserves host-supplied registrations.
+Hosts composing these services directly can call `AddSecurityMasterContractAdapters()` after
+registering their query, resolver and position adjuster to expose the compatibility aliases.
+Aliases retain the last unkeyed host registration's singleton, scoped or transient lifetime; scoped
+host services are never captured by a singleton compatibility bridge.
+`LivePositionCorporateActionAdjusterAdapter` lets legacy hosts use a canonical adjuster, retaining
+its exact total carrying basis. Existing Application-contract implementers also satisfy the canonical
+adjuster contract. The retained-basis overload avoids rebuilding basis from rounded unit quotes;
+a null `AdjustedTotalCostBasis` identifies a legacy result and remains absent from serialized output.
 
 Security Master governed edits now validate and stage the overlay and draft in one PostgreSQL
 transaction guarded by a durable per-security generation. Competing instances receive a conflict
@@ -1162,6 +1171,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 ## Validation
 
 ```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~SecurityMasterContractAdapterTests|FullyQualifiedName~StorageFeatureRegistrationTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~TracingIntegrationTests|FullyQualifiedName~EventPipelineTracePropagationTests" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderCompositionTests|FullyQualifiedName~ProviderCatalogCompositionTests|FullyQualifiedName~ProviderModuleCompositionTests" --logger "console;verbosity=normal"

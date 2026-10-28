@@ -25,6 +25,8 @@ symbol and currency; ambiguous historical classification forks still require ind
 An exact run replay may upgrade only that subject representation against its original retained
 receipt; changed run membership, time, comparison policy or authority scope remains refused.
 
+Security Master consumers import the shared Contracts interfaces. Strategies does not inherit
+an Application dependency through Execution.
 
 Portfolio position read models carry shared mark-freshness assessments. A position snapshot timestamp is not a mark observation date: when historical mark provenance is absent, the projection reports review required rather than treating the snapshot as current valuation evidence.
 

@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using System.Runtime.ExceptionServices;
 using System.Threading.Channels;
-using Meridian.Application.Pipeline;
 using Meridian.Execution.Events;
 using Meridian.Execution.Logging;
 using Meridian.Execution.OrderManagement;

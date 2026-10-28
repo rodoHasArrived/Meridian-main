@@ -6,7 +6,7 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-10-14
+last_reviewed: 2026-10-21
 ---
 
 # src/Meridian.Backtesting
@@ -20,6 +20,14 @@ Backtesting contains runtime support for historical strategy simulation and repl
 ## Layer responsibility
 
 This layer should keep simulation behavior isolated from live execution while producing evidence that can flow into research and paper validation.
+
+Security Master dependencies come from `Meridian.Contracts.SecurityMaster`, with no Application
+project reference. The engine accepts separate identity and trading-parameter query services;
+`CorporateActionAdjustmentService` requires only the resolver and corporate-action query interface
+and implements the canonical live-position adjuster. Existing aggregate query callers retain the
+identity fallback, while hosts can compose the narrow services independently.
+The original aggregate-query constructor remains available with its original CLR signature and
+optional arguments for existing compiled callers.
 
 ## Key folders and files
 
@@ -190,6 +198,8 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 ## Validation
 
 ```bash
+dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj --filter "FullyQualifiedName~CorporateActionAdjustmentServiceTests" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj --filter "FullyQualifiedName~BacktestPreflightServiceTests|FullyQualifiedName~MeridianNativeBacktestStudioEngineTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~BacktestStudioRunOrchestratorTests" --logger "console;verbosity=normal"

@@ -2,11 +2,21 @@
 
 # `security-master-contracts` data objects - page 3 of 6
 
-Objects 161-240 of 437. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 443. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_ISecurityMasterStructuredCreditReclassificationService["ISecurityMasterStructuredCreditReclassificationService"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ISecurityResolver["ISecurityResolver"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ISecurityTradingParametersQueryService["ISecurityTradingParametersQueryService"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ISecurityUnderlyingGraphStore["ISecurityUnderlyingGraphStore"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ISecurityValuationModel["ISecurityValuationModel"] {
+    }
     class Meridian_Contracts_SecurityMaster_ISecurityValuationService["ISecurityValuationService"] {
     }
     class Meridian_Contracts_SecurityMaster_IStructuredCashFlowProvider["IStructuredCashFlowProvider"] {
@@ -314,6 +324,15 @@ classDiagram
         +string EventType
         +JsonElement? Payload
     }
+    class Meridian_Contracts_SecurityMaster_PositionCorporateActionAdjustment["PositionCorporateActionAdjustment"] {
+        +int ActionCount
+        +decimal AdjustedCostBasis
+        +decimal AdjustedQuantity
+        +decimal? AdjustedTotalCostBasis
+        +decimal OriginalCostBasis
+        +decimal OriginalQuantity
+        +string Ticker
+    }
     class Meridian_Contracts_SecurityMaster_PostCorporateActionCaseAccountingRequestDto["PostCorporateActionCaseAccountingRequestDto"] {
         +string Actor
         +Guid ApprovalId
@@ -470,32 +489,6 @@ classDiagram
         +DateOnly? Date
         +string Message
     }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailureCode["ScheduleFailureCode"] {
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult["ScheduleGenerationResult"] {
-        +IReadOnlyList~ScheduleCalendarUsage~ CalendarsUsed
-        +IReadOnlyList~ScheduleDiagnostic~ Diagnostics
-        +ScheduleFailure? Failure
-        +IReadOnlyList~SchedulePeriod~ Periods
-        +ScheduleSpec Spec
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerator["ScheduleGenerator"] {
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriod["SchedulePeriod"] {
-        +DateOnly AccrualEnd
-        +DateOnly AccrualStart
-        +bool IsFinal
-        +SchedulePeriodKind Kind
-        +DateOnly PaymentDate
-        +IReadOnlyList~DayCountReferencePeriod~ ReferencePeriods
-        +int Sequence
-        +DateOnly UnadjustedEnd
-        +DateOnly UnadjustedStart
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriodId["SchedulePeriodId"] {
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriodKind["SchedulePeriodKind"] {
-    }
     Meridian_Contracts_SecurityMaster_IssueOtcMarginCallRequest --> Meridian_Contracts_SecurityMaster_OtcMovementKind
     Meridian_Contracts_SecurityMaster_IssueOtcMarginCallRequest --> Meridian_Contracts_SecurityMaster_OtcMovementParty
     Meridian_Contracts_SecurityMaster_NotionalLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
@@ -533,10 +526,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_OtcNettingSetViewDto --> Meridian_Contracts_SecurityMaster_OtcNettingSetDto
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarUsage --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarPurpose
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnostic --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnosticCode
-    Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailure --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailureCode
-    Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarUsage
-    Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnostic
-    Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailure
-    Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriod
-    Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriod --> Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriodKind
 ```

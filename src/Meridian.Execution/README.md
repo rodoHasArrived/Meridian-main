@@ -68,6 +68,12 @@ Execution owns order routing, execution services, allocation, margin, derivative
 
 This layer implements execution behavior and broker-facing runtime services while preserving paper-first and evidence-backed gating rules.
 
+Security Master dependencies come from `Meridian.Contracts.SecurityMaster`, with no Application
+project reference. The gate needs only `ISecurityResolver`; paper gateways accept separate identity
+and trading-parameter query services; paper portfolios consume the canonical live-position adjuster.
+Existing aggregate query callers continue to supply both query capabilities through the optional
+identity fallback. Host registrations can provide each narrow service independently.
+
 ## Key folders and files
 
 - `Interfaces/` - order gateway and execution abstractions.
@@ -388,6 +394,7 @@ See `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.
 ## Validation
 
 ```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~PaperTradingGatewayTests|FullyQualifiedName~PaperTradingPortfolioBasisParityTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 ```
 
@@ -399,3 +406,6 @@ Keep live actions explicitly gated and paper-first unless roadmap acceptance evi
 
 - `docs/plans/paper-trading-cockpit-reliability-sprint.md`
 - `docs/source/generated/source-roadmap-traceability.md`
+
+Both paper gateway implementations retain their aggregate-query constructor signatures and optional
+arguments alongside the separate identity/trading-query overloads for compiled-client compatibility.

@@ -1,5 +1,4 @@
 using FluentAssertions;
-using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.TestSupport.CorporateActions;
 using Microsoft.Extensions.Logging.Abstractions;

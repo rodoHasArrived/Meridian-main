@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Text.Json;
-using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.FillModels;
 using Meridian.Backtesting.Metrics;
 using Meridian.Backtesting.Portfolio;
@@ -21,10 +20,26 @@ namespace Meridian.Backtesting.Engine;
 public sealed class BacktestEngine(
     ILogger<BacktestEngine> logger,
     StorageCatalogService catalogService,
-    Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService? securityMasterQueryService = null,
+    ISecurityTradingParametersQueryService? securityMasterQueryService,
     ICorporateActionAdjustmentService? corporateActionAdjustment = null,
-    IBacktestPreflightService? backtestPreflightService = null)
+    IBacktestPreflightService? backtestPreflightService = null,
+    ISecurityIdentityQueryService? securityIdentityQueryService = null)
 {
+    /// <summary>Retains the aggregate-query constructor used by compiled consumers.</summary>
+    public BacktestEngine(
+        ILogger<BacktestEngine> logger,
+        StorageCatalogService catalogService,
+        ISecurityMasterQueryService? securityMasterQueryService = null,
+        ICorporateActionAdjustmentService? corporateActionAdjustment = null,
+        IBacktestPreflightService? backtestPreflightService = null)
+        : this(logger, catalogService, (ISecurityTradingParametersQueryService?)securityMasterQueryService,
+            corporateActionAdjustment, backtestPreflightService, securityMasterQueryService)
+    {
+    }
+
+    private readonly ISecurityIdentityQueryService? _securityIdentity =
+        securityIdentityQueryService ?? securityMasterQueryService as ISecurityIdentityQueryService;
+
     /// <summary>
     /// Runs a complete backtest, replaying all events in the requested date/symbol range.
     /// </summary>
@@ -1020,7 +1035,7 @@ public sealed class BacktestEngine(
         BacktestRequest request,
         CancellationToken ct)
     {
-        if (securityMasterQueryService is null || universe.Count == 0)
+        if (_securityIdentity is null || universe.Count == 0)
             return ([], []);
 
         var missing = new List<string>();
@@ -1032,9 +1047,9 @@ public sealed class BacktestEngine(
             ct.ThrowIfCancellationRequested();
             try
             {
-                // Resolve the ticker as the Security Master knew it at the end of the replay window, so
-                // a recycled or renamed ticker is judged against the identity it carried then.
-                var detail = await securityMasterQueryService.GetByIdentifierAsync(
+                // Resolve the ticker for the replay window's end, so a recycled or renamed ticker
+                // is judged against the identity valid for that date.
+                var detail = await _securityIdentity.GetByIdentifierAsync(
                     SecurityIdentifierKind.Ticker, symbol, provider: null, ct, asOfUtc: universeAsOf).ConfigureAwait(false);
 
                 if (detail is null)
@@ -1081,7 +1096,7 @@ public sealed class BacktestEngine(
         DateTime asOf,
         CancellationToken ct)
     {
-        if (securityMasterQueryService is null || universe.Count == 0)
+        if (securityMasterQueryService is null || _securityIdentity is null || universe.Count == 0)
             return new Dictionary<string, decimal>();
 
         var result = new Dictionary<string, decimal>(universe.Count, StringComparer.OrdinalIgnoreCase);
@@ -1092,7 +1107,7 @@ public sealed class BacktestEngine(
             ct.ThrowIfCancellationRequested();
             try
             {
-                var detail = await securityMasterQueryService.GetByIdentifierAsync(
+                var detail = await _securityIdentity.GetByIdentifierAsync(
                     SecurityIdentifierKind.Ticker, symbol, provider: null, ct, asOfUtc: asOfOffset);
 
                 if (detail is null)
