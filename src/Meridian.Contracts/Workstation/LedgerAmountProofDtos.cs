@@ -17,7 +17,15 @@ public sealed record LedgerAmountProofEvidenceDto(
     DateTimeOffset? RetainedAt,
     EvidenceStatusDto Status,
     string? ContentHash = null,
-    string? Reason = null);
+    string? Reason = null)
+{
+    /// <summary>The exact posted source boundary when this source supports a generated report amount.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public LedgerAmountScopeDto? SourceScope { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? SourceSubjectId { get; init; }
+}
 
 /// <summary>One server-evaluated amount proof shared by the browser and desktop.</summary>
 public sealed record LedgerAmountProofDto(

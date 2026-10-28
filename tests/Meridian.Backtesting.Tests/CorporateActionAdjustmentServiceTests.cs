@@ -1,5 +1,4 @@
 using FluentAssertions;
-using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -29,6 +28,30 @@ public sealed class CorporateActionAdjustmentServiceTests
         var result = await _service.AdjustAsync([], "SPY");
 
         result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task PrepareAsync_WithOnlyResolutionAndCorporateActionContracts_AppliesSplit()
+    {
+        var securityId = Guid.NewGuid();
+        var resolver = new MockSecurityResolver();
+        resolver.SetResolveResult(securityId);
+        var action = new CorporateActionDto(
+            Guid.NewGuid(), securityId, "StockSplit", new DateOnly(2024, 2, 1), null,
+            null, null, 2m, null, null, null, null, null, null,
+            LifecycleState: CorporateActionLifecycleStates.Confirmed);
+        var actions = new CorporateActionsOnlyQuery(action);
+        var service = new CorporateActionAdjustmentService(
+            actions, resolver, NullLogger<CorporateActionAdjustmentService>.Instance);
+        var bar = CreateBar("SPY", new DateOnly(2024, 1, 2), 100m, 100m, 100m, 100m, 1_000);
+        using var cancellation = new CancellationTokenSource();
+
+        var plan = await service.PrepareAsync(
+            [bar], "SPY", new DateTimeOffset(2024, 2, 15, 0, 0, 0, TimeSpan.Zero), cancellation.Token);
+
+        plan.Apply(bar).Close.Should().Be(50m);
+        actions.RequestedSecurityId.Should().Be(securityId);
+        actions.CancellationToken.Should().Be(cancellation.Token);
     }
 
     [Fact]
@@ -522,6 +545,19 @@ public sealed class CorporateActionAdjustmentServiceTests
     }
 
     // Mock implementations
+    private sealed class CorporateActionsOnlyQuery(CorporateActionDto action) : ISecurityCorporateActionsQueryService
+    {
+        public Guid RequestedSecurityId { get; private set; }
+        public CancellationToken CancellationToken { get; private set; }
+
+        public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
+        {
+            RequestedSecurityId = securityId;
+            CancellationToken = ct;
+            return Task.FromResult<IReadOnlyList<CorporateActionDto>>([action]);
+        }
+    }
+
     private sealed class MockSecurityResolver : ISecurityResolver
     {
         private Guid? _result;

@@ -11,6 +11,9 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Core
 
+`IProviderCredentialStore.ReadCredentialRecordAsync` distinguishes a selected empty credential record from proven absence. Compatibility stores conservatively retain an unknown/empty selection; module setup cannot combine its missing fields with ambient credentials.
+
+
 `IO/IAtomicFileWriter.cs` exposes only the atomic operations needed by Infrastructure consumers.
 The concrete durable writer stays in Storage and is supplied through application/host composition.
 

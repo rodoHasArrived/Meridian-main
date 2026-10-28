@@ -8,10 +8,10 @@ import type {
 
 export function quantContextToParameters(context: CellExecutionContext): Record<string, string | number | boolean | null> {
   return {
-    symbol: context.symbol ?? null,
-    from: context.from ?? null,
-    to: context.to ?? null,
-    interval: context.interval ?? null
+    "context.symbol": context.symbol ?? null,
+    "context.from": context.from ?? null,
+    "context.to": context.to ?? null,
+    "context.interval": context.interval ?? null
   };
 }
 
@@ -27,6 +27,14 @@ export function mapQuantRunResponseToCellResult(
 
   for (const metric of response.metrics) {
     output.push({ kind: "metric", text: `${metric.label}: ${metric.value}`, tone: "default" });
+  }
+
+  for (const plot of response.plots) {
+    output.push({ kind: "plot", text: plot.title, plot });
+  }
+
+  if (response.trades.length > 0) {
+    output.push({ kind: "trades", text: "Script-emitted trades", trades: response.trades });
   }
 
   for (const diagnostic of [...response.compilationErrors, ...response.runtimeDiagnostics]) {

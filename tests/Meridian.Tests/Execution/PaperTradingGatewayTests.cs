@@ -4,6 +4,7 @@ using Meridian.Execution.Adapters;
 using Meridian.Execution.Exceptions;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
 using Xunit;
 
 namespace Meridian.Tests.Execution;
@@ -167,6 +168,30 @@ public sealed class PaperTradingGatewayTests
         result.IsValid.Should().BeFalse();
         result.Reason.Should().Contain("lot-size");
         result.Reason.Should().Contain("100");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_WithSeparateIdentityAndTradingContracts_EnforcesLotSize()
+    {
+        var securityId = Guid.NewGuid();
+        var identity = Substitute.For<ISecurityIdentityQueryService>();
+        var trading = Substitute.For<ISecurityTradingParametersQueryService>();
+        var fixture = new StubSecurityMaster(securityId, lotSize: 100m);
+        identity.GetByIdentifierAsync(SecurityIdentifierKind.Ticker, "XYZ", null, Arg.Any<CancellationToken>())
+            .Returns(await fixture.GetByIdentifierAsync(SecurityIdentifierKind.Ticker, "XYZ", null));
+        trading.GetTradingParametersAsync(securityId, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .Returns(call => fixture.GetTradingParametersAsync(securityId, call.Arg<DateTimeOffset>()));
+        await using var gateway = new PaperTradingGateway(
+            NullLogger<PaperTradingGateway>.Instance, trading, securityIdentity: identity);
+
+        var result = await gateway.ValidateOrderAsync(MarketBuy("XYZ", 150));
+
+        result.IsValid.Should().BeFalse();
+        result.Reason.Should().Contain("lot-size");
+        await identity.Received(1).GetByIdentifierAsync(
+            SecurityIdentifierKind.Ticker, "XYZ", null, Arg.Any<CancellationToken>());
+        await trading.Received(1).GetTradingParametersAsync(
+            securityId, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

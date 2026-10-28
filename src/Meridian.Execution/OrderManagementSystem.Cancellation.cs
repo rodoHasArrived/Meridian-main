@@ -136,8 +136,6 @@ public sealed partial class OrderManagementSystem
         };
     }
 
-    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, PendingOrderAmendment> _restoredPendingAmendments = new(StringComparer.Ordinal);
-
     /// <returns>null when there is no retained candidate or it is proven inactive without fills;
     /// otherwise why the cancellation cannot complete yet.</returns>
     private async Task<string?> CancelRetainedReplacementCandidateAsync(
@@ -148,8 +146,7 @@ public sealed partial class OrderManagementSystem
         // second, racing cancellation here would only obscure that authoritative path.
         if (_gateway is not IExplicitOrderCancellationGateway
             || GetPendingAmendmentForRecovery(orderId) is not { CandidateBrokerOrderId: { Length: > 0 } candidateId } pending
-            || !_restoredPendingAmendments.TryGetValue(orderId, out var restored)
-            || !ReferenceEquals(restored.Original, pending.Original)
+            || !_amendmentBook.IsRestoredAttempt(orderId, pending)
             || string.Equals(candidateId, predecessorBrokerId, StringComparison.Ordinal))
             return null;
         ExecutionReport candidate;
@@ -187,8 +184,7 @@ public sealed partial class OrderManagementSystem
         if (_gateway is IExplicitOrderCancellationGateway
             || _gateway is not IBrokerageOrderAmendmentRecoveryGateway recoveryGateway
             || GetPendingAmendmentForRecovery(orderId) is not { CandidateBrokerOrderId: null, CandidateClientOrderId: { Length: > 0 } candidateRef } pending
-            || !_restoredPendingAmendments.TryGetValue(orderId, out var restored)
-            || !ReferenceEquals(restored.Original, pending.Original)
+            || !_amendmentBook.IsRestoredAttempt(orderId, pending)
             || !_orders.TryGetValue(orderId, out var state))
             return null;
         try

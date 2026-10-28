@@ -17,6 +17,13 @@ public interface IAccountQueryService
     Task<IReadOnlyList<CustodianPositionLineDto>> GetCustodianPositionsAsync(Guid accountId, DateOnly asOfDate, CancellationToken ct = default);
     Task<IReadOnlyList<BankStatementLineDto>> GetBankStatementLinesAsync(Guid accountId, DateOnly? fromDate = null, DateOnly? toDate = null, CancellationToken ct = default);
     Task<IReadOnlyList<AccountReconciliationRunDto>> GetReconciliationRunsAsync(Guid accountId, CancellationToken ct = default);
+    /// <summary>Reads retained results for the exact account set in one batch; openOnly excludes
+    /// superseded, matched and unverified observations without changing their history.</summary>
+    Task<IReadOnlyList<AccountReconciliationResultDto>> GetReconciliationResultsForAccountsAsync(
+        IReadOnlyCollection<Guid> accountIds, bool openOnly = false, CancellationToken ct = default)
+        => Task.FromException<IReadOnlyList<AccountReconciliationResultDto>>(
+            new NotSupportedException("This account authority does not support batched reconciliation results."));
+
     Task<IReadOnlyList<AccountReconciliationResultDto>> GetReconciliationResultsAsync(Guid reconciliationRunId, CancellationToken ct = default);
     Task<IReadOnlyList<AccountSyncHistoryEntryDto>> GetSyncHistoryAsync(Guid accountId, string? capability = null, CancellationToken ct = default);
     Task<AccountSyncHistoryEntryDto?> GetLatestSyncHistoryAsync(Guid accountId, string? capability = null, CancellationToken ct = default);

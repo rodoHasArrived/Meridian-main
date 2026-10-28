@@ -332,12 +332,22 @@ internal static class OrderRiskSizingPolicy
         return amended with { Metadata = probeMetadata };
     }
 
+    internal static decimal? ResolveBrokerageOrderNotional(GatewayResolvedOrder order) =>
+        order.Sizing is OrderSizing.BrokerNotional notional
+            ? notional.Amount
+            : ResolveQuantityNotional(order.Request, order.Sizing is OrderSizing.FaceValuePercentageOfPar);
+
     internal static decimal? ResolveBrokerageOrderNotional(OrderRequest request)
     {
         var faceValue = OrderSizingMetadata.UsesFaceValuePercentageOfPar(request.Metadata);
         if (!faceValue && BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is { } routedNotional)
             return routedNotional;
 
+        return ResolveQuantityNotional(request, faceValue);
+    }
+
+    private static decimal? ResolveQuantityNotional(OrderRequest request, bool faceValue)
+    {
         // The package's net limit does not establish the gross value of its individual
         // legs. Without leg pricing this configuration limit cannot authorize the order.
         if (request.Legs is { Count: > 0 })

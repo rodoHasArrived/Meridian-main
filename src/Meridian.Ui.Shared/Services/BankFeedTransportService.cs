@@ -180,8 +180,8 @@ public sealed class BankFeedTransportService
                 var bankName = string.IsNullOrWhiteSpace(schedule.BankName)
                     ? account.BankDetails?.BankName ?? account.Institution ?? "Bank feed"
                     : schedule.BankName!.Trim();
-                var batchId = BankStatementCsvImportMapper.BuildBatchId(fileBytes, accountId, bankName);
-                var mapped = BankStatementCsvImportMapper.Parse(fileBytes, accountId, batchId);
+                var batchId = BankStatementCsvImportMapper.BuildBatchId(fileBytes, accountId, bankName, schedule.StatementDate);
+                var mapped = BankStatementCsvImportMapper.Parse(fileBytes, accountId, batchId, schedule.StatementDate);
                 var errorIssues = mapped.Issues
                     .Where(static issue => string.Equals(issue.Severity, "Error", StringComparison.OrdinalIgnoreCase))
                     .ToArray();
@@ -206,12 +206,13 @@ public sealed class BankFeedTransportService
                         new IngestBankStatementRequest(
                             batchId,
                             accountId,
-                            schedule.StatementDate ?? mapped.StatementDate!.Value,
+                            mapped.StatementDate!.Value,
                             bankName,
                             notes,
                             mapped.Lines,
                             schedule.RequestedBy,
-                            schedule.IsBackfill),
+                            schedule.IsBackfill,
+                            mapped.StatementRevision),
                         ct)
                     .ConfigureAwait(false);
 
@@ -313,19 +314,44 @@ internal static class BankStatementCsvImportMapper
         // Deliberately NOT routed through Sha256Digest (which lowercases): the hash feeds the
         // deterministic batch GUID, so changing its casing would change every derived batch ID
         // and break duplicate detection against previously imported batches (#2691).
-        var fileHash = Convert.ToHexString(SHA256.HashData(fileBytes));
-        return BuildGuid($"bank-statement-batch|{accountId:N}|{bankName}|{fileHash}");
+        return BuildGuid(LegacyBatchKey(fileBytes, accountId, bankName));
     }
 
+    private static string LegacyBatchKey(byte[] fileBytes, Guid accountId, string bankName) =>
+        $"bank-statement-batch|{accountId:N}|{bankName}|{Convert.ToHexString(SHA256.HashData(fileBytes))}";
+
+    /// <summary>
+    /// Batch identity for an import whose statement date may be declared outside the file. A
+    /// declared date that differs from the date the file itself implies is a different statement
+    /// authority, so it gets its own batch; otherwise the legacy byte-derived identity is kept so
+    /// duplicate detection against earlier imports still holds.
+    /// </summary>
+    public static Guid BuildBatchId(byte[] fileBytes, Guid accountId, string bankName, DateOnly? declaredStatementDate)
+    {
+        var legacyKey = LegacyBatchKey(fileBytes, accountId, bankName);
+        var legacy = BuildGuid(legacyKey);
+        if (declaredStatementDate is not { } declared)
+            return legacy;
+        var implied = Parse(fileBytes, accountId, legacy).StatementDate;
+        return implied == declared ? legacy : BuildGuid($"{legacyKey}|{declared:yyyyMMdd}");
+    }
+
+    /// <param name="declaredStatementDate">Statement as-of date from the upload form or schedule;
+    /// takes precedence over a <c>statement_date</c> column.</param>
     public static BankStatementCsvImportMappingResult Parse(
         byte[] fileBytes,
         Guid accountId,
-        Guid batchId)
+        Guid batchId,
+        DateOnly? declaredStatementDate = null)
     {
         using var stream = new MemoryStream(fileBytes);
         using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
         var issues = new List<DataUploadValidationIssueDto>();
         var lines = new List<BankStatementLineDto>();
+        var acceptedSequences = new HashSet<int>();
+        int? statementRevision = null;
+        var revisionDeclared = false;
+        DateOnly? csvStatementDate = null;
         var headerLine = reader.ReadLine();
         if (string.IsNullOrWhiteSpace(headerLine))
         {
@@ -421,7 +447,51 @@ internal static class BankStatementCsvImportMapper
             }
 
             var reference = ReadValue(headerIndex, values, "reference");
+            var sequenceValue = ReadValue(headerIndex, values, "line_sequence");
+            var sequence = lineNumber - 1;
+            if (!string.IsNullOrWhiteSpace(sequenceValue)
+                && (!int.TryParse(sequenceValue, NumberStyles.None, CultureInfo.InvariantCulture, out sequence) || sequence <= 0))
+            {
+                issues.Add(new DataUploadValidationIssueDto("Error", "line_sequence", "Line sequence must be a positive integer.", RowNumber: lineNumber));
+                continue;
+            }
+            var statementDateValue = ReadValue(headerIndex, values, "statement_date");
+            if (!string.IsNullOrWhiteSpace(statementDateValue))
+            {
+                if (!TryParseDate(statementDateValue, out var rowStatementDate))
+                {
+                    issues.Add(new DataUploadValidationIssueDto("Error", "statement_date", "Statement date must use YYYY-MM-DD format.", RowNumber: lineNumber));
+                    continue;
+                }
+                if (csvStatementDate.HasValue && csvStatementDate != rowStatementDate)
+                {
+                    issues.Add(new DataUploadValidationIssueDto("Error", "statement_date", "Every row in a statement must declare the same statement date.", RowNumber: lineNumber));
+                    continue;
+                }
+                csvStatementDate = rowStatementDate;
+            }
+            var revisionValue = ReadValue(headerIndex, values, "statement_revision");
+            revisionDeclared |= !string.IsNullOrWhiteSpace(revisionValue);
+            var revision = 1;
+            if (!string.IsNullOrWhiteSpace(revisionValue)
+                && (!int.TryParse(revisionValue, NumberStyles.None, CultureInfo.InvariantCulture, out revision) || revision <= 0))
+            {
+                issues.Add(new DataUploadValidationIssueDto("Error", "statement_revision", "Statement revision must be a positive integer.", RowNumber: lineNumber));
+                continue;
+            }
+            if (statementRevision.HasValue && statementRevision != revision)
+            {
+                issues.Add(new DataUploadValidationIssueDto("Error", "statement_revision", "Every row in a statement must declare the same revision.", RowNumber: lineNumber));
+                continue;
+            }
+            if (acceptedSequences.Contains(sequence))
+            {
+                issues.Add(new DataUploadValidationIssueDto("Error", "line_sequence", "Source line sequences must be unique within a statement.", RowNumber: lineNumber));
+                continue;
+            }
+            statementRevision = revision;
             var currency = currencyValue.Trim().ToUpperInvariant();
+            acceptedSequences.Add(sequence);
             lines.Add(new BankStatementLineDto(
                 LineId: BuildGuid(
                     $"bank-statement-line|{batchId:N}|{lineNumber.ToString(CultureInfo.InvariantCulture)}|{transactionDate:yyyyMMdd}|{valueDate:yyyyMMdd}|{amount.ToString(CultureInfo.InvariantCulture)}|{currency}|{transactionType}|{reference}|{description}"),
@@ -434,7 +504,8 @@ internal static class BankStatementCsvImportMapper
                 TransactionType: transactionType.Trim(),
                 Description: description.Trim(),
                 Reference: string.IsNullOrWhiteSpace(reference) ? null : reference.Trim(),
-                ClosingBalance: closingBalance));
+                ClosingBalance: closingBalance,
+                LineSequence: sequence));
         }
 
         if (lines.Count == 0 && issues.Count == 0)
@@ -446,10 +517,24 @@ internal static class BankStatementCsvImportMapper
                 RowNumber: null));
         }
 
+        // Revision identity is the statement date, so a revisioned statement must declare it;
+        // deriving it from transaction value dates would let a re-dated correction start a new
+        // statement instead of superseding the original.
+        var statementDate = declaredStatementDate ?? csvStatementDate;
+        if (statementDate is null && revisionDeclared && lines.Count > 0)
+        {
+            issues.Add(new DataUploadValidationIssueDto(
+                "Error",
+                "statement_date",
+                "A statement that declares statement_revision must also declare its statement date (statement_date column or the upload's statement date).",
+                RowNumber: null));
+        }
+
         return new BankStatementCsvImportMappingResult(
             lines,
-            lines.Count == 0 ? null : lines.Max(static bankLine => bankLine.ValueDate),
-            issues);
+            statementDate ?? (lines.Count == 0 ? null : lines.Max(static bankLine => bankLine.ValueDate)),
+            issues,
+            statementRevision ?? 1);
     }
 
     private static IReadOnlyList<string> SplitCsvLine(string line)
@@ -537,4 +622,5 @@ internal static class BankStatementCsvImportMapper
 internal sealed record BankStatementCsvImportMappingResult(
     IReadOnlyList<BankStatementLineDto> Lines,
     DateOnly? StatementDate,
-    IReadOnlyList<DataUploadValidationIssueDto> Issues);
+    IReadOnlyList<DataUploadValidationIssueDto> Issues,
+    int StatementRevision = 1);

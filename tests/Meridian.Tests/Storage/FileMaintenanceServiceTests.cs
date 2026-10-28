@@ -48,28 +48,94 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
     }
 
     [Fact]
+    public async Task RunHealthCheckAsync_ArchiveBeingAppended_IsCheckedOnTheNextSweepNotMisreported()
+    {
+        var archivePath = Path.Combine(TestDataRoot, "SPY_trade_20260110.jsonl.gz");
+        await using (var gzip = new System.IO.Compression.GZipStream(File.Create(archivePath), System.IO.Compression.CompressionLevel.Fastest))
+            await gzip.WriteAsync(Encoding.UTF8.GetBytes("{\"price\":450.0}\n"));
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+        var checksumsOnly = new HealthCheckOptions(ValidateChecksums: true, IdentifyCorruption: false);
+
+        // An appender has retired the sidecar and holds the archive's lock while it rewrites the bytes.
+        using (var appender = new FileStream(ArchiveAppendLock.PathFor(archivePath), FileMode.OpenOrCreate,
+                   FileAccess.ReadWrite, FileShare.None))
+        {
+            var during = await service.RunHealthCheckAsync(checksumsOnly);
+            during.Issues.Should().NotContain(issue => issue.Path == archivePath,
+                "a sidecar retired by an in-flight append is not lost coverage");
+        }
+
+        var after = await service.RunHealthCheckAsync(checksumsOnly);
+        after.Issues.Should().ContainSingle(issue => issue.Type == IssueType.MissingChecksum && issue.Path == archivePath);
+    }
+
+    [Fact]
+    public async Task RunHealthCheckAsync_CompressedArchiveWithoutSidecar_ReportsMissingChecksum()
+    {
+        // Compression always publishes a sidecar beside the archive, so a bare archive has lost
+        // its coverage and must not pass as healthy; an open plain day file never had one.
+        var archivePath = Path.Combine(TestDataRoot, "SPY_trade_20260110.jsonl.gz");
+        await using (var gzip = new System.IO.Compression.GZipStream(File.Create(archivePath), System.IO.Compression.CompressionLevel.Fastest))
+            await gzip.WriteAsync(Encoding.UTF8.GetBytes("{\"price\":450.0}\n"));
+        await File.WriteAllTextAsync(Path.Combine(TestDataRoot, "SPY_trade_20260111.jsonl"), "{\"price\":451.0}\n");
+
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+        var report = await service.RunHealthCheckAsync(new HealthCheckOptions(
+            ValidateChecksums: true,
+            IdentifyCorruption: false));
+
+        report.Issues.Should().ContainSingle(i => i.Type == IssueType.MissingChecksum).Which.Path.Should().Be(archivePath);
+        report.Issues.Should().NotContain(i => i.Type == IssueType.ChecksumMismatch);
+    }
+
+    [Fact]
     public async Task RepairAsync_TruncateCorrupted_SalvagesValidTailAndQuarantinesCorruptLines()
     {
-        // The old repair stopped at the first invalid line and discarded the valid tail, and
-        // never refreshed the sidecar (so a repaired file reported ChecksumMismatch forever).
+        // The old repair stopped at the first invalid line and discarded the valid tail. The file
+        // was published intact; corrupt lines were interleaved afterwards, so the salvaged records
+        // reproduce the retained checksum.
         var dataPath = Path.Combine(TestDataRoot, "AAPL_trade_20260110.jsonl");
+        await AtomicFileWriter.WriteWithChecksumAsync(dataPath, Encoding.UTF8.GetBytes("{\"seq\":1}\n{\"seq\":2}\n"));
         var content = "{\"seq\":1}\nnot-json-1\n{\"seq\":2}\nnot-json-2\n";
-        await AtomicFileWriter.WriteWithChecksumAsync(dataPath, Encoding.UTF8.GetBytes(content));
+        await File.WriteAllTextAsync(dataPath, content);
 
         var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
         var result = await service.RepairAsync(new RepairOptions(RepairStrategy.TruncateCorrupted));
 
-        result.FilesRepaired.Should().BeGreaterThanOrEqualTo(1);
+        result.FilesRepaired.Should().Be(1);
+        result.Errors.Should().BeEmpty();
         var repairedLines = await File.ReadAllLinesAsync(dataPath);
         repairedLines.Where(l => !string.IsNullOrWhiteSpace(l)).Should().Equal("{\"seq\":1}", "{\"seq\":2}");
 
-        var quarantined = await File.ReadAllLinesAsync(dataPath + ".corrupt-lines");
+        var quarantinePath = result.RecoveryCopies.Should().ContainSingle(path => path.EndsWith(".corrupt-lines")).Subject;
+        var quarantined = await File.ReadAllLinesAsync(quarantinePath);
         quarantined.Where(l => !string.IsNullOrWhiteSpace(l)).Should().Equal("not-json-1", "not-json-2");
 
-        File.Exists(dataPath + ".pre-repair.bak").Should().BeTrue(
-            "repairs without a configured BackupPath must back up next to the file");
+        var backupPath = result.RecoveryCopies.Should().ContainSingle(path => path.StartsWith(dataPath + ".pre-repair.")).Subject;
+        (await File.ReadAllTextAsync(backupPath)).Should().Be(content);
         (await AtomicFileWriter.VerifyChecksumAsync(dataPath)).Should().BeTrue(
-            "the sha256 sidecar must be refreshed to match the salvaged content");
+            "the salvaged records reproduce the retained checksum");
+    }
+
+    [Fact]
+    public async Task RepairAsync_TruncateCorrupted_AlteredRecordsBesideACorruptTail_LeaveTheChecksumMismatchUnresolved()
+    {
+        // A valid record was altered and a corrupt tail appended. Salvage removes the tail, but
+        // the remaining records no longer match the retained checksum; rewriting the sidecar over
+        // them would bless the alteration.
+        var dataPath = Path.Combine(TestDataRoot, "AAPL_trade_20260110.jsonl");
+        await AtomicFileWriter.WriteWithChecksumAsync(dataPath, Encoding.UTF8.GetBytes("{\"price\":450.0}\n"));
+        var originalSidecar = await File.ReadAllTextAsync(dataPath + ".sha256");
+        await File.WriteAllTextAsync(dataPath, "{\"price\":999.0}\nnot-json\n");
+
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+        var result = await service.RepairAsync(new RepairOptions(RepairStrategy.TruncateCorrupted));
+
+        result.FilesRepaired.Should().Be(0);
+        result.Errors.Should().ContainSingle(error => error.Contains(nameof(IssueType.ChecksumMismatch)));
+        (await File.ReadAllLinesAsync(dataPath)).Where(l => !string.IsNullOrWhiteSpace(l)).Should().Equal("{\"price\":999.0}");
+        (await File.ReadAllTextAsync(dataPath + ".sha256")).Should().Be(originalSidecar, "the retained checksum is never rewritten over altered records");
+        (await AtomicFileWriter.VerifyChecksumAsync(dataPath)).Should().BeFalse();
     }
 
     [Fact]
@@ -96,10 +162,10 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
     }
 
     [Fact]
-    public async Task RepairAsync_RecompressOptimal_LeavesSingleCanonicalCompressedCopy()
+    public async Task RepairAsync_RecompressOptimal_LeavesDamagedContentUnchangedAndUnsigned()
     {
-        // The old recompress left both the .jsonl and the .gz on disk, so replay double-counted
-        // every event; it also wrote the .gz non-atomically.
+        // Re-encoding cannot repair damaged content. Publishing it under a fresh archive checksum and
+        // deleting the source would make the same damage read as healthy on every later check.
         var dataPath = Path.Combine(TestDataRoot, "SPY_trade_20260109.jsonl");
         var content = "{\"seq\":1}\nnot-json\n";
         await File.WriteAllTextAsync(dataPath, content);
@@ -107,12 +173,32 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
         var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
         var result = await service.RepairAsync(new RepairOptions(RepairStrategy.RecompressOptimal));
 
-        result.FilesRepaired.Should().Be(1);
-        File.Exists(dataPath).Should().BeFalse("the plain file must be removed after recompression");
-        var compressedPath = dataPath + ".gz";
-        File.Exists(compressedPath).Should().BeTrue();
-        (await ReadGzipTextAsync(compressedPath)).Should().Be(content,
-            "the compressed copy must round-trip the original bytes");
+        result.FilesRepaired.Should().Be(0, "encoding damaged content does not resolve its corruption");
+        result.FilesChanged.Should().Be(0);
+        result.Errors.Should().ContainSingle(error => error.Contains("recompression cannot repair"));
+        (await File.ReadAllTextAsync(dataPath)).Should().Be(content);
+        File.Exists(dataPath + ".gz").Should().BeFalse();
+        File.Exists(dataPath + ".gz.sha256").Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RepairAsync_RecompressWithExistingDestination_PreservesBothArchives()
+    {
+        var sourcePath = Path.Combine(TestDataRoot, "a.jsonl");
+        const string original = "{\"seq\":1}\nbad-json\n";
+        await File.WriteAllTextAsync(sourcePath, original);
+        var compressedPath = sourcePath + ".gz";
+        byte[] retainedCompressed = [0x1f, 0x8b, 0x08, 0x00, 0x01];
+        await File.WriteAllBytesAsync(compressedPath, retainedCompressed);
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+
+        var result = await service.RepairAsync(new RepairOptions(RepairStrategy.RecompressOptimal));
+
+        result.FilesRepaired.Should().Be(0);
+        result.Errors.Should().ContainSingle(error => error.Contains("recompression cannot repair"));
+        (await File.ReadAllTextAsync(sourcePath)).Should().Be(original);
+        (await File.ReadAllBytesAsync(compressedPath)).Should().Equal(retainedCompressed);
+        Directory.GetFiles(TestDataRoot, "*.recompress.tmp").Should().BeEmpty();
     }
 
     [Fact]
@@ -134,9 +220,136 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
             ScopeTarget: scopedDir));
 
         result.FilesProcessed.Should().Be(1);
-        File.Exists(scopedFile + ".corrupt-lines").Should().BeTrue();
-        File.Exists(otherFile + ".corrupt-lines").Should().BeFalse(
+        Directory.GetFiles(scopedDir, "*.corrupt-lines").Should().ContainSingle();
+        Directory.GetFiles(otherDir, "*.corrupt-lines").Should().BeEmpty(
             "files outside the scoped directory must not be touched");
+    }
+
+    [Fact]
+    public async Task RepairAsync_RequiredBackupFailure_LeavesEverySourceAndSidecarUntouched()
+    {
+        var dataPaths = new[] { Path.Combine(TestDataRoot, "a.jsonl"), Path.Combine(TestDataRoot, "b.jsonl") };
+        const string original = "{\"seq\":1}\nnot-json\n";
+        foreach (var path in dataPaths)
+            await AtomicFileWriter.WriteWithChecksumAsync(path, Encoding.UTF8.GetBytes(original));
+        var sidecars = await Task.WhenAll(dataPaths.Select(path => File.ReadAllTextAsync(path + ".sha256")));
+        var blockedBackupPath = Path.Combine(TestDataRoot, "backup-destination");
+        await File.WriteAllTextAsync(blockedBackupPath, "a file cannot hold the required backup directory");
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+
+        var result = await service.RepairAsync(new RepairOptions(
+            RepairStrategy.TruncateCorrupted, BackupPath: blockedBackupPath));
+
+        result.FilesProcessed.Should().Be(2);
+        result.FilesRepaired.Should().Be(0);
+        result.FilesUnresolved.Should().Be(2);
+        result.Errors.Should().HaveCount(2).And.OnlyContain(error => error.Contains("Backup failed"));
+        (await Task.WhenAll(dataPaths.Select(path => File.ReadAllTextAsync(path)))).Should().OnlyContain(content => content == original);
+        (await Task.WhenAll(dataPaths.Select(path => File.ReadAllTextAsync(path + ".sha256")))).Should().Equal(sidecars);
+        Directory.GetFiles(TestDataRoot, "*.corrupt-lines", SearchOption.AllDirectories).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task RepairAsync_SameNamedSourcesAndRepeatedRepairs_PreserveDistinctRecoveryCopies()
+    {
+        var dataPaths = new[] { "alpaca", "polygon" }.Select(provider =>
+        {
+            var directory = Path.Combine(TestDataRoot, provider);
+            Directory.CreateDirectory(directory);
+            return Path.Combine(directory, "a.jsonl");
+        }).ToArray();
+        var originals = new[] { "{\"seq\":1}\nfirst-corruption\n", "{\"seq\":2}\nsecond-corruption\n" };
+        for (var i = 0; i < dataPaths.Length; i++)
+            await File.WriteAllTextAsync(dataPaths[i], originals[i]);
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+        var options = new RepairOptions(RepairStrategy.TruncateCorrupted, BackupPath: Path.Combine(TestDataRoot, "backups"));
+
+        var first = await service.RepairAsync(options);
+        first.FilesRepaired.Should().Be(2);
+        first.RecoveryCopies.Should().HaveCount(4).And.OnlyHaveUniqueItems();
+        var firstContents = await Task.WhenAll(first.RecoveryCopies.Select(path => File.ReadAllTextAsync(path)));
+        var backupContents = await Task.WhenAll(first.RecoveryCopies.Where(path => path.EndsWith(".bak")).Select(path => File.ReadAllTextAsync(path)));
+        backupContents.Should().BeEquivalentTo(originals);
+
+        await File.AppendAllTextAsync(dataPaths[0], "third-corruption\n");
+        var second = await service.RepairAsync(options);
+
+        second.FilesRepaired.Should().Be(1);
+        second.RecoveryCopies.Should().HaveCount(2);
+        second.RecoveryCopies.Intersect(first.RecoveryCopies).Should().BeEmpty();
+        (await Task.WhenAll(first.RecoveryCopies.Select(path => File.ReadAllTextAsync(path)))).Should().Equal(firstContents,
+            "a later repair must never replace an earlier backup or rejected-line recovery copy");
+    }
+
+    [Fact]
+    public async Task RepairAsync_ChecksumAndTruncationIssues_ProcessFileOnceAndRetainOriginalSidecar()
+    {
+        var path = Path.Combine(TestDataRoot, "a.jsonl");
+        await AtomicFileWriter.WriteWithChecksumAsync(path, Encoding.UTF8.GetBytes("{\"seq\":1}\n"));
+        var originalSidecar = await File.ReadAllTextAsync(path + ".sha256");
+        await File.AppendAllTextAsync(path, "bad-json\n");
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+
+        var result = await service.RepairAsync(new RepairOptions(RepairStrategy.TruncateCorrupted));
+
+        result.FilesProcessed.Should().Be(1);
+        result.FilesRepaired.Should().Be(1);
+        result.Errors.Should().BeEmpty();
+        result.RecoveryCopies.Should().HaveCount(3);
+        var sidecarBackup = result.RecoveryCopies.Single(copy => copy.Contains(".sha256.pre-repair."));
+        (await File.ReadAllTextAsync(sidecarBackup)).Should().Be(originalSidecar);
+    }
+
+    [Theory]
+    [InlineData(RepairStrategy.RebuildIndex)]
+    [InlineData(RepairStrategy.MergeFragments)]
+    [InlineData(RepairStrategy.RestoreFromBackup)]
+    [InlineData(RepairStrategy.BackfillFromSource)]
+    public async Task RepairAsync_UnsupportedStrategies_ReportFailureWithoutMutation(RepairStrategy strategy)
+    {
+        var path = Path.Combine(TestDataRoot, "a.jsonl");
+        const string original = "{\"seq\":1}\nbad-json\n";
+        await File.WriteAllTextAsync(path, original);
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+
+        var result = await service.RepairAsync(new RepairOptions(strategy));
+
+        result.FilesRepaired.Should().Be(0);
+        result.FilesUnresolved.Should().Be(1);
+        result.Errors.Should().ContainSingle(error => error.Contains("unsupported"));
+        result.RecoveryCopies.Should().BeEmpty();
+        (await File.ReadAllTextAsync(path)).Should().Be(original);
+        Directory.GetFiles(TestDataRoot).Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task RepairAsync_ValidJsonWithWrongChecksum_ReportsUnresolvedNoOp()
+    {
+        var path = Path.Combine(TestDataRoot, "a.jsonl");
+        await AtomicFileWriter.WriteWithChecksumAsync(path, Encoding.UTF8.GetBytes("{\"seq\":1}\n"));
+        await File.WriteAllTextAsync(path, "{\"seq\":2}\n");
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+
+        var result = await service.RepairAsync(new RepairOptions(RepairStrategy.TruncateCorrupted));
+
+        result.FilesRepaired.Should().Be(0);
+        result.FilesUnresolved.Should().Be(1);
+        result.Errors.Should().ContainSingle(error => error.Contains("made no repair"));
+        (await AtomicFileWriter.VerifyChecksumAsync(path)).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RepairAsync_SalvageLeavesEmptyFile_ReportsUnresolvedReadback()
+    {
+        var path = Path.Combine(TestDataRoot, "a.jsonl");
+        await File.WriteAllTextAsync(path, "bad-json\n");
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+
+        var result = await service.RepairAsync(new RepairOptions(RepairStrategy.TruncateCorrupted));
+
+        result.FilesRepaired.Should().Be(0);
+        result.Errors.Should().ContainSingle(error => error.Contains(nameof(IssueType.EmptyFile)));
+        result.RecoveryCopies.Should().HaveCount(2).And.OnlyContain(copy => File.Exists(copy));
     }
 
     [Fact]
@@ -242,13 +455,5 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
         result.FilesDeleted.Should().Be(1);
         result.BytesAfter.Should().BeGreaterThan(lockedLength,
             "the actual footprint includes both the merged file and the source that survived deletion");
-    }
-
-    private static async Task<string> ReadGzipTextAsync(string path)
-    {
-        await using var fileStream = File.OpenRead(path);
-        await using var gzip = new System.IO.Compression.GZipStream(fileStream, System.IO.Compression.CompressionMode.Decompress);
-        using var reader = new StreamReader(gzip);
-        return await reader.ReadToEndAsync();
     }
 }

@@ -1,13 +1,14 @@
+using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Sdk;
-using Meridian.Execution.Services;
 using static Meridian.Execution.OrderManagement.OrderRiskSizingPolicy;
+using static Meridian.Execution.OrderManagement.OrderAmendmentBook;
 
 namespace Meridian.Execution;
 
 public sealed partial class OrderManagementSystem
 {
     internal PendingOrderAmendment? GetPendingAmendmentForRecovery(string orderId) =>
-        _pendingModificationOrderIds.GetValueOrDefault(orderId);
+        _amendmentBook.GetPending(orderId);
 
     private async Task<PendingOrderAmendment> BeginOrderAmendmentAsync(
         string orderId, OrderState original, OrderModification modification, CancellationToken ct)
@@ -23,21 +24,14 @@ public sealed partial class OrderManagementSystem
                 RoutedNotional = ResolveAmendedRoutedNotional(original, modification)
             };
             _brokerIdentities.TryGetActiveId(orderId, out var brokerId);
-            // The replacement reference and the chain's earlier members are durable before the
-            // gateway dispatches, so a crash mid-dispatch still leaves recovery able to find the
-            // successor and attribute every member's fills.
-            var pending = new PendingOrderAmendment(original, proposed, brokerId)
-            {
-                CandidateClientOrderId = string.IsNullOrWhiteSpace(modification.ReplacementClientOrderId)
-                    ? null : modification.ReplacementClientOrderId,
-                PriorChainBrokerOrderIds = GetBrokerOrderAliases(orderId)
+            // Persist the preassigned replacement reference and prior chain before dispatch,
+            // while the book retains snapshot reference identity across later candidate enrichment.
+            var pending = _amendmentBook.Begin(orderId, original, proposed, brokerId, modification.NewTrail,
+                modification.ReplacementClientOrderId,
+                GetBrokerOrderAliases(orderId)
                     .Where(alias => !string.Equals(alias, brokerId, StringComparison.Ordinal)
                         && !string.Equals(alias, orderId, StringComparison.Ordinal))
-                    .ToArray(),
-                ProposedTrail = modification.NewTrail
-            };
-            if (!_pendingModificationOrderIds.TryAdd(orderId, pending))
-                throw new InvalidOperationException("An earlier amendment requires broker reconciliation.");
+                    .ToArray());
             var current = _orders[orderId];
             _orders[orderId] = ApplyAmendmentTerms(current, original);
             try
@@ -48,7 +42,7 @@ public sealed partial class OrderManagementSystem
             }
             catch
             {
-                _pendingModificationOrderIds.TryRemove(orderId, out _);
+                _amendmentBook.Remove(orderId);
                 throw;
             }
             return pending;
@@ -64,7 +58,7 @@ public sealed partial class OrderManagementSystem
         await _brokerageRecoveryReportGate.WaitAsync().ConfigureAwait(false);
         try
         {
-            if (_pendingModificationOrderIds.TryRemove(new KeyValuePair<string, PendingOrderAmendment>(orderId, amendment)))
+            if (_amendmentBook.RemoveExpected(orderId, amendment))
             {
                 _orders[orderId] = ApplyAmendmentTerms(_orders[orderId], amendment.Original);
                 SavePendingAmendment(orderId);
@@ -90,24 +84,18 @@ public sealed partial class OrderManagementSystem
         await _brokerageRecoveryReportGate.WaitAsync().ConfigureAwait(false);
         try
         {
-            if (IsSamePendingAmendment(orderId, amendment))
+            if (_amendmentBook.IsSameAttempt(orderId, amendment))
             {
                 await ProcessGatewayReportCoreAsync(report, CancellationToken.None).ConfigureAwait(false);
-                if (IsSamePendingAmendment(orderId, amendment))
+                if (_amendmentBook.IsSameAttempt(orderId, amendment))
                 {
                     MarkBrokerageRecoveryRequired(orderId);
                     return null;
                 }
             }
 
-            // Report the outcome the broker actually established. Comparing terms cannot tell a
-            // trail-only amendment's acceptance from its rejection: both snapshots are identical.
-            if (_amendmentOutcomes.TryGetValue(amendment.Proposed, out var outcome))
-                return outcome.Value;
-            var resolved = _orders[orderId];
-            return resolved.LimitPrice == amendment.Proposed.LimitPrice
-                && resolved.StopPrice == amendment.Proposed.StopPrice
-                && resolved.Quantity == Math.Max(amendment.Proposed.Quantity, resolved.FilledQuantity);
+            // The book retains broker outcome evidence for indistinguishable trail-only terms.
+            return _amendmentBook.ResolveOutcome(orderId, amendment);
         }
         finally
         {
@@ -115,11 +103,6 @@ public sealed partial class OrderManagementSystem
             TrimRetainedOrdersIfNeeded();
         }
     }
-
-    private bool IsSamePendingAmendment(string orderId, PendingOrderAmendment amendment) =>
-        _pendingModificationOrderIds.TryGetValue(orderId, out var current)
-        && ReferenceEquals(current.Original, amendment.Original)
-        && ReferenceEquals(current.Proposed, amendment.Proposed);
 
     private void SavePendingAmendment(string orderId)
     {
@@ -130,174 +113,19 @@ public sealed partial class OrderManagementSystem
         _recoveryJournal.SavePendingAmendment(_orders[orderId], brokerId, GetBrokerOrderAliases(orderId), pending);
     }
 
-    private static OrderState ApplyAmendmentTerms(OrderState current, OrderState terms) => current with
-    {
-        Quantity = Math.Max(terms.Quantity, current.FilledQuantity),
-        LimitPrice = terms.LimitPrice,
-        StopPrice = terms.StopPrice,
-        RoutedNotional = terms.RoutedNotional
-    };
-
-    private static bool MatchesAmendmentTerms(ExecutionReport report, OrderState terms) =>
-        report.OrderQuantity == terms.Quantity && (!report.HasOrderTerms
-            || report.OrderLimitPrice == terms.LimitPrice && report.OrderStopPrice == terms.StopPrice);
-
-    private static OrderState SelectAmendmentTerms(
-        ExecutionReport report, PendingOrderAmendment pending, bool locallyConfirmed = false)
-    {
-        if (report.ReportType is ExecutionReportType.ModificationPending)
-            throw new InvalidDataException("Broker amendment outcome remains pending.");
-        var brokerId = report.GatewayOrderId ?? report.OrderId;
-        var successor = !string.Equals(brokerId, pending.OriginalBrokerOrderId, StringComparison.Ordinal)
-            && (report.ReplacesOrderId == pending.OriginalBrokerOrderId || brokerId == pending.CandidateBrokerOrderId);
-        if (brokerId == pending.OriginalBrokerOrderId
-            && (pending.CandidateBrokerOrderId is not null || pending.CandidateClientOrderId is not null)
-            && IsTerminal(report.OrderStatus)
-            && report.ReportType is not ExecutionReportType.ModificationRejected)
-            throw new InvalidDataException("A terminal predecessor does not establish the candidate replacement outcome.");
-        if (locallyConfirmed && report.ReportType is ExecutionReportType.Modified)
-            return pending.Proposed;
-        // A rejection settles the amendment as refused whichever broker id carries it: a
-        // rejected successor (Robinhood reports the rejected replacement itself) never makes the
-        // proposed terms live, even when its echoed terms match them.
-        if (report.ReportType is ExecutionReportType.ModificationRejected)
-            return pending.Original;
-        if (!report.HasOrderTerms
-            && (pending.Original.LimitPrice != pending.Proposed.LimitPrice || pending.Original.StopPrice != pending.Proposed.StopPrice))
-            throw new InvalidDataException("Broker recovery lacks the prices needed to distinguish amendment outcomes.");
-        if (successor && MatchesAmendmentTerms(report, pending.Proposed))
-            return pending.Proposed;
-        var original = MatchesAmendmentTerms(report, pending.Original);
-        var proposed = MatchesAmendmentTerms(report, pending.Proposed);
-        if (original && proposed)
-            // Indistinguishable terms (a trail-only amendment): the report type is the evidence.
-            return report.ReportType is ExecutionReportType.Modified ? pending.Proposed : pending.Original;
-        if (original)
-            return pending.Original;
-        if (proposed)
-            return pending.Proposed;
-        throw new InvalidDataException("Broker recovery matches neither retained amendment outcome.");
-    }
-
     private PendingOrderAmendment? PrepareAmendmentReport(
         string orderId, ref ExecutionReport report, decimal? locallyAuthorizedQuantity)
     {
-        if (!_pendingModificationOrderIds.TryGetValue(orderId, out var pending))
-            return null;
-        if (report.CandidateGatewayOrderId is { Length: > 0 } candidate)
+        var transition = _amendmentBook.PrepareReport(orderId, report, locallyAuthorizedQuantity);
+        report = transition.Report;
+        if (transition.UpdatedState is { } updated)
         {
-            pending = pending with { CandidateBrokerOrderId = candidate };
-            _pendingModificationOrderIds[orderId] = pending;
+            _orders[orderId] = updated;
+            _amendmentBook.RecordOutcome(transition.ResolvedAmendment!, transition.Accepted);
         }
-        if (report.CandidateClientOrderId is { Length: > 0 } candidateClient)
-        {
-            pending = pending with { CandidateClientOrderId = candidateClient };
-            _pendingModificationOrderIds[orderId] = pending;
-        }
-        var current = _orders[orderId];
-        if (report.ReportType is ExecutionReportType.Modified
-            && report.GatewayOrderId is { Length: > 0 } confirmedCandidate
-            && confirmedCandidate != pending.OriginalBrokerOrderId)
-        {
-            pending = pending with { CandidateBrokerOrderId = confirmedCandidate };
-            _pendingModificationOrderIds[orderId] = pending;
-        }
-        if (report.ReportType is ExecutionReportType.ModificationPending)
-        {
-            var status = current.Status;
-            if (!IsTerminal(status) && report.FillPrice is > 0m && report.FilledQuantity > current.FilledQuantity)
-                status = report.FilledQuantity >= Math.Max(pending.Original.Quantity, pending.Proposed.Quantity)
-                    ? OrderStatus.Filled : OrderStatus.PartiallyFilled;
-            report = report with { OrderStatus = status, OrderQuantity = current.Quantity };
-            return null;
-        }
-        if (report.ReportType is not (ExecutionReportType.Modified or ExecutionReportType.ModificationRejected))
-            return null;
-        OrderState terms;
-        try
-        {
-            terms = SelectAmendmentTerms(report, pending, locallyAuthorizedQuantity is not null);
-        }
-        catch (InvalidDataException)
-        {
-            report = report with
-            {
-                ReportType = ExecutionReportType.ModificationPending,
-                OrderStatus = current.Status,
-                OrderQuantity = current.Quantity
-            };
-            return null;
-        }
-        // A late working acknowledgement cannot reopen or resize a terminal order. Its
-        // still-possible exposure remains separately reserved until authoritative recovery.
-        if (IsTerminal(current.Status)
-            && (!IsTerminal(report.OrderStatus) || terms.Quantity != current.Quantity))
-        {
-            report = report with
-            {
-                ReportType = ExecutionReportType.ModificationPending,
-                OrderStatus = current.Status,
-                OrderQuantity = current.Quantity
-            };
-            return null;
-        }
-        _orders[orderId] = ApplyAmendmentTerms(current, terms);
-        RecordAmendmentOutcome(pending, ReferenceEquals(terms, pending.Proposed));
-        return pending;
+        return transition.ResolvedAmendment;
     }
 
-    // Keyed by the proposed snapshot's identity, which every `with` copy of the amendment shares.
-    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<OrderState, System.Runtime.CompilerServices.StrongBox<bool>> _amendmentOutcomes = new();
-
-    private void RecordAmendmentOutcome(PendingOrderAmendment pending, bool accepted) =>
-        _amendmentOutcomes.AddOrUpdate(pending.Proposed, new System.Runtime.CompilerServices.StrongBox<bool>(accepted));
-
-    private IReadOnlyList<OrderState> GetAmendmentExposureReservations()
-    {
-        var reservations = new List<OrderState>();
-        foreach (var (id, pending) in _pendingModificationOrderIds)
-        {
-            var current = _orders.GetValueOrDefault(id) ?? pending.Original;
-            if (Math.Max(pending.Original.Quantity, pending.Proposed.Quantity) <= current.FilledQuantity)
-                continue;
-            // Reserve one real outcome, never independent maxima: 100 shares at $1 amended to
-            // 1 share at $100 is $100 either way, not a synthetic 100 shares at $100. Exposure
-            // providers multiply quantity by price, so the terms must stay correlated.
-            var outcome = SelectLargerAmendmentOutcome(pending, current);
-            if (outcome.Quantity <= current.FilledQuantity)
-                outcome = outcome == pending.Original ? pending.Proposed : pending.Original;
-            reservations.Add(current with
-            {
-                Status = OrderStatus.Accepted,
-                Quantity = outcome.Quantity,
-                LimitPrice = outcome.LimitPrice,
-                StopPrice = outcome.StopPrice,
-                RoutedNotional = outcome.RoutedNotional
-            });
-        }
-        return reservations;
-    }
-
-    private static OrderState SelectLargerAmendmentOutcome(PendingOrderAmendment pending, OrderState current)
-    {
-        // Compare what each outcome can still execute: both share the fills already booked, so
-        // total order value misranks them (90 filled: 100@$100 leaves $1,000, 200@$40 leaves $4,400).
-        decimal? Remaining(OrderState outcome)
-        {
-            var remaining = Math.Max(0m, outcome.Quantity - current.FilledQuantity);
-            var routed = outcome.RoutedNotional is { } notional && notional > 0m && outcome.Quantity > 0m
-                ? notional * remaining / outcome.Quantity
-                : (decimal?)null;
-            return MeasureOrderValue(remaining, outcome.LimitPrice, outcome.StopPrice, routed,
-                current.ContractMultiplier, current.UsesFaceValuePercentageOfPar);
-        }
-
-        var original = Remaining(pending.Original);
-        var proposed = Remaining(pending.Proposed);
-        // Unpriced outcomes (market orders) are valued at the mark by the exposure provider, so
-        // the larger remaining quantity is the larger exposure.
-        if (original is null || proposed is null || proposed.Value == original.Value)
-            return pending.Proposed.Quantity > pending.Original.Quantity ? pending.Proposed : pending.Original;
-        return proposed.Value > original.Value ? pending.Proposed : pending.Original;
-    }
+    private IReadOnlyList<OrderState> GetAmendmentExposureReservations() =>
+        _amendmentBook.GetExposureReservations();
 }

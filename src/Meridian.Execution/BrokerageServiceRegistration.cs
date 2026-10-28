@@ -1,4 +1,4 @@
-using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Execution.Adapters;
 using Meridian.Execution.Events;
@@ -65,13 +65,16 @@ public static class BrokerageServiceRegistration
             if (!brokerageConfig.LiveExecutionEnabled || brokerageConfig.Gateway == "paper")
             {
                 var paperLogger = sp.GetRequiredService<ILogger<Adapters.PaperTradingGateway>>();
-                var secMaster = sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
+                var secMaster = sp.GetService<ISecurityTradingParametersQueryService>()
+                    ?? sp.GetService<ISecurityMasterQueryService>();
                 return new Adapters.PaperTradingGateway(
                     paperLogger,
                     secMaster,
                     sp.GetService<Adapters.PaperTradingGatewayOptions>(),
                     liveFeed: sp.GetService<Interfaces.ILiveFeedAdapter>(),
-                    costOptions: sp.GetService<PaperMatching.PaperTradingCostOptions>());
+                    costOptions: sp.GetService<PaperMatching.PaperTradingCostOptions>(),
+                    securityIdentity: sp.GetService<ISecurityIdentityQueryService>()
+                        ?? sp.GetService<ISecurityMasterQueryService>());
             }
 
             // Resolve the named brokerage gateway via keyed registration, then expose it as an

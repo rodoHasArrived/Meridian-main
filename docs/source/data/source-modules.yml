@@ -65,7 +65,7 @@ modules:
     layer: Application
     status: active
     owner_lane: Runtime Host
-    purpose: Application use cases, orchestration services, commands, and workflow coordination that consumes Core configuration JSON options, config JSON Schema generation, FluentValidation-based config validation, config validation pipeline, credential placeholder detection, default config-path resolution, config file hot-reload watching, configuration/redaction/masking helpers, Core-owned monitoring alert/health contracts, Domain-owned event quarantine sink port, Contracts-owned pipeline statistics DTOs, monitoring webhook sink contract, backfill run-result and per-symbol completeness payloads, Contracts-owned coordination interfaces and records, Storage-owned storage-option mapping, backfill status/checkpoint persistence, and shared-storage coordination lease persistence, ProviderSdk plugin discovery helpers, Platform runtime/diagnostic/API-documentation/performance/circuit-breaker status/event-metrics/shutdown/coordination/monitoring/backpressure helpers, Platform runtime error ring-buffer, diagnostic bundle generation, and system-health diagnostics, Identity fund-account traversal helpers, Data Integration ETL job service/orchestrator, ETL normalization/export services, sample-data, historical-query, event canonicalization publisher decorator, market-data validation, schema compatibility checks, clock-skew/spread/data-loss monitors, provider telemetry, provider health/connection-status/degradation scoring, provider calibration helpers, provider integration template catalog and dry-run orchestration, Instruments option-chain helpers, Financial Operations reconciliation-engine helpers, Strategies reconciliation-governance helpers, and Reporting report-generation/NAV helpers instead of owning shared configuration JSON options, config JSON Schema generation, config validation rules, config validation pipeline stages, credential placeholder detection, default config-path resolution, config file hot-reload watching, storage option mapping, backfill result transport payloads, backfill status persistence, coordination contracts, shared-storage lease persistence, lease renewal, coordinator election, split-brain detection, scheduled-work/subscription ownership services, monitoring alert/health contracts, pipeline statistics DTOs, monitoring webhook sink contracts, pipeline backpressure alerting, alert dispatch, health aggregation, SLO/runbook registries, provider plugin discovery, configuration-template, environment-override, runtime diagnostic bundle generation, API-documentation, runtime-performance, runtime circuit-breaker status, default event metrics counters, hosted shutdown flush or shutdown sequence handling, runtime error ring-buffer, system-health snapshots, fund-account traversal, ETL job/orchestrator, ETL normalization/export services, data-fixture, historical-data, event canonicalization publisher decorator, market-data validation, schema validation services, provider data-quality monitors, provider connection-status notification, provider trust-calibration/scoring, option-chain, reconciliation-engine, strategy-governance, or reporting utilities.
+    purpose: Application use cases, Security Master implementations and compatibility adapters, orchestration services, commands, and workflow coordination that consumes Core configuration JSON options, config JSON Schema generation, FluentValidation-based config validation, config validation pipeline, credential placeholder detection, default config-path resolution, config file hot-reload watching, configuration/redaction/masking helpers, Core-owned monitoring alert/health contracts, Domain-owned event quarantine sink port, Contracts-owned pipeline statistics DTOs, monitoring webhook sink contract, backfill run-result and per-symbol completeness payloads, Contracts-owned coordination interfaces and records, Storage-owned storage-option mapping, backfill status/checkpoint persistence, and shared-storage coordination lease persistence, ProviderSdk plugin discovery helpers, Platform runtime/diagnostic/API-documentation/performance/circuit-breaker status/event-metrics/shutdown/coordination/monitoring/backpressure helpers, Platform runtime error ring-buffer, diagnostic bundle generation, and system-health diagnostics, Identity fund-account traversal helpers, Data Integration ETL job service/orchestrator, ETL normalization/export services, sample-data, historical-query, event canonicalization publisher decorator, market-data validation, schema compatibility checks, clock-skew/spread/data-loss monitors, provider telemetry, provider health/connection-status/degradation scoring, provider calibration helpers, provider integration template catalog and dry-run orchestration, Instruments option-chain helpers, Financial Operations reconciliation-engine helpers, Strategies reconciliation-governance helpers, and Reporting report-generation/NAV helpers instead of owning shared configuration JSON options, config JSON Schema generation, config validation rules, config validation pipeline stages, credential placeholder detection, default config-path resolution, config file hot-reload watching, storage option mapping, backfill result transport payloads, backfill status persistence, coordination contracts, shared-storage lease persistence, lease renewal, coordinator election, split-brain detection, scheduled-work/subscription ownership services, monitoring alert/health contracts, pipeline statistics DTOs, monitoring webhook sink contracts, pipeline backpressure alerting, alert dispatch, health aggregation, SLO/runbook registries, provider plugin discovery, configuration-template, environment-override, runtime diagnostic bundle generation, API-documentation, runtime-performance, runtime circuit-breaker status, default event metrics counters, hosted shutdown flush or shutdown sequence handling, runtime error ring-buffer, system-health snapshots, fund-account traversal, ETL job/orchestrator, ETL normalization/export services, data-fixture, historical-data, event canonicalization publisher decorator, market-data validation, schema validation services, provider data-quality monitors, provider connection-status notification, provider trust-calibration/scoring, option-chain, reconciliation-engine, strategy-governance, or reporting utilities.
     readme: src/Meridian.Application/README.md
     roadmap_items:
       - W2-TRD-001
@@ -80,11 +80,12 @@ modules:
       - ResearchContinuity
       - AccountingRecords
     validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~SecurityMasterContractAdapterTests|FullyQualifiedName~StorageFeatureRegistrationTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-10-14
+    last_reviewed: 2026-10-21
 
   - id: SRC-CONTRACTS
     path: src/Meridian.Contracts
@@ -92,7 +93,7 @@ modules:
     layer: Contracts
     status: active
     owner_lane: Contract Compatibility
-    purpose: Shared DTOs, pipeline statistics DTOs, monitoring webhook sink contracts, backfill run-result and per-symbol completeness payloads, coordination lease/leadership/ownership contracts, acceptance evidence payloads, provider integration template catalog/manifest/raw-payload/quarantine/staging contracts, fund-structure service contracts, accounting configuration and private-capital ledger payloads, canonical reporting run parameters, readiness, governance/action-availability, restatement, schedule-handoff, artifact, grant, delivery, and provider-receipt contracts, report-writer contracts, ETL job-definition store and SFTP publisher contracts, operational scheduler contracts, event-pipeline metrics contracts, and cross-layer contracts used by host, services, dashboard, and WPF.
+    purpose: Canonical Security Master resolver, query slices and live-position adjustment contracts, shared DTOs, pipeline statistics DTOs, monitoring webhook sink contracts, backfill run-result and per-symbol completeness payloads, coordination lease/leadership/ownership contracts, acceptance evidence payloads, provider integration template catalog/manifest/raw-payload/quarantine/staging contracts, fund-structure service contracts, accounting configuration and private-capital ledger payloads, canonical reporting run parameters, readiness, governance/action-availability, restatement, schedule-handoff, artifact, grant, delivery, and provider-receipt contracts, report-writer contracts, ETL job-definition store and SFTP publisher contracts, operational scheduler contracts, event-pipeline metrics contracts, and cross-layer contracts used by host, services, dashboard, and WPF.
     readme: src/Meridian.Contracts/README.md
     roadmap_items:
       - W9-GOV-008
@@ -125,6 +126,7 @@ modules:
       - AccountingRecords
       - BacktestingEvidence
     validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~SecurityMasterContractAdapterTests|FullyQualifiedName~StorageFeatureRegistrationTests" --logger "console;verbosity=normal"
       - dotnet build src/Meridian.Contracts/Meridian.Contracts.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~BackfillStatusStoreTests|FullyQualifiedName~ParallelBackfillServiceTests|FullyQualifiedName~GapBackfillServiceTests|FullyQualifiedName~AutoGapRemediationServiceTests|FullyQualifiedName~BackfillCoordinatorPreviewTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~BackpressureAlertServiceTests|FullyQualifiedName~ConnectionStatusWebhookTests|FullyQualifiedName~EventPipelineMetricsTests|FullyQualifiedName~EndpointStubDetectionTests|FullyQualifiedName~DiagnosticsEndpointsTests|FullyQualifiedName~DiagnosticBundleServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
@@ -141,7 +143,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-10-02
+    last_reviewed: 2026-10-21
 
   - id: SRC-CORE
     path: src/Meridian.Core
@@ -284,7 +286,7 @@ modules:
     layer: Execution
     status: active
     owner_lane: Execution and Fund Accounts
-    purpose: Order routing, execution services, allocation, margin, derivatives, tax-lot, and broker gateway behavior.
+    purpose: Execution composed through Contracts-owned Security Master ports without an Application dependency, order routing, execution services, allocation, margin, derivatives, tax-lot, and broker gateway behavior.
     readme: src/Meridian.Execution/README.md
     roadmap_items:
       - W2-TRD-001
@@ -296,11 +298,12 @@ modules:
       - PromotionReview
       - LiveReadiness
     validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~PaperTradingGatewayTests|FullyQualifiedName~PaperTradingPortfolioBasisParityTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
     diagrams:
       - DIA-PAPER-SESSION-REPLAY
     todos: []
-    last_reviewed: 2026-10-14
+    last_reviewed: 2026-10-21
 
   - id: SRC-EXECUTION-SDK
     path: src/Meridian.Execution.Sdk
@@ -379,7 +382,7 @@ modules:
     layer: Backtesting
     status: active
     owner_lane: Strategy Analytics
-    purpose: Backtesting runtime and replay support for historical strategy simulation.
+    purpose: Backtesting runtime and replay support for historical strategy simulation composed through Contracts-owned Security Master ports without an Application dependency.
     readme: src/Meridian.Backtesting/README.md
     roadmap_items:
       - W3-CONT-001
@@ -390,6 +393,8 @@ modules:
       - ResearchContinuity
       - BacktestingEvidence
     validation:
+      - dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj --filter "FullyQualifiedName~CorporateActionAdjustmentServiceTests" --logger "console;verbosity=normal"
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests" --logger "console;verbosity=normal"
       - dotnet build src/Meridian.Backtesting/Meridian.Backtesting.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj --filter "FullyQualifiedName~BacktestPreflightServiceTests|FullyQualifiedName~MeridianNativeBacktestStudioEngineTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
@@ -397,7 +402,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-10-14
+    last_reviewed: 2026-10-21
 
   - id: SRC-BACKTESTING-SDK
     path: src/Meridian.Backtesting.Sdk

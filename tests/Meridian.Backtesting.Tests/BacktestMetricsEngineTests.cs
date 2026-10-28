@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Backtesting.Metrics;
+using Meridian.Backtesting.Portfolio;
 using Xunit;
 
 namespace Meridian.Backtesting.Tests;
@@ -301,7 +302,7 @@ public sealed class BacktestMetricsEngineTests
             new(Guid.NewGuid(), Guid.NewGuid(), "SPY", -10L, 130m, 0m, t0.AddHours(2)),
         };
 
-        var metrics = BacktestMetricsEngine.Compute(snapshots, [], fills, request);
+        var metrics = ComputeBooked(fills, request);
 
         // LIFO relieves the 120 lot: 10 x (130 - 120). FIFO would report 300.
         metrics.SymbolAttribution["SPY"].RealizedPnl.Should().Be(100m);
@@ -325,7 +326,7 @@ public sealed class BacktestMetricsEngineTests
             new(Guid.NewGuid(), Guid.NewGuid(), "SPY", 10L, 90m, 0m, t0.AddHours(1)),
         };
 
-        var metrics = BacktestMetricsEngine.Compute(snapshots, [], fills, request);
+        var metrics = ComputeBooked(fills, request);
 
         // Short 10 @ 100 covered @ 90: realized +100 (previously ignored by the long-only matcher).
         metrics.SymbolAttribution["SPY"].RealizedPnl.Should().Be(100m);
@@ -344,7 +345,7 @@ public sealed class BacktestMetricsEngineTests
         var request = new BacktestRequest(
             From: startDate,
             To: startDate.AddDays(1),
-            InitialCash: 100_000m,
+            InitialCash: 200_000m,
             Accounts: [accountA, accountB]);
 
         var fills = new List<FillEvent>
@@ -354,10 +355,23 @@ public sealed class BacktestMetricsEngineTests
             new(Guid.NewGuid(), Guid.NewGuid(), "SPY", -10L, 130m, 0m, t0.AddHours(2), accountB.AccountId),
         };
 
-        var metrics = BacktestMetricsEngine.Compute(snapshots, [], fills, request);
+        var metrics = ComputeBooked(fills, request);
 
         // Account B's sell relieves account B's 120 lot; account A's 100 lot stays open.
         metrics.SymbolAttribution["SPY"].RealizedPnl.Should().Be(100m);
+    }
+
+    private static BacktestMetrics ComputeBooked(IReadOnlyList<FillEvent> fills, BacktestRequest request)
+    {
+        var portfolio = new SimulatedPortfolio(request.ResolveAccounts(), request.DefaultBrokerageAccountId,
+            new FixedCommissionModel(0m));
+        foreach (var fill in fills)
+        {
+            portfolio.ProcessFill(fill);
+            portfolio.UpdateLastPrice(fill.Symbol, fill.FillPrice);
+        }
+        var snapshot = portfolio.TakeSnapshot(fills[^1].FilledAt, request.To);
+        return BacktestMetricsEngine.Compute([snapshot], snapshot.DayCashFlows, fills, request);
     }
 
     private static IReadOnlyList<PortfolioSnapshot> BuildSnapshots(

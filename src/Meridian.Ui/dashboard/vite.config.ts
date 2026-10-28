@@ -5,6 +5,7 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
 import type { Plugin, ProxyOptions } from "vite";
 import { resolveDevFixture } from "./src/lib/dev-fixtures";
+import { getScenario, resolveScenarioResponse, scenarioHeader, unexpectedScenarioRequest } from "./src/scenarios";
 import { COVERED_CALL_API_ENDPOINTS, QUANT_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "./src/lib/workstation-endpoints";
 
 export const defaultMeridianApiBaseUrl = "http://localhost:8080";
@@ -14,6 +15,59 @@ export const meridianApiAvailabilityTimeoutMs = 200;
 export const meridianScreenshotCaptureEnv = "MERIDIAN_SCREENSHOT_CAPTURE";
 export const meridianDevSessionHeader = "x-meridian-dev-session";
 export type MeridianDevMode = "fixture-only" | "backend-connected";
+
+/** The page URL selects a scenario per request; parallel previews never share mutable state. */
+export function createMeridianScenarioPlugin(): Plugin {
+  const middleware = async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+    try {
+      const requestUrl = new URL(req.url ?? "/", "http://meridian.local");
+      if (!requestUrl.pathname.startsWith("/api/")) return next();
+      const referer = req.headers.referer;
+      const selected = typeof req.headers[scenarioHeader] === "string"
+        ? req.headers[scenarioHeader] as string
+        : referer ? new URL(referer, "http://meridian.local").searchParams.get("scenario") : null;
+      if (selected === null || selected === undefined) return next();
+
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      res.setHeader("Cache-Control", "no-store");
+      res.setHeader(scenarioHeader, selected);
+      const scenario = getScenario(selected);
+      const response = resolveScenarioResponse(scenario, req.url ?? "/", req.method);
+      if (!response) {
+        res.statusCode = 501;
+        res.end(JSON.stringify({
+          status: 501,
+          title: "Scenario response unavailable",
+          detail: unexpectedScenarioRequest(scenario, req.url ?? "/", req.method ?? "GET")
+        }));
+        return;
+      }
+      if (response.delayMs) {
+        // A disconnected preview must release its pending delay.
+        await new Promise<void>((resolve) => {
+          const finish = () => { clearTimeout(timer); res.off("close", finish); resolve(); };
+          const timer = setTimeout(finish, response.delayMs);
+          res.once("close", finish);
+        });
+      }
+      if (res.destroyed) return;
+      res.statusCode = response.status;
+      for (const [name, value] of Object.entries(response.headers ?? {})) res.setHeader(name, value);
+      res.end(req.method === "HEAD" || response.status === 204 ? "" : JSON.stringify(response.body));
+    } catch (error) {
+      res.statusCode = 400;
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      res.setHeader("Cache-Control", "no-store");
+      res.setHeader(scenarioHeader, "invalid");
+      res.end(JSON.stringify({ status: 400, title: "Invalid preview scenario", detail: String(error) }));
+    }
+  };
+  return {
+    name: "meridian-api-scenarios",
+    configureServer(server) { server.middlewares.use(middleware); },
+    configurePreviewServer(server) { server.middlewares.use(middleware); }
+  };
+}
 
 export interface MeridianApiAvailabilityProbe {
   isAvailable: () => Promise<boolean>;
@@ -225,7 +279,7 @@ const { version: appVersion } = JSON.parse(
 export default defineConfig({
   root: appRoot,
   base: "/workstation/",
-  plugins: [react(), createMeridianDevSessionPlugin()],
+  plugins: [react(), createMeridianDevSessionPlugin(), createMeridianScenarioPlugin()],
   define: {
     __APP_VERSION__: JSON.stringify(appVersion),
     "import.meta.env.VITE_MERIDIAN_DEV_MODE": JSON.stringify(devMode ?? "")

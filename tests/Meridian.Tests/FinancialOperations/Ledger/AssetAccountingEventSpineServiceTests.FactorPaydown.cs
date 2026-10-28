@@ -132,6 +132,8 @@ public sealed partial class AssetAccountingEventSpineServiceTests
         public required IAtomicTaxLotJournalStore Atomic { get; init; }
         public required Dictionary<long, AssetAccountingEventProjectionRecord> Retained { get; init; }
         public AtomicTaxLotJournalCommand? CommittedCommand { get; set; }
+        public List<JournalEntry> RebuiltJournals { get; } = [];
+        public Func<JournalEntry, JournalEntry>? CandidateMutation { get; set; }
 
         public PostPostingRuleJournalCandidateRequestDto ApprovedPostRequest(PostingRuleJournalCandidateRequestDto candidate, string draftedFingerprint)
         {
@@ -159,7 +161,7 @@ public sealed partial class AssetAccountingEventSpineServiceTests
     /// 0.95 at 101.5) held in the fixture position pays 0.95 -> 0.90, so the projected effect is Dr
     /// cash 50,000 / Cr carrying 50,750 / Dr realized loss 750.
     /// </summary>
-    private static FactorPaydownSpineHarness BuildFactorPaydownSpineHarness()
+    private static FactorPaydownSpineHarness BuildFactorPaydownSpineHarness(bool regenerateCashFlowWrites = false)
     {
         var baseline = BuildFixture(AssetAccountingEventKindDto.CorporateAction);
         var lot = FactorPaydownTestData.PremiumLot(baseline.Security.SecurityId, baseline.Position.PositionId, baseline.Book.LedgerBookId);
@@ -218,9 +220,7 @@ public sealed partial class AssetAccountingEventSpineServiceTests
             AccountingPolicyId: fixture.Book.AccountingPolicyId, AccountingPolicyVersion: fixture.Book.AccountingPolicyVersion));
         var authority = Substitute.For<IAccountingPostingCandidateAuthorityBuilder>();
         AccountingPostingCandidateWriteResult? stableWrite = null;
-        authority.BuildAuthoritativeCandidateWriteAsync(Arg.Any<PostingRuleJournalCandidateRequestDto>(),
-                Arg.Any<AssetAccountingCandidateAuthorityContext>(), Arg.Any<CancellationToken>())
-            .Returns(call => stableWrite ??= BuildFactorPaydownCandidateWrite(call.ArgAt<PostingRuleJournalCandidateRequestDto>(0), fixture));
+        Guid? stableCommandId = null;
         var atomic = Substitute.For<IAtomicTaxLotJournalStore>();
         var harness = new FactorPaydownSpineHarness
         {
@@ -234,12 +234,35 @@ public sealed partial class AssetAccountingEventSpineServiceTests
             Atomic = atomic,
             Retained = retained
         };
+        authority.BuildAuthoritativeCandidateWriteAsync(Arg.Any<PostingRuleJournalCandidateRequestDto>(),
+                Arg.Any<AssetAccountingCandidateAuthorityContext>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                if (!regenerateCashFlowWrites)
+                    return stableWrite ??= BuildFactorPaydownCandidateWrite(call.ArgAt<PostingRuleJournalCandidateRequestDto>(0), fixture);
+                var result = BuildFactorPaydownCandidateWrite(call.ArgAt<PostingRuleJournalCandidateRequestDto>(0), fixture);
+                stableCommandId ??= result.Write!.PostingCommand!.CommandId;
+                var command = result.Write!.PostingCommand! with { CommandId = stableCommandId.Value };
+                result = result with
+                {
+                    Candidate = result.Candidate with { PostingCommand = command },
+                    Write = result.Write with { CommandId = stableCommandId.Value, PostingCommand = command }
+                };
+                var entry = LedgerCashFlowAttribution.WithClassifiedActivity(result.Write!.Entry,
+                    LedgerCashFlowCategory.Investing, "Factor principal repayment");
+                if (harness.CandidateMutation is { } mutate)
+                    entry = mutate(entry);
+                harness.RebuiltJournals.Add(entry);
+                return result with { Write = result.Write with { Entry = entry } };
+            });
         AtomicTaxLotJournalResult? committed = null;
         atomic.AppendAssetPostingAsync(Arg.Any<AtomicTaxLotJournalCommand>(), Arg.Any<CancellationToken>()).Returns(call =>
         {
             var command = call.ArgAt<AtomicTaxLotJournalCommand>(0);
             if (committed is not null)
             {
+                if (command.CanonicalFingerprint != harness.CommittedCommand!.CanonicalFingerprint)
+                    throw new LedgerValidationException("Atomic tax-lot posting identity collision: changed canonical fingerprint.");
                 command.CanonicalFingerprint.Should().Be(harness.CommittedCommand!.CanonicalFingerprint);
                 return committed with { IsExactReplay = true };
             }

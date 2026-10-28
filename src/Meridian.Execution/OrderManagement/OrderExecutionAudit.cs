@@ -1,4 +1,5 @@
 using System.Globalization;
+using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using static Meridian.Execution.OrderManagement.OrderAuditMetadata;
@@ -57,7 +58,7 @@ internal sealed class OrderExecutionAudit(
             _logger.LogCritical(
                 failure,
                 "Broker fill for order {OrderId} could not form a durable accounting event and no execution audit store is configured",
-                orderId ?? report.OrderId);
+                LogSanitizer.Sanitize(orderId ?? report.OrderId));
             return false;
         }
 
@@ -88,7 +89,7 @@ internal sealed class OrderExecutionAudit(
             _logger.LogCritical(
                 auditFailure,
                 "Broker fill for order {OrderId} could not form a durable accounting event and its audit evidence could not be retained",
-                orderId ?? report.OrderId);
+                LogSanitizer.Sanitize(orderId ?? report.OrderId));
             return false;
         }
     }

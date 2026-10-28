@@ -281,7 +281,8 @@ public sealed class CsvStatementConnector(
             columnMappings,
             records,
             issues,
-            fingerprint);
+            fingerprint)
+        { ExecutedMappingFingerprint = StatementMappingExecutionEvidence.ForProfile(ConnectorId, profile) };
     }
 
     private static (char Delimiter, StatementParseIssue? Issue) ResolveDelimiter(

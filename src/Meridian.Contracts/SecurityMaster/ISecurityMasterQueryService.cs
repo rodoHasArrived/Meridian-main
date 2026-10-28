@@ -3,7 +3,10 @@ namespace Meridian.Contracts.SecurityMaster;
 /// <summary>
 /// Queries current and historical security details and resolves identifiers within Security Master.
 /// </summary>
-public interface ISecurityMasterQueryService
+public interface ISecurityMasterQueryService :
+    ISecurityIdentityQueryService,
+    ISecurityTradingParametersQueryService,
+    ISecurityCorporateActionsQueryService
 {
     Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default);
 
@@ -31,14 +34,6 @@ public interface ISecurityMasterQueryService
         ct.ThrowIfCancellationRequested();
         return Task.FromResult<SecurityDetailDto?>(null);
     }
-
-    /// <summary>
-    /// Resolves identifiers and aliases using current knowledge of their valid-time windows.
-    /// An explicit <paramref name="asOfUtc"/> selects terms by stored event-timestamp eligibility, but
-    /// identity resolution can use later corrections and the legacy stable-identity fallback.
-    /// This compatibility API does not establish what identifier the system knew at that time.
-    /// </summary>
-    Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null);
 
     /// <summary>
     /// Resolves identifiers from retained events whose stored event timestamps, and alias revisions
@@ -73,18 +68,6 @@ public interface ISecurityMasterQueryService
     /// by governance or drill-in surfaces that need classification and sub-type detail.
     /// </summary>
     Task<SecurityEconomicDefinitionRecord?> GetEconomicDefinitionByIdAsync(Guid securityId, CancellationToken ct = default);
-
-    /// <summary>
-    /// Returns the trading parameters (lot size, tick size, etc.) for a security as of the
-    /// specified point in time. Returns <c>null</c> when the security is not found.
-    /// </summary>
-    Task<TradingParametersDto?> GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default);
-
-    /// <summary>
-    /// Returns the time-ordered list of corporate action events for a security.
-    /// Returns an empty list when no corporate actions are recorded.
-    /// </summary>
-    Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default);
 
     /// <summary>
     /// Returns the preferred-equity-specific terms for a security.
