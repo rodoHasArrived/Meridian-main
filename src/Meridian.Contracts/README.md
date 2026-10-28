@@ -44,7 +44,15 @@ Each class writes its `TermsVersion` and reads through `ReadsTermsThrough`, whic
 raises with `ReadableTermsVersion` (ADR-024, readable before writable). Terms stamped above the read
 ceiling fail loudly; terms stamped above the write version, or populating a term introduced above
 it, are read but refused on write (`EnsureWritableAsAssetSpecificTerms`, `TryGetWriteRefusal`), and
-profile envelopes are checked by stamp only. Economic modules a flat conversion cannot
+profile envelopes are checked by stamp only. `TryGetReadRefusal` returns the read guard's refusal,
+with its exact text, without throwing. `SecurityVersionedTerms` names the versioned containers
+(`ScheduleConventionsKey`, `CallScheduleKey`, `PutScheduleKey`) and holds the one predicate that
+decides which of them a payload decodes (`Decoding`, `SecurityVersionedTermDecoding.Decodes`): a
+read decodes a container at or below the row's own stamp, a write at or below the class's write
+version, and a profile envelope none. It also holds the one block reader and the tri-state declared
+reads (`None`, `Declared`, `Unreadable`), so the mapping, the schema validator and the cash-flow
+engine agree on what a row declares; `ScheduleConventionTerms` mirrors the F# record. Economic
+modules a flat conversion cannot
 express travel under the reserved `retainedEconomicTerms` key and fold back on the next economic
 rebuild. Reserved envelope keys are rejected as user-editable term fields.
 `SecurityMasterEventEnvelope` carries `PayloadType`/`PayloadVersion`;
@@ -392,13 +400,21 @@ accepts older numeric status payloads; persisted queue records already use text 
   GUID from the unadjusted dates within a consumer-chosen scope and stream, and `ScheduleDayCount`
   dispatches period day counts through `DayCountConventions`. `ScheduleSpec.IssueAnchoredForward`,
   `CompoundedForward` and `BackwardFromTermination` name the legacy generator modes.
+  `SecurityMaster/ScheduleSpecFactory` maps a security's declared `scheduleConventions` block to a
+  `ScheduleSpec` (`Resolve`, with the node's calendars) or a typed `DeclaredScheduleRefusal`, and
+  `ResolveShape` applies the same rules without calendars for write validation. It dispatches on
+  `CashFlowBehavior` and schema facts, reads the block only where the mapping decodes it, never
+  falls back to the effective-from date, an annual cadence or a weekends-only calendar, and never
+  throws for any terms shape. Its mapping is frozen as `DeclaredMappingVersion`
+  (`security-master-declared-schedule-v1`, ADR-025).
 - `Calendars/` - the business-day calendar seam: `IBusinessDayCalendar` (id, content hash,
   coverage), `HolidayBusinessDayCalendar` (weekend mask plus holidays, versioned and
   SHA-256 content-hashed through `Sha256Digest`), `JointBusinessDayCalendar`, the built-in
   `BusinessDayCalendars.WeekendsOnly` (`WEEKENDS`) and the shared roll, add and count extensions,
   `BusinessDayConvention` with `BusinessDayAdjustment`, and `IBusinessDayCalendarSource` with the
   in-memory `StaticBusinessDayCalendarSource`. A source never falls back to weekends-only for an
-  unknown id. Calendars are pure: no clock and no I/O.
+  unknown id. Calendars are pure: no clock and no I/O. The file-backed source every host registers
+  is `Meridian.Storage.Calendars.FileBusinessDayCalendarSource`.
 - `Backfill/` - shared historical backfill run-result and per-symbol completeness signal payloads
   published under `Meridian.Contracts.Backfill`.
 - `Coordination/` - shared cluster lease, leadership, scheduled-work ownership, subscription
@@ -1894,10 +1910,14 @@ contract shape, blocker vocabulary, or route-visible payloads change.
 
 Calculated cash-flow projections retain `BlockedReason` and `IsNormalizedPer100`: missing coupon
 terms and unresolved floating fixings never mean zero, and normalized analytical schedules cannot
-drive ledger postings without retained principal/notional. Discount rates on Treasury bills and
-commercial paper are not coupon payments. Classes with no implemented calculated schedule require
-provider evidence. Asset-pack template bindings use exact mappings with declared Fee, Amortization,
-and MarginSettlement lifecycle coverage.
+drive ledger postings without retained principal/notional. A schedule generated from declared
+schedule conventions also carries `ScheduleEvidence` (`StructuredCashFlowScheduleEvidence`: the
+kernel and declared-mapping versions, each calendar's id, content hash and purpose, and per-calendar
+coverage gaps), a trailing optional member omitted from JSON when null, so an undeclared projection
+keeps its wire shape; a projection that carries it is not postable yet. Discount rates on Treasury
+bills and commercial paper are not coupon payments. Classes with no implemented calculated schedule
+require provider evidence. Asset-pack template bindings use exact mappings with declared Fee,
+Amortization, and MarginSettlement lifecycle coverage.
 
 Security Master prices declare CurrencyPerUnit or PercentOfPar. Legacy Unspecified observations
 remain readable but cannot support a golden copy. Selections retain economic, hierarchy and

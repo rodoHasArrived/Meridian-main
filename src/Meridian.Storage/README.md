@@ -612,6 +612,17 @@ lookup paths, and evidence trails those layers rely on.
   writer.
 - `Backfill/` - durable last-run backfill status plus per-symbol checkpoint and bar-count sidecars
   published under `Meridian.Storage.Backfill`.
+- `Calendars/` - `FileBusinessDayCalendarSource`, the business-day calendars declared schedule
+  conventions resolve against (ADR-025): one `<dataRoot>/calendars/{ID}.json` file per calendar,
+  read once at host start in ordinal file-name order through the strict source-generated
+  `BusinessDayCalendarFileJsonContext` (camelCase, unknown and repeated members refused) beside the
+  built-in `WEEKENDS`. A file is refused, with a Warning naming it and the reason, for malformed or
+  missing members, a version below 1, an id outside `^[A-Z][A-Z0-9]{1,15}$` or not equal to its
+  file stem, the reserved `WEEKENDS`, a weekend day that is not an exact English day name, no
+  working day, inverted coverage or an id another file also defines; its id stays unresolvable and
+  is never replaced by weekends only. A missing directory loads only `WEEKENDS`. `Calendars` and
+  `RefusedFiles` list what loaded and what did not. The Application composition registers it and
+  logs the terms capability line (`docs/operators/business-day-calendar-files.md`).
 - `Config/StorageConfigExtensions.cs` - Storage-owned mapping from shared `StorageConfig` values
   into `StorageOptions`, including naming convention, date partition, sink, and profile defaults.
 - `Coordination/` - file-backed shared-storage lease store implementation published under

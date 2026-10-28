@@ -1026,7 +1026,9 @@ mode (every create, amend, import, term-block amend and approved field-edit merg
 above the class's write version is refused with a reason naming the class, the stamp and the versions
 this node reads and writes, and one populating a term introduced above it with a reason naming the
 term, the class, the term's version and the write version; in Read mode such a term is decoded once the payload's
-own stamp reaches its version, and profile envelopes are decoded at the write version. The
+own stamp reaches its version, and a profile envelope decodes none. The mapping, the schema-terms
+validator and the cash-flow engine decide this through one predicate,
+`SecurityVersionedTerms.Decoding`, and read the block through one shared reader. The
 `callSchedule` and `putSchedule` readers are tolerant: they keep stored order, drop an entry that is
 not an object or lacks a parseable date (`callDate`, `putDate`), and read any other member that does
 not parse as unset. Deactivate and
@@ -1071,6 +1073,33 @@ forward. `SecurityMasterService.AmendTermBlockAsync` replaces one registry-decla
 block (preferred terms, step and principal schedules, swap legs) through the normal amend path and
 records `TermBlockAmended`. A block the class only reads (`scheduleConventions`, `callSchedule`,
 `putSchedule`) is refused with the not-yet-writable reason.
+
+`SecurityMasterCashFlowService` follows a record's declared `scheduleConventions` block (ADR-025).
+After the unsupported-class and missing-maturity checks, and before the legacy issue-date fallback,
+it resolves `ScheduleSpecFactory.Resolve` with the node's `IBusinessDayCalendarSource` (a trailing
+optional constructor parameter). A refusal blocks the projection with its reason; a record that
+declares nothing takes every legacy step unchanged. A declaring record branches before the legacy
+coupon walk into `BuildDeclaredProjection` (`SecurityMasterCashFlowService.DeclaredConventions.cs`):
+the kernel's periods dated on their payment dates, interest over adjusted accrual dates through
+`ScheduleDayCount`, the declared coupon unit and cash basis, the legacy bullet, sinker and
+asserted-bullet principal rules, a block for contractual principal schedules, and
+`ScheduleEvidence`. Coverage gaps are logged at Debug and never block.
+`StructuredCashFlowLedgerGate` refuses any projection that carries `ScheduleEvidence`, after its own
+`BlockedReason`. No write path can store a declaring block before increment 5b-2, so this branch is
+dormant in production. Verify
+this lane with the declared-conventions partial of `SecurityMasterCashFlowServiceTests`,
+`ScheduleSpecFactoryTests` and `SecurityMasterCashFlowProjectionShapeTests`.
+
+`AddSecurityMasterTermsCapability(services, dataRoot)` (in `Meridian.Application.Composition`)
+registers `FileBusinessDayCalendarSource` over `<dataRoot>/calendars` with `TryAddSingleton` and
+the internal `SecurityMasterTermsCapabilityHostedService`. `StorageFeatureRegistration` calls it
+over `StorageOptions.RootPath`; the WPF desktop calls it from its own composition root. At host
+start the hosted service loads the calendars and logs one Information line, "Security Master terms
+capability: declared mapping {DeclaredMappingVersion}, schedule kernel {KernelVersion}, terms
+versions {TermsVersions}, business-day calendars {CalendarCount}: {Calendars}", so every node's
+build and calendar set are visible without a projection request (the rollout inventory in
+`docs/operators/security-master-terms-contract-rollout.md`). Verify it with
+`SecurityMasterTermsCapabilityStartupTests` and `BusinessDayCalendarSourceCompositionTests`.
 
 ## API contract notes
 
