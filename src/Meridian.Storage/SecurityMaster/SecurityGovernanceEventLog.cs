@@ -13,6 +13,12 @@ public static class SecurityGovernanceStreams
 
     /// <summary>Declared underlying-graph links: declaration, amendment and removal (migration 051).</summary>
     public const string UnderlyingGraph = "UnderlyingGraph";
+
+    /// <summary>Stored market curves: definitions and published versions (migration 053). Events carry no security id; the curve id is in the payload.</summary>
+    public const string Curves = "Curves";
+
+    /// <summary>OTC exposure snapshots, collateral balances and margin calls (migrations 054 and 055); events carry no security id and name a netting set (snapshots, calls) or a collateral agreement (balances).</summary>
+    public const string OtcCollateral = "OtcCollateral";
 }
 
 /// <summary>One recorded governance event.</summary>
@@ -31,6 +37,14 @@ public interface ISecurityGovernanceEventReader
 {
     /// <summary>Every governance event recorded for <paramref name="securityId"/>, oldest first.</summary>
     Task<IReadOnlyList<SecurityGovernanceEvent>> GetForSecurityAsync(Guid securityId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Events on one <paramref name="stream"/> with a global sequence after <paramref name="afterSequence"/>,
+    /// oldest first, at most <paramref name="limit"/>. This is how streams whose subject is not a
+    /// security, such as <see cref="SecurityGovernanceStreams.Curves"/> and
+    /// <see cref="SecurityGovernanceStreams.OtcCollateral"/>, are read.
+    /// </summary>
+    Task<IReadOnlyList<SecurityGovernanceEvent>> GetForStreamAsync(string stream, long afterSequence = 0, int limit = 500, CancellationToken ct = default);
 }
 
 /// <summary>
@@ -91,13 +105,43 @@ public sealed class PostgresSecurityGovernanceEventLog : ISecurityGovernanceEven
         command.Transaction = lease.Transaction;
         command.CommandText =
             $"""
-            select global_sequence, security_id, stream, event_type, actor, occurred_at, payload::text, payload_version
+            select {Columns}
             from {_options.Schema}.security_governance_events
             where security_id = @security_id
             order by global_sequence;
             """;
         command.Parameters.AddWithValue("security_id", securityId);
+        return await ReadEventsAsync(command, ct).ConfigureAwait(false);
+    }
 
+    public async Task<IReadOnlyList<SecurityGovernanceEvent>> GetForStreamAsync(string stream, long afterSequence = 0, int limit = 500, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(stream);
+        if (limit is < 1 or > 5000)
+            throw new ArgumentOutOfRangeException(nameof(limit), limit, "A stream page holds between 1 and 5000 events.");
+
+        await using var lease = await PostgresSecurityMasterMutation.OpenConnectionAsync(_options, ct).ConfigureAwait(false);
+        await using var command = lease.Connection.CreateCommand();
+        command.Transaction = lease.Transaction;
+        // Served by ix_security_governance_events_stream_sequence (migration 040).
+        command.CommandText =
+            $"""
+            select {Columns}
+            from {_options.Schema}.security_governance_events
+            where stream = @stream and global_sequence > @after
+            order by global_sequence
+            limit @limit;
+            """;
+        command.Parameters.AddWithValue("stream", stream.Trim());
+        command.Parameters.AddWithValue("after", afterSequence);
+        command.Parameters.AddWithValue("limit", limit);
+        return await ReadEventsAsync(command, ct).ConfigureAwait(false);
+    }
+
+    private const string Columns = "global_sequence, security_id, stream, event_type, actor, occurred_at, payload::text, payload_version";
+
+    private static async Task<IReadOnlyList<SecurityGovernanceEvent>> ReadEventsAsync(NpgsqlCommand command, CancellationToken ct)
+    {
         var events = new List<SecurityGovernanceEvent>();
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         while (await reader.ReadAsync(ct).ConfigureAwait(false))

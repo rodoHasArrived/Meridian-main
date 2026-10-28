@@ -745,10 +745,15 @@ public sealed partial class AccountingConfigurationService
         IReadOnlyList<GeneratedPostingLineDto> generatedLines;
         if (rule.GeneratedPostings.Count > 0)
         {
+            // A lot-mutation component that resolves to zero (a par lot's realized result, or the
+            // unused side of a gain/loss pair) generates no line: the draft refuses zero lines and
+            // the component is genuinely absent from the journal rather than posted as nothing.
             generatedLines = rule.GeneratedPostings
+                .Where(line => !IsZeroLotMutationComponent(line, rule.Formulas, request.LotMutationComponents))
                 .Select(line => line with
                 {
-                    Amount = ResolveFormulaAmount(line.AmountFormulaId, line.Amount, rule.Formulas, request.EventAmount),
+                    Amount = ResolveFormulaAmount(line.AmountFormulaId, line.Amount, rule.Formulas, request.EventAmount,
+                        request.LotMutationComponents),
                     Currency = string.IsNullOrWhiteSpace(line.Currency) ? NormalizeCurrency(request.Currency) : line.Currency.Trim().ToUpperInvariant(),
                     Dimensions = MergeDimensions(rule.Scope, eventDimensions, line.Dimensions)
                 })
@@ -778,7 +783,8 @@ public sealed partial class AccountingConfigurationService
         string formulaId,
         decimal fallbackAmount,
         IReadOnlyList<AccountingRuleFormulaDto> formulas,
-        decimal eventAmount)
+        decimal eventAmount,
+        IReadOnlyDictionary<string, decimal>? lotMutationComponents = null)
     {
         var formula = formulas.FirstOrDefault(item => string.Equals(item.FormulaId, formulaId, StringComparison.OrdinalIgnoreCase));
         if (formula is null)
@@ -792,8 +798,22 @@ public sealed partial class AccountingConfigurationService
             AccountingRuleFormulaKindDto.PercentageOfSourceAmount => Math.Round(eventAmount * formula.Value, 2, MidpointRounding.AwayFromZero),
             AccountingRuleFormulaKindDto.FixedAmount => formula.Value,
             AccountingRuleFormulaKindDto.AllocationResidual => fallbackAmount == 0m ? eventAmount : fallbackAmount,
+            // The component is the governed lot instruction's figure or nothing; the event amount is
+            // never a substitute, since basis relieved and realized result are not derivable from it.
+            AccountingRuleFormulaKindDto.LotMutationComponent => lotMutationComponents is not null
+                && lotMutationComponents.TryGetValue(formula.FormulaId, out var component) ? component : 0m,
             _ => fallbackAmount
         };
+    }
+
+    private static bool IsZeroLotMutationComponent(
+        GeneratedPostingLineDto line,
+        IReadOnlyList<AccountingRuleFormulaDto> formulas,
+        IReadOnlyDictionary<string, decimal>? lotMutationComponents)
+    {
+        var formula = formulas.FirstOrDefault(item => string.Equals(item.FormulaId, line.AmountFormulaId, StringComparison.OrdinalIgnoreCase));
+        return formula is { Kind: AccountingRuleFormulaKindDto.LotMutationComponent }
+            && ResolveFormulaAmount(line.AmountFormulaId, line.Amount, formulas, 0m, lotMutationComponents) == 0m;
     }
 
     private static IReadOnlyList<GeneratedPostingLineDto> ApplyAllocations(

@@ -261,8 +261,31 @@ public sealed class FaceValueLotTests
         var lot = new FaceValueLot("lot-1", SecurityId, new DateOnly(2026, 1, 1), 1_000m, 100m, bookedFactor: 0.5m);
 
         lot.Invoking(l => l.ApplyFactor(0.6m)).Should().Throw<ArgumentOutOfRangeException>();
-        lot.Invoking(l => l.ApplyFactor(0m)).Should().Throw<ArgumentOutOfRangeException>();
+        lot.Invoking(l => l.ApplyFactor(-0.1m)).Should().Throw<ArgumentOutOfRangeException>();
+        lot.Invoking(l => l.ApplyFactor(1.1m)).Should().Throw<ArgumentOutOfRangeException>();
         lot.WithFactor(0.6m).FaceOutstanding.Should().Be(1_200m);
+    }
+
+    [Fact]
+    public void ApplyFactor_ToZero_ReleasesAllParFaceAndFaceOutstandingIsZero()
+    {
+        // A pool that repays every remaining dollar of principal is a full paydown: the lot still
+        // exists with its acquisition facts but holds no face. Original face 950,000 booked at 0.95
+        // is 1,000,000 of par face; paying 0.95 -> 0.90 and then 0.90 -> 0 releases all of it.
+        var lot = new FaceValueLot("lot-1", SecurityId, new DateOnly(2026, 1, 1), 950_000m, 101.5m, bookedFactor: 0.95m);
+
+        var partial = lot.ApplyFactor(0.90m);
+        var full = partial.Lot.ApplyFactor(0m);
+
+        partial.PrincipalPaydown.Should().Be(50_000m);
+        full.PrincipalPaydown.Should().Be(900_000m);
+        full.Lot.CurrentFactor.Should().Be(0m);
+        full.Lot.FaceOutstanding.Should().Be(0m);
+        ((IUnitizedLot)full.Lot).Quantity.Should().Be(0m);
+        full.Lot.BookedFactor.Should().Be(0.95m, "the acquisition-time convention is preserved");
+        full.Lot.CostBasis.Should().Be(lot.CostBasis, "a paydown does not restate the acquisition cost");
+        lot.CurrentFace(0m).Should().Be(0m);
+        lot.Invoking(l => l.CurrentFace(-0.1m)).Should().Throw<ArgumentOutOfRangeException>();
     }
 
     [Fact]
@@ -280,9 +303,14 @@ public sealed class FaceValueLotTests
     [Fact]
     public void Constructor_RefusesAnOutOfRangeCurrentFactor()
     {
-        FluentActions.Invoking(() => new FaceValueLot("lot-1", SecurityId, new DateOnly(2026, 1, 1), 1_000m, 100m, currentFactor: 0m))
+        // The current factor may reach zero (a fully repaid pool) but never go negative or above
+        // one; the booked factor, an acquisition fact, stays strictly positive.
+        FluentActions.Invoking(() => new FaceValueLot("lot-1", SecurityId, new DateOnly(2026, 1, 1), 1_000m, 100m, currentFactor: -0.01m))
             .Should().Throw<ArgumentOutOfRangeException>();
         FluentActions.Invoking(() => new FaceValueLot("lot-1", SecurityId, new DateOnly(2026, 1, 1), 1_000m, 100m, currentFactor: 1.5m))
             .Should().Throw<ArgumentOutOfRangeException>();
+        FluentActions.Invoking(() => new FaceValueLot("lot-1", SecurityId, new DateOnly(2026, 1, 1), 1_000m, 100m, bookedFactor: 0m))
+            .Should().Throw<ArgumentOutOfRangeException>();
+        new FaceValueLot("lot-1", SecurityId, new DateOnly(2026, 1, 1), 1_000m, 100m, currentFactor: 0m).FaceOutstanding.Should().Be(0m);
     }
 }

@@ -141,6 +141,7 @@ erDiagram
         numeric disposal_sale_price
         jsonb corporate_action_instruction
         jsonb capital_return_instruction
+        jsonb factor_paydown_instruction
     }
     ledger_fund_profile_tenancy {
         text fund_profile_id PK
@@ -443,6 +444,7 @@ erDiagram
         numeric_38_12_ par_basis
         jsonb acquisition_terms
         jsonb basis_adjustment
+        numeric_38_12_ current_factor
     }
     ledger_wash_sale_deferrals {
         uuid deferral_id PK
