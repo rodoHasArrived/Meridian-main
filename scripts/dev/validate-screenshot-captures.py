@@ -309,16 +309,25 @@ def validate_manifest_routes(
     manifest_path: Path | None,
     output_dir: Path,
 ) -> tuple[list[str], datetime | None]:
-    if manifest_path is None or not manifest_path.exists():
+    if manifest_path is None:
         return [], None
 
-    manifest = load_json(manifest_path)
+    if not manifest_path.is_file():
+        return [f"Capture manifest file does not exist: {manifest_path}."], None
+
+    try:
+        manifest = load_json(manifest_path)
+    except (OSError, ValueError) as exc:
+        return [f"Capture manifest could not be read: {manifest_path}: {exc}."], None
+    if not isinstance(manifest, dict):
+        return [f"Capture manifest must contain a JSON object: {manifest_path}."], None
+
     expected_by_name = {item.name: item for item in expected}
     errors: list[str] = []
     started_at = parse_timestamp(manifest.get("generatedAtUtc")) or parse_timestamp(manifest.get("run", {}).get("startedAt"))
     expected_status = "passed" if surface == "web" else "ok"
     observed_status = manifest.get("status") if surface == "web" else manifest.get("run", {}).get("status")
-    if observed_status and observed_status != expected_status:
+    if (surface == "web" or observed_status) and observed_status != expected_status:
         errors.append(f"Manifest status is {observed_status!r}, expected {expected_status!r}.")
 
     if surface == "web":
