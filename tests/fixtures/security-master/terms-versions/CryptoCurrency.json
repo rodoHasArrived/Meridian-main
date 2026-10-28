@@ -1,0 +1,25 @@
+{
+  "assetClass": "CryptoCurrency",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "baseCurrency",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "network",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "quoteCurrency",
+          "type": "String",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -50,7 +51,10 @@ public static class SecurityTermsEnvelope
 
     /// <summary>
     /// The asset-class terms contract version a flat payload was written against
-    /// (<see cref="SecurityAssetClassDescriptor.TermsVersion"/>). Absent means version 1.
+    /// (<see cref="SecurityAssetClassDescriptor.TermsVersion"/> of the writing node, or the newer
+    /// version its populated terms need). Absent means version 1. An older version is read through
+    /// <see cref="SecurityAssetClassTermsUpgrader"/>; a version above the write version and within
+    /// <see cref="SecurityAssetClassDescriptor.ReadsTermsThrough"/> is readable but not writable.
     /// </summary>
     public const string AssetClassTermsVersionKey = "assetClassTermsVersion";
 
@@ -139,8 +143,40 @@ public static class SecurityTermsEnvelope
     /// stamping is idempotent. Non-object JSON is returned unchanged.
     /// </summary>
     public static string StampFlat(string json, string assetClass)
+        => StampFlat(json, SecurityAssetClassCatalog.GetTermsVersion(assetClass));
+
+    /// <summary>
+    /// <see cref="StampFlat(string, string)"/> at the version a writer's populated terms need: the
+    /// class's write version, or, when the record carries terms introduced above it, the highest
+    /// readable version among them (a row read from a node that writes the newer version). Throws
+    /// when the version is below the write version or above <see cref="SecurityAssetClassCatalog.GetReadsTermsThrough"/>.
+    /// </summary>
+    public static string StampFlat(string json, string assetClass, int assetClassTermsVersion)
+    {
+        var writes = SecurityAssetClassCatalog.GetTermsVersion(assetClass);
+        var reads = SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass);
+        if (assetClassTermsVersion < writes || assetClassTermsVersion > reads)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(assetClassTermsVersion),
+                assetClassTermsVersion,
+                $"Asset class '{assetClass}' writes {AssetClassTermsVersionKey} {writes} and reads versions {DefaultAssetClassTermsVersion} through {reads}.");
+        }
+
+        return StampFlat(json, assetClassTermsVersion);
+    }
+
+    /// <summary>
+    /// <see cref="StampFlat(string, string)"/> with an explicit asset-class terms version: the stamping
+    /// routine every flat writer and the upgrade hook's transform path share
+    /// (<see cref="SecurityAssetClassTermsUpgrader"/>). The envelope keys go immediately after
+    /// <c>schemaVersion</c> when the document carries one, and last otherwise; keys the document
+    /// already carries are replaced, so stamping is idempotent. Non-object JSON is returned unchanged.
+    /// </summary>
+    public static string StampFlat(string json, int assetClassTermsVersion)
     {
         ArgumentNullException.ThrowIfNull(json);
+        ArgumentOutOfRangeException.ThrowIfLessThan(assetClassTermsVersion, DefaultAssetClassTermsVersion);
         if (JsonNode.Parse(json) is not JsonObject source)
         {
             return json;
@@ -151,7 +187,7 @@ public static class SecurityTermsEnvelope
         void WriteEnvelope()
         {
             stamped[FormatKey] = SecurityTermsFormats.Flat;
-            stamped[AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion;
+            stamped[AssetClassTermsVersionKey] = assetClassTermsVersion;
             wroteEnvelope = true;
         }
 
@@ -179,10 +215,11 @@ public static class SecurityTermsEnvelope
     }
 
     /// <summary>
-    /// Fails when a flat payload declares an asset-class terms version newer than this node's
-    /// contract for <paramref name="assetClass"/>, or declares a format other than flat or custom
-    /// profile. Reading such a payload with the current decoder would silently drop whatever the
-    /// newer contract added, so the read is refused with a precise reason instead.
+    /// Fails when a flat payload declares an asset-class terms version newer than this node reads for
+    /// <paramref name="assetClass"/> (<see cref="SecurityAssetClassCatalog.GetReadsTermsThrough"/>), or
+    /// declares a format other than flat or custom profile. Reading such a payload with the current
+    /// decoder would silently drop whatever the newer contract added, so the read is refused with a
+    /// precise reason instead.
     /// </summary>
     public static void EnsureReadableAsAssetSpecificTerms(string assetClass, JsonElement payload)
     {
@@ -195,7 +232,7 @@ public static class SecurityTermsEnvelope
                 "asset-specific-terms format; route it through SecurityAssetSpecificTermsUpcasterChain before reading.");
         }
 
-        var supported = SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion;
+        var supported = SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass);
         var declaredVersion = ResolveAssetClassTermsVersion(payload);
         if (declaredVersion > supported || declaredVersion < DefaultAssetClassTermsVersion)
         {
@@ -204,6 +241,111 @@ public static class SecurityTermsEnvelope
                 $"this node reads versions {DefaultAssetClassTermsVersion} through {supported}.");
         }
     }
+
+    /// <summary>
+    /// <see cref="EnsureReadableAsAssetSpecificTerms"/> for a write: also fails when the payload is
+    /// readable but not writable on this node (<see cref="TryGetWriteRefusal"/>). Every create, amend,
+    /// import, term-block amend and approved field-edit merge maps its terms through this check.
+    /// </summary>
+    public static void EnsureWritableAsAssetSpecificTerms(string assetClass, JsonElement payload)
+    {
+        EnsureReadableAsAssetSpecificTerms(assetClass, payload);
+        if (TryGetWriteRefusal(assetClass, payload, out var reason))
+        {
+            throw new InvalidOperationException(reason);
+        }
+    }
+
+    /// <summary>
+    /// Why a payload this node reads cannot be written by it: it is stamped above the class's write
+    /// version, or it populates a term introduced above that version (ADR-024, readable before
+    /// writable). Absent, null, <c>[]</c> and all-null objects mean unset and are accepted. A
+    /// profile-governed payload (<see cref="IsProfileGovernedPayload"/>) has no versioned class terms,
+    /// so only its stamp is checked. A class that reads exactly what it writes is never refused here,
+    /// and neither is a payload stamped above what this node reads: that is the read guard's refusal
+    /// (<see cref="EnsureReadableAsAssetSpecificTerms"/>), which names the newer version.
+    /// </summary>
+    public static bool TryGetWriteRefusal(string assetClass, JsonElement payload, [NotNullWhen(true)] out string? reason)
+    {
+        reason = null;
+        var writes = SecurityAssetClassCatalog.GetTermsVersion(assetClass);
+        var reads = SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass);
+        if (reads == writes)
+        {
+            return false;
+        }
+
+        var declaredVersion = ResolveAssetClassTermsVersion(payload);
+        if (declaredVersion > reads)
+        {
+            return false;
+        }
+
+        if (declaredVersion > writes)
+        {
+            // A flat payload can populate a term introduced above its own stamp; only a node that
+            // writes that term's version can apply it.
+            var needed = declaredVersion;
+            if (!IsProfileGovernedPayload(assetClass, payload))
+            {
+                foreach (var (_, field) in SecurityAssetTermsSchema.PopulatedTermsAbove(assetClass, payload, declaredVersion))
+                {
+                    needed = Math.Max(needed, field.SinceTermsVersion);
+                }
+            }
+
+            reason =
+                $"{AssetClassTermsVersionKey} '{declaredVersion}' for asset class '{assetClass}' is readable but not writable on this node: " +
+                $"it reads versions {DefaultAssetClassTermsVersion} through {reads} and writes version {writes}. " +
+                $"Submit the terms at version {writes}, or apply the change from a node that writes version {needed}.";
+            return true;
+        }
+
+        if (IsProfileGovernedPayload(assetClass, payload))
+        {
+            return false;
+        }
+
+        var populated = SecurityAssetTermsSchema.PopulatedTermsAbove(assetClass, payload, writes);
+        if (populated.Count == 0)
+        {
+            return false;
+        }
+
+        reason = DescribeNotYetWritable(assetClass, populated[0].Path, populated[0].Field.SinceTermsVersion);
+        return true;
+    }
+
+    /// <summary>
+    /// The shared reason a term this node reads cannot be set by it: the refusal every write path,
+    /// term-block amend and field edit gives for a term introduced above the class's write version.
+    /// </summary>
+    public static string DescribeNotYetWritable(string assetClass, string path, int sinceTermsVersion)
+        => $"'{path}' is an asset-class terms version {sinceTermsVersion} term of '{assetClass}'. This node reads it but writes " +
+           $"{AssetClassTermsVersionKey} {SecurityAssetClassCatalog.GetTermsVersion(assetClass)}, so a create, amend, import or field edit " +
+           "cannot set it yet. Leave it absent, null or empty (ADR-024).";
+
+    /// <summary>
+    /// Whether a payload of <paramref name="assetClass"/> is a profile envelope: the class supports
+    /// profile-backed terms and the payload carries a <c>customProfileId</c> or a <c>profileFields</c>
+    /// object. Its fields belong to the approved profile, not to the class's terms version, so
+    /// versioned class terms are never walked, decoded or validated in it; only its stamp is checked.
+    /// </summary>
+    public static bool IsProfileGovernedPayload(string assetClass, JsonElement payload)
+        => SecurityAssetClassCatalog.GetOrDefault(assetClass).SupportsProfileBackedTerms
+           && CarriesProfileEnvelope(payload);
+
+    /// <summary>
+    /// Whether a terms object carries a profile envelope signal: a non-blank string
+    /// <c>customProfileId</c> or a <c>profileFields</c> object. Non-objects carry none.
+    /// </summary>
+    public static bool CarriesProfileEnvelope(JsonElement payload)
+        => payload.ValueKind == JsonValueKind.Object
+           && ((payload.TryGetProperty("customProfileId", out var profileId)
+                && profileId.ValueKind == JsonValueKind.String
+                && !string.IsNullOrWhiteSpace(profileId.GetString()))
+               || (payload.TryGetProperty("profileFields", out var profileFields)
+                   && profileFields.ValueKind == JsonValueKind.Object));
 
     /// <summary>
     /// Returns the economic-terms document a flattened payload retained under

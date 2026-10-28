@@ -3,8 +3,8 @@
 # `ledger` schema
 
 - Relations: 34
-- Functions/procedures: 16
-- Triggers: 22
+- Functions/procedures: 17
+- Triggers: 23
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -153,6 +153,7 @@ erDiagram
         numeric disposal_sale_price
         jsonb corporate_action_instruction
         jsonb capital_return_instruction
+        jsonb factor_paydown_instruction
     }
     ledger_fund_profile_tenancy {
         text fund_profile_id PK
@@ -455,6 +456,7 @@ erDiagram
         numeric_38_12_ par_basis
         jsonb acquisition_terms
         jsonb basis_adjustment
+        numeric_38_12_ current_factor
     }
     ledger_wash_sale_deferrals {
         uuid deferral_id PK
@@ -525,7 +527,7 @@ erDiagram
 | `accounting_configuration_workspaces` | table | 9 | `tenant_id`, `company_id`, `fund_profile_id`, `configuration_scope_id` | 0 | 1 | - |
 | `accounting_periods` | table | 14 | `period_id` | 1 | 8 | - |
 | `accounting_policies` | table | 14 | `accounting_policy_key` | 0 | 3 | - |
-| `atomic_tax_lot_posting_batches` | table | 20 | `mutation_batch_id` | 4 | 5 | - |
+| `atomic_tax_lot_posting_batches` | table | 21 | `mutation_batch_id` | 4 | 5 | - |
 | `fund_profile_tenancy` | table | 4 | `fund_profile_id` | 0 | 2 | - |
 | `journal_entries` | table | 19 | `global_sequence` | 0 | 16 | - |
 | `journal_entries_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
@@ -548,5 +550,5 @@ erDiagram
 | `period_close_events` | table | 8 | `event_id` | 1 | 2 | - |
 | `tax_lot_mutations` | table | 25 | `mutation_record_id` | 4 | 5 | - |
 | `tax_lot_policies` | table | 16 | `policy_record_id` | 1 | 3 | - |
-| `tax_lots` | table | 26 | `tax_lot_record_id` | 4 | 8 | - |
+| `tax_lots` | table | 27 | `tax_lot_record_id` | 4 | 8 | - |
 | `wash_sale_deferrals` | table | 18 | `deferral_id` | 3 | 4 | - |

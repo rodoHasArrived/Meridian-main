@@ -106,17 +106,58 @@ public sealed class ConfigStore
     }
 
     // The callback must be synchronous and must not reenter configuration persistence.
-    internal async Task<T> UpdateRequiredAsync<T>(Func<AppConfig, (AppConfig Config, T Result)> update, CancellationToken ct = default)
+    internal Task<T> UpdateRequiredAsync<T>(Func<AppConfig, (AppConfig Config, T Result)> update, CancellationToken ct = default)
+        => UpdateCoreAsync(LoadRequired, update, ct);
+
+    /// <summary>
+    /// Read-modify-write of the configuration document under the cross-process configuration lock
+    /// (PRD-002: concurrent configuration writes). The current document is loaded <em>inside</em> the
+    /// lock, handed to <paramref name="update"/>, and the returned document is written atomically
+    /// before the lock is released, so two writers editing different sections can never lose each
+    /// other's change the way a <c>Load()</c> + <see cref="SaveAsync"/> pair can.
+    /// </summary>
+    /// <remarks>
+    /// <para>A missing file starts from the default configuration, matching <see cref="Load"/>. An
+    /// unreadable or JSON-<c>null</c> file throws and leaves the file untouched: an edit never
+    /// replaces a corrupt authoritative document with defaults. Returning the same reference skips
+    /// the write. The callback must be synchronous and must not reenter configuration persistence.</para>
+    /// </remarks>
+    public Task<T> UpdateAsync<T>(Func<AppConfig, (AppConfig Config, T Result)> update, CancellationToken ct = default)
+        => UpdateCoreAsync(LoadForUpdate, update, ct);
+
+    /// <summary>Result-less form of <see cref="UpdateAsync{T}"/>.</summary>
+    public Task UpdateAsync(Func<AppConfig, AppConfig> update, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(update);
+        return UpdateCoreAsync<object?>(LoadForUpdate, current => (update(current), null), ct);
+    }
+
+    private async Task<T> UpdateCoreAsync<T>(
+        Func<AppConfig> load,
+        Func<AppConfig, (AppConfig Config, T Result)> update,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(update);
         using var lease = await AcquireWriteLockAsync(ct).ConfigureAwait(false);
-        var current = LoadRequired();
+        var current = load();
         var (next, result) = update(current);
         ct.ThrowIfCancellationRequested();
         if (!ReferenceEquals(current, next))
             await SaveCoreAsync(next, ct).ConfigureAwait(false);
         return result;
     }
+
+    private AppConfig LoadForUpdate()
+        => File.Exists(ConfigPath) ? LoadRequired() : CreateDefaultConfig(ConfigPath);
+
+    /// <summary>
+    /// Holds the cross-process configuration write lock (the <c>.lock</c> sidecar beside the file)
+    /// until the returned lease is disposed. For writers that persist the document through their own
+    /// serializer, such as the WPF shell's configuration service, so the installed two-process
+    /// workstation shares one lock with every <see cref="UpdateAsync{T}"/> caller. Not reentrant.
+    /// </summary>
+    public async Task<IDisposable> AcquireWriteLeaseAsync(CancellationToken ct = default)
+        => await AcquireWriteLockAsync(ct).ConfigureAwait(false);
 
     private async Task<FileStream> AcquireWriteLockAsync(CancellationToken ct)
     {
@@ -151,6 +192,12 @@ public sealed class ConfigStore
         }
     }
 
+    /// <summary>
+    /// Whole-document replacement: the caller's snapshot becomes the configuration, last writer wins.
+    /// Reserved for callers that own the entire document (the CLI "save this configuration" path and
+    /// the setup wizard's generated output). Section-level edits use <see cref="UpdateAsync{T}"/>,
+    /// which reads the current document under the same lock and cannot drop a concurrent change.
+    /// </summary>
     public async Task SaveAsync(AppConfig cfg, CancellationToken ct = default)
     {
         using var lease = await AcquireWriteLockAsync(ct).ConfigureAwait(false);

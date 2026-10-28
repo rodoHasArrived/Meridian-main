@@ -295,6 +295,7 @@ public sealed class KillSwitchCloseOnlyTests : IDisposable
             NullLogger<OrderManagementSystem>.Instance,
             operatorControls: controls,
             portfolioState: Portfolio(("AAPL", 10m)));
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(Order(OrderSide.Sell, quantity: 10m, manualOverride.OverrideId));
 

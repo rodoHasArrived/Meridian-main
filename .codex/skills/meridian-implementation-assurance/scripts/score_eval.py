@@ -32,7 +32,9 @@ class EvalResult:
     @property
     def outcome(self) -> str:
         has_zero = any(v == 0 for v in self.scores.values())
-        return "Pass" if self.total >= 8 and not has_zero else "Fail"
+        has_evidence = all(self.evidence.get(k, "").strip() for k in CATEGORIES)
+        passes = self.total >= 8 and not has_zero and not self.failed_checks and has_evidence
+        return "Pass" if passes else "Fail"
 
 
 def parse_args() -> argparse.Namespace:
@@ -62,10 +64,9 @@ def validate_scores(raw: dict[str, object]) -> dict[str, int]:
 
     scores: dict[str, int] = {}
     for k in CATEGORIES:
-        try:
-            val = int(raw[k])
-        except Exception as exc:  # noqa: BLE001
-            raise ValueError(f"Score for '{k}' is not an integer: {raw[k]!r}") from exc
+        val = raw[k]
+        if type(val) is not int:
+            raise ValueError(f"Score for '{k}' must be a JSON integer: {val!r}")
         if val < 0 or val > 2:
             raise ValueError(f"Score for '{k}' must be between 0 and 2. Got {val}.")
         scores[k] = val
@@ -81,7 +82,14 @@ def parse_evidence(values: list[str]) -> dict[str, str]:
         key = key.strip()
         if key not in CATEGORIES:
             raise ValueError(f"Unknown evidence category '{key}'. Expected one of {CATEGORIES}")
-        evidence[key] = value.strip() or "not provided"
+        if key in evidence:
+            raise ValueError(f"Duplicate evidence category '{key}'.")
+        if not value.strip():
+            raise ValueError(f"Evidence for '{key}' must not be blank.")
+        evidence[key] = value.strip()
+    missing = [k for k in CATEGORIES if k not in evidence]
+    if missing:
+        raise ValueError(f"Evidence or an explicit applicability reason is required for every category: {missing}")
     return evidence
 
 
@@ -94,7 +102,7 @@ def to_schema_json(result: EvalResult) -> dict[str, object]:
             {
                 "id": category,
                 "score": score,
-                "pass": score >= 1,
+                "pass": score >= 1 and bool(result.evidence.get(category, "").strip()),
                 "notes": result.evidence.get(category, "not provided"),
             }
             for category, score in result.scores.items()
@@ -160,7 +168,7 @@ def main() -> int:
     else:
         print(to_markdown(result))
 
-    return 0
+    return 0 if result.outcome == "Pass" else 1
 
 
 if __name__ == "__main__":

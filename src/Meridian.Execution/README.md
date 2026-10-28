@@ -11,6 +11,32 @@ last_reviewed: 2026-10-14
 
 # src/Meridian.Execution
 
+OMS amendments resolve explicit broker/client identifiers, retain replacement broker aliases under
+the original client identity, and process cumulative fills through the shared fill funnel.
+Refused cancellations and amendments fail the operation while preserving observed order state;
+they cannot turn a working order into a terminal rejection. These controls support `W7-LIVE-001`.
+Unconfirmed replacements retain both original and proposed terms durably and reserve conservative
+exposure until authoritative recovery selects the actual outcome. The reservation uses whichever
+retained outcome measures larger, keeping its quantity and prices together rather than combining
+independent maxima. A pending gateway answer is applied atomically with the check that the amendment
+is still unresolved, so a confirmation that races it is reported as the actual outcome. Pending
+recovery reports must prove the same identity and fill evidence as resolved ones. Cancelling an order with a retained
+unconfirmed replacement also cancels the retained candidate, so a restart cannot leave a successor
+working; the cancellation stays pending until the candidate is proven inactive without fills.
+When a restored amendment carries only the replacement's client reference, cancellation first runs
+the gateway's amendment recovery and applies its outcome, so the cancel reaches the adopted successor.
+A rejection resolves an amendment to its original terms whichever broker id reports it, including a
+rejected successor whose echoed terms match the proposal.
+Trail-only amendments retain the requested trail and report the broker's actual outcome. A pending
+recovery answer that arrives after the live stream resolved the amendment is discarded without
+re-blocking the order. Late amendment acknowledgements
+preserve terminal lifecycle state; unresolved amendment exposure and open-order capacity remain
+reserved separately. Retained
+orders and compacted tombstones keep replacement aliases so restart and late callbacks preserve
+the original order identity.
+Open-order limits recognize a working order's prior broker IDs in stale snapshots. Multiple chain
+members reported as open still consume separate slots.
+
 Broker-dispatched client IDs, run/account ownership and processed fill watermarks are retained by
 `FileBrokerageOrderRecoveryStore` before dispatch. An ambiguous acknowledgement keeps exposure
 reserved and requires authoritative lookup; the ID cannot be reused after restart or a terminal
@@ -51,7 +77,18 @@ This layer implements execution behavior and broker-facing runtime services whil
 
 Use this module for paper session execution, broker gateway behavior, order lifecycle, and execution evidence.
 
-Paper session fills retain exact remaining carrying basis on each internal `PositionLot` and use
+`OrderManagementSystem` implements `IOrderManagementLifecycle`: construction restores retained
+order identities but leaves report intake and accounting-handoff replay inactive. Call `StartAsync`
+before submitting, amending, cancelling, or reconciling orders; concurrent starts launch one pair
+of pumps. `AddBrokerageExecution` registers a hosted lifecycle owner for the resolved `IOrderManager`,
+including a host-provided OMS registration. Direct callers own start and stop explicitly.
+`StopAsync` closes admission, drains already-admitted operations and accepted accounting handoffs,
+then joins both pumps before dependencies are disposed. Stop and disposal share one terminal
+shutdown; cancelling a stop wait does not abandon the drain, and a stopped instance cannot restart.
+This lifecycle boundary supports `W7-LIVE-001` without changing order or fill semantics.
+
+Paper session fills retain exact remaining carrying basis on each internal `PositionLot` (an
+`IUnitizedLot` whose unit and multiplier come live from its `PaperPosition`) and use
 Ledger's `LotBasisRelief` for partial long sales and short covers. Average unit cost remains a
 display quote; subsequent fills and unrealized P&L use the retained total. The native corporate-action
 adjuster carries that total through splits and principal paydowns, and lot rescaling assigns the
