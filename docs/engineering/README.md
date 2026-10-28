@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-15
+**Reviewed:** 2026-10-28
 
 This is the canonical developer and agent entrypoint for Meridian engineering and contribution work.
 It replaces hand-built planning and historical engineering prose with active operating guidance.
@@ -93,8 +93,8 @@ and checks in order; focused test commands below are useful for a shorter edit/t
 | --- | --- | --- |
 | .NET source or tests | `bash scripts/ci.sh --lane verify-dotnet` | SDK from `global.json`; the lane restores and builds before testing. |
 | Browser dashboard or generated UI contracts | `bash scripts/ci.sh --lane verify-browser` | Node.js 24 and npm; the lane installs dashboard dependencies from the lockfile. |
-| Documentation, source registry, roadmap, or AI guidance | `bash scripts/ci.sh --lane verify-docs` | `python -m pip install --requirement build/scripts/docs/requirements.txt`; generation can update tracked files, so review the resulting diff. |
-| Actions, CI tooling, or repository script tests | `bash scripts/ci.sh --lane verify-workflows` | `python -m pip install --requirement build/scripts/ci/requirements.txt`, actionlint 1.7.12, and PowerShell 7 for the recovery suites. |
+| Documentation, source registry, roadmap, or AI guidance | `bash scripts/ci.sh --lane verify-docs` | Install `build/scripts/docs/requirements.txt` in the [Python environment](#python-automation-environment); generation can update tracked files, so review the resulting diff. |
+| Actions, CI tooling, or repository script tests | `bash scripts/ci.sh --lane verify-workflows` | Install `build/scripts/ci/requirements.txt` in the [Python environment](#python-automation-environment); actionlint 1.7.12 and PowerShell 7 are also required for the recovery suites. |
 
 All lanes require Bash, Git, and Python 3.11 or newer. See the [workflow prerequisites](ci-cd-optimization.md)
 for the hosted tool installation. Before retrying a failure, open
@@ -222,6 +222,11 @@ python build/scripts/ci/dispatch-targeted-test.py `
 
 ### Most common default lanes
 
+Complete [local setup](../start/README.md#first-local-setup) before these checks. Run the .NET
+commands for backend work; run the npm commands for browser work after installing both npm
+lockfiles. A focused browser test can pass a file path after `--`, for example
+`npm --prefix src/Meridian.Ui/dashboard run test -- src/components/ui/button.test.tsx`.
+
 ```powershell
 dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true
@@ -229,6 +234,41 @@ python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 ```
+
+### Python automation environment
+
+Create a virtual environment before installing automation requirements, especially on Linux
+systems with a managed system Python. Keep it outside the checkout so environment files do not
+enter Git status or documentation inventories. Use the activation command for your shell:
+
+```powershell
+# Windows / PowerShell
+python -m venv ../meridian-venv
+../meridian-venv/Scripts/Activate.ps1
+```
+
+```bash
+# Linux or macOS / Bash
+python3 -m venv ../meridian-venv
+source ../meridian-venv/bin/activate
+```
+
+Install the documentation dependencies in the activated environment:
+
+```sh
+python -m pip install --requirement build/scripts/docs/requirements.txt
+```
+
+For workflow/script checks, also install
+`python -m pip install --requirement build/scripts/ci/requirements.txt`. Other specialist tools
+have their own requirements, such as schema control below. Run `deactivate` when finished.
+
+`scripts/ci.sh` prefers a compatible `python3` over `python`. From the Bash shell used for CI,
+check `python -c "import sys; print(sys.executable)"` and, if available,
+`python3 -c "import sys; print(sys.executable)"`. The interpreter CI selects must have the lane's
+dependencies installed. Windows virtual environments normally provide only `python.exe`; a
+separate global `python3` can still win selection. When using WSL, create and activate the Linux
+environment inside WSL rather than reusing a Windows virtual environment.
 
 ### PostgreSQL schema control
 
@@ -287,8 +327,11 @@ does not infer DDL from DTOs or mutate production state. See the
 
 ### Browser-workstation slices
 
+For a fresh checkout, restore the solution filter before using `--no-restore`:
+
 ```powershell
-dotnet build Meridian.WebWorkstation.slnf -c Debug --no-restore /p:EnableWindowsTargeting=true /p:UseAppHost=false
+dotnet restore Meridian.WebWorkstation.slnf -p:EnableWindowsTargeting=true
+dotnet build Meridian.WebWorkstation.slnf -c Debug --no-restore -p:EnableWindowsTargeting=true -p:UseAppHost=false
 ```
 
 ### Desktop slices
