@@ -12,6 +12,17 @@ This is Meridian's single active implementation list for turning the existing pr
 
 The original implementation audit covered the modular-monolith host, contracts and shared services, accounting and financial operations, portfolio and reference data, execution and strategy, providers and ingestion, storage and audit, browser and WPF workstations, tests, release workflows, deployment manifests, security material, operator guidance, generated status output, and tracked duplicate/deprecation candidates. The current refresh reconciles bounded source progress and remaining work; the historical certification baseline and acceptance decisions retain their recorded scope.
 
+### Latest merged-source follow-up (2026-10-28)
+
+Reviewed against `62215f9194`, including merged PR #3284: quoted percent-of-par
+valuation and projected cash flows now share the outstanding-principal calculation,
+including completed principal after dated factor evidence and refusal to apply a
+future-dated scalar factor early. Regression sources live in
+`tests/Meridian.Tests/SecurityMaster/QuotedPriceValuationModelTests.cs`.
+This records implementation progress, not a new test run or release acceptance.
+Factor-paydown operator activation and the existing frozen-release evidence gates
+remain open.
+
 ## Production Definition
 
 Meridian may be called production-ready only when all of the following are true:
