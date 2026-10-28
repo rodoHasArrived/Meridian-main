@@ -6,9 +6,9 @@
   "endpoint_coverage_percent": 31.4,
   "contract_coverage_percent": 3.7,
   "summary": {
-    "endpoint_count": 725,
+    "endpoint_count": 727,
     "documented_endpoint_count": 228,
-    "undocumented_endpoint_count": 497,
+    "undocumented_endpoint_count": 499,
     "workstation_contract_count": 961,
     "documented_workstation_contract_count": 36,
     "undocumented_workstation_contract_count": 925
@@ -2377,6 +2377,18 @@
       "path": "/api/ledger/journal-entry-workbench/lifecycle-action",
       "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1724",
       "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/prepare",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:24",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/draft",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:40",
+      "documented": false
     },
     {
       "method": "GET",
