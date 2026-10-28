@@ -93,6 +93,10 @@ public sealed class AmortizationLotInstructionContractTests
     [InlineData("factorScheduleEntries", "{}")]
     [InlineData("stepSchedule", "\"unresolved\"")]
     [InlineData("legs", "[{}]")]
+    [InlineData("callSchedule", "[{\"callDate\":\"2027-01-15\"}]")]
+    [InlineData("putSchedule", "[{\"putDate\":\"2027-01-15\"}]")]
+    [InlineData("putSchedule", "{}")]
+    [InlineData("callSchedule", "\"x\"")]
     public void UnsupportedOrMalformedReferenceTerms_BlockPosting(string name, string json)
     {
         var inputs = WithTerms(Inputs(), terms => terms[name] = JsonDocument.Parse(json).RootElement.Clone());
@@ -126,8 +130,32 @@ public sealed class AmortizationLotInstructionContractTests
         {
             terms["principalSchedule"] = JsonSerializer.SerializeToElement(Array.Empty<object>());
             terms["stepSchedule"] = JsonSerializer.SerializeToElement(Array.Empty<object>());
+            terms["callSchedule"] = JsonSerializer.SerializeToElement(Array.Empty<object>());
+            terms["putSchedule"] = JsonDocument.Parse("null").RootElement.Clone();
         });
         Validate(inputs).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("callSchedule", "[{\"callDate\":\"2027-01-15\",\"callPrice\":101}]")]
+    [InlineData("putSchedule", "[{\"putDate\":\"2027-01-15\"}]")]
+    public void DeclaredCallOrPutSchedule_InGovernedProfileFields_BlocksPostingAsOptionality(string name, string json)
+    {
+        // A declared schedule is optionality the bullet cannot honour, wherever the term reader finds it.
+        var inputs = Inputs();
+        var security = inputs.Security with
+        {
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new Dictionary<string, Dictionary<string, JsonElement>>
+            {
+                ["profileFields"] = new() { [name] = JsonDocument.Parse(json).RootElement.Clone() }
+            })
+        };
+        inputs = inputs with
+        {
+            Security = security,
+            SecurityEvidence = inputs.SecurityEvidence with { ContentHashSha256 = OpenLotAmortization.SecurityHash(security) }
+        };
+        Validate(inputs).Should().Contain(issue => issue.Contains("calls, puts or advance-refunding terms"));
     }
 
     [Fact]

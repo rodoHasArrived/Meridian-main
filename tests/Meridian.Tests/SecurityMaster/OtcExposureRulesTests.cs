@@ -1,0 +1,566 @@
+using FluentAssertions;
+using Meridian.Contracts.Operations;
+using Meridian.Contracts.SecurityMaster;
+
+namespace Meridian.Tests.SecurityMaster;
+
+/// <summary>
+/// The exposure and credit support arithmetic on the worked fixture: an ISDA 2002 master, a CSA
+/// with a 250,000 counterparty threshold, 100,000 minimum transfer, 1,000,000 independent amount
+/// posted by the fund and 10,000 rounding, a 10,000,000 bought swap and a 4,000,000 sold one, and
+/// 596,245 of haircut-adjusted collateral posted by the fund.
+/// </summary>
+[Trait("Category", "Unit")]
+public sealed class OtcExposureRulesTests
+{
+    private static readonly DateOnly Trade = new(2026, 3, 2);
+    private static readonly DateOnly AsOf = new(2026, 3, 31);
+    private static readonly Guid SwapId = Guid.NewGuid();
+    private static readonly Guid MasterId = Guid.NewGuid();
+    private static readonly Guid CsaId = Guid.NewGuid();
+    private static readonly Guid NettingSetId = Guid.NewGuid();
+    private static readonly Guid BuyId = Guid.NewGuid();
+    private static readonly Guid SellId = Guid.NewGuid();
+    private static readonly IReadOnlyCollection<Guid> NotShared = [];
+
+    [Theory]
+    [InlineData("A net", 1.25, 400_000, OtcMasterAgreementType.Isda2002, 75_000, null, "Delivery:Fund:330000")]
+    [InlineData("B return", 1.25, 1_600_000, OtcMasterAgreementType.Isda2002, 75_000, null, "Return:Counterparty:870000")]
+    [InlineData("C below MTA", 1.25, 750_000, OtcMasterAgreementType.Isda2002, 75_000, null, null)]
+    [InlineData("D gross", 1.25, 400_000, OtcMasterAgreementType.Other, 75_000, null, "Delivery:Fund:460000")]
+    [InlineData("E signed exposure", 14.00, 400_000, OtcMasterAgreementType.Isda2002, 840_000, null, "Return:Counterparty:430000")]
+    [InlineData("F two movements", 25.00, 400_000, OtcMasterAgreementType.Isda2002, 1_500_000, "Delivery:Counterparty:250000", "Return:Counterparty:590000")]
+    public void WorkedCases_ProduceTheExpectedMovements(string label, double pricePercent, decimal cashPosted, OtcMasterAgreementType masterType, decimal expectedNet, string? fundSideMovement, string? counterpartySideMovement)
+    {
+        var view = View(masterType);
+        var price = (decimal)pricePercent;
+        var valuations = new[] { Valued(view.Contracts[0], price), Valued(view.Contracts[1], price) };
+
+        var snapshot = OtcExposureRules.Compute(view, valuations, Balances(cashPosted), NotShared, AsOf, "casey", DateTimeOffset.UtcNow);
+
+        snapshot.Status.Should().Be(OtcExposureSnapshotStatus.Complete, label);
+        snapshot.NettingBasis.Should().Be(masterType == OtcMasterAgreementType.Other ? OtcNettingBasis.Gross : OtcNettingBasis.CloseOutNet, label);
+        snapshot.NetExposure.Should().Be(expectedNet, label);
+        snapshot.GrossPositive.Should().Be(view.Contracts[0].Notional * price / 100m, label);
+        snapshot.GrossNegative.Should().Be(view.Contracts[1].Notional * price / 100m, label);
+        snapshot.Currency.Should().Be("USD");
+        snapshot.RuleVersion.Should().Be(OtcExposureRules.RuleVersion);
+        snapshot.Blockers.Should().BeEmpty(label);
+        snapshot.CollateralHeld.Should().HaveCount(2, label);
+        snapshot.CounterpartyAsSecuredParty!.Held.Should().Be(cashPosted + 196_245m, label);
+        snapshot.FundAsSecuredParty!.Held.Should().Be(0m, label);
+
+        Describe(snapshot.FundAsSecuredParty.Movement).Should().Be(fundSideMovement, $"{label}: fund as Secured Party");
+        Describe(snapshot.CounterpartyAsSecuredParty.Movement).Should().Be(counterpartySideMovement, $"{label}: counterparty as Secured Party");
+        snapshot.Movements.Select(Describe).Should().Equal(new[] { fundSideMovement, counterpartySideMovement }.Where(m => m is not null), label);
+        snapshot.Movements.Should().OnlyContain(m => m.Currency == "USD");
+    }
+
+    [Fact]
+    public void CaseA_ReportsTheCreditSupportArithmeticOnBothSides()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002);
+        var snapshot = OtcExposureRules.Compute(view, [Valued(view.Contracts[0], 1.25m), Valued(view.Contracts[1], 1.25m)], Balances(400_000m), NotShared, AsOf, "casey", DateTimeOffset.UtcNow);
+
+        var fund = snapshot.FundAsSecuredParty!;
+        fund.SecuredParty.Should().Be(OtcMovementParty.Fund);
+        fund.Exposure.Should().Be(75_000m);
+        fund.IndependentAmountPledgor.Should().Be(0m, "the counterparty posts no independent amount");
+        fund.IndependentAmountSecuredParty.Should().Be(1_000_000m, "the independent amount is read as the fund's");
+        fund.ThresholdPledgor.Should().Be(250_000m);
+        fund.CreditSupportAmount.Should().Be(0m);
+        fund.Movement.Should().BeNull();
+
+        var counterparty = snapshot.CounterpartyAsSecuredParty!;
+        counterparty.SecuredParty.Should().Be(OtcMovementParty.Counterparty);
+        counterparty.Exposure.Should().Be(-75_000m, "close-out net exposure is signed");
+        counterparty.IndependentAmountPledgor.Should().Be(1_000_000m);
+        counterparty.ThresholdPledgor.Should().Be(0m);
+        counterparty.CreditSupportAmount.Should().Be(925_000m);
+        counterparty.Held.Should().Be(596_245m);
+        counterparty.DeliveryRaw.Should().Be(328_755m);
+        counterparty.Movement!.Amount.Should().Be(330_000m, "the delivery rounds up after the MTA test on the raw amount");
+
+        snapshot.CollateralHeld.Should().ContainSingle(line => line.Kind == OtcCollateralKind.Security)
+            .Which.HaircutAdjusted.Should().Be(196_245m);
+        snapshot.Provenance.Should().Be(DataProvenance.Real);
+        snapshot.MasterAgreementVersion.Should().Be(view.MasterAgreement.Version);
+        snapshot.CollateralAgreementVersion.Should().Be(view.CollateralAgreement!.Version);
+        snapshot.Version.Should().Be(0, "the store assigns the version");
+        snapshot.PayloadSha256.Should().BeEmpty("the store assigns the digest");
+    }
+
+    [Fact]
+    public void CaseG_AnUnvaluedContract_LeavesTheSnapshotIncomplete_WithExposuresButNoMovement()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002);
+        var snapshot = OtcExposureRules.Compute(view, [Valued(view.Contracts[0], 1.25m), Unvalued(view.Contracts[1])], Balances(400_000m), NotShared, AsOf, "casey", DateTimeOffset.UtcNow);
+
+        snapshot.Status.Should().Be(OtcExposureSnapshotStatus.Incomplete);
+        snapshot.NetExposure.Should().Be(125_000m, "exposure is reported for what was valued");
+        snapshot.GrossPositive.Should().Be(125_000m);
+        snapshot.GrossNegative.Should().Be(0m);
+        snapshot.Movements.Should().BeEmpty();
+        snapshot.FundAsSecuredParty!.Movement.Should().BeNull();
+        snapshot.CounterpartyAsSecuredParty!.Movement.Should().BeNull();
+        snapshot.Blockers.Should().ContainSingle(b => b.Code == OtcValuationBlockerCodes.MissingInput && b.Reason.Contains(SellId.ToString("D")));
+        snapshot.Contracts.Should().HaveCount(2);
+        snapshot.Contracts[1].Status.Should().Be(OtcValuationStatus.Unvalued);
+        snapshot.Contracts[1].MarkToMarket.Should().BeNull();
+    }
+
+    [Fact]
+    public void CaseH_AReturnThatRoundsToZero_IsNoMovement()
+    {
+        OtcExposureRules.Movement(-100_000m, 100_000m, 100_000m, 150_000m, OtcMovementParty.Fund, OtcMovementParty.Counterparty, "USD").Should().BeNull();
+        OtcExposureRules.RoundDown(100_000m, 150_000m).Should().Be(0m);
+
+        // The same return with a smaller rounding amount is a movement by the Secured Party.
+        var movement = OtcExposureRules.Movement(-100_000m, 100_000m, 100_000m, 10_000m, OtcMovementParty.Fund, OtcMovementParty.Counterparty, "USD");
+        movement.Should().BeEquivalentTo(new OtcCollateralMovementDto(OtcMovementKind.Return, OtcMovementParty.Counterparty, 100_000m, "USD"));
+    }
+
+    [Fact]
+    public void MinimumTransfer_IsTestedOnTheUnroundedAmount_AndADeliveryIsMovedByThePledgor()
+    {
+        OtcExposureRules.Movement(99_999m, -99_999m, 100_000m, 10_000m, OtcMovementParty.Fund, OtcMovementParty.Counterparty, "USD").Should().BeNull("99,999 would round up to 100,000 but the MTA test comes first");
+        OtcExposureRules.Movement(100_000m, -100_000m, 100_000m, 10_000m, OtcMovementParty.Fund, OtcMovementParty.Counterparty, "USD")
+            .Should().BeEquivalentTo(new OtcCollateralMovementDto(OtcMovementKind.Delivery, OtcMovementParty.Fund, 100_000m, "USD"));
+        OtcExposureRules.Movement(0m, 0m, 0m, null, OtcMovementParty.Fund, OtcMovementParty.Counterparty, "USD").Should().BeNull("nothing to move");
+    }
+
+    [Fact]
+    public void Pins_Haircut_Rounding_And_CreditSupport()
+    {
+        OtcExposureRules.HaircutAdjusted(200_250m, 2m).Should().Be(196_245m);
+        OtcExposureRules.HaircutAdjusted(400_000m, 0m).Should().Be(400_000m);
+        OtcExposureRules.RoundUp(328_755m, 10_000m).Should().Be(330_000m);
+        OtcExposureRules.RoundDown(871_245m, 10_000m).Should().Be(870_000m);
+        OtcExposureRules.RoundUp(328_755m, null).Should().Be(328_755m);
+        OtcExposureRules.RoundDown(871_245m, null).Should().Be(871_245m);
+        OtcExposureRules.RoundUp(330_000m, 10_000m).Should().Be(330_000m, "an exact multiple is unchanged");
+        OtcExposureRules.CreditSupportAmount(-75_000m, 1_000_000m, 0m, 0m).Should().Be(925_000m);
+        OtcExposureRules.CreditSupportAmount(75_000m, 0m, 1_000_000m, 250_000m).Should().Be(0m, "floored at zero");
+    }
+
+    [Theory]
+    [InlineData(OtcMasterAgreementType.Isda1992, true)]
+    [InlineData(OtcMasterAgreementType.Isda2002, true)]
+    [InlineData(OtcMasterAgreementType.Gmra, true)]
+    [InlineData(OtcMasterAgreementType.Gmsla, true)]
+    [InlineData(OtcMasterAgreementType.Other, false)]
+    public void OnlyTheNamedMasterForms_PermitCloseOutNetting(OtcMasterAgreementType type, bool nets)
+        => OtcExposureRules.PermitsCloseOutNetting(type).Should().Be(nets);
+
+    [Fact]
+    public void ContractSelection_ExcludesClosedAndUntradedContracts_AndIncludesPendingOnes()
+    {
+        var pending = Contract(Guid.NewGuid(), OtcContractDirection.Buy, 1m, OtcContractStatus.Pending, Trade, Trade.AddYears(5));
+        var terminated = pending with { ContractId = Guid.NewGuid(), Status = OtcContractStatus.Terminated };
+        var novated = pending with { ContractId = Guid.NewGuid(), Status = OtcContractStatus.Novated };
+        var matured = pending with { ContractId = Guid.NewGuid(), Status = OtcContractStatus.Matured };
+        var future = pending with { ContractId = Guid.NewGuid(), TradeDate = AsOf.AddDays(1), EffectiveDate = AsOf.AddDays(1) };
+
+        OtcExposureRules.SelectContracts([pending, terminated, novated, matured, future], AsOf)
+            .Select(c => c.ContractId).Should().Equal(pending.ContractId);
+    }
+
+    [Fact]
+    public void AnOpenContractPastItsTermination_IsABlocker()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002);
+        var stale = view.Contracts[1] with { TerminationDate = AsOf.AddDays(-1) };
+        view = view with { Contracts = [view.Contracts[0], stale] };
+
+        var snapshot = OtcExposureRules.Compute(view, [Valued(view.Contracts[0], 1.25m), Valued(stale, 1.25m)], Balances(400_000m), NotShared, AsOf, "casey", DateTimeOffset.UtcNow);
+
+        snapshot.Status.Should().Be(OtcExposureSnapshotStatus.Incomplete);
+        snapshot.NetExposure.Should().Be(75_000m, "the contract is still valued; the operator decides whether to close it");
+        snapshot.Blockers.Should().ContainSingle(b => b.Code == OtcValuationBlockerCodes.PastTermination && b.Reason.Contains(stale.ContractId.ToString("D")));
+        snapshot.Movements.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void WithoutACollateralAgreement_ExposuresAreReported_AndNoCreditSupportIsComputed()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002) with { CollateralAgreement = null };
+        view = view with { NettingSet = view.NettingSet with { CollateralAgreementId = null } };
+
+        var snapshot = OtcExposureRules.Compute(view, [Valued(view.Contracts[0], 1.25m), Valued(view.Contracts[1], 1.25m)], Balances(400_000m), NotShared, AsOf, "casey", DateTimeOffset.UtcNow);
+
+        snapshot.Status.Should().Be(OtcExposureSnapshotStatus.Incomplete);
+        snapshot.Currency.Should().Be("USD", "the first contract's currency");
+        snapshot.CollateralAgreementId.Should().BeNull();
+        snapshot.CollateralAgreementVersion.Should().BeNull();
+        snapshot.NetExposure.Should().Be(75_000m);
+        snapshot.CollateralHeld.Should().BeEmpty("balances cannot belong to a missing agreement");
+        snapshot.Movements.Should().BeEmpty();
+        snapshot.Blockers.Should().ContainSingle(b => b.Code == OtcValuationBlockerCodes.NoCollateralAgreement);
+        snapshot.FundAsSecuredParty.Should().BeNull("there are no credit support terms to report, so none are filled from zero thresholds");
+        snapshot.CounterpartyAsSecuredParty.Should().BeNull();
+    }
+
+    [Fact]
+    public void WithoutACollateralAgreement_TheNullSides_RoundTripThroughThePayload_AndTheDigestReproduces()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002) with { CollateralAgreement = null };
+        var snapshot = OtcExposureRules.Compute(view, [Valued(view.Contracts[0], 1.25m), Valued(view.Contracts[1], 1.25m)], [], NotShared, AsOf, "casey", new DateTimeOffset(2026, 4, 1, 9, 30, 0, TimeSpan.Zero)) with { Version = 1 };
+
+        var payload = OtcExposureRules.SerializePayload(snapshot);
+        payload.Should().Contain("\"FundAsSecuredParty\":null").And.Contain("\"CounterpartyAsSecuredParty\":null");
+        var read = System.Text.Json.JsonSerializer.Deserialize(payload, OtcCollateralJsonContext.Default.OtcExposureSnapshotDto)!;
+        read.FundAsSecuredParty.Should().BeNull();
+        read.CounterpartyAsSecuredParty.Should().BeNull();
+        OtcExposureRules.Digest(read).Should().Be(OtcExposureRules.Digest(snapshot));
+    }
+
+    [Fact]
+    public void WithoutACollateralAgreement_TheCurrencyComesFromAContractThatEnters_NotAClosedOrUntradedOne()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002) with { CollateralAgreement = null };
+        var closedEuro = view.Contracts[0] with { ContractId = Guid.NewGuid(), NotionalCurrency = "EUR", Status = OtcContractStatus.Terminated, TradeDate = Trade.AddYears(-1) };
+        var untradedSterling = view.Contracts[0] with { ContractId = Guid.NewGuid(), NotionalCurrency = "GBP", TradeDate = AsOf.AddDays(1) };
+        view = view with { Contracts = [closedEuro, untradedSterling, .. view.Contracts] };
+
+        OtcExposureRules.ResolveCurrency(view, AsOf).Should().Be("USD", "the first contract that enters the exposure sets it");
+        var snapshot = OtcExposureRules.Compute(view, [Valued(view.Contracts[2], 1.25m), Valued(view.Contracts[3], 1.25m)], [], NotShared, AsOf, "casey", DateTimeOffset.UtcNow);
+        snapshot.Currency.Should().Be("USD");
+        snapshot.NetExposure.Should().Be(75_000m, "the live contracts are not voided by a closed one in another currency");
+        snapshot.Blockers.Select(b => b.Code).Should().Equal(OtcValuationBlockerCodes.NoCollateralAgreement);
+
+        OtcExposureRules.ResolveCurrency(view with { Contracts = [closedEuro, untradedSterling] }, AsOf)
+            .Should().Be("EUR", "with nothing entering, the first contract's currency is the fallback; nothing is valued in it");
+    }
+
+    [Fact]
+    public void ACollateralAgreementSharedWithAnotherNettingSet_IsABlocker_AndNoMovementIsComputed()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002);
+        var other = Guid.NewGuid();
+        var valuations = new[] { Valued(view.Contracts[0], 1.25m), Valued(view.Contracts[1], 1.25m) };
+
+        var snapshot = OtcExposureRules.Compute(view, valuations, Balances(400_000m), [NettingSetId, other], AsOf, "casey", DateTimeOffset.UtcNow);
+
+        snapshot.Status.Should().Be(OtcExposureSnapshotStatus.Incomplete);
+        snapshot.Blockers.Should().ContainSingle(b => b.Code == OtcValuationBlockerCodes.SharedCollateralAgreement)
+            .Which.Reason.Should().Contain(other.ToString("D")).And.Contain("not allocated across netting sets");
+        snapshot.Movements.Should().BeEmpty("the agreement's balances would otherwise be credited to each netting set in full");
+        snapshot.CounterpartyAsSecuredParty!.Movement.Should().BeNull();
+        snapshot.NetExposure.Should().Be(75_000m);
+
+        OtcExposureRules.Compute(view, valuations, Balances(400_000m), [NettingSetId], AsOf, "casey", DateTimeOffset.UtcNow)
+            .Status.Should().Be(OtcExposureSnapshotStatus.Complete, "the netting set itself referencing its agreement is not sharing");
+    }
+
+    [Fact]
+    public void ATerminatedCollateralAgreement_IsABlocker()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002);
+        view = view with { CollateralAgreement = view.CollateralAgreement! with { TerminationDate = AsOf.AddDays(-1) } };
+
+        var snapshot = OtcExposureRules.Compute(view, [Valued(view.Contracts[0], 1.25m), Valued(view.Contracts[1], 1.25m)], Balances(400_000m), NotShared, AsOf, "casey", DateTimeOffset.UtcNow);
+
+        snapshot.Status.Should().Be(OtcExposureSnapshotStatus.Incomplete);
+        snapshot.Blockers.Should().ContainSingle(b => b.Code == OtcValuationBlockerCodes.CollateralAgreementTerminated);
+        snapshot.Movements.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ACollateralAgreementNotYetInEffect_IsABlocker()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002);
+        view = view with { CollateralAgreement = view.CollateralAgreement! with { EffectiveDate = AsOf.AddDays(1) } };
+
+        var snapshot = OtcExposureRules.Compute(view, [Valued(view.Contracts[0], 1.25m), Valued(view.Contracts[1], 1.25m)], Balances(400_000m), NotShared, AsOf, "casey", DateTimeOffset.UtcNow);
+
+        snapshot.Status.Should().Be(OtcExposureSnapshotStatus.Incomplete);
+        snapshot.Blockers.Should().ContainSingle(b => b.Code == OtcValuationBlockerCodes.CollateralAgreementNotYetEffective)
+            .Which.Reason.Should().Contain("takes effect on");
+        snapshot.Movements.Should().BeEmpty("thresholds and the independent amount of an agreement not yet in force cannot call collateral");
+        snapshot.NetExposure.Should().Be(75_000m, "exposure is still reported for what was valued");
+    }
+
+    [Fact]
+    public void FullyReturnedBalances_AndBalancesUnderAnotherAgreement_AreIgnored()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002);
+        var balances = Balances(400_000m);
+        var returned = balances[0] with { BalanceId = Guid.NewGuid(), Quantity = 0m, ValuedAmount = 0m };
+        var returnedLater = returned with { BalanceId = Guid.NewGuid(), ValuedAsOf = AsOf.AddDays(5) };
+        var elsewhere = balances[0] with { BalanceId = Guid.NewGuid(), CollateralAgreementId = Guid.NewGuid() };
+        var elsewhereLater = elsewhere with { BalanceId = Guid.NewGuid(), ValuedAsOf = AsOf.AddDays(5) };
+
+        var snapshot = OtcExposureRules.Compute(view, [Valued(view.Contracts[0], 1.25m), Valued(view.Contracts[1], 1.25m)], [.. balances, returned, returnedLater, elsewhere, elsewhereLater], NotShared, AsOf, "casey", DateTimeOffset.UtcNow);
+
+        snapshot.Status.Should().Be(OtcExposureSnapshotStatus.Complete, "a zero quantity or another agreement's balance says nothing about this one's holdings, whatever its valuation date");
+        snapshot.Blockers.Should().BeEmpty();
+        snapshot.CollateralHeld.Select(line => line.BalanceId).Should().BeEquivalentTo(balances.Select(b => b.BalanceId));
+        snapshot.CounterpartyAsSecuredParty!.Held.Should().Be(596_245m);
+    }
+
+    [Fact]
+    public void APositiveBalanceValuedAfterTheAsOfDate_IsABlocker_NotZeroHeld()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002);
+        var balances = Balances(400_000m);
+        var revalued = balances[0] with { ValuedAsOf = AsOf.AddDays(1) };
+
+        var snapshot = OtcExposureRules.Compute(view, [Valued(view.Contracts[0], 1.25m), Valued(view.Contracts[1], 1.25m)], [revalued, balances[1]], NotShared, AsOf, "casey", DateTimeOffset.UtcNow);
+
+        snapshot.Status.Should().Be(OtcExposureSnapshotStatus.Incomplete, "balances are current-state rows, so the holding on the earlier date is unknown");
+        snapshot.Blockers.Should().ContainSingle(b => b.Code == OtcValuationBlockerCodes.CollateralValuationAfterAsOf)
+            .Which.Reason.Should().Contain(revalued.BalanceId.ToString("D")).And.Contain("2026-04-01");
+        snapshot.Movements.Should().BeEmpty("a back-dated computation must not call the collateral it cannot see as if none were held");
+        snapshot.CollateralHeld.Select(line => line.BalanceId).Should().Equal(balances[1].BalanceId);
+        snapshot.NetExposure.Should().Be(75_000m);
+    }
+
+    [Fact]
+    public void TheHaircut_IsTheAgreementsCurrentOne_MatchedByDescriptionRegardlessOfCase()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002);
+        view = view with
+        {
+            CollateralAgreement = view.CollateralAgreement! with
+            {
+                Version = 3,
+                EligibleCollateral = [new OtcEligibleCollateralDto("USD cash", null, 0m), new OtcEligibleCollateralDto("US Treasuries", "Bond", 5m)]
+            }
+        };
+        var balances = Balances(400_000m);
+        var treasuries = balances[1] with { EligibleCollateralDescription = "us treasuries" };
+
+        var snapshot = OtcExposureRules.Compute(view, [Valued(view.Contracts[0], 1.25m), Valued(view.Contracts[1], 1.25m)], [balances[0], treasuries], NotShared, AsOf, "casey", DateTimeOffset.UtcNow);
+
+        treasuries.HaircutPercent.Should().Be(2m, "the balance still carries the haircut copied when it was written");
+        var line = snapshot.CollateralHeld.Should().ContainSingle(l => l.BalanceId == treasuries.BalanceId).Subject;
+        line.HaircutPercent.Should().Be(5m, "the snapshot applies, and reports, the amended agreement's haircut");
+        line.HaircutAdjusted.Should().Be(190_237.5m);
+        snapshot.CollateralAgreementVersion.Should().Be(3);
+        snapshot.CounterpartyAsSecuredParty!.Held.Should().Be(590_237.5m);
+        snapshot.CounterpartyAsSecuredParty.DeliveryRaw.Should().Be(334_762.5m);
+        snapshot.Movements.Should().ContainSingle().Which.Amount.Should().Be(340_000m);
+    }
+
+    [Fact]
+    public void ABalanceNoLongerEligible_IsABlocker_AndIsNotCountedAsHeld()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002);
+        view = view with { CollateralAgreement = view.CollateralAgreement! with { EligibleCollateral = [new OtcEligibleCollateralDto("USD cash", null, 0m)] } };
+        var balances = Balances(400_000m);
+
+        var snapshot = OtcExposureRules.Compute(view, [Valued(view.Contracts[0], 1.25m), Valued(view.Contracts[1], 1.25m)], balances, NotShared, AsOf, "casey", DateTimeOffset.UtcNow);
+
+        snapshot.Status.Should().Be(OtcExposureSnapshotStatus.Incomplete);
+        snapshot.Blockers.Should().ContainSingle(b => b.Code == OtcValuationBlockerCodes.IneligibleCollateral)
+            .Which.Reason.Should().Contain(balances[1].BalanceId.ToString("D")).And.Contain("US Treasuries");
+        snapshot.CollateralHeld.Select(l => l.BalanceId).Should().Equal(balances[0].BalanceId);
+        snapshot.Movements.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ABalanceInAnotherCurrency_IsABlocker_AndIsNotCreditedWithoutFx()
+    {
+        // The agreement's currency was amended to EUR after the balances were recorded in USD.
+        var view = View(OtcMasterAgreementType.Isda2002);
+        view = view with
+        {
+            CollateralAgreement = view.CollateralAgreement! with { Currency = "EUR" },
+            Contracts = view.Contracts.Select(contract => contract with { NotionalCurrency = "EUR" }).ToArray()
+        };
+        var balances = Balances(400_000m);
+
+        var snapshot = OtcExposureRules.Compute(
+            view,
+            view.Contracts.Select(contract => Valued(contract, 1.25m) with { Currency = "EUR" }).ToArray(),
+            balances, NotShared, AsOf, "casey", DateTimeOffset.UtcNow);
+
+        snapshot.Currency.Should().Be("EUR");
+        snapshot.Status.Should().Be(OtcExposureSnapshotStatus.Incomplete);
+        snapshot.Blockers.Where(b => b.Code == OtcValuationBlockerCodes.CollateralCurrencyMismatch).Should().HaveCount(2)
+            .And.OnlyContain(b => b.Reason.Contains("held in USD") && b.Reason.Contains("computed in EUR"));
+        snapshot.CollateralHeld.Should().BeEmpty("a USD balance is never credited as EUR");
+        snapshot.Movements.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void AValuedMark_ForAnotherDateOrAnotherInstrument_IsUnvalued()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002);
+        var staleDate = Valued(view.Contracts[0], 1.25m) with { AsOfDate = AsOf.AddDays(-1) };
+        var otherInstrument = Valued(view.Contracts[1], 1.25m) with { SecurityId = Guid.NewGuid() };
+
+        var snapshot = OtcExposureRules.Compute(view, [staleDate, otherInstrument], Balances(400_000m), NotShared, AsOf, "casey", DateTimeOffset.UtcNow);
+
+        snapshot.Status.Should().Be(OtcExposureSnapshotStatus.Incomplete);
+        snapshot.Contracts.Should().OnlyContain(c => c.Status == OtcValuationStatus.Unvalued && c.MarkToMarket == null);
+        snapshot.NetExposure.Should().Be(0m, "neither mark is folded in");
+        snapshot.Movements.Should().BeEmpty();
+        snapshot.Blockers.Should().HaveCount(2).And.OnlyContain(b => b.Code == OtcValuationBlockerCodes.MissingValuation);
+        snapshot.Blockers.Should().Contain(b => b.Reason.Contains(BuyId.ToString("D")) && b.Reason.Contains("as of 2026-03-30"));
+        snapshot.Blockers.Should().Contain(b => b.Reason.Contains(SellId.ToString("D")) && b.Reason.Contains(otherInstrument.SecurityId.ToString("D")));
+    }
+
+    [Fact]
+    public void AValuationInAnotherCurrency_OrMissing_OrWithoutAMark_IsUnvalued()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002);
+        var euro = Valued(view.Contracts[0], 1.25m) with { Currency = "EUR" };
+        var markless = Valued(view.Contracts[1], 1.25m) with { MarkToMarket = null };
+
+        var snapshot = OtcExposureRules.Compute(view, [euro, markless], Balances(400_000m), NotShared, AsOf, "casey", DateTimeOffset.UtcNow);
+        snapshot.Status.Should().Be(OtcExposureSnapshotStatus.Incomplete);
+        snapshot.Contracts.Should().OnlyContain(c => c.Status == OtcValuationStatus.Unvalued && c.MarkToMarket == null);
+        snapshot.Blockers.Select(b => b.Code).Should().BeEquivalentTo(OtcValuationBlockerCodes.CurrencyMismatch, OtcValuationBlockerCodes.MissingInput);
+
+        var missing = OtcExposureRules.Compute(view, [Valued(view.Contracts[0], 1.25m)], Balances(400_000m), NotShared, AsOf, "casey", DateTimeOffset.UtcNow);
+        missing.Status.Should().Be(OtcExposureSnapshotStatus.Incomplete);
+        missing.Blockers.Should().ContainSingle(b => b.Code == OtcValuationBlockerCodes.MissingValuation);
+    }
+
+    [Fact]
+    public void Provenance_FoldsToTheStrongestInput_AndTheDigestIsStable()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002);
+        var simulated = Valued(view.Contracts[1], 1.25m) with { Provenance = DataProvenance.Simulated };
+        var computedAt = new DateTimeOffset(2026, 4, 1, 9, 30, 0, TimeSpan.Zero);
+
+        var snapshot = OtcExposureRules.Compute(view, [Valued(view.Contracts[0], 1.25m), simulated], Balances(400_000m), NotShared, AsOf, "casey", computedAt);
+        snapshot.Provenance.Should().Be(DataProvenance.Simulated, "a snapshot is never more real than its least-real input");
+        snapshot.Status.Should().Be(OtcExposureSnapshotStatus.Complete, "provenance is reported, not hidden; issuing a call is what refuses it");
+
+        var versioned = snapshot with { Version = 3 };
+        var digest = OtcExposureRules.Digest(versioned);
+        digest.Should().HaveLength(64).And.MatchRegex("^[0-9a-f]+$");
+        OtcExposureRules.Digest(versioned with { PayloadSha256 = digest }).Should().Be(digest, "the digest field is blanked before hashing");
+        OtcExposureRules.Digest(versioned with { Version = 4 }).Should().NotBe(digest);
+        OtcExposureRules.SerializePayload(versioned with { PayloadSha256 = digest }).Should().Contain("\"PayloadSha256\":\"\"");
+    }
+
+    [Fact]
+    public void Compute_RecordsTheVersionOfEveryRecordItRead_InIdOrder()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002);
+        var closed = Contract(Guid.NewGuid(), OtcContractDirection.Sell, 1_000_000m, OtcContractStatus.Terminated, Trade.AddYears(-1), Trade.AddYears(4)) with { Version = 4, SecurityId = Guid.NewGuid() };
+        var untraded = Contract(Guid.NewGuid(), OtcContractDirection.Buy, 2_000_000m, OtcContractStatus.Pending, AsOf.AddDays(1), AsOf.AddYears(5)) with { Version = 2, SecurityId = Guid.NewGuid() };
+        view = view with { NettingSet = view.NettingSet with { Version = 7 }, Contracts = [untraded, .. view.Contracts, closed] };
+        var balances = Balances(400_000m);
+        var returned = balances[0] with { BalanceId = Guid.NewGuid(), Quantity = 0m, ValuedAmount = 0m, Version = 3 };
+        var revalued = balances[1] with { BalanceId = Guid.NewGuid(), ValuedAsOf = AsOf.AddDays(1), Version = 5 };
+        var elsewhere = balances[0] with { BalanceId = Guid.NewGuid(), CollateralAgreementId = Guid.NewGuid() };
+        var other = Guid.NewGuid();
+        var computedAt = DateTimeOffset.UtcNow;
+
+        var snapshot = OtcExposureRules.Compute(
+            view, [Valued(view.Contracts[1], 1.25m), Valued(view.Contracts[2], 1.25m)], [revalued, .. balances, elsewhere, returned], [other, NettingSetId, other], AsOf, "casey", computedAt);
+
+        var inputs = snapshot.Inputs!;
+        inputs.NettingSetVersion.Should().Be(7);
+        inputs.Contracts.Should().Equal(
+            view.Contracts.Select(c => new OtcExposureInputVersionDto(c.ContractId, c.Version)).OrderBy(i => i.Id),
+            "a closed or not-yet-traded contract is an input too: changing its status or trade date changes which contracts enter");
+        inputs.Contracts.Should().Contain(new[] { new OtcExposureInputVersionDto(closed.ContractId, 4), new OtcExposureInputVersionDto(untraded.ContractId, 2) });
+        inputs.CollateralBalances.Should().Equal(
+            new[] { balances[0], balances[1], returned, revalued }.Select(b => new OtcExposureInputVersionDto(b.BalanceId, b.Version)).OrderBy(i => i.Id),
+            "a fully returned balance and one blocked for its valuation date are inputs too; a balance under another agreement is not");
+        inputs.NettingSetsUnderAgreement.Should().Equal(new[] { other, NettingSetId }.Order());
+        inputs.Securities.Should().Equal(new[] { SwapId }, "the market data read is that of the securities valued; a closed or untraded contract's security is not priced");
+        inputs.KnowledgeAsOf.Should().Be(computedAt, "with no knowledge time the valuations read market data as known at the computation instant");
+        snapshot.Contracts.Should().HaveCount(2, "only the contracts that enter are valued");
+        snapshot.Status.Should().Be(OtcExposureSnapshotStatus.Incomplete, "the shared agreement and the revalued balance still block");
+
+        var versioned = snapshot with { Version = 1 };
+        var payload = OtcExposureRules.SerializePayload(versioned);
+        var read = System.Text.Json.JsonSerializer.Deserialize(payload, OtcCollateralJsonContext.Default.OtcExposureSnapshotDto)!;
+        read.Inputs.Should().BeEquivalentTo(inputs, o => o.WithStrictOrdering());
+        OtcExposureRules.Digest(read).Should().Be(OtcExposureRules.Digest(versioned), "the inputs round-trip through the payload");
+        OtcExposureRules.Digest(versioned with { Inputs = inputs with { NettingSetVersion = 8 } }).Should().NotBe(OtcExposureRules.Digest(versioned), "the digest covers the inputs");
+        OtcExposureRules.Digest(versioned with { Inputs = inputs with { KnowledgeAsOf = computedAt.AddTicks(-1) } }).Should().NotBe(OtcExposureRules.Digest(versioned), "and the knowledge time");
+    }
+
+    [Fact]
+    public void Compute_RecordsASuppliedKnowledgeTime_AndRefusesADateThatHasNotCome()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002);
+        IReadOnlyList<OtcContractValuationDto> valuations = [Valued(view.Contracts[0], 1.25m), Valued(view.Contracts[1], 1.25m)];
+        var computedAt = new DateTimeOffset(2026, 4, 1, 9, 30, 0, TimeSpan.Zero);
+        var knownAt = new DateTimeOffset(2026, 3, 31, 18, 0, 0, TimeSpan.Zero);
+
+        var replay = OtcExposureRules.Compute(view, valuations, Balances(400_000m), NotShared, AsOf, "casey", computedAt, knownAt);
+        replay.Inputs!.KnowledgeAsOf.Should().Be(knownAt, "a replay records the knowledge time its valuations used, so it can be told from a live valuation");
+        replay.ComputedAt.Should().Be(computedAt);
+
+        FluentActions.Invoking(() => OtcExposureRules.Compute(view, valuations, Balances(400_000m), NotShared, AsOf, "casey", new DateTimeOffset(2026, 3, 30, 23, 59, 0, TimeSpan.Zero)))
+            .Should().Throw<ArgumentException>("an append-only snapshot of a date to come would stand as the latest valuation for good")
+            .WithMessage("An exposure computation cannot value 2026-03-31, after the current date 2026-03-30 (UTC)*");
+        OtcExposureRules.Compute(view, valuations, Balances(400_000m), NotShared, AsOf, "casey", new DateTimeOffset(2026, 3, 31, 0, 0, 0, TimeSpan.Zero))
+            .AsOfDate.Should().Be(AsOf, "the as-of date has come from its first UTC instant");
+        FluentActions.Invoking(() => OtcExposureRules.RequireNotFutureDated(AsOf, new DateTimeOffset(2026, 3, 31, 8, 0, 0, TimeSpan.FromHours(10))))
+            .Should().Throw<ArgumentException>("the current date is the UTC one: 08:00 on the 31st at UTC+10 is still the 30th in UTC");
+    }
+
+    [Fact]
+    public void WithoutACollateralAgreement_OnlyTheNettingSetAndItsContractsAreRecorded()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002) with { CollateralAgreement = null };
+
+        var snapshot = OtcExposureRules.Compute(view, [Valued(view.Contracts[0], 1.25m), Valued(view.Contracts[1], 1.25m)], Balances(400_000m), [NettingSetId], AsOf, "casey", DateTimeOffset.UtcNow);
+
+        snapshot.Inputs!.NettingSetVersion.Should().Be(view.NettingSet.Version);
+        snapshot.Inputs.Contracts.Select(i => i.Id).Should().BeEquivalentTo(new[] { BuyId, SellId });
+        snapshot.Inputs.CollateralBalances.Should().BeEmpty("no balance belongs to a missing agreement");
+        snapshot.Inputs.NettingSetsUnderAgreement.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Compute_RequiresAnActor_AndACurrency()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002);
+        FluentActions.Invoking(() => OtcExposureRules.Compute(view, [], [], NotShared, AsOf, " ", DateTimeOffset.UtcNow))
+            .Should().Throw<ArgumentException>().WithMessage("*who computed it*");
+
+        var empty = view with { CollateralAgreement = null, Contracts = [] };
+        FluentActions.Invoking(() => OtcExposureRules.ResolveCurrency(empty, AsOf))
+            .Should().Throw<ArgumentException>().WithMessage("*no currency*");
+        OtcExposureRules.ResolveCurrency(view, AsOf).Should().Be("USD");
+        FluentActions.Invoking(() => OtcExposureRules.Compute(view, [], [], null!, AsOf, "casey", DateTimeOffset.UtcNow))
+            .Should().Throw<ArgumentNullException>("whether the agreement is shared is a required fact, not a default");
+    }
+
+    private static string? Describe(OtcCollateralMovementDto? movement)
+        => movement is null ? null : $"{movement.Kind}:{movement.Mover}:{movement.Amount:0}";
+
+    private static OtcNettingSetViewDto View(OtcMasterAgreementType masterType)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var master = new OtcMasterAgreementDto(MasterId, "Big Bank", null, "Meridian Master Fund", null, masterType, new DateOnly(2024, 1, 15), "New York", null, 1, "casey", now);
+        var csa = new OtcCollateralAgreementDto(
+            CsaId, MasterId, "USD", 0m, 250_000m, 100_000m, 1_000_000m, 10_000m, "Daily",
+            [new OtcEligibleCollateralDto("USD cash", null, 0m), new OtcEligibleCollateralDto("US Treasuries", "Bond", 2m)],
+            new DateOnly(2024, 1, 15), null, null, 2, "casey", now);
+        var nettingSet = new OtcNettingSetDto(NettingSetId, MasterId, CsaId, "Big Bank ISDA", null, 1, "casey", now);
+        return new OtcNettingSetViewDto(nettingSet, master, csa,
+        [
+            Contract(BuyId, OtcContractDirection.Buy, 10_000_000m, OtcContractStatus.Pending, Trade, Trade.AddYears(5)),
+            Contract(SellId, OtcContractDirection.Sell, 4_000_000m, OtcContractStatus.Confirmed, Trade.AddDays(1), Trade.AddYears(5))
+        ]);
+    }
+
+    private static OtcContractDto Contract(Guid id, OtcContractDirection direction, decimal notional, OtcContractStatus status, DateOnly trade, DateOnly? termination)
+        => new(id, SwapId, NettingSetId, null, direction, notional, "USD", trade, trade.AddDays(2), termination, status, null, null, 1, "casey", DateTimeOffset.UtcNow);
+
+    private static OtcCollateralBalanceDto[] Balances(decimal cashPosted) =>
+    [
+        new(Guid.NewGuid(), CsaId, OtcCollateralDirection.Posted, OtcCollateralKind.Cash, "USD cash", null, "USD", cashPosted, 1m, cashPosted, 0m, AsOf.AddDays(-1), null, null, 1, "casey", DateTimeOffset.UtcNow),
+        new(Guid.NewGuid(), CsaId, OtcCollateralDirection.Posted, OtcCollateralKind.Security, "US Treasuries", Guid.NewGuid(), "USD", 2_000m, 100.125m, 200_250m, 2m, AsOf.AddDays(-1), null, null, 1, "casey", DateTimeOffset.UtcNow)
+    ];
+
+    private static OtcContractValuationDto Valued(OtcContractDto contract, decimal pricePercent, DataProvenance provenance = DataProvenance.Real)
+        => new(contract.ContractId, contract.SecurityId, AsOf, OtcValuationStatus.Valued,
+            (contract.Direction == OtcContractDirection.Buy ? 1m : -1m) * contract.Notional * pricePercent / 100m,
+            "USD", "test", [], [], provenance);
+
+    private static OtcContractValuationDto Unvalued(OtcContractDto contract)
+        => new(contract.ContractId, contract.SecurityId, AsOf, OtcValuationStatus.Unvalued, null, "USD", "test", [],
+            [new OtcValuationBlockerDto(OtcValuationBlockerCodes.MissingInput, "no golden-copy price")], DataProvenance.Real);
+}

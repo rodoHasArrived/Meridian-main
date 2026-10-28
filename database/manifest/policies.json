@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 243,
-    "warning": 243
+    "total": 248,
+    "warning": 248
   },
   "failed": false,
   "findings": [
@@ -2177,6 +2177,76 @@
     {
       "details": {
         "columns": [
+          "security_id"
+        ],
+        "constraint": "otc_collateral_balances_security_id_fkey",
+        "schema": "security_master",
+        "table": "otc_collateral_balances"
+      },
+      "message": "Foreign key security_master.otc_collateral_balances.otc_collateral_balances_security_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.otc_collateral_balances.otc_collateral_balances_security_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "collateral_agreement_id"
+        ],
+        "constraint": "otc_exposure_snapshots_collateral_agreement_id_fkey",
+        "schema": "security_master",
+        "table": "otc_exposure_snapshots"
+      },
+      "message": "Foreign key security_master.otc_exposure_snapshots.otc_exposure_snapshots_collateral_agreement_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.otc_exposure_snapshots.otc_exposure_snapshots_collateral_agreement_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "collateral_agreement_id"
+        ],
+        "constraint": "otc_margin_calls_collateral_agreement_id_fkey",
+        "schema": "security_master",
+        "table": "otc_margin_calls"
+      },
+      "message": "Foreign key security_master.otc_margin_calls.otc_margin_calls_collateral_agreement_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.otc_margin_calls.otc_margin_calls_collateral_agreement_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "snapshot_id"
+        ],
+        "constraint": "otc_margin_calls_snapshot_id_fkey",
+        "schema": "security_master",
+        "table": "otc_margin_calls"
+      },
+      "message": "Foreign key security_master.otc_margin_calls.otc_margin_calls_snapshot_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.otc_margin_calls.otc_margin_calls_snapshot_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "collateral_agreement_id"
+        ],
+        "constraint": "otc_netting_sets_collateral_agreement_id_fkey",
+        "schema": "security_master",
+        "table": "otc_netting_sets"
+      },
+      "message": "Foreign key security_master.otc_netting_sets.otc_netting_sets_collateral_agreement_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.otc_netting_sets.otc_netting_sets_collateral_agreement_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
           "source_event_id"
         ],
         "constraint": "payment_allocation_source_event_id_fkey",
@@ -2655,5 +2725,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "7b8e72fb06f84fc1e785be066b77a4543deab85df8d5a9fee585845583dd504f"
+  "fingerprint": "298b84706416124e0a1a654ba8c61e83b0fcad8440c40130c19b6ba74bbb2e5b"
 }

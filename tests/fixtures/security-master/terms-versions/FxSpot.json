@@ -1,0 +1,20 @@
+{
+  "assetClass": "FxSpot",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "baseCurrency",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "quoteCurrency",
+          "type": "String",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

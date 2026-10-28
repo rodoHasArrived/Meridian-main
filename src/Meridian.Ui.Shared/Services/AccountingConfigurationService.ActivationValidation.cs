@@ -718,6 +718,9 @@ public sealed partial class AccountingConfigurationService
             AccountingRuleFormulaKindDto.FixedAmount => formula.Value <= 0m,
             AccountingRuleFormulaKindDto.PercentageOfSourceAmount => formula.Value <= 0m,
             AccountingRuleFormulaKindDto.AllocationResidual => fallbackWeight <= 0m,
+            // A lot-mutation component is supplied per dry run by the governed instruction, so no
+            // static activation check can declare it always non-positive.
+            AccountingRuleFormulaKindDto.LotMutationComponent => false,
             _ => false
         };
 

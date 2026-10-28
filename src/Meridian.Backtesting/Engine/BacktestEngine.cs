@@ -1025,14 +1025,17 @@ public sealed class BacktestEngine(
 
         var missing = new List<string>();
         var inactive = new List<string>();
+        var universeAsOf = new DateTimeOffset(request.To.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
 
         foreach (var symbol in universe)
         {
             ct.ThrowIfCancellationRequested();
             try
             {
+                // Resolve the ticker as the Security Master knew it at the end of the replay window, so
+                // a recycled or renamed ticker is judged against the identity it carried then.
                 var detail = await securityMasterQueryService.GetByIdentifierAsync(
-                    SecurityIdentifierKind.Ticker, symbol, provider: null, ct).ConfigureAwait(false);
+                    SecurityIdentifierKind.Ticker, symbol, provider: null, ct, asOfUtc: universeAsOf).ConfigureAwait(false);
 
                 if (detail is null)
                 {
@@ -1090,7 +1093,7 @@ public sealed class BacktestEngine(
             try
             {
                 var detail = await securityMasterQueryService.GetByIdentifierAsync(
-                    SecurityIdentifierKind.Ticker, symbol, provider: null, ct);
+                    SecurityIdentifierKind.Ticker, symbol, provider: null, ct, asOfUtc: asOfOffset);
 
                 if (detail is null)
                     continue;

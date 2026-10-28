@@ -49,7 +49,7 @@ These repo-local skills are the primary Meridian skill set for current AI work:
 | `meridian-ledger-projection-replay-review` | Review ledger projection, replay ordering, rebuild, versioning, and report handoff risk |
 | `meridian-codex-skill-builder` | Package Codex skills with scripts, evals, profiles, catalogs, and route coverage |
 | `meridian-docs` | Maintain Meridian documentation with repo-grounded evidence |
-| `meridian-implementation-assurance` | Implement, certify, and improve work with scope control, requirement-to-evidence traceability, explicit validation, and docs sync |
+| `meridian-implementation-assurance` | Implement, certify, and improve work with acceptance evidence, risk-based checks, explicit verification gaps, and docs sync |
 | `meridian-provider-builder` | Build and extend providers with the right contracts |
 | `meridian-repo-navigation` | Route large-repo tasks before deeper work |
 | `meridian-roadmap-strategist` | Refresh roadmap and target-state documents |
