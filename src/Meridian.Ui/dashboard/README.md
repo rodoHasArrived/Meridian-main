@@ -16,6 +16,10 @@ save, verification and deletion use the same retained connection; account and en
 from authenticated ownership. Missing or changed ownership blocks changes without provider-wide
 fallback. Refresh or session changes clear secret drafts and invalidate delayed responses. This
 client increment does not create ownership, migrate legacy secrets or bind host runtime providers.
+Family matching uses only the server's explicit provider aliases and preserves each retained
+connection's raw identity, tenant, account and environment.
+Live/production acknowledgement also recognizes case and surrounding whitespace in retained
+environment labels without changing the environment sent to the server.
 
 Accounting Ledger Explorer includes a governed factor-paydown workbench. Exact factor text and
 existing retained evidence identities go to the shared preparation endpoint; the server supplies

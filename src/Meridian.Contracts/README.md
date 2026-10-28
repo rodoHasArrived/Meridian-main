@@ -325,6 +325,8 @@ exact strings on these HTTP routes, and factor input fields accept decimal strin
 Optional `AssetAccountingEventSpineDto.PreparationRevision` links a freshly reviewed, undrafted
 factor preparation to its exact prior spine version and canonical fingerprint. The link records
 the authenticated preparing actor, time and reason; absent links preserve historical JSON.
+The non-positional init property preserves the original constructor/deconstruction signatures and
+the serializer order of previously populated links as well as historical null-link snapshots.
 Recovery keeps the same economic event, factors, evidence and owner identity. Drafted and posted
 authority cannot enter this transition, and ordinary lifecycle appends preserve the retained link.
 `ManualJournalEntryDraftDto.AssetAccountingDraft` retains the exact typed asset candidate and source
