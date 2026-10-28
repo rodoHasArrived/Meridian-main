@@ -17,7 +17,7 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
     {
         var input = Normalize(request);
         var inputHash = InputHash(input);
-        return store.WithStateAsync(document =>
+        return store.WithStateAsync(input.Scope, document =>
         {
             var retained = document.Runs.FirstOrDefault(item => item.Input.RunId == input.RunId && item.Input.Scope == input.Scope);
             if (retained is not null)
@@ -84,7 +84,7 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
     {
         RequireScope(scope);
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
-        return store.WithStateAsync(document =>
+        return store.WithStateAsync(scope, document =>
         {
             var run = document.Runs.SingleOrDefault(item => item.Input.Scope == scope && item.Input.RunId == runId)
                 ?? throw new KeyNotFoundException("The requested run was not retained in this exact account scope.");
@@ -99,7 +99,7 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
     public Task<IReadOnlyList<AccountCashReconciliationCase>> GetCasesAsync(AccountCashReconciliationScope scope, CancellationToken ct = default)
     {
         RequireScope(scope);
-        return store.WithStateAsync<IReadOnlyList<AccountCashReconciliationCase>>(document =>
+        return store.WithStateAsync<IReadOnlyList<AccountCashReconciliationCase>>(scope, document =>
             (document, document.Cases.Where(item => item.Scope == scope).ToArray()), false, ct);
     }
 
@@ -112,7 +112,7 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
         ArgumentException.ThrowIfNullOrWhiteSpace(reason);
         if (assignedAtUtc == default)
             throw new ArgumentException("Assignment time is required.", nameof(assignedAtUtc));
-        return store.WithStateAsync(document =>
+        return store.WithStateAsync(scope, document =>
         {
             var item = document.Cases.SingleOrDefault(item => item.Scope == scope && item.CaseId == caseId)
                 ?? throw new KeyNotFoundException("The requested case was not retained in this exact account scope.");

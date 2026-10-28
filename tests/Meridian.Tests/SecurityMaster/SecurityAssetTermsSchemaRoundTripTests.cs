@@ -21,7 +21,7 @@ namespace Meridian.Tests.SecurityMaster;
 /// fails this test until the payload — and therefore both codec sides — carry it.</para>
 /// </summary>
 [Trait("Category", "Unit")]
-public sealed class SecurityAssetTermsSchemaRoundTripTests
+public sealed partial class SecurityAssetTermsSchemaRoundTripTests
 {
     private static readonly Guid UnderlyingId = Guid.Parse("6f9619ff-8b86-d011-b42d-00cf4fc964ff");
 
@@ -333,6 +333,85 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
             expiry = "2029-05-31",
             multiplier = 1m
         },
+        ["FxForward"] = new
+        {
+            baseCurrency = "EUR",
+            quoteCurrency = "USD",
+            notional = 10_000_000m,
+            forwardRate = 1.0925m,
+            tradeDate = "2026-03-02",
+            valueDate = "2026-09-02",
+            settlementType = "Physical"
+        },
+        ["NonDeliverableForward"] = new
+        {
+            baseCurrency = "USD",
+            quoteCurrency = "BRL",
+            settlementCurrency = "USD",
+            notional = 5_000_000m,
+            forwardRate = 5.4150m,
+            fixingDate = "2026-06-29",
+            valueDate = "2026-07-01",
+            fixingSource = "PTAX"
+        },
+        ["CreditDefaultSwap"] = new
+        {
+            referenceEntity = "Meridian Industries Inc",
+            referenceObligation = "US59000AAB12",
+            protectionSide = "Buy",
+            notional = 10_000_000m,
+            fixedCouponBps = 100m,
+            effectiveDate = "2026-03-20",
+            maturityDate = "2031-06-20",
+            paymentFrequency = "Quarterly",
+            dayCount = "ACT/360",
+            seniority = "SeniorUnsecured",
+            restructuringClause = "XR",
+            upfrontPoints = 2.35m,
+            recoveryRateAssumption = 0.4m,
+            indexName = "CDX.NA.IG.46"
+        },
+        ["Swaption"] = new
+        {
+            payerReceiver = "Payer",
+            exerciseStyle = "European",
+            strikeRate = 0.0375m,
+            expiry = "2027-03-15",
+            underlyingEffectiveDate = "2027-03-17",
+            underlyingMaturityDate = "2037-03-17",
+            notional = 25_000_000m,
+            floatingIndex = "SOFR",
+            fixedLegPaymentFrequency = "SemiAnnual",
+            fixedLegDayCount = "30/360",
+            settlementType = "Physical"
+        },
+        ["CapFloor"] = new
+        {
+            capFloorType = "Collar",
+            referenceIndex = "SOFR",
+            capStrike = 0.05m,
+            floorStrike = 0.02m,
+            notional = 50_000_000m,
+            effectiveDate = "2026-04-01",
+            maturityDate = "2031-04-01",
+            resetFrequency = "Quarterly",
+            dayCount = "ACT/360",
+            premiumAmount = 125_000m
+        },
+        ["StructuredNote"] = new
+        {
+            issuerName = "Meridian Bank plc",
+            underlyingDescription = "S&P 500 Index",
+            maturity = "2031-12-15",
+            issueDate = "2026-12-15",
+            denomination = 1000m,
+            principalProtectionPct = 1m,
+            participationRate = 0.85m,
+            returnCap = 0.4m,
+            couponRate = 0.01m,
+            paymentFrequency = "Annual",
+            barrierLevel = 0.6m
+        },
         ["InvestmentFund"] = new
         {
             fundType = "ETF",
@@ -369,7 +448,9 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
     public void FullPayload_DeclaresEverySchemaField(string assetClass)
     {
         var payloadKeys = PayloadKeys(assetClass);
-        foreach (var field in SecurityAssetTermsSchema.Fields(assetClass))
+        // The fully-populated payloads are WRITES, so they carry what the node writes; a term it
+        // only reads (ADR-024) has its own readable twin below.
+        foreach (var field in SecurityAssetTermsSchema.WritableFields(assetClass))
         {
             payloadKeys.Should().Contain(
                 field.Key,
@@ -405,7 +486,7 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
         var serializedKeys = ElementKeys(serialized);
         serializedKeys.RemoveWhere(SecurityTermsEnvelope.IsReservedKey);
 
-        var declaredKeys = SecurityAssetTermsSchema.Fields(assetClass)
+        var declaredKeys = SecurityAssetTermsSchema.WritableFields(assetClass)
             .Select(static field => field.Key)
             .ToHashSet(StringComparer.Ordinal);
 
@@ -571,6 +652,49 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
                 $"declared vocabulary members ({string.Join(", ", field.AllowedValues)})");
         }
     }
+
+    [Theory]
+    [InlineData("paymentFrequency", "every other tuesday", "coupon frequency")]
+    [InlineData("paymentFrequency", "Weekly", "coupon frequency")]
+    [InlineData("frequency", "every other tuesday", "coupon frequency")]
+    [InlineData("dayCount", "lunar", "day-count convention")]
+    [InlineData("dayCountConvention", "lunar", "day-count convention")]
+    public void Swap_UnrecognizedLegConvention_IsRejectedOnWrite(string key, string value, string expectedConvention)
+    {
+        // Conventions declared on the swap-leg elements are enforced on write like top-level ones:
+        // otherwise a leg could persist a cadence or basis every typed reader then reads as unknown.
+        var leg = new Dictionary<string, object?>
+        {
+            ["legType"] = "Fixed",
+            ["currency"] = "USD",
+            ["fixedRate"] = 0.04m,
+            ["exchangesPrincipal"] = false,
+            [key] = value
+        };
+
+        FluentActions.Invoking(() => CreateSnapshot("Swap", new
+        {
+            effectiveDate = "2026-01-15",
+            maturityDate = "2031-01-15",
+            legs = new object[] { leg }
+        }))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage($"*'{value}' is not a recognized {expectedConvention}*legs[].{key}*");
+    }
+
+    [Fact]
+    public void Swap_RecognizedLegConventions_AreAcceptedOnWrite()
+        => FluentActions.Invoking(() => CreateSnapshot("Swap", new
+        {
+            effectiveDate = "2026-01-15",
+            maturityDate = "2031-01-15",
+            legs = new object[]
+            {
+                new { legType = "Fixed", currency = "USD", fixedRate = 0.04m, paymentFrequency = "Semi-Annual", dayCount = "30/360", exchangesPrincipal = false },
+                new { legType = "Floating", currency = "USD", index = "SOFR", frequency = "3M", dayCountConvention = "ACT/360", exchangesPrincipal = false }
+            }
+        }))
+            .Should().NotThrow();
 
     [Fact]
     public void Bond_UndeclaredCouponType_IsRejectedOnWrite()
@@ -889,8 +1013,19 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
 
     private static SecurityMasterSnapshotWrapper CreateSnapshot(string assetClass, object payload)
     {
+        var command = SecurityMasterMapping.ToCreateCommand(CreateRequest(assetClass, JsonSerializer.SerializeToElement(payload)));
+        var result = SecurityMasterCommandFacade.Create(command);
+
+        result.IsSuccess.Should().BeTrue(
+            string.Join("; ", result.ErrorDetails.Select(error => $"[{error.Code}] {error.Message}")));
+        result.Snapshot.Should().NotBeNull();
+        return result.Snapshot;
+    }
+
+    private static CreateSecurityRequest CreateRequest(string assetClass, JsonElement assetSpecificTerms)
+    {
         var effectiveFrom = new DateTimeOffset(2026, 8, 1, 0, 0, 0, TimeSpan.Zero);
-        var request = new CreateSecurityRequest(
+        return new CreateSecurityRequest(
             SecurityId: Guid.NewGuid(),
             AssetClass: assetClass,
             CommonTerms: JsonSerializer.SerializeToElement(new
@@ -898,7 +1033,7 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
                 displayName = $"{assetClass} schema round-trip",
                 currency = "USD"
             }),
-            AssetSpecificTerms: JsonSerializer.SerializeToElement(payload),
+            AssetSpecificTerms: assetSpecificTerms,
             Identifiers:
             [
                 new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, $"SCHEMA-{assetClass}", true, effectiveFrom)
@@ -908,13 +1043,5 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
             UpdatedBy: "schema-round-trip-tests",
             SourceRecordId: $"{assetClass}-schema-round-trip",
             Reason: "SecurityAssetTermsSchema round-trip guard");
-
-        var command = SecurityMasterMapping.ToCreateCommand(request);
-        var result = SecurityMasterCommandFacade.Create(command);
-
-        result.IsSuccess.Should().BeTrue(
-            string.Join("; ", result.ErrorDetails.Select(error => $"[{error.Code}] {error.Message}")));
-        result.Snapshot.Should().NotBeNull();
-        return result.Snapshot;
     }
 }

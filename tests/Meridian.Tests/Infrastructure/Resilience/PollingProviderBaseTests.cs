@@ -9,6 +9,66 @@ namespace Meridian.Tests.Infrastructure.Resilience;
 public sealed class PollingProviderBaseTests
 {
     [Fact]
+    public async Task RequestTimeouts_InPollAndRecovery_RetryAndResumePolling()
+    {
+        await using var provider = new TestPollingProvider(
+            _ => Task.FromException<bool>(new TaskCanceledException("HTTP timeout")),
+            _ => Task.FromException<bool>(new TaskCanceledException("probe timeout")),
+            _ => Task.FromResult(true));
+        var observed = new ConcurrentQueue<WebSocketConnectionDiagnostics>();
+        provider.ConnectionDiagnosticsChanged += observed.Enqueue;
+
+        await provider.ConnectAsync();
+        await WaitUntilAsync(() => provider.PollCount >= 4);
+
+        var snapshot = provider.GetConnectionDiagnosticsSnapshot();
+        snapshot.IsConnected.Should().BeTrue();
+        snapshot.ReconnectAttempts.Should().Be(2);
+        snapshot.LastError.Should().BeNull();
+        snapshot.LastFailureKind.Should().BeNull();
+        observed.Should().Contain(x => x.LifecycleState == ProviderConnectionLifecycleState.Degraded &&
+            x.LastFailureKind == ProviderFailureKind.TransientNetworkFailure);
+    }
+
+    [Fact]
+    public async Task RepeatedRequestTimeouts_ExhaustRecoveryWithHonestFailedState()
+    {
+        Func<CancellationToken, Task<bool>> timeout = _ =>
+            Task.FromException<bool>(new TaskCanceledException("HTTP timeout"));
+        await using var provider = new TestPollingProvider(timeout, timeout, timeout, timeout);
+
+        await provider.ConnectAsync();
+        await WaitUntilAsync(() => provider.GetConnectionDiagnosticsSnapshot().LifecycleState ==
+            ProviderConnectionLifecycleState.Failed);
+
+        var snapshot = provider.GetConnectionDiagnosticsSnapshot();
+        snapshot.IsConnected.Should().BeFalse();
+        snapshot.LastFailureKind.Should().Be(ProviderFailureKind.TransientNetworkFailure);
+        provider.PollCount.Should().Be(4);
+    }
+
+    [Fact]
+    public async Task DisconnectDuringInitialPoll_CancelsWithoutStartingRecovery()
+    {
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var provider = new TestPollingProvider(async ct =>
+        {
+            started.SetResult();
+            await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+            return true;
+        });
+
+        await provider.ConnectAsync();
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await provider.DisconnectAsync().WaitAsync(TimeSpan.FromSeconds(5));
+
+        provider.PollCount.Should().Be(1);
+        provider.GetConnectionDiagnosticsSnapshot().LifecycleState.Should().Be(
+            ProviderConnectionLifecycleState.Disconnected);
+        provider.GetConnectionDiagnosticsSnapshot().ReconnectAttempts.Should().Be(0);
+    }
+
+    [Fact]
     public async Task FailedPoll_RecoversThroughOneSupervisedProbeAndReturnsConnected()
     {
         var provider = new TestPollingProvider(

@@ -56,6 +56,8 @@ public static class StructuredCashFlowTermsResolver
     private static readonly string[] LegCurrentIndexRateAliases = ["currentIndexRate", "lastFixing", "currentRate", "indexRate"];
     private static readonly string[] LegNotionalAliases = ["notional", "notionalAmount", "faceAmount", "principal"];
     private static readonly string[] LegPaymentFrequencyAliases = ["paymentFrequency", "frequency"];
+    private static readonly string[] LegNotionalScheduleAliases = ["notionalSchedule", "amortizationSchedule"];
+    private static readonly string[] LegResetScheduleAliases = ["resetSchedule", "fixings"];
     private static readonly string[] LegDayCountAliases = ["dayCountConvention", "dayCount", "dayCountBasis"];
     private static readonly string[] LegPrincipalExchangeAliases = ["exchangesPrincipal", "principalExchange", "notionalExchange"];
 
@@ -66,9 +68,11 @@ public static class StructuredCashFlowTermsResolver
 
         var sources = EnumerateTermSources(security).ToArray();
 
+        // A financing trade (repo) has a start and an end date rather than an issue and a maturity.
+        var isFinancing = SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CashFlowBehavior == SecurityCashFlowBehavior.FinancingInterest;
         return new StructuredCashFlowTerms(
-            MaturityDate: SecurityTermReader.ReadDate(sources, string.Equals(SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).AssetClass, "Repo", StringComparison.Ordinal) ? ["endDate", .. MaturityAliases] : MaturityAliases),
-            IssueDate: SecurityTermReader.ReadDate(sources, string.Equals(SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).AssetClass, "Repo", StringComparison.Ordinal) ? ["startDate", .. IssueAliases] : IssueAliases),
+            MaturityDate: SecurityTermReader.ReadDate(sources, isFinancing ? ["endDate", .. MaturityAliases] : MaturityAliases),
+            IssueDate: SecurityTermReader.ReadDate(sources, isFinancing ? ["startDate", .. IssueAliases] : IssueAliases),
             PrincipalFace: SecurityTermReader.ReadDecimal(sources, PrincipalFaceAliases),
             CurrentFactor: SecurityTermReader.ReadDecimal(sources, CurrentFactorAliases),
             CouponRate: ResolveCouponRate(security.AssetClass, sources),
@@ -251,7 +255,31 @@ public static class StructuredCashFlowTermsResolver
             Notional: SecurityTermReader.ReadDecimal(leg, LegNotionalAliases),
             PaymentFrequency: SecurityTermReader.ReadString(leg, LegPaymentFrequencyAliases),
             DayCountConvention: SecurityTermReader.ReadString(leg, LegDayCountAliases),
-            ExchangesPrincipal: ReadBoolean(leg, LegPrincipalExchangeAliases));
+            ExchangesPrincipal: ReadBoolean(leg, LegPrincipalExchangeAliases),
+            NotionalSchedule: ReadScheduleItems(leg, LegNotionalScheduleAliases)
+                .Select(static item => (Date: SecurityTermReader.ReadDate(item, "effectiveDate", "date"), Notional: SecurityTermReader.ReadDecimal(item, "notional", "amount")))
+                .Where(static step => step.Date is not null && step.Notional is > 0m)
+                .Select(static step => new StructuredCashFlowNotionalStep(step.Date!.Value, step.Notional!.Value))
+                .ToArray(),
+            ResetSchedule: ReadScheduleItems(leg, LegResetScheduleAliases)
+                .Select(static item => (Date: SecurityTermReader.ReadDate(item, "resetDate", "fixingDate", "date"), Fixing: SecurityTermReader.ReadDecimal(item, "fixingRate", "fixing", "rate")))
+                .Where(static entry => entry.Date is not null)
+                .Select(static entry => new StructuredCashFlowResetFixing(entry.Date!.Value, entry.Fixing))
+                .ToArray());
+    }
+
+    // Read-side tolerance: an entry that cannot be typed is skipped (the write path refuses it).
+    private static IReadOnlyList<JsonElement> ReadScheduleItems(JsonElement leg, string[] aliases)
+    {
+        foreach (var alias in aliases)
+        {
+            if (SecurityTermReader.TryGetProperty(leg, alias, out var value) && value.ValueKind == JsonValueKind.Array)
+            {
+                return value.EnumerateArray().Where(static item => item.ValueKind == JsonValueKind.Object).ToArray();
+            }
+        }
+
+        return [];
     }
 
     private static CashFlowLegRateKind ResolveRateKind(string? token, decimal? fixedRate, string? indexName)
@@ -365,21 +393,26 @@ public static class StructuredCashFlowTermsResolver
             .OrderBy(static entry => entry.AsOfDate)
             .ToArray();
 
-    /// <summary>Enumerates governed profile fields, outer asset terms, and common terms in authority order.</summary>
+    /// <summary>
+    /// Enumerates governed profile fields, outer asset terms, and common terms in authority order.
+    /// The asset terms are read at the class's current terms version
+    /// (<see cref="SecurityAssetClassTermsUpgrader"/>, ADR-024).
+    /// </summary>
     public static IEnumerable<JsonElement> EnumerateTermSources(SecurityDetailDto security)
     {
         ArgumentNullException.ThrowIfNull(security);
+        var assetSpecificTerms = SecurityAssetClassTermsUpgrader.UpgradeForRead(security.AssetClass, security.AssetSpecificTerms);
         // Governed profile fields outrank outer duplicates: profileFields values are schema- and
         // profile-validated on write, while extra outer keys on an envelope are ungoverned
         // pass-through. Probing the outer object first would let an unvalidated outer `maturity`
         // silently shadow the governed one in every projection and conflict comparison.
-        if (SecurityTermReader.TryGetProperty(security.AssetSpecificTerms, "profileFields", out var profileFields) &&
+        if (SecurityTermReader.TryGetProperty(assetSpecificTerms, "profileFields", out var profileFields) &&
             profileFields.ValueKind == JsonValueKind.Object)
         {
             yield return profileFields;
         }
 
-        yield return security.AssetSpecificTerms;
+        yield return assetSpecificTerms;
         yield return security.CommonTerms;
     }
 }

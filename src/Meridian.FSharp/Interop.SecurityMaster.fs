@@ -18,6 +18,132 @@ module private NullableHelpers =
         | Some v -> v
         | None -> Unchecked.defaultof<'T>
 
+/// The asset-class terms version a flat payload is written at (ADR-024, readable before writable):
+/// the class's write version, raised to the highest version among the versioned terms the record
+/// holds (scheduleConventions; callSchedule and putSchedule). A record read from a node that writes a
+/// newer version (a bond stamped 3 with declared calls) therefore re-serializes with its terms and
+/// stamp; a record that declares nothing writes exactly what the write version writes.
+[<RequireQualifiedAccess>]
+module internal SecurityTermsWriteVersion =
+    let private scheduleConventionsKey = "scheduleConventions"
+    let private callScheduleKey = "callSchedule"
+    let private putScheduleKey = "putSchedule"
+
+    let private fieldSince (assetClass: string) (key: string) =
+        match SecurityAssetTermsSchema.Field(assetClass, key) with
+        | null -> invalidOp (sprintf "The term schema declares no '%s' on '%s'; the flat writer and the schema have drifted." key assetClass)
+        | field -> field.SinceTermsVersion
+
+    let private elementFieldSince (assetClass: string) (container: string) (key: string) =
+        match SecurityAssetTermsSchema.ElementFields(assetClass, container) |> Seq.tryFind (fun field -> field.Key = key) with
+        | Some field -> field.SinceTermsVersion
+        | None -> invalidOp (sprintf "The term schema declares no '%s.%s' on '%s'; the flat writer and the schema have drifted." container key assetClass)
+
+    /// The terms version that introduced the scheduleConventions block on the record's class (on a
+    /// swap, on each leg).
+    let blockSince (kind: SecurityKind) =
+        let assetClass = SecurityKind.assetClass kind
+        match kind with
+        | SecurityKind.Swap _ -> elementFieldSince assetClass "legs" scheduleConventionsKey
+        | _ -> fieldSince assetClass scheduleConventionsKey
+
+    /// The terms version that introduced the callSchedule and putSchedule arrays on the record's
+    /// class. The writer emits both together, in the tier above scheduleConventions.
+    let schedulesSince (kind: SecurityKind) =
+        let assetClass = SecurityKind.assetClass kind
+        match kind with
+        | SecurityKind.Bond _
+        | SecurityKind.CertificateOfDeposit _
+        | SecurityKind.StructuredCredit _ ->
+            let calls = fieldSince assetClass callScheduleKey
+            let puts = fieldSince assetClass putScheduleKey
+            if calls <> puts || calls <= blockSince kind then
+                invalidOp
+                    (sprintf
+                        "The flat writer emits callSchedule and putSchedule together, in the tier above scheduleConventions, but '%s' declares them at versions %d and %d; the schema has drifted."
+                        assetClass
+                        calls
+                        puts)
+            calls
+        | _ -> invalidOp (sprintf "'%s' declares no call or put schedules." assetClass)
+
+    let private declares (conventions: ScheduleConventions) = not (ScheduleConventions.isEmpty conventions)
+
+    let private holdsSchedules (schedules: CallPutSchedules) = not (CallPutSchedules.isEmpty schedules)
+
+    /// The version the record's flat payload is written at: the class's write version, raised to the
+    /// highest version among the versioned terms the record holds.
+    let effective (kind: SecurityKind) =
+        let writes = SecurityAssetClassCatalog.GetTermsVersion(SecurityKind.assetClass kind)
+        // Every versioned term the record can hold, with whether it holds it.
+        let held =
+            match kind with
+            | SecurityKind.Bond terms ->
+                [ declares terms.ScheduleConventions, blockSince kind
+                  holdsSchedules terms.CallPutSchedules, schedulesSince kind ]
+            | SecurityKind.CertificateOfDeposit terms ->
+                [ declares terms.ScheduleConventions, blockSince kind
+                  holdsSchedules terms.CallPutSchedules, schedulesSince kind ]
+            | SecurityKind.StructuredCredit terms ->
+                [ declares terms.ScheduleConventions, blockSince kind
+                  holdsSchedules terms.CallPutSchedules, schedulesSince kind ]
+            | SecurityKind.Swap terms ->
+                [ terms.Legs |> List.exists (fun leg -> declares leg.ScheduleConventions), blockSince kind ]
+            | _ -> []
+        held |> List.filter fst |> List.fold (fun version (_, since) -> max version since) writes
+
+    /// The canonical written block (frozen by ADR-024): null when nothing is declared, otherwise all
+    /// twelve members in alphabetical order, with null or [] for an unset one.
+    let conventionsPayload (conventions: ScheduleConventions) =
+        if ScheduleConventions.isEmpty conventions then
+            None
+        else
+            Some
+                {| accrualAdjusted = conventions.AccrualAdjusted
+                   businessDayConvention = conventions.BusinessDayConvention
+                   couponCashBasis = conventions.CouponCashBasis
+                   couponRateUnit = conventions.CouponRateUnit
+                   direction = conventions.Direction
+                   endOfMonthRule = conventions.EndOfMonthRule
+                   firstRegularDate = conventions.FirstRegularDate
+                   lastRegularDate = conventions.LastRegularDate
+                   paymentCalendars = conventions.PaymentCalendars
+                   paymentLagBusinessDays = conventions.PaymentLagBusinessDays
+                   rollConvention = conventions.RollConvention
+                   stubPolicy = conventions.StubPolicy |}
+
+    /// The canonical written call schedule (frozen by ADR-024): one object per entry in stored order,
+    /// carrying every member in alphabetical order with null for an unset one; [] when none is declared.
+    let callSchedulePayload (calls: CallScheduleTerm list) =
+        calls
+        |> List.map (fun call ->
+            {| callDate = call.CallDate
+               callEndDate = call.CallEndDate
+               callPrice = call.CallPrice
+               exerciseFrequency = call.ExerciseFrequency
+               exerciseStyle = call.ExerciseStyle
+               makeWholeSpreadBps = call.MakeWholeSpreadBps
+               maximumNoticeDays = call.MaximumNoticeDays
+               minimumNoticeDays = call.MinimumNoticeDays
+               noticeDayType = call.NoticeDayType
+               partialRedemption = call.PartialRedemption
+               priceBasis = call.PriceBasis
+               priceType = call.PriceType |})
+
+    /// The canonical written put schedule, under the same rules as the call schedule.
+    let putSchedulePayload (puts: PutScheduleTerm list) =
+        puts
+        |> List.map (fun put ->
+            {| exerciseFrequency = put.ExerciseFrequency
+               exerciseStyle = put.ExerciseStyle
+               maximumNoticeDays = put.MaximumNoticeDays
+               minimumNoticeDays = put.MinimumNoticeDays
+               noticeDayType = put.NoticeDayType
+               priceBasis = put.PriceBasis
+               putDate = put.PutDate
+               putEndDate = put.PutEndDate
+               putPrice = put.PutPrice |})
+
 type SecurityIdentifierSnapshot(identifier: Identifier) =
     do
         if not (SecurityIdentifier.providerMetadataMatchesKind identifier) then
@@ -50,6 +176,7 @@ type SecurityIdentifierSnapshot(identifier: Identifier) =
         | IdentifierKind.Cik -> "Cik"
         | IdentifierKind.LoanX -> "LoanX"
         | IdentifierKind.Clip -> "Clip"
+        | IdentifierKind.ListingId -> "ListingId"
 
     member _.Kind = kind
     member _.Value = identifier.Value
@@ -65,6 +192,19 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
 
     // Idea 2: delegate to the domain function instead of duplicating the match.
     let assetClass = SecurityKind.assetClass record.Kind
+
+    // The version this record's flat payload is written at, and which versioned keys it carries:
+    // from a term's version upward its key is always present (the block null when nothing is
+    // declared, the schedules [] when none is declared: ADR-024's frozen written form); below it the
+    // key is absent.
+    let termsVersion = SecurityTermsWriteVersion.effective record.Kind
+
+    let writesScheduleConventions () =
+        termsVersion >= SecurityTermsWriteVersion.blockSince record.Kind
+
+    // Called only for the classes that declare the schedules.
+    let writesCallPutSchedules () =
+        termsVersion >= SecurityTermsWriteVersion.schedulesSince record.Kind
 
     let unstampedAssetSpecificTermsJson =
         match record.Kind with
@@ -185,7 +325,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                 | BondCouponStructure.InflationLinked(_, indexName, baseIndexValue, indexRatio, _) ->
                     Some indexName, baseIndexValue, indexRatio
                 | _ -> None, None, None
-            JsonSerializer.Serialize(
+            let payload =
                 {| schemaVersion = schemaVersion
                    maturity = terms.Maturity
                    issueDate = terms.IssueDate
@@ -214,7 +354,18 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                         terms.PrincipalSchedule
                         |> List.map (fun entry ->
                             {| paymentDate = entry.PaymentDate
-                               amount = entry.Amount |}) |})
+                               amount = entry.Amount |}) |}
+            if writesCallPutSchedules () then
+                JsonSerializer.Serialize(
+                    {| payload with
+                         scheduleConventions = SecurityTermsWriteVersion.conventionsPayload terms.ScheduleConventions
+                         callSchedule = SecurityTermsWriteVersion.callSchedulePayload terms.CallPutSchedules.Calls
+                         putSchedule = SecurityTermsWriteVersion.putSchedulePayload terms.CallPutSchedules.Puts |})
+            elif writesScheduleConventions () then
+                JsonSerializer.Serialize(
+                    {| payload with scheduleConventions = SecurityTermsWriteVersion.conventionsPayload terms.ScheduleConventions |})
+            else
+                JsonSerializer.Serialize(payload)
         | SecurityKind.FxSpot terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
@@ -237,13 +388,24 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    weightedAverageMaturityDays = terms.WeightedAverageMaturityDays
                    liquidityFeeEligible = terms.LiquidityFeeEligible |})
         | SecurityKind.CertificateOfDeposit terms ->
-            JsonSerializer.Serialize(
+            let payload =
                 {| schemaVersion = schemaVersion
                    issuerName = terms.IssuerName
                    maturity = terms.Maturity
                    couponRate = terms.CouponRate
                    callableDate = terms.CallableDate
-                   dayCount = terms.DayCount |})
+                   dayCount = terms.DayCount |}
+            if writesCallPutSchedules () then
+                JsonSerializer.Serialize(
+                    {| payload with
+                         scheduleConventions = SecurityTermsWriteVersion.conventionsPayload terms.ScheduleConventions
+                         callSchedule = SecurityTermsWriteVersion.callSchedulePayload terms.CallPutSchedules.Calls
+                         putSchedule = SecurityTermsWriteVersion.putSchedulePayload terms.CallPutSchedules.Puts |})
+            elif writesScheduleConventions () then
+                JsonSerializer.Serialize(
+                    {| payload with scheduleConventions = SecurityTermsWriteVersion.conventionsPayload terms.ScheduleConventions |})
+            else
+                JsonSerializer.Serialize(payload)
         | SecurityKind.CommercialPaper terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
@@ -285,25 +447,41 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    issuerName = terms.IssuerName
                    settlementType = terms.SettlementType |})
         | SecurityKind.Swap terms ->
-            JsonSerializer.Serialize(
-                {| schemaVersion = schemaVersion
-                   effectiveDate = terms.EffectiveDate
-                   maturityDate = terms.MaturityDate
-                   legs =
-                        terms.Legs
-                        |> List.map (fun leg ->
-                            {| legId = leg.LegId
-                               legType = leg.LegType
-                               currency = leg.Currency
-                               direction = leg.Direction
-                               index = leg.Index
-                               fixedRate = leg.FixedRate
-                               spreadBps = leg.SpreadBps
-                               currentIndexRate = leg.CurrentIndexRate
-                               notional = leg.Notional
-                               paymentFrequency = leg.PaymentFrequency
-                               dayCount = leg.DayCount
-                               exchangesPrincipal = leg.ExchangesPrincipal |}) |})
+            let legPayload (leg: SwapLeg) =
+                {| legId = leg.LegId
+                   legType = leg.LegType
+                   currency = leg.Currency
+                   direction = leg.Direction
+                   index = leg.Index
+                   fixedRate = leg.FixedRate
+                   spreadBps = leg.SpreadBps
+                   currentIndexRate = leg.CurrentIndexRate
+                   notional = leg.Notional
+                   paymentFrequency = leg.PaymentFrequency
+                   dayCount = leg.DayCount
+                   exchangesPrincipal = leg.ExchangesPrincipal
+                   notionalSchedule =
+                       leg.NotionalSchedule
+                       |> List.map (fun step -> {| effectiveDate = step.EffectiveDate; notional = step.Notional |})
+                   resetSchedule =
+                       leg.ResetSchedule
+                       |> List.map (fun entry -> {| resetDate = entry.ResetDate; fixingRate = entry.FixingRate |}) |}
+            if writesScheduleConventions () then
+                JsonSerializer.Serialize(
+                    {| schemaVersion = schemaVersion
+                       effectiveDate = terms.EffectiveDate
+                       maturityDate = terms.MaturityDate
+                       legs =
+                           terms.Legs
+                           |> List.map (fun leg ->
+                               {| legPayload leg with
+                                    scheduleConventions = SecurityTermsWriteVersion.conventionsPayload leg.ScheduleConventions |}) |})
+            else
+                JsonSerializer.Serialize(
+                    {| schemaVersion = schemaVersion
+                       effectiveDate = terms.EffectiveDate
+                       maturityDate = terms.MaturityDate
+                       legs = terms.Legs |> List.map legPayload |})
         | SecurityKind.DirectLoan terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
@@ -326,7 +504,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                             {| paymentDate = entry.PaymentDate
                                amount = entry.Amount |}) |})
         | SecurityKind.StructuredCredit terms ->
-            JsonSerializer.Serialize(
+            let payload =
                 {| schemaVersion = schemaVersion
                    tranche = terms.Tranche
                    poolId = terms.PoolId
@@ -349,7 +527,18 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    weightedAverageMaturityMonths = terms.WeightedAverageMaturityMonths
                    weightedAverageLoanAgeMonths = terms.WeightedAverageLoanAgeMonths
                    reinvestmentPeriodEnd = terms.ReinvestmentPeriodEnd
-                   nonCallPeriodEnd = terms.NonCallPeriodEnd |})
+                   nonCallPeriodEnd = terms.NonCallPeriodEnd |}
+            if writesCallPutSchedules () then
+                JsonSerializer.Serialize(
+                    {| payload with
+                         scheduleConventions = SecurityTermsWriteVersion.conventionsPayload terms.ScheduleConventions
+                         callSchedule = SecurityTermsWriteVersion.callSchedulePayload terms.CallPutSchedules.Calls
+                         putSchedule = SecurityTermsWriteVersion.putSchedulePayload terms.CallPutSchedules.Puts |})
+            elif writesScheduleConventions () then
+                JsonSerializer.Serialize(
+                    {| payload with scheduleConventions = SecurityTermsWriteVersion.conventionsPayload terms.ScheduleConventions |})
+            else
+                JsonSerializer.Serialize(payload)
         | SecurityKind.PrivateFundInterest terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
@@ -425,6 +614,85 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    strike = terms.Strike
                    expiry = terms.Expiry
                    multiplier = terms.Multiplier |})
+        | SecurityKind.FxForward terms ->
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   baseCurrency = terms.BaseCurrency
+                   quoteCurrency = terms.QuoteCurrency
+                   notional = terms.Notional
+                   forwardRate = terms.ForwardRate
+                   tradeDate = terms.TradeDate
+                   valueDate = terms.ValueDate
+                   settlementType = terms.SettlementType |})
+        | SecurityKind.NonDeliverableForward terms ->
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   baseCurrency = terms.BaseCurrency
+                   quoteCurrency = terms.QuoteCurrency
+                   settlementCurrency = terms.SettlementCurrency
+                   notional = terms.Notional
+                   forwardRate = terms.ForwardRate
+                   fixingDate = terms.FixingDate
+                   valueDate = terms.ValueDate
+                   fixingSource = terms.FixingSource |})
+        | SecurityKind.CreditDefaultSwap terms ->
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   referenceEntity = terms.ReferenceEntity
+                   referenceObligation = terms.ReferenceObligation
+                   protectionSide = terms.ProtectionSide
+                   notional = terms.Notional
+                   fixedCouponBps = terms.FixedCouponBps
+                   effectiveDate = terms.EffectiveDate
+                   maturityDate = terms.MaturityDate
+                   paymentFrequency = terms.PaymentFrequency
+                   dayCount = terms.DayCount
+                   seniority = terms.Seniority
+                   restructuringClause = terms.RestructuringClause
+                   upfrontPoints = terms.UpfrontPoints
+                   recoveryRateAssumption = terms.RecoveryRateAssumption
+                   indexName = terms.IndexName |})
+        | SecurityKind.Swaption terms ->
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   payerReceiver = terms.PayerReceiver
+                   exerciseStyle = terms.ExerciseStyle
+                   strikeRate = terms.StrikeRate
+                   expiry = terms.Expiry
+                   underlyingEffectiveDate = terms.UnderlyingEffectiveDate
+                   underlyingMaturityDate = terms.UnderlyingMaturityDate
+                   notional = terms.Notional
+                   floatingIndex = terms.FloatingIndex
+                   fixedLegPaymentFrequency = terms.FixedLegPaymentFrequency
+                   fixedLegDayCount = terms.FixedLegDayCount
+                   settlementType = terms.SettlementType |})
+        | SecurityKind.CapFloor terms ->
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   capFloorType = terms.CapFloorType
+                   referenceIndex = terms.ReferenceIndex
+                   capStrike = terms.CapStrike
+                   floorStrike = terms.FloorStrike
+                   notional = terms.Notional
+                   effectiveDate = terms.EffectiveDate
+                   maturityDate = terms.MaturityDate
+                   resetFrequency = terms.ResetFrequency
+                   dayCount = terms.DayCount
+                   premiumAmount = terms.PremiumAmount |})
+        | SecurityKind.StructuredNote terms ->
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   issuerName = terms.IssuerName
+                   underlyingDescription = terms.UnderlyingDescription
+                   maturity = terms.Maturity
+                   issueDate = terms.IssueDate
+                   denomination = terms.Denomination
+                   principalProtectionPct = terms.PrincipalProtectionPct
+                   participationRate = terms.ParticipationRate
+                   returnCap = terms.ReturnCap
+                   couponRate = terms.CouponRate
+                   paymentFrequency = terms.PaymentFrequency
+                   barrierLevel = terms.BarrierLevel |})
         | SecurityKind.InvestmentFund terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
@@ -446,7 +714,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
     let assetSpecificTermsJson =
         match record.Kind with
         | SecurityKind.CustomAsset _ -> unstampedAssetSpecificTermsJson
-        | _ -> SecurityTermsEnvelope.StampFlat(unstampedAssetSpecificTermsJson, assetClass)
+        | _ -> SecurityTermsEnvelope.StampFlat(unstampedAssetSpecificTermsJson, assetClass, termsVersion)
 
     let commonTermsJson =
         JsonSerializer.Serialize(

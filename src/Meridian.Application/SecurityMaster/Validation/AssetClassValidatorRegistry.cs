@@ -37,8 +37,12 @@ public sealed class AssetClassValidatorRegistry
     public static AssetClassValidatorRegistry CreateDefault()
         => CreateDefault(StaticSecurityAssetProfileCatalog.CreateDefault());
 
+    /// <summary>
+    /// The default registry: every class's hand-written semantic rules composed with the rules
+    /// generated from its term schema (<see cref="SchemaTermsAssetClassValidator"/>).
+    /// </summary>
     public static AssetClassValidatorRegistry CreateDefault(ISecurityAssetProfileCatalog assetProfileCatalog)
-        => new(DefaultAssetClassValidators.Create(assetProfileCatalog));
+        => new(SchemaBackedAssetClassValidator.WrapAll(DefaultAssetClassValidators.Create(assetProfileCatalog)));
 }
 
 internal static class SecurityValidationIssueFactory
@@ -300,6 +304,83 @@ internal static class DefaultAssetClassValidators
                     FieldRule.RequiredAllowedString("warrantType", SecurityReferenceTaxonomyCatalog.Default.GetValues(SecurityReferenceTaxonomyKeys.WarrantType), "SM_WARRANT_TYPE_INVALID", "Warrant type is invalid", "Warrant type must be Put or Call."),
                     FieldRule.OptionalPositive("strike", "SM_WARRANT_STRIKE_INVALID", "Warrant strike is invalid", "Warrant strike must be greater than zero when supplied."),
                     FieldRule.OptionalPositive("multiplier", "SM_WARRANT_MULTIPLIER_INVALID", "Warrant multiplier is invalid", "Warrant multiplier must be greater than zero when supplied.")
+                ]),
+            new JsonAssetClassValidator(
+                "FxForward",
+                [
+                    FieldRule.RequiredString("baseCurrency", "SM_FX_FORWARD_BASE_CURRENCY_REQUIRED", "FX forward base currency is missing", "FX forwards must include a base currency."),
+                    FieldRule.RequiredString("quoteCurrency", "SM_FX_FORWARD_QUOTE_CURRENCY_REQUIRED", "FX forward quote currency is missing", "FX forwards must include a quote currency."),
+                    DistinctStringRule.Required("baseCurrency", "quoteCurrency", "SM_FX_FORWARD_PAIR_INVALID", "FX forward currency pair is invalid", "FX forward base and quote currencies must differ."),
+                    FieldRule.RequiredDate("valueDate", "SM_FX_FORWARD_VALUE_DATE_REQUIRED", "FX forward value date is missing", "FX forwards must include a value date."),
+                    DateOrderRule.Optional("tradeDate", "valueDate", "SM_FX_FORWARD_TRADE_DATE_INVALID", "FX forward trade date is after value date", "FX forward trade date must be on or before the value date."),
+                    FieldRule.OptionalPositive("notional", "SM_FX_FORWARD_NOTIONAL_INVALID", "FX forward notional is invalid", "FX forward notional must be greater than zero when present."),
+                    FieldRule.OptionalPositive("forwardRate", "SM_FX_FORWARD_RATE_INVALID", "FX forward rate is invalid", "FX forward rate must be greater than zero when present.")
+                ]),
+            new JsonAssetClassValidator(
+                "NonDeliverableForward",
+                [
+                    FieldRule.RequiredString("baseCurrency", "SM_NDF_BASE_CURRENCY_REQUIRED", "NDF base currency is missing", "Non-deliverable forwards must include a base currency."),
+                    FieldRule.RequiredString("quoteCurrency", "SM_NDF_QUOTE_CURRENCY_REQUIRED", "NDF quote currency is missing", "Non-deliverable forwards must include a quote currency."),
+                    FieldRule.RequiredString("settlementCurrency", "SM_NDF_SETTLEMENT_CURRENCY_REQUIRED", "NDF settlement currency is missing", "Non-deliverable forwards must name the currency the net difference settles in."),
+                    DistinctStringRule.Required("baseCurrency", "quoteCurrency", "SM_NDF_PAIR_INVALID", "NDF currency pair is invalid", "NDF base and quote currencies must differ."),
+                    FieldRule.RequiredDate("fixingDate", "SM_NDF_FIXING_DATE_REQUIRED", "NDF fixing date is missing", "Non-deliverable forwards must include a fixing date."),
+                    FieldRule.RequiredDate("valueDate", "SM_NDF_VALUE_DATE_REQUIRED", "NDF value date is missing", "Non-deliverable forwards must include a value date."),
+                    DateOrderRule.Required("fixingDate", "valueDate", "SM_NDF_FIXING_DATE_INVALID", "NDF fixing date is after value date", "NDF fixing date must be on or before the value date."),
+                    FieldRule.OptionalPositive("notional", "SM_NDF_NOTIONAL_INVALID", "NDF notional is invalid", "NDF notional must be greater than zero when present."),
+                    FieldRule.OptionalPositive("forwardRate", "SM_NDF_RATE_INVALID", "NDF forward rate is invalid", "NDF forward rate must be greater than zero when present.")
+                ]),
+            new JsonAssetClassValidator(
+                "CreditDefaultSwap",
+                [
+                    FieldRule.RequiredString("referenceEntity", "SM_CDS_REFERENCE_ENTITY_REQUIRED", "CDS reference entity is missing", "Credit default swaps must name a reference entity or index."),
+                    FieldRule.RequiredAllowedString("protectionSide", ["Buy", "Sell"], "SM_CDS_PROTECTION_SIDE_INVALID", "CDS protection side is invalid", "CDS protection side must be 'Buy' or 'Sell'."),
+                    FieldRule.RequiredPositive("notional", "SM_CDS_NOTIONAL_REQUIRED", "CDS notional is missing or invalid", "Credit default swaps must include a notional greater than zero."),
+                    FieldRule.RequiredDate("effectiveDate", "SM_CDS_EFFECTIVE_DATE_REQUIRED", "CDS effective date is missing", "Credit default swaps must include an effective date."),
+                    FieldRule.RequiredDate("maturityDate", "SM_CDS_MATURITY_DATE_REQUIRED", "CDS maturity date is missing", "Credit default swaps must include a scheduled termination date."),
+                    DateOrderRule.Required("effectiveDate", "maturityDate", "SM_CDS_DATE_RANGE_INVALID", "CDS date range is invalid", "CDS effective date must be on or before the maturity date."),
+                    FieldRule.RequiredNonNegative("fixedCouponBps", "SM_CDS_FIXED_COUPON_INVALID", "CDS fixed coupon is missing or invalid", "Credit default swaps must include a running fixed coupon of zero or more basis points."),
+                    FieldRule.OptionalFraction("recoveryRateAssumption", "SM_CDS_RECOVERY_RATE_INVALID", "CDS recovery rate is invalid", "CDS recovery rate assumption must be a fraction between 0 and 1.")
+                ]),
+            new JsonAssetClassValidator(
+                "Swaption",
+                [
+                    FieldRule.RequiredAllowedString("payerReceiver", ["Payer", "Receiver"], "SM_SWAPTION_PAYER_RECEIVER_INVALID", "Swaption payer/receiver is invalid", "Swaptions must be 'Payer' or 'Receiver'."),
+                    FieldRule.OptionalAllowedString("exerciseStyle", ["European", "American", "Bermudan"], "SM_SWAPTION_EXERCISE_STYLE_INVALID", "Swaption exercise style is invalid", "Swaption exercise style must be European, American or Bermudan when present."),
+                    FieldRule.RequiredNumber("strikeRate", "SM_SWAPTION_STRIKE_REQUIRED", "Swaption strike is missing", "Swaptions must include the strike fixed rate of the underlying swap (it may be negative)."),
+                    FieldRule.RequiredDate("expiry", "SM_SWAPTION_EXPIRY_REQUIRED", "Swaption expiry is missing", "Swaptions must include an expiry date."),
+                    FieldRule.RequiredDate("underlyingMaturityDate", "SM_SWAPTION_UNDERLYING_MATURITY_REQUIRED", "Swaption underlying maturity is missing", "Swaptions must include the underlying swap's maturity date."),
+                    DateOrderRule.Required("expiry", "underlyingMaturityDate", "SM_SWAPTION_EXPIRY_AFTER_MATURITY", "Swaption expiry is after the underlying maturity", "Swaption expiry must be on or before the underlying swap's maturity date."),
+                    DateOrderRule.OptionalStrict("underlyingEffectiveDate", "underlyingMaturityDate", "SM_SWAPTION_UNDERLYING_DATES_INVALID", "Swaption underlying dates are invalid", "The underlying swap's effective date must fall before its maturity date."),
+                    DateOrderRule.Optional("expiry", "underlyingEffectiveDate", "SM_SWAPTION_EFFECTIVE_BEFORE_EXPIRY", "Swaption underlying starts before expiry", "The underlying swap's effective date must be on or after the swaption expiry."),
+                    FieldRule.RequiredPositive("notional", "SM_SWAPTION_NOTIONAL_REQUIRED", "Swaption notional is missing or invalid", "Swaptions must include a notional greater than zero.")
+                ]),
+            new JsonAssetClassValidator(
+                "CapFloor",
+                [
+                    FieldRule.RequiredAllowedString("capFloorType", ["Cap", "Floor", "Collar"], "SM_CAP_FLOOR_TYPE_INVALID", "Cap/floor type is invalid", "Cap/floor type must be Cap, Floor or Collar."),
+                    FieldRule.RequiredString("referenceIndex", "SM_CAP_FLOOR_REFERENCE_INDEX_REQUIRED", "Cap/floor reference index is missing", "Caps and floors must name the floating index they reference."),
+                    FieldRule.RequiredPositive("notional", "SM_CAP_FLOOR_NOTIONAL_REQUIRED", "Cap/floor notional is missing or invalid", "Caps and floors must include a notional greater than zero."),
+                    FieldRule.RequiredDate("effectiveDate", "SM_CAP_FLOOR_EFFECTIVE_DATE_REQUIRED", "Cap/floor effective date is missing", "Caps and floors must include an effective date."),
+                    FieldRule.RequiredDate("maturityDate", "SM_CAP_FLOOR_MATURITY_DATE_REQUIRED", "Cap/floor maturity date is missing", "Caps and floors must include a maturity date."),
+                    DateOrderRule.Required("effectiveDate", "maturityDate", "SM_CAP_FLOOR_DATE_RANGE_INVALID", "Cap/floor date range is invalid", "Cap/floor effective date must be on or before the maturity date."),
+                    new RequiredNumberWhenRule("capFloorType", ["Cap", "Collar"], "capStrike", "SM_CAP_FLOOR_CAP_STRIKE_REQUIRED", "Cap strike is missing", "A Cap or Collar must include its cap strike."),
+                    new RequiredNumberWhenRule("capFloorType", ["Floor", "Collar"], "floorStrike", "SM_CAP_FLOOR_FLOOR_STRIKE_REQUIRED", "Floor strike is missing", "A Floor or Collar must include its floor strike."),
+                    NumericOrderRule.Optional("floorStrike", "capStrike", "SM_CAP_FLOOR_STRIKE_ORDER_INVALID", "Collar floor strike is above the cap strike", "A collar's floor strike must be at or below its cap strike."),
+                    FieldRule.OptionalNonNegative("premiumAmount", "SM_CAP_FLOOR_PREMIUM_INVALID", "Cap/floor premium is invalid", "Cap/floor premium must be zero or greater when present.")
+                ]),
+            new JsonAssetClassValidator(
+                "StructuredNote",
+                [
+                    FieldRule.RequiredString("issuerName", "SM_STRUCTURED_NOTE_ISSUER_REQUIRED", "Structured note issuer is missing", "Structured notes must name their issuer."),
+                    FieldRule.RequiredString("underlyingDescription", "SM_STRUCTURED_NOTE_UNDERLYING_REQUIRED", "Structured note underlying is missing", "Structured notes must name the reference asset or basket their payoff is linked to."),
+                    FieldRule.RequiredDate("maturity", "SM_STRUCTURED_NOTE_MATURITY_REQUIRED", "Structured note maturity is missing", "Structured notes must include a maturity date."),
+                    DateOrderRule.Optional("issueDate", "maturity", "SM_STRUCTURED_NOTE_ISSUE_AFTER_MATURITY", "Structured note issue date is after maturity", "Structured note issue date must be on or before maturity."),
+                    FieldRule.OptionalPositive("denomination", "SM_STRUCTURED_NOTE_DENOMINATION_INVALID", "Structured note denomination is invalid", "Structured note denomination must be greater than zero when present."),
+                    FieldRule.OptionalFraction("principalProtectionPct", "SM_STRUCTURED_NOTE_PROTECTION_INVALID", "Structured note principal protection is invalid", "Principal protection must be a fraction between 0 and 1 (1 = fully protected)."),
+                    FieldRule.OptionalNonNegative("participationRate", "SM_STRUCTURED_NOTE_PARTICIPATION_INVALID", "Structured note participation is invalid", "Participation rate must be zero or greater when present."),
+                    FieldRule.OptionalNonNegative("returnCap", "SM_STRUCTURED_NOTE_RETURN_CAP_INVALID", "Structured note return cap is invalid", "Return cap must be zero or greater when present."),
+                    FieldRule.OptionalNonNegative("couponRate", "SM_STRUCTURED_NOTE_COUPON_INVALID", "Structured note coupon is invalid", "Structured note coupon must be zero or greater when present."),
+                    FieldRule.OptionalPositive("barrierLevel", "SM_STRUCTURED_NOTE_BARRIER_INVALID", "Structured note barrier is invalid", "Structured note barrier must be greater than zero when present.")
                 ]),
             // ADR-022 canonical-home guidance: MoneyMarketFund is the canonical home for
             // stable-NAV money-market and government liquidity vehicles; the generic fund wrapper
@@ -789,6 +870,13 @@ internal sealed record FieldRule(
     public static FieldRule RequiredPositive(string fieldPath, string code, string title, string message)
         => new(fieldPath, SecurityFieldRuleKind.RequiredPositiveNumber, SecurityValidationSeverityDto.Error, code, title, message);
 
+    /// <summary>A required number of any sign (rates and strikes may be negative).</summary>
+    public static FieldRule RequiredNumber(string fieldPath, string code, string title, string message)
+        => new(fieldPath, SecurityFieldRuleKind.RequiredNumber, SecurityValidationSeverityDto.Error, code, title, message);
+
+    public static FieldRule RequiredNonNegative(string fieldPath, string code, string title, string message)
+        => new(fieldPath, SecurityFieldRuleKind.RequiredNonNegativeNumber, SecurityValidationSeverityDto.Error, code, title, message);
+
     public static FieldRule RequiredArray(string fieldPath, string code, string title, string message)
         => new(fieldPath, SecurityFieldRuleKind.RequiredArrayNotEmpty, SecurityValidationSeverityDto.Error, code, title, message);
 
@@ -838,6 +926,8 @@ internal sealed record FieldRule(
             SecurityFieldRuleKind.RequiredGuid => JsonValidationReader.HasGuid(property),
             SecurityFieldRuleKind.RequiredDate => JsonValidationReader.HasDate(property),
             SecurityFieldRuleKind.RequiredPositiveNumber => JsonValidationReader.TryGetDecimal(property, out var value) && value > 0m,
+            SecurityFieldRuleKind.RequiredNonNegativeNumber => JsonValidationReader.TryGetDecimal(property, out var value) && value >= 0m,
+            SecurityFieldRuleKind.RequiredNumber => JsonValidationReader.TryGetDecimal(property, out _),
             SecurityFieldRuleKind.RequiredArrayNotEmpty => property.ValueKind == JsonValueKind.Array && property.GetArrayLength() > 0,
             SecurityFieldRuleKind.OptionalPositiveNumber => JsonValidationReader.TryGetDecimal(property, out var value) && value > 0m,
             SecurityFieldRuleKind.OptionalNonNegativeNumber => JsonValidationReader.TryGetDecimal(property, out var value) && value >= 0m,
@@ -866,6 +956,8 @@ internal sealed record FieldRule(
             or SecurityFieldRuleKind.RequiredGuid
             or SecurityFieldRuleKind.RequiredDate
             or SecurityFieldRuleKind.RequiredPositiveNumber
+            or SecurityFieldRuleKind.RequiredNonNegativeNumber
+            or SecurityFieldRuleKind.RequiredNumber
             or SecurityFieldRuleKind.RequiredArrayNotEmpty;
 }
 
@@ -875,13 +967,18 @@ internal sealed record DateOrderRule(
     bool RequiresBothFields,
     string Code,
     string Title,
-    string Message) : ISecurityValidationRule
+    string Message,
+    bool Strict = false) : ISecurityValidationRule
 {
     public static DateOrderRule Required(string startFieldPath, string endFieldPath, string code, string title, string message)
         => new(startFieldPath, endFieldPath, true, code, title, message);
 
     public static DateOrderRule Optional(string startFieldPath, string endFieldPath, string code, string title, string message)
         => new(startFieldPath, endFieldPath, false, code, title, message);
+
+    /// <summary>Like <see cref="Optional"/>, but the start must fall strictly before the end.</summary>
+    public static DateOrderRule OptionalStrict(string startFieldPath, string endFieldPath, string code, string title, string message)
+        => new(startFieldPath, endFieldPath, false, code, title, message, Strict: true);
 
     public SecurityValidationIssueDto? Validate(SecurityValidationContext context)
     {
@@ -894,7 +991,7 @@ internal sealed record DateOrderRule(
                 : null;
         }
 
-        return start <= end ? null : Issue();
+        return (Strict ? start < end : start <= end) ? null : Issue();
     }
 
     private SecurityValidationIssueDto Issue()
@@ -905,6 +1002,43 @@ internal sealed record DateOrderRule(
             Message,
             [$"assetSpecificTerms.{StartFieldPath}", $"assetSpecificTerms.{EndFieldPath}"],
             "Correct the effective-date ordering and resubmit the Security Master amendment.");
+}
+
+/// <summary>
+/// A number that is required only when a discriminant names one of <c>DiscriminantValues</c>
+/// (case-insensitive, matching the F# command validator), e.g. the cap strike of a Cap or Collar.
+/// Any other discriminant value, or none, leaves the field to its own optional rules.
+/// </summary>
+internal sealed record RequiredNumberWhenRule(
+    string DiscriminantPath,
+    IReadOnlyList<string> DiscriminantValues,
+    string FieldPath,
+    string Code,
+    string Title,
+    string Message) : ISecurityValidationRule
+{
+    public SecurityValidationIssueDto? Validate(SecurityValidationContext context)
+    {
+        if (!JsonValidationReader.TryGetAssetTermProperty(context.Record.AssetSpecificTerms, DiscriminantPath, context.Record.AssetClass, out var discriminant)
+            || !JsonValidationReader.HasAllowedString(discriminant, DiscriminantValues))
+        {
+            return null;
+        }
+
+        if (JsonValidationReader.TryGetAssetTermProperty(context.Record.AssetSpecificTerms, FieldPath, context.Record.AssetClass, out var value)
+            && JsonValidationReader.TryGetDecimal(value, out _))
+        {
+            return null;
+        }
+
+        return SecurityValidationIssueFactory.Create(
+            SecurityValidationSeverityDto.Error,
+            Code,
+            Title,
+            Message,
+            [$"assetSpecificTerms.{DiscriminantPath}", $"assetSpecificTerms.{FieldPath}"],
+            "Supply the field the selected type requires and resubmit the Security Master amendment.");
+    }
 }
 
 /// <summary>
@@ -1121,6 +1255,8 @@ internal enum SecurityFieldRuleKind
     RequiredGuid,
     RequiredDate,
     RequiredPositiveNumber,
+    RequiredNonNegativeNumber,
+    RequiredNumber,
     RequiredArrayNotEmpty,
     OptionalPositiveNumber,
     OptionalNonNegativeNumber,

@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-10-07
+**Reviewed:** 2026-10-28 (bounded source-owner and Security Master seam refresh)
 
 This map gives maintainers a quick layer-oriented view of Meridian.
 
@@ -27,6 +27,9 @@ flowchart LR
   Application --> Providers["Provider adapters"]
   Application --> Execution["Execution and risk"]
   Application --> Ledger["Ledger and accounting records"]
+  Application --> FinancialOperations["Financial Operations workflows"]
+  Application --> Instruments["Instrument economics and projections"]
+  Application --> ReferenceData["Reference-data catalogs and classification"]
   Application --> Reporting["Reporting and report packs"]
   Application --> Identity["Identity and scoped access"]
   Application --> UiServices["UI services and shared endpoints"]
@@ -49,6 +52,9 @@ flowchart LR
 | Storage | `src/Meridian.Storage` | Preserve WAL and atomic-write durability expectations |
 | Execution/Risk | `src/Meridian.Execution*`, `src/Meridian.Risk` | Isolate broker gateways, paper/live controls, and pre-trade validation |
 | Accounting and Ledger | `src/Meridian.Ledger`, `src/Meridian.FSharp.Ledger` | Own ledger behavior, private-capital fund-event reconstruction, capital-account subledger impact, treasury ledger metadata, and accounting-record boundaries |
+| Financial Operations | `src/Meridian.FinancialOperations` | Own close, reconciliation, accounting-basis workflows, and preparation of governed ledger instructions |
+| Instruments | `src/Meridian.Instruments` | Own instrument economics, Security Master-keyed Asset Operations, cash-flow projections, and factor-paydown projections |
+| Reference Data | `src/Meridian.ReferenceData` | Own asset-class/instrument-kind mapping, profile catalog contracts, and seeded approved asset-profile templates |
 | Reporting | `src/Meridian.Reporting` | Own governed report-pack behavior, report-writer grids, filters, formulas, lineage, publication, restatement, and report-generation semantics |
 | Identity and Access | `src/Meridian.Identity` | Own sessions, role profiles, scoped access, fund/account traversal authorization, and company-scoped user account/profile state |
 | Strategy/Backtesting | `src/Meridian.Strategies`, `src/Meridian.Backtesting*`, `src/Meridian.QuantScript` | Keep strategy lifecycle, replay, and scripting reusable outside UI |
@@ -65,8 +71,31 @@ flowchart LR
   hardcoding workflow state in React components.
 - Browser workstation work and WPF desktop workstation work are two active co-equal operator UI lanes over shared contracts; WPF's current focus is web-UI parity (`W8-WPF-PARITY-001`).
 - Browser surfaces and retained WPF compatibility should consume shared DTOs, services, and route definitions for accounting, reporting, private-capital, and identity workflows instead of duplicating business rules.
+- Security Master query and command contracts are owned by `Meridian.Contracts.SecurityMaster`.
+  Application implementations, host registration, and workstation callers use that single contract;
+  Application does not declare a parallel query interface.
+- Typed schedule generation lives in `src/Meridian.Contracts/SecurityMaster/Schedules/`;
+  open-lot factor-paydown contracts live in `src/Meridian.Contracts/Accounting/Lots/`.
+  `src/Meridian.Instruments/AssetOperations/FactorPaydownProjectionService.cs` projects the economics,
+  and `src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs` prepares the
+  ledger and lot instructions. Application composition registers this preparation service, but no
+  operator route calls it yet; composition does not establish workstation activation.
 - Design tokens and shared UI patterns should come from the Meridian Design
   System or local shared dashboard primitives, not one-off screen styling.
+
+## OMS Runtime Lifecycle
+
+`OrderManagementSystem` implements `IOrderManagementLifecycle`. Construction restores retained
+identity evidence without starting background work. `StartAsync` starts gateway-report intake and
+retained accounting-handoff replay once; order operations require startup. `StopAsync` closes
+admission and shares the existing asynchronous disposal drain, including admitted operations and
+accepted fills. Cancellation stops the caller's wait, while disposal still waits for the drain.
+A stopped instance cannot restart.
+
+`AddBrokerageExecution` registers the hosted lifecycle owner for the resolved `IOrderManager`.
+Direct callers must start the OMS explicitly and await stop/disposal before releasing its gateway
+or accounting dependencies. Order transitions, risk checks, fill booking, and persistence remain
+in their existing owners pending the larger OMS decomposition.
 
 ## Operational Record Boundaries
 
@@ -84,7 +113,8 @@ The current product direction is the W1-W5 operational record baseline: data con
 ## Fund Structure Service Refactor Boundaries (Staged Migration)
 
 - `IFundStructureService` remains the caller-facing application contract for UI/API layers.
-- Command handling and workflow orchestration stay in `InMemoryFundStructureService` so existing endpoint behavior and method contracts remain stable during migration.
+- Command handling and workflow orchestration stay in `InMemoryFundStructureService` and `PostgresFundStructureService` so existing endpoint behavior and method contracts remain stable during migration.
+- `FundStructureProjector` owns the shared, pure organization graph, legacy fund graph, advisory, fund operating, and accounting projections. Each service supplies a captured structure snapshot, authorized accounts, explicit effective time, and resolved shared-data metadata; the projector does not perform I/O or mutate state.
 - Persistence concerns are now isolated behind `IFundStructureStateStore` with adapters:
   - `JsonFileFundStructureStateStore` for durable local snapshots.
   - `InMemoryFundStructureStateStore` for test/dev ephemeral state.
@@ -100,13 +130,13 @@ The current product direction is the W1-W5 operational record baseline: data con
   - Query projection: `GetOrganizationStructureAsync`, `GetFundStructureGraphAsync`, `GetAdvisoryViewAsync`, `GetFundOperatingViewAsync`, `GetAccountingViewAsync`, `GetCashFlowViewAsync`.
 - `InMemoryFundStructureService`
   - Command handling: implements the full `IFundStructureService` creation, ownership lifecycle, validation, and assignment surface.
-  - Query projection: organization graph, legacy fund graph, advisory, fund operating, accounting, and cash-flow views.
+  - Query projection: delegates organization graph, legacy fund graph, advisory, fund operating, and accounting views to `FundStructureProjector`; retains cash-flow orchestration and uses the shared scope helpers.
   - Validation/policy: delegates pure portfolio-parent rules to `IFundStructurePolicyService`; owns existence checks, ownership-link lifecycle checks, and cycle validation.
   - Workflow orchestration: parent-link creation, ownership projection rebuilds after link lifecycle changes, shared-data synchronization, cross-service composition with account/security-master services.
   - Storage concerns: snapshot capture/load/save via `IFundStructureStateStore`, including updated, expired, and replacement ownership links.
 - `PostgresFundStructureService`
   - Command handling: implements the same `IFundStructureService` creation, ownership lifecycle, validation, and assignment surface over `IFundStructureStore`.
-  - Query projection: mirrors the in-memory graph, advisory, fund operating, and accounting projections; cash-flow view remains unsupported and returns `null`.
+  - Query projection: delegates the same graph, advisory, fund operating, and accounting views to `FundStructureProjector` after loading and tenant filtering; cash-flow views retain the snapshot-backed in-memory service adapter.
   - Validation/policy: reuses `FundStructurePolicyService` for pure rules and service-local ownership existence/cycle validation for persisted links.
   - Workflow orchestration: loads a mutable snapshot, applies lifecycle mutations, rebuilds ownership projections, and upserts changed rows through the store.
   - Storage concerns: persists organizations, businesses, clients, funds, sleeves, vehicles, entities, portfolios, ownership links, and assignments via `IFundStructureStore`.

@@ -257,6 +257,155 @@ type PrincipalPaymentEntry = {
     Amount: decimal
 }
 
+/// The declared conventions the contractual schedule kernel (ADR-025) builds an instrument's periods
+/// with: the flat terms' <c>scheduleConventions</c> block (asset-class terms version 2 on bonds,
+/// certificates of deposit and swap legs, 3 on structured credit). A node reads it from payloads
+/// stamped at that version and does not write it until the contract step (ADR-024, readable before
+/// writable). Text members are kept verbatim, as the payload carries them;
+/// <c>ScheduleConventions.empty</c> means nothing is declared.
+type ScheduleConventions = {
+    BusinessDayConvention: string option
+    /// Whether accrual period boundaries are adjusted for business days (payment dates always are,
+    /// under <c>BusinessDayConvention</c>). None when the terms do not say.
+    AccrualAdjusted: bool option
+    /// The payment calendars by id, joined into one calendar when more than one is named.
+    PaymentCalendars: string list
+    PaymentLagBusinessDays: int option
+    RollConvention: string option
+    EndOfMonthRule: bool option
+    FirstRegularDate: DateOnly option
+    LastRegularDate: DateOnly option
+    /// Schedule generation direction: Forward or Backward.
+    Direction: string option
+    StubPolicy: string option
+    /// Whether a coupon rate is a percent or a fraction: Percent or Fraction.
+    CouponRateUnit: string option
+    /// How a regular coupon's cash amount is computed: Level (rate over frequency) or DayCount.
+    CouponCashBasis: string option
+}
+
+[<RequireQualifiedAccess>]
+module ScheduleConventions =
+    /// No convention declared: what every record carries until a node writes the block.
+    [<CompiledName("Empty")>]
+    let empty : ScheduleConventions =
+        { BusinessDayConvention = None
+          AccrualAdjusted = None
+          PaymentCalendars = []
+          PaymentLagBusinessDays = None
+          RollConvention = None
+          EndOfMonthRule = None
+          FirstRegularDate = None
+          LastRegularDate = None
+          Direction = None
+          StubPolicy = None
+          CouponRateUnit = None
+          CouponCashBasis = None }
+
+    /// Whether nothing is declared.
+    [<CompiledName("IsEmpty")>]
+    let isEmpty (conventions: ScheduleConventions) = conventions = empty
+
+/// One declared call (a flat callSchedule entry: asset-class terms version 3 on bonds and
+/// certificates of deposit, 4 on structured credit). Text members are kept verbatim; their meanings
+/// are frozen in ADR-025's Applications.
+type CallScheduleTerm = {
+    /// The call date, or the start of an American or Bermudan call window. An entry without one is
+    /// not a term and is never read.
+    CallDate: DateOnly
+    /// The last day of the call window, inclusive. Absent, the window runs to the day before the
+    /// next call's date in date order, or to maturity for the last call (ADR-025).
+    CallEndDate: DateOnly option
+    /// European, American or Bermudan.
+    ExerciseStyle: string option
+    /// How often a Bermudan window's call dates recur (a coupon frequency spelling).
+    ExerciseFrequency: string option
+    /// The call price, in the unit priceBasis names.
+    CallPrice: decimal option
+    /// PercentOfPar or PercentOfAccretedValue.
+    PriceBasis: string option
+    /// Fixed or MakeWhole.
+    PriceType: string option
+    /// The make-whole spread over the benchmark, in basis points.
+    MakeWholeSpreadBps: decimal option
+    /// WholeOnly, ProRata or ByLot.
+    PartialRedemption: string option
+    /// Notice of the call falls at least this many days before the exercise date.
+    MinimumNoticeDays: int option
+    /// Notice of the call falls at most this many days before the exercise date.
+    MaximumNoticeDays: int option
+    /// Whether the notice counts are Business or Calendar days.
+    NoticeDayType: string option
+}
+
+/// One declared holder put (a flat putSchedule entry), with the same versions as the call entry. A
+/// mandatory tender is not a put entry; it stays MandatoryPutDate.
+type PutScheduleTerm = {
+    /// The put date, or the start of a put window. An entry without one is never read.
+    PutDate: DateOnly
+    /// The last day of the put window, inclusive. Absent, the window runs to the day before the
+    /// next put's date in date order, or to maturity for the last put (ADR-025).
+    PutEndDate: DateOnly option
+    /// European, American or Bermudan.
+    ExerciseStyle: string option
+    /// How often a Bermudan window's put dates recur (a coupon frequency spelling).
+    ExerciseFrequency: string option
+    /// The put price, in the unit priceBasis names.
+    PutPrice: decimal option
+    /// PercentOfPar or PercentOfAccretedValue.
+    PriceBasis: string option
+    /// The holder's election falls at least this many days before the exercise date.
+    MinimumNoticeDays: int option
+    /// The holder's election falls at most this many days before the exercise date.
+    MaximumNoticeDays: int option
+    /// Whether the notice counts are Business or Calendar days.
+    NoticeDayType: string option
+}
+
+/// The declared call and put schedules, in stored order; empty until declared.
+type CallPutSchedules = { Calls: CallScheduleTerm list; Puts: PutScheduleTerm list }
+
+[<RequireQualifiedAccess>]
+module CallPutSchedules =
+    /// Nothing declared: what every record carries until a node writes the schedules.
+    [<CompiledName("Empty")>]
+    let empty : CallPutSchedules = { Calls = []; Puts = [] }
+
+    /// Whether neither a call nor a put is declared.
+    [<CompiledName("IsEmpty")>]
+    let isEmpty (schedules: CallPutSchedules) = schedules.Calls.IsEmpty && schedules.Puts.IsEmpty
+
+[<RequireQualifiedAccess>]
+module CallScheduleTerm =
+    /// A call on the date with nothing else stated.
+    let onDate (date: DateOnly) : CallScheduleTerm =
+        { CallDate = date
+          CallEndDate = None
+          ExerciseStyle = None
+          ExerciseFrequency = None
+          CallPrice = None
+          PriceBasis = None
+          PriceType = None
+          MakeWholeSpreadBps = None
+          PartialRedemption = None
+          MinimumNoticeDays = None
+          MaximumNoticeDays = None
+          NoticeDayType = None }
+
+[<RequireQualifiedAccess>]
+module PutScheduleTerm =
+    /// A put on the date with nothing else stated.
+    let onDate (date: DateOnly) : PutScheduleTerm =
+        { PutDate = date
+          PutEndDate = None
+          ExerciseStyle = None
+          ExerciseFrequency = None
+          PutPrice = None
+          PriceBasis = None
+          MinimumNoticeDays = None
+          MaximumNoticeDays = None
+          NoticeDayType = None }
+
 type BondTerms = {
     Maturity: DateOnly
     IssueDate: DateOnly option
@@ -285,6 +434,10 @@ type BondTerms = {
     /// subclasses. Empty for bullet bonds. The BondSubclass taxonomy already names SinkingFund;
     /// this is the term data that lets cash-flow and amortization math act on it.
     PrincipalSchedule: PrincipalPaymentEntry list
+    /// Declared schedule conventions (asset-class terms version 2); empty until declared.
+    ScheduleConventions: ScheduleConventions
+    /// Declared call and put schedules (asset-class terms version 3); empty until declared.
+    CallPutSchedules: CallPutSchedules
 }
 
 [<RequireQualifiedAccess>]
@@ -294,21 +447,27 @@ module BondTerms =
           IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None
           Subclass = BondSubclass.Corporate
           Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None
-          PrincipalSchedule = [] }
+          PrincipalSchedule = []
+          ScheduleConventions = ScheduleConventions.empty
+          CallPutSchedules = CallPutSchedules.empty }
 
     let floatingRate maturity index spreadBps issuerName =
         { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Floating(index, spreadBps, None, None, None)
           IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None
           Subclass = BondSubclass.FloatingRate
           Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None
-          PrincipalSchedule = [] }
+          PrincipalSchedule = []
+          ScheduleConventions = ScheduleConventions.empty
+          CallPutSchedules = CallPutSchedules.empty }
 
     let zeroCoupon maturity issuerName =
         { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.ZeroCoupon
           IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None
           Subclass = BondSubclass.Corporate
           Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None
-          PrincipalSchedule = [] }
+          PrincipalSchedule = []
+          ScheduleConventions = ScheduleConventions.empty
+          CallPutSchedules = CallPutSchedules.empty }
 
     let couponRate (terms: BondTerms) =
         match terms.Coupon with
@@ -368,6 +527,10 @@ type CertificateOfDepositTerms = {
     CouponRate: decimal option
     CallableDate: DateOnly option
     DayCount: string option
+    /// Declared schedule conventions (asset-class terms version 2); empty until declared.
+    ScheduleConventions: ScheduleConventions
+    /// Declared call and put schedules (asset-class terms version 3); empty until declared.
+    CallPutSchedules: CallPutSchedules
 }
 
 type CommercialPaperTerms = {
@@ -410,6 +573,19 @@ type OtherSecurityTerms = {
     SettlementType: string option
 }
 
+/// One step of an amortizing or accreting leg notional: the notional in effect from this date
+/// until the next step (or maturity).
+type SwapNotionalStep = {
+    EffectiveDate: DateOnly
+    Notional: decimal
+}
+
+/// A floating-leg reset date with the index fixing observed on it, once known.
+type SwapResetEntry = {
+    ResetDate: DateOnly
+    FixingRate: decimal option
+}
+
 /// A swap leg with the economics consumed by cash-flow projection. Optional terms keep
 /// legacy legs readable and allow the projection to use security-level fallbacks.
 type SwapLeg = {
@@ -428,6 +604,12 @@ type SwapLeg = {
     DayCount: string option
     /// Whether principal exchanges are part of the leg's contractual terms.
     ExchangesPrincipal: bool
+    /// Dated notional steps for an amortizing or accreting leg; empty for a constant notional.
+    NotionalSchedule: SwapNotionalStep list
+    /// Reset dates with their observed fixings for a floating leg; empty when not tracked.
+    ResetSchedule: SwapResetEntry list
+    /// The leg's declared schedule conventions (asset-class terms version 2); empty until declared.
+    ScheduleConventions: ScheduleConventions
 }
 
 type SwapTerms = {
@@ -555,6 +737,10 @@ type StructuredCreditTerms = {
     ReinvestmentPeriodEnd: DateOnly option
     /// CLO: last day of the non-call period, before which the notes cannot be refinanced.
     NonCallPeriodEnd: DateOnly option
+    /// Declared schedule conventions (asset-class terms version 3); empty until declared.
+    ScheduleConventions: ScheduleConventions
+    /// Declared call and put schedules (asset-class terms version 4); empty until declared.
+    CallPutSchedules: CallPutSchedules
 }
 
 type PrivateFundInterestTerms = {
@@ -660,6 +846,123 @@ type CustomAssetTerms = {
     TermsJson: string
 }
 
+/// Outright FX forward: an agreed exchange of the base and quote currencies at a forward rate on
+/// the value date. Deliverable unless SettlementType says otherwise.
+type FxForwardTerms = {
+    BaseCurrency: string
+    QuoteCurrency: string
+    /// Notional in the base currency.
+    Notional: decimal option
+    /// Agreed forward rate, quote currency per unit of base currency.
+    ForwardRate: decimal option
+    TradeDate: DateOnly option
+    ValueDate: DateOnly
+    /// Settlement method label ("Physical" by default, "Cash" for a cash-settled forward).
+    SettlementType: string option
+}
+
+/// Non-deliverable forward: cash-settled in the settlement currency against a published fixing of
+/// the base/quote rate on the fixing date; no exchange of the restricted currency takes place.
+type NonDeliverableForwardTerms = {
+    BaseCurrency: string
+    QuoteCurrency: string
+    /// Currency in which the net difference is paid (usually the convertible leg).
+    SettlementCurrency: string
+    /// Notional in the base currency.
+    Notional: decimal option
+    /// Agreed forward rate, quote currency per unit of base currency.
+    ForwardRate: decimal option
+    FixingDate: DateOnly
+    ValueDate: DateOnly
+    /// Published fixing source the settlement rate is read from (operational reference).
+    FixingSource: string option
+}
+
+/// Single-name or index credit default swap: protection bought or sold on a reference entity (or
+/// index) for a running fixed coupon over the protection period.
+type CreditDefaultSwapTerms = {
+    ReferenceEntity: string
+    ReferenceObligation: string option
+    /// "Buy" when the holder buys protection (pays the coupon), "Sell" when it sells protection.
+    ProtectionSide: string
+    Notional: decimal
+    /// Running fixed coupon in basis points per annum (e.g. 100 or 500 under the standard contract).
+    FixedCouponBps: decimal
+    EffectiveDate: DateOnly
+    MaturityDate: DateOnly
+    PaymentFrequency: string option
+    DayCount: string option
+    /// Seniority of the reference obligation (e.g. "SeniorUnsecured", "Subordinated").
+    Seniority: string option
+    /// ISDA restructuring clause (e.g. "ModR", "ModModR", "XR", "CR").
+    RestructuringClause: string option
+    /// Upfront payment as points of notional; positive when paid by the protection buyer.
+    UpfrontPoints: decimal option
+    /// Assumed recovery rate as a fraction (0 to 1).
+    RecoveryRateAssumption: decimal option
+    /// Index name and series for an index CDS (e.g. "CDX.NA.IG.42"); None for single-name.
+    IndexName: string option
+}
+
+/// Option to enter an interest-rate swap: the holder may pay ("Payer") or receive ("Receiver") the
+/// strike fixed rate against the floating index on the underlying swap dates.
+type SwaptionTerms = {
+    /// "Payer" (right to pay fixed) or "Receiver" (right to receive fixed).
+    PayerReceiver: string
+    /// "European", "American" or "Bermudan"; None leaves the style undeclared.
+    ExerciseStyle: string option
+    /// Fixed rate of the underlying swap, as a decimal rate; may be negative.
+    StrikeRate: decimal
+    Expiry: DateOnly
+    UnderlyingEffectiveDate: DateOnly option
+    UnderlyingMaturityDate: DateOnly
+    Notional: decimal
+    FloatingIndex: string option
+    FixedLegPaymentFrequency: string option
+    FixedLegDayCount: string option
+    /// Settlement method label ("Physical" enters the swap, "Cash" pays its value).
+    SettlementType: string option
+}
+
+/// Interest-rate cap, floor or collar on a floating reference index over the protection period.
+type CapFloorTerms = {
+    /// "Cap", "Floor" or "Collar" (a long cap with a short floor).
+    CapFloorType: string
+    ReferenceIndex: string
+    /// Cap strike as a decimal rate; required for Cap and Collar.
+    CapStrike: decimal option
+    /// Floor strike as a decimal rate; required for Floor and Collar.
+    FloorStrike: decimal option
+    Notional: decimal
+    EffectiveDate: DateOnly
+    MaturityDate: DateOnly
+    ResetFrequency: string option
+    DayCount: string option
+    PremiumAmount: decimal option
+}
+
+/// Issuer note whose return is linked to a reference asset or basket (principal-protected notes,
+/// participation notes, reverse convertibles, autocallables). Held and priced by face like debt.
+type StructuredNoteTerms = {
+    IssuerName: string
+    /// Reference asset, index or basket the payoff is linked to.
+    UnderlyingDescription: string
+    Maturity: DateOnly
+    IssueDate: DateOnly option
+    /// Face amount of one note.
+    Denomination: decimal option
+    /// Share of principal repaid at maturity regardless of the underlying, as a fraction (1 = 100%).
+    PrincipalProtectionPct: decimal option
+    /// Share of the underlying's return the holder receives, as a fraction (1 = 100%).
+    ParticipationRate: decimal option
+    /// Maximum return paid, as a fraction of face.
+    ReturnCap: decimal option
+    CouponRate: decimal option
+    PaymentFrequency: string option
+    /// Knock-in or knock-out barrier as a fraction of the underlying's initial level.
+    BarrierLevel: decimal option
+}
+
 [<RequireQualifiedAccess>]
 type SecurityKind =
     | Equity of EquityTerms
@@ -686,6 +989,18 @@ type SecurityKind =
     | CryptoCurrency of CryptoTerms
     | Cfd of CfdTerms
     | Warrant of WarrantTerms
+    /// Outright deliverable FX forward.
+    | FxForward of FxForwardTerms
+    /// Cash-settled non-deliverable FX forward.
+    | NonDeliverableForward of NonDeliverableForwardTerms
+    /// Single-name or index credit default swap.
+    | CreditDefaultSwap of CreditDefaultSwapTerms
+    /// Option to enter an interest-rate swap.
+    | Swaption of SwaptionTerms
+    /// Interest-rate cap, floor or collar.
+    | CapFloor of CapFloorTerms
+    /// Issuer note with a payoff linked to a reference asset or basket.
+    | StructuredNote of StructuredNoteTerms
     /// Mutual fund, ETF, hedge fund, REIT, or closed-end fund.
     /// Market value = units × NAV (or market price); no amortization in general.
     | InvestmentFund of InvestmentFundTerms
@@ -773,6 +1088,18 @@ module AssetClassRegistry =
             SubType = SecuritySubType.OtherSubType "Cfd"; IssuerType = None; RiskCountry = None; IsDerivative = true }
           { AssetClassName = "Warrant"; AssetClass = AssetClass.Derivative; Family = Some AssetFamily.ListedDerivative
             SubType = SecuritySubType.OtherSubType "Warrant"; IssuerType = None; RiskCountry = None; IsDerivative = true }
+          { AssetClassName = "FxForward"; AssetClass = AssetClass.Derivative; Family = Some (AssetFamily.OtherFamily "OtcDerivative")
+            SubType = SecuritySubType.OtherSubType "FxForward"; IssuerType = None; RiskCountry = None; IsDerivative = true }
+          { AssetClassName = "NonDeliverableForward"; AssetClass = AssetClass.Derivative; Family = Some (AssetFamily.OtherFamily "OtcDerivative")
+            SubType = SecuritySubType.OtherSubType "NonDeliverableForward"; IssuerType = None; RiskCountry = None; IsDerivative = true }
+          { AssetClassName = "CreditDefaultSwap"; AssetClass = AssetClass.Derivative; Family = Some (AssetFamily.OtherFamily "OtcDerivative")
+            SubType = SecuritySubType.OtherSubType "CreditDefaultSwap"; IssuerType = None; RiskCountry = None; IsDerivative = true }
+          { AssetClassName = "Swaption"; AssetClass = AssetClass.Derivative; Family = Some (AssetFamily.OtherFamily "OtcDerivative")
+            SubType = SecuritySubType.OtherSubType "Swaption"; IssuerType = None; RiskCountry = None; IsDerivative = true }
+          { AssetClassName = "CapFloor"; AssetClass = AssetClass.Derivative; Family = Some (AssetFamily.OtherFamily "OtcDerivative")
+            SubType = SecuritySubType.OtherSubType "CapFloor"; IssuerType = None; RiskCountry = None; IsDerivative = true }
+          { AssetClassName = "StructuredNote"; AssetClass = AssetClass.FixedIncome; Family = Some AssetFamily.CorporateDebt
+            SubType = SecuritySubType.OtherSubType "StructuredNote"; IssuerType = Some "Corporate"; RiskCountry = None; IsDerivative = false }
           { AssetClassName = "InvestmentFund"; AssetClass = AssetClass.Fund; Family = None
             SubType = SecuritySubType.OtherSubType "InvestmentFund"; IssuerType = None; RiskCountry = None; IsDerivative = false }
           { AssetClassName = "CustomAsset"; AssetClass = AssetClass.Other; Family = Some (AssetFamily.OtherFamily "CustomAsset")
@@ -810,6 +1137,12 @@ module AssetClassRegistry =
         | SecurityKind.CryptoCurrency _ -> "CryptoCurrency"
         | SecurityKind.Cfd _ -> "Cfd"
         | SecurityKind.Warrant _ -> "Warrant"
+        | SecurityKind.FxForward _ -> "FxForward"
+        | SecurityKind.NonDeliverableForward _ -> "NonDeliverableForward"
+        | SecurityKind.CreditDefaultSwap _ -> "CreditDefaultSwap"
+        | SecurityKind.Swaption _ -> "Swaption"
+        | SecurityKind.CapFloor _ -> "CapFloor"
+        | SecurityKind.StructuredNote _ -> "StructuredNote"
         | SecurityKind.InvestmentFund _ -> "InvestmentFund"
         | SecurityKind.CustomAsset _ -> "CustomAsset"
 

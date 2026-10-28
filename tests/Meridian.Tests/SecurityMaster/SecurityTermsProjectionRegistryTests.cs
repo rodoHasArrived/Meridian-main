@@ -697,22 +697,50 @@ public sealed class SecurityTermsProjectionRegistryTests
 
         foreach (var descriptor in SecurityTermsProjectionRegistry.Descriptors)
         {
-            AssertTableDeclares(
-                ddl,
-                descriptor.TableName,
-                SecurityTermsProjectionRegistry.LeadingIdentityColumnsFor(descriptor)
-                    .Concat(descriptor.Columns.Select(column => column.ColumnName))
-                    .Concat(SecurityTermsProjectionRegistry.TrailingIdentityColumns));
+            AssertTableDeclares(ddl, descriptor.TableName, SecurityTermsProjectionRegistry.ParentColumnNames(descriptor));
 
             foreach (var child in descriptor.ChildTables)
             {
-                AssertTableDeclares(
-                    ddl,
-                    child.TableName,
-                    SecurityTermsProjectionRegistry.ChildKeyColumns
-                        .Concat(child.Columns.Select(column => column.ColumnName)));
+                AssertTableDeclares(ddl, child.TableName, SecurityTermsProjectionRegistry.ChildColumnNames(child));
+            }
+
+            foreach (var satellite in descriptor.Satellites)
+            {
+                AssertTableDeclares(ddl, satellite.TableName, SecurityTermsProjectionRegistry.SatelliteColumnNames(satellite));
             }
         }
+    }
+
+    [Fact]
+    public void EveryTableWithoutASpineColumn_DeclaresThatInTheRegistry_NotTheOtherWayRound()
+    {
+        // A table that opts out of display_name, currency or the primary identifier must really lack
+        // the column: the upsert would otherwise leave a NOT NULL column unbound. Bond's parent and
+        // two of its satellites predate the spine and are the only such tables today.
+        var ddl = ReadShippedMigrationDdl();
+
+        foreach (var descriptor in SecurityTermsProjectionRegistry.Descriptors)
+        {
+            AssertSpineMatchesDdl(ddl, descriptor.TableName, descriptor.ProjectsDisplayName, descriptor.ProjectsCurrency, descriptor.ProjectsPrimaryIdentifier);
+            foreach (var satellite in descriptor.Satellites)
+            {
+                AssertSpineMatchesDdl(ddl, satellite.TableName, satellite.ProjectsDisplayName, satellite.ProjectsCurrency, satellite.ProjectsPrimaryIdentifier);
+            }
+        }
+    }
+
+    private static void AssertSpineMatchesDdl(
+        IReadOnlyDictionary<string, IReadOnlyCollection<string>> ddl,
+        string tableName,
+        bool projectsDisplayName,
+        bool projectsCurrency,
+        bool projectsPrimaryIdentifier)
+    {
+        var columns = ddl[tableName];
+        columns.Contains("display_name").Should().Be(projectsDisplayName, $"'{tableName}' declares ProjectsDisplayName={projectsDisplayName}");
+        columns.Contains("currency").Should().Be(projectsCurrency, $"'{tableName}' declares ProjectsCurrency={projectsCurrency}");
+        columns.Contains("primary_identifier_value").Should().Be(projectsPrimaryIdentifier, $"'{tableName}' declares ProjectsPrimaryIdentifier={projectsPrimaryIdentifier}");
+        columns.Should().Contain("version", $"every registry table carries version");
     }
 
     [Fact]
@@ -733,7 +761,117 @@ public sealed class SecurityTermsProjectionRegistryTests
                         $"'{child.TableName}' claims it cascades from '{descriptor.TableName}', so its "
                         + "security_id foreign key must declare 'on delete cascade'");
             }
+
+            foreach (var satellite in descriptor.Satellites.Where(static satellite => satellite.CascadesFromParent))
+            {
+                CascadingForeignKey(satellite.TableName, descriptor.TableName)
+                    .IsMatch(sql)
+                    .Should().BeTrue(
+                        $"'{satellite.TableName}' claims it cascades from '{descriptor.TableName}', so its "
+                        + "security_id foreign key must declare 'on delete cascade'");
+            }
         }
+    }
+
+    [Fact]
+    public void Validate_RejectsAGatingColumnOnASatelliteTable()
+    {
+        var issues = SecurityTermsProjectionRegistry.Validate(
+        [
+            new(
+                AssetClass: "Deposit",
+                TableName: "deposit_probe_projection",
+                Columns: [SecurityTermsProjectionColumn.Optional("institution_name", "institutionName", SecurityAssetTermFieldType.String)],
+                ChildTables: [],
+                SatelliteTables:
+                [
+                    new(
+                        TableName: "deposit_probe_lifecycle_projection",
+                        // depositType is Required, so the only objection is the gate's placement.
+                        Columns: [SecurityTermsProjectionColumn.Gate("deposit_type", "depositType", SecurityAssetTermFieldType.String)])
+                ])
+        ]);
+
+        issues.Should().ContainSingle().Which.Should().Contain("satellite").And.Contain("Condition");
+    }
+
+    [Fact]
+    public void Validate_HoldsSatelliteColumnsToTheTermsSchemaLikeParentColumns()
+    {
+        var issues = SecurityTermsProjectionRegistry.Validate(
+        [
+            new(
+                AssetClass: "Deposit",
+                TableName: "deposit_probe_projection",
+                Columns: [SecurityTermsProjectionColumn.Optional("institution_name", "institutionName", SecurityAssetTermFieldType.String)],
+                ChildTables: [],
+                SatelliteTables:
+                [
+                    new(
+                        TableName: "deposit_probe_lifecycle_projection",
+                        Columns: [SecurityTermsProjectionColumn.Optional("maturity_date", "maturityDate", SecurityAssetTermFieldType.Date)])
+                ])
+        ]);
+
+        issues.Should().ContainSingle().Which.Should().Contain("deposit_probe_lifecycle_projection.maturity_date").And.Contain("does not declare");
+    }
+
+    [Fact]
+    public void SatelliteUpsertSql_UsesTheSpineTheSatelliteDeclares()
+    {
+        var bond = Descriptor("Bond");
+        var issuer = bond.Satellites.Single(static satellite => satellite.TableName == "bond_issuer_projection");
+        var lifecycle = bond.Satellites.Single(static satellite => satellite.TableName == "bond_lifecycle_projection");
+
+        PostgresSecurityMasterStore.BuildTermsProjectionUpsertSql(bond, "security_master")
+            .Should().StartWith("insert into security_master.bond_projection (security_id, issuer_name, ")
+            .And.Contain(", floating_spread_bps, version) values (")
+            .And.NotContain("display_name");
+        PostgresSecurityMasterStore.BuildTermsProjectionSatelliteUpsertSql(issuer, "security_master")
+            .Should().StartWith("insert into security_master.bond_issuer_projection (security_id, display_name, currency, issuer_name, maturity_date, seniority, primary_identifier_value, version)")
+            .And.Contain("on conflict (security_id) do update set display_name = excluded.display_name");
+        PostgresSecurityMasterStore.BuildTermsProjectionSatelliteUpsertSql(lifecycle, "security_master")
+            .Should().StartWith("insert into security_master.bond_lifecycle_projection (security_id, lifecycle_stat, ")
+            .And.NotContain("display_name")
+            .And.NotContain("primary_identifier_value");
+    }
+
+    [Fact]
+    public void TryBuild_DecodesACanonicalBondIntoItsParentAndThreeSatellites()
+    {
+        var record = Record("Bond", new
+        {
+            schemaVersion = 1,
+            // Far enough out that the lifecycle state does not flip to Matured as the real date advances.
+            maturity = "2091-06-15",
+            issueDate = "2021-06-15",
+            couponType = "Fixed",
+            couponRate = 5.25m,
+            dayCount = "30/360",
+            isCallable = true,
+            callDate = "2026-06-15",
+            subclass = "Corporate",
+            seniority = "Senior",
+            issuerName = "Acme Corp",
+            par = 1000m,
+            paymentFrequency = "SemiAnnual"
+        });
+
+        PostgresSecurityMasterStore.TryBuildTermsProjection(Descriptor("Bond"), record, out var plan).Should().BeTrue();
+
+        plan.Columns.Select(static column => column.ColumnName).Should().Equal(
+            "security_id", "issuer_name", "seniority", "subclass", "issue_date", "maturity_date",
+            "coupon_kind", "fixed_coupon_rate", "floating_rate_index", "floating_spread_bps", "version");
+        plan.Value("issuer_name").Should().Be("Acme Corp");
+        plan.SatelliteValue("bond_lifecycle_projection", "lifecycle_stat").Should().Be("Callable",
+            "the call date has passed and the bond is callable");
+        plan.SatelliteValue("bond_lifecycle_projection", "par").Should().Be(1000m);
+        plan.SatelliteValue("bond_lifecycle_projection", "is_callable").Should().Be(true);
+        plan.SatelliteValue("bond_accrual_convention_projection", "settlement_cycle_days").Should().Be(DBNull.Value,
+            "the record's common terms carry no settlement cycle");
+        plan.SatelliteColumns("bond_issuer_projection")!.Select(static column => column.ColumnName).Should().Equal(
+            "security_id", "display_name", "currency", "issuer_name", "maturity_date", "seniority", "primary_identifier_value", "version");
+        plan.SatelliteValue("bond_issuer_projection", "display_name").Should().Be(record.DisplayName);
     }
 
     private static void AssertTableDeclares(
@@ -890,6 +1028,12 @@ public sealed class SecurityTermsProjectionRegistryTests
         "InvestmentFund", "PrivateFundInterest", "PrivateCompanyEquity", "RealEstateHolding", "CommitmentGuarantee"
     ];
 
+    /// <summary>The OTC derivative classes migration 046 projects from the day they are modeled.</summary>
+    private static readonly string[] Migration046Classes = ["FxForward", "NonDeliverableForward", "CreditDefaultSwap"];
+
+    /// <summary>The rate options and linked notes migration 047 projects from the day they are modeled.</summary>
+    private static readonly string[] Migration047Classes = ["Swaption", "CapFloor", "StructuredNote"];
+
     [Fact]
     public void Registry_ProjectsEveryCatalogClassExceptCustomAsset()
     {
@@ -900,6 +1044,8 @@ public sealed class SecurityTermsProjectionRegistryTests
         SecurityTermsProjectionRegistry.AssetClasses.Should().BeEquivalentTo(expected,
             "CustomAsset is the one deliberate gap: its fields are governed per profile and have no fixed column set");
         Migration044Classes.Should().BeSubsetOf(SecurityTermsProjectionRegistry.AssetClasses);
+        Migration046Classes.Should().BeSubsetOf(SecurityTermsProjectionRegistry.AssetClasses);
+        Migration047Classes.Should().BeSubsetOf(SecurityTermsProjectionRegistry.AssetClasses);
     }
 
     [Fact]
@@ -908,7 +1054,7 @@ public sealed class SecurityTermsProjectionRegistryTests
         // The descriptors gate on the terms the schema marks Required, so the canonical full payload
         // of each class — the one the domain serializer writes — must satisfy every gate. A gate that
         // the canonical document could not satisfy would unproject every valid record of the class.
-        foreach (var assetClass in Migration044Classes)
+        foreach (var assetClass in Migration044Classes.Concat(Migration046Classes).Concat(Migration047Classes))
         {
             var descriptor = SecurityTermsProjectionRegistry.Descriptors.Single(candidate => candidate.AssetClass == assetClass);
             var record = SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(

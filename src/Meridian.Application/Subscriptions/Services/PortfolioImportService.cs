@@ -319,18 +319,11 @@ public sealed class PortfolioImportService
         PortfolioImportOptions options,
         CancellationToken ct)
     {
-        var config = _configStore.Load();
-        var existingSymbols = (config.Symbols ?? Array.Empty<SymbolConfig>())
-            .Select(s => s.Symbol)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
         var excludeSymbols = new HashSet<string>(
             options.ExcludeSymbols ?? Array.Empty<string>(),
             StringComparer.OrdinalIgnoreCase);
 
         var errors = new List<string>();
-        var imported = new List<string>();
-        var skipped = 0;
 
         // Filter positions based on options
         var filteredPositions = portfolio.Positions
@@ -359,33 +352,42 @@ public sealed class PortfolioImportService
             })
             .ToList();
 
-        var symbolsToImport = new List<SymbolConfig>();
-
-        foreach (var position in filteredPositions)
+        var (imported, skipped) = await _configStore.UpdateAsync(config =>
         {
-            if (options.SkipExisting && existingSymbols.Contains(position.Symbol))
+            var existingSymbols = (config.Symbols ?? Array.Empty<SymbolConfig>())
+                .Select(s => s.Symbol)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var imported = new List<string>();
+            var skipped = 0;
+            var symbolsToImport = new List<SymbolConfig>();
+
+            foreach (var position in filteredPositions)
             {
-                skipped++;
-                continue;
+                if (options.SkipExisting && existingSymbols.Contains(position.Symbol))
+                {
+                    skipped++;
+                    continue;
+                }
+
+                var symbolConfig = new SymbolConfig(
+                    Symbol: position.Symbol,
+                    SubscribeTrades: options.SubscribeTrades,
+                    SubscribeDepth: options.SubscribeDepth,
+                    DepthLevels: 10,
+                    SecurityType: MapAssetClass(position.AssetClass),
+                    Exchange: position.Exchange ?? "SMART",
+                    Currency: position.Currency
+                );
+
+                symbolsToImport.Add(symbolConfig);
+                imported.Add(position.Symbol);
             }
 
-            var symbolConfig = new SymbolConfig(
-                Symbol: position.Symbol,
-                SubscribeTrades: options.SubscribeTrades,
-                SubscribeDepth: options.SubscribeDepth,
-                DepthLevels: 10,
-                SecurityType: MapAssetClass(position.AssetClass),
-                Exchange: position.Exchange ?? "SMART",
-                Currency: position.Currency
-            );
+            // Save imported symbols
+            if (symbolsToImport.Count == 0)
+                return (config, (imported, skipped));
 
-            symbolsToImport.Add(symbolConfig);
-            imported.Add(position.Symbol);
-        }
-
-        // Save imported symbols
-        if (symbolsToImport.Count > 0)
-        {
             var allSymbols = (config.Symbols ?? Array.Empty<SymbolConfig>())
                 .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
 
@@ -394,9 +396,8 @@ public sealed class PortfolioImportService
                 allSymbols[symbol.Symbol] = symbol;
             }
 
-            var next = config with { Symbols = allSymbols.Values.ToArray() };
-            await _configStore.SaveAsync(next);
-        }
+            return (config with { Symbols = allSymbols.Values.ToArray() }, (imported, skipped));
+        }, ct);
 
         // Create watchlist if requested
         string? watchlistId = null;

@@ -123,10 +123,6 @@ public static class ProviderEndpoints
                     $"Unknown provider '{req.Provider}'. Valid values: {string.Join(", ", Enum.GetNames<DataSourceKind>())}.");
             }
 
-            var cfg = store.Load();
-            var dataSources = cfg.DataSources ?? new DataSourcesConfig();
-            var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
-
             var id = string.IsNullOrWhiteSpace(req.Id) ? Guid.NewGuid().ToString("N") : req.Id;
             var source = new DataSourceConfig(
                 Id: id,
@@ -145,14 +141,19 @@ public static class ProviderEndpoints
                 Tags: req.Tags
             );
 
-            var idx = sources.FindIndex(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
-            if (idx >= 0)
-                sources[idx] = source;
-            else
-                sources.Add(source);
+            await store.UpdateAsync(cfg =>
+            {
+                var dataSources = cfg.DataSources ?? new DataSourcesConfig();
+                var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
 
-            var next = cfg with { DataSources = dataSources with { Sources = sources.ToArray() } };
-            await store.SaveAsync(next);
+                var idx = sources.FindIndex(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
+                if (idx >= 0)
+                    sources[idx] = source;
+                else
+                    sources.Add(source);
+
+                return cfg with { DataSources = dataSources with { Sources = sources.ToArray() } };
+            }, context.RequestAborted);
 
             return Results.Ok(new { id });
         })
@@ -175,14 +176,15 @@ public static class ProviderEndpoints
                 return authorizationFailure;
             }
 
-            var cfg = store.Load();
-            var dataSources = cfg.DataSources ?? new DataSourcesConfig();
-            var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
+            await store.UpdateAsync(cfg =>
+            {
+                var dataSources = cfg.DataSources ?? new DataSourcesConfig();
+                var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
 
-            sources.RemoveAll(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
+                sources.RemoveAll(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
 
-            var next = cfg with { DataSources = dataSources with { Sources = sources.ToArray() } };
-            await store.SaveAsync(next);
+                return cfg with { DataSources = dataSources with { Sources = sources.ToArray() } };
+            }, context.RequestAborted);
 
             return Results.Ok();
         })
@@ -205,21 +207,22 @@ public static class ProviderEndpoints
                 return authorizationFailure;
             }
 
-            var cfg = store.Load();
-            var dataSources = cfg.DataSources ?? new DataSourcesConfig();
-            var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
+            var outcome = await store.UpdateAsync<IResult?>(cfg =>
+            {
+                var dataSources = cfg.DataSources ?? new DataSourcesConfig();
+                var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
 
-            var source = sources.FirstOrDefault(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
-            if (source == null)
-                return Results.NotFound();
+                var source = sources.FirstOrDefault(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
+                if (source == null)
+                    return (cfg, Results.NotFound());
 
-            var idx = sources.IndexOf(source);
-            sources[idx] = source with { Enabled = req.Enabled };
+                var idx = sources.IndexOf(source);
+                sources[idx] = source with { Enabled = req.Enabled };
 
-            var next = cfg with { DataSources = dataSources with { Sources = sources.ToArray() } };
-            await store.SaveAsync(next);
+                return (cfg with { DataSources = dataSources with { Sources = sources.ToArray() } }, null);
+            }, context.RequestAborted);
 
-            return Results.Ok();
+            return outcome ?? Results.Ok();
         })
         .WithName("ToggleDataSource").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Toggles the enabled/disabled state of a data source.")
@@ -240,18 +243,19 @@ public static class ProviderEndpoints
                 return authorizationFailure;
             }
 
-            var cfg = store.Load();
-            var dataSources = cfg.DataSources ?? new DataSourcesConfig();
-
-            var next = cfg with
+            await store.UpdateAsync(cfg =>
             {
-                DataSources = dataSources with
+                var dataSources = cfg.DataSources ?? new DataSourcesConfig();
+
+                return cfg with
                 {
-                    DefaultRealTimeSourceId = req.DefaultRealTimeSourceId,
-                    DefaultHistoricalSourceId = req.DefaultHistoricalSourceId
-                }
-            };
-            await store.SaveAsync(next);
+                    DataSources = dataSources with
+                    {
+                        DefaultRealTimeSourceId = req.DefaultRealTimeSourceId,
+                        DefaultHistoricalSourceId = req.DefaultHistoricalSourceId
+                    }
+                };
+            }, context.RequestAborted);
 
             return Results.Ok();
         })
@@ -273,18 +277,19 @@ public static class ProviderEndpoints
                 return authorizationFailure;
             }
 
-            var cfg = store.Load();
-            var dataSources = cfg.DataSources ?? new DataSourcesConfig();
-
-            var next = cfg with
+            await store.UpdateAsync(cfg =>
             {
-                DataSources = dataSources with
+                var dataSources = cfg.DataSources ?? new DataSourcesConfig();
+
+                return cfg with
                 {
-                    EnableFailover = req.EnableFailover,
-                    FailoverTimeoutSeconds = req.FailoverTimeoutSeconds
-                }
-            };
-            await store.SaveAsync(next);
+                    DataSources = dataSources with
+                    {
+                        EnableFailover = req.EnableFailover,
+                        FailoverTimeoutSeconds = req.FailoverTimeoutSeconds
+                    }
+                };
+            }, context.RequestAborted);
 
             return Results.Ok();
         })
@@ -717,10 +722,6 @@ public static class ProviderEndpoints
                     $"Unknown provider '{req.Provider}'. Valid values: {string.Join(", ", Enum.GetNames<DataSourceKind>())}.");
             }
 
-            var cfg = store.Load();
-            var dataSources = cfg.DataSources ?? new DataSourcesConfig();
-            var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
-
             var id = string.IsNullOrWhiteSpace(req.Id) ? Guid.NewGuid().ToString("N") : req.Id;
             var source = new DataSourceConfig(
                 Id: id,
@@ -739,14 +740,19 @@ public static class ProviderEndpoints
                 Tags: req.Tags
             );
 
-            var idx = sources.FindIndex(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
-            if (idx >= 0)
-                sources[idx] = source;
-            else
-                sources.Add(source);
+            await store.UpdateAsync(cfg =>
+            {
+                var dataSources = cfg.DataSources ?? new DataSourcesConfig();
+                var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
 
-            var next = cfg with { DataSources = dataSources with { Sources = sources.ToArray() } };
-            await store.SaveAsync(next);
+                var idx = sources.FindIndex(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
+                if (idx >= 0)
+                    sources[idx] = source;
+                else
+                    sources.Add(source);
+
+                return cfg with { DataSources = dataSources with { Sources = sources.ToArray() } };
+            }, context.RequestAborted);
 
             return Results.Ok(new { id });
         })

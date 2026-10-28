@@ -48,6 +48,8 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
         _secretKey = secretKey
             ?? Environment.GetEnvironmentVariable("ALPACA_SECRET_KEY")
             ?? Environment.GetEnvironmentVariable("ALPACA__SECRETKEY");
+        // The base constructor runs before this provider's second credential exists.
+        ConfigureHttpClientHeaders();
     }
 
     protected override bool HasValidCredentials()
@@ -57,12 +59,15 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
 
     protected override void ConfigureHttpClientHeaders()
     {
+        Http.DefaultRequestHeaders.Remove("APCA-API-KEY-ID");
+        Http.DefaultRequestHeaders.Remove("APCA-API-SECRET-KEY");
         if (HasValidCredentials())
         {
             Http.DefaultRequestHeaders.Add("APCA-API-KEY-ID", ApiKey);
             Http.DefaultRequestHeaders.Add("APCA-API-SECRET-KEY", _secretKey);
         }
-        Http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        if (!Http.DefaultRequestHeaders.Accept.Any(header => header.MediaType == "application/json"))
+            Http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
 
     protected override string BuildSearchUrl(string query, string? assetType, string? exchange)

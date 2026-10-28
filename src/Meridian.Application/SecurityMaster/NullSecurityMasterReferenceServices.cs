@@ -70,6 +70,10 @@ public sealed class NullSecurityMasterCashFlowService : ISecurityMasterCashFlowS
         Guid securityId, StructuredCashFlowScenario scenario, CancellationToken ct = default)
         => Task.FromResult<StructuredCashFlowProjectionDto?>(null);
 
+    public Task<StructuredCashFlowProjectionDto?> GetProjectionAsOfAsync(
+        Guid securityId, StructuredCashFlowScenario scenario, DateTimeOffset asOf, CancellationToken ct = default)
+        => Task.FromResult<StructuredCashFlowProjectionDto?>(null);
+
     public Task<StructuredCashFlowLedgerPostingResult> BuildLedgerPostingsAsync(
         Guid securityId, string? financialAccountId = null, DateOnly? through = null, CancellationToken ct = default)
         => Task.FromResult(StructuredCashFlowLedgerPostingResult.Blocked(

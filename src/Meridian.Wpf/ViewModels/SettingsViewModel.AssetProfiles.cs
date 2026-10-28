@@ -896,7 +896,8 @@ public sealed class SettingsAssetProfileRow
         : $"{Profile.Category} / {Profile.SubType}";
     public string FieldCountLabel => $"{Profile.Fields.Count} field(s)";
     public int ProjectedFieldCount => Profile.Fields.Count(static profileField => profileField.IsProjected);
-    public string ProjectedFieldCountLabel => $"{ProjectedFieldCount} projected";
+    // "Declared": the flag is promotion intent, not a live projection (SecurityAssetProfileFieldDefinitionDto).
+    public string ProjectedFieldCountLabel => $"{ProjectedFieldCount} declared projected";
     public string RequiredIdentifierKindsLabel
     {
         get

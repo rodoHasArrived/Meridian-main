@@ -1,0 +1,40 @@
+{
+  "assetClass": "Deposit",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "dayCount",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "depositType",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "institutionName",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "interestRate",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "isCallable",
+          "type": "Boolean",
+          "required": true
+        },
+        {
+          "key": "maturity",
+          "type": "Date",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

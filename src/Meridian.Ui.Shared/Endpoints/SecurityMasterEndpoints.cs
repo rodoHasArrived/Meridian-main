@@ -461,7 +461,9 @@ public static partial class SecurityMasterEndpoints
             if (!SecurityTermBlocks.For(current.AssetClass).Any(field => string.Equals(field.Key, blockKey, StringComparison.Ordinal)))
             {
                 return Results.Problem(
-                    $"Asset class '{current.AssetClass}' declares no term block '{blockKey}'.",
+                    SecurityTermBlocks.TryDescribeReadableOnlyBlock(current.AssetClass, blockKey, out var readableOnly)
+                        ? readableOnly
+                        : $"Asset class '{current.AssetClass}' declares no term block '{blockKey}'.",
                     statusCode: StatusCodes.Status400BadRequest);
             }
 
@@ -476,6 +478,10 @@ public static partial class SecurityMasterEndpoints
             {
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
+            catch (AppSecurityMaster.SecurityMasterConcurrencyException ex)
+            {
+                return VersionConflict(ex, jsonOptions);
+            }
         })
         .WithName("AmendSecurityMasterTermBlock").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<AmendSecurityTermBlockRequest>("application/json")
@@ -483,6 +489,7 @@ public static partial class SecurityMasterEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
@@ -626,17 +633,24 @@ public static partial class SecurityMasterEndpoints
                 return Results.NotFound();
             }
 
-            var detail = await service
-                .AmendPreferredEquityTermsAsync(securityId, request with { UpdatedBy = ResolveActor(context) }, ct)
-                .ConfigureAwait(false);
-
-            return Results.Json(detail, jsonOptions);
+            try
+            {
+                var detail = await service
+                    .AmendPreferredEquityTermsAsync(securityId, request with { UpdatedBy = ResolveActor(context) }, ct)
+                    .ConfigureAwait(false);
+                return Results.Json(detail, jsonOptions);
+            }
+            catch (AppSecurityMaster.SecurityMasterConcurrencyException ex)
+            {
+                return VersionConflict(ex, jsonOptions);
+            }
         })
         .WithName("AmendSecurityMasterPreferredEquityTerms").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<AmendPreferredEquityTermsRequest>("application/json")
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
@@ -687,17 +701,24 @@ public static partial class SecurityMasterEndpoints
                 return Results.NotFound();
             }
 
-            var detail = await service
-                .AmendConvertibleEquityTermsAsync(securityId, request with { UpdatedBy = ResolveActor(context) }, ct)
-                .ConfigureAwait(false);
-
-            return Results.Json(detail, jsonOptions);
+            try
+            {
+                var detail = await service
+                    .AmendConvertibleEquityTermsAsync(securityId, request with { UpdatedBy = ResolveActor(context) }, ct)
+                    .ConfigureAwait(false);
+                return Results.Json(detail, jsonOptions);
+            }
+            catch (AppSecurityMaster.SecurityMasterConcurrencyException ex)
+            {
+                return VersionConflict(ex, jsonOptions);
+            }
         })
         .WithName("AmendSecurityMasterConvertibleEquityTerms").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<AmendConvertibleEquityTermsRequest>("application/json")
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
@@ -786,6 +807,116 @@ public static partial class SecurityMasterEndpoints
         .WithName("GetSecurityMasterFactorHistory").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<SecurityFactorHistoryDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
+
+        /// <summary>
+        /// The underlying graph around a security: the securities and named references it depends on
+        /// (derived from its terms and declared through this API), the instruments that depend on it,
+        /// and the references that resolve to no Security Master record yet.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterUnderlyings, async (
+            Guid securityId,
+            DateTimeOffset? asOfUtc,
+            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityUnderlyingGraphStore graphStore,
+            CancellationToken ct) =>
+        {
+            var security = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+            if (security is null)
+            {
+                return Results.NotFound();
+            }
+
+            var asOf = asOfUtc ?? DateTimeOffset.UtcNow;
+            var underlyings = (await graphStore.GetUnderlyingsAsync(securityId, ct).ConfigureAwait(false))
+                .Where(link => link.IsActiveAt(asOf))
+                .ToArray();
+            var dependents = (await graphStore.GetDependentsAsync(securityId, ct).ConfigureAwait(false))
+                .Where(link => link.IsActiveAt(asOf))
+                .ToArray();
+            var gaps = new List<string>();
+            foreach (var link in underlyings)
+            {
+                if (!link.IsResolved)
+                {
+                    gaps.Add($"{link.Role}: '{link.Reference}' names no Security Master record.");
+                }
+                else if (await queryService.GetByIdAsync(link.UnderlyingSecurityId!.Value, ct).ConfigureAwait(false) is null)
+                {
+                    gaps.Add($"{link.Role}: security {link.UnderlyingSecurityId:D} is not in the Security Master.");
+                }
+            }
+
+            return Results.Json(new SecurityUnderlyingGraphDto(securityId, asOf, underlyings, dependents, gaps), jsonOptions);
+        })
+        .WithName("GetSecurityMasterUnderlyings").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
+        .Produces<SecurityUnderlyingGraphDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        /// <summary>
+        /// Declares an underlying link (a basket constituent with its weight, a collateral asset, a
+        /// reference obligation) with its own validity window. The link id is derived from the
+        /// security, role and target, so re-declaring the same edge updates it.
+        /// </summary>
+        group.MapPost(UiApiRoutes.SecurityMasterUnderlyings, async (
+            Guid securityId,
+            DeclareSecurityUnderlyingLinkRequest request,
+            HttpContext context,
+            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityUnderlyingGraphStore graphStore,
+            CancellationToken ct) =>
+        {
+            var authorizationResult = RequireSecurityMasterMutationPermission(context);
+            if (authorizationResult is not null)
+                return authorizationResult;
+            if (request.SecurityId != securityId)
+                return Results.BadRequest(new { error = "SecurityId in body must match the route." });
+            if (await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false) is null)
+                return Results.NotFound();
+
+            try
+            {
+                var link = await graphStore
+                    .DeclareAsync(request with { CreatedBy = ResolveActor(context) }, ct)
+                    .ConfigureAwait(false);
+                return Results.Json(link, jsonOptions);
+            }
+            catch (ArgumentException exception)
+            {
+                return Results.BadRequest(new { error = exception.Message });
+            }
+        })
+        .WithName("DeclareSecurityMasterUnderlying").RequirePermission(UserPermission.ModifySecurityMaster)
+        .Produces<SecurityUnderlyingLinkDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
+        /// <summary>Removes a declared underlying link, recording the actor. Derived links follow the terms and cannot be removed here.</summary>
+        group.MapDelete(UiApiRoutes.SecurityMasterUnderlyingLink, async (
+            Guid securityId,
+            Guid linkId,
+            HttpContext context,
+            [FromServices] ISecurityUnderlyingGraphStore graphStore,
+            CancellationToken ct) =>
+        {
+            var authorizationResult = RequireSecurityMasterMutationPermission(context);
+            if (authorizationResult is not null)
+                return authorizationResult;
+
+            return await graphStore.RemoveDeclaredAsync(securityId, linkId, ResolveActor(context), ct).ConfigureAwait(false)
+                ? Results.NoContent()
+                : Results.NotFound();
+        })
+        .WithName("RemoveSecurityMasterUnderlying").RequirePermission(UserPermission.ModifySecurityMaster)
+        .Produces(StatusCodes.Status204NoContent)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
         /// <summary>
         /// Records a new corporate action event for a security (dividend, split, merger, etc.).
@@ -1249,15 +1380,23 @@ public static partial class SecurityMasterEndpoints
             if (existing is null)
                 return Results.NotFound();
 
-            var detail = await service
-                .AmendPreferredEquityTermsAsync(securityId, request with { UpdatedBy = ResolveActor(context) }, ct)
-                .ConfigureAwait(false);
-            return Results.Json(detail, jsonOptions);
+            try
+            {
+                var detail = await service
+                    .AmendPreferredEquityTermsAsync(securityId, request with { UpdatedBy = ResolveActor(context) }, ct)
+                    .ConfigureAwait(false);
+                return Results.Json(detail, jsonOptions);
+            }
+            catch (AppSecurityMaster.SecurityMasterConcurrencyException ex)
+            {
+                return VersionConflict(ex, jsonOptions);
+            }
         })
         .WithName("PatchSecurityPreferredTerms").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
@@ -1285,6 +1424,10 @@ public static partial class SecurityMasterEndpoints
         if (app.Services.GetService<ISecurityMasterStructuredCreditReclassificationService>()
             is not (null or AppSecurityMaster.NullSecurityMasterStructuredCreditReclassificationService))
             MapStructuredCreditReclassificationEndpoints(group, jsonOptions);
+
+        MapOtcContractEndpoints(group, jsonOptions);
+        MapOtcCollateralEndpoints(app, group, jsonOptions);
+        MapCurveAndValuationEndpoints(app, group, jsonOptions);
 
         if (app.Services.GetService<SecurityMasterExceptionCaseworkService>() is not null)
             MapExceptionAgingEndpoints(group, jsonOptions);
@@ -1364,6 +1507,16 @@ public static partial class SecurityMasterEndpoints
             : $"'{request.Resolution}' action from the shared conflict queue by {resolvedBy}.";
         return (chosenWinnerSource, reason);
     }
+
+    /// <summary>
+    /// Stale expected version on a governed term amend. Mirrors the workbench 409 shape so clients
+    /// can refetch at the current version and replay the operator's edit.
+    /// </summary>
+    private static IResult VersionConflict(AppSecurityMaster.SecurityMasterConcurrencyException ex, JsonSerializerOptions jsonOptions)
+        => Results.Json(
+            new { error = "version-conflict", currentVersion = ex.CurrentVersion },
+            jsonOptions,
+            statusCode: StatusCodes.Status409Conflict);
 
     /// <summary>
     /// The single source of actor identity for Security Master writes. Every mutation route stamps

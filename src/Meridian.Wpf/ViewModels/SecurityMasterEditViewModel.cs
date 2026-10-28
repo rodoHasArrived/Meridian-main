@@ -47,7 +47,8 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
             [SecurityIdentifierKind.Ric] = "RIC",
             [SecurityIdentifierKind.Cik] = "CIK",
             [SecurityIdentifierKind.LoanX] = "LoanX ID",
-            [SecurityIdentifierKind.Clip] = "CLIP"
+            [SecurityIdentifierKind.Clip] = "CLIP",
+            [SecurityIdentifierKind.ListingId] = "Listing (Ticker:MIC)"
         };
     private static readonly IReadOnlyDictionary<string, SecurityIdentifierKind> IdentifierKindLookup =
         IdentifierKindDisplayNames.ToDictionary(static pair => pair.Value, static pair => pair.Key, StringComparer.OrdinalIgnoreCase);
@@ -379,8 +380,8 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
         {
             ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
             [SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.Flat,
-            [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion,
-            ["classification"] = string.Equals(assetClass, "Equity", StringComparison.OrdinalIgnoreCase) ? "Common" : null
+            [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetTermsVersion(assetClass),
+            ["classification"] = SecurityAssetClassCatalog.GetOrDefault(assetClass).SupportsEquityClassification ? "Common" : null
         });
 
     private static string ReadJsonString(JsonElement element, string propertyName)

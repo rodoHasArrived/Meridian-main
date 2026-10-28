@@ -943,6 +943,214 @@ public sealed class SecurityValidationServiceTests
             item.Code == "SM_STRUCTURED_CREDIT_NON_CALL_END_NOT_A_DATE" || item.Code == "SM_STRUCTURED_CREDIT_REINVESTMENT_END_INVALID");
     }
 
+    [Theory]
+    [InlineData(0.05, 0.02, false)]
+    [InlineData(0.03, 0.03, false)]
+    [InlineData(0.02, 0.05, true)]
+    public void Scenario_CollarStrikes_FloorAboveCapIsAnError(double capStrike, double floorStrike, bool expectIssue)
+    {
+        var collar = CreateProjection(
+            Guid.NewGuid(),
+            "CapFloor",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "COLLAR-1", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                capFloorType = "Collar",
+                referenceIndex = "SOFR",
+                capStrike = (decimal)capStrike,
+                floorStrike = (decimal)floorStrike,
+                notional = 10_000_000m,
+                effectiveDate = "2026-04-01",
+                maturityDate = "2031-04-01"
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(collar, [collar], Now);
+
+        var strikeIssues = report.Issues.Where(static item => item.Code == "SM_CAP_FLOOR_STRIKE_ORDER_INVALID").ToArray();
+        strikeIssues.Any().Should().Be(expectIssue);
+        strikeIssues.Should().OnlyContain(static item => item.Severity == SecurityValidationSeverityDto.Error);
+    }
+
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData(-0.0025, false)]
+    [InlineData(0.0375, false)]
+    public void Scenario_SwaptionStrike_IsRequiredButMayBeNegative(double? strikeRate, bool expectIssue)
+    {
+        var terms = new Dictionary<string, object?>
+        {
+            ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+            ["payerReceiver"] = "Receiver",
+            ["expiry"] = "2027-03-15",
+            ["underlyingMaturityDate"] = "2037-03-17",
+            ["notional"] = 25_000_000m
+        };
+        if (strikeRate is { } strike)
+        {
+            terms["strikeRate"] = (decimal)strike;
+        }
+
+        var swaption = CreateProjection(
+            Guid.NewGuid(),
+            "Swaption",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "SWPN-2", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(terms));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(swaption, [swaption], Now);
+
+        report.Issues.Any(static item => item.Code == "SM_SWAPTION_STRIKE_REQUIRED").Should().Be(expectIssue);
+    }
+
+    [Theory]
+    [InlineData("Cap", true, false, null)]
+    [InlineData("Cap", false, false, "SM_CAP_FLOOR_CAP_STRIKE_REQUIRED")]
+    [InlineData("Floor", false, true, null)]
+    [InlineData("Floor", true, false, "SM_CAP_FLOOR_FLOOR_STRIKE_REQUIRED")]
+    [InlineData("collar", true, false, "SM_CAP_FLOOR_FLOOR_STRIKE_REQUIRED")]
+    [InlineData("Collar", false, true, "SM_CAP_FLOOR_CAP_STRIKE_REQUIRED")]
+    public void Scenario_CapFloorStrikes_AreRequiredByType(string capFloorType, bool withCap, bool withFloor, string? expectedCode)
+    {
+        var terms = new Dictionary<string, object?>
+        {
+            ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+            ["capFloorType"] = capFloorType,
+            ["referenceIndex"] = "SOFR",
+            ["notional"] = 10_000_000m,
+            ["effectiveDate"] = "2026-04-01",
+            ["maturityDate"] = "2031-04-01"
+        };
+        if (withCap)
+        {
+            terms["capStrike"] = 0.05m;
+        }
+
+        if (withFloor)
+        {
+            terms["floorStrike"] = 0.02m;
+        }
+
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "CapFloor",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "CAPFLOOR-1", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(terms));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var strikeCodes = service.ValidateRecord(record, [record], Now).Issues
+            .Select(static item => item.Code)
+            .Where(static code => code is "SM_CAP_FLOOR_CAP_STRIKE_REQUIRED" or "SM_CAP_FLOOR_FLOOR_STRIKE_REQUIRED")
+            .ToArray();
+
+        if (expectedCode is null)
+        {
+            strikeCodes.Should().BeEmpty();
+        }
+        else
+        {
+            strikeCodes.Should().Equal(expectedCode);
+        }
+    }
+
+    [Fact]
+    public void Scenario_SwaptionUnderlyingEndingOnItsStart_IsBlocking()
+    {
+        var swaption = CreateProjection(
+            Guid.NewGuid(),
+            "Swaption",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "SWPN-3", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                payerReceiver = "Payer",
+                strikeRate = 0.0375m,
+                expiry = "2027-03-15",
+                underlyingEffectiveDate = "2037-03-17",
+                underlyingMaturityDate = "2037-03-17",
+                notional = 25_000_000m
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(swaption, [swaption], Now);
+
+        report.Issues.Should().Contain(static item => item.Code == "SM_SWAPTION_UNDERLYING_DATES_INVALID");
+        report.HasBlockingIssues.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Scenario_SwaptionUnderlyingStartingBeforeExpiry_IsBlocking()
+    {
+        var swaption = CreateProjection(
+            Guid.NewGuid(),
+            "Swaption",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "SWPN-1", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                payerReceiver = "Payer",
+                strikeRate = 0.0375m,
+                expiry = "2027-03-15",
+                underlyingEffectiveDate = "2027-01-15",
+                underlyingMaturityDate = "2037-03-17",
+                notional = 25_000_000m
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(swaption, [swaption], Now);
+
+        report.Issues.Should().Contain(static item => item.Code == "SM_SWAPTION_EFFECTIVE_BEFORE_EXPIRY");
+        report.HasBlockingIssues.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData(-25.0, true)]
+    [InlineData(0.0, false)]
+    [InlineData(100.0, false)]
+    public void Scenario_CreditDefaultSwapFixedCoupon_IsRequiredAndNonNegative(double? fixedCouponBps, bool expectIssue)
+    {
+        var terms = new Dictionary<string, object?>
+        {
+            ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+            ["referenceEntity"] = "Meridian Industries Inc",
+            ["protectionSide"] = "Buy",
+            ["notional"] = 10_000_000m,
+            ["effectiveDate"] = "2026-03-20",
+            ["maturityDate"] = "2031-06-20"
+        };
+        if (fixedCouponBps is { } coupon)
+        {
+            terms["fixedCouponBps"] = (decimal)coupon;
+        }
+
+        var cds = CreateProjection(
+            Guid.NewGuid(),
+            "CreditDefaultSwap",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "CDS-1", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(terms));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(cds, [cds], Now);
+
+        var couponIssues = report.Issues.Where(static item => item.Code == "SM_CDS_FIXED_COUPON_INVALID").ToArray();
+        couponIssues.Any().Should().Be(expectIssue);
+        couponIssues.Should().OnlyContain(static item => item.Severity == SecurityValidationSeverityDto.Error);
+    }
+
     [Fact]
     public void Scenario_StructuredCreditFactorSchedulePointerWithoutEntries_WarnsButDoesNotBlock()
     {
@@ -1081,6 +1289,123 @@ public sealed class SecurityValidationServiceTests
         report.Issues.Should().Contain(issue =>
             issue.Code == "SM_CUSTOM_PROFILE_APPROVAL_METADATA_REQUIRED"
             && issue.Severity == SecurityValidationSeverityDto.Error);
+    }
+
+    // ── Per-class terms version (ADR-024 decision 3) ───────────────────────────────────────────
+
+    private const string TermsVersionBehind = "SM_ASSET_CLASS_TERMS_VERSION_BEHIND";
+
+    private static SecurityProjectionRecord StructuredCreditTerms(string assetClass, IReadOnlyDictionary<string, object?> envelope)
+    {
+        var terms = new Dictionary<string, object?>(envelope)
+        {
+            ["tranche"] = "A-1",
+            ["collateralType"] = "CLO",
+            ["originalFace"] = 1000000m,
+            ["couponOrIndex"] = "SOFR+250"
+        };
+        return CreateProjection(
+            Guid.NewGuid(),
+            assetClass,
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "037833100", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(terms));
+    }
+
+    private static Dictionary<string, object?> FlatEnvelope(object? assetClassTermsVersion)
+        => new()
+        {
+            ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+            [SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.Flat,
+            [SecurityTermsEnvelope.AssetClassTermsVersionKey] = assetClassTermsVersion
+        };
+
+    private static SecurityValidationReportDto Validate(SecurityProjectionRecord record)
+        => new SecurityValidationService(Substitute.For<ISecurityMasterStore>(), AssetClassValidatorRegistry.CreateDefault())
+            .ValidateRecord(record, [record], Now);
+
+    [Fact]
+    public void Scenario_StructuredCreditStampedVersionOne_ProducesOneInformationalTermsVersionNotice()
+    {
+        var behind = Validate(StructuredCreditTerms("StructuredCredit", FlatEnvelope(1)));
+        var current = Validate(StructuredCreditTerms("StructuredCredit", FlatEnvelope(2)));
+
+        var issue = behind.Issues.Should().ContainSingle(static item => item.Code == TermsVersionBehind).Which;
+        issue.Severity.Should().Be(SecurityValidationSeverityDto.Info);
+        issue.AffectedFields.Should().Equal($"assetSpecificTerms.{SecurityTermsEnvelope.AssetClassTermsVersionKey}");
+        issue.Message.Should().Contain("is 1").And.Contain("terms version 2");
+        issue.Title.Should().NotContainAny("conflict", "identifier");
+        string.Join(" ", issue.AffectedFields).Should().NotContainAny("conflict", "identifier");
+
+        behind.HasBlockingIssues.Should().Be(current.HasBlockingIssues);
+        behind.CriticalIssueCount.Should().Be(current.CriticalIssueCount);
+        behind.ErrorIssueCount.Should().Be(current.ErrorIssueCount);
+        behind.Issues.Select(static item => item.Code)
+            .Should().BeEquivalentTo(current.Issues.Select(static item => item.Code).Append(TermsVersionBehind));
+        behind.Issues[^1].Code.Should().Be(TermsVersionBehind, "an informational notice sorts after every warning and error");
+    }
+
+    [Fact]
+    public void Scenario_UnstampedStructuredCredit_ReadsAsVersionOne_AndKeepsTheFormatWarning()
+    {
+        var report = Validate(StructuredCreditTerms("StructuredCredit", new Dictionary<string, object?>
+        {
+            ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms
+        }));
+
+        report.Issues.Should().ContainSingle(static item => item.Code == TermsVersionBehind)
+            .Which.Message.Should().Contain("absent or not an integer");
+        report.Issues.Should().Contain(static item =>
+            item.Code == "SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING" && item.Severity == SecurityValidationSeverityDto.Warning);
+    }
+
+    [Fact]
+    public void Scenario_AliasStampedVersionOne_ProducesTheTermsVersionNotice()
+    {
+        Validate(StructuredCreditTerms("MBS", FlatEnvelope(1))).Issues
+            .Should().ContainSingle(static item => item.Code == TermsVersionBehind);
+    }
+
+    public static TheoryData<string, string> PayloadsWithoutATermsVersionNotice() => new()
+    {
+        { "StructuredCredit", """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":2,"tranche":"A-1"}""" },
+        { "StructuredCredit", """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":3,"tranche":"A-1"}""" },
+        { "Bond", """{"schemaVersion":1,"maturity":"2030-01-15"}""" },
+        { "StructuredCredit", """{"schemaVersion":3,"customProfileId":"structured-credit-v1","profileVersion":1,"profileFields":{"tranche":"A-1"}}""" },
+        { "StructuredCredit", """{"schemaVersion":2,"termsFormat":"economic","maturity":{"maturityDate":"2031-06-15"}}""" },
+        { "StructuredCredit", """{"schemaVersion":2,"termsFormat":"flat","assetClassTermsVersion":1,"tranche":"A-1"}""" },
+        // Stamped above the write version and within what the node reads (ADR-024, readable before
+        // writable): written by a newer node, so not behind. An unstamped version-1 class is current.
+        { "Bond", """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":2,"maturity":"2030-01-15","isCallable":false,"scheduleConventions":{"stubPolicy":"Short"}}""" },
+        { "CertificateOfDeposit", """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":2,"issuerName":"First Meridian Bank","maturity":"2027-09-30","scheduleConventions":null}""" },
+        { "Swap", """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":2,"effectiveDate":"2026-01-15","maturityDate":"2031-01-15","legs":[{"legId":"fixed","legType":"Fixed","scheduleConventions":{"paymentCalendars":["USNY"]}}]}""" },
+        { "CertificateOfDeposit", """{"schemaVersion":1,"issuerName":"First Meridian Bank","maturity":"2027-09-30"}""" },
+        // At each class's read ceiling, which also declares the call and put schedules: still above
+        // the write version, so not behind.
+        { "Bond", """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":3,"maturity":"2031-06-15","isCallable":true,"callSchedule":[{"callDate":"2030-06-15","callPrice":101}],"putSchedule":[{"putDate":"2029-06-15"}]}""" },
+        { "CertificateOfDeposit", """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":3,"issuerName":"First Meridian Bank","maturity":"2027-09-30","putSchedule":[{"putDate":"2026-09-30"}]}""" },
+        { "StructuredCredit", """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":4,"tranche":"A-1","callSchedule":[],"putSchedule":null}""" },
+    };
+
+    [Theory]
+    [MemberData(nameof(PayloadsWithoutATermsVersionNotice))]
+    public void Scenario_PayloadsOutsideTheUpgradeDomain_ProduceNoTermsVersionNotice(string assetClass, string terms)
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            assetClass,
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "037833100", isPrimary: true)],
+            assetSpecificTerms: JsonDocument.Parse(terms).RootElement.Clone());
+
+        Validate(record).Issues.Should().NotContain(static item => item.Code == TermsVersionBehind);
+    }
+
+    [Fact]
+    public void Scenario_MissingSchemaVersion_ReportsOnlyTheSchemaVersionWarning_NotTheTermsVersionNotice()
+    {
+        var report = Validate(StructuredCreditTerms("StructuredCredit", new Dictionary<string, object?>()));
+
+        report.Issues.Should().Contain(static item => item.Code == "SM_ASSET_SPECIFIC_SCHEMA_VERSION_MISSING");
+        report.Issues.Should().NotContain(static item => item.Code == TermsVersionBehind);
     }
 
     private static SecurityProjectionRecord CreateProjection(

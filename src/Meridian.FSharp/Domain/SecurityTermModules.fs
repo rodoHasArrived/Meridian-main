@@ -105,7 +105,7 @@ type CallScheduleEntry = {
     /// Call price as percentage of par (e.g. 102.5 means 102.5% of face value).
     CallPx: decimal option
     IsParCall: bool
-    /// e.g. "American", "European", "Bermudan", "Makewhole".
+    /// e.g. "American", "European", "Bermudan", "MakeWhole".
     CallType: string option
 }
 
@@ -115,12 +115,18 @@ type PutScheduleEntry = {
 }
 
 type EconomicCallTerms = {
+    /// Filled from the class's own scalar call terms under the frozen fill (ADR-025): bond
+    /// isCallable, certificate-of-deposit callableDate, preferred-equity callableDate. A class without
+    /// scalar call terms (structured credit) sets it when a call is declared.
     IsCallable: bool
-    /// Convenience field — mirrors the first entry in CallSchedule for quick access.
+    /// The class's scalar first call date (bond callDate, certificate-of-deposit callableDate). A
+    /// class without one (structured credit) leaves it None even when calls are declared.
     FirstCallDate: DateOnly option
-    /// Convenience field — mirrors the first entry's price for quick access.
+    /// None for every flat class today: none carries a scalar call price. Entry prices are in
+    /// CallSchedule.
     CallPrice: decimal option
-    /// Full step-up call schedule ordered ascending by CallDt.
+    /// Full step-up call schedule, sorted ascending by CallDt by the fill (stably); the flat terms
+    /// keep their stored order.
     CallSchedule: CallScheduleEntry list
     MakeWholeSpreadBps: decimal option
     IsPuttable: bool
@@ -473,6 +479,19 @@ module PaymentFrequency =
         | SemiAnnual -> "SemiAnnual"
         | Annual -> "Annual"
         | OtherFrequency other -> other
+
+    /// Inverse of label for the canonical labels; any other text is carried verbatim as
+    /// OtherFrequency, matching the C# mapping's ToPaymentFrequencyOption.
+    [<CompiledName("Parse")>]
+    let parse (value: string) =
+        match value.Trim() with
+        | "Daily" -> Daily
+        | "Weekly" -> Weekly
+        | "Monthly" -> Monthly
+        | "Quarterly" -> Quarterly
+        | "SemiAnnual" -> SemiAnnual
+        | "Annual" -> Annual
+        | other -> OtherFrequency other
 
 [<RequireQualifiedAccess>]
 module DayCountConvention =

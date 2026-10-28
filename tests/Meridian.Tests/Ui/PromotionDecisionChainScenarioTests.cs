@@ -49,6 +49,7 @@ public sealed class PromotionDecisionChainScenarioTests
             operatorControls: controls,
             auditTrail: auditTrail,
             portfolioState: new StaticPortfolioState());
+        await oms.StartAsync();
 
         // ---- STEP 2: create a paper session ----
 
@@ -231,6 +232,7 @@ public sealed class PromotionDecisionChainScenarioTests
             operatorControls: controls,
             auditTrail: auditTrail,
             portfolioState: new StaticPortfolioState());
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {

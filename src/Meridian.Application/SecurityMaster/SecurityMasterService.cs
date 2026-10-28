@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.SecurityMaster;
 
-public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMasterAmender, IDisposable
+public sealed partial class SecurityMasterService : ISecurityMasterService, ISecurityMasterAmender, IDisposable
 {
     /// <summary>
     /// Per-security amendment serialization from the conflict pre-check (which reads per-field
@@ -233,6 +233,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     {
         var currentProjection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Security '{securityId}' was not found.");
+        EnsurePatchBaseMatchesExpectedVersion(currentProjection, request.ExpectedVersion);
 
         var amendRequest = new AmendSecurityTermsRequest(
             SecurityId: securityId,
@@ -254,6 +255,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     {
         var currentProjection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Security '{securityId}' was not found.");
+        EnsurePatchBaseMatchesExpectedVersion(currentProjection, request.ExpectedVersion);
 
         var amendRequest = new AmendSecurityTermsRequest(
             SecurityId: securityId,
@@ -276,6 +278,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         ArgumentNullException.ThrowIfNull(request);
         var currentProjection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Security '{securityId}' was not found.");
+        EnsurePatchBaseMatchesExpectedVersion(currentProjection, request.ExpectedVersion);
 
         var amendRequest = new AmendSecurityTermsRequest(
             SecurityId: securityId,
@@ -292,6 +295,20 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             Reason: request.Reason);
 
         return await AmendTermsInternalAsync(amendRequest, eventType: SecurityTermBlocks.AmendedEventType, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Patch-building amends merge the caller's change into terms read from the projection. If that
+    /// projection is not the version the caller edited, the merged patch would silently carry (or
+    /// drop) a concurrent writer's changes, so reject it before building the patch. The event-store
+    /// append still enforces ExpectedVersion for races after this read.
+    /// </summary>
+    private static void EnsurePatchBaseMatchesExpectedVersion(SecurityProjectionRecord currentProjection, long expectedVersion)
+    {
+        if (currentProjection.Version != expectedVersion)
+        {
+            throw new SecurityMasterConcurrencyException(currentProjection.SecurityId, expectedVersion, currentProjection.Version);
+        }
     }
 
     public async Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default)
@@ -920,6 +937,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         EnsureDeclaredVocabulariesRoundTripSafely(projection, assetSpecificTermsPatch);
         EnsureBondCouponPayloadRoundTripsSafely(projection, assetSpecificTermsPatch);
         EnsureCustomAssetEnvelopeRoundTripsSafely(projection, assetSpecificTermsPatch);
+        EnsureAheadOfWriteTermsRoundTripSafely(projection, assetSpecificTermsPatch);
     }
 
     /// <summary>
@@ -949,7 +967,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             return;
         }
 
-        var isCustomAsset = string.Equals(projection.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase);
+        var isCustomAsset = SecurityAssetClassCatalog.GetOrDefault(projection.AssetClass).RequiresProfileReference;
         var terms = projection.AssetSpecificTerms;
         var referencesProfile = terms.ValueKind == JsonValueKind.Object
             && terms.TryGetProperty("customProfileId", out var profileId)
@@ -1006,7 +1024,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         SecurityProjectionRecord projection,
         JsonElement? assetSpecificTermsPatch)
     {
-        if (!string.Equals(projection.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase))
+        if (!SecurityAssetClassCatalog.GetOrDefault(projection.AssetClass).RequiresProfileReference)
         {
             return;
         }
@@ -1277,7 +1295,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// nested-coupon fallback, so the record reads as <c>Fixed(couponRate ?? 0)</c> and
     /// re-serializing flattens it to <c>couponType: "Fixed"</c>, dropping the nested index, spread,
     /// and day count. Nothing in this repo writes that shape, but the projection store reads it
-    /// deliberately — <c>PostgresSecurityMasterStore.TryBuildBondProjection</c> falls back to
+    /// deliberately — the Bond descriptor in <c>SecurityTermsProjectionRegistry</c> falls back to
     /// <c>coupon.kind</c>/<c>rate</c>/<c>index</c> "for externally-authored payloads that still use
     /// it", with a regression test pinning the behaviour — so such rows are expected to exist.
     /// <para>The same hole is open one step wider, and a present <c>couponType</c> does not close
@@ -1298,7 +1316,8 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         JsonElement? assetSpecificTermsPatch)
     {
         var terms = projection.AssetSpecificTerms;
-        if (!string.Equals(projection.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase)
+        var descriptor = SecurityAssetClassCatalog.GetOrDefault(projection.AssetClass);
+        if (!descriptor.CarriesBondCouponStructure
             || terms.ValueKind != JsonValueKind.Object)
         {
             return;
@@ -1398,7 +1417,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
     /// <summary>
     /// The legacy nested <c>coupon</c> members and the flat key each corresponds to, mirroring the
-    /// per-field fallback in <c>PostgresSecurityMasterStore.TryBuildBondProjection</c>. That
+    /// per-field fallback in the Bond descriptor in <c>SecurityTermsProjectionRegistry</c>. That
     /// per-field shape is why the nested object cannot be judged present-or-absent: a row can carry
     /// its discriminant flat and one value only nested.
     /// </summary>
@@ -1470,7 +1489,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// InflationLinked arms, and those arms READ the key, so they are judged by
     /// <see cref="CodecCanRead"/> and never reach this branch at all. The arms that do reach it
     /// leave <c>BondTerms.couponRate</c> as <c>None</c>, so re-serializing writes
-    /// <c>couponRate: null</c> while <c>TryBuildBondProjection</c> reads the flat key without
+    /// <c>couponRate: null</c> while the Bond projection reads the flat key without
     /// consulting the arm — a stored <c>fixed_coupon_rate</c> of 0 becomes NULL. That is a stated
     /// value turning into an absence, refused like any other.</para>
     /// </summary>
@@ -1783,8 +1802,8 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             return resolvedAssetClass;
         }
 
-        return string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
-            ? "CustomAsset"
+        return SecurityAssetClassCatalog.GetOrDefault(assetClass) is { RequiresProfileReference: true } profileBacked
+            ? profileBacked.AssetClass
             : null;
     }
 
