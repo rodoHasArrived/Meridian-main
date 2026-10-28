@@ -1,11 +1,11 @@
 {
   "total_files": 764,
-  "total_lines": 172560,
+  "total_lines": 172636,
   "orphaned_count": 257,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 312,
-  "average_lines": 225.9,
+  "average_lines": 226.0,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1421,7 +1421,7 @@
     },
     {
       "path": "docs/ai/tooling/README.md",
-      "line_count": 205,
+      "line_count": 207,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1429,7 +1429,7 @@
     },
     {
       "path": "docs/ai/tooling/throughput-pilot.md",
-      "line_count": 226,
+      "line_count": 242,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1773,7 +1773,7 @@
     },
     {
       "path": "docs/development/build-observability.md",
-      "line_count": 214,
+      "line_count": 245,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2525,7 +2525,7 @@
     },
     {
       "path": "docs/engineering/web-development.md",
-      "line_count": 147,
+      "line_count": 170,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2925,7 +2925,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12620,
+      "line_count": 12624,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
