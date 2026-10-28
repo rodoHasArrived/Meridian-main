@@ -93,6 +93,16 @@ which refuses payload types or versions newer than this build understands. Amend
 carry the stored economic terms that a flat rebuild cannot express (`retainedEconomicTerms`), so a
 newer-to-older terms conversion keeps the data rather than silently dropping it.
 
+A Security Master create or term amendment that a write guard, the Write-mode mapping or the F#
+validator refuses, whether for the terms it submits or for the state of the stored record (a
+round-trip or ahead-of-write guard it trips, or `security_inactive`), raises
+`SecurityMasterWriteRefusedException`, an `InvalidOperationException` subtype whose message is
+written for the caller (deactivation shares the guards and raises it too). Request errors raised as
+`ArgumentException`, such as a term block of the wrong JSON kind or an unsupported identifier kind,
+are not this type. A stored row this node cannot decode, a missing security, an F# rejection
+carrying `version_conflict`, `missing_state` or `security_id_mismatch` (even beside request errors)
+and a store failure are not refusals and keep their existing exception types.
+
 `SecurityMasterStructuredCreditReclassificationService` builds the ADR-022 reclassification report:
 it maps every active record through the read-tolerant mapper, asks the F# domain for a
 StructuredCredit proposal, and returns ready proposals (the exact stamped terms document the write

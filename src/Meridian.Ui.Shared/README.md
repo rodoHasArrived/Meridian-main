@@ -2731,6 +2731,20 @@ Security Master also serves `GET /api/security-master/{securityId}/income-cash-f
 400 for an undeclared block or JSON kind, and 400 with the not-yet-writable reason for a block the
 class only reads, such as `scheduleConventions`, `callSchedule` or `putSchedule`).
 
+A refused write on the direct create and term-amendment routes (`POST /api/security-master`,
+`POST /api/security-master/amend`, the term-block `PUT`, and the preferred- and convertible-equity
+term `PATCH` routes including the legacy `/equities/{securityId}/preferred-terms` alias) answers 400
+with the refusal reason as the Problem Details `detail`. Refusals include terms this node reads but does
+not write (ADR-024), a missing or malformed term, an undeclared vocabulary value, an F# domain
+validation error (`[code] message`), a profile failing catalog validation, and a round-trip guard
+naming the repair. A refusal the stored record triggers answers 400 too, such as a patch-less amend
+of a row stamped above the write version whose re-serialization would change it, or stored terms the
+Write-mode mapping refuses on the term-block, preferred and convertible routes, which build the
+patch from the stored row. Only `SecurityMasterWriteRefusedException` is translated, by a filter
+applied per route (`SecurityMasterEndpoints.WriteRefusals.cs`). Undecodable stored rows, unknown
+securities, stale versions, duplicate creates and store failures keep their responses; deactivate
+refusals still answer 500; no read route changes.
+
 `POST /api/security-master/structured-credit-reclassification/report` (AdminMaintenance) builds the
 ADR-022 report of active securitised `Bond` and `CustomAsset` rows with their proposed
 `StructuredCredit` terms and blockers. It is mapped only when the Postgres-backed service is
