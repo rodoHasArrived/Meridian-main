@@ -6503,7 +6503,8 @@ describe behaviour that predates this change.
 - **Inbound refusals are not 400s on every route.** The design said a client that populates the
   arrays gets a 400 with the reason. The term-block route does. A create or amend request throws
   from the Write-mode mapping, and `MeridianApiExceptionHandler` answers 500, with the reason in the
-  server log, as 4a's Write-mode refusals already did.
+  server log, as 4a's Write-mode refusals already did. Resolved 2026-10-27; see the resolution pass
+  of that date.
 
 **Behaviour changes.**
 
@@ -6799,6 +6800,184 @@ mistyped or wrong schema fails instead of passing silently; AQ1 matches Bond's c
 trims the Unicode spaces .NET trims and folds case under the C collation; and the README and the
 not-covered note say exactly what declares nothing and what the retained economic terms leave
 unread.
+
+## Resolution pass — 2026-10-27 (refused creates and amends answer 400)
+
+Increment 4b's corrections recorded that a create or amend refused in Write mode reached the caller
+as a 500, with the reason only in the server log, while the term-block route answered the same kind
+of refusal with 400. This pass gives that 400, with the reason, to every direct canonical term write.
+
+| Finding | What landed |
+| --- | --- |
+| A create or term amendment refused for what it asked surfaced through `MeridianApiExceptionHandler` as a 500 whose detail is "An unexpected error occurred.", so the caller never saw the reason or the repair it names. The term-block route answered an ADR-024 refusal 400 at its pre-check but 500 when the service raised one (a Bond row stamped 2, or a `legs` block whose leg populates `scheduleConventions`) | `SecurityMasterWriteRefusedException` (Application, beside `SecurityMasterConcurrencyException` and `SecurityMasterPublishFailedException`) marks a write refused with a message written for the caller. It derives from `InvalidOperationException`, which these refusals were raised as, so existing handlers, ingest classification and subclass-tolerant assertions keep working; nothing in Contracts throws it. `AnswerWriteRefusalsWith400` (`SecurityMasterEndpoints.WriteRefusals.cs`) is a per-route endpoint filter that catches that type alone, answers `Results.Problem(reason, statusCode: 400)`, the term-block route's existing shape, and declares the 400. Each route adds it between `RequirePermission` and the `RequireModifySecurityMasterPermission` filter; both permission filters return their 403s as results, not exceptions, so the refusal filter never alters them. |
+| The service raised refusals and server faults as the same plain `InvalidOperationException`, so no route could tell them apart | The guards that only a write runs now raise the new type: the unrecognized asset class, the declared vocabularies, the case-variant discriminant, the bond coupon structure (stored and submitted), the CustomAsset envelope, the ahead-of-write round trip, the profile catalog validation and the resolved class's domain invariants, the profile-backed amendment without its envelope, and the profile classification conflict. `SecurityMasterService.WriteRefusals.cs` adds `MapRequestOrRefuse`, which turns a plain `InvalidOperationException` from a mapping of the request into the new type, with the same message and the original as its inner exception, and lets subclasses through unchanged. It wraps only the three mappings that read submitted content: `ToCreateCommand`, `ToAmendCommand` and the post-override `ToRecord` in the domain-invariant check. On a patch-less amend of a profile-backed row, that last one reads the stored envelope as the class the write resolves to, and its failure is a refusal by design: an amendment carrying a corrected envelope repairs it here, because the current-record decode reads the row as `CustomAsset`. F# command rejections go through `CommandRejection`, which keeps the `[code] message; …` text. `SecurityMasterMapping` and `SecurityTermsEnvelope` are unchanged and still throw plain `InvalidOperationException`; the service decides which of their failures were the request's. |
+
+**Refusals and faults.** A refusal is a write this node declines because of the terms it was asked
+to write, or because of the state of the stored record (for example `security_inactive`, an invalid
+stored identifier set, or what re-serializing it would do): terms readable but not writable here
+(ADR-024), a missing or malformed term, an undeclared vocabulary value, an F# domain validation
+error, a profile failing catalog validation, or a round-trip guard whose reason names the repair.
+Everything else is a fault and keeps its exception type and its response: a stored row this node
+cannot decode (the rebuild, the adapter, `ToRecord` of the current projection and the patch builders
+stay unwrapped, and amend and deactivate now decode the stored row before the round-trip guards, so
+a row one of them would also refuse is still a fault), a missing security, a stale version, a
+duplicate create, an append race and a store failure. `ToEconomicRecord`, the conflict pre-check,
+the append and everything after them stay unwrapped too.
+
+**What stays a non-refusal.** The F# codes `version_conflict`, `missing_state` and
+`security_id_mismatch` describe the stream and the aggregate, not the submitted terms. A rejection
+that carries any of them stays a plain `InvalidOperationException`, a 500 as before, and they win
+when the F# validator also reported request errors, so F# never reports a stale amend as a refused
+one. `/amend` compares the expected version only there. The request mapping, the round-trip guards
+and the profile-envelope guards run before it, so a stale amend whose patch one of them refuses
+answers 400 with that refusal, which holds whatever the version. The catalog validation and the
+resolved class's domain invariants run after it, so a stale amend that only they would refuse still
+answers 500. The term-block, preferred and convertible routes compare the version in the service
+before building the patch and answer a stale request with 409, except that the term-block route's
+block pre-check answers an undeclared or readable-only block with 400 first. A rejection with no
+error details stays plain too. Every other F# code, `security_inactive` included, is a refusal.
+
+**Routes.** In: `POST /api/security-master`, `POST /api/security-master/amend`,
+`PUT /api/security-master/{securityId}/terms/{blockKey}`,
+`PATCH /api/security-master/{securityId}/preferred-equity-terms`,
+`PATCH /api/security-master/{securityId}/convertible-equity-terms` and the legacy
+`PATCH /api/security-master/equities/{securityId}/preferred-terms`: the create route and every
+direct term amendment that `RequireGovernedTermAmendmentRoute` gates, all five of which run
+`AmendTermsInternalAsync`. Out, with their responses unchanged: deactivate, which now raises the new
+type through the shared guards and its F# rejections but still answers 500; the workbench field,
+resolve-conflict, submit, approve and discard routes, whose `ArgumentException` arm still answers
+422 and whose `InvalidOperationException` arm still answers 409; workbench publish, which still
+answers 500 `publish-side-effect-failed` because the fan-out catches the merge's refusal, logs it,
+and raises `SecurityMasterPublishFailedException` naming only the failed handler; import and EDGAR
+ingest, which already report the reason in their error lists; alias upsert, operator overrides and
+conflict resolve, which do not reach these guards; and the corporate-action ticker change, which
+amends internally. `MeridianApiExceptionHandler` is unchanged, and none of the six routes, nor the
+new filter, catches plain `InvalidOperationException`.
+
+**Design choices.**
+
+- **A per-route filter, not inline `try`/`catch`.** `check-file-size.py` fails CI for any file over
+  2,000 lines that the baseline does not list, and neither `SecurityMasterEndpoints.cs` (1,993
+  lines before this change) nor `SecurityMasterService.cs` is listed. The new code therefore lives
+  in partial files, and the endpoint file grows by five lines.
+- **Not a global handler arm.** It would also answer deactivate, the corporate-action ticker change
+  and any read path that raised the type, and those keep their responses.
+- **Not a blanket `catch (InvalidOperationException)`.** It would turn not-found, stale versions,
+  duplicate creates and server faults into 400s.
+- **Not `ArgumentException`.** The global handler's `ArgumentException` arm deliberately replaces
+  the message with "One or more request values are invalid.", so the reason would still not reach
+  the caller, and every handler and assertion that catches these refusals as
+  `InvalidOperationException` would stop seeing them.
+- **A typed subclass, not an `Exception.Data` tag.** A tag keeps the type but hides the contract.
+  The precedent is `SecurityMasterStreamVersionConflictException`, which also derives from
+  `InvalidOperationException` so that existing handlers keep working.
+
+**Tests retargeted.** Two tests pinned the exact type of a refusal that is now the subtype; their
+message assertions are unchanged. `SecurityMasterServiceSnapshotTests.DeactivateAsync_BondWhoseFloatingIndexContradictsItsDeclaredStepCoupon_RefusesTheWrite`
+expects `SecurityMasterWriteRefusedException`, because deactivation shares the retyped bond coupon
+guard. `SecurityMasterWorkbenchCommandServiceTests.Publish_InFlightLegsRevisionPopulatingALegBlock_FailsInTheMergeAndStaysApproved`
+expects it as the failure the merge records at the amend seam, because the merge's amendment maps
+its request through the now-wrapped `ToAmendCommand`. Three assertions on the preferred and
+convertible patch builders' stored-state faults now expect exactly `InvalidOperationException`, so
+wrapping a patch builder would fail them.
+
+**Behaviour changes.**
+
+- **The six routes answer a refused write with 400** and the reason as the Problem Details `detail`,
+  instead of 500 with "An unexpected error occurred.". Routes, DTOs and `UiApiRoutes` are unchanged;
+  create, amend, the preferred and convertible routes and the legacy alias now declare the 400 that
+  the term-block route already declared.
+- **Refusals the stored record triggers answer 400 too** on these routes, for a row this node
+  decodes: an undeclared stored vocabulary value, coupon structure the codec does not read, a row
+  stamped above the write version that a patch-less amend would change, a CustomAsset without its
+  envelope, `security_inactive`, an identifier-set error the F# validator reports, a stored profile
+  envelope the class a patch-less amend resolves to cannot decode, and, on the term-block, preferred
+  and convertible routes and the legacy alias, stored terms the Write-mode mapping refuses, because
+  those routes build the patch from the stored row. On the term-block route a Bond stamped 2 gets
+  the write-version reason, whose "submit the terms at version 1" means a full-document `/amend`,
+  since a block request carries no stamp. A stored asset class that matches no catalog class name in
+  any casing is refused too, before the stored row is decoded, because its repair is on a node that
+  supports the class, whose terms this node may not decode. That holds for a security rebuilt from
+  its events or snapshot, as a newer node writes it; a projection-only security is decoded by the
+  rebuild itself, so an undecodable one answers 500. A class the catalog does not resolve at all
+  reaches the check only through `/amend`: the preferred, convertible and legacy routes answer it
+  404 at their read-model probe, and the term-block route answers its pre-check's 400 that the class
+  declares no such block. A class stored under an alias (`CorporateBond`) or with surrounding
+  whitespace passes those probes, which resolve it through the catalog, and then gets the class
+  refusal. 409 or 422 would also be defensible; 400 matches the term-block route. Their messages
+  echo stored values, to callers who already hold `ModifySecurityMaster`.
+- **A write that declares a non-flat `termsFormat` gets a caller-facing reason.**
+  `EnsureWritableAsAssetSpecificTerms` now refuses it with what to submit (omit `termsFormat`, or set
+  it to `flat` or `customProfile`) instead of the read guard's instruction to route the payload
+  through a server-side conversion. The read guard keeps its wording. Every write path that maps
+  terms through the check, including import and the field-edit merge, reports the new reason.
+- **Refusals on these routes are no longer logged.** The shared exception handler logged each one at
+  error level with the exception; the filter returns the 400 without logging, as the term-block
+  route's pre-check refusals already did.
+- **Deactivation's refusals change type** to the subtype; its HTTP status does not.
+- **A misdeclared terms-upgrader catalog** would surface on these routes as a 400 with descriptor
+  wording instead of a 500. That needs a build bug.
+
+**Deploy and rollback.** No migration, manifest, DTO or event change: nodes on either side of this
+change write the same events and projections. During a rolling deploy the same refusal answers 400
+on an updated node and 500 on an older one. Rolling back restores the 500s.
+
+**Not yet landed.**
+
+- **Amend concurrency as 409.** Turning F# `version_conflict` into `SecurityMasterConcurrencyException`
+  and catching stream and mutation conflicts on `/amend` would make the amend route's documented 409
+  true; today a stale amend that reaches the F# validator still answers 500, and that remark is left
+  as it stands. The same change should decide whether `/amend` compares the version before mapping
+  the request, as the term-block route does.
+- **A duplicate create as 409,** and **an amend of an unknown security as 404.**
+- **Deactivate adopting the filter.**
+- **Workbench publish carrying the merge's refusal reason** instead of 500 `publish-side-effect-failed`.
+- **Corporate-action ticker-change refusals.**
+- **`ArgumentException` on these routes.** An unsupported identifier kind on create or amend
+  (`SecurityMasterMapping.cs:214`) still answers 400 without its reason, and the term-block route
+  answers `SecurityTermBlocks.cs:91` (stored terms that are not a JSON object) with 400 although it
+  describes the stored row.
+- **A snapshot failure after the commit** still answers 500 for a write that was committed.
+- **The WPF asset-profile create.** `FormatApiError` shows the raw Problem Details JSON, and the
+  view model fabricates `approvalReference` (`SettingsViewModel.AssetProfiles.cs:511`), so a
+  profile-backed create whose catalog records its own approval reference is refused, and now
+  receives a 400 with the catalog-validation reason instead of a 500.
+
+**Validation.** `SecurityMasterWriteRefusalEndpointsTests` (new) drives the six routes behind the
+shared Problem Details writer and exception handler a deployed host registers, mostly through the
+real service over substitute stores. It pins each 400 with its detail and each 500 with the
+exception the handler logs, so a 500 cannot pass for the wrong fault. The 400 cases cover a
+write-version refusal, a missing term, a non-flat `termsFormat`, an F# domain error,
+`security_inactive` (on `/amend` and both preferred routes), a round-trip guard, a term-block row
+stamped above the write version, an unrecognized class rebuilt from events, and a stale amend whose
+patch the mapping refuses. The 500 cases cover undecodable rows (projection, event, a row a guard
+would also refuse, and a projection-only row of an unrecognized class), stored rows lacking the
+terms the preferred and convertible patch builders read, a term-block row whose event cannot be
+replayed, a stale version, a stream naming another security, a duplicate create, an unknown security
+and deactivate. The whole `Meridian.Tests` suite ran on the code before the last test-only commit
+with 21,648 passed, 609 skipped and 2 failed: the isolated QuantScript worker behind one
+strategy-design test, which has failed in every full run in this container since increment 3, and an
+allocation-budget test that measured allocations while other builds ran and passed alone (9 of 9).
+The Security Master, corporate-action, amortization and import filter passed (4,905), and the
+endpoint and versioning classes passed after the last commit (198). Four ordering mutations each
+failed only the test written for them: running the round-trip guards before the decode, on amend and
+on deactivate, and running the class check after it, on amend and on deactivate. The format,
+file-size, inline SHA-256, duplicate-helper, test-skip, warning-suppression and
+endpoint-cancellation guards pass, schema-control `verify` reproduces the committed manifests,
+`validate-doc-hashes` is clean and the `verify-docs` lane passes.
+
+The change went through three adversarial reviews, with two skeptics trying to refute each finding.
+They changed the code in three places: amend and deactivate decode the stored row before the
+round-trip guards, so a row this node cannot decode is never reported as a refusal whose repair
+fails at that decode; the unrecognized-class check runs before the decode, because its repair is on
+another node; and a write that declares a non-flat `termsFormat` is told what to submit instead of
+the read guard's server-side instruction, which reached callers once refusals answered 400. They
+also added the real-service route cases above and narrowed the stale-amend ordering, the
+compatibility-matrix entry, the exception remarks and the reach of the class refusal to what the
+code does. Two findings were refuted by both skeptics: that the 400 should declare a Problem Details
+schema (the file declares its 400s without one, as the term-block route did), and that the
+term-block route's write-version reason names a stamp the route cannot carry, which the behaviour
+list now explains instead.
 
 ## Resolution pass — 2026-10-27 (priority 1, second increment: the current factor on the lot of record)
 
