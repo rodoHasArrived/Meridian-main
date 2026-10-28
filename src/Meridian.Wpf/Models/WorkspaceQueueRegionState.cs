@@ -1,5 +1,8 @@
 namespace Meridian.Wpf.Models;
 
+/// <summary>
+/// Carries loading, empty, and error presentation for a workspace queue region.
+/// </summary>
 public sealed class WorkspaceQueueRegionState
 {
     public bool IsLoading { get; init; }

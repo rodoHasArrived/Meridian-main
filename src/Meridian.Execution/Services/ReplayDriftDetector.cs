@@ -13,6 +13,9 @@ public sealed record ReplayDriftAssessment(
     string RequiredNextAction,
     string Detail);
 
+/// <summary>
+/// Compares active paper-session identity and event counts with retained replay-verification evidence.
+/// </summary>
 public static class ReplayDriftDetector
 {
     public static ReplayDriftAssessment Assess(

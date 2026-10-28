@@ -19,7 +19,7 @@ namespace Meridian.Tests.Reconciliation;
 /// support, no window) fails closed to the empty population so the informational
 /// internal-transaction-population-unavailable classification keeps operating.
 /// </summary>
-public sealed class LedgerJournalInternalTransactionSourceTests
+public sealed partial class LedgerJournalInternalTransactionSourceTests
 {
     private const string AccountLabel = "EXT-1";
     private static readonly DateOnly PeriodStart = new(2026, 5, 1);

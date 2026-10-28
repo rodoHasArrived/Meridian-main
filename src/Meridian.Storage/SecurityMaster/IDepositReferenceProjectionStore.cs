@@ -2,6 +2,9 @@ using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Queries deposit reference projections by security, institution, and maturity.
+/// </summary>
 public interface IDepositReferenceProjectionStore
 {
     Task<DepositProjectionRow?> GetDepositAsync(Guid securityId, CancellationToken ct = default);

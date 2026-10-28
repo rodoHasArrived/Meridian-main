@@ -53,16 +53,22 @@ public sealed class ProviderCredentialStore : Meridian.Core.Contracts.IProviderC
     public async Task<IReadOnlyDictionary<string, string>> GetCredentialsAsync(
         string moduleId,
         CancellationToken ct = default)
+        => await ReadCredentialRecordAsync(moduleId, ct).ConfigureAwait(false)
+            ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+    public async Task<IReadOnlyDictionary<string, string>?> ReadCredentialRecordAsync(
+        string moduleId,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(moduleId);
         await EnsureLegacyMigratedAsync(ct).ConfigureAwait(false);
         if (ProviderCredentialCatalog.Find(moduleId) is null)
         {
-            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            return null;
         }
 
         var result = await _vault.ReadForProviderAsync(moduleId, ct).ConfigureAwait(false);
-        return result?.Credentials ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        return result?.Credentials;
     }
 
     public async Task<IReadOnlySet<string>> GetStoredKeyNamesAsync(

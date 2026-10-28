@@ -7,6 +7,9 @@ using Meridian.Infrastructure.Reconciliation;
 
 namespace Meridian.FinancialOperations.Reconciliation;
 
+/// <summary>
+/// Coordinates retained statement-run processing, recovery, and reconciliation casework.
+/// </summary>
 public sealed class StatementRunWorkflowService(
     ICanonicalStatementStore importStore,
     IReconciliationCaseStore caseStore,
@@ -231,6 +234,21 @@ public sealed class StatementRunWorkflowService(
                 var comparableArtifact = isLegacyArtifact
                     ? expectedArtifact with { MatchGroups = null }
                     : expectedArtifact;
+                if (retainedArtifact.SourceComparisonMappingFingerprint is null)
+                    comparableArtifact = comparableArtifact with
+                    {
+                        SourceComparisonMappingFingerprint = null,
+                        SourceComparisonPolicyFingerprint = StatementRunComparisonEvidence.LegacyPolicyFingerprint(toleranceProfile)
+                    };
+                if (retainedArtifact.SourceComparisonComplete is null
+                    && retainedArtifact.SourceComparisonPolicyFingerprint is null
+                    && retainedArtifact.SourceComparisonPopulationKinds is null)
+                    comparableArtifact = comparableArtifact with
+                    {
+                        SourceComparisonComplete = null,
+                        SourceComparisonPolicyFingerprint = null,
+                        SourceComparisonPopulationKinds = null
+                    };
                 // A legacy conflict can also mean the matcher's assignment rules changed between
                 // the write and this replay, not that the retained bytes are corrupt; name that so
                 // an operator investigates the right thing.
@@ -412,7 +430,7 @@ public sealed class StatementRunWorkflowService(
             matchResult.MatchCount)
         {
             MatchGroups = matchResult.MatchGroups
-        }, imported.Rows, populations, toleranceProfile);
+        }, imported.Rows, populations, toleranceProfile, imported.Import.ExecutedMappingFingerprint);
     }
 
     private async Task<StatementRunMatchArtifact> LoadVerifiedMatchArtifactAsync(
@@ -1168,6 +1186,7 @@ public sealed class StatementRunWorkflowService(
         {
             CanonicalSourcePath = request.CanonicalSourcePath,
             CanonicalArtifactHash = request.CanonicalArtifactHash,
+            ExecutedMappingFingerprint = request.ExecutedMappingFingerprint,
             AccountingScope = request.AccountingScope
         };
 
@@ -1345,6 +1364,9 @@ public enum StatementRunWorkflowFaultPoint
     CompletedCheckpointRetained
 }
 
+/// <summary>
+/// Exposes statement workflow fault points for controlled recovery testing.
+/// </summary>
 public interface IStatementRunWorkflowFaultInjector
 {
     Task OnPointAsync(

@@ -2,6 +2,9 @@ using System.Text.Json.Serialization;
 
 namespace Meridian.Contracts.Lifecycle;
 
+/// <summary>
+/// Provides source-generated JSON metadata for runtime lifecycle, supervisor, and shutdown receipts.
+/// </summary>
 [JsonSourceGenerationOptions(
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     PropertyNameCaseInsensitive = true,

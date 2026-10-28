@@ -1,5 +1,8 @@
 namespace Meridian.Contracts.Coordination;
 
+/// <summary>
+/// Manages this instance's resource leases and exposes current coordination ownership.
+/// </summary>
 public interface ILeaseManager
 {
     bool Enabled { get; }

@@ -4,11 +4,17 @@ using Meridian.Ui.Services;
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Defines an operator-inbox query with optional fund-account scope.
+/// </summary>
 public interface IWorkstationOperatorInboxApiClient
 {
     Task<OperatorInboxDto?> GetInboxAsync(Guid? fundAccountId = null, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Loads the shared operator inbox for the requested fund-account scope.
+/// </summary>
 public sealed class WorkstationOperatorInboxApiClient : IWorkstationOperatorInboxApiClient
 {
     private readonly ApiClientService _apiClient;

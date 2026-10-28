@@ -1,5 +1,8 @@
 namespace Meridian.Contracts.Workstation;
 
+/// <summary>
+/// Rejects ledger reconciliation and continuity payloads missing required contract fields.
+/// </summary>
 public static class LedgerReconciliationContractCompatibility
 {
     public static void EnsureFundLedgerSummaryRequiredFields(FundLedgerSummary summary)

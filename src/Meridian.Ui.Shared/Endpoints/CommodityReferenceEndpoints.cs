@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps commodity reference and commodity-type lookups to HTTP endpoints.
+/// </summary>
 public static class CommodityReferenceEndpoints
 {
     public static void MapCommodityReferenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)

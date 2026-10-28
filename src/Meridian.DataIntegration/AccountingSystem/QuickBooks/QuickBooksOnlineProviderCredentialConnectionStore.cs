@@ -5,6 +5,7 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.DataIntegration.AccountingSystem.QuickBooks;
 
+/// <summary>Adapts the provider credential vault to QuickBooks connection and token persistence operations.</summary>
 public sealed class QuickBooksOnlineProviderCredentialConnectionStore : IQuickBooksOnlineConnectionStore
 {
     public const string ClientIdField = "ClientId";
@@ -47,7 +48,8 @@ public sealed class QuickBooksOnlineProviderCredentialConnectionStore : IQuickBo
             refreshToken.Trim(),
             realmId.Trim(),
             NormalizeEnvironment(read.Environment),
-            NormalizeOptional(read.Get(CompanyNameField)));
+            NormalizeOptional(read.Get(CompanyNameField)))
+        { CredentialSnapshot = read };
     }
 
     public async Task<AccountingSystemConnectionMetadataDto> GetMetadataAsync(CancellationToken ct = default)
@@ -84,6 +86,17 @@ public sealed class QuickBooksOnlineProviderCredentialConnectionStore : IQuickBo
                     new Dictionary<string, string?> { [RefreshTokenField] = refreshToken.Trim() },
                     Actor: "quickbooks-token-exchange"),
                 ct);
+
+    public Task<string> SaveRefreshTokenAsync(string? refreshToken, QuickBooksOnlineConnection expectedConnection, CancellationToken ct = default)
+    {
+        var snapshot = expectedConnection.CredentialSnapshot
+            ?? throw new InvalidOperationException("The expected QuickBooks credential generation is missing.");
+        var credentials = snapshot.Credentials.ToDictionary(pair => pair.Key, pair => (string?)pair.Value, StringComparer.OrdinalIgnoreCase);
+        if (!string.IsNullOrWhiteSpace(refreshToken))
+            credentials[RefreshTokenField] = refreshToken.Trim();
+        return _credentialStore.SaveRotatedCredentialsAsync(new(QuickBooksOnlineAccountingProvider.Id,
+            credentials, snapshot.Environment, "quickbooks-token-exchange"), snapshot, ct);
+    }
 
     public Task RecordConnectionAsync(
         bool success,

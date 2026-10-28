@@ -403,6 +403,9 @@ public sealed class PortfolioImportViewModel : BindableBase
     }
 }
 
+/// <summary>
+/// Presents a portfolio import's source, imported record count, and date.
+/// </summary>
 public sealed class ImportHistoryEntry
 {
     public string Source { get; init; } = string.Empty;

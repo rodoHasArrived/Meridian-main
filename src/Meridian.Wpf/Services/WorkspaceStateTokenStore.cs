@@ -5,6 +5,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Persists workspace snapshots and validates them before restoring navigation and operating context.
+/// </summary>
 public sealed class WorkspaceStateTokenStore
 {
     private const string FileName = "workspace-state.json";

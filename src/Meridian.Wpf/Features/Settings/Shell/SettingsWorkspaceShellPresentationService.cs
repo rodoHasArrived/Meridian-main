@@ -3,11 +3,17 @@ using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Features.Settings.Shell;
 
+/// <summary>
+/// Projects a settings snapshot into shell context, commands, and readiness presentation.
+/// </summary>
 public interface ISettingsWorkspaceShellPresentationService
 {
     SettingsWorkspaceShellPresentation Build(SettingsWorkspaceShellSnapshot snapshot);
 }
 
+/// <summary>
+/// Builds settings shell context, commands, and readiness presentation from a settings snapshot.
+/// </summary>
 public sealed class SettingsWorkspaceShellPresentationService : ISettingsWorkspaceShellPresentationService, IWorkspaceScopedService
 {
     public SettingsWorkspaceShellPresentation Build(SettingsWorkspaceShellSnapshot snapshot)

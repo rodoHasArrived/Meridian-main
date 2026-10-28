@@ -3,6 +3,9 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.Ledger;
 
+/// <summary>
+/// Builds a set of journal candidate projections across requested accounting bases.
+/// </summary>
 public interface IAccountingBasisProjectionSetService
 {
     Task<AccountingBasisProjectionSetDto> BuildProjectionSetAsync(
@@ -10,6 +13,9 @@ public interface IAccountingBasisProjectionSetService
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Uses the candidate service to assemble projections for multiple accounting bases.
+/// </summary>
 public sealed class AccountingBasisProjectionSetService : IAccountingBasisProjectionSetService
 {
     private readonly IAccountingPostingCandidateService _candidateService;

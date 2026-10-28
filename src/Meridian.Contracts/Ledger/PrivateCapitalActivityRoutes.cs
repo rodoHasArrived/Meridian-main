@@ -2,6 +2,9 @@ using Meridian.Contracts.Api;
 
 namespace Meridian.Contracts.Ledger;
 
+/// <summary>
+/// Builds private capital activity and evidence navigation routes with escaped scope identifiers.
+/// </summary>
 public static class PrivateCapitalActivityRoutes
 {
     private const string PrivateCapitalFundEventEvidenceSubjectKind = "private-capital-fund-event";

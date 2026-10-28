@@ -4,6 +4,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.SecurityMaster;
 
+/// <summary>
+/// Builds and refreshes Security Master projections and warms the projection cache.
+/// </summary>
 public sealed class SecurityMasterProjectionService
 {
     private readonly ISecurityMasterStore _store;

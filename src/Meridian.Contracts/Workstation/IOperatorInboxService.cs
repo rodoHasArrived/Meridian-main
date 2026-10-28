@@ -1,5 +1,8 @@
 namespace Meridian.Contracts.Workstation;
 
+/// <summary>
+/// Queries and maintains the operator's actionable work item inbox.
+/// </summary>
 public interface IOperatorInboxService
 {
     Task<IReadOnlyList<OperatorWorkItemDto>> GetItemsAsync(CancellationToken ct = default);

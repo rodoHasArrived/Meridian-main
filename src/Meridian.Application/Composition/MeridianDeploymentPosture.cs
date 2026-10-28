@@ -43,6 +43,9 @@ internal sealed record MeridianHostPlatformDeclaration(
     System.Runtime.InteropServices.Architecture Architecture,
     string Description);
 
+/// <summary>
+/// Registers deployment posture and provenance declarations used during host composition.
+/// </summary>
 public static class MeridianDeploymentPostureServiceCollectionExtensions
 {
     /// <summary>

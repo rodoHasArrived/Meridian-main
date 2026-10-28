@@ -143,6 +143,89 @@ class ValidationPlanTests(unittest.TestCase):
         self.write("untracked.py", "new\n")
         self.assertEqual(plan.collect_changed_paths(self.root), ["deleted.py", "staged.py", "unstaged.py", "untracked.py"])
 
+    def test_git_base_includes_committed_rename_and_dirty_paths(self):
+        def git(*args):
+            return subprocess.check_output(["git", *args], cwd=self.root, stderr=subprocess.PIPE).decode().strip()
+        git("init")
+        git("config", "user.name", "Fixture")
+        git("config", "user.email", "fixture@example.invalid")
+        self.write("docs/original name.md", "same content\n")
+        git("add", ".")
+        git("commit", "-m", "baseline")
+        git("branch", "base")
+        git("mv", "docs/original name.md", "new name.cs")
+        git("commit", "-m", "move between subsystems")
+        self.write("local script.py", "pass\n")
+        self.assertEqual(plan.collect_changed_paths(self.root, "base"),
+                         ["docs/original name.md", "local script.py", "new name.cs"])
+        # Default remains local-only, so an explicit base has an observable purpose.
+        self.assertEqual(plan.collect_changed_paths(self.root), ["local script.py"])
+
+    def test_git_staged_rename_preserves_both_paths_and_unusual_names(self):
+        def git(*args):
+            subprocess.run(["git", *args], cwd=self.root, check=True, capture_output=True)
+        git("init")
+        git("config", "user.name", "Fixture")
+        git("config", "user.email", "fixture@example.invalid")
+        self.write("docs/old.md", "same content\n")
+        git("add", ".")
+        git("commit", "-m", "baseline")
+        git("mv", "docs/old.md", "new.cs")
+        self.write("unusual\nfile $(touch OWNED).py", "pass\n")
+        self.assertEqual(plan.collect_changed_paths(self.root),
+                         ["docs/old.md", "new.cs", "unusual\nfile $(touch OWNED).py"])
+        self.assertFalse((self.root / "OWNED").exists())
+
+    def test_invalid_base_fails_closed(self):
+        subprocess.run(["git", "init"], cwd=self.root, check=True, capture_output=True)
+        with self.assertRaisesRegex(ValueError, "cannot resolve base"):
+            plan.collect_changed_paths(self.root, "--invalid-option")
+
+    def test_node_launcher_selects_existing_focused_tests_without_execution(self):
+        self.write("scripts/dev/web-dev.mjs", "export {}")
+        self.write("scripts/dev/web-dev.test.mjs", "// fixture")
+        self.write("scripts/dev/web-doctor.test.mjs", "// fixture")
+        with patch.object(plan.subprocess, "run", side_effect=AssertionError("must not execute")):
+            data = self.recommend("scripts/dev/web-dev.mjs", "scripts/dev/web-dev.test.mjs", "scripts/dev/web-doctor.test.mjs")
+        checks = [c for c in data["checks"] if c["id"].startswith("node-")]
+        self.assertEqual(len(checks), 2)
+        dev = next(c for c in checks if c["argv"][-1] == "scripts/dev/web-dev.test.mjs")
+        self.assertEqual(dev["argv"], ["node", "--test", "scripts/dev/web-dev.test.mjs"])
+        self.assertEqual(len(dev["paths"]), 2)
+        self.assertIn("scripts/dev/web-doctor.test.mjs", [s["path"] for s in data["sources"]])
+
+    def test_missing_node_test_is_visible_without_invented_command(self):
+        data = self.recommend("scripts/dev/unmapped.mjs")
+        self.assertFalse(any(c["id"].startswith("node-") for c in data["checks"]))
+        self.assertTrue(any("No exact Node test filename" in warning for warning in data["coverageWarnings"]))
+
+    def test_docs_and_workflow_lanes_are_explicit_but_final_gate_retained(self):
+        data = self.recommend("docs/engineering/README.md", ".github/workflows/ci.yml")
+        commands = [c["argv"] for c in data["checks"]]
+        self.assertIn(["bash", "scripts/ci.sh", "--lane", "verify-docs"], commands)
+        self.assertIn(["bash", "scripts/ci.sh", "--lane", "verify-workflows"], commands)
+        self.assertEqual(data["requiredFinalChecks"][0]["argv"], ["bash", "scripts/ci.sh"])
+
+    def test_cli_base_argument_includes_branch_scope_and_never_runs_checks(self):
+        def git(*args):
+            subprocess.run(["git", *args], cwd=self.root, check=True, capture_output=True)
+        git("init")
+        git("config", "user.name", "Fixture")
+        git("config", "user.email", "fixture@example.invalid")
+        git("add", ".")
+        git("commit", "-m", "baseline")
+        git("branch", "base")
+        self.write("committed.txt", "new\n")
+        git("add", ".")
+        git("commit", "-m", "change")
+        before = subprocess.check_output(["git", "status", "--porcelain=v1", "-z"], cwd=self.root)
+        result = subprocess.run(["python", str(REPO / "build/python/cli/buildctl.py"), "recommend-validation",
+                                 "--root", str(self.root), "--base", "base", "--json"], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout)["changedPaths"], ["committed.txt"])
+        self.assertEqual(subprocess.check_output(["git", "status", "--porcelain=v1", "-z"], cwd=self.root), before)
+        self.assertFalse((self.root / "artifacts").exists())
+
     def test_cli_output_is_optional_and_never_overwrites_input(self):
         source = self.write("docs/change.md", "unchanged\n")
         args = argparse.Namespace(root=self.root, changed_file=["docs/change.md"], from_git=False,

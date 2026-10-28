@@ -6,6 +6,9 @@ public enum WorkspaceShellSlot
     ActionBar
 }
 
+/// <summary>
+/// Defines the tone names shared by desktop workspace badges, commands, and status surfaces.
+/// </summary>
 public static class WorkspaceTone
 {
     public const string Neutral = "Neutral";
@@ -17,6 +20,9 @@ public static class WorkspaceTone
     public const string Secondary = "Secondary";
 }
 
+/// <summary>
+/// Carries the workspace title, subtitle, and context badges displayed by the shell.
+/// </summary>
 public sealed class WorkspaceShellContext
 {
     public string WorkspaceTitle { get; init; } = string.Empty;
@@ -32,6 +38,9 @@ public sealed record WorkspaceShellSlotContributionRequest(
     string? FundAccountId = null,
     string? ActiveWorkItemId = null);
 
+/// <summary>
+/// Identifies the workspace, shell slot, and ordering of a contributed shell element.
+/// </summary>
 public interface IWorkspaceShellSlotContribution
 {
     string WorkspaceId { get; }
@@ -41,6 +50,9 @@ public interface IWorkspaceShellSlotContribution
     int Order { get; }
 }
 
+/// <summary>
+/// Produces context-dependent shell slot contributions for a workspace and page.
+/// </summary>
 public interface IWorkspaceShellSlotContributor
 {
     ValueTask<IReadOnlyList<IWorkspaceShellSlotContribution>> GetContributionsAsync(
@@ -64,6 +76,9 @@ public sealed record WorkspaceShellActionBarContribution(
     public WorkspaceShellSlot Slot => WorkspaceShellSlot.ActionBar;
 }
 
+/// <summary>
+/// Carries the label, value, glyph, and tone of a shell context badge.
+/// </summary>
 public sealed class WorkspaceShellBadge
 {
     public string Label { get; init; } = string.Empty;
@@ -75,6 +90,9 @@ public sealed class WorkspaceShellBadge
     public string Tone { get; init; } = WorkspaceTone.Neutral;
 }
 
+/// <summary>
+/// Collects scope, freshness, review, and attention values used to build shell context badges.
+/// </summary>
 public sealed class WorkspaceShellContextInput
 {
     public string WorkspaceTitle { get; init; } = string.Empty;
@@ -104,6 +122,9 @@ public sealed class WorkspaceShellContextInput
     public IReadOnlyList<WorkspaceShellBadge> AdditionalBadges { get; init; } = Array.Empty<WorkspaceShellBadge>();
 }
 
+/// <summary>
+/// Separates workspace actions into primary and secondary command collections.
+/// </summary>
 public sealed class WorkspaceCommandGroup
 {
     public IReadOnlyList<WorkspaceCommandItem> PrimaryCommands { get; init; } = Array.Empty<WorkspaceCommandItem>();
@@ -111,6 +132,9 @@ public sealed class WorkspaceCommandGroup
     public IReadOnlyList<WorkspaceCommandItem> SecondaryCommands { get; init; } = Array.Empty<WorkspaceCommandItem>();
 }
 
+/// <summary>
+/// Describes a workspace action, its availability and disabled reason, and its automation identity.
+/// </summary>
 public sealed class WorkspaceCommandItem
 {
     public string Id { get; init; } = string.Empty;
@@ -161,6 +185,9 @@ public static class WorkspaceCommandAutomation
             : new string(value.Where(char.IsLetterOrDigit).ToArray());
 }
 
+/// <summary>
+/// Describes a queue entry with status, blocking state, and primary and secondary action identities.
+/// </summary>
 public sealed class WorkspaceQueueItem
 {
     public string Title { get; init; } = string.Empty;
@@ -186,6 +213,9 @@ public sealed class WorkspaceQueueItem
     public string AutomationName { get; init; } = string.Empty;
 }
 
+/// <summary>
+/// Describes recent workspace activity with supporting metadata and an optional action.
+/// </summary>
 public sealed class WorkspaceRecentItem
 {
     public string Title { get; init; } = string.Empty;

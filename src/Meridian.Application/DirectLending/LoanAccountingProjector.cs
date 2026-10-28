@@ -12,6 +12,9 @@ using SecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMa
 
 namespace Meridian.Application.DirectLending;
 
+/// <summary>
+/// Builds ledger journal writes for loan events using the applicable accounting policy.
+/// </summary>
 public sealed class LoanAccountingProjector
 {
     private readonly ILedgerJournalStore? _journalStore;

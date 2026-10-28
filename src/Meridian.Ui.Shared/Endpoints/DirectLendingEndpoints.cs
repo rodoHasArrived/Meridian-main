@@ -11,6 +11,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps loan queries and governed direct-lending mutations with permission and rate-limit checks.
+/// </summary>
 public static class DirectLendingEndpoints
 {
     public static void MapDirectLendingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)

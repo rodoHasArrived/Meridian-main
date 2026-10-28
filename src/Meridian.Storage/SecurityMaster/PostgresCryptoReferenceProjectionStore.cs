@@ -3,6 +3,9 @@ using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Reads cryptocurrency reference projections from PostgreSQL by security, network, and base currency.
+/// </summary>
 public sealed class PostgresCryptoReferenceProjectionStore : ICryptoReferenceProjectionStore
 {
     internal const string AssetClass = "CryptoCurrency";

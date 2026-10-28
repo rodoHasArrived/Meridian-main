@@ -12,6 +12,7 @@ import subprocess
 import sys
 import time
 import uuid
+import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[3]
 spec = importlib.util.spec_from_file_location("windows_dotnet_runner", Path(__file__).with_name("run-dotnet-ci-tests.py"))
@@ -29,6 +30,52 @@ def selected_projects(slices: list[str], test_filter: str | None = None):
         raise ValueError("A filter override requires exactly one explicitly selected slice.")
     return [runner.TestProject(row["name"], row["project"], test_filter or row["filter"])
             for row in roster if not slices or row["name"] in slices]
+
+
+def class_outcomes(trx_files: list[str], expected_identities: list[str] | None = None) -> dict[str, dict[str, int]]:
+    """Count executed result rows, including individual theory cases, from the retained TRX files."""
+    classes = {}
+    identities = []
+    for file in trx_files:
+        root = ET.parse(file).getroot()
+        methods = {}
+        for test in root.iter():
+            if test.tag.rsplit("}", 1)[-1] == "UnitTest":
+                method = next((m for m in test if m.tag.rsplit("}", 1)[-1] == "TestMethod"), None)
+                methods[test.get("id")] = method.get("className", "") if method is not None else ""
+        for result in root.iter():
+            if result.tag.rsplit("}", 1)[-1] != "UnitTestResult":
+                continue
+            actual_name = methods.get(result.get("testId"), "")
+            identities.append(f"{actual_name}|{result.get('testName', '')}")
+            name = actual_name or "<unresolved class>"
+            counts = classes.setdefault(name, dict(passed=0, failed=0, skipped=0, other=0))
+            key = {"passed": "passed", "failed": "failed", "notexecuted": "skipped", "skipped": "skipped"}.get(
+                result.get("outcome", "").lower(), "other")
+            counts[key] += 1
+    if expected_identities is not None and sorted(identities) != expected_identities:
+        raise ValueError("TRX result identities changed after collection")
+    return classes
+
+
+def print_class_outcomes(results) -> None:
+    """Expose existing test evidence without treating builds or discovered methods as execution."""
+    for result in results:
+        if result.evidence is None:
+            continue
+        try:
+            classes = class_outcomes(result.evidence["trxFiles"], result.evidence["testIdentities"])
+            totals = {key: sum(counts[key] for counts in classes.values())
+                      for key in ("passed", "failed", "skipped", "other")}
+            if totals != result.evidence["counts"]:
+                raise ValueError("TRX result counts changed after collection")
+        except (OSError, ValueError, ET.ParseError) as exc:
+            print(f"TRX class evidence unavailable [{result.name}]: {exc}", flush=True)
+            continue
+        for name, counts in sorted(classes.items()):
+            # JSON escapes line breaks so test-owned names cannot inject console commands.
+            row = {"class": name, **counts, "total": sum(counts.values())}
+            print(f"TRX class outcomes [{result.name}]: {json.dumps(row, ensure_ascii=True)}", flush=True)
 
 
 def main() -> int:
@@ -71,6 +118,7 @@ def main() -> int:
                                    results_dir=output, dry_run=args.dry_run, properties=properties)
     runner.write_summaries(results, summary_output=output / "summary.md",
                            json_output=output / "summary.json", build_results=builds)
+    print_class_outcomes(results)
     if os.environ.get("GITHUB_STEP_SUMMARY"):
         with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
             summary.write((output / "summary.md").read_text(encoding="utf-8"))

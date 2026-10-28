@@ -2,6 +2,9 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.Ui.Shared.Evidence;
 
+/// <summary>
+/// Extracts reviewable fields and metadata from an Evidence Vault document.
+/// </summary>
 public interface IEvidenceDocumentExtractor
 {
     Task<EvidenceDocumentExtractionResultDto> ExtractAsync(
@@ -9,6 +12,9 @@ public interface IEvidenceDocumentExtractor
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Builds document extraction results from manual metadata or deterministic fixture inputs.
+/// </summary>
 public sealed class ManualEvidenceDocumentExtractor : IEvidenceDocumentExtractor
 {
     public const string ExtractorId = "manual-metadata-v1";

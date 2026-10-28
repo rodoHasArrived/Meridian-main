@@ -3,6 +3,9 @@ using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Persists security cash flow source definitions in PostgreSQL.
+/// </summary>
 public sealed class PostgresSecurityMasterCashFlowStore : ISecurityMasterCashFlowStore
 {
     private readonly SecurityMasterOptions _options;

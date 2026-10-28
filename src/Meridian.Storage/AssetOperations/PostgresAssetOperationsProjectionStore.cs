@@ -6,6 +6,9 @@ using Npgsql;
 
 namespace Meridian.Storage.AssetOperations;
 
+/// <summary>
+/// Persists asset operations, accounting event, and instrument position projections in PostgreSQL.
+/// </summary>
 public sealed partial class PostgresAssetOperationsProjectionStore :
     IAssetOperationsProjectionStore,
     IInstrumentPositionProjectionStore,

@@ -6,6 +6,9 @@ using Meridian.Wpf.Shell.ViewModels;
 
 namespace Meridian.Wpf.Shell.Services;
 
+/// <summary>
+/// Coordinates canonical routes, navigation-frame initialization, and pane content and drop operations.
+/// </summary>
 public interface IShellNavigationCoordinator
 {
     IShellRouteRegistry RouteRegistry { get; }

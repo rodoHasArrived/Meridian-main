@@ -2,6 +2,9 @@ using Meridian.Contracts.Api;
 
 namespace Meridian.Execution.Services;
 
+/// <summary>
+/// Selects a position lot by FIFO, LIFO, highest entry price, or an explicit lot identifier.
+/// </summary>
 public static class PositionLotSelector
 {
     public static PositionLotEntry? SelectLot(

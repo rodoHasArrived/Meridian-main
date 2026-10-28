@@ -87,6 +87,9 @@ public sealed record RecurringOccurrenceRecord(
 /// <summary>A definition change cannot silently reinterpret a retained approval draft.</summary>
 public sealed class RecurringJournalDefinitionChangedException(string message) : InvalidOperationException(message);
 
+/// <summary>
+/// Opens sessions for reading and updating recurring journal schedules and templates.
+/// </summary>
 public interface IRecurringJournalStore
 {
     Task<IRecurringJournalSession> OpenSessionAsync(CancellationToken ct = default);
@@ -142,6 +145,9 @@ internal sealed record RecurringJournalEnvelope(string ContentHash, RecurringJou
 [JsonSerializable(typeof(RecurringJournalScheduleSnapshot))]
 internal partial class RecurringJournalJsonContext : JsonSerializerContext;
 
+/// <summary>
+/// Produces canonical serialized identities for recurring journal definitions and occurrences.
+/// </summary>
 public static class RecurringJournalIdentity
 {
     public static string SerializeSchedule(RecurringScheduleDefinition definition)

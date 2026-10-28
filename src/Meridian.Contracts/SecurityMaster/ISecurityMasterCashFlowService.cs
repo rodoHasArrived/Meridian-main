@@ -1,5 +1,8 @@
 namespace Meridian.Contracts.SecurityMaster;
 
+/// <summary>
+/// Manages security cash flow sources and retrieves current or historical scenario projections.
+/// </summary>
 public interface ISecurityMasterCashFlowService
 {
     Task<SecurityCashFlowSourceDto?> GetCashFlowSourceAsync(Guid securityId, CancellationToken ct = default);

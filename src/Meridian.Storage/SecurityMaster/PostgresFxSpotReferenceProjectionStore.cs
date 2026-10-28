@@ -3,6 +3,9 @@ using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Reads spot foreign exchange reference projections from PostgreSQL by security, pair, and currency.
+/// </summary>
 public sealed class PostgresFxSpotReferenceProjectionStore : IFxSpotReferenceProjectionStore
 {
     internal const string AssetClass = "FxSpot";

@@ -4,6 +4,9 @@ using Meridian.Application.Composition;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Stores and queries operator inbox work items in process memory.
+/// </summary>
 public sealed class InMemoryOperatorInboxService : INonProductionOnlyService, IOperatorInboxService
 {
     private readonly ConcurrentDictionary<string, OperatorWorkItemDto> _items =

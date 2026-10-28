@@ -36,15 +36,18 @@ public sealed partial class AlphaVantageCorporateActionProvider : ICorporateActi
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
+    private readonly ICredentialContext? _credentials;
     private readonly ILogger<AlphaVantageCorporateActionProvider> _logger;
 
     public AlphaVantageCorporateActionProvider(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
-        ILogger<AlphaVantageCorporateActionProvider> logger)
+        ILogger<AlphaVantageCorporateActionProvider> logger,
+        ICredentialContext? credentials = null)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _credentials = credentials;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -216,6 +219,9 @@ public sealed partial class AlphaVantageCorporateActionProvider : ICorporateActi
 
     private string? ResolveApiKey()
     {
+        if (_credentials is not null)
+            return _credentials.Get("ALPHA_VANTAGE_API_KEY");
+
         return FirstNonEmpty(
             _configuration["ALPHA_VANTAGE_API_KEY"],
             _configuration["ALPHAVANTAGE__APIKEY"],

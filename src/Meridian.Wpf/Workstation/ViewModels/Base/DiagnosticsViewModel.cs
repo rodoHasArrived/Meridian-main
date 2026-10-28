@@ -1,5 +1,8 @@
 namespace Meridian.Wpf.Workstation.ViewModels.Base;
 
+/// <summary>
+/// Exposes observable diagnostic status title and detail text.
+/// </summary>
 public sealed class DiagnosticsViewModel : Meridian.Wpf.ViewModels.BindableBase
 {
     private string _statusTitle = string.Empty;

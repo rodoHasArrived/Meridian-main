@@ -65,6 +65,9 @@ public interface IReportingAuthoritativeSource
     }
 }
 
+/// <summary>
+/// Indicates that an authoritative source required for reporting is unavailable.
+/// </summary>
 public class ReportingAuthoritativeSourceUnavailableException : InvalidOperationException
 {
     public ReportingAuthoritativeSourceUnavailableException(string message) : base(message)

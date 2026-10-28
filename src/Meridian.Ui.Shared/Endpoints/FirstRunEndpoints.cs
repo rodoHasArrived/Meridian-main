@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps first-run experience reads and administrative activation completion commands.
+/// </summary>
 public static class FirstRunEndpoints
 {
     public static void MapFirstRunEndpoints(this WebApplication app)

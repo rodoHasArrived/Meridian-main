@@ -7,6 +7,9 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.Application.DirectLending;
 
+/// <summary>
+/// Maintains loan contracts and servicing workflows in process for nonproduction use.
+/// </summary>
 public sealed partial class InMemoryDirectLendingService : INonProductionOnlyService, IDirectLendingService
 {
     private static readonly JsonSerializerOptions HashJsonOptions = new()

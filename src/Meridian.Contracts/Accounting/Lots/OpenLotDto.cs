@@ -56,6 +56,9 @@ public sealed record OpenLotBasisAdjustmentDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     OpenLotFactorPaydownInstructionDto? FactorPaydown = null);
 
+/// <summary>
+/// Defines canonical reasons for adjustments to an open lot's basis.
+/// </summary>
 public static class OpenLotBasisAdjustmentReasons
 {
     /// <summary>Average-cost relief restated the surviving pool at the pooled per-unit basis.</summary>
@@ -103,6 +106,9 @@ public sealed record OpenLotReliefSelectionDto(Guid TaxLotRecordId, string LotId
 public sealed record OpenLotReliefResultDto(IReadOnlyList<OpenLotReliefSelectionDto> Selections,
     decimal Quantity, decimal TransactionCostBasis, decimal FunctionalCostBasis);
 
+/// <summary>
+/// Defines lot relief selection and calculation for a proposed disposal.
+/// </summary>
 public interface IOpenLotReliefService
 {
     OpenLotReliefResultDto Select(IReadOnlyList<OpenLotDto> lots, decimal quantity,

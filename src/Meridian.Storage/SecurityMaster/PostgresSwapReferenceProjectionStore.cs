@@ -3,6 +3,9 @@ using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Reads swap reference projections from PostgreSQL by security, type, and maturity.
+/// </summary>
 public sealed class PostgresSwapReferenceProjectionStore : ISwapReferenceProjectionStore
 {
     internal const string AssetClass = "Swap";

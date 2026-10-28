@@ -6,6 +6,9 @@ using Meridian.Contracts.Etl;
 
 namespace Meridian.Infrastructure.Etl;
 
+/// <summary>
+/// Parses CSV and XLSX partner files using registered column schemas.
+/// </summary>
 public sealed class CsvPartnerFileParser : IPartnerFileParser
 {
     private static readonly XNamespace Spreadsheet = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";

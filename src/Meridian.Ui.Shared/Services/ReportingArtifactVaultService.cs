@@ -58,6 +58,9 @@ public sealed record ReportingArtifactDownload(
     DateTimeOffset AccessedAtUtc,
     string AuditEventId);
 
+/// <summary>
+/// Indicates that access to a reporting artifact in the vault was denied.
+/// </summary>
 public sealed class ReportingArtifactVaultAccessDeniedException : UnauthorizedAccessException
 {
     public ReportingArtifactVaultAccessDeniedException(string message) : base(message)

@@ -1,0 +1,425 @@
+using FluentAssertions;
+using Meridian.Execution;
+using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
+using Meridian.Infrastructure.Adapters.InteractiveBrokers;
+using Microsoft.Extensions.Logging.Abstractions;
+using Xunit;
+
+namespace Meridian.Tests.Infrastructure.Providers;
+
+public sealed partial class IBBrokerageGatewayTests
+{
+    [Fact]
+    public async Task OrderRecovery_LegacyOwnershipWithoutAnExplicitPin_InstallsNoRoute()
+    {
+        var queried = false;
+        var client = RecoveryClient(c =>
+        {
+            queried = true;
+            c.RaiseOpenOrder(RecoverableOpenOrder());
+        });
+        await using var sut = new IBBrokerageGateway(DefaultOptions(), NullLogger<IBBrokerageGateway>.Instance, client);
+        await sut.ConnectAsync();
+
+        (await sut.GetOrderForRecoveryAsync("client-1")).Should().BeNull();
+        (await sut.GetOrderForRecoveryAsync("client-1", RecoveryOriginal)).Should().BeNull(
+            "pre-change retained order states have no broker account and must not invent one");
+        queried.Should().BeFalse("an orderRef does not prove the retained external account");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.CancelOrderAsync("client-1"));
+    }
+
+    [Theory]
+    [InlineData("DU123456", true)]
+    [InlineData("DU654321", false)]
+    public async Task OrderRecovery_MultiAccountLogin_RequiresTheRetainedAcknowledgementAccount(string observedAccount, bool expected)
+    {
+        var client = RecoveryClient(c =>
+        {
+            c.RaiseOpenOrder(RecoverableOpenOrder(account: observedAccount));
+            if (expected)
+                c.RaiseOpenOrder(RecoverableOpenOrder(orderId: 7002, account: "DU654321"));
+        });
+        client.ManagedAccounts = "DU123456,DU654321";
+        await using var sut = new IBBrokerageGateway(DefaultOptions(), NullLogger<IBBrokerageGateway>.Instance, client);
+        await sut.ConnectAsync();
+        var retained = RecoveryOriginal with { FilledQuantity = 0m, AverageFillPrice = null, BrokerAccountId = "DU123456" };
+
+        var recovered = await sut.GetOrderForRecoveryAsync("client-1", retained);
+
+        if (expected)
+        {
+            recovered.Should().NotBeNull();
+            recovered!.BrokerAccountId.Should().Be("DU123456");
+        }
+        else
+        {
+            recovered.Should().BeNull("another managed account cannot borrow the retained orderRef");
+            await Assert.ThrowsAsync<InvalidOperationException>(() => sut.CancelOrderAsync("client-1"));
+        }
+    }
+
+    [Theory]
+    [InlineData("U123456", true)]
+    [InlineData("DU123456", false)]
+    [InlineData("DF123456", true)]
+    [InlineData("DU123456,U123456", true)]
+    [InlineData("DU123456bad", true)]
+    public async Task OrderRecovery_UnverifiedOrContradictoryEnvironment_InstallsNoRoute(string accounts, bool paper)
+    {
+        var queried = false;
+        var client = RecoveryClient(c =>
+        {
+            queried = true;
+            c.RaiseOpenOrder(RecoverableOpenOrder());
+        });
+        client.ManagedAccounts = accounts;
+        await using var sut = CreateSut(client, paper);
+        await sut.ConnectAsync();
+
+        sut.ScopeIdentity.Should().BeNull();
+        (await sut.GetOrderForRecoveryAsync("client-1")).Should().BeNull();
+        queried.Should().BeFalse("the socket port and configured flag do not prove the broker environment");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.CancelOrderAsync("client-1"));
+    }
+
+    [Fact]
+    public async Task WrongAccountAmendmentRecovery_PreservesOrderPendingAliasesAndDurableEvidence()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"ib-amendment-account-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var original = RecoveryOriginal with
+            {
+                BrokerAccountId = "DU1",
+                FilledQuantity = 0m,
+                AverageFillPrice = null,
+                Status = OrderStatus.Accepted,
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+            var amendment = new PendingOrderAmendment(original, original with { Quantity = 20m, LimitPrice = 200m }, "7001")
+            { CandidateBrokerOrderId = "7002" };
+            var path = Path.Combine(directory, "orders.json");
+            var store = new FileBrokerageOrderRecoveryStore(path, "ibkr");
+            store.BindScope("paper:DU1");
+            store.Save(new(original, "7001", true)
+            {
+                PendingAmendment = amendment,
+                RequiresAmendmentRecovery = true,
+                BrokerOrderAliases = ["7001"]
+            });
+            var other = original with { OrderId = "other-order" };
+            store.Save(new(other, "8001", true) { BrokerOrderAliases = ["8001"] });
+            var client = RecoveryClient(_ => { });
+            client.ManagedAccounts = "DU1";
+            await using var gateway = new IBBrokerageGateway(DefaultOptions(), NullLogger<IBBrokerageGateway>.Instance, client);
+            await gateway.ConnectAsync();
+            await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
+                recoveryStore: store, portfolioState: new PaperTradingPortfolio(100_000m));
+            await oms.StartAsync();
+            var pendingBefore = oms.GetPendingAmendmentForRecovery(original.OrderId);
+            var durableBefore = await File.ReadAllTextAsync(path);
+            var wrong = new ExecutionReport
+            {
+                OrderId = original.OrderId,
+                ClientOrderId = original.OrderId,
+                GatewayOrderId = "7002",
+                ReplacesOrderId = "7001",
+                BrokerAccountId = "DU2",
+                ReportType = ExecutionReportType.Modified,
+                Symbol = "AAPL",
+                Side = OrderSide.Buy,
+                OrderStatus = OrderStatus.Accepted,
+                OrderQuantity = 20m,
+                OrderLimitPrice = 200m,
+                HasOrderTerms = true
+            };
+
+            await Assert.ThrowsAsync<InvalidDataException>(() => oms.ReconcileRecoveryOrderAsync(wrong));
+
+            oms.GetOrder(original.OrderId).Should().Be(original);
+            oms.GetPendingAmendmentForRecovery(original.OrderId).Should().BeSameAs(pendingBefore);
+            (await File.ReadAllTextAsync(path)).Should().Be(durableBefore);
+            store.Load().Single(order => order.State.OrderId == original.OrderId).BrokerOrderAliases.Should().Equal("7001");
+            // The rejected candidate must not be reserved as this order's active/alias identity.
+            // A different retained order's independently proven report may still use that id.
+            await oms.ReconcileRecoveryOrderAsync(wrong with
+            {
+                OrderId = other.OrderId,
+                ClientOrderId = other.OrderId,
+                ReplacesOrderId = null,
+                BrokerAccountId = "DU1",
+                ReportType = ExecutionReportType.New,
+                OrderQuantity = 10m,
+                HasOrderTerms = false,
+                OrderLimitPrice = null
+            });
+            oms.GetOrder(other.OrderId)!.BrokerAccountId.Should().Be("DU1");
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task BrokerAcknowledgement_RetainsItsAccountAcrossFileReload_AndRejectsAnotherAccount()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"ib-account-proof-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var client = CreateAcknowledgingClient();
+            client.ManagedAccounts = "DU1";
+            await using var gateway = new IBBrokerageGateway(DefaultOptions(), NullLogger<IBBrokerageGateway>.Instance, client);
+            await gateway.ConnectAsync();
+            var path = Path.Combine(directory, "orders.json");
+            var store = new FileBrokerageOrderRecoveryStore(path, "ibkr");
+            await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
+                recoveryStore: store, portfolioState: new PaperTradingPortfolio(100_000m));
+            await oms.StartAsync();
+
+            var placed = await oms.PlaceOrderAsync(WorkingOrder());
+            placed.Success.Should().BeTrue();
+            placed.OrderState!.BrokerAccountId.Should().Be("DU1");
+            new FileBrokerageOrderRecoveryStore(path, "ibkr").Load().Should().ContainSingle()
+                .Which.State.BrokerAccountId.Should().Be("DU1");
+
+            var wrongAccount = new ExecutionReport
+            {
+                OrderId = "working-order",
+                ClientOrderId = "working-order",
+                GatewayOrderId = "11001",
+                BrokerAccountId = "DU2",
+                ReportType = ExecutionReportType.New,
+                Symbol = "AAPL",
+                Side = OrderSide.Buy,
+                OrderStatus = OrderStatus.Accepted,
+                OrderQuantity = 10m
+            };
+            await Assert.ThrowsAsync<InvalidDataException>(() => oms.ReconcileRecoveryOrderAsync(wrongAccount));
+            oms.GetOrder("working-order")!.BrokerAccountId.Should().Be("DU1");
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData(0, false)]
+    [InlineData(1, false)]
+    [InlineData(10, false)]
+    [InlineData(1, true)]
+    public async Task LateOpenOrder_RetainsAccountWithoutRegressingOrRebookingEarlierFills(int filled, bool executionFill)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"ib-late-account-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var client = CreateAcknowledgingClient();
+            client.ManagedAccounts = "DU1";
+            client.OnPlaceOrder = (c, id, _) => c.RaiseOrderStatus(Status(id, "Submitted"));
+            await using var gateway = new IBBrokerageGateway(DefaultOptions(), NullLogger<IBBrokerageGateway>.Instance, client);
+            await gateway.ConnectAsync();
+            var path = Path.Combine(directory, "orders.json");
+            var store = new FileBrokerageOrderRecoveryStore(path, "ibkr");
+            var portfolio = new PaperTradingPortfolio(100_000m);
+            var publisher = new AmendmentRacePublisher();
+            await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
+                recoveryStore: store, portfolioState: portfolio, tradeEventPublisher: publisher);
+            await oms.StartAsync();
+            (await oms.PlaceOrderAsync(WorkingOrder())).Success.Should().BeTrue();
+            if (filled > 0)
+            {
+                if (executionFill)
+                    client.RaiseExecution(new(11001, "AAPL", "BOT", filled, 100d, filled, 100d,
+                        "owned-fill", "DU1", "NYSE", 1L, null, DateTimeOffset.UtcNow));
+                else
+                    client.RaiseOrderStatus(new(11001, filled == 10 ? "Filled" : "Submitted", filled, 10 - filled,
+                        100d, 100d, 1L, 1, null, null, DateTimeOffset.UtcNow));
+            }
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            if (filled > 0)
+            {
+                await WaitForRecoveryCheckpointAsync(store,
+                    state => state.FilledQuantity == filled, timeout.Token);
+            }
+            var beforeAccount = oms.GetOrder("working-order")!;
+            client.RaiseOpenOrder(OpenOrder(11001, WorkingOrder()));
+            await WaitForRecoveryCheckpointAsync(store,
+                state => state.BrokerAccountId == "DU1" && state.FilledQuantity == filled, timeout.Token);
+
+            var state = oms.GetOrder("working-order")!;
+            state.Should().Be(beforeAccount with { BrokerAccountId = "DU1" },
+                "late ownership evidence must preserve all retained terms, economics and timestamps");
+            state.BrokerAccountId.Should().Be("DU1");
+            state.FilledQuantity.Should().Be(filled);
+            state.Status.Should().Be(filled == 10 ? OrderStatus.Filled : filled > 0 ? OrderStatus.PartiallyFilled : OrderStatus.Accepted);
+            (portfolio.Positions.GetValueOrDefault("AAPL")?.Quantity ?? 0L).Should().Be(filled);
+            publisher.Events.Count.Should().Be(filled > 0 ? 1 : 0, "account enrichment must not repeat accounting handoff");
+            new FileBrokerageOrderRecoveryStore(path, "ibkr").Load().Should().ContainSingle()
+                .Which.State.Should().Be(state);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task ForeignAccountExecution_DoesNotPoisonCurrentFillsOrDurableState()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"ib-foreign-execution-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var client = CreateAcknowledgingClient();
+            client.ManagedAccounts = "DU1";
+            await using var gateway = new IBBrokerageGateway(DefaultOptions(), NullLogger<IBBrokerageGateway>.Instance, client);
+            await gateway.ConnectAsync();
+            var path = Path.Combine(directory, "orders.json");
+            var store = new FileBrokerageOrderRecoveryStore(path, "ibkr");
+            var portfolio = new PaperTradingPortfolio(100_000m);
+            var publisher = new AmendmentRacePublisher();
+            await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
+                recoveryStore: store, portfolioState: portfolio, tradeEventPublisher: publisher);
+            await oms.StartAsync();
+            (await oms.PlaceOrderAsync(WorkingOrder())).Success.Should().BeTrue();
+
+            client.RaiseExecution(new(11001, "AAPL", "BOT", 1m, 100d, 1m, 100d,
+                "foreign-fill", "DU2", "NYSE", 1L, null, DateTimeOffset.UtcNow));
+            var barrier = Status(11001, "Submitted") with
+            {
+                ReceivedAt = oms.GetOrder("working-order")!.LastUpdatedAt!.Value.AddTicks(1)
+            };
+            client.RaiseOrderStatus(barrier);
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            await WaitForRecoveryCheckpointAsync(store,
+                state => state.LastUpdatedAt == barrier.ReceivedAt, timeout.Token);
+
+            var state = oms.GetOrder("working-order")!;
+            state.FilledQuantity.Should().Be(0m);
+            state.BrokerAccountId.Should().Be("DU1");
+            portfolio.Positions.Should().BeEmpty();
+            publisher.Events.Should().BeEmpty();
+            new FileBrokerageOrderRecoveryStore(path, "ibkr").Load().Should().ContainSingle()
+                .Which.State.Should().Be(state);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData("DU2", "AAPL", "BUY")]
+    [InlineData("DU1", "TSLA", "BUY")]
+    [InlineData("DU1", "AAPL", "SELL")]
+    [InlineData("DU1", "AAPL", "UNKNOWN")]
+    public async Task LateInvalidAccountObservation_DoesNotClaimTheContextBeforeValidAcknowledgement(
+        string account, string symbol, string side)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"ib-invalid-late-account-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var client = CreateAcknowledgingClient();
+            client.ManagedAccounts = "DU1";
+            client.OnPlaceOrder = (c, id, _) => c.RaiseOrderStatus(Status(id, "Submitted"));
+            await using var gateway = new IBBrokerageGateway(DefaultOptions(), NullLogger<IBBrokerageGateway>.Instance, client);
+            await gateway.ConnectAsync();
+            var path = Path.Combine(directory, "orders.json");
+            var store = new FileBrokerageOrderRecoveryStore(path, "ibkr");
+            var portfolio = new PaperTradingPortfolio(100_000m);
+            var publisher = new AmendmentRacePublisher();
+            await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
+                recoveryStore: store, portfolioState: portfolio, tradeEventPublisher: publisher);
+            await oms.StartAsync();
+            (await oms.PlaceOrderAsync(WorkingOrder())).Success.Should().BeTrue();
+            var pendingBefore = oms.GetPendingAmendmentForRecovery("working-order");
+            var aliasesBefore = store.Load().Single().BrokerOrderAliases!.ToArray();
+            client.RaiseOpenOrder(OpenOrder(11001, WorkingOrder()) with { Account = account, Symbol = symbol, Action = side });
+            var barrier = Status(11001, "Submitted") with
+            {
+                ReceivedAt = oms.GetOrder("working-order")!.LastUpdatedAt!.Value.AddTicks(1)
+            };
+            client.RaiseOrderStatus(barrier);
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var observed = await WaitForRecoveryCheckpointAsync(store,
+                state => state.LastUpdatedAt == barrier.ReceivedAt, timeout.Token);
+            observed.BrokerAccountId.Should().NotBe("DU2", "inadmissible observations cannot taint later statuses");
+
+            var beforeValid = oms.GetOrder("working-order")!;
+            beforeValid.BrokerAccountId.Should().BeNull();
+            beforeValid.FilledQuantity.Should().Be(0m);
+            oms.GetPendingAmendmentForRecovery("working-order").Should().BeSameAs(pendingBefore);
+            portfolio.Positions.Should().BeEmpty();
+            publisher.Events.Should().BeEmpty();
+            var durable = new FileBrokerageOrderRecoveryStore(path, "ibkr").Load().Single();
+            durable.State.Should().Be(beforeValid);
+            durable.BrokerOrderAliases.Should().Equal(aliasesBefore);
+
+            client.RaiseOpenOrder(OpenOrder(11001, WorkingOrder()));
+            await WaitForRecoveryCheckpointAsync(store,
+                state => state.BrokerAccountId == "DU1", timeout.Token);
+            var afterValid = oms.GetOrder("working-order")!;
+            afterValid.Should().Be(beforeValid with { BrokerAccountId = "DU1" });
+            publisher.Events.Should().BeEmpty();
+            new FileBrokerageOrderRecoveryStore(path, "ibkr").Load().Single().State.Should().Be(afterValid);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    private static async Task<OrderState> WaitForRecoveryCheckpointAsync(
+        FileBrokerageOrderRecoveryStore store, Func<OrderState, bool> condition, CancellationToken ct)
+    {
+        // The OMS observer publishes fill increments only, before the recovery checkpoint.
+        // Store.Load takes Save's lock, so observing this exact checkpoint proves processing
+        // and its durable write completed; metadata-only reports need no observer emission.
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            var state = store.Load().Single().State;
+            if (condition(state))
+                return state;
+            await Task.Delay(TimeSpan.FromMilliseconds(10), ct);
+        }
+    }
+
+    [Fact]
+    public async Task ReconnectedSubmittedOrder_WithTheSameRetainedOwner_RemainsInTheBrokerSnapshot()
+    {
+        var client = CreateAcknowledgingClient();
+        client.ManagedAccounts = "DU1";
+        await using var gateway = new IBBrokerageGateway(DefaultOptions(), NullLogger<IBBrokerageGateway>.Instance, client);
+        await gateway.ConnectAsync();
+        await gateway.SubmitOrderAsync(WorkingOrder());
+        client.RaiseConnectionLost();
+        client.RaiseConnectionRestored();
+        client.RaiseManagedAccounts("DU1");
+        client.OnRequestOpenOrders = c =>
+        {
+            c.RaiseOpenOrder(OpenOrder(11001, WorkingOrder()));
+            c.RaiseOpenOrdersCompleted();
+        };
+
+        var open = await gateway.GetOpenOrdersAsync();
+
+        open.Should().ContainSingle().Which.ClientOrderId.Should().Be("working-order");
+        var retained = RecoveryOriginal with
+        {
+            OrderId = "working-order",
+            BrokerAccountId = "DU1",
+            FilledQuantity = 0m,
+            AverageFillPrice = null,
+            Status = OrderStatus.Accepted
+        };
+        (await gateway.GetOrderForRecoveryAsync("working-order", retained)).Should().NotBeNull(
+            "verified same-owner rows remain available for reconciliation after reconnect");
+    }
+}

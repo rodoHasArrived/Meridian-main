@@ -8,6 +8,9 @@ using Meridian.Contracts.Ledger;
 
 namespace Meridian.Instruments.AssetOperations;
 
+/// <summary>
+/// Maps corporate-action evidence into canonical asset accounting events.
+/// </summary>
 public interface ICorporateActionAssetAccountingEventMapper
 {
     CorporateActionAssetAccountingEventMapResult Map(CorporateActionAssetAccountingEventMapRequest request);

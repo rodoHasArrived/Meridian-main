@@ -4,6 +4,9 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Resolves reporting templates through the governed registry and evaluates caller access.
+/// </summary>
 public sealed class GovernedReportingTemplateCatalog : IReportingTemplateCatalog
 {
     private readonly IReportingTemplateCatalog _fallbackCatalog;

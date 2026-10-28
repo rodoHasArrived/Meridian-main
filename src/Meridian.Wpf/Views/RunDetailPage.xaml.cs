@@ -4,6 +4,9 @@ using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Provides the desktop page to review diagnostics and execution details for a selected run.
+/// </summary>
 public partial class RunDetailPage : Page
 {
     public RunDetailPage()

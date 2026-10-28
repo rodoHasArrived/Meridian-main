@@ -12,6 +12,7 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.DataIntegration.Credentials;
 
+/// <summary>Persists protected provider credentials and scoped OAuth tokens in the local credential vault.</summary>
 public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore, ILegacyProviderCredentialImporter, IScopedOAuthTokenVault
 {
     private static readonly ILogger Log = LoggingSetup.ForContext<FileProviderCredentialStore>();
@@ -149,6 +150,10 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
     public Task<string> SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request,
         ProviderCredentialReadResult expectedConnection, CancellationToken ct = default)
         => SaveCredentialsAsync(request, true, null, ct, expectedConnection);
+
+    public Task<string> SaveScopedRotatedCredentialsAsync(ProviderCredentialSaveRequest request, ProviderCredentialScope scope,
+        ProviderCredentialReadResult expectedConnection, CancellationToken ct = default)
+        => SaveCredentialsAsync(request, true, scope ?? throw new ArgumentNullException(nameof(scope)), ct, expectedConnection);
 
     private async Task<string> SaveCredentialsAsync(ProviderCredentialSaveRequest request, bool retainCurrentGenerationAsBackup,
         ProviderCredentialScope? scope, CancellationToken ct, ProviderCredentialReadResult? expectedConnection = null)

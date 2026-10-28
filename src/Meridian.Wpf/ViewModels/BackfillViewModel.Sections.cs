@@ -10,6 +10,9 @@ using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Groups backfill progress, scheduled and resumable jobs, gaps, and remediation queues for desktop binding.
+/// </summary>
 public sealed class BackfillWorkbenchSectionViewModel : BindableBase
 {
     private string _backfillStatusText = string.Empty;
@@ -88,6 +91,9 @@ public sealed class BackfillWorkbenchSectionViewModel : BindableBase
     public bool IsGapActionPanelVisible { get => _isGapActionPanelVisible; set => SetProperty(ref _isGapActionPanelVisible, value); }
 }
 
+/// <summary>
+/// Presents the most recent backfill API status and run outcome with visibility and styling state.
+/// </summary>
 public sealed class BackfillStatusSectionViewModel : BindableBase
 {
     private BackfillResultDto? _lastApiStatus;

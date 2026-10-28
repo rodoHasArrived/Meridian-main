@@ -4,6 +4,9 @@ using Meridian.Contracts.Ledger;
 
 namespace Meridian.Instruments.AssetOperations;
 
+/// <summary>
+/// Defines accounting previews and projections for corporate-action cases and canonical lots.
+/// </summary>
 public interface ICorporateActionAccountingProjectionService
 {
     CorporateActionAccountingProjectionDto Project(CorporateActionAccountingProjectionRequest request);

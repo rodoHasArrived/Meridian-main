@@ -1,5 +1,8 @@
 namespace Meridian.Mcp.Resources;
 
+/// <summary>
+/// Exposes provider scaffold files as MCP resources selected by provider component type.
+/// </summary>
 [McpServerResourceType]
 public sealed class TemplateResources(RepoPathService repo)
 {

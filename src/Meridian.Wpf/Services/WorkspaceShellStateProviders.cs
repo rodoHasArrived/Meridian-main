@@ -3,6 +3,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Provides the default shell-state construction shared by workspace-specific state providers.
+/// </summary>
 public abstract class WorkspaceShellStateProviderBase : IWorkspaceShellStateProvider
 {
     private readonly WorkstationOperatingContextService? _operatingContextService;
@@ -38,6 +41,9 @@ public abstract class WorkspaceShellStateProviderBase : IWorkspaceShellStateProv
     protected virtual bool HasPrimaryContext() => true;
 }
 
+/// <summary>
+/// Supplies the strategy workspace definition and shell state.
+/// </summary>
 public sealed class StrategyWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
 {
     private readonly StrategyRunWorkspaceService _runService;
@@ -69,6 +75,9 @@ public sealed class StrategyWorkspaceShellStateProvider : WorkspaceShellStatePro
     }
 }
 
+/// <summary>
+/// Supplies the trading workspace definition and shell state.
+/// </summary>
 public sealed class TradingWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
 {
     private readonly StrategyRunWorkspaceService _runService;
@@ -100,6 +109,9 @@ public sealed class TradingWorkspaceShellStateProvider : WorkspaceShellStateProv
     }
 }
 
+/// <summary>
+/// Supplies the data workspace definition and shell state.
+/// </summary>
 public sealed class DataWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
 {
     public DataWorkspaceShellStateProvider(WorkstationOperatingContextService? operatingContextService)
@@ -111,6 +123,9 @@ public sealed class DataWorkspaceShellStateProvider : WorkspaceShellStateProvide
         => ShellNavigationCatalog.GetWorkspaceShell("data")!;
 }
 
+/// <summary>
+/// Supplies the portfolio workspace definition and shell state.
+/// </summary>
 public sealed class PortfolioWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
 {
     private readonly FundContextService _fundContextService;
@@ -130,6 +145,9 @@ public sealed class PortfolioWorkspaceShellStateProvider : WorkspaceShellStatePr
         => base.GetLayoutScopeKey() ?? _fundContextService.CurrentFundProfile?.FundProfileId;
 }
 
+/// <summary>
+/// Supplies the accounting workspace definition and shell state.
+/// </summary>
 public sealed class AccountingWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
 {
     private readonly FundContextService _fundContextService;
@@ -152,6 +170,9 @@ public sealed class AccountingWorkspaceShellStateProvider : WorkspaceShellStateP
         => _fundContextService.CurrentFundProfile is not null;
 }
 
+/// <summary>
+/// Supplies the reporting workspace definition and shell state.
+/// </summary>
 public sealed class ReportingWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
 {
     private readonly FundContextService _fundContextService;
@@ -174,6 +195,9 @@ public sealed class ReportingWorkspaceShellStateProvider : WorkspaceShellStatePr
         => _fundContextService.CurrentFundProfile is not null;
 }
 
+/// <summary>
+/// Supplies the settings workspace definition and shell state.
+/// </summary>
 public sealed class SettingsWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
 {
     public SettingsWorkspaceShellStateProvider(WorkstationOperatingContextService? operatingContextService)

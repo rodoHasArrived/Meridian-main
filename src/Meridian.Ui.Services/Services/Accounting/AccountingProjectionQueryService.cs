@@ -4,6 +4,9 @@ using Meridian.FinancialOperations.AccountingClose;
 
 namespace Meridian.Ui.Services.Services.Accounting;
 
+/// <summary>
+/// Exposes dimension-scoped ledger balances, roll-forwards, source-linked audits, and close evidence projections.
+/// </summary>
 public interface IAccountingProjectionQueryService
 {
     ImmutableArray<TrialBalanceLine> GetTrialBalance(string ledgerId, LedgerDimensionSetDto? dimensions = null);
@@ -17,6 +20,9 @@ public interface IAccountingProjectionQueryService
         LedgerDimensionSetDto? dimensions = null);
 }
 
+/// <summary>
+/// Builds workstation accounting projections from replayed postings, close-state rules, and evidence packages.
+/// </summary>
 public sealed class AccountingProjectionQueryService : IAccountingProjectionQueryService
 {
     private readonly AccountingPostingService _postingService;

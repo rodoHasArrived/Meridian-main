@@ -11,6 +11,53 @@ last_reviewed: 2026-10-06
 
 # src/Meridian.Ui.Shared
 
+Source comparison requires a completed recovery checkpoint with matching run/import IDs, artifact hashes and counts, plus executed mapping proof shared by the import and match artifact. Failed or running recovery cannot clear observations. Named SLA calendars load once per host from DataRoot/reconciliation/sla-calendars.json; see the reconciliation operating procedure.
+An unfinished recovery refuses publication so the report workflow can retry after completion.
+Transaction lineage uses the retained external transaction identity; changed break classifications,
+mapped activity, symbols and currencies remain comparison evidence rather than forking its occurrence.
+
+Provider module status and connection tests select one complete credential record, matching runtime ownership. A retained partial or empty record cannot borrow mapped environment fields; only proven absence allows the separate mapped record. The compatibility vault adapter exposes record presence without exposing additional secrets.
+
+Replay file previews return an explicit empty JSON error response for malformed persisted events,
+including source file/line evidence, and distinguish active/unavailable captures from corruption.
+Quant Lab parameter discovery returns HTTP 400 when any globals `Param` metadata is incomplete;
+partial extraction cannot authorize the browser run command.
+
+Banking workspace balances, latest source transactions and statement dates use retained header,
+revision and sequence authority. Missing or ambiguous balances remain null. Provider bank cash-flow
+comparisons project complete authoritative statement revisions before summing; ambiguity produces an
+unavailable comparison instead of duplicated income. Governance cash-flow reads return HTTP 409 with
+an explicit evidence-unavailable problem when relevant statement authorities conflict.
+
+Legacy fund-account queue status, family-office reconciliation and workspace summaries consume the
+shared batched retained-result contract. Superseded failures and unverified checks do not count as
+active breaks; missing independent evidence still prevents queue sign-off. Family-office readers
+recognize the native verified `Matched` outcome while retaining blockers from other active scopes.
+Workspace account counts and reconciliation rows share one validated read cut. The reader brackets
+the batched result query with immutable, append-only run-history reads, retries a changed run set,
+and refuses persistent churn rather than publishing counts against different history. Report-pack
+summaries reuse that same captured evidence; they do not reread the run and break lists separately.
+
+Bank-statement CSV imports accept optional positive `line_sequence` and `statement_revision`
+columns. Missing sequences retain source file order; missing revisions use 1. Each file must have
+unique sequences and one revision, shared by manual uploads and scheduled feeds. Corrected files
+declare a higher revision. A file that declares `statement_revision` must also declare its
+statement date, through a `statement_date` column or the upload or schedule statement date,
+so a re-dated correction still supersedes the original. A declared statement date that differs from the date the
+file implies gives the import its own batch identity, so a corrected header can be re-imported
+with the same bytes. Provider shadow cash comparisons use the same statement authority as
+account reconciliation instead of choosing a balance from arrival order.
+
+`ProviderConnectionLifecycleService` verifies retained Xero, NetSuite and QuickBooks
+connections through credential-bound adapters. Each adapter reads and rotates only the
+selected connection's secrets; provider-wide credentials never supply scoped verification.
+Verification must match both the retained external account and current credential generation,
+and the lifecycle retains the authenticated operator identity once for the result.
+Xero tenant GUID formats and NetSuite account case/underscore aliases compare by provider
+identity; successful results retain the selected connection's exact external-account text.
+QuickBooks realms and other provider identities keep ordinal comparison, and vault ownership
+keys and exact ownership checks remain unchanged.
+
 Late-adjustment review requires the authenticated operator's built-in role or named role profile
 to match the review role retained on the adjustment's materiality policy, alongside ledger mutation
 permission and an independent requester/reviewer. Administrative mutation permission does not
@@ -236,6 +283,9 @@ with the requesting actor. Concurrent replacements reject stale results and retu
 a blocked verification response without changing the replacement's status. Alpaca applies the same
 generation check to both successful and failed tests, including scoped connections, deletion and
 recreation. A stale test cannot verify or attach an old error to the replacement credentials.
+When a scoped verifier rejects a malformed credential before reporting a generation, the lifecycle
+uses the generation it already read, so the validation failure is recorded instead of a
+spurious credential-change conflict.
 
 Strict tenant read posture also enables the fund-scoped write tenant gate. A multi-company
 deployment with permissive reads refuses startup even when PostgreSQL is configured; login and

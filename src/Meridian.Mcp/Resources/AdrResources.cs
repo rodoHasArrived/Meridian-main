@@ -1,6 +1,9 @@
 using Meridian.Core.Pipeline;
 namespace Meridian.Mcp.Resources;
 
+/// <summary>
+/// Exposes the architecture decision index and individual decision records as MCP resources.
+/// </summary>
 [McpServerResourceType]
 public sealed class AdrResources(RepoPathService repo)
 {

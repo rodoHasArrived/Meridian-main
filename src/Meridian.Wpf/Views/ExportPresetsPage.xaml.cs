@@ -4,6 +4,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Provides the desktop page to configure reusable export settings.
+/// </summary>
 public partial class ExportPresetsPage : Page
 {
     private readonly ExportPresetsViewModel _viewModel = new();

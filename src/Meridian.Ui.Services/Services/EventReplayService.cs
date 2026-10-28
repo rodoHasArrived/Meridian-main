@@ -263,17 +263,26 @@ public sealed class EventReplayService
 }
 
 
+/// <summary>
+/// Identifies a replay session and its newly reported playback state.
+/// </summary>
 public sealed class ReplayStateChangedEventArgs : EventArgs
 {
     public string SessionId { get; set; } = string.Empty;
     public ReplayState State { get; set; }
 }
 
+/// <summary>
+/// Supplies the replayed market-data event for an event notification.
+/// </summary>
 public sealed class ReplayEventArgs : EventArgs
 {
     public ReplayEvent? Event { get; set; }
 }
 
+/// <summary>
+/// Supplies replay-session event counts, completion percentage, elapsed time, and remaining time.
+/// </summary>
 public sealed class ReplayProgressEventArgs : EventArgs
 {
     public string SessionId { get; set; } = string.Empty;
@@ -286,6 +295,9 @@ public sealed class ReplayProgressEventArgs : EventArgs
 
 
 
+/// <summary>
+/// Reports replay-file query success and the available source files.
+/// </summary>
 public sealed class ReplayFilesResult
 {
     public bool Success { get; set; }
@@ -293,6 +305,9 @@ public sealed class ReplayFilesResult
     public List<ReplayFileInfo> Files { get; set; } = new();
 }
 
+/// <summary>
+/// Describes a replay source file's symbol, event type, date, size, and compression state.
+/// </summary>
 public sealed class ReplayFileInfo
 {
     public string Path { get; set; } = string.Empty;
@@ -305,6 +320,9 @@ public sealed class ReplayFileInfo
     public bool IsCompressed { get; set; }
 }
 
+/// <summary>
+/// Selects replay sources and controls playback speed, timing preservation, and event-bus publication.
+/// </summary>
 public sealed class ReplayOptions
 {
     public string? FilePath { get; set; }
@@ -317,6 +335,9 @@ public sealed class ReplayOptions
     public bool PreserveTiming { get; set; } = true;
 }
 
+/// <summary>
+/// Reports replay-start success, session identity, event count, and estimated duration.
+/// </summary>
 public sealed class ReplayStartResult
 {
     public bool Success { get; set; }
@@ -326,6 +347,9 @@ public sealed class ReplayStartResult
     public TimeSpan EstimatedDuration { get; set; }
 }
 
+/// <summary>
+/// Describes a replay session's current state, playback position, speed, and progress.
+/// </summary>
 public sealed class ReplayStatus
 {
     public ReplayState State { get; set; }
@@ -350,6 +374,9 @@ public enum ReplayState : byte
     Error
 }
 
+/// <summary>
+/// Reports preview-query success, returned replay events, and total event count.
+/// </summary>
 public sealed class EventPreviewResult
 {
     public bool Success { get; set; }
@@ -358,6 +385,9 @@ public sealed class EventPreviewResult
     public long TotalCount { get; set; }
 }
 
+/// <summary>
+/// Carries a timestamped symbol event and its serialized payload for replay.
+/// </summary>
 public sealed class ReplayEvent
 {
     public string EventType { get; set; } = string.Empty;
@@ -366,6 +396,9 @@ public sealed class ReplayEvent
     public string? Data { get; set; }
 }
 
+/// <summary>
+/// Summarizes a replay file's event counts, time bounds, and event-type distribution.
+/// </summary>
 public sealed class ReplayFileStats
 {
     public long EventCount { get; set; }
@@ -377,11 +410,17 @@ public sealed class ReplayFileStats
 
 
 
+/// <summary>
+/// Carries the API collection of available replay source files.
+/// </summary>
 public sealed class ReplayFilesResponse
 {
     public List<ReplayFileInfo>? Files { get; set; }
 }
 
+/// <summary>
+/// Carries API replay-session identity, total events, and estimated duration in seconds.
+/// </summary>
 public sealed class ReplayStartResponse
 {
     public string? SessionId { get; set; }
@@ -389,6 +428,9 @@ public sealed class ReplayStartResponse
     public double EstimatedDurationSeconds { get; set; }
 }
 
+/// <summary>
+/// Carries API preview events and the total available event count.
+/// </summary>
 public sealed class EventPreviewResponse
 {
     public List<ReplayEvent>? Events { get; set; }

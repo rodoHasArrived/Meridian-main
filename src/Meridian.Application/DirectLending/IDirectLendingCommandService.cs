@@ -2,6 +2,9 @@ using Meridian.Contracts.DirectLending;
 
 namespace Meridian.Application.DirectLending;
 
+/// <summary>
+/// Defines loan lifecycle and servicing commands with explicit command results and metadata.
+/// </summary>
 public interface IDirectLendingCommandService
 {
     Task<DirectLendingCommandResult<bool>> PublishAssetOperationsAsync(Guid loanId, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);

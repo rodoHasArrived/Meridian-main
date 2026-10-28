@@ -218,6 +218,9 @@ public sealed partial class SettingsViewModel
         => string.IsNullOrWhiteSpace(value) ? "-" : value.Trim();
 }
 
+/// <summary>
+/// Presents an approval policy's workflow, action, gate, trigger, and permission requirements.
+/// </summary>
 public sealed class SettingsOperationsApprovalPolicyRow
 {
     public SettingsOperationsApprovalPolicyRow(OperationsApprovalPolicyMatrixRowDto row)
@@ -287,6 +290,9 @@ public sealed class SettingsOperationsApprovalPolicyRow
         => SettingsViewModel.FormatOptional(value);
 }
 
+/// <summary>
+/// Presents a close-calendar item's scope, status, due date, owner, and related workflow.
+/// </summary>
 public sealed class SettingsOperationsCloseCalendarRow
 {
     public SettingsOperationsCloseCalendarRow(OperationsCloseCalendarItemDto item)

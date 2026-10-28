@@ -6,6 +6,7 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.Strategies.Services;
 
+/// <summary>Values a shadow book and returns its comparison results and verified operation outcome.</summary>
 public interface IShadowBookValuationService
 {
     Task<ShadowBookValuationResult> RunAsync(ShadowBookValuationRequest request, CancellationToken ct = default);
@@ -36,6 +37,7 @@ public sealed record ShadowBookValuationResult(
     ReconciliationBreakQueueItem? EmittedBreak,
     VerifiedOperationOutcome Outcome);
 
+/// <summary>Values shadow-book positions, retains run snapshots, and queues variance breaks against configured thresholds.</summary>
 public sealed class ShadowBookValuationService : IShadowBookValuationService
 {
     private const string OperationKind = "strategy.shadow-book-valuation";

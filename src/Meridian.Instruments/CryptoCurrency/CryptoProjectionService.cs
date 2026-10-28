@@ -3,6 +3,10 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Instruments.CryptoCurrency;
 
+/// <summary>
+/// Reads cryptocurrency reference projections and combines them with canonical Security Master
+/// data.
+/// </summary>
 public sealed class CryptoProjectionService
     : InstrumentProjectionServiceBase<CryptoProjectionRow, CryptoReferenceDto>, ICryptoReferenceService
 {
@@ -38,6 +42,9 @@ public sealed class CryptoProjectionService
             row.Version);
 }
 
+/// <summary>
+/// Returns absent or empty cryptocurrency reference data when the reference service is unavailable.
+/// </summary>
 public sealed class NullCryptoReferenceService : ICryptoReferenceService
 {
     public Task<CryptoReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)

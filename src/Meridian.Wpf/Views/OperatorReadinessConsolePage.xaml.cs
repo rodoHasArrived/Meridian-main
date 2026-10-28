@@ -5,6 +5,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Hosts operator readiness checks and the resulting blockers and next actions.
+/// </summary>
 public partial class OperatorReadinessConsolePage : Page
 {
     private readonly OperatorReadinessConsoleViewModel _viewModel;

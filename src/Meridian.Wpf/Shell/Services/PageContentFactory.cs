@@ -4,6 +4,9 @@ using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Shell.Services;
 
+/// <summary>
+/// Resolves desktop page types, creates their content, and applies navigation parameters and presentation mode.
+/// </summary>
 public sealed class PageContentFactory : IPageContentFactory
 {
     private readonly NavigationService _navigationService;

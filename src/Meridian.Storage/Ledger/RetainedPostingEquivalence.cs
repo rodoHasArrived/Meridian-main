@@ -79,7 +79,7 @@ public static class RetainedPostingEquivalence
         if (!string.Equals(retainedEntry.Description, candidateEntry.Description, StringComparison.Ordinal))
             return Differs("journal description", out difference);
 
-        if (MetadataDifference(retainedEntry.Metadata.Normalize(), candidateEntry.Metadata.Normalize())
+        if (MetadataDifference(retainedEntry, candidateEntry)
             is { } metadataDifference)
         {
             return Differs(metadataDifference, out difference);
@@ -146,8 +146,10 @@ public static class RetainedPostingEquivalence
     /// stamp nor the merged entries and comparing the list would reject ordinary retries.
     /// </para>
     /// </summary>
-    private static string? MetadataDifference(JournalEntryMetadata retained, JournalEntryMetadata candidate)
+    private static string? MetadataDifference(JournalEntry retainedEntry, JournalEntry candidateEntry)
     {
+        var retained = retainedEntry.Metadata.Normalize();
+        var candidate = candidateEntry.Metadata.Normalize();
         if (!TextMatches(retained.ActivityType, candidate.ActivityType))
             return "activity type";
         if (!TextMatches(retained.Symbol, candidate.Symbol))
@@ -190,7 +192,7 @@ public static class RetainedPostingEquivalence
             return "payment intent";
         if (!TextMatches(retained.SettlementReference, candidate.SettlementReference))
             return "settlement reference";
-        return TagsDifference(retained.Tags, candidate.Tags);
+        return TagsDifference(retainedEntry, candidateEntry);
     }
 
     /// <summary>
@@ -209,15 +211,27 @@ public static class RetainedPostingEquivalence
                StringComparison.OrdinalIgnoreCase);
 
     private static string? TagsDifference(
-        IReadOnlyDictionary<string, string>? retained,
-        IReadOnlyDictionary<string, string>? candidate)
+        JournalEntry retained,
+        JournalEntry candidate)
     {
-        var retainedTags = ComparableTags(retained);
-        var candidateTags = ComparableTags(candidate);
+        var retainedTags = ComparableTags(retained.Metadata.Tags);
+        var candidateTags = ComparableTags(candidate.Metadata.Tags);
+        try
+        {
+            ReplaceCashFlowKeysWithValidatedTokens(retained, retainedTags);
+            ReplaceCashFlowKeysWithValidatedTokens(candidate, candidateTags);
+        }
+        catch (LedgerValidationException)
+        {
+            return "cash-flow attribution";
+        }
 
         foreach (var (key, retainedValue) in retainedTags)
         {
-            if (!candidateTags.TryGetValue(key, out var candidateValue) || !TextMatches(retainedValue, candidateValue))
+            if (!candidateTags.TryGetValue(key, out var candidateValue)
+                || (key.StartsWith("cash-flow.", StringComparison.OrdinalIgnoreCase)
+                    ? !string.Equals(retainedValue, candidateValue, StringComparison.Ordinal)
+                    : !TextMatches(retainedValue, candidateValue)))
                 return $"tag '{key}'";
         }
 
@@ -228,6 +242,15 @@ public static class RetainedPostingEquivalence
         }
 
         return null;
+    }
+
+    private static void ReplaceCashFlowKeysWithValidatedTokens(JournalEntry entry, Dictionary<string, string> comparable)
+    {
+        var tokens = LedgerCashFlowAttribution.GetComparisonTokens(entry);
+        foreach (var key in comparable.Keys.Where(key => key.StartsWith("cash-flow.", StringComparison.OrdinalIgnoreCase)).ToArray())
+            comparable.Remove(key);
+        foreach (var token in tokens)
+            comparable.Add(token.Key, token.Value);
     }
 
     private static Dictionary<string, string> ComparableTags(IReadOnlyDictionary<string, string>? tags)

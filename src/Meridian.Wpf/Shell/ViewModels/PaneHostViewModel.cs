@@ -6,6 +6,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Shell.ViewModels;
 
+/// <summary>
+/// Manages pane layout, active pane, page assignments, and content changes caused by pane drops.
+/// </summary>
 public partial class PaneHostViewModel : BindableBase
 {
     private readonly IShellRouteRegistry _routeRegistry;

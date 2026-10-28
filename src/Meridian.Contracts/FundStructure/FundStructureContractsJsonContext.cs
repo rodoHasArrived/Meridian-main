@@ -2,6 +2,9 @@ using System.Text.Json.Serialization;
 
 namespace Meridian.Contracts.FundStructure;
 
+/// <summary>
+/// Provides source-generated JSON metadata for fund structure, account, reconciliation, and setup contracts.
+/// </summary>
 [JsonSourceGenerationOptions(
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     PropertyNameCaseInsensitive = true,

@@ -27,6 +27,9 @@ using IDataWorkspaceShellSnapshotService = Meridian.Wpf.Features.Data.Shell.IDat
 
 namespace Meridian.Wpf.Features.Data;
 
+/// <summary>
+/// Registers data desktop services and contributes the feature's navigation pages and workspace metadata.
+/// </summary>
 public sealed class DataFeatureModule : IDesktopFeatureModule
 {
     private static IReadOnlyList<string> LegacyDataShellAliases =>

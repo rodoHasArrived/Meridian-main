@@ -5,6 +5,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Displays searchable shell commands and handles keyboard selection and activation.
+/// </summary>
 public partial class InstitutionalCommandPaletteControl : UserControl
 {
     public InstitutionalCommandPaletteControl()

@@ -3,6 +3,9 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Builds investment-accounting transaction lab scenarios and expected journal previews.
+/// </summary>
 public sealed class InvestmentAccountingTransactionLabService
 {
     public InvestmentAccountingTransactionLabPreviewDto Preview(InvestmentAccountingTransactionLabRequestDto request)

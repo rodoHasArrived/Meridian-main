@@ -6,6 +6,9 @@ using Serilog;
 
 namespace Meridian.Application.Commands;
 
+/// <summary>
+/// Handles CLI requests to validate or commit broker statement imports.
+/// </summary>
 public sealed class StatementImportCommands(
     IStatementImportCommitService importCommitService,
     ILogger log) : ICliCommand

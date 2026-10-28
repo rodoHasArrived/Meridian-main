@@ -3,6 +3,7 @@ using Meridian.Domain.Events;
 
 namespace Meridian.DataIntegration.Filters;
 
+/// <summary>Matches market events against optional symbol, event-type, and tier criteria.</summary>
 public sealed class MarketEventFilter
 {
     public string? Symbol { get; init; }

@@ -4,6 +4,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Hosts the desktop startup and authentication view.
+/// </summary>
 public partial class StartupWindow : Window
 {
     private readonly StartupWindowViewModel _viewModel;

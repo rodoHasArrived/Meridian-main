@@ -174,6 +174,9 @@ public sealed class ProductionRegistrationGuardService : IHostedService
     }
 }
 
+/// <summary>
+/// Registers the hosted guard that validates the final production service graph at startup.
+/// </summary>
 public static class ProductionRegistrationGuardServiceCollectionExtensions
 {
     /// <summary>

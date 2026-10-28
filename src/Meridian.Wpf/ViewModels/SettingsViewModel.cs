@@ -903,6 +903,9 @@ public sealed partial class SettingsViewModel : BindableBase
     }
 }
 
+/// <summary>
+/// Binds a feature capability descriptor to its current enabled state and toggle availability.
+/// </summary>
 public sealed class FeatureCapabilityToggleViewModel : BindableBase
 {
     private readonly IFeatureCapabilityGate _gate;

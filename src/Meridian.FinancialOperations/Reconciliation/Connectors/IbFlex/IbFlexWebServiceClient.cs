@@ -5,6 +5,9 @@ using System.Xml.Linq;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors.IbFlex;
 
+/// <summary>
+/// Fetches Interactive Brokers Flex statement payloads for the configured query request.
+/// </summary>
 public interface IIbFlexWebServiceClient
 {
     Task<ReadOnlyMemory<byte>> FetchStatementAsync(

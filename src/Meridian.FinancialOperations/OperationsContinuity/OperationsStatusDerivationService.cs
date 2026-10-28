@@ -3,11 +3,17 @@ using Meridian.FSharp.Operations;
 
 namespace Meridian.FinancialOperations.OperationsContinuity;
 
+/// <summary>
+/// Derives workflow status from operations continuity state and control evidence.
+/// </summary>
 public interface IOperationsStatusDerivationService
 {
     OperationsWorkflowStatusDto Derive(OperationsContinuityWorkflow workflow);
 }
 
+/// <summary>
+/// Calculates workflow status from retained operations state and control evidence.
+/// </summary>
 public sealed class OperationsStatusDerivationService : IOperationsStatusDerivationService
 {
     public OperationsWorkflowStatusDto Derive(OperationsContinuityWorkflow workflow)

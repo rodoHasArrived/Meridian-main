@@ -19,6 +19,9 @@ namespace Meridian.Application.SecurityMaster;
 // Query service (read-only) — returns null / empty so endpoint callers see 404
 // ──────────────────────────────────────────────────────────────────────────────
 
+/// <summary>
+/// Reports Security Master unavailability and returns empty query results.
+/// </summary>
 public sealed class NullSecurityMasterQueryService
     : ISecurityMasterQueryService,
       ISecurityMasterRuntimeStatus
@@ -98,6 +101,9 @@ public sealed class NullSecurityMasterQueryService
 // Command service — throws when Security Master is not configured
 // ──────────────────────────────────────────────────────────────────────────────
 
+/// <summary>
+/// Rejects security mutations when the Security Master service is unavailable.
+/// </summary>
 public sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMaster.ISecurityMasterService, Meridian.Contracts.SecurityMaster.ISecurityMasterAmender
 {
     private static Task<T> NotConfigured<T>() =>
@@ -129,6 +135,9 @@ public sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMaste
         => NotConfigured<SecurityAliasDto>();
 }
 
+/// <summary>
+/// Rejects corporate-action appends when their command service is unavailable.
+/// </summary>
 public sealed class NullCorporateActionCommandService : ICorporateActionCommandService
 {
     public Task<CorporateActionAppendResult> AppendAsync(
@@ -142,6 +151,9 @@ public sealed class NullCorporateActionCommandService : ICorporateActionCommandS
             "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable this feature."));
 }
 
+/// <summary>
+/// Rejects Security Master corporate-action appends when command storage is unavailable.
+/// </summary>
 public sealed class NullSecurityMasterCorporateActionCommandService : ISecurityMasterCorporateActionCommandService
 {
     public Task<SecurityMasterCorporateActionAppendResultDto> AppendAsync(
@@ -152,6 +164,9 @@ public sealed class NullSecurityMasterCorporateActionCommandService : ISecurityM
             "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable corporate action appends."));
 }
 
+/// <summary>
+/// Rejects corporate-action operations when the operations service is unavailable.
+/// </summary>
 public sealed class NullCorporateActionOperationsService : ICorporateActionOperationsService
 {
     private static Task<T> NotConfigured<T>() =>
@@ -208,6 +223,9 @@ public sealed class NullCorporateActionOperationsService : ICorporateActionOpera
         NotConfigured<CorporateActionCaseTransitionResultDto>();
 }
 
+/// <summary>
+/// Rejects corporate-action accounting mutations when the accounting service is unavailable.
+/// </summary>
 public sealed class NullCorporateActionCaseAccountingService : ICorporateActionCaseAccountingService
 {
     private static Task<T> NotConfigured<T>() =>
@@ -257,6 +275,9 @@ internal sealed class NullSecurityMasterConflictService : ISecurityMasterConflic
 // Import service — returns error result when Security Master is not configured
 // ──────────────────────────────────────────────────────────────────────────────
 
+/// <summary>
+/// Reports an unavailable Security Master import service and refuses imports.
+/// </summary>
 public sealed class NullSecurityMasterImportService : ISecurityMasterImportService, ISecurityMasterIngestStatusService
 {
     public SecurityMasterIngestStatusSnapshot GetSnapshot()

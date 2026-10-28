@@ -6,6 +6,9 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.Ledger;
 
+/// <summary>
+/// Defines creation and resolution of accounting policies and authority leases for consolidation.
+/// </summary>
 public interface IAccountingPolicyService
 {
     Task<AccountingPolicyDto> CreatePolicyAsync(CreateAccountingPolicyRequest request, CancellationToken ct = default);
@@ -20,6 +23,9 @@ public interface IAccountingPolicyService
     Task<IReadOnlyList<AccountingPolicyDto>> ListPoliciesAsync(AccountingBasisKindDto? accountingBasis = null, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Projects an accounting request into basis-specific journal results.
+/// </summary>
 public interface IAccountingBasisProjectionService
 {
     Task<AccountingBasisProjectionResult> ProjectAsync(AccountingBasisProjectionRequest request, CancellationToken ct = default);
@@ -51,6 +57,9 @@ public sealed record AccountingBasisProjectionResult(
     AccountingPolicyDto Policy,
     LedgerJournalEntryWrite Write);
 
+/// <summary>
+/// Maintains accounting policies and resolves applicable rules under mutation and authority leases.
+/// </summary>
 public sealed class AccountingPolicyService : IAccountingPolicyService
 {
     private readonly ConcurrentDictionary<string, AccountingPolicyDto> _policies = new(StringComparer.OrdinalIgnoreCase);
@@ -301,6 +310,9 @@ public sealed class AccountingPolicyService : IAccountingPolicyService
     }
 }
 
+/// <summary>
+/// Builds accounting-basis projections using the resolved accounting policy.
+/// </summary>
 public sealed class AccountingBasisProjectionService(IAccountingPolicyService accountingPolicyService) : IAccountingBasisProjectionService
 {
     private readonly IAccountingPolicyService _accountingPolicyService =

@@ -2,6 +2,9 @@ using Meridian.Storage.Archival;
 
 namespace Meridian.Storage.FundStructure;
 
+/// <summary>
+/// Loads fund structure state from a JSON file and saves it using atomic file replacement.
+/// </summary>
 public sealed class JsonFileFundStructureStateStore : IFundStructureStateStore
 {
     private readonly string _path;

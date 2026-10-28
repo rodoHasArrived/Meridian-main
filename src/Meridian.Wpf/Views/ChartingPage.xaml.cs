@@ -4,6 +4,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Provides the desktop page to review price and signal charts for selected strategies.
+/// </summary>
 public partial class ChartingPage : Page
 {
     private readonly ChartingPageViewModel _viewModel;

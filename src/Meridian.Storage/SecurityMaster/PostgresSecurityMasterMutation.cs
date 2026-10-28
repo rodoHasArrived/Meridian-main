@@ -207,6 +207,9 @@ public static class PostgresSecurityMasterMutation
         public SemaphoreSlim ConnectionGate { get; } = new(1, 1);
     }
 
+    /// <summary>
+    /// Holds a mutation connection and optional transaction, releasing its gate and any owned connection on disposal.
+    /// </summary>
     public sealed class ConnectionLease(NpgsqlConnection connection, bool ownsConnection,
         NpgsqlTransaction? transaction = null, SemaphoreSlim? gate = null) : IAsyncDisposable
     {
@@ -220,6 +223,9 @@ public static class PostgresSecurityMasterMutation
     }
 }
 
+/// <summary>
+/// Signals a concurrent change to a security's governed mutation state.
+/// </summary>
 public sealed class SecurityMasterMutationConflictException(Guid securityId)
     : InvalidOperationException($"Security Master edits for '{securityId:D}' changed on another instance. Reload and retry.")
 {

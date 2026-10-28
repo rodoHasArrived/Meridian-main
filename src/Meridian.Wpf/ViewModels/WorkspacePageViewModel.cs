@@ -10,6 +10,9 @@ using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Presents a saved workspace's identity, description, pages, active state, and deletion eligibility.
+/// </summary>
 public sealed class WorkspaceListItemViewModel : BindableBase
 {
     private bool _isActive;
@@ -33,6 +36,9 @@ public sealed class WorkspaceListItemViewModel : BindableBase
     }
 }
 
+/// <summary>
+/// Coordinates saved workspace creation, activation, deletion, export, capture, and session restoration.
+/// </summary>
 public sealed class WorkspacePageViewModel : BindableBase, IDisposable
 {
     private const string SuccessColor = "#3FB950";

@@ -364,6 +364,9 @@ public sealed class LeanIntegrationService
 }
 
 
+/// <summary>
+/// Supplies a backtest's identity, execution state, and progress for status notifications.
+/// </summary>
 public sealed class BacktestStatusChangedEventArgs : EventArgs
 {
     public string BacktestId { get; set; } = string.Empty;
@@ -373,6 +376,9 @@ public sealed class BacktestStatusChangedEventArgs : EventArgs
 
 
 
+/// <summary>
+/// Describes Lean installation, configuration, version, and data synchronization status.
+/// </summary>
 public sealed class LeanStatus
 {
     public bool IsInstalled { get; set; }
@@ -383,6 +389,9 @@ public sealed class LeanStatus
     public int SymbolsSynced { get; set; }
 }
 
+/// <summary>
+/// Configures Lean executable, data and result paths, synchronization, and default resolution.
+/// </summary>
 public sealed class LeanConfiguration
 {
     public string? LeanPath { get; set; }
@@ -393,6 +402,9 @@ public sealed class LeanConfiguration
     public List<string>? SyncSymbols { get; set; }
 }
 
+/// <summary>
+/// Carries optional changes to Lean paths, synchronization settings, and default resolution.
+/// </summary>
 public sealed class LeanConfigurationUpdate
 {
     public string? LeanPath { get; set; }
@@ -403,6 +415,9 @@ public sealed class LeanConfigurationUpdate
     public List<string>? SyncSymbols { get; set; }
 }
 
+/// <summary>
+/// Reports Lean installation verification details with configuration errors and warnings.
+/// </summary>
 public sealed class LeanVerificationResult
 {
     public bool Success { get; set; }
@@ -415,6 +430,9 @@ public sealed class LeanVerificationResult
 
 
 
+/// <summary>
+/// Describes a Lean algorithm file's name, language, modification time, and validity.
+/// </summary>
 public sealed class AlgorithmInfo
 {
     public string Name { get; set; } = string.Empty;
@@ -424,6 +442,9 @@ public sealed class AlgorithmInfo
     public bool IsValid { get; set; }
 }
 
+/// <summary>
+/// Reports algorithm-discovery success and the available Lean algorithm files.
+/// </summary>
 public sealed class AlgorithmListResult
 {
     public bool Success { get; set; }
@@ -433,6 +454,9 @@ public sealed class AlgorithmListResult
 
 
 
+/// <summary>
+/// Selects symbols, dates, resolution, and overwrite behavior for Lean data synchronization.
+/// </summary>
 public sealed class DataSyncOptions
 {
     public List<string>? Symbols { get; set; }
@@ -442,6 +466,9 @@ public sealed class DataSyncOptions
     public bool Overwrite { get; set; }
 }
 
+/// <summary>
+/// Reports synchronization success, symbols processed, files created, bytes written, and errors.
+/// </summary>
 public sealed class DataSyncResult
 {
     public bool Success { get; set; }
@@ -451,6 +478,9 @@ public sealed class DataSyncResult
     public List<string> Errors { get; set; } = new();
 }
 
+/// <summary>
+/// Describes an active data synchronization's progress and current symbol.
+/// </summary>
 public sealed class DataSyncStatus
 {
     public bool IsSyncing { get; set; }
@@ -462,6 +492,9 @@ public sealed class DataSyncStatus
 
 
 
+/// <summary>
+/// Selects a Lean algorithm, test dates, initial capital, and algorithm parameters.
+/// </summary>
 public sealed class BacktestOptions
 {
     public string? AlgorithmPath { get; set; }
@@ -472,6 +505,9 @@ public sealed class BacktestOptions
     public Dictionary<string, string>? Parameters { get; set; }
 }
 
+/// <summary>
+/// Reports whether a Lean backtest started and the resulting backtest identity.
+/// </summary>
 public sealed class BacktestStartResult
 {
     public bool Success { get; set; }
@@ -479,6 +515,9 @@ public sealed class BacktestStartResult
     public string? BacktestId { get; set; }
 }
 
+/// <summary>
+/// Describes a backtest's execution state, progress, simulated date, elapsed time, and error.
+/// </summary>
 public sealed class BacktestStatus
 {
     public string? BacktestId { get; set; }
@@ -500,6 +539,9 @@ public enum BacktestState : byte
     Cancelled
 }
 
+/// <summary>
+/// Groups backtest performance metrics, trades, and the equity curve for a run.
+/// </summary>
 public sealed class BacktestResults
 {
     public string? BacktestId { get; set; }
@@ -519,6 +561,9 @@ public sealed class BacktestResults
     public List<EquityPoint>? EquityCurve { get; set; }
 }
 
+/// <summary>
+/// Describes a completed backtest trade's entry, exit, size, prices, and realized return.
+/// </summary>
 public sealed class BacktestTradeRecord
 {
     public string Symbol { get; set; } = string.Empty;
@@ -532,12 +577,18 @@ public sealed class BacktestTradeRecord
     public decimal ReturnPercent { get; set; }
 }
 
+/// <summary>
+/// Records portfolio equity at one date in a backtest equity curve.
+/// </summary>
 public sealed class EquityPoint
 {
     public DateTime Date { get; set; }
     public decimal Equity { get; set; }
 }
 
+/// <summary>
+/// Describes a historical backtest's algorithm, execution times, state, and headline performance.
+/// </summary>
 public sealed class BacktestSummary
 {
     public string BacktestId { get; set; } = string.Empty;
@@ -549,6 +600,9 @@ public sealed class BacktestSummary
     public decimal? SharpeRatio { get; set; }
 }
 
+/// <summary>
+/// Reports backtest-history query success and the retained run summaries.
+/// </summary>
 public sealed class BacktestHistoryResult
 {
     public bool Success { get; set; }
@@ -558,6 +612,9 @@ public sealed class BacktestHistoryResult
 
 
 
+/// <summary>
+/// Carries API Lean installation validity, paths, version, errors, and warnings.
+/// </summary>
 public sealed class LeanVerificationResponse
 {
     public bool IsValid { get; set; }
@@ -568,11 +625,17 @@ public sealed class LeanVerificationResponse
     public string[]? Warnings { get; set; }
 }
 
+/// <summary>
+/// Carries the API collection of discovered Lean algorithms.
+/// </summary>
 public sealed class AlgorithmListResponse
 {
     public List<AlgorithmInfo>? Algorithms { get; set; }
 }
 
+/// <summary>
+/// Carries API synchronization outcomes, file counts, written bytes, and errors.
+/// </summary>
 public sealed class DataSyncResponse
 {
     public bool Success { get; set; }
@@ -582,11 +645,17 @@ public sealed class DataSyncResponse
     public string[]? Errors { get; set; }
 }
 
+/// <summary>
+/// Carries the API identity assigned to a newly started backtest.
+/// </summary>
 public sealed class BacktestStartResponse
 {
     public string? BacktestId { get; set; }
 }
 
+/// <summary>
+/// Carries the API collection of historical backtest summaries.
+/// </summary>
 public sealed class BacktestHistoryResponse
 {
     public List<BacktestSummary>? Backtests { get; set; }
@@ -594,6 +663,9 @@ public sealed class BacktestHistoryResponse
 
 
 
+/// <summary>
+/// Describes scheduled Lean export availability, configuration, totals, and the latest success or error.
+/// </summary>
 public sealed class LeanAutoExportStatus
 {
     public bool Available { get; set; }
@@ -607,6 +679,9 @@ public sealed class LeanAutoExportStatus
     public long TotalBytesExported { get; set; }
 }
 
+/// <summary>
+/// Configures scheduled Lean exports, their destination, interval, and symbol selection.
+/// </summary>
 public sealed class LeanAutoExportConfigureOptions
 {
     public bool? Enabled { get; set; }
@@ -617,6 +692,9 @@ public sealed class LeanAutoExportConfigureOptions
 
 
 
+/// <summary>
+/// Reports ingestion of Lean results with run identity and imported headline performance.
+/// </summary>
 public sealed class LeanResultsIngestResult
 {
     public bool Success { get; set; }
@@ -631,6 +709,9 @@ public sealed class LeanResultsIngestResult
 
 
 
+/// <summary>
+/// Maps a Meridian symbol to a Lean ticker, security type, and market.
+/// </summary>
 public sealed class LeanSymbolMapping
 {
     public string MdcSymbol { get; set; } = string.Empty;
@@ -639,6 +720,9 @@ public sealed class LeanSymbolMapping
     public string Market { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Groups symbol mappings and their total count for Lean integration.
+/// </summary>
 public sealed class LeanSymbolMappingResult
 {
     public List<LeanSymbolMapping> Mappings { get; set; } = new();

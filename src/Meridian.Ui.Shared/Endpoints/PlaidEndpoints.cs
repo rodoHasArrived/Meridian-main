@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps Plaid linking, account discovery, and synchronization operations to HTTP endpoints.
+/// </summary>
 public static class PlaidEndpoints
 {
     public static void MapPlaidEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)

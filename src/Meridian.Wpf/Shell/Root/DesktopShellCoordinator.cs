@@ -9,6 +9,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Wpf.Shell.Root;
 
+/// <summary>
+/// Prepares the operating context used when opening the desktop shell.
+/// </summary>
 public sealed class DesktopShellCoordinator
 {
     private readonly DesktopShellSessionService _sessionService;

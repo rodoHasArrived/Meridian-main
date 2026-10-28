@@ -42,6 +42,9 @@ public sealed record StatementFetchScheduleSnapshot(
 [JsonSerializable(typeof(StatementFetchScheduleSnapshot))]
 internal sealed partial class StatementFetchScheduleJsonContext : JsonSerializerContext;
 
+/// <summary>
+/// Maintains statement fetch schedules and records their run and failure outcomes.
+/// </summary>
 public interface IStatementFetchScheduleStore
 {
     Task<IReadOnlyList<StatementFetchSchedule>> ListAsync(CancellationToken ct = default);

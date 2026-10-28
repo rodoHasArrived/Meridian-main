@@ -298,12 +298,18 @@ public sealed class MessagingHubViewModel : BindableBase, IDisposable
     public void Dispose() => Stop();
 
     // ── Nested display item types ────────────────────────────────────────────
+    /// <summary>
+    /// Presents a messaging-hub message type and its formatted occurrence count.
+    /// </summary>
     public sealed class MessageTypeItem
     {
         public string TypeName { get; set; } = string.Empty;
         public string CountText { get; set; } = string.Empty;
     }
 
+    /// <summary>
+    /// Presents a messaging-hub activity's direction, type, detail, and timestamp.
+    /// </summary>
     public sealed class ActivityItem
     {
         public string DirectionIcon { get; set; } = string.Empty;

@@ -119,6 +119,9 @@ internal static class CookieCsrfProtection
     }
 }
 
+/// <summary>
+/// Rejects requests that fail cookie-session CSRF validation before invoking the next middleware.
+/// </summary>
 public sealed class CookieCsrfMiddleware(RequestDelegate next)
 {
     public async Task InvokeAsync(HttpContext context)
@@ -136,6 +139,9 @@ public sealed class CookieCsrfMiddleware(RequestDelegate next)
     }
 }
 
+/// <summary>
+/// Registers cookie-session CSRF validation in the HTTP request pipeline.
+/// </summary>
 public static class CookieCsrfMiddlewareExtensions
 {
     public static IApplicationBuilder UseCookieCsrfProtection(this IApplicationBuilder app)

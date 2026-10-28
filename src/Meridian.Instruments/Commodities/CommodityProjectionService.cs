@@ -3,6 +3,9 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Instruments.Commodities;
 
+/// <summary>
+/// Reads commodity reference projections and combines them with canonical Security Master data.
+/// </summary>
 public sealed class CommodityProjectionService
     : InstrumentProjectionServiceBase<CommodityProjectionRow, CommodityReferenceDto>, ICommodityReferenceService
 {
@@ -41,6 +44,9 @@ public sealed class CommodityProjectionService
             row.Version);
 }
 
+/// <summary>
+/// Returns absent or empty commodity reference data when the reference service is unavailable.
+/// </summary>
 public sealed class NullCommodityReferenceService : ICommodityReferenceService
 {
     public Task<CommodityReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)

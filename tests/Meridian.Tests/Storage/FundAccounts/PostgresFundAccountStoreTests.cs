@@ -16,7 +16,7 @@ namespace Meridian.Tests.Storage.FundAccounts;
 /// across tenants, or lost in the SQL layer.
 /// </summary>
 [Trait("Category", "Integration")]
-public sealed class PostgresFundAccountStoreTests : IClassFixture<FundAccountDatabaseFixture>
+public sealed partial class PostgresFundAccountStoreTests : IClassFixture<FundAccountDatabaseFixture>
 {
     private readonly FundAccountDatabaseFixture _fixture;
 
@@ -27,6 +27,75 @@ public sealed class PostgresFundAccountStoreTests : IClassFixture<FundAccountDat
 
     private PostgresFundAccountStore CreateStore(IFundScopeTenantAccessor? tenantAccessor = null) =>
         new(_fixture.Options, tenantAccessor);
+
+    [FundAccountDatabaseFact]
+    public async Task Reconciliation_BatchedReadRejectsMixedTenantScopeWithoutReturningPartialHistory()
+    {
+        var alpha = new PostgresFundAccountStore(_fixture.Options, new FixedTenantAccessor("alpha"), TenantScopeEnforcementOptions.FailClosed);
+        var beta = new PostgresFundAccountStore(_fixture.Options, new FixedTenantAccessor("beta"), TenantScopeEnforcementOptions.FailClosed);
+        var account = MakeAccount();
+        var foreign = MakeAccount();
+        await alpha.TryCreateAccountAsync(account);
+        await beta.TryCreateAccountAsync(foreign);
+        var now = DateTimeOffset.UtcNow;
+        var run = new AccountReconciliationRunDto(Guid.NewGuid(), account.AccountId, new(2026, 10, 15), "Breaks", 1, 0, 1, 10m, now, now, "ops");
+        var result = new AccountReconciliationResultDto(Guid.NewGuid(), run.ReconciliationRunId, "CashBalance", false, "Cash", "Break", 100m, 90m, -10m, "difference");
+        await alpha.InsertReconciliationRunAsync(run, [result]);
+
+        (await alpha.GetReconciliationResultsForAccountsAsync([account.AccountId], openOnly: true)).Should().ContainSingle();
+        await FluentActions.Awaiting(() => alpha.GetReconciliationResultsForAccountsAsync([account.AccountId, foreign.AccountId]))
+            .Should().ThrowAsync<UnauthorizedAccessException>();
+        await FluentActions.Awaiting(() => beta.GetReconciliationResultsForAccountsAsync([account.AccountId], openOnly: true))
+            .Should().ThrowAsync<UnauthorizedAccessException>();
+        (await alpha.GetReconciliationResultsAsync(run.ReconciliationRunId)).Should().ContainSingle().Which.ResultId.Should().Be(result.ResultId);
+    }
+
+    [FundAccountDatabaseFact]
+    public async Task Reconciliation_PositionCountLabelsShareStableIdentityAndEqualTimeEvidenceStaysOpen()
+    {
+        var store = CreateStore();
+        var account = MakeAccount();
+        await store.UpsertAccountAsync(account);
+        var now = DateTimeOffset.UtcNow;
+        var run = new AccountReconciliationRunDto(Guid.NewGuid(), account.AccountId, new(2026, 10, 15), "Breaks", 1, 0, 1, 1m, now, now, "ops");
+        var failure = new AccountReconciliationResultDto(Guid.NewGuid(), run.ReconciliationRunId, "PositionCount (2 lines)", false, "Positions", "Break", 1m, 2m, 1m, "count differs");
+        await store.InsertReconciliationRunAsync(run, [failure]);
+        var equalTime = run with { ReconciliationRunId = Guid.NewGuid(), Status = "Matched", TotalBreaks = 0 };
+        var match = failure with { ResultId = Guid.NewGuid(), ReconciliationRunId = equalTime.ReconciliationRunId, CheckLabel = "PositionCount", IsMatch = true, Status = "Matched" };
+        await store.InsertReconciliationRunAsync(equalTime, [match]);
+        (await store.GetReconciliationResultsAsync(run.ReconciliationRunId)).Single().IsOpenBreak.Should().BeTrue();
+        var corrected = equalTime with { ReconciliationRunId = Guid.NewGuid(), RequestedAt = now.AddMinutes(1), CompletedAt = now.AddMinutes(1) };
+        var correctedMatch = match with { ResultId = Guid.NewGuid(), ReconciliationRunId = corrected.ReconciliationRunId };
+        await store.InsertReconciliationRunAsync(corrected, [correctedMatch]);
+        var retained = (await store.GetReconciliationResultsAsync(run.ReconciliationRunId)).Single();
+        retained.SupersededByResultId.Should().Be(correctedMatch.ResultId);
+        retained.ResolvedAt.Should().NotBeNull();
+        retained.IsOpenBreak.Should().BeFalse();
+    }
+
+    [FundAccountDatabaseFact]
+    public async Task Reconciliation_DelayedOlderRunAndReplayCannotReplaceCorrectedAuthority()
+    {
+        var store = CreateStore();
+        var account = MakeAccount();
+        await store.UpsertAccountAsync(account);
+        var now = DateTimeOffset.UtcNow;
+        var date = new DateOnly(2026, 10, 15);
+        var corrected = new AccountReconciliationRunDto(Guid.NewGuid(), account.AccountId, date, "Matched", 1, 1, 0, 0m, now, now, "ops");
+        var match = new AccountReconciliationResultDto(Guid.NewGuid(), corrected.ReconciliationRunId, "CashBalance", true, "Cash", "Matched", 100m, 100m, 0m, "corrected");
+        await store.InsertReconciliationRunAsync(corrected, [match]);
+        var older = corrected with { ReconciliationRunId = Guid.NewGuid(), RequestedAt = now.AddMinutes(-1), Status = "Breaks", TotalMatched = 0, TotalBreaks = 1 };
+        var oldBreak = match with { ResultId = Guid.NewGuid(), ReconciliationRunId = older.ReconciliationRunId, IsMatch = false, Status = "Break", ActualAmount = 90m, Variance = -10m };
+        await store.InsertReconciliationRunAsync(older, [oldBreak]);
+        await store.InsertReconciliationRunAsync(older, [oldBreak]);
+
+        var retained = (await store.GetReconciliationResultsAsync(older.ReconciliationRunId)).Single();
+        retained.IsMatch.Should().BeFalse();
+        retained.SupersededByResultId.Should().Be(match.ResultId);
+        retained.ResolvedAt.Should().NotBeNull();
+        retained.IsOpenBreak.Should().BeFalse();
+        (await store.GetReconciliationResultsAsync(corrected.ReconciliationRunId)).Single().SupersededByResultId.Should().BeNull();
+    }
 
     [FundAccountDatabaseFact]
     public async Task TryCreateAccountAsync_ConcurrentSameIdentity_CreatesExactlyOneWithoutOverwriting()
@@ -145,6 +214,25 @@ public sealed class PostgresFundAccountStoreTests : IClassFixture<FundAccountDat
     }
 
     [FundAccountDatabaseFact]
+    public async Task InsertBankStatementBatchAsync_LegacyLineWithoutSequence_AdoptsReimportedSourceOrder()
+    {
+        var store = CreateStore();
+        var account = MakeAccount();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await store.UpsertAccountAsync(account, cts.Token);
+        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        var bank = new BankStatementBatchDto(Guid.NewGuid(), account.AccountId, date, "Bank", 1, DateTimeOffset.UtcNow, "operator");
+        var line = new BankStatementLineDto(Guid.NewGuid(), bank.BatchId, account.AccountId, date, date, 125m, "USD", "deposit", "test", null, 125m);
+
+        // A row retained before source order was recorded carries no sequence.
+        await store.InsertBankStatementBatchAsync(bank, [line with { LineSequence = null }], cts.Token);
+        await store.InsertBankStatementBatchAsync(bank, [line with { LineSequence = 7 }], cts.Token);
+
+        (await store.GetBankStatementLinesAsync(account.AccountId, null, null, cts.Token))
+            .Should().ContainSingle().Which.LineSequence.Should().Be(7);
+    }
+
+    [FundAccountDatabaseFact]
     public async Task InsertSyncHistoryAsync_SameSyncHistoryId_UpdatesStatusFreshnessAndWarnings()
     {
         var store = CreateStore();
@@ -155,9 +243,11 @@ public sealed class PostgresFundAccountStoreTests : IClassFixture<FundAccountDat
 
         await store.InsertSyncHistoryAsync(entry, cts.Token);
         var freshUntil = DateTimeOffset.UtcNow.AddHours(2);
+        var completedAttempt = entry.AttemptedAt.AddMinutes(5);
         await store.InsertSyncHistoryAsync(entry with
         {
             Status = AccountSyncStatusDto.Succeeded,
+            AttemptedAt = completedAttempt,
             CompletedAt = DateTimeOffset.UtcNow,
             FreshUntil = freshUntil,
             Warnings = new[] { "stale price" },
@@ -169,6 +259,8 @@ public sealed class PostgresFundAccountStoreTests : IClassFixture<FundAccountDat
         history[0].Status.Should().Be(AccountSyncStatusDto.Succeeded);
         history[0].FreshUntil.Should().BeCloseTo(freshUntil, TimeSpan.FromMilliseconds(2));
         history[0].Warnings.Should().BeEquivalentTo("stale price");
+        history[0].AttemptedAt.Should().BeCloseTo(completedAttempt, TimeSpan.FromMilliseconds(2),
+            "readers order sync history by attempt time, so the accepted outcome must carry its own");
         history[0].RequestedBy.Should().Be(entry.RequestedBy,
             "the ON CONFLICT column list intentionally preserves the original requester");
     }
@@ -257,6 +349,89 @@ public sealed class PostgresFundAccountStoreTests : IClassFixture<FundAccountDat
             (await store.IsEmptyAsync(cts.Token)).Should().BeTrue();
             await store.UpsertAccountAsync(MakeAccount(), cts.Token);
             (await store.IsEmptyAsync(cts.Token)).Should().BeFalse();
+        }
+        finally
+        {
+            await FundAccountDatabaseFixture.DropSchemaAsync(options.ConnectionString, options.Schema);
+        }
+    }
+
+    [FundAccountDatabaseFact]
+    public async Task SyncHistoryCorrelationMigration_EquallyRankedDuplicates_KeepsTheNewestAttemptCurrent()
+    {
+        var options = CreateIsolatedOptions("fa_sync_dedupe");
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await new FundAccountMigrationRunner(options).EnsureMigratedAsync(cts.Token);
+            var store = new PostgresFundAccountStore(options);
+            var account = MakeAccount();
+            await store.UpsertAccountAsync(account, cts.Token);
+            var t0 = new DateTimeOffset(2026, 7, 24, 9, 0, 0, TimeSpan.Zero);
+            var completed = t0.AddHours(1);
+            var pending = MakeSyncEntry(account.AccountId, AccountSyncStatusDto.Pending) with { AttemptedAt = t0 };
+            var succeeded = MakeSyncEntry(account.AccountId, AccountSyncStatusDto.Succeeded) with
+            {
+                AttemptedAt = t0,
+                CompletedAt = completed
+            };
+            await store.InsertSyncHistoryAsync(pending, cts.Token);
+            await store.InsertSyncHistoryAsync(succeeded, cts.Token);
+
+            // Recreate the pre-006 state: no correlation index, and later duplicate attempts that tie
+            // on status rank and completion (both null for Pending, equal for Succeeded).
+            var newestPending = Guid.NewGuid();
+            var newestSucceeded = Guid.NewGuid();
+            await using (var connection = new NpgsqlConnection(options.ConnectionString))
+            {
+                await connection.OpenAsync(cts.Token);
+                var table = $"{options.Schema}.account_sync_history";
+                var columns = new List<string>();
+                await using (var list = connection.CreateCommand())
+                {
+                    list.CommandText = """
+                        SELECT column_name FROM information_schema.columns
+                        WHERE table_schema = @schema AND table_name = 'account_sync_history'
+                          AND column_name NOT IN ('sync_history_id', 'attempted_at', 'superseded_by_sync_history_id')
+                        ORDER BY ordinal_position
+                        """;
+                    list.Parameters.AddWithValue("schema", options.Schema);
+                    await using var reader = await list.ExecuteReaderAsync(cts.Token);
+                    while (await reader.ReadAsync(cts.Token))
+                        columns.Add(reader.GetString(0));
+                }
+                var copied = string.Join(", ", columns);
+                await using var seed = connection.CreateCommand();
+                seed.CommandText = $"""
+                    DROP INDEX {options.Schema}.ux_account_sync_history_correlation;
+                    INSERT INTO {table} (sync_history_id, attempted_at, {copied})
+                    SELECT @middle_pending, attempted_at + interval '1 minute', {copied} FROM {table} WHERE sync_history_id = @pending;
+                    INSERT INTO {table} (sync_history_id, attempted_at, {copied})
+                    SELECT @newest_pending, attempted_at + interval '2 minutes', {copied} FROM {table} WHERE sync_history_id = @pending;
+                    INSERT INTO {table} (sync_history_id, attempted_at, {copied})
+                    SELECT @newest_succeeded, attempted_at + interval '2 minutes', {copied} FROM {table} WHERE sync_history_id = @succeeded;
+                    UPDATE {table} SET superseded_by_sync_history_id = NULL;
+                    """;
+                seed.Parameters.AddWithValue("pending", pending.SyncHistoryId);
+                seed.Parameters.AddWithValue("succeeded", succeeded.SyncHistoryId);
+                seed.Parameters.AddWithValue("middle_pending", Guid.NewGuid());
+                seed.Parameters.AddWithValue("newest_pending", newestPending);
+                seed.Parameters.AddWithValue("newest_succeeded", newestSucceeded);
+                await seed.ExecuteNonQueryAsync(cts.Token);
+
+                var script = await File.ReadAllTextAsync(Path.Combine(
+                    AppContext.BaseDirectory, "FundAccounts", "Migrations", "006_sync_history_correlation.sql"), cts.Token);
+                await using var migrate = connection.CreateCommand();
+                migrate.CommandText = script.Replace("__SCHEMA__", options.Schema, StringComparison.Ordinal);
+                await migrate.ExecuteNonQueryAsync(cts.Token);
+            }
+
+            var current = await store.GetSyncHistoryAsync(account.AccountId, null, cts.Token);
+            current.Select(entry => entry.SyncHistoryId).Should().BeEquivalentTo(
+                new[] { newestPending, newestSucceeded },
+                "like the runtime upsert, a full tie keeps the newest attempt current");
+            current.Single(entry => entry.SyncHistoryId == newestPending).AttemptedAt
+                .Should().BeCloseTo(t0.AddMinutes(2), TimeSpan.FromMilliseconds(2));
         }
         finally
         {
@@ -380,7 +555,11 @@ public sealed class PostgresFundAccountStoreTests : IClassFixture<FundAccountDat
             (await store.GetCustodianPositionsAsync(first.AccountId, asOfDate, cts.Token))
                 .Should().ContainSingle().Which.Should().Be(custodianLine);
             (await store.GetBankStatementLinesAsync(first.AccountId, null, null, cts.Token))
-                .Should().ContainSingle().Which.Should().Be(bankLine);
+                .Should().ContainSingle().Which.Should().Be(bankLine with
+                {
+                    StatementRevision = 1,
+                    StatementAsOfDate = bankBatch.StatementDate
+                });
         }
         finally
         {

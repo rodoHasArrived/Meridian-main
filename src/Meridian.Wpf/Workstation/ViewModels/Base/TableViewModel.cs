@@ -3,6 +3,9 @@ using System.Collections.Specialized;
 
 namespace Meridian.Wpf.Workstation.ViewModels.Base;
 
+/// <summary>
+/// Maintains bindable table rows and row-availability state, with batched replacement.
+/// </summary>
 public abstract class TableViewModel<TRow> : Meridian.Wpf.ViewModels.BindableBase
 {
     private readonly BatchedObservableCollection<TRow> _rows = [];

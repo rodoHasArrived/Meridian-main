@@ -7,6 +7,9 @@ using Meridian.Storage.Archival;
 
 namespace Meridian.Application.SecurityMaster;
 
+/// <summary>
+/// Defines asset-profile lineage, drafting, approval, and promotion operations.
+/// </summary>
 public interface ISecurityAssetProfileGovernanceService : ISecurityAssetProfileCatalog
 {
     IReadOnlyList<SecurityAssetProfileDefinitionDto> GetAllProfiles();
@@ -29,6 +32,9 @@ public interface ISecurityAssetProfileGovernanceService : ISecurityAssetProfileC
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Maintains versioned asset profiles and their governance lifecycle.
+/// </summary>
 public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfileGovernanceService
 {
     private static readonly HashSet<string> ReservedFieldKeys = new(StringComparer.OrdinalIgnoreCase)

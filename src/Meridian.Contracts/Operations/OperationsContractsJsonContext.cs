@@ -2,6 +2,9 @@ using System.Text.Json.Serialization;
 
 namespace Meridian.Contracts.Operations;
 
+/// <summary>
+/// Provides source-generated JSON metadata for verified outcomes, provenance, and operational case history.
+/// </summary>
 [JsonSourceGenerationOptions(
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     PropertyNameCaseInsensitive = true,

@@ -3,6 +3,9 @@ using System.Windows.Controls;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Hosts workflow evidence summaries and primary and secondary actions.
+/// </summary>
 public partial class WorkspaceEvidenceStripControl : UserControl
 {
     public static readonly DependencyProperty StripAutomationIdProperty =

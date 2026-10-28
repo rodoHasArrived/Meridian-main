@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Identity;
 
+/// <summary>Loads and updates role permission profiles and their catalog metadata.</summary>
 public interface IRolePermissionProfileStore
 {
     Task<RolePermissionCatalogDto> GetCatalogAsync(CancellationToken ct = default);
@@ -19,6 +20,7 @@ public interface IRolePermissionProfileStore
         CancellationToken ct = default);
 }
 
+/// <summary>Persists custom role permission profiles and their audit events in local files.</summary>
 public sealed class FileRolePermissionProfileStore : IRolePermissionProfileStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)

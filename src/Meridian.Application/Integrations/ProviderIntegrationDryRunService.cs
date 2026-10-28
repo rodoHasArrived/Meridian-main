@@ -10,6 +10,10 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.Application.Integrations;
 
+/// <summary>
+/// Validates manually supplied CSV data against a provider integration manifest without activating
+/// it.
+/// </summary>
 public sealed class ProviderIntegrationDryRunService
 {
     internal const string ManualCsvEndpointKey = "manual-csv-upload";

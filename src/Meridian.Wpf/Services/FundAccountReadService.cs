@@ -28,6 +28,9 @@ public sealed class FundAccountReadService
             .Concat(grouped.OtherAccounts)
             .ToArray();
 
+        var activeResults = await _fundAccountService.GetReconciliationResultsForAccountsAsync(
+            accounts.Select(account => account.AccountId).ToArray(), openOnly: true, ct).ConfigureAwait(false);
+        var activeResultsByRun = activeResults.ToLookup(result => result.ReconciliationRunId);
         var summaries = new List<FundAccountSummary>(accounts.Length);
         foreach (var account in accounts)
         {
@@ -37,10 +40,7 @@ public sealed class FundAccountReadService
             var reconciliationRuns = await _fundAccountService
                 .GetReconciliationRunsAsync(account.AccountId, ct)
                 .ConfigureAwait(false);
-            var openBreaks = reconciliationRuns
-                .Where(run => !string.Equals(run.Status, "Matched", StringComparison.OrdinalIgnoreCase)
-                           && !string.Equals(run.Status, "Resolved", StringComparison.OrdinalIgnoreCase))
-                .Sum(run => run.TotalBreaks);
+            var openBreaks = reconciliationRuns.Sum(run => activeResultsByRun[run.ReconciliationRunId].Count());
 
             summaries.Add(new FundAccountSummary(
                 AccountId: account.AccountId,
@@ -94,10 +94,7 @@ public sealed class FundAccountReadService
             var bankLines = await _fundAccountService
                 .GetBankStatementLinesAsync(account.AccountId, ct: ct)
                 .ConfigureAwait(false);
-            var latestLine = bankLines
-                .OrderByDescending(line => line.StatementDate)
-                .ThenByDescending(line => line.ValueDate)
-                .FirstOrDefault();
+            var latestLine = BankStatementClosingBalanceAuthority.SelectLatestLine(bankLines, account.BaseCurrency);
 
             snapshots.Add(new BankAccountSnapshot(
                 AccountId: account.AccountId,
@@ -105,9 +102,9 @@ public sealed class FundAccountReadService
                 AccountCode: account.AccountCode,
                 BankName: account.BankDetails?.BankName ?? account.Institution ?? "Bank account",
                 Currency: account.BaseCurrency,
-                CurrentBalance: latestSnapshot?.CashBalance ?? latestLine?.RunningBalance ?? 0m,
+                CurrentBalance: latestSnapshot?.CashBalance ?? BankStatementClosingBalanceAuthority.SelectClosingBalance(bankLines, account.BaseCurrency),
                 PendingSettlement: latestSnapshot?.PendingSettlement ?? 0m,
-                LastStatementDate: latestLine?.StatementDate,
+                LastStatementDate: BankStatementClosingBalanceAuthority.LatestStatementDate(bankLines),
                 StatementLineCount: bankLines.Count,
                 LatestTransactionType: latestLine?.TransactionType,
                 LatestTransactionAmount: latestLine?.Amount));

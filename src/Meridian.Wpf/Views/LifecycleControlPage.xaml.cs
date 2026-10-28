@@ -3,6 +3,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Hosts runtime readiness and confirmed restart and shutdown controls.
+/// </summary>
 public partial class LifecycleControlPage : Page
 {
     private readonly CancellationTokenSource _pageLifetime = new();

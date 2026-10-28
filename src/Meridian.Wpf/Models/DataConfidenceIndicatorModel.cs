@@ -23,6 +23,9 @@ public enum DataConfidenceReconciliationStatus
     Estimated
 }
 
+/// <summary>
+/// Defines the operator-facing labels for data confidence and availability states.
+/// </summary>
 public static class DataConfidenceLabels
 {
     public const string Current = "Current";

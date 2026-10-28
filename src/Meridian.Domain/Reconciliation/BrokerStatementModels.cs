@@ -27,6 +27,9 @@ public sealed record StatementRunRequest(
     /// Optional SHA-256 assertion for <see cref="CanonicalSourcePath"/>. The importer always
     /// recomputes this value from the captured parse bytes before accepting it.
     /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ExecutedMappingFingerprint { get; init; }
+
     public string CanonicalArtifactHash { get; init; } = string.Empty;
 
     public StatementAccountingScope? AccountingScope { get; init; }
@@ -108,6 +111,9 @@ public sealed record BrokerStatementImportRequest(
     /// Optional SHA-256 assertion for the canonical parse artifact. It is never trusted without
     /// recomputing the hash from the same immutable bytes that are parsed.
     /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ExecutedMappingFingerprint { get; init; }
+
     public string CanonicalArtifactHash { get; init; } = string.Empty;
 
     public StatementAccountingScope? AccountingScope { get; init; }
@@ -138,10 +144,14 @@ public sealed record BrokerStatementImportRequest(
         {
             CanonicalSourcePath = CanonicalSourcePath,
             CanonicalArtifactHash = CanonicalArtifactHash,
+            ExecutedMappingFingerprint = ExecutedMappingFingerprint,
             AccountingScope = AccountingScope
         };
 }
 
+/// <summary>
+/// Builds normalized statement deduplication keys from account, period, and retained artifact hashes.
+/// </summary>
 public static class StatementDuplicateKey
 {
     public static string Create(
@@ -307,6 +317,9 @@ public static class StatementDuplicateKey
         => value.Trim().ToUpperInvariant();
 }
 
+/// <summary>
+/// Reports a duplicate statement import and identifies the previously retained import.
+/// </summary>
 public sealed class StatementAlreadyImportedException : InvalidOperationException
 {
     public StatementAlreadyImportedException(string existingImportId)
@@ -335,12 +348,18 @@ public sealed record MatchOutcome(
     public string? ToleranceRuleId { get; init; }
 }
 
+/// <summary>
+/// Validates and imports broker statement requests into canonical statement rows and metadata.
+/// </summary>
 public interface IBrokerStatementService
 {
     Task<BrokerStatementValidationResult> ValidateAsync(BrokerStatementImportRequest request, CancellationToken ct = default);
     Task<BrokerStatementImportResult> ImportAsync(BrokerStatementImportRequest request, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Creates and manages reconciliation case status, assignments, comments, and open-case queries.
+/// </summary>
 public interface IReconciliationCaseService
 {
     Task<IReadOnlyList<ReconciliationCase>> CreateOpenCasesAsync(string importId, IReadOnlyList<MatchOutcome> outcomes, CancellationToken ct = default);

@@ -7,6 +7,9 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Executes accounting migration worker plans and retains their resulting artifacts and evidence.
+/// </summary>
 public sealed class AccountingMigrationRunExecutionService
 {
     private const string DefaultFundProfileId = "default-fund";
