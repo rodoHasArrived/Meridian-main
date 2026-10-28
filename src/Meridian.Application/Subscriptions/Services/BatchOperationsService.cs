@@ -30,37 +30,38 @@ public sealed class BatchOperationsService
     {
         var stopwatch = Stopwatch.StartNew();
         var errors = new List<string>();
-        var affected = new List<string>();
-        var skipped = new List<string>();
 
-        var cfg = _configStore.Load();
-        var symbolsToDelete = new HashSet<string>(request.Symbols, StringComparer.OrdinalIgnoreCase);
-
-        var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
-            .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
-
-        foreach (var symbol in request.Symbols)
+        var (affected, skipped) = await _configStore.UpdateAsync(cfg =>
         {
-            if (existingSymbols.Remove(symbol))
-            {
-                affected.Add(symbol);
-            }
-            else
-            {
-                skipped.Add(symbol);
-            }
-        }
+            var affected = new List<string>();
+            var skipped = new List<string>();
+            var symbolsToDelete = new HashSet<string>(request.Symbols, StringComparer.OrdinalIgnoreCase);
 
-        if (affected.Count > 0)
+            var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
+                .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var symbol in request.Symbols)
+            {
+                if (existingSymbols.Remove(symbol))
+                {
+                    affected.Add(symbol);
+                }
+                else
+                {
+                    skipped.Add(symbol);
+                }
+            }
+
+            if (affected.Count == 0)
+                return (cfg, (affected, skipped));
+
+            return (cfg with { Symbols = existingSymbols.Values.ToArray() }, (affected, skipped));
+        }, ct);
+
+        // Remove from watchlists if requested
+        if (affected.Count > 0 && request.RemoveFromWatchlists)
         {
-            var next = cfg with { Symbols = existingSymbols.Values.ToArray() };
-            await _configStore.SaveAsync(next);
-
-            // Remove from watchlists if requested
-            if (request.RemoveFromWatchlists)
-            {
-                await RemoveFromAllWatchlistsAsync(affected.ToArray(), ct);
-            }
+            await RemoveFromAllWatchlistsAsync(affected.ToArray(), ct);
         }
 
         stopwatch.Stop();
@@ -87,37 +88,38 @@ public sealed class BatchOperationsService
     {
         var stopwatch = Stopwatch.StartNew();
         var errors = new List<string>();
-        var affected = new List<string>();
-        var skipped = new List<string>();
 
-        var cfg = _configStore.Load();
-        var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
-            .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
-
-        foreach (var symbol in request.Symbols)
+        var (affected, skipped) = await _configStore.UpdateAsync(cfg =>
         {
-            if (existingSymbols.TryGetValue(symbol, out var existing))
+            var affected = new List<string>();
+            var skipped = new List<string>();
+            var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
+                .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var symbol in request.Symbols)
             {
-                var updated = existing with
+                if (existingSymbols.TryGetValue(symbol, out var existing))
                 {
-                    SubscribeTrades = request.SubscribeTrades ?? existing.SubscribeTrades,
-                    SubscribeDepth = request.SubscribeDepth ?? existing.SubscribeDepth,
-                    DepthLevels = request.DepthLevels ?? existing.DepthLevels
-                };
-                existingSymbols[symbol] = updated;
-                affected.Add(symbol);
+                    var updated = existing with
+                    {
+                        SubscribeTrades = request.SubscribeTrades ?? existing.SubscribeTrades,
+                        SubscribeDepth = request.SubscribeDepth ?? existing.SubscribeDepth,
+                        DepthLevels = request.DepthLevels ?? existing.DepthLevels
+                    };
+                    existingSymbols[symbol] = updated;
+                    affected.Add(symbol);
+                }
+                else
+                {
+                    skipped.Add(symbol);
+                }
             }
-            else
-            {
-                skipped.Add(symbol);
-            }
-        }
 
-        if (affected.Count > 0)
-        {
-            var next = cfg with { Symbols = existingSymbols.Values.ToArray() };
-            await _configStore.SaveAsync(next);
-        }
+            if (affected.Count == 0)
+                return (cfg, (affected, skipped));
+
+            return (cfg with { Symbols = existingSymbols.Values.ToArray() }, (affected, skipped));
+        }, ct);
 
         stopwatch.Stop();
 
@@ -143,38 +145,39 @@ public sealed class BatchOperationsService
     {
         var stopwatch = Stopwatch.StartNew();
         var errors = new List<string>();
-        var affected = new List<string>();
-        var skipped = new List<string>();
 
-        var cfg = _configStore.Load();
-        var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
-            .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
-
-        foreach (var symbol in request.Symbols)
+        var (affected, skipped) = await _configStore.UpdateAsync(cfg =>
         {
-            if (existingSymbols.TryGetValue(symbol, out var existing))
+            var affected = new List<string>();
+            var skipped = new List<string>();
+            var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
+                .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var symbol in request.Symbols)
             {
-                var updated = existing with
+                if (existingSymbols.TryGetValue(symbol, out var existing))
                 {
-                    SecurityType = request.SecurityType ?? existing.SecurityType,
-                    Exchange = request.Exchange ?? existing.Exchange,
-                    Currency = request.Currency ?? existing.Currency,
-                    PrimaryExchange = request.PrimaryExchange ?? existing.PrimaryExchange
-                };
-                existingSymbols[symbol] = updated;
-                affected.Add(symbol);
+                    var updated = existing with
+                    {
+                        SecurityType = request.SecurityType ?? existing.SecurityType,
+                        Exchange = request.Exchange ?? existing.Exchange,
+                        Currency = request.Currency ?? existing.Currency,
+                        PrimaryExchange = request.PrimaryExchange ?? existing.PrimaryExchange
+                    };
+                    existingSymbols[symbol] = updated;
+                    affected.Add(symbol);
+                }
+                else
+                {
+                    skipped.Add(symbol);
+                }
             }
-            else
-            {
-                skipped.Add(symbol);
-            }
-        }
 
-        if (affected.Count > 0)
-        {
-            var next = cfg with { Symbols = existingSymbols.Values.ToArray() };
-            await _configStore.SaveAsync(next);
-        }
+            if (affected.Count == 0)
+                return (cfg, (affected, skipped));
+
+            return (cfg with { Symbols = existingSymbols.Values.ToArray() }, (affected, skipped));
+        }, ct);
 
         stopwatch.Stop();
 
@@ -200,52 +203,53 @@ public sealed class BatchOperationsService
     {
         var stopwatch = Stopwatch.StartNew();
         var errors = new List<string>();
-        var affected = new List<string>();
-        var skipped = new List<string>();
 
         var defaults = request.Defaults ?? new BatchAddDefaults();
 
-        var cfg = _configStore.Load();
-        var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
-            .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
-
-        foreach (var symbol in request.Symbols)
+        var (affected, skipped) = await _configStore.UpdateAsync(cfg =>
         {
-            var normalizedSymbol = symbol.Trim().ToUpperInvariant();
+            var affected = new List<string>();
+            var skipped = new List<string>();
+            var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
+                .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
 
-            if (string.IsNullOrWhiteSpace(normalizedSymbol))
+            foreach (var symbol in request.Symbols)
             {
-                continue;
-            }
+                var normalizedSymbol = symbol.Trim().ToUpperInvariant();
 
-            if (existingSymbols.ContainsKey(normalizedSymbol))
-            {
-                if (request.SkipExisting)
+                if (string.IsNullOrWhiteSpace(normalizedSymbol))
                 {
-                    skipped.Add(normalizedSymbol);
                     continue;
                 }
+
+                if (existingSymbols.ContainsKey(normalizedSymbol))
+                {
+                    if (request.SkipExisting)
+                    {
+                        skipped.Add(normalizedSymbol);
+                        continue;
+                    }
+                }
+
+                var symbolConfig = new SymbolConfig(
+                    Symbol: normalizedSymbol,
+                    SubscribeTrades: defaults.SubscribeTrades,
+                    SubscribeDepth: defaults.SubscribeDepth,
+                    DepthLevels: defaults.DepthLevels,
+                    SecurityType: defaults.SecurityType,
+                    Exchange: defaults.Exchange,
+                    Currency: defaults.Currency
+                );
+
+                existingSymbols[normalizedSymbol] = symbolConfig;
+                affected.Add(normalizedSymbol);
             }
 
-            var symbolConfig = new SymbolConfig(
-                Symbol: normalizedSymbol,
-                SubscribeTrades: defaults.SubscribeTrades,
-                SubscribeDepth: defaults.SubscribeDepth,
-                DepthLevels: defaults.DepthLevels,
-                SecurityType: defaults.SecurityType,
-                Exchange: defaults.Exchange,
-                Currency: defaults.Currency
-            );
+            if (affected.Count == 0)
+                return (cfg, (affected, skipped));
 
-            existingSymbols[normalizedSymbol] = symbolConfig;
-            affected.Add(normalizedSymbol);
-        }
-
-        if (affected.Count > 0)
-        {
-            var next = cfg with { Symbols = existingSymbols.Values.ToArray() };
-            await _configStore.SaveAsync(next);
-        }
+            return (cfg with { Symbols = existingSymbols.Values.ToArray() }, (affected, skipped));
+        }, ct);
 
         stopwatch.Stop();
 
@@ -303,14 +307,47 @@ public sealed class BatchOperationsService
     {
         var stopwatch = Stopwatch.StartNew();
         var errors = new List<string>();
-        var affected = new List<string>();
-        var skipped = new List<string>();
 
-        var cfg = _configStore.Load();
-        var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
-            .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
+        var (sourceFound, affected, skipped) = await _configStore.UpdateAsync(cfg =>
+        {
+            var affected = new List<string>();
+            var skipped = new List<string>();
+            var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
+                .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
 
-        if (!existingSymbols.TryGetValue(request.SourceSymbol, out var source))
+            if (!existingSymbols.TryGetValue(request.SourceSymbol, out var source))
+                return (cfg, (false, affected, skipped));
+
+            foreach (var symbol in request.TargetSymbols)
+            {
+                if (existingSymbols.TryGetValue(symbol, out var existing))
+                {
+                    var updated = existing with
+                    {
+                        SubscribeTrades = source.SubscribeTrades,
+                        SubscribeDepth = source.SubscribeDepth,
+                        DepthLevels = source.DepthLevels,
+                        SecurityType = source.SecurityType,
+                        Exchange = source.Exchange,
+                        Currency = source.Currency,
+                        PrimaryExchange = source.PrimaryExchange
+                    };
+                    existingSymbols[symbol] = updated;
+                    affected.Add(symbol);
+                }
+                else
+                {
+                    skipped.Add(symbol);
+                }
+            }
+
+            if (affected.Count == 0)
+                return (cfg, (true, affected, skipped));
+
+            return (cfg with { Symbols = existingSymbols.Values.ToArray() }, (true, affected, skipped));
+        }, ct);
+
+        if (!sourceFound)
         {
             return new BatchOperationResult(
                 Success: false,
@@ -323,35 +360,6 @@ public sealed class BatchOperationsService
                 Errors: new[] { $"Source symbol '{request.SourceSymbol}' not found" },
                 ProcessingTimeMs: stopwatch.ElapsedMilliseconds
             );
-        }
-
-        foreach (var symbol in request.TargetSymbols)
-        {
-            if (existingSymbols.TryGetValue(symbol, out var existing))
-            {
-                var updated = existing with
-                {
-                    SubscribeTrades = source.SubscribeTrades,
-                    SubscribeDepth = source.SubscribeDepth,
-                    DepthLevels = source.DepthLevels,
-                    SecurityType = source.SecurityType,
-                    Exchange = source.Exchange,
-                    Currency = source.Currency,
-                    PrimaryExchange = source.PrimaryExchange
-                };
-                existingSymbols[symbol] = updated;
-                affected.Add(symbol);
-            }
-            else
-            {
-                skipped.Add(symbol);
-            }
-        }
-
-        if (affected.Count > 0)
-        {
-            var next = cfg with { Symbols = existingSymbols.Values.ToArray() };
-            await _configStore.SaveAsync(next);
         }
 
         stopwatch.Stop();

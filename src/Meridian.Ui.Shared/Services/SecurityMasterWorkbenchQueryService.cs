@@ -86,7 +86,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
 
         // Tenant isolation (SEC-005): sanitize the operator-supplied fund scope ONCE here so every
         // fund-scoped evidence path the snapshot and its instrument passport fan out to — downstream
-        // impact, open lots, Clearwater pricing (golden-copy/hierarchy), and entitlement applicability —
+        // impact, open lots, pricing (golden-copy/hierarchy), and entitlement applicability —
         // is unscoped for a fund owned by another tenant, not just runs/lots. Own/blank funds and registry
         // uncertainty pass through unchanged (fail open to the single-company-per-deployment boundary).
         fundProfileId = await SanitizeFundScopeAsync(fundProfileId, ct).ConfigureAwait(false);
@@ -257,7 +257,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                 .ToArray();
         var pricing = BuildPassportPricing(snapshot.TrustPosture, tradingParameters);
         var providerConfidence = BuildProviderConfidence(snapshot, identifierSummary, lifecycleEvents);
-        var clearwaterEvidence = await BuildClearwaterEvidenceAsync(
+        var referenceDataEvidence = await BuildReferenceDataEvidenceAsync(
             snapshot.SecurityId,
             fundProfileId,
             ct).ConfigureAwait(false);
@@ -267,7 +267,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             fundProfileId,
             providerConfidence,
             lifecycleEvents,
-            clearwaterEvidence);
+            referenceDataEvidence);
         var referenceDataWorkbench = BuildReferenceDataWorkbench(
             snapshot,
             identifierSummary,
@@ -963,7 +963,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         _ => "(quote unit unspecified)"
     };
 
-    private async Task<ClearwaterReferenceDataEvidence> BuildClearwaterEvidenceAsync(
+    private async Task<ReferenceDataControlEvidence> BuildReferenceDataEvidenceAsync(
         Guid securityId,
         string? fundProfileId,
         CancellationToken ct)
@@ -984,7 +984,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             ? null
             : await _dataQualityService.GetLatestReportAsync(ct).ConfigureAwait(false);
 
-        return new ClearwaterReferenceDataEvidence(
+        return new ReferenceDataControlEvidence(
             securityId,
             goldenCopy,
             hierarchy,
@@ -993,8 +993,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             qualityReport);
     }
 
-    private static IReadOnlyList<InstrumentPassportReferenceDataWorkbenchSectionDto> BuildClearwaterControlSections(
-        ClearwaterReferenceDataEvidence evidence,
+    private static IReadOnlyList<InstrumentPassportReferenceDataWorkbenchSectionDto> BuildReferenceDataControlSections(
+        ReferenceDataControlEvidence evidence,
         IReadOnlyList<SecurityMasterChangeHistoryItemDto> lifecycleEvents)
     {
         return
@@ -1013,16 +1013,16 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         string? fundProfileId,
         IReadOnlyList<InstrumentPassportProviderConfidenceDto> providerConfidence,
         IReadOnlyList<SecurityMasterChangeHistoryItemDto> lifecycleEvents,
-        ClearwaterReferenceDataEvidence clearwaterEvidence)
+        ReferenceDataControlEvidence referenceDataEvidence)
     {
         var context = new SecurityMasterOperatingScope(
             ClientId: null,
             AccountId: ResolveDominantAccountId(snapshot),
             FundProfileId: NormalizeOptional(fundProfileId),
             SecurityId: snapshot.SecurityId);
-        var controls = BuildClearwaterControlSections(clearwaterEvidence, lifecycleEvents);
-        var entitlementApplicability = BuildEntitlementApplicability(clearwaterEvidence.VendorEntitlements, context);
-        var operatorMetadata = BuildOperatorMetadata(clearwaterEvidence, entitlementApplicability);
+        var controls = BuildReferenceDataControlSections(referenceDataEvidence, lifecycleEvents);
+        var entitlementApplicability = BuildEntitlementApplicability(referenceDataEvidence.VendorEntitlements, context);
+        var operatorMetadata = BuildOperatorMetadata(referenceDataEvidence, entitlementApplicability);
         var manualChangeApproval = BuildManualChangeApprovalPosture(lifecycleEvents);
         var stages = BuildOperatingModelStages(snapshot, identifierSummary, providerConfidence, controls, entitlementApplicability, manualChangeApproval);
         var status = stages.Any(static stage => stage.BlockingIssueCount > 0 || stage.Status.Equals("Review", StringComparison.OrdinalIgnoreCase))
@@ -1181,7 +1181,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
     }
 
     private static IReadOnlyList<SecurityMasterOperatorMetadataDto> BuildOperatorMetadata(
-        ClearwaterReferenceDataEvidence evidence,
+        ReferenceDataControlEvidence evidence,
         IReadOnlyList<SecurityMasterEntitlementApplicabilityDto> entitlementApplicability)
     {
         var entitlementMetadata = evidence.VendorEntitlements
@@ -1313,7 +1313,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             .ToArray();
 
     private static InstrumentPassportReferenceDataWorkbenchSectionDto BuildPricingHierarchySection(
-        ClearwaterReferenceDataEvidence evidence)
+        ReferenceDataControlEvidence evidence)
     {
         var hierarchyCount = evidence.PricingHierarchy?.Entries.Count ?? 0;
         if (evidence.GoldenCopyPrice is null)
@@ -1324,7 +1324,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                 Status: "Review",
                 Summary: hierarchyCount > 0
                     ? $"{hierarchyCount} pricing source(s) configured, but no market-price golden copy is available."
-                    : "No Clearwater pricing hierarchy or market-price golden copy is available on this passport.",
+                    : "No pricing hierarchy or market-price golden copy is available on this passport.",
                 EvidenceCount: hierarchyCount,
                 BlockingIssueCount: 1);
         }
@@ -1342,7 +1342,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
     }
 
     private static InstrumentPassportReferenceDataWorkbenchSectionDto BuildCashFlowSourceSection(
-        ClearwaterReferenceDataEvidence evidence)
+        ReferenceDataControlEvidence evidence)
     {
         if (evidence.CashFlowSource is null)
         {
@@ -1350,7 +1350,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                 SectionId: "cash-flow-source-governance",
                 Title: "Cash-flow source governance",
                 Status: "Review",
-                Summary: "No Clearwater cash-flow source assignment is available for this security.",
+                Summary: "No cash-flow source assignment is available for this security.",
                 EvidenceCount: 0,
                 BlockingIssueCount: 1);
         }
@@ -1374,7 +1374,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
     }
 
     private static InstrumentPassportReferenceDataWorkbenchSectionDto BuildVendorEntitlementSection(
-        ClearwaterReferenceDataEvidence evidence)
+        ReferenceDataControlEvidence evidence)
     {
         var entitlements = evidence.VendorEntitlements;
         var directContractCount = entitlements.Count(static item => item.RequiresDirectClientContract);
@@ -1393,7 +1393,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
     }
 
     private static InstrumentPassportReferenceDataWorkbenchSectionDto BuildDataQualityControlSection(
-        ClearwaterReferenceDataEvidence evidence)
+        ReferenceDataControlEvidence evidence)
     {
         var violations = evidence.QualityReport?.Violations
             .Where(item => item.SecurityId == evidence.SecurityId)
@@ -2637,7 +2637,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         var missingTradingFields = GetMissingTradingParameterFields(economic?.AssetClass, trading);
         var openConflictCount = assessments.Count;
         var blockingValidationCount = validationReport.CriticalIssueCount + validationReport.ErrorIssueCount;
-        var advisoryValidationCount = Math.Max(0, validationReport.Issues.Count - blockingValidationCount);
+        var advisoryValidationCount = Math.Max(0, validationReport.Issues.Count(static issue => issue.Severity != SecurityValidationSeverityDto.Info) - blockingValidationCount);
         // Effective view only: amendments fold to their latest terms and cancelled actions
         // stop counting against trust, so the posture reflects what will actually happen.
         var upcomingCorporateActions = CorporateActionEffectiveStateProjector
@@ -2839,8 +2839,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             Title: "Edit selected security",
             Detail: validationReport.HasBlockingIssues
                 ? $"Resolve {validationReport.CriticalIssueCount + validationReport.ErrorIssueCount} blocking validation issue(s) before downstream workflows consume the golden copy."
-                : validationReport.Issues.Count > 0
-                    ? $"Review {validationReport.Issues.Count} advisory validation issue(s) before promoting the selected security."
+                : validationReport.Issues.Any(static issue => issue.Severity != SecurityValidationSeverityDto.Info)
+                    ? $"Review {validationReport.Issues.Count(static issue => issue.Severity != SecurityValidationSeverityDto.Info)} advisory validation issue(s) before promoting the selected security."
                     : "Make a governed amendment to the golden copy after completing triage.",
             IsPrimary: false,
             IsEnabled: true));
@@ -3911,12 +3911,11 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         return missingFields;
     }
 
+    // A contract multiplier is a trading fact exactly where the catalog sizes lots in contracts or
+    // declares a multiplier term (listed options, futures, warrants, commodity contracts).
     private static bool RequiresContractMultiplier(string? assetClass)
-        => assetClass is not null &&
-           (assetClass.Equals("Option", StringComparison.OrdinalIgnoreCase)
-            || assetClass.Equals("Future", StringComparison.OrdinalIgnoreCase)
-            || assetClass.Equals("Swap", StringComparison.OrdinalIgnoreCase)
-            || assetClass.Equals("Warrant", StringComparison.OrdinalIgnoreCase));
+        => SecurityAssetClassCatalog.GetOrDefault(assetClass) is { } descriptor
+           && (descriptor.LotUnit == SecurityLotUnitKind.Contracts || descriptor.LotMultiplierTermKey is not null);
 
     private static string FormatFieldLabel(string? fieldPath)
     {
@@ -4737,7 +4736,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         string? UpdatedBy,
         string? Reason);
 
-    private sealed record ClearwaterReferenceDataEvidence(
+    private sealed record ReferenceDataControlEvidence(
         Guid SecurityId,
         SecurityPriceGoldenCopyDto? GoldenCopyPrice,
         SecurityPricingHierarchyDto? PricingHierarchy,

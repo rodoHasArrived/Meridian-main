@@ -8,7 +8,8 @@ namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
 /// Manages provider module configuration lifecycle: discovery, upsert, enable/disable, remove, and test.
-/// A SemaphoreSlim guards all config load→mutate→save cycles to prevent concurrent write races.
+/// All config load→mutate→save cycles run through <c>ConfigStore.UpdateAsync</c> so they
+/// execute under the cross-process configuration lock and cannot race with other writers.
 /// </summary>
 public sealed class ProviderModuleSetupService : IProviderModuleSetupService
 {
@@ -16,7 +17,6 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
     private readonly IProviderCredentialStore _credentialStore;
     private readonly ProviderRegistry? _providerRegistry;
     private readonly ILogger<ProviderModuleSetupService> _logger;
-    private readonly SemaphoreSlim _configLock = new(1, 1);
     private readonly IReadOnlyList<Type> _moduleTypes;
 
     public ProviderModuleSetupService(
@@ -112,8 +112,8 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
         if (string.IsNullOrWhiteSpace(request.ModuleId))
             return ProviderModuleSetupResult.Fail("ModuleId is required");
 
-        // Both baselines captured inside the lambda so they are read under _configLock,
-        // preventing a concurrent mutation from making the rollback target stale.
+        // Both baselines captured inside the lambda so they are read under the ConfigStore
+        // update lock, preventing a concurrent mutation from making the rollback target stale.
         ProviderModuleSettings? preExistingSettings = null;
         ProviderModuleSettings? writtenSettings = null;
 
@@ -210,7 +210,7 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(moduleId);
 
-        // Baseline captured inside the lambda so it is read under _configLock.
+        // Baseline captured inside the lambda so it is read under the ConfigStore update lock.
         ProviderModuleSettings? removedSettings = null;
 
         // Remove config first; if SaveAsync fails, credentials remain intact for the still-configured provider
@@ -367,12 +367,9 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
         Func<AppConfig, AppConfig> mutate,
         CancellationToken ct)
     {
-        await _configLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var cfg = _configStore.Load();
-            var next = mutate(cfg);
-            await _configStore.SaveAsync(next).ConfigureAwait(false);
+            await _configStore.UpdateAsync(mutate, ct).ConfigureAwait(false);
             return ProviderModuleSetupResult.Ok();
         }
         catch (OperationCanceledException)
@@ -383,10 +380,6 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
         {
             _logger.LogError(ex, "Failed to mutate provider module config");
             return ProviderModuleSetupResult.Fail(ex.Message);
-        }
-        finally
-        {
-            _configLock.Release();
         }
     }
 

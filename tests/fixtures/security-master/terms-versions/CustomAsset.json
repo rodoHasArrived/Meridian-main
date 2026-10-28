@@ -1,0 +1,45 @@
+{
+  "assetClass": "CustomAsset",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "category",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "customProfileId",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "evidenceLinks",
+          "type": "Array",
+          "required": false
+        },
+        {
+          "key": "profileApproval",
+          "type": "Object",
+          "required": false
+        },
+        {
+          "key": "profileFields",
+          "type": "Object",
+          "required": true
+        },
+        {
+          "key": "profileVersion",
+          "type": "Integer",
+          "required": true
+        },
+        {
+          "key": "subType",
+          "type": "String",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "assetClass": "OtherSecurity",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "category",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "issuerName",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "maturity",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "settlementType",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "subType",
+          "type": "String",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

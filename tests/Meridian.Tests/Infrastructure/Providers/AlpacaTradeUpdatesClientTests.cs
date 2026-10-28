@@ -593,6 +593,40 @@ public sealed class AlpacaTradeUpdatesClientTests
     }
 
     [Fact]
+    public async Task GatewayReconciliation_ReplacementFillActivity_CarriesTheBrokerReplacementLink()
+    {
+        // After a restart the gateway's in-process replacement attempts are empty. The broker's own
+        // `replaces` link must ride on the FILL activity so the OMS binds the successor's fill to
+        // the original order instead of booking it again under the candidate identity.
+        var handler = new RecordingHandler(request => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                request.RequestUri!.AbsolutePath.EndsWith("/account/activities/FILL", StringComparison.Ordinal)
+                    ? """
+                      [{"id":"fill-activity-successor","activity_type":"FILL","transaction_time":"2026-08-05T14:01:00Z",
+                        "symbol":"AAPL","qty":"3","cum_qty":"3","leaves_qty":"0","price":"101.25","side":"buy",
+                        "type":"fill","order_id":"successor"}]
+                      """
+                    : """
+                      [{"id":"successor","client_order_id":"successor-ref","symbol":"AAPL","side":"buy","qty":"3",
+                        "filled_qty":"3","filled_avg_price":"101.25","status":"filled","replaces":"original",
+                        "created_at":"2026-08-05T14:00:00Z","filled_at":"2026-08-05T14:01:00Z"}]
+                      """,
+                Encoding.UTF8,
+                "application/json")
+        });
+        await using var gateway = new AlpacaBrokerageGateway(
+            new StubHttpClientFactory(handler),
+            new AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret", UseSandbox: true),
+            NullLogger<AlpacaBrokerageGateway>.Instance);
+
+        var reports = await gateway.ReconcileExecutionSnapshotsAsync(null, CancellationToken.None);
+
+        reports.Single(report => report.Source == "rest-fill-activity")
+            .Report.ReplacesOrderId.Should().Be("original");
+    }
+
+    [Fact]
     public async Task ProcessMessageAsync_FillEvent_StampsThePerEventQuantityWithoutChangingIdentity()
     {
         var store = new TestCursorStore();

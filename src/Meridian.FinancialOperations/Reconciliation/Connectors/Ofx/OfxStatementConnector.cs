@@ -147,7 +147,7 @@ public sealed class OfxStatementConnector(
             }
 
             var record = StatementRecordMapper.MapRecord(
-                mappedValues, profile, activityCodeMap, index + 1, issues, reportedUnknownCodes);
+                mappedValues, profile, activityCodeMap, index + 1, issues, reportedUnknownCodes, requireInvariantNumbers: true);
             if (record is not null)
             {
                 // Charged on the append, on what the entry actually produced. MapRecord returns null for

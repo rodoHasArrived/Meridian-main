@@ -259,6 +259,11 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
             OrderId = ReadString(order, "id") ?? throw new JsonException("Alpaca trade update lacks order.id."),
             GatewayOrderId = ReadString(order, "id"),
             ClientOrderId = ReadString(order, "client_order_id"),
+            ReplacesOrderId = ReadString(order, "replaces"),
+            CandidateGatewayOrderId = ReadString(order, "replaced_by"),
+            HasOrderTerms = order.TryGetProperty("limit_price", out _) && order.TryGetProperty("stop_price", out _),
+            OrderLimitPrice = ReadNullableDecimal(order, "limit_price"),
+            OrderStopPrice = ReadNullableDecimal(order, "stop_price"),
             Symbol = ReadString(order, "symbol") ?? string.Empty,
             Side = string.Equals(ReadString(order, "side"), "sell", StringComparison.OrdinalIgnoreCase)
                 ? ExecutionOrderSide.Sell
@@ -268,6 +273,7 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
             OrderQuantity = ReadDecimal(order, "qty"),
             FilledQuantity = ReadDecimal(order, "filled_qty"),
             FillPrice = ReadNullableDecimal(data, "price") ?? ReadNullableDecimal(order, "filled_avg_price"),
+            FillPriceIsCumulativeAverage = ReadNullableDecimal(data, "price") is null,
             // The event's own executed quantity, distinct from the order's cumulative filled_qty:
             // the OMS needs it to book a fill for an order it no longer tracks after a restart.
             LastFillQuantity = mapped.type is ExecutionReportType.Fill or ExecutionReportType.PartialFill
@@ -1235,12 +1241,22 @@ internal static class AlpacaTradeUpdateStateCodec
     internal static string ComputeContentHash(ExecutionReport report, DateTimeOffset timestamp)
     {
         ArgumentNullException.ThrowIfNull(report);
-        // The per-event quantity is derived from the same broker event as everything else here,
-        // so it adds nothing to identity -- and keeping it out means an envelope persisted before
-        // the field existed still matches a redelivery of the same event rather than failing
-        // closed as conflicting content.
+        // Derived execution metadata must not change identities or content checks for events
+        // persisted before those fields existed. Keep it in durable reports for execution, but
+        // omit it from the stable hash material used for broker redelivery and reconciliation.
         var content = JsonSerializer.SerializeToUtf8Bytes(
-            new AlpacaTradeUpdateHashMaterial(report with { LastFillQuantity = null, AssetClass = null }, timestamp),
+            new AlpacaTradeUpdateHashMaterial(report with
+            {
+                LastFillQuantity = null,
+                AssetClass = null,
+                FillPriceIsCumulativeAverage = false,
+                ReplacesOrderId = null,
+                OrderLimitPrice = null,
+                OrderStopPrice = null,
+                HasOrderTerms = false,
+                CandidateGatewayOrderId = null,
+                CandidateClientOrderId = null
+            }, timestamp),
             AlpacaTradeUpdateStateJsonContext.Default.AlpacaTradeUpdateHashMaterial);
         return Convert.ToHexString(SHA256.HashData(content));
     }

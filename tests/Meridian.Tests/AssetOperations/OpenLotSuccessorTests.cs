@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.ReferenceData.CorporateActions;
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FixedIncome;
@@ -310,6 +311,34 @@ public sealed class OpenLotSuccessorTests
     }
 
     [Fact]
+    public void Validate_RequiresTheSuccessorToInheritThePredecessorsPaydownFactorExactly()
+    {
+        // A successor of a paid-down lot opens at the predecessor's factor. Dropping it would silently
+        // restore the paid-down face; changing it would move face no paydown released; stating one
+        // for a predecessor still at its booked factor would invent a paydown.
+        var paidDown = OpenLotSuccessorTestData.Predecessor() with { CurrentFactor = 0.9m };
+        var target = OpenLotSuccessorTestData.Successor(paidDown, 1m);
+        var inherited = target with { Lot = target.Lot with { CurrentFactor = 0.9m } };
+        var instruction = OpenLotSuccessorTestData.Build(paidDown, [inherited]);
+        OpenLotSuccessors.Validate(instruction);
+
+        foreach (var factor in new decimal?[] { null, 0.85m, 0.95m })
+        {
+            var changed = () => OpenLotSuccessors.Validate(instruction with
+            {
+                Successors = [inherited with { Lot = inherited.Lot with { CurrentFactor = factor } }]
+            });
+            changed.Should().Throw<ArgumentException>().WithMessage("*paydown factor*");
+        }
+
+        var booked = OpenLotSuccessorTestData.Predecessor();
+        var bookedTarget = OpenLotSuccessorTestData.Successor(booked, 1m);
+        var invented = OpenLotSuccessorTestData.Build(booked, [bookedTarget with { Lot = bookedTarget.Lot with { CurrentFactor = 0.9m } }]);
+        var invent = () => OpenLotSuccessors.Validate(invented);
+        invent.Should().Throw<ArgumentException>().WithMessage("*paydown factor*");
+    }
+
+    [Fact]
     public void Validate_RejectsScheduleDOnTheUnrefundedSuccessor()
     {
         var source = OpenLotSuccessorTestData.Predecessor();
@@ -499,7 +528,7 @@ internal static class OpenLotSuccessorTestData
                 ?? (actionType is CorporateActionAccountingTypeDto.StockSplit or CorporateActionAccountingTypeDto.ReverseStockSplit
                     or CorporateActionAccountingTypeDto.SpinOff)
         };
-        var service = new CorporateActionAccountingProjectionService();
+        var service = new CorporateActionAccountingProjectionService(ClearwaterCorporateActionRuleProfileV1.Instance);
         var intent = service.Project(request);
         intent.Status.Should().Be(CorporateActionProjectionStatusDto.Projected, "the reusable fixture must use a supported registered projection");
         var mutations = intent.LotMutations!.Mutations.Select((mutation, index) => mutation with

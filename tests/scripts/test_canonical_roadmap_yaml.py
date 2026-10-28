@@ -95,7 +95,7 @@ class CanonicalRoadmapYamlTests(unittest.TestCase):
         data = common.load_data(ROOT / "docs" / "roadmap" / "data" / "roadmap-items.yml")
         item = next(item for item in data["items"] if item["id"] == "W9-INGEST-009")
         self.assertIn("#2948. This remains shared-service/file-store evidence", item["current_summary"])
-        self.assertTrue(item["current_summary"].endswith("does not close operator acceptance."))
+        self.assertTrue(item["current_summary"].endswith("does not move the row to done or certify a release."))
 
     def test_missing_yaml_parser_does_not_use_legacy_recovery(self) -> None:
         path = ROOT / "docs" / "roadmap" / "data" / "roadmap-items.yml"

@@ -32,7 +32,10 @@ public sealed class ProviderSetupService
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
         ArgumentException.ThrowIfNullOrWhiteSpace(actor);
-        var matches = (_store.Load().ProviderConnections?.Connections ?? [])
+        // Keep retained ownership stable through the scoped vault mutation and its status read.
+        // Connection writers take the same configuration lease; the vault never reenters it.
+        using var ownershipLease = await _store.AcquireWriteLeaseAsync(ct).ConfigureAwait(false);
+        var matches = (_store.LoadRequired().ProviderConnections?.Connections ?? [])
             .Where(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)).ToArray();
         var connection = matches.Length == 1 ? matches[0] : null;
         if (connection is null || !string.Equals(connection.TenantId, tenantId, StringComparison.Ordinal) ||
