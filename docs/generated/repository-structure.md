@@ -1778,6 +1778,7 @@ Meridian-main
 │   │   ├── filterConfig.yml
 │   │   └── README.md
 │   ├── domain
+│   │   ├── account-and-book-scopes.md
 │   │   ├── account-oversight-evidence.md
 │   │   ├── brokerage-account-snapshot.md
 │   │   ├── business-day-calendar.md
