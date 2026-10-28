@@ -98,6 +98,11 @@ selects explicit offline fixtures. The guide includes readiness and shutdown acc
 
 ## Read Budget
 
+For the optional task-context and generated-guidance pilot, follow
+[`../tooling/throughput-pilot.md`](../tooling/throughput-pilot.md). Assemble a scoped packet before
+discovery, verify its source hashes before reuse, and retain the raw task-event log. Packets aid
+routing; applicable instructions, current source, and required validation remain authoritative.
+
 Load only enough context to route and validate the task.
 Progress updates should use the canonical AI User Notification template in
 `../assistant-workflow-contract.md`: phase, intent understood, current action, evidence/source, next
@@ -208,6 +213,14 @@ only repo-owned abandoned build/test/compiler PIDs before retrying or dispatchin
 - Documentation ownership: `../../documentation-ownership.md`, `../assistant-workflow-contract.md`
 
 ## Task-To-Proof Matrix
+
+For a read-only recommendation based on local changed files, run
+`python build/python/cli/buildctl.py recommend-validation`. Use repeatable
+`--changed-file <path>` arguments to preview a specific scope. Recommendations explain their
+inputs and unknown coverage; they never establish that a check ran or replace the full required
+gate. Use a [task brief](../tooling/throughput-pilot.md#describe-the-observable-outcome) to carry
+the expected behavior, acceptance example, ownership, exclusions, and validation commands into
+a context packet.
 
 | Change type | Default docs | Narrow validation |
 | --- | --- | --- |

@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "baseCommit": "3ce44397107075bc7759517a694d614a62841e3c",
+  "experiment": "known-scope shared guidance maintenance with adaptive tool use",
+  "hypothesis": "For an already located shared-guidance edit, using the guidance generator directly avoids packet preparation and manual mirror maintenance overhead.",
+  "primaryMetric": "validatedCompletionSeconds",
+  "secondaryMetrics": [
+    "firstUsefulEditSeconds",
+    "repeatedFileReads",
+    "correctionCycles",
+    "validationWaitSeconds",
+    "passingPrSeconds"
+  ],
+  "successRule": {
+    "allAcceptanceChecksPass": true,
+    "allInstrumentationComplete": true,
+    "minimumFasterPairs": 5,
+    "pairCount": 6,
+    "minimumPairReductionFraction": 0.1,
+    "minimumMedianReductionFraction": 0.15,
+    "noGreaterTreatmentCorrectionTotal": true
+  },
+  "stoppingRule": "Run all six fixed pairs once; retain every outcome. No replacement of slow, failed or incomplete runs. Only a concrete new defect can justify another separately versioned experiment. A failed threshold is a failed threshold, not grounds to add favorable repetitions.",
+  "baseline": "Fresh agent manually maintains the shared block in all three host files; generic scripting allowed. Named new workflow tools unavailable.",
+  "treatment": "Fresh agent edits canonical shared block and invokes generate-guidance.py. Skip packet creation for this known-scope task, as the revised workflow recommends. Generic scripting allowed.",
+  "sharedConditions": "Same model/settings inherited; identical fixture source and task objective per pair; full root fixture AGENTS read required for both. Both may inspect sources and use general shell/Python. Tool/fixture setup after task_started is charged. Raw actual UTC observations; independent final exact-change validator.",
+  "agentAssignment": "One fresh agent per trial, no agent runs both cohorts. Two waves of three matched pairs; alternate cohort launch order. Root records task_started immediately before dispatch, so model initiation/queue time is charged. Common fixture copies prepared beforehand identically; all cohort-specific preparation occurs after the start. Each wave completes before the next starts.",
+  "tasks": [
+    {
+      "pair": "r2-pair-1",
+      "sections": {
+        "Useful Commands": "Record the focused validation command and observed result in each handoff."
+      }
+    },
+    {
+      "pair": "r2-pair-2",
+      "sections": {
+        "Source Documentation Mesh": "Keep the source module owner visible in scoped task context."
+      }
+    },
+    {
+      "pair": "r2-pair-3",
+      "sections": {
+        "Review Guardrails": "Carry unresolved assumptions into the next task handoff explicitly."
+      }
+    },
+    {
+      "pair": "r2-pair-4",
+      "sections": {
+        "Useful Commands": "Prefer the direct guidance generator when the shared edit scope is already known.",
+        "Review Guardrails": "Preserve each host-specific section while synchronizing common guidance."
+      }
+    },
+    {
+      "pair": "r2-pair-5",
+      "sections": {
+        "Source Documentation Mesh": "Reference the source revision associated with retained validation evidence.",
+        "Review Guardrails": "Recheck source freshness before reusing a prior task packet."
+      }
+    },
+    {
+      "pair": "r2-pair-6",
+      "sections": {
+        "Useful Commands": "Record validation failures and retries alongside successful checks.",
+        "Source Documentation Mesh": "Keep task ownership and exclusions explicit when work changes hands."
+      }
+    }
+  ],
+  "interpretation": "Operational threshold for this maintenance family only, not statistical proof or general development speed. Tool API microbenchmarks are separate evidence. Passing PR timing remains unavailable for temporary fixture tasks. Original pilot remains unchanged.",
+  "toolHashes": {
+    "build/scripts/ai/generate_guidance.py": "15da6693e2c115709da5c401abb1fc2f9cb988829c106134383908c74333ca93",
+    "build/scripts/ai/task_context.py": "b0be25755d2e9f3c845dc91dd86dfbd7395f637630cfe1c9e680bb740bda8fed",
+    "build/python/cli/validation_plan.py": "4893dba12d1d1c28073e0454a280035965713cd8f93fe7fc0ec312163d03c3cd",
+    "build/scripts/ai/throughput_metrics.py": "37e711dab0f8734ac82570600553ab75ad7f8172d237550dd6bde59e9b534f5e"
+  }
+}

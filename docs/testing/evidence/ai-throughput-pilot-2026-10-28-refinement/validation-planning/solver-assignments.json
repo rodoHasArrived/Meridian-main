@@ -1,0 +1,20 @@
+{
+  "forkTurns": "none for every solver; coordinator history not inherited",
+  "modelOverrides": "none; same parent model/settings inherited",
+  "assignment": "one fresh solver per cohort, balanced order; vc4_b resumed same thread after capacity interruption",
+  "solvers": {
+    "vc-pair-1-baseline": "/root/vc1_b",
+    "vc-pair-1-treatment": "/root/vc1_t",
+    "vc-pair-2-baseline": "/root/vc2_b",
+    "vc-pair-2-treatment": "/root/vc2_t",
+    "vc-pair-3-baseline": "/root/vc3_b",
+    "vc-pair-3-treatment": "/root/vc3_t",
+    "vc-pair-4-baseline": "/root/vc4_b",
+    "vc-pair-4-treatment": "/root/vc4_t",
+    "vc-pair-5-baseline": "/root/vc5_b",
+    "vc-pair-5-treatment": "/root/vc5_t",
+    "vc-pair-6-baseline": "/root/vc6_b",
+    "vc-pair-6-treatment": "/root/vc6_t"
+  },
+  "notBlinded": "solvers knew their permitted tool availability; no oracle or other cohort result supplied"
+}

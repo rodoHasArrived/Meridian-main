@@ -1,0 +1,535 @@
+{
+  "schemaVersion": 1,
+  "rawLogs": [
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/validation-planning/confirmation-events/vc-pair-1-baseline.jsonl",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/validation-planning/confirmation-events/vc-pair-1-treatment.jsonl",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/validation-planning/confirmation-events/vc-pair-2-baseline.jsonl",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/validation-planning/confirmation-events/vc-pair-2-treatment.jsonl",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/validation-planning/confirmation-events/vc-pair-3-baseline.jsonl",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/validation-planning/confirmation-events/vc-pair-3-treatment.jsonl",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/validation-planning/confirmation-events/vc-pair-4-baseline.jsonl",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/validation-planning/confirmation-events/vc-pair-4-treatment.jsonl",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/validation-planning/confirmation-events/vc-pair-5-baseline.jsonl",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/validation-planning/confirmation-events/vc-pair-5-treatment.jsonl",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/validation-planning/confirmation-events/vc-pair-6-baseline.jsonl",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/validation-planning/confirmation-events/vc-pair-6-treatment.jsonl"
+  ],
+  "trials": [
+    {
+      "trial": "vc-pair-1-baseline",
+      "pair": "vc-pair-1",
+      "cohort": "baseline",
+      "instrumentationComplete": true,
+      "eventCount": 18,
+      "firstUsefulEditSeconds": null,
+      "observedFirstUsefulEditSeconds": null,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 1,
+      "observedCorrectionCycles": 1,
+      "validationWaitSeconds": 0.057309,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 1
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "attempt-1",
+          "result": "fail",
+          "startedAt": "2026-10-28T07:39:15.635796+00:00",
+          "finishedAt": "2026-10-28T07:39:15.666932+00:00",
+          "seconds": 0.031136
+        },
+        {
+          "validationId": "attempt-2",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:40:15.596374+00:00",
+          "finishedAt": "2026-10-28T07:40:15.622547+00:00",
+          "seconds": 0.026173
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 98.822349,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "first useful edit",
+        "passing PR required-check evidence"
+      ]
+    },
+    {
+      "trial": "vc-pair-1-treatment",
+      "pair": "vc-pair-1",
+      "cohort": "treatment",
+      "instrumentationComplete": true,
+      "eventCount": 6,
+      "firstUsefulEditSeconds": null,
+      "observedFirstUsefulEditSeconds": null,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 0,
+      "observedCorrectionCycles": 0,
+      "validationWaitSeconds": 0.034899,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 0
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "attempt-1",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:39:01.374257+00:00",
+          "finishedAt": "2026-10-28T07:39:01.409156+00:00",
+          "seconds": 0.034899
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 12.902736,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "first useful edit",
+        "passing PR required-check evidence"
+      ]
+    },
+    {
+      "trial": "vc-pair-2-baseline",
+      "pair": "vc-pair-2",
+      "cohort": "baseline",
+      "instrumentationComplete": true,
+      "eventCount": 61,
+      "firstUsefulEditSeconds": null,
+      "observedFirstUsefulEditSeconds": null,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 1,
+      "observedCorrectionCycles": 1,
+      "validationWaitSeconds": 0.056033,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 1
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "attempt-1",
+          "result": "fail",
+          "startedAt": "2026-10-28T07:39:41.881239+00:00",
+          "finishedAt": "2026-10-28T07:39:41.908432+00:00",
+          "seconds": 0.027193
+        },
+        {
+          "validationId": "attempt-2",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:40:21.609529+00:00",
+          "finishedAt": "2026-10-28T07:40:21.638369+00:00",
+          "seconds": 0.02884
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 69.421566,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "first useful edit",
+        "passing PR required-check evidence"
+      ]
+    },
+    {
+      "trial": "vc-pair-2-treatment",
+      "pair": "vc-pair-2",
+      "cohort": "treatment",
+      "instrumentationComplete": true,
+      "eventCount": 6,
+      "firstUsefulEditSeconds": null,
+      "observedFirstUsefulEditSeconds": null,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 0,
+      "observedCorrectionCycles": 0,
+      "validationWaitSeconds": 0.027974,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 0
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "attempt-1",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:39:12.041647+00:00",
+          "finishedAt": "2026-10-28T07:39:12.069621+00:00",
+          "seconds": 0.027974
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 13.250388,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "first useful edit",
+        "passing PR required-check evidence"
+      ]
+    },
+    {
+      "trial": "vc-pair-3-baseline",
+      "pair": "vc-pair-3",
+      "cohort": "baseline",
+      "instrumentationComplete": true,
+      "eventCount": 6,
+      "firstUsefulEditSeconds": null,
+      "observedFirstUsefulEditSeconds": null,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 0,
+      "observedCorrectionCycles": 0,
+      "validationWaitSeconds": 0.026114,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 0
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "attempt-1",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:39:45.195554+00:00",
+          "finishedAt": "2026-10-28T07:39:45.221668+00:00",
+          "seconds": 0.026114
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 20.532168,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "first useful edit",
+        "passing PR required-check evidence"
+      ]
+    },
+    {
+      "trial": "vc-pair-3-treatment",
+      "pair": "vc-pair-3",
+      "cohort": "treatment",
+      "instrumentationComplete": true,
+      "eventCount": 6,
+      "firstUsefulEditSeconds": null,
+      "observedFirstUsefulEditSeconds": null,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 0,
+      "observedCorrectionCycles": 0,
+      "validationWaitSeconds": 0.027064,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 0
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "attempt-1",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:39:31.770360+00:00",
+          "finishedAt": "2026-10-28T07:39:31.797424+00:00",
+          "seconds": 0.027064
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 8.963506,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "first useful edit",
+        "passing PR required-check evidence"
+      ]
+    },
+    {
+      "trial": "vc-pair-4-baseline",
+      "pair": "vc-pair-4",
+      "cohort": "baseline",
+      "instrumentationComplete": true,
+      "eventCount": 6,
+      "firstUsefulEditSeconds": null,
+      "observedFirstUsefulEditSeconds": null,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 0,
+      "observedCorrectionCycles": 0,
+      "validationWaitSeconds": 0.02928,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 0
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "attempt-1",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:42:41.432027+00:00",
+          "finishedAt": "2026-10-28T07:42:41.461307+00:00",
+          "seconds": 0.02928
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 36.764145,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "first useful edit",
+        "passing PR required-check evidence"
+      ]
+    },
+    {
+      "trial": "vc-pair-4-treatment",
+      "pair": "vc-pair-4",
+      "cohort": "treatment",
+      "instrumentationComplete": true,
+      "eventCount": 6,
+      "firstUsefulEditSeconds": null,
+      "observedFirstUsefulEditSeconds": null,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 0,
+      "observedCorrectionCycles": 0,
+      "validationWaitSeconds": 0.038105,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 0
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "attempt-1",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:41:19.121105+00:00",
+          "finishedAt": "2026-10-28T07:41:19.159210+00:00",
+          "seconds": 0.038105
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 13.985389,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "first useful edit",
+        "passing PR required-check evidence"
+      ]
+    },
+    {
+      "trial": "vc-pair-5-baseline",
+      "pair": "vc-pair-5",
+      "cohort": "baseline",
+      "instrumentationComplete": true,
+      "eventCount": 6,
+      "firstUsefulEditSeconds": null,
+      "observedFirstUsefulEditSeconds": null,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 0,
+      "observedCorrectionCycles": 0,
+      "validationWaitSeconds": 0.027583,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 0
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "attempt-1",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:41:42.607444+00:00",
+          "finishedAt": "2026-10-28T07:41:42.635027+00:00",
+          "seconds": 0.027583
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 22.537508,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "first useful edit",
+        "passing PR required-check evidence"
+      ]
+    },
+    {
+      "trial": "vc-pair-5-treatment",
+      "pair": "vc-pair-5",
+      "cohort": "treatment",
+      "instrumentationComplete": true,
+      "eventCount": 6,
+      "firstUsefulEditSeconds": null,
+      "observedFirstUsefulEditSeconds": null,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 0,
+      "observedCorrectionCycles": 0,
+      "validationWaitSeconds": 0.028655,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 0
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "attempt-1",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:41:39.719218+00:00",
+          "finishedAt": "2026-10-28T07:41:39.747873+00:00",
+          "seconds": 0.028655
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 14.403946,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "first useful edit",
+        "passing PR required-check evidence"
+      ]
+    },
+    {
+      "trial": "vc-pair-6-baseline",
+      "pair": "vc-pair-6",
+      "cohort": "baseline",
+      "instrumentationComplete": true,
+      "eventCount": 27,
+      "firstUsefulEditSeconds": null,
+      "observedFirstUsefulEditSeconds": null,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 1,
+      "observedCorrectionCycles": 1,
+      "validationWaitSeconds": 0.056974,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 1
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "attempt-1",
+          "result": "fail",
+          "startedAt": "2026-10-28T07:42:13.619822+00:00",
+          "finishedAt": "2026-10-28T07:42:13.649533+00:00",
+          "seconds": 0.029711
+        },
+        {
+          "validationId": "attempt-2",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:44:39.009849+00:00",
+          "finishedAt": "2026-10-28T07:44:39.037112+00:00",
+          "seconds": 0.027263
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 175.26964,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "first useful edit",
+        "passing PR required-check evidence"
+      ]
+    },
+    {
+      "trial": "vc-pair-6-treatment",
+      "pair": "vc-pair-6",
+      "cohort": "treatment",
+      "instrumentationComplete": true,
+      "eventCount": 6,
+      "firstUsefulEditSeconds": null,
+      "observedFirstUsefulEditSeconds": null,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 0,
+      "observedCorrectionCycles": 0,
+      "validationWaitSeconds": 0.026279,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 0
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "attempt-1",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:42:08.684760+00:00",
+          "finishedAt": "2026-10-28T07:42:08.711039+00:00",
+          "seconds": 0.026279
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 31.878864,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "first useful edit",
+        "passing PR required-check evidence"
+      ]
+    }
+  ],
+  "comparisons": {
+    "firstUsefulEditSeconds": {
+      "matchedPairs": 0,
+      "baselineMedian": null,
+      "treatmentMedian": null,
+      "medianPairedDifference": null
+    },
+    "repeatedFileReads": {
+      "matchedPairs": 6,
+      "baselineMedian": 0.0,
+      "treatmentMedian": 0.0,
+      "medianPairedDifference": 0.0
+    },
+    "correctionCycles": {
+      "matchedPairs": 6,
+      "baselineMedian": 0.5,
+      "treatmentMedian": 0.0,
+      "medianPairedDifference": -0.5
+    },
+    "validationWaitSeconds": {
+      "matchedPairs": 6,
+      "baselineMedian": 0.0426565,
+      "treatmentMedian": 0.0283145,
+      "medianPairedDifference": -0.010729999999999998
+    },
+    "passingPrSeconds": {
+      "matchedPairs": 0,
+      "baselineMedian": null,
+      "treatmentMedian": null,
+      "medianPairedDifference": null
+    },
+    "validatedCompletionSeconds": {
+      "matchedPairs": 6,
+      "baselineMedian": 53.0928555,
+      "treatmentMedian": 13.6178885,
+      "medianPairedDifference": -39.474967
+    }
+  },
+  "interpretation": "Observed local pilot trials only; task family and timing boundary are defined by the retained protocol. No causal or general delivery-speed claim. Missing evidence is null, not zero. Comparisons require complete instrumentation and a final successful recorded validation; failed attempt wait is retained. Passing PR evidence is supplied by the recorder; this offline reporter does not verify GitHub policy or check authenticity."
+}

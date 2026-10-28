@@ -1,0 +1,18 @@
+{"cohort": "baseline", "event": "task_started", "pair": "vc-pair-1", "timestamp": "2026-10-28T07:38:36.800578+00:00", "trial": "vc-pair-1-baseline"}
+{"event": "file_read", "path": "AGENTS.md", "sha256": "b8de136469c290a0b2b4b5da68748d0cb61c687aef5b7dc2fa65cd9f60294323", "timestamp": "2026-10-28T07:38:36.801120+00:00", "trial": "vc-pair-1-baseline"}
+{"event": "file_read", "path": "task.json", "sha256": "0e01cfcab6688854b729139f5aa5f8b24ee4fd632b45ab997689817ea40c8a01", "timestamp": "2026-10-28T07:38:36.801352+00:00", "trial": "vc-pair-1-baseline"}
+{"event": "validation_started", "timestamp": "2026-10-28T07:39:15.635796+00:00", "trial": "vc-pair-1-baseline", "validationId": "attempt-1"}
+{"event": "validation_finished", "result": "fail", "timestamp": "2026-10-28T07:39:15.666932+00:00", "trial": "vc-pair-1-baseline", "validationId": "attempt-1"}
+{"event": "correction", "timestamp": "2026-10-28T07:39:22.311414+00:00", "trial": "vc-pair-1-baseline"}
+{"event": "file_read", "path": "tests/Meridian.TestSupport/Meridian.TestSupport.csproj", "sha256": "b78c6e6a9d329b69dcd3de8d31b3d02c436235092f17c63e8b6d53b2a854d2fb", "timestamp": "2026-10-28T07:39:33.429075+00:00", "trial": "vc-pair-1-baseline"}
+{"event": "file_read", "path": "tests/Meridian.Setup.Tests/Meridian.Setup.Tests.csproj", "sha256": "c6710bdd23715f96dcb6262119ec55b3e53ad0f185f7f6ded9d67952c2e0a933", "timestamp": "2026-10-28T07:39:33.431708+00:00", "trial": "vc-pair-1-baseline"}
+{"event": "file_read", "path": "tests/Meridian.ProcessTestHelper/Meridian.ProcessTestHelper.csproj", "sha256": "8ebb665b1bdf9dd9afb3e14792f5b30aa28626984369359ad252ed544e1e2e8f", "timestamp": "2026-10-28T07:39:33.462145+00:00", "trial": "vc-pair-1-baseline"}
+{"event": "file_read", "path": "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj", "sha256": "0dd65ce68408f4958aa32105a67efd3a2ddebc48cec165d2850ebf6489aecaf9", "timestamp": "2026-10-28T07:39:33.469618+00:00", "trial": "vc-pair-1-baseline"}
+{"event": "file_read", "path": "src/Meridian.Contracts/Meridian.Contracts.csproj", "sha256": "85be8c4df1d781438c21062de8db0770686bbaef306f3a17e64b4e30f9e78157", "timestamp": "2026-10-28T07:39:47.664368+00:00", "trial": "vc-pair-1-baseline"}
+{"event": "file_read", "path": "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj", "sha256": "a95a75f8af149e65f38906dc273d3394f7663f0cede961999355266b8590ca04", "timestamp": "2026-10-28T07:39:47.665859+00:00", "trial": "vc-pair-1-baseline"}
+{"event": "file_read", "path": "src/Meridian.Setup/Meridian.Setup.csproj", "sha256": "658c9fe680e438a78b377528e1952e551ede2974382245d3f898f608a987e18f", "timestamp": "2026-10-28T07:39:47.669890+00:00", "trial": "vc-pair-1-baseline"}
+{"event": "file_read", "path": "tests/Meridian.Tests/Meridian.Tests.csproj", "sha256": "a85baab62fba8baae8e2dc7dcda41167b0ba3ae7ceb26ccce5624d37a5adcb12", "timestamp": "2026-10-28T07:39:47.699050+00:00", "trial": "vc-pair-1-baseline"}
+{"event": "file_read", "path": "tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj", "sha256": "3aa555728e55363a9086eef98db40e916452f62e9bc7588e21aafae4e9a53e40", "timestamp": "2026-10-28T07:40:01.250193+00:00", "trial": "vc-pair-1-baseline"}
+{"event": "validation_started", "timestamp": "2026-10-28T07:40:15.596374+00:00", "trial": "vc-pair-1-baseline", "validationId": "attempt-2"}
+{"event": "validation_finished", "result": "pass", "timestamp": "2026-10-28T07:40:15.622547+00:00", "trial": "vc-pair-1-baseline", "validationId": "attempt-2"}
+{"event": "task_finished", "instrumentationComplete": true, "timestamp": "2026-10-28T07:40:15.622927+00:00", "trial": "vc-pair-1-baseline"}
