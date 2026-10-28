@@ -280,6 +280,17 @@ public static class SecurityTermsEnvelope
     /// </summary>
     public static void EnsureWritableAsAssetSpecificTerms(string assetClass, JsonElement payload)
     {
+        // A write reaches the caller, so it names what to submit rather than the read path's conversion.
+        var declaredFormat = GetDeclaredFormat(payload);
+        if (declaredFormat is not null
+            && declaredFormat is not (SecurityTermsFormats.Flat or SecurityTermsFormats.CustomProfile))
+        {
+            throw new InvalidOperationException(
+                $"Terms for asset class '{assetClass}' declare {FormatKey} '{declaredFormat}', which a write does not accept. " +
+                $"Submit asset-specific terms: omit {FormatKey}, or set it to '{SecurityTermsFormats.Flat}' or " +
+                $"'{SecurityTermsFormats.CustomProfile}'.");
+        }
+
         EnsureReadableAsAssetSpecificTerms(assetClass, payload);
         if (TryGetWriteRefusal(assetClass, payload, out var reason))
         {

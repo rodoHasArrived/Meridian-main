@@ -490,9 +490,15 @@ This command verifies referenced files and directories exist; it does not valida
     the economic `call` module. Search API request logs and retained import batches (JSON, CSV,
     EDGAR, WPF) for Bond, CertificateOfDeposit and StructuredCredit payloads that populate either key
     at the top level, and notify the owners of any client that sends them. 4a dropped those keys
-    silently; this build refuses them with the not-yet-writable reason. The term-block endpoint
-    answers 400 with that reason; a create or amend request surfaces it through the shared API
-    exception handler as a 500, with the reason in the server log.
+    silently; this build refuses them with the not-yet-writable reason. From the 2026-10-27 change
+    that answers refused creates and amends with 400 (its resolution pass is in the
+    [extensibility review](../architecture/security-master-extensibility-review.md)), the create,
+    amend and term-block endpoints answer 400 with that reason as the Problem Details `detail`. On a
+    node without that change, including one rolled back below it, only the term-block endpoint's
+    pre-check of a `callSchedule` or `putSchedule` block answers 400; a create or amend request
+    answers 500, with the reason only in the server log. An import reports the reason among that
+    row's errors, and a workbench field edit is refused by the field-edit route (422) before
+    anything is staged.
 - **Versioned containers decode by their own stamp (priority 5, increment 5a) (2026-10-28).**
   Decision 3's rule that versioned class terms are flat-codec-only now has one implementation,
   shared by every reader that decides what a row declares.

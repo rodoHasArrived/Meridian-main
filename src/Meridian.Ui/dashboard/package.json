@@ -17,7 +17,7 @@
     "test:w4": "vitest run src/screens/w4-acceptance-parity.test.ts src/screens/operations-continuity-screen.view-model.test.ts src/screens/reporting-screen.view-model.test.ts"
   },
   "dependencies": {
-    "lucide-react": "0.468.0",
+    "lucide-react": "1.61.0",
     "meridian-tools": "file:../../..",
     "react": "18.3.1",
     "react-dom": "18.3.1",
@@ -26,7 +26,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@tailwindcss/postcss": "4.3.3",
-    "@testing-library/jest-dom": "6.6.3",
+    "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "16.3.3",
     "@testing-library/user-event": "14.6.8",
     "@types/node": "20.19.0",

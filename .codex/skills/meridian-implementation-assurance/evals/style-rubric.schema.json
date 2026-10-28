@@ -6,7 +6,7 @@
   "properties": {
     "overall_pass": {
       "type": "boolean",
-      "description": "True when total >= 8/10 and no category scored 0."
+      "description": "True only when total >= 8/10, no category scored 0, every category has evidence, and failed_checks is empty. Verify these conditions beyond schema validation."
     },
     "score": {
       "type": "integer",
@@ -45,11 +45,12 @@
           },
           "pass": {
             "type": "boolean",
-            "description": "True when score >= 1."
+            "description": "True when score >= 1 and evidence is present."
           },
           "notes": {
             "type": "string",
-            "description": "Concise evidence or failure reason for this category."
+            "description": "Concise evidence or failure reason for this category.",
+            "minLength": 1
           }
         },
         "required": ["id", "score", "pass", "notes"],
@@ -59,7 +60,7 @@
     "failed_checks": {
       "type": "array",
       "items": { "type": "string" },
-      "description": "Human-readable list of checks that scored 0. Empty when all pass."
+      "description": "Critical or failed checks; any entry prevents overall_pass, regardless of total score."
     },
     "corrective_follow_ups": {
       "type": "array",

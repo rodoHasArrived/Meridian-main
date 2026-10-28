@@ -65,7 +65,7 @@ classDiagram
         +string FundProfileId
         +string? InstrumentSymbol
         +Guid? LedgerBookId
-        +string SourceEventType
+        +IReadOnlyDictionary~string__decimal~? LotMutationComponents
     }
     class Meridian_Contracts_Ledger_RuleDryRunResultDto["RuleDryRunResultDto"] {
         +string Currency

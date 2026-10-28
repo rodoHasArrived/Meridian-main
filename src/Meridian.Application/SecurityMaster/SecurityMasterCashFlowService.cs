@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Meridian.Application.SecurityMaster.CashFlow;
 using Meridian.Contracts.Calendars;
 using Meridian.Contracts.SecurityMaster;
@@ -90,8 +89,12 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         await _store.UpsertSourceAsync(record, ct).ConfigureAwait(false);
     }
 
-    public async Task<StructuredCashFlowProjectionDto?> GetProjectionAsync(
+    public Task<StructuredCashFlowProjectionDto?> GetProjectionAsync(
         Guid securityId, StructuredCashFlowScenario scenario, CancellationToken ct = default)
+        => GetProjectionAsOfAsync(securityId, scenario, DateTimeOffset.UtcNow, ct);
+
+    public async Task<StructuredCashFlowProjectionDto?> GetProjectionAsOfAsync(
+        Guid securityId, StructuredCashFlowScenario scenario, DateTimeOffset asOf, CancellationToken ct = default)
     {
         var assignment = await _store.GetSourceAsync(securityId, ct).ConfigureAwait(false);
         if (assignment is null)
@@ -129,9 +132,11 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         if (assignment.SourceKind is StructuredCashFlowSourceKind.CalculatedBullet
             or StructuredCashFlowSourceKind.CalculatedSinker)
         {
-            var forwardCurves = await LoadForwardCurvesAsync(security, ct).ConfigureAwait(false);
+            // Curves are read as of the projection date, not the wall clock, so a valuation as of
+            // another date projects floating legs from the curve in force on that date.
+            var forwardCurves = await LoadForwardCurvesAsync(security, DateOnly.FromDateTime(asOf.UtcDateTime.Date), ct).ConfigureAwait(false);
             var projection = BuildCalculatedProjection(
-                security, assignment.SourceKind, scenario, staleness, assignment.LastUpdatedUtc, _calendars, forwardCurves);
+                security, assignment.SourceKind, scenario, staleness, assignment.LastUpdatedUtc, asOf, _calendars, forwardCurves);
             if (projection.ScheduleEvidence is { CoverageGaps.Count: > 0 } evidence)
             {
                 // Coverage gaps are informational (ADR-025 decision 2): the schedule still projects.
@@ -169,7 +174,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         }
 
         var providerProjection = await provider.GetProjectedCashFlowsAsync(
-            securityId, isin, DateTimeOffset.UtcNow, scenario, ct).ConfigureAwait(false);
+            securityId, isin, asOf, scenario, ct).ConfigureAwait(false);
 
         // Stamp freshness onto provider projections too so every consumer sees a consistent gate.
         return providerProjection is null
@@ -244,7 +249,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
     /// the provider has no curve for, the leg keeps the flat-forward projection.
     /// </summary>
     private async Task<IReadOnlyDictionary<string, SecurityForwardCurve>> LoadForwardCurvesAsync(
-        SecurityDetailDto security, CancellationToken ct)
+        SecurityDetailDto security, DateOnly asOfDate, CancellationToken ct)
     {
         var curves = new Dictionary<string, SecurityForwardCurve>(StringComparer.OrdinalIgnoreCase);
         if (_forwardCurves is null)
@@ -253,7 +258,6 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         }
 
         var legs = StructuredCashFlowTermsResolver.Resolve(security).Legs ?? [];
-        var asOfDate = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime.Date);
         foreach (var indexName in legs
                      .Where(static leg => leg.RateKind == CashFlowLegRateKind.Floating && !string.IsNullOrWhiteSpace(leg.IndexName))
                      .Select(static leg => leg.IndexName!.Trim())
@@ -275,10 +279,10 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         StructuredCashFlowScenario scenario,
         StructuredCashFlowStaleness staleness,
         DateTimeOffset? sourceLastUpdatedUtc,
+        DateTimeOffset asOf,
         IBusinessDayCalendarSource? calendars,
         IReadOnlyDictionary<string, SecurityForwardCurve>? forwardCurves = null)
     {
-        var asOf = DateTimeOffset.UtcNow;
         var terms = StructuredCashFlowTermsResolver.Resolve(security);
         var factorSchedule = terms.FactorSchedule;
 
@@ -326,9 +330,6 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
 
         var principalBasis = terms.PrincipalFace is > 0m ? terms.PrincipalFace.Value : 100m;
 
-        // Seed the outstanding factor from the typed factor schedule as of today, falling back to the
-        // scalar current factor when no dated schedule point applies. The applied ENTRY (not just its
-        // factor) is retained: a dated factor only reflects principal events up to its own as-of.
         // A contractual schedule needs a RESOLVABLE principal basis: without par/face/notional
         // (DirectLoan carries none) the 100-unit fallback above would cap a real 1,000,000
         // instalment at 100 and feed that distortion to the ledger bridge — so basis-less records
@@ -348,59 +349,9 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
                 .ToArray()
             : [];
         var contractualPrincipal = terms.PrincipalFace is > 0m ? inWindowContractual : [];
-        StructuredFactorScheduleEntry? appliedFactorEntry = null;
-        for (var i = terms.FactorSchedule.Count - 1; i >= 0; i--)
-        {
-            if (terms.FactorSchedule[i].AsOfDate <= asOfDate)
-            {
-                appliedFactorEntry = terms.FactorSchedule[i];
-                break;
-            }
-        }
+        var outstanding = SecurityPrincipalBalance.OpeningOutstanding(security, terms, asOfDate);
 
-        // A scalar current factor is DATED evidence when a factorDate is retained — and dated
-        // evidence from the FUTURE does not describe today's balance: a 0.8 factor effective next
-        // month would understate today's outstanding (and every projected interest and principal
-        // row) by 20%. Only an undated scalar, or one dated on or before the projection as-of,
-        // may seed the balance; a future-dated scalar leaves the latest eligible schedule point
-        // (already resolved above) or the unfactored walk in charge.
-        var scalarFactorDate = SecurityTermReader.ReadDate(
-            EnumerateFactorDateSources(SecurityAssetClassTermsUpgrader.UpgradeForRead(security.AssetClass, security.AssetSpecificTerms)),
-            ["factorDate", "currentFactorDate"]);
-        var scalarFactorApplies = scalarFactorDate is not DateOnly scalarAsOf || scalarAsOf <= asOfDate;
-        var scheduledFactor = appliedFactorEntry?.Factor ?? (scalarFactorApplies ? terms.CurrentFactor : null);
-        var hasAuthoritativeFactor = scheduledFactor is >= 0m;
-        var factor = hasAuthoritativeFactor ? scheduledFactor.GetValueOrDefault() : 1m;
-        var outstanding = RoundCash(principalBasis * factor);
-        if (contractualPrincipal.Length > 0)
-        {
-            if (!hasAuthoritativeFactor)
-            {
-                // Without an as-of factor, completed contractual payments are the best retained
-                // evidence of today's outstanding.
-                var paidBeforeAsOf = contractualPrincipal
-                    .Where(entry => entry.PaymentDate < asOfDate)
-                    .Sum(static entry => entry.Amount);
-                outstanding = RoundCash(decimal.Max(0m, outstanding - paidBeforeAsOf));
-            }
-            else if ((appliedFactorEntry?.AsOfDate ?? scalarFactorDate) is DateOnly factorEvidenceDate)
-            {
-                // A DATED factor reflects principal events only up to its as-of date: a January
-                // factor of 0.8 does not know about February's contractual payment, so completed
-                // payments dated after the factor and before today still reduce the opening
-                // balance — otherwise later interest, maturity principal, and ledger postings are
-                // overstated. A scalar currentFactor with a retained factorDate is dated evidence
-                // too; only a genuinely undated scalar keeps the assumed-current fallback below.
-                var paidAfterFactor = contractualPrincipal
-                    .Where(entry => entry.PaymentDate > factorEvidenceDate && entry.PaymentDate < asOfDate)
-                    .Sum(static entry => entry.Amount);
-                outstanding = RoundCash(decimal.Max(0m, outstanding - paidAfterFactor));
-            }
-            // Undated scalar factor: assumed to already reflect every completed payment — reducing
-            // again would double-count.
-        }
-
-        // A declared schedule shares the principal basis and factor seeding above and replaces the
+        // A declared schedule shares the principal basis and opening balance above and replaces the
         // coupon walk below.
         if (declared.IsDeclared)
         {
@@ -806,29 +757,6 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
 
     private static DateTimeOffset ToUtcDateTimeOffset(DateOnly date)
         => new(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
-
-    /// <summary>
-    /// Term sources for the scalar factor-date lookup, in the SAME nested-first precedence
-    /// <see cref="StructuredCashFlowTermsResolver"/> uses for the factor and schedule themselves:
-    /// a profile-backed record persists its governed scalar terms beneath
-    /// <c>profileFields</c>, so probing only the envelope root would miss the retained date and
-    /// misread a dated factor as current.
-    /// </summary>
-    private static IEnumerable<JsonElement> EnumerateFactorDateSources(JsonElement assetSpecificTerms)
-    {
-        if (assetSpecificTerms.ValueKind != JsonValueKind.Object)
-        {
-            yield break;
-        }
-
-        if (SecurityTermReader.TryGetProperty(assetSpecificTerms, "profileFields", out var profileFields)
-            && profileFields.ValueKind == JsonValueKind.Object)
-        {
-            yield return profileFields;
-        }
-
-        yield return assetSpecificTerms;
-    }
 
     private static decimal RoundCash(decimal amount)
         => decimal.Round(amount, 4, MidpointRounding.AwayFromZero);

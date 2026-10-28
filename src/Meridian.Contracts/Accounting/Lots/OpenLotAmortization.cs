@@ -90,6 +90,10 @@ public static class OpenLotAmortization
         if (lot.Version <= 0 || lot.OpenQuantity <= 0 || acquisition.QuantityBasis != LotQuantityBasis.Face || terms is null
             || terms.BookedFactor != 1m || instruction.ExpectedBookPositionVersion <= 0)
             throw new ArgumentException("Amortization requires a versioned open face lot with unadjusted bullet principal and retained acquisition terms.");
+        // A paid-down lot is not amortized: its premium or discount is realized pro rata through
+        // factor paydowns and the remainder through the reduced basis at disposal.
+        if (lot.CurrentFactor is not null)
+            throw new ArgumentException("Amortization refuses a lot that holds a paydown factor; its premium or discount is realized through factor paydowns and disposal.");
         var retainedReversal = instruction.Reversal is not null;
         if (security.SecurityId != lot.SecurityId || security.Version <= 0
             || (security.Status != SecurityStatusDto.Active && !(retainedReversal && security.Status == SecurityStatusDto.Inactive))

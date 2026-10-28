@@ -93,6 +93,17 @@ which refuses payload types or versions newer than this build understands. Amend
 carry the stored economic terms that a flat rebuild cannot express (`retainedEconomicTerms`), so a
 newer-to-older terms conversion keeps the data rather than silently dropping it.
 
+A Security Master create or term amendment that a write guard, the Write-mode mapping or the F#
+validator refuses, whether for the terms it submits or for the state of the stored record (a
+round-trip or ahead-of-write guard it trips, or `security_inactive`), raises
+`SecurityMasterWriteRefusedException`, an `InvalidOperationException` subtype whose message is
+written for the caller (deactivation shares the guards and raises it too). Request errors raised as
+`ArgumentException`, such as a term block of the wrong JSON kind or an unsupported identifier kind,
+are not this type. A stored row this node cannot decode (amend and deactivate decode it before every
+write guard except the unrecognized-class check), a missing security, an F# rejection
+carrying `version_conflict`, `missing_state` or `security_id_mismatch` (even beside request errors)
+and a store failure are not refusals and keep their existing exception types.
+
 `SecurityMasterStructuredCreditReclassificationService` builds the ADR-022 reclassification report:
 it maps every active record through the read-tolerant mapper, asks the F# domain for a
 StructuredCredit proposal, and returns ready proposals (the exact stamped terms document the write
@@ -252,6 +263,11 @@ account, and does not recreate routing or bindings. Its result reports the canon
 the connection ID as separate identities, and it fails unless the resulting scoped status is usable
 (Configured, Verified, or NotRequired for a provider without credentials). Credential verification
 remains a separate step.
+Scoped setup takes the shared configuration lease before strictly loading ownership and holds it
+through the scoped vault write and status read. A concurrent connection removal waits for that
+operation; setup waiting behind a removal rechecks the committed ownership and refuses before
+touching the vault. Cancellation while waiting also leaves the vault untouched. The lock order is
+configuration then vault; scoped vault operations must not reenter configuration persistence.
 
 `ProviderFeatureRegistration` uses the shared `AddProviderServices` composition path. The
 Infrastructure descriptor catalog supplies built-in factories for streaming, historical backfill,
@@ -686,7 +702,16 @@ Core workstation host. Do not introduce a second listener or independent monitor
   instrument-kind mapping, the profile catalog contract,
   and seeded approved custom/private asset profile templates are owned by
   `Meridian.ReferenceData.SecurityMaster`; this folder consumes those reference-data contracts for
-  validation, governance, readiness, projection rebuilds, and endpoint composition. Profile-backed
+  validation, governance, readiness, projection rebuilds, and endpoint composition.
+  `SecurityMaster/Otc/` holds `OtcExposureService` (refuses a default as-of date, reads a netting
+  set, its agreement's balances and the netting sets that share the agreement, values each open
+  contract through `IOtcContractValuationSource` at one knowledge time, the request's or else the
+  computation instant, applies `OtcExposureRules.Compute` and appends the snapshot) and
+  `PricingStoreOtcContractValuationSource`, the default source, which marks a
+  contract from its instrument's percent-of-par golden-copy price as `sign(direction) × notional ×
+  price / 100` and reports a missing, stale, differently quoted or differently denominated price
+  as a named blocker; `StorageFeatureRegistration` registers it with `TryAddSingleton` so a host
+  can supply another source first. Profile-backed
   validation rules still enforce approved profile-version pinning, typed no-code field values,
   profile approval metadata, and identifier coverage. The C# to F# identifier seam preserves
   optional provider/source metadata without changing standard-identifier identity; a
@@ -1066,10 +1091,36 @@ lots with multiplier 100. Writes reject non-canonical values for typed term conv
 (day count, settlement method, option right).
 
 `SecurityMasterCashFlowService` projects floating legs from an `ISecurityForwardCurveProvider` when
-one is registered (the default is the in-process `InMemorySecurityForwardCurveProvider`): each
-future reset reads the index curve at its accrual start, the period already reset keeps the
-retained fixing, and each leg schedule records its `RateSource`. Without a curve, legs stay flat
-forward. `SecurityMasterService.AmendTermBlockAsync` replaces one registry-declared nested term
+one is registered: each future reset reads the index curve at its accrual start, the period already
+reset keeps the retained fixing, and each leg schedule records its `RateSource`. Without a curve,
+legs stay flat forward. The registered provider is `SecurityMaster/Curves/StoredSecurityForwardCurveProvider`,
+which reads the one stored Forward definition for the index (trimmed, ignoring case) at its latest
+version dated on or before the projection date and carries the curve key, version and hash prefix
+into `RateSource`; several definitions for one index are logged and leave the leg flat forward.
+`GetProjectionAsOfAsync` projects as of a requested date and reads curves as of that date;
+`GetProjectionAsync` is that method at `UtcNow`, so existing callers are unchanged.
+`SecurityMaster/Valuation/` holds the valuation seam: `SecurityValuationService` loads the security
+and dispatches to the registered `ISecurityValuationModel` whose kind the request names or the
+catalog's `DefaultValuationModel` declares; `QuotedPriceValuationModel` composes the golden-copy
+as-of read (retaining a selection receipt, as that read does), reports its staleness verdict as a
+diagnostic and picks the market-value function by the price's quote unit, scaling a percent-of-par
+quote by the same opening outstanding principal used by calculated cash flows. Dated factors
+include only payments through their evidence date; later contractual payments completed before
+the valuation date reduce the balance. Without an applicable factor, all completed in-window
+contractual principal payments reduce it; an undated scalar is assumed current and is not reduced
+twice. Payments on the valuation date remain payable, and a future-dated scalar does not apply yet.
+Quotations retain decimal factor precision until holding valuation; calculated schedules keep their
+existing four-place cash rounding.
+`DiscountedCashFlowValuationModel` discounts
+the base-scenario projection as of the valuation date on a stored Discount curve (pinned on the
+request by id and optionally by version id, or the one definition in the security's currency),
+refuses to extrapolate past the curve, quotes face-value lots per 100 of the outstanding face the
+projection repays from the valuation date, reports the oldest of the discount and forward curves'
+as-of dates as `ObservedAsOf`, reports a stale or undated cash-flow source and a pinned version
+dated after the valuation date or recorded after the knowledge cutoff as diagnostics, and names the
+curve version, hash, forward provenance and terms version in its inputs. Market values use the F#
+`SecurityCalculations` functions, with the paydown factor applied once.
+`SecurityMasterService.AmendTermBlockAsync` replaces one registry-declared nested term
 block (preferred terms, step and principal schedules, swap legs) through the normal amend path and
 records `TermBlockAmended`. A block the class only reads (`scheduleConventions`, `callSchedule`,
 `putSchedule`) is refused with the not-yet-writable reason.

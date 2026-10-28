@@ -35,8 +35,11 @@ public sealed record FaceValueLot : IUnitizedLot
             throw new ArgumentOutOfRangeException(nameof(bookedFactor), bookedFactor, "Booked factor must be in (0, 1].");
         if (parBasis <= 0m)
             throw new ArgumentOutOfRangeException(nameof(parBasis), parBasis, "Par basis must be positive.");
-        if (currentFactor is { } current && current is <= 0m or > 1m)
-            throw new ArgumentOutOfRangeException(nameof(currentFactor), currentFactor, "Current factor must be in (0, 1].");
+        // The booked factor is an acquisition fact and stays in (0, 1]; the current factor may reach
+        // zero, which is a pool that has repaid all of its principal: the lot still exists as a
+        // record with its acquisition facts, it simply holds no face.
+        if (currentFactor is { } current && current is < 0m or > 1m)
+            throw new ArgumentOutOfRangeException(nameof(currentFactor), currentFactor, "Current factor must be in [0, 1].");
 
         LotId = lotId.Trim();
         SecurityId = securityId;
@@ -114,7 +117,7 @@ public sealed record FaceValueLot : IUnitizedLot
     /// </summary>
     public decimal CurrentFace(decimal currentFactor)
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(currentFactor);
+        ArgumentOutOfRangeException.ThrowIfNegative(currentFactor);
         return OriginalFace * currentFactor / BookedFactor;
     }
 
@@ -127,12 +130,13 @@ public sealed record FaceValueLot : IUnitizedLot
     /// and the principal paid down is the face released by the decline, <see cref="ParFace"/> ×
     /// (<see cref="CurrentFactor"/> − <paramref name="newFactor"/>), the same arithmetic the
     /// factor-paydown projection posts. A factor equal to the current one releases no principal; a
-    /// higher factor is a restatement, not a paydown, and is refused.
+    /// higher factor is a restatement, not a paydown, and is refused. A factor of zero is a full
+    /// paydown: every remaining par face is released and the lot holds no face.
     /// </summary>
     public FaceValueLotFactorPaydown ApplyFactor(decimal newFactor)
     {
-        if (newFactor is <= 0m or > 1m)
-            throw new ArgumentOutOfRangeException(nameof(newFactor), newFactor, "Factor must be in (0, 1].");
+        if (newFactor is < 0m or > 1m)
+            throw new ArgumentOutOfRangeException(nameof(newFactor), newFactor, "Factor must be in [0, 1].");
         if (newFactor > CurrentFactor)
             throw new ArgumentOutOfRangeException(nameof(newFactor), newFactor, $"A factor above the lot's current factor {CurrentFactor} is a restatement, not a paydown; use WithFactor.");
 

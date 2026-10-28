@@ -43,8 +43,9 @@ profile) and a per-asset-class `assetClassTermsVersion` taken from `SecurityAsse
 Each class writes its `TermsVersion` and reads through `ReadsTermsThrough`, which an expand step
 raises with `ReadableTermsVersion` (ADR-024, readable before writable). Terms stamped above the read
 ceiling fail loudly; terms stamped above the write version, or populating a term introduced above
-it, are read but refused on write (`EnsureWritableAsAssetSpecificTerms`, `TryGetWriteRefusal`), and
-profile envelopes are checked by stamp only. `TryGetReadRefusal` returns the read guard's refusal,
+it, are read but refused on write (`EnsureWritableAsAssetSpecificTerms`, `TryGetWriteRefusal`; a
+write that declares a non-flat `termsFormat` is refused with what to submit), and profile envelopes
+are checked by stamp only. `TryGetReadRefusal` returns the read guard's refusal,
 with its exact text, without throwing. `SecurityVersionedTerms` names the versioned containers
 (`ScheduleConventionsKey`, `CallScheduleKey`, `PutScheduleKey`) and holds the one predicate that
 decides which of them a payload decodes (`Decoding`, `SecurityVersionedTermDecoding.Decodes`): a
@@ -261,6 +262,28 @@ neither value is a tax-basis determination or a new FX translation. The transiti
 quantity, acquisition facts and holding date and refuses reductions beyond either remaining basis.
 Optional capital-return fields on the event spine, posting command and basis adjustment are
 omitted from historical JSON when absent.
+
+`OpenLotFactorPaydownInstructionDto` (`Accounting/Lots/OpenLotFactorPaydown.cs`) retains a reviewed
+MBS/ABS factor paydown over every lot open in one security/position scope: the canonical
+`AssetAccounting.CorporateAction` event whose identity is the projector's deterministic
+`FactorPaydownProjectionIdentity.EventId`, its lineage, the versioned scope, the prior and new
+factor, the position principal and the per-lot allocation (`OpenLotFactorPaydownLotDto`: expected
+lot, expected current factor, principal, both bases after relief, ordinal).
+`OpenLotFactorPaydown.Allocate` requires the position principal to equal the lots' held par face x
+(prior - new) rounded once to `CurrencyMinorUnits`, spreads it by largest remainder (each lot's raw
+share truncated, the leftover minor units to the largest remainders, ties to the later lot in the
+given order), so every lot's principal is non-negative, at most its raw share rounded up, and the
+lots sum to the position exactly, and relieves each lot's basis pro rata (`basis x new / prior`,
+rounded once in the lot's currency), so across several lots the currency rounding is part of the
+realized result. `Project` re-runs that allocation, requires equality and returns each lot at the
+new factor with its version advanced, closed when the new factor is zero. `OpenLotAmortization`
+refuses a lot that holds a `CurrentFactor`. `RealizedResult` is principal less functional basis relieved;
+`Components` exposes principal, basis relieved and realized gain/loss to Rules Studio's
+`LotMutationComponent` formulas. Same-currency Long face lots only. `OpenLotDto.CurrentFactor`
+(omitted when null) and `FaceValueLot` now admit a factor of zero for a fully repaid pool; a
+successor must inherit its predecessor's factor. Optional factor-paydown fields on the event spine,
+lot mutation, posting command and basis adjustment are omitted from JSON when absent, so retained
+fingerprints are unchanged.
 
 `AssetLotMutationInstructionDto.DisposalSalePrice` optionally retains the original disposal quote
 through governed drafting and posting. It is omitted from JSON when absent so existing retained
@@ -1869,13 +1892,55 @@ markets Meridian's providers and seed data use and maps unambiguous exchange nam
 `Nasdaq`, `AMEX`, ...) to a MIC, leaving routing labels such as `SMART` unresolved; its `Codes` and
 `ExchangeNames` tables also drive the `securities.listing_mic` backfill.
 
+### OTC contract model: exposure, collateral and margin calls
+
+`OtcContracts.cs` models master agreements, collateral agreements (CSAs), netting sets and bilateral
+contracts behind `IOtcContractStore`, with `OtcContractRules` as the pure write rules.
+`OtcExposure.cs` adds the valuation seam `IOtcContractValuationSource` (one contract, one date, one
+currency, a signed mark from the fund's side or named blockers), the append-only
+`OtcExposureSnapshotDto` and `OtcExposureRules`: which contracts enter, close-out versus gross
+netting by master form, the two-sided credit support amount with the agreement's independent
+amount read as the fund's, holdings adjusted by the agreement's current eligible-line haircut, the
+minimum-transfer test before rounding, the fail-closed blockers (among them an agreement shared
+with another netting set, a positive balance valued after the as-of date and a balance no longer
+eligible), null credit support sides when there is no agreement, the refusal of an as-of date
+after the current UTC date (`RequireNotFutureDated`), what the computation read
+(`OtcExposureSnapshotInputsDto`: the netting set, each of its contracts, each balance under the
+agreement and the netting sets that reference it, each at a version, plus the securities valued
+and the knowledge time of their market data) and a reproducible payload digest.
+`OtcCollateral.cs` adds `OtcCollateralBalanceDto` (haircut copied from the agreement's
+eligible line when written, valued amount computed, valuation date required), `OtcMarginCallDto`
+(amount copied from a snapshot movement of a date that has come, refused by
+`OtcMarginCallRules.RequireUnchangedInputs` once any recorded input has changed, once market data
+for a valued security is recorded after `MarketDataKnownAt` (`OtcMarketDataRecordDto`), or when the
+snapshot replays an earlier knowledge time) and the lifecycle in `OtcMarginCallRules` behind
+`IOtcCollateralStore`, which also lists the netting sets that reference an agreement;
+`IOtcExposureService` computes and records snapshots. The domain page is
+[Credit Support](../../docs/domain/credit-support.md).
+
 ### Security Master income, curves, factors and corporate-action terms
 
 `SecurityIncomeCashFlowProjector` builds the declared income schedule (dividends, special
 dividends, fund distributions with a typed `distributionComponent`, returns of capital) from
 effective corporate actions and lists unschedulable distributions as gaps.
 `SecurityForwardCurve` and `ISecurityForwardCurveProvider` supply per-index forward fixings for
-floating legs. `SecurityFactorHistoryProjector` merges the declared factor schedule, paydown
+floating legs; `SecurityForwardCurve.Describe` writes the `forwardCurve:{index}@{yyyy-MM-dd}`
+provenance in the invariant culture and `TryReadAsOf` reads the as-of back. `SecurityCurves.cs`
+holds the stored-curve model behind that seam: a write-once
+`SecurityCurveDefinitionDto` (key, kind, currency, index, tenor, day count, interpolation, source),
+append-only `SecurityCurveVersionDto`s (economic as-of, knowledge time, actor, dated points and a
+canonical content hash), the `ISecurityCurveStore` contract (including `GetVersionByIdAsync` for a
+pinned version), and `SecurityCurveRules`, the pure
+rules and arithmetic every store and model shares (normalization, `ContentSha256`, `ValueAt`,
+`DiscountFactorAt`, and `ToForwardCurve`, which adapts a Forward version to `SecurityForwardCurve`
+with the key, version and hash prefix in its source). `SecurityValuation.cs` is the valuation seam:
+`SecurityValuationRequest` (security, economic as-of, knowledge cutoff, account, quantity, pinned
+curves, model override), `SecurityValuationResult` (price with unit, present value, market value,
+observed as-of as the oldest market input, observability, inputs, diagnostics, blockers; blocked
+results carry no number),
+`ISecurityValuationModel` and `ISecurityValuationService`. `SecurityAssetClassDescriptor.DefaultValuationModel`
+names the model a class is valued with when a request names none (`DiscountedCashFlow` for Bond and
+Swap, `QuotedPrice` otherwise). `SecurityFactorHistoryProjector` merges the declared factor schedule, paydown
 factors and the dated scalar factor into one dated history with same-day conflicts.
 `CorporateActionTerms.From` reads a `CorporateActionDto` into its event family's typed terms
 (cash distribution, split, exchange, redemption, principal paydown and others); a coverage test

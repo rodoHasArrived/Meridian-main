@@ -119,7 +119,11 @@ public sealed partial class AtomicTaxLotSuccessorMigrationTests
         private MigrationFixture(PostgresTestServer server, string scripts, string schema, string successorSql, string migrationFile)
         {
             (_server, _scripts, Schema, SuccessorSql, _migrationFile) = (server, scripts, schema, successorSql, migrationFile);
-            _instructionColumn = migrationFile == SuccessorMigration ? "corporate_action_instruction" : "capital_return_instruction";
+            // The nullable instruction column each migration adds; history snapshots strip it so a
+            // populated pre-upgrade row compares equal to its post-upgrade self.
+            _instructionColumn = migrationFile == SuccessorMigration ? "corporate_action_instruction"
+                : migrationFile == CapitalReturnMigration ? "capital_return_instruction"
+                : "factor_paydown_instruction";
         }
 
         public static async Task<MigrationFixture> CreateAsync(CancellationToken ct, string migrationFile = SuccessorMigration)
@@ -184,9 +188,14 @@ public sealed partial class AtomicTaxLotSuccessorMigrationTests
                 join pg_namespace n on n.oid = t.relnamespace
                 where n.nspname = '{Schema}' and c.conname in (
                     'ck_atomic_tax_lot_batch_kind', 'ck_atomic_tax_lot_successor_instruction',
-                    'ck_atomic_tax_lot_capital_return_instruction',
-                    'ck_tax_lot_mutations_kind', 'ck_tax_lot_mutations_quantities', 'ck_tax_lot_mutations_cost')
+                    'ck_atomic_tax_lot_capital_return_instruction', 'ck_atomic_tax_lot_factor_paydown_instruction',
+                    'ck_tax_lot_mutations_kind', 'ck_tax_lot_mutations_quantities', 'ck_tax_lot_mutations_cost',
+                    'ck_tax_lots_current_factor')
                 """, ct);
+
+        public Task<string> TriggerFunctionAsync(string functionName, CancellationToken ct)
+            => ScalarAsync($"select pg_get_functiondef(p.oid) from pg_proc p join pg_namespace n on n.oid = p.pronamespace " +
+                $"where n.nspname = '{Schema}' and p.proname = '{functionName}'", ct);
 
         public async Task<string> HistoryAsync(CancellationToken ct)
         {
@@ -206,11 +215,17 @@ public sealed partial class AtomicTaxLotSuccessorMigrationTests
             return Convert.ToString(await command.ExecuteScalarAsync(ct), System.Globalization.CultureInfo.InvariantCulture)!;
         }
 
-        public async Task SeedAsync(bool corporateAction, CancellationToken ct, bool capitalReturn = false)
+        public async Task SeedAsync(bool corporateAction, CancellationToken ct, bool capitalReturn = false, bool factorPaydown = false)
         {
             // Values deliberately cover each pre-042 predicate branch, including legal NULL fields,
             // zero acquisition cost and each adjusted-current-basis discrete relief method.
-            var cases = capitalReturn
+            var cases = factorPaydown
+                ? """
+                  ('factor-paydown-partial', 'FactorPaydown', 'FactorPaydown', 10, 0, 5, 7, null, null, '{}'::jsonb, null::integer, null::numeric),
+                  ('factor-paydown-full', 'FactorPaydown', 'FactorPaydown', 10, -10, 5, 7, null, null, '{}'::jsonb, null::integer, null::numeric),
+                  ('factor-paydown-zero-basis', 'FactorPaydown', 'FactorPaydown', 10, 0, 5, 0, null, null, '{}'::jsonb, null::integer, null::numeric)
+                  """
+                : capitalReturn
                 ? """
                   ('capital-return', 'CapitalReturn', 'CapitalReturn', 10, 0, 5, 7, null, null, '{}'::jsonb, null::integer, null::numeric)
                   """
@@ -232,8 +247,9 @@ public sealed partial class AtomicTaxLotSuccessorMigrationTests
                   ('specific-current', 'Disposal', 'Disposal', 10, -2, 5, 7, 'SpecificId', 'policy-v1', '{"acquisition":{},"basisAdjustment":{}}'::jsonb, null::integer, null::numeric),
                   ('zero-current', 'Disposal', 'Disposal', 10, -2, 5, 0, 'fIfO', null, '{"acquisition":{},"basisAdjustment":{}}'::jsonb, null::integer, null::numeric)
                   """;
-            var instructionColumn = capitalReturn ? ", capital_return_instruction" : corporateAction ? ", corporate_action_instruction" : "";
-            var instructionValue = corporateAction || capitalReturn ? ", '{\"fixture\":\"successor-reapply\"}'::jsonb" : "";
+            var instructionColumn = factorPaydown ? ", factor_paydown_instruction"
+                : capitalReturn ? ", capital_return_instruction" : corporateAction ? ", corporate_action_instruction" : "";
+            var instructionValue = corporateAction || capitalReturn || factorPaydown ? ", '{\"fixture\":\"successor-reapply\"}'::jsonb" : "";
             var sql = $$"""
                 do $seed$
                 declare

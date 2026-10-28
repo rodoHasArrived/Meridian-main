@@ -134,6 +134,21 @@ public sealed class SecurityTermsVersioningTests
         read.Should().Throw<InvalidOperationException>().WithMessage("*not an asset-specific-terms format*");
     }
 
+    [Theory]
+    [InlineData("economic")]
+    [InlineData("foo")]
+    public void EnsureWritable_RefusesANonFlatFormatWithWhatToSubmit(string format)
+    {
+        // A write's reason reaches the caller, so it must not name the server's read-side conversion.
+        var payload = Json($$"""{"schemaVersion":2,"{{SecurityTermsEnvelope.FormatKey}}":"{{format}}"}""");
+
+        var write = () => SecurityTermsEnvelope.EnsureWritableAsAssetSpecificTerms("Bond", payload);
+
+        write.Should().Throw<InvalidOperationException>().WithMessage(
+            $"Terms for asset class 'Bond' declare termsFormat '{format}', which a write does not accept. " +
+            "Submit asset-specific terms: omit termsFormat, or set it to 'flat' or 'customProfile'.");
+    }
+
     [Fact]
     public void EveryCatalogClass_HasAPositiveTermsVersion()
     {
@@ -617,7 +632,14 @@ public sealed class SecurityTermsVersioningTests
 
         var readError = Capture(() => SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms(assetClass, payload));
         var writeError = Capture(() => SecurityTermsEnvelope.EnsureWritableAsAssetSpecificTerms(assetClass, payload));
-        (writeError?.GetType(), writeError?.Message).Should().Be((readError?.GetType(), readError?.Message));
+        // The same payloads fail, with the same type. Only a declared non-flat format words the write's
+        // reason for the caller (EnsureWritable_RefusesANonFlatFormatWithWhatToSubmit).
+        writeError?.GetType().Should().Be(readError?.GetType());
+        (writeError is null).Should().Be(readError is null);
+        if (SecurityTermsEnvelope.GetDeclaredFormat(payload) is null or SecurityTermsFormats.Flat or SecurityTermsFormats.CustomProfile)
+        {
+            writeError?.Message.Should().Be(readError?.Message);
+        }
     }
 
     [Theory]
