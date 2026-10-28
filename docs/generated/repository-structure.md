@@ -1076,6 +1076,8 @@ Meridian-main
 │   │   ├── cli
 │   │   │   ├── build_profiles.py
 │   │   │   ├── buildctl.py
+│   │   │   ├── dev_environment.py
+│   │   │   ├── validation_metrics.py
 │   │   │   └── validation_plan.py
 │   │   ├── core
 │   │   │   ├── __init__.py
@@ -12276,6 +12278,8 @@ Meridian-main
 │   │   ├── test_benchmark_pipeline.py
 │   │   ├── test_build_profiles.py
 │   │   ├── test_buildctl_artifact_retention.py
+│   │   ├── test_buildctl_environment.py
+│   │   ├── test_buildctl_validation_metrics.py
 │   │   ├── test_buildctl_validation_runner.py
 │   │   ├── test_canonical_roadmap_yaml.py
 │   │   ├── test_central_package_versions.py

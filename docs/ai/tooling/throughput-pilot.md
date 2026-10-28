@@ -190,6 +190,22 @@ successful validation result. Earlier failures remain visible and their wait tim
 Incomplete first-edit timings appear only as observations. Passing-PR events must follow task
 completion; supply `--commit-sha` on `task_finished` to bind later check evidence to that revision.
 
+## Environment Setup And Local Validation Measurements
+
+Use the [profile-aware environment command](../../engineering/web-development.md#install-and-choose-a-mode)
+to check tool versions and fingerprint dependency/fixture inputs, or explicitly restore the two
+npm lockfiles and selected backend dependencies. Fixture-only setup does not require .NET or a
+database. The devcontainer shares the npm setup command and installs pinned Python script dependencies.
+
+For local validation feedback, supply a unique `--task-id` on related `buildctl test` attempts
+and summarize their receipts with `buildctl validation-metrics`. See the
+[measurement definitions](../../development/build-observability.md#local-feedback-latency-and-observed-retries)
+for measured feedback/queue/execution time, missing legacy data, and task grouping.
+
+Receipt metrics complement the explicit task-event recorder above. They do not measure human
+correction cycles, implementation time, or a passing PR, and are not added retroactively to the
+retained pilot evidence. A failed validation attempt alone does not establish a code defect.
+
 ## Validation And Initial Evidence
 
 ```bash
