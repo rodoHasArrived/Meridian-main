@@ -244,6 +244,73 @@ class ValidationRunnerTests(unittest.TestCase):
         self.assertEqual([command[1] for command in commands], ["restore", "build"])
         self.assertEqual(payload["status"], "failed")
 
+    def test_receipt_identifies_task_and_failed_phase(self) -> None:
+        for phase in ("restore", "build", "test"):
+            with self.subTest(phase=phase):
+                code, _, payload, _ = self._run_test(
+                    self._args(task_id="provider-123", framework="net10.0", runtime="linux-x64"),
+                    exit_codes={phase: 1},
+                )
+                self.assertEqual(code, 1)
+                self.assertEqual(payload["schemaVersion"], 2)
+                self.assertEqual(payload["taskId"], "provider-123")
+                self.assertEqual(payload["framework"], "net10.0")
+                self.assertEqual(payload["runtime"], "linux-x64")
+                self.assertEqual(payload["failurePhase"], phase)
+                self.assertGreaterEqual(payload["queueSeconds"], 0)
+                self.assertGreaterEqual(payload["executionSeconds"], 0)
+
+    def test_passed_receipt_has_no_failed_phase(self) -> None:
+        code, _, payload, _ = self._run_test(self._args())
+        self.assertEqual(code, 0)
+        self.assertIsNone(payload["taskId"])
+        self.assertIsNone(payload["failurePhase"])
+
+    def test_task_id_rejects_nonportable_values_before_running(self) -> None:
+        with patch.object(self.buildctl, "_run_passthrough") as run, redirect_stderr(io.StringIO()):
+            self.assertEqual(self.buildctl.cmd_test(self._args(task_id="../other-task")), 2)
+        run.assert_not_called()
+
+    def test_queue_timing_includes_wait_and_records_interruption(self) -> None:
+        for outcome in ("pass", "blocked", "interrupted", "error"):
+            with self.subTest(outcome=outcome), tempfile.TemporaryDirectory() as temp_dir:
+                root = Path(temp_dir)
+                clock = [100.0]
+
+                def acquire(*args, **kwargs):
+                    clock[0] += 7
+                    if outcome == "interrupted":
+                        raise KeyboardInterrupt
+                    if outcome == "error":
+                        raise OSError("lock unavailable")
+                    return outcome != "blocked"
+
+                def run(command):
+                    clock[0] += 2
+                    return 0
+
+                with (
+                    patch.object(self.buildctl, "REPO_ROOT", root),
+                    patch.object(self.buildctl.time, "monotonic", side_effect=lambda: clock[0]),
+                    patch.object(self.buildctl, "_acquire_validation_lock", side_effect=acquire),
+                    patch.object(self.buildctl, "_get_active_repo_build_processes", return_value=[]),
+                    patch.object(self.buildctl, "_prune_for_isolation"),
+                    patch.object(self.buildctl, "_run_passthrough", side_effect=run),
+                    redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()),
+                ):
+                    code = self.buildctl.cmd_test(self._args(run_id="timing"))
+                payload = json.loads((root / ".ai/validation-runs/timing.json").read_text())
+                self.assertEqual(payload["queueSeconds"], 7)
+                self.assertEqual(payload["feedbackSeconds"], 13 if outcome == "pass" else 7)
+                if outcome == "pass":
+                    self.assertEqual(code, 0)
+                    self.assertEqual(payload["executionSeconds"], 6)
+                    self.assertEqual([step["durationSeconds"] for step in payload["steps"]], [2, 2, 2])
+                else:
+                    self.assertEqual(code, {"blocked": 3, "interrupted": 130, "error": 2}[outcome])
+                    self.assertIsNone(payload["executionSeconds"])
+                    self.assertEqual(payload["failurePhase"], "queue")
+
     def _run_test(self, args, *, exit_codes=None):
         commands: list[list[str]] = []
         stderr = io.StringIO()

@@ -311,6 +311,11 @@ history commit between the journal and history reads and verifies that all use t
 `Archival/AtomicFileWriterAdapter.cs`, `EtlStagingStore` in `Etl/EtlStores.cs`, and `Backfill/JsonlBackfillBarWriter.cs`
 implement lower-level persistence ports consumed by Infrastructure. Application/host composition
 owns their construction; atomic durability, staging and JSONL naming policies remain in Storage.
+`AtomicFileWriter` commits every write by renaming a fsynced temp file over the destination. On
+Windows every rename it performs, including `ReplaceAsync`'s backup and restore moves, is retried
+briefly (ten attempts, growing from 20 ms) when another handle without delete sharing, such as an
+antivirus or indexer scan, still holds the file; a handle that never closes still fails the write
+and removes the temp file. POSIX renames never wait.
 
 `LedgerAccountTaxLotPolicyRecord.EffectiveWashSalePolicy` carries the existing `PolicyId` revision
 into wash-sale projection evidence together with the configured window, scope and activation date.

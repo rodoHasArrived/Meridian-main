@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-28",
+  "kind": "isolated-agent-maintenance-pilot",
+  "baseCommit": "9a63b8463051ffce67d1df7177322f00b5149f54",
+  "tasks": {
+    "pair-1": "Pilot handoffs record the focused validation command and its observed outcome.",
+    "pair-2": "Pilot handoffs identify unresolved assumptions before another agent resumes work.",
+    "pair-3": "Pilot handoffs identify the source revision used for retained validation evidence."
+  },
+  "orders": {
+    "pair-1": [
+      "baseline",
+      "treatment"
+    ],
+    "pair-2": [
+      "treatment",
+      "baseline"
+    ],
+    "pair-3": [
+      "baseline",
+      "treatment"
+    ]
+  },
+  "instrumentation": "Explicit real-UTC recorder; deliberate agent-visible fixture reads only; same agent per pair. Context packet generation included in treatment timing. Tools-internal reads excluded. No PR created for fixture tasks.",
+  "toolHashesAtPilot": {
+    "build/scripts/ai/task_context.py": "0e7bf1a271c920dac1dfdcc1f1eda81083127a321e5b285399ec21964f479103",
+    "build/scripts/ai/generate_guidance.py": "15da6693e2c115709da5c401abb1fc2f9cb988829c106134383908c74333ca93",
+    "build/scripts/ai/throughput_metrics.py": "77ae9a1351c49925d392a036c07c60577e0c52a42ae7972730f7c316c66010e0"
+  }
+}

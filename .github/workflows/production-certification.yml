@@ -2,6 +2,20 @@ name: Production Certification
 
 on:
   workflow_call:
+    inputs:
+      integration-artifact-id:
+        description: Validated integration artifact from a successful coordinator dependency.
+        type: string
+        default: ""
+      integration-artifact-name:
+        type: string
+        default: ""
+      integration-receipt-sha256:
+        type: string
+        default: ""
+      integration-result:
+        type: string
+        default: ""
   workflow_dispatch:
   schedule:
     - cron: "17 3 * * 0"
@@ -30,6 +44,10 @@ jobs:
     with:
       artifact-name: production-certification
       retention-days: 90
+      reuse-artifact-id: ${{ inputs.integration-artifact-id || '' }}
+      reuse-artifact-name: ${{ inputs.integration-artifact-name || '' }}
+      reuse-receipt-sha256: ${{ inputs.integration-receipt-sha256 || '' }}
+      reuse-result: ${{ inputs.integration-result || '' }}
 
   dependency-evidence:
     name: NuGet and npm dependency evidence
@@ -59,7 +77,7 @@ jobs:
           cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
 
       - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
 
@@ -67,7 +85,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
+          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/*.packages.lock.json', '**/NuGet.Config', 'global.json') }}
           restore-keys: |
             ${{ runner.os }}-nuget-v1-
 
@@ -138,7 +156,7 @@ jobs:
     timeout-minutes: 35
     services:
       postgres:
-        image: postgres:17
+        image: postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: meridian-recovery
@@ -234,7 +252,7 @@ jobs:
             vaultSha256 = (Get-FileHash -LiteralPath $vaultPath -Algorithm SHA256).Hash.ToLowerInvariant()
           } | ConvertTo-Json | Set-Content -LiteralPath $checkpointPath -Encoding utf8
           $checkpointHash = (Get-FileHash -LiteralPath $checkpointPath -Algorithm SHA256).Hash.ToLowerInvariant()
-          $evidence = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID/attempts/$env:GITHUB_RUN_ATTEMPT#production-recovery-drill-$env:GITHUB_RUN_ID/source-data/recovery-checkpoint.json;sha256=$checkpointHash"
+          $evidence = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID/attempts/$env:GITHUB_RUN_ATTEMPT#production-recovery-drill-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT/source-data/recovery-checkpoint.json;sha256=$checkpointHash"
           "point=$($probe[0])" >> $env:GITHUB_OUTPUT
           "evidence=$evidence" >> $env:GITHUB_OUTPUT
 
@@ -282,7 +300,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: production-recovery-drill-${{ github.run_id }}
+          name: production-recovery-drill-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/recovery/
           if-no-files-found: error
           retention-days: 90
@@ -300,7 +318,7 @@ jobs:
           fetch-depth: 1
 
       - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
           cache: pip

@@ -1,11 +1,11 @@
 {
-  "total_files": 752,
-  "total_lines": 170158,
-  "orphaned_count": 250,
+  "total_files": 764,
+  "total_lines": 172967,
+  "orphaned_count": 257,
   "no_heading_count": 157,
   "stale_count": 0,
-  "todo_count": 307,
-  "average_lines": 226.3,
+  "todo_count": 312,
+  "average_lines": 226.4,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -225,6 +225,13 @@
     "docs/source/source-diagram-standard.md",
     "docs/source/source-readme-template.md",
     "docs/source/source-todo-standard.md",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/packet-rendering/refined.md",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/packet-rendering/same-input-baseline.md",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/report.md",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/validation-planning/confirmation-report.md",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28/packets/pair-1.md",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28/packets/pair-2.md",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28/packets/pair-3.md",
     "docs/testing/evidence/wal-checksum-2026-10-07/ci/canonical-evidence-packaging-failure/dotnet-test-summary.md",
     "docs/testing/evidence/wal-checksum-2026-10-07/ci/canonical-evidence-packaging-failure/quality-gate-summary.md",
     "docs/testing/evidence/wal-checksum-2026-10-07/ci/provider-documentation-drift/ai-handoff-docs-automation-summary.md",
@@ -422,7 +429,7 @@
   "all_files": [
     {
       "path": ".agents/skills/_shared/project-context.md",
-      "line_count": 252,
+      "line_count": 254,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1062,7 +1069,7 @@
     },
     {
       "path": "docs/adr/024-terms-payload-format-and-version-policy.md",
-      "line_count": 467,
+      "line_count": 473,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1254,7 +1261,7 @@
     },
     {
       "path": "docs/ai/codex/quickstart.md",
-      "line_count": 273,
+      "line_count": 286,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1414,7 +1421,15 @@
     },
     {
       "path": "docs/ai/tooling/README.md",
-      "line_count": 200,
+      "line_count": 207,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/ai/tooling/throughput-pilot.md",
+      "line_count": 242,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1574,7 +1589,7 @@
     },
     {
       "path": "docs/architecture/module-map.md",
-      "line_count": 148,
+      "line_count": 190,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1654,7 +1669,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 6880,
+      "line_count": 7236,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1758,7 +1773,7 @@
     },
     {
       "path": "docs/development/build-observability.md",
-      "line_count": 214,
+      "line_count": 245,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2366,7 +2381,7 @@
     },
     {
       "path": "docs/engineering/ci-cd-optimization.md",
-      "line_count": 551,
+      "line_count": 629,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2382,7 +2397,7 @@
     },
     {
       "path": "docs/engineering/docs-regeneration-automation-design.md",
-      "line_count": 216,
+      "line_count": 235,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2406,7 +2421,7 @@
     },
     {
       "path": "docs/engineering/generated-merge-recovery.md",
-      "line_count": 183,
+      "line_count": 198,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2494,7 +2509,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 440,
+      "line_count": 483,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2510,7 +2525,7 @@
     },
     {
       "path": "docs/engineering/web-development.md",
-      "line_count": 135,
+      "line_count": 170,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2910,7 +2925,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12500,
+      "line_count": 12653,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2926,7 +2941,7 @@
     },
     {
       "path": "docs/generated/workflows-overview.md",
-      "line_count": 46,
+      "line_count": 48,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3350,7 +3365,7 @@
     },
     {
       "path": "docs/product/implementation-todo-list.md",
-      "line_count": 730,
+      "line_count": 741,
       "has_heading": true,
       "todo_count": 5,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3445,6 +3460,14 @@
       "stale": false
     },
     {
+      "path": "docs/product/plans/next-work-determination-2026-10-27.md",
+      "line_count": 294,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/product/plans/product-roadmap-priorities-2026-07.md",
       "line_count": 93,
       "has_heading": true,
@@ -3462,7 +3485,7 @@
     },
     {
       "path": "docs/product/plans/README.md",
-      "line_count": 46,
+      "line_count": 47,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3654,7 +3677,7 @@
     },
     {
       "path": "docs/reference/contract-compatibility-matrix.md",
-      "line_count": 208,
+      "line_count": 209,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3894,15 +3917,15 @@
     },
     {
       "path": "docs/roadmap/README.md",
-      "line_count": 44,
+      "line_count": 60,
       "has_heading": true,
-      "todo_count": 0,
+      "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
     {
       "path": "docs/roadmap/roadmap-governance.md",
-      "line_count": 97,
+      "line_count": 101,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4118,7 +4141,7 @@
     },
     {
       "path": "docs/source/README.md",
-      "line_count": 58,
+      "line_count": 77,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4158,7 +4181,7 @@
     },
     {
       "path": "docs/start/README.md",
-      "line_count": 280,
+      "line_count": 326,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4183,6 +4206,86 @@
     {
       "path": "docs/testing/endpoint-fixture-isolation.md",
       "line_count": 93,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/packet-rendering/refined.md",
+      "line_count": 108,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/packet-rendering/same-input-baseline.md",
+      "line_count": 399,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/README.md",
+      "line_count": 101,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/report.md",
+      "line_count": 20,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/validation-planning/confirmation-report.md",
+      "line_count": 20,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/ai-throughput-pilot-2026-10-28/packets/pair-1.md",
+      "line_count": 149,
+      "has_heading": true,
+      "todo_count": 2,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/ai-throughput-pilot-2026-10-28/packets/pair-2.md",
+      "line_count": 175,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/ai-throughput-pilot-2026-10-28/packets/pair-3.md",
+      "line_count": 187,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/ai-throughput-pilot-2026-10-28/README.md",
+      "line_count": 94,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/ai-throughput-pilot-2026-10-28/report.md",
+      "line_count": 14,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5894,7 +5997,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 1180,
+      "line_count": 1196,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5926,7 +6029,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1990,
+      "line_count": 1991,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5974,7 +6077,7 @@
     },
     {
       "path": "src/Meridian.Execution.Sdk/README.md",
-      "line_count": 136,
+      "line_count": 138,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5982,7 +6085,7 @@
     },
     {
       "path": "src/Meridian.Execution/README.md",
-      "line_count": 369,
+      "line_count": 401,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5990,7 +6093,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 1106,
+      "line_count": 1123,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6046,7 +6149,7 @@
     },
     {
       "path": "src/Meridian.Infrastructure/README.md",
-      "line_count": 470,
+      "line_count": 481,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6158,7 +6261,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 1327,
+      "line_count": 1332,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6182,7 +6285,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2859,
+      "line_count": 2881,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

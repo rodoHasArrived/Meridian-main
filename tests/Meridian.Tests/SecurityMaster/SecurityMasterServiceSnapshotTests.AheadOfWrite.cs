@@ -273,7 +273,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
         harness.Seed(securityId, assetClass, terms);
 
         await FluentActions.Invoking(() => RunAsync(harness, securityId, operation))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage(
                 $"Security '{securityId:D}' is stamped assetClassTermsVersion {stamp}, which this node reads but does not write, " +
                 $"and re-serializing it here would change '{changedPath}'. Apply the change from a node that writes that " +
@@ -293,7 +293,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
         harness.Seed(securityId, "Bond", BondAtVersion2);
 
         await harness.Service.Invoking(service => service.AmendTermsAsync(AmendRequest(securityId, Parse(BondAtVersion2))))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage(BondWriteVersionRefusal(2));
 
         harness.Appended.Should().BeEmpty();
@@ -319,7 +319,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
                     UpdatedBy: "codex",
                     SourceRecordId: null,
                     Reason: "replace the principal schedule")))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage(BondWriteVersionRefusal(2));
 
         harness.Appended.Should().BeEmpty();
@@ -382,7 +382,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
         patch[SecurityTermsEnvelope.AssetClassTermsVersionKey] = 1;
 
         await harness.Service.Invoking(service => service.AmendTermsAsync(AmendRequest(securityId, Parse(patch.ToJsonString()))))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage(
                 "'scheduleConventions' is an asset-class terms version 2 term of 'Bond'. This node reads it but writes " +
                 "assetClassTermsVersion 1, so a create, amend, import or field edit cannot set it yet. Leave it absent, " +
@@ -643,7 +643,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
         var envelope = ProfileEnvelopeWithSchedules(stamp, exerciseFrequency);
 
         await harness.Service.Invoking(service => service.CreateAsync(ProfileEnvelopeCreateRequest(securityId, envelope)))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage(
                 $"assetClassTermsVersion '{stamp}' for asset class 'StructuredCredit' is readable but not writable on this node: " +
                 "it reads versions 1 through 4 and writes version 2. Submit the terms at version 2, or apply the change from a " +
@@ -663,7 +663,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
         harness.Seed(securityId, "Bond", BondAtVersion3);
 
         await harness.Service.Invoking(service => service.AmendTermsAsync(AmendRequest(securityId, Parse(BondAtVersion3))))
-            .Should().ThrowAsync<InvalidOperationException>()
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage(BondWriteVersionRefusal(3));
 
         harness.Appended.Should().BeEmpty();

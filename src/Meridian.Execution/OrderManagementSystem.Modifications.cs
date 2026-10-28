@@ -1,5 +1,7 @@
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using static Meridian.Execution.OrderManagement.OrderAuditMetadata;
+using static Meridian.Execution.OrderManagement.OrderRiskSizingPolicy;
 
 namespace Meridian.Execution;
 
@@ -23,7 +25,7 @@ public sealed partial class OrderManagementSystem
 
         if (!_orders.TryGetValue(orderId, out var state))
         {
-            await RecordOrderLifecycleAuditAsync(
+            await _executionAudit.RecordLifecycleAsync(
                 action: "OrderModifyRejected",
                 outcome: "Rejected",
                 orderId: orderId,
@@ -47,7 +49,7 @@ public sealed partial class OrderManagementSystem
         // a retained zero quantity would poison the recovery store and every later restart.
         if (DescribeInvalidModification(state, modification) is { } invalid)
         {
-            await RecordOrderLifecycleAuditAsync(
+            await _executionAudit.RecordLifecycleAsync(
                 action: "OrderModifyRejected",
                 outcome: "Rejected",
                 orderId: orderId,
@@ -57,6 +59,10 @@ public sealed partial class OrderManagementSystem
                 ct: ct).ConfigureAwait(false);
             return new OrderResult { Success = false, OrderId = orderId, OrderState = state, ErrorMessage = invalid };
         }
+
+        // Persisted with the pending amendment before dispatch; see BeginOrderAmendmentAsync.
+        if (_gateway is IPreassignedReplacementReferenceGateway && string.IsNullOrWhiteSpace(modification.ReplacementClientOrderId))
+            modification = modification with { ReplacementClientOrderId = Guid.NewGuid().ToString("N") };
 
         // A quantity increase or any supplied limit/stop price is a new risk decision. Notional
         // increases are not the only dangerous direction: lowering a sell limit or a buy stop can
@@ -73,7 +79,7 @@ public sealed partial class OrderManagementSystem
             amendmentWarnings = gate.Warnings;
             if (gate.Refusal is not null)
             {
-                await RecordOrderLifecycleAuditAsync(
+                await _executionAudit.RecordLifecycleAsync(
                     action: "OrderModifyRejected",
                     outcome: "Rejected",
                     orderId: orderId,
@@ -106,7 +112,7 @@ public sealed partial class OrderManagementSystem
             amendmentDispatchAttempted = true;
             report = _gateway is IExplicitOrderModificationGateway explicitModification
                 ? await explicitModification.ModifyOrderAsync(
-                    _orderBrokerIds.TryGetValue(orderId, out var brokerOrderId)
+                    _brokerIdentities.TryGetActiveId(orderId, out var brokerOrderId)
                         ? new OrderCancellationIdentifier(brokerOrderId, OrderCancellationIdentifierKind.BrokerOrderId)
                         : new OrderCancellationIdentifier(orderId, OrderCancellationIdentifierKind.ClientOrderId),
                     modification, ct).ConfigureAwait(false)
@@ -123,7 +129,7 @@ public sealed partial class OrderManagementSystem
                 await AbandonOrderAmendmentAsync(orderId, amendment).ConfigureAwait(false);
             RollBackSpeculativeReservation(orderId, speculativeReservation, state);
             var rejectedState = _orders.TryGetValue(orderId, out var currentOrder) ? currentOrder : state;
-            await RecordOrderLifecycleAuditAsync(
+            await _executionAudit.RecordLifecycleAsync(
                 action: "OrderModifyRejected",
                 outcome: "Rejected",
                 orderId: orderId,
@@ -176,7 +182,7 @@ public sealed partial class OrderManagementSystem
                 // The live report stream resolved the amendment before this pending answer was
                 // applied. Report that authoritative outcome rather than an uncertain one.
                 var resolvedState = _orders.TryGetValue(orderId, out var resolvedOrder) ? resolvedOrder : state;
-                await RecordOrderLifecycleAuditAsync(
+                await _executionAudit.RecordLifecycleAsync(
                     action: confirmed ? "OrderModified" : "OrderModifyRejected",
                     outcome: resolvedState.Status.ToString(),
                     orderId: orderId,
@@ -195,7 +201,7 @@ public sealed partial class OrderManagementSystem
                 };
             }
             var pending = _orders.TryGetValue(orderId, out var retained) ? retained : state;
-            await RecordOrderLifecycleAuditAsync("OrderModifyPending", "RecoveryRequired", orderId,
+            await _executionAudit.RecordLifecycleAsync("OrderModifyPending", "RecoveryRequired", orderId,
                 pending, report, report.RejectReason ?? "Amendment outcome requires broker reconciliation.",
                 ct: CancellationToken.None).ConfigureAwait(false);
             return new OrderResult
@@ -225,7 +231,7 @@ public sealed partial class OrderManagementSystem
             // Do not apply a rejected modify to order state: ApplyReport would let the terminal
             // Rejected overwrite a completed Filled/Cancelled order, and returning Success would
             // misreport that overwrite as a successful modify. Mirror the cancel path and fail.
-            await RecordOrderLifecycleAuditAsync(
+            await _executionAudit.RecordLifecycleAsync(
                 action: "OrderModifyRejected",
                 outcome: report.OrderStatus.ToString(),
                 orderId: orderId,
@@ -253,7 +259,7 @@ public sealed partial class OrderManagementSystem
         await ProcessGatewayReportAsync(report, CancellationToken.None, amendment.Proposed.Quantity).ConfigureAwait(false);
         var updated = _orders.TryGetValue(orderId, out var amendedState) ? amendedState : state;
         await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId), updated, ct).ConfigureAwait(false);
-        await RecordOrderLifecycleAuditAsync(
+        await _executionAudit.RecordLifecycleAsync(
             action: "OrderModified",
             outcome: updated.Status.ToString(),
             orderId: orderId,
@@ -275,52 +281,8 @@ public sealed partial class OrderManagementSystem
     }
 
 
-    private ExecutionReport NormalizeBrokerOrderIdentity(ExecutionReport report)
-    {
-        var brokerId = report.GatewayOrderId ?? report.OrderId;
-        string? localId = null;
-        if (_brokerOrderAliases.TryGetValue(brokerId, out var known))
-            localId = known;
-        else if (report.ReplacesOrderId is { Length: > 0 } replaced
-            && _brokerOrderAliases.TryGetValue(replaced, out var original))
-            localId = original;
-        if (localId is null)
-            return report;
-        var normalized = report with { ClientOrderId = localId };
-        if (report.ReportType is ExecutionReportType.Rejected && report.OrderStatus is OrderStatus.Rejected
-            && report.ReplacesOrderId is { Length: > 0 } rejectedPredecessor
-            && _orderBrokerIds.TryGetValue(localId, out var workingBrokerId)
-            && string.Equals(rejectedPredecessor, workingBrokerId, StringComparison.Ordinal)
-            && !string.Equals(brokerId, workingBrokerId, StringComparison.Ordinal)
-            && _orders.TryGetValue(localId, out var working) && !IsTerminal(working.Status))
-        {
-            // Rejecting a proposed replacement leaves its predecessor working. Keep the
-            // rejected identity as an alias so a replay cannot adopt it as another order.
-            normalized = normalized with
-            {
-                ReportType = ExecutionReportType.ModificationRejected,
-                OrderStatus = working.Status,
-                OrderQuantity = working.Quantity
-            };
-        }
-        if (_brokerOrderAliases.ContainsKey(brokerId)
-            && _orderBrokerIds.TryGetValue(localId, out var activeBrokerId)
-            && !string.Equals(brokerId, activeBrokerId, StringComparison.Ordinal)
-            && _orders.TryGetValue(localId, out var current))
-        {
-            // A superseded chain member can supply a late execution, but its cancellation
-            // or expiry cannot terminate the replacement that is still working.
-            var status = report.FilledQuantity >= current.Quantity ? OrderStatus.Filled
-                : report.FilledQuantity > current.FilledQuantity
-                    && current.Status is OrderStatus.Accepted or OrderStatus.PendingNew
-                        ? OrderStatus.PartiallyFilled
-                        : current.Status;
-            normalized = normalized with { OrderStatus = status, OrderQuantity = current.Quantity };
-        }
-        return normalized;
-    }
+    private ExecutionReport NormalizeBrokerOrderIdentity(ExecutionReport report) =>
+        _brokerIdentities.Normalize(report, orderId => _orders.TryGetValue(orderId, out var state) ? state : null);
 
-    private string[] GetBrokerOrderAliases(string localId) => _brokerOrderAliases
-        .Where(pair => string.Equals(pair.Value, localId, StringComparison.Ordinal))
-        .Select(pair => pair.Key).Order(StringComparer.Ordinal).ToArray();
+    private string[] GetBrokerOrderAliases(string localId) => _brokerIdentities.GetAliases(localId);
 }

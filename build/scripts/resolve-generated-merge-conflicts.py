@@ -9,38 +9,78 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import json
 import subprocess
 import sys
-from pathlib import Path
+import tempfile
+from pathlib import Path, PurePosixPath
 
 
-# Whole-file generator outputs only. Source READMEs, HELP.md, schema snapshots,
-# diagrams, and the reviewed source-hash manifest require separate review.
-# Do not replace this list with a wildcard over docs/status or docs/generated.
-GENERATED_FILES = frozenset({
-    "docs/generated/repository-structure.md",
-    "docs/generated/workflows-overview.md",
-    "docs/status/doc-health-dashboard.json",
-    "docs/status/doc-health-dashboard.md",
-    "docs/status/example-validation.md",
-    "docs/status/docs-automation-summary.json",
-    "docs/status/docs-automation-summary.md",
-    "docs/status/todo-scan-results.json",
-    "docs/status/TODO.md",
-    "docs/status/coverage-report.md",
-    "docs/status/api-docs-report.md",
-    "docs/status/workflow-drift-report.md",
-    "docs/roadmap/generated/MANIFEST.json",
-    "docs/roadmap/generated/ROADMAP_SUMMARY.md",
-    "docs/roadmap/generated/roadmap-register.md",
-    "docs/status/ROADMAP_SUMMARY.md",
-    "docs/source/generated/MANIFEST.json",
-    "docs/source/generated/source-module-index.md",
-    "docs/source/generated/source-roadmap-traceability.md",
-    "docs/source/generated/source-todo-checklist.md",
-})
-WORKSTATION_ROOT = "src/Meridian.Ui/wwwroot/workstation/"
 REVIEWED_MANIFEST = "docs/source/generated/source-hash-manifest.json"
+POLICY = Path(__file__).with_name("maintained-generation-outputs.json")
+
+
+def safe_path(path: str) -> bool:
+    return (isinstance(path, str) and bool(path) and "\\" not in path and ":" not in path
+            and not PurePosixPath(path).is_absolute()
+            and all(ord(character) >= 32 and ord(character) != 127 for character in path)
+            and all(part not in {"", ".", ".."} and part.casefold() != ".git" for part in path.split("/")))
+
+
+def load_conflict_policy(policy_path: Path = POLICY) -> dict:
+    """Load conflict authority from the trusted tooling, never the merged checkout.
+
+    Permission to generate a file does not imply permission to discard conflicts
+    in it. Required producer metadata is checked against the maintained catalog
+    by the policy contract tests; absent strategies always require review.
+    """
+    policy = json.loads(policy_path.read_text(encoding="utf-8"))
+    recovery = policy.get("conflict_recovery", {}) if isinstance(policy, dict) else {}
+    if (not isinstance(policy, dict) or policy.get("schema_version") != 1
+            or not isinstance(recovery, dict) or recovery.get("default_strategy") != "manual"):
+        raise ValueError("Missing or unsupported generated conflict policy")
+    files, trees = recovery.get("files", {}), recovery.get("trees", {})
+    if not isinstance(files, dict) or not isinstance(trees, dict):
+        raise ValueError("Conflict policy files and trees must be mappings")
+    protected = set(policy.get("protected_suffixes", {})) | set(policy.get("hybrid_files", {}))
+    trusted_root = policy_path.resolve().parents[2]
+    for is_tree, records in ((False, files), (True, trees)):
+        for path, record in records.items():
+            if not safe_path(path) or not isinstance(record, dict):
+                raise ValueError(f"Invalid conflict policy entry: {path!r}")
+            strategy = record.get("strategy")
+            if strategy not in {"manual", "regenerate", "protected-suffix", "reviewed-hashes"}:
+                raise ValueError(f"Unknown conflict strategy: {path}")
+            if is_tree and (strategy != "regenerate" or path not in policy.get("whole_trees", [])):
+                raise ValueError(f"Conflict tree is not an authorized generated tree: {path}")
+            if strategy == "regenerate":
+                if ((not is_tree and (path not in policy.get("whole_files", []) or path in protected))
+                        or (is_tree and any(name == path or name.startswith(path + "/") for name in protected))):
+                    raise ValueError(f"Whole-file recovery would replace protected content: {path}")
+            elif strategy == "protected-suffix" and path not in policy.get("protected_suffixes", {}):
+                raise ValueError(f"No protected suffix declared: {path}")
+            elif strategy == "reviewed-hashes" and path != REVIEWED_MANIFEST:
+                raise ValueError(f"Unsupported reviewed manifest: {path}")
+            if strategy in {"regenerate", "protected-suffix"}:
+                generator = record.get("generator", "")
+                source, _, script = generator.partition("#") if isinstance(generator, str) else ("", "", "")
+                if record.get("required") is not True or not safe_path(source) or not (trusted_root / source).is_file():
+                    raise ValueError(f"Recovery requires an available required generator: {path}")
+                if script:
+                    package = json.loads((trusted_root / source).read_text(encoding="utf-8"))
+                    if not script.startswith("scripts.") or script[8:] not in package.get("scripts", {}):
+                        raise ValueError(f"Unknown package generator: {path}")
+    return policy
+
+
+def conflict_strategy(path: str, policy: dict) -> str:
+    recovery = policy["conflict_recovery"]
+    if path in recovery["files"]:
+        return recovery["files"][path]["strategy"]
+    for tree, record in recovery["trees"].items():
+        if path.startswith(tree + "/"):
+            return record["strategy"]
+    return "manual"
 
 
 def load_hash_merger():
@@ -68,8 +108,53 @@ def git(root: Path, *args: str, data: bytes | None = None) -> bytes:
     return result.stdout
 
 
-def generated(path: str) -> bool:
-    return path.startswith(WORKSTATION_ROOT) or path in GENERATED_FILES
+def generated(path: str, policy: dict | None = None) -> bool:
+    return conflict_strategy(path, policy or load_conflict_policy()) == "regenerate"
+
+
+def merge_protected_suffix(root: Path, path: str, marker: str) -> bytes:
+    """Seed only the generated prefix; merge all handwritten bytes three ways.
+
+    Refuse missing parents, malformed markers, unsafe file modes and prose
+    conflicts without touching either the worktree or index.
+    """
+    destination = root / path
+    if destination.is_symlink() or any(
+        parent.is_symlink() for parent in destination.parents if parent.is_relative_to(root)
+    ):
+        raise ValueError("Protected suffix cannot be written through a symbolic link")
+    entries = git(root, "ls-files", "--unmerged", "-z", "--", path).split(b"\0")
+    modes = {}
+    for entry in entries:
+        if entry:
+            metadata, _ = entry.split(b"\t", 1)
+            mode, _, stage = metadata.split()
+            modes[stage] = mode
+    if modes != {b"1": b"100644", b"2": b"100644", b"3": b"100644"}:
+        raise ValueError("Protected suffix requires three existing regular-file parents")
+    contents = [git(root, "show", f":{stage}:{path}") for stage in (1, 2, 3)]
+    boundary = marker.encode("utf-8")
+    suffixes = []
+    for content in contents:
+        if content.count(boundary) != 1:
+            raise ValueError("Protected suffix marker is missing or duplicated")
+        index = content.index(boundary)
+        end = index + len(boundary)
+        if (index and content[index - 1:index] != b"\n") or content[end:end + 1] not in {b"\n", b"\r", b""}:
+            raise ValueError("Protected suffix marker must occupy its own line")
+        suffixes.append(content[index:])
+    with tempfile.TemporaryDirectory(prefix="meridian-protected-merge-") as temporary:
+        paths = [Path(temporary) / name for name in ("ancestor", "head", "incoming")]
+        for target, content in zip(paths, suffixes):
+            target.write_bytes(content)
+        result = subprocess.run(
+            ["git", "-c", "core.attributesFile=/dev/null", "merge-file", "--stdout",
+             str(paths[1]), str(paths[0]), str(paths[2])],
+            capture_output=True,
+        )
+        if result.returncode:
+            raise ValueError("Handwritten suffix has conflicts; resolve its three-way merge manually")
+    return contents[2][:contents[2].index(boundary)] + result.stdout
 
 
 def unmerged_paths(root: Path) -> list[str]:
@@ -91,10 +176,24 @@ def recover(root: Path, main_ref: str, apply: bool) -> int:
     if parents[0] != main_sha:
         raise ValueError(f"MERGE_HEAD does not match {main_ref}; refusing to select the wrong merge parent.")
 
+    policy = load_conflict_policy()
     conflicts = unmerged_paths(root)
-    candidates = [path for path in conflicts if generated(path)]
-    manual = [path for path in conflicts if not generated(path)]
-    if manual == [REVIEWED_MANIFEST]:
+    candidates = [path for path in conflicts if generated(path, policy)]
+    manual = [path for path in conflicts if not generated(path, policy)]
+    for path in list(manual):
+        if conflict_strategy(path, policy) != "protected-suffix":
+            continue
+        try:
+            merged = merge_protected_suffix(root, path, policy["protected_suffixes"][path])
+        except ValueError as exc:
+            print(f"REVIEW     {path}: {exc}")
+            continue
+        if apply:
+            (root / path).write_bytes(merged)
+            git(root, "add", "--", path)
+        manual.remove(path)
+        print(f"PROTECTED  {path}: handwritten suffix merged from all three parents")
+    if manual == [REVIEWED_MANIFEST] and conflict_strategy(REVIEWED_MANIFEST, policy) == "reviewed-hashes":
         try:
             head_sha = git(root, "rev-parse", "HEAD").decode().strip()
             reviewed = merge_reviewed_hashes(root, head_sha, main_sha, apply)
@@ -128,7 +227,7 @@ def recover(root: Path, main_ref: str, apply: bool) -> int:
             if paths:
                 pathspec = b"".join(path.encode("utf-8") + b"\0" for path in paths)
                 git(root, *command, "--pathspec-from-file=-", "--pathspec-file-nul", data=pathspec)
-        remaining_generated = [path for path in unmerged_paths(root) if generated(path)]
+        remaining_generated = [path for path in unmerged_paths(root) if generated(path, policy)]
         if remaining_generated:
             raise ValueError("Generated conflicts remain: " + ", ".join(remaining_generated))
         print("Selected incoming output. Resolve the remaining conflicts, then regenerate and validate before committing.")
