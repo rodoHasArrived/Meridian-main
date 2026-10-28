@@ -422,7 +422,7 @@ items:
       - type: source
         path: src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs
       - type: source
-        path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperationsContinuity.cs
+        path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
       - type: source
         path: src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.ts
       - type: source
@@ -1501,7 +1501,7 @@ items:
     health: green
     priority: high
     evidence_posture: in_progress
-    current_summary: First posted-ledger slice implemented for individual debit and credit amounts in browser Ledger Explorer and WPF Posted Ledger. Both consume one ledger-amount payload through the subject-addressed evidence API with immutable journal and entry identifiers plus exact authenticated tenant, company, fund, book, and period scope. Retained source identity, digest, bytes, and review are verified again when opening proof; absent, stale, ambiguous, or foreign support is review-required or blocked. Text-based evidence inference is removed. Review fixes normalize vault aliases before authorization, reject dotted path aliases, clear browser selections on navigation, and invalidate WPF proof before journal reprojection; journal and summary responses jointly supply available bases, including open GAAP-only periods. Targeted validation passed 61 backend tests, 144 browser tests, and 70 WPF tests including native control interaction; mocked Edge checks passed. WPF parity was revalidated on 2026-10-02 with 14 additional node/artifact ambiguity, identity, kind, retention, and missing-reference regressions; rejected proof cannot issue a manifest request. Full repository and hosted validation are tracked in PR 3041 and docs/testing/w10-amount-provenance.md. The row remains in progress because report generation does not yet emit typed retained amount bindings, legacy typed pointers remain review-required until content verification, and other amount surfaces are not activated.
+    current_summary: First posted-ledger slice implemented for individual debit and credit amounts in browser Ledger Explorer and WPF Posted Ledger. Both consume one ledger-amount payload through the subject-addressed evidence API with immutable journal and entry identifiers plus exact authenticated tenant, company, fund, book, and period scope. Retained source identity, digest, bytes, and review are verified again when opening proof; absent, stale, ambiguous, or foreign support is review-required or blocked. Text-based evidence inference is removed. Review fixes normalize vault aliases before authorization, reject dotted path aliases, clear browser selections on navigation, and invalidate WPF proof before journal reprojection; journal and summary responses jointly supply available bases, including open GAAP-only periods. Targeted validation passed 61 backend tests, 144 browser tests, and 70 WPF tests including native control interaction; mocked Edge checks passed. WPF parity was revalidated on 2026-10-02 with 14 additional node/artifact ambiguity, identity, kind, retention, and missing-reference regressions; rejected proof cannot issue a manifest request. The first slice merged in PR 3041 on 2026-10-05; docs/testing/w10-amount-provenance.md retains its candidate-bound validation and PR 3041 owns its hosted results. The row remains in progress because report generation does not yet emit typed retained amount bindings, legacy typed pointers remain review-required until content verification, and other amount surfaces are not activated.
     exit_criteria:
       - Any amount an operator sees can open its provenance from the surface it appears on, through one shared component rather than a per-screen variant.
       - Provenance is served through the existing subject-addressed evidence surface rather than a parallel endpoint family beside it.
@@ -1549,7 +1549,7 @@ items:
         path: src/Meridian.Ui/dashboard/src/screens/finance-standard-pages-screen.test.tsx
       - type: document
         path: docs/testing/w10-amount-provenance.md
-    last_reviewed: 2026-10-02
+    last_reviewed: 2026-10-28
   - id: W10-RECON-002
     title: Break clustering and bulk-resolution activation
     wave: W10
@@ -1685,7 +1685,7 @@ items:
     health: green
     priority: high
     evidence_posture: planned_evidence
-    current_summary: Rank 6 of the 2026-07 W10 depth slate. The wash-sale and tax-character engine landed in 2026-07 and terminates in a single report-pack artifact that no endpoint serves and no screen reads, so the character split and wash-sale impact it computes are invisible to every operator. This row makes that output operator-visible and adds a relief-method comparison for a pending disposal. Two source constraints bound it - the engine does not yet decompose wash-sale deferral within a mixed gain and loss disposal, and account relief policy is not effective-dated - and both are recorded with their owning types in docs/product/plans/w10-depth-slate-2026-07.md.
+    current_summary: Rank 6 of the 2026-07 W10 depth slate. The bounded retained-disposal read slice merged in PR 3104 on 2026-10-07. One scoped journal-tax-results endpoint and server-derived contract expose retained lot parcels, holding periods, character, economic and recognized results, deferred loss, applied policy revision, and replacement-window state in the browser journal detail. Missing or inconsistent acquisition, policy or wash-sale support remains unavailable rather than a settled zero; refresh reads retained evidence and neither re-evaluates nor finalizes a disposal. Backend, PostgreSQL and browser regression sources cover retained history, parcel economics, replacement claims, exact decimals and scope refusals. This corrects the former claim that no endpoint or screen consumes tax results. Full status remains planned under the explicit exit gate because WPF presentation, pending-disposal relief-method comparison, complete period reproducibility and governed standing-policy changes are not delivered by this slice; operator acceptance is not inferred.
     exit_criteria:
       - Tax character, holding period, and wash-sale impact are visible on the positions and disposals they belong to rather than only inside an export artifact.
       - An operator comparing cost-basis relief methods for a pending disposal sees realized gain, character split, and wash-sale exposure per method, and any figure the engine cannot yet compute completely renders as incomplete rather than as a settled zero. A disposal that could still attract a wash sale while its replacement window is open - one a wash-sale policy actually governs on its own sale date, that either realizes a loss or holds mixed gain and loss lots meaning a loss cannot yet be excluded, and whose known replacement acquisitions do not yet cover the entire quantity sold - is labelled provisional with the remaining window shown and is re-evaluated or governed-finalized once that window closes. A disposal no governing policy reaches, whose every relieved lot realizes a gain, or whose matched quantity and disallowed loss have already reached their maximum, reads as settled rather than being marked provisional for a window that cannot change it.
@@ -1700,7 +1700,28 @@ items:
       - SRC-WPF
     diagrams:
       - DIA-ASSURANCE-LOOP
-    last_reviewed: 2026-07-31
+    evidence:
+      - type: source
+        path: src/Meridian.Contracts/Ledger/LedgerDisposalTaxDtos.cs
+      - type: source
+        path: src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs
+      - type: source
+        path: src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Tax.cs
+      - type: source
+        path: src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs
+      - type: source
+        path: src/Meridian.Ui/dashboard/src/screens/journal-entry-tax-results.tsx
+      - type: test
+        path: tests/Meridian.Tests/Ui/LedgerDisposalTaxReadServiceTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/LedgerDisposalTaxEndpointTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.TaxResultHistory.cs
+      - type: test
+        path: tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.TaxEconomics.cs
+      - type: test
+        path: src/Meridian.Ui/dashboard/src/screens/journal-entry-tax-results.test.tsx
+    last_reviewed: 2026-10-28
 
   - id: W10-SEAM-001
     title: Unified close-readiness projection behind one shared contract
@@ -1717,7 +1738,7 @@ items:
     health: green
     priority: high
     evidence_posture: in_progress
-    current_summary: Close acceptance binds declared book/account/entity ownership to authoritative records, stamps the real close plan with workflow and retained-evidence versions, and rechecks contributor snapshots before returning readiness. Hard close and workflow publication require that shared authority before mutation. WPF Accounting Close uses the governed server HTTP client for retained plans and commands. Browser and WPF selections invalidate old decisions and delayed responses. Private-capital statement and allocation support must belong to selected events and period/entity scope; cumulative balances and foreign evidence remain diagnostic. Missing, stale, mismatched and concurrently changed evidence has refusal-and-repair scenarios through the actual workflow, calendar, retained plan and cockpit, including mixed-period and mixed-entity subledgers. Hosted CI and Windows automated acceptance passed at d49fbc8e7; live operator certification remains open and Production Certification run 35885778558 passed all four jobs on 13aa7576575e7816c14ec3b9b5b002a3f4494c97 on 2026-09-23, including 1028 database tests with no failures or skips. That baseline evidence does not supply live operator acceptance or certify later changes.
+    current_summary: Close acceptance binds declared book/account/entity ownership to authoritative records, stamps the real close plan with workflow and retained-evidence versions, and rechecks contributor snapshots before returning readiness. Hard close and workflow publication require that shared authority before mutation. WPF Accounting Close uses the governed server HTTP client for retained plans and commands. Browser and WPF selections invalidate old decisions and delayed responses. Private-capital statement and allocation support must belong to selected events and period/entity scope; cumulative balances and foreign evidence remain diagnostic. Missing, stale, mismatched and concurrently changed evidence has refusal-and-repair scenarios through the actual workflow, calendar, retained plan and cockpit, including mixed-period and mixed-entity subledgers. Hosted CI and Windows automated acceptance passed at d49fbc8e7; live operator certification remains open and Production Certification run 35885778558 passed all four jobs on 13aa7576575e7816c14ec3b9b5b002a3f4494c97 on 2026-09-23, including 1028 database tests with no failures or skips. That baseline evidence does not supply live operator acceptance or certify later changes. The follow-on source and evidence refresh merged in PR 3108 on 2026-10-09. Its retained 2026-10-07 packet binds 74 browser regressions, 24 rendered response-simulation observations and WPF compilation to candidate 12565b9; that candidate ran zero WPF runtime tests and establishes no live operator acceptance or later-commit certification.
     exit_criteria:
       - One close-readiness projection is the shared source both workstation lanes consume rather than each lane deriving its own, and the caller or an explicit operator selection establishes the complete close scope - fund profile, ledger book, fund account, entity, and period - rather than the projection inferring any dimension from whichever workflow it happened to select; every contribution answers for that declared scope, and a dimension that is missing, ambiguous, or mismatched blocks the projection rather than being merged into it.
       - Every blocker names its type, count, severity, owner, and the records causing it.
@@ -1759,7 +1780,9 @@ items:
         path: tests/Meridian.Wpf.Tests/Features/Accounting/AccountingCloseHttpRecoveryTests.cs
       - type: test
         path: tests/Meridian.Tests/FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitServiceTests.EvidenceScope.cs
-    last_reviewed: 2026-09-23
+      - type: document
+        path: docs/testing/evidence/w10-seam-reviewed-20261007/README.md
+    last_reviewed: 2026-10-28
 
   - id: W10-RECON-003
     title: Unified tolerance model and what-if replay workbench
@@ -1875,7 +1898,7 @@ items:
     health: green
     priority: medium
     evidence_posture: planned_evidence
-    current_summary: Rank 11 of the 2026-07 W10 depth slate. The first slice implements the existing ConsolidationElimination policy treatment for two directly wholly owned entities in one currency, authoritative effective-dated perimeter checks, reciprocal receivable/payable matching, reviewed drafts, freshness guards, idempotent reruns and linked adjustments. The shared Accounting view distinguishes gross, proposed, posted, consolidated and unmatched balances with source drill-through. Scope and evidence paths are recorded in docs/domain/intercompany-consolidation.md. Full status remains planned because governed FX translation and desktop presentation are outside the first slice; partial consolidation and minority interest remain excluded.
+    current_summary: Rank 11 of the 2026-07 W10 depth slate. The first slice, merged in PR 3107 on 2026-10-07, implements the existing ConsolidationElimination policy treatment for two directly wholly owned entities in one currency, authoritative effective-dated perimeter checks, reciprocal receivable/payable matching, reviewed drafts, freshness guards, idempotent reruns and linked adjustments. The shared Accounting view distinguishes gross, proposed, posted, consolidated and unmatched balances with source drill-through. Scope and evidence paths are recorded in docs/domain/intercompany-consolidation.md. Full status remains planned because governed FX translation and desktop presentation are outside the first slice; partial consolidation and minority interest remain excluded.
     exit_criteria:
       - Consolidated views no longer double-count intercompany balances and state whether they are presenting gross or eliminated figures, and an eliminated figure reflects only approved and posted eliminations, with a proposed draft visible solely as a labeled preview.
       - Eliminations are proposed as reviewable drafts on the existing approval rail and never post automatically, driven by a rule on the existing policy seam with no parallel discriminator beside it. Approval fails closed when either source balance has moved since the draft was computed, and a posted elimination is corrected through a linked reversing or adjusting entry rather than replaced in place.
@@ -1892,7 +1915,22 @@ items:
       - SRC-WPF
     diagrams:
       - DIA-ASSURANCE-LOOP
-    last_reviewed: 2026-07-31
+    evidence:
+      - type: document
+        path: docs/domain/intercompany-consolidation.md
+      - type: source
+        path: src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs
+      - type: source
+        path: src/Meridian.Ui.Shared/Services/ConsolidationWorkbenchService.cs
+      - type: source
+        path: src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Consolidation.cs
+      - type: source
+        path: src/Meridian.Ui/dashboard/src/screens/accounting-screen.consolidation-panel.tsx
+      - type: test
+        path: tests/Meridian.Tests/Storage/ConsolidationSourcesPostgresTests.cs
+      - type: test
+        path: src/Meridian.Ui/dashboard/src/screens/accounting-screen.consolidation-panel.test.tsx
+    last_reviewed: 2026-10-28
 
   - id: W10-LOT-002
     title: Security-identified open-lot convergence
@@ -1911,7 +1949,7 @@ items:
     health: green
     priority: critical
     evidence_posture: in_progress
-    current_summary: "Canonical acquisition, retained legacy backfill, AverageCost redistribution, current-basis relief and bounded face-lot amortization share the durable lot and immutable journal boundary. New atomic acquisitions require complete canonical facts after exact historical replay is resolved; face drafts and new posting require an explicitly selected amortization method, including NoAmortization. Incomplete new writes create no journal or lot, while historical fact-free receipts retain their shape and governed backfill path. Retained incomplete face drafts can post through a separately reviewed method/yield supplement bound to the original candidate and lot; original Drafted and Approved attestations remain unchanged. PR #3102 is the single consolidated review surface for successor posting, governed amortization corrections, disposal and consumer evidence through one successor instruction and atomic posting implementation. Migration 042 owns successors with populated upgrade/recovery audit; forward migration 043 narrowly permits approved amortization reversal restoring a retained null prior basis. Supported single-predecessor actions are cashless Reg S/144A exchange, whole-unit forward/reverse split, stock merger, non-taxable unit spin-off and two-successor advance refunding. Spin-offs retain the parent security/position and quantity while opening separately identified children under the approved carried-basis allocation; dividend/purchase recipes, cash-linked cases and new holding periods cannot enter that path. Parent closeout and every child share the atomic journal boundary, with retained reporting evidence. Original/current transaction and functional bases, acquisition FX, holding dates and immutable source-action lineage survive posting and later disposal; only refunded successors carry Schedule D treatment. Full immutable predecessor ancestry resolves stable source actions from retained version/hash-bound evidence, including historical absent lineage or stable-ID fields; intervening actions or disposal cannot hide repeat application. Missing, contradictory, cyclic or foreign-book receipts block new posting while exact committed retries replay. Reviewed lifecycle evidence, source/target account and policy scope, canonical dimensions, optimistic versions, exact replay and retained Reporting JSON plus signed lot evidence remain bound through commit. Atomic successors require the canonical corporate-action source type, complete approved typed context and named actor; type aliases and corrected-batch/source-journal, reversal/rebook or closing-entry metadata cannot bypass the unsupported correction boundary. Amortization reversal restores the retained prior basis and exact inverse journal atomically; same-date rebook requires approved reversal lineage. Null restoration is bound to the latest original mutation and an approved same-scope/date correcting journal, with exact typed snapshot and inverse-line checks unchanged and general removal/version/new-batch guards retained. PostgreSQL proof covers partial and closing FIFO disposal after amortization. AverageCost certification compares acquisition evidence and successor origin by value, and Backtesting/shared Security Master projections use retained lot cost basis and current composite provenance. Tailwind 4/PostCSS and rebuilt browser assets are carried into the same canonical review surface. New test coverage includes full ancestry and legacy shape, restart, competing commands, collision rollback, source/approval/correction/dimension refusals and null-basis reversal/rebook. Merged main 187a6bd87c6a62cbc1748421d69ac5aa2eca52f7 passed Meridian CI run 38433413113 and Production Certification run 38433413156 on 2026-10-13. The ordinary lane passed 20,133 .NET tests with five existing registered skips; both PostgreSQL lanes passed 1,212 tests with zero failures or skips, including fractional spin-off conservation, rollback/retry and period-lock replay after partial disposal. Subsequent merged source includes PR 3149 unchanged-exchange amortization continuation, restricted to a one-for-one face-lot Reg S/144A exchange with unchanged economic/reference terms and an immediately preceding retained ordinary v2 amortization receipt; other successor types and chains remain blocked. PR 3153 adds reviewed capital returns through an atomic cash journal, carrying-basis reduction and immutable receipt while preserving quantity, acquisition FX and holding date; corrections and distributions beyond remaining basis stay blocked. Bounded MBS/ABS factor paydowns now prepare and post one atomic journal/basis/factor mutation across every open same-currency Long face lot in the security/position scope. Principal follows held par face times factor decline with largest-remainder allocation, a zero factor closes the lots, and later disposal uses remaining basis. No operator route invokes factor-paydown preparation yet, and factored-lot amortization remains blocked. PR 3272 also refuses amortization for populated or malformed call/put schedules; null or empty arrays add no optionality. Readable call/put terms do not establish schedule write or execution support. These source updates and linked tests do not extend the historical 2026-10-13 validation results to later commits, certify a release or supply live operator acceptance. This remains partial delivery: broader actions and corporate-action corrections, broader successor schedules, factor-paydown operator integration, remaining Execution/Backtesting/Reporting parity and live shadow-operation acceptance are open. W10-LOT-002 remains in_progress pending its full exit criteria and independent Accounting/Ledger and Storage review."
+    current_summary: "Canonical acquisition, retained legacy backfill, AverageCost redistribution, exact current-basis relief and bounded face-lot amortization share the durable lot and immutable journal boundary. New acquisitions require complete canonical facts after exact historical replay is resolved; face drafts and posting require an explicitly selected amortization method, including NoAmortization. Historical fact-free receipts retain their shape and governed backfill path, and retained incomplete face drafts require a separately reviewed method/yield supplement without rewriting original attestations. The successor and correction implementation merged in PR #3102; supported actions include cashless Reg S/144A exchange, whole-unit split, stock merger, non-taxable spin-off and two-successor advance refunding with conserved basis, holding dates, acquisition FX, retained source-action ancestry and exact retry identity. Approved amortization reversal and same-date rebook retain the prior basis and inverse journal under the atomic boundary. Later merged increments add unchanged-exchange schedule continuation (#3149), reviewed in-place capital returns (#3153), shared exact basis relief (#3155), reference-version authority (#3161), and retained advance-refunding linkage to signed reports (#3167). Standalone lot writes are refused in governed stores; new or changed production lots require their journal and immutable mutation receipt. Main at 9306ce56fa also contains governed FactorPaydown mutations for same-currency MBS lots, moving the lot-of-record factor and basis atomically, allocating position principal by largest remainder, retaining realized gain or loss and closing the lot on full paydown. The preparation service is composed but has no operator route; current-factor lots remain excluded from amortization. Declared nonempty or malformed call and put schedules also fail closed in amortization (#3272); schedule read support does not authorize those posting calculations. Source and regression links record delivered boundaries, not fresh test execution. The retained 2026-10-13 baseline 187a6bd87c6a62cbc1748421d69ac5aa2eca52f7 passed Meridian CI run 38433413113 and Production Certification run 38433413156 with 20,133 ordinary .NET tests and five registered skips, plus 1,212 PostgreSQL tests with zero failures or skips in both lanes; that evidence certifies neither later commits nor a release. W10-LOT-002 remains in_progress: operator activation of factor paydowns, broader actions and corrections, remaining successor/amortization cases, Execution/Backtesting/Reporting parity, compatibility retirement, independent Accounting/Ledger and Storage review, and live shadow-operation acceptance remain open."
     exit_criteria:
       - Every authoritative open lot requires SecurityId and BookPositionId, uses decimal original/open quantity, and declares Units or Face quantity basis; symbols remain effective-dated display evidence only.
       - Acquisition currency, functional currency, transaction-to-functional acquisition FX, transaction basis, and functional basis are retained and restatable without using a current market FX rate.
@@ -2037,8 +2075,6 @@ items:
         path: tests/Meridian.Tests/AssetOperations/AmortizationLotInstructionContractTests.cs
       - type: source
         path: src/Meridian.Contracts/Accounting/Lots/OpenLotAmortizationContinuation.cs
-      - type: source
-        path: src/Meridian.Storage/Ledger/SuccessorAmortizationEvidence.cs
       - type: test
         path: tests/Meridian.Tests/AssetOperations/OpenLotAmortizationContinuationTests.cs
       - type: test
@@ -2047,24 +2083,32 @@ items:
         path: src/Meridian.Contracts/Accounting/Lots/OpenLotCapitalReturn.cs
       - type: source
         path: src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CapitalReturn.cs
-      - type: source
-        path: src/Meridian.Storage/Ledger/Migrations/V_ledger_050__atomic_lot_capital_return.sql
-      - type: test
-        path: tests/Meridian.Tests/AssetOperations/OpenLotCapitalReturnTests.cs
       - type: test
         path: tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.CapitalReturn.cs
+      - type: test
+        path: tests/Meridian.Tests/Ledger/LedgerTaxLotExactBasisReliefTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.DirectWrites.cs
       - type: source
         path: src/Meridian.Contracts/Accounting/Lots/OpenLotFactorPaydown.cs
       - type: source
-        path: src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs
-      - type: source
         path: src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.FactorPaydown.cs
       - type: source
-        path: src/Meridian.Storage/Ledger/Migrations/V_ledger_053__atomic_lot_factor_paydown.sql
+        path: src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs
       - type: test
         path: tests/Meridian.Tests/AssetOperations/OpenLotFactorPaydownTests.cs
       - type: test
         path: tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.FactorPaydown.cs
+      - type: test
+        path: tests/Meridian.Tests/Application/Composition/FactorPaydownLotInstructionCompositionTests.cs
+      - type: source
+        path: src/Meridian.Storage/Ledger/SuccessorAmortizationEvidence.cs
+      - type: source
+        path: src/Meridian.Storage/Ledger/Migrations/V_ledger_050__atomic_lot_capital_return.sql
+      - type: test
+        path: tests/Meridian.Tests/AssetOperations/OpenLotCapitalReturnTests.cs
+      - type: source
+        path: src/Meridian.Storage/Ledger/Migrations/V_ledger_053__atomic_lot_factor_paydown.sql
       - type: test
         path: tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.FactorPaydownPublication.cs
     last_reviewed: 2026-10-28

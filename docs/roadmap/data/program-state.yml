@@ -38,6 +38,8 @@ program:
     - W10-JRNL-001
     - W10-PROV-001
   current_focus:
+    - Source reconciliation through main 9306ce56fa records delivered Security Master schedule contracts, lot-factor paydown preparation, and retained tax and consolidation read slices; these bounded deliveries do not close their roadmap gates or certify a release
+    - Use docs/product/plans/next-work-determination-2026-10-25.md for the latest release-path prioritization input; retain the frozen-release evidence requirements and the protected signing-secret decision in the production-readiness tracker
     - For W10 roadmap selection, retain the registry sequence values and recorded dependencies; W10-MARK-001 is rank 1, W10-RECON-001 rank 2, W10-SEAM-001 rank 7, and W10-LOT-002 rank 12
     - Preserve the operator-session plan recorded in docs/product/plans/next-work-determination-2026-09-27.md; certify W10-SEAM-001 before W10-MARK-001, with W10-LOT-002 as a separate continuation
     - For the user-requested work queue only, complete W10-LOT-002, then W10-MARK-001, then W10-SEAM-001 before opening W10-RECON-001 in that queue; this priority override creates no roadmap prerequisite and does not change the operator-session plan
