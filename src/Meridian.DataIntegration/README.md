@@ -107,7 +107,10 @@ documented scope-out, not a production path. This does not certify PRD-002.
 Scoped token records retain and validate their provider and ownership context; legacy token enumeration
 cannot return scoped tokens. `OAuthTokenRefreshService` accepts trusted `ownershipScope` for loading,
 saving, refresh rotation and deletion. Scoped services never claim or erase an unassigned legacy OAuth
-sidecar. Host callers must supply authorized scope; the default service remains a legacy compatibility path.
+sidecar or interrupted `.migrated` artifact, but do restrict both to owner-only access on Unix.
+Scoped startup propagates permission failures and verifies the resulting mode before continuing.
+Host callers must supply
+authorized scope; the default service remains a legacy compatibility path.
 
 ## Credential migration recovery
 
