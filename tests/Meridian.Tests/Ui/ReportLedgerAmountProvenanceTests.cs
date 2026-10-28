@@ -64,6 +64,52 @@ public sealed class ReportLedgerAmountProvenanceTests
 
     [Theory]
     [MemberData(nameof(ArtifactFormatCases))]
+    public async Task CertifiedArtifacts_CarryThePopulationDigestButNotItsReplayPayload(ReportingOutputFormatDto format)
+    {
+        using var fixture = new Fixture();
+        await fixture.CaptureAsync();
+        var manifest = fixture.BuildManifest(fixture.Snapshot, format);
+        var population = manifest.AuthoritativeSource!.LedgerPopulation!;
+
+        var production = await new DeterministicReportingCertifiedArtifactProducer().ProduceAsync(manifest);
+
+        // The payload is the whole book's journals; a download scoped to one audience must not carry it.
+        production.Artifacts.Should().NotContain(artifact => CarriesString(artifact.Content, population.PayloadJson));
+        var retained = DeterministicReportingCertifiedArtifactProducer.ParseRetainedManifest(
+            production.Artifacts.Single(artifact => artifact.ArtifactId == production.ManifestArtifactId).Content.Span);
+        retained.AuthoritativeSource.CheckpointHash.Should().Be(manifest.AuthoritativeSource.CheckpointHash);
+        retained.AuthoritativeSource.LedgerPopulation!.ContentHashSha256.Should().Be(population.ContentHashSha256,
+            "the digest still identifies the retained population the checkpoint covers");
+        retained.AuthoritativeSource.LedgerPopulation.PayloadJson.Should().BeEmpty();
+    }
+
+    // JSON artifacts escape strings, so search their decoded values as well as the raw bytes.
+    private static bool CarriesString(ReadOnlyMemory<byte> content, string value)
+    {
+        if (System.Text.Encoding.UTF8.GetString(content.Span).Contains(value, StringComparison.Ordinal))
+            return true;
+        System.Text.Json.Nodes.JsonNode? root;
+        try
+        {
+            root = System.Text.Json.Nodes.JsonNode.Parse(content.Span);
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return false;
+        }
+        return Contains(root);
+
+        bool Contains(System.Text.Json.Nodes.JsonNode? node) => node switch
+        {
+            System.Text.Json.Nodes.JsonObject obj => obj.Any(pair => Contains(pair.Value)),
+            System.Text.Json.Nodes.JsonArray array => array.Any(Contains),
+            System.Text.Json.Nodes.JsonValue leaf when leaf.TryGetValue<string>(out var text) => text == value,
+            _ => false
+        };
+    }
+
+    [Theory]
+    [MemberData(nameof(ArtifactFormatCases))]
     public async Task CertifiedArtifacts_LegacyManifestWithoutPopulationOrMarkerPreservesCompatibility(ReportingOutputFormatDto format)
     {
         using var fixture = new Fixture();
