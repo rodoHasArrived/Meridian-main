@@ -278,6 +278,13 @@ Ledger posting from trade-fill events is explicit and Security Master gated. `Le
 retains the trade journal's Investing cash category against its immutable line IDs. Sales report
 actual cash proceeds; realized gains/losses remain noncash adjustments, and commission journals
 remain separate Operating payments. Reversal preserves the retained category.
+For a crash retry whose deterministic journal was already retained before attribution existed,
+the governed target first requires exactly one authoritative identity collision with no
+`cash-flow.*` evidence. Only the new canonical trade group/category tags can be omitted from the
+expected retry; all money, lines, scope, command fingerprints and other metadata still undergo
+ordinary exact comparison. Partial, unknown or older cash-flow evidence is never stripped.
+The consumer independently checks the normalized posting candidate and projects the actual
+retained record, preserving historical bytes rather than inventing retrospective attribution.
 `AddBrokerageExecution`
 injects an `ITradeEventPublisher` into the OMS only when one has been composed; the execution host
 does not infer an accounting book or period. A book-owning composition root can call

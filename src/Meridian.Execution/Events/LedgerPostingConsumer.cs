@@ -533,12 +533,15 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
                     throw new OperationCanceledException("Ledger posting consumer is shutting down.", ct);
             }
 
-            var write = BuildDurableWrite(evt, expectedJournal);
+            var write = AccountingPostingCommandValidator.NormalizeAndValidate(BuildDurableWrite(evt, expectedJournal));
             var confirmation = await _postingTarget
                 .PostAndConfirmAsync(write, ct)
                 .ConfigureAwait(false);
+            var comparisonJournal = confirmation.WasAppended ? write.Entry
+                : TradeFillCashFlowReplayCompatibility.SelectCandidate(write.Entry, confirmation.RetainedRecord.Entry);
+            DurableLedgerPostingTarget.VerifyRetainedEntry(confirmation.RetainedRecord, write with { Entry = comparisonJournal });
             EnsureCanonicalJournalMatches(
-                expectedJournal,
+                comparisonJournal,
                 confirmation.RetainedRecord.Entry,
                 evt.FillId,
                 expectedJournal.Metadata.ActivityType ?? "unknown");
@@ -549,7 +552,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
             {
                 if (_postingDisabled || ct.IsCancellationRequested)
                     throw new OperationCanceledException("Ledger posting consumer is shutting down.", ct);
-                UpdateProjection(expectedJournal, evt.FillId);
+                UpdateProjection(confirmation.RetainedRecord.Entry, evt.FillId);
             }
         }
 
