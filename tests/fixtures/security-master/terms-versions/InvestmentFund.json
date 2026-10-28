@@ -1,0 +1,40 @@
+{
+  "assetClass": "InvestmentFund",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "distributionPolicy",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "fundFamily",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "fundType",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "isStableNav",
+          "type": "Boolean",
+          "required": false
+        },
+        {
+          "key": "navCurrency",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "pricingSource",
+          "type": "String",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

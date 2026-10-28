@@ -2637,7 +2637,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         var missingTradingFields = GetMissingTradingParameterFields(economic?.AssetClass, trading);
         var openConflictCount = assessments.Count;
         var blockingValidationCount = validationReport.CriticalIssueCount + validationReport.ErrorIssueCount;
-        var advisoryValidationCount = Math.Max(0, validationReport.Issues.Count - blockingValidationCount);
+        var advisoryValidationCount = Math.Max(0, validationReport.Issues.Count(static issue => issue.Severity != SecurityValidationSeverityDto.Info) - blockingValidationCount);
         // Effective view only: amendments fold to their latest terms and cancelled actions
         // stop counting against trust, so the posture reflects what will actually happen.
         var upcomingCorporateActions = CorporateActionEffectiveStateProjector
@@ -2839,8 +2839,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             Title: "Edit selected security",
             Detail: validationReport.HasBlockingIssues
                 ? $"Resolve {validationReport.CriticalIssueCount + validationReport.ErrorIssueCount} blocking validation issue(s) before downstream workflows consume the golden copy."
-                : validationReport.Issues.Count > 0
-                    ? $"Review {validationReport.Issues.Count} advisory validation issue(s) before promoting the selected security."
+                : validationReport.Issues.Any(static issue => issue.Severity != SecurityValidationSeverityDto.Info)
+                    ? $"Review {validationReport.Issues.Count(static issue => issue.Severity != SecurityValidationSeverityDto.Info)} advisory validation issue(s) before promoting the selected security."
                     : "Make a governed amendment to the golden copy after completing triage.",
             IsPrimary: false,
             IsEnabled: true));
@@ -3911,12 +3911,11 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         return missingFields;
     }
 
+    // A contract multiplier is a trading fact exactly where the catalog sizes lots in contracts or
+    // declares a multiplier term (listed options, futures, warrants, commodity contracts).
     private static bool RequiresContractMultiplier(string? assetClass)
-        => assetClass is not null &&
-           (assetClass.Equals("Option", StringComparison.OrdinalIgnoreCase)
-            || assetClass.Equals("Future", StringComparison.OrdinalIgnoreCase)
-            || assetClass.Equals("Swap", StringComparison.OrdinalIgnoreCase)
-            || assetClass.Equals("Warrant", StringComparison.OrdinalIgnoreCase));
+        => SecurityAssetClassCatalog.GetOrDefault(assetClass) is { } descriptor
+           && (descriptor.LotUnit == SecurityLotUnitKind.Contracts || descriptor.LotMultiplierTermKey is not null);
 
     private static string FormatFieldLabel(string? fieldPath)
     {

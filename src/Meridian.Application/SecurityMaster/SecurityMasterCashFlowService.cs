@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.SecurityMaster.CashFlow;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.SecurityMaster.Schedules;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging;
 
@@ -77,8 +78,12 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         await _store.UpsertSourceAsync(record, ct).ConfigureAwait(false);
     }
 
-    public async Task<StructuredCashFlowProjectionDto?> GetProjectionAsync(
+    public Task<StructuredCashFlowProjectionDto?> GetProjectionAsync(
         Guid securityId, StructuredCashFlowScenario scenario, CancellationToken ct = default)
+        => GetProjectionAsOfAsync(securityId, scenario, DateTimeOffset.UtcNow, ct);
+
+    public async Task<StructuredCashFlowProjectionDto?> GetProjectionAsOfAsync(
+        Guid securityId, StructuredCashFlowScenario scenario, DateTimeOffset asOf, CancellationToken ct = default)
     {
         var assignment = await _store.GetSourceAsync(securityId, ct).ConfigureAwait(false);
         if (assignment is null)
@@ -116,9 +121,11 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         if (assignment.SourceKind is StructuredCashFlowSourceKind.CalculatedBullet
             or StructuredCashFlowSourceKind.CalculatedSinker)
         {
-            var forwardCurves = await LoadForwardCurvesAsync(security, ct).ConfigureAwait(false);
+            // Curves are read as of the projection date, not the wall clock, so a valuation as of
+            // another date projects floating legs from the curve in force on that date.
+            var forwardCurves = await LoadForwardCurvesAsync(security, DateOnly.FromDateTime(asOf.UtcDateTime.Date), ct).ConfigureAwait(false);
             var projection = BuildCalculatedProjection(
-                security, assignment.SourceKind, scenario, staleness, assignment.LastUpdatedUtc, forwardCurves);
+                security, assignment.SourceKind, scenario, staleness, assignment.LastUpdatedUtc, asOf, forwardCurves);
             var terms = projection.TermsUsed!;
             var usesNormalizedBasis = terms.PrincipalFace is not > 0m
                 && (!terms.HasLegs || terms.Legs!.Any(leg => leg.Notional is not > 0m));
@@ -144,7 +151,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         }
 
         var providerProjection = await provider.GetProjectedCashFlowsAsync(
-            securityId, isin, DateTimeOffset.UtcNow, scenario, ct).ConfigureAwait(false);
+            securityId, isin, asOf, scenario, ct).ConfigureAwait(false);
 
         // Stamp freshness onto provider projections too so every consumer sees a consistent gate.
         return providerProjection is null
@@ -219,7 +226,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
     /// the provider has no curve for, the leg keeps the flat-forward projection.
     /// </summary>
     private async Task<IReadOnlyDictionary<string, SecurityForwardCurve>> LoadForwardCurvesAsync(
-        SecurityDetailDto security, CancellationToken ct)
+        SecurityDetailDto security, DateOnly asOfDate, CancellationToken ct)
     {
         var curves = new Dictionary<string, SecurityForwardCurve>(StringComparer.OrdinalIgnoreCase);
         if (_forwardCurves is null)
@@ -228,7 +235,6 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         }
 
         var legs = StructuredCashFlowTermsResolver.Resolve(security).Legs ?? [];
-        var asOfDate = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime.Date);
         foreach (var indexName in legs
                      .Where(static leg => leg.RateKind == CashFlowLegRateKind.Floating && !string.IsNullOrWhiteSpace(leg.IndexName))
                      .Select(static leg => leg.IndexName!.Trim())
@@ -250,9 +256,9 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         StructuredCashFlowScenario scenario,
         StructuredCashFlowStaleness staleness,
         DateTimeOffset? sourceLastUpdatedUtc,
+        DateTimeOffset asOf,
         IReadOnlyDictionary<string, SecurityForwardCurve>? forwardCurves = null)
     {
-        var asOf = DateTimeOffset.UtcNow;
         var terms = StructuredCashFlowTermsResolver.Resolve(security);
         var factorSchedule = terms.FactorSchedule;
 
@@ -329,8 +335,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         // row) by 20%. Only an undated scalar, or one dated on or before the projection as-of,
         // may seed the balance; a future-dated scalar leaves the latest eligible schedule point
         // (already resolved above) or the unfactored walk in charge.
-        var scalarFactorDate = SecurityTermReader.ReadDate(
-            EnumerateFactorDateSources(security.AssetSpecificTerms), ["factorDate", "currentFactorDate"]);
+        var scalarFactorDate = ReadScalarFactorDate(security);
         var scalarFactorApplies = scalarFactorDate is not DateOnly scalarAsOf || scalarAsOf <= asOfDate;
         var scheduledFactor = appliedFactorEntry?.Factor ?? (scalarFactorApplies ? terms.CurrentFactor : null);
         var hasAuthoritativeFactor = scheduledFactor is >= 0m;
@@ -369,7 +374,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
             annualRate = 0m;
         }
 
-        var periodMonths = Math.Max(1, 12 / ResolvePaymentFrequencyPerYear(terms.PaymentFrequency));
+        var periodMonths = Math.Max(1, 12 / SecurityTermConventions.LegacyCouponPaymentsPerYear(terms.PaymentFrequency));
         var periods = BuildPaymentPeriods(issueDate, maturity, periodMonths)
             .Where(period => period.PaymentDate >= asOfDate)
             .ToArray();
@@ -606,7 +611,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         }
 
         var dayCount = leg.DayCountConvention ?? terms.DayCountConvention;
-        var periodMonths = Math.Max(1, 12 / ResolvePaymentFrequencyPerYear(leg.PaymentFrequency ?? terms.PaymentFrequency));
+        var periodMonths = Math.Max(1, 12 / SecurityTermConventions.LegacyCouponPaymentsPerYear(leg.PaymentFrequency ?? terms.PaymentFrequency));
         var periods = BuildPaymentPeriods(issueDate, maturity, periodMonths)
             .Where(period => period.PaymentDate >= asOfDate)
             .ToArray();
@@ -714,80 +719,31 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
     };
 
     /// <summary>
-    /// Yields each coupon period as an accrual start and its payment date, ending on maturity.
+    /// Each coupon period's accrual start and payment date, ending on maturity: the kernel's <see cref="ScheduleSpec.IssueAnchoredForward"/> schedule.
     /// </summary>
-    /// <remarks>
-    /// Every payment date is anchored on the issue date rather than compounded from the previous
-    /// payment date. <see cref="DateOnly.AddMonths"/> clamps a month-end anchor into shorter months
-    /// (31 Jan plus three months is 30 Apr), and compounding that clamp walks the schedule earlier
-    /// every period. For a bond issued on the 31st that drift lands the final period one day before
-    /// maturity and emits a spurious one-day stub, so a one-year quarterly bond yields five payments
-    /// instead of four. Anchoring keeps each period on the issue day-of-month, clamping only where
-    /// the target month is shorter.
-    /// </remarks>
     private static IEnumerable<(DateOnly AccrualStart, DateOnly PaymentDate)> BuildPaymentPeriods(
         DateOnly issueDate,
         DateOnly maturity,
         int periodMonths)
     {
-        // A non-positive period would never advance the anchor and would spin forever. Both callers
-        // clamp with Math.Max(1, ...), so this guards the contract rather than a reachable path.
+        // Both callers clamp with Math.Max(1, ...), so this guards the contract rather than a reachable path.
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(periodMonths);
 
-        if (issueDate >= maturity)
+        var tenor = ScheduleTenor.Months(periodMonths);
+        var schedule = ScheduleGenerator.Generate(ScheduleSpec.IssueAnchoredForward(issueDate, maturity, tenor));
+        if (!schedule.Succeeded)
         {
-            yield break;
+            throw new InvalidOperationException(schedule.Failure.Message);
         }
 
-        var accrualStart = issueDate;
-        for (var period = 1; ; period++)
-        {
-            var paymentDate = issueDate.AddMonths(periodMonths * period);
-            if (paymentDate >= maturity)
-            {
-                yield return (accrualStart, maturity);
-                yield break;
-            }
+        // The legacy loop evaluated the grid date that closed the schedule, so a maturity whose
+        // closing grid date lies beyond the supported date range (a far-dated or perpetual sentinel
+        // such as 9999-12-31 off the grid) threw ArgumentOutOfRangeException. The kernel treats that
+        // date as unbounded and closes at maturity instead; evaluate it to keep the legacy failure
+        // (SCH-DEF-010). Advance throws the same exception type for an out-of-range date.
+        _ = tenor.Advance(issueDate, schedule.Periods.Count);
 
-            yield return (accrualStart, paymentDate);
-            accrualStart = paymentDate;
-        }
-    }
-
-    private static int ResolvePaymentFrequencyPerYear(string? paymentFrequency)
-    {
-        if (string.IsNullOrWhiteSpace(paymentFrequency))
-        {
-            return 1;
-        }
-
-        // The write path admits only the cadences the shared convention recognizes; read them the
-        // same way (this adds BiMonthly and tenor spellings such as "3M"). Anything else keeps the
-        // legacy interpretation below so stored values read exactly as before.
-        if (SecurityTermConventions.CouponPaymentsPerYear(paymentFrequency) is { } paymentsPerYear)
-        {
-            return paymentsPerYear;
-        }
-
-        var normalized = paymentFrequency
-            .Replace("-", string.Empty, StringComparison.Ordinal)
-            .Replace("_", string.Empty, StringComparison.Ordinal)
-            .Replace(" ", string.Empty, StringComparison.Ordinal)
-            .Trim()
-            .ToUpperInvariant();
-        if (int.TryParse(normalized, out var parsed) && parsed > 0)
-        {
-            return Math.Clamp(parsed, 1, 12);
-        }
-
-        return normalized switch
-        {
-            "MONTHLY" => 12,
-            "QUARTERLY" => 4,
-            "SEMIANNUAL" or "SEMIANNUALLY" or "SEMIYEARLY" or "HALFYEARLY" => 2,
-            "ANNUAL" or "ANNUALLY" or "YEARLY" => 1,
-            _ => 1
-        };
+        return schedule.Periods.Select(static period => (period.AccrualStart, period.PaymentDate));
     }
 
     private static decimal NormalizeAnnualRate(decimal coupon)
@@ -808,6 +764,17 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
 
     private static DateTimeOffset ToUtcDateTimeOffset(DateOnly date)
         => new(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+
+    /// <summary>
+    /// The date the security's scalar current factor is effective from, when its terms retain one
+    /// (<c>factorDate</c> or <c>currentFactorDate</c>). A scalar dated after a valuation or
+    /// projection date does not describe that date's balance; the valuation models apply the same
+    /// rule so quoted and projected values read one factor.
+    /// </summary>
+    internal static DateOnly? ReadScalarFactorDate(SecurityDetailDto security)
+        => SecurityTermReader.ReadDate(
+            EnumerateFactorDateSources(SecurityAssetClassTermsUpgrader.UpgradeForRead(security.AssetClass, security.AssetSpecificTerms)),
+            ["factorDate", "currentFactorDate"]);
 
     /// <summary>
     /// Term sources for the scalar factor-date lookup, in the SAME nested-first precedence

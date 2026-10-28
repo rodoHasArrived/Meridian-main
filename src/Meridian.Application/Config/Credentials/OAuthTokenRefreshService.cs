@@ -409,7 +409,19 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
             // The provider may already have invalidated the old refresh token. Retain the new
             // token in memory even if durable storage fails, but never acknowledge that failure as success.
             _tokens[providerName] = newToken;
-            await WriteOwnedTokenAsync(providerName, newToken, CancellationToken.None).ConfigureAwait(false);
+            var auditDeferred = false;
+            try
+            {
+                await WriteOwnedTokenAsync(providerName, newToken, CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (ProviderCredentialAuditDeferredException deferred)
+            {
+                // The replacement is durable in the vault; only its audit record is owed and journaled.
+                // Reporting this as a failed refresh would invite a retry of a rotation that succeeded.
+                auditDeferred = true;
+                _log.Warning("OAuth token refresh for {Provider} committed but its audit record is deferred to {PendingAuditPath}",
+                    providerName, deferred.PendingAuditPath);
+            }
 
             OnTokenRefreshed?.Invoke(providerName, newToken);
             _log.Information("Successfully refreshed OAuth token for {Provider}, new expiration: {ExpiresAt}",
@@ -419,7 +431,8 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
                 Success: true,
                 Token: newToken,
                 RefreshedAt: DateTimeOffset.UtcNow,
-                NextRefreshAt: newToken.ExpiresAt.AddDays(-_config.AutoRefreshDaysBeforeExpiration)
+                NextRefreshAt: newToken.ExpiresAt.AddDays(-_config.AutoRefreshDaysBeforeExpiration),
+                AuditDeferred: auditDeferred
             );
         }
         catch (Exception ex)

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.SecurityMaster;
 
-public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMasterAmender, IDisposable
+public sealed partial class SecurityMasterService : ISecurityMasterService, ISecurityMasterAmender, IDisposable
 {
     /// <summary>
     /// Per-security amendment serialization from the conflict pre-check (which reads per-field
@@ -937,6 +937,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         EnsureDeclaredVocabulariesRoundTripSafely(projection, assetSpecificTermsPatch);
         EnsureBondCouponPayloadRoundTripsSafely(projection, assetSpecificTermsPatch);
         EnsureCustomAssetEnvelopeRoundTripsSafely(projection, assetSpecificTermsPatch);
+        EnsureAheadOfWriteTermsRoundTripSafely(projection, assetSpecificTermsPatch);
     }
 
     /// <summary>
@@ -966,7 +967,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             return;
         }
 
-        var isCustomAsset = string.Equals(projection.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase);
+        var isCustomAsset = SecurityAssetClassCatalog.GetOrDefault(projection.AssetClass).RequiresProfileReference;
         var terms = projection.AssetSpecificTerms;
         var referencesProfile = terms.ValueKind == JsonValueKind.Object
             && terms.TryGetProperty("customProfileId", out var profileId)
@@ -1023,7 +1024,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         SecurityProjectionRecord projection,
         JsonElement? assetSpecificTermsPatch)
     {
-        if (!string.Equals(projection.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase))
+        if (!SecurityAssetClassCatalog.GetOrDefault(projection.AssetClass).RequiresProfileReference)
         {
             return;
         }
@@ -1315,7 +1316,8 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         JsonElement? assetSpecificTermsPatch)
     {
         var terms = projection.AssetSpecificTerms;
-        if (!string.Equals(projection.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase)
+        var descriptor = SecurityAssetClassCatalog.GetOrDefault(projection.AssetClass);
+        if (!descriptor.CarriesBondCouponStructure
             || terms.ValueKind != JsonValueKind.Object)
         {
             return;
@@ -1800,8 +1802,8 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             return resolvedAssetClass;
         }
 
-        return string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
-            ? "CustomAsset"
+        return SecurityAssetClassCatalog.GetOrDefault(assetClass) is { RequiresProfileReference: true } profileBacked
+            ? profileBacked.AssetClass
             : null;
     }
 

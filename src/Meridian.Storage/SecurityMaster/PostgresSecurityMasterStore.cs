@@ -523,6 +523,11 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             await ProjectionWritersByAssetClass[assetClass].WriteAsync(this, connection, transaction, record, ct).ConfigureAwait(false);
         }
 
+        // The underlying graph follows the terms: the derived edges are rewritten with every
+        // projection write, in the same transaction, so the graph never shows a dependency the
+        // terms no longer state. Declared edges are owned by the graph store and left alone.
+        await SecurityUnderlyingLinkWriter.ReplaceDerivedAsync(connection, transaction, _options.Schema, record, ct).ConfigureAwait(false);
+
         return true;
     }
 
@@ -566,7 +571,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         SecurityProjectionRecord record,
         CancellationToken ct)
     {
-        if (!string.Equals(record.AssetClass, "Option", StringComparison.OrdinalIgnoreCase) ||
+        if (SecurityAssetClassCatalog.GetOrDefault(record.AssetClass).ProjectionKind != SecurityTermsProjectionKind.Specialized ||
             !TryBuildOptionProjection(record, out var projection))
         {
             await DeleteOptionProjectionTablesAsync(connection, transaction, record.SecurityId, ct).ConfigureAwait(false);
@@ -836,7 +841,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
               and i.valid_from <= @as_of
               and (i.valid_to is null or i.valid_to > @as_of)
               and (@include_inactive = true or s.status = 'Active')
-            order by i.is_primary desc
+            order by i.is_primary desc, i.valid_from desc, i.security_id
             limit 1;
             """,
             $"""
@@ -850,6 +855,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
               and (a.valid_to is null or a.valid_to > @as_of)
               and a.is_enabled = true
               and (@include_inactive = true or s.status = 'Active')
+            order by a.valid_from desc, a.security_id
             limit 1;
             """,
             $"""
@@ -865,6 +871,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                     and i.identifier_kind = @identifier_kind
                     and i.normalized_identifier_value = @normalized_identifier_value)
               and (@include_inactive = true or s.status = 'Active')
+            order by s.security_id
             limit 1;
             """
         })
