@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 1149 |
-| Valid | 671 |
+| Total code blocks | 1151 |
+| Valid | 673 |
 | Invalid | 0 |
 | Skipped | 478 |
 
@@ -18,7 +18,7 @@
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 121 | 0 | 0 | 121 |
-| `bash` | 263 | 263 | 0 | 0 |
+| `bash` | 265 | 265 | 0 | 0 |
 | `cpp` | 1 | 0 | 0 | 1 |
 | `csharp` | 307 | 307 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
@@ -128,7 +128,7 @@ No invalid code examples found.
 | `docs/engineering/blueprints/security-master-passport-workbench.md` | 4 |
 | `docs/engineering/blueprints/w10-mark-001-fail-closed-marks.md` | 17 |
 | `docs/engineering/blueprints/web-ui-report-run-stream-blueprint-2026-07.md` | 7 |
-| `docs/engineering/ci-cd-optimization.md` | 2 |
+| `docs/engineering/ci-cd-optimization.md` | 3 |
 | `docs/engineering/contract-type-parity.md` | 1 |
 | `docs/engineering/live-trading-engine.md` | 1 |
 | `docs/engineering/pipeline-benchmark.md` | 2 |
@@ -167,7 +167,7 @@ No invalid code examples found.
 | `docs/roadmap/README.md` | 1 |
 | `docs/roadmap/roadmap-item-template.md` | 1 |
 | `docs/roadmap/schema-versioning.md` | 1 |
-| `docs/source/README.md` | 1 |
+| `docs/source/README.md` | 2 |
 | `docs/source/generated/adapter-readiness-matrix.md` | 1 |
 | `docs/source/source-documentation-standard.md` | 3 |
 | `docs/source/source-todo-standard.md` | 1 |

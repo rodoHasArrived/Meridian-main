@@ -1,11 +1,11 @@
 {
   "total_files": 770,
-  "total_lines": 174971,
+  "total_lines": 175128,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 314,
-  "average_lines": 227.2,
+  "average_lines": 227.4,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2407,7 +2407,7 @@
     },
     {
       "path": "docs/engineering/ci-cd-optimization.md",
-      "line_count": 551,
+      "line_count": 629,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2431,7 +2431,7 @@
     },
     {
       "path": "docs/engineering/docs-regeneration-automation-design.md",
-      "line_count": 216,
+      "line_count": 235,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2455,7 +2455,7 @@
     },
     {
       "path": "docs/engineering/generated-merge-recovery.md",
-      "line_count": 183,
+      "line_count": 198,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2967,7 +2967,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12747,
+      "line_count": 12762,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2983,7 +2983,7 @@
     },
     {
       "path": "docs/generated/workflows-overview.md",
-      "line_count": 46,
+      "line_count": 48,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3967,7 +3967,7 @@
     },
     {
       "path": "docs/roadmap/roadmap-governance.md",
-      "line_count": 97,
+      "line_count": 101,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4183,7 +4183,7 @@
     },
     {
       "path": "docs/source/README.md",
-      "line_count": 58,
+      "line_count": 77,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6143,7 +6143,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 1140,
+      "line_count": 1145,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
