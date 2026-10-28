@@ -7,8 +7,12 @@ import tempfile
 import unittest
 
 SCRIPTS = Path(__file__).resolve().parents[2] / "build/scripts/ai"
-sys.path.insert(0, str(SCRIPTS))
-from task_context import build_packet, check_packet, main, markdown
+_import_path = sys.path[:]
+try:
+    sys.path.insert(0, str(SCRIPTS))
+    from task_context import build_packet, check_packet, main, markdown
+finally:
+    sys.path[:] = _import_path
 from unittest.mock import patch
 
 
