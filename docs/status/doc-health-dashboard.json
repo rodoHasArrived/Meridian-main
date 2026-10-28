@@ -1,6 +1,6 @@
 {
   "total_files": 752,
-  "total_lines": 169950,
+  "total_lines": 169988,
   "orphaned_count": 250,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -1574,7 +1574,7 @@
     },
     {
       "path": "docs/architecture/module-map.md",
-      "line_count": 136,
+      "line_count": 148,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1606,7 +1606,7 @@
     },
     {
       "path": "docs/architecture/project-structure.md",
-      "line_count": 83,
+      "line_count": 85,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3350,7 +3350,7 @@
     },
     {
       "path": "docs/product/implementation-todo-list.md",
-      "line_count": 706,
+      "line_count": 730,
       "has_heading": true,
       "todo_count": 5,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
