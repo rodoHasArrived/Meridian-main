@@ -27,12 +27,13 @@ describe("WorkflowContinuityDock route modes", () => {
     );
 
     expect(screen.getByRole("region", { name: "Settings task choice" })).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "Choose a task" })).toBeTruthy();
+    expect(screen.getByText("Operating scope")).toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: "Settings task workflow steps" })).toBeNull();
 
-    await user.click(screen.getByText("Flow details"));
+    await user.click(screen.getByText("Workflow context"));
 
     expect(screen.queryByRole("navigation", { name: "Settings task workflow steps" })).toBeNull();
+    expect(screen.getByText("Choose a task", { selector: "span" })).toBeInTheDocument();
     const primaryFlow = screen.getByRole("navigation", { name: "Primary operator workflow steps" });
     expect(within(primaryFlow).queryByRole("link", { current: "step" })).toBeNull();
   });

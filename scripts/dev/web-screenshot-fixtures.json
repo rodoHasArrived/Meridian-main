@@ -2,7 +2,7 @@
   "version": 1,
   "description": "Static fixture responses served by Playwright page.route() during web screenshot capture. Keeps screenshots independent of a running Meridian API backend. Update when API response shapes change.",
   "routes": {
-    "/api/workstation/first-run/": {
+    "/api/workstation/first-run": {
       "isComplete": true,
       "goal": "operate-fund",
       "starterKitId": "fund-operations",

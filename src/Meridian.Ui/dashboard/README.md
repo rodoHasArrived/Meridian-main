@@ -11,6 +11,25 @@ last_reviewed: 2026-10-11
 
 # src/Meridian.Ui/dashboard
 
+## Shared workstation header
+
+The browser shell combines `WorkspaceHeader` and its persistent operating scope in one compact
+header. `Workflow context` starts collapsed and reveals workflow steps and decision evidence.
+`Views` discloses existing saved-layout and save-current-view controls; Copy link and Refresh stay
+visible. Workspace descriptions are available under the About information disclosure. Live,
+simulated/seeded, unknown-provenance and degraded warnings remain outside disclosures.
+
+The scope picker stages all changes, including Clear scope, until Apply scope. Cancel and Escape
+leave the active URL and stored scope unchanged. Run and date dimensions remain inspectable;
+applicability text distinguishes dimensions applied here from those retained for other screens.
+Symbol suggestions support arrow keys, Enter, Escape, search progress, no matches and Retry.
+Escape dismisses suggestions before closing the dialog. Navigation reveals the active destination
+after route changes while respecting manual collapse until the next navigation.
+
+Focused regression coverage includes `app.test.tsx`, `workspace-header.test.tsx`,
+`workspace-views-menu.test.tsx`, `workflow-continuity-dock.test.tsx`, `scope-picker.test.tsx`,
+`workspace-nav.test.tsx`, and `layout-switcher.test.tsx`.
+
 Historical price charts require a complete successful historical query before showing prices
 or indicators. Failed and partial queries show an explicit incomplete state with failed source
 paths and Retry; incomplete comparison series are withheld and named in an alert. The shared

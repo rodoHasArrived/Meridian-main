@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, GitBranch, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { Link } from "react-router-dom";
 import "@/styles/workflow-continuity-dock.css";
 import type { AppShellWorkflowContinuityViewModel } from "@/app-shell.view-model";
@@ -8,12 +8,10 @@ import { cn } from "@/lib/utils";
 
 export function WorkflowContinuityDock({
   viewModel,
-  onClearOperatingContext,
   onEditOperatingContext,
   scopeDimensionsInEffect
 }: {
   viewModel: AppShellWorkflowContinuityViewModel;
-  onClearOperatingContext?: () => void;
   onEditOperatingContext?: () => void;
   scopeDimensionsInEffect?: AppShellOperatingScopeQueryKey[];
 }) {
@@ -25,9 +23,7 @@ export function WorkflowContinuityDock({
   const [operatorFlowOpen, setOperatorFlowOpen] = useState(false);
   const toggleOperatorFlow = () => setOperatorFlowOpen((isOpen) => !isOpen);
 
-  if (viewModel.mode === "hidden") {
-    return null;
-  }
+  if (viewModel.mode === "hidden") return null;
 
   return (
     <section
@@ -39,39 +35,20 @@ export function WorkflowContinuityDock({
         {viewModel.title}. {viewModel.summary} Current route {routePathLabel}. Next action: {viewModel.nextActionLabel}.
       </p>
       <div className="workflow-continuity-context">
-        <div className="flex min-w-0 items-center gap-2">
-          <GitBranch className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-          <div className="min-w-0">
-            <div className="eyebrow-label">{viewModel.contextLabel}</div>
-            <h2 className="workflow-continuity-title">{viewModel.title}</h2>
-          </div>
-        </div>
-        <p className="sr-only">{viewModel.summary}</p>
-        <div className="workflow-continuity-meta" aria-label={`Current route ${routePathLabel}`}>
-          <span>{viewModel.contextValue}</span>
-          <span>{routePathLabel}</span>
+        <div className="workflow-continuity-scope-heading">
+          <span className="text-xs font-semibold">Operating scope</span>
           {onEditOperatingContext ? (
             <button
               type="button"
-              className="workflow-continuity-clear focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+              className="workflow-continuity-edit"
               onClick={onEditOperatingContext}
               aria-label={viewModel.operatingScope.hasScope ? "Change operating scope" : "Set operating scope"}
-              title={viewModel.operatingScope.hasScope ? "Change operating scope" : "Set operating scope"}
             >
               <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
+              {viewModel.operatingScope.hasScope ? "Change scope" : "Set scope"}
             </button>
           ) : null}
-          {viewModel.operatingScope.hasScope && viewModel.clearSubjectAriaLabel && onClearOperatingContext ? (
-            <button
-              type="button"
-              className="workflow-continuity-clear focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
-              onClick={onClearOperatingContext}
-              aria-label={viewModel.clearSubjectAriaLabel}
-              title={viewModel.clearSubjectAriaLabel}
-            >
-              <X className="h-3.5 w-3.5" aria-hidden="true" />
-            </button>
-          ) : null}
+          {!viewModel.operatingScope.hasScope ? <span className="text-xs text-muted-foreground">No scope selected</span> : null}
         </div>
         {scopeSummary ? <p className="sr-only">Operating scope: {scopeSummary}.</p> : null}
         {viewModel.operatingScope.items.length > 0 ? (
@@ -82,11 +59,12 @@ export function WorkflowContinuityDock({
                 <div
                   key={item.id}
                   className={cn("workflow-continuity-scope-chip", !inEffect && "workflow-continuity-scope-chip-inactive")}
-                  aria-label={inEffect ? item.ariaLabel : `${item.ariaLabel}. Not applied on this workspace.`}
+                  aria-label={inEffect ? item.ariaLabel : `${item.ariaLabel}. Retained for other screens.`}
                   title={inEffect ? undefined : "Carried, but not applied on this workspace"}
                 >
                   <dt>{item.label}</dt>
                   <dd>{item.value}</dd>
+                  <span className="workflow-continuity-scope-applicability">{inEffect ? "Applied here" : "Retained"}</span>
                 </div>
               );
             })}
@@ -117,7 +95,7 @@ export function WorkflowContinuityDock({
           }}
         >
           <span className="workflow-continuity-flow-summary">
-            <span className="workflow-continuity-flow-label">Flow details</span>
+            <span className="workflow-continuity-flow-label">Workflow context</span>
             <span className="sr-only">
               {viewModel.primaryOperatorFlowLabel}: {viewModel.primaryOperatorFlowSummary}
             </span>
@@ -131,8 +109,8 @@ export function WorkflowContinuityDock({
               <span>{viewModel.primaryOperatorFlowSummary}</span>
             </p>
             <p className="workflow-continuity-expanded-flow">
-              <span>Technical route</span>
-              <span>{viewModel.routeLabel}</span>
+              <span>Current workflow</span>
+              <span>{viewModel.title}</span>
             </p>
             <div className="workflow-continuity-expanded-decision" aria-label={`${decision.label} detail`}>
               <span className="workflow-continuity-decision-status">{decision.statusLabel}</span>

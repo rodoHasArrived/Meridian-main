@@ -34,6 +34,7 @@ import {
 } from "@/lib/operating-scope/persistence";
 import { WorkflowContinuityDock } from "@/components/meridian/workflow-continuity-dock";
 import { DecisionBriefPill } from "@/components/meridian/decision-brief-pill";
+import { WorkspaceViewsMenu } from "@/components/meridian/workspace-views-menu";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
 import { CompanionPaneWindow } from "@/components/meridian/companion-pane-window";
 import { LayoutSwitcher } from "@/components/meridian/layout-switcher";
@@ -350,9 +351,9 @@ function AppShell({
   const onboardingTour = useOnboardingTour();
   const workbenchRef = useRef<HTMLElement | null>(null);
   const previousRouteKeyRef = useRef<string | null>(null);
-  const suppressScopePersistRef = useRef(false);
+  const scopeReplacementLocationRef = useRef<string | null>(null);
   const navigate = useNavigate();
-  const { hash, pathname, search } = useLocation();
+  const { hash, pathname, search, key: locationKey } = useLocation();
   const activeWorkspace = resolveWorkspaceKeyFromPath(pathname);
   const routeOperatingScope = useMemo(() => readOperatingScopeFromSearch(search), [search]);
   const operatingScopeInput = useMemo(
@@ -453,11 +454,12 @@ function AppShell({
   );
 
   useEffect(() => {
-    if (suppressScopePersistRef.current) {
-      if (!hasOperatingScopeValues(routeOperatingScope)) {
-        suppressScopePersistRef.current = false;
+    // An explicit replacement must not re-import the old route's scope while
+    // React Router completes navigation (including partial clears and layout restores).
+    if (scopeReplacementLocationRef.current !== null) {
+      if (locationKey !== scopeReplacementLocationRef.current) {
+        scopeReplacementLocationRef.current = null;
       }
-
       return;
     }
 
@@ -472,22 +474,14 @@ function AppShell({
 
     writeStoredOperatingScope(nextScope);
     setStoredOperatingScope(nextScope);
-  }, [routeOperatingScope, storedOperatingScope]);
-
-  const handleClearOperatingContext = () => {
-    const emptyScope: AppShellOperatingScopeInput = {};
-    suppressScopePersistRef.current = true;
-    writeStoredOperatingScope(emptyScope);
-    setStoredOperatingScope(emptyScope);
-    navigate(`${pathname}${removeOperatingScopeFromSearch(search)}${hash}`, { replace: true });
-  };
+  }, [locationKey, routeOperatingScope, storedOperatingScope]);
 
   // Replace the operating scope from the picker: persist it and reflect the
   // applicable dimensions into the current route so URL-reading screens filter,
   // preserving any non-scope query params already on the route.
   const handleSetOperatingScope = (next: AppShellOperatingScopeInput) => {
     const compacted = compactOperatingScope(next);
-    suppressScopePersistRef.current = false;
+    scopeReplacementLocationRef.current = locationKey;
     writeStoredOperatingScope(compacted);
     setStoredOperatingScope(compacted);
     const baseRoute = `${pathname}${removeOperatingScopeFromSearch(search)}`;
@@ -504,7 +498,7 @@ function AppShell({
     applyDensity(plan.density);
 
     const compacted = compactOperatingScope(plan.operatingScope);
-    suppressScopePersistRef.current = false;
+    scopeReplacementLocationRef.current = locationKey;
     writeStoredOperatingScope(compacted);
     setStoredOperatingScope(compacted);
 
@@ -746,7 +740,7 @@ function AppShell({
         <main
           ref={workbenchRef}
           id="workbench-content"
-          className="workbench grid grid-rows-[auto_auto_minmax(0,1fr)]"
+          className="workbench grid grid-rows-[auto_minmax(0,1fr)]"
           aria-label={`${headerWorkspace.label} workbench`}
           aria-busy={loading || refreshStatus.inFlight}
           tabIndex={-1}
@@ -754,30 +748,35 @@ function AppShell({
           <WorkspaceHeader
             actions={(
               <>
-                <LayoutSwitcher
-                  route={`${pathname}${search}`}
-                  operatingScope={operatingScopeInput}
-                  onRestore={handleRestoreLayout}
-                />
                 <CopyLinkButton />
-                <SaveViewButton
-                  workflowLibrary={workflowLibrary}
-                  workflowError={workflowError}
-                  onPresetSaved={upsertWorkflowPreset}
-                />
+                <WorkspaceViewsMenu routeKey={locationKey}>
+                  <LayoutSwitcher
+                    route={`${pathname}${search}`}
+                    operatingScope={operatingScopeInput}
+                    onRestore={handleRestoreLayout}
+                    showLabel
+                  />
+                  <SaveViewButton
+                    workflowLibrary={workflowLibrary}
+                    workflowError={workflowError}
+                    onPresetSaved={upsertWorkflowPreset}
+                    showLabel
+                  />
+                </WorkspaceViewsMenu>
               </>
+            )}
+            context={(
+              <WorkflowContinuityDock
+                viewModel={shell.workflowContinuity}
+                onEditOperatingContext={() => setScopePickerOpen(true)}
+                scopeDimensionsInEffect={scopeDimensionsInEffect}
+              />
             )}
             breadcrumbItems={breadcrumbItems}
             workspace={headerWorkspace}
             session={session}
             onRefresh={refresh}
             refreshing={loading || refreshStatus.inFlight}
-          />
-          <WorkflowContinuityDock
-            viewModel={shell.workflowContinuity}
-            onClearOperatingContext={handleClearOperatingContext}
-            onEditOperatingContext={() => setScopePickerOpen(true)}
-            scopeDimensionsInEffect={scopeDimensionsInEffect}
           />
 
           <div className="workbench-scroll px-4 py-4 lg:px-6 lg:py-5">
@@ -903,6 +902,7 @@ function AppShell({
       />
       <OnboardingCoachMark controller={onboardingTour} />
       <ScopePicker
+        scopeDimensionsInEffect={scopeDimensionsInEffect}
         open={scopePickerOpen}
         onOpenChange={setScopePickerOpen}
         scope={operatingScopeInput}
