@@ -391,6 +391,11 @@ dotnet build Meridian.WebWorkstation.slnf -c Debug --no-restore -p:EnableWindows
 
 ### Desktop slices
 
+The Windows CI runner prints per-class passed, failed, skipped, and other outcome counts from
+the same retained TRX records used by its existing gate. Every theory result row counts separately;
+build success or discovered methods do not count as execution. Full records remain in the Windows
+validation artifact when detailed transport is available.
+
 ```powershell
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -Restore
 pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development
