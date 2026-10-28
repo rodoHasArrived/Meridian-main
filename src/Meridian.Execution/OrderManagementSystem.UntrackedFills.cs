@@ -422,7 +422,7 @@ public sealed partial class OrderManagementSystem
     {
         try
         {
-            await RecordOrderLifecycleAuditAsync(
+            await _executionAudit.RecordLifecycleAsync(
                 action: action,
                 outcome: "AttentionRequired",
                 orderId: orderId,
