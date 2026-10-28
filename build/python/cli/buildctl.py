@@ -1817,6 +1817,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
+    # read-only focused validation recommendations
+    p_recommend = sub.add_parser("recommend-validation", help="Recommend focused checks without running them")
+    p_recommend.add_argument("--root", type=Path, default=REPO_ROOT)
+    p_recommend.add_argument("--changed-file", action="append", default=[])
+    p_recommend.add_argument("--from-git", action="store_true", help="Include staged, unstaged and untracked changes")
+    p_recommend.add_argument("--json", action="store_true", help="Emit structured JSON instead of text")
+    p_recommend.add_argument("--output", type=Path)
+
     # doctor
     p_doctor = sub.add_parser("doctor", help="Run environment health check")
     p_doctor.add_argument("--quick", action="store_true", help="Skip dotnet restore")
@@ -1982,7 +1990,13 @@ def build_parser() -> argparse.ArgumentParser:
 # Entry point
 # ---------------------------------------------------------------------------
 
+def cmd_recommend_validation(args: argparse.Namespace) -> int:
+    from validation_plan import run_cli
+    return run_cli(args)
+
+
 _COMMANDS = {
+    "recommend-validation": cmd_recommend_validation,
     "doctor": cmd_doctor,
     "build": cmd_build,
     "test": cmd_test,

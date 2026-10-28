@@ -137,6 +137,81 @@ Unrelated shared guidance update.
                 self.assertNotIn("Platform Snapshot", excerpt["excerpt"])
                 self.assertNotIn("Source Documentation Mesh", excerpt["excerpt"])
 
+    def brief(self, **updates):
+        return {
+            "desiredBehavior": "Expose useful guidance at startup.",
+            "acceptanceExample": "A developer opens a packet and sees the exact proof command.",
+            "ownedPaths": ["src/Meridian.Contracts/Example.cs", "src/Meridian.Contracts/Future.cs"],
+            "exclusions": ["Do not change persistence or WPF behavior."],
+            "validationCommands": ["python -m unittest tests.test_guidance"],
+            **updates,
+        }
+
+    def test_brief_details_are_rendered_and_owned_future_paths_planned(self):
+        brief = self.brief()
+        self.write("brief.json", json.dumps(brief))
+        packet = build_packet(self.root, brief_path="brief.json")
+        self.assertEqual(packet["objective"], brief["desiredBehavior"])
+        self.assertEqual(packet["scope"]["targets"], ["src/Meridian.Contracts/Example.cs"])
+        self.assertEqual(packet["scope"]["ownedPaths"], brief["ownedPaths"])
+        self.assertIn("src/Meridian.Contracts/Future.cs", packet["validationPlan"]["changedPaths"])
+        self.assertIn(brief["validationCommands"][0], packet["validation"])
+        rendered = markdown(packet)
+        self.assertIn(brief["acceptanceExample"], rendered)
+        self.assertIn(brief["exclusions"][0], rendered)
+        self.assertIn("Required final checks remain", rendered)
+        self.assertTrue(any(source["path"] == "brief.json" for source in packet["sources"]))
+        check_packet(self.root, packet)
+
+    def test_brief_source_and_embedded_details_are_checked_against_current_file(self):
+        brief = self.brief()
+        self.write("brief.json", json.dumps(brief))
+        packet = build_packet(self.root, brief_path="brief.json")
+        altered = json.loads(json.dumps(packet))
+        altered["brief"]["acceptanceExample"] = "Changed embedded assertion"
+        with self.assertRaisesRegex(ValueError, "stale"):
+            check_packet(self.root, altered)
+        self.write("brief.json", json.dumps({**brief, "acceptanceExample": "Changed source assertion"}))
+        with self.assertRaisesRegex(ValueError, "stale"):
+            check_packet(self.root, packet)
+
+    def test_planned_only_brief_requires_existing_anchor(self):
+        brief = self.brief(ownedPaths=["src/Meridian.Contracts/Future.cs"])
+        self.write("brief.json", json.dumps(brief))
+        with self.assertRaisesRegex(ValueError, "--target-file"):
+            build_packet(self.root, brief_path="brief.json")
+        packet = build_packet(self.root, targets=["src/Meridian.Contracts/README.md"], brief_path="brief.json")
+        self.assertEqual(packet["scope"]["targets"], ["src/Meridian.Contracts/README.md"])
+        self.assertIn("src/Meridian.Contracts/Future.cs", packet["scope"]["ownedPaths"])
+
+    def test_planner_sources_and_buildctl_changes_invalidate(self):
+        for name in ("build/python/cli/validation_plan.py", "build/python/cli/buildctl.py",
+                     "docs/ai/codex/quickstart.md"):
+            self.write(name, "# Existing planner input\n")
+        for name in ("build/python/cli/validation_plan.py", "build/python/cli/buildctl.py",
+                     "docs/ai/codex/quickstart.md"):
+            with self.subTest(name=name):
+                packet = self.packet()
+                self.assertTrue(any(source["path"] == name for source in packet["sources"]))
+                self.write(name, "# Changed planner input\n")
+                with self.assertRaisesRegex(ValueError, "stale"):
+                    check_packet(self.root, packet)
+                self.write(name, "# Existing planner input\n")
+
+    def test_cli_brief_file_alternative_and_source_collision(self):
+        self.write("brief.json", json.dumps(self.brief()))
+        command = [sys.executable, str(SCRIPTS / "task-context.py"), "--root", str(self.root)]
+        result = subprocess.run(command + ["--brief-file", "brief.json", "--output", "artifacts/brief-packet.json"], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        result = subprocess.run(command + ["--check", "artifacts/brief-packet.json"], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        result = subprocess.run(command + ["--brief-file", "brief.json", "--task", "Ambiguous"], capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        before = (self.root / "brief.json").read_bytes()
+        result = subprocess.run(command + ["--brief-file", "brief.json", "--output", "brief.json"], capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(before, (self.root / "brief.json").read_bytes())
+
     def test_missing_optional_context_is_explicit(self):
         packet = self.packet()
         self.assertIn("docs/ai/generated/repo-navigation.json", packet["missingSources"])

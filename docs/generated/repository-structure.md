@@ -1075,7 +1075,8 @@ Meridian-main
 │   │   │   └── profile.py
 │   │   ├── cli
 │   │   │   ├── build_profiles.py
-│   │   │   └── buildctl.py
+│   │   │   ├── buildctl.py
+│   │   │   └── validation_plan.py
 │   │   ├── core
 │   │   │   ├── __init__.py
 │   │   │   ├── events.py
@@ -1108,9 +1109,16 @@ Meridian-main
 │       │   ├── ai_edit_tool.py
 │       │   ├── context-budget.py
 │       │   ├── context_budget.py
+│       │   ├── generate-guidance.py
+│       │   ├── generate_guidance.py
 │       │   ├── meridian_context_exporter.py
 │       │   ├── promptfoo-adapter.py
-│       │   └── promptfoo_adapter.py
+│       │   ├── promptfoo_adapter.py
+│       │   ├── task-context.py
+│       │   ├── task_brief.py
+│       │   ├── task_context.py
+│       │   ├── throughput-metrics.py
+│       │   └── throughput_metrics.py
 │       ├── ci
 │       │   ├── apiclient-caller-baseline.json
 │       │   ├── benchmark-ci.py
@@ -1421,7 +1429,10 @@ Meridian-main
 │   │   ├── skills
 │   │   │   └── README.md
 │   │   ├── tooling
-│   │   │   └── README.md
+│   │   │   ├── examples
+│   │   │   │   └── guidance-task.json
+│   │   │   ├── README.md
+│   │   │   └── throughput-pilot.md
 │   │   ├── agent-handoff-checklist.md
 │   │   ├── ai-known-errors.md
 │   │   ├── ai-systems-inventory.md
@@ -2458,6 +2469,26 @@ Meridian-main
 │   │   └── wpf-screen-development-tracker.md
 │   ├── testing
 │   │   ├── evidence
+│   │   │   ├── ai-throughput-pilot-2026-10-28
+│   │   │   │   ├── events
+│   │   │   │   │   ├── pair-1-baseline.jsonl
+│   │   │   │   │   ├── pair-1-treatment.jsonl
+│   │   │   │   │   ├── pair-2-baseline.jsonl
+│   │   │   │   │   ├── pair-2-treatment.jsonl
+│   │   │   │   │   ├── pair-3-baseline.jsonl
+│   │   │   │   │   └── pair-3-treatment.jsonl
+│   │   │   │   ├── packets
+│   │   │   │   │   ├── pair-1.json
+│   │   │   │   │   ├── pair-1.md
+│   │   │   │   │   ├── pair-2.json
+│   │   │   │   │   ├── pair-2.md
+│   │   │   │   │   ├── pair-3.json
+│   │   │   │   │   └── pair-3.md
+│   │   │   │   ├── manifest.json
+│   │   │   │   ├── README.md
+│   │   │   │   ├── report.json
+│   │   │   │   ├── report.md
+│   │   │   │   └── verify-pilot.py
 │   │   │   ├── program-state-20261014
 │   │   │   │   └── main-validation.json
 │   │   │   ├── w10-615abde9
@@ -12289,6 +12320,7 @@ Meridian-main
 │   │   ├── test_generate_dependency_graph.py
 │   │   ├── test_generate_desktop_user_manual.py
 │   │   ├── test_generate_dk1_pilot_parity_packet.py
+│   │   ├── test_generate_guidance.py
 │   │   ├── test_generate_program_state_summary.py
 │   │   ├── test_generate_ui_api_routes_ts.py
 │   │   ├── test_generate_ui_route_wiring_report.py
@@ -12355,6 +12387,9 @@ Meridian-main
 │   │   ├── test_summarize_desktop_workflow_bundle.py
 │   │   ├── test_targeted_test_dispatcher.py
 │   │   ├── test_targeted_test_workflow.py
+│   │   ├── test_task_brief.py
+│   │   ├── test_task_context.py
+│   │   ├── test_throughput_metrics.py
 │   │   ├── test_validate_agent_definitions.py
 │   │   ├── test_validate_doc_hashes.py
 │   │   ├── test_validate_npm_audit.py
@@ -12364,6 +12399,7 @@ Meridian-main
 │   │   ├── test_validate_test_results.py
 │   │   ├── test_validate_tooling_metadata.py
 │   │   ├── test_validate_workstation_cockpit_acceptance_matrix.py
+│   │   ├── test_validation_plan.py
 │   │   ├── test_web_workstation_installer.py
 │   │   ├── test_windows_ci_runner.py
 │   │   ├── test_windows_desktop_build_workflow.py

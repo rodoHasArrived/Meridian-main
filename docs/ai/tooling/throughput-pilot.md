@@ -60,6 +60,57 @@ The existing AI inventory check still enforces shared-block equality and now poi
 command. Other policy mirrors and host-specific guidance remain separately maintained. No CI
 workflow or protected governance file is changed by this pilot.
 
+## Describe The Observable Outcome
+
+Use a small JSON brief to make the assignment reviewable before editing. The required fields are
+`desiredBehavior`, `acceptanceExample`, `ownedPaths`, `exclusions`, and `validationCommands`.
+Behavior and the acceptance example are nonempty text; the other fields are lists of nonempty
+strings. Exclusions may be empty. Owned paths are repository-relative; exclusions describe what
+must stay out of scope. Validation commands are retained as explicit instructions, not executed
+by packet generation. See the [maintained guidance-task example](examples/guidance-task.json).
+
+```bash
+python build/scripts/ai/task-context.py \
+  --brief-file docs/ai/tooling/examples/guidance-task.json \
+  --output artifacts/ai/guidance-task.json \
+  --markdown-output artifacts/ai/guidance-task.md
+```
+
+The packet uses the desired behavior as its objective and carries every brief field. Existing
+owned files provide context anchors. If the task owns only new paths, supply an existing
+`--target-file` as an anchor. Owned paths describe assignment boundaries, not an edit permission
+enforcement mechanism. Browser/WPF briefs must identify `sharedContract`: the shared contract or
+service seam to use, or an explicit `none: <reason>` for a presentation-only change. This makes
+the shared-state decision visible before either surface starts implementing.
+
+The brief is a hashed input: changing acceptance, ownership, exclusions, or validation makes its
+packet stale. `--brief-file` and `--task` are alternatives. Plain `--task` remains supported for
+orientation and tasks that do not need a structured brief.
+
+## Recommend Focused Validation
+
+```bash
+# Inspect staged, unstaged, deleted, and untracked nonignored paths:
+python build/python/cli/buildctl.py recommend-validation
+# Preview a chosen scope without executing validation:
+python build/python/cli/buildctl.py recommend-validation \
+  --changed-file src/Meridian.Ui.Services/Meridian.Ui.Services.csproj --json
+```
+
+Recommendations contain command argument arrays, affected paths, selection reasons, input hashes,
+consumer impact, unknown-coverage warnings, and retained final-check requirements. They use
+path-based proof selection and the reverse .NET project-reference graph. A shared contract or
+workstation-service change includes both browser and WPF consumers. Known script-test and browser
+test paths select focused checks; uncertain mappings stay visible for manual review rather than
+being reported as covered. Recommendations do not execute arbitrary brief or registry commands.
+
+Context packets include the same validation plan and bind its consulted inputs to freshness
+checking. Review the plan, run the applicable commands during iteration, and retain their actual
+results separately. Project references are a conservative approximation: runtime wiring, reflection,
+MSBuild imports/expressions, and external dependencies can require more checks than the graph
+identifies. Unknown files and unresolved dependencies require manual proof selection. Full
+`bash scripts/ci.sh` and GitHub's required checks remain completion requirements.
+
 ## Record Comparable Tasks
 
 Use three matched pairs initially, with the same acceptance criteria, task family, model, and
@@ -143,6 +194,7 @@ completion; supply `--commit-sha` on `task_finished` to bind later check evidenc
 
 ```bash
 python -m unittest tests.scripts.test_task_context tests.scripts.test_generate_guidance tests.scripts.test_throughput_metrics
+python -m unittest tests.scripts.test_task_brief tests.scripts.test_validation_plan
 python build/scripts/ai/generate-guidance.py --check --summary
 python build/scripts/docs/check-ai-inventory.py --summary
 ```

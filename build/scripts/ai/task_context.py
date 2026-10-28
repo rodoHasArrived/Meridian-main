@@ -9,6 +9,7 @@ import importlib.util
 import json
 from pathlib import Path, PurePosixPath
 import re
+import shlex
 import subprocess
 import sys
 from typing import Any
@@ -16,6 +17,7 @@ from typing import Any
 import yaml
 
 from context_budget import MAX_MARKDOWN_LINES, classify_task, _candidate_sources, _slice_code, _slice_markdown
+from task_brief import validate_brief
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 NAVIGATION = "docs/ai/generated/repo-navigation.json"
@@ -147,9 +149,26 @@ def task_markdown_slice(lines: list[str], task: str, terms: list[str]) -> tuple[
     return start, end
 
 
-def build_packet(root: Path, task: str, targets: list[str], *, max_files: int = 12,
-                 max_chars: int = 24000) -> dict[str, Any]:
+def build_packet(root: Path, task: str = "", targets: list[str] | None = None, *, max_files: int = 12,
+                 max_chars: int = 24000, brief: dict[str, Any] | None = None,
+                 brief_path: str | None = None) -> dict[str, Any]:
     root = root.resolve()
+    sources = Sources(root)
+    targets = list(targets or [])
+    if brief_path:
+        brief_path = local_path(root, brief_path).relative_to(root).as_posix()
+        loaded = validate_brief(root, json.loads(sources.read(brief_path, required=True)))
+        if brief is not None and validate_brief(root, brief) != loaded:
+            raise ValueError("Inline task brief differs from its source file")
+        brief = loaded
+    elif brief is not None:
+        brief = validate_brief(root, brief)
+    if brief is not None:
+        task = brief["desiredBehavior"]
+        if not targets:
+            targets = [name for name in brief["ownedPaths"] if local_path(root, name).is_file()]
+        if not targets:
+            raise ValueError("Brief ownedPaths contains no existing file anchor; provide --target-file with an existing source or README")
     if not task.strip() or not targets:
         raise ValueError("Provide a non-empty task and at least one target file")
     if not 1 <= max_files <= 40 or not 256 <= max_chars <= 100000:
@@ -157,12 +176,12 @@ def build_packet(root: Path, task: str, targets: list[str], *, max_files: int = 
     if len(task) > 12000 or len(targets) > 40:
         raise ValueError("Task or target list exceeds packet input limits")
     targets = sorted({local_path(root, name).relative_to(root).as_posix() for name in targets})
-    sources = Sources(root)
+    planning_paths = sorted(set(targets) | set(brief["ownedPaths"] if brief else []))
     for name in targets:
         sources.read(name, required=True)
     navigation = sources.json(NAVIGATION)
     policy = sources.json(POLICY)
-    classification = classify_task(navigation, policy, task, targets)
+    classification = classify_task(navigation, policy, task, planning_paths)
     route: dict[str, Any] = json.loads(json.dumps(asdict(classification)))
     rules = sources.json(RULES)
     if rules:
@@ -185,24 +204,38 @@ def build_packet(root: Path, task: str, targets: list[str], *, max_files: int = 
     modules = []
     for item in registered:
         prefix = str(item.get("path", "")).rstrip("/")
-        if prefix and any(name == prefix or name.startswith(prefix + "/") for name in targets):
+        if prefix and any(name == prefix or name.startswith(prefix + "/") for name in planning_paths):
             modules.append({key: item.get(key) for key in ("id", "path", "owner_lane", "readme", "validation")})
     modules.sort(key=lambda item: str(item["id"]))
     validation = sorted({str(command) for item in modules for command in item.get("validation") or []})
     validation = list(dict.fromkeys(validation + route.get("promptRoute", {}).get("validation_floor", [])))
     consumers = []
-    if any(name.startswith(("src/Meridian.Contracts/", "src/Meridian.Ui.Shared/", "src/Meridian.Ui.Services/")) for name in targets):
+    if any(name.startswith(("src/Meridian.Contracts/", "src/Meridian.Ui.Shared/", "src/Meridian.Ui.Services/")) for name in planning_paths):
         consumers = ["src/Meridian.Ui/dashboard", "src/Meridian.Wpf"]
 
+    planner_path = Path(__file__).resolve().parents[2] / "python/cli/validation_plan.py"
+    spec = importlib.util.spec_from_file_location("meridian_task_packet_validation_plan", planner_path)
+    planner = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = planner
+    spec.loader.exec_module(planner)
+    validation_plan = planner.recommend_validation(root, planning_paths)
+    for source in validation_plan["sources"]:
+        sources.read(source["path"], required=True)
+        if sources.hashes[source["path"]] != source["sha256"]:
+            raise ValueError(f"Validation metadata changed during packet generation: {source['path']}")
+    for name in ("build/python/cli/validation_plan.py", "build/python/cli/buildctl.py"):
+        sources.read(name)
+    validation = list(dict.fromkeys(validation + (brief["validationCommands"] if brief else []) +
+                                   [shlex.join(check["argv"]) for check in validation_plan["checks"]]))
     instructions = []
-    for name in instruction_paths(root, targets):
+    for name in instruction_paths(root, planning_paths):
         if local_path(root, name).is_file():
             sources.read(name)
             instructions.append(name)
     candidates = [(name, 200, "target file") for name in targets]
-    if any(is_ai_guidance(name) for name in targets):
+    if any(is_ai_guidance(name) for name in planning_paths):
         candidates.append(("docs/ai/tooling/README.md", 180, "AI tooling command and validation index"))
-    for name in targets:
+    for name in planning_paths:
         readme = nearest_readme(root, name)
         if readme:
             candidates.append((readme, 20 if readme == "README.md" else 130, "nearest module README"))
@@ -211,7 +244,7 @@ def build_packet(root: Path, task: str, targets: list[str], *, max_files: int = 
             candidates.append((item["readme"], 130, "registered module README"))
     for consumer in consumers:
         candidates.append((consumer + "/README.md", 125, "shared-contract consumer README"))
-    ai_only = all(is_ai_guidance(name) for name in targets)
+    ai_only = all(is_ai_guidance(name) for name in planning_paths)
     navigation_candidates = _candidate_sources(navigation, classification, targets)
     # Keyword routing is advisory; e.g. "guidance" may match a UI keyword. Keep an
     # explicit tooling-only task from loading unrelated product implementation.
@@ -253,7 +286,9 @@ def build_packet(root: Path, task: str, targets: list[str], *, max_files: int = 
                          "excerpt": clipped, "sha256": sources.hashes[name],
                          "truncated": clipped != text})
         used += len(clipped)
-    warnings = []
+    warnings = list(validation_plan["coverageWarnings"])
+    if brief is not None and brief_path is None:
+        warnings.append("Inline task brief has no external freshness source; use --brief-file for source-bound checks.")
     if not modules:
         warnings.append("No matching source-module owner; inspect the nearest README for ownership and proof.")
     if not validation:
@@ -263,9 +298,10 @@ def build_packet(root: Path, task: str, targets: list[str], *, max_files: int = 
     warnings.append("Excerpts are partial context. Read applicable instructions in full; packets never override them.")
     return {
         "schemaVersion": 1, "objective": task.strip(),
-        "scope": {"targets": targets, "affectedConsumers": consumers},
+        "scope": {"targets": targets, "ownedPaths": brief["ownedPaths"] if brief else targets, "affectedConsumers": consumers},
         "repository": {"revision": revision(root)}, "route": route,
-        "moduleOwners": modules, "validation": validation,
+        "moduleOwners": modules, "validation": validation, "validationPlan": validation_plan,
+        "brief": brief, "briefSource": brief_path,
         "instructions": instructions, "context": selected, "omitted": omitted,
         "sources": [{"path": name, "sha256": value} for name, value in sorted(sources.hashes.items())],
         "missingSources": sorted(sources.missing), "warnings": warnings,
@@ -278,13 +314,23 @@ def check_packet(root: Path, packet: dict[str, Any]) -> None:
         raise ValueError("Unsupported task packet schema")
     budget = packet["budget"]
     current = build_packet(root, packet["objective"], packet["scope"]["targets"],
-                           max_files=budget["maxFiles"], max_chars=budget["maxChars"])
+                           max_files=budget["maxFiles"], max_chars=budget["maxChars"],
+                           brief=None if packet.get("briefSource") else packet.get("brief"),
+                           brief_path=packet.get("briefSource"))
     if current != packet:
         raise ValueError("Task packet is stale or altered; regenerate before use")
 
 
 def markdown(packet: dict[str, Any]) -> str:
-    lines = ["# Task context packet", "", packet["objective"], "",
+    brief_lines = []
+    if packet.get("brief"):
+        brief_lines = ["## Observable task brief", "", "````json",
+                       json.dumps(packet["brief"], indent=2, ensure_ascii=False), "````", ""]
+    plan = packet["validationPlan"]
+    plan_lines = ["## Focused validation plan (not executed)", "", plan["policy"], ""]
+    plan_lines += [f"- `{shlex.join(check['argv'])}`: {check['reason']}" for check in plan["checks"]]
+    plan_lines += ["", "Required final checks remain: `bash scripts/ci.sh`, `Meridian CI / quality-gate`, and `Meridian CI / integration-gate`.", ""]
+    lines = ["# Task context packet", "", packet["objective"], "", *brief_lines, *plan_lines,
              "Packets provide partial context and never override applicable instructions.", "",
              "## Scope", "", *[f"- `{name}`" for name in packet["scope"]["targets"]], "",
              "## Instructions to read in full", "", *[f"- `{name}`" for name in packet["instructions"]], "",
@@ -301,7 +347,9 @@ def markdown(packet: dict[str, Any]) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--task")
+    objective = parser.add_mutually_exclusive_group()
+    objective.add_argument("--task")
+    objective.add_argument("--brief-file", help="Repository-relative observable task brief JSON")
     parser.add_argument("--target-file", action="append", default=[])
     parser.add_argument("--output", default="artifacts/ai/task-context.json")
     parser.add_argument("--markdown-output")
@@ -316,12 +364,13 @@ def main() -> int:
             check_packet(root, json.loads(packet_path.read_text(encoding="utf-8")))
             print("Task context packet is current")
             return 0
-        packet = build_packet(root, args.task or "", args.target_file, max_files=args.max_files, max_chars=args.max_chars)
+        packet = build_packet(root, args.task or "", args.target_file, max_files=args.max_files, max_chars=args.max_chars,
+                              brief_path=args.brief_file)
         destinations = [local_path(root, args.output)]
         if args.markdown_output:
             destinations.append(local_path(root, args.markdown_output))
         protected = {local_path(root, name).resolve() for name in
-                     [item["path"] for item in packet["sources"]] + packet["missingSources"]}
+                     [item["path"] for item in packet["sources"]] + packet["missingSources"] + packet["scope"]["ownedPaths"]}
         if len({path.resolve() for path in destinations}) != len(destinations) or any(path.resolve() in protected for path in destinations):
             raise ValueError("Packet outputs collide with each other or a source file")
         rendered = [json.dumps(packet, indent=2, sort_keys=True) + "\n", markdown(packet)]
