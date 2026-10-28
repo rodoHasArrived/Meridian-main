@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-10-07T18:21:09Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-10-21T15:53:39Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -134,19 +134,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Consolidation.cs` | Providers and Storage | `baeea857d` (2026-10-07T17:17:54Z) | 6 |
-| `src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs` | Unmapped | `baeea857d` (2026-10-07T17:17:54Z) | 5 |
-| `src/Meridian.Ui.Shared/Services/ConsolidationWorkbenchService.cs` | Desktop and UI Workflows | `baeea857d` (2026-10-07T17:17:54Z) | 5 |
-| `src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs` | Unmapped | `405dc1f3f` (2026-10-07T16:51:14Z) | 3 |
-| `src/Meridian.Contracts/Ledger/ConsolidationDtos.cs` | Host and Composition | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
-| `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Consolidation.cs` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
-| `src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Consolidation.cs` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.consolidation-panel.test.tsx` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.consolidation-panel.tsx` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
-| `src/Meridian.Ui/dashboard/src/types/consolidation.ts` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
-| `src/Meridian.Contracts/Ledger/LedgerBookDtos.cs` | Host and Composition | `405dc1f3f` (2026-10-07T16:51:14Z) | 1 |
-| `src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs` | Unmapped | `405dc1f3f` (2026-10-07T16:51:14Z) | 1 |
-| `src/Meridian.Ui.Shared/Services/ConsolidationChartValidation.cs` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 1 |
-| `src/Meridian.FinancialOperations/Consolidation/PostgresConsolidationPostingAuthority.cs` | Unmapped | `4c039f269` (2026-10-07T16:17:55Z) | 2 |
-| `src/Meridian.Storage/FundStructure/PostgresFundStructureStore.Consolidation.cs` | Providers and Storage | `4c039f269` (2026-10-07T16:17:55Z) | 2 |
+| `src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs` | Host and Composition | `468399d31` (2026-10-21T05:33:44Z) | 10 |
+| `src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs` | Unmapped | `468399d31` (2026-10-21T05:33:44Z) | 5 |
+| `src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs` | Host and Composition | `468399d31` (2026-10-21T05:33:44Z) | 2 |
+| `src/Meridian.Contracts/SecurityMaster/NotionalLot.cs` | Host and Composition | `468399d31` (2026-10-21T05:33:44Z) | 1 |
+| `src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs` | Host and Composition | `468399d31` (2026-10-21T05:33:44Z) | 1 |
+| `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs` | Host and Composition | `0bd7b0bc4` (2026-10-20T20:28:18Z) | 16 |
+| `src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs` | Host and Composition | `0bd7b0bc4` (2026-10-20T20:28:18Z) | 7 |
+| `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs` | Desktop and UI Workflows | `0bd7b0bc4` (2026-10-20T20:28:18Z) | 3 |
+| `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.CorporateActions.cs` | Desktop and UI Workflows | `7d276fc6d` (2026-10-20T20:14:06Z) | 5 |
+| `src/Meridian.Instruments/AssetOperations/AssetObligationProjectionService.cs` | Unmapped | `7d276fc6d` (2026-10-20T20:14:06Z) | 2 |
+| `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs` | Host and Composition | `7d276fc6d` (2026-10-20T20:14:06Z) | 1 |
+| `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.SecurityCoverage.cs` | Desktop and UI Workflows | `7d276fc6d` (2026-10-20T20:14:06Z) | 1 |
+| `src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs` | Host and Composition | `53223bf3b` (2026-10-20T19:34:19Z) | 2 |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | Desktop and UI Workflows | `0aa3eeb19` (2026-10-20T19:26:20Z) | 3 |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.operations-control.ts` | Desktop and UI Workflows | `0aa3eeb19` (2026-10-20T19:26:20Z) | 2 |
 

@@ -39,6 +39,12 @@ Maturity levels are defined in [UFL Capability Model](ufl-capability-model.md).
 | Crypto | L1/L2 partial | L3 | network/venue aliases, custody metadata, provider-independent projections | endpoint tests, alias projection tests |
 | CFD | L1 partial | L2 | underlying/exposure reference reads and margin metadata | mapping tests, endpoint tests |
 | Warrant | L1 partial | L2/L3 | underlying link, expiry, lifecycle, and conversion projections | mapping tests, underlying-link tests, projection tests |
+| FX Forward | L1 partial | L2 | pair, notional, forward rate, value-date and settlement projections; MTM and settlement workflows | round-trip tests, validation tests, projection DDL tests |
+| Non-Deliverable Forward | L1 partial | L2 | fixing-date and settlement-currency projections; fixing capture and net-settlement workflows | round-trip tests, validation tests, projection DDL tests |
+| Swaption | L1 partial | L2 | payer/receiver, strike, expiry and underlying-tenor projections; exercise and premium workflows | round-trip tests, validation tests, projection DDL tests |
+| Cap / Floor / Collar | L1 partial | L2 | index, strike, notional and tenor projections; caplet fixing and premium workflows | round-trip tests, validation tests, projection DDL tests |
+| Structured Note | L1 partial | L2/L3 | issuer, reference-asset, protection, participation and barrier projections; payoff evaluation and lifecycle workflows | round-trip tests, validation tests, projection DDL tests |
+| Credit Default Swap | L1 partial | L2/L3 | reference-entity, protection-side, coupon and tenor projections; premium accrual, credit-event and index-roll workflows | round-trip tests, validation tests, projection DDL tests |
 | Other Security | L1 | L2/L3 | review, taxonomy, custom-profile handoff, and promotion projections | category validation tests, governance endpoint tests, projection tests |
 | Custom Asset Profile | L0 target-state | L1 | governed profile definitions, typed fields, validation, and version pinning | profile validation tests, Security Master reference tests |
 

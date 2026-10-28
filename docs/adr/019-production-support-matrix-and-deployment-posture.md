@@ -1,14 +1,17 @@
 # ADR-019: Production Support Matrix and Typed Deployment Posture
 
-**Status:** Proposed (awaiting core-team sign-off; signing this ADR is the `PRD-000` "signed support matrix" artifact)
+**Status:** Accepted (core-team sign-off 2026-10-20; this signature is the `PRD-000` "signed support matrix" artifact, recorded as `DEC-PRD000-SUPPORT-MATRIX-001`)
 **Date:** 2026-07-12
+**Owner:** core-team
+**Reviewed:** 2026-10-20
 **Deciders:** core-team
 **Supersedes:** —
 **Superseded by:** —
 
 The context below records the problem at proposal time. Typed posture and final-graph validation
-now have source implementations listed below; this ADR remains Proposed pending the sign-off and
-release evidence tracked under [PRD-000](../product/implementation-todo-list.md).
+have source implementations listed below. Core-team signed this record on 2026-10-20; the release
+evidence half of [PRD-000](../product/implementation-todo-list.md) (signed-tag installed
+publish/start/update/rollback receipts) remains tracked there.
 
 ## Context
 
@@ -43,7 +46,7 @@ remote multi-node topology is close to certifiable.
 | Dimension | Supported in the v1 production envelope | Explicitly experimental (fail closed / not production) |
 |-----------|------------------------------------------|--------------------------------------------------------|
 | Topology | Single-operator, single-company, single-node **local workstation**: one unelevated per-user lifecycle supervisor owns one Meridian host process and, when configured, one dedicated local PostgreSQL instance per operator machine | Remote/browser-hosted `ProductionApi`, multi-node, shared multi-tenant hosting, machine-wide lifecycle services |
-| OS / runtime | Windows 11 x64, .NET 10, installed via the desktop-installer lane | Linux container (`deploy/docker/`, `deploy/k8s/`), `deploy/systemd/` service |
+| OS / runtime | Windows 11 (x64 and ARM64), .NET 10, installed via the desktop-installer lane | Linux container (`deploy/docker/`, `deploy/k8s/`), `deploy/systemd/` service, any non-Windows host |
 | UI | Browser workstation served over loopback by the local host, plus the WPF desktop shell (co-equal lanes over shared contracts) | Any remotely served workstation origin |
 | Auth / tenancy | `AuthenticationMode.Required` (packaged/customer builds already default to it); one company per isolated deployment | `Optional` auth outside dev/test; cross-tenant shared deployments (until `PRD-001` tenant partitioning completes) |
 | Storage | Local WAL / atomic-file stores under the resolved `DataRoot`; supervisor-managed dedicated **local** PostgreSQL for the domains that require it (fund accounts, fund structure, security master, direct lending). An explicitly configured `external` local PostgreSQL mode is supported as a non-owning compatibility posture. | Remote/managed database topologies; any in-memory, null, or no-op store in a production posture |
@@ -100,6 +103,21 @@ format are governed by [ADR-020](020-lifecycle-control-plane.md).
   required because .NET 10 does not enumerate wildcard registrations through `GetKeyedServices`.
   Unlabeled local-workstation graphs apply the runtime check to durable-store contracts, while a pinned
   non-real provenance declaration preserves the documented simulation lane.
+- **Platform fail-closed.** A production composition, or the shipped topology itself (a
+  `LocalWorkstation` composition flagged `MDC_PACKAGED_BUILD` or `MERIDIAN_CUSTOMER_BUILD`, which is
+  how the lifecycle supervisor starts the installed host), on any non-Windows host is refused by the
+  same policy, from the service collection alone, so the descriptor-only preflight guard rejects it
+  before any shell. An unflagged `LocalWorkstation` composition is development and is not gated. The diagnostic names the posture (declared, or the environment variable that
+  selected production), the detected OS and architecture, this ADR, and the platform-bound bindings
+  that would otherwise silently degrade: provider credential vault protection falling from
+  `dpapi-current-user` to the adjacent-AES-key `local-aes-gcm`, and the lifecycle protected secret
+  store. Architecture is reported but not refused, because `PRD-014` certifies both x64 and ARM64
+  installer receipts. The Windows version is likewise reported, not refused: the code gate is the
+  operating-system family, which is the boundary that changes the credential-protection path; the
+  Windows 11 row of the matrix is enforced by the installer lane and certification receipts, not by
+  this guard. Unflagged `LocalWorkstation` and unspecified postures are never platform-gated, so
+  development on Linux keeps composing. Tests pin the platform through an internal
+  `DeclareMeridianHostPlatform` declaration rather than a process-global probe.
 - Prohibited-by-default implementation names in production postures: `InMemory*`, `Null*`,
   `NoOp*`, `Fake*`, `Stub*`, `Sample*`, plus anything carrying
   `[NonProductionOnlyImplementation]` or `INonProductionOnlyService`. A type that is genuinely
@@ -158,6 +176,9 @@ default environment stays unvalidated.
   bindings remain to be built — turning the remaining `PRD-*` work into a machine-generated list.
 - Unrecognized deployment-mode strings can no longer silently demote a production host to
   a development posture.
+- The `PRD-002` clause "protect non-Windows vault keys with an OS keyring or KMS" is a scope-out
+  under this matrix rather than v1 implementation work: the adjacent-AES-key path is reachable only
+  off Windows, and a production posture no longer composes there.
 
 ### Negative
 
@@ -175,6 +196,9 @@ default environment stays unvalidated.
   other non-production postures do not run the production factory check.
 - `deploy/docker/`, `deploy/k8s/`, and `deploy/systemd/` remain in-tree as experimental material
   pending `PRD-013` disposition.
+- The consumer `Meridian-Setup.exe` ships both architectures plus a full PostgreSQL distribution
+  (~1 GB). Core-team accepted that size for the `v0.1.0-rc` line on 2026-10-20; splitting by
+  architecture is a later product decision, not a condition of this matrix.
 
 ## Compliance
 
@@ -206,4 +230,4 @@ services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorksta
 
 ---
 
-*Last Updated: 2026-07-17*
+*Last Updated: 2026-10-20*

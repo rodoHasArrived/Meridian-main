@@ -46,23 +46,24 @@ public static class SubscriptionEndpoints
             if (string.IsNullOrWhiteSpace(req.Symbol))
                 return Results.BadRequest(new { error = "Symbol is required" });
 
-            var config = store.Load();
-            var symbols = config.Symbols?.ToList() ?? new List<SymbolConfig>();
+            var outcome = await store.UpdateAsync<IResult?>(config =>
+            {
+                var symbols = config.Symbols?.ToList() ?? new List<SymbolConfig>();
 
-            if (symbols.Any(s => string.Equals(s.Symbol, req.Symbol, StringComparison.OrdinalIgnoreCase)))
-                return Results.Json(new { message = "Symbol already subscribed", symbol = req.Symbol }, jsonOptions);
+                if (symbols.Any(s => string.Equals(s.Symbol, req.Symbol, StringComparison.OrdinalIgnoreCase)))
+                    return (config, Results.Json(new { message = "Symbol already subscribed", symbol = req.Symbol }, jsonOptions));
 
-            symbols.Add(new SymbolConfig(
-                Symbol: req.Symbol.ToUpperInvariant(),
-                SubscribeTrades: req.Trades ?? true,
-                SubscribeDepth: req.Depth ?? false,
-                DepthLevels: req.DepthLevels ?? 5
-            ));
+                symbols.Add(new SymbolConfig(
+                    Symbol: req.Symbol.ToUpperInvariant(),
+                    SubscribeTrades: req.Trades ?? true,
+                    SubscribeDepth: req.Depth ?? false,
+                    DepthLevels: req.DepthLevels ?? 5
+                ));
 
-            var next = config with { Symbols = symbols.ToArray() };
-            await store.SaveAsync(next);
+                return (config with { Symbols = symbols.ToArray() }, null);
+            });
 
-            return Results.Json(new { success = true, symbol = req.Symbol, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
+            return outcome ?? Results.Json(new { success = true, symbol = req.Symbol, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
         .WithName("Subscribe").RequirePermission(UserPermission.ModifyConfig)
         .Produces(200)
@@ -72,17 +73,18 @@ public static class SubscriptionEndpoints
         // Unsubscribe from symbol
         group.MapPost(UiApiRoutes.SubscriptionsUnsubscribe, async (string symbol, [FromServices] ConfigStore store) =>
         {
-            var config = store.Load();
-            var symbols = config.Symbols?.ToList() ?? new List<SymbolConfig>();
+            var outcome = await store.UpdateAsync<IResult?>(config =>
+            {
+                var symbols = config.Symbols?.ToList() ?? new List<SymbolConfig>();
 
-            var removed = symbols.RemoveAll(s => string.Equals(s.Symbol, symbol, StringComparison.OrdinalIgnoreCase));
-            if (removed == 0)
-                return Results.NotFound(new { error = $"Symbol '{symbol}' not found in subscriptions" });
+                var removed = symbols.RemoveAll(s => string.Equals(s.Symbol, symbol, StringComparison.OrdinalIgnoreCase));
+                if (removed == 0)
+                    return (config, Results.NotFound(new { error = $"Symbol '{symbol}' not found in subscriptions" }));
 
-            var next = config with { Symbols = symbols.ToArray() };
-            await store.SaveAsync(next);
+                return (config with { Symbols = symbols.ToArray() }, null);
+            });
 
-            return Results.Json(new { success = true, symbol, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
+            return outcome ?? Results.Json(new { success = true, symbol, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
         .WithName("Unsubscribe").RequirePermission(UserPermission.ModifyConfig)
         .Produces(200)

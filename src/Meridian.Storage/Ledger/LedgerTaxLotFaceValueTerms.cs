@@ -47,6 +47,18 @@ public static class LedgerTaxLotFaceValueTerms
                 "lot whose par and unit statements of the same acquisition disagree must not be retained.");
         }
 
+        // This is the acquisition-time seam: a lot of record opens at its booked factor, and the
+        // paydown factor it later holds is written only by the governed paydown mutation. A lot that
+        // has already absorbed a paydown cannot be opened as a record, rather than being opened
+        // silently at its booked face.
+        if (lot.CurrentFactor != lot.BookedFactor)
+        {
+            throw new LedgerValidationException(
+                $"Face-value lot '{lot.LotId}' holds a current factor of {lot.CurrentFactor} against a booked " +
+                $"factor of {lot.BookedFactor}; a lot of record opens at its booked factor and absorbs paydowns " +
+                "only through the governed lot mutation.");
+        }
+
         return record with
         {
             OriginalFace = lot.OriginalFace,
@@ -60,7 +72,9 @@ public static class LedgerTaxLotFaceValueTerms
     /// the lot recorded no face terms — the lot of record carries them all-three-or-none, and a lot
     /// booked before they existed states nothing rather than defaulting to a price-per-100 quote at
     /// factor 1. Callers that need face economics must fail closed on the null rather than
-    /// substituting a quantity.
+    /// substituting a quantity. A lot that has absorbed a paydown rehydrates at the factor it
+    /// currently holds, so its <see cref="FaceValueLot.FaceOutstanding"/> is the paid-down face; a
+    /// lot still at its booked factor rehydrates there.
     /// </summary>
     public static FaceValueLot? ToFaceValueLot(this LedgerTaxLotRecord record)
     {
@@ -81,6 +95,7 @@ public static class LedgerTaxLotFaceValueTerms
             record.OriginalFace!.Value,
             pricePercentOfPar,
             record.BookedFactor!.Value,
-            record.ParBasis!.Value);
+            record.ParBasis!.Value,
+            record.CurrentFactor);
     }
 }

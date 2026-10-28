@@ -167,7 +167,7 @@ public static class SecurityAssetPackRegistry
         DeepAutomation(
             "cash-bank",
             "Cash and bank accounts",
-            ["Deposit", "CashSweep", "MoneyMarketFund"],
+            Claimed("cash-bank"),
             ["Purchase", "Sale", "Draw", "Repayment", "Coupon", "Appraisal", "Maturity", "Default", "Amendment", "Fee"],
             ["MarketPrice", "AmortizedCost", "UserEstimate"],
             ["cash movement", "bank fee", "interest income", "FX remeasurement"],
@@ -175,7 +175,7 @@ public static class SecurityAssetPackRegistry
         DeepAutomation(
             "public-equity-etf",
             "Public equities and exchange-traded funds",
-            ["Equity", "InvestmentFund"],
+            Claimed("public-equity-etf"),
             ["Purchase", "Sale", "Dividend", "Appraisal", "CorporateAction", "Impairment", "Amendment"],
             ["MarketPrice", "UserEstimate", "ExternalModel"],
             ["trade", "dividend", "corporate action", "realized gain/loss", "unrealized gain/loss"],
@@ -183,14 +183,14 @@ public static class SecurityAssetPackRegistry
         DeepAutomation(
             "fixed-income",
             "Fixed income",
-            ["Bond", "StructuredCredit", "TreasuryBill", "CommercialPaper", "CertificateOfDeposit", "Repo"],
+            Claimed("fixed-income"),
             ["Purchase", "Sale", "Coupon", "Repayment", "Maturity", "Default", "Amendment", "CorporateAction", "Impairment", "Amortization"],
             ["MarketPrice", "DiscountedCashFlow", "AmortizedCost", "ExternalModel", "UserEstimate"],
             ["coupon accrual", "principal repayment", "amortization", "realized gain/loss", "impairment"]),
         DeepAutomation(
             "private-fund-partnership",
             "Private funds and partnerships",
-            ["PrivateFundInterest", "PrivateCompanyEquity"],
+            Claimed("private-fund-partnership"),
             ["Purchase", "Sale", "CapitalCall", "Distribution", "Appraisal", "Impairment", "Amendment", "Maturity", "Fee"],
             ["ManagerReportedNav", "Appraisal", "DiscountedCashFlow", "UserEstimate", "ExternalModel"],
             ["capital call", "distribution", "NAV adjustment", "management fee", "performance allocation"],
@@ -198,7 +198,7 @@ public static class SecurityAssetPackRegistry
         DeepAutomation(
             "private-loan-credit",
             "Private loans and credit",
-            ["DirectLoan"],
+            Claimed("private-loan-credit"),
             ["Purchase", "Sale", "Coupon", "Draw", "Repayment", "Default", "Amendment", "Impairment", "Maturity", "Fee"],
             ["DiscountedCashFlow", "AmortizedCost", "Appraisal", "UserEstimate", "ExternalModel"],
             ["interest accrual", "principal draw", "principal repayment", "fee income", "impairment", "default"],
@@ -206,7 +206,7 @@ public static class SecurityAssetPackRegistry
         DeepAutomation(
             "real-estate",
             "Real estate",
-            ["RealEstateHolding"],
+            Claimed("real-estate"),
             ["Purchase", "Sale", "Distribution", "Appraisal", "Impairment", "Amendment", "Maturity"],
             ["Appraisal", "DiscountedCashFlow", "ManagerReportedNav", "UserEstimate", "ExternalModel"],
             ["property acquisition", "rental income", "expense allocation", "appraisal adjustment", "impairment"],
@@ -214,15 +214,14 @@ public static class SecurityAssetPackRegistry
         DeepAutomation(
             "derivatives-fx",
             "Basic derivatives and FX",
-            ["Option", "Future", "Swap", "FxSpot", "Cfd", "Warrant"],
+            Claimed("derivatives-fx"),
             ["Purchase", "Sale", "Draw", "Repayment", "Appraisal", "Maturity", "Default", "Amendment", "CorporateAction", "MarginSettlement"],
             ["MarketPrice", "DiscountedCashFlow", "ExternalModel", "UserEstimate"],
-            ["premium", "variation margin", "settlement", "FX remeasurement", "realized gain/loss"],
-            plannedAssetClasses: ["Forward"]),
+            ["premium", "variation margin", "settlement", "FX remeasurement", "realized gain/loss"]),
         DeepAutomation(
             "mortgage-facility-intercompany",
             "Mortgages, credit facilities and intercompany loans",
-            ["DirectLoan"],
+            Claimed("mortgage-facility-intercompany"),
             ["Purchase", "Sale", "Coupon", "Draw", "Repayment", "Default", "Amendment", "Maturity", "Impairment"],
             ["DiscountedCashFlow", "AmortizedCost", "Appraisal", "UserEstimate", "ExternalModel"],
             ["interest accrual", "principal draw", "principal repayment", "intercompany elimination", "impairment"],
@@ -230,7 +229,7 @@ public static class SecurityAssetPackRegistry
         DeepAutomation(
             "commitment-guarantee",
             "Unfunded commitments and guarantees",
-            ["CommitmentGuarantee"],
+            Claimed("commitment-guarantee"),
             ["Purchase", "Sale", "Draw", "Repayment", "Coupon", "CapitalCall", "Distribution", "Default", "Amendment", "Maturity", "Fee"],
             ["UserEstimate", "ExternalModel", "DiscountedCashFlow"],
             ["commitment recognition", "guarantee exposure", "drawdown", "fee accrual", "release"],
@@ -238,7 +237,7 @@ public static class SecurityAssetPackRegistry
         WideCapture(
             "controlled-other-asset",
             "Controlled other asset",
-            ["OtherSecurity", "CustomAsset", "Commodity", "CryptoCurrency"],
+            Claimed("controlled-other-asset"),
             ["Purchase", "Sale", "Appraisal", "Impairment", "Amendment", "Maturity"],
             ["Appraisal", "UserEstimate", "ExternalModel", "ManagerReportedNav"],
             ["acquisition", "appraisal adjustment", "impairment", "disposal"],
@@ -350,6 +349,11 @@ public static class SecurityAssetPackRegistry
 
         return new AssetPackRegistryValidationResult(issues.Count == 0, issues);
     }
+
+    // Pack membership is declared once, on each SecurityAssetClassDescriptor (AssetPackIds), so the
+    // catalog stays the single source of asset-class facts; the registry only reads it back per pack.
+    private static IReadOnlyList<string> Claimed(string packId)
+        => SecurityAssetClassCatalog.AssetClassesInPack(packId);
 
     private static SecurityAssetPackDescriptor DeepAutomation(
         string packId,

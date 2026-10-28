@@ -68,7 +68,14 @@ public enum AccountingRuleFormulaKindDto
     FixedAmount = 0,
     SourceAmount = 1,
     PercentageOfSourceAmount = 2,
-    AllocationResidual = 3
+    AllocationResidual = 3,
+    /// <summary>
+    /// Resolves to the lot-mutation component the formula id names (for example
+    /// <c>lot.principal</c>, <c>lot.basisRelieved</c>, <c>lot.realizedGain</c>, <c>lot.realizedLoss</c>)
+    /// supplied by the governed lot instruction behind the dry run; a component that resolves to
+    /// zero generates no line. Never derivable from the event amount alone.
+    /// </summary>
+    LotMutationComponent = 4
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<AllocationRuleBasisDto>))]
@@ -825,7 +832,12 @@ public sealed record RuleDryRunRequestDto(
     string? InstrumentSymbol = null,
     string? CorrelationId = null,
     string? TenantId = null,
-    string? CompanyId = null);
+    string? CompanyId = null,
+    // Lot-mutation components a LotMutationComponent formula resolves against, keyed by formula id.
+    // Supplied only by governed lot instructions (a factor paydown's principal, basis relieved and
+    // realized result); absent for every event whose lines derive from the event amount alone.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyDictionary<string, decimal>? LotMutationComponents = null);
 
 public sealed record AccountingRuleDryRunMatchDto(
     string RuleId,

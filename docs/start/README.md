@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-15
+**Reviewed:** 2026-10-28
 
 Use this page for the fastest safe orientation in a fresh Meridian checkout. Run commands from the
 repository root unless a command says otherwise.
@@ -27,13 +27,21 @@ For the current product framing and capability thesis, use the [Meridian Design 
 ## Prerequisites
 
 - .NET SDK pinned by [global.json](../../global.json)
-- PowerShell 7 for Windows helper scripts
+- Windows and PowerShell 7 for WPF desktop development and its helper scripts; non-Windows
+  builds compile a stub and do not validate WPF behavior
 - Node.js 24 and npm for browser development, pinned by [.nvmrc](../../.nvmrc) and browser CI
 - Python 3.11 or newer for build and documentation automation
 - Git
 - Bash for the canonical `scripts/ci.sh` validation lanes (Git Bash or WSL on Windows)
-- Optional: GNU Make. On Windows, use the explicit commands below when `make` is unavailable.
+- Optional: GNU Make with a POSIX shell and `python3` on `PATH`. On Windows, use Git Bash or WSL
+  for Make recipes, or use the direct PowerShell commands below.
 - Optional: one configured data provider for live or credentialed historical data.
+
+Install only the tools needed for your task: the tracked workstation demo needs .NET but no
+Node.js; fixture-only browser development needs Node.js and npm but no .NET or database.
+Backend-connected browser development needs both .NET and Node.js. The dev container supplies
+PostgreSQL 16; database-backed integration checks use the version specified by their lane.
+The database-less demo does not need PostgreSQL.
 
 ## First Local Setup
 
@@ -51,23 +59,56 @@ credentials or running services. Desktop checks require Windows and PowerShell 7
 checks the pinned Python packages, actionlint, and PowerShell needed by the script suite. See
 [engineering prerequisite checks](../engineering/README.md#prerequisite-checks) for details.
 
-If `make` is available:
+### .NET setup
 
 ```powershell
-make setup-dev
+dotnet restore Meridian.sln -p:EnableWindowsTargeting=true
+dotnet build Meridian.WebWorkstation.slnf -c Debug --no-restore -p:EnableWindowsTargeting=true -p:UseAppHost=false
+```
+
+These commands work in PowerShell or Bash from the repository root. They restore the solution
+and build the browser host and its dependencies. Choose a launch path below after the build.
+For a first evaluation with no provider configuration, use the [seeded demo](#see-it-working-one-command-demo).
+
+For your own configuration, run auto-configuration:
+
+```powershell
 dotnet run --project src/Meridian/Meridian.csproj -- --quickstart
 ```
 
-Plain Windows/PowerShell path:
+`--quickstart` writes `config/appsettings.json`. Rerunning it backs up the existing file as
+`config/appsettings.json.backup-<timestamp>` and replaces it with the newly detected configuration.
+It does not prove that persistence, operator authentication, or provider connectivity is ready;
+complete [operator preflight](../operators/preflight-checklist.md) before a non-demo launch.
+Use `config/appsettings.sample.json` as the template when configuring manually. Keep local
+configuration, configuration backups, secrets, provider credentials, logs, and generated data out
+of commits.
 
-```powershell
-dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
+### Browser dependencies
+
+For browser source development, install both lockfiles, then choose a mode:
+
+```sh
 npm ci
 npm --prefix src/Meridian.Ui/dashboard ci
-dotnet run --project src/Meridian/Meridian.csproj -- --quickstart
 ```
 
-`--quickstart` prepares application configuration. It does not prove that persistence, operator authentication, or provider connectivity is ready; complete [operator preflight](../operators/preflight-checklist.md) before a non-demo launch. Use `config/appsettings.sample.json` as the template for local runtime configuration. Do not commit local `appsettings*.json`, secrets, provider credentials, logs, or generated data.
+Use `npm run dev` for the seeded backend and Vite together, or `npm run dev:fixtures` for Vite
+with labelled sample responses and no backend. Each launcher stays running until Ctrl+C.
+The backend-connected launcher creates its own configuration; neither mode needs `--quickstart`.
+See the [browser development guide](../engineering/web-development.md) for readiness and recovery.
+
+### Optional Make setup
+
+In a POSIX shell with GNU Make and `python3` available:
+
+```bash
+make setup-dev
+```
+
+This installs Git hooks, prepares configuration, restores/builds .NET, and runs a .NET test slice.
+It does **not** install browser dependencies; browser contributors must also run the two npm
+install commands above. Use the direct .NET commands when you only need the host build.
 
 ### Dev Container
 
@@ -86,8 +127,13 @@ This starts the seeded backend in watch mode and Vite together. For browser fixt
 backend, use `npm run dev:fixtures`. See the [browser development launcher guide](../engineering/web-development.md)
 for modes, readiness checks, and shutdown behavior.
 
-Open `http://localhost:5173/workstation/` through the forwarded **Browser Workstation (Vite)** port.
-The host/API port 8080 and PostgreSQL port 5432 are also forwarded. The coordinated launcher starts the backend; it does not provision PostgreSQL. If using Vite directly, start the configured host separately. A forwarded port alone does not establish a running service.
+Open the URL printed after `[dev] Ready`, normally `http://127.0.0.1:5173/workstation/`, through
+the forwarded **Browser Workstation (Vite)** port. The host/API port 8080 and PostgreSQL port 5432
+are also forwarded. The dev container's [Compose configuration](../../.devcontainer/docker-compose.yml)
+starts PostgreSQL 16, waits for its health check, and supplies database connection variables to the
+development shell. The launcher respects those variables; outside the dev container it does not
+provision a database. If using Vite directly, start the configured host separately. A forwarded
+port alone does not establish a running service.
 Run a focused browser component test in another terminal; no additional dependency install is needed:
 
 ```bash

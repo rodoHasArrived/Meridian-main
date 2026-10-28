@@ -1625,6 +1625,10 @@ public sealed class ExecutionWriteEndpointsTests
         });
 
         await app.StartAsync();
+        if (app.Services.GetService<IOrderManager>() is IOrderManagementLifecycle lifecycle)
+        {
+            await lifecycle.StartAsync();
+        }
         return app;
     }
 

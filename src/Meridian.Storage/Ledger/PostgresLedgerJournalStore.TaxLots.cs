@@ -143,7 +143,8 @@ public sealed partial class PostgresLedgerJournalStore
                       booked_factor,
                       par_basis,
                       acquisition_terms,
-                      basis_adjustment;
+                      basis_adjustment,
+                      current_factor;
             """;
         command.Parameters.AddWithValue("tax_lot_record_id", lot.TaxLotRecordId);
         command.Parameters.AddWithValue("ledger_book_id", lot.LedgerBookId);
@@ -230,13 +231,14 @@ public sealed partial class PostgresLedgerJournalStore
                    booked_factor,
                    par_basis,
                    acquisition_terms,
-                   basis_adjustment
+                   basis_adjustment,
+                   current_factor
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and account_name = @account_name
               and account_type = @account_type
               and symbol is not distinct from @symbol
-              and financial_account_id is not distinct from @financial_account_id
+              and lower(financial_account_id) is not distinct from lower(@financial_account_id)
               and open_quantity > 0
             order by acquired_date, lot_id;
             """;
@@ -303,7 +305,8 @@ public sealed partial class PostgresLedgerJournalStore
                    booked_factor,
                    par_basis,
                    acquisition_terms,
-                   basis_adjustment
+                   basis_adjustment,
+                   current_factor
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and tax_lot_record_id = any(@tax_lot_record_ids)
@@ -374,13 +377,14 @@ public sealed partial class PostgresLedgerJournalStore
                    booked_factor,
                    par_basis,
                    acquisition_terms,
-                   basis_adjustment
+                   basis_adjustment,
+                   current_factor
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and account_name = @account_name
               and account_type = @account_type
               and coalesce(symbol, '') = coalesce(@symbol, '')
-              and coalesce(financial_account_id, '') = coalesce(@financial_account_id, '')
+              and lower(coalesce(financial_account_id, '')) = lower(coalesce(@financial_account_id, ''))
               and lot_id = any(@lot_ids)
             order by tax_lot_record_id;
             """;
@@ -455,6 +459,12 @@ public sealed partial class PostgresLedgerJournalStore
             throw new LedgerValidationException(
                 "Atomic tax-lot mutation lineage can only be written through IAtomicTaxLotJournalStore.");
         }
+
+        if (lot.CurrentFactor is not null)
+        {
+            throw new LedgerValidationException(
+                "A lot of record opens at its booked factor; a paydown factor is applied only through IAtomicTaxLotJournalStore.");
+        }
     }
 
     private static LedgerTaxLotRecord ReadTaxLot(NpgsqlDataReader reader)
@@ -481,7 +491,8 @@ public sealed partial class PostgresLedgerJournalStore
             reader.IsDBNull(22) ? null : reader.GetDecimal(22),
             reader.IsDBNull(23) ? null : reader.GetDecimal(23),
             reader.IsDBNull(24) ? null : System.Text.Json.JsonSerializer.Deserialize<Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto>(reader.GetString(24)),
-            ReadBasisAdjustment(reader));
+            ReadBasisAdjustment(reader),
+            ReadCurrentFactor(reader));
 
     // Every lot query selects basis_adjustment at ordinal 25. Requiring it by name means a query
     // that omits it fails loudly instead of projecting a restated lot at its acquisition basis.
@@ -497,6 +508,20 @@ public sealed partial class PostgresLedgerJournalStore
         return reader.IsDBNull(Ordinal)
             ? null
             : System.Text.Json.JsonSerializer.Deserialize<Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentDto>(reader.GetString(Ordinal));
+    }
+
+    // Likewise current_factor at ordinal 26: a query that omits it would silently rehydrate a
+    // paid-down lot at its booked factor, the exact mis-scaling the column exists to remove.
+    private static decimal? ReadCurrentFactor(NpgsqlDataReader reader)
+    {
+        const int Ordinal = 26;
+        if (reader.FieldCount <= Ordinal ||
+            !string.Equals(reader.GetName(Ordinal), "current_factor", StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("Tax-lot queries must select current_factor at ordinal 26.");
+        }
+
+        return reader.IsDBNull(Ordinal) ? null : reader.GetDecimal(Ordinal);
     }
 
     /// <summary>

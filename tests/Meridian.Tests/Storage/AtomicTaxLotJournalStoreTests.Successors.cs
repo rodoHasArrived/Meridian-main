@@ -376,7 +376,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var targets = new List<OpenLotSuccessorTargetDto>();
         foreach (var fraction in advanceRefunding ? new[] { 0.6m, 0.4m } : new[] { 1m })
         {
-            var security = AmortSecurity(Guid.NewGuid()) with { PrimaryIdentifierValue = "SUCCESSOR-" + Guid.NewGuid().ToString("N") };
+            var security = AmortSecurity(Guid.NewGuid()) with
+            { PrimaryIdentifierValue = "SUCCESSOR-" + Guid.NewGuid().ToString("N"), Currency = fixture.Security.Currency };
             await fixture.Securities.UpsertProjectionAsync(security);
             security = (await fixture.Securities.GetProjectionAsync(security.SecurityId))!;
             var positionId = Guid.NewGuid();
@@ -403,10 +404,12 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 FunctionalCostBasis = predecessor.Acquisition.FunctionalCostBasis * openFraction * fraction,
                 Evidence = [.. predecessor.Acquisition.Evidence, evidence]
             };
+            // A successor inherits the paydown factor its predecessor holds (null while at booked factor).
             var lot = new OpenLotDto(lotId, security.SecurityId, positionId, predecessor.LedgerBookId,
                 "successor-" + lotId.ToString("N"), predecessor.AcquiredDate, predecessor.OpenQuantity * fraction,
                 predecessor.OpenQuantity * fraction, predecessor.OpenTransactionCostBasis * fraction,
-                predecessor.OpenFunctionalCostBasis * fraction, 1, acquisition);
+                predecessor.OpenFunctionalCostBasis * fraction, 1, acquisition)
+            { CurrentFactor = predecessor.CurrentFactor };
             targets.Add(new(lot, 1, security.Version, OpenLotAmortization.SecurityHash(security)));
         }
         var instruction = OpenLotSuccessorTestData.Build(predecessor, targets, advanceRefunding,
@@ -421,10 +424,10 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var lines = targets.Select(target => new LedgerEntry(Guid.NewGuid(), journalId, at, AmortAccount,
             target.Lot.OpenFunctionalCostBasis, 0m, "Approved cashless successor allocation",
             fixture.Dimensions(target.Lot.SecurityId, target.Lot.BookPositionId),
-            new LedgerEntryCurrency("EUR", "USD", target.Lot.OpenTransactionCostBasis, 0m, 1.1m))).ToList();
+            new LedgerEntryCurrency(fixture.TransactionCurrency, "USD", target.Lot.OpenTransactionCostBasis, 0m, fixture.FxRate))).ToList();
         lines.Add(new(Guid.NewGuid(), journalId, at, AmortAccount, 0m, predecessor.OpenFunctionalCostBasis, "Approved cashless successor allocation",
             fixture.Dimensions(predecessor.SecurityId, predecessor.BookPositionId),
-            new LedgerEntryCurrency("EUR", "USD", 0m, predecessor.OpenTransactionCostBasis, 1.1m)));
+            new LedgerEntryCurrency(fixture.TransactionCurrency, "USD", 0m, predecessor.OpenTransactionCostBasis, fixture.FxRate)));
         var tags = new Dictionary<string, string>(SecurityMasterLineageTags(predecessor.SecurityId))
         { ["openLotSuccessorInstructionFingerprint"] = OpenLotSuccessors.Fingerprint(instruction) };
         var entry = new JournalEntry(journalId, at, "Approved cashless successor allocation", lines,

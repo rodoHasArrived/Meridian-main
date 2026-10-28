@@ -40,7 +40,8 @@ public interface ISecurityMasterOperationalReadinessService
 
 public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterOperationalReadinessService
 {
-    private static readonly IReadOnlyList<MultiAssetCoverageSpecification> Specifications =
+    // Internal so the asset-class parity guards can hold these rows to the catalog.
+    internal static readonly IReadOnlyList<MultiAssetCoverageSpecification> Specifications =
     [
         Listed(
             "Equity",
@@ -177,7 +178,7 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
     private readonly AssetClassValidatorRegistry _assetClassValidators;
     private readonly ISecurityAssetProfileCatalog _assetProfileCatalog;
 
-    private static readonly IReadOnlyDictionary<string, IReadOnlyList<AssetClassDepthTargetSpec>> AssetClassDepthTargetSpecs =
+    internal static readonly IReadOnlyDictionary<string, IReadOnlyList<AssetClassDepthTargetSpec>> AssetClassDepthTargetSpecs =
         new Dictionary<string, IReadOnlyList<AssetClassDepthTargetSpec>>(StringComparer.OrdinalIgnoreCase)
         {
             ["Bond"] =
@@ -300,7 +301,7 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
         SecurityMasterOperationalEvidenceSnapshot? evidenceSnapshot)
     {
         var hasValidator = _assetClassValidators.TryGetValidator(spec.AssetClass, out _);
-        var hasCatalogDescriptor = SecurityAssetClassCatalog.GetOrDefault(spec.AssetClass).AssetClass != "Unknown";
+        var hasCatalogDescriptor = SecurityAssetClassCatalog.TryGet(spec.AssetClass, out _);
         // GetProfiles() already applies write-time governance: Approved OR Superseded versions
         // whose effective window covers today. A Superseded predecessor stays THE selectable
         // version while its future-dated replacement waits to activate, so re-filtering to
@@ -865,8 +866,7 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
         };
 
     private static bool RequiresGovernedProfile(string assetClass)
-        => string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(assetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase);
+        => SecurityAssetClassCatalog.GetOrDefault(assetClass).RequiresGovernedProfile;
 
     private static MultiAssetPackCoverageDto ToAssetPackCoverage(SecurityAssetPackDescriptor pack)
     {

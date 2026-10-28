@@ -111,9 +111,11 @@ public sealed class CorporateActionDividendEventProducer
 
             try
             {
+                // A ticker without a security id is resolved as of the production instant, so the
+                // journal names the security that carried the ticker then.
                 var securityId = representative.SecurityId
                     ?? (await _securityMaster
-                        .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, symbol, provider: null, ct)
+                        .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, symbol, provider: null, ct, request.AsOf)
                         .ConfigureAwait(false))?.SecurityId;
                 if (securityId is null)
                 {

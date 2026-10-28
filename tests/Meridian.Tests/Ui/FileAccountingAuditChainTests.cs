@@ -83,6 +83,22 @@ public sealed class FileAccountingAuditChainTests : IDisposable
     }
 
     [Fact]
+    public async Task VerifyAuditChainAsync_CountsOnlyTheLinksVerifiedBeforeTheBreak()
+    {
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        await store.AppendAsync(AuditEvent("post-journal"));
+        await store.AppendAsync(AuditEvent("close-period"));
+        await store.AppendAsync(AuditEvent("reopen-period"));
+
+        MutateSnapshot(snapshot => snapshot["auditEvents"]!.AsArray()[1]!["actor"] = "someone-else");
+
+        var verification = await store.VerifyAuditChainAsync();
+        verification.Status.Should().Be(AccountingAuditChainStatus.EventMutated);
+        verification.FailedSequence.Should().Be(AccountingAuditChainState.FirstSequence + 1);
+        verification.LinksChecked.Should().Be(1, "only the first link verified before the edited second one");
+    }
+
+    [Fact]
     public async Task VerifyAuditChainAsync_DetectsAReorderedChain()
     {
         var store = new FileAccountingConfigurationStore(SnapshotPath);
@@ -485,6 +501,7 @@ public sealed class FileAccountingAuditChainTests : IDisposable
 
         verification.IsValid.Should().BeFalse();
         verification.Status.Should().Be(AccountingAuditChainStatus.UnlinkedEvent);
+        verification.FailedSequence.Should().BeNull("the fabricated event has no chain sequence and every link verified");
     }
 
     [Fact]

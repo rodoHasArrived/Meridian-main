@@ -1,0 +1,115 @@
+{
+  "assetClass": "CertificateOfDeposit",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "callableDate",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "couponRate",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "dayCount",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "issuerName",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "maturity",
+          "type": "Date",
+          "required": true
+        }
+      ]
+    },
+    {
+      "termsVersion": 2,
+      "fields": [
+        {
+          "key": "callableDate",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "couponRate",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "dayCount",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "issuerName",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "maturity",
+          "type": "Date",
+          "required": true
+        },
+        {
+          "key": "scheduleConventions",
+          "type": "Object",
+          "required": false
+        }
+      ]
+    },
+    {
+      "termsVersion": 3,
+      "fields": [
+        {
+          "key": "callSchedule",
+          "type": "Array",
+          "required": false
+        },
+        {
+          "key": "callableDate",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "couponRate",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "dayCount",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "issuerName",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "maturity",
+          "type": "Date",
+          "required": true
+        },
+        {
+          "key": "putSchedule",
+          "type": "Array",
+          "required": false
+        },
+        {
+          "key": "scheduleConventions",
+          "type": "Object",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

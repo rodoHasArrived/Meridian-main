@@ -321,11 +321,13 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         IAccountingTenantAdministrationProfileStore? tenantAdministrationProfileStore = null,
         IAccountingMigrationRunWorkerPlanStore? migrationRunWorkerPlanStore = null,
         DesktopAuthenticationSession? authenticationSession = null,
-        IRecurringJournalQueueSource? recurringJournalQueueSource = null)
+        IRecurringJournalQueueSource? recurringJournalQueueSource = null,
+        IAccountingAuditIntegrityApiClient? auditIntegrityClient = null)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _authenticationSession = authenticationSession;
         RecurringJournalQueue = new RecurringJournalQueueViewModel(recurringJournalQueueSource);
+        AuditChainIntegrity = new AuditChainIntegrityViewModel(auditIntegrityClient);
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         _manualJournalEntryWorkbenchService = manualJournalEntryWorkbenchService ?? throw new ArgumentNullException(nameof(manualJournalEntryWorkbenchService));
         _capitalAccountWorkbenchService = capitalAccountWorkbenchService;
@@ -434,6 +436,9 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalDraftRows { get; } = [];
 
     public RecurringJournalQueueViewModel RecurringJournalQueue { get; }
+
+    /// <summary>On-demand audit-chain verification, matching the browser Configuration panel.</summary>
+    public AuditChainIntegrityViewModel AuditChainIntegrity { get; }
 
     public ObservableCollection<string> RecurringJournalEntityOptions { get; } = [];
 

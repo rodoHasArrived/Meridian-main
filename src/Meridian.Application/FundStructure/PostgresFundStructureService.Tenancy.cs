@@ -358,7 +358,7 @@ public sealed partial class PostgresFundStructureService
     /// review finding on PR #2871).</para>
     /// </remarks>
     private static Guid? StructuralPortfolioId(string? portfolioId, MutableSnapshot snap)
-        => TryParseGuid(portfolioId, out var id) && snap.AllInvestmentPortfolioIds.Contains(id)
+        => FundStructureProjector.TryParseGuid(portfolioId, out var id) && snap.AllInvestmentPortfolioIds.Contains(id)
             ? id
             : null;
 }

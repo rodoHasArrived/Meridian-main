@@ -42,9 +42,11 @@ public sealed class IBBrokerageGateway :
     private readonly ConcurrentDictionary<int, SubmittedOrderContext> _submittedOrders = new();
     private readonly ConcurrentDictionary<string, int> _gatewayOrderIdsByExternalId = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<int, BrokerOrder> _openOrders = new();
+    private readonly ConcurrentDictionary<int, ExecutionReport> _latestOrderReports = new();
     private readonly ConcurrentDictionary<int, string> _openOrderAccounts = new();
     private readonly ConcurrentDictionary<string, IBExecutionUpdate> _executions = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<int, PendingOrderOperation> _pendingOrderOperations = new();
+    private readonly ConcurrentDictionary<int, PendingOrderOperation> _unconfirmedAmendments = new();
     private readonly ConcurrentDictionary<int, AccountSummaryCollector> _accountSummaryRequests = new();
     private readonly SemaphoreSlim _openOrdersGate = new(1, 1);
     private readonly SemaphoreSlim _positionsGate = new(1, 1);
@@ -218,16 +220,24 @@ public sealed class IBBrokerageGateway :
         ArgumentException.ThrowIfNullOrWhiteSpace(orderId);
         ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureConnected();
+        ct.ThrowIfCancellationRequested();
 
         var (gatewayOrderId, context) = ResolveOrder(orderId);
         var pendingOperation = RegisterPendingOrderOperation(gatewayOrderId, PendingOrderOperationKind.Cancel);
 
-        await _client.CancelOrderAsync(gatewayOrderId, ct).ConfigureAwait(false);
-        return await AwaitPendingOrderOperationAsync(
-            gatewayOrderId,
-            pendingOperation,
-            $"cancel order {context.MeridianOrderId}",
-            ct).ConfigureAwait(false);
+        try
+        {
+            await _client.CancelOrderAsync(gatewayOrderId, ct).ConfigureAwait(false);
+            return await AwaitPendingOrderOperationAsync(
+                gatewayOrderId,
+                pendingOperation,
+                $"cancel order {context.MeridianOrderId}",
+                ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            ReleaseOrderOperationWaiter(gatewayOrderId, pendingOperation);
+        }
     }
 
     /// <inheritdoc />
@@ -241,19 +251,43 @@ public sealed class IBBrokerageGateway :
         ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureConnected();
 
-        var (gatewayOrderId, context) = ResolveOrder(orderId);
-        var updatedRequest = context.ToModifiedRequest(modification);
-        var updatedContext = SubmittedOrderContext.FromRequest(gatewayOrderId, context.MeridianOrderId, updatedRequest);
-        var pendingOperation = RegisterPendingOrderOperation(gatewayOrderId, PendingOrderOperationKind.Modify);
-
-        _submittedOrders[gatewayOrderId] = updatedContext;
-
-        await _client.PlaceOrderAsync(gatewayOrderId, updatedRequest, ct).ConfigureAwait(false);
-        return await AwaitPendingOrderOperationAsync(
-            gatewayOrderId,
-            pendingOperation,
-            $"modify order {context.MeridianOrderId}",
-            ct).ConfigureAwait(false);
+        // Send boundary: resolution, request shaping and claiming the operation slot (which a
+        // concurrent cancel or amendment may own) are process-local, so a failure or cancellation
+        // before PlaceOrderAsync proves the amendment never reached IB. The slot is claimed last,
+        // immediately before the send, so nothing can leave it registered without dispatch.
+        var sent = false;
+        var gatewayOrderId = 0;
+        PendingOrderOperation? pendingOperation = null;
+        try
+        {
+            ct.ThrowIfCancellationRequested();
+            (gatewayOrderId, var context) = ResolveOrder(orderId);
+            var updatedRequest = context.ToModifiedRequest(modification);
+            var updatedContext = context with
+            {
+                Quantity = updatedRequest.Quantity,
+                LimitPrice = updatedRequest.LimitPrice,
+                StopPrice = updatedRequest.StopPrice
+            };
+            pendingOperation = RegisterPendingOrderOperation(
+                gatewayOrderId, PendingOrderOperationKind.Modify, updatedContext);
+            sent = true;
+            await _client.PlaceOrderAsync(gatewayOrderId, updatedRequest, ct).ConfigureAwait(false);
+            return await AwaitPendingOrderOperationAsync(
+                gatewayOrderId,
+                pendingOperation,
+                $"modify order {context.MeridianOrderId}",
+                ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (!sent && ex is not BrokerageRequestNotSentException)
+        {
+            throw new BrokerageRequestNotSentException(ex.Message, ex);
+        }
+        finally
+        {
+            if (pendingOperation is not null)
+                ReleaseOrderOperationWaiter(gatewayOrderId, pendingOperation);
+        }
     }
 
     /// <inheritdoc />
@@ -575,13 +609,24 @@ public sealed class IBBrokerageGateway :
         return reserved - 1;
     }
 
-    private PendingOrderOperation RegisterPendingOrderOperation(int gatewayOrderId, PendingOrderOperationKind kind)
+    private PendingOrderOperation RegisterPendingOrderOperation(
+        int gatewayOrderId,
+        PendingOrderOperationKind kind,
+        SubmittedOrderContext? proposedContext = null)
     {
         var operation = new PendingOrderOperation(
             kind,
-            new TaskCompletionSource<ExecutionReport>(TaskCreationOptions.RunContinuationsAsynchronously));
+            new TaskCompletionSource<ExecutionReport>(TaskCreationOptions.RunContinuationsAsynchronously),
+            proposedContext,
+            _latestOrderReports.TryGetValue(gatewayOrderId, out var latest) ? latest.OrderStatus : OrderStatus.Accepted);
 
-        _pendingOrderOperations[gatewayOrderId] = operation;
+        if (!_pendingOrderOperations.TryAdd(gatewayOrderId, operation))
+            throw new InvalidOperationException($"IB order {gatewayOrderId} already has a pending operation.");
+        if (kind == PendingOrderOperationKind.Modify && !_unconfirmedAmendments.TryAdd(gatewayOrderId, operation))
+        {
+            RemovePendingOrderOperation(gatewayOrderId, operation);
+            throw new InvalidOperationException($"IB order {gatewayOrderId} already has an unconfirmed amendment.");
+        }
         return operation;
     }
 
@@ -597,12 +642,26 @@ public sealed class IBBrokerageGateway :
         }
         catch (TimeoutException ex)
         {
-            _pendingOrderOperations.TryRemove(gatewayOrderId, out _);
             throw new TimeoutException(
                 $"IB did not acknowledge the request to {description} within {CallbackTimeout.TotalSeconds:0} seconds.",
                 ex);
         }
+        finally
+        {
+            ReleaseOrderOperationWaiter(gatewayOrderId, operation);
+        }
     }
+
+    private void ReleaseOrderOperationWaiter(int gatewayOrderId, PendingOrderOperation operation)
+    {
+        // Stop waiting without withdrawing a dispatched amendment. The separate amendment
+        // record remains available to late callbacks while cancellation can still proceed.
+        RemovePendingOrderOperation(gatewayOrderId, operation);
+    }
+
+    private void RemovePendingOrderOperation(int gatewayOrderId, PendingOrderOperation operation)
+        => ((ICollection<KeyValuePair<int, PendingOrderOperation>>)_pendingOrderOperations)
+            .Remove(new KeyValuePair<int, PendingOrderOperation>(gatewayOrderId, operation));
 
     private (int GatewayOrderId, SubmittedOrderContext Context) ResolveOrder(string orderId)
     {
@@ -682,13 +741,14 @@ public sealed class IBBrokerageGateway :
         var marketValue = Math.Abs(update.Quantity) * averageCost;
         var accruedInterest = TryGetDecimal(update.Metadata, "accrued_interest");
 
-        var key = new AccountPositionKey(accountId.ToUpperInvariant(), symbol.ToUpperInvariant());
+        var contractIdentity = BuildPositionContractIdentity(update);
+        var key = new AccountPositionKey(accountId.ToUpperInvariant(), contractIdentity);
         buffer[key] = new AccountScopedBrokerPosition(
             accountId,
             string.IsNullOrWhiteSpace(update.Currency) ? null : update.Currency.Trim(),
             new BrokerPosition
             {
-                PositionId = $"{accountId}:{symbol}",
+                PositionId = $"{key.AccountId}:{contractIdentity}",
                 Symbol = symbol,
                 Quantity = update.Quantity,
                 AverageEntryPrice = averageCost,
@@ -707,6 +767,7 @@ public sealed class IBBrokerageGateway :
             _positionsSnapshotBuffer?.Values
                 .OrderBy(p => p.AccountId, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(p => p.Position.Symbol, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(p => p.Position.PositionId, StringComparer.Ordinal)
                 .ToArray()
             ?? Array.Empty<AccountScopedBrokerPosition>());
     }
@@ -720,6 +781,44 @@ public sealed class IBBrokerageGateway :
             _openOrderAccounts[gatewayOrderId] = update.Account.Trim();
 
         var context = _submittedOrders.TryGetValue(gatewayOrderId, out var tracked) ? tracked : null;
+        _pendingOrderOperations.TryGetValue(gatewayOrderId, out var pending);
+        _unconfirmedAmendments.TryGetValue(gatewayOrderId, out var amendment);
+        _latestOrderReports.TryGetValue(gatewayOrderId, out var latest);
+        var status = IBCanonicalPayloadMapper.MapOrderStatus(update.Status, update.FilledQuantity,
+            Math.Max(update.Quantity - update.FilledQuantity, 0m), update.RejectReason, update.Metadata);
+
+        // A refused amendment describes the operation, not rejection of the working order.
+        // Keep the last confirmed request until IB echoes the amended terms.
+        var refusedOperation = pending?.Kind == PendingOrderOperationKind.Cancel ? pending : amendment;
+        if (refusedOperation is not null && status == OrderStatus.Rejected)
+        {
+            RejectPendingOperation(gatewayOrderId, refusedOperation, context!, update.RejectReason ?? update.Status,
+                update.FilledQuantity);
+            return;
+        }
+
+        if (latest?.OrderStatus == OrderStatus.Filled)
+            status = OrderStatus.Filled;
+        else if (latest is not null && IsTerminalOrderStatus(latest.OrderStatus) && !IsTerminalOrderStatus(status))
+            status = latest.OrderStatus;
+        else if (latest?.OrderStatus == OrderStatus.PendingCancel && pending?.Kind == PendingOrderOperationKind.Cancel &&
+            !IsTerminalOrderStatus(status))
+            status = OrderStatus.PendingCancel;
+        else if (status == OrderStatus.Accepted && Math.Max(update.FilledQuantity, latest?.FilledQuantity ?? 0m) > 0m)
+            status = OrderStatus.PartiallyFilled;
+
+        var amendmentConfirmed = amendment is not null &&
+            (status is OrderStatus.Accepted or OrderStatus.PartiallyFilled or OrderStatus.PendingCancel or OrderStatus.Filled or OrderStatus.Cancelled ||
+                string.Equals(update.Status, "PreSubmitted", StringComparison.OrdinalIgnoreCase)) &&
+            amendment.ProposedContext is { } proposed && MatchesAmendment(update, proposed);
+        if (amendmentConfirmed)
+        {
+            context = amendment!.ProposedContext;
+            _submittedOrders[gatewayOrderId] = context!;
+            if (Math.Max(update.FilledQuantity, latest?.FilledQuantity ?? 0m) >= context!.Quantity)
+                status = OrderStatus.Filled;
+        }
+
         var brokerOrder = new BrokerOrder
         {
             OrderId = gatewayOrderId.ToString(),
@@ -727,47 +826,81 @@ public sealed class IBBrokerageGateway :
             Symbol = context?.Symbol ?? update.Symbol,
             Side = context?.Side ?? IBCanonicalPayloadMapper.ParseSide(update.Action, update.Metadata),
             Type = context?.Type ?? IBCanonicalPayloadMapper.ParseOrderType(update.OrderType, update.Metadata),
-            Quantity = context?.Quantity ?? update.Quantity,
-            FilledQuantity = update.FilledQuantity,
-            LimitPrice = update.LimitPrice is > 0 ? (decimal)update.LimitPrice.Value : context?.LimitPrice,
-            StopPrice = update.StopPrice is > 0 ? (decimal)update.StopPrice.Value : context?.StopPrice,
-            Status = IBCanonicalPayloadMapper.MapOrderStatus(update.Status, update.FilledQuantity, Math.Max(update.Quantity - update.FilledQuantity, 0m), update.RejectReason, update.Metadata),
+            Quantity = update.Quantity,
+            FilledQuantity = Math.Max(update.FilledQuantity, latest?.FilledQuantity ?? 0m),
+            LimitPrice = update.LimitPrice is > 0 ? (decimal)update.LimitPrice.Value : null,
+            StopPrice = update.StopPrice is > 0 ? (decimal)update.StopPrice.Value : null,
+            Status = status,
             CreatedAt = context?.CreatedAt ?? update.ReceivedAt
         };
 
-        _openOrders[gatewayOrderId] = brokerOrder;
-        var openOrdersSnapshotBuffer = _openOrdersSnapshotBuffer;
-        if (openOrdersSnapshotBuffer is not null)
-            openOrdersSnapshotBuffer[gatewayOrderId] = brokerOrder;
-
-        if (_pendingOrderOperations.TryGetValue(gatewayOrderId, out var pending) &&
-            pending.Kind is PendingOrderOperationKind.Submit or PendingOrderOperationKind.Modify)
+        if (IsTerminalOrderStatus(status))
+            _openOrders.TryRemove(gatewayOrderId, out _);
+        else
+            _openOrders[gatewayOrderId] = brokerOrder;
+        if (_openOrdersSnapshotBuffer is { } snapshot)
         {
-            var reportType = brokerOrder.Status == OrderStatus.Rejected
-                ? ExecutionReportType.Rejected
-                : pending.Kind == PendingOrderOperationKind.Modify
-                    ? ExecutionReportType.Modified
-                    : ExecutionReportType.New;
+            if (IsTerminalOrderStatus(status))
+                snapshot.TryRemove(gatewayOrderId, out _);
+            else
+                snapshot[gatewayOrderId] = brokerOrder;
+        }
 
-            var report = BuildExecutionReport(
-                gatewayOrderId,
-                reportType,
-                brokerOrder.Status,
-                context,
-                brokerOrder.Symbol,
-                brokerOrder.Side,
-                brokerOrder.Quantity,
-                brokerOrder.FilledQuantity,
-                update.LimitPrice is > 0 ? (decimal)update.LimitPrice.Value : null,
-                update.Status,
-                update.RejectReason,
-                update.Commission is > 0 ? (decimal)update.Commission.Value : null,
-                update.ReceivedAt);
+        if (pending is null && amendment is null)
+            return;
+        if (!amendmentConfirmed && pending?.Kind == PendingOrderOperationKind.Cancel)
+        {
+            // openOrder can also deliver the terminal state while cancellation is pending.
+            if (IsTerminalOrderStatus(status))
+                OnOrderStatusReceived(sender, new IBOrderStatusUpdate(gatewayOrderId, update.Status,
+                    brokerOrder.FilledQuantity, Math.Max(update.Quantity - brokerOrder.FilledQuantity, 0m),
+                    0d, 0d, 0L, _client.ClientId, null, update.RejectReason, update.ReceivedAt));
+            return;
+        }
+        if (amendment is not null && !amendmentConfirmed)
+        {
+            if (IsTerminalOrderStatus(status))
+                OnOrderStatusReceived(sender, new IBOrderStatusUpdate(gatewayOrderId, update.Status,
+                    brokerOrder.FilledQuantity, Math.Max(update.Quantity - brokerOrder.FilledQuantity, 0m),
+                    0d, 0d, 0L, _client.ClientId, null, update.RejectReason, update.ReceivedAt));
+            return;
+        }
 
-            PublishReport(report);
+        var report = BuildExecutionReport(
+            gatewayOrderId,
+            status == OrderStatus.Rejected ? ExecutionReportType.Rejected :
+                amendmentConfirmed ? ExecutionReportType.Modified : ExecutionReportType.New,
+            status, context, brokerOrder.Symbol, brokerOrder.Side, brokerOrder.Quantity,
+            brokerOrder.FilledQuantity, latest?.FillPrice, update.Status, update.RejectReason,
+            update.Commission is > 0 ? (decimal)update.Commission.Value : null, update.ReceivedAt,
+            latest?.FillPriceIsCumulativeAverage ?? false) with
+        {
+            HasOrderTerms = amendmentConfirmed,
+            OrderLimitPrice = amendmentConfirmed ? context?.LimitPrice : null,
+            OrderStopPrice = amendmentConfirmed ? context?.StopPrice : null
+        };
+        PublishReport(report);
+        if (amendmentConfirmed)
+        {
+            CompleteAmendment(gatewayOrderId, amendment!, report);
+            if (pending?.Kind == PendingOrderOperationKind.Cancel && IsTerminalOrderStatus(status))
+                OnOrderStatusReceived(sender, new IBOrderStatusUpdate(gatewayOrderId, status.ToString(),
+                    brokerOrder.FilledQuantity, Math.Max(update.Quantity - brokerOrder.FilledQuantity, 0m),
+                    0d, 0d, 0L, _client.ClientId, null, null, update.ReceivedAt));
+        }
+        else
+        {
             CompletePendingOrderOperation(gatewayOrderId, report);
         }
     }
+
+    private static bool MatchesAmendment(IBOpenOrderUpdate update, SubmittedOrderContext proposed)
+        => update.Quantity == proposed.Quantity &&
+            (update.LimitPrice is > 0 ? (decimal)update.LimitPrice.Value : null) == proposed.LimitPrice &&
+            (update.StopPrice is > 0 ? (decimal)update.StopPrice.Value : null) == proposed.StopPrice;
+
+    private static bool IsTerminalOrderStatus(OrderStatus status)
+        => status is OrderStatus.Cancelled or OrderStatus.Filled or OrderStatus.Rejected or OrderStatus.Expired;
 
     private void OnOpenOrdersCompleted(object? sender, EventArgs e)
     {
@@ -783,64 +916,77 @@ public sealed class IBBrokerageGateway :
     {
         var gatewayOrderId = update.OrderId;
         var context = _submittedOrders.TryGetValue(gatewayOrderId, out var tracked) ? tracked : null;
-        var orderStatus = IBCanonicalPayloadMapper.MapOrderStatus(update.Status, update.Filled, update.Remaining, null);
+        _latestOrderReports.TryGetValue(gatewayOrderId, out var latest);
+        _pendingOrderOperations.TryGetValue(gatewayOrderId, out var pending);
+        _unconfirmedAmendments.TryGetValue(gatewayOrderId, out var amendment);
+        var filled = Math.Max(update.Filled, latest?.FilledQuantity ?? 0m);
+        var orderStatus = IBCanonicalPayloadMapper.MapOrderStatus(update.Status, filled, update.Remaining, update.RejectReason);
+        var refusedOperation = pending?.Kind == PendingOrderOperationKind.Cancel ? pending : amendment;
+        if (refusedOperation is not null &&
+            orderStatus == OrderStatus.Rejected && context is not null)
+        {
+            RejectPendingOperation(gatewayOrderId, refusedOperation, context, update.RejectReason ?? update.Status,
+                filled, update.AverageFillPrice > 0 ? (decimal)update.AverageFillPrice : null);
+            return;
+        }
+        if (orderStatus == OrderStatus.Accepted && filled > 0m)
+            orderStatus = OrderStatus.PartiallyFilled;
+        // Late working callbacks must not revive an already completed order.
+        if (latest?.OrderStatus == OrderStatus.Filled)
+            orderStatus = OrderStatus.Filled;
+        else if (latest is not null && IsTerminalOrderStatus(latest.OrderStatus) && !IsTerminalOrderStatus(orderStatus))
+            orderStatus = latest.OrderStatus;
+        else if (latest?.OrderStatus == OrderStatus.PendingCancel && pending?.Kind == PendingOrderOperationKind.Cancel &&
+            !IsTerminalOrderStatus(orderStatus))
+            orderStatus = OrderStatus.PendingCancel;
 
         if (_openOrders.TryGetValue(gatewayOrderId, out var openOrder))
         {
-            var refreshed = openOrder with
-            {
-                FilledQuantity = update.Filled,
-                Status = orderStatus,
-            };
-
-            if (orderStatus is OrderStatus.Cancelled or OrderStatus.Filled)
+            var refreshed = openOrder with { FilledQuantity = filled, Status = orderStatus };
+            if (IsTerminalOrderStatus(orderStatus))
                 _openOrders.TryRemove(gatewayOrderId, out _);
             else
                 _openOrders[gatewayOrderId] = refreshed;
-
-            var openOrdersSnapshotBuffer = _openOrdersSnapshotBuffer;
-            if (openOrdersSnapshotBuffer is not null)
-                openOrdersSnapshotBuffer[gatewayOrderId] = refreshed;
+            if (_openOrdersSnapshotBuffer is { } snapshot)
+            {
+                if (IsTerminalOrderStatus(orderStatus))
+                    snapshot.TryRemove(gatewayOrderId, out _);
+                else
+                    snapshot[gatewayOrderId] = refreshed;
+            }
         }
 
-        if (!_pendingOrderOperations.TryGetValue(gatewayOrderId, out var pending) &&
-            orderStatus is not (OrderStatus.Cancelled or OrderStatus.Rejected))
+        var reportType = orderStatus switch
         {
-            return;
-        }
-
-        var reportType = pending?.Kind switch
-        {
-            PendingOrderOperationKind.Cancel => orderStatus == OrderStatus.Rejected
-                ? ExecutionReportType.Rejected
-                : ExecutionReportType.Cancelled,
-            PendingOrderOperationKind.Modify => orderStatus == OrderStatus.Rejected
-                ? ExecutionReportType.Rejected
-                : ExecutionReportType.Modified,
-            _ when orderStatus == OrderStatus.Rejected => ExecutionReportType.Rejected,
-            _ when orderStatus == OrderStatus.Cancelled => ExecutionReportType.Cancelled,
-            _ => ExecutionReportType.New,
+            OrderStatus.Cancelled => ExecutionReportType.Cancelled,
+            OrderStatus.Rejected => ExecutionReportType.Rejected,
+            OrderStatus.Filled => ExecutionReportType.Fill,
+            OrderStatus.PartiallyFilled => ExecutionReportType.PartialFill,
+            _ when filled > (latest?.FilledQuantity ?? 0m) => ExecutionReportType.PartialFill,
+            _ => ExecutionReportType.New
         };
-
         var report = BuildExecutionReport(
-            gatewayOrderId,
-            reportType,
-            orderStatus,
-            context,
+            gatewayOrderId, reportType, orderStatus, context,
             context?.Symbol ?? openOrder?.Symbol ?? gatewayOrderId.ToString(),
             context?.Side ?? openOrder?.Side ?? OrderSide.Buy,
-            context?.Quantity ?? openOrder?.Quantity ?? update.Filled + update.Remaining,
-            update.Filled,
-            update.LastFillPrice > 0 ? (decimal)update.LastFillPrice : update.AverageFillPrice > 0 ? (decimal)update.AverageFillPrice : null,
-            update.Status,
-            null,
-            null,
-            update.ReceivedAt);
-
+            amendment?.ProposedContext is { } proposed
+                ? Math.Max(context?.Quantity ?? 0m, proposed.Quantity)
+                : context?.Quantity ?? openOrder?.Quantity ?? filled + update.Remaining,
+            filled,
+            update.Filled < (latest?.FilledQuantity ?? 0m) ? latest?.FillPrice :
+                update.AverageFillPrice > 0 ? (decimal)update.AverageFillPrice : update.LastFillPrice > 0 ? (decimal)update.LastFillPrice : latest?.FillPrice,
+            update.Status, update.RejectReason, null, update.ReceivedAt,
+            update.Filled < (latest?.FilledQuantity ?? 0m) ? latest!.FillPriceIsCumulativeAverage :
+                update.AverageFillPrice > 0 || (update.LastFillPrice <= 0 && latest?.FillPriceIsCumulativeAverage == true));
         PublishReport(report);
 
-        if (orderStatus is OrderStatus.Cancelled or OrderStatus.Rejected ||
-            pending is not null)
+        // PendingCancel/Submitted and partial fills are progress, not confirmation of a cancel.
+        // A status-only callback cannot confirm amended quantity or price either.
+        if (IsTerminalOrderStatus(orderStatus) && pending?.Kind != PendingOrderOperationKind.Modify)
+        {
+            CompletePendingOrderOperation(gatewayOrderId, report);
+        }
+        else if (pending?.Kind == PendingOrderOperationKind.Submit && orderStatus != OrderStatus.PendingCancel)
         {
             CompletePendingOrderOperation(gatewayOrderId, report);
         }
@@ -853,13 +999,24 @@ public sealed class IBBrokerageGateway :
 
         var gatewayOrderId = update.OrderId;
         var context = _submittedOrders.TryGetValue(gatewayOrderId, out var tracked) ? tracked : null;
-        var orderQuantity = context?.Quantity ?? update.CumulativeQuantity;
-        var reportType = update.CumulativeQuantity >= orderQuantity
+        _pendingOrderOperations.TryGetValue(gatewayOrderId, out var pending);
+        _unconfirmedAmendments.TryGetValue(gatewayOrderId, out var amendment);
+        _latestOrderReports.TryGetValue(gatewayOrderId, out var latest);
+        var staleFill = update.CumulativeQuantity < (latest?.FilledQuantity ?? 0m);
+        var cumulativeQuantity = Math.Max(update.CumulativeQuantity, latest?.FilledQuantity ?? 0m);
+        var orderQuantity = amendment?.ProposedContext is { } proposed
+            ? Math.Max(context?.Quantity ?? 0m, proposed.Quantity)
+            : context?.Quantity ?? update.CumulativeQuantity;
+        var reportType = cumulativeQuantity >= orderQuantity
             ? ExecutionReportType.Fill
             : ExecutionReportType.PartialFill;
-        var orderStatus = reportType == ExecutionReportType.Fill
+        var orderStatus = reportType == ExecutionReportType.Fill || latest?.OrderStatus == OrderStatus.Filled
             ? OrderStatus.Filled
-            : OrderStatus.PartiallyFilled;
+            : latest?.OrderStatus is OrderStatus.Cancelled or OrderStatus.PendingCancel
+                ? latest.OrderStatus
+                : OrderStatus.PartiallyFilled;
+        if (orderStatus == OrderStatus.Filled)
+            reportType = ExecutionReportType.Fill;
 
         var report = BuildExecutionReport(
             gatewayOrderId,
@@ -869,12 +1026,13 @@ public sealed class IBBrokerageGateway :
             context?.Symbol ?? update.Symbol,
             context?.Side ?? IBCanonicalPayloadMapper.ParseSide(update.Side),
             orderQuantity,
-            update.CumulativeQuantity,
-            (decimal)update.Price,
+            cumulativeQuantity,
+            staleFill ? latest?.FillPrice : update.AveragePrice > 0 ? (decimal)update.AveragePrice : (decimal)update.Price,
             null,
             null,
             null,
-            update.ExecutedAt);
+            update.ExecutedAt,
+            staleFill ? latest!.FillPriceIsCumulativeAverage : update.AveragePrice > 0);
 
         if (_openOrders.TryGetValue(gatewayOrderId, out var openOrder))
         {
@@ -886,26 +1044,73 @@ public sealed class IBBrokerageGateway :
             {
                 _openOrders[gatewayOrderId] = openOrder with
                 {
-                    FilledQuantity = update.CumulativeQuantity,
+                    FilledQuantity = cumulativeQuantity,
                     Status = orderStatus
                 };
             }
         }
 
         PublishReport(report);
+        if (orderStatus == OrderStatus.Filled && pending?.Kind != PendingOrderOperationKind.Modify)
+        {
+            CompletePendingOrderOperation(gatewayOrderId, report);
+        }
     }
 
     private void OnErrorOccurred(object? sender, IBApiError error)
     {
+        // IB sends informational/warning messages through the same error callback. These
+        // neither refuse a request nor provide terminal order-state evidence.
+        if (error.ErrorCode is 399 or 10167 or 10197 || error.ErrorCode is >= 2100 and < 2200 and not 2102)
+        {
+            _logger.LogInformation("IB message {ErrorCode}: {Message}", error.ErrorCode, error.ErrorMessage);
+            return;
+        }
+
         if (_accountSummaryRequests.TryRemove(error.RequestId, out var collector))
         {
             collector.Completion.TrySetException(new IBApiException(error.ErrorCode, error.ErrorMessage));
             return;
         }
 
-        if (error.RequestId <= 0 || !_submittedOrders.TryGetValue(error.RequestId, out var context))
+        if (error.RequestId < 0 || !_submittedOrders.TryGetValue(error.RequestId, out var context))
             return;
 
+        if (error.ErrorCode == 202)
+        {
+            _latestOrderReports.TryGetValue(error.RequestId, out var latest);
+            OnOrderStatusReceived(sender, new IBOrderStatusUpdate(error.RequestId, "Cancelled",
+                latest?.FilledQuantity ?? 0m, 0m, (double)(latest?.FillPrice ?? 0m), 0d,
+                0L, _client.ClientId, null, null, DateTimeOffset.UtcNow));
+            return;
+        }
+
+        _pendingOrderOperations.TryGetValue(error.RequestId, out var pending);
+        _unconfirmedAmendments.TryGetValue(error.RequestId, out var amendment);
+        // A cancel may follow an amendment whose caller stopped waiting. IB identifies
+        // these refusals by error code even though both use the same stable order ID.
+        var refusedOperation = error.ErrorCode is 161 or 10147 or 10148
+            ? pending?.Kind == PendingOrderOperationKind.Cancel ? pending : null
+            : error.ErrorCode is 104 or 105 or 106 or 107 or 110 or 201 or 2102
+                ? amendment ?? (pending?.Kind == PendingOrderOperationKind.Cancel ? pending : null)
+                : pending?.Kind is PendingOrderOperationKind.Cancel or PendingOrderOperationKind.Modify ? pending : amendment;
+        if (refusedOperation is not null)
+        {
+            RejectPendingOperation(error.RequestId, refusedOperation, context, error.ErrorMessage);
+            return;
+        }
+
+        // An error associated with an old order ID is not proof that a working order
+        // was rejected. Code 201 explicitly reports order rejection; other errors can
+        // reject a pending submission, but cannot terminalize an established order.
+        if (pending?.Kind != PendingOrderOperationKind.Submit && error.ErrorCode != 201)
+        {
+            _logger.LogWarning("IB order {OrderId} message {ErrorCode}: {Message}",
+                error.RequestId, error.ErrorCode, error.ErrorMessage);
+            return;
+        }
+
+        _latestOrderReports.TryGetValue(error.RequestId, out var previous);
         var report = BuildExecutionReport(
             error.RequestId,
             ExecutionReportType.Rejected,
@@ -914,19 +1119,72 @@ public sealed class IBBrokerageGateway :
             context.Symbol,
             context.Side,
             context.Quantity,
-            0m,
-            null,
+            previous?.FilledQuantity ?? 0m,
+            previous?.FillPrice,
             null,
             error.ErrorMessage,
             null,
             DateTimeOffset.UtcNow);
 
         PublishReport(report);
+        _openOrders.TryRemove(error.RequestId, out _);
         CompletePendingOrderOperation(error.RequestId, report);
+    }
+
+    private void RejectPendingOperation(
+        int gatewayOrderId,
+        PendingOrderOperation pending,
+        SubmittedOrderContext context,
+        string reason,
+        decimal? filledQuantity = null,
+        decimal? averageFillPrice = null)
+    {
+        _latestOrderReports.TryGetValue(gatewayOrderId, out var latest);
+        var filled = Math.Max(latest?.FilledQuantity ?? 0m, filledQuantity ?? 0m);
+        var orderQuantity = pending.Kind == PendingOrderOperationKind.Cancel &&
+            _unconfirmedAmendments.TryGetValue(gatewayOrderId, out var amendment) && amendment.ProposedContext is { } proposed
+                ? Math.Max(context.Quantity, proposed.Quantity)
+                : context.Quantity;
+        var status = latest?.OrderStatus ?? pending.PreviousStatus;
+        if (status == OrderStatus.PendingCancel && pending.Kind == PendingOrderOperationKind.Cancel)
+            status = pending.PreviousStatus == OrderStatus.PendingCancel ? OrderStatus.Accepted : pending.PreviousStatus;
+        if (!IsTerminalOrderStatus(status) && status != OrderStatus.PendingCancel)
+            status = filled > 0m ? OrderStatus.PartiallyFilled : status;
+        if (orderQuantity > 0m && filled >= orderQuantity)
+            status = OrderStatus.Filled;
+        var report = BuildExecutionReport(
+            gatewayOrderId,
+            pending.Kind == PendingOrderOperationKind.Cancel
+                ? ExecutionReportType.CancelRejected : ExecutionReportType.ModificationRejected,
+            status, context, context.Symbol, context.Side, orderQuantity, filled,
+            averageFillPrice ?? latest?.FillPrice, null, reason, null, DateTimeOffset.UtcNow,
+            averageFillPrice.HasValue || latest?.FillPriceIsCumulativeAverage == true);
+        if (IsTerminalOrderStatus(status))
+        {
+            _openOrders.TryRemove(gatewayOrderId, out _);
+            _openOrdersSnapshotBuffer?.TryRemove(gatewayOrderId, out _);
+        }
+        else if (_openOrders.TryGetValue(gatewayOrderId, out var openOrder))
+        {
+            var refreshed = openOrder with { Status = status, FilledQuantity = filled };
+            _openOrders[gatewayOrderId] = refreshed;
+            if (_openOrdersSnapshotBuffer is { } snapshot)
+                snapshot[gatewayOrderId] = refreshed;
+        }
+        PublishReport(report);
+        if (pending.Kind == PendingOrderOperationKind.Modify)
+            CompleteAmendment(gatewayOrderId, pending, report);
+        else
+        {
+            RemovePendingOrderOperation(gatewayOrderId, pending);
+            pending.Completion.TrySetResult(report);
+        }
     }
 
     private void PublishReport(ExecutionReport report)
     {
+        if (int.TryParse(report.GatewayOrderId, out var gatewayOrderId))
+            _latestOrderReports[gatewayOrderId] = report;
         if (!_reportChannel.Writer.TryWrite(report))
         {
             _ = _reportChannel.Writer.WriteAsync(report);
@@ -939,6 +1197,14 @@ public sealed class IBBrokerageGateway :
         {
             pending.Completion.TrySetResult(report);
         }
+    }
+
+    private void CompleteAmendment(int gatewayOrderId, PendingOrderOperation amendment, ExecutionReport report)
+    {
+        ((ICollection<KeyValuePair<int, PendingOrderOperation>>)_unconfirmedAmendments)
+            .Remove(new KeyValuePair<int, PendingOrderOperation>(gatewayOrderId, amendment));
+        RemovePendingOrderOperation(gatewayOrderId, amendment);
+        amendment.Completion.TrySetResult(report);
     }
 
     private static ExecutionReport BuildExecutionReport(
@@ -954,7 +1220,8 @@ public sealed class IBBrokerageGateway :
         string? brokerStatus,
         string? rejectReason,
         decimal? commission,
-        DateTimeOffset timestamp)
+        DateTimeOffset timestamp,
+        bool fillPriceIsCumulativeAverage = false)
     {
         var optionContract = context?.OptionContract ?? TryParseOptionContract(context?.Metadata);
         var diagnostics = BuildDiagnostics(brokerStatus, rejectReason);
@@ -969,6 +1236,7 @@ public sealed class IBBrokerageGateway :
             OrderQuantity = quantity,
             FilledQuantity = filledQuantity,
             FillPrice = fillPrice,
+            FillPriceIsCumulativeAverage = fillPriceIsCumulativeAverage,
             Commission = commission,
             RejectReason = rejectReason,
             GatewayOrderId = gatewayOrderId.ToString(),
@@ -987,6 +1255,33 @@ public sealed class IBBrokerageGateway :
         return decimal.TryParse(raw, out var parsed)
             ? parsed
             : null;
+    }
+
+    private static string BuildPositionContractIdentity(IBPositionUpdate update)
+    {
+        var metadata = update.Metadata;
+        var conId = GetMetadata(metadata, "con_id") ?? GetMetadata(metadata, "conId");
+        if (long.TryParse(conId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var contractId) && contractId > 0)
+            return $"con_id:{contractId.ToString(CultureInfo.InvariantCulture)}";
+
+        // Qualified socket callbacks normally contain conId. The full descriptor is a
+        // deterministic fallback for clients without it: a symbol alone cannot identify
+        // strikes, expiries, currencies, or separate instruments sharing an underlying.
+        var strike = GetMetadata(metadata, "strike");
+        if (decimal.TryParse(strike, NumberStyles.Number, CultureInfo.InvariantCulture, out var strikeValue))
+            strike = strikeValue.ToString("G29", CultureInfo.InvariantCulture);
+        var right = GetMetadata(metadata, "right")?.Trim().ToUpperInvariant();
+        right = right is "CALL" ? "C" : right is "PUT" ? "P" : right;
+        var components = new[]
+        {
+            update.SecurityType ?? GetMetadata(metadata, "sec_type"), update.Symbol,
+            GetMetadata(metadata, "local_symbol"), GetMetadata(metadata, "trading_class"),
+            GetMetadata(metadata, "last_trade_date_or_contract_month"), strike, right,
+            GetMetadata(metadata, "multiplier"), update.Currency ?? GetMetadata(metadata, "currency"),
+            GetMetadata(metadata, "primary_exchange") ?? update.Exchange ?? GetMetadata(metadata, "exchange")
+        };
+        return "contract:" + string.Join(":", components.Select(static value =>
+            Uri.EscapeDataString(value?.Trim().ToUpperInvariant() ?? string.Empty)));
     }
 
     private static OptionContractIdentity? TryParseOptionContract(IReadOnlyDictionary<string, string>? metadata)
@@ -1108,7 +1403,9 @@ public sealed class IBBrokerageGateway :
 
     private sealed record PendingOrderOperation(
         PendingOrderOperationKind Kind,
-        TaskCompletionSource<ExecutionReport> Completion);
+        TaskCompletionSource<ExecutionReport> Completion,
+        SubmittedOrderContext? ProposedContext,
+        OrderStatus PreviousStatus);
 
     private enum PendingOrderOperationKind
     {
@@ -1117,7 +1414,7 @@ public sealed class IBBrokerageGateway :
         Cancel
     }
 
-    private readonly record struct AccountPositionKey(string AccountId, string Symbol);
+    private readonly record struct AccountPositionKey(string AccountId, string ContractIdentity);
 
     private sealed record AccountScopedBrokerPosition(
         string AccountId,
