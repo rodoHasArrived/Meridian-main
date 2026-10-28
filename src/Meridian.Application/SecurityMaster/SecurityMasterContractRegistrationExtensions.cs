@@ -19,42 +19,58 @@ public static class SecurityMasterContractRegistrationExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        if (services.Any(descriptor => descriptor.ServiceType == typeof(ISecurityMasterQueryService)))
+        if (services.Any(descriptor => !descriptor.IsKeyedService && descriptor.ServiceType == typeof(ISecurityMasterQueryService)))
         {
-            services.TryAddSingleton<ISecurityIdentityQueryService>(sp =>
+            TryAddAlias<ISecurityIdentityQueryService, ISecurityMasterQueryService>(services, sp =>
                 sp.GetRequiredService<ISecurityMasterQueryService>());
-            services.TryAddSingleton<ISecurityTradingParametersQueryService>(sp =>
+            TryAddAlias<ISecurityTradingParametersQueryService, ISecurityMasterQueryService>(services, sp =>
                 sp.GetRequiredService<ISecurityMasterQueryService>());
-            services.TryAddSingleton<ISecurityCorporateActionsQueryService>(sp =>
+            TryAddAlias<ISecurityCorporateActionsQueryService, ISecurityMasterQueryService>(services, sp =>
                 sp.GetRequiredService<ISecurityMasterQueryService>());
         }
 
-        if (services.Any(descriptor => descriptor.ServiceType == typeof(ISecurityResolver)))
+        if (services.Any(descriptor => !descriptor.IsKeyedService && descriptor.ServiceType == typeof(ISecurityResolver)))
         {
-            services.TryAddSingleton<CanonicalResolver>(sp => sp.GetRequiredService<ISecurityResolver>());
+            TryAddAlias<CanonicalResolver, ISecurityResolver>(services, sp => sp.GetRequiredService<ISecurityResolver>());
         }
-        else if (services.Any(descriptor => descriptor.ServiceType == typeof(CanonicalResolver)))
+        else if (services.Any(descriptor => !descriptor.IsKeyedService && descriptor.ServiceType == typeof(CanonicalResolver)))
         {
-            services.TryAddSingleton<ISecurityResolver>(sp =>
-                sp.GetRequiredService<CanonicalResolver>() is ISecurityResolver legacy
-                    ? legacy
-                    : new SecurityResolverCompatibilityAdapter(sp.GetRequiredService<CanonicalResolver>()));
+            TryAddAlias<ISecurityResolver, CanonicalResolver>(services, sp =>
+            {
+                var canonical = sp.GetRequiredService<CanonicalResolver>();
+                return canonical as ISecurityResolver ?? new SecurityResolverCompatibilityAdapter(canonical);
+            });
         }
 
-        if (services.Any(descriptor => descriptor.ServiceType == typeof(CorporateActions.ILivePositionCorporateActionAdjuster)))
+        if (services.Any(descriptor => !descriptor.IsKeyedService && descriptor.ServiceType == typeof(CorporateActions.ILivePositionCorporateActionAdjuster)))
         {
-            services.TryAddSingleton<CanonicalAdjuster>(sp =>
+            TryAddAlias<CanonicalAdjuster, CorporateActions.ILivePositionCorporateActionAdjuster>(services, sp =>
                 sp.GetRequiredService<CorporateActions.ILivePositionCorporateActionAdjuster>());
         }
-        else if (services.Any(descriptor => descriptor.ServiceType == typeof(CanonicalAdjuster)))
+        else if (services.Any(descriptor => !descriptor.IsKeyedService && descriptor.ServiceType == typeof(CanonicalAdjuster)))
         {
-            services.TryAddSingleton<CorporateActions.ILivePositionCorporateActionAdjuster>(sp =>
-                sp.GetRequiredService<CanonicalAdjuster>() is CorporateActions.ILivePositionCorporateActionAdjuster legacy
-                    ? legacy
-                    : new LivePositionCorporateActionAdjusterAdapter(sp.GetRequiredService<CanonicalAdjuster>()));
+            TryAddAlias<CorporateActions.ILivePositionCorporateActionAdjuster, CanonicalAdjuster>(services, sp =>
+            {
+                var canonical = sp.GetRequiredService<CanonicalAdjuster>();
+                return canonical as CorporateActions.ILivePositionCorporateActionAdjuster
+                    ?? new LivePositionCorporateActionAdjusterAdapter(canonical);
+            });
         }
 
         return services;
+    }
+
+    // Match the last unkeyed registration, which GetRequiredService resolves. A singleton
+    // alias must never capture a host's scoped or transient implementation.
+    private static void TryAddAlias<TAlias, TSource>(
+        IServiceCollection services, Func<IServiceProvider, TAlias> factory)
+        where TAlias : class
+        where TSource : class
+    {
+        var source = services.LastOrDefault(descriptor =>
+            !descriptor.IsKeyedService && descriptor.ServiceType == typeof(TSource));
+        if (source is not null)
+            services.TryAdd(ServiceDescriptor.Describe(typeof(TAlias), sp => factory(sp), source.Lifetime));
     }
 #pragma warning restore CS0618
 }

@@ -34,10 +34,22 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     /// Single-account initialiser for backwards compatibility.
     /// Creates one brokerage account with id <see cref="DefaultAccountId"/>.
     /// </summary>
+#pragma warning disable CS0618
     public PaperTradingPortfolio(
         decimal initialCash,
         Meridian.Ledger.Ledger? ledger = null,
-        ILivePositionCorporateActionAdjuster? corporateActionAdjuster = null,
+        Meridian.Application.SecurityMaster.CorporateActions.ILivePositionCorporateActionAdjuster? corporateActionAdjuster = null,
+        PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo)
+        : this(initialCash, ledger, (ILivePositionCorporateActionAdjuster?)corporateActionAdjuster, lotSelectionMethod)
+    {
+    }
+#pragma warning restore CS0618
+
+    /// <summary>Composes the portfolio through the Contracts-owned adjuster.</summary>
+    public PaperTradingPortfolio(
+        decimal initialCash,
+        Meridian.Ledger.Ledger? ledger,
+        ILivePositionCorporateActionAdjuster? corporateActionAdjuster,
         PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo)
     {
         if (initialCash < 0)
@@ -72,10 +84,22 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     /// <param name="accounts">At least one account must be supplied.</param>
     /// <param name="ledger">Optional shared ledger.</param>
     /// <param name="corporateActionAdjuster">Optional corporate-action adjuster.</param>
+#pragma warning disable CS0618
     public PaperTradingPortfolio(
         IReadOnlyList<AccountDefinition> accounts,
         Meridian.Ledger.Ledger? ledger = null,
-        ILivePositionCorporateActionAdjuster? corporateActionAdjuster = null,
+        Meridian.Application.SecurityMaster.CorporateActions.ILivePositionCorporateActionAdjuster? corporateActionAdjuster = null,
+        PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo)
+        : this(accounts, ledger, (ILivePositionCorporateActionAdjuster?)corporateActionAdjuster, lotSelectionMethod)
+    {
+    }
+#pragma warning restore CS0618
+
+    /// <summary>Composes the portfolio through the Contracts-owned adjuster.</summary>
+    public PaperTradingPortfolio(
+        IReadOnlyList<AccountDefinition> accounts,
+        Meridian.Ledger.Ledger? ledger,
+        ILivePositionCorporateActionAdjuster? corporateActionAdjuster,
         PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo)
     {
         ArgumentNullException.ThrowIfNull(accounts);

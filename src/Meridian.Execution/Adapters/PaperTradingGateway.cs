@@ -115,13 +115,20 @@ public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEv
     /// Optional transaction-cost options. When omitted, the default per-share commission
     /// schedule applies (see <see cref="PaperTradingCostOptions"/>).
     /// </param>
-    /// <param name="securityIdentity">
-    /// Optional identity lookup paired with the trading-parameter query. Aggregate Security
-    /// Master query implementations supply both contracts when this argument is omitted.
-    /// </param>
     public PaperTradingGateway(
         ILogger<PaperTradingGateway> logger,
-        ISecurityTradingParametersQueryService? securityMaster = null,
+        ISecurityMasterQueryService? securityMaster = null,
+        PaperTradingGatewayOptions? options = null,
+        Interfaces.ILiveFeedAdapter? liveFeed = null,
+        PaperTradingCostOptions? costOptions = null)
+        : this(logger, (ISecurityTradingParametersQueryService?)securityMaster, options, liveFeed, costOptions, securityMaster)
+    {
+    }
+
+    /// <summary>Composes the paper gateway through separate query contracts.</summary>
+    public PaperTradingGateway(
+        ILogger<PaperTradingGateway> logger,
+        ISecurityTradingParametersQueryService? securityMaster,
         PaperTradingGatewayOptions? options = null,
         Interfaces.ILiveFeedAdapter? liveFeed = null,
         PaperTradingCostOptions? costOptions = null,

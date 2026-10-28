@@ -194,7 +194,11 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// an original v1 write for that class.
     /// <para>
     /// What remains lost is what the economic-terms document never carried: an option's strike and
-    /// put/call, a swap's legs, a bond's subclass and schedules. Those keys are listed by
+    /// put/call, a swap's legs, a bond's subclass and schedules, the scheduleConventions block
+    /// (whose business-day convention and joint payment calendar the Accrual module carries), and the
+    /// callSchedule and putSchedule arrays (whose dates and prices the Call module's lists carry). The
+    /// readable-only terms travel whole in the retained flat terms until a contract step maps them.
+    /// Those keys are listed by
     /// <see cref="UnrecoverableKeys"/> and the result keeps the <see cref="FlattenedFromMarkerProperty"/>
     /// marker. When <paramref name="assetClass"/> is not a declared class (or is <see langword="null"/>)
     /// this falls back to the class-independent <see cref="Convert(JsonElement)"/>.
@@ -221,7 +225,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
         using var buffer = new MemoryStream();
         using (var writer = new Utf8JsonWriter(buffer))
         {
-            WriteFlatEnvelope(writer, SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion);
+            WriteFlatEnvelope(writer, SecurityAssetClassCatalog.GetTermsVersion(assetClass));
 
             foreach (var mapping in mappings)
             {

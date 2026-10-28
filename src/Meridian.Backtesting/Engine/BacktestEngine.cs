@@ -20,11 +20,23 @@ namespace Meridian.Backtesting.Engine;
 public sealed class BacktestEngine(
     ILogger<BacktestEngine> logger,
     StorageCatalogService catalogService,
-    ISecurityTradingParametersQueryService? securityMasterQueryService = null,
+    ISecurityTradingParametersQueryService? securityMasterQueryService,
     ICorporateActionAdjustmentService? corporateActionAdjustment = null,
     IBacktestPreflightService? backtestPreflightService = null,
     ISecurityIdentityQueryService? securityIdentityQueryService = null)
 {
+    /// <summary>Retains the aggregate-query constructor used by compiled consumers.</summary>
+    public BacktestEngine(
+        ILogger<BacktestEngine> logger,
+        StorageCatalogService catalogService,
+        ISecurityMasterQueryService? securityMasterQueryService = null,
+        ICorporateActionAdjustmentService? corporateActionAdjustment = null,
+        IBacktestPreflightService? backtestPreflightService = null)
+        : this(logger, catalogService, (ISecurityTradingParametersQueryService?)securityMasterQueryService,
+            corporateActionAdjustment, backtestPreflightService, securityMasterQueryService)
+    {
+    }
+
     private readonly ISecurityIdentityQueryService? _securityIdentity =
         securityIdentityQueryService ?? securityMasterQueryService as ISecurityIdentityQueryService;
 

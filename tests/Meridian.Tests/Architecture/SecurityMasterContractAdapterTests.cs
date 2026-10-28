@@ -14,6 +14,55 @@ public sealed class SecurityMasterContractAdapterTests
     private static readonly Guid SecurityId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly DateTimeOffset OpenedAt = new(2026, 1, 5, 12, 0, 0, TimeSpan.Zero);
 
+    [Theory]
+    [InlineData(ServiceLifetime.Singleton, false)]
+    [InlineData(ServiceLifetime.Scoped, false)]
+    [InlineData(ServiceLifetime.Transient, false)]
+    [InlineData(ServiceLifetime.Singleton, true)]
+    [InlineData(ServiceLifetime.Scoped, true)]
+    [InlineData(ServiceLifetime.Transient, true)]
+    public void CompatibilityAliases_PreserveHostLifetimesAcrossScopes(ServiceLifetime lifetime, bool registerLegacy)
+    {
+        var services = new ServiceCollection();
+        services.Add(new ServiceDescriptor(typeof(ISecurityMasterQueryService),
+            _ => NSubstitute.Substitute.For<ISecurityMasterQueryService>(), lifetime));
+        if (registerLegacy)
+        {
+            services.Add(new ServiceDescriptor(typeof(LegacyResolver),
+                _ => new LegacyResolverImplementation(new RecordingResolver()), lifetime));
+            services.Add(new ServiceDescriptor(typeof(LegacyAdjuster), _ => new LegacyQuoteOnlyAdjuster(), lifetime));
+        }
+        else
+        {
+            services.Add(new ServiceDescriptor(typeof(ISecurityResolver), _ => new RecordingResolver(), lifetime));
+            services.Add(new ServiceDescriptor(typeof(ILivePositionCorporateActionAdjuster), _ => new RecordingAdjuster(), lifetime));
+        }
+        services.AddSecurityMasterContractAdapters();
+        var aliases = new[]
+        {
+            typeof(ISecurityIdentityQueryService), typeof(ISecurityTradingParametersQueryService),
+            typeof(ISecurityCorporateActionsQueryService), typeof(ISecurityResolver), typeof(LegacyResolver),
+            typeof(ILivePositionCorporateActionAdjuster), typeof(LegacyAdjuster)
+        };
+        using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });
+        using var first = provider.CreateScope();
+        using var second = provider.CreateScope();
+        foreach (var alias in aliases)
+        {
+            var initial = first.ServiceProvider.GetRequiredService(alias);
+            var repeated = first.ServiceProvider.GetRequiredService(alias);
+            var otherScope = second.ServiceProvider.GetRequiredService(alias);
+            if (lifetime == ServiceLifetime.Transient)
+                repeated.Should().NotBeSameAs(initial);
+            else
+                repeated.Should().BeSameAs(initial);
+            if (lifetime == ServiceLifetime.Singleton)
+                otherScope.Should().BeSameAs(initial);
+            else
+                otherScope.Should().NotBeSameAs(initial);
+        }
+    }
+
     [Fact]
     public void ResolverOnlyHost_DoesNotAdvertiseUnavailableQueryContracts()
     {

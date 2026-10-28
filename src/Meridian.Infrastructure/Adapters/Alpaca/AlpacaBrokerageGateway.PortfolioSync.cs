@@ -1,4 +1,3 @@
-using System.Globalization;
 using Meridian.Execution.Sdk;
 
 namespace Meridian.Infrastructure.Adapters.Alpaca;
@@ -133,7 +132,13 @@ public sealed partial class AlpacaBrokerageGateway
 
     private static void RequirePortfolioDecimal(string? value, string field, List<string> issues)
     {
-        if (!decimal.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out _))
+        if (!ParseNullableDecimal(value).HasValue)
             issues.Add($"Broker {field} was missing or invalid.");
+    }
+
+    private static void RequireOptionalPortfolioDecimal(string? value, string field, List<string> issues)
+    {
+        if (value is not null)
+            RequirePortfolioDecimal(value, field, issues);
     }
 }

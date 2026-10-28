@@ -67,9 +67,20 @@ public sealed class PaperTradingGateway :
         public bool Completed { get; set; }
     }
 
+    /// <summary>Retains the aggregate-query constructor used by compiled consumers.</summary>
     public PaperTradingGateway(
         ILogger<PaperTradingGateway> logger,
-        ISecurityTradingParametersQueryService? securityMaster = null,
+        ISecurityMasterQueryService? securityMaster = null,
+        Adapters.PaperTradingGatewayOptions? options = null,
+        Interfaces.ILiveFeedAdapter? liveFeed = null,
+        PaperTradingCostOptions? costOptions = null)
+        : this(logger, (ISecurityTradingParametersQueryService?)securityMaster, options, liveFeed, costOptions, securityMaster)
+    {
+    }
+
+    public PaperTradingGateway(
+        ILogger<PaperTradingGateway> logger,
+        ISecurityTradingParametersQueryService? securityMaster,
         Adapters.PaperTradingGatewayOptions? options = null,
         Interfaces.ILiveFeedAdapter? liveFeed = null,
         PaperTradingCostOptions? costOptions = null,

@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-10-21
+**Reviewed:** 2026-10-28 (bounded source-owner and Security Master seam refresh)
 
 This map gives maintainers a quick layer-oriented view of Meridian.
 
@@ -27,6 +27,9 @@ flowchart LR
   Application --> Providers["Provider adapters"]
   Application --> Execution["Execution and risk"]
   Application --> Ledger["Ledger and accounting records"]
+  Application --> FinancialOperations["Financial Operations workflows"]
+  Application --> Instruments["Instrument economics and projections"]
+  Application --> ReferenceData["Reference-data catalogs and classification"]
   Application --> Reporting["Reporting and report packs"]
   Application --> Identity["Identity and scoped access"]
   Application --> UiServices["UI services and shared endpoints"]
@@ -49,6 +52,9 @@ flowchart LR
 | Storage | `src/Meridian.Storage` | Preserve WAL and atomic-write durability expectations |
 | Execution/Risk | `src/Meridian.Execution*`, `src/Meridian.Risk` | Isolate broker gateways, paper/live controls, and pre-trade validation |
 | Accounting and Ledger | `src/Meridian.Ledger`, `src/Meridian.FSharp.Ledger` | Own ledger behavior, private-capital fund-event reconstruction, capital-account subledger impact, treasury ledger metadata, and accounting-record boundaries |
+| Financial Operations | `src/Meridian.FinancialOperations` | Own close, reconciliation, accounting-basis workflows, and preparation of governed ledger instructions |
+| Instruments | `src/Meridian.Instruments` | Own instrument economics, Security Master-keyed Asset Operations, cash-flow projections, and factor-paydown projections |
+| Reference Data | `src/Meridian.ReferenceData` | Own asset-class/instrument-kind mapping, profile catalog contracts, and seeded approved asset-profile templates |
 | Reporting | `src/Meridian.Reporting` | Own governed report-pack behavior, report-writer grids, filters, formulas, lineage, publication, restatement, and report-generation semantics |
 | Identity and Access | `src/Meridian.Identity` | Own sessions, role profiles, scoped access, fund/account traversal authorization, and company-scoped user account/profile state |
 | Strategy/Backtesting | `src/Meridian.Strategies`, `src/Meridian.Backtesting*`, `src/Meridian.QuantScript` | Keep strategy lifecycle, replay, and scripting reusable outside UI |
@@ -70,10 +76,16 @@ flowchart LR
   reference. Identity, trading parameters and corporate actions have narrow query interfaces;
   the aggregate query inherits them for existing callers. Application owns implementations and
   deprecated compatibility bridges, with no parallel query interface.
+- Typed schedule generation lives in `src/Meridian.Contracts/SecurityMaster/Schedules/`;
+  open-lot factor-paydown contracts live in `src/Meridian.Contracts/Accounting/Lots/`.
+  `src/Meridian.Instruments/AssetOperations/FactorPaydownProjectionService.cs` projects the economics,
+  and `src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs` prepares the
+  ledger and lot instructions. Application composition registers this preparation service, but no
+  operator route calls it yet; composition does not establish workstation activation.
 - Design tokens and shared UI patterns should come from the Meridian Design
   System or local shared dashboard primitives, not one-off screen styling.
 
-## OMS Runtime Lifecycle
+## OMS Runtime Ownership and Lifecycle
 
 `OrderManagementSystem` implements `IOrderManagementLifecycle`. Construction restores retained
 identity evidence without starting background work. `StartAsync` starts gateway-report intake and
@@ -84,8 +96,41 @@ A stopped instance cannot restart.
 
 `AddBrokerageExecution` registers the hosted lifecycle owner for the resolved `IOrderManager`.
 Direct callers must start the OMS explicitly and await stop/disposal before releasing its gateway
-or accounting dependencies. Order transitions, risk checks, fill booking, and persistence remain
-in their existing owners pending the larger OMS decomposition.
+or accounting dependencies.
+
+Internal collaborators under `Meridian.Execution/OrderManagement` now own bounded parts of the
+runtime. The facade retains public commands, live order state and sidecars, the shared broker-report
+and pre-trade admission gates, and command/risk-reservation/amendment/cancellation/kill-switch
+coordination.
+
+```mermaid
+flowchart LR
+  OMS["OMS facade and lifecycle"] --> Policy["OrderAdmissionPolicy / OrderRiskSizingPolicy"]
+  OMS --> Recovery["OrderBrokerIdentityIndex / BrokerageOrderRecoveryJournal"]
+  OMS --> Fills["OrderFillProcessor"]
+  Fills --> Context["OrderFillContext: read-only state access"]
+  Fills --> Accounting["AccountingHandoffCoordinator"]
+  Fills --> Reports["ExecutionReportHub"]
+  Fills --> Audit["OrderExecutionAudit / OrderAuditMetadata"]
+  Reports --> Failure["ExecutionFailureState"]
+  OMS --> Failure
+  OMS --> Audit
+```
+
+The recovery journal owns durable checkpoints, permanent dispatched identities, tombstones, and
+the recovery-version lock; the identity index owns active broker IDs and replacement aliases.
+The fill processor owns progress and pending exposure while reading order ownership/sizing
+through `OrderFillContext`. Accounting acceptance and replay belong to the handoff coordinator;
+subscriber delivery and observer publication belong to the report hub. Admission and delivery
+share the first terminal consumer failure. Audit helpers consume explicit snapshots.
+
+The facade's shared report gate still protects live reports, recovery, amendment resolution, and
+retention. The journal's guarded compaction persists the tombstone and performs expected-state
+removal under one recovery lock; the facade then removes sidecars. Existing APIs, persistence
+formats, alias and fill identity rules, effect ordering, and shutdown drain semantics are
+preserved. These are scoped ownership boundaries, with command coordination still in the facade;
+see the [execution module README](../../src/Meridian.Execution/README.md#oms-ownership) for the
+detailed ownership map.
 
 ## Operational Record Boundaries
 

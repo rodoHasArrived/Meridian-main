@@ -26,6 +26,8 @@ project reference. The engine accepts separate identity and trading-parameter qu
 `CorporateActionAdjustmentService` requires only the resolver and corporate-action query interface
 and implements the canonical live-position adjuster. Existing aggregate query callers retain the
 identity fallback, while hosts can compose the narrow services independently.
+The original aggregate-query constructor remains available with its original CLR signature and
+optional arguments for existing compiled callers.
 
 ## Key folders and files
 

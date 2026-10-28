@@ -148,7 +148,7 @@ public sealed class PaperTradingPortfolioBasisParityTests
     [Fact]
     public async Task NativeSplit_BelowQuantityPrecision_RefusesWithoutDiscardingBasis()
     {
-        var portfolio = new PaperTradingPortfolio(1m, corporateActionAdjuster: Adjuster(Action("StockSplit", splitRatio: 0.1m)));
+        var portfolio = new PaperTradingPortfolio(1m, ledger: null, corporateActionAdjuster: Adjuster(Action("StockSplit", splitRatio: 0.1m)));
         portfolio.ApplyFill(Fill(OrderSide.Buy, 0.0000000000000000000000000001m, 1m, 0));
         var original = portfolio.GetPositionLots("BASIS");
 
@@ -187,7 +187,7 @@ public sealed class PaperTradingPortfolioBasisParityTests
     public async Task AdjustmentAwaitingCompletion_DoesNotReplaceANewerLotBook(bool replacePosition)
     {
         var adjuster = new DeferredAdjuster();
-        var portfolio = new PaperTradingPortfolio(10m, corporateActionAdjuster: adjuster);
+        var portfolio = new PaperTradingPortfolio(10m, ledger: null, corporateActionAdjuster: adjuster);
         portfolio.ApplyFill(Fill(OrderSide.Buy, 1m, 1m, 0));
         var pending = portfolio.ApplyCorporateActionsAsync("BASIS", OpenedAt);
         await adjuster.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
