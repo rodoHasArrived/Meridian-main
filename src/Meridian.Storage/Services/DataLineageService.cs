@@ -403,6 +403,9 @@ public interface IDataLineageService
 }
 
 // Lineage types
+/// <summary>
+/// Captures a file's ingestion, transformation, migration, and upstream or downstream lineage.
+/// </summary>
 public sealed class LineageGraph
 {
     public string FilePath { get; set; } = string.Empty;

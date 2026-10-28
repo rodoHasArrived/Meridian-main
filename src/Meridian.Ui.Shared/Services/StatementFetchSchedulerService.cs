@@ -62,6 +62,9 @@ public sealed class StatementFetchSchedulerService(
     }
 }
 
+/// <summary>
+/// Registers the statement fetch scheduler as a shared singleton and hosted service.
+/// </summary>
 public static class StatementFetchSchedulerServiceCollectionExtensions
 {
     public static IServiceCollection AddStatementFetchSchedulerHostedService(this IServiceCollection services)

@@ -9,6 +9,9 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Storage.Ledger;
 
+/// <summary>
+/// Appends and queries ledger journal entries and persists ledger books and periods.
+/// </summary>
 public interface ILedgerJournalStore
 {
     Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default);
@@ -132,6 +135,9 @@ public interface ILedgerJournalStore
             new NotSupportedException("This ledger journal store does not support atomic tax-lot authority reads."));
 }
 
+/// <summary>
+/// Hard-closes accounting periods while atomically validating balances and retaining the close event.
+/// </summary>
 public interface IAtomicLedgerPeriodCloseStore
 {
     /// <summary>
@@ -146,6 +152,9 @@ public interface IAtomicLedgerPeriodCloseStore
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Appends ledger journal entries within a caller-owned PostgreSQL transaction.
+/// </summary>
 public interface ITransactionalLedgerJournalStore :
     ILedgerJournalStore,
     IAtomicLedgerPeriodCloseStore

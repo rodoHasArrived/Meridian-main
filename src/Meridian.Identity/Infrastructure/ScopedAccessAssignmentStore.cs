@@ -8,12 +8,14 @@ using Npgsql;
 
 namespace Meridian.Identity;
 
+/// <summary>Configures the PostgreSQL connection and schema used for scoped access assignments.</summary>
 public sealed class ScopedAccessStoreOptions
 {
     public string ConnectionString { get; init; } = string.Empty;
     public string Schema { get; init; } = "identity_access";
 }
 
+/// <summary>Persists and retrieves scoped user access assignments and their mutations.</summary>
 public interface IScopedAccessAssignmentStore
 {
     Task<IReadOnlyList<UserAccessAssignmentDto>> ListAsync(CancellationToken ct = default);
@@ -28,6 +30,7 @@ public interface IScopedAccessAssignmentStore
         CancellationToken ct = default);
 }
 
+/// <summary>Stores scoped access assignments in a local JSON file.</summary>
 public sealed class FileScopedAccessAssignmentStore : IScopedAccessAssignmentStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
@@ -158,6 +161,7 @@ public sealed class FileScopedAccessAssignmentStore : IScopedAccessAssignmentSto
     private sealed record ScopedAccessAssignmentSnapshot(IReadOnlyList<UserAccessAssignmentDto> Assignments);
 }
 
+/// <summary>Stores scoped access assignments in PostgreSQL using the configured identity schema.</summary>
 public sealed class PostgresScopedAccessAssignmentStore : IScopedAccessAssignmentStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)

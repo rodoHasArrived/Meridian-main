@@ -3,6 +3,9 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.Infrastructure.Reconciliation;
 
+/// <summary>
+/// Normalizes broker statement fields into canonical rows according to their statement row kind.
+/// </summary>
 public sealed class BrokerStatementNormalizer
 {
     public NormalizedStatementRow Normalize(string rowId, StatementRowKind kind, IDictionary<string, string> fields)

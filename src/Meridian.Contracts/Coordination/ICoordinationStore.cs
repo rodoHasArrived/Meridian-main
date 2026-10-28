@@ -1,5 +1,8 @@
 namespace Meridian.Contracts.Coordination;
 
+/// <summary>
+/// Persists resource leases and coordinates acquisition, renewal, release, and fenced execution.
+/// </summary>
 public interface ICoordinationStore
 {
     Task<LeaseAcquireResult> TryAcquireLeaseAsync(

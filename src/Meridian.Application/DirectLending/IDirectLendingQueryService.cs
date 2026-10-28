@@ -3,6 +3,9 @@ using Meridian.Storage.DirectLending;
 
 namespace Meridian.Application.DirectLending;
 
+/// <summary>
+/// Reads loan contracts, servicing projections, and retained event history.
+/// </summary>
 public interface IDirectLendingQueryService
 {
     Task<LoanContractDetailDto?> GetLoanAsync(Guid loanId, CancellationToken ct = default);

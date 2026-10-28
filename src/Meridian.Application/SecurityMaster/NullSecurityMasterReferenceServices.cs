@@ -55,6 +55,9 @@ public sealed class NullSecurityMasterPricingService : ISecurityMasterPricingSer
         => Task.FromResult<IReadOnlyList<SecurityClosePriceSetDto>>(Array.Empty<SecurityClosePriceSetDto>());
 }
 
+/// <summary>
+/// Supplies unavailable cash-flow results and refuses unsupported cash-flow mutations.
+/// </summary>
 public sealed class NullSecurityMasterCashFlowService : ISecurityMasterCashFlowService
 {
     public Task<SecurityCashFlowSourceDto?> GetCashFlowSourceAsync(
@@ -80,6 +83,9 @@ public sealed class NullSecurityMasterCashFlowService : ISecurityMasterCashFlowS
             securityId, "Security Master is not configured; no cash flow projections are available to post."));
 }
 
+/// <summary>
+/// Supplies empty entitlement reads and refuses entitlement mutations when storage is unavailable.
+/// </summary>
 public sealed class NullDataVendorEntitlementService : IDataVendorEntitlementService
 {
     private static readonly IReadOnlyList<DataVendorEntitlementDto> _empty =
@@ -102,6 +108,9 @@ public sealed class NullDataVendorEntitlementService : IDataVendorEntitlementSer
             "Security Master is not configured. Set MERIDIAN_SECURITY_MASTER_CONNECTION_STRING to enable data vendor entitlement management.");
 }
 
+/// <summary>
+/// Returns no retained quality report and rejects quality checks when Security Master is unavailable.
+/// </summary>
 public sealed class NullSecurityMasterDataQualityService : ISecurityMasterDataQualityService
 {
     public Task<SecurityMasterQualityReportDto> RunQualityChecksAsync(CancellationToken ct = default)
@@ -112,6 +121,9 @@ public sealed class NullSecurityMasterDataQualityService : ISecurityMasterDataQu
         => Task.FromResult<SecurityMasterQualityReportDto?>(null);
 }
 
+/// <summary>
+/// Rejects structured-credit reclassification reports when Security Master is unavailable.
+/// </summary>
 public sealed class NullSecurityMasterStructuredCreditReclassificationService : ISecurityMasterStructuredCreditReclassificationService
 {
     public Task<StructuredCreditReclassificationReportDto> BuildReportAsync(CancellationToken ct = default)

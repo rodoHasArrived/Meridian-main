@@ -12,6 +12,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Coordinates Plaid linking, institution search, item discovery, and account synchronization.
+/// </summary>
 public sealed class PlaidWorkstationService : IPlaidIngestionService, IPlaidTransferService
 {
     private const string ProviderId = "plaid";

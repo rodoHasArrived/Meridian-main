@@ -7,6 +7,9 @@ public sealed record EvidencePacketValidationResult(
     EvidenceCompletenessDto Completeness,
     IReadOnlyList<string> Warnings);
 
+/// <summary>
+/// Checks evidence graph integrity, required nodes, and freshness against packet requirements.
+/// </summary>
 public sealed class EvidencePacketValidationService
 {
     private static readonly EvidenceSlaPolicyDto[] DefaultSlaPolicies =

@@ -1,5 +1,8 @@
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Queries equity reference projections by security, exchange, and issuer.
+/// </summary>
 public interface IEquityReferenceProjectionStore
 {
     Task<EquityProjectionRow?> GetEquityAsync(Guid securityId, CancellationToken ct = default);

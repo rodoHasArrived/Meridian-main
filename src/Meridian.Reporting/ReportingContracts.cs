@@ -226,6 +226,7 @@ public sealed record ReportingRunCreateClaimResult(
     DateTimeOffset? LeaseExpiresAtUtc = null,
     long LeaseVersion = 0);
 
+/// <summary>Indicates that a reporting run creation claim could not be used for the specified tenant and run.</summary>
 public sealed class ReportingRunCreateClaimException : InvalidOperationException
 {
     public ReportingRunCreateClaimException(
@@ -243,6 +244,7 @@ public sealed class ReportingRunCreateClaimException : InvalidOperationException
     public string RunId { get; }
 }
 
+/// <summary>Stores reporting run manifests and audit trails, including tenant-scoped reads and creation claims.</summary>
 public interface IReportingRunStore
 {
     IReadOnlyList<ReportingRunSnapshot> ListRuns(int limit = 25);
@@ -508,6 +510,7 @@ public interface IReportingRunStore
     }
 }
 
+/// <summary>Computes deterministic reporting run revisions from manifest and audit-trail content.</summary>
 public static class ReportingRunStoreRevision
 {
     private static readonly JsonSerializerOptions JsonOptions =
@@ -598,6 +601,7 @@ public static class ReportingRunStoreRevision
         IReadOnlyList<ReportingRunAuditEntry> AuditTrail);
 }
 
+/// <summary>Reports a reporting run revision conflict with the expected and actual revisions.</summary>
 public sealed class ReportingRunConcurrencyException : InvalidOperationException
 {
     private ReportingRunConcurrencyException(

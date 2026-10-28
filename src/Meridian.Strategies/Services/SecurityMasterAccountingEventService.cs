@@ -6,11 +6,13 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.Strategies.Services;
 
+/// <summary>Generates accounting events and issues from Security Master evidence for a requested period.</summary>
 public interface ISecurityMasterAccountingEventService
 {
     SecurityMasterAccountingEventResult Generate(SecurityMasterAccountingEventRequest request);
 }
 
+/// <summary>Builds period accounting-event requests from strategy, Security Master, and asset-operations evidence.</summary>
 public interface ISecurityMasterAccountingEventSourceAdapter
 {
     Task<SecurityMasterAccountingEventRequest?> BuildRequestAsync(
@@ -135,6 +137,7 @@ public sealed record SecurityMasterAccountingEventResult(
     IReadOnlyList<ExpectedJournalPreviewDto> JournalPreviews,
     IReadOnlyList<SecurityMasterAccountingIssueDto> Issues);
 
+/// <summary>Indicates that no Security Master accounting-event request is available from the configured source.</summary>
 public sealed class NullSecurityMasterAccountingEventSourceAdapter : ISecurityMasterAccountingEventSourceAdapter
 {
     public Task<SecurityMasterAccountingEventRequest?> BuildRequestAsync(
@@ -148,6 +151,7 @@ public sealed class NullSecurityMasterAccountingEventSourceAdapter : ISecurityMa
     }
 }
 
+/// <summary>Generates Security Master accounting projections and related validation issues for a reporting period.</summary>
 public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccountingEventService
 {
     private readonly IFactorPaydownProjectionService _factorPaydownProjector;

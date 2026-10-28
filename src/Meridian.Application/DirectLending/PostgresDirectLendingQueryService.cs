@@ -3,6 +3,9 @@ using Meridian.Storage.DirectLending;
 
 namespace Meridian.Application.DirectLending;
 
+/// <summary>
+/// Reads durable loan projections and reconstructs loan state from retained history.
+/// </summary>
 public sealed partial class PostgresDirectLendingQueryService : IDirectLendingQueryService
 {
     private readonly IDirectLendingStateStore _stateStore;

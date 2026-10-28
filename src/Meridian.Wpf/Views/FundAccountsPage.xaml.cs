@@ -4,6 +4,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Provides the desktop page to inspect account balances, routing, and reconciliation readiness.
+/// </summary>
 public partial class FundAccountsPage : Page
 {
     private readonly FundAccountsViewModel _viewModel;

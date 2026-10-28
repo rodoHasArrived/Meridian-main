@@ -9,6 +9,9 @@ using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Exposes bindable state and commands to review journal, account, and accounting readiness in one view.
+/// </summary>
 public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 {
     private readonly FundLedgerReadService _fundLedgerReadService;

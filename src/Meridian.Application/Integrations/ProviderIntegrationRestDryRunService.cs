@@ -10,6 +10,9 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.Application.Integrations;
 
+/// <summary>
+/// Defines the HTTP request and response boundary used by provider integration dry runs.
+/// </summary>
 public interface IProviderIntegrationHttpTransport
 {
     Task<ProviderIntegrationHttpResponse> SendAsync(
@@ -30,6 +33,9 @@ public sealed record ProviderIntegrationHttpResponse(
     IReadOnlyDictionary<string, string> Headers,
     string Body);
 
+/// <summary>
+/// Fetches and validates REST source data against an integration manifest without activation.
+/// </summary>
 public sealed class ProviderIntegrationRestDryRunService
 {
     private const int MaximumDryRunRecords = 10_000;

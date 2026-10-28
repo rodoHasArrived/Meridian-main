@@ -21,6 +21,9 @@ public sealed record ReconciliationRolloutTarget(
     string Team,
     string Counterparty);
 
+/// <summary>
+/// Controls reconciliation rollout by client, team, and counterparty membership.
+/// </summary>
 public sealed class ReconciliationFeatureFlagPolicy
 {
     private readonly HashSet<string> _enabledClients = new(StringComparer.OrdinalIgnoreCase);

@@ -8,6 +8,9 @@ using Meridian.Storage.Archival;
 
 namespace Meridian.Application.SecurityMaster.Validation;
 
+/// <summary>
+/// Records retained snapshots of Security Master validation evidence.
+/// </summary>
 public interface ISecurityValidationSnapshotStore
 {
     Task<SecurityValidationSnapshotDto> RecordAsync(
@@ -76,6 +79,9 @@ public sealed class FileSecurityValidationSnapshotStore : ISecurityValidationSna
     }
 }
 
+/// <summary>
+/// Returns validation snapshot results without retaining them in durable storage.
+/// </summary>
 public sealed class NullSecurityValidationSnapshotStore : ISecurityValidationSnapshotStore
 {
     public Task<SecurityValidationSnapshotDto> RecordAsync(

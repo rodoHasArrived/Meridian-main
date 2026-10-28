@@ -11,6 +11,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Evidence;
 
+/// <summary>
+/// Registers evidence artifact storage and the services that assemble workflow evidence.
+/// </summary>
 public static class EvidenceWorkflowServiceCollectionExtensions
 {
     /// <summary>Registers the shared evidence store and host-configured storage limits for browser and desktop hosts.</summary>

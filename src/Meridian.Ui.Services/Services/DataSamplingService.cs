@@ -372,6 +372,9 @@ public sealed class DataSamplingService
 }
 
 
+/// <summary>
+/// Supplies sampling progress, the current symbol, and processed record count.
+/// </summary>
 public sealed class SamplingProgressEventArgs : EventArgs
 {
     public double Progress { get; set; }
@@ -396,6 +399,9 @@ public enum SamplingStrategyType : byte
 
 
 
+/// <summary>
+/// Configures sampling scope, strategy, reproducibility seed, and output artifact settings.
+/// </summary>
 public sealed class SamplingOptions
 {
     public string? Name { get; set; }
@@ -414,6 +420,9 @@ public sealed class SamplingOptions
     public bool IncludeStatistics { get; set; } = true;
 }
 
+/// <summary>
+/// Reports sampling success, output location, record counts, statistics, and elapsed duration.
+/// </summary>
 public sealed class SamplingResult
 {
     public bool Success { get; set; }
@@ -427,6 +436,9 @@ public sealed class SamplingResult
     public int? Seed { get; set; }
 }
 
+/// <summary>
+/// Summarizes sampled records by symbol and event type with price, volume, and time coverage.
+/// </summary>
 public sealed class SampleStatistics
 {
     public Dictionary<string, long>? RecordsBySymbol { get; set; }
@@ -438,6 +450,9 @@ public sealed class SampleStatistics
     public TimeSpan TimeSpanCovered { get; set; }
 }
 
+/// <summary>
+/// Describes a sampling method and the size, interval, and distribution controls it supports.
+/// </summary>
 public sealed class SamplingStrategy
 {
     public SamplingStrategyType Id { get; set; }
@@ -450,6 +465,9 @@ public sealed class SamplingStrategy
     public string Icon { get; set; } = "\uE8A5";
 }
 
+/// <summary>
+/// Provides a reusable sampling configuration with strategy, size, filters, and seed.
+/// </summary>
 public sealed class SamplingPreset
 {
     public string Name { get; set; } = string.Empty;
@@ -463,6 +481,9 @@ public sealed class SamplingPreset
     public bool IncludeStatistics { get; set; }
 }
 
+/// <summary>
+/// Reports estimated sample size, artifact bytes, and execution duration or an estimation error.
+/// </summary>
 public sealed class SampleEstimate
 {
     public bool Success { get; set; }
@@ -473,6 +494,9 @@ public sealed class SampleEstimate
     public double EstimatedDurationSeconds { get; set; }
 }
 
+/// <summary>
+/// Describes a retained sample artifact, its strategy, record count, symbols, and date range.
+/// </summary>
 public sealed class SavedSample
 {
     public string Id { get; set; } = string.Empty;
@@ -487,6 +511,9 @@ public sealed class SavedSample
     public DateOnly? ToDate { get; set; }
 }
 
+/// <summary>
+/// Collects errors and warnings from validating sampling options.
+/// </summary>
 public sealed class SamplingValidationResult
 {
     public bool IsValid { get; set; }
@@ -496,6 +523,9 @@ public sealed class SamplingValidationResult
 
 
 
+/// <summary>
+/// Carries API sample output details, record counts, statistics, and duration in seconds.
+/// </summary>
 public sealed class SamplingResponse
 {
     public bool Success { get; set; }
@@ -508,6 +538,9 @@ public sealed class SamplingResponse
     public int? Seed { get; set; }
 }
 
+/// <summary>
+/// Carries API estimates for source records, sampled records, output bytes, and duration.
+/// </summary>
 public sealed class SampleEstimateResponse
 {
     public long TotalSourceRecords { get; set; }
@@ -516,11 +549,17 @@ public sealed class SampleEstimateResponse
     public double EstimatedDurationSeconds { get; set; }
 }
 
+/// <summary>
+/// Carries the API collection of retained sample artifacts.
+/// </summary>
 public sealed class SavedSamplesResponse
 {
     public List<SavedSample>? Samples { get; set; }
 }
 
+/// <summary>
+/// Carries the API success flag for deleting a retained sample.
+/// </summary>
 public sealed class SamplingDeleteResponse
 {
     public bool Success { get; set; }

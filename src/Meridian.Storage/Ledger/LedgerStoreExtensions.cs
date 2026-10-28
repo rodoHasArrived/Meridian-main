@@ -5,6 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Storage.Ledger;
 
+/// <summary>
+/// Registers the PostgreSQL ledger journal store and its dependencies with dependency injection.
+/// </summary>
 public static class LedgerStoreExtensions
 {
     public static IServiceCollection AddLedgerJournalStore(this IServiceCollection services, string connStr)

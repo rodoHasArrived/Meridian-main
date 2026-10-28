@@ -12,6 +12,9 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Evidence;
 
+/// <summary>
+/// Stores and retrieves retained evidence artifacts, scoped documents, and their review history.
+/// </summary>
 public interface IEvidenceArtifactStore
 {
     Task<EvidencePacketExportResponse> WriteManifestAsync(
@@ -118,6 +121,9 @@ public sealed record EvidenceManifestFile(
     string ContentType,
     string FileName,
     DateTimeOffset LastModified);
+/// <summary>
+/// Retains evidence content, manifests, document reviews, and exports in file-backed storage.
+/// </summary>
 public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
 {
     private const string ManifestRelativeRoot = "workstation/evidence/";

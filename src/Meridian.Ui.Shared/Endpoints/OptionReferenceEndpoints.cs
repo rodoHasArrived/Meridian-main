@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps option reference queries to the shared HTTP API.
+/// </summary>
 public static class OptionReferenceEndpoints
 {
     public static void MapOptionReferenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)

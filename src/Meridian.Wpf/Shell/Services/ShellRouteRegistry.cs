@@ -3,6 +3,9 @@ using Meridian.Wpf.Shell.Models;
 
 namespace Meridian.Wpf.Shell.Services;
 
+/// <summary>
+/// Indexes desktop routes and aliases for canonical page and workspace lookup.
+/// </summary>
 public sealed class ShellRouteRegistry : IShellRouteRegistry
 {
     private readonly IShellPageRegistry _pageRegistry;

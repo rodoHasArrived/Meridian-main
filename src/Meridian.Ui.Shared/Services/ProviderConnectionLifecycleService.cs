@@ -10,6 +10,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Manages tenant-visible provider connections, credential mutations, and live verification requests.
+/// </summary>
 public sealed class ProviderConnectionLifecycleService
 {
     private const string AlpacaPaperTradingApiEndpoint = "https://paper-api.alpaca.markets/v2";

@@ -5,6 +5,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
+/// <summary>
+/// Compares observed provider data with the configured schema and retains drift results.
+/// </summary>
 public sealed class ProviderIntegrationSchemaDriftService
 {
     private readonly ILogger<ProviderIntegrationSchemaDriftService> logger;

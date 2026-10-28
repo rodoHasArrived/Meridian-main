@@ -5,6 +5,9 @@ using Meridian.Storage.Services;
 
 namespace Meridian.Application.ProviderRouting;
 
+/// <summary>
+/// Selects a provider route for a request, including tenant-scoped routing.
+/// </summary>
 public interface IBestOfBreedProviderSelector
 {
     Task<ProviderRouteResult> SelectAsync(ProviderRouteContext context, CancellationToken ct = default);
@@ -12,6 +15,9 @@ public interface IBestOfBreedProviderSelector
         => throw new NotSupportedException("Tenant-scoped provider selection is unavailable.");
 }
 
+/// <summary>
+/// Selects provider routes using configured capability, preference, and availability evidence.
+/// </summary>
 public sealed class BestOfBreedProviderSelector : IBestOfBreedProviderSelector
 {
     private const double HealthWeight = 0.35;

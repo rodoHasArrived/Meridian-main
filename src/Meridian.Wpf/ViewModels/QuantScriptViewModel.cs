@@ -17,6 +17,9 @@ using Palette = Meridian.Ui.Services.Services.ColorPalette;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Exposes bindable state and commands to configure and run quantitative scripts for strategy research.
+/// </summary>
 public sealed class QuantScriptViewModel : BindableBase, IDisposable
 {
     private const int ChartsTabIndex = 0;

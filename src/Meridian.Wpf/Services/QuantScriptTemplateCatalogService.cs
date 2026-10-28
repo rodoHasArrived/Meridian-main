@@ -6,6 +6,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Lists and loads QuantScript starter templates from the configured template directory.
+/// </summary>
 public sealed class QuantScriptTemplateCatalogService
 {
     private readonly ILogger<QuantScriptTemplateCatalogService> _logger;

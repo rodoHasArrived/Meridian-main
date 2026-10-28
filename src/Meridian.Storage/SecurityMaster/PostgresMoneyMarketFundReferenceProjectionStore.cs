@@ -3,6 +3,9 @@ using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Reads money market fund reference projections from PostgreSQL by security, family, and sweep eligibility.
+/// </summary>
 public sealed class PostgresMoneyMarketFundReferenceProjectionStore : IMoneyMarketFundReferenceProjectionStore
 {
     internal const string AssetClass = "MoneyMarketFund";

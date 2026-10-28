@@ -3,6 +3,9 @@ using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Reads futures reference projections from PostgreSQL by security and root symbol.
+/// </summary>
 public sealed class PostgresFutureReferenceProjectionStore : IFutureReferenceProjectionStore
 {
     internal const string AssetClass = "Future";

@@ -6,6 +6,9 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.AccountingClose;
 
+/// <summary>
+/// Validates and retains journal entries in process and supplies posting results and replay views.
+/// </summary>
 public sealed class AccountingPostingService
 {
     private readonly ConcurrentDictionary<string, ImmutableArray<JournalEntry>> _journals = new(StringComparer.OrdinalIgnoreCase);
@@ -127,6 +130,9 @@ public sealed class AccountingPostingService
         => string.IsNullOrWhiteSpace(currency) ? "UNSPECIFIED" : currency.Trim().ToUpperInvariant();
 }
 
+/// <summary>
+/// Translates ledger balances and produces foreign-exchange translation adjustments.
+/// </summary>
 public sealed class FxTranslationService
 {
     public TranslationAdjustment Translate(
@@ -185,6 +191,9 @@ public sealed class FxTranslationService
     }
 }
 
+/// <summary>
+/// Derives the next close-period state from retained evidence and trial-balance status.
+/// </summary>
 public sealed class MonthEndCloseStateMachine
 {
     public ClosePeriod Transition(ClosePeriod current, CloseEvidence evidence, bool isTrialBalanceBalanced)
@@ -248,6 +257,9 @@ public sealed class MonthEndCloseStateMachine
     }
 }
 
+/// <summary>
+/// Builds a close evidence package from the period's accounting and review evidence.
+/// </summary>
 public sealed class CloseEvidencePackageService
 {
     public CloseEvidencePackage Build(
@@ -435,6 +447,9 @@ public sealed class CloseEvidencePackageService
     }
 }
 
+/// <summary>
+/// Builds trial-balance and roll-forward projections and checks debit-credit balance.
+/// </summary>
 public sealed class TrialBalanceProjectionService
 {
     public ImmutableArray<TrialBalanceLine> BuildTrialBalance(

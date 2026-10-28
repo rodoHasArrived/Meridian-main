@@ -12,6 +12,9 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.AccountingClose;
 
+/// <summary>
+/// Defines creation, listing, and certification of accounting report packages.
+/// </summary>
 public interface IAccountingReportPackageService
 {
     Task<AccountingReportPackageBundleDto> BuildPackageAsync(
@@ -39,6 +42,9 @@ public interface IAccountingReportPackageService
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Builds and retains accounting report packages and their certification state.
+/// </summary>
 public sealed class AccountingReportPackageService : IAccountingReportPackageService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)

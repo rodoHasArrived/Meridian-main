@@ -9,6 +9,7 @@ using Meridian.FSharp.Ledger;
 
 namespace Meridian.Strategies.Services;
 
+/// <summary>Assembles strategy reconciliation sources, computes checks, and retains verified run results.</summary>
 public sealed class ReconciliationRunService : IReconciliationRunService
 {
     private readonly StrategyRunReadService _runReadService;

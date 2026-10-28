@@ -19,6 +19,9 @@ public sealed record InstrumentPositionProjectionSnapshot(
     public DateOnly? AsOfDate { get; init; }
 }
 
+/// <summary>
+/// Reads instrument position snapshots and maintains security and book position projections.
+/// </summary>
 public interface IInstrumentPositionProjectionStore
 {
     Task<InstrumentPositionProjectionSnapshot> GetSecurityAsync(

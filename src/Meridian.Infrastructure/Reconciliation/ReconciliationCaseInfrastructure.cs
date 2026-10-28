@@ -6,6 +6,9 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.Infrastructure.Reconciliation;
 
+/// <summary>
+/// Retains reconciliation cases and their run and casework projections.
+/// </summary>
 public interface IReconciliationCaseStore
 {
     Task SaveAsync(ReconciliationCase reconciliationCase, CancellationToken ct = default);
@@ -49,6 +52,9 @@ public interface IReconciliationCaseStore
         => Task.FromResult<ReconciliationCaseAuditEvent?>(null);
 }
 
+/// <summary>
+/// Persists reconciliation cases and their audit-backed projections in JSON files.
+/// </summary>
 public sealed class JsonReconciliationCaseStore : IReconciliationCaseStore
 {
     private readonly IAtomicFileWriter _atomicFileWriter;
@@ -551,6 +557,9 @@ public sealed class JsonReconciliationCaseStore : IReconciliationCaseStore
         ReconciliationCaseHistoryEntry? LatestHistory);
 }
 
+/// <summary>
+/// Creates reconciliation cases from match outcomes and records status and assignment changes.
+/// </summary>
 public sealed class ReconciliationCaseService : IReconciliationCaseService
 {
     private readonly IReconciliationCaseStore _store;

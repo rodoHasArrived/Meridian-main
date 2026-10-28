@@ -20,6 +20,9 @@ using WpfCredentialService = Meridian.Wpf.Services.CredentialService;
 
 namespace Meridian.Wpf.Features.Settings;
 
+/// <summary>
+/// Registers settings desktop services and contributes the feature's navigation pages and workspace metadata.
+/// </summary>
 public sealed class SettingsFeatureModule : IDesktopFeatureModule
 {
     private static readonly IReadOnlyList<ShellPageDescriptor> Pages =

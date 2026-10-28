@@ -5,6 +5,9 @@ using Meridian.Contracts.DirectLending;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Builds direct-lending operational projections from loan accounting and reconciliation evidence.
+/// </summary>
 public sealed class DirectLendingOperationsReadService
 {
     private readonly IDirectLendingService? _directLendingService;

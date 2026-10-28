@@ -1,5 +1,8 @@
 namespace Meridian.Mcp.Tools;
 
+/// <summary>
+/// Provides MCP tools for retrieving provider templates and implementation guidance.
+/// </summary>
 [McpServerToolType]
 public sealed class ProviderTools(RepoPathService repo)
 {

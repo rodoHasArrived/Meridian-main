@@ -4,6 +4,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Provides the desktop page to replay event streams to review sequence and signal behavior.
+/// </summary>
 public partial class EventReplayPage : Page
 {
     private readonly EventReplayViewModel _viewModel = new();

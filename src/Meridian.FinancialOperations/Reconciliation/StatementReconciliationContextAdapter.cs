@@ -1,5 +1,9 @@
 namespace Meridian.FinancialOperations.Reconciliation;
 
+/// <summary>
+/// Adapts statement validation, data ingestion, and case intake to the reconciliation context
+/// contracts.
+/// </summary>
 public sealed class StatementReconciliationContextAdapter(StatementReconciliationService service)
     : IStatementReconciliationValidationService, IDataIntegrationIngestionService, IReconciliationCaseIntakeService
 {

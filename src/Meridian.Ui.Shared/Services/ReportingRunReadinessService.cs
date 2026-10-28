@@ -11,6 +11,9 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Evaluates dependency readiness checks for a requested reporting run.
+/// </summary>
 public interface IReportingRunReadinessDependencyEvaluator
 {
     Task<IReadOnlyList<ReportingRunReadinessCheckDto>> EvaluateAsync(
@@ -25,6 +28,9 @@ public sealed record ReportingRunReadinessOptions(
     bool AllowLegacyUnscopedDrafts = false,
     bool AllowDraftWhenDependencyEvaluatorIsUnavailable = false);
 
+/// <summary>
+/// Collects reporting dependency checks from the services available in the deployment.
+/// </summary>
 public sealed class ReportingRunReadinessDependencyEvaluator : IReportingRunReadinessDependencyEvaluator
 {
     private readonly IServiceProvider _services;
@@ -443,6 +449,9 @@ public sealed class ReportingRunReadinessDependencyEvaluator : IReportingRunRead
         new(id, label, ReportingRunReadinessStatusDto.Unavailable, summary, 1, blocksDraft, true, route);
 }
 
+/// <summary>
+/// Combines request and dependency checks into a reporting run readiness assessment.
+/// </summary>
 public sealed class ReportingRunReadinessService
 {
     private readonly IReportingTemplateCatalog _templateCatalog;

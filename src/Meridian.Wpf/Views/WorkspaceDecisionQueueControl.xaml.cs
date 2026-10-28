@@ -11,6 +11,9 @@ public enum WorkspaceDecisionActionKind
     Secondary
 }
 
+/// <summary>
+/// Carries the selected workspace decision and the invoked action kind and identity.
+/// </summary>
 public sealed class WorkspaceDecisionInvokedEventArgs : EventArgs
 {
     public WorkspaceDecisionInvokedEventArgs(WorkspaceQueueItem decision, WorkspaceDecisionActionKind actionKind)
@@ -29,6 +32,9 @@ public sealed class WorkspaceDecisionInvokedEventArgs : EventArgs
     public string ActionId { get; }
 }
 
+/// <summary>
+/// Displays workspace decisions in configurable columns and raises selected decision actions.
+/// </summary>
 public partial class WorkspaceDecisionQueueControl : UserControl
 {
     public static readonly DependencyProperty ItemsSourceProperty =

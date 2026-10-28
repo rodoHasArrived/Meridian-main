@@ -6,6 +6,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Displays shell context titles and badges in regular or compact form.
+/// </summary>
 public partial class WorkspaceShellContextStripControl : UserControl
 {
     private const string AttentionTitleDanger = "Action required";

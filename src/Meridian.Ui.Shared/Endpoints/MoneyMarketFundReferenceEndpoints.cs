@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps money-market fund reference queries to HTTP endpoints.
+/// </summary>
 public static class MoneyMarketFundReferenceEndpoints
 {
     public static void MapMoneyMarketFundReferenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)

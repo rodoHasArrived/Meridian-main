@@ -2,6 +2,9 @@ using Meridian.Contracts.FundStructure;
 
 namespace Meridian.Entities.FundStructure;
 
+/// <summary>
+/// Resolves account ledger-group mappings from explicit assignments and fund-structure ancestry.
+/// </summary>
 public static class LedgerGroupingRules
 {
     public const string LedgerGroupAssignmentType = "LedgerGroup";

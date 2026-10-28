@@ -5,6 +5,9 @@ using System.Windows.Controls;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Provides a bound secret editor with explicit reveal state and accessible input and reveal labels.
+/// </summary>
 public partial class SecretInputControl : UserControl
 {
     public static readonly DependencyProperty SecretProperty =

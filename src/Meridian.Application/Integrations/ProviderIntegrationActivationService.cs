@@ -4,6 +4,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
+/// <summary>
+/// Activates configured provider integrations after validating their retained setup evidence.
+/// </summary>
 public sealed class ProviderIntegrationActivationService
 {
     private readonly IProviderIntegrationManifestStore store;

@@ -2,6 +2,9 @@ using Meridian.Contracts.FundStructure;
 
 namespace Meridian.Entities.FundStructure;
 
+/// <summary>
+/// Defines validation rules for operating parents, ownership lifecycle changes, and governance cash-flow queries.
+/// </summary>
 public interface IFundStructurePolicyService
 {
     void EnsureSingleOperatingParent(CreateInvestmentPortfolioRequest request);

@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps swap reference queries to the shared HTTP API.
+/// </summary>
 public static class SwapReferenceEndpoints
 {
     public static void MapSwapReferenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)

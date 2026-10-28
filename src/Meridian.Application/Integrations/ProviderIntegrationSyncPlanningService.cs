@@ -4,6 +4,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
+/// <summary>
+/// Builds synchronization plans from provider connection configuration and retained run state.
+/// </summary>
 public sealed class ProviderIntegrationSyncPlanningService
 {
     private static readonly ProviderIntegrationProcessingStatusDto[] SuccessfulSyncStatuses =

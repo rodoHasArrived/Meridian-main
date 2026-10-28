@@ -4,6 +4,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Shell.Services;
 
+/// <summary>
+/// Combines feature-module page and workspace declarations into a desktop shell registry.
+/// </summary>
 public sealed class ShellPageRegistryBuilder
 {
     private readonly List<ShellPageDescriptor> _pages = [];

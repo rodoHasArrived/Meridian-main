@@ -158,6 +158,9 @@ internal sealed class ApiClientSystemHealthApiClient(ApiClientService apiClient)
 
 // DTO classes for system health
 
+/// <summary>
+/// Summarizes system health, connections, latency, processed events, storage usage, alerts, and uptime.
+/// </summary>
 public sealed class SystemHealthSummary
 {
     public string OverallStatus { get; set; } = "Unknown";
@@ -174,6 +177,9 @@ public sealed class SystemHealthSummary
     public TimeSpan Uptime { get; set; }
 }
 
+/// <summary>
+/// Describes a provider's connection lifecycle, event activity, failures, and current health issues.
+/// </summary>
 public sealed class ProviderHealth
 {
     public string Provider { get; set; } = string.Empty;
@@ -199,6 +205,9 @@ public sealed class ProviderHealth
     public List<string> Issues { get; set; } = new();
 }
 
+/// <summary>
+/// Combines provider connection telemetry, active subscriptions, event counts, configuration, and diagnostic issues.
+/// </summary>
 public sealed class ProviderDiagnosticsSnapshot
 {
     public string Provider { get; set; } = string.Empty;
@@ -220,6 +229,9 @@ public sealed class ProviderDiagnosticsSnapshot
     public Dictionary<string, object> Configuration { get; set; } = new();
 }
 
+/// <summary>
+/// Describes a diagnostic finding's type, severity, explanation, and optional recommendation.
+/// </summary>
 public sealed class DiagnosticIssue
 {
     public string Type { get; set; } = string.Empty;
@@ -228,6 +240,9 @@ public sealed class DiagnosticIssue
     public string? Recommendation { get; set; }
 }
 
+/// <summary>
+/// Summarizes storage capacity, utilization, corrupt or orphaned files, and current issues.
+/// </summary>
 public sealed class StorageHealth
 {
     public bool IsHealthy { get; set; }
@@ -242,6 +257,9 @@ public sealed class StorageHealth
     public List<string> Issues { get; set; } = new();
 }
 
+/// <summary>
+/// Describes a timestamped system event with severity, source, message, and structured details.
+/// </summary>
 public sealed class SystemEvent
 {
     public string Id { get; set; } = string.Empty;
@@ -253,6 +271,9 @@ public sealed class SystemEvent
     public Dictionary<string, object>? Details { get; set; }
 }
 
+/// <summary>
+/// Captures timestamped process resources, event and byte rates, connections, and pending operations.
+/// </summary>
 public sealed class SystemMetrics
 {
     public double CpuUsagePercent { get; set; }
@@ -268,6 +289,9 @@ public sealed class SystemMetrics
     public DateTime Timestamp { get; set; }
 }
 
+/// <summary>
+/// Reports a connection test's success, latency, message, and warnings.
+/// </summary>
 public sealed class ConnectionTestResult
 {
     public bool Success { get; set; }
@@ -276,6 +300,9 @@ public sealed class ConnectionTestResult
     public List<string> Warnings { get; set; } = new();
 }
 
+/// <summary>
+/// Identifies a created diagnostic bundle with its file location, size, time, and included sections.
+/// </summary>
 public sealed class DiagnosticBundle
 {
     public string BundleId { get; set; } = string.Empty;

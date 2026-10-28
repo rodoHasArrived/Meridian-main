@@ -2,6 +2,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Collects workspace shell contributions and resolves the context strip and action bar.
+/// </summary>
 public interface IWorkspaceShellSlotContributionService
 {
     ValueTask<IReadOnlyList<IWorkspaceShellSlotContribution>> GetContributionsAsync(
@@ -17,6 +20,9 @@ public interface IWorkspaceShellSlotContributionService
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Combines registered contributors into ordered context-strip and action-bar contributions.
+/// </summary>
 public sealed class WorkspaceShellSlotContributionService : IWorkspaceShellSlotContributionService
 {
     private readonly IReadOnlyList<IWorkspaceShellSlotContributor> _contributors;

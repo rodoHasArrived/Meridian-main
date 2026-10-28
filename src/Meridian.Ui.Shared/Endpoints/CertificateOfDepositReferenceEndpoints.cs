@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps certificate-of-deposit reference and issuer lookups to HTTP endpoints.
+/// </summary>
 public static class CertificateOfDepositReferenceEndpoints
 {
     public static void MapCertificateOfDepositReferenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)

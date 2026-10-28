@@ -3,6 +3,9 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Application.SecurityMaster;
 
+/// <summary>
+/// Resolves security identifiers against canonical Security Master records.
+/// </summary>
 public sealed class SecurityResolver : ISecurityResolver
 {
     private readonly ISecurityMasterStore _store;

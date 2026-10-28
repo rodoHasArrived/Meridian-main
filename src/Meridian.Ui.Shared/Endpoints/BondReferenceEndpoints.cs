@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps bond reference lookup and issuer and maturity queries to HTTP endpoints.
+/// </summary>
 public static class BondReferenceEndpoints
 {
     private const int MaxIssuerNameLength = 200;

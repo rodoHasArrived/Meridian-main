@@ -2,6 +2,9 @@ using Meridian.Contracts.Ledger;
 
 namespace Meridian.FinancialOperations.PrivateCapital;
 
+/// <summary>
+/// Builds investor capital-account subledger views from private-capital activity.
+/// </summary>
 public static class PrivateCapitalCapitalAccountSubledgerBuilder
 {
     public static IReadOnlyList<PrivateCapitalCapitalAccountSubledgerDto> Build(

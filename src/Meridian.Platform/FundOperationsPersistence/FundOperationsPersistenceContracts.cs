@@ -34,12 +34,14 @@ public sealed record ProjectionDiscrepancy(
     string Summary,
     DateTimeOffset DetectedAt);
 
+/// <summary>Compares a domain projection with its source and reports detected discrepancies.</summary>
 public interface IDomainProjectionReconciliationJob
 {
     FundOperationsDomain Domain { get; }
     Task<IReadOnlyList<ProjectionDiscrepancy>> ReconcileAsync(CancellationToken ct = default);
 }
 
+/// <summary>Writes named shadow projection payloads for entities within a fund-operations domain.</summary>
 public interface IShadowProjectionWriter
 {
     FundOperationsDomain Domain { get; }

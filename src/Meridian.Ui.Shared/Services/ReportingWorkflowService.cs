@@ -12,6 +12,9 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Registers versioned reporting templates and manages their governed lifecycle and access policies.
+/// </summary>
 public sealed class ReportTemplateRegistryService
 {
     private readonly ConcurrentDictionary<string, ReportTemplateGovernanceRecordDto> _templates = new(StringComparer.Ordinal);
@@ -1149,12 +1152,18 @@ public sealed class ReportTemplateRegistryService
 
 public sealed record ReportTemplateGovernanceStoreOptions(string SnapshotPath);
 
+/// <summary>
+/// Loads and saves reporting template governance records.
+/// </summary>
 public interface IReportTemplateGovernanceStore
 {
     IReadOnlyList<ReportTemplateGovernanceRecordDto> Load();
     void Save(IReadOnlyList<ReportTemplateGovernanceRecordDto> records);
 }
 
+/// <summary>
+/// Persists reporting template governance records to a snapshot file.
+/// </summary>
 public sealed class FileReportTemplateGovernanceStore : IReportTemplateGovernanceStore
 {
     private readonly ReportTemplateGovernanceStoreOptions _options;
@@ -1266,6 +1275,9 @@ public sealed class FileReportTemplateGovernanceStore : IReportTemplateGovernanc
     private sealed record ReportTemplateGovernanceSnapshot(IReadOnlyList<ReportTemplateGovernanceRecordDto> Records);
 }
 
+/// <summary>
+/// Persists report-pack workflow records to a snapshot file.
+/// </summary>
 public sealed class FileReportPackWorkflowRecordStore : IReportPackWorkflowRecordStore
 {
     private readonly ReportPackWorkflowRecordStoreOptions _options;
@@ -1327,6 +1339,9 @@ public sealed class FileReportPackWorkflowRecordStore : IReportPackWorkflowRecor
     private sealed record ReportPackWorkflowSnapshot(IReadOnlyList<ReportPackWorkflowRecordDto> Records);
 }
 
+/// <summary>
+/// Manages report-pack submission, review, rejection, restatement, and lifecycle history.
+/// </summary>
 public sealed partial class ReportPackWorkflowService
 {
     private const string LedgerFinancialRecordExplorerId = "ledger";

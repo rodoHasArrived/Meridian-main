@@ -4,6 +4,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Hosts security-master discovery, trust review, and conflict workflows.
+/// </summary>
 public partial class SecurityMasterPage : Page
 {
     private readonly SecurityMasterViewModel _viewModel;

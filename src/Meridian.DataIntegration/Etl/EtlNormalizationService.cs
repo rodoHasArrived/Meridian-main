@@ -9,6 +9,7 @@ using Meridian.Domain.Events;
 
 namespace Meridian.DataIntegration.Etl;
 
+/// <summary>Resolves the built-in partner CSV schema definitions by schema identifier.</summary>
 public sealed class PartnerSchemaRegistry : IPartnerSchemaRegistry
 {
     private static readonly IReadOnlyDictionary<string, CsvSchemaDefinition> Schemas =
@@ -72,6 +73,7 @@ public sealed class PartnerSchemaRegistry : IPartnerSchemaRegistry
     public bool IsSupported(string schemaId) => Schemas.ContainsKey(schemaId);
 }
 
+/// <summary>Converts parsed partner records into canonical market events or explicit rejection outcomes.</summary>
 public sealed class EtlNormalizationService
 {
     private readonly IEventCanonicalizer _canonicalizer;

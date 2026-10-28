@@ -13,6 +13,9 @@ using Meridian.Wpf.Workstation.ViewModels.Base;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Provides workspace definition, attention ribbon, and command-group state for shell view models.
+/// </summary>
 public abstract class WorkspaceShellViewModelBase : WorkspaceViewModelBase
 {
     private WorkspaceCommandGroup _commandGroup = new();
@@ -56,6 +59,9 @@ public abstract class WorkspaceShellViewModelBase : WorkspaceViewModelBase
     }
 }
 
+/// <summary>
+/// Presents workspace attention severity, summary, timestamp, and available follow-up action.
+/// </summary>
 public sealed class WorkspaceAttentionRibbonViewModel : BindableBase
 {
     private static readonly DateTimeOffset PlaceholderTimestamp = new(2026, 06, 15, 09, 00, 00, TimeSpan.Zero);
@@ -151,6 +157,9 @@ public sealed class WorkspaceAttentionRibbonViewModel : BindableBase
     }
 }
 
+/// <summary>
+/// Defines attention severity labels shared by workspace ribbon presentation.
+/// </summary>
 public static class WorkspaceAttentionSeverity
 {
     public const string Healthy = "Healthy";
@@ -179,6 +188,9 @@ internal sealed class WorkspaceAttentionRibbonCommand : ICommand
     public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
 }
 
+/// <summary>
+/// Exposes bindable state and commands to review account, aggregate, fund, lending, and import workflows.
+/// </summary>
 public sealed class PortfolioWorkspaceShellViewModel : WorkspaceShellViewModelBase
 {
     private const string MultiAssetCoverageRoute = UiApiRoutes.WorkstationPortfolioMultiAssetCoverage;
@@ -369,6 +381,9 @@ public sealed class PortfolioWorkspaceShellViewModel : WorkspaceShellViewModelBa
         => RefreshRequested?.Invoke(this, EventArgs.Empty);
 }
 
+/// <summary>
+/// Exposes bindable state and commands to review ledger, cash, reconciliation, trial balance, and audit workflows.
+/// </summary>
 public sealed class AccountingWorkspaceShellViewModel : WorkspaceShellViewModelBase
 {
     public AccountingWorkspaceShellViewModel()
@@ -377,6 +392,9 @@ public sealed class AccountingWorkspaceShellViewModel : WorkspaceShellViewModelB
     }
 }
 
+/// <summary>
+/// Exposes bindable state and commands to prepare report packs, dashboards, analysis exports, and export presets.
+/// </summary>
 public sealed class ReportingWorkspaceShellViewModel : WorkspaceShellViewModelBase
 {
     private readonly FundContextService? _fundContextService;
@@ -580,6 +598,9 @@ public sealed class ReportingWorkspaceShellViewModel : WorkspaceShellViewModelBa
         => RefreshRequested?.Invoke(this, EventArgs.Empty);
 }
 
+/// <summary>
+/// Provides the data shell specialization of the shared workspace view-model base.
+/// </summary>
 public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase
 {
     public DataWorkspaceShellViewModel()
@@ -588,6 +609,9 @@ public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase
     }
 }
 
+/// <summary>
+/// Provides the settings shell specialization of the shared workspace view-model base.
+/// </summary>
 public sealed class SettingsWorkspaceShellViewModel : WorkspaceShellViewModelBase
 {
     public SettingsWorkspaceShellViewModel()

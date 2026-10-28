@@ -12,6 +12,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Registers desktop shell navigation, operating-context, persistence, and presentation services.
+/// </summary>
 public static class WpfShellServiceCollectionExtensions
 {
     public static IServiceCollection AddWorkspaceScoped<TService>(this IServiceCollection services)

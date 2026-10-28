@@ -5,6 +5,9 @@ using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.Workstation.Controls;
 
+/// <summary>
+/// Displays audit timeline entries and exposes an empty-state flag.
+/// </summary>
 public partial class ActivityLogGridControl : UserControl
 {
     public static readonly DependencyProperty TimelineProperty =

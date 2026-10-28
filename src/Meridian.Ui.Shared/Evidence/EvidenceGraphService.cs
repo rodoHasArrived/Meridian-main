@@ -5,6 +5,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Evidence;
 
+/// <summary>
+/// Resolves workflow subjects and assembles their evidence packets and connected graphs.
+/// </summary>
 public sealed class EvidenceGraphService
 {
     private readonly EvidenceSubjectResolver _subjectResolver;

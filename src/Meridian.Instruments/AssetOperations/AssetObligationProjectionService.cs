@@ -7,6 +7,9 @@ using Meridian.Contracts.SecurityMaster.Schedules;
 
 namespace Meridian.Instruments.AssetOperations;
 
+/// <summary>
+/// Builds asset obligation projections from canonical instrument and lifecycle evidence.
+/// </summary>
 public sealed class AssetObligationProjectionService
 {
     public const string EngineVersion = "asset-obligation-projection-v1";

@@ -157,6 +157,9 @@ public sealed record CorporateActionCaseTransitionAuthorityDto(
     bool CanOverridePolicy,
     bool CanReopenCase);
 
+/// <summary>
+/// Maps corporate action case transitions to the authority required to perform them.
+/// </summary>
 public static class CorporateActionCaseTransitionAuthorization
 {
     public static bool IsAuthorized(
@@ -222,6 +225,9 @@ public static class CorporateActionCaseTransitionAuthorization
     }
 }
 
+/// <summary>
+/// Defines supported corporate action evidence types and validates retained reference locations.
+/// </summary>
 public static class CorporateActionEvidenceKinds
 {
     public const string ProviderPayload = "ProviderPayload";
@@ -250,6 +256,9 @@ public static class CorporateActionEvidenceKinds
     }
 }
 
+/// <summary>
+/// Defines and recognizes the lifecycle states of a corporate action source conflict.
+/// </summary>
 public static class CorporateActionConflictStates
 {
     public const string Open = "Open";
@@ -259,6 +268,9 @@ public static class CorporateActionConflictStates
     public static bool IsKnown(string? state) => state is Open or Resolved or Waived;
 }
 
+/// <summary>
+/// Defines and recognizes the review states of corporate action processing options.
+/// </summary>
 public static class CorporateActionProcessingOptionStates
 {
     public const string Proposed = "Proposed";
@@ -326,6 +338,9 @@ public sealed record CorporateActionDissentFieldDto(
     string Field,
     IReadOnlyList<CorporateActionConflictCandidateDto> Candidates);
 
+/// <summary>
+/// Checks that dissenting source values retain the field-level evidence required to establish a conflict.
+/// </summary>
 public static class CorporateActionDissentEvidencePolicy
 {
     /// <summary>
@@ -716,6 +731,9 @@ public sealed record CorporateActionCaseTransitionResultDto(
     CorporateActionCaseTransitionDto Transition,
     bool Replayed);
 
+/// <summary>
+/// Manages corporate action source proposals, scoped cases, evidence, and governed workflow commands.
+/// </summary>
 public interface ICorporateActionOperationsService
 {
     Task<CorporateActionSourceProposalDto> RecordSourceProposalAsync(
@@ -793,6 +811,9 @@ public interface ICorporateActionOperationsService
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Represents a corporate action operation failure with a stable machine-readable problem code.
+/// </summary>
 public class CorporateActionOperationException : InvalidOperationException
 {
     public CorporateActionOperationException(string code, string message)
@@ -804,6 +825,9 @@ public class CorporateActionOperationException : InvalidOperationException
     public string Code { get; }
 }
 
+/// <summary>
+/// Signals that a requested corporate action resource could not be found.
+/// </summary>
 public sealed class CorporateActionNotFoundException : CorporateActionOperationException
 {
     public CorporateActionNotFoundException(string resourceType, Guid resourceId)
@@ -817,6 +841,9 @@ public sealed class CorporateActionNotFoundException : CorporateActionOperationE
     public Guid ResourceId { get; }
 }
 
+/// <summary>
+/// Signals that a corporate action resource changed since the caller's expected version.
+/// </summary>
 public sealed class CorporateActionVersionConflictException : CorporateActionOperationException
 {
     public CorporateActionVersionConflictException(Guid resourceId, long expectedVersion, long currentVersion)
@@ -834,6 +861,9 @@ public sealed class CorporateActionVersionConflictException : CorporateActionOpe
     public long CurrentVersion { get; }
 }
 
+/// <summary>
+/// Signals reuse of a corporate action idempotency key with different command data.
+/// </summary>
 public sealed class CorporateActionIdempotencyConflictException : CorporateActionOperationException
 {
     public CorporateActionIdempotencyConflictException(Guid resourceId, string idempotencyKey)
@@ -849,6 +879,9 @@ public sealed class CorporateActionIdempotencyConflictException : CorporateActio
     public string IdempotencyKey { get; }
 }
 
+/// <summary>
+/// Signals that a corporate action command conflicts with the resource's current state.
+/// </summary>
 public sealed class CorporateActionStateConflictException : CorporateActionOperationException
 {
     public CorporateActionStateConflictException(Guid resourceId, string message)
@@ -860,6 +893,9 @@ public sealed class CorporateActionStateConflictException : CorporateActionOpera
     public Guid ResourceId { get; }
 }
 
+/// <summary>
+/// Signals that a corporate action command failed input validation.
+/// </summary>
 public sealed class CorporateActionValidationException : CorporateActionOperationException
 {
     public CorporateActionValidationException(string message)
@@ -868,6 +904,9 @@ public sealed class CorporateActionValidationException : CorporateActionOperatio
     }
 }
 
+/// <summary>
+/// Signals that required corporate action terms are incomplete.
+/// </summary>
 public sealed class CorporateActionTermsIncompleteException : CorporateActionOperationException
 {
     public CorporateActionTermsIncompleteException(string message)
@@ -876,6 +915,9 @@ public sealed class CorporateActionTermsIncompleteException : CorporateActionOpe
     }
 }
 
+/// <summary>
+/// Signals an unresolved conflict between corporate action source data.
+/// </summary>
 public sealed class CorporateActionSourceConflictException : CorporateActionOperationException
 {
     public CorporateActionSourceConflictException(string message)
@@ -884,6 +926,9 @@ public sealed class CorporateActionSourceConflictException : CorporateActionOper
     }
 }
 
+/// <summary>
+/// Signals that corporate action data does not match the requested operating scope.
+/// </summary>
 public sealed class CorporateActionScopeMismatchException : CorporateActionOperationException
 {
     public CorporateActionScopeMismatchException(string message)
@@ -892,6 +937,9 @@ public sealed class CorporateActionScopeMismatchException : CorporateActionOpera
     }
 }
 
+/// <summary>
+/// Signals that a case transition requires the governed downstream accounting or posting workflow.
+/// </summary>
 public sealed class CorporateActionDownstreamAuthorityRequiredException : CorporateActionOperationException
 {
     public CorporateActionDownstreamAuthorityRequiredException(string targetState)
@@ -905,6 +953,9 @@ public sealed class CorporateActionDownstreamAuthorityRequiredException : Corpor
     public string TargetState { get; }
 }
 
+/// <summary>
+/// Signals that the persistence authority required by a corporate action operation is unavailable.
+/// </summary>
 public sealed class CorporateActionPersistenceUnavailableException : CorporateActionOperationException
 {
     public CorporateActionPersistenceUnavailableException(string message)
@@ -913,6 +964,9 @@ public sealed class CorporateActionPersistenceUnavailableException : CorporateAc
     }
 }
 
+/// <summary>
+/// Signals that the caller lacks the authority required for a corporate action transition.
+/// </summary>
 public sealed class CorporateActionPermissionDeniedException : CorporateActionOperationException
 {
     public CorporateActionPermissionDeniedException(string targetState, string requiredAuthority)

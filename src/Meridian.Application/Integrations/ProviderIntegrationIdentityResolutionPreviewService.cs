@@ -7,6 +7,9 @@ using UiApiRoutes = Meridian.Contracts.Api.UiApiRoutes;
 
 namespace Meridian.Application.Integrations;
 
+/// <summary>
+/// Previews security identity candidates for staged provider integration data.
+/// </summary>
 public sealed class ProviderIntegrationIdentityResolutionPreviewService
 {
     private const int DefaultRecentRunLimit = 10;

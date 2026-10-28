@@ -215,6 +215,9 @@ internal readonly record struct WorkflowLibraryFilterPresentation(
     string EmptyStateDetail,
     string EmptyStateActionText);
 
+/// <summary>
+/// Presents a workflow definition with its workspace, entry page, and available actions.
+/// </summary>
 public sealed class WorkflowLibraryWorkflowItem
 {
     public WorkflowLibraryWorkflowItem(WorkflowDefinitionDto definition)
@@ -261,6 +264,9 @@ public sealed class WorkflowLibraryWorkflowItem
            Actions.Any(action => action.Matches(query));
 }
 
+/// <summary>
+/// Presents a workflow action with its detail, target page, and search matching behavior.
+/// </summary>
 public sealed class WorkflowLibraryActionItem
 {
     public WorkflowLibraryActionItem(WorkflowActionDto action)

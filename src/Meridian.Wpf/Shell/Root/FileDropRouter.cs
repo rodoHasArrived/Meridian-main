@@ -4,6 +4,9 @@ using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Shell.Root;
 
+/// <summary>
+/// Classifies dropped files and routes supported file types to the relevant desktop workflow.
+/// </summary>
 public sealed class FileDropRouter
 {
     private readonly NavigationService _navigationService;

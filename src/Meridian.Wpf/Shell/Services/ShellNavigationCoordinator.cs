@@ -7,6 +7,9 @@ using Meridian.Wpf.Shell.ViewModels;
 
 namespace Meridian.Wpf.Shell.Services;
 
+/// <summary>
+/// Resolves navigation routes and coordinates page creation and pane drop behavior.
+/// </summary>
 public sealed class ShellNavigationCoordinator : IShellNavigationCoordinator
 {
     private readonly INavigationService _navigationService;

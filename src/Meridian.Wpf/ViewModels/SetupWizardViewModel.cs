@@ -10,6 +10,9 @@ using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Coordinates provider and preset selection, backend checks, and configuration saving during initial setup.
+/// </summary>
 public sealed class SetupWizardViewModel : BindableBase
 {
     private const string InstructionsUrl = "https://github.com/example/meridian/blob/main/docs/guides/configuration.md";

@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 
 namespace Meridian.Reporting;
 
+/// <summary>Provides the built-in reporting template metadata and section definitions.</summary>
 public sealed class DefaultReportingTemplateCatalog : IReportingTemplateCatalog
 {
     private readonly IReadOnlyDictionary<string, ReportingTemplateMetadata> templates = new Dictionary<string, ReportingTemplateMetadata>(StringComparer.OrdinalIgnoreCase)

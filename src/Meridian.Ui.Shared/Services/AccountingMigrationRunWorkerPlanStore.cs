@@ -5,6 +5,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Reads accounting migration worker plans by scope or plan identity.
+/// </summary>
 public interface IAccountingMigrationRunWorkerPlanStore
 {
     Task<IReadOnlyList<AccountingMigrationRunWorkerPlanDto>> ListAsync(
@@ -20,6 +23,9 @@ public interface IAccountingMigrationRunWorkerPlanStore
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Adds or updates retained accounting migration worker plans.
+/// </summary>
 public interface IAccountingMigrationRunWorkerPlanWriter : IAccountingMigrationRunWorkerPlanStore
 {
     Task<AccountingMigrationRunWorkerPlanDto> UpsertAsync(
@@ -27,6 +33,9 @@ public interface IAccountingMigrationRunWorkerPlanWriter : IAccountingMigrationR
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Stores accounting migration worker plans in process memory.
+/// </summary>
 public sealed class InMemoryAccountingMigrationRunWorkerPlanStore : IAccountingMigrationRunWorkerPlanWriter
 {
     private readonly Dictionary<string, AccountingMigrationRunWorkerPlanDto> _plans = new(StringComparer.OrdinalIgnoreCase);
@@ -124,6 +133,9 @@ public sealed class InMemoryAccountingMigrationRunWorkerPlanStore : IAccountingM
             : value.Trim();
 }
 
+/// <summary>
+/// Persists accounting migration worker plans to a snapshot file.
+/// </summary>
 public sealed class FileAccountingMigrationRunWorkerPlanStore :
     JsonFileSnapshotStore<AccountingMigrationRunWorkerPlanSnapshot>,
     IAccountingMigrationRunWorkerPlanWriter

@@ -1,5 +1,8 @@
 namespace Meridian.Wpf.Workstation.ViewModels.Base;
 
+/// <summary>
+/// Exposes observable inspector title and summary text.
+/// </summary>
 public sealed class InspectorViewModel : Meridian.Wpf.ViewModels.BindableBase
 {
     private string _title = string.Empty;

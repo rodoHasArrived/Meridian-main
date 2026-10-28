@@ -17,6 +17,12 @@ public interface IOnboardingSourceProvider
         OnboardingWorkspaceDto workspace, CaptureOnboardingComparisonRequestDto request, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Indicates that retained onboarding state changed during a requested mutation.
+/// </summary>
 public sealed class OnboardingConcurrencyException(string message) : InvalidOperationException(message);
 
+/// <summary>
+/// Indicates invalid input for an accounting onboarding operation.
+/// </summary>
 public sealed class OnboardingValidationException(string message) : ArgumentException(message);

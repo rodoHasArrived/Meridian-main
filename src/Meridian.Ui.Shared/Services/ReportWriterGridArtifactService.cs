@@ -12,6 +12,9 @@ public sealed record ReportWriterGridArtifactContent(
     string ContentType,
     byte[] Content);
 
+/// <summary>
+/// Renders report-writer grids and produces their downloadable artifact content.
+/// </summary>
 public sealed class ReportWriterGridArtifactService
 {
     private const string JsonContentType = "application/json";

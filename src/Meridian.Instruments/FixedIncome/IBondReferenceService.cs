@@ -2,6 +2,9 @@ using Meridian.Contracts.FixedIncome;
 
 namespace Meridian.Instruments.FixedIncome;
 
+/// <summary>
+/// Queries bond reference data by security identifier and supported asset-specific filters.
+/// </summary>
 public interface IBondReferenceService
 {
     Task<BondReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default);

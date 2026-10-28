@@ -768,6 +768,9 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
 
 // ---- Display item types ----
 
+/// <summary>
+/// Presents a symbol's quality grade, completeness, integrity, and issue count.
+/// </summary>
 public sealed class SymbolQualityDisplayItem
 {
     public string Symbol { get; set; } = string.Empty;
@@ -779,6 +782,9 @@ public sealed class SymbolQualityDisplayItem
     public string IssueCount { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Presents a market-data gap's symbol, event type, interval, and repairability.
+/// </summary>
 public sealed class GapDisplayItem
 {
     public string Symbol { get; set; } = string.Empty;
@@ -789,6 +795,9 @@ public sealed class GapDisplayItem
     public SolidColorBrush? RepairableBackground { get; set; }
 }
 
+/// <summary>
+/// Presents a discrepancy's timestamp, type, compared values, and difference.
+/// </summary>
 public sealed class DiscrepancyDisplayItem
 {
     public string TimestampText { get; set; } = string.Empty;
@@ -797,6 +806,9 @@ public sealed class DiscrepancyDisplayItem
     public string DifferenceText { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Presents provider latency percentiles and a normalized latency display value.
+/// </summary>
 public sealed class LatencyDisplayItem
 {
     public string Provider { get; set; } = string.Empty;
@@ -806,6 +818,9 @@ public sealed class LatencyDisplayItem
     public double LatencyPercent { get; set; }
 }
 
+/// <summary>
+/// Presents provider quota usage and its visual status.
+/// </summary>
 public sealed class RateLimitDisplayItem
 {
     public string Provider { get; set; } = string.Empty;

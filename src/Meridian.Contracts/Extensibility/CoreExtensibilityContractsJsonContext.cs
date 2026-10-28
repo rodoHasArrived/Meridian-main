@@ -2,6 +2,9 @@ using System.Text.Json.Serialization;
 
 namespace Meridian.Contracts.Extensibility;
 
+/// <summary>
+/// Provides source-generated JSON metadata for extensibility configuration, validation, and catalog contracts.
+/// </summary>
 [JsonSourceGenerationOptions(
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     PropertyNameCaseInsensitive = true,

@@ -6,11 +6,13 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.Strategies.Services;
 
+/// <summary>Evaluates reconciliation case transitions using the current case, command, and evaluation time.</summary>
 public interface IReconciliationCaseWorkflowService
 {
     ReconciliationBreakQueueTransitionResult Apply(ReconciliationBreakQueueItem item, ReconciliationCaseTransitionCommand command, DateTimeOffset now);
 }
 
+/// <summary>Applies the shared reconciliation case workflow decision to a case transition request.</summary>
 public sealed class ReconciliationCaseWorkflowService : IReconciliationCaseWorkflowService
 {
     public ReconciliationBreakQueueTransitionResult Apply(ReconciliationBreakQueueItem item, ReconciliationCaseTransitionCommand command, DateTimeOffset now)

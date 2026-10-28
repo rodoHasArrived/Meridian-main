@@ -7,6 +7,9 @@ using Meridian.Wpf.Contracts;
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Defines startup and authenticated lifecycle queries and governed shutdown requests for the desktop workstation.
+/// </summary>
 public interface ILifecycleControlClient
 {
     Task<RuntimeLifecycleSnapshotDto?> GetStartupSnapshotAsync(CancellationToken cancellationToken = default);
@@ -25,6 +28,9 @@ public interface ILifecycleControlClient
         CancellationToken cancellationToken = default);
 }
 
+/// <summary>
+/// Calls the shared lifecycle API for startup status, authentication, runtime snapshots, and shutdown receipts.
+/// </summary>
 public sealed class LifecycleControlClient : ILifecycleControlClient, IDisposable
 {
     private const string StartupEndpoint = "/startupz";

@@ -7,6 +7,9 @@ using Meridian.Reporting;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Queues reporting delivery jobs, dispatches due work, and retains provider receipts.
+/// </summary>
 public sealed class ReportingDeliveryDispatcher
 {
     private const int MaximumConcurrencyAttempts = 8;
@@ -927,6 +930,9 @@ public sealed class ReportingDeliveryDispatcher
         && string.Equals(left.Detail, right.Detail, StringComparison.Ordinal);
 }
 
+/// <summary>
+/// Delivers reporting packages through a secure portal access grant.
+/// </summary>
 public sealed class SecurePortalReportingDeliveryTransport : IReportingDeliveryTransport
 {
     private readonly TimeProvider _timeProvider;
@@ -1002,6 +1008,9 @@ public sealed class SecurePortalReportingDeliveryTransport : IReportingDeliveryT
     }
 }
 
+/// <summary>
+/// Delivers reporting package notifications through the configured HTTP relay.
+/// </summary>
 public sealed class HttpRelayReportingDeliveryTransport :
     IReportingDeliveryTransport,
     IReportingDeliveryAttemptBindingProvider

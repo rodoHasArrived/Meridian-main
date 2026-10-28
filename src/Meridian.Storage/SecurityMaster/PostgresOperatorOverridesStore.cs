@@ -6,6 +6,9 @@ using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Persists Security Master operator overrides and their governed changes in PostgreSQL.
+/// </summary>
 public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore, ISecurityMasterMutationParticipant
 {
     private static readonly JsonSerializerOptions JsonOptions = new()

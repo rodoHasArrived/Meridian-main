@@ -6,6 +6,9 @@ using Meridian.Core.IO;
 
 namespace Meridian.Infrastructure.Adapters.Plaid;
 
+/// <summary>
+/// Persists Plaid items, accounts, sync cursors, and webhook state in files under the data root.
+/// </summary>
 public sealed class FilePlaidConnectionRepository : IPlaidConnectionRepository
 {
     private readonly IAtomicFileWriter _atomicFileWriter;

@@ -5,6 +5,9 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Application.SecurityMaster;
 
+/// <summary>
+/// Reads and maintains data-vendor entitlement records and their expiration state.
+/// </summary>
 public sealed class DataVendorEntitlementService : IDataVendorEntitlementService
 {
     private readonly IDataVendorEntitlementStore _store;
