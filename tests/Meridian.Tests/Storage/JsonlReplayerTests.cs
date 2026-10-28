@@ -76,6 +76,78 @@ public sealed class JsonlReplayerTests : IDisposable
             .WithMessage("*events.jsonl.sha256*line 1*");
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReadEventsAsync_EqualPlainAndGzipArchive_RefusesEitherWriterThenReplaysOneEvent(bool gzipWriter)
+    {
+        var source = Path.Combine(_tempRoot, "events.jsonl");
+        var archive = source + ".gz";
+        var evt = BuildTrade("SPY", 1);
+        await File.WriteAllTextAsync(source, SerializeLine(evt));
+        await WriteGzipAsync(archive, evt);
+        foreach (var suffix in new[] { ".sha256", ".recovery", ".write-lock" })
+        {
+            await File.WriteAllTextAsync(source + suffix, "not a persisted market event");
+            await File.WriteAllTextAsync(archive + suffix, "not a persisted market event");
+        }
+
+        await using (var writer = new FileStream(gzipWriter ? archive : source,
+                         FileMode.Open, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete))
+        {
+            await using var replay = new JsonlReplayer(_tempRoot).ReadEventsAsync().GetAsyncEnumerator();
+            var firstEvent = async () => await replay.MoveNextAsync();
+
+            await firstEvent.Should().ThrowAsync<IOException>();
+        }
+
+        var result = await ReadAllAsync(new JsonlReplayer(_tempRoot));
+
+        result.Should().ContainSingle().Which.Should().Be(evt);
+    }
+
+    [Fact]
+    public async Task ReadEventsAsync_ParallelPlainAndGzipAliases_ShareTheirClosedCaptureGate()
+    {
+        var source = Path.Combine(_tempRoot, "events.jsonl");
+        var archive = source + ".gz";
+        var evt = BuildTrade("SPY", 1);
+        await File.WriteAllTextAsync(source, SerializeLine(evt));
+        await WriteGzipAsync(archive, evt);
+        var opened = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var releaseSource = new ManualResetEventSlim();
+        var previousHook = JsonlArchiveFiles.AfterSourceOpenedForTest;
+        var sourceOpens = 0;
+        Task<IReadOnlyList<MarketEvent>>? sourceRead = null;
+        try
+        {
+            JsonlArchiveFiles.AfterSourceOpenedForTest = _ =>
+            {
+                if (Interlocked.Increment(ref sourceOpens) != 1)
+                    return;
+                opened.TrySetResult();
+                if (!releaseSource.Wait(TimeSpan.FromSeconds(10)))
+                    throw new TimeoutException("The test did not release its retained source handle.");
+            };
+            sourceRead = Task.Run(() => ReadAllAsync(new JsonlReplayer(source)));
+            await opened.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+            var archiveRead = ReadAllAsync(new JsonlReplayer(archive));
+            archiveRead.IsCompleted.Should().BeFalse("the plain alias still owns the closed-capture lease");
+            releaseSource.Set();
+
+            var results = await Task.WhenAll(sourceRead, archiveRead).WaitAsync(TimeSpan.FromSeconds(10));
+            results.Should().AllSatisfy(events => events.Should().ContainSingle().Which.Should().Be(evt));
+        }
+        finally
+        {
+            releaseSource.Set();
+            JsonlArchiveFiles.AfterSourceOpenedForTest = previousHook;
+            if (sourceRead is not null)
+                await sourceRead.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+    }
+
     [Fact]
     public async Task ReadEventsAsync_WhenFilesInterleave_MergesByFullUtcTimestampThenFileAndLineOrder()
     {

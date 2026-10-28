@@ -85,6 +85,21 @@ public sealed class InMemoryFundAccountServiceContractTests : FundAccountService
     public Task ReconcileAccountAsync_SnapshotAndPositions_ProducesMatchedRun() => ReconcileAccountAsync_SnapshotAndPositions_ProducesMatchedRun_Core();
 
     [Fact]
+    public Task ReconcileAccountAsync_SameDayBalances_UsesSourceSequence() => ReconcileAccountAsync_SameDayBalances_UsesSourceSequence_Core();
+
+    [Fact]
+    public Task ReconcileAccountAsync_CorrectedStatement_UsesRevisionRegardlessOfArrival() => ReconcileAccountAsync_CorrectedStatement_UsesRevisionRegardlessOfArrival_Core();
+
+    [Fact]
+    public Task IngestBankStatementAsync_RetainedBatchCannotReplaceLineIdentity() => IngestBankStatementAsync_RetainedBatchCannotReplaceLineIdentity_Core();
+
+    [Fact]
+    public Task IngestBankStatementAsync_TransactionFeedBatches_AreAdditiveAndSupersedeByLineIdentity() => IngestBankStatementAsync_TransactionFeedBatches_AreAdditiveAndSupersedeByLineIdentity_Core();
+
+    [Fact]
+    public Task IngestBankStatementAsync_TransactionFeedRedelivery_MovesItsHeaderDate() => IngestBankStatementAsync_TransactionFeedRedelivery_MovesItsHeaderDate_Core();
+
+    [Fact]
     public Task ReconcileAccountAsync_CashDivergingFromBankClosingBalance_ProducesCashBreak() => ReconcileAccountAsync_CashDivergingFromBankClosingBalance_ProducesCashBreak_Core();
 
     [Fact]
@@ -179,4 +194,14 @@ public sealed class InMemoryFundAccountServiceContractTests : FundAccountService
 
     [Fact]
     public Task RecordMarginSnapshotAsync_CorrectedEffectiveTimeAlreadyOccupied_RejectsWithoutReplacing() => RecordMarginSnapshotAsync_CorrectedEffectiveTimeAlreadyOccupied_RejectsWithoutReplacing_Core();
+    [Fact]
+    public Task Reconciliation_CorrectedEvidenceClearsOnlyMatchingActiveScopeAndRetainsHistory()
+        => Reconciliation_CorrectedEvidenceClearsOnlyMatchingActiveScopeAndRetainsHistory_Core();
+
+    [Fact]
+    public Task SyncHistory_SimultaneousCorrelatedRetriesRetainSuccessWithoutRegression()
+        => SyncHistory_SimultaneousCorrelatedRetriesRetainSuccessWithoutRegression_Core();
+    [Fact]
+    public Task Reconciliation_BatchedReadsKeepExactAccountScopeAndRetainedHistory()
+        => Reconciliation_BatchedReadsKeepExactAccountScopeAndRetainedHistory_Core();
 }

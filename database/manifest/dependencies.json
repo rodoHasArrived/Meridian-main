@@ -46256,6 +46256,13 @@
       "target": "database:fund_accounts.account_definition_pkey"
     },
     {
+      "constraint": "account_reconciliation_breaks_superseded_by_result_id_fkey",
+      "kind": "foreign-key",
+      "label": "superseded_by_result_id",
+      "source": "database:fund_accounts.account_reconciliation_breaks",
+      "target": "database:fund_accounts.account_reconciliation_breaks"
+    },
+    {
       "constraint": "account_reconciliation_breaks_reconciliation_run_id_fkey",
       "kind": "foreign-key",
       "label": "reconciliation_run_id",
@@ -46273,6 +46280,18 @@
       "label": "",
       "source": "database:fund_accounts.account_reconciliation_breaks_reconciliation_run_id_fkey on fund_accounts.account_reconciliation_breaks",
       "target": "database:fund_accounts.account_reconciliation_run_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_accounts.account_reconciliation_breaks_superseded_by_result_id_fkey on fund_accounts.account_reconciliation_breaks",
+      "target": "database:fund_accounts.account_reconciliation_breaks.result_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_accounts.account_reconciliation_breaks_superseded_by_result_id_fkey on fund_accounts.account_reconciliation_breaks",
+      "target": "database:fund_accounts.account_reconciliation_breaks_pkey"
     },
     {
       "constraint": "account_reconciliation_run_account_id_fkey",
@@ -46301,6 +46320,13 @@
       "target": "database:fund_accounts.account_definition"
     },
     {
+      "constraint": "account_sync_history_superseded_by_sync_history_id_fkey",
+      "kind": "foreign-key",
+      "label": "superseded_by_sync_history_id",
+      "source": "database:fund_accounts.account_sync_history",
+      "target": "database:fund_accounts.account_sync_history"
+    },
+    {
       "kind": "normal",
       "label": "",
       "source": "database:fund_accounts.account_sync_history_account_id_fkey on fund_accounts.account_sync_history",
@@ -46311,6 +46337,18 @@
       "label": "",
       "source": "database:fund_accounts.account_sync_history_account_id_fkey on fund_accounts.account_sync_history",
       "target": "database:fund_accounts.account_definition_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_accounts.account_sync_history_superseded_by_sync_history_id_fkey on fund_accounts.account_sync_history",
+      "target": "database:fund_accounts.account_sync_history.sync_history_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_accounts.account_sync_history_superseded_by_sync_history_id_fkey on fund_accounts.account_sync_history",
+      "target": "database:fund_accounts.account_sync_history_pkey"
     },
     {
       "constraint": "bank_statement_batch_account_id_fkey",
@@ -46330,6 +46368,12 @@
       "label": "",
       "source": "database:fund_accounts.bank_statement_batch_account_id_fkey on fund_accounts.bank_statement_batch",
       "target": "database:fund_accounts.account_definition_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_accounts.bank_statement_batch_statement_revision_check on fund_accounts.bank_statement_batch",
+      "target": "database:fund_accounts.bank_statement_batch.statement_revision"
     },
     {
       "constraint": "bank_statement_line_account_id_fkey",
@@ -46368,6 +46412,12 @@
       "label": "",
       "source": "database:fund_accounts.bank_statement_line_batch_id_fkey on fund_accounts.bank_statement_line",
       "target": "database:fund_accounts.bank_statement_batch_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_accounts.bank_statement_line_line_sequence_check on fund_accounts.bank_statement_line",
+      "target": "database:fund_accounts.bank_statement_line.line_sequence"
     },
     {
       "kind": "normal",
@@ -53581,7 +53631,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "af2917df79b79fb02bdf6d431401cb40811733e7aea1e94d5d13b7cb65b74c7a",
+  "fingerprint": "789f7f77dd6ff95f0e11f0ae9fb5e1b804ea5ecbb1cd08c5fcca21b024cda9ae",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -72392,9 +72442,24 @@
       "schema": "fund_accounts"
     },
     {
+      "id": "database:fund_accounts.account_reconciliation_breaks.result_id",
+      "kind": "database-object",
+      "label": "fund_accounts.account_reconciliation_breaks.result_id"
+    },
+    {
+      "id": "database:fund_accounts.account_reconciliation_breaks_pkey",
+      "kind": "database-object",
+      "label": "fund_accounts.account_reconciliation_breaks_pkey"
+    },
+    {
       "id": "database:fund_accounts.account_reconciliation_breaks_reconciliation_run_id_fkey on fund_accounts.account_reconciliation_breaks",
       "kind": "database-object",
       "label": "fund_accounts.account_reconciliation_breaks_reconciliation_run_id_fkey on fund_accounts.account_reconciliation_breaks"
+    },
+    {
+      "id": "database:fund_accounts.account_reconciliation_breaks_superseded_by_result_id_fkey on fund_accounts.account_reconciliation_breaks",
+      "kind": "database-object",
+      "label": "fund_accounts.account_reconciliation_breaks_superseded_by_result_id_fkey on fund_accounts.account_reconciliation_breaks"
     },
     {
       "id": "database:fund_accounts.account_reconciliation_run",
@@ -72424,9 +72489,24 @@
       "schema": "fund_accounts"
     },
     {
+      "id": "database:fund_accounts.account_sync_history.sync_history_id",
+      "kind": "database-object",
+      "label": "fund_accounts.account_sync_history.sync_history_id"
+    },
+    {
       "id": "database:fund_accounts.account_sync_history_account_id_fkey on fund_accounts.account_sync_history",
       "kind": "database-object",
       "label": "fund_accounts.account_sync_history_account_id_fkey on fund_accounts.account_sync_history"
+    },
+    {
+      "id": "database:fund_accounts.account_sync_history_pkey",
+      "kind": "database-object",
+      "label": "fund_accounts.account_sync_history_pkey"
+    },
+    {
+      "id": "database:fund_accounts.account_sync_history_superseded_by_sync_history_id_fkey on fund_accounts.account_sync_history",
+      "kind": "database-object",
+      "label": "fund_accounts.account_sync_history_superseded_by_sync_history_id_fkey on fund_accounts.account_sync_history"
     },
     {
       "id": "database:fund_accounts.bank_statement_batch",
@@ -72440,6 +72520,11 @@
       "label": "fund_accounts.bank_statement_batch.batch_id"
     },
     {
+      "id": "database:fund_accounts.bank_statement_batch.statement_revision",
+      "kind": "database-object",
+      "label": "fund_accounts.bank_statement_batch.statement_revision"
+    },
+    {
       "id": "database:fund_accounts.bank_statement_batch_account_id_fkey on fund_accounts.bank_statement_batch",
       "kind": "database-object",
       "label": "fund_accounts.bank_statement_batch_account_id_fkey on fund_accounts.bank_statement_batch"
@@ -72450,10 +72535,20 @@
       "label": "fund_accounts.bank_statement_batch_pkey"
     },
     {
+      "id": "database:fund_accounts.bank_statement_batch_statement_revision_check on fund_accounts.bank_statement_batch",
+      "kind": "database-object",
+      "label": "fund_accounts.bank_statement_batch_statement_revision_check on fund_accounts.bank_statement_batch"
+    },
+    {
       "id": "database:fund_accounts.bank_statement_line",
       "kind": "database-table",
       "label": "fund_accounts.bank_statement_line",
       "schema": "fund_accounts"
+    },
+    {
+      "id": "database:fund_accounts.bank_statement_line.line_sequence",
+      "kind": "database-object",
+      "label": "fund_accounts.bank_statement_line.line_sequence"
     },
     {
       "id": "database:fund_accounts.bank_statement_line_account_id_fkey on fund_accounts.bank_statement_line",
@@ -72464,6 +72559,11 @@
       "id": "database:fund_accounts.bank_statement_line_batch_id_fkey on fund_accounts.bank_statement_line",
       "kind": "database-object",
       "label": "fund_accounts.bank_statement_line_batch_id_fkey on fund_accounts.bank_statement_line"
+    },
+    {
+      "id": "database:fund_accounts.bank_statement_line_line_sequence_check on fund_accounts.bank_statement_line",
+      "kind": "database-object",
+      "label": "fund_accounts.bank_statement_line_line_sequence_check on fund_accounts.bank_statement_line"
     },
     {
       "id": "database:fund_accounts.ck_fund_account_legacy_import_receipt_source_hash on fund_accounts.fund_account_legacy_import_receipt",
@@ -78413,9 +78513,9 @@
   "summary": {
     "contract_references": 3429,
     "contract_set_memberships": 4229,
-    "edges": 8902,
-    "foreign_keys": 152,
+    "edges": 8910,
+    "foreign_keys": 154,
     "logical_references": 6,
-    "nodes": 4308
+    "nodes": 4318
   }
 }

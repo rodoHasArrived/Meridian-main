@@ -150,6 +150,10 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
         ProviderCredentialReadResult expectedConnection, CancellationToken ct = default)
         => SaveCredentialsAsync(request, true, null, ct, expectedConnection);
 
+    public Task<string> SaveScopedRotatedCredentialsAsync(ProviderCredentialSaveRequest request, ProviderCredentialScope scope,
+        ProviderCredentialReadResult expectedConnection, CancellationToken ct = default)
+        => SaveCredentialsAsync(request, true, scope ?? throw new ArgumentNullException(nameof(scope)), ct, expectedConnection);
+
     private async Task<string> SaveCredentialsAsync(ProviderCredentialSaveRequest request, bool retainCurrentGenerationAsBackup,
         ProviderCredentialScope? scope, CancellationToken ct, ProviderCredentialReadResult? expectedConnection = null)
     {

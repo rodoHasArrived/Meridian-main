@@ -12,7 +12,7 @@ namespace Meridian.Storage.Services;
 /// <summary>
 /// Service for file health monitoring, self-healing, and maintenance operations.
 /// </summary>
-public sealed class FileMaintenanceService : IFileMaintenanceService
+public sealed partial class FileMaintenanceService : IFileMaintenanceService
 {
     private readonly ILogger _log = LoggingSetup.ForContext<FileMaintenanceService>();
     private readonly StorageOptions _options;
@@ -120,9 +120,10 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
 
     public async Task<RepairResult> RepairAsync(RepairOptions options, CancellationToken ct = default)
     {
-        var filesProcessed = 0;
         var filesRepaired = 0;
+        var filesChanged = 0;
         var errors = new List<string>();
+        var recoveryCopies = new List<string>();
 
         // First run health check to identify issues
         var healthCheck = await RunHealthCheckAsync(new HealthCheckOptions
@@ -133,82 +134,98 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
             ParallelChecks = 4
         }, ct);
 
-        var repairableIssues = healthCheck.Issues
-            .Where(i => i.AutoRepairable && MatchesScope(i, options))
+        // A file can have several issues. Back it up and mutate it only once, and include
+        // issues requiring manual recovery so they cannot disappear from the result.
+        var issueGroups = healthCheck.Issues
+            .Where(i => i.Severity >= IssueSeverity.Warning && MatchesScope(i, options))
+            .GroupBy(i => i.Path, OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal)
             .ToList();
+
+        if (options.Strategy is not (RepairStrategy.TruncateCorrupted or RepairStrategy.RecompressOptimal))
+        {
+            return new RepairResult(issueGroups.Count, 0,
+                [$"Repair strategy {options.Strategy} is unsupported by file repair. Use storage search for index rebuilding, defragmentation for merging, or an explicit restore/re-ingest workflow."],
+                options.DryRun, null);
+        }
 
         if (options.DryRun)
         {
             return new RepairResult(
-                FilesProcessed: repairableIssues.Count,
+                FilesProcessed: issueGroups.Count,
                 FilesRepaired: 0,
                 Errors: new List<string>(),
                 DryRun: true,
-                PlannedActions: repairableIssues.Select(i => i.RecommendedAction).ToList()
+                PlannedActions: issueGroups.Select(group => $"{options.Strategy}: {group.Key}").ToList()
             );
         }
 
-        // Create backup if requested. With no BackupPath configured, back up next to the file
-        // instead of silently repairing a possibly-destructive strategy with no safety copy.
-        if (options.BackupBeforeRepair)
-        {
-            foreach (var issue in repairableIssues)
-            {
-                try
-                {
-                    string backupFile;
-                    if (!string.IsNullOrEmpty(options.BackupPath))
-                    {
-                        Directory.CreateDirectory(options.BackupPath);
-                        backupFile = Path.Combine(options.BackupPath, Path.GetFileName(issue.Path));
-                    }
-                    else
-                    {
-                        backupFile = issue.Path + ".pre-repair.bak";
-                    }
+        if (!await CreateRequiredBackupsAsync(issueGroups.Select(group => group.Key),
+                options.BackupBeforeRepair, options.BackupPath, "repair", recoveryCopies, errors, ct))
+            return new RepairResult(issueGroups.Count, 0, errors, false, null) { RecoveryCopies = recoveryCopies };
 
-                    File.Copy(issue.Path, backupFile, overwrite: true);
-                }
-                catch (Exception ex)
-                {
-                    errors.Add($"Backup failed for {issue.Path}: {ex.Message}");
-                }
-            }
-        }
-
-        // Perform repairs based on strategy
-        foreach (var issue in repairableIssues)
+        foreach (var group in issueGroups)
         {
             ct.ThrowIfCancellationRequested();
-            filesProcessed++;
+
+            if (group.Any(issue => !issue.AutoRepairable))
+            {
+                errors.Add($"Unresolved issues for {group.Key} require manual recovery: {string.Join(", ", group.Select(issue => issue.Type))}.");
+                continue;
+            }
 
             try
             {
+                if (options.Strategy == RepairStrategy.RecompressOptimal)
+                {
+                    // Changing encoding cannot correct damaged data or establish which bytes were
+                    // authoritative before a checksum mismatch. Re-encoding would publish the damaged
+                    // bytes under a fresh archive checksum and delete the source and its retained
+                    // checksum, after which the same damage reads as healthy. Leave the file as found.
+                    errors.Add($"Unresolved issues for {group.Key}: recompression cannot repair {string.Join(", ", group.Select(issue => issue.Type))}; the file was left unchanged. Restore or repair its evidence, then compress the healthy file.");
+                    continue;
+                }
+
                 var repaired = options.Strategy switch
                 {
-                    RepairStrategy.TruncateCorrupted => await TruncateCorruptedAsync(issue.Path, ct),
-                    RepairStrategy.RebuildIndex => await RebuildIndexAsync(issue.Path, ct),
-                    RepairStrategy.MergeFragments => await MergeFragmentsAsync(issue.Path, ct),
-                    RepairStrategy.RecompressOptimal => await RecompressAsync(issue.Path, ct),
+                    RepairStrategy.TruncateCorrupted => await TruncateCorruptedAsync(group.Key, recoveryCopies, ct),
                     _ => false
                 };
 
-                if (repaired)
-                    filesRepaired++;
+                if (!repaired)
+                {
+                    errors.Add($"Unresolved issues for {group.Key}: {options.Strategy} made no repair.");
+                    continue;
+                }
+                filesChanged++;
+
+                var remaining = new ConcurrentBag<HealthIssue>();
+                await CheckFileHealthAsync(new FileInfo(group.Key), new HealthCheckOptions(), remaining, ct);
+                if (remaining.Any(issue => issue.Severity >= IssueSeverity.Warning))
+                {
+                    errors.Add($"Unresolved issues after repairing {group.Key}: {string.Join(", ", remaining.Select(issue => issue.Type))}.");
+                    continue;
+                }
+
+                filesRepaired++;
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
             }
             catch (Exception ex)
             {
-                errors.Add($"Repair failed for {issue.Path}: {ex.Message}");
+                errors.Add($"Repair failed for {group.Key}: {ex.Message}");
             }
         }
 
         return new RepairResult(
-            FilesProcessed: filesProcessed,
+            FilesProcessed: issueGroups.Count,
             FilesRepaired: filesRepaired,
             Errors: errors,
             DryRun: false,
             PlannedActions: null
-        );
+        )
+        { RecoveryCopies = recoveryCopies, FilesChanged = filesChanged };
     }
 
     public async Task<DefragResult> DefragmentAsync(DefragOptions options, CancellationToken ct = default)
@@ -402,11 +419,21 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
         ));
     }
 
+    private static bool IsArchiveBeingAppended(FileInfo file, out FileStream? appendLease)
+    {
+        appendLease = null;
+        return file.Name.EndsWith(".gz", StringComparison.OrdinalIgnoreCase)
+            && !ArchiveAppendLock.TryAcquire(file.FullName, out appendLease);
+    }
+
     private async Task CheckFileHealthAsync(FileInfo file, HealthCheckOptions options, ConcurrentBag<HealthIssue> issues, CancellationToken ct)
     {
-        // Validate checksum if requested
-        if (options.ValidateChecksums)
+        // Validate checksum if requested. An append retires and republishes a .gz archive's sidecar
+        // under the archive append lock; holding it keeps the sidecar and the bytes from one
+        // generation, and an archive being appended right now is checked on the next sweep.
+        if (options.ValidateChecksums && !IsArchiveBeingAppended(file, out var appendLease))
         {
+            using var heldAppendLease = appendLease;
             var checksumFile = file.FullName + ".sha256";
             if (File.Exists(checksumFile))
             {
@@ -429,6 +456,20 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
                         AutoRepairable: true
                     ));
                 }
+            }
+            else if (file.Name.EndsWith(".jsonl.gz", StringComparison.OrdinalIgnoreCase))
+            {
+                // Compression always publishes a sidecar with the archive, and a late append
+                // retires it before changing the bytes and republishes it after. An archive with
+                // no sidecar has lost its coverage (interrupted republish, manual removal), so
+                // later truncation or corruption would otherwise pass every health check.
+                issues.Add(new HealthIssue(
+                    Severity: IssueSeverity.Warning,
+                    Type: IssueType.MissingChecksum,
+                    Path: file.FullName,
+                    RecommendedAction: "republish_checksum",
+                    AutoRepairable: false
+                ));
             }
         }
 
@@ -583,7 +624,7 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
         }
     }
 
-    private async Task<bool> TruncateCorruptedAsync(string filePath, CancellationToken ct)
+    private async Task<bool> TruncateCorruptedAsync(string filePath, List<string> recoveryCopies, CancellationToken ct)
     {
         // Line-level salvage only makes sense for plain JSONL. On compressed or binary formats
         // every "line" parses as invalid, and the old behaviour atomically rewrote the file as
@@ -604,7 +645,7 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
                 continue;
             try
             {
-                JsonDocument.Parse(line);
+                using var document = JsonDocument.Parse(line);
                 validCount++;
             }
             catch (JsonException)
@@ -618,14 +659,21 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
         if (rejectedLines.Count == 0)
             return false;
 
-        await AtomicFileWriter.WriteStreamAsync(filePath + ".corrupt-lines", async stream =>
+        // Quarantine is recovery evidence. Create a fresh file rather than overwriting the
+        // rejected lines from an earlier repair of this archive.
+        var quarantinePath = filePath + $".{Guid.NewGuid():N}.corrupt-lines";
+        await using (var stream = new FileStream(quarantinePath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
         {
             // encoding: null selects BOM-less UTF-8; a BOM would corrupt line-oriented readers
             // (same rationale as AtomicFileWriter.Utf8NoBom).
             await using var writer = new StreamWriter(stream, encoding: null, leaveOpen: true);
             foreach (var line in rejectedLines)
                 await writer.WriteLineAsync(line.AsMemory(), ct);
-        }, ct);
+            await writer.FlushAsync(ct);
+            stream.Flush(flushToDisk: true);
+        }
+        await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(quarantinePath)!, CancellationToken.None);
+        recoveryCopies.Add(quarantinePath);
 
         // Pass 2: stream the salvaged content into the atomic temp file. The source is re-read
         // and fully closed inside the callback, before the atomic rename replaces it.
@@ -638,7 +686,7 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
                     continue;
                 try
                 {
-                    JsonDocument.Parse(line);
+                    using var document = JsonDocument.Parse(line);
                 }
                 catch (JsonException)
                 {
@@ -649,72 +697,29 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
             }
         }, ct);
 
-        await RefreshChecksumSidecarAsync(filePath, ct);
-
         _log.Information(
             "Truncate repair salvaged {ValidCount} lines and quarantined {RejectedCount} corrupt lines for {FilePath}",
             validCount, rejectedLines.Count, filePath);
+        if (!await SalvageReproducesRetainedChecksumAsync(filePath, ct))
+        {
+            _log.Warning(
+                "Truncate repair of {FilePath} removed corrupt lines, but the remaining records do not reproduce the retained checksum; the mismatch is left for restoration",
+                filePath);
+        }
         return true;
     }
 
-    // A repaired file's bytes changed; a stale sha256 sidecar would report the repair itself as
-    // corruption on the next health check, permanently. Rewrite it in sha256sum format.
-    private async Task RefreshChecksumSidecarAsync(string filePath, CancellationToken ct)
+    // A sidecar retains the checksum of the file as published. Salvage removes only lines that
+    // never parsed, so a file published intact and then damaged by an appended tail reproduces
+    // its checksum once the tail is gone. If it does not, parseable records were altered too:
+    // rewriting the sidecar would bless them, so it is left as is and the mismatch stays visible.
+    private async Task<bool> SalvageReproducesRetainedChecksumAsync(string filePath, CancellationToken ct)
     {
         var sidecarPath = filePath + ".sha256";
         if (!File.Exists(sidecarPath))
-            return;
-
-        var checksum = await ComputeChecksumAsync(filePath, ct);
-        await AtomicFileWriter.WriteAsync(sidecarPath, $"{checksum}  {Path.GetFileName(filePath)}", ct);
-    }
-
-    private Task<bool> RebuildIndexAsync(string filePath, CancellationToken ct)
-    {
-        // Index rebuilding is not implemented. Return false rather than a fake success so it is
-        // not counted as a repair — reporting "repaired" for a no-op masked real health issues.
-        _log.Warning(
-            "RebuildIndex repair requested for {FilePath} but is not implemented; reporting no repair",
-            filePath);
-        return Task.FromResult(false);
-    }
-
-    private Task<bool> MergeFragmentsAsync(string filePath, CancellationToken ct)
-    {
-        // Fragment merging is performed by DefragmentAsync, not by this per-file repair strategy.
-        // Return false rather than a fake success so it is not counted as a repair here.
-        _log.Warning(
-            "MergeFragments repair requested for {FilePath}; fragment merging is handled by defragmentation, reporting no repair",
-            filePath);
-        return Task.FromResult(false);
-    }
-
-    private async Task<bool> RecompressAsync(string filePath, CancellationToken ct)
-    {
-        // Recompress with optimal settings
-        if (!filePath.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase))
-            return false;
-
-        // Write the compressed copy atomically, then remove the original so exactly one canonical
-        // copy remains. Leaving both files meant every replay double-counted these events.
-        var outputPath = filePath + ".gz";
-        await AtomicFileWriter.WriteStreamAsync(outputPath, async output =>
-        {
-            await using var input = File.OpenRead(filePath);
-            await using var gzip = new System.IO.Compression.GZipStream(
-                output, System.IO.Compression.CompressionLevel.Optimal, leaveOpen: true);
-            await input.CopyToAsync(gzip, ct);
-        }, ct);
-
-        File.Delete(filePath);
-
-        // The plain-file sidecar no longer matches anything on disk; drop it rather than leaving
-        // a dangling checksum that the health check reports as an orphan/mismatch.
-        var staleSidecar = filePath + ".sha256";
-        if (File.Exists(staleSidecar))
-            File.Delete(staleSidecar);
-
-        return true;
+            return true;
+        var expected = (await File.ReadAllTextAsync(sidecarPath, ct)).Split(' ', 2)[0].Trim();
+        return string.Equals(expected, await ComputeChecksumAsync(filePath, ct), StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task<string?> MergeFilesAsync(List<FileInfo> files, DefragOptions options, CancellationToken ct)
@@ -757,6 +762,7 @@ public interface IFileMaintenanceService
 {
     Task<HealthReport> RunHealthCheckAsync(HealthCheckOptions options, CancellationToken ct = default);
     Task<RepairResult> RepairAsync(RepairOptions options, CancellationToken ct = default);
+    Task<FileCompressionResult> CompressAsync(FileCompressionOptions options, CancellationToken ct = default);
     Task<DefragResult> DefragmentAsync(DefragOptions options, CancellationToken ct = default);
     Task<OrphanReport> FindOrphansAsync(CancellationToken ct = default);
 }
@@ -827,7 +833,8 @@ public enum IssueType : byte
     UnreadableFile,
     PermissionDenied,
     OrphanedFile,
-    SchemaViolation
+    SchemaViolation,
+    MissingChecksum
 }
 
 // Repair types
@@ -858,7 +865,12 @@ public sealed record RepairResult(
     IReadOnlyList<string> Errors,
     bool DryRun,
     IReadOnlyList<string>? PlannedActions
-);
+)
+{
+    public IReadOnlyList<string> RecoveryCopies { get; init; } = [];
+    public int FilesChanged { get; init; }
+    public int FilesUnresolved => Math.Max(0, FilesProcessed - FilesRepaired);
+}
 
 // Defrag types
 public sealed record DefragOptions(

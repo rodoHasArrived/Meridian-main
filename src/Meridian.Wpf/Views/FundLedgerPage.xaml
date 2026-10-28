@@ -436,7 +436,7 @@
                                 <DataGridTextColumn Header="Code" Binding="{Binding AccountCode}" Width="120" />
                                 <DataGridTextColumn Header="Bank" Binding="{Binding BankName}" Width="160" />
                                 <DataGridTextColumn Header="Currency" Binding="{Binding Currency}" Width="90" />
-                                <DataGridTextColumn Header="Balance" Binding="{Binding CurrentBalance, StringFormat={}{0:C2}}" Width="120" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                <DataGridTextColumn Header="Balance" Binding="{Binding CurrentBalance, StringFormat={}{0:C2}, TargetNullValue=Unavailable, FallbackValue=Unavailable}" Width="120" ElementStyle="{StaticResource RightAlignedCellStyle}" />
                                 <DataGridTextColumn Header="Pending Settlement" Binding="{Binding PendingSettlement, StringFormat={}{0:C2}}" Width="140" ElementStyle="{StaticResource RightAlignedCellStyle}" />
                                 <DataGridTextColumn Header="Last Statement" Binding="{Binding LastStatementDate}" Width="110" />
                                 <DataGridTextColumn Header="Lines" Binding="{Binding StatementLineCount}" Width="70" ElementStyle="{StaticResource RightAlignedCellStyle}" />

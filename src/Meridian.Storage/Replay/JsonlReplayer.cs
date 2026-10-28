@@ -69,13 +69,12 @@ public sealed class JsonlReplayer
     public async IAsyncEnumerable<MarketEvent> ReadEventsAsync(
         [EnumeratorCancellation] CancellationToken ct = default)
     {
-        if (!File.Exists(_path) && !Directory.Exists(_path))
+        if (!JsonlArchiveFiles.Exists(_path) && !Directory.Exists(_path))
             yield break;
 
-        IReadOnlyList<string> files = File.Exists(_path)
+        IReadOnlyList<string> files = JsonlArchiveFiles.Exists(_path)
             ? [_path]
-            : Directory.EnumerateFiles(_path, "*", SearchOption.AllDirectories)
-                .Where(IsCanonicalArchivePath)
+            : JsonlArchiveFiles.Enumerate(_path)
                 .OrderBy(static file => file, StringComparer.Ordinal)
                 .ToArray();
 
@@ -182,14 +181,6 @@ public sealed class JsonlReplayer
             }
         }
     }
-
-    private static bool IsCanonicalArchivePath(string path) =>
-        path.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase) ||
-        path.EndsWith(".jsonl.gz", StringComparison.OrdinalIgnoreCase) ||
-        path.EndsWith(".jsonl.gzip", StringComparison.OrdinalIgnoreCase) ||
-        path.EndsWith(".jsonl.zst", StringComparison.OrdinalIgnoreCase) ||
-        path.EndsWith(".jsonl.lz4", StringComparison.OrdinalIgnoreCase) ||
-        path.EndsWith(".jsonl.br", StringComparison.OrdinalIgnoreCase);
 
     private static async Task<(IReadOnlyList<ReplayRecord> Records, long NextOffset)> ReadSpoolPageAsync(
         string path, long offset, CancellationToken ct)
@@ -409,20 +400,16 @@ public sealed class JsonlReplayer
         [EnumeratorCancellation] CancellationToken ct)
     {
         var comparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
-        var gate = SourceReadGates[(uint)comparer.GetHashCode(Path.GetFullPath(file)) % (uint)SourceReadGates.Length];
+        var gate = SourceReadGates[(uint)comparer.GetHashCode(Path.GetFullPath(JsonlArchiveFiles.LogicalPath(file))) % (uint)SourceReadGates.Length];
         await gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await using var fs = new FileStream(
-                file,
-                FileMode.Open,
-                FileAccess.Read,
-                FileShare.None,
-                bufferSize: 4096,
-                useAsync: true);
+            await using var fs = await JsonlArchiveFiles.OpenReadAsync(file, ct, FileShare.None)
+                .ConfigureAwait(false);
             // Closed-capture lease: an active sink returns IOException instead of exposing a partial
             // tail to the parser. No source lease survives sort preparation or a public replay yield.
-            var stream = CompressedJsonlStream.Decompress(fs, file);
+            var sourceFile = fs.Name;
+            var stream = CompressedJsonlStream.Decompress(fs, sourceFile);
             using var reader = new StreamReader(stream);
             long lineNumber = 0;
             while (true)
@@ -457,14 +444,14 @@ public sealed class JsonlReplayer
                 catch (Exception ex) when (ex is JsonException or ArgumentException or NotSupportedException)
                 {
                     throw new InvalidDataException(
-                        $"Malformed JSONL record in replay file '{file}' at line {lineNumber}.",
+                        $"Malformed JSONL record in replay file '{sourceFile}' at line {lineNumber}.",
                         ex);
                 }
 
                 if (evt is null)
                 {
                     throw new InvalidDataException(
-                        $"Null JSONL record in replay file '{file}' at line {lineNumber}.");
+                        $"Null JSONL record in replay file '{sourceFile}' at line {lineNumber}.");
                 }
 
                 yield return new ReplayRecord(evt, lineNumber, FileIndex: 0);

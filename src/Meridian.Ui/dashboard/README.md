@@ -139,6 +139,12 @@ reported by the surface that did the work -- statement import commit, reconcilia
 resolution, report run, and analysis export each call `recordActivationOutcome` in
 `src/lib/first-run/activation.ts` -- so the count never advances on a page visit alone.
 
+Quant Lab plots preserve the worker's calculated series, including fractional cumulative returns
+and drawdowns, without repeating financial transformations in the browser. Notebook execution
+forwards the selected symbol, date range and interval using the worker's `context.*` parameters;
+cell outputs retain emitted charts and trades alongside console, metrics and diagnostics. The
+server-shaped regression fixture lives in `src/test/fixtures/quant-run-response.json`.
+
 ## Shared close and lot convergence
 
 Accounting forwards the entity along with fund/book/account/period when requesting the shared close decision. The close headline requires a complete ready server projection. Legacy metrics remain diagnostic and cannot produce Ready when the shared service is absent. Focused proof: `accounting-screen.close-cockpit.view-model.test.ts`.

@@ -4,10 +4,12 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
+using Meridian.Contracts.Integrity;
 using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
+using Meridian.Storage.Replay;
 using Meridian.Storage.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -121,6 +123,9 @@ public sealed class JsonlStorageSink : IStorageSink
     // Cached factory delegate — the Lazy<> wrapper ensures WriterState.Create is called at most once
     // per unique path even under concurrent access, while the cached delegate avoids closure allocation.
     private readonly Func<string, Lazy<WriterState>> _writerFactory;
+
+    // Per-instance test seam: throws during checksum republication after a committed archive append.
+    internal Action? ArchiveChecksumFault { get; init; }
     private readonly Func<string, MarketEventBuffer> _bufferFactory;
 
     // Test seam mirroring ParquetStorageSink's injectable atomic-write delegate: when set,
@@ -204,7 +209,9 @@ public sealed class JsonlStorageSink : IStorageSink
         // Keep compressed day files behind the atomic replacement boundary so a crash cannot
         // strand later WAL replay members behind an unreadable member.
         var copyOnWrite = _batchOptions.WriteMode == JsonlWriteMode.CopyOnWrite || compress;
-        _writerFactory = p => new Lazy<WriterState>(() => WriterState.Create(p, compress, copyOnWrite), LazyThreadSafetyMode.ExecutionAndPublication);
+        _writerFactory = p => new Lazy<WriterState>(
+            () => WriterState.Create(p, compress, copyOnWrite, _logger, ArchiveChecksumFault),
+            LazyThreadSafetyMode.ExecutionAndPublication);
         _bufferFactory = _ => new MarketEventBuffer(batchSize);
 
         if (_batchOptions.Enabled)
@@ -378,7 +385,8 @@ public sealed class JsonlStorageSink : IStorageSink
         }
     }
 
-    private void RunRetentionCleanup()
+    // Internal so tests can run one sweep without waiting for the 15-second timer.
+    internal void RunRetentionCleanup()
     {
         try
         {
@@ -511,22 +519,33 @@ public sealed class JsonlStorageSink : IStorageSink
         private readonly bool _compressed;
         private readonly bool _copyOnWrite;
         private FileStream? _stream;
+        // Held while _stream is open so compression cannot delete a source we append to.
+        private IDisposable? _fenceLease;
+        // Held with the fence while the append stream is open, so compression in another process
+        // sharing the data root cannot delete this source while it can still be appended to.
+        private FileStream? _writerLock;
+        private static readonly TimeSpan WriterLockTimeout = TimeSpan.FromMinutes(5);
         private bool _dirtySinceFsync;
         private bool _compressedFileValidated;
         private long _fsyncCount;
         private DateTimeOffset _lastWriteUtc;
 
-        private WriterState(string path, bool compressed, bool copyOnWrite)
+        private readonly ILogger _logger;
+        private readonly Action? _archiveChecksumFault;
+
+        private WriterState(string path, bool compressed, bool copyOnWrite, ILogger logger, Action? archiveChecksumFault)
         {
             _path = path;
             _compressed = compressed;
             _copyOnWrite = copyOnWrite;
+            _logger = logger;
+            _archiveChecksumFault = archiveChecksumFault;
         }
 
-        public static WriterState Create(string path, bool compress, bool copyOnWrite)
+        public static WriterState Create(string path, bool compress, bool copyOnWrite, ILogger logger, Action? archiveChecksumFault)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-            return new WriterState(path, compress, copyOnWrite);
+            return new WriterState(path, compress, copyOnWrite, logger, archiveChecksumFault);
         }
 
         public long FsyncCount => Interlocked.Read(ref _fsyncCount);
@@ -578,10 +597,14 @@ public sealed class JsonlStorageSink : IStorageSink
                 if (_copyOnWrite)
                 {
                     EnsureCompressedFileIsReadable();
-                    await AtomicFileWriter.AppendAsync(
-                        _path,
-                        stream => WriteSingleEventAsync(stream, evt, ct),
-                        ct).ConfigureAwait(false);
+                    using var fence = await JsonlWriteFence.EnterWriteAsync(_path, ct).ConfigureAwait(false);
+                    // A plain source replaced copy-on-write is still a source another process may be
+                    // compressing; hold the writer lock as the append stream does.
+                    await using var writerLock = _compressed ? null
+                        : await JsonlWriterLock.AcquireSharedAsync(_path, WriterLockTimeout, ct).ConfigureAwait(false);
+                    if (await TryAppendToPublishedArchiveAsync(stream => WriteEventToTargetStreamAsync(stream, evt, ct), ct).ConfigureAwait(false))
+                        return;
+                    await AppendCopyOnWriteAsync(stream => WriteSingleEventAsync(stream, evt, ct), ct).ConfigureAwait(false);
                     return;
                 }
 
@@ -610,10 +633,14 @@ public sealed class JsonlStorageSink : IStorageSink
                 if (_copyOnWrite)
                 {
                     EnsureCompressedFileIsReadable();
-                    await AtomicFileWriter.AppendAsync(
-                        _path,
-                        stream => WriteEventsAsync(stream, events, ct),
-                        ct).ConfigureAwait(false);
+                    using var fence = await JsonlWriteFence.EnterWriteAsync(_path, ct).ConfigureAwait(false);
+                    // A plain source replaced copy-on-write is still a source another process may be
+                    // compressing; hold the writer lock as the append stream does.
+                    await using var writerLock = _compressed ? null
+                        : await JsonlWriterLock.AcquireSharedAsync(_path, WriterLockTimeout, ct).ConfigureAwait(false);
+                    if (await TryAppendToPublishedArchiveAsync(stream => WriteEventsToTargetStreamAsync(stream, events, ct), ct).ConfigureAwait(false))
+                        return;
+                    await AppendCopyOnWriteAsync(stream => WriteEventsAsync(stream, events, ct), ct).ConfigureAwait(false);
                     return;
                 }
 
@@ -666,14 +693,49 @@ public sealed class JsonlStorageSink : IStorageSink
 
             await _stream.DisposeAsync().ConfigureAwait(false);
             _stream = null;
+            ReleaseWriteLeases();
+        }
+
+        // Caller must hold _gate. Releases in the reverse of acquisition order.
+        private void ReleaseWriteLeases()
+        {
+            _writerLock?.Dispose();
+            _writerLock = null;
+            _fenceLease?.Dispose();
+            _fenceLease = null;
         }
 
         // Caller holds _gate. If a cancellable write fails after reaching the OS, restore the
         // file to its last complete JSONL boundary. The buffer/WAL retry can then append the
         // original events without joining valid JSON to a torn prefix.
-        private async Task WriteAppendStreamAsync(Func<FileStream, Task> write, CancellationToken ct)
+        private async Task WriteAppendStreamAsync(Func<Stream, Task> write, CancellationToken ct)
         {
-            var stream = EnsureStream();
+            FileStream stream;
+            if (_stream is null)
+            {
+                _fenceLease ??= await JsonlWriteFence.EnterWriteAsync(_path, ct).ConfigureAwait(false);
+                try
+                {
+                    // Waits out a compression of this source in another process; the archive check
+                    // below then sees its outcome, so a late write never recreates a compressed source.
+                    _writerLock ??= await JsonlWriterLock.AcquireSharedAsync(_path, WriterLockTimeout, ct).ConfigureAwait(false);
+                    if (await TryAppendToPublishedArchiveAsync(write, ct).ConfigureAwait(false))
+                    {
+                        ReleaseWriteLeases();
+                        return;
+                    }
+                    stream = EnsureStream();
+                }
+                catch
+                {
+                    ReleaseWriteLeases();
+                    throw;
+                }
+            }
+            else
+            {
+                stream = _stream;
+            }
             var startPosition = stream.Position;
             try
             {
@@ -730,14 +792,109 @@ public sealed class JsonlStorageSink : IStorageSink
             if (!_compressed || _compressedFileValidated || !File.Exists(_path))
                 return;
 
-            using var file = new FileStream(_path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            RequireReadableGzip(_path);
+            _compressedFileValidated = true;
+        }
+
+        private static void RequireReadableGzip(string path)
+        {
+            using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
             using var gzip = new GZipStream(file, CompressionMode.Decompress);
             var buffer = new byte[64 * 1024];
             while (gzip.Read(buffer, 0, buffer.Length) > 0)
             {
             }
+        }
 
-            _compressedFileValidated = true;
+        // Caller holds this path's write fence. Maintenance compression publishes x.jsonl.gz and
+        // deletes x.jsonl; a later write to the same plain path must extend that archive with a
+        // gzip member rather than recreate x.jsonl beside it, which replay would reject as two
+        // conflicting representations of one archive. Returns false when no archive applies.
+        // Copy-on-write costs O(archive size) per call; that is acceptable only because scheduled
+        // compression selects closed partition periods, so this path serves rare late writes.
+        // Bounded by the copy of one archive plus a competing appender's; a holder wedged longer
+        // than this is a storage fault to surface, not contention to wait out.
+        private static readonly TimeSpan ArchiveAppendLockTimeout = TimeSpan.FromMinutes(5);
+
+        private async Task<bool> TryAppendToPublishedArchiveAsync(Func<Stream, Task> writePlain, CancellationToken ct)
+        {
+            var archive = _path + ".gz";
+            if (_compressed || !File.Exists(archive))
+                return false;
+
+            // Another sink instance, in this process or another sharing the data root, may be
+            // appending to the same archive; serialize the whole read-copy-replace (the in-process
+            // fence, then the OS lock) and re-check, since that appender may have changed the state.
+            using var appendLease = await JsonlWriteFence.EnterArchiveAppendAsync(archive, ct).ConfigureAwait(false);
+            await using var processLease = await ArchiveAppendLock.AcquireAsync(archive, ArchiveAppendLockTimeout, ct).ConfigureAwait(false);
+            if (!File.Exists(archive))
+                return false;
+            // A crash between gzip publication and source deletion leaves both complete, equal
+            // representations. Appending to the plain one would make the pair unequal and block
+            // replay, so finish that interrupted cleanup first and extend the archive instead.
+            if (File.Exists(_path) && !await JsonlArchiveFiles.TryRetireEqualSourceAsync(_path, ct).ConfigureAwait(false))
+                return false;
+
+            RequireReadableGzip(archive);
+            // Retire the archive's checksum before changing its bytes and publish a fresh one
+            // after: a crash in between loses coverage rather than reporting false corruption.
+            var sidecar = archive + ".sha256";
+            if (File.Exists(sidecar))
+                File.Delete(sidecar);
+            await AtomicFileWriter.AppendAsync(archive, async stream =>
+            {
+                await using var gzip = new GZipStream(stream, CompressionLevel.Fastest, leaveOpen: true);
+                await writePlain(gzip).ConfigureAwait(false);
+            }, ct).ConfigureAwait(false);
+            _lastWriteUtc = DateTimeOffset.UtcNow;
+            // The member is committed: from here nothing may report failure, or the caller would
+            // retry (or the WAL would replay) and append the same events again. The checksum is
+            // published whether or not one existed before: an archive whose compression was
+            // interrupted before its sidecar was written must not stay uncovered on every append.
+            await RepublishArchiveChecksumAsync(archive, sidecar).ConfigureAwait(false);
+            return true;
+        }
+
+        // Caller holds _gate and the write fence. A plain source is replaced as a whole. A direct gzip
+        // partition is itself an archive: every instance writing it, in this process or another, would
+        // copy the same bytes and the last replacement would drop the others' members, so it takes the
+        // same append lease and OS lock as a late append to a published archive. Its checksum is retired
+        // before the bytes change and republished after, as for a published archive.
+        private async Task AppendCopyOnWriteAsync(Func<Stream, Task> write, CancellationToken ct)
+        {
+            if (!_compressed)
+            {
+                await AtomicFileWriter.AppendAsync(_path, write, ct).ConfigureAwait(false);
+                return;
+            }
+
+            using var appendLease = await JsonlWriteFence.EnterArchiveAppendAsync(_path, ct).ConfigureAwait(false);
+            await using var processLease = await ArchiveAppendLock.AcquireAsync(_path, ArchiveAppendLockTimeout, ct).ConfigureAwait(false);
+            var sidecar = _path + ".sha256";
+            if (File.Exists(sidecar))
+                File.Delete(sidecar);
+            await AtomicFileWriter.AppendAsync(_path, write, ct).ConfigureAwait(false);
+            // Committed: as for a published archive, nothing after this may report failure.
+            await RepublishArchiveChecksumAsync(_path, sidecar).ConfigureAwait(false);
+        }
+
+        // Best effort and uncancellable. On failure the sidecar stays retired, so health checks
+        // report IssueType.MissingChecksum for the archive rather than corruption of committed bytes.
+        private async Task RepublishArchiveChecksumAsync(string archive, string sidecar)
+        {
+            try
+            {
+                _archiveChecksumFault?.Invoke();
+                await using var archiveStream = File.OpenRead(archive);
+                var checksum = await Sha256Digest.ComputeAsync(archiveStream, CancellationToken.None).ConfigureAwait(false);
+                await AtomicFileWriter.WriteAsync(sidecar, $"{checksum}  {Path.GetFileName(archive)}", CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "Appended to compressed archive {ArchivePath} but could not republish its checksum; it is left without a checksum sidecar",
+                    archive);
+            }
         }
 
         private async Task WriteSingleEventAsync(Stream stream, MarketEvent evt, CancellationToken ct)
@@ -903,13 +1060,13 @@ public sealed class JsonlStorageSink : IStorageSink
                     var ordered = files
                         .OrderBy(f => f.LastWriteTimeUtc)
                         .ToList();
-                    long total = ordered.Sum(f => f.Exists ? f.Length : 0);
+                    long total = ordered.Sum(RetainedBytes);
 
                     var idx = 0;
                     while (total > _maxBytes && idx < ordered.Count)
                     {
                         var target = ordered[idx++];
-                        total -= target.Length;
+                        total -= RetainedBytes(target);
                         TryDelete(target);
                     }
                 }
@@ -926,10 +1083,36 @@ public sealed class JsonlStorageSink : IStorageSink
             }
         }
 
+        // A data file and its checksum sidecar share one retention lifecycle.
+        private static long RetainedBytes(FileInfo file)
+        {
+            var sidecar = new FileInfo(file.FullName + ".sha256");
+            return (file.Exists ? file.Length : 0) + (sidecar.Exists ? sidecar.Length : 0);
+        }
+
+        // The file was selected from metadata read at enumeration. A writer may have changed it since:
+        // a late append replaces an archive, a sink extends a plain file. Deleting it then would drop
+        // bytes whose append already reported success, so the WAL would commit events no longer on
+        // disk. Hold the lock that writer takes, without creating one, and delete only a file that is
+        // still exactly as selected; anything else waits for a later sweep.
         private void TryDelete(FileInfo file)
         {
+            var selectedWriteUtc = file.LastWriteTimeUtc;
+            var selectedLength = file.Length;
+            FileStream? lease = null;
             try
             {
+                var free = file.Name.EndsWith(".gz", StringComparison.OrdinalIgnoreCase)
+                    ? ArchiveAppendLock.TryAcquire(file.FullName, out lease, createIfMissing: false)
+                    : JsonlWriterLock.TryAcquireExclusive(file.FullName, out lease, createIfMissing: false);
+                if (!free)
+                    return;
+                file.Refresh();
+                if (!file.Exists || file.LastWriteTimeUtc != selectedWriteUtc || file.Length != selectedLength)
+                    return;
+                // Remove the sidecar first: an interruption then leaves a file without a
+                // checksum, never a stale checksum that a later recreated file would fail.
+                File.Delete(file.FullName + ".sha256");
                 file.Delete();
             }
             catch (Exception ex)
@@ -939,6 +1122,10 @@ public sealed class JsonlStorageSink : IStorageSink
                     "Failed to delete file during retention cleanup: {FilePath}, Size={FileSize} bytes",
                     file.FullName,
                     file.Exists ? file.Length : 0);
+            }
+            finally
+            {
+                lease?.Dispose();
             }
         }
 
