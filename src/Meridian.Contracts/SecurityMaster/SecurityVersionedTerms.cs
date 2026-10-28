@@ -76,6 +76,14 @@ public static class SecurityVersionedTerms
     /// <summary>The declared put schedule.</summary>
     public const string PutScheduleKey = "putSchedule";
 
+    /// <summary>
+    /// The version of the mapping from a declared <c>scheduleConventions</c> block to a schedule
+    /// specification (ADR-025). Schedule evidence and the startup capability line report it, and the
+    /// schedule factory's <c>DeclaredMappingVersion</c> aliases it, so a node's logs and its evidence
+    /// name one mapping. Any change to how a declared block maps to a schedule ships under a new value.
+    /// </summary>
+    public const string DeclaredScheduleMappingVersion = "security-master-declared-schedule-v1";
+
     private static readonly SecurityDeclaredConventionsRead NotDeclared =
         new(SecurityDeclaredConventionsStatus.None, ScheduleConventionTerms.Empty, null);
 

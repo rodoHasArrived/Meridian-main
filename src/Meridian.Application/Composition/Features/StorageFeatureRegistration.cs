@@ -1,3 +1,4 @@
+using System.Globalization;
 using Meridian.Storage.Archival;
 using Meridian.Core.IO;
 using Meridian.Application.Backfill;
@@ -25,6 +26,7 @@ using Meridian.Application.SecurityMaster.CashFlow;
 using Meridian.Application.Tenancy;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
+using Meridian.Contracts.Calendars;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Domain;
@@ -49,6 +51,7 @@ using Meridian.Instruments.CertificatesOfDeposit;
 using Meridian.ReferenceData.SecurityMaster;
 using Meridian.Storage;
 using Meridian.Storage.AssetOperations;
+using Meridian.Storage.Calendars;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Export;
 using Meridian.Storage.Banking;
@@ -108,6 +111,12 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton(sp => new LocalTenantMigrationGate(
             sp.GetService<TenantScopeEnforcementOptions>() ?? TenantScopeEnforcementOptions.FailClosed));
         services.AddStatementReconciliationServices();
+        // Business-day calendars for declared schedule conventions (ADR-025): files under <dataRoot>/calendars,
+        // loaded once at host start; an unknown id never falls back to weekends only.
+        services.TryAddSingleton<IBusinessDayCalendarSource>(sp => FileBusinessDayCalendarSource.Load(
+            sp.GetRequiredService<StorageOptions>().RootPath,
+            sp.GetService<ILogger<FileBusinessDayCalendarSource>>()));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, SecurityMasterTermsCapabilityHostedService>());
 
         // StorageOptions - configured from AppConfig or defaults
         services.AddSingleton<StorageOptions>(sp =>
@@ -807,6 +816,63 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 
         public Task StartAsync(CancellationToken cancellationToken)
             => _catalog.InitializeAsync(cancellationToken);
+
+        public Task StopAsync(CancellationToken cancellationToken)
+            => Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Resolves the business-day calendar source at host start, so its per-calendar and refused-file
+    /// lines are logged on every node, desktops included, rather than on the first projection request
+    /// (the cash-flow service is its only other consumer). It then logs one capability line: the
+    /// declared-mapping and schedule-kernel versions, each asset class whose read and write terms
+    /// versions differ, and the loaded calendars, so a node's build is visible from its logs.
+    /// </summary>
+    private sealed class SecurityMasterTermsCapabilityHostedService : IHostedService
+    {
+        private readonly IServiceProvider _services;
+        private readonly ILogger<SecurityMasterTermsCapabilityHostedService> _logger;
+
+        public SecurityMasterTermsCapabilityHostedService(
+            IServiceProvider services,
+            ILogger<SecurityMasterTermsCapabilityHostedService>? logger = null)
+        {
+            _services = services;
+            _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<SecurityMasterTermsCapabilityHostedService>.Instance;
+        }
+
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var source = _services.GetRequiredService<IBusinessDayCalendarSource>();
+
+            var termsVersions = SecurityAssetClassCatalog.All
+                .Where(static descriptor => descriptor.ReadsTermsThrough != descriptor.TermsVersion)
+                .OrderBy(static descriptor => descriptor.AssetClass, StringComparer.Ordinal)
+                .Select(static descriptor => string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"{descriptor.AssetClass} r{descriptor.ReadsTermsThrough}/w{descriptor.TermsVersion}"))
+                .ToArray();
+
+            // Only the file source lists what it loaded (never the built-in WEEKENDS, whose id a file
+            // cannot claim); another source's count is unknown, not zero.
+            var calendars = (source as FileBusinessDayCalendarSource)?.Calendars
+                .Select(static calendar => string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"{calendar.CalendarId} v{calendar.Version} {calendar.ContentHash}"))
+                .ToArray();
+
+            _logger.LogInformation(
+                "Security Master terms capability: declared mapping {DeclaredMappingVersion}, schedule kernel {KernelVersion}, terms versions {TermsVersions}, business-day calendars {CalendarCount}: {Calendars}",
+                SecurityVersionedTerms.DeclaredScheduleMappingVersion,
+                Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerator.KernelVersion,
+                termsVersions.Length == 0 ? "none" : string.Join(", ", termsVersions),
+                calendars?.Length,
+                calendars is null
+                    ? "not listed by " + source.GetType().Name
+                    : calendars.Length == 0 ? "none" : string.Join(", ", calendars));
+            return Task.CompletedTask;
+        }
 
         public Task StopAsync(CancellationToken cancellationToken)
             => Task.CompletedTask;

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Application.SecurityMaster.CashFlow;
+using Meridian.Contracts.Calendars;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.SecurityMaster.Schedules;
 using Meridian.Storage.SecurityMaster;
@@ -30,6 +31,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
     private readonly IStructuredCashFlowLedgerBridge _ledgerBridge;
     private readonly ILogger<SecurityMasterCashFlowService> _logger;
     private readonly ISecurityForwardCurveProvider? _forwardCurves;
+    private readonly IBusinessDayCalendarSource? _calendars;
 
     private static readonly TimeSpan StalenessThreshold = TimeSpan.FromDays(7);
 
@@ -39,7 +41,8 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         ISecurityMasterQueryService queryService,
         ILogger<SecurityMasterCashFlowService> logger,
         IStructuredCashFlowLedgerBridge? ledgerBridge = null,
-        ISecurityForwardCurveProvider? forwardCurves = null)
+        ISecurityForwardCurveProvider? forwardCurves = null,
+        IBusinessDayCalendarSource? calendars = null)
     {
         _store = store;
         _providers = providers?.ToList() ?? [];
@@ -47,7 +50,14 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         _logger = logger;
         _ledgerBridge = ledgerBridge ?? new StructuredCashFlowLedgerBridge();
         _forwardCurves = forwardCurves;
+        _calendars = calendars;
     }
+
+    /// <summary>
+    /// The business-day calendars declared schedule conventions resolve against (ADR-025), or null when
+    /// the host composed none; an unknown calendar id never falls back to weekends only.
+    /// </summary>
+    internal IBusinessDayCalendarSource? CalendarSource => _calendars;
 
     public Task<SecurityCashFlowSourceDto?> GetCashFlowSourceAsync(Guid securityId, CancellationToken ct = default)
         => _store.GetSourceAsync(securityId, ct);
