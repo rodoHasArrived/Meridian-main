@@ -26,7 +26,7 @@ Last verified against `README.md`, `docs/roadmap/data/*.yml`,
 | `meridian-ledger-projection-replay-review` | [`SKILL.md`](meridian-ledger-projection-replay-review/SKILL.md) | Review ledger projection, replay ordering, rebuild, versioning, and report handoff risk |
 | `meridian-codex-skill-builder` | [`SKILL.md`](meridian-codex-skill-builder/SKILL.md) | Package Codex skills with scripts, evals, profiles, catalogs, and route coverage |
 | `meridian-docs` | [`SKILL.md`](meridian-docs/SKILL.md) | Maintain Meridian documentation with repo-grounded evidence |
-| `meridian-implementation-assurance` | [`SKILL.md`](meridian-implementation-assurance/SKILL.md) | Implement, certify, and improve changes with scope control, requirement-to-evidence traceability, explicit validation, and docs sync |
+| `meridian-implementation-assurance` | [`SKILL.md`](meridian-implementation-assurance/SKILL.md) | Implement, certify, and improve changes with acceptance evidence, risk-based checks, explicit verification gaps, and docs sync |
 | `meridian-provider-builder` | [`SKILL.md`](meridian-provider-builder/SKILL.md) | Build and extend provider integrations |
 | `meridian-repo-navigation` | [`SKILL.md`](meridian-repo-navigation/SKILL.md) | Orient large-repo tasks before specialist work |
 | `meridian-roadmap-strategist` | [`SKILL.md`](meridian-roadmap-strategist/SKILL.md) | Refresh roadmap, delivery-plan, and target-state docs |

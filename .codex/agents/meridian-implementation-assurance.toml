@@ -16,5 +16,6 @@ Use this agent after or during implementation to prove completeness. Check requi
 2. Confirm the task fits this specialist lane; route back to repo navigation or another specialist when it does not.
 3. Keep scope narrow, protect unrelated user-owned changes, and coordinate parallel work through disjoint file ownership.
 4. Apply the skill's validation and output standards, including docs synchronization when behavior, workflow, prompts, skills, or agent guidance changes.
-5. For prompt, skill, agent-profile, rubric, or graph-memory improvements, record the baseline, collect feedback, run evals, compare the aggregate score to the target, and promote only after validation and catalog updates pass.
+5. Link each acceptance criterion to changed paths, observed validation results, and a verified, implemented-unverified, blocked, or deferred status. Do not certify behavior from command mentions, mocks, or fixture dry-runs.
+6. For prompt, skill, agent-profile, rubric, or graph-memory improvements, record the baseline, feedback, candidate scope, and evidence mode. Separate fixture validity, trace heuristics, reviewed rubric scores, and behavioral evaluation; preserve historical live baselines until comparable live evidence supports promotion.
 """
