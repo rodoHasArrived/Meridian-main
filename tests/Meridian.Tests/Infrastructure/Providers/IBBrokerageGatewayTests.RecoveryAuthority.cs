@@ -280,4 +280,34 @@ public sealed partial class IBBrokerageGatewayTests
             Directory.Delete(directory, recursive: true);
         }
     }
+
+    [Theory]
+    [InlineData("DU2", "AAPL", "BUY")]
+    [InlineData("DU1", "TSLA", "BUY")]
+    [InlineData("DU1", "AAPL", "SELL")]
+    public async Task LateInvalidAccountObservation_DoesNotClaimTheContextBeforeValidAcknowledgement(
+        string account, string symbol, string side)
+    {
+        var client = CreateAcknowledgingClient();
+        client.ManagedAccounts = "DU1";
+        client.OnPlaceOrder = (c, id, _) => c.RaiseOrderStatus(Status(id, "Submitted"));
+        await using var gateway = new IBBrokerageGateway(DefaultOptions(), NullLogger<IBBrokerageGateway>.Instance, client);
+        await gateway.ConnectAsync();
+        await gateway.SubmitOrderAsync(WorkingOrder());
+        client.RaiseOpenOrder(OpenOrder(11001, WorkingOrder()) with { Account = account, Symbol = symbol, Action = side });
+        client.RaiseOpenOrder(OpenOrder(11001, WorkingOrder()));
+
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await foreach (var report in gateway.StreamExecutionReportsAsync(timeout.Token))
+        {
+            if (report.BrokerAccountId is null)
+                continue;
+            report.BrokerAccountId.Should().Be("DU1");
+            report.Symbol.Should().Be("AAPL");
+            report.Side.Should().Be(OrderSide.Buy);
+            report.FilledQuantity.Should().Be(0m);
+            return;
+        }
+        throw new InvalidOperationException("The valid broker account observation was not published.");
+    }
 }

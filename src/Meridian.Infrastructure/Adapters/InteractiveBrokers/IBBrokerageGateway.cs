@@ -942,9 +942,14 @@ public sealed partial class IBBrokerageGateway :
             _logger.LogWarning("IB open-order callback refused because its external account differs from the owned order acknowledgement.");
             return;
         }
-        if (context is { BrokerAccountId: null } && !string.IsNullOrWhiteSpace(update.Account)
-            && context.SubmissionEpoch == callbackEpoch
-            && string.Equals(update.ClientOrderId, context.ClientOrderId, StringComparison.Ordinal))
+        var ownedAccountObservation = context is not null && !string.IsNullOrWhiteSpace(update.Account)
+            && _verifiedAccounts.Contains(update.Account.Trim())
+            && (context.SubmissionEpoch == callbackEpoch || context.RecoveredFromSnapshot && context.RecoveryEpoch == callbackEpoch)
+            && string.Equals(update.ClientOrderId, context.ClientOrderId, StringComparison.Ordinal)
+            && string.Equals(update.Symbol, context.Symbol, StringComparison.OrdinalIgnoreCase)
+            && IBCanonicalPayloadMapper.ParseSide(update.Action, update.Metadata) == context.Side
+            && IBCanonicalPayloadMapper.ParseOrderType(update.OrderType, update.Metadata) == context.Type;
+        if (context is { BrokerAccountId: null } && ownedAccountObservation)
         {
             var owned = context with { BrokerAccountId = update.Account.Trim() };
             if (!_submittedOrders.TryUpdate(gatewayOrderId, owned, context))
@@ -1038,15 +1043,8 @@ public sealed partial class IBBrokerageGateway :
             // orderStatus may settle Submit before openOrder reports its actual account. Enrich
             // only this session's owned client reference, using the latest report unchanged so
             // a late acknowledgement cannot roll back fills, prices or terminal lifecycle state.
-            var ownsSession = context.SubmissionEpoch == callbackEpoch
-                || context.RecoveredFromSnapshot && context.RecoveryEpoch == callbackEpoch;
-            if (ownsSession && latest is { BrokerAccountId: null }
-                && !string.IsNullOrWhiteSpace(update.Account)
-                && _verifiedAccounts.Contains(update.Account.Trim())
-                && string.Equals(update.ClientOrderId, context.ClientOrderId, StringComparison.Ordinal)
-                && string.Equals(update.Symbol, context.Symbol, StringComparison.OrdinalIgnoreCase)
-                && IBCanonicalPayloadMapper.ParseSide(update.Action, update.Metadata) == context.Side)
-                PublishReport(latest with { BrokerAccountId = update.Account.Trim() }, callbackEpoch);
+            if (ownedAccountObservation && latest is { BrokerAccountId: null })
+                PublishReport(latest with { BrokerAccountId = update.Account!.Trim() }, callbackEpoch);
             return;
         }
         if (!amendmentConfirmed && pending?.Kind == PendingOrderOperationKind.Cancel)
