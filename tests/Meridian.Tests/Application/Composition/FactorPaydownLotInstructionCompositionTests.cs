@@ -16,7 +16,7 @@ namespace Meridian.Tests.Application.Composition;
 /// <summary>
 /// Factor-paydown preparation composes like the amortization preview: a host without one of its
 /// authorities still validates and starts, and preparation refuses the missing authority before it
-/// reads any source record. No operator route calls the service yet.
+/// reads any source record. Governed operator routes require these same authorities before preparing a paydown.
 /// </summary>
 public sealed class FactorPaydownLotInstructionCompositionTests
 {

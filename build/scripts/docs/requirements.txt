@@ -3,4 +3,4 @@
 # Canonical registry loaders and validate-agent-definitions.py require standard
 # YAML parsing with PyYAML. The pin matches tools/source_docs/requirements-render.txt
 # so the repository resolves one PyYAML version.
-PyYAML==6.0.2
+PyYAML==6.0.3

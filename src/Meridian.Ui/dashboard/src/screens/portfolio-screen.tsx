@@ -40,6 +40,9 @@ import {
   saveFinancialRecordExplorerView
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { getPositionSideOptions, selectPortfolioPositionRows } from "@/lib/portfolio-positions-table";
+import { usePortfolioPositionsTable } from "@/hooks/use-portfolio-positions-table";
+import { PortfolioPositionsToolbar } from "@/screens/portfolio-positions-toolbar";
 import { readinessToneToSeverityStatus } from "@/lib/shared-tone-mappings";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import {
@@ -101,15 +104,17 @@ const cashFlowBorderClass = {
 } as const;
 
 const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
-  { id: "mark-readiness", label: "Mark readiness", render: (row) => <MarkFreshnessCell mark={row.markFreshness} /> },
+  { id: "mark-readiness", label: "Mark readiness", sortable: true, render: (row) => <MarkFreshnessCell mark={row.markFreshness} /> },
   {
     id: "symbol",
     label: "Symbol",
+    sortable: true,
     render: (row) => <span className="font-mono font-semibold text-foreground">{row.symbol}</span>
   },
   {
     id: "side",
     label: "Side",
+    sortable: true,
     render: (row) => <span className="font-mono text-foreground">{row.side}</span>
   },
   {
@@ -362,6 +367,14 @@ export function PortfolioScreen({
     selectedRunDrillIn,
     pathname: location.pathname
   });
+  const positionsTable = usePortfolioPositionsTable();
+  const visiblePositionRows = useMemo(
+    () => selectPortfolioPositionRows(vm.positionRows, positionsTable.state),
+    [vm.positionRows, positionsTable.state]
+  );
+  const positionSideOptions = useMemo(() => getPositionSideOptions(vm.positionRows), [vm.positionRows]);
+  const selectedVisiblePositionIndex = visiblePositionRows.findIndex((row) => row.id === vm.selectedPosition?.id);
+  const selectedPositionOutsideResults = Boolean(vm.selectedPosition && selectedVisiblePositionIndex < 0);
   const portfolioExplorerPresentation = useMemo(
     () => buildPortfolioExplorerPresentation(portfolioExplorer, {
       sourceLabel: vm.positionSourceLabel,
@@ -1181,8 +1194,8 @@ export function PortfolioScreen({
       ) : null}
 
         {showOverview ? (
-        <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
-          <Card className="panel-surface">
+        <section className="grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)]">
+          <Card className="panel-surface min-w-0">
             <CardHeader className="px-3 py-2">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
@@ -1200,10 +1213,24 @@ export function PortfolioScreen({
               </div>
             </CardHeader>
             <CardContent className="px-3 py-2">
+              <PortfolioPositionsToolbar
+                state={positionsTable.state}
+                sides={positionSideOptions}
+                resultCount={visiblePositionRows.length}
+                loadedCount={vm.positionRows.length}
+                onSearch={positionsTable.setSearch}
+                onSearchBlur={positionsTable.flushSearch}
+                onSide={positionsTable.setSide}
+                onReadiness={positionsTable.setReadiness}
+                onReset={positionsTable.resetControls}
+                shareError={positionsTable.shareError}
+              />
               {vm.hasPositions ? (
                 <DenseDataTable
                   columns={positionColumns}
-                  rows={vm.positionRows}
+                  rows={visiblePositionRows}
+                  sort={positionsTable.state.sort}
+                  onToggleSort={positionsTable.toggleSort}
                   getRowId={(row) => row.id}
                   getRowAriaLabel={(row) => row.ariaLabel}
                   getRowSelectAriaLabel={(row) => row.selectAriaLabel}
@@ -1211,7 +1238,7 @@ export function PortfolioScreen({
                   getRowAriaExpanded={(row) => row.expanded}
                   onRowSelect={(row) => vm.selectPosition(row.id)}
                   selectedRowId={vm.selectedPosition?.id ?? null}
-                  emptyText={vm.positionEmptyText}
+                  emptyText="No positions match these controls."
                   ariaLabel={vm.positionListLabel}
                   caption="Select a position row to update the holding detail panel."
                 />
@@ -1250,6 +1277,12 @@ export function PortfolioScreen({
                 : "border-border/70"
             )}
           >
+            {selectedPositionOutsideResults ? (
+              <div className="mb-3 space-y-2 border-b border-border pb-3">
+                <p role="status" className="text-sm text-muted-foreground">Selected holding is outside the current results.</p>
+                <Button type="button" size="sm" variant="outline" onClick={positionsTable.clearFilters}>Clear filters</Button>
+              </div>
+            ) : null}
             {vm.selectedPosition ? (
               <>
                 <div className="flex items-start justify-between gap-3">

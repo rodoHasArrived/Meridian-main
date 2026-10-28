@@ -261,12 +261,12 @@ internal static class SecurityMasterMapping
         EnsureSupportedAssetSchemaVersion(assetClass, json, mode);
         if (mode == SecurityKindMappingMode.Write)
             SecurityAssetPackAdmission.EnsureSubmittedFields(assetClass, json);
-        // A term above the class's write version is decoded only from a flat payload stamped at or
-        // above it (ADR-024, readable before writable). Writes and profile envelopes decode exactly
-        // what the write version declares, so their bytes never change.
-        var decodeThrough = mode == SecurityKindMappingMode.Write || SecurityTermsEnvelope.IsProfileGovernedPayload(assetClass, json)
-            ? SecurityAssetClassCatalog.GetTermsVersion(assetClass)
-            : Math.Max(SecurityAssetClassCatalog.GetTermsVersion(assetClass), SecurityTermsEnvelope.ResolveAssetClassTermsVersion(json));
+        // Which versioned containers (the scheduleConventions block, the call and put schedules) this
+        // payload decodes, through the one predicate the validator and the cash-flow engine share: a
+        // read decodes those at or below the row's own stamp, a write those at or below the class's
+        // write version, and a profile envelope none (ADR-024 decision 3). Decided on the payload as
+        // stored or submitted, before the upgrade.
+        var versionedTerms = SecurityVersionedTerms.Decoding(assetClass, json, writeMode: mode == SecurityKindMappingMode.Write);
         // The guard sees the stored or submitted payload; the decoder reads it at the class's current
         // terms version (ADR-024). Identity steps return the same element.
         json = SecurityAssetClassTermsUpgrader.UpgradeForRead(assetClass, json);
@@ -304,8 +304,8 @@ internal static class SecurityMasterMapping
             "Bond" => SecurityKind.NewBond(ToBondTerms(
                 json,
                 mode,
-                ReadScheduleConventions(json, assetClass, decodeThrough),
-                ReadCallPutSchedules(json, assetClass, decodeThrough))),
+                ReadScheduleConventions(json, assetClass, versionedTerms),
+                ReadCallPutSchedules(json, assetClass, versionedTerms))),
             "FxSpot" => SecurityKind.NewFxSpot(new FxSpotTerms(
                 GetRequiredString(json, "baseCurrency"),
                 GetRequiredString(json, "quoteCurrency"))),
@@ -327,8 +327,8 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalDecimal(json, "couponRate")),
                 ToOption(GetOptionalDateOnly(json, "callableDate")),
                 ToOption(GetOptionalString(json, "dayCount")),
-                ReadScheduleConventions(json, assetClass, decodeThrough),
-                ReadCallPutSchedules(json, assetClass, decodeThrough))),
+                ReadScheduleConventions(json, assetClass, versionedTerms),
+                ReadCallPutSchedules(json, assetClass, versionedTerms))),
             "CommercialPaper" => SecurityKind.NewCommercialPaper(new CommercialPaperTerms(
                 GetRequiredString(json, "issuerName"),
                 GetRequiredDateOnly(json, "maturity"),
@@ -363,7 +363,7 @@ internal static class SecurityMasterMapping
             "Swap" => SecurityKind.NewSwap(new SwapTerms(
                 GetRequiredDateOnly(json, "effectiveDate"),
                 GetRequiredDateOnly(json, "maturityDate"),
-                ToFSharpList(GetSwapLegItems(json).Select(leg => ToSwapLeg(leg, ReadLegScheduleConventions(leg, assetClass, decodeThrough)))))),
+                ToFSharpList(GetSwapLegItems(json).Select(leg => ToSwapLeg(leg, ReadLegScheduleConventions(leg, assetClass, versionedTerms)))))),
             "DirectLoan" => SecurityKind.NewDirectLoan(new DirectLoanTerms(
                 GetRequiredString(json, "borrower"),
                 ToOption(GetOptionalDateOnly(json, "maturity")),
@@ -397,10 +397,10 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalInt(terms, "weightedAverageLoanAgeMonths", mode)),
                 ToOption(GetOptionalDateOnly(terms, "reinvestmentPeriodEnd", mode)),
                 ToOption(GetOptionalDateOnly(terms, "nonCallPeriodEnd", mode)),
-                // From the root: a profile envelope's decode ceiling is the write version, so its
+                // From the root: a profile envelope decodes no versioned container, so its
                 // profileFields never reach the block or the schedules.
-                ReadScheduleConventions(json, assetClass, decodeThrough),
-                ReadCallPutSchedules(json, assetClass, decodeThrough))),
+                ReadScheduleConventions(json, assetClass, versionedTerms),
+                ReadCallPutSchedules(json, assetClass, versionedTerms))),
             "PrivateFundInterest" => SecurityKind.NewPrivateFundInterest(new PrivateFundInterestTerms(
                 GetRequiredString(terms, "gpSponsor"),
                 GetRequiredString(terms, "strategy"),
@@ -549,7 +549,7 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalString(json, "settlementType"))))
         };
 
-        EnsureDeclaredVocabulariesOnWrite(assetClass, json, mode);
+        EnsureDeclaredVocabulariesOnWrite(assetClass, json, mode, versionedTerms);
         return kind;
     }
 
@@ -564,7 +564,7 @@ internal static class SecurityMasterMapping
     /// ordering costs nothing but the wording of the exception.</para>
     /// </summary>
     private static void EnsureDeclaredVocabulariesOnWrite(
-        string assetClass, JsonElement json, SecurityKindMappingMode mode)
+        string assetClass, JsonElement json, SecurityKindMappingMode mode, SecurityVersionedTermDecoding versionedTerms)
     {
         if (mode != SecurityKindMappingMode.Write || json.ValueKind != JsonValueKind.Object)
         {
@@ -618,7 +618,7 @@ internal static class SecurityMasterMapping
             }
         }
 
-        EnsureElementConventionsOnWrite(assetClass, json);
+        EnsureElementConventionsOnWrite(assetClass, json, versionedTerms);
     }
 
     /// <summary>
@@ -626,16 +626,17 @@ internal static class SecurityMasterMapping
     /// frequency and day count) are enforced on write exactly like top-level ones; otherwise a leg
     /// could persist a cadence every typed reader and schedule would then misread. Every present
     /// alias is checked, since readers differ in which spelling they prefer. Only conventions this
-    /// node writes are enforced, and never inside a versioned container of a profile envelope:
-    /// versioned class terms are flat-codec-only (ADR-024 decision 3, kept by the contract step).
+    /// node writes are enforced, and only in the arrays the write decodes: never inside a versioned
+    /// container of a profile envelope, through the shared predicate
+    /// (<see cref="SecurityVersionedTermDecoding.Decodes"/>), because versioned class terms are
+    /// flat-codec-only (ADR-024 decision 3, kept by the contract step).
     /// </summary>
-    private static void EnsureElementConventionsOnWrite(string assetClass, JsonElement json)
+    private static void EnsureElementConventionsOnWrite(string assetClass, JsonElement json, SecurityVersionedTermDecoding versionedTerms)
     {
-        var profileGoverned = SecurityTermsEnvelope.IsProfileGovernedPayload(assetClass, json);
         foreach (var arrayField in SecurityAssetTermsSchema.WritableFields(assetClass)
                      .Where(static field => field.Type == SecurityAssetTermFieldType.Array))
         {
-            if (profileGoverned && arrayField.SinceTermsVersion > SecurityTermsEnvelope.DefaultAssetClassTermsVersion)
+            if (!versionedTerms.Decodes(arrayField))
             {
                 continue;
             }
@@ -826,19 +827,19 @@ internal static class SecurityMasterMapping
             callPutSchedules);
     }
 
-    private const string ScheduleConventionsKey = "scheduleConventions";
-    private const string CallScheduleKey = "callSchedule";
-    private const string PutScheduleKey = "putSchedule";
+    private const string ScheduleConventionsKey = SecurityVersionedTerms.ScheduleConventionsKey;
+    private const string CallScheduleKey = SecurityVersionedTerms.CallScheduleKey;
+    private const string PutScheduleKey = SecurityVersionedTerms.PutScheduleKey;
 
-    // The callSchedule and putSchedule arrays (ADR-024, readable before writable), behind the same stamp
-    // gate as the block: decoded only when the class declares them at or below decodeThrough. Entries
-    // are read tolerantly and verbatim; one that is not an object, or has no parseable date, is not a
-    // term and is dropped. SecurityMasterService refuses to re-serialize a row whose entries this
-    // cannot type, before anything could be dropped.
-    private static CallPutSchedules ReadCallPutSchedules(JsonElement container, string assetClass, int decodeThrough)
+    // The callSchedule and putSchedule arrays (ADR-024, readable before writable), behind the same
+    // shared predicate as the block: decoded only when the class declares them and the payload decodes
+    // them. Entries are read tolerantly and verbatim; one that is not an object, or has no parseable
+    // date, is not a term and is dropped. SecurityMasterService refuses to re-serialize a row whose
+    // entries this cannot type, before anything could be dropped.
+    private static CallPutSchedules ReadCallPutSchedules(JsonElement container, string assetClass, SecurityVersionedTermDecoding versionedTerms)
     {
-        var calls = ReadEntries(container, SecurityAssetTermsSchema.Field(assetClass, CallScheduleKey), decodeThrough, ToCallScheduleTerm).ToArray();
-        var puts = ReadEntries(container, SecurityAssetTermsSchema.Field(assetClass, PutScheduleKey), decodeThrough, ToPutScheduleTerm).ToArray();
+        var calls = ReadEntries(container, SecurityAssetTermsSchema.Field(assetClass, CallScheduleKey), versionedTerms, ToCallScheduleTerm).ToArray();
+        var puts = ReadEntries(container, SecurityAssetTermsSchema.Field(assetClass, PutScheduleKey), versionedTerms, ToPutScheduleTerm).ToArray();
         return calls.Length == 0 && puts.Length == 0
             ? CallPutSchedulesModule.Empty
             : new CallPutSchedules(ToFSharpList(calls), ToFSharpList(puts));
@@ -847,11 +848,11 @@ internal static class SecurityMasterMapping
     private static IEnumerable<T> ReadEntries<T>(
         JsonElement container,
         SecurityAssetTermField? field,
-        int decodeThrough,
+        SecurityVersionedTermDecoding versionedTerms,
         Func<JsonElement, T?> read)
         where T : class
     {
-        if (field is null || field.SinceTermsVersion > decodeThrough)
+        if (field is null || !versionedTerms.Decodes(field))
         {
             return [];
         }
@@ -893,42 +894,50 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalString(entry, "noticeDayType")))
             : null;
 
-    private static ScheduleConventions ReadScheduleConventions(JsonElement container, string assetClass, int decodeThrough)
-        => ReadScheduleConventions(container, SecurityAssetTermsSchema.Field(assetClass, ScheduleConventionsKey), decodeThrough);
+    private static ScheduleConventions ReadScheduleConventions(JsonElement container, string assetClass, SecurityVersionedTermDecoding versionedTerms)
+        => ReadScheduleConventions(container, SecurityAssetTermsSchema.Field(assetClass, ScheduleConventionsKey), versionedTerms);
 
-    private static ScheduleConventions ReadLegScheduleConventions(JsonElement leg, string assetClass, int decodeThrough)
+    private static ScheduleConventions ReadLegScheduleConventions(JsonElement leg, string assetClass, SecurityVersionedTermDecoding versionedTerms)
         => leg.ValueKind == JsonValueKind.Object
             ? ReadScheduleConventions(
                 leg,
                 SecurityAssetTermsSchema.ElementFields(assetClass, "legs").FirstOrDefault(static field => field.Key == ScheduleConventionsKey),
-                decodeThrough)
+                versionedTerms)
             : ScheduleConventionsModule.Empty;
 
     // The scheduleConventions block (ADR-024, readable before writable): decoded only when the class
-    // declares it at or below decodeThrough, so a version-1 row, an unstamped row, a profile envelope
-    // and every write decode nothing and keep their bytes. Members are read tolerantly and verbatim;
+    // declares it and the payload decodes it (SecurityVersionedTermDecoding), so a row stamped below
+    // the block's version, an unstamped row, a profile envelope and every write decode nothing and keep
+    // their bytes. The shared reader (SecurityVersionedTerms.ReadScheduleConventions) reads the members
+    // tolerantly and verbatim; the F# record drops blank text members, as it always has.
     // SecurityMasterService refuses to re-serialize a row whose block content this cannot type, before
     // anything could be dropped.
-    private static ScheduleConventions ReadScheduleConventions(JsonElement container, SecurityAssetTermField? field, int decodeThrough)
+    private static ScheduleConventions ReadScheduleConventions(JsonElement container, SecurityAssetTermField? field, SecurityVersionedTermDecoding versionedTerms)
     {
-        if (field is null || field.SinceTermsVersion > decodeThrough || GetOptionalObject(container, field.Key) is not { } block)
+        if (field is null || !versionedTerms.Decodes(field))
+        {
+            return ScheduleConventionsModule.Empty;
+        }
+
+        var block = SecurityVersionedTerms.ReadScheduleConventions(container, field.Key);
+        if (block.IsEmpty)
         {
             return ScheduleConventionsModule.Empty;
         }
 
         return new ScheduleConventions(
-            ToOption(GetOptionalString(block, "businessDayConvention")),
-            ToOption(GetOptionalBoolean(block, "accrualAdjusted")),
-            ToFSharpList(GetOptionalStringArray(block, "paymentCalendars").Where(static calendar => !string.IsNullOrWhiteSpace(calendar))),
-            ToOption(GetOptionalInt(block, "paymentLagBusinessDays")),
-            ToOption(GetOptionalString(block, "rollConvention")),
-            ToOption(GetOptionalBoolean(block, "endOfMonthRule")),
-            ToOption(GetOptionalDateOnly(block, "firstRegularDate")),
-            ToOption(GetOptionalDateOnly(block, "lastRegularDate")),
-            ToOption(GetOptionalString(block, "direction")),
-            ToOption(GetOptionalString(block, "stubPolicy")),
-            ToOption(GetOptionalString(block, "couponRateUnit")),
-            ToOption(GetOptionalString(block, "couponCashBasis")));
+            ToOption(block.BusinessDayConvention),
+            ToOption(block.AccrualAdjusted),
+            ToFSharpList(block.PaymentCalendars),
+            ToOption(block.PaymentLagBusinessDays),
+            ToOption(block.RollConvention),
+            ToOption(block.EndOfMonthRule),
+            ToOption(block.FirstRegularDate),
+            ToOption(block.LastRegularDate),
+            ToOption(block.Direction),
+            ToOption(block.StubPolicy),
+            ToOption(block.CouponRateUnit),
+            ToOption(block.CouponCashBasis));
     }
 
     // Match the cash-flow resolver's alias priority, while refusing malformed supplied economics
@@ -1411,18 +1420,6 @@ internal static class SecurityMasterMapping
         => json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String && DateTimeOffset.TryParse(value.GetString(), out var date)
             ? date
             : throw new InvalidOperationException($"Missing required timestamp '{propertyName}'.");
-
-    private static IEnumerable<string> GetOptionalStringArray(JsonElement json, string propertyName)
-    {
-        if (json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.Array)
-        {
-            foreach (var item in value.EnumerateArray())
-            {
-                if (item.ValueKind == JsonValueKind.String)
-                    yield return item.GetString()!;
-            }
-        }
-    }
 
     private static JsonElement? GetOptionalObject(JsonElement json, string propertyName)
         => json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.Object

@@ -6,9 +6,9 @@
    ───────────────────────────────────────────────────────────────────────────── */
 
 .workstation-frame {
-  min-height: 100vh;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
   background: var(--theme-bg-canvas, var(--ws-page-bg, #F2F0EC));
   color: var(--theme-primary-text, var(--ws-text, #22252A));
   font-family: var(--theme-font-body, var(--font-body, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif));
@@ -455,6 +455,7 @@ a.workstation-trust-item:focus-visible {
 
 /* ── Shell body (nav rail + workbench) ──────────────────────────────────────── */
 .workstation-shell {
+  flex: 1;
   min-height: 0;
   display: grid;
   grid-template-columns: 14rem minmax(0, 1fr);
@@ -473,6 +474,9 @@ a.workstation-trust-item:focus-visible {
 }
 
 .workbench-scroll {
+  /* Keep absolute accessibility text, including off-screen table captions,
+     inside this scrollport instead of extending the outer document. */
+  position: relative;
   min-width: 0;
   min-height: 0;
   height: 100%;
@@ -662,4 +666,49 @@ a.workstation-trust-item:focus-visible {
   .workstation-search-kbd {
     display: none;
   }
+}
+
+/* Compact shared header: location/actions, then always-visible operating scope. */
+.workspace-header-shell.workstation-header-compact {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.375rem 0.75rem;
+  padding: 0.5rem 1.5rem;
+}
+.workstation-header-location { min-width: 0; display: grid; gap: 0.25rem; }
+.workstation-header-title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.workstation-header-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: end; gap: 0.25rem; }
+.workstation-header-context { grid-column: 1 / -1; min-width: 0; }
+.workstation-header-info, .workstation-views-menu { position: relative; }
+.workstation-header-info summary, .workstation-views-menu > summary {
+  display: flex; align-items: center; gap: 0.375rem; cursor: pointer; list-style: none;
+  padding: 0.375rem; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 600;
+}
+.workstation-header-info summary::-webkit-details-marker,
+.workstation-views-menu > summary::-webkit-details-marker { display: none; }
+.workstation-header-info summary:focus-visible,
+.workstation-views-menu > summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.workstation-header-info > p, .workstation-views-panel {
+  position: absolute; z-index: 30; top: 100%; margin: 0.25rem 0 0;
+  width: min(20rem, 70vw); padding: 0.75rem; border: 1px solid var(--ws-border);
+  background: var(--ws-surface); color: var(--ws-text); border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-menu, 0 2px 6px rgb(0 0 0 / 0.18));
+}
+.workstation-views-panel { right: 0; width: 15rem; }
+.workstation-views-panel > button { display: flex; width: 100%; justify-content: start; }
+@media (max-width: 980px) {
+  .workspace-header-shell.workstation-header-compact { padding: 0.5rem 0.75rem; grid-template-columns: minmax(0, 1fr); }
+  .workstation-header-actions { justify-content: start; }
+  .workstation-views-panel { left: 0; right: auto; }
+}
+
+/* Warnings retain their natural height; only the workstation consumes free space. */
+.workstation-frame > :not(.workstation-shell) { flex-shrink: 0; }
+@media (max-width: 980px) {
+  /* Browser zoom needs page scrolling rather than a compressed, trapped work area. */
+  .workstation-frame { height: auto; min-height: 100dvh; }
+  .workstation-shell { min-height: 24rem; }
+  .workbench { overflow: visible; }
+  .workbench-scroll { height: auto; min-height: 16rem; overflow: visible; }
 }

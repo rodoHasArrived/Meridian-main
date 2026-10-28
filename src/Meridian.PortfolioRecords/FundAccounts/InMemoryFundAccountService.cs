@@ -1476,6 +1476,19 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             SyncHistory = account.SyncHistory ?? [],
             MarginSnapshots = account.MarginSnapshots ?? []
         };
+        // Match the exact historical line and whole-delivery identities, as guarded SQL migration 008
+        // does. Name-only, incomplete or ambiguous evidence remains a statement requiring review.
+        var legacyFeeds = normalized.BankBatches
+            .Where(batch => normalized.BankBatches.Count(candidate => candidate.BatchId == batch.BatchId) == 1
+                && LegacyPlaidTransactionFeedBackfill.CanUpgrade(batch, normalized.BankLines, normalized.Summary.AccountId))
+            .Select(static batch => batch.BatchId)
+            .ToHashSet();
+        for (var i = 0; i < normalized.BankBatches.Count; i++)
+            if (legacyFeeds.Contains(normalized.BankBatches[i].BatchId))
+                normalized.BankBatches[i] = normalized.BankBatches[i] with { IsTransactionFeed = true };
+        for (var i = 0; i < normalized.BankLines.Count; i++)
+            if (legacyFeeds.Contains(normalized.BankLines[i].BatchId))
+                normalized.BankLines[i] = normalized.BankLines[i] with { IsTransactionFeed = true };
         var history = new List<AccountReconciliationResultDto>();
         foreach (var run in normalized.ReconciliationRuns.OrderBy(run => run.RequestedAt))
         {

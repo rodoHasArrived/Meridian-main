@@ -818,6 +818,22 @@ lookup paths, and evidence trails those layers rely on.
   writer.
 - `Backfill/` - durable last-run backfill status plus per-symbol checkpoint and bar-count sidecars
   published under `Meridian.Storage.Backfill`.
+- `Calendars/` - `FileBusinessDayCalendarSource`, the business-day calendars declared schedule
+  conventions resolve against (ADR-025): one `<dataRoot>/calendars/{ID}.json` file per calendar,
+  read once at host start in ordinal file-name order through the strict source-generated
+  `BusinessDayCalendarFileJsonContext` (camelCase, unknown and repeated members refused) beside the
+  built-in `WEEKENDS`. A file is refused, with a Warning naming it and the reason, for malformed or
+  missing members, a version below 1, an id outside `^[A-Z][A-Z0-9]{1,15}$` or not equal to its
+  file stem, the reserved `WEEKENDS`, a weekend day that is not an exact English day name, no
+  working day, inverted coverage or an id another file that passes these checks also defines (both
+  are refused). A refused file loads nothing, and its Warning says whether each id it names (its
+  `calendarId` and its file stem, which can differ) still resolves, from another file or as the
+  built-in `WEEKENDS`; any other id stays unresolvable, the Warning says so, and it is never
+  replaced by weekends only. A missing directory loads only `WEEKENDS`, and so, with a
+  Warning, do a `calendars` path that is a file and a directory that cannot be listed (access denied
+  is not read as an empty directory). `Calendars` and `RefusedFiles` list what loaded and what did
+  not. The Application composition registers it and logs the terms capability line
+  (`docs/operators/business-day-calendar-files.md`).
 - `Config/StorageConfigExtensions.cs` - Storage-owned mapping from shared `StorageConfig` values
   into `StorageOptions`, including naming convention, date partition, sink, and profile defaults.
 - `Coordination/` - file-backed shared-storage lease store implementation published under
@@ -1158,6 +1174,10 @@ versions, group membership, and category values through the existing ordered lin
 Fresh draft GUIDs can replay the same posting without excluding attribution from comparison.
 Unknown, malformed, partial, or changed evidence refuses replay; all unrelated metadata, ordered
 economics, and posting scope retain their existing checks. Retained IDs and journal bytes do not change.
+`RetainedPostingEquivalence.AccountingTimestampsMatch` exposes the same schema-owned timestamp
+comparison to canonical asset replay: PostgreSQL microsecond precision, including pre-epoch and
+infinity handling. It adds no tolerance. Original command timestamps remain bound to their immutable
+fingerprints; comparisons against stored values do not replace them with a current or rounded clock.
 `LedgerJournalStoreHydrationExtensions` rebuilds an in-memory `Meridian.Ledger.Ledger` from that
 durable journal-read seam, including an as-of helper that scopes by ledger book and upper occurrence
 timestamp so restart, close, and reporting projections can hydrate from the stored spine before
@@ -1372,6 +1392,11 @@ serializable transaction for the journal, scoped tax lots, immutable mutation sn
 and correction lineage. Every atomic lot carries Security Master plus book-position identity;
 disposal compare-and-swap also rechecks unit cost and journal asset relief against the retained
 selected-lot cost basis.
+An explicitly linked, undrafted factor preparation may append a fresh Projected snapshot using
+the exact predecessor version and fingerprint. The bounded transition preserves source event,
+factors, retained evidence and owner identity, refuses any Drafted or financial authority, and
+uses the same locked version check as candidate creation. Earlier snapshots remain byte-exact;
+ordinary lifecycle transitions cannot replace the preparation link or relax source immutability.
 
 ## Roadmap traceability
 

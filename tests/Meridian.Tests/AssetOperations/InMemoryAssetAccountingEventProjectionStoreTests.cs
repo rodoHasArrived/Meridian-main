@@ -10,7 +10,7 @@ namespace Meridian.Tests.AssetOperations;
 /// the real in-memory implementation, which routes every write through the same
 /// <see cref="AssetAccountingEventProjectionRules"/> as the Postgres store.
 /// </summary>
-public sealed class InMemoryAssetAccountingEventProjectionStoreTests
+public sealed partial class InMemoryAssetAccountingEventProjectionStoreTests
 {
     private static readonly Guid EventId = Guid.Parse("a3000000-eeee-4000-8000-000000000010");
     private static readonly Guid PeriodId = Guid.Parse("a3000000-eeee-4000-8000-000000000011");

@@ -62,12 +62,19 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
             return [];
         }
 
+        // A field above the class's write version (ADR-024, readable before writable) is checked only
+        // where the decoder reads it: a flat payload stamped at or above its version. A stray key of
+        // that name on an older or profile-governed payload is not a term of the class. Versioned
+        // containers are gated by the predicate the mapping decodes them with
+        // (SecurityVersionedTermDecoding); later scalar terms keep the stamp ceiling below.
         var writes = SecurityAssetClassCatalog.GetTermsVersion(AssetClass);
         var decodesThrough = forWrite || profileGoverned
             ? writes
             : Math.Max(writes, SecurityTermsEnvelope.ResolveAssetClassTermsVersion(terms));
+        var versionedTerms = SecurityVersionedTerms.Decoding(AssetClass, terms, writeMode: forWrite);
+
         var issues = new List<SecurityValidationIssueDto>();
-        ValidateFields(terms, _fields, "", "assetSpecificTerms", decodesThrough, profileGoverned,
+        ValidateFields(terms, _fields, "", "assetSpecificTerms", decodesThrough, versionedTerms,
             requirePresence, forWrite, issues);
         return issues;
     }
@@ -78,15 +85,16 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
         string schemaPath,
         string valuePath,
         int decodesThrough,
-        bool profileGoverned,
+        SecurityVersionedTermDecoding versionedTerms,
         bool requirePresence,
         bool forWrite,
         List<SecurityValidationIssueDto> issues)
     {
         foreach (var field in fields)
         {
-            if (field.SinceTermsVersion > decodesThrough
-                || (profileGoverned && field.SinceTermsVersion > SecurityTermsEnvelope.DefaultAssetClassTermsVersion))
+            if (SecurityVersionedTerms.IsVersionedContainer(field)
+                    ? !versionedTerms.Decodes(field)
+                    : field.SinceTermsVersion > decodesThrough)
             {
                 continue;
             }
@@ -112,7 +120,7 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
             }
             if (field.Type == SecurityAssetTermFieldType.Object)
             {
-                ValidateFields(value, children, childSchemaPath, path, decodesThrough, profileGoverned,
+                ValidateFields(value, children, childSchemaPath, path, decodesThrough, versionedTerms,
                     requirePresence: forWrite && requirePresence, forWrite, issues);
             }
             else if (field.Type == SecurityAssetTermFieldType.Array)
@@ -126,7 +134,7 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
                         issues.Add(TypeIssue(field.Key, SecurityAssetTermFieldType.Object, item, itemPath));
                         continue;
                     }
-                    ValidateFields(item, children, childSchemaPath, itemPath, decodesThrough, profileGoverned,
+                    ValidateFields(item, children, childSchemaPath, itemPath, decodesThrough, versionedTerms,
                         requirePresence: forWrite && requirePresence, forWrite, issues);
                 }
             }

@@ -30,6 +30,7 @@ export function CopyLinkButton() {
       variant="ghost"
     >
       <Link2 aria-hidden="true" className="size-4" />
+      <span>Copy link</span>
     </Button>
   );
 }

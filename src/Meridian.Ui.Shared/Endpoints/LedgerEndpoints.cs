@@ -1742,6 +1742,7 @@ public static partial class LedgerEndpoints
                     .ApplyLifecycleActionAsync(request with
                     {
                         Actor = actor,
+                        AuthenticatedActorAssertion = request.Actor ?? string.Empty,
                         TenantId = tenantContext.TenantId,
                         CompanyId = tenantContext.CompanyId,
                         ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
@@ -1828,7 +1829,10 @@ public static partial class LedgerEndpoints
                  context.RequestServices.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
                  context.RequestServices.GetService<ILedgerJournalStore>(),
                  context.RequestServices.GetService<ReportPackWorkflowService>(),
-                 postingTarget: context.RequestServices.GetService<IGovernedLedgerPostingTarget>());
+                 postingTarget: context.RequestServices.GetService<IGovernedLedgerPostingTarget>(),
+                 evidenceArtifacts: context.RequestServices.GetService<Meridian.Ui.Shared.Evidence.IEvidenceArtifactStore>(),
+                 assetCandidatePostingFactory: () => context.RequestServices.GetService<IAccountingPostingCandidatePostService>(),
+                 assetAccountingSourceFactory: () => ResolveAssetAccountingEventSpineService(context));
     }
 
     private static IManualJournalEntryLifecycleService? ResolveManualJournalEntryLifecycleService(HttpContext context)

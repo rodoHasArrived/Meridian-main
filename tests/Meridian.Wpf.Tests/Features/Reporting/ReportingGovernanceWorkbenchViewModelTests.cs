@@ -981,8 +981,159 @@ public sealed class ReportingGovernanceWorkbenchViewModelTests
             "correlation-42",
             [actor]);
 
+    [Fact]
+    public async Task LateGovernedRunRead_CannotRestoreAnEarlierRunAfterSelectionRoundTrip()
+    {
+        var pending = new TaskCompletionSource<ApiResponse<GovernedReportingRunDto>>();
+        var client = new FakeReportingGovernanceApiClient { PendingGovernedRead = pending.Task };
+        var model = CreateConfiguredViewModel(client);
+        model.CurrentRunId = "run-42";
+        var read = model.LoadGovernedRunCommand.ExecuteAsync(null);
+        model.CurrentRunId = "other-run";
+        model.CurrentRunId = "run-42";
+        pending.SetResult(ApiResponse<GovernedReportingRunDto>.Ok(BuildRun("Draft", 1)));
+        await read;
+        model.CurrentRun.Should().BeNull();
+        model.RetainedAmounts.Rows.Should().BeEmpty();
+        model.RetainedAmounts.ProofDrawer.IsOpen.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GovernedRunRead_ForeignResponseCannotBecomeTheSelectedReport()
+    {
+        var client = new FakeReportingGovernanceApiClient { GovernedRun = BuildRun("Draft", 1, runId: "foreign-run") };
+        var model = CreateConfiguredViewModel(client);
+        model.CurrentRunId = "run-42";
+        await model.LoadGovernedRunCommand.ExecuteAsync(null);
+        model.CurrentRun.Should().BeNull();
+        model.ErrorText.Should().Contain("does not match the selected run");
+    }
+
+    [Theory]
+    [InlineData("Approve", "InReview")]
+    [InlineData("Validate", "Draft")]
+    [InlineData("Submit", "Validated")]
+    [InlineData("Release", "Approved")]
+    public async Task LateLifecycleResponse_PreservesServerOutcomeWithoutRestoringOldRun(string action, string state)
+    {
+        var pause = new TaskCompletionSource<bool>();
+        var client = new FakeReportingGovernanceApiClient { GovernedRun = BuildRun(state, 1) };
+        var model = CreateConfiguredViewModel(client);
+        model.CurrentRunId = "run-42";
+        await model.LoadGovernedRunCommand.ExecuteAsync(null);
+        model.ApprovalDecisionNote = "Independent retained review.";
+        client.PauseResponses = pause.Task;
+        var command = action switch
+        {
+            "Approve" => model.ApproveCommand,
+            "Validate" => model.ValidateCommand,
+            "Submit" => model.SubmitCommand,
+            _ => model.ReleaseCommand
+        };
+        var response = command.ExecuteAsync(null);
+        model.CurrentRunId = "newly-selected-run";
+        pause.SetResult(true);
+        await response;
+        client.TransitionCalls.Should().ContainSingle();
+        client.GovernedRun.Version.Should().Be(2, "the server-side action already completed");
+        model.CurrentRunId.Should().Be("newly-selected-run");
+        model.CurrentRun.Should().BeNull();
+        model.RetainedAmounts.Rows.Should().BeEmpty();
+        model.RetainedAmounts.ProofDrawer.IsOpen.Should().BeFalse();
+        model.ValidateCommand.CanExecute(null).Should().BeFalse();
+        model.StatusText.Should().Contain("retained history");
+    }
+
+    [Fact]
+    public async Task LateGenerationResponse_DoesNotAttachOrSelectRunAfterUserSelectionChanged()
+    {
+        var client = new FakeReportingGovernanceApiClient();
+        var model = CreateConfiguredViewModel(client);
+        await model.AssessReadinessCommand.ExecuteAsync(null);
+        var pause = new TaskCompletionSource<bool>();
+        client.PauseResponses = pause.Task;
+        var generated = model.GenerateGovernedRunCommand.ExecuteAsync(null);
+        model.CurrentRunId = "newly-selected-run";
+        pause.SetResult(true);
+        await generated;
+        client.RunCalls.Should().Be(1);
+        client.GovernCalls.Should().Be(0);
+        model.CurrentRunId.Should().Be("newly-selected-run");
+        model.CurrentRun.Should().BeNull();
+        model.RetainedAmounts.Rows.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LateRestatementResponse_CannotRestoreOldScopeOrSelectItsNewRevision(bool approve)
+    {
+        var client = new FakeReportingGovernanceApiClient { GovernedRun = BuildRun("Released", 5, includeRelease: true) };
+        var model = CreateConfiguredViewModel(client);
+        model.CurrentRunId = "run-42";
+        await model.LoadGovernedRunCommand.ExecuteAsync(null);
+        model.RestatementReason = "Retained source adjustment.";
+        if (approve) await model.RequestRestatementCommand.ExecuteAsync(null);
+        var pause = new TaskCompletionSource<bool>();
+        client.PauseResponses = pause.Task;
+        var response = approve ? model.ApproveRestatementCommand.ExecuteAsync(null) : model.RequestRestatementCommand.ExecuteAsync(null);
+        model.CurrentRunId = "newly-selected-run";
+        pause.SetResult(true);
+        await response;
+        model.CurrentRunId.Should().Be("newly-selected-run");
+        model.CurrentRun.Should().BeNull();
+        model.CurrentRestatement.Should().BeNull();
+        model.RetainedAmounts.Rows.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CompetingLoadIsRefusedWhileEarlierCommandOwnsBusy_AndItsLateResponseCannotChangeNewSelection(bool fail)
+    {
+        var pause = new TaskCompletionSource<bool>();
+        var client = new FakeReportingGovernanceApiClient { GovernedRun = BuildRun("InReview", 1) };
+        var model = CreateConfiguredViewModel(client);
+        model.CurrentRunId = "run-42";
+        await model.LoadGovernedRunCommand.ExecuteAsync(null);
+        model.ApprovalDecisionNote = "Independent review.";
+        client.PauseResponses = pause.Task;
+        if (fail) client.TransitionFailure = ApiResponse<GovernedReportingRunDto>.Fail("Old run approval failed", 409);
+        var oldCommand = model.ApproveCommand.ExecuteAsync(null);
+        model.CurrentRunId = "run-b";
+        var newSelectionStatus = model.StatusText;
+        model.IsBusy.Should().BeTrue();
+        model.LoadGovernedRunCommand.CanExecute(null).Should().BeFalse();
+        await model.LoadGovernedRunCommand.ExecuteAsync(null);
+        client.ReadRunIds.Should().Equal(new[] { "run-42" }, "the existing busy policy refuses the competing load");
+        pause.SetResult(true);
+        await oldCommand;
+        model.CurrentRunId.Should().Be("run-b");
+        model.CurrentRun.Should().BeNull();
+        model.ErrorText.Should().BeEmpty();
+        model.StatusText.Should().Be(newSelectionStatus);
+        model.IsBusy.Should().BeFalse();
+        // A real B operation starts only after A relinquishes ownership; no parallel feature is introduced.
+        client.PauseResponses = null;
+        client.GovernedRun = BuildRun("Draft", 1, runId: "run-b");
+        await model.LoadGovernedRunCommand.ExecuteAsync(null);
+        model.CurrentRun!.RunId.Should().Be("run-b");
+        client.ReadRunIds.Should().Equal("run-42", "run-b");
+    }
+
     private sealed class FakeReportingGovernanceApiClient : IReportingGovernanceApiClient
     {
+        public Task<ApiResponse<GovernedReportingRunDto>>? PendingGovernedRead { get; init; }
+        public Task? PauseResponses { get; set; }
+        public ApiResponse<GovernedReportingRunDto>? TransitionFailure { get; set; }
+        public List<string> ReadRunIds { get; } = [];
+        public int GovernCalls { get; private set; }
+
+        private async Task<ApiResponse<T>> ReturnResponseAsync<T>(ApiResponse<T> response) where T : class
+        {
+            if (PauseResponses is { } pause) await pause;
+            return response;
+        }
         public ReportingRunRequestDto? LastReadinessRequest { get; private set; }
         public SecureReportingDeliveryQueueCommand? LastDeliveryRequest { get; private set; }
         public GovernedReportingRunDto GovernedRun { get; set; } = BuildRun("Draft", 1);
@@ -1059,20 +1210,24 @@ public sealed class ReportingGovernanceWorkbenchViewModelTests
                 null,
                 ResolvedTemplate: request.Template,
                 ResolvedParameters: request.Parameters);
-            return Task.FromResult(ApiResponse<ReportingRunResultDto>.Ok(new ReportingRunResultDto(payload), 201));
+            return ReturnResponseAsync(ApiResponse<ReportingRunResultDto>.Ok(new ReportingRunResultDto(payload), 201));
         }
 
         public Task<ApiResponse<GovernedReportingRunDto>> GetGovernedRunAsync(
             string runId,
-            CancellationToken ct = default) =>
-            Task.FromResult(ApiResponse<GovernedReportingRunDto>.Ok(GovernedRun));
+            CancellationToken ct = default)
+        {
+            ReadRunIds.Add(runId);
+            return PendingGovernedRead ?? Task.FromResult(ApiResponse<GovernedReportingRunDto>.Ok(GovernedRun));
+        }
 
         public Task<ApiResponse<GovernedReportingRunDto>> GovernCompletedRunAsync(
             string runId,
             CancellationToken ct = default)
         {
+            GovernCalls++;
             GovernedRun = BuildRun("Draft", 1, runId: runId);
-            return Task.FromResult(ApiResponse<GovernedReportingRunDto>.Ok(GovernedRun, 201));
+            return ReturnResponseAsync(ApiResponse<GovernedReportingRunDto>.Ok(GovernedRun, 201));
         }
 
         public Task<ApiResponse<GovernedReportingRunDto>> ValidateAsync(
@@ -1130,7 +1285,7 @@ public sealed class ReportingGovernanceWorkbenchViewModelTests
                         BlockedReason: null,
                         ExpectedVersion: 1)
                 ]);
-            return Task.FromResult(ApiResponse<ReportingGovernanceRestatementDto>.Ok(request, 201));
+            return ReturnResponseAsync(ApiResponse<ReportingGovernanceRestatementDto>.Ok(request, 201));
         }
 
         public Task<ApiResponse<ReportingGovernanceRestatementApprovalDto>> ApproveRestatementAsync(
@@ -1170,7 +1325,7 @@ public sealed class ReportingGovernanceWorkbenchViewModelTests
                 runId: "run-42-r2",
                 restatementOfRunId: "run-42");
             GovernedRun = draft;
-            return Task.FromResult(ApiResponse<ReportingGovernanceRestatementApprovalDto>.Ok(
+            return ReturnResponseAsync(ApiResponse<ReportingGovernanceRestatementApprovalDto>.Ok(
                 new ReportingGovernanceRestatementApprovalDto(request, draft)));
         }
 
@@ -1294,7 +1449,7 @@ public sealed class ReportingGovernanceWorkbenchViewModelTests
                 includeRelease,
                 GovernedRun.RunId,
                 GovernedRun.RestatementOfRunId);
-            return Task.FromResult(ApiResponse<GovernedReportingRunDto>.Ok(GovernedRun));
+            return ReturnResponseAsync(TransitionFailure ?? ApiResponse<GovernedReportingRunDto>.Ok(GovernedRun));
         }
     }
 }

@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 2 of 5
 
-Objects 81-160 of 338. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 344. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -409,6 +409,36 @@ classDiagram
         +DateTimeOffset? RequestedAtUtc
         +string? RequestedBy
     }
+    class Meridian_Contracts_Ledger_AssetAccountingApprovalReceiptDto["AssetAccountingApprovalReceiptDto"] {
+        +string ApprovalId
+        +DateTimeOffset ApprovedAtUtc
+        +string Approver
+        +string CandidateFingerprint
+        +string CanonicalContentBase64
+        +string ContentHashSha256
+        +string SubjectId
+    }
+    class Meridian_Contracts_Ledger_AssetAccountingDraftCapabilitiesDto["AssetAccountingDraftCapabilitiesDto"] {
+        +AssetAccountingApprovalReceiptDto? Approval
+        +string? ApproveBlockedReason
+        +string? AuthenticatedActor
+        +bool CanApprove
+        +string CandidateFingerprint
+        +bool CanPost
+        +int DraftVersion
+        +string FundProfileId
+        +bool HasPendingPost
+        +Guid JournalEntryId
+        +Guid LedgerBookId
+        +JournalEntryLifecycleActionRequestDto? PendingPostCommand
+    }
+    class Meridian_Contracts_Ledger_AssetAccountingPostIntentDto["AssetAccountingPostIntentDto"] {
+        +PostPostingRuleJournalCandidateRequestDto CanonicalRequest
+        +string DocumentId
+        +JournalEntryLifecycleActionRequestDto OriginalCommand
+        +string OriginalCommandHash
+        +string VaultId
+    }
     class Meridian_Contracts_Ledger_AttachManualJournalEntryEvidenceRequest["AttachManualJournalEntryEvidenceRequest"] {
         +OperationsActionOriginDto ActionOrigin
         +string Actor
@@ -635,38 +665,6 @@ classDiagram
         +IReadOnlyList~CloseTaskConfigurationDto~ TaskConfigurations
         +Guid WorkflowId
     }
-    class Meridian_Contracts_Ledger_ClosePeriodPlanDto["ClosePeriodPlanDto"] {
-        +IReadOnlyList~CloseCalendarMilestoneDto~ CloseCalendar
-        +DateOnly CloseDueDate
-        +string ClosePlanId
-        +ClosePostingGateDto? ClosingEntriesGate
-        +ClosePeriodPlanConfigurationDto? Configuration
-        +DateTimeOffset? EvaluatedAtUtc
-        +IReadOnlyList~CloseEvidenceReviewDto~ EvidenceReviews
-        +string? EvidenceVersion
-        +Guid? FundAccountId
-        +string FundProfileId
-        +bool IsPeriodLocked
-        +IReadOnlyList~LateAdjustmentRequestDto~ LateAdjustments
-    }
-    class Meridian_Contracts_Ledger_ClosePeriodReopenResultDto["ClosePeriodReopenResultDto"] {
-        +ClosePostingGateDto? ClosingEntriesGate
-        +bool IsReopened
-        +IReadOnlyList~AccountingConfigurationValidationIssueDto~ Issues
-        +ClosePeriodPlanDto? Plan
-        +OperationsTransitionResultDto? Transition
-    }
-    class Meridian_Contracts_Ledger_ClosePlanPreparationLineageDto["ClosePlanPreparationLineageDto"] {
-        +DateTimeOffset CreatedAtUtc
-        +string CreatedBy
-        +IReadOnlyList~ClosePreparationHistoryDto~ History
-        +DateOnly PeriodEnd
-        +DateOnly PeriodStart
-        +Guid SourceWorkflowId
-        +Guid TargetPeriodId
-        +Guid TemplateId
-        +int TemplateVersion
-    }
     Meridian_Contracts_Ledger_AccountingBasisProjectionItemDto --> Meridian_Contracts_Ledger_AccountingBasisKindDto
     Meridian_Contracts_Ledger_AccountingBasisProjectionSetDto --> Meridian_Contracts_Ledger_AccountingBasisProjectionItemDto
     Meridian_Contracts_Ledger_AccountingBasisProjectionSetRequestDto --> Meridian_Contracts_Ledger_AccountingBasisProjectionTargetDto
@@ -713,6 +711,7 @@ classDiagram
     Meridian_Contracts_Ledger_AccountingRulesStudioDto --> Meridian_Contracts_Ledger_AccountingRulesStudioRuleRowDto
     Meridian_Contracts_Ledger_AccountingRulesStudioDto --> Meridian_Contracts_Ledger_AccountingRulesStudioSummaryDto
     Meridian_Contracts_Ledger_AllocationRuleDto --> Meridian_Contracts_Ledger_AllocationRuleBasisDto
+    Meridian_Contracts_Ledger_AssetAccountingDraftCapabilitiesDto --> Meridian_Contracts_Ledger_AssetAccountingApprovalReceiptDto
     Meridian_Contracts_Ledger_AutomatedJournalEvidenceAssessmentDto --> Meridian_Contracts_Ledger_AutomatedJournalEvidenceQualityDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationRuleDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationInputDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
@@ -729,13 +728,4 @@ classDiagram
     Meridian_Contracts_Ledger_CloseOperatingCoverageItemDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
     Meridian_Contracts_Ledger_CloseOperatingCoverageItemDto --> Meridian_Contracts_Ledger_AccountingReadinessStateDto
     Meridian_Contracts_Ledger_ClosePeriodLockResultDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
-    Meridian_Contracts_Ledger_ClosePeriodLockResultDto --> Meridian_Contracts_Ledger_ClosePeriodPlanDto
-    Meridian_Contracts_Ledger_ClosePeriodPlanConfigurationDto --> Meridian_Contracts_Ledger_ClosePlanPreparationLineageDto
-    Meridian_Contracts_Ledger_ClosePeriodPlanDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
-    Meridian_Contracts_Ledger_ClosePeriodPlanDto --> Meridian_Contracts_Ledger_CloseCalendarMilestoneDto
-    Meridian_Contracts_Ledger_ClosePeriodPlanDto --> Meridian_Contracts_Ledger_CloseEvidenceReviewDto
-    Meridian_Contracts_Ledger_ClosePeriodPlanDto --> Meridian_Contracts_Ledger_CloseOperatingCoverageItemDto
-    Meridian_Contracts_Ledger_ClosePeriodPlanDto --> Meridian_Contracts_Ledger_ClosePeriodPlanConfigurationDto
-    Meridian_Contracts_Ledger_ClosePeriodReopenResultDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
-    Meridian_Contracts_Ledger_ClosePeriodReopenResultDto --> Meridian_Contracts_Ledger_ClosePeriodPlanDto
 ```

@@ -1768,7 +1768,7 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
                   aria-pressed={vm.form.provider === provider.value}
                   onClick={() => vm.updateBackfillForm("provider", provider.value)}
                 >
-                  <span className="font-semibold">{provider.label}</span>
+                  <span className="font-semibold">{provider.label}</span>{" "}
                   <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.12em] text-primary">{provider.badge}</span>
                 </button>
               ))}

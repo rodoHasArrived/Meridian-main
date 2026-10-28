@@ -99,6 +99,7 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.AddSingleton<IWorkstationAccountingCloseApiClient, WorkstationAccountingCloseApiClient>();
         // Audit-chain verification (W9-GOV-008) is read-only and AdminMaintenance-gated server side.
         services.AddSingleton<IAccountingAuditIntegrityApiClient, AccountingAuditIntegrityApiClient>();
+        services.AddSingleton<IFactorPaydownApiClient, FactorPaydownApiClient>();
         // Passport Workbench governed-write editor (Phase 4 desktop parity).
         services.AddTransient<Meridian.Wpf.ViewModels.SecurityPassportEditorViewModel>();
         services.AddTransient<Meridian.Wpf.Views.SecurityPassportEditorPage>();

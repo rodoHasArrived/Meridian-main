@@ -11,6 +11,89 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.Ui/dashboard
 
+Provider credential editors require explicit selection of an existing owned connection. Status,
+save, verification and deletion use the same retained connection; account and environment come
+from authenticated ownership. Missing or changed ownership blocks changes without provider-wide
+fallback. Refresh or session changes clear secret drafts and invalidate delayed responses. This
+client increment does not create ownership, migrate legacy secrets or bind host runtime providers.
+
+Accounting Ledger Explorer includes a governed factor-paydown workbench. Exact factor text and
+existing retained evidence identities go to the shared preparation endpoint; the server supplies
+principal, basis relief, realized results and per-lot allocation as exact decimal strings. Creating
+a review draft requires an explicit description and confirmation of the preview. The shared draft
+adapter rechecks its fingerprint and retains the accounting-event candidate plus its exact journal
+workbench draft. The scoped link selects that exact draft for validation and review submission.
+Asset-linked drafts remain immutable. The journal lifecycle panel loads authenticated protocol-1
+capabilities for the exact draft, book, period, version and authenticated actor; old, absent or
+mismatched capabilities keep approval and posting unavailable. Supported decisions require explicit
+review and a rationale.
+The server retains the real independent approver, candidate fingerprint and receipt bytes; the
+browser checks their SHA-256 digest before offering the receipt download. Uncertain outcomes retain
+one exact command and UUID in session recovery; session changes and actor mismatches clear prior
+operator retry state. Pending posting resumes the server's original command unchanged, even when
+the recovery version advances, and blocks all other mutations.
+Canonical posted journal links come only from the returned durable posting receipt. Editing, Save,
+reversal, rebook and close-lock remain unavailable. The browser submits reviewed decisions to the
+shared governed workflow and never calculates financial amounts or roundtrips numeric lot instructions. Book,
+period and tab changes discard preparation, stale responses are ignored, and uncertain writes keep
+the same reviewed request for retry. Focused tests are in
+`accounting-screen.factor-paydown-panel.test.tsx`, `factor-paydown.api.test.ts`,
+`accounting-screen.asset-workflow.test.ts` and `asset-accounting-workflow.api.test.ts`.
+
+## Portfolio Open positions controls
+
+Open positions supports case-insensitive symbol search, exact Side filtering from loaded rows,
+and shared-assessment Current/Review required filtering. Filters combine with AND. Symbol, Side,
+and Mark readiness headers sort stably; no sort retains source order. Financial strings and totals
+are not sorted or recomputed. Counts explicitly describe filtered versus loaded positions.
+
+The toolbar remains available for both no-data and no-matches states. Filtering never changes
+holding selection or row identity: a selected holding outside the results retains its evidence and
+shows Clear filters, which preserves sorting. Reset controls also removes sorting. The existing
+row cap and Show all control remain in place for large result sets.
+
+Controls round-trip through the optional `positionsTable` member of the existing v1
+`portfolio-workstation` view envelope. Search updates the URL after 250 ms with replacement;
+blur flushes it before Copy link/Save view. Discrete filters and sorts create history entries.
+Back/Forward or external navigation cancels pending writes and restores URL controls. Scope,
+other query parameters, hash, and existing same-screen envelope fields are preserved. Old or
+invalid controls default safely without rewriting the URL on load. Link-budget failures are
+explicit, and controls stay applied locally. No new selection persistence is introduced.
+Saved layouts accept internal table-state routes beyond 512 characters while retaining the existing
+complete-envelope size limit. An invalid or oversized layout reports failure and keeps the save
+dialog open; it cannot claim success with an empty route or an unrestorable persisted record.
+
+Focused coverage: `portfolio-positions-table.test.ts`, `use-portfolio-positions-table.test.tsx`,
+`portfolio-screen.positions-table.test.tsx`, and existing Portfolio/a11y suites. Brokerage positions
+and Trading blotters retain their existing interaction models.
+
+## Shared workstation header
+
+The browser shell combines `WorkspaceHeader` and its persistent operating scope in one compact
+header. `Workflow context` starts collapsed and reveals workflow steps and decision evidence.
+`Views` discloses existing saved-layout and save-current-view controls; Copy link and Refresh stay
+visible. Workspace descriptions are available under the About information disclosure. Live,
+simulated/seeded, unknown-provenance and degraded warnings remain outside disclosures.
+
+The scope picker stages all changes, including Clear scope, until Apply scope. Cancel and Escape
+leave the active URL and stored scope unchanged. Run and date dimensions remain inspectable;
+applicability text distinguishes dimensions applied here from those retained for other screens.
+Navigating to another workflow disposes nested view-control dialogs and their keyboard listeners
+before the disclosure closes; screen-local table URL updates retain the current control session.
+Symbol suggestions support arrow keys, Enter, Escape, search progress, no matches and Retry.
+Escape dismisses suggestions before closing the dialog. Navigation reveals the active destination
+after route changes while respecting manual collapse until the next navigation.
+
+Focused regression coverage includes `app.test.tsx`, `workspace-header.test.tsx`,
+`workspace-views-menu.test.tsx`, `workflow-continuity-dock.test.tsx`, `scope-picker.test.tsx`,
+`workspace-nav.test.tsx`, and `layout-switcher.test.tsx`.
+
+React, React DOM, and their type packages are upgraded together. Runtime support uses the floating
+Node major in `.nvmrc` and the minimum declared in this dashboard's `engines.node`; both prerequisite
+doctors enforce that minimum. Account names, tab counts, and provider badges retain explicit text
+separators so accessible names do not depend on CSS layout. StrictMode regression fixtures enable
+the boundary at the rendering root and retain stale-response and financial-command assertions.
+
 Report Run Detail exposes retained trial-balance account balances from the exact run's ledger
 checkpoint through `/api/fund-structure/reporting/runs/{runId}/amounts`. Each balance opens the
 shared `LedgerAmountProofDrawer` with its immutable `report:{runId}:{amountId}` subject and
@@ -292,6 +375,11 @@ source. Its remediation SLA queue keeps server-owned tier, deadline, status, pro
 owner-assignment, outcome, and compatibility-derived provenance visible, with operator sorting on
 SLA tier and deadline. Live provider-attempt progress remains a separate bounded projection so a
 dropped transient notification cannot erase the retained execution/SLA record.
+
+The workbench owns its scrollport and the containing block for absolute accessibility text.
+Off-screen table captions stay available to assistive technology without expanding the outer
+document into a blank page. Desktop workstations retain internal scrolling; the existing zoom
+layout retains page scrolling.
 
 ## Important workflows
 

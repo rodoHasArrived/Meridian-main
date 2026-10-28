@@ -7,7 +7,7 @@ import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { apiGetJson } from "@/lib/api";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import { renderWithRouter } from "@/test/render";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import type { FirstRunStatus } from "@/features/first-run/types";
 import type {
   DataWorkspaceResponse,
@@ -308,6 +308,22 @@ describe("App", () => {
       refreshPortfolio: vi.fn(),
       upsertWorkflowPreset: vi.fn()
     });
+  });
+
+  it("keeps Views open when a pending Portfolio search flushes on blur", async () => {
+    const user = userEvent.setup();
+    function PendingSearch() {
+      const navigate = useNavigate();
+      return <input aria-label="Pending table search" onBlur={() => navigate("/portfolio?view=table-search", { replace: true })} />;
+    }
+    renderWithRouter(<><App /><PendingSearch /></>, { initialEntries: ["/portfolio"] });
+    await user.click(screen.getByRole("textbox", { name: "Pending table search" }));
+    await user.type(screen.getByRole("textbox", { name: "Pending table search" }), "AA");
+    const views = screen.getByText("Views", { selector: "summary" });
+    await user.click(views);
+    await waitFor(() => expect(screen.getByRole("region", { name: "View controls" })).toBeVisible());
+    expect(views.closest("details")).toHaveAttribute("open");
+    expect(views).toHaveFocus();
   });
 
   it("keeps the workstation closed while activation status is loading", () => {
@@ -675,15 +691,15 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/data/quotes?symbol=MSFT"] });
 
     expect(screen.getByRole("region", { name: "Market Data To Paper continuity" })).toBeInTheDocument();
-    expect(screen.getByText("Data / MSFT")).toBeInTheDocument();
-    expect(screen.getByLabelText("Current route /data/quotes")).toHaveTextContent("/data/quotes");
+    expect(screen.getByRole("button", { name: "Change operating scope" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Operating scope")).toHaveTextContent("MSFT");
     expect(screen.queryByText("/data/quotes?symbol=MSFT")).not.toBeInTheDocument();
     expect(screen.queryByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).not.toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: "Market Data To Paper workflow steps" })).not.toBeInTheDocument();
 
-    await user.click(screen.getByText("Flow details"));
+    await user.click(screen.getByText("Workflow context"));
 
-    expect(screen.getByText("/data/quotes?symbol=MSFT")).toBeInTheDocument();
+    expect(screen.getByText("Current workflow")).toBeInTheDocument();
     expect(screen.getByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Market Data To Paper workflow steps" })).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Primary operator workflow steps" })).toBeInTheDocument();
@@ -703,7 +719,7 @@ describe("App", () => {
       "href",
       "/trading/readiness?symbol=MSFT"
     );
-    expect(screen.getByRole("button", { name: "Clear MSFT operating context" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Change operating scope" })).toBeInTheDocument();
   });
 
   it("renders and clears the global operating scope across the workstation shell", async () => {
@@ -766,12 +782,56 @@ describe("App", () => {
     );
 
     await user.keyboard("{Escape}");
-    await user.click(screen.getByRole("button", {
-      name: "Clear operating scope: Subject MSFT, Account fund-1, Run Selected run, Provider Alpaca, Window 2026-05-01 to 2026-05-15"
-    }));
+    await user.click(screen.getByRole("button", { name: "Change operating scope" }));
+    await user.click(screen.getByRole("button", { name: "Clear scope" }));
+    expect(window.localStorage.getItem("meridian.workstation.operatingContext.v1")).toContain("fund-1");
+    await user.click(screen.getByRole("button", { name: "Apply scope" }));
 
     expect(window.localStorage.getItem("meridian.workstation.operatingContext.v1")).toBeNull();
     expect(screen.queryByLabelText("Operating scope")).not.toBeInTheDocument();
+  });
+
+  it("removes a cleared scope dimension from the URL and storage without restoring it from the old route", async () => {
+    const user = userEvent.setup();
+    mockWorkstationData({
+      session: {
+        displayName: "Ops Desk",
+        role: "Operator",
+        environment: "paper",
+        activeWorkspace: "portfolio",
+        commandCount: 7
+      },
+      overview,
+      portfolio,
+      loading: false
+    });
+    function LocationProbe() {
+      const location = useLocation();
+      return <output aria-label="Current route">{location.pathname}{location.search}</output>;
+    }
+    renderWithRouter(<><App /><LocationProbe /></>, {
+      initialEntries: ["/portfolio?symbol=MSFT&fundAccountId=fund-1&provider=Alpaca"]
+    });
+
+    const storageKey = "meridian.workstation.operatingContext.v1";
+    expect(JSON.parse(window.localStorage.getItem(storageKey) ?? "{}")).toMatchObject({
+      symbol: "MSFT", fundAccountId: "fund-1", provider: "Alpaca"
+    });
+    await user.click(screen.getByRole("button", { name: "Change operating scope" }));
+    await user.clear(screen.getByLabelText("Fund account"));
+    await user.click(screen.getByRole("button", { name: "Apply scope" }));
+
+    await waitFor(() => {
+      const route = screen.getByLabelText("Current route").textContent ?? "";
+      const params = new URLSearchParams(route.split("?")[1]);
+      expect(params.has("fundAccountId")).toBe(false);
+      expect(params.get("symbol")).toBe("MSFT");
+      expect(params.get("provider")).toBe("Alpaca");
+      const stored = JSON.parse(window.localStorage.getItem(storageKey) ?? "{}");
+      expect(stored).toMatchObject({ symbol: "MSFT", provider: "Alpaca" });
+      expect(stored).not.toHaveProperty("fundAccountId");
+    });
+    expect(screen.getByLabelText("Operating scope")).not.toHaveTextContent("fund-1");
   });
 
   it("surfaces ranked operator focus and evidence while preserving command palette actions", async () => {
@@ -921,7 +981,7 @@ describe("App", () => {
 
     renderWithRouter(<App />, { initialEntries: ["/portfolio"] });
 
-    expect(screen.getByText("Portfolio / MSFT")).toBeInTheDocument();
+    expect(screen.getByLabelText("Operating scope")).toHaveTextContent("MSFT");
     await user.keyboard("{Control>}k{/Control}");
 
     expect(screen.getAllByText("Subject: MSFT").length).toBeGreaterThan(0);
@@ -935,9 +995,11 @@ describe("App", () => {
     );
 
     await user.keyboard("{Escape}");
-    await user.click(screen.getByRole("button", { name: "Clear MSFT operating context" }));
+    await user.click(screen.getByRole("button", { name: "Change operating scope" }));
+    await user.click(screen.getByRole("button", { name: "Clear scope" }));
+    await user.click(screen.getByRole("button", { name: "Apply scope" }));
 
-    expect(screen.queryByText("Portfolio / MSFT")).not.toBeInTheDocument();
+    expect(screen.getByText("No scope selected")).toBeInTheDocument();
     expect(window.localStorage.getItem("meridian.workstation.operatingContext.v1")).toBeNull();
   });
 
@@ -1076,7 +1138,7 @@ describe("App", () => {
     await waitFor(() => expect(document.getElementById("alpaca-provider-setup")).not.toBeNull(), { timeout: 15000 });
     const alpacaSetup = document.getElementById("alpaca-provider-setup");
     await waitFor(() => expect(alpacaSetup).toHaveFocus(), { timeout: 5000 });
-    await user.click(screen.getByText("Flow details"));
+    await user.click(screen.getByText("Workflow context"));
     expect(screen.getByRole("link", { name: /Provider setup, current workflow step/ })).toHaveAttribute(
       "aria-current",
       "step"

@@ -3585,6 +3585,25 @@ describe("AccountingScreen", () => {
     expect(within(queue).queryByRole("button", { name: "Review retained draft" })).not.toBeInTheDocument();
   });
 
+  it("shows retained asset drafts as immutable review records with approval and posting unavailable", async () => {
+    const assetDraft = { ...manualJournalDraft, validationIssues: [], assetAccountingDraft: { spine: { eventId: "asset-event" }, candidate: {} } };
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce({ ...manualJournalWorkbench, drafts: [assetDraft] });
+    const { container } = await renderAccountingScreen(data, "/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha");
+    expect(screen.getByText(/This is an immutable asset accounting review draft/)).toBeVisible();
+    expect(screen.getByRole("button", { name: "Save draft" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Validate" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Submit for review" })).toBeInTheDocument();
+    expect(screen.getByLabelText("GL account for line line-debit")).toBeDisabled();
+    expect(screen.getByDisplayValue("Manual close adjustment")).toBeDisabled();
+    expect(screen.getByLabelText("Line entity")).toBeDisabled();
+    for (const action of ["Approve", "Post", "Reverse", "Rebook"]) {
+      expect(screen.getByRole("button", { name: action })).toBeDisabled();
+    }
+    expect(screen.getByRole("region", { name: "Journal source lines" })).toHaveAttribute("tabindex", "0");
+    expect(screen.getByRole("region", { name: "Journal balance impact" })).toHaveAttribute("tabindex", "0");
+    expect((await axe(container)).violations).toEqual([]);
+  });
+
   it("renders the manual journal entry workbench with GL and Security Master line fields", async () => {
     vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(manualJournalWorkbench);
 

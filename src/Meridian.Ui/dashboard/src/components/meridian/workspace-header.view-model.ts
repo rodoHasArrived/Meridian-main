@@ -130,6 +130,6 @@ function maturityVariant(maturity: ProductMaturity): WorkspaceHeaderBadgeVariant
     case "Setup":
       return "outline";
     case "Available":
-      return "default";
+      return "outline";
   }
 }

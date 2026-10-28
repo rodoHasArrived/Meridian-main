@@ -60,8 +60,16 @@ Each class writes its `TermsVersion` and reads through `ReadsTermsThrough`, whic
 raises with `ReadableTermsVersion` (ADR-024, readable before writable). Terms stamped above the read
 ceiling fail loudly; terms stamped above the write version, or populating a term introduced above
 it, are read but refused on write (`EnsureWritableAsAssetSpecificTerms`, `TryGetWriteRefusal`; a
-write that declares a non-flat `termsFormat` is refused with what to submit), and
-profile envelopes are checked by stamp only. Economic modules a flat conversion cannot
+write that declares a non-flat `termsFormat` is refused with what to submit), and profile envelopes
+are checked by stamp only. `TryGetReadRefusal` returns the read guard's refusal,
+with its exact text, without throwing. `SecurityVersionedTerms` names the versioned containers
+(`ScheduleConventionsKey`, `CallScheduleKey`, `PutScheduleKey`) and holds the one predicate that
+decides which of them a payload decodes (`Decoding`, `SecurityVersionedTermDecoding.Decodes`): a
+read decodes a container at or below the row's own stamp, a write at or below the class's write
+version, and a profile envelope none. It also holds the one block reader and the tri-state declared
+reads (`None`, `Declared`, `Unreadable`), so the mapping and the cash-flow engine agree on what a
+row declares (the schema validator only gates the container); `ScheduleConventionTerms` mirrors
+the F# record. Economic modules a flat conversion cannot
 express travel under the reserved `retainedEconomicTerms` key and fold back on the next economic
 rebuild. Reserved envelope keys are rejected as user-editable term fields.
 `SecurityMasterEventEnvelope` carries `PayloadType`/`PayloadVersion`;
@@ -309,6 +317,27 @@ event payloads keep their shape. Aggregate-only instructions do not claim an ori
 
 `OpenLotBackfillDtos` adds retained acquisition-source packets, independent review, a durable exception queue, and versioned application receipts. Apply accepts a retained source identity rather than replacement acquisition facts. `MarkFreshnessDtos` carries one server decision per position, including observation date, age, policy version, and blocking reason; absent assessments remain review required. Close plan transports retain workflow, account, and evidence-version stamps for declared-scope validation.
 
+`PrepareFactorPaydownRequestDto` carries operator factor/source assertions without caller-owned
+actor or tenant fields. `FactorPaydownPreparationDto` binds the exact lot/account preview to a
+fingerprint; `CreateFactorPaydownDraftRequestDto` requires that fingerprint before server-side
+repreparation and governed candidate creation. Component and nested decimal response values are
+exact strings on these HTTP routes, and factor input fields accept decimal strings.
+Optional `AssetAccountingEventSpineDto.PreparationRevision` links a freshly reviewed, undrafted
+factor preparation to its exact prior spine version and canonical fingerprint. The link records
+the authenticated preparing actor, time and reason; absent links preserve historical JSON.
+Recovery keeps the same economic event, factors, evidence and owner identity. Drafted and posted
+authority cannot enter this transition, and ordinary lifecycle appends preserve the retained link.
+`ManualJournalEntryDraftDto.AssetAccountingDraft` retains the exact typed asset candidate and source
+fingerprints in the review queue. It is omitted on historical manual drafts and cannot be introduced,
+removed or edited by a client. Submission preserves it. Optional `AssetAccountingApproval` retains
+the actual authenticated decision bytes/hash and exact candidate scope; `AssetAccountingPostIntent`
+binds the original command before canonical posting; `AssetAccountingPostingResult` contains only
+the actual durable financial receipt. These fields are omitted when null on legacy drafts.
+`AssetAccountingDraftCapabilitiesDto` is caller-, scope- and version-specific; missing/unknown
+protocols remain read-only. Pending post commands must be retried unchanged, including their
+original optimistic version. Approval/posting require the same independent certified operator;
+financial edits and generic corrections remain unavailable for asset-linked drafts.
+
 ## Purpose
 
 `TenantScopeEnforcementOptions.ConfigurationKey` names the supported `TenantScopeEnforcement`
@@ -439,13 +468,21 @@ accepts older numeric status payloads; persisted queue records already use text 
   GUID from the unadjusted dates within a consumer-chosen scope and stream, and `ScheduleDayCount`
   dispatches period day counts through `DayCountConventions`. `ScheduleSpec.IssueAnchoredForward`,
   `CompoundedForward` and `BackwardFromTermination` name the legacy generator modes.
+  `SecurityMaster/ScheduleSpecFactory` maps a security's declared `scheduleConventions` block to a
+  `ScheduleSpec` (`Resolve`, with the node's calendars) or a typed `DeclaredScheduleRefusal`, and
+  `ResolveShape` applies the same rules without calendars for write validation. It dispatches on
+  `CashFlowBehavior` and schema facts, reads the block only where the mapping decodes it, never
+  falls back to the effective-from date, an annual cadence or a weekends-only calendar, and never
+  throws for any terms shape. Its mapping is frozen as `DeclaredMappingVersion`
+  (`security-master-declared-schedule-v1`, ADR-025).
 - `Calendars/` - the business-day calendar seam: `IBusinessDayCalendar` (id, content hash,
   coverage), `HolidayBusinessDayCalendar` (weekend mask plus holidays, versioned and
   SHA-256 content-hashed through `Sha256Digest`), `JointBusinessDayCalendar`, the built-in
   `BusinessDayCalendars.WeekendsOnly` (`WEEKENDS`) and the shared roll, add and count extensions,
   `BusinessDayConvention` with `BusinessDayAdjustment`, and `IBusinessDayCalendarSource` with the
   in-memory `StaticBusinessDayCalendarSource`. A source never falls back to weekends-only for an
-  unknown id. Calendars are pure: no clock and no I/O.
+  unknown id. Calendars are pure: no clock and no I/O. The file-backed source every host registers
+  is `Meridian.Storage.Calendars.FileBusinessDayCalendarSource`.
 - `Backfill/` - shared historical backfill run-result and per-symbol completeness signal payloads
   published under `Meridian.Contracts.Backfill`.
 - `Coordination/` - shared cluster lease, leadership, scheduled-work ownership, subscription
@@ -1988,10 +2025,16 @@ contract shape, blocker vocabulary, or route-visible payloads change.
 
 Calculated cash-flow projections retain `BlockedReason` and `IsNormalizedPer100`: missing coupon
 terms and unresolved floating fixings never mean zero, and normalized analytical schedules cannot
-drive ledger postings without retained principal/notional. Discount rates on Treasury bills and
-commercial paper are not coupon payments. Classes with no implemented calculated schedule require
-provider evidence. Asset-pack template bindings use exact mappings with declared Fee, Amortization,
-and MarginSettlement lifecycle coverage.
+drive ledger postings without retained principal/notional. A schedule generated from declared
+schedule conventions also carries `ScheduleEvidence` (`StructuredCashFlowScheduleEvidence`: the
+kernel and declared-mapping versions, each calendar's id, content hash and purpose, and per-calendar
+coverage gaps), an optional nonpositional init property omitted from JSON when null. Its legacy
+twelve-argument constructor and twelve-output deconstruction remain available to compiled providers;
+an undeclared projection keeps its wire shape. A projection that carries the evidence is not postable
+yet. Discount rates on Treasury
+bills and commercial paper are not coupon payments. Classes with no implemented calculated schedule
+require provider evidence. Asset-pack template bindings use exact mappings with declared Fee,
+Amortization, and MarginSettlement lifecycle coverage.
 
 Security Master prices declare CurrencyPerUnit or PercentOfPar. Legacy Unspecified observations
 remain readable but cannot support a golden copy. Selections retain economic, hierarchy and

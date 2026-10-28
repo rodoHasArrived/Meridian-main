@@ -1,6 +1,7 @@
 <Page x:Class="Meridian.Wpf.Views.AccountingConfigurePage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:views="clr-namespace:Meridian.Wpf.Views"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
@@ -754,6 +755,9 @@
                                     </DataGrid>
                                 </StackPanel>
                             </Border>
+                            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+                                <views:FactorPaydownControl DataContext="{Binding FactorPaydown}" />
+                            </Border>
                             <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16" DataContext="{Binding AuditChainIntegrity}">
                                 <StackPanel>
                                     <TextBlock Text="Audit Chain Integrity" Style="{StaticResource CardHeaderStyle}" />
@@ -977,8 +981,10 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel>
-                                        <TextBlock Text="MANUAL JOURNAL ENTRY - BALANCED DOUBLE-ENTRY" Style="{StaticResource CardHeaderStyle}" />
+                                        <TextBlock Text="MANUAL JOURNAL ENTRY - BALANCED DOUBLE-ENTRY" Style="{StaticResource CardHeaderStyle}" Visibility="{Binding CanEditManualJournalDraft, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                        <TextBlock Text="{Binding ManualJournalEntryHeadingText}" Style="{StaticResource CardHeaderStyle}" Visibility="{Binding IsAssetAccountingDraft, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                         <TextBlock Text="{Binding ManualJournalStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding AssetAccountingDraftRestrictionText}" TextWrapping="Wrap" Margin="0,6,0,0" AutomationProperties.AutomationId="AssetAccountingDraftRestriction" />
                                     </StackPanel>
                                     <Border Grid.Column="1"
                                             Margin="10,0,0,0"
@@ -1001,7 +1007,7 @@
                                         Padding="12"
                                         Margin="0,14,0,0"
                                         Background="{StaticResource ConsoleBackgroundLightBrush}">
-                                    <Grid>
+                                    <Grid IsEnabled="{Binding CanEditManualJournalDraft}">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
@@ -1048,7 +1054,7 @@
                                         Padding="0"
                                         Margin="0,14,0,0"
                                         Background="{StaticResource ConsoleBackgroundLightBrush}">
-                                    <Grid AutomationProperties.AutomationId="ManualJournalDoubleEntryGrid"
+                                    <Grid Visibility="{Binding CanEditManualJournalDraft, Converter={StaticResource BooleanToVisibilityConverter}}" AutomationProperties.AutomationId="ManualJournalDoubleEntryGrid"
                                           AutomationProperties.Name="Manual journal double-entry grid">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" />
@@ -1140,10 +1146,19 @@
                                     </Grid>
                                 </Border>
 
+                                <DataGrid ItemsSource="{Binding AssetAccountingDraftLines}" IsReadOnly="True" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0"
+                                          Visibility="{Binding IsAssetAccountingDraft, Converter={StaticResource BooleanToVisibilityConverter}}" AutomationProperties.AutomationId="AssetAccountingDraftLines">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Account" Binding="{Binding AccountPath}" Width="*" />
+                                        <DataGridTextColumn Header="Side" Binding="{Binding Side}" Width="80" />
+                                        <DataGridTextColumn Header="Amount" Binding="{Binding Amount}" Width="120" />
+                                        <DataGridTextColumn Header="Currency" Binding="{Binding Currency}" Width="70" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
                                 <TextBlock Text="Evidence Link" Style="{StaticResource MetricLabelStyle}" Margin="0,12,0,4" />
                                 <TextBox Text="{Binding DraftEvidenceLink, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 <WrapPanel Margin="0,16,0,0">
-                                    <Button Content="Save Draft" Command="{Binding SaveManualJournalDraftCommand}" Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,8,8" />
+                                    <Button Content="Save Draft" Command="{Binding SaveManualJournalDraftCommand}" ToolTip="{Binding AssetAccountingDraftRestrictionText}" ToolTipService.ShowOnDisabled="True" Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,8,8" />
                                     <Button Content="Validate" Command="{Binding ValidateManualJournalDraftCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,8" />
                                     <Button Content="Submit" Command="{Binding SubmitManualJournalDraftCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" />
                                 </WrapPanel>
@@ -1159,11 +1174,11 @@
                                         <TextBlock Text="Lifecycle Actions" Style="{StaticResource CardHeaderStyle}" />
                                         <TextBlock Text="{Binding ManualJournalLifecycleStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
                                         <WrapPanel Margin="0,12,0,0">
-                                            <Button Content="Approve" Command="{Binding ApproveManualJournalCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" AutomationProperties.AutomationId="ManualJournalApproveButton" />
-                                            <Button Content="Post" Command="{Binding PostManualJournalCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" AutomationProperties.AutomationId="ManualJournalPostButton" />
-                                            <Button Content="Reverse" Command="{Binding ReverseManualJournalCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" AutomationProperties.AutomationId="ManualJournalReverseButton" />
-                                            <Button Content="Rebook" Command="{Binding RebookManualJournalCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" AutomationProperties.AutomationId="ManualJournalRebookButton" />
-                                            <Button Content="Lock Close" Command="{Binding LockManualJournalAfterCloseCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" AutomationProperties.AutomationId="ManualJournalCloseLockButton" />
+                                            <Button Content="Approve" Command="{Binding ApproveManualJournalCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" AutomationProperties.AutomationId="ManualJournalApproveButton" ToolTip="{Binding AssetAccountingDraftRestrictionText}" ToolTipService.ShowOnDisabled="True" />
+                                            <Button Content="Post" Command="{Binding PostManualJournalCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" AutomationProperties.AutomationId="ManualJournalPostButton" ToolTip="{Binding AssetAccountingDraftRestrictionText}" ToolTipService.ShowOnDisabled="True" />
+                                            <Button Content="Reverse" Command="{Binding ReverseManualJournalCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" AutomationProperties.AutomationId="ManualJournalReverseButton" ToolTip="{Binding AssetAccountingDraftRestrictionText}" ToolTipService.ShowOnDisabled="True" />
+                                            <Button Content="Rebook" Command="{Binding RebookManualJournalCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" AutomationProperties.AutomationId="ManualJournalRebookButton" ToolTip="{Binding AssetAccountingDraftRestrictionText}" ToolTipService.ShowOnDisabled="True" />
+                                            <Button Content="Lock Close" Command="{Binding LockManualJournalAfterCloseCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" AutomationProperties.AutomationId="ManualJournalCloseLockButton" ToolTip="{Binding AssetAccountingDraftRestrictionText}" ToolTipService.ShowOnDisabled="True" />
                                         </WrapPanel>
                                         <DataGrid ItemsSource="{Binding ManualJournalLifecycleRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="ManualJournalLifecycleGrid">
                                             <DataGrid.Columns>
@@ -1189,7 +1204,7 @@
                                     </DataGrid.Columns>
                                 </DataGrid>
                                 <TextBlock Text="Drafts" Style="{StaticResource CardHeaderStyle}" />
-                                <DataGrid ItemsSource="{Binding ManualJournalDraftRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="ManualJournalDraftGrid">
+                                <DataGrid ItemsSource="{Binding ManualJournalDraftRows}" SelectedItem="{Binding SelectedManualJournalDraftRow}" IsReadOnly="True" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="ManualJournalDraftGrid">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="Type and Memo" Binding="{Binding Name}" Width="260" />
                                         <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120" />

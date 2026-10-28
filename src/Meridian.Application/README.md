@@ -11,6 +11,15 @@ last_reviewed: 2026-10-21
 
 # src/Meridian.Application
 
+The internal `SecurityMaster/CashFlow/ScheduleSpecFactory` remains a preparatory adapter over decoded
+F# conventions, with its broader day/week cadence and explicit common-calendar fallback tests.
+Production projections explicitly use `Meridian.Contracts.SecurityMaster.ScheduleSpecFactory`:
+that versioned record reader follows the descriptor, requires monthly-or-longer coupon cadences or
+AtMaturity, and resolves only the declaring block's calendars. The prototype is not a production
+fallback; both factories retain their separate refusal and calendar tests. See the
+[contractual schedule rollout](../../docs/domain/contractual-schedule.md#future-expansion-notes)
+for the declared engine and remaining 5b work.
+
 Freshness monitoring begins with live ingress or collector subscription attempts, not configured symbols in an idle workstation. An unused UI monitor does not publish empty snapshots over an active collector's process-wide metrics. Internal reconciliation retains observed `tradeFill.price` only for the single-currency share movement, never a commission leg or a price inferred from fee-inclusive net cash.
 
 
@@ -225,9 +234,15 @@ writing certification state. Unrelated concurrent connection changes are retaine
 current connection record with the checked record; it does not provide a durable revision fence for
 changes that are subsequently reverted or certify the provenance of every runner implementation.
 Provider setup performs this strict read before credential persistence and returns a fixed failure
-without creating a vault when required configuration is unreadable. Its later source/connection/binding
-update re-reads configuration under the shared transaction, preserving concurrent ownership changes
-and assigning source IDs from current state. Credential and configuration commits remain separate;
+without creating a vault when required configuration is unreadable. Legacy provider-wide setup also
+refuses a provider family with retained tenant ownership, incomplete explicit ownership or ambiguous
+connection identity before saving or reading vault state. The ownership check and both vault operations
+hold the same configuration lease as connection writers. Callers must select an authorized retained
+connection for scoped setup; this guard does not migrate legacy credentials or the default resolver.
+Its later source/connection/binding
+update rechecks ownership under the shared transaction and refuses a provider-wide reference if an
+owner arrived after the vault phase. It preserves concurrent changes and assigns source IDs from
+current state. Credential and configuration commits remain separate;
 this does not resolve cross-store commit ambiguity or make legacy setup tenant-owned.
 
 Tenant-aware route preview filters connections and bindings before ranking, health queries and
@@ -827,10 +842,16 @@ Core workstation host. Do not introduce a second listener or independent monitor
   at the service boundary; projection never reads persistence or mutates command state.
   `FundStructureProjectionContractTests` exercises these views, effective windows, enrichment,
   and snapshot isolation across both implementations.
-  The PostgreSQL-backed service now supports the same shared
-  governance cash-flow projection path as the local JSON/in-memory service, using stored
-  structure rows plus fund-account snapshots, bank-statement rows, assignment metadata, and
-  optional Security Master economic rules for realized/projected cash-flow evidence.
+  `FundStructureCashFlowReadService` owns shared governance cash-flow orchestration, scope
+  resolution, ladders, variance, trend fallback, and optional Security Master projections.
+  Both persistence services pass captured structure, authorized accounts, shared metadata, and
+  an explicit as-of time; PostgreSQL no longer constructs an in-memory command service to read
+  cash flows. Its existing tenant/account visibility filter applies before account history is
+  read. Public contracts, currency handling, effective windows, and projection evidence remain
+  shared. The reader preserves complete statement revision/sequence authority, admits feed rows
+  by their own value date, refuses conflicting statement evidence, and retains unknown current
+  cash as unavailable rather than zero. `FundStructureCashFlowContractTests` covers both service implementations alongside
+  the existing cash-flow and schedule characterization tests.
   In-memory and PostgreSQL ownership-graph diagnostics share one iterative validator for
   self-links, dangling nodes, and exact cycle participants, avoiding recursion limits and
   implementation drift between persistence lanes.
@@ -1084,7 +1105,11 @@ mode (every create, amend, import, term-block amend and approved field-edit merg
 above the class's write version is refused with a reason naming the class, the stamp and the versions
 this node reads and writes, and one populating a term introduced above it with a reason naming the
 term, the class, the term's version and the write version; in Read mode such a term is decoded once the payload's
-own stamp reaches its version, and profile envelopes are decoded at the write version. The
+own stamp reaches its version, and a profile envelope decodes none. The mapping, the schema-terms
+validator and the cash-flow engine decide this through one predicate,
+`SecurityVersionedTerms.Decoding`. The mapping and the engine also read the block through one
+shared reader; the validator reads none of its members and checks the container only as a schema
+field, by its JSON type. The
 `callSchedule` and `putSchedule` readers are tolerant: they keep stored order, drop an entry that is
 not an object or lacks a parseable date (`callDate`, `putDate`), and read any other member that does
 not parse as unset. Deactivate and
@@ -1149,12 +1174,55 @@ refuses to extrapolate past the curve, quotes face-value lots per 100 of the out
 projection repays from the valuation date, reports the oldest of the discount and forward curves'
 as-of dates as `ObservedAsOf`, reports a stale or undated cash-flow source and a pinned version
 dated after the valuation date or recorded after the knowledge cutoff as diagnostics, and names the
-curve version, hash, forward provenance and terms version in its inputs. Market values use the F#
+curve version, hash, forward provenance and terms version in its inputs. For a schedule generated
+from declared conventions it also names the kernel and declared-mapping versions and each calendar
+with its content hash (`ScheduleKernel`, `DeclaredScheduleMapping`, `BusinessDayCalendar`), and
+reports each coverage gap as a `CalendarCoverageGap` diagnostic. Market values use the F#
 `SecurityCalculations` functions, with the paydown factor applied once.
 `SecurityMasterService.AmendTermBlockAsync` replaces one registry-declared nested term
 block (preferred terms, step and principal schedules, swap legs) through the normal amend path and
 records `TermBlockAmended`. A block the class only reads (`scheduleConventions`, `callSchedule`,
 `putSchedule`) is refused with the not-yet-writable reason.
+
+`SecurityMasterCashFlowService` follows a record's declared `scheduleConventions` block (ADR-025).
+After the unsupported-class and missing-maturity checks, and before the legacy issue-date fallback,
+it resolves `Meridian.Contracts.SecurityMaster.ScheduleSpecFactory.Resolve` with the node's
+`IBusinessDayCalendarSource`. The exact legacy six-argument constructor remains available to compiled
+hosts; the calendar-aware overload requires the source first, avoiding ambiguity in legacy positional
+null calls. Dependency injection selects that seven-argument overload when a source is registered.
+A refusal blocks the projection with its reason. A record that
+declares nothing takes every legacy step unchanged, except that a Bond, CertificateOfDeposit,
+StructuredCredit or Swap row stamped outside 1 to its class's `ReadsTermsThrough` is refused with
+the read guard's reason whether or not it carries a block. A declaring record branches before the
+legacy coupon walk into `BuildDeclaredProjection`
+(`SecurityMasterCashFlowService.DeclaredConventions.cs`): the kernel's periods dated on their
+payment dates (those paying before the projection's as-of date dropped), interest over adjusted
+accrual dates through `ScheduleDayCount`, the declared coupon unit and cash basis, the legacy
+bullet, sinker and asserted-bullet principal rules, a block for contractual principal schedules, and
+`ScheduleEvidence`. Coverage gaps are logged at Debug and never block.
+`StructuredCashFlowLedgerGate` refuses any projection that carries `ScheduleEvidence`, after its own
+`BlockedReason`. No write path can store a declaring block before increment 5b-2, so this branch is
+dormant in production. Verify
+this lane with the declared-conventions partial of `SecurityMasterCashFlowServiceTests`,
+`ScheduleSpecFactoryTests` and `SecurityMasterCashFlowProjectionShapeTests`.
+
+`AddSecurityMasterTermsCapability(services, dataRoot)` (in `Meridian.Application.Composition`)
+registers `FileBusinessDayCalendarSource` over `<dataRoot>/calendars` with `TryAddSingleton` and
+the internal `SecurityMasterTermsCapabilityHostedService`. `StorageFeatureRegistration` calls it
+over `StorageOptions.RootPath`; the WPF desktop calls it from its own composition root. At host
+start the hosted service loads the calendars and logs one Information line, "Security Master terms
+capability: declared mapping {DeclaredMappingVersion}, schedule kernel {KernelVersion}, terms
+versions {TermsVersions}, business-day calendars {CalendarCount}: {Calendars}", so every node's
+build and calendar set are visible without a projection request (the rollout inventory in
+`docs/operators/security-master-terms-contract-rollout.md`). A `HostStartup` graph logs through
+Serilog, whose file sink writes `<dataRoot>/_logs/meridian-<yyyyMMdd>.log`. `UiServer` keeps its
+default providers' Warning minimum, unless a configured `Logging` level lowers it (the container
+deployments set `Logging__LogLevel__Default`, and the default console provider then repeats these
+lines beside Serilog's console sink), and sends only the hosted service's and the calendar source's
+categories (`UiServer.StartupInventoryLogCategories`) to that Serilog logger, from Information, so a
+workstation-mode host writes these lines to the same file. Verify it with
+`SecurityMasterTermsCapabilityStartupTests`, `BusinessDayCalendarSourceCompositionTests` and
+`UiServerLoggingTests`.
 
 ## API contract notes
 
@@ -1229,13 +1297,3 @@ the original security/account scope, without consulting live prices. Timestamp-o
 can legitimately change after an earlier-started transaction commits; timestamps are eligibility
 filters, while `SelectionReceiptId` is the durable replay identity.
 
-The calculated Security Master cash-flow service has a strict declared-convention path for
-schema-versioned coupon blocks and swap-leg blocks. It separates accrual and payment dates and
-refuses unresolved calendars and unsupported declared combinations instead of using legacy defaults.
-Declared projections remain preview-only and block ledger posting until their convention and calendar
-evidence is retained in projection contracts.
-`SecurityMaster:BusinessDayCalendarsFile` optionally supplies a JSON array with `calendarId`,
-`version`, `holidays`, `coverageFrom`, `coverageTo` and optional `weekendDays` per entry; the file is
-loaded once, and invalid definitions refuse startup. Without a file only `WEEKENDS` resolves.
-A host-supplied `IBusinessDayCalendarSource` takes precedence. Write versions remain unchanged.
-See the [continuation and remaining scope](../../docs/architecture/security-master-extensibility-review.md#working-continuation--2026-10-28-priority-5-declared-engine-foundation).

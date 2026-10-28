@@ -27,3 +27,6 @@ export * from "./types/workstation-6";
 export * from "./types/workstation-7";
 export * from "./types/workstation-8";
 export * from "./types/workstation-corporate-actions";
+
+export * from "./types/factor-paydown";
+export * from "./types/asset-accounting-workflow";

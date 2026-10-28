@@ -1,173 +1,202 @@
-using System.Globalization;
-using System.Text.Json;
+using System.Diagnostics.CodeAnalysis;
 using Meridian.Contracts.Calendars;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.SecurityMaster.Schedules;
+using Meridian.FSharp.Domain;
 
 namespace Meridian.Application.SecurityMaster.CashFlow;
 
-// The factory is deliberately internal: writable terms remain governed by ADR-024's separate
-// rollout. Raw spellings are parsed strictly here, never coerced to legacy schedule defaults.
+/// <summary>
+/// Maps an already decoded, declared convention block to the contractual schedule kernel.
+/// Does not select a legacy schedule or infer coupon cash amounts.
+/// </summary>
 internal static class ScheduleSpecFactory
 {
-    internal sealed record Plan(ScheduleGenerationResult Schedule, bool RateIsPercent, bool LevelCash);
-
-    internal static JsonElement? ReadBlock(SecurityDetailDto security, int? legIndex = null)
+    /// <summary>
+    /// Resolves declared scheduling terms. Missing calendars and unrecognized conventions refuse;
+    /// they never select a weekends-only calendar or the legacy coupon-frequency fallback.
+    /// </summary>
+    internal static bool TryCreate(
+        ScheduleConventions conventions,
+        DateOnly effectiveDate,
+        DateOnly terminationDate,
+        string? paymentFrequency,
+        IBusinessDayCalendarSource calendars,
+        string? commonCalendarId,
+        [NotNullWhen(true)] out ScheduleSpec? spec,
+        [NotNullWhen(false)] out string? refusal)
     {
-        if (SecurityTermsEnvelope.IsProfileGovernedPayload(security.AssetClass, security.AssetSpecificTerms))
-            return null;
-        var descriptor = SecurityAssetClassCatalog.GetOrDefault(security.AssetClass);
-        var field = legIndex is null
-            ? SecurityAssetTermsSchema.Field(descriptor.AssetClass, "scheduleConventions")
-            : SecurityAssetTermsSchema.ElementFields(descriptor.AssetClass, "legs")
-                .FirstOrDefault(field => field.Key == "scheduleConventions");
-        if (field is null || SecurityTermsEnvelope.ResolveAssetClassTermsVersion(security.AssetSpecificTerms) < field.SinceTermsVersion)
-            return null;
+        ArgumentNullException.ThrowIfNull(conventions);
+        ArgumentNullException.ThrowIfNull(calendars);
+        spec = null;
+        refusal = null;
 
-        foreach (var source in StructuredCashFlowTermsResolver.EnumerateTermSources(security))
+        if (ScheduleConventionsModule.IsEmpty(conventions))
         {
-            if (legIndex is null)
-            {
-                var block = Property(source, "scheduleConventions");
-                if (block is { } value && SecurityAssetTermsSchema.IsPopulatedTermValue(value))
-                    return value;
-            }
-            else
-            {
-                foreach (var key in new[] { "legs", "swapLegs", "cashFlowLegs" })
-                {
-                    var container = Property(source, key);
-                    if (container is not { ValueKind: JsonValueKind.Array } array)
-                        continue;
-                    // Mirrors the resolver's first usable container and object-row ordering.
-                    var rows = array.EnumerateArray().Where(row => row.ValueKind == JsonValueKind.Object).ToArray();
-                    if (rows.Length == 0)
-                        continue;
-                    return legIndex.Value < rows.Length ? Property(rows[legIndex.Value], "scheduleConventions") : null;
-                }
-            }
+            refusal = "No schedule conventions are declared; the caller must retain its legacy schedule.";
+            return false;
         }
 
-        return null;
-    }
-
-    internal static Plan? Create(
-        JsonElement? declaration, DateOnly start, DateOnly end, string? frequency,
-        IBusinessDayCalendarSource calendars)
-    {
-        if (declaration is not { } block || !SecurityAssetTermsSchema.IsPopulatedTermValue(block))
-            return null;
-        if (block.ValueKind != JsonValueKind.Object)
-            throw Refused("scheduleConventions must be an object.");
-
-        if (!SecurityTermConventions.TryParsePaymentFrequency(frequency, out var cadence))
-            throw Refused("Declared schedules require a known payment frequency.");
-        var tenor = cadence switch
+        if (terminationDate <= effectiveDate)
         {
-            SecurityPaymentFrequency.Daily => ScheduleTenor.Days(1),
-            SecurityPaymentFrequency.Weekly => ScheduleTenor.Weeks(1),
-            SecurityPaymentFrequency.BiWeekly => ScheduleTenor.Weeks(2),
-            SecurityPaymentFrequency.AtMaturity => ScheduleTenor.Term,
-            _ when cadence.MonthsPerPeriod() is int months => ScheduleTenor.Months(months),
-            _ => throw Refused("Irregular payment frequency requires an authoritative schedule.")
-        };
+            refusal = "Declared schedule termination must be after its effective date.";
+            return false;
+        }
 
-        var direction = ParseEnum(block, "direction", ScheduleDirection.Forward);
-        var stub = ScheduleStubPolicy.Short;
-        if (Text(block, "stubPolicy") is { } stubToken && !SecurityTermConventions.TryParseStubPolicy(stubToken, out stub))
-            throw Refused("Unknown declared stubPolicy.");
+        if (!TryTenor(paymentFrequency, out var tenor))
+        {
+            refusal = "Declared schedules require a recognized regular payment frequency or AtMaturity.";
+            return false;
+        }
+
+        var direction = ScheduleDirection.Forward;
+        if (conventions.Direction is { } directionTerm)
+        {
+            // These are the exact values frozen in the versioned container, not enum numbers.
+            if (directionTerm.Value is not ("Forward" or "Backward"))
+            {
+                refusal = "Schedule direction must be Forward or Backward.";
+                return false;
+            }
+
+            direction = directionTerm.Value == "Backward" ? ScheduleDirection.Backward : ScheduleDirection.Forward;
+        }
+
         var roll = ScheduleRoll.AnchorDay;
-        var rollToken = Text(block, "rollConvention");
-        if (rollToken is not null && !SecurityTermConventions.TryParseRollConvention(rollToken, out roll))
-            throw Refused("Unknown declared rollConvention.");
-        if (Boolean(block, "endOfMonthRule") == true)
+        if (conventions.RollConvention is { } rollTerm
+            && !SecurityTermConventions.TryParseRollConvention(rollTerm.Value, out roll))
         {
-            if (rollToken is not null && roll != ScheduleRoll.AnchorDay && roll != ScheduleRoll.EndOfMonth)
-                throw Refused("endOfMonthRule conflicts with rollConvention.");
+            refusal = "Unrecognized schedule roll convention.";
+            return false;
+        }
+
+        if (conventions.EndOfMonthRule is { Value: true })
+        {
+            if (conventions.RollConvention is not null && roll != ScheduleRoll.EndOfMonth)
+            {
+                refusal = "endOfMonthRule conflicts with the declared roll convention.";
+                return false;
+            }
+
             roll = ScheduleRoll.EndOfMonth;
         }
-
-        var convention = BusinessDayConvention.Unadjusted;
-        if (Text(block, "businessDayConvention") is { } conventionToken
-            && !SecurityTermConventions.TryParseBusinessDayConvention(conventionToken, out convention))
-            throw Refused("Unknown declared businessDayConvention.");
-        var lag = Integer(block, "paymentLagBusinessDays") ?? 0;
-        if (lag < 0)
-            throw Refused("paymentLagBusinessDays cannot be negative.");
-        IBusinessDayCalendar? calendar = null;
-        if (Property(block, "paymentCalendars") is { ValueKind: not JsonValueKind.Null } ids)
+        else if (conventions.EndOfMonthRule is { Value: false } && roll == ScheduleRoll.EndOfMonth)
         {
-            if (ids.ValueKind != JsonValueKind.Array)
-                throw Refused("paymentCalendars must be an array of calendar ids.");
-            var names = ids.EnumerateArray().Select(id => id.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(id.GetString())
-                ? id.GetString()! : throw Refused("paymentCalendars contains an invalid calendar id.")).ToArray();
-            if (names.Length > 0 && !calendars.TryResolve(names, out calendar))
-                throw Refused("A declared payment calendar cannot be resolved.");
+            refusal = "endOfMonthRule=false conflicts with an end-of-month roll.";
+            return false;
         }
-        // No fallback to commonTerms.holidayCalendarId or WEEKENDS: an empty declaration is not
-        // authorization to substitute another holiday set.
-        if (calendar is null && (convention != BusinessDayConvention.Unadjusted || lag > 0))
-            throw Refused("Declared business-day adjustment or payment lag requires paymentCalendars.");
-        var payment = new BusinessDayAdjustment(convention, calendar);
-        var accrual = Boolean(block, "accrualAdjusted") == true ? payment : BusinessDayAdjustment.Unadjusted;
-        var unit = Text(block, "couponRateUnit");
-        if (unit is null || !(unit.Equals("Percent", StringComparison.OrdinalIgnoreCase) || unit.Equals("Fraction", StringComparison.OrdinalIgnoreCase)))
-            throw Refused("Declared schedules require couponRateUnit (Percent or Fraction).");
-        var basis = Text(block, "couponCashBasis");
-        if (basis is null || !(basis.Equals("Level", StringComparison.OrdinalIgnoreCase) || basis.Equals("DayCount", StringComparison.OrdinalIgnoreCase)))
-            throw Refused("Declared schedules require couponCashBasis (Level or DayCount).");
-        var schedule = ScheduleGenerator.Generate(new ScheduleSpec(start, end, tenor, direction,
-            Roll: roll, StubPolicy: stub, FirstRegularDate: Date(block, "firstRegularDate"),
-            LastRegularDate: Date(block, "lastRegularDate"), AccrualAdjustment: accrual,
-            PaymentAdjustment: payment, PaymentLagBusinessDays: lag));
-        if (!schedule.Succeeded)
-            throw Refused(schedule.Failure.Message);
-        if (schedule.Diagnostics.Count > 0)
-            throw Refused("Declared schedule exceeds the available calendar coverage.");
-        if (basis.Equals("Level", StringComparison.OrdinalIgnoreCase) && tenor.PeriodsPerYear is null)
-            throw Refused("Level coupon cash requires a fixed annual cadence.");
-        return new Plan(schedule, unit.Equals("Percent", StringComparison.OrdinalIgnoreCase), basis.Equals("Level", StringComparison.OrdinalIgnoreCase));
+
+        var stubPolicy = ScheduleStubPolicy.Short;
+        if (conventions.StubPolicy is { } stubTerm
+            && !SecurityTermConventions.TryParseStubPolicy(stubTerm.Value, out stubPolicy))
+        {
+            refusal = "Unrecognized schedule stub policy.";
+            return false;
+        }
+
+        var businessDayConvention = BusinessDayConvention.Unadjusted;
+        if (conventions.BusinessDayConvention is { } businessDayTerm
+            && !SecurityTermConventions.TryParseBusinessDayConvention(businessDayTerm.Value, out businessDayConvention))
+        {
+            refusal = "Unrecognized business-day convention.";
+            return false;
+        }
+
+        var lag = conventions.PaymentLagBusinessDays?.Value ?? 0;
+        if (lag < 0)
+        {
+            refusal = "Payment lag must not be negative.";
+            return false;
+        }
+
+        // Explicit payment calendars are authoritative. A common calendar is used only when the
+        // block names none; an explicit unknown id must never fall back to the common calendar.
+        var ids = conventions.PaymentCalendars.ToArray();
+        if (ids.Any(string.IsNullOrWhiteSpace))
+        {
+            refusal = "Payment calendar ids must not be blank.";
+            return false;
+        }
+
+        if (ids.Length == 0 && !string.IsNullOrWhiteSpace(commonCalendarId))
+        {
+            ids = [commonCalendarId];
+        }
+
+        IBusinessDayCalendar? calendar = null;
+        if (ids.Length > 0 && !calendars.TryResolve(ids, out calendar))
+        {
+            refusal = "One or more declared payment calendars could not be resolved.";
+            return false;
+        }
+
+        if (calendar is null && (businessDayConvention != BusinessDayConvention.Unadjusted || lag != 0))
+        {
+            refusal = "Business-day adjustment and payment lag require a resolvable payment calendar.";
+            return false;
+        }
+
+        var paymentAdjustment = new BusinessDayAdjustment(businessDayConvention, calendar);
+        var candidate = new ScheduleSpec(
+            effectiveDate,
+            terminationDate,
+            tenor,
+            Direction: direction,
+            Roll: roll,
+            StubPolicy: stubPolicy,
+            FirstRegularDate: conventions.FirstRegularDate?.Value,
+            LastRegularDate: conventions.LastRegularDate?.Value,
+            AccrualAdjustment: conventions.AccrualAdjusted is { Value: true }
+                ? paymentAdjustment
+                : BusinessDayAdjustment.Unadjusted,
+            PaymentAdjustment: paymentAdjustment,
+            PaymentLagBusinessDays: lag);
+
+        // The kernel owns grid validation (regular dates, tenor/roll compatibility, collapsed
+        // accrual periods and range limits). Do not duplicate those invariants in this adapter.
+        var generated = ScheduleGenerator.Generate(candidate);
+        if (!generated.Succeeded)
+        {
+            refusal = generated.Failure.Message;
+            return false;
+        }
+
+        spec = candidate;
+        return true;
     }
 
-    private static JsonElement? Property(JsonElement source, string key)
+    private static bool TryTenor(string? raw, out ScheduleTenor tenor)
     {
-        if (source.ValueKind != JsonValueKind.Object)
-            return null;
-        var matches = source.EnumerateObject().Where(property => property.Name.Equals(key, StringComparison.OrdinalIgnoreCase)).ToArray();
-        if (matches.Length > 1)
-            throw Refused($"Ambiguous declared schedule member '{key}'.");
-        return matches.Length == 1 ? matches[0].Value : null;
+        tenor = default;
+        if (!SecurityTermConventions.TryParsePaymentFrequency(raw, out var frequency))
+        {
+            return false;
+        }
+
+        switch (frequency)
+        {
+            case SecurityPaymentFrequency.Daily:
+                tenor = ScheduleTenor.Days(1);
+                break;
+            case SecurityPaymentFrequency.Weekly:
+                tenor = ScheduleTenor.Weeks(1);
+                break;
+            case SecurityPaymentFrequency.BiWeekly:
+                tenor = ScheduleTenor.Weeks(2);
+                break;
+            case SecurityPaymentFrequency.AtMaturity:
+                tenor = ScheduleTenor.Term;
+                break;
+            default:
+                if (frequency.MonthsPerPeriod() is not { } months)
+                {
+                    return false;
+                }
+
+                tenor = ScheduleTenor.Months(months);
+                break;
+        }
+
+        return true;
     }
-
-    private static string? Text(JsonElement source, string key)
-        => Property(source, key) is not { ValueKind: not JsonValueKind.Null } value ? null
-            : value.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(value.GetString()) ? value.GetString()!.Trim()
-            : throw Refused($"{key} must be a nonblank string.");
-
-    private static bool? Boolean(JsonElement source, string key)
-        => Property(source, key) is not { ValueKind: not JsonValueKind.Null } value ? null
-            : value.ValueKind is JsonValueKind.True or JsonValueKind.False ? value.GetBoolean()
-            : throw Refused($"{key} must be a boolean.");
-
-    private static int? Integer(JsonElement source, string key)
-        => Property(source, key) is not { ValueKind: not JsonValueKind.Null } value ? null
-            : value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var number) ? number
-            : throw Refused($"{key} must be an integer.");
-
-    private static DateOnly? Date(JsonElement source, string key)
-        => Text(source, key) is not { } token ? null
-            : DateOnly.TryParseExact(token, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) ? date
-            : throw Refused($"{key} must be an ISO date.");
-
-    private static T ParseEnum<T>(JsonElement source, string key, T fallback) where T : struct, Enum
-        => Text(source, key) is not { } token ? fallback
-            : Enum.GetNames<T>().Any(name => name.Equals(token, StringComparison.OrdinalIgnoreCase))
-                && Enum.TryParse<T>(token, true, out var parsed) ? parsed
-            : throw Refused($"Unknown declared {key}.");
-
-    internal sealed class RefusalException(string reason) : InvalidOperationException($"Declared schedule blocked: {reason}")
-    {
-    }
-
-    private static RefusalException Refused(string reason) => new(reason);
 }

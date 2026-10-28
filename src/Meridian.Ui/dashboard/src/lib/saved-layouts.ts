@@ -24,7 +24,9 @@ export const SAVED_LAYOUTS_STORAGE_KEY = "meridian.workstation.layouts.v1";
 export const MAX_SAVED_LAYOUTS = 40;
 export const MAX_LAYOUT_NAME_LENGTH = 80;
 export const MAX_LAYOUT_DESCRIPTION_LENGTH = 200;
-const MAX_LAYOUT_ROUTE_LENGTH = 512;
+// Screen-state tokens plus operating scope can exceed the former 512-character
+// limit. The complete layout still has to fit the existing envelope budget.
+const MAX_LAYOUT_ROUTE_LENGTH = 4096;
 
 const OPERATING_SCOPE_KEYS = [
   "symbol",
@@ -264,7 +266,7 @@ export function removeUserLayout(
   return next;
 }
 
-/** Build a user layout from a name + captured state. Rejects an empty name. */
+/** Build a restorable user layout; reject an empty name or an unpersistable state. */
 export function createUserLayout(input: {
   id: string;
   name: string;
@@ -275,13 +277,17 @@ export function createUserLayout(input: {
   if (!name) {
     return null;
   }
+  const state = normalizeLayoutState(input.state);
+  if (!state || encodeLayoutStateToken(state) === null) {
+    return null;
+  }
   const description = input.description?.trim().slice(0, MAX_LAYOUT_DESCRIPTION_LENGTH) || null;
   return {
     id: input.id,
     name,
     description,
     source: "user",
-    state: input.state
+    state
   };
 }
 

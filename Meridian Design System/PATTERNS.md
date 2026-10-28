@@ -47,6 +47,39 @@ thin, self-explanatory wrapper over a native element (`Input`) can keep its to o
 `mod+k`) and manages open state. Group commands so no more than ~6 rows show without a section
 header; the selected row carries a 4px left-inset accent, never a full-row background swap.
 
+### Browser workstation header composition
+
+The dashboard adapter composes a compact `WorkspaceHeader` with persistent scope, followed by
+the working surface. Show breadcrumb/title and Refresh/Copy link at the top; use the `Views`
+disclosure for saved layouts and save-current-view controls. Keep view controls mounted so nested
+dialog state and focus restoration survive opening and closing. Tab moves through disclosed
+controls; Escape closes the innermost layer first and restores its trigger. Do not assign ARIA
+menu semantics to a disclosure containing independent dialog launchers.
+
+`Workflow context` is collapsed initially; expanding it reveals steps, status and evidence links.
+Scope chips use explicit Applied here/Retained text. Never collapse live-environment, simulation,
+unknown-provenance or degraded-operation warnings into this disclosure. Descriptions belong in
+an About disclosure, rather than repeating a generic paragraph above every working surface.
+At desktop/laptop widths the outer shell allocates available height to the work area, not warning
+banners; at browser zoom controls wrap without hiding scope or warnings. Reuse existing semantic
+colors, typography, focus indicators and spacing tokens rather than introducing a new theme.
+
+### Loaded-position table controls
+
+Compose `PortfolioPositionsToolbar` immediately above the existing dense table. Keep symbol
+search, Side and Mark readiness labels visible; derive Side options from all loaded positions,
+not the filtered subset. AND-combine controls and label counts as “Showing X of Y loaded
+positions” rather than suggesting a server-wide total. Keep toolbar/reset available with zero
+matches, and distinguish that state from no source holdings.
+
+Sorting uses semantic header controls and `aria-sort`; only Symbol, Side and Mark readiness
+are enabled in this pilot. Preserve row IDs, source-order ties, original financial values and
+portfolio totals. Filtering a selected row out must not switch the evidence panel to another
+holding: disclose the hidden selection and offer Clear filters. Reset controls also clears sort.
+Use native labelled input/select controls, existing focus indicators, and wrapping toolbar groups
+at laptop widths/browser zoom. Search URL updates must not move focus or scroll the workbench.
+Copy link and Save view capture table controls through the existing view envelope.
+
 ### Selection inputs — which control?
 
 | Situation | Use |

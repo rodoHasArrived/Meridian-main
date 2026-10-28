@@ -1,4 +1,5 @@
 import type {
+  AssetPostedJournalReceipt,
   AccountingActionAuditEvent,
   AccountingBasisKind,
   AccountingConfigurationValidationIssue,
@@ -79,6 +80,7 @@ export interface AttachManualJournalEntryEvidenceRequest {
 }
 
 export interface JournalEntryLifecycleActionResult {
+  postedJournal?: AssetPostedJournalReceipt | null;
   journalEntry: ManualJournalEntryDraft;
   transition: JournalEntryLifecycleTransition;
   generatedJournalEntries: ManualJournalEntryDraft[];

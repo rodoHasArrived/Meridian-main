@@ -4,7 +4,7 @@
 
 This is a source inventory of public DTOs and related contract objects. Database-to-contract links are explicit module associations; they do not assert one-to-one structural equivalence.
 
-- Public contract objects: 3059
+- Public contract objects: 3080
 - Namespaces: 59
 
 ## Classifications
@@ -12,14 +12,14 @@ This is a source inventory of public DTOs and related contract objects. Database
 | Classification | Count |
 | --- | ---: |
 | `catalog` | 13 |
-| `class` | 270 |
+| `class` | 273 |
 | `configuration` | 20 |
-| `dto` | 1452 |
-| `enum` | 428 |
+| `dto` | 1459 |
+| `enum` | 431 |
 | `event` | 5 |
 | `payload` | 63 |
-| `record` | 364 |
-| `record_struct` | 9 |
+| `record` | 371 |
+| `record_struct` | 10 |
 | `request` | 166 |
 | `response` | 91 |
 | `result` | 45 |
@@ -28,10 +28,10 @@ This is a source inventory of public DTOs and related contract objects. Database
 
 ## Database-adjacent diagrams
 
-- [`ledger-contracts`](contracts/ledger-contracts.md): 338 objects; mapped schemas: `ledger`.
-- [`security-master-contracts`](contracts/security-master-contracts.md): 443 objects; mapped schemas: `security_master`.
+- [`ledger-contracts`](contracts/ledger-contracts.md): 344 objects; mapped schemas: `ledger`.
+- [`security-master-contracts`](contracts/security-master-contracts.md): 456 objects; mapped schemas: `security_master`.
 - [`direct-lending-contracts`](contracts/direct-lending-contracts.md): 99 objects; mapped schemas: `security_master`.
-- [`asset-operations-contracts`](contracts/asset-operations-contracts.md): 128 objects; mapped schemas: `asset_operations`.
+- [`asset-operations-contracts`](contracts/asset-operations-contracts.md): 130 objects; mapped schemas: `asset_operations`.
 - [`fund-governance-contracts`](contracts/fund-governance-contracts.md): 141 objects; mapped schemas: `fund_accounts`, `fund_structure`.
 - [`banking-contracts`](contracts/banking-contracts.md): 11 objects; mapped schemas: `banking`.
 - [`money-market-contracts`](contracts/money-market-contracts.md): 1 objects; mapped schemas: `money_market`.

@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-PORTFOLIO-RECORDS
 path: src/Meridian.PortfolioRecords
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-07
+last_reviewed: 2026-10-28
 ---
 
 # src/Meridian.PortfolioRecords
@@ -15,6 +15,17 @@ last_reviewed: 2026-10-07
 balances or aggregating cash flows. Competing batches at the same account/header-date/revision remain
 unavailable, including when their closing balances happen to agree. Currency filtering follows revision
 selection so a replacement cannot leak a superseded currency's amount. Source rows remain retained.
+Complete statement batches supersede transaction-feed copies only for currencies the chosen batch
+retains, from its earliest observed transaction through its retained header. Competing highest-revision
+batches remain unavailable when their possible spans would change an in-window feed; unrelated
+currencies and windows remain usable. The caller separately fences statement knowledge by historical
+as-of date; an activity-window cutoff is not a statement observation date.
+
+Local snapshot loading upgrades an old Plaid delivery only when its complete batch and every line
+match the historical connector's MD5-to-Guid identities, exact account ownership and count, absent
+balances, and unique supported ASCII references. A bank label alone cannot convert a complete
+statement into an editable feed. Duplicate batch identities, partial or contradictory history require review;
+raw records remain retained. This mirrors guarded PostgreSQL migration 008 without changing it.
 
 Reconciliation readers can load an exact account set through one batched retained-result query,
 optionally filtering to active breaks. PostgreSQL checks strict tenant ownership for the whole

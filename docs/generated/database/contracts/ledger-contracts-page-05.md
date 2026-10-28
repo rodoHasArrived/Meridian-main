@@ -2,11 +2,74 @@
 
 # `ledger-contracts` data objects - page 5 of 5
 
-Objects 321-338 of 338. References crossing pages remain available in the dependency manifest.
+Objects 321-344 of 344. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_RealizedGainLossReportDto["RealizedGainLossReportDto"] {
+        +AccountingCertificationStateDto CertificationState
+        +string Currency
+        +LedgerDimensionSetDto Dimensions
+        +IReadOnlyList~string~ EvidenceLinks
+        +string FundProfileId
+        +Guid? LedgerBookId
+        +string PeriodId
+        +decimal RealizedGainLoss
+        +string ReportId
+    }
+    class Meridian_Contracts_Ledger_ReopenClosePeriodRequestDto["ReopenClosePeriodRequestDto"] {
+        +OperationsActionOriginDto ActionOrigin
+        +string Actor
+        +string ApprovalReference
+        +string? CorrelationId
+        +IReadOnlyList~string~ EvidenceLinks
+        +long ExpectedWorkflowVersion
+        +string ImpactSummary
+        +string IncidentId
+        +string Justification
+        +string Rationale
+        +string Role
+        +Guid WorkflowId
+    }
+    class Meridian_Contracts_Ledger_ReopenLedgerPeriodRequest["ReopenLedgerPeriodRequest"] {
+        +OperationsActionOriginDto ActionOrigin
+        +string ApprovalReference
+        +IReadOnlyList~string~ EvidenceLinks
+        +string Reason
+        +string ReopenedBy
+        +string Role
+    }
+    class Meridian_Contracts_Ledger_ReportCertificationDto["ReportCertificationDto"] {
+        +string Actor
+        +string CertificationId
+        +IReadOnlyList~string~ EvidenceLinks
+        +DateTimeOffset RecordedAtUtc
+        +AccountingCertificationStateDto State
+        +string Summary
+    }
+    class Meridian_Contracts_Ledger_ReportDimensionScopeDto["ReportDimensionScopeDto"] {
+        +string CertificationEvidenceToken
+        +LedgerDimensionSetDto Dimensions
+        +bool HasExplicitScope
+        +Guid? LedgerBookId
+        +IReadOnlyList~string~ ScopedDimensionKeys
+        +string ScopeHash
+    }
+    class Meridian_Contracts_Ledger_ReportExportArtifactDto["ReportExportArtifactDto"] {
+        +string ArtifactId
+        +string ArtifactKind
+        +AccountingCertificationStateDto CertificationState
+        +string ContentHash
+        +LedgerDimensionSetDto Dimensions
+        +ReportDimensionScopeDto? DimensionScope
+        +string DisplayName
+        +IReadOnlyList~string~ EvidenceLinks
+        +string Format
+        +DateTimeOffset GeneratedAtUtc
+        +Guid? LedgerBookId
+        +string Route
+    }
     class Meridian_Contracts_Ledger_ReportExportArtifactManifestDto["ReportExportArtifactManifestDto"] {
         +string ArtifactId
         +string ArtifactKind
@@ -209,4 +272,6 @@ classDiagram
         +bool PeriodIsLocked
         +string? TenantId
     }
+    Meridian_Contracts_Ledger_ReportExportArtifactDto --> Meridian_Contracts_Ledger_ReportDimensionScopeDto
+    Meridian_Contracts_Ledger_ReportExportArtifactManifestDto --> Meridian_Contracts_Ledger_ReportDimensionScopeDto
 ```

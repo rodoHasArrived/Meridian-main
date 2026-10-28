@@ -21,7 +21,11 @@ public sealed record ManualJournalMutationIntent(
     LedgerJournalEntryWrite? Posting,
     JsonElement Result,
     bool Completed = false,
-    DateTimeOffset? CompletedAtUtc = null);
+    DateTimeOffset? CompletedAtUtc = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? AssetPostPlanForCommandKey { get; init; }
+}
 
 public sealed record ManualJournalMutationRecoveryOptions
 {

@@ -19,6 +19,7 @@ public sealed class ReportingFeatureModule : IDesktopFeatureModule
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddSingleton<IReportingGovernanceApiClient, ReportingGovernanceApiClient>();
+        services.AddSingleton<IReportRetainedAmountsApiClient, ReportRetainedAmountsApiClient>();
         services.AddSingleton<IEvidenceWorkbenchApiClient, EvidenceWorkbenchApiClient>();
         services.AddTransient<ReportingGovernanceWorkbenchViewModel>();
         services.AddTransient<EvidenceWorkbenchViewModel>();

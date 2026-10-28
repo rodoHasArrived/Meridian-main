@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
+      Unloaded="OnPageUnloaded"
       AutomationProperties.Name="Add Provider Wizard">
 
     <Grid Background="{DynamicResource ShellWindowBackgroundBrush}">
@@ -36,9 +37,9 @@
                                    HorizontalAlignment="Center" />
                     </Border>
                     <StackPanel Margin="12,0,0,0">
-                        <TextBlock Text="Add Data Provider"
+                        <TextBlock Text="Provider Connection Credentials"
                                    Style="{StaticResource PageTitleStyle}" />
-                        <TextBlock Text="Connect a new provider for real-time streaming or historical backfill."
+                        <TextBlock Text="Manage credentials on an existing owned connection. Connection creation and runtime activation are managed separately."
                                    Style="{StaticResource CardDescriptionStyle}" />
                     </StackPanel>
                     </StackPanel>
@@ -254,6 +255,20 @@
                             <TextBlock Text="Enter Credentials" Style="{StaticResource CardHeaderStyle}" VerticalAlignment="Center" />
                         </StackPanel>
 
+                        <TextBlock Text="Existing owned connection" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
+                        <ComboBox ItemsSource="{Binding OwnedConnections}" SelectedItem="{Binding SelectedOwnedConnection}" SelectionChanged="OwnedConnectionSelectionChanged" IsSynchronizedWithCurrentItem="False"
+                                  AutomationProperties.Name="Existing owned provider connection" AutomationProperties.AutomationId="AddProviderOwnedConnectionSelector">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding DisplayName}" />
+                                        <TextBlock><Run Text="{Binding ConnectionId}" /><Run Text=" · " /><Run Text="{Binding CredentialEnvironment}" /><Run Text=" · " /><Run Text="{Binding ExternalAccountId}" /></TextBlock>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <TextBlock Text="{Binding OwnedConnectionStatusText}" TextWrapping="Wrap" Margin="0,8,0,8" />
+                        <Button Content="Reload existing connections" Click="ReloadOwnedConnections_Click" Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left" Margin="0,0,0,12" />
                         <TextBlock x:Name="CredentialsInfoText"
                                    Text="{Binding CredentialsInfoText}"
                                    TextWrapping="Wrap"
@@ -295,7 +310,7 @@
 
                         <Button Content="Test Connection"
                                 Style="{StaticResource SecondaryButtonStyle}"
-                                Click="TestProviderConnection_Click" />
+                                Click="TestProviderConnection_Click" IsEnabled="{Binding CanUseOwnedCredentials}" />
                     </StackPanel>
                 </Border>
 
@@ -309,41 +324,21 @@
                                            Foreground="White"
                                            HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
-                            <TextBlock Text="Configure Data Types" Style="{StaticResource CardHeaderStyle}" VerticalAlignment="Center" />
+                            <TextBlock Text="Save Selected Connection Credentials" Style="{StaticResource CardHeaderStyle}" VerticalAlignment="Center" />
                         </StackPanel>
 
-                        <CheckBox x:Name="EnableTradesCheck"
-                                  Content="Subscribe to Trades"
-                                  IsChecked="True"
-                                  Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                  Margin="0,0,0,8" />
-                        <CheckBox x:Name="EnableQuotesCheck"
-                                  Content="Subscribe to Quotes (BBO)"
-                                  IsChecked="True"
-                                  Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                  Margin="0,0,0,8" />
-                        <CheckBox x:Name="EnableDepthCheck"
-                                  Content="Subscribe to Market Depth (L2)"
-                                  Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                  Margin="0,0,0,8" />
-                        <CheckBox x:Name="EnableBackfillCheck"
-                                  Content="Enable for historical backfill"
-                                  IsChecked="True"
-                                  Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                  Margin="0,0,0,16" />
+                        <TextBlock Text="This action saves credentials for the selected existing connection. Connection creation, subscriptions and runtime activation are managed separately."
+                                   TextWrapping="Wrap" Margin="0,0,0,12" />
 
-                        <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="Backfill Priority (lower = higher priority)" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
-                            <TextBox x:Name="PriorityBox"
-                                     Style="{StaticResource FormTextBoxStyle}"
-                                     Text="10" Width="100"
-                                     HorizontalAlignment="Left" />
-                        </StackPanel>
-
-                        <Button Content="Save Provider Configuration"
+                        <Button Content="Save selected connection credentials"
                                 Style="{StaticResource PrimaryButtonStyle}"
-                                Click="SaveProvider_Click"
+                                Click="SaveProvider_Click" IsEnabled="{Binding CanUseOwnedCredentials}"
                                 Margin="0,16,0,0" />
+
+                        <CheckBox Content="Remove saved credentials from this selected owned connection." IsChecked="{Binding RemoveCredentialsConfirmed}"
+                                  IsEnabled="{Binding CanUseOwnedCredentials}" Margin="0,12,0,8" />
+                        <Button Content="Remove selected connection credentials" Click="RemoveOwnedCredentials_Click" IsEnabled="{Binding CanRemoveOwnedCredentials}"
+                                Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left" />
 
                         <TextBlock x:Name="SaveStatusText"
                                    Text="{Binding SaveStatusText}"
@@ -450,7 +445,7 @@
                         <StackPanel Orientation="Horizontal" Margin="0,4">
                             <Ellipse x:Name="Step4Dot" Width="10" Height="10"
                                      Fill="{Binding Step4Fill}" Margin="0,0,8,0" />
-                            <TextBlock x:Name="Step4Label" Text="Configure &amp; save"
+                            <TextBlock x:Name="Step4Label" Text="Save selected credentials"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                         </StackPanel>
                     </StackPanel>

@@ -886,7 +886,26 @@ as the mutation's `cost_basis`, and dates the factor in `HistoricalTaxLotQuantit
 snapshot. Financial Operations: `FactorPaydownLotInstructionService` prepares the spine request from
 the lots of record. It is composed in `LedgerFeatureRegistration` next to
 `CanonicalLotAmortizationService` (nullable authorities; preparation refuses a missing one before
-reading anything), but no operator route calls it yet. The candidate service accepts a
+reading anything). The operator preparation and draft routes resolve authenticated book ownership
+and the current open period before preparation. Browser Ledger Explorer and WPF Accounting
+Configuration review exact amounts and a fingerprint bound to the retained lots, factors, source
+evidence and proposed accounts. Draft creation re-prepares and checks that fingerprint, then uses
+the existing spine projection and candidate lifecycle, then retains an immutable mirror in the
+manual journal review queue under the same journal ID. Missing mirrors are repaired on exact
+retry; validation uses server-retained authority and submission preserves it. A failed candidate
+build can leave Expected/Projected state. Fresh reviewed preparation may append a linked revision
+for that same economic observation only before Drafted authority exists, with the exact predecessor
+version/hash, unchanged source/factors/evidence/owner and current lot/period/security checks.
+Original snapshots remain immutable; the locked append version makes an old candidate build and
+recovery compete for one next version. Independent approval
+retains the authenticated decision bytes and posting reopens their scoped Vault content before
+calling the canonical atomic candidate service. The original pending command survives restart;
+exact replay verifies the original journal, lot receipt and full storage fingerprint before repairing
+the workbench mirror. Canonical approval attests at the later of actual review and retention while
+preserving both original timestamps. Retained journal comparisons use the existing schema precision
+contract; original command representation remains authoritative for fingerprints. Generic editing
+and corrections remain blocked. Browser and the WPF factor-paydown child require exact server
+capabilities and authenticated actor; legacy desktop local drafts remain in their existing lane. The candidate service accepts a
 factor-paydown candidate only under spine authority and only with the governed lot instruction,
 recomputing held face, principal and the allocation from the lots, and feeds the instruction's
 components to the rule only under the `FactorPaydown` intent; the spine service rereads every lot

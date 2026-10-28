@@ -6,10 +6,14 @@ module_id: SRC-UI
 path: src/Meridian.Ui
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-27
+last_reviewed: 2026-10-28
 ---
 
 # src/Meridian.Ui
+
+The host-served workstation bundle uses paired React/React DOM runtime packages and preserves
+accessible separators between account labels, tab counts, and provider state badges. Dashboard
+runtime requirements remain declared in its package manifest and checked before dependency work.
 
 Browser reconciliation queue source observations and retained occurrence age are projected separately from case status. Shared services own lineage, comparison evidence and SLA calendars.
 

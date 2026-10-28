@@ -25,6 +25,53 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         "meridian-accounting-configure-tests",
         Guid.NewGuid().ToString("N"));
 
+    [Fact]
+    public async Task LocalRetainedAssetDraft_RemainsVisibleAndBlocksGenericLifecycle()
+    {
+        Directory.CreateDirectory(_root);
+        var context = new FundContextService(Path.Combine(_root, "asset-fund-context.json"));
+        var profile = await context.UpsertProfileAsync(new FundProfileDetail(
+            "alpha-fund", "Alpha Fund", "Alpha Fund LP", "USD", "accounting", "FundAccountingConfigure",
+            FundLedgerScope.Consolidated, ["entity-alpha"], ["sleeve-credit"], ["vehicle-master"], IsDefault: true));
+        await context.SelectFundProfileAsync(profile.FundProfileId);
+        var harness = CreateHarness(context);
+        await harness.ViewModel.LoadAsync();
+        await harness.ViewModel.SeedBaselineConfigurationAsync();
+        harness.ViewModel.DraftAmount = 100m;
+        await harness.ViewModel.SaveManualJournalDraftAsync();
+        var store = new FileManualJournalEntryDraftStore(harness.DraftsPath);
+        var draft = (await store.ListAsync("alpha-fund")).Single();
+        // UI guards depend on retained origin, not fabricated approval or posting authority.
+        await store.SaveAsync(draft with { AssetAccountingDraft = new(null!, null!) });
+        await harness.ViewModel.RefreshAsync();
+        var view = harness.ViewModel;
+        view.SelectedManualJournalDraftRow = view.ManualJournalDraftRows.Single();
+        view.FactorPaydown.RetainedDrafts.Should().BeEmpty();
+        view.IsAssetAccountingDraft.Should().BeTrue();
+        view.CanEditManualJournalDraft.Should().BeFalse();
+        view.AssetAccountingDraftLines.Should().BeEquivalentTo(draft.Lines);
+        view.AssetAccountingDraftRestrictionText.Should().Contain("submitted for review").And.Contain("posting").And.Contain("blocked");
+        view.SaveManualJournalDraftCommand.CanExecute(null).Should().BeFalse();
+        view.ApproveManualJournalCommand.CanExecute(null).Should().BeFalse();
+        view.PostManualJournalCommand.CanExecute(null).Should().BeFalse();
+        view.ReverseManualJournalCommand.CanExecute(null).Should().BeFalse();
+        view.RebookManualJournalCommand.CanExecute(null).Should().BeFalse();
+        view.CanSubmitManualJournal.Should().BeTrue();
+        view.DraftAmount = 999m;
+        await view.SaveManualJournalDraftAsync();
+        foreach (var action in new[] { JournalEntryLifecycleActionDto.Approve, JournalEntryLifecycleActionDto.Post,
+                     JournalEntryLifecycleActionDto.Reverse, JournalEntryLifecycleActionDto.Rebook })
+        {
+            await view.ApplyManualJournalLifecycleActionAsync(action);
+            view.ManualJournalLifecycleStatusText.Should().Contain("blocked");
+        }
+        var retained = (await store.ListAsync("alpha-fund")).Single();
+        retained.TotalDebits.Should().Be(draft.TotalDebits);
+        retained.Version.Should().Be(draft.Version);
+        retained.Status.Should().Be(draft.Status);
+        retained.AssetAccountingDraft.Should().NotBeNull();
+    }
+
     [Theory]
     [InlineData(1)]
     [InlineData(2)]

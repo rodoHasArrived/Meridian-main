@@ -1,3 +1,4 @@
+import type { PortfolioPositionsTableState } from "@/lib/portfolio-positions-table";
 import { VIEW_STATE_ENVELOPE_VERSION, type ViewStateEnvelope } from "@/lib/view-state-envelope";
 
 export const WORKSTATION_SCREEN_VIEW_STATE_SCREENS = {
@@ -19,6 +20,7 @@ export interface TradingBlotterViewState {
 }
 
 export interface PortfolioWorkstationViewState {
+  positionsTable?: PortfolioPositionsTableState;
   selectedKind: "holding" | "run" | "brokerage-account" | "brokerage-position";
   selectedId: string | null;
 }

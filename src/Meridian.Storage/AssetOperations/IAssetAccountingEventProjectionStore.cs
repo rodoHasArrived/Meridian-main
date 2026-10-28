@@ -80,6 +80,9 @@ internal static class AssetAccountingEventProjectionRules
                 "Asset accounting projections must append the next consecutive spine version.");
         }
 
+        if (expectedSpineVersion == 0 && projection.PreparationRevision is not null)
+            throw new InvalidOperationException("An initial preparation cannot claim a retained predecessor.");
+
         if (expectedBookPositionVersion <= 0 ||
             projection.Scope.ExpectedBookPositionVersion != expectedBookPositionVersion)
         {
@@ -210,6 +213,11 @@ internal static class AssetAccountingEventProjectionRules
         AssetAccountingEventSpineDto previous,
         AssetAccountingEventSpineDto next)
     {
+        if (!PayloadEquals(previous.PreparationRevision, next.PreparationRevision))
+        {
+            AssetAccountingPreparationRevisionValidator.ValidateTransition(previous, next);
+            return;
+        }
         var isExpectedToProjectedTransition =
             previous.Stages[^1].Stage == AssetAccountingLifecycleStageDto.Expected &&
             next.Stages.Count == previous.Stages.Count + 1 &&
@@ -334,10 +342,7 @@ internal static class AssetAccountingEventProjectionRules
     }
 
     public static string Fingerprint(AssetAccountingEventSpineDto projection)
-    {
-        var payload = JsonSerializer.SerializeToUtf8Bytes(projection, JsonOptions);
-        return Sha256Digest.Compute(payload);
-    }
+        => AssetAccountingPreparationRevisionValidator.ProjectionFingerprint(projection);
 
     public static async Task<bool> ValidateDurablePostedImpactAsync(
         AssetAccountingEventSpineDto projection,

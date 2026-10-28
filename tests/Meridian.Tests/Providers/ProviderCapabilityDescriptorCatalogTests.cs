@@ -73,7 +73,11 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
     {
         foreach (var descriptor in ProviderCapabilityDescriptorCatalog.Descriptors)
         {
-            descriptor.FactoryOwner.Should().Be(ProviderCapabilityFactoryOwner.Descriptor);
+            var expectedOwner = descriptor.ProviderId == "fred"
+                ? ProviderCapabilityFactoryOwner.Module
+                : ProviderCapabilityFactoryOwner.Descriptor;
+            descriptor.FactoryOwner.Should().Be(expectedOwner,
+                "FRED is the audited module-owned built-in; all other built-ins retain descriptor ownership");
             (Type? Implementation, Delegate? Factory, string Capability)[] slots =
             [
                 (descriptor.Streaming, descriptor.StreamingFactory, nameof(IMarketDataClient)),
@@ -88,8 +92,33 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
                 slot.Factory.Should().NotBeNull(
                     $"{descriptor.ProviderId} must explicitly own the factory for its declared {slot.Capability}");
 
-            descriptor.Registrations().Should().HaveCount(slots.Count(slot => slot.Implementation is not null));
+            descriptor.Registrations().Should().HaveCount(expectedOwner == ProviderCapabilityFactoryOwner.Descriptor
+                ? slots.Count(slot => slot.Implementation is not null)
+                : 0, "module inventory must not publish a descriptor fallback factory");
         }
+    }
+
+    [Fact]
+    public void Fred_module_owns_late_gated_factories_for_its_complete_declared_contract_inventory()
+    {
+        var descriptor = ProviderCapabilityDescriptorCatalog.Descriptors.Single(value => value.ProviderId == "fred");
+        descriptor.Should().BeSameAs(FredProviderModule.Descriptor);
+        descriptor.FactoryOwner.Should().Be(ProviderCapabilityFactoryOwner.Module);
+        descriptor.Historical.Should().Be(typeof(FredHistoricalDataProvider));
+        descriptor.Search.Should().Be(typeof(FredSymbolSearchProvider));
+        descriptor.Registrations().Should().BeEmpty("hosted construction requires successful module registration");
+        var module = new FredProviderModule();
+        module.Should().BeAssignableTo<IProviderModuleCapabilityAvailability>();
+        var services = new ServiceCollection();
+
+        module.Register(services, new DataSourceRegistry());
+
+        services.Should().HaveCount(2);
+        services.Select(service => service.ServiceType).Should().BeEquivalentTo(descriptor.Implementations(),
+            "both historical and search capability implementations must have module-owned factories");
+        services.Should().OnlyContain(service => service.Lifetime == ServiceLifetime.Singleton
+            && service.ImplementationFactory != null,
+            "the module must own concrete factory construction and container lifetime");
     }
 
     [Fact]

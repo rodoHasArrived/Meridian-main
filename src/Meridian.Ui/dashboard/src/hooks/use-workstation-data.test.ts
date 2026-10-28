@@ -1,5 +1,4 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { createElement, StrictMode, type ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import * as api from "@/lib/api";
@@ -294,7 +293,7 @@ describe("useWorkstationData", () => {
   });
 
   it("keeps the active StrictMode refresh live after the dev remount cycle", async () => {
-    const { result } = renderHook(() => useWorkstationData(), { wrapper: StrictModeWrapper });
+    const { result } = renderHook(() => useWorkstationData(), { reactStrictMode: true });
 
     await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(2));
 
@@ -1176,10 +1175,6 @@ describe("useWorkstationData", () => {
     expect(result.current.workspaceErrors.reporting).toBeUndefined();
   });
 });
-
-function StrictModeWrapper({ children }: { children: ReactNode }) {
-  return createElement(StrictMode, null, children);
-}
 
 function track<T>(key: keyof typeof requests): Promise<T> {
   const deferred = createDeferred<T>();

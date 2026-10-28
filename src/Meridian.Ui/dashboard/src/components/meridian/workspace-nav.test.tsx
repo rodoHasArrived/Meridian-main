@@ -1,6 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
+import { useNavigate } from "react-router-dom";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { renderWithRouter } from "@/test/render";
 
@@ -118,4 +119,46 @@ describe("WorkspaceNav", () => {
     expect(within(accountingSections!).getByLabelText("Open Approvals")).toHaveAttribute("href", "/accounting/approvals");
     expect(screen.getByRole("button", { name: "Collapse Accounting pages" })).toHaveAttribute("aria-expanded", "true");
   });
+
+  it("reveals a new active page in the same workspace while preserving other expansion choices", async () => {
+    const user = userEvent.setup();
+    function RouteControls() {
+      const navigate = useNavigate();
+      return <button onClick={() => navigate("/accounting/approvals?fundAccountId=account-1")}>Open approval destination</button>;
+    }
+    renderWithRouter(<><WorkspaceNav density="compact" /><RouteControls /></>, {
+      initialEntries: ["/accounting/reconciliation?fundAccountId=account-1"]
+    });
+
+    await user.click(screen.getByRole("button", { name: "Expand Data pages" }));
+    await user.click(screen.getByRole("button", { name: "Collapse Accounting pages" }));
+    expect(screen.queryByLabelText("Casework, current page, preserving Account: account-1")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Expand Accounting pages" })).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(screen.getByRole("button", { name: "Open approval destination" }));
+
+    expect(screen.getByRole("button", { name: "Collapse Accounting pages" })).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("button", { name: "Collapse Data pages" })).toHaveAttribute("aria-expanded", "true");
+    const current = screen.getByRole("link", { name: /Approvals, current page/ });
+    expect(current).toHaveAttribute("aria-current", "page");
+    expect(current).toHaveAttribute("href", "/accounting/approvals?fundAccountId=account-1");
+
+    // A deliberate collapse remains closed until the destination changes again.
+    await user.click(screen.getByRole("button", { name: "Collapse Accounting pages" }));
+    expect(screen.getByRole("button", { name: "Expand Accounting pages" })).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("makes complete destination names available for pointer and keyboard users", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<WorkspaceNav density="compact" />, { initialEntries: ["/data/providers"] });
+    const destination = screen.getByRole("link", { name: "Open Ingestion operations" });
+    expect(destination).toHaveAttribute("title", "Ingestion operations");
+    expect(destination.querySelector(".operator-nav-label")).toHaveTextContent("Ingestion operations");
+    destination.focus();
+    expect(destination).toHaveFocus();
+    await user.keyboard("{Enter}");
+    expect(screen.getByRole("link", { name: "Ingestion operations, current page" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: /Open Trading workspace/ })).toHaveAttribute("title", "Trading");
+  });
+
 });

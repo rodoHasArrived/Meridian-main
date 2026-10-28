@@ -508,7 +508,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                     _gateway.GatewayId);
             }
 
-            // Record submitted order in the audit trail when connected
+            // The broker acknowledgement is an observed fact. A strategy stop can cancel the
+            // caller while this append is pending, but cannot erase that submission evidence.
             if (_auditTrail is not null)
             {
                 try
@@ -531,7 +532,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                         Scope: BuildOrderAuditScope(safeRequest, runId),
                         Metadata: BuildOrderSubmittedAuditMetadata(
                             operatorControlDecision,
-                            liveOrderReadinessDecision)), ct).ConfigureAwait(false);
+                            liveOrderReadinessDecision)), CancellationToken.None).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

@@ -21,7 +21,7 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
     private readonly IFundStructureStore _store;
     private readonly IFundAccountService _fundAccountService;
     private readonly IGovernanceSharedDataAccessService? _sharedDataAccessService;
-    private readonly ISecurityMasterQueryService? _securityMasterQueryService;
+    private readonly FundStructureCashFlowReadService _cashFlowReadService;
     private readonly IFundStructurePolicyService _policy;
     private readonly IFundScopeTenantAccessor? _tenantAccessor;
     private readonly TenantScopeEnforcementOptions _tenantScope;
@@ -51,7 +51,7 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
         _policy = policyService ?? throw new ArgumentNullException(nameof(policyService));
         _sharedDataAccessService = sharedDataAccessService;
-        _securityMasterQueryService = securityMasterQueryService;
+        _cashFlowReadService = new FundStructureCashFlowReadService(fundAccountService, securityMasterQueryService);
         _tenantAccessor = tenantAccessor;
         _tenantScope = tenantScope ?? TenantScopeEnforcementOptions.DeploymentBoundary;
     }
@@ -793,25 +793,15 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
             return null;
         }
 
-        var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
-        var projector = new InMemoryFundStructureService(
-            _fundAccountService,
-            _sharedDataAccessService,
-            _securityMasterQueryService,
-            _policy,
-            snap.Organizations.Values.ToList(),
-            snap.Businesses.Values.ToList(),
-            snap.Clients.Values.ToList(),
-            snap.Funds.Values.ToList(),
-            snap.Sleeves.Values.ToList(),
-            snap.Vehicles.Values.ToList(),
-            snap.Entities.Values.ToList(),
-            snap.InvestmentPortfolios.Values.ToList(),
-            snap.OwnershipLinks.Values.ToList(),
-            snap.Assignments.Values.ToList(),
-            snap.LinkedAccountIds.ToList());
-
-        return await projector.GetCashFlowViewAsync(query, ct).ConfigureAwait(false);
+        var tenantScoped = await LoadSnapshotAsync(ct).ConfigureAwait(false);
+        var snapshot = tenantScoped.ToStructureSnapshot();
+        var asOf = query.AsOf ?? DateTimeOffset.UtcNow;
+        var sharedDataAccess = await GetSharedDataAccessAsync(ct).ConfigureAwait(false);
+        var visibleAccounts = AttachSharedDataAccess(
+            await GetVisibleAccountsAsync(query.ActiveOnly, asOf, tenantScoped, ct).ConfigureAwait(false),
+            sharedDataAccess);
+        return await _cashFlowReadService.GetViewAsync(
+            query, snapshot, visibleAccounts, asOf, sharedDataAccess, ct).ConfigureAwait(false);
     }
 
     private async Task<bool> CashFlowScopeTargetExistsAsync(GovernanceCashFlowQuery query, CancellationToken ct)

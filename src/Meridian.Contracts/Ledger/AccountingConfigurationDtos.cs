@@ -817,6 +817,19 @@ public sealed record ManualJournalEntryDraftDto(
 {
     public IReadOnlyList<JournalEntryLifecycleTransitionDto> LifecycleTransitions { get; init; } =
         LifecycleTransitions ?? [];
+
+    /// <summary>Server-retained asset candidate authority; absent from historical manual drafts.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AssetAccountingPostingCandidateDto? AssetAccountingDraft { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AssetAccountingApprovalReceiptDto? AssetAccountingApproval { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AssetAccountingPostIntentDto? AssetAccountingPostIntent { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public PostedPostingRuleJournalCandidateResultDto? AssetAccountingPostingResult { get; init; }
 }
 
 public sealed record RuleDryRunRequestDto(
@@ -1147,6 +1160,10 @@ public sealed record JournalEntryLifecycleActionRequestDto(
 
     public IReadOnlyList<ManualJournalEntryLineDto> RebookLines { get; init; } =
         RebookLines ?? [];
+
+    /// <summary>Server-captured body actor used only as an asset-workflow stale-session assertion.</summary>
+    [JsonIgnore]
+    public string? AuthenticatedActorAssertion { get; init; }
 }
 
 public sealed record JournalEntryReversalDto(
