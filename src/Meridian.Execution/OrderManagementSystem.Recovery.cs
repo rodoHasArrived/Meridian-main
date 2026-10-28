@@ -194,6 +194,8 @@ public sealed partial class OrderManagementSystem
         try
         {
             var orderId = report.ClientOrderId ?? report.OrderId;
+            if (_orders.TryGetValue(orderId, out var retainedAccountState))
+                ValidateBrokerAccountEvidence(retainedAccountState, report);
             if (_inFlightDispatches.ContainsKey(orderId))
                 throw new InvalidOperationException("Order submission is still in progress; broker recovery must wait for its outcome.");
             // Processing normalizes a report to the order its broker id is retained for. A later

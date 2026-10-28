@@ -84,6 +84,66 @@ public sealed partial class IBBrokerageGatewayTests
     }
 
     [Fact]
+    public async Task WrongAccountAmendmentRecovery_PreservesOrderPendingAliasesAndDurableEvidence()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"ib-amendment-account-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var original = RecoveryOriginal with
+            {
+                BrokerAccountId = "DU1", FilledQuantity = 0m, AverageFillPrice = null, Status = OrderStatus.Accepted,
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+            var amendment = new PendingOrderAmendment(original, original with { Quantity = 20m, LimitPrice = 200m }, "7001")
+            { CandidateBrokerOrderId = "7002" };
+            var path = Path.Combine(directory, "orders.json");
+            var store = new FileBrokerageOrderRecoveryStore(path, "ibkr");
+            store.BindScope("paper:DU1");
+            store.Save(new(original, "7001", true)
+            {
+                PendingAmendment = amendment, RequiresAmendmentRecovery = true, BrokerOrderAliases = ["7001"]
+            });
+            var other = original with { OrderId = "other-order" };
+            store.Save(new(other, "8001", true) { BrokerOrderAliases = ["8001"] });
+            var client = RecoveryClient(_ => { });
+            client.ManagedAccounts = "DU1";
+            await using var gateway = new IBBrokerageGateway(DefaultOptions(), NullLogger<IBBrokerageGateway>.Instance, client);
+            await gateway.ConnectAsync();
+            await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
+                recoveryStore: store, portfolioState: new PaperTradingPortfolio(100_000m));
+            await oms.StartAsync();
+            var pendingBefore = oms.GetPendingAmendmentForRecovery(original.OrderId);
+            var durableBefore = await File.ReadAllTextAsync(path);
+            var wrong = new ExecutionReport
+            {
+                OrderId = original.OrderId, ClientOrderId = original.OrderId, GatewayOrderId = "7002", ReplacesOrderId = "7001",
+                BrokerAccountId = "DU2", ReportType = ExecutionReportType.Modified, Symbol = "AAPL", Side = OrderSide.Buy,
+                OrderStatus = OrderStatus.Accepted, OrderQuantity = 20m, OrderLimitPrice = 200m, HasOrderTerms = true
+            };
+
+            await Assert.ThrowsAsync<InvalidDataException>(() => oms.ReconcileRecoveryOrderAsync(wrong));
+
+            oms.GetOrder(original.OrderId).Should().Be(original);
+            oms.GetPendingAmendmentForRecovery(original.OrderId).Should().BeSameAs(pendingBefore);
+            (await File.ReadAllTextAsync(path)).Should().Be(durableBefore);
+            store.Load().Single(order => order.State.OrderId == original.OrderId).BrokerOrderAliases.Should().Equal("7001");
+            // The rejected candidate must not be reserved as this order's active/alias identity.
+            // A different retained order's independently proven report may still use that id.
+            await oms.ReconcileRecoveryOrderAsync(wrong with
+            {
+                OrderId = other.OrderId, ClientOrderId = other.OrderId, ReplacesOrderId = null, BrokerAccountId = "DU1",
+                ReportType = ExecutionReportType.New, OrderQuantity = 10m, HasOrderTerms = false, OrderLimitPrice = null
+            });
+            oms.GetOrder(other.OrderId)!.BrokerAccountId.Should().Be("DU1");
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task BrokerAcknowledgement_RetainsItsAccountAcrossFileReload_AndRejectsAnotherAccount()
     {
         var directory = Path.Combine(Path.GetTempPath(), $"ib-account-proof-{Guid.NewGuid():N}");
