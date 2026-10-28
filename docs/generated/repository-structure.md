@@ -7287,6 +7287,8 @@ Meridian-main
 │   │   │   │   │   │   ├── workspace-nav.view-model.ts
 │   │   │   │   │   │   ├── workspace-primitives.test.tsx
 │   │   │   │   │   │   ├── workspace-primitives.tsx
+│   │   │   │   │   │   ├── workspace-views-menu.test.tsx
+│   │   │   │   │   │   ├── workspace-views-menu.tsx
 │   │   │   │   │   │   ├── workspace-workbench-shell.test.tsx
 │   │   │   │   │   │   ├── workspace-workbench-shell.tsx
 │   │   │   │   │   │   ├── workstation-status-bar.test.tsx
@@ -7426,6 +7428,8 @@ Meridian-main
 │   │   │   │   │       └── entity-setup-wizard.tsx
 │   │   │   │   ├── hooks
 │   │   │   │   │   ├── use-notification-center.ts
+│   │   │   │   │   ├── use-portfolio-positions-table.test.tsx
+│   │   │   │   │   ├── use-portfolio-positions-table.ts
 │   │   │   │   │   ├── use-quotes-stream.test.ts
 │   │   │   │   │   ├── use-quotes-stream.ts
 │   │   │   │   │   ├── use-report-run-stream.test.ts
@@ -7567,6 +7571,8 @@ Meridian-main
 │   │   │   │   │   ├── mark-freshness.ts
 │   │   │   │   │   ├── onboarding.ts
 │   │   │   │   │   ├── plaid-link.ts
+│   │   │   │   │   ├── portfolio-positions-table.test.ts
+│   │   │   │   │   ├── portfolio-positions-table.ts
 │   │   │   │   │   ├── provider-integration-setup-validation.test.ts
 │   │   │   │   │   ├── provider-integration-setup-validation.ts
 │   │   │   │   │   ├── provider-integration-workbench.ts
@@ -7883,6 +7889,7 @@ Meridian-main
 │   │   │   │   │   ├── operator-readiness-console.tsx
 │   │   │   │   │   ├── operator-readiness-console.view-model.test.ts
 │   │   │   │   │   ├── operator-readiness-console.view-model.ts
+│   │   │   │   │   ├── portfolio-positions-toolbar.tsx
 │   │   │   │   │   ├── portfolio-screen.a11y.test.tsx
 │   │   │   │   │   ├── portfolio-screen.evidence-timeline.test.ts
 │   │   │   │   │   ├── portfolio-screen.evidence-timeline.ts
@@ -7890,6 +7897,7 @@ Meridian-main
 │   │   │   │   │   ├── portfolio-screen.mark-freshness.test.ts
 │   │   │   │   │   ├── portfolio-screen.multi-asset-coverage.ts
 │   │   │   │   │   ├── portfolio-screen.operator-focus.ts
+│   │   │   │   │   ├── portfolio-screen.positions-table.test.tsx
 │   │   │   │   │   ├── portfolio-screen.presentation.ts
 │   │   │   │   │   ├── portfolio-screen.test.tsx
 │   │   │   │   │   ├── portfolio-screen.tsx

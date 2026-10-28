@@ -11,6 +11,54 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.Ui/dashboard
 
+## Portfolio Open positions controls
+
+Open positions supports case-insensitive symbol search, exact Side filtering from loaded rows,
+and shared-assessment Current/Review required filtering. Filters combine with AND. Symbol, Side,
+and Mark readiness headers sort stably; no sort retains source order. Financial strings and totals
+are not sorted or recomputed. Counts explicitly describe filtered versus loaded positions.
+
+The toolbar remains available for both no-data and no-matches states. Filtering never changes
+holding selection or row identity: a selected holding outside the results retains its evidence and
+shows Clear filters, which preserves sorting. Reset controls also removes sorting. The existing
+row cap and Show all control remain in place for large result sets.
+
+Controls round-trip through the optional `positionsTable` member of the existing v1
+`portfolio-workstation` view envelope. Search updates the URL after 250 ms with replacement;
+blur flushes it before Copy link/Save view. Discrete filters and sorts create history entries.
+Back/Forward or external navigation cancels pending writes and restores URL controls. Scope,
+other query parameters, hash, and existing same-screen envelope fields are preserved. Old or
+invalid controls default safely without rewriting the URL on load. Link-budget failures are
+explicit, and controls stay applied locally. No new selection persistence is introduced.
+Saved layouts accept internal table-state routes beyond 512 characters while retaining the existing
+complete-envelope size limit. An invalid or oversized layout reports failure and keeps the save
+dialog open; it cannot claim success with an empty route or an unrestorable persisted record.
+
+Focused coverage: `portfolio-positions-table.test.ts`, `use-portfolio-positions-table.test.tsx`,
+`portfolio-screen.positions-table.test.tsx`, and existing Portfolio/a11y suites. Brokerage positions
+and Trading blotters retain their existing interaction models.
+
+## Shared workstation header
+
+The browser shell combines `WorkspaceHeader` and its persistent operating scope in one compact
+header. `Workflow context` starts collapsed and reveals workflow steps and decision evidence.
+`Views` discloses existing saved-layout and save-current-view controls; Copy link and Refresh stay
+visible. Workspace descriptions are available under the About information disclosure. Live,
+simulated/seeded, unknown-provenance and degraded warnings remain outside disclosures.
+
+The scope picker stages all changes, including Clear scope, until Apply scope. Cancel and Escape
+leave the active URL and stored scope unchanged. Run and date dimensions remain inspectable;
+applicability text distinguishes dimensions applied here from those retained for other screens.
+Navigating to another workflow disposes nested view-control dialogs and their keyboard listeners
+before the disclosure closes; screen-local table URL updates retain the current control session.
+Symbol suggestions support arrow keys, Enter, Escape, search progress, no matches and Retry.
+Escape dismisses suggestions before closing the dialog. Navigation reveals the active destination
+after route changes while respecting manual collapse until the next navigation.
+
+Focused regression coverage includes `app.test.tsx`, `workspace-header.test.tsx`,
+`workspace-views-menu.test.tsx`, `workflow-continuity-dock.test.tsx`, `scope-picker.test.tsx`,
+`workspace-nav.test.tsx`, and `layout-switcher.test.tsx`.
+
 Report Run Detail exposes retained trial-balance account balances from the exact run's ledger
 checkpoint through `/api/fund-structure/reporting/runs/{runId}/amounts`. Each balance opens the
 shared `LedgerAmountProofDrawer` with its immutable `report:{runId}:{amountId}` subject and

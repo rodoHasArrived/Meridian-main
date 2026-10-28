@@ -50,6 +50,12 @@ export function useDialogInteractionViewModel({ open, onOpenChange }: DialogInte
       return;
     }
 
+    // An expanded combobox owns its first Escape; the next Escape closes the dialog.
+    if (event.key === "Escape" && event.target instanceof Element &&
+      event.target.closest('[role="combobox"][aria-expanded="true"]')) {
+      return;
+    }
+
     if (shouldCloseDialogFromKey(event.key)) {
       event.preventDefault();
       requestClose();

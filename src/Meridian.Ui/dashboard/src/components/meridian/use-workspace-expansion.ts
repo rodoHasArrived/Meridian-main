@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import type { WorkspaceKey } from "@/types";
 
-export function useWorkspaceExpansion(activeWorkspaceKey: WorkspaceKey | undefined) {
+/** Keep operator choices until navigation reveals a new active destination. */
+export function useWorkspaceExpansion(activeWorkspaceKey: WorkspaceKey | undefined, activeRoute?: string) {
   const [expandedWorkspaces, setExpandedWorkspaces] = useState<Set<WorkspaceKey>>(() =>
     activeWorkspaceKey ? new Set([activeWorkspaceKey]) : new Set()
   );
@@ -20,7 +21,7 @@ export function useWorkspaceExpansion(activeWorkspaceKey: WorkspaceKey | undefin
       next.add(activeWorkspaceKey);
       return next;
     });
-  }, [activeWorkspaceKey]);
+  }, [activeWorkspaceKey, activeRoute]);
 
   const toggleWorkspace = (key: WorkspaceKey) => {
     setExpandedWorkspaces((current) => {

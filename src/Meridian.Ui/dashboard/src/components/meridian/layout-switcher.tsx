@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Check, LayoutGrid, Plus, Trash2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover } from "@/components/ui/popover";
@@ -31,6 +31,7 @@ import {
 import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
 
 export interface LayoutSwitcherProps {
+  showLabel?: boolean;
   /** Current route (pathname + search) to snapshot when saving a layout. */
   route: string;
   operatingScope: AppShellOperatingScopeInput;
@@ -49,6 +50,7 @@ export interface LayoutSwitcherProps {
  * layout. Restoring hands a plan back to the shell, which replays it.
  */
 export function LayoutSwitcher({
+  showLabel = false,
   route,
   operatingScope,
   onRestore,
@@ -59,6 +61,10 @@ export function LayoutSwitcher({
 }: LayoutSwitcherProps) {
   const toast = useToast();
   const anchorRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const saveTriggerRef = useRef<HTMLButtonElement>(null);
+  const returnToSaveTrigger = useRef(false);
+  const menuId = useId();
   const [open, setOpen] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
   const [name, setName] = useState("");
@@ -66,9 +72,31 @@ export function LayoutSwitcher({
   const [userLayouts, setUserLayouts] = useState<SavedLayout[]>(() => readUserLayouts(storage));
   const teamLayouts = useMemo(() => listTeamLayouts(), []);
 
-  const handleRestore = (layout: SavedLayout) => {
-    onRestore(buildLayoutRestorePlan(layout));
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    const target = returnToSaveTrigger.current
+      ? saveTriggerRef.current
+      : menuRef.current?.querySelector<HTMLElement>('[role="menuitem"]');
+    returnToSaveTrigger.current = false;
+    target?.focus();
+  }, [open]);
+
+  const closeMenu = () => {
     setOpen(false);
+    anchorRef.current?.focus();
+  };
+
+  const closeSaveDialog = () => {
+    returnToSaveTrigger.current = true;
+    setSaveOpen(false);
+    setOpen(true);
+  };
+
+  const handleRestore = (layout: SavedLayout) => {
+    closeMenu();
+    onRestore(buildLayoutRestorePlan(layout));
     toast.success(`Restored ${layout.name}.`, describeLayoutState(layout));
   };
 
@@ -94,11 +122,12 @@ export function LayoutSwitcher({
       })
     });
     if (!layout) {
+      toast.danger("Layout could not be saved.", "The current route is invalid or the layout exceeds the saved-view size limit. Shorten the view settings and try again.");
       return;
     }
     setUserLayouts(upsertUserLayout(layout, storage));
     toast.success(`Saved layout ${layout.name}.`, describeLayoutState(layout));
-    setSaveOpen(false);
+    closeSaveDialog();
     setName("");
     setDescription("");
   };
@@ -107,9 +136,10 @@ export function LayoutSwitcher({
     <>
       <Button
         ref={anchorRef}
-        aria-label="Saved workspace layouts"
+        aria-label={showLabel ? "Saved layouts" : "Saved workspace layouts"}
         aria-haspopup="dialog"
         aria-expanded={open}
+        aria-controls={open ? menuId : undefined}
         onClick={() => setOpen((current) => !current)}
         size="sm"
         title="Saved workspace layouts"
@@ -117,17 +147,46 @@ export function LayoutSwitcher({
         variant="ghost"
       >
         <LayoutGrid aria-hidden="true" className="size-4" />
-        <span className="hidden sm:inline">Workspaces</span>
+        <span className={showLabel ? undefined : "hidden sm:inline"}>{showLabel ? "Saved layouts" : "Workspaces"}</span>
       </Button>
 
       <Popover
+        ariaLabel="Saved workspace layouts"
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={closeMenu}
+        closeOnEsc={false}
         anchorEl={anchorRef.current}
         position="bottom"
         className="min-w-[260px]"
       >
-        <div className="max-h-[70vh] overflow-y-auto" role="menu" aria-label="Saved workspace layouts">
+        <div
+          ref={menuRef}
+          id={menuId}
+          className="max-h-[70vh] overflow-y-auto"
+          role="menu"
+          aria-label="Saved workspace layouts"
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              event.preventDefault();
+              event.stopPropagation();
+              closeMenu();
+              return;
+            }
+            if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
+              return;
+            }
+            const items = Array.from(menuRef.current?.querySelectorAll<HTMLElement>('button:not([disabled])') ?? []);
+            if (!items.length) {
+              return;
+            }
+            event.preventDefault();
+            const current = items.indexOf(document.activeElement as HTMLElement);
+            const next = event.key === "Home" ? 0
+              : event.key === "End" ? items.length - 1
+              : (current + (event.key === "ArrowDown" ? 1 : -1) + items.length) % items.length;
+            items[next].focus();
+          }}
+        >
           <LayoutSection title="Your layouts" icon={<LayoutGrid aria-hidden="true" className="size-3.5" />}>
             {userLayouts.length === 0 ? (
               <p className="px-2 py-2 text-xs text-muted-foreground">
@@ -158,6 +217,7 @@ export function LayoutSwitcher({
             <button
               type="button"
               role="menuitem"
+              ref={saveTriggerRef}
               className="flex w-full items-center gap-2 rounded-[2px] px-2 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-secondary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
               onClick={() => {
                 setOpen(false);
@@ -171,11 +231,11 @@ export function LayoutSwitcher({
         </div>
       </Popover>
 
-      <Dialog open={saveOpen} onOpenChange={setSaveOpen}>
-        <DialogContent aria-labelledby="save-layout-title" aria-describedby="save-layout-description">
+      <Dialog open={saveOpen} onOpenChange={(next) => { if (!next) closeSaveDialog(); }}>
+        <DialogContent aria-labelledby="save-layout-title" aria-describedby="save-layout-help">
           <DialogHeader>
             <DialogTitle id="save-layout-title">Save this layout</DialogTitle>
-            <DialogDescription id="save-layout-description">
+            <DialogDescription id="save-layout-help">
               Captures the current route, operating scope, display density, and any popped-out companion
               panes as a named layout you can restore in one click.
             </DialogDescription>
@@ -206,7 +266,7 @@ export function LayoutSwitcher({
               />
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <Button onClick={() => setSaveOpen(false)} size="sm" type="button" variant="outline">
+              <Button onClick={closeSaveDialog} size="sm" type="button" variant="outline">
                 Cancel
               </Button>
               <Button disabled={!name.trim()} onClick={handleSave} size="sm" type="button">

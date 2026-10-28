@@ -20,6 +20,7 @@ import type { WorkflowLibrary, WorkflowPreset } from "@/types";
 const MAX_SAVE_VIEW_NAME_LENGTH = 120;
 
 interface SaveViewButtonProps {
+  showLabel?: boolean;
   workflowLibrary: WorkflowLibrary | null;
   workflowError?: string | null;
   onPresetSaved: (preset: WorkflowPreset) => void;
@@ -31,7 +32,7 @@ interface SaveViewButtonProps {
  * scope-only views are still valid saves. Enabled only when a workflow action
  * owns the current route — presets must attach to catalog workflows.
  */
-export function SaveViewButton({ workflowLibrary, workflowError, onPresetSaved }: SaveViewButtonProps) {
+export function SaveViewButton({ workflowLibrary, workflowError, onPresetSaved, showLabel = false }: SaveViewButtonProps) {
   const { pathname, search } = useLocation();
   const toast = useToast();
   const [open, setOpen] = useState(false);
@@ -84,7 +85,7 @@ export function SaveViewButton({ workflowLibrary, workflowError, onPresetSaved }
   return (
     <>
       <Button
-        aria-label="Save this view as a preset"
+        aria-label={showLabel ? "Save current view as a preset" : "Save this view as a preset"}
         disabled={Boolean(disabledReason)}
         disabledReason={disabledReason ?? undefined}
         onClick={() => setOpen(true)}
@@ -94,6 +95,7 @@ export function SaveViewButton({ workflowLibrary, workflowError, onPresetSaved }
         variant="ghost"
       >
         <BookmarkPlus aria-hidden="true" className="size-4" />
+        {showLabel ? <span>Save current view</span> : null}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent aria-labelledby="save-view-title" aria-describedby="save-view-description">
