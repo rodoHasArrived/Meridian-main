@@ -229,9 +229,16 @@ Automatically fail if any of these occur:
   rubric target remains >= 8/10, no zero category, complete evidence, and no failed checks.
   No live baseline is promoted. Trace assertions still require review in an isolated live run.
 - Broader gates: `python build/scripts/ai-architecture-check.py --src src/ check` reports 117
-  critical findings and 930 warnings on unchanged source inputs (verified against `HEAD`). Full
-  `bash scripts/ci.sh` is tracked separately; do not infer repository-wide readiness from the
-  package tests. The separate `ai-verify` wrapper was not repeated because it duplicates the
-  build/test work of that CI entry point.
+  critical findings and 930 warnings on unchanged source inputs (verified against the starting
+  commit). `bash scripts/ci.sh` passed solution/test builds but failed four
+  `Meridian.Tests.Mcp.ToolProcessRunnerTests` cases on Linux descendant/process-group termination
+  timeouts. Their source, tests, and build configuration are unchanged from `838a74d5a7`; no
+  clean-run baseline was reproduced, so this record does not assert a regression origin. The
+  separately run `bash scripts/ci.sh --lane verify-docs` passed. Browser and later full-CI lanes
+  were not reached. The separate `ai-verify` wrapper was not repeated because it duplicates the
+  build/test work of that CI entry point. Repository-wide readiness is not certified.
+- Remaining proof: review live agent assertions in an isolated checkout; investigate or rerun
+  `ToolProcessRunnerTests` on a supported runner, then rerun full CI. No publication or GitHub
+  Actions result is claimed.
 - Rollback: revert only this revision's skill, helper, test, profile, metadata, and catalog changes.
   The historical benchmark file and other hosts' skill packages remain unchanged.
