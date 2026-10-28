@@ -2,6 +2,7 @@ using System.Net;
 using FluentAssertions;
 using Meridian.Application.Config.Credentials;
 using Meridian.Application.Services;
+using Meridian.Contracts.Api;
 using Meridian.Core.Config;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Infrastructure.Adapters.Core;
@@ -46,6 +47,8 @@ public sealed class FredProviderModuleCompositionTests : IDisposable
         search.Should().BeSameAs(provider.GetRequiredService<FredSymbolSearchProvider>());
         registry.GetCapability<IHistoricalDataProvider>("fred").Should().BeSameAs(historical);
         registry.GetCapability<ISymbolSearchProvider>("fred").Should().BeSameAs(search);
+        registry.GetProviders<IProviderMetadata>().Should().Contain(historical!).And.Contain(search!);
+        registry.GetCapability<IProviderMetadata>("fred").Should().NotBeNull();
         var registrations = provider.GetRequiredService<DataSourceRegistry>().ModuleCapabilityRegistrations;
         registrations.Where(registration => registration.ProviderId == "fred")
             .Select(registration => registration.Contract).Should().BeEquivalentTo(

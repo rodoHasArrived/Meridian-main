@@ -127,7 +127,8 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
         => RegisterProvider(provider, priorityOverride: null, ownsLifetime: false, allowedContracts.ToHashSet());
 
     private static bool CanResolve(RegisteredProvider provider, Type contract)
-        => provider.AllowedContracts is null || provider.AllowedContracts.Contains(contract);
+        => contract == typeof(IProviderMetadata)
+            || provider.AllowedContracts is null || provider.AllowedContracts.Contains(contract);
 
     private void RegisterProvider(IProviderMetadata provider, int? priorityOverride, bool ownsLifetime,
         IReadOnlySet<Type>? allowedContracts)

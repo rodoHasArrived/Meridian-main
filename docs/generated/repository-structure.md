@@ -4064,6 +4064,9 @@ Meridian-main
 │   │   │   ├── PostgresDirectLendingQueryService.cs
 │   │   │   └── PostgresDirectLendingService.cs
 │   │   ├── FundStructure
+│   │   │   ├── FundStructureCashFlowReadService.cs
+│   │   │   ├── FundStructureCashFlowReadService.Scopes.cs
+│   │   │   ├── FundStructureCashFlowReadService.SecurityMaster.cs
 │   │   │   ├── FundStructureProjector.cs
 │   │   │   ├── FundStructureTenantAttribution.cs
 │   │   │   ├── FundStructureTenantBackfillPlanner.cs
@@ -5637,6 +5640,7 @@ Meridian-main
 │   │   │   │   └── FinnhubSymbolSearchProvider.cs
 │   │   │   ├── Fred
 │   │   │   │   ├── FredHistoricalDataProvider.cs
+│   │   │   │   ├── FredProviderModule.cs
 │   │   │   │   └── FredSymbolSearchProvider.cs
 │   │   │   ├── InteractiveBrokers
 │   │   │   │   ├── ContractFactory.cs
@@ -6133,6 +6137,7 @@ Meridian-main
 │   │   ├── IProviderInstrumentDiscoveryService.cs
 │   │   ├── IProviderMetadata.cs
 │   │   ├── IProviderModule.cs
+│   │   ├── IProviderModuleCapabilityAvailability.cs
 │   │   ├── IProviderModuleConnectionProbe.cs
 │   │   ├── IProviderModuleCredentialHints.cs
 │   │   ├── IProviderModuleSettingsSchema.cs
@@ -9526,6 +9531,7 @@ Meridian-main
 │   ├── Meridian.FundStructure.Tests
 │   │   ├── EnvironmentDesignerServiceTests.cs
 │   │   ├── FakeFundStructureStore.cs
+│   │   ├── FundStructureCashFlowContractTests.cs
 │   │   ├── FundStructurePolicyServiceTests.cs
 │   │   ├── FundStructureProjectionContractTests.cs
 │   │   ├── FundStructureScopeContractTests.cs
@@ -10211,6 +10217,7 @@ Meridian-main
 │   │   │   │   ├── DiagnosticsFeatureRegistrationTests.cs
 │   │   │   │   ├── DirectLendingStartupTests.cs
 │   │   │   │   ├── FactorPaydownLotInstructionCompositionTests.cs
+│   │   │   │   ├── FredProviderModuleCompositionTests.cs
 │   │   │   │   ├── HostStartupLifecycleTests.cs
 │   │   │   │   ├── HostTenantScopeCompositionTests.cs
 │   │   │   │   ├── HttpClientFeatureRegistrationTests.cs
