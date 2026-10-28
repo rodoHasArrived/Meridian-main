@@ -7,6 +7,7 @@ using Meridian.FinancialOperations.Ledger;
 using Meridian.Ledger;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
+using Meridian.Storage.SecurityMaster;
 using Meridian.Tests.AssetOperations;
 using NSubstitute;
 
@@ -201,7 +202,9 @@ public sealed partial class AssetAccountingEventSpineServiceTests
     /// 0.95 at 101.5) held in the fixture position pays 0.95 -> 0.90, so the projected effect is Dr
     /// cash 50,000 / Cr carrying 50,750 / Dr realized loss 750.
     /// </summary>
-    private static FactorPaydownSpineHarness BuildFactorPaydownSpineHarness(bool regenerateCashFlowWrites = false)
+    private static FactorPaydownSpineHarness BuildFactorPaydownSpineHarness(bool regenerateCashFlowWrites = false,
+        ISecurityMasterStore? securityMasterStore = null,
+        Func<SecurityDetailDto, DateTimeOffset, SecurityDetailDto>? recordedSecurityAt = null)
     {
         var baseline = BuildFixture(AssetAccountingEventKindDto.CorporateAction);
         var lot = FactorPaydownTestData.PremiumLot(baseline.Security.SecurityId, baseline.Position.PositionId, baseline.Book.LedgerBookId);
@@ -241,7 +244,7 @@ public sealed partial class AssetAccountingEventSpineServiceTests
         positions.GetBookPositionAsync(lot.BookPositionId, Arg.Any<CancellationToken>()).Returns(fixture.Position);
         var securities = Substitute.For<ISecurityMasterQueryService>();
         securities.GetRecordedByIdAsOfAsync(lot.SecurityId, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
-            .Returns(fixture.Security);
+            .Returns(call => recordedSecurityAt?.Invoke(fixture.Security, call.ArgAt<DateTimeOffset>(1)) ?? fixture.Security);
         var books = Substitute.For<ILedgerBookService>();
         books.GetBookAsync(lot.LedgerBookId, Arg.Any<CancellationToken>()).Returns(fixture.Book);
         books.ListPeriodsAsync(Arg.Any<LedgerPeriodQuery>(), Arg.Any<CancellationToken>()).Returns([fixture.Period]);
@@ -253,6 +256,8 @@ public sealed partial class AssetAccountingEventSpineServiceTests
         var ledger = Substitute.For<ILedgerJournalStore>();
         ledger.GetTaxLotsByIdsAsync(lot.LedgerBookId, Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>())
             .Returns([sourceRecord]);
+        ledger.ListOpenTaxLotsByAssetScopeAsync(lot.LedgerBookId, lot.SecurityId, lot.BookPositionId,
+            Arg.Any<DateOnly>(), Arg.Any<CancellationToken>()).Returns([sourceRecord]);
         ledger.GetLedgerBookAsync(lot.LedgerBookId, Arg.Any<CancellationToken>()).Returns(new LedgerBookRecord(
             fixture.Book.LedgerBookId, fixture.Book.FundProfileId, fixture.Book.FundStructureNodeId,
             fixture.Book.FundStructureNodeKind, fixture.Book.DisplayName, fixture.Book.BaseCurrency,
@@ -264,7 +269,7 @@ public sealed partial class AssetAccountingEventSpineServiceTests
         var atomic = Substitute.For<IAtomicTaxLotJournalStore>();
         var harness = new FactorPaydownSpineHarness
         {
-            Service = new AssetAccountingEventSpineService(eventStore, positions, securities, books, policies, configuration, authority, ledger),
+            Service = new AssetAccountingEventSpineService(eventStore, positions, securities, books, policies, configuration, authority, ledger, securityMasterStore),
             PostService = new AccountingPostingCandidatePostService(Substitute.For<IAccountingPostingCandidateWriteBuilder>(),
                 ledger, atomic, eventStore, authority),
             Fixture = fixture,

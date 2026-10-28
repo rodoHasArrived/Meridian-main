@@ -4584,6 +4584,7 @@ Meridian-main
 │   │   │   ├── AccountCashForecastDtos.cs
 │   │   │   ├── AccountCashForecastJsonContext.cs
 │   │   │   ├── AssetAccountingEventDtos.cs
+│   │   │   ├── AssetAccountingPreparationRevision.cs
 │   │   │   ├── AssetAcquisitionTermsCompletionDto.cs
 │   │   │   ├── AssetOperationsDtos.cs
 │   │   │   ├── AssetOperationsReferenceDtos.cs
@@ -5468,6 +5469,7 @@ Meridian-main
 │   │   │   ├── AccountingPostingCandidateService.cs
 │   │   │   ├── AssetAccountingCandidateCanonicalizer.cs
 │   │   │   ├── AssetAccountingEventSpineService.cs
+│   │   │   ├── AssetAccountingEventSpineService.PreparationRevision.cs
 │   │   │   ├── CanonicalLotAmortizationService.cs
 │   │   │   ├── CanonicalLotCorporateActionService.CapitalReturn.cs
 │   │   │   ├── CanonicalLotCorporateActionService.cs
@@ -10679,6 +10681,7 @@ Meridian-main
 │   │   │   ├── AmortizationLotInstructionContractTests.cs
 │   │   │   ├── AmortizationReversalPreviewTests.cs
 │   │   │   ├── AssetAccountingEventSpineContractTests.cs
+│   │   │   ├── AssetAccountingEventSpineContractTests.PreparationRevision.cs
 │   │   │   ├── AssetAccountingEvidenceSubjectContractTests.cs
 │   │   │   ├── AssetAcquisitionLotPostgresRoundTripTests.Completion.cs
 │   │   │   ├── AssetAcquisitionLotPostgresRoundTripTests.cs
@@ -10695,6 +10698,7 @@ Meridian-main
 │   │   │   ├── CorporateActionAssetAccountingEventMapperTests.cs
 │   │   │   ├── FactorPaydownProjectionServiceTests.cs
 │   │   │   ├── InMemoryAssetAccountingEventProjectionStoreTests.cs
+│   │   │   ├── InMemoryAssetAccountingEventProjectionStoreTests.PreparationRevision.cs
 │   │   │   ├── InMemoryInstrumentPositionProjectionStoreSlice3Tests.cs
 │   │   │   ├── InstrumentPositionProjectionStoreTests.cs
 │   │   │   ├── OpenLotAmortizationCalendarTests.cs
@@ -10993,6 +10997,7 @@ Meridian-main
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.Direction.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.FactorPaydown.cs
+│   │   │   │   ├── AssetAccountingEventSpineServiceTests.PreparationRevision.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.ReferenceAuthority.cs
 │   │   │   │   └── AssetAccountingLifecycleSeparationTests.cs
 │   │   │   ├── OperationsContinuity
@@ -11720,6 +11725,7 @@ Meridian-main
 │   │   │   ├── AtomicTaxLotJournalStoreTests.FactorPaydownPublication.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.HistoricalQuantity.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.HoldingPeriodEvidence.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.PreparationRecovery.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.ProceedsAllocation.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.ReferenceAuthority.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.ReferenceLocks.cs
@@ -12174,6 +12180,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.Extensibility.cs
 │   │   │   ├── WorkstationEndpointsTests.FactorPaydown.cs
 │   │   │   ├── WorkstationEndpointsTests.FactorPaydownPreparation.cs
+│   │   │   ├── WorkstationEndpointsTests.FactorPaydownRecovery.cs
 │   │   │   ├── WorkstationEndpointsTests.FactorPaydownWorkbench.cs
 │   │   │   ├── WorkstationEndpointsTests.IBResults.cs
 │   │   │   ├── WorkstationEndpointsTests.Infrastructure.cs

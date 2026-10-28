@@ -1392,6 +1392,11 @@ serializable transaction for the journal, scoped tax lots, immutable mutation sn
 and correction lineage. Every atomic lot carries Security Master plus book-position identity;
 disposal compare-and-swap also rechecks unit cost and journal asset relief against the retained
 selected-lot cost basis.
+An explicitly linked, undrafted factor preparation may append a fresh Projected snapshot using
+the exact predecessor version and fingerprint. The bounded transition preserves source event,
+factors, retained evidence and owner identity, refuses any Drafted or financial authority, and
+uses the same locked version check as candidate creation. Earlier snapshots remain byte-exact;
+ordinary lifecycle transitions cannot replace the preparation link or relax source immutability.
 
 ## Roadmap traceability
 

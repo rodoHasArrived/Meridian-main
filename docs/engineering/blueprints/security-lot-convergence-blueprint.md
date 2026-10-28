@@ -892,7 +892,12 @@ Configuration review exact amounts and a fingerprint bound to the retained lots,
 evidence and proposed accounts. Draft creation re-prepares and checks that fingerprint, then uses
 the existing spine projection and candidate lifecycle, then retains an immutable mirror in the
 manual journal review queue under the same journal ID. Missing mirrors are repaired on exact
-retry; validation uses server-retained authority and submission preserves it. Independent approval
+retry; validation uses server-retained authority and submission preserves it. A failed candidate
+build can leave Expected/Projected state. Fresh reviewed preparation may append a linked revision
+for that same economic observation only before Drafted authority exists, with the exact predecessor
+version/hash, unchanged source/factors/evidence/owner and current lot/period/security checks.
+Original snapshots remain immutable; the locked append version makes an old candidate build and
+recovery compete for one next version. Independent approval
 retains the authenticated decision bytes and posting reopens their scoped Vault content before
 calling the canonical atomic candidate service. The original pending command survives restart;
 exact replay verifies the original journal, lot receipt and full storage fingerprint before repairing

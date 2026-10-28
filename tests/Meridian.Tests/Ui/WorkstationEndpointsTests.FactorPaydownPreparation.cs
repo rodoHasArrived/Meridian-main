@@ -45,7 +45,7 @@ public sealed partial class WorkstationEndpointsTests
         preview.GetProperty("instruction").GetProperty("scope").GetProperty("companyId").GetString().Should().Be("company-alpha");
         preview.GetProperty("projectRequest").GetProperty("actor").GetString().Should().Be("ops-user");
         preview.GetProperty("preparationFingerprint").GetString().Should().NotBeNullOrWhiteSpace();
-        spine.ReceivedCalls().Should().BeEmpty("preparation cannot retain, approve or post an event");
+        await AssertFactorPreparationOnlyReadsSpineAsync(spine, 1);
     }
 
     [Fact]
@@ -128,7 +128,7 @@ public sealed partial class WorkstationEndpointsTests
 
         response.StatusCode.Should().Be(HttpStatusCode.Conflict, await response.Content.ReadAsStringAsync());
         (await response.Content.ReadAsStringAsync()).Should().Contain("FACTOR_PAYDOWN_PREVIEW_STALE");
-        spine.ReceivedCalls().Should().BeEmpty();
+        await AssertFactorPreparationOnlyReadsSpineAsync(spine, 2);
     }
 
     [Fact]
@@ -225,7 +225,7 @@ public sealed partial class WorkstationEndpointsTests
 
         response.StatusCode.Should().Be(HttpStatusCode.Conflict, await response.Content.ReadAsStringAsync());
         (await response.Content.ReadAsStringAsync()).Should().Contain("FACTOR_PAYDOWN_PREVIEW_STALE");
-        spine.ReceivedCalls().Should().BeEmpty();
+        await AssertFactorPreparationOnlyReadsSpineAsync(spine, 2);
     }
 
     [Theory]
@@ -263,6 +263,17 @@ public sealed partial class WorkstationEndpointsTests
         response.StatusCode.Should().Be(expected, await response.Content.ReadAsStringAsync());
         await spine.DidNotReceive().ProjectAsync(Arg.Any<ProjectAssetAccountingEventRequestDto>(), Arg.Any<CancellationToken>());
         await spine.DidNotReceive().BuildPostingCandidateAsync(Arg.Any<AssetAccountingPostingCandidateRequestDto>(), Arg.Any<CancellationToken>());
+    }
+
+    private static async Task AssertFactorPreparationOnlyReadsSpineAsync(IAssetAccountingEventSpineService spine, int expectedReadCount)
+    {
+        spine.ReceivedCalls().Select(static call => call.GetMethodInfo().Name).Should().Equal(
+            Enumerable.Repeat(nameof(IAssetAccountingEventSpineService.GetLatestAsync), expectedReadCount),
+            "review binds the exact retained predecessor without retaining, approving or posting an event");
+        await spine.DidNotReceiveWithAnyArgs().ProjectAsync(default!, default);
+        await spine.DidNotReceiveWithAnyArgs().ReprepareUnpostedFactorPaydownAsync(default!, default!, default, default!, default);
+        await spine.DidNotReceiveWithAnyArgs().BuildPostingCandidateAsync(default!, default);
+        await spine.DidNotReceiveWithAnyArgs().AppendLifecycleStageAsync(default!, default);
     }
 
     private static AssetAccountingEventSpineDto FactorProjectedSpine(ProjectAssetAccountingEventRequestDto request)

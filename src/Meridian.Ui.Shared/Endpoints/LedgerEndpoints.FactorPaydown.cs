@@ -57,11 +57,14 @@ public static partial class LedgerEndpoints
 
         app.MapPost(UiApiRoutes.LedgerFactorPaydownPreparation, async (
             Guid ledgerBookId, PrepareFactorPaydownRequestDto request, HttpContext context) =>
-            await ExecuteFactorPaydownAsync(context, ledgerBookId, request, async (prepared, _) =>
-                Results.Json(new FactorPaydownPreparationDto(prepared.Instruction, prepared.LotMutation,
+            await ExecuteFactorPaydownAsync(context, ledgerBookId, request, async (prepared, actor) =>
+            {
+                var review = await ResolveFactorPaydownReviewAsync(context, prepared, actor).ConfigureAwait(false);
+                return Results.Json(new FactorPaydownPreparationDto(prepared.Instruction, prepared.LotMutation,
                     prepared.ProjectRequest, prepared.Components.ToDictionary(static item => item.Key,
                         static item => item.Value.ToString(CultureInfo.InvariantCulture)),
-                    FactorPaydownPreviewFingerprint(prepared.Instruction, prepared.ProjectRequest.ProjectedEffect)), jsonOptions))
+                    review.Fingerprint), jsonOptions);
+            })
                 .ConfigureAwait(false))
             .WithName("PrepareLedgerFactorPaydown")
             .RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
@@ -77,17 +80,21 @@ public static partial class LedgerEndpoints
             {
                 if (string.IsNullOrWhiteSpace(request.Description) || string.IsNullOrWhiteSpace(request.ExpectedPreparationFingerprint))
                     return Results.BadRequest(new { error = "A reviewed preparation fingerprint and draft description are required." });
-                var fingerprint = FactorPaydownPreviewFingerprint(prepared.Instruction, prepared.ProjectRequest.ProjectedEffect);
+                var review = await ResolveFactorPaydownReviewAsync(context, prepared, actor).ConfigureAwait(false);
+                var fingerprint = review.Fingerprint;
                 if (!string.Equals(fingerprint, request.ExpectedPreparationFingerprint, StringComparison.Ordinal))
                     return Results.Conflict(new { error = "Factor paydown preparation changed. Prepare and review it again.", code = "FACTOR_PAYDOWN_PREVIEW_STALE" });
                 if (ResolveManualJournalEntryWorkbenchService(context) is not ManualJournalEntryWorkbenchService workbench)
                     return ServiceUnavailable("The durable manual-journal review workbench is required for factor draft intake.");
-                var spine = ResolveAssetAccountingEventSpineService(context);
+                var spine = review.Service;
                 if (spine is null)
                     return ServiceUnavailable("Asset accounting event spine service is not registered.");
                 var project = prepared.ProjectRequest;
-                var retained = await spine.GetLatestAsync(project.EconomicEvent.EventId,
-                    project.EconomicEvent.EventVersion, context.RequestAborted).ConfigureAwait(false);
+                var retained = review.Retained;
+                if (review.RequiresRevision)
+                    retained = (await spine.ReprepareUnpostedFactorPaydownAsync(project, prepared.LotMutation,
+                        review.Revision!.PreviousSpineVersion, review.Revision.PreviousCanonicalFingerprint,
+                        context.RequestAborted).ConfigureAwait(false)).Spine;
                 if (retained is { SpineVersion: 1, ProjectedEffect: null, FactorPaydown: { } expectedInstruction })
                 {
                     var expected = retained.Stages.SingleOrDefault(stage => stage.Stage == AssetAccountingLifecycleStageDto.Expected);
@@ -108,7 +115,8 @@ public static partial class LedgerEndpoints
                 if (retained is not null)
                 {
                     if (retained.FactorPaydown is null || retained.ProjectedEffect is null ||
-                        !string.Equals(fingerprint, FactorPaydownPreviewFingerprint(retained.FactorPaydown, retained.ProjectedEffect), StringComparison.Ordinal))
+                        !string.Equals(fingerprint, FactorPaydownPreviewFingerprint(retained.FactorPaydown, retained.ProjectedEffect,
+                            retained.PreparationRevision), StringComparison.Ordinal))
                         return Results.Conflict(new { error = "The retained factor event differs from the reviewed preparation." });
                     if (retained.PostedJournalImpact is not null || retained.Stages.Any(static stage => stage.Stage == AssetAccountingLifecycleStageDto.Posted))
                         return Results.Conflict(new { error = "The factor event is already posted." });
@@ -203,15 +211,54 @@ public static partial class LedgerEndpoints
         catch (ArgumentException ex) { return Results.BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return Results.Conflict(new { error = ex.Message }); }
         catch (UnauthorizedAccessException) { return EndpointHelpers.Forbidden(); }
+        catch (NotSupportedException ex) { return ServiceUnavailable(ex.Message); }
         catch (LedgerBookServiceException ex) { return MapServiceException(ex); }
     }
 
-    private static string FactorPaydownPreviewFingerprint(OpenLotFactorPaydownInstructionDto instruction, ProjectedAccountingEffectDto effect)
+    private sealed record FactorPaydownReview(IAssetAccountingEventSpineService? Service,
+        AssetAccountingEventSpineDto? Retained, AssetAccountingPreparationRevisionDto? Revision,
+        bool RequiresRevision, string Fingerprint);
+
+    private static async Task<FactorPaydownReview> ResolveFactorPaydownReviewAsync(HttpContext context,
+        FactorPaydownPreparation prepared, string actor)
+    {
+        var service = ResolveAssetAccountingEventSpineService(context);
+        var project = prepared.ProjectRequest;
+        var retained = service is null ? null : await service.GetLatestAsync(project.EconomicEvent.EventId,
+            project.EconomicEvent.EventVersion, context.RequestAborted).ConfigureAwait(false);
+        var semantic = FactorPaydownPreviewFingerprint(prepared.Instruction, project.ProjectedEffect);
+        var revision = retained?.PreparationRevision;
+        var requiresRevision = retained is not null && (retained.FactorPaydown is null ||
+            !string.Equals(semantic, FactorPaydownPreviewFingerprint(retained.FactorPaydown,
+                retained.ProjectedEffect ?? project.ProjectedEffect), StringComparison.Ordinal));
+        if (requiresRevision)
+        {
+            if (retained!.Stages.Count is < 1 or > 2 || retained.Stages.Any(stage =>
+                    stage.Stage is not (AssetAccountingLifecycleStageDto.Expected or AssetAccountingLifecycleStageDto.Projected)) ||
+                retained.DraftedCandidate is not null || retained.PostedJournalImpact is not null)
+                throw new InvalidOperationException("A retained drafted or posted factor event cannot be replaced by a new preparation.");
+            if (!string.Equals(retained.Stages[0].AttestedBy, actor, StringComparison.Ordinal))
+                throw new InvalidOperationException("Only the original preparing actor may recover an undrafted factor preparation.");
+            revision = new AssetAccountingPreparationRevisionDto(retained.SpineVersion,
+                AssetAccountingPreparationRevisionValidator.ProjectionFingerprint(retained), actor,
+                project.ProjectedAtUtc, "Fresh reviewed factor preparation replaces an undrafted attempt.");
+        }
+        return new FactorPaydownReview(service, retained, revision, requiresRevision,
+            FactorPaydownPreviewFingerprint(prepared.Instruction, project.ProjectedEffect, revision));
+    }
+
+    private static string FactorPaydownPreviewFingerprint(OpenLotFactorPaydownInstructionDto instruction,
+        ProjectedAccountingEffectDto effect, AssetAccountingPreparationRevisionDto? revision = null)
         // Generation time is observational, not an economic input. Everything reviewed, including
         // exact lots/versions, source evidence, ownership and proposed account lines, remains bound.
-        => AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(new
+        => revision is null ? AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(new
         {
             Instruction = instruction with { Lineage = instruction.Lineage with { GeneratedAtUtc = instruction.EconomicEvent.OccurredAtUtc } },
             Effect = effect
+        }) : AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(new
+        {
+            Instruction = instruction with { Lineage = instruction.Lineage with { GeneratedAtUtc = instruction.EconomicEvent.OccurredAtUtc } },
+            Effect = effect,
+            PreparationRevision = new { revision.PreviousSpineVersion, revision.PreviousCanonicalFingerprint }
         });
 }

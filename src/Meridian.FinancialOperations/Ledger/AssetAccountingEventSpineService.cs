@@ -32,6 +32,14 @@ public interface IAssetAccountingEventSpineService
         ProjectAssetAccountingEventRequestDto request,
         CancellationToken ct = default);
 
+    Task<AssetAccountingEventSpineAppendResultDto> ReprepareUnpostedFactorPaydownAsync(
+        ProjectAssetAccountingEventRequestDto request,
+        AssetLotMutationInstructionDto lotMutation,
+        long expectedSpineVersion,
+        string expectedCanonicalFingerprint,
+        CancellationToken ct = default)
+        => throw new NotSupportedException("This host does not support governed factor-preparation recovery.");
+
     Task<AssetAccountingEventSpineAppendResultDto> AppendLifecycleStageAsync(
         AppendAssetAccountingLifecycleStageRequestDto request,
         CancellationToken ct = default);
@@ -41,7 +49,7 @@ public interface IAssetAccountingEventSpineService
 /// Assembles accounting-event lineage across source events, projections, candidates, approvals, and
 /// postings.
 /// </summary>
-public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpineService
+public sealed partial class AssetAccountingEventSpineService : IAssetAccountingEventSpineService
 {
     private static readonly JsonSerializerOptions CanonicalJsonOptions = new(JsonSerializerDefaults.Web);
 

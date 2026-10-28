@@ -1,11 +1,11 @@
 {
   "total_files": 773,
-  "total_lines": 177449,
+  "total_lines": 177551,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 315,
-  "average_lines": 229.6,
+  "average_lines": 229.7,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2375,7 +2375,7 @@
     },
     {
       "path": "docs/engineering/blueprints/security-lot-convergence-blueprint.md",
-      "line_count": 931,
+      "line_count": 936,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2615,7 +2615,7 @@
     },
     {
       "path": "docs/generated/database/contracts/asset-operations-contracts-page-01.md",
-      "line_count": 696,
+      "line_count": 693,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2623,7 +2623,7 @@
     },
     {
       "path": "docs/generated/database/contracts/asset-operations-contracts-page-02.md",
-      "line_count": 347,
+      "line_count": 359,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2967,7 +2967,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12848,
+      "line_count": 12855,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3423,7 +3423,7 @@
     },
     {
       "path": "docs/product/implementation-todo-list.md",
-      "line_count": 782,
+      "line_count": 786,
       "has_heading": true,
       "todo_count": 5,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4351,7 +4351,7 @@
     },
     {
       "path": "docs/testing/evidence/next-work-20261028/release-readiness.md",
-      "line_count": 373,
+      "line_count": 429,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6103,7 +6103,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 2057,
+      "line_count": 2062,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6167,7 +6167,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 1164,
+      "line_count": 1170,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6335,7 +6335,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 1471,
+      "line_count": 1476,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6359,7 +6359,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2958,
+      "line_count": 2963,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "be7381fff1de85168f7b3a12b9d98e405379cecd314e881815855ad79e87871a",
+      "fingerprint": "c6c40f16373fdfe47867465447cf9ef3e453dae3744ca5b4b6b03c909a7dd850",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -351,6 +351,8 @@
         "Meridian.Contracts.AssetOperations.AssetAccountingLifecycleStageDto",
         "Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateDto",
         "Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto",
+        "Meridian.Contracts.AssetOperations.AssetAccountingPreparationRevisionDto",
+        "Meridian.Contracts.AssetOperations.AssetAccountingPreparationRevisionValidator",
         "Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto",
         "Meridian.Contracts.AssetOperations.AssetAcquisitionLotDto",
         "Meridian.Contracts.AssetOperations.AssetAcquisitionTermsCompletionDto",
@@ -3044,7 +3046,7 @@
       "directories": [
         "src/Meridian.Contracts/AssetOperations"
       ],
-      "fingerprint": "2751ab9b4aafb50c2ef8031fbf3dd8e874bf0badf4348f4c33ef46c45aef0d4e",
+      "fingerprint": "ce25cbd99fe2aaa90d7bf6686a1a11f1dc79fc4b0a24bac344ad6763cb70fa37",
       "id": "asset-operations-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.AssetOperations"
@@ -3073,6 +3075,8 @@
         "Meridian.Contracts.AssetOperations.AssetAccountingLifecycleStageDto",
         "Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateDto",
         "Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto",
+        "Meridian.Contracts.AssetOperations.AssetAccountingPreparationRevisionDto",
+        "Meridian.Contracts.AssetOperations.AssetAccountingPreparationRevisionValidator",
         "Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto",
         "Meridian.Contracts.AssetOperations.AssetAcquisitionLotDto",
         "Meridian.Contracts.AssetOperations.AssetAcquisitionTermsCompletionDto",
@@ -4442,7 +4446,7 @@
       ]
     }
   ],
-  "fingerprint": "512db6bb67c09357ab3f876cf9b96f42a75033267745dfcfdefa2594d21e6cfe",
+  "fingerprint": "0ef3a3dcada5b6bf68573279d3b7ce8a20c415ccfc25660a9b5fbb316596ad7d",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4824,7 +4828,7 @@
         "all-contracts",
         "asset-operations-contracts"
       ],
-      "fingerprint": "b0b145e6cc66f9f3d1390712390282f53544a2b36d1f969576194e50115fc898",
+      "fingerprint": "5d65371c41e31d56f28b2716707b18ec59fa6e2a5cfb0ca18568aea16aabe394",
       "mapped_schemas": [
         "asset_operations"
       ],
@@ -4853,6 +4857,8 @@
         "Meridian.Contracts.AssetOperations.AssetAccountingLifecycleStageDto",
         "Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateDto",
         "Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto",
+        "Meridian.Contracts.AssetOperations.AssetAccountingPreparationRevisionDto",
+        "Meridian.Contracts.AssetOperations.AssetAccountingPreparationRevisionValidator",
         "Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto",
         "Meridian.Contracts.AssetOperations.AssetAcquisitionLotDto",
         "Meridian.Contracts.AssetOperations.AssetAcquisitionTermsCompletionDto",
@@ -53488,7 +53494,7 @@
         "asset-operations-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "b6e325e2dfd056a2bf792bf8e5450fb99c036474daf46563bd449e181cc388a7",
+      "fingerprint": "e0df645922c74f9e17f9758832e6cd20c1fff8b7c571e6d22a4feec4315db992",
       "full_name": "Meridian.Contracts.AssetOperations.AppendAssetAccountingLifecycleStageRequestDto",
       "id": "Meridian.Contracts.AssetOperations.AppendAssetAccountingLifecycleStageRequestDto",
       "kind": "record",
@@ -53507,7 +53513,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 257,
+          "source_line": 259,
           "type": "string"
         },
         {
@@ -53521,7 +53527,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 258,
+          "source_line": 260,
           "type": "DateTimeOffset"
         },
         {
@@ -53536,7 +53542,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 263,
+          "source_line": 265,
           "type": "string?"
         },
         {
@@ -53550,7 +53556,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 251,
+          "source_line": 253,
           "type": "Guid"
         },
         {
@@ -53564,7 +53570,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 252,
+          "source_line": 254,
           "type": "long"
         },
         {
@@ -53578,7 +53584,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<RetainedEvidenceIdentityDto>",
-          "source_line": 265,
+          "source_line": 267,
           "type": "IReadOnlyList<RetainedEvidenceIdentityDto>"
         },
         {
@@ -53592,7 +53598,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 255,
+          "source_line": 257,
           "type": "long"
         },
         {
@@ -53606,7 +53612,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 254,
+          "source_line": 256,
           "type": "long"
         },
         {
@@ -53620,7 +53626,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 256,
+          "source_line": 258,
           "type": "string"
         },
         {
@@ -53635,7 +53641,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 261,
+          "source_line": 263,
           "type": "string?"
         },
         {
@@ -53649,7 +53655,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 259,
+          "source_line": 261,
           "type": "string"
         },
         {
@@ -53663,7 +53669,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AssetAccountingLifecycleStageDto",
-          "source_line": 253,
+          "source_line": 255,
           "type": "AssetAccountingLifecycleStageDto"
         },
         {
@@ -53678,7 +53684,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 262,
+          "source_line": 264,
           "type": "string?"
         }
       ],
@@ -53691,12 +53697,12 @@
         "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
       ],
       "source": {
-        "line": 250,
+        "line": 252,
         "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
       },
       "sources": [
         {
-          "line": 250,
+          "line": 252,
           "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
         }
       ],
@@ -54141,7 +54147,7 @@
         "asset-operations-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "94b092c6cd5f69a3305f3dfcd424b6cb3eb6e2c18b6a84b674f086286665a840",
+      "fingerprint": "2bc5a71ad0689bbbe828823271056731f09ab74dd56273ff0b749d2ac9c47a37",
       "full_name": "Meridian.Contracts.AssetOperations.AssetAccountingEventSpineAppendResultDto",
       "id": "Meridian.Contracts.AssetOperations.AssetAccountingEventSpineAppendResultDto",
       "kind": "record",
@@ -54160,7 +54166,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AssetAccountingEventSpineDto",
-          "source_line": 269,
+          "source_line": 271,
           "type": "AssetAccountingEventSpineDto"
         },
         {
@@ -54174,7 +54180,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 270,
+          "source_line": 272,
           "type": "bool"
         }
       ],
@@ -54186,12 +54192,12 @@
         "Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto"
       ],
       "source": {
-        "line": 268,
+        "line": 270,
         "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
       },
       "sources": [
         {
-          "line": 268,
+          "line": 270,
           "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
         }
       ],
@@ -54210,7 +54216,7 @@
         "asset-operations-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "76f2033a6c9325e3431d96d13bad8f1924d95ba8373fab5ead5961a7f763bf9b",
+      "fingerprint": "94a10534926e941bf54bb751e9eb511512e1fd324ff1395eb5bc7cf9d974ae3a",
       "full_name": "Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
       "id": "Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
       "kind": "record",
@@ -54486,6 +54492,21 @@
           "collection_kind": null,
           "default": "null",
           "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "PreparationRevision",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "AssetAccountingPreparationRevisionDto?",
+          "source_line": 211,
+          "type": "AssetAccountingPreparationRevisionDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
@@ -54521,7 +54542,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<RetainedEvidenceIdentityDto>",
-          "source_line": 211,
+          "source_line": 213,
           "type": "IReadOnlyList<RetainedEvidenceIdentityDto>"
         },
         {
@@ -54563,7 +54584,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<AssetAccountingStageEvidenceDto>",
-          "source_line": 213,
+          "source_line": 215,
           "type": "IReadOnlyList<AssetAccountingStageEvidenceDto>"
         },
         {
@@ -54593,6 +54614,7 @@
         "Meridian.Contracts.AssetOperations.AssetAccountingCorrectionReferenceDto",
         "Meridian.Contracts.AssetOperations.AssetAccountingEventKindDto",
         "Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto",
+        "Meridian.Contracts.AssetOperations.AssetAccountingPreparationRevisionDto",
         "Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto",
         "Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto",
         "Meridian.Contracts.AssetOperations.EconomicEventReferenceDto",
@@ -54628,7 +54650,7 @@
         "asset-operations-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "d33680b05f99900e99bce8d742baf41302e2542093f0d32966db8f8e3bae6ac2",
+      "fingerprint": "8c84648d05e03e54655544080acc9185d9a97698ea84da5ce75e9200d0980bcb",
       "full_name": "Meridian.Contracts.AssetOperations.AssetAccountingEventSpineValidator",
       "id": "Meridian.Contracts.AssetOperations.AssetAccountingEventSpineValidator",
       "kind": "class",
@@ -54642,12 +54664,12 @@
       "qualified_name": "Meridian.Contracts.AssetOperations.AssetAccountingEventSpineValidator",
       "references": [],
       "source": {
-        "line": 442,
+        "line": 444,
         "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
       },
       "sources": [
         {
-          "line": 442,
+          "line": 444,
           "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
         }
       ],
@@ -54823,7 +54845,7 @@
         "asset-operations-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "030e5a9169c09712f595edead4ad7cf4c3936f00f47cd9ebbd292d6a3019c8c6",
+      "fingerprint": "a60a725d4e368767efbb6d4fd14eb11381cdb9b33d092a2c3e75a5775ce8dde0",
       "full_name": "Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateDto",
       "id": "Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateDto",
       "kind": "record",
@@ -54842,7 +54864,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "PostingRuleJournalCandidateResultDto",
-          "source_line": 386,
+          "source_line": 388,
           "type": "PostingRuleJournalCandidateResultDto"
         },
         {
@@ -54856,7 +54878,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AssetAccountingEventSpineDto",
-          "source_line": 385,
+          "source_line": 387,
           "type": "AssetAccountingEventSpineDto"
         }
       ],
@@ -54869,12 +54891,12 @@
         "Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto"
       ],
       "source": {
-        "line": 384,
+        "line": 386,
         "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
       },
       "sources": [
         {
-          "line": 384,
+          "line": 386,
           "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
         }
       ],
@@ -54893,7 +54915,7 @@
         "asset-operations-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "25d1cd392174f35982bdf3a377f821bb8c476ba65655965ad4745078dedcc079",
+      "fingerprint": "04467041b396dc420d6e38d01183e8074e1154f855aa2d8715483327fe83c94f",
       "full_name": "Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto",
       "id": "Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto",
       "kind": "record",
@@ -54912,7 +54934,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 370,
+          "source_line": 372,
           "type": "DateTimeOffset"
         },
         {
@@ -54926,7 +54948,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 369,
+          "source_line": 371,
           "type": "string"
         },
         {
@@ -54941,7 +54963,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "LedgerAdjustmentApprovalMetadataDto?",
-          "source_line": 379,
+          "source_line": 381,
           "type": "LedgerAdjustmentApprovalMetadataDto?"
         },
         {
@@ -54956,7 +54978,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 376,
+          "source_line": 378,
           "type": "Guid?"
         },
         {
@@ -54971,7 +54993,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 377,
+          "source_line": 379,
           "type": "string?"
         },
         {
@@ -54985,7 +55007,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 368,
+          "source_line": 370,
           "type": "string"
         },
         {
@@ -54999,7 +55021,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 371,
+          "source_line": 373,
           "type": "string"
         },
         {
@@ -55013,7 +55035,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "EconomicEventReferenceDto",
-          "source_line": 365,
+          "source_line": 367,
           "type": "EconomicEventReferenceDto"
         },
         {
@@ -55027,7 +55049,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 367,
+          "source_line": 369,
           "type": "decimal"
         },
         {
@@ -55041,7 +55063,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AssetAccountingEventKindDto",
-          "source_line": 363,
+          "source_line": 365,
           "type": "AssetAccountingEventKindDto"
         },
         {
@@ -55055,7 +55077,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 373,
+          "source_line": 375,
           "type": "long"
         },
         {
@@ -55069,7 +55091,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 372,
+          "source_line": 374,
           "type": "long"
         },
         {
@@ -55084,7 +55106,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 378,
+          "source_line": 380,
           "type": "string?"
         },
         {
@@ -55099,7 +55121,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "AssetLotMutationInstructionDto?",
-          "source_line": 375,
+          "source_line": 377,
           "type": "AssetLotMutationInstructionDto?"
         },
         {
@@ -55113,7 +55135,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ProjectionLineageDto",
-          "source_line": 366,
+          "source_line": 368,
           "type": "ProjectionLineageDto"
         },
         {
@@ -55127,7 +55149,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<RetainedEvidenceIdentityDto>",
-          "source_line": 381,
+          "source_line": 383,
           "type": "IReadOnlyList<RetainedEvidenceIdentityDto>"
         },
         {
@@ -55141,7 +55163,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AssetAccountingEventScopeDto",
-          "source_line": 364,
+          "source_line": 366,
           "type": "AssetAccountingEventScopeDto"
         }
       ],
@@ -55159,13 +55181,160 @@
         "Meridian.Contracts.Ledger.LedgerAdjustmentApprovalMetadataDto"
       ],
       "source": {
-        "line": 362,
+        "line": 364,
         "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
       },
       "sources": [
         {
-          "line": 362,
+          "line": 364,
           "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "asset-operations-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "asset-operations-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "b033d2d08e33f13333187ea88ffdc577b05c32660e88f640364fb84eb453a5e7",
+      "full_name": "Meridian.Contracts.AssetOperations.AssetAccountingPreparationRevisionDto",
+      "id": "Meridian.Contracts.AssetOperations.AssetAccountingPreparationRevisionDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "asset_operations"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PreparedAtUtc",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 11,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PreparedBy",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 10,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PreviousCanonicalFingerprint",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 9,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PreviousSpineVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "long",
+          "source_line": 8,
+          "type": "long"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Reason",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 12,
+          "type": "string"
+        }
+      ],
+      "name": "AssetAccountingPreparationRevisionDto",
+      "namespace": "Meridian.Contracts.AssetOperations",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.AssetOperations.AssetAccountingPreparationRevisionDto",
+      "references": [],
+      "source": {
+        "line": 7,
+        "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingPreparationRevision.cs"
+      },
+      "sources": [
+        {
+          "line": 7,
+          "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingPreparationRevision.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "asset-operations-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "asset-operations-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "75587aff73455f31012cb0f3fdf813f4204d851951009d47ab74d386c4fc887d",
+      "full_name": "Meridian.Contracts.AssetOperations.AssetAccountingPreparationRevisionValidator",
+      "id": "Meridian.Contracts.AssetOperations.AssetAccountingPreparationRevisionValidator",
+      "kind": "class",
+      "mapped_schemas": [
+        "asset_operations"
+      ],
+      "members": [],
+      "name": "AssetAccountingPreparationRevisionValidator",
+      "namespace": "Meridian.Contracts.AssetOperations",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.AssetOperations.AssetAccountingPreparationRevisionValidator",
+      "references": [],
+      "source": {
+        "line": 15,
+        "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingPreparationRevision.cs"
+      },
+      "sources": [
+        {
+          "line": 15,
+          "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingPreparationRevision.cs"
         }
       ],
       "type_parameters": []
@@ -55311,7 +55480,7 @@
         "asset-operations-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "f26d3ebbf7a5945fabff60d88a649d4240b3c0331f17fa66b63e15e1c48f2bdd",
+      "fingerprint": "095b7f85f870b79ceb4708b83639344bc0b0a541239c2884d81c808da99ff623",
       "full_name": "Meridian.Contracts.AssetOperations.AssetAcquisitionLotDto",
       "id": "Meridian.Contracts.AssetOperations.AssetAcquisitionLotDto",
       "kind": "record",
@@ -55330,7 +55499,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 290,
+          "source_line": 292,
           "type": "string"
         },
         {
@@ -55344,7 +55513,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 287,
+          "source_line": 289,
           "type": "DateOnly"
         },
         {
@@ -55359,7 +55528,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Meridian.Contracts.FixedIncome.BondAmortizationMethod?",
-          "source_line": 304,
+          "source_line": 306,
           "type": "Meridian.Contracts.FixedIncome.BondAmortizationMethod?"
         },
         {
@@ -55374,7 +55543,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 298,
+          "source_line": 300,
           "type": "decimal?"
         },
         {
@@ -55389,7 +55558,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 306,
+          "source_line": 308,
           "type": "decimal?"
         },
         {
@@ -55403,7 +55572,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 286,
+          "source_line": 288,
           "type": "string"
         },
         {
@@ -55418,7 +55587,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 296,
+          "source_line": 298,
           "type": "decimal?"
         },
         {
@@ -55433,7 +55602,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 300,
+          "source_line": 302,
           "type": "decimal?"
         },
         {
@@ -55447,7 +55616,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 288,
+          "source_line": 290,
           "type": "decimal"
         },
         {
@@ -55461,7 +55630,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 285,
+          "source_line": 287,
           "type": "Guid"
         },
         {
@@ -55475,7 +55644,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 289,
+          "source_line": 291,
           "type": "decimal"
         }
       ],
@@ -55487,12 +55656,12 @@
         "Meridian.Contracts.FixedIncome.BondAmortizationMethod"
       ],
       "source": {
-        "line": 284,
+        "line": 286,
         "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
       },
       "sources": [
         {
-          "line": 284,
+          "line": 286,
           "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
         }
       ],
@@ -56029,7 +56198,7 @@
         "asset-operations-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "e4118fd50546f17a1e89db8b2c8cd807144b2dde8cf4bd0af17b6be599e750fa",
+      "fingerprint": "3b4a7a6df39fbe800781fa14f94e52072a23ad3ac53af48fb988b532d41a0793",
       "full_name": "Meridian.Contracts.AssetOperations.AssetDisposalLotSelectionDto",
       "id": "Meridian.Contracts.AssetOperations.AssetDisposalLotSelectionDto",
       "kind": "record",
@@ -56049,7 +56218,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 328,
+          "source_line": 330,
           "type": "decimal"
         },
         {
@@ -56063,7 +56232,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 323,
+          "source_line": 325,
           "type": "decimal"
         },
         {
@@ -56078,7 +56247,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 327,
+          "source_line": 329,
           "type": "decimal"
         },
         {
@@ -56092,7 +56261,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 322,
+          "source_line": 324,
           "type": "long"
         },
         {
@@ -56106,7 +56275,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 321,
+          "source_line": 323,
           "type": "string"
         },
         {
@@ -56120,7 +56289,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 324,
+          "source_line": 326,
           "type": "decimal"
         },
         {
@@ -56134,7 +56303,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 326,
+          "source_line": 328,
           "type": "string"
         },
         {
@@ -56148,7 +56317,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 325,
+          "source_line": 327,
           "type": "int"
         },
         {
@@ -56162,7 +56331,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 320,
+          "source_line": 322,
           "type": "Guid"
         }
       ],
@@ -56172,12 +56341,12 @@
       "qualified_name": "Meridian.Contracts.AssetOperations.AssetDisposalLotSelectionDto",
       "references": [],
       "source": {
-        "line": 319,
+        "line": 321,
         "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
       },
       "sources": [
         {
-          "line": 319,
+          "line": 321,
           "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
         }
       ],
@@ -56630,7 +56799,7 @@
         "asset-operations-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "3ba883c867d4f4fa8159f36aa885cda1de63bfd89e8ac088aca17f2560f4cc97",
+      "fingerprint": "6875111ca84a0e609888595c260073cc0826b57042db1aec1fc8139d5ab64029",
       "full_name": "Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto",
       "id": "Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto",
       "kind": "record",
@@ -56650,7 +56819,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "AssetAcquisitionLotDto?",
-          "source_line": 336,
+          "source_line": 338,
           "type": "AssetAcquisitionLotDto?"
         },
         {
@@ -56665,7 +56834,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto?",
-          "source_line": 347,
+          "source_line": 349,
           "type": "Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto?"
         },
         {
@@ -56680,7 +56849,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 343,
+          "source_line": 345,
           "type": "string?"
         },
         {
@@ -56695,7 +56864,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto?",
-          "source_line": 351,
+          "source_line": 353,
           "type": "Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto?"
         },
         {
@@ -56710,7 +56879,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto?",
-          "source_line": 349,
+          "source_line": 351,
           "type": "Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto?"
         },
         {
@@ -56725,7 +56894,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "LedgerAdjustmentApprovalMetadataDto?",
-          "source_line": 342,
+          "source_line": 344,
           "type": "LedgerAdjustmentApprovalMetadataDto?"
         },
         {
@@ -56740,7 +56909,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 341,
+          "source_line": 343,
           "type": "Guid?"
         },
         {
@@ -56755,7 +56924,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 340,
+          "source_line": 342,
           "type": "Guid?"
         },
         {
@@ -56769,7 +56938,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "OpenLotDirection",
-          "source_line": 356,
+          "source_line": 358,
           "type": "OpenLotDirection"
         },
         {
@@ -56784,7 +56953,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 345,
+          "source_line": 347,
           "type": "decimal?"
         },
         {
@@ -56798,7 +56967,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<AssetDisposalLotSelectionDto>",
-          "source_line": 358,
+          "source_line": 360,
           "type": "IReadOnlyList<AssetDisposalLotSelectionDto>"
         },
         {
@@ -56813,7 +56982,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto?",
-          "source_line": 353,
+          "source_line": 355,
           "type": "Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto?"
         },
         {
@@ -56827,7 +56996,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AssetLotMutationIntentDto",
-          "source_line": 335,
+          "source_line": 337,
           "type": "AssetLotMutationIntentDto"
         },
         {
@@ -56842,7 +57011,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 339,
+          "source_line": 341,
           "type": "string?"
         },
         {
@@ -56857,7 +57026,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 338,
+          "source_line": 340,
           "type": "string?"
         }
       ],
@@ -56877,12 +57046,12 @@
         "Meridian.Contracts.Ledger.LedgerAdjustmentApprovalMetadataDto"
       ],
       "source": {
-        "line": 334,
+        "line": 336,
         "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
       },
       "sources": [
         {
-          "line": 334,
+          "line": 336,
           "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
         }
       ],
@@ -56901,7 +57070,7 @@
         "asset-operations-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "700e1aed9ed9f4a4eb59e115e22cfb15bb1b32d3dcd31231713834a13a78566f",
+      "fingerprint": "90276f65c7971894a67156b65572cd6f98a2fc6ef2f0b306128a5b6fa76c088f",
       "full_name": "Meridian.Contracts.AssetOperations.AssetLotMutationInstructionValidator",
       "id": "Meridian.Contracts.AssetOperations.AssetLotMutationInstructionValidator",
       "kind": "class",
@@ -56915,12 +57084,12 @@
       "qualified_name": "Meridian.Contracts.AssetOperations.AssetLotMutationInstructionValidator",
       "references": [],
       "source": {
-        "line": 958,
+        "line": 969,
         "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
       },
       "sources": [
         {
-          "line": 958,
+          "line": 969,
           "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
         }
       ],
@@ -56942,47 +57111,47 @@
         {
           "explicit_value": true,
           "name": "None",
-          "source_line": 275,
+          "source_line": 277,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "Acquire",
-          "source_line": 276,
+          "source_line": 278,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "Dispose",
-          "source_line": 277,
+          "source_line": 279,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "Amortize",
-          "source_line": 278,
+          "source_line": 280,
           "value": "3"
         },
         {
           "explicit_value": true,
           "name": "CorporateAction",
-          "source_line": 279,
+          "source_line": 281,
           "value": "4"
         },
         {
           "explicit_value": true,
           "name": "CapitalReturn",
-          "source_line": 280,
+          "source_line": 282,
           "value": "5"
         },
         {
           "explicit_value": true,
           "name": "FactorPaydown",
-          "source_line": 281,
+          "source_line": 283,
           "value": "6"
         }
       ],
-      "fingerprint": "68bd04fb1726f91682375a0a1a61c767bf9588feb6613754cf1667cf39b0ff41",
+      "fingerprint": "4b92f6f882f18864de1a57df98a14033de23200a8706e1c0d903de322ab6d713",
       "full_name": "Meridian.Contracts.AssetOperations.AssetLotMutationIntentDto",
       "id": "Meridian.Contracts.AssetOperations.AssetLotMutationIntentDto",
       "kind": "enum",
@@ -56996,12 +57165,12 @@
       "qualified_name": "Meridian.Contracts.AssetOperations.AssetLotMutationIntentDto",
       "references": [],
       "source": {
-        "line": 273,
+        "line": 275,
         "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
       },
       "sources": [
         {
-          "line": 273,
+          "line": 275,
           "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
         }
       ],
@@ -68248,7 +68417,7 @@
         "asset-operations-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "eeb2a79f6e64433cd8d6a9c0724104564f9d85c46f1a5949e71edb3a91a5a983",
+      "fingerprint": "f7f4383ac1339e05aa0ed901eda406e2a7f2cdcae192c0cf027210db3c30ecf0",
       "full_name": "Meridian.Contracts.AssetOperations.PostedJournalImpactValidator",
       "id": "Meridian.Contracts.AssetOperations.PostedJournalImpactValidator",
       "kind": "class",
@@ -68262,12 +68431,12 @@
       "qualified_name": "Meridian.Contracts.AssetOperations.PostedJournalImpactValidator",
       "references": [],
       "source": {
-        "line": 391,
+        "line": 393,
         "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
       },
       "sources": [
         {
-          "line": 391,
+          "line": 393,
           "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
         }
       ],
@@ -68286,7 +68455,7 @@
         "asset-operations-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "88f545e9542154a72d4e2cd3cd8b72dc6a87c16ae7a1dc534599a71269600729",
+      "fingerprint": "babbe6e562c20b3020a0fce3b5074815f9e0bdcf48c9aca7684917761a21666c",
       "full_name": "Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
       "id": "Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
       "kind": "record",
@@ -68305,7 +68474,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 230,
+          "source_line": 232,
           "type": "string"
         },
         {
@@ -68320,7 +68489,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto?",
-          "source_line": 238,
+          "source_line": 240,
           "type": "Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto?"
         },
         {
@@ -68335,7 +68504,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto?",
-          "source_line": 236,
+          "source_line": 238,
           "type": "Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto?"
         },
         {
@@ -68350,7 +68519,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "AssetAccountingCorrectionReferenceDto?",
-          "source_line": 234,
+          "source_line": 236,
           "type": "AssetAccountingCorrectionReferenceDto?"
         },
         {
@@ -68364,7 +68533,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 228,
+          "source_line": 230,
           "type": "string"
         },
         {
@@ -68378,7 +68547,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "EconomicEventReferenceDto",
-          "source_line": 224,
+          "source_line": 226,
           "type": "EconomicEventReferenceDto"
         },
         {
@@ -68392,7 +68561,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 227,
+          "source_line": 229,
           "type": "decimal"
         },
         {
@@ -68406,7 +68575,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AssetAccountingEventKindDto",
-          "source_line": 222,
+          "source_line": 224,
           "type": "AssetAccountingEventKindDto"
         },
         {
@@ -68420,7 +68589,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 229,
+          "source_line": 231,
           "type": "long"
         },
         {
@@ -68435,7 +68604,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto?",
-          "source_line": 240,
+          "source_line": 242,
           "type": "Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto?"
         },
         {
@@ -68450,7 +68619,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 233,
+          "source_line": 235,
           "type": "string?"
         },
         {
@@ -68464,7 +68633,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 231,
+          "source_line": 233,
           "type": "DateTimeOffset"
         },
         {
@@ -68478,7 +68647,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ProjectedAccountingEffectDto",
-          "source_line": 226,
+          "source_line": 228,
           "type": "ProjectedAccountingEffectDto"
         },
         {
@@ -68492,7 +68661,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ProjectionLineageDto",
-          "source_line": 225,
+          "source_line": 227,
           "type": "ProjectionLineageDto"
         },
         {
@@ -68506,7 +68675,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<RetainedEvidenceIdentityDto>",
-          "source_line": 242,
+          "source_line": 244,
           "type": "IReadOnlyList<RetainedEvidenceIdentityDto>"
         },
         {
@@ -68520,7 +68689,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AssetAccountingEventScopeDto",
-          "source_line": 223,
+          "source_line": 225,
           "type": "AssetAccountingEventScopeDto"
         }
       ],
@@ -68541,12 +68710,12 @@
         "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
       ],
       "source": {
-        "line": 221,
+        "line": 223,
         "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
       },
       "sources": [
         {
-          "line": 221,
+          "line": 223,
           "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
         }
       ],

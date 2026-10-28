@@ -322,6 +322,11 @@ actor or tenant fields. `FactorPaydownPreparationDto` binds the exact lot/accoun
 fingerprint; `CreateFactorPaydownDraftRequestDto` requires that fingerprint before server-side
 repreparation and governed candidate creation. Component and nested decimal response values are
 exact strings on these HTTP routes, and factor input fields accept decimal strings.
+Optional `AssetAccountingEventSpineDto.PreparationRevision` links a freshly reviewed, undrafted
+factor preparation to its exact prior spine version and canonical fingerprint. The link records
+the authenticated preparing actor, time and reason; absent links preserve historical JSON.
+Recovery keeps the same economic event, factors, evidence and owner identity. Drafted and posted
+authority cannot enter this transition, and ordinary lifecycle appends preserve the retained link.
 `ManualJournalEntryDraftDto.AssetAccountingDraft` retains the exact typed asset candidate and source
 fingerprints in the review queue. It is omitted on historical manual drafts and cannot be introduced,
 removed or edited by a client. Submission preserves it. Optional `AssetAccountingApproval` retains

@@ -71,6 +71,11 @@ book/period ownership. Creating a draft requires the reviewed preview fingerprin
 and lot versions, then uses the existing Asset Accounting Event Spine projection and candidate
 builder and persists the same journal identity in the manual review workbench. Interrupted handoffs
 resume from retained lineage; retries repair a missing workbench mirror without duplicating it.
+After a failed candidate build, a fresh preview can bind a replacement undrafted preparation to
+the retained predecessor's version and fingerprint. Only the same authenticated preparing actor
+can submit that reviewed recovery; the spine revalidates current lots and authority before its
+version-checked append. Old previews refuse, recovered exact retries retain the same draft, and
+Drafted or Posted events cannot be replaced through this path.
 The immutable `AssetAccountingDraft` context preserves source fingerprints, lot instructions and
 evidence through review submission. Generic manual edits and corrections refuse these drafts. Draft construction also requires the exact reviewed factor event, lineage and retained
 evidence already associated with the authoritative position. An acquisition-only position is not

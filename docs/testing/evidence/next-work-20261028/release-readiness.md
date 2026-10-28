@@ -371,3 +371,59 @@ original token the new regression failed with the same empty audit; its pre-disp
 passed. Restoring the correction passed both cases and the full **184-test** live-engine/OMS/audit
 packet, including both original hosted account-scope variants. No test deadline was widened and
 no sleep was added. Final candidate-bound full local and hosted checks remain required.
+
+## Unposted preparation recovery review
+
+The integrated `8bf093eb8c` candidate passed its hosted quality gate: 25,275 ordinary .NET
+tests (zero failed, five registered skips), 4,103 browser tests and all 1,381 PostgreSQL
+tests. Its tested PR merge was `10c04bd8f3adde0281f65eacabf31632a0f9bb09`.
+Both original live-trading account-scope variants and the deterministic accepted-order audit
+regression passed. Verified ordinary .NET artifact `12830741730` has SHA-256
+`be1080df7c22965ee7b0239af77a422956873515a1e07b4d11deba83a36c6ac9`;
+PostgreSQL artifact `12829729459` has SHA-256
+`2fd1508a8690dddfdf581b5b276b2ff49d51a5dec4f54bd9217570ab8243bcdb`.
+Native Windows also passed: 2,569 WPF tests, zero failed and one registered skip,
+including all 34 factor-paydown, 20 retained-report-amount and 23 provider-wizard cases.
+Artifact `12830722634` has SHA-256
+`1e794da93fa2ce30e43b8b1ca455e06d6f3ed7e82078b630edfa9fd0826c6023`.
+All hosted checks for that head finished green; its local full gate was not completed.
+
+That candidate still contained the PR review's P1 recovery defect: a candidate-build refusal
+after retaining Expected/Projected state could permanently block a corrected preparation for
+the same economic observation. Two independent source reviews confirmed the account-change
+and after-retention lot-version cases were not covered by unchanged-input retry tests.
+The local full run was intentionally stopped after 3,012 passing application and endpoint
+tests so the defect could be repaired. Those results do not certify the recovery follow-up.
+
+The recovery follow-up appends a freshly reviewed factor preparation under the same economic
+event and source version. Its optional `PreparationRevision` records the exact predecessor spine
+version and canonical fingerprint, preparing actor, time and reason. Recovery requires the same
+authenticated preparing actor, unchanged source/factors/evidence/owner identity, current complete
+lots and authoritative security/book/open-period checks. The trusted preparation time supplies the
+recorded-security cutoff; the original economic observation and lineage remain unchanged.
+Drafted, approved or posted authority cannot enter this transition. The same locked append version
+arbitrates recovery against an old candidate build; all earlier snapshots remain immutable.
+
+A controlled baseline restored only the original `8bf093eb8c` endpoint while retaining the new
+regression fixtures. Both after-retention lot drift and corrected-account retry reached the intended
+failure: expected HTTP 200, actual HTTP 409 with “The retained factor event differs from the
+reviewed preparation.” An exit trap restored the exact fixed source before validation continued.
+The baseline log is `/workspace/scratch/meridian-factor-recovery-original-endpoint.log`.
+
+The restored implementation passed the full **601-test** focused packet with zero failures or
+skips, recorded in `/workspace/scratch/meridian-factor-recovery-fixed-final.log`. All three HTTP
+regressions passed: lot drift after actual projection retention, corrected-account recovery and a
+held old candidate build losing the real append CAS to fresh preparation/drafting. The tests retain
+byte-exact original snapshots, reject old previews, verify stable recovered retries and retain one
+workbench draft without a ledger write during preparation. Recorded-security v1/v2, contract,
+strict store, candidate, manual-journal and approval guards also passed. Authorized preview tests
+now assert the required read-only head lookup and explicitly forbid all spine mutations; scope
+denial checks are unchanged.
+
+Real PostgreSQL proof recovered a failed candidate into the same event's draft, independently
+approved and posted it, then restarted and replayed one canonical journal and mutation batch.
+The disposable test database was removed after this packet. Schema control again applied all
+152 migrations with zero migration/policy errors: 10 schemas, 233 relations and 3,080 public
+contract objects. Only contract/dependency inventories changed; physical schema, migration and
+policy manifests remain unchanged. Full candidate-bound local and hosted results are recorded
+in the PR separately from this focused proof.

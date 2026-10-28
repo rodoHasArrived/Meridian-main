@@ -340,7 +340,8 @@ Projected and Drafted unchanged. The effect has two or three lines: cash for the
 carrying relief when any basis is relieved, and one realized gain or loss line when the result is
 not zero. `LedgerFeatureRegistration` composes the service next to `CanonicalLotAmortizationService`
 with nullable authorities, and preparation refuses a missing ledger, Security Master, position or
-projector authority before reading anything; no operator route calls it yet. The spine event and
+projector authority before reading anything. Shared operator routes use it for reviewed preparation
+and durable manual-workbench draft intake. The spine event and
 its lineage trigger are typed `AssetAccounting.CorporateAction` and the lineage keeps the model key
 `mbs-factor-paydown`; the model's own `MbsFactorPaydown` event type stays on the projector's output
 and the persisted Asset Operations lineage. `AccountingPostingCandidateService` requires the
@@ -361,6 +362,11 @@ ordered economics, or scope remains a collision. Original drafts and retained jo
 The spine service rereads every paid-down lot
 and its carrying credit before drafting; posting dispatches a `FactorPaydown` batch to the atomic
 journal/lot store. A plain factor journal without the lot mutation is not posting authority.
+If candidate construction fails after retaining an undrafted preparation, the same preparing
+actor can review fresh lots, period versions and proposed accounts. The spine service revalidates
+current authority and appends a predecessor-bound preparation revision for the same source event;
+it retains every prior snapshot. The existing store version check makes stale candidate creation
+and recovery compete for one next version. Once Drafted authority exists, this recovery is refused.
 
 ## Purpose
 

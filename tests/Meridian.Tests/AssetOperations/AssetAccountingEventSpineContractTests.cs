@@ -5,7 +5,7 @@ using Meridian.Contracts.Ledger;
 
 namespace Meridian.Tests.AssetOperations;
 
-public sealed class AssetAccountingEventSpineContractTests
+public sealed partial class AssetAccountingEventSpineContractTests
 {
     [Fact]
     public void Validate_ExactProjectedSpine_Passes()

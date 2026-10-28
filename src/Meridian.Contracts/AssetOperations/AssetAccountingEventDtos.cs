@@ -206,7 +206,9 @@ public sealed record AssetAccountingEventSpineDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null)
+    Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    AssetAccountingPreparationRevisionDto? PreparationRevision = null)
 {
     public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = RetainedEvidence ?? [];
 
@@ -466,6 +468,15 @@ public static class AssetAccountingEventSpineValidator
             issues.Add("Asset accounting event version must be positive.");
         if (spine.SpineVersion <= 0)
             issues.Add("Asset accounting spine version must be positive.");
+        if (spine.PreparationRevision is { } revision &&
+            (revision.PreviousSpineVersion <= 0 || revision.PreviousSpineVersion >= spine.SpineVersion ||
+             !Sha256Digest.IsCanonical(revision.PreviousCanonicalFingerprint) ||
+             string.IsNullOrWhiteSpace(revision.PreparedBy) || string.IsNullOrWhiteSpace(revision.Reason) ||
+             revision.PreparedAtUtc == default || revision.PreparedAtUtc.Offset != TimeSpan.Zero ||
+             spine.FactorPaydown is null || spine.Stages.Count < 2 ||
+             spine.Stages[0].AttestedBy != revision.PreparedBy || spine.Stages[0].AttestedAtUtc != revision.PreparedAtUtc ||
+             spine.Stages[1].AttestedBy != revision.PreparedBy || spine.Stages[1].AttestedAtUtc != revision.PreparedAtUtc))
+            issues.Add("A factor preparation revision requires a complete prior snapshot identity and matching fresh preparation attestations.");
         if (spine.Scope.SecurityId == Guid.Empty || spine.Scope.BookPositionId == Guid.Empty)
             issues.Add("Asset accounting event requires Security Master and book-position identity.");
         if (spine.Scope.ExpectedSecurityVersion <= 0)
