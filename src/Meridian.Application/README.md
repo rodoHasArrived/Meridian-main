@@ -1086,8 +1086,14 @@ and dispatches to the registered `ISecurityValuationModel` whose kind the reques
 catalog's `DefaultValuationModel` declares; `QuotedPriceValuationModel` composes the golden-copy
 as-of read (retaining a selection receipt, as that read does), reports its staleness verdict as a
 diagnostic and picks the market-value function by the price's quote unit, scaling a percent-of-par
-quote by the factor in effect on the valuation date (the factor the projection selects, so a scalar
-current factor dated after the valuation date does not apply yet); `DiscountedCashFlowValuationModel` discounts
+quote by the same opening outstanding principal used by calculated cash flows. Dated factors
+include only payments through their evidence date; later contractual payments completed before
+the valuation date reduce the balance. Without an applicable factor, all completed in-window
+contractual principal payments reduce it; an undated scalar is assumed current and is not reduced
+twice. Payments on the valuation date remain payable, and a future-dated scalar does not apply yet.
+Quotations retain decimal factor precision until holding valuation; calculated schedules keep their
+existing four-place cash rounding.
+`DiscountedCashFlowValuationModel` discounts
 the base-scenario projection as of the valuation date on a stored Discount curve (pinned on the
 request by id and optionally by version id, or the one definition in the security's currency),
 refuses to extrapolate past the curve, quotes face-value lots per 100 of the outstanding face the

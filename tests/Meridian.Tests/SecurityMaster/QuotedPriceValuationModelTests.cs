@@ -1,7 +1,13 @@
+using System.Globalization;
+using System.Text.Json;
 using FluentAssertions;
+using Meridian.Application.SecurityMaster;
 using Meridian.Application.SecurityMaster.Valuation;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Storage.SecurityMaster;
+using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
+using SecurityMasterQueryContract = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Tests.SecurityMaster;
 
@@ -86,6 +92,83 @@ public sealed class QuotedPriceValuationModelTests
         onTheDate.MarketValue.Should().Be(400_000.00m, "from its date the factor applies: 500,000 par x 0.8 x 100 / 100");
     }
 
+    [Theory]
+    [InlineData("schedule", 70)]
+    [InlineData("dated-scalar", 70)]
+    [InlineData("profile-dated-scalar", 70)]
+    [InlineData("none", 90)]
+    [InlineData("future-scalar", 90)]
+    [InlineData("undated-scalar", 80)]
+    public async Task QuotedValuationAndProjection_UseTheSameRetainedOpeningPrincipal(
+        string factorSource, int expectedOutstanding)
+    {
+        // The June factor knows nothing about December's payment. An undated scalar is assumed
+        // current, however, so deducting that same payment again would count it twice.
+        var bond = RepayingBond(factorSource, new DateOnly(2025, 12, 1));
+
+        await AssertQuoteMatchesProjectionAsync(bond, expectedOutstanding);
+    }
+
+    [Theory]
+    [InlineData(0, 12345678)]
+    [InlineData(1, 11345678)]
+    public async Task QuotedFace_RetainsFactorPrecisionBeforeScalingToTheHolding(
+        int principalPaid, int expectedMarketValueCents)
+    {
+        // Cash-flow rows round to cash precision, but a factor must retain its precision before
+        // it scales a large holding. Rounding 100 x .12345678 first would overstate this value.
+        var bond = ValuationTestSecurities.Bond() with
+        {
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+            {
+                issueDate = new DateOnly(2025, 1, 1),
+                maturityDate = new DateOnly(2027, 1, 1),
+                par = 100m,
+                couponRate = 0m,
+                paymentFrequency = "Annual",
+                currentFactor = 0.12345678m,
+                factorDate = new DateOnly(2025, 6, 1),
+                principalSchedule = principalPaid == 0
+                    ? Array.Empty<object>()
+                    : new object[] { new { paymentDate = new DateOnly(2025, 12, 1), amount = principalPaid } }
+            })
+        };
+        var pricing = Pricing(bond, new SecurityPriceGoldenCopyDto(
+            bond.SecurityId, 100m, SecurityPriceKind.MarketGoldenCopy, "BLOOMBERG", PriceAsOf, false, 1, [],
+            SecurityPriceUnit.PercentOfPar, ValuationTestSecurities.AsOf, PriceAsOf, KnownAt, Guid.NewGuid()));
+
+        var result = await new QuotedPriceValuationModel(pricing).ValueAsync(
+            new SecurityValuationRequest(bond.SecurityId, ValuationTestSecurities.AsOf, Quantity: 1_000_000m), bond, CancellationToken.None);
+
+        result.IsBlocked.Should().BeFalse();
+        result.MarketValue.Should().Be(expectedMarketValueCents / 100m);
+    }
+
+    [Theory]
+    [InlineData("2025-05-31")]
+    [InlineData("2025-06-01")]
+    [InlineData("2026-01-01")]
+    [InlineData("2026-02-01")]
+    [InlineData("2024-12-31")]
+    [InlineData("2027-01-02")]
+    public async Task PaymentsAlreadyInTheFactor_NotYetCompleted_OrOutsideTheContract_DoNotReduceQuotedFace(
+        string paymentDate)
+    {
+        var bond = RepayingBond("schedule", DateOnly.ParseExact(paymentDate, "yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        await AssertQuoteMatchesProjectionAsync(bond, 80m);
+    }
+
+    [Theory]
+    [InlineData(100)]
+    [InlineData(110)]
+    public async Task CompletedPrincipalPayments_CannotMakeTheQuotedFaceNegative(int paymentAmount)
+    {
+        var bond = RepayingBond("none", new DateOnly(2025, 12, 1), paymentAmount);
+
+        await AssertQuoteMatchesProjectionAsync(bond, 0m);
+    }
+
     [Fact]
     public async Task AQuoteWithoutAUnit_HasNoMarketValue_AndSaysSo()
     {
@@ -148,6 +231,70 @@ public sealed class QuotedPriceValuationModelTests
         result.Price.Should().BeNull();
         result.MarketValue.Should().BeNull();
         result.PriceUnit.Should().Be(SecurityPriceUnit.Unspecified);
+    }
+
+    private static SecurityDetailDto RepayingBond(string factorSource, DateOnly paymentDate, decimal paymentAmount = 10m)
+    {
+        var terms = new Dictionary<string, object>
+        {
+            ["issueDate"] = new DateOnly(2025, 1, 1),
+            ["maturityDate"] = new DateOnly(2027, 1, 1),
+            ["par"] = 100m,
+            ["couponRate"] = 0m,
+            ["paymentFrequency"] = "Annual",
+            ["principalSchedule"] = new[] { new { paymentDate, amount = paymentAmount } }
+        };
+        if (factorSource == "schedule")
+        {
+            terms["factorScheduleEntries"] = new[] { new { asOfDate = new DateOnly(2025, 6, 1), factor = 0.8m } };
+        }
+        else if (factorSource != "none")
+        {
+            terms["currentFactor"] = 0.8m;
+            if (factorSource != "undated-scalar")
+            {
+                terms["factorDate"] = factorSource == "future-scalar"
+                    ? new DateOnly(2026, 6, 1)
+                    : new DateOnly(2025, 6, 1);
+            }
+        }
+
+        var retainedTerms = factorSource == "profile-dated-scalar"
+            ? JsonSerializer.SerializeToElement(new { profileFields = terms })
+            : JsonSerializer.SerializeToElement(terms);
+        return ValuationTestSecurities.Bond() with { AssetSpecificTerms = retainedTerms };
+    }
+
+    private static async Task AssertQuoteMatchesProjectionAsync(SecurityDetailDto bond, decimal expectedOutstanding)
+    {
+        var store = Substitute.For<ISecurityMasterCashFlowStore>();
+        store.GetSourceAsync(bond.SecurityId, Arg.Any<CancellationToken>()).Returns(
+            new SecurityCashFlowSourceDto(bond.SecurityId, StructuredCashFlowSourceKind.CalculatedBullet, KnownAt, false, null, null));
+        var query = Substitute.For<SecurityMasterQueryContract>();
+        query.GetByIdAsync(bond.SecurityId, Arg.Any<CancellationToken>()).Returns(bond);
+        var cashFlows = new SecurityMasterCashFlowService(
+            store, [], query, NullLogger<SecurityMasterCashFlowService>.Instance);
+
+        var projection = await cashFlows.GetProjectionAsOfAsync(
+            bond.SecurityId, StructuredCashFlowScenario.Base, ValuationTestSecurities.AsOf);
+
+        projection.Should().NotBeNull();
+        projection!.BlockedReason.Should().BeNull();
+        projection.Schedule.Sum(static row => row.PrincipalAmount).Should().Be(expectedOutstanding);
+
+        var pricing = Pricing(bond, new SecurityPriceGoldenCopyDto(
+            bond.SecurityId, 100m, SecurityPriceKind.MarketGoldenCopy, "BLOOMBERG", PriceAsOf, false, 1, [],
+            SecurityPriceUnit.PercentOfPar, ValuationTestSecurities.AsOf, PriceAsOf, KnownAt, Guid.NewGuid()));
+        var model = new QuotedPriceValuationModel(pricing);
+        foreach (var quantity in new[] { 100m, 200m })
+        {
+            var result = await model.ValueAsync(
+                new SecurityValuationRequest(bond.SecurityId, ValuationTestSecurities.AsOf, Quantity: quantity), bond, CancellationToken.None);
+
+            result.IsBlocked.Should().BeFalse();
+            result.MarketValue.Should().Be(expectedOutstanding * quantity / 100m,
+                "a quote per 100 of current face uses the same outstanding principal as the projection, scaled to the holding");
+        }
     }
 
     private static ISecurityMasterPricingService Pricing(SecurityDetailDto security, SecurityPriceGoldenCopyDto? selection)

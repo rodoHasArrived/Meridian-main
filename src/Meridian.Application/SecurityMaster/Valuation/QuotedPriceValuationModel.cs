@@ -7,8 +7,8 @@ namespace Meridian.Application.SecurityMaster.Valuation;
 /// the as-of and knowledge cutoffs. The pricing lane's staleness verdict is reported as a
 /// diagnostic, not re-decided, and the selection receipt is the result's input. Every evaluation
 /// retains a selection receipt, exactly as the golden-copy read does. The market value follows the
-/// price's quote unit: percent of par on the face scaled by the factor in effect on the valuation
-/// date, or currency per unit on units.
+/// price's quote unit: percent of par on the outstanding face after applicable factors and
+/// completed contractual principal payments, or currency per unit on units.
 /// </summary>
 public sealed class QuotedPriceValuationModel : ISecurityValuationModel
 {
@@ -51,7 +51,7 @@ public sealed class QuotedPriceValuationModel : ISecurityValuationModel
         }
 
         // The market-value function follows the selected price's quote unit; a percent-of-par quote
-        // scales the face by the factor in effect on the valuation date.
+        // scales the face by the same opening outstanding balance as the cash-flow projection.
         var asOfDate = DateOnly.FromDateTime(request.AsOf.UtcDateTime.Date);
         var marketValue = SecurityValuationMarketValues.Compute(security, request.Quantity, selection.GoldenCopyPrice, selection.Unit, asOfDate, diagnostics);
         return new SecurityValuationResult(
