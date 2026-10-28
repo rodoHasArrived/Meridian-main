@@ -2111,6 +2111,10 @@ items:
         path: src/Meridian.Storage/Ledger/Migrations/V_ledger_053__atomic_lot_factor_paydown.sql
       - type: test
         path: tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.FactorPaydownPublication.cs
+      - type: source
+        path: src/Meridian.Application/SecurityMaster/CashFlow/SecurityPrincipalBalance.cs
+      - type: test
+        path: tests/Meridian.Tests/SecurityMaster/QuotedPriceValuationModelTests.cs
     last_reviewed: 2026-10-28
 
   - id: W10-DEBT-001
