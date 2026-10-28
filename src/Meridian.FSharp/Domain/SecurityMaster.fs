@@ -257,6 +257,155 @@ type PrincipalPaymentEntry = {
     Amount: decimal
 }
 
+/// The declared conventions the contractual schedule kernel (ADR-025) builds an instrument's periods
+/// with: the flat terms' <c>scheduleConventions</c> block (asset-class terms version 2 on bonds,
+/// certificates of deposit and swap legs, 3 on structured credit). A node reads it from payloads
+/// stamped at that version and does not write it until the contract step (ADR-024, readable before
+/// writable). Text members are kept verbatim, as the payload carries them;
+/// <c>ScheduleConventions.empty</c> means nothing is declared.
+type ScheduleConventions = {
+    BusinessDayConvention: string option
+    /// Whether accrual period boundaries are adjusted for business days (payment dates always are,
+    /// under <c>BusinessDayConvention</c>). None when the terms do not say.
+    AccrualAdjusted: bool option
+    /// The payment calendars by id, joined into one calendar when more than one is named.
+    PaymentCalendars: string list
+    PaymentLagBusinessDays: int option
+    RollConvention: string option
+    EndOfMonthRule: bool option
+    FirstRegularDate: DateOnly option
+    LastRegularDate: DateOnly option
+    /// Schedule generation direction: Forward or Backward.
+    Direction: string option
+    StubPolicy: string option
+    /// Whether a coupon rate is a percent or a fraction: Percent or Fraction.
+    CouponRateUnit: string option
+    /// How a regular coupon's cash amount is computed: Level (rate over frequency) or DayCount.
+    CouponCashBasis: string option
+}
+
+[<RequireQualifiedAccess>]
+module ScheduleConventions =
+    /// No convention declared: what every record carries until a node writes the block.
+    [<CompiledName("Empty")>]
+    let empty : ScheduleConventions =
+        { BusinessDayConvention = None
+          AccrualAdjusted = None
+          PaymentCalendars = []
+          PaymentLagBusinessDays = None
+          RollConvention = None
+          EndOfMonthRule = None
+          FirstRegularDate = None
+          LastRegularDate = None
+          Direction = None
+          StubPolicy = None
+          CouponRateUnit = None
+          CouponCashBasis = None }
+
+    /// Whether nothing is declared.
+    [<CompiledName("IsEmpty")>]
+    let isEmpty (conventions: ScheduleConventions) = conventions = empty
+
+/// One declared call (a flat callSchedule entry: asset-class terms version 3 on bonds and
+/// certificates of deposit, 4 on structured credit). Text members are kept verbatim; their meanings
+/// are frozen in ADR-025's Applications.
+type CallScheduleTerm = {
+    /// The call date, or the start of an American or Bermudan call window. An entry without one is
+    /// not a term and is never read.
+    CallDate: DateOnly
+    /// The last day of the call window, inclusive. Absent, the window runs to the day before the
+    /// next call's date in date order, or to maturity for the last call (ADR-025).
+    CallEndDate: DateOnly option
+    /// European, American or Bermudan.
+    ExerciseStyle: string option
+    /// How often a Bermudan window's call dates recur (a coupon frequency spelling).
+    ExerciseFrequency: string option
+    /// The call price, in the unit priceBasis names.
+    CallPrice: decimal option
+    /// PercentOfPar or PercentOfAccretedValue.
+    PriceBasis: string option
+    /// Fixed or MakeWhole.
+    PriceType: string option
+    /// The make-whole spread over the benchmark, in basis points.
+    MakeWholeSpreadBps: decimal option
+    /// WholeOnly, ProRata or ByLot.
+    PartialRedemption: string option
+    /// Notice of the call falls at least this many days before the exercise date.
+    MinimumNoticeDays: int option
+    /// Notice of the call falls at most this many days before the exercise date.
+    MaximumNoticeDays: int option
+    /// Whether the notice counts are Business or Calendar days.
+    NoticeDayType: string option
+}
+
+/// One declared holder put (a flat putSchedule entry), with the same versions as the call entry. A
+/// mandatory tender is not a put entry; it stays MandatoryPutDate.
+type PutScheduleTerm = {
+    /// The put date, or the start of a put window. An entry without one is never read.
+    PutDate: DateOnly
+    /// The last day of the put window, inclusive. Absent, the window runs to the day before the
+    /// next put's date in date order, or to maturity for the last put (ADR-025).
+    PutEndDate: DateOnly option
+    /// European, American or Bermudan.
+    ExerciseStyle: string option
+    /// How often a Bermudan window's put dates recur (a coupon frequency spelling).
+    ExerciseFrequency: string option
+    /// The put price, in the unit priceBasis names.
+    PutPrice: decimal option
+    /// PercentOfPar or PercentOfAccretedValue.
+    PriceBasis: string option
+    /// The holder's election falls at least this many days before the exercise date.
+    MinimumNoticeDays: int option
+    /// The holder's election falls at most this many days before the exercise date.
+    MaximumNoticeDays: int option
+    /// Whether the notice counts are Business or Calendar days.
+    NoticeDayType: string option
+}
+
+/// The declared call and put schedules, in stored order; empty until declared.
+type CallPutSchedules = { Calls: CallScheduleTerm list; Puts: PutScheduleTerm list }
+
+[<RequireQualifiedAccess>]
+module CallPutSchedules =
+    /// Nothing declared: what every record carries until a node writes the schedules.
+    [<CompiledName("Empty")>]
+    let empty : CallPutSchedules = { Calls = []; Puts = [] }
+
+    /// Whether neither a call nor a put is declared.
+    [<CompiledName("IsEmpty")>]
+    let isEmpty (schedules: CallPutSchedules) = schedules.Calls.IsEmpty && schedules.Puts.IsEmpty
+
+[<RequireQualifiedAccess>]
+module CallScheduleTerm =
+    /// A call on the date with nothing else stated.
+    let onDate (date: DateOnly) : CallScheduleTerm =
+        { CallDate = date
+          CallEndDate = None
+          ExerciseStyle = None
+          ExerciseFrequency = None
+          CallPrice = None
+          PriceBasis = None
+          PriceType = None
+          MakeWholeSpreadBps = None
+          PartialRedemption = None
+          MinimumNoticeDays = None
+          MaximumNoticeDays = None
+          NoticeDayType = None }
+
+[<RequireQualifiedAccess>]
+module PutScheduleTerm =
+    /// A put on the date with nothing else stated.
+    let onDate (date: DateOnly) : PutScheduleTerm =
+        { PutDate = date
+          PutEndDate = None
+          ExerciseStyle = None
+          ExerciseFrequency = None
+          PutPrice = None
+          PriceBasis = None
+          MinimumNoticeDays = None
+          MaximumNoticeDays = None
+          NoticeDayType = None }
+
 type BondTerms = {
     Maturity: DateOnly
     IssueDate: DateOnly option
@@ -285,6 +434,10 @@ type BondTerms = {
     /// subclasses. Empty for bullet bonds. The BondSubclass taxonomy already names SinkingFund;
     /// this is the term data that lets cash-flow and amortization math act on it.
     PrincipalSchedule: PrincipalPaymentEntry list
+    /// Declared schedule conventions (asset-class terms version 2); empty until declared.
+    ScheduleConventions: ScheduleConventions
+    /// Declared call and put schedules (asset-class terms version 3); empty until declared.
+    CallPutSchedules: CallPutSchedules
 }
 
 [<RequireQualifiedAccess>]
@@ -294,21 +447,27 @@ module BondTerms =
           IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None
           Subclass = BondSubclass.Corporate
           Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None
-          PrincipalSchedule = [] }
+          PrincipalSchedule = []
+          ScheduleConventions = ScheduleConventions.empty
+          CallPutSchedules = CallPutSchedules.empty }
 
     let floatingRate maturity index spreadBps issuerName =
         { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Floating(index, spreadBps, None, None, None)
           IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None
           Subclass = BondSubclass.FloatingRate
           Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None
-          PrincipalSchedule = [] }
+          PrincipalSchedule = []
+          ScheduleConventions = ScheduleConventions.empty
+          CallPutSchedules = CallPutSchedules.empty }
 
     let zeroCoupon maturity issuerName =
         { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.ZeroCoupon
           IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None
           Subclass = BondSubclass.Corporate
           Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None
-          PrincipalSchedule = [] }
+          PrincipalSchedule = []
+          ScheduleConventions = ScheduleConventions.empty
+          CallPutSchedules = CallPutSchedules.empty }
 
     let couponRate (terms: BondTerms) =
         match terms.Coupon with
@@ -368,6 +527,10 @@ type CertificateOfDepositTerms = {
     CouponRate: decimal option
     CallableDate: DateOnly option
     DayCount: string option
+    /// Declared schedule conventions (asset-class terms version 2); empty until declared.
+    ScheduleConventions: ScheduleConventions
+    /// Declared call and put schedules (asset-class terms version 3); empty until declared.
+    CallPutSchedules: CallPutSchedules
 }
 
 type CommercialPaperTerms = {
@@ -445,6 +608,8 @@ type SwapLeg = {
     NotionalSchedule: SwapNotionalStep list
     /// Reset dates with their observed fixings for a floating leg; empty when not tracked.
     ResetSchedule: SwapResetEntry list
+    /// The leg's declared schedule conventions (asset-class terms version 2); empty until declared.
+    ScheduleConventions: ScheduleConventions
 }
 
 type SwapTerms = {
@@ -572,6 +737,10 @@ type StructuredCreditTerms = {
     ReinvestmentPeriodEnd: DateOnly option
     /// CLO: last day of the non-call period, before which the notes cannot be refinanced.
     NonCallPeriodEnd: DateOnly option
+    /// Declared schedule conventions (asset-class terms version 3); empty until declared.
+    ScheduleConventions: ScheduleConventions
+    /// Declared call and put schedules (asset-class terms version 4); empty until declared.
+    CallPutSchedules: CallPutSchedules
 }
 
 type PrivateFundInterestTerms = {

@@ -1,7 +1,9 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.FSharp.SecurityMasterInterop;
 using Xunit;
 
 namespace Meridian.Tests.SecurityMaster;
@@ -284,4 +286,411 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys("Swap").Should().Contain("legs");
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys("Bond").Should().Contain("subclass");
     }
+
+    // ── Schedule conventions read ahead of write (ADR-024; Accrual rules frozen by ADR-025) ─────
+
+    // The economic terms each fully-populated payload bridges to without a block, as pinned at base
+    // by SecurityTermsWriteGoldenTests. The block may change only the accrual module.
+    private const string BondEconomicTerms =
+        """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":"2025-06-15","maturityDate":"2035-06-15"},"coupon":{"couponType":"Floating","couponRate":null,"paymentFrequency":"Quarterly","dayCount":"ACT/360"},"discount":null,"accrual":null,"payment":null,"redemption":null,"call":{"isCallable":true,"firstCallDate":"2030-06-15","callPrice":null,"callSchedule":[],"makeWholeSpreadBps":null,"isPuttable":false,"putSchedule":[]},"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"Meridian Capital Corp","institutionName":null,"issuerProgram":null,"leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":{"factor":null,"factorDate":null,"weightedAvgCoupon":null,"weightedAvgMaturityMonths":null,"weightedAvgLoanAgeMos":null,"collateralType":null,"poolIdentifier":null,"trancheClass":null,"prepaymentAssumption":null,"averageLifeYears":null,"isInterestOnly":false,"isPrincipalOnly":false,"notionalBalance":null,"originator":null,"creditEnhancementPct":null,"factorScheduleReference":null}}""";
+
+    private const string CertificateOfDepositEconomicTerms =
+        """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":null,"maturityDate":"2027-09-30"},"coupon":{"couponType":"Fixed","couponRate":4.4,"paymentFrequency":null,"dayCount":"ACT/365"},"discount":null,"accrual":null,"payment":null,"redemption":null,"call":{"isCallable":true,"firstCallDate":"2026-09-30","callPrice":null,"callSchedule":[],"makeWholeSpreadBps":null,"isPuttable":false,"putSchedule":[]},"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"First Meridian Bank","institutionName":null,"issuerProgram":null,"leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":null}""";
+
+    private const string StructuredCreditEconomicTerms =
+        """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":null,"maturityDate":"2031-06-15"},"coupon":{"couponType":"SOFR\u002B250","couponRate":null,"paymentFrequency":null,"dayCount":null},"discount":null,"accrual":null,"payment":null,"redemption":null,"call":null,"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"MRDN-2026-1","institutionName":null,"issuerProgram":"CLO","leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":{"factor":0.8235,"factorDate":null,"weightedAvgCoupon":7.85,"weightedAvgMaturityMonths":58,"weightedAvgLoanAgeMos":14,"collateralType":"CLO","poolIdentifier":"MRDN-2026-1","trancheClass":"B","prepaymentAssumption":null,"averageLifeYears":null,"isInterestOnly":false,"isPrincipalOnly":false,"notionalBalance":10000000,"originator":null,"creditEnhancementPct":null,"factorScheduleReference":"See trustee report 2026-07"}}""";
+
+    private const string SwapEconomicTerms =
+        """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":"2026-01-15","issueDate":"2026-01-15","maturityDate":"2031-01-15"},"coupon":null,"discount":null,"accrual":null,"payment":null,"redemption":null,"call":null,"auction":null,"sweep":null,"financing":null,"issuer":null,"equityBehavior":null,"fund":null,"structuredProduct":null}""";
+
+    private const string NullAccrual = "\"accrual\":null";
+
+    [Theory]
+    [InlineData("Bond")]
+    [InlineData("CertificateOfDeposit")]
+    [InlineData("StructuredCredit")]
+    public void UnrecoverableKeys_IncludeTheScheduleConventionsBlock(string assetClass)
+    {
+        // The economic document carries only the block's business-day convention and joint payment
+        // calendar (in Accrual), so the block as a whole is not recoverable on replay until a contract
+        // step maps it; a swap's leg blocks travel inside the already-unrecoverable legs.
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys(assetClass).Should().Contain("scheduleConventions");
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.RecoverableKeys(assetClass).Should().NotContain("scheduleConventions");
+    }
+
+    [Theory]
+    [InlineData("Bond", BondEconomicTerms, """{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":"ModifiedFollowing","holidayCalendar":"GBLO\u002BUSNY","dayCount":null}""")]
+    [InlineData("CertificateOfDeposit", CertificateOfDepositEconomicTerms, """{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":"Following","holidayCalendar":"USNY","dayCount":null}""")]
+    [InlineData("StructuredCredit", StructuredCreditEconomicTerms, """{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":"ModifiedFollowing","holidayCalendar":"GBLO\u002BUSNY","dayCount":null}""")]
+    [InlineData("Swap", SwapEconomicTerms, null)]
+    public void ReadableTwin_BridgesItsScheduleConventionsIntoTheAccrualModule(string assetClass, string economicTermsWithoutBlock, string? expectedAccrual)
+    {
+        // The frozen rules: the block fills Accrual on a bond, CD or structured credit only, with the
+        // convention verbatim and the payment calendars as one joint calendar id. A swap's legs carry
+        // their own blocks, and the swap has no Accrual module to fill.
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, SecurityAssetTermsSchemaRoundTripTests.ReadableTwin(assetClass)));
+
+        economic.EconomicTerms.GetRawText().Should().Be(WithAccrual(economicTermsWithoutBlock, expectedAccrual));
+    }
+
+    [Theory]
+    [InlineData(
+        """{"stubPolicy":"Long"}""",
+        null)]
+    [InlineData(
+        """{"accrualAdjusted":false,"businessDayConvention":"ModifiedFollowing"}""",
+        """{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":"ModifiedFollowing","holidayCalendar":null,"dayCount":null}""")]
+    [InlineData(
+        """{"paymentCalendars":["USNY"]}""",
+        """{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":null,"holidayCalendar":"USNY","dayCount":null}""")]
+    [InlineData(
+        """{"businessDayConvention":"Following","paymentCalendars":["USNY","GBLO","usny","GBLO"]}""",
+        """{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":"Following","holidayCalendar":"GBLO\u002BUSNY","dayCount":null}""")]
+    public void BondScheduleConventions_FillAccrualUnderTheFrozenRules(string block, string? expectedAccrual)
+    {
+        // Only a convention or a calendar fills the module; accrualAdjusted=false keeps the convention
+        // verbatim rather than turning it into Unadjusted; duplicate and case-variant calendars collapse
+        // to one joint id, the first spelling kept and the ids sorted ordinally.
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond", BondTwin(block)));
+
+        economic.EconomicTerms.GetRawText().Should().Be(WithAccrual(BondEconomicTerms, expectedAccrual));
+    }
+
+    [Fact]
+    public void BondScheduleConventions_PaymentCalendarsGovernTheAccrualCalendar_AndCommonTermsKeepTheirOwn()
+    {
+        // The security-level holiday calendar stays in the common terms; the block's payment
+        // calendars, not a merge of the two, are the accrual calendar.
+        var projection = SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond", BondTwin("""{"paymentCalendars":["GBLO"]}""")) with
+        {
+            CommonTerms = JsonSerializer.SerializeToElement(new { displayName = "Legacy Bond", currency = "USD", holidayCalendarId = "USNY" })
+        };
+
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
+
+        economic.EconomicTerms.GetRawText().Should().Be(WithAccrual(
+            BondEconomicTerms,
+            """{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":null,"holidayCalendar":"GBLO","dayCount":null}"""));
+
+        // Through the domain: the record decoded from the row, and the common terms it writes back,
+        // keep the security's own calendar rather than the block's.
+        var record = SecurityMasterMapping.ToRecord(projection);
+        record.Common.HolidayCalendarId.Should().NotBeNull("the common terms carry the security's holiday calendar");
+        record.Common.HolidayCalendarId!.Value.Should().Be("USNY", "the block's payment calendars never replace or merge into the common calendar");
+        using var writtenCommonTerms = JsonDocument.Parse(new SecurityMasterSnapshotWrapper(record).CommonTermsJson);
+        writtenCommonTerms.RootElement.GetProperty("holidayCalendarId").GetString().Should().Be("USNY");
+    }
+
+    [Fact]
+    public void BondScheduleConventions_WithoutPaymentCalendars_NeverFallBackToTheCommonTermsCalendar()
+    {
+        var projection = SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond", BondTwin("""{"businessDayConvention":"Following"}""")) with
+        {
+            CommonTerms = JsonSerializer.SerializeToElement(new { displayName = "Legacy Bond", currency = "USD", holidayCalendarId = "USNY" })
+        };
+
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
+
+        economic.EconomicTerms.GetProperty("accrual").GetRawText().Should().Be(
+            """{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":"Following","holidayCalendar":null,"dayCount":null}""");
+    }
+
+    [Theory]
+    [InlineData("Bond")]
+    [InlineData("CertificateOfDeposit")]
+    [InlineData("StructuredCredit")]
+    public void ReplayWithoutLegacyTerms_FlattensAtTheWriteVersionWithoutTheBlock_AndRetainsTheAccrualVerbatim(string assetClass)
+    {
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, SecurityAssetTermsSchemaRoundTripTests.ReadableTwin(assetClass)));
+        var accrual = economic.EconomicTerms.GetProperty("accrual");
+        accrual.ValueKind.Should().Be(JsonValueKind.Object, "the twin's block fills the accrual module");
+
+        var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms;
+
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.WasFlattenedFromEconomicTerms(rebuilt).Should().BeTrue();
+        SecurityTermsEnvelope.ResolveAssetClassTermsVersion(rebuilt).Should().Be(
+            SecurityAssetClassCatalog.GetTermsVersion(assetClass),
+            "the bridge flattens at the version this node writes, never at a version it only reads");
+        rebuilt.EnumerateObject().Select(static property => property.Name)
+            .Should().NotContain(name => string.Equals(name, "scheduleConventions", StringComparison.OrdinalIgnoreCase));
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(rebuilt, out var retained).Should().BeTrue();
+        retained.GetProperty("accrual").GetRawText().Should().Be(accrual.GetRawText(), "the accrual travels verbatim in the retained economic terms");
+    }
+
+    // ── Call and put schedules read ahead of write (ADR-024; the Call fill frozen by ADR-025) ────
+
+    // The accrual each class's readable twin block fills (the frozen 4a rules), so a schedule twin's
+    // economic terms differ from its class's constant above only in the accrual and call modules.
+    private const string BondTwinAccrual =
+        """{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":"ModifiedFollowing","holidayCalendar":"GBLO\u002BUSNY","dayCount":null}""";
+
+    private const string CertificateOfDepositTwinAccrual =
+        """{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":"Following","holidayCalendar":"USNY","dayCount":null}""";
+
+    private const string StructuredCreditTwinAccrual =
+        """{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":"ModifiedFollowing","holidayCalendar":"GBLO\u002BUSNY","dayCount":null}""";
+
+    [Theory]
+    [InlineData("Bond")]
+    [InlineData("CertificateOfDeposit")]
+    [InlineData("StructuredCredit")]
+    public void UnrecoverableKeys_IncludeTheCallAndPutSchedules(string assetClass)
+    {
+        // The economic Call module keeps only each entry's date, a par price and a call type, so the
+        // arrays as a whole are not recoverable on replay until a contract step maps them.
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys(assetClass).Should().Contain(["callSchedule", "putSchedule"]);
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.RecoverableKeys(assetClass)
+            .Should().NotContain("callSchedule")
+            .And.NotContain("putSchedule");
+    }
+
+    [Fact]
+    public void ReadableBondTwinAtVersionThree_FillsTheEconomicCallModuleUnderTheFrozenRule()
+    {
+        // Calls sort by date. Only a Fixed price on a PercentOfPar basis (an absent type or basis
+        // counts as each) is a call price, so neither the make-whole floor nor the accreted-value price
+        // is; a carried price of exactly 100 is a par call; the call type is MakeWhole for a make-whole
+        // entry and otherwise the exercise style. The scalars stay the bond's own: isCallable verbatim,
+        // firstCallDate from callDate rather than the earliest entry, and no call price. Puts carry only
+        // a date and a par price, and a declared put makes the bond puttable; mandatoryPutDate still
+        // maps nowhere.
+        var twin = ScheduleTwin(
+            "Bond",
+            """[{"callDate":"2030-06-15","callEndDate":"2031-06-14","exerciseStyle":"American","callPrice":100,"priceBasis":"PercentOfPar","priceType":"Fixed","partialRedemption":"WholeOnly","minimumNoticeDays":30,"maximumNoticeDays":60,"noticeDayType":"Calendar"},{"callDate":"2032-06-15","exerciseStyle":"European","callPrice":98.5,"priceBasis":"PercentOfAccretedValue"},{"callDate":"2027-06-15","callEndDate":"2030-06-14","exerciseStyle":"American","callPrice":100,"priceType":"MakeWhole","makeWholeSpreadBps":25},{"callDate":"2028-06-15","exerciseStyle":"Bermudan","exerciseFrequency":"SemiAnnual","callPrice":101.5}]""",
+            """[{"putDate":"2031-06-15","exerciseStyle":"European","putPrice":100,"priceBasis":"PercentOfPar","minimumNoticeDays":15,"maximumNoticeDays":30,"noticeDayType":"Business"},{"putDate":"2033-06-15","putPrice":97,"priceBasis":"PercentOfAccretedValue"},{"putDate":"2029-12-15","putPrice":99.5}]""");
+        SecurityTermsEnvelope.ResolveAssetClassTermsVersion(twin).Should().Be(3);
+        twin.GetProperty("callDate").GetString().Should().Be("2030-06-15");
+        twin.GetProperty("mandatoryPutDate").GetString().Should().Be("2031-06-15");
+
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond", twin));
+
+        economic.EconomicTerms.GetRawText().Should().Be(
+            """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":"2025-06-15","maturityDate":"2035-06-15"},"coupon":{"couponType":"Floating","couponRate":null,"paymentFrequency":"Quarterly","dayCount":"ACT/360"},"discount":null,"accrual":{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":"ModifiedFollowing","holidayCalendar":"GBLO\u002BUSNY","dayCount":null},"payment":null,"redemption":null,"call":{"isCallable":true,"firstCallDate":"2030-06-15","callPrice":null,"callSchedule":[{"callDt":"2027-06-15","callPx":null,"isParCall":false,"callType":"MakeWhole"},{"callDt":"2028-06-15","callPx":101.5,"isParCall":false,"callType":"Bermudan"},{"callDt":"2030-06-15","callPx":100,"isParCall":true,"callType":"American"},{"callDt":"2032-06-15","callPx":null,"isParCall":false,"callType":"European"}],"makeWholeSpreadBps":25,"isPuttable":true,"putSchedule":[{"putDt":"2029-12-15","putPx":99.5},{"putDt":"2031-06-15","putPx":100},{"putDt":"2033-06-15","putPx":null}]},"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"Meridian Capital Corp","institutionName":null,"issuerProgram":null,"leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":{"factor":null,"factorDate":null,"weightedAvgCoupon":null,"weightedAvgMaturityMonths":null,"weightedAvgLoanAgeMos":null,"collateralType":null,"poolIdentifier":null,"trancheClass":null,"prepaymentAssumption":null,"averageLifeYears":null,"isInterestOnly":false,"isPrincipalOnly":false,"notionalBalance":null,"originator":null,"creditEnhancementPct":null,"factorScheduleReference":null}}""");
+    }
+
+    [Theory]
+    // A bond that is not callable stays not callable whatever calls it declares; an entry without an
+    // exercise style has no call type.
+    [InlineData(
+        "Bond", """{"isCallable":false}""", """[{"callDate":"2030-06-15","callPrice":100}]""", "[]",
+        """{"isCallable":false,"firstCallDate":"2030-06-15","callPrice":null,"callSchedule":[{"callDt":"2030-06-15","callPx":100,"isParCall":true,"callType":null}],"makeWholeSpreadBps":null,"isPuttable":false,"putSchedule":[]}""")]
+    // Puts alone leave the call list empty and make the bond puttable.
+    [InlineData(
+        "Bond", null, "[]", """[{"putDate":"2031-06-15","putPrice":100,"priceBasis":"PercentOfPar"}]""",
+        """{"isCallable":true,"firstCallDate":"2030-06-15","callPrice":null,"callSchedule":[],"makeWholeSpreadBps":null,"isPuttable":true,"putSchedule":[{"putDt":"2031-06-15","putPx":100}]}""")]
+    // A certificate of deposit is callable only through its own callableDate, never through an entry.
+    [InlineData(
+        "CertificateOfDeposit", """{"callableDate":null}""", """[{"callDate":"2026-09-30","callEndDate":"2027-03-31","exerciseStyle":"American","callPrice":100,"minimumNoticeDays":10,"noticeDayType":"Calendar"}]""", "[]",
+        """{"isCallable":false,"firstCallDate":null,"callPrice":null,"callSchedule":[{"callDt":"2026-09-30","callPx":100,"isParCall":true,"callType":"American"}],"makeWholeSpreadBps":null,"isPuttable":false,"putSchedule":[]}""")]
+    // Structured credit has no scalar call terms: conventions alone, with empty or absent lists, add no
+    // module.
+    [InlineData("StructuredCredit", null, "[]", "[]", "null")]
+    [InlineData("StructuredCredit", null, null, null, "null")]
+    // A declared call makes it callable, with the lists, the puttable flag and the spread, but never a
+    // first call date or price (nonCallPeriodEnd never feeds the module).
+    [InlineData(
+        "StructuredCredit", null, """[{"callDate":"2028-07-15","exerciseStyle":"Bermudan","exerciseFrequency":"Quarterly","callPrice":100,"priceBasis":"PercentOfPar","priceType":"Fixed","partialRedemption":"ProRata"},{"callDate":"2027-07-15","exerciseStyle":"European","callPrice":100,"priceType":"MakeWhole","makeWholeSpreadBps":50}]""", """[{"putDate":"2029-07-15","putPrice":100}]""",
+        """{"isCallable":true,"firstCallDate":null,"callPrice":null,"callSchedule":[{"callDt":"2027-07-15","callPx":null,"isParCall":false,"callType":"MakeWhole"},{"callDt":"2028-07-15","callPx":100,"isParCall":true,"callType":"Bermudan"}],"makeWholeSpreadBps":50,"isPuttable":true,"putSchedule":[{"putDt":"2029-07-15","putPx":100}]}""")]
+    // Puts alone make it puttable but not callable.
+    [InlineData(
+        "StructuredCredit", null, "[]", """[{"putDate":"2029-07-15","exerciseStyle":"European"}]""",
+        """{"isCallable":false,"firstCallDate":null,"callPrice":null,"callSchedule":[],"makeWholeSpreadBps":null,"isPuttable":true,"putSchedule":[{"putDt":"2029-07-15","putPx":null}]}""")]
+    // An exercise style outside the vocabulary is the call type verbatim.
+    [InlineData(
+        "Bond", null, """[{"callDate":"2030-06-15","exerciseStyle":"american","callPrice":101}]""", "[]",
+        """{"isCallable":true,"firstCallDate":"2030-06-15","callPrice":null,"callSchedule":[{"callDt":"2030-06-15","callPx":101,"isParCall":false,"callType":"american"}],"makeWholeSpreadBps":null,"isPuttable":false,"putSchedule":[]}""")]
+    // The spread comes from the first make-whole entry, after sorting, that carries one: a make-whole
+    // entry without a spread is passed over, and a Fixed entry's spread never counts.
+    [InlineData(
+        "Bond", null, """[{"callDate":"2029-06-15","priceType":"MakeWhole","makeWholeSpreadBps":35},{"callDate":"2027-06-15","priceType":"MakeWhole","makeWholeSpreadBps":20},{"callDate":"2026-06-15","priceType":"MakeWhole"},{"callDate":"2025-12-15","priceType":"Fixed","callPrice":102,"makeWholeSpreadBps":99}]""", "[]",
+        """{"isCallable":true,"firstCallDate":"2030-06-15","callPrice":null,"callSchedule":[{"callDt":"2025-12-15","callPx":102,"isParCall":false,"callType":null},{"callDt":"2026-06-15","callPx":null,"isParCall":false,"callType":"MakeWhole"},{"callDt":"2027-06-15","callPx":null,"isParCall":false,"callType":"MakeWhole"},{"callDt":"2029-06-15","callPx":null,"isParCall":false,"callType":"MakeWhole"}],"makeWholeSpreadBps":20,"isPuttable":false,"putSchedule":[]}""")]
+    // Every comparison is ordinal: a case-variant price type or basis is neither MakeWhole nor a Fixed
+    // price on a PercentOfPar basis, so its entry carries no price, keeps its exercise style as the
+    // call type and adds no spread, and a case-variant put basis carries no put price.
+    [InlineData(
+        "Bond", null, """[{"callDate":"2029-06-15","exerciseStyle":"European","callPrice":100,"priceType":"makeWhole","makeWholeSpreadBps":30},{"callDate":"2030-06-15","callPrice":100,"priceType":"fixed"},{"callDate":"2031-06-15","exerciseStyle":"American","callPrice":100,"priceBasis":"percentOfPar"}]""", """[{"putDate":"2032-06-15","putPrice":100,"priceBasis":"percentOfPar"}]""",
+        """{"isCallable":true,"firstCallDate":"2030-06-15","callPrice":null,"callSchedule":[{"callDt":"2029-06-15","callPx":null,"isParCall":false,"callType":"European"},{"callDt":"2030-06-15","callPx":null,"isParCall":false,"callType":null},{"callDt":"2031-06-15","callPx":null,"isParCall":false,"callType":"American"}],"makeWholeSpreadBps":null,"isPuttable":true,"putSchedule":[{"putDt":"2032-06-15","putPx":null}]}""")]
+    // The sort is stable: entries on one date keep their stored order (no tie-break by price or call
+    // type), and of two make-whole spreads on one date the first stored wins, not the smaller.
+    [InlineData(
+        "Bond", null, """[{"callDate":"2027-06-15","exerciseStyle":"European","callPrice":101,"priceType":"Fixed"},{"callDate":"2027-06-15","priceType":"MakeWhole","makeWholeSpreadBps":30},{"callDate":"2026-06-15","exerciseStyle":"Bermudan","callPrice":102},{"callDate":"2027-06-15","priceType":"MakeWhole","makeWholeSpreadBps":15},{"callDate":"2027-06-15","exerciseStyle":"American","callPrice":100}]""", """[{"putDate":"2031-06-15","putPrice":101},{"putDate":"2031-06-15","putPrice":99}]""",
+        """{"isCallable":true,"firstCallDate":"2030-06-15","callPrice":null,"callSchedule":[{"callDt":"2026-06-15","callPx":102,"isParCall":false,"callType":"Bermudan"},{"callDt":"2027-06-15","callPx":101,"isParCall":false,"callType":"European"},{"callDt":"2027-06-15","callPx":null,"isParCall":false,"callType":"MakeWhole"},{"callDt":"2027-06-15","callPx":null,"isParCall":false,"callType":"MakeWhole"},{"callDt":"2027-06-15","callPx":100,"isParCall":true,"callType":"American"}],"makeWholeSpreadBps":30,"isPuttable":true,"putSchedule":[{"putDt":"2031-06-15","putPx":101},{"putDt":"2031-06-15","putPx":99}]}""")]
+    // Empty or absent lists on a bond or certificate of deposit stamped with the schedules' version
+    // leave the call module, and so the whole document, exactly as the class constants above (4a).
+    [InlineData(
+        "Bond", null, "[]", "[]",
+        """{"isCallable":true,"firstCallDate":"2030-06-15","callPrice":null,"callSchedule":[],"makeWholeSpreadBps":null,"isPuttable":false,"putSchedule":[]}""")]
+    [InlineData(
+        "Bond", null, null, null,
+        """{"isCallable":true,"firstCallDate":"2030-06-15","callPrice":null,"callSchedule":[],"makeWholeSpreadBps":null,"isPuttable":false,"putSchedule":[]}""")]
+    [InlineData(
+        "CertificateOfDeposit", null, "[]", "[]",
+        """{"isCallable":true,"firstCallDate":"2026-09-30","callPrice":null,"callSchedule":[],"makeWholeSpreadBps":null,"isPuttable":false,"putSchedule":[]}""")]
+    public void DeclaredSchedules_ChangeOnlyTheEconomicCallModule_UnderTheFrozenRule(
+        string assetClass,
+        string? scalarEdits,
+        string? callSchedule,
+        string? putSchedule,
+        string expectedCall)
+    {
+        var twin = ScheduleTwin(assetClass, callSchedule, putSchedule, scalarEdits);
+        SecurityTermsEnvelope.ResolveAssetClassTermsVersion(twin).Should().Be(SchedulesSince(assetClass));
+
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, twin));
+
+        economic.EconomicTerms.GetRawText().Should().Be(WithCall(EconomicTermsOfTheScheduleTwin(assetClass), expectedCall));
+    }
+
+    [Fact]
+    public void RetainedEconomicTerms_FillAnEmptyDeclaredList_WhileADeclaredNonEmptyListWins()
+    {
+        // A projection rebuilt from an economic-only event carries the original economic document. The
+        // declared calls replace its call list; the bond declares no puts, so the retained put list still
+        // fills the empty one (SecurityTermsEnvelope.FoldRetainedEconomicTerms).
+        var terms = JsonNode.Parse(ScheduleTwin(
+            "Bond",
+            """[{"callDate":"2030-06-15","exerciseStyle":"American","callPrice":100}]""",
+            "[]").GetRawText())!.AsObject();
+        terms[SecurityTermsEnvelope.RetainedEconomicTermsKey] = JsonNode.Parse(
+            """{"schemaVersion":2,"termsFormat":"economic","call":{"isCallable":true,"firstCallDate":"2026-01-15","callPrice":null,"callSchedule":[{"callDt":"2026-01-15","callPx":101,"isParCall":false,"callType":"European"}],"makeWholeSpreadBps":null,"isPuttable":true,"putSchedule":[{"putDt":"2028-06-15","putPx":100}]}}""");
+
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond", ToElement(terms)));
+
+        var call = economic.EconomicTerms.GetProperty("call");
+        call.GetProperty("callSchedule").GetRawText().Should().Be(
+            """[{"callDt":"2030-06-15","callPx":100,"isParCall":true,"callType":"American"}]""",
+            "a declared, non-empty list replaces the retained one");
+        call.GetProperty("putSchedule").GetRawText().Should().Be(
+            """[{"putDt":"2028-06-15","putPx":100}]""",
+            "an empty declared list is still filled from the retained document");
+    }
+
+    [Theory]
+    [InlineData("2032-12-15")]
+    [InlineData(null)]
+    public void ReplayWithoutLegacyTerms_FlattensTheBondCallDateFromItsScalarOnly_AndWritesNoScheduleArrays(string? callDate)
+    {
+        // The row writes its own callDate scalar (a null removes the key). Neither declared call
+        // (2027-06-15 is the earliest) ever becomes callDate: firstCallDate is the bond's own scalar, so
+        // a bond without one flattens without a callDate. The arrays are unrecoverable, so the payload
+        // is rebuilt at the write version without them, and the economic call module travels verbatim
+        // in the retained economic terms.
+        var twin = ScheduleTwin(
+            "Bond",
+            """[{"callDate":"2031-06-15","callPrice":100},{"callDate":"2027-06-15","priceType":"MakeWhole","makeWholeSpreadBps":25}]""",
+            """[{"putDate":"2029-12-15","putPrice":100}]""",
+            JsonSerializer.Serialize(new { callDate }));
+        if (callDate is null)
+        {
+            twin.TryGetProperty("callDate", out _).Should().BeFalse();
+        }
+        else
+        {
+            twin.GetProperty("callDate").GetString().Should().Be(callDate);
+        }
+
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond", twin));
+
+        var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms;
+
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.WasFlattenedFromEconomicTerms(rebuilt).Should().BeTrue();
+        SecurityTermsEnvelope.ResolveAssetClassTermsVersion(rebuilt).Should().Be(
+            SecurityAssetClassCatalog.GetTermsVersion("Bond"),
+            "the bridge flattens at the version this node writes, never at a version it only reads");
+        rebuilt.GetProperty("isCallable").GetBoolean().Should().BeTrue();
+        if (callDate is null)
+        {
+            rebuilt.TryGetProperty("callDate", out _).Should().BeFalse("no declared entry stands in for the bond's own call date");
+        }
+        else
+        {
+            rebuilt.GetProperty("callDate").GetString().Should().Be(callDate);
+        }
+
+        rebuilt.EnumerateObject().Select(static property => property.Name)
+            .Should().NotContain(name =>
+                string.Equals(name, "callSchedule", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(name, "putSchedule", StringComparison.OrdinalIgnoreCase));
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(rebuilt, out var retained).Should().BeTrue();
+        retained.GetProperty("call").GetRawText().Should().Be(economic.EconomicTerms.GetProperty("call").GetRawText());
+    }
+
+    /// <summary>
+    /// The readable twin of <paramref name="assetClass"/> at the version that introduced its call and
+    /// put schedules (<see cref="SchedulesSince"/>), carrying exactly the given arrays. A null array
+    /// leaves its key absent; each member of <paramref name="scalarEdits"/> replaces that key, and a
+    /// null member removes it.
+    /// </summary>
+    private static JsonElement ScheduleTwin(string assetClass, string? callSchedule, string? putSchedule, string? scalarEdits = null)
+    {
+        var terms = JsonNode.Parse(
+            SecurityAssetTermsSchemaRoundTripTests.ReadableTwin(assetClass, SchedulesSince(assetClass)).GetRawText())!.AsObject();
+        SetOrRemove(terms, "callSchedule", callSchedule is null ? null : JsonNode.Parse(callSchedule));
+        SetOrRemove(terms, "putSchedule", putSchedule is null ? null : JsonNode.Parse(putSchedule));
+        if (scalarEdits is not null)
+        {
+            foreach (var (key, value) in JsonNode.Parse(scalarEdits)!.AsObject())
+            {
+                SetOrRemove(terms, key, value?.DeepClone());
+            }
+        }
+
+        return ToElement(terms);
+    }
+
+    private static void SetOrRemove(JsonObject terms, string key, JsonNode? value)
+    {
+        if (value is null)
+        {
+            terms.Remove(key);
+        }
+        else
+        {
+            terms[key] = value;
+        }
+    }
+
+    private static int SchedulesSince(string assetClass)
+        => SecurityAssetTermsSchema.Field(assetClass, "callSchedule")!.SinceTermsVersion;
+
+    private static string EconomicTermsOfTheScheduleTwin(string assetClass)
+        => assetClass switch
+        {
+            "Bond" => WithAccrual(BondEconomicTerms, BondTwinAccrual),
+            "CertificateOfDeposit" => WithAccrual(CertificateOfDepositEconomicTerms, CertificateOfDepositTwinAccrual),
+            "StructuredCredit" => WithAccrual(StructuredCreditEconomicTerms, StructuredCreditTwinAccrual),
+            _ => throw new ArgumentOutOfRangeException(nameof(assetClass), assetClass, "Only bonds, CDs and structured credit declare call and put schedules.")
+        };
+
+    // Replaces the call module of an economic terms document: the text from its "call" key up to the
+    // next module, "auction".
+    private static string WithCall(string economicTerms, string call)
+    {
+        const string CallKey = "\"call\":";
+        const string NextModule = ",\"auction\":";
+        var start = economicTerms.IndexOf(CallKey, StringComparison.Ordinal);
+        var end = economicTerms.IndexOf(NextModule, start, StringComparison.Ordinal);
+        return economicTerms[..start] + CallKey + call + economicTerms[end..];
+    }
+
+    private static JsonElement ToElement(JsonNode node)
+    {
+        using var document = JsonDocument.Parse(node.ToJsonString());
+        return document.RootElement.Clone();
+    }
+
+    private static JsonElement BondTwin(string block)
+        => SecurityAssetTermsSchemaRoundTripTests.ReadableTwin("Bond", SecurityAssetTermsSchemaRoundTripTests.FullPayloads["Bond"], [block]);
+
+    private static string WithAccrual(string economicTermsWithoutBlock, string? accrual)
+        => accrual is null
+            ? economicTermsWithoutBlock
+            : economicTermsWithoutBlock.Replace(NullAccrual, $"\"accrual\":{accrual}", StringComparison.Ordinal);
 }

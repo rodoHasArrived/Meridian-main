@@ -1,5 +1,8 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Calendars;
+using Meridian.Contracts.SecurityMaster.Schedules;
 
 namespace Meridian.Contracts.SecurityMaster;
 
@@ -129,7 +132,25 @@ public enum SecurityTermConventionKind
     /// The schedule engines step coupon periods in months, so a sub-monthly or irregular cadence on
     /// these fields would silently produce the wrong number of coupons.
     /// </summary>
-    CouponFrequency
+    CouponFrequency,
+
+    /// <summary>
+    /// A business-day convention (<see cref="Meridian.Contracts.Calendars.BusinessDayConvention"/>):
+    /// how a schedule date that falls on a non-business day is moved.
+    /// </summary>
+    BusinessDayConvention,
+
+    /// <summary>
+    /// A schedule roll (<see cref="Meridian.Contracts.SecurityMaster.Schedules.ScheduleRoll"/>): the
+    /// anchor's day, the end of the month, the IMM date or a fixed day of the month from 1 to 31.
+    /// </summary>
+    RollConvention,
+
+    /// <summary>
+    /// What a schedule does with a remainder that does not fill a regular period
+    /// (<see cref="Meridian.Contracts.SecurityMaster.Schedules.ScheduleStubPolicy"/>).
+    /// </summary>
+    StubPolicy
 }
 
 /// <summary>Parsers and typed readers for the term conventions.</summary>
@@ -149,8 +170,20 @@ public static class SecurityTermConventions
                 .Where(static frequency => IsSchedulableCoupon(frequency))
                 .Select(static frequency => frequency.ToString())
                 .ToArray(),
+            SecurityTermConventionKind.BusinessDayConvention => Enum.GetNames<BusinessDayConvention>(),
+            SecurityTermConventionKind.RollConvention => CanonicalRollConventions,
+            SecurityTermConventionKind.StubPolicy => Enum.GetNames<ScheduleStubPolicy>(),
             _ => []
         };
+
+    // The canonical roll spellings: the three named rolls, then the fixed days of the month.
+    private static readonly string[] CanonicalRollConventions =
+    [
+        nameof(ScheduleRollKind.AnchorDay),
+        nameof(ScheduleRollKind.EndOfMonth),
+        nameof(ScheduleRollKind.Imm),
+        .. Enumerable.Range(1, 31).Select(static day => day.ToString(CultureInfo.InvariantCulture)),
+    ];
 
     /// <summary>Whether <paramref name="raw"/> names a recognized value of the convention.</summary>
     public static bool IsRecognized(SecurityTermConventionKind kind, string? raw)
@@ -160,8 +193,133 @@ public static class SecurityTermConventions
             SecurityTermConventionKind.SettlementMethod => TryParseSettlementMethod(raw, out _),
             SecurityTermConventionKind.PaymentFrequency => TryParsePaymentFrequency(raw, out _),
             SecurityTermConventionKind.CouponFrequency => TryParsePaymentFrequency(raw, out var frequency) && IsSchedulableCoupon(frequency),
+            SecurityTermConventionKind.BusinessDayConvention => TryParseBusinessDayConvention(raw, out _),
+            SecurityTermConventionKind.RollConvention => TryParseRollConvention(raw, out _),
+            SecurityTermConventionKind.StubPolicy => TryParseStubPolicy(raw, out _),
             _ => true
         };
+
+    /// <summary>
+    /// Parses business-day convention spellings: the canonical names and the common abbreviations
+    /// (<c>Unadjusted</c>/<c>None</c>, <c>Following</c>/<c>F</c>, <c>ModifiedFollowing</c>/<c>MF</c>,
+    /// <c>Preceding</c>/<c>P</c>, <c>ModifiedPreceding</c>/<c>MP</c>). The FpML <c>NEAREST</c> and
+    /// <c>FRN</c> conventions have no kernel adjustment and are refused.
+    /// </summary>
+    public static bool TryParseBusinessDayConvention(string? raw, out BusinessDayConvention convention)
+    {
+        switch (Normalize(raw))
+        {
+            case "UNADJUSTED":
+            case "NONE":
+                convention = BusinessDayConvention.Unadjusted;
+                return true;
+            case "FOLLOWING":
+            case "F":
+                convention = BusinessDayConvention.Following;
+                return true;
+            case "MODIFIEDFOLLOWING":
+            case "MODFOLLOWING":
+            case "MF":
+                convention = BusinessDayConvention.ModifiedFollowing;
+                return true;
+            case "PRECEDING":
+            case "P":
+                convention = BusinessDayConvention.Preceding;
+                return true;
+            case "MODIFIEDPRECEDING":
+            case "MODPRECEDING":
+            case "MP":
+                convention = BusinessDayConvention.ModifiedPreceding;
+                return true;
+            default:
+                convention = default;
+                return false;
+        }
+    }
+
+    /// <summary>
+    /// Parses roll spellings: <c>AnchorDay</c>/<c>Anchor</c>, <c>EndOfMonth</c>/<c>EOM</c>, <c>IMM</c>, a
+    /// day of the month from 1 to 31, or <c>FixedDay(n)</c>. A day of the month is read from the
+    /// trimmed text itself, so <c>"1.5"</c> and <c>"-3"</c> are refused rather than read as 15 and 3.
+    /// </summary>
+    public static bool TryParseRollConvention(string? raw, out ScheduleRoll roll)
+    {
+        roll = default;
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return false;
+        }
+
+        var trimmed = raw.Trim();
+        if (trimmed.All(char.IsAsciiDigit))
+        {
+            return TryFixedDay(trimmed, out roll);
+        }
+
+        switch (Normalize(trimmed))
+        {
+            case "ANCHORDAY":
+            case "ANCHOR":
+                roll = ScheduleRoll.AnchorDay;
+                return true;
+            case "ENDOFMONTH":
+            case "EOM":
+                roll = ScheduleRoll.EndOfMonth;
+                return true;
+            case "IMM":
+                roll = ScheduleRoll.Imm;
+                return true;
+        }
+
+        const string FixedDayPrefix = "FixedDay(";
+        return trimmed.StartsWith(FixedDayPrefix, StringComparison.OrdinalIgnoreCase)
+               && trimmed.EndsWith(')')
+               && trimmed[FixedDayPrefix.Length..^1].Trim() is { Length: > 0 } day
+               && day.All(char.IsAsciiDigit)
+               && TryFixedDay(day, out roll);
+
+        static bool TryFixedDay(string digits, out ScheduleRoll fixedDay)
+        {
+            fixedDay = default;
+            if (!int.TryParse(digits, NumberStyles.None, CultureInfo.InvariantCulture, out var dayOfMonth)
+                || dayOfMonth is < 1 or > 31)
+            {
+                return false;
+            }
+
+            fixedDay = ScheduleRoll.FixedDay(dayOfMonth);
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Parses stub-policy spellings: <c>Short</c>/<c>ShortStub</c>, <c>Long</c>/<c>LongStub</c> and
+    /// <c>RequireRegular</c>/<c>Regular</c>/<c>NoStub</c>. FpML spellings that also name the stub's
+    /// position (<c>ShortInitial</c>, <c>LongFinal</c>) are refused: the position follows from the
+    /// generation direction.
+    /// </summary>
+    public static bool TryParseStubPolicy(string? raw, out ScheduleStubPolicy policy)
+    {
+        switch (Normalize(raw))
+        {
+            case "SHORT":
+            case "SHORTSTUB":
+                policy = ScheduleStubPolicy.Short;
+                return true;
+            case "LONG":
+            case "LONGSTUB":
+                policy = ScheduleStubPolicy.Long;
+                return true;
+            case "REQUIREREGULAR":
+            case "REGULAR":
+            case "NOSTUB":
+                policy = ScheduleStubPolicy.RequireRegular;
+                return true;
+            default:
+                policy = default;
+                return false;
+        }
+    }
 
     /// <summary>
     /// Whether a cadence can drive a calculated coupon schedule: a whole number of months per period,
@@ -172,13 +330,79 @@ public static class SecurityTermConventions
 
     /// <summary>
     /// Coupon payments per year for a schedule-driving cadence spelling, or null when the text is not
-    /// a recognized monthly-or-longer cadence. Shared by the cash-flow and asset-operations schedulers
-    /// so they agree with the convention the write path enforces.
+    /// a recognized monthly-or-longer cadence. <see cref="LegacyCouponPaymentsPerYear"/>, the reader the
+    /// cash-flow and asset-operations schedulers share, consults it first, so they agree with the
+    /// convention the write path enforces.
     /// </summary>
     public static int? CouponPaymentsPerYear(string? raw)
         => TryParsePaymentFrequency(raw, out var frequency) && frequency.MonthsPerPeriod() is { } months
             ? 12 / months
             : null;
+
+    /// <summary>
+    /// Coupon payments per year as the legacy schedulers read a stored cadence. The Security Master
+    /// cash-flow projection and the asset-operations bond projection
+    /// (<c>fixed-income-cash-flow-projection-v1</c>) both step <c>Math.Max(1, 12 / n)</c> months per
+    /// coupon period from it. It never returns null and never refuses.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A spelling <see cref="CouponPaymentsPerYear"/> recognizes reads the same here. Anything else
+    /// keeps the reading those schedulers had before the convention existed, so a stored value
+    /// projects exactly as it always has:
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description>Blank text, <see cref="SecurityPaymentFrequency.AtMaturity"/>,
+    /// <see cref="SecurityPaymentFrequency.Irregular"/>, the sub-monthly cadence names and tenors
+    /// (<c>Daily</c>, <c>Weekly</c>, <c>BiWeekly</c>, <c>2W</c>) and unrecognized text read as 1.</description></item>
+    /// <item><description>Any other positive whole number, once hyphens, underscores and spaces are
+    /// removed, is a payments-per-year count clamped to 1 through 12: <c>"5"</c> reads as 5, and
+    /// <c>"13"</c> and the numeric sub-monthly spellings <c>"52"</c> and <c>"365"</c> as 12. Zero, a
+    /// number too large for an <see cref="int"/> and a decimal such as <c>"1.5"</c> read as 1. The
+    /// convention drops separators before it is consulted, so <c>"1.2"</c> reads as <c>"12"</c>, which
+    /// is 12.</description></item>
+    /// </list>
+    /// <para>
+    /// Reading <c>AtMaturity</c> as one payment a year is the pinned defect SCH-DEF-001, kept for records
+    /// that declare no schedule conventions. New readers use <see cref="CouponPaymentsPerYear"/> or
+    /// <see cref="TryParsePaymentFrequency"/>, which say when they do not recognize a value.
+    /// </para>
+    /// </remarks>
+    public static int LegacyCouponPaymentsPerYear(string? paymentFrequency)
+    {
+        if (string.IsNullOrWhiteSpace(paymentFrequency))
+        {
+            return 1;
+        }
+
+        // The write path admits only the cadences the shared convention recognizes; read them the
+        // same way (this adds BiMonthly and tenor spellings such as "3M"). Anything else keeps the
+        // legacy interpretation below so stored values read exactly as before.
+        if (SecurityTermConventions.CouponPaymentsPerYear(paymentFrequency) is { } paymentsPerYear)
+        {
+            return paymentsPerYear;
+        }
+
+        var normalized = paymentFrequency
+            .Replace("-", string.Empty, StringComparison.Ordinal)
+            .Replace("_", string.Empty, StringComparison.Ordinal)
+            .Replace(" ", string.Empty, StringComparison.Ordinal)
+            .Trim()
+            .ToUpperInvariant();
+        if (int.TryParse(normalized, out var parsed) && parsed > 0)
+        {
+            return Math.Clamp(parsed, 1, 12);
+        }
+
+        return normalized switch
+        {
+            "MONTHLY" => 12,
+            "QUARTERLY" => 4,
+            "SEMIANNUAL" or "SEMIANNUALLY" or "SEMIYEARLY" or "HALFYEARLY" => 2,
+            "ANNUAL" or "ANNUALLY" or "YEARLY" => 1,
+            _ => 1
+        };
+    }
 
     /// <summary>The shared rejection reason for an unrecognized convention value.</summary>
     public static string DescribeUnrecognized(SecurityTermConventionKind kind, string assetClass, string key, string? raw)
@@ -351,6 +575,9 @@ public static class SecurityTermConventions
             SecurityTermConventionKind.SettlementMethod => "settlement method",
             SecurityTermConventionKind.PaymentFrequency => "payment frequency",
             SecurityTermConventionKind.CouponFrequency => "coupon frequency (monthly or longer, or at maturity)",
+            SecurityTermConventionKind.BusinessDayConvention => "business-day convention",
+            SecurityTermConventionKind.RollConvention => "roll convention (AnchorDay, EndOfMonth, Imm or a day of the month from 1 to 31)",
+            SecurityTermConventionKind.StubPolicy => "stub policy",
             _ => "value"
         };
 

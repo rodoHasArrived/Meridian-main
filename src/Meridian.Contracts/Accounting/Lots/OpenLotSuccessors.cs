@@ -260,10 +260,11 @@ public static class OpenLotSuccessors
                 && acquisition.AcquisitionFxRateToFunctional == sourceAcquisition.AcquisitionFxRateToFunctional
                 && acquisition.QuantityBasis == sourceAcquisition.QuantityBasis
                 && acquisition.FaceValueTerms == sourceAcquisition.FaceValueTerms
+                && lot.CurrentFactor == source.CurrentFactor
                 && lot.AcquiredDate == source.AcquiredDate
                 && acquisition.HoldingPeriodStartDate == sourceAcquisition.HoldingPeriodStartDate
                 && sourceAcquisition.Evidence.All(acquisition.Evidence.Contains),
-                "Successors must preserve acquisition FX, dates, face terms and evidence while allocating both bases exactly.");
+                "Successors must preserve acquisition FX, dates, face terms, paydown factor and evidence while allocating both bases exactly.");
             var operation = projection.Recipe.SingleOrDefault(operation => operation.Kind == CorporateActionEconomicOperationKindDto.ExchangeIn
                 && operation.SecurityId == lot.SecurityId);
             Require(operation is not null && operation.Quantity == lot.OpenQuantity

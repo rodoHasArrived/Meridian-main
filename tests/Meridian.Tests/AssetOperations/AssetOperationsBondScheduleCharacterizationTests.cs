@@ -10,17 +10,21 @@ using NSubstitute;
 namespace Meridian.Tests.AssetOperations;
 
 /// <summary>
-/// Characterization pins for the asset-operations bond projection loop, recorded against base
-/// 7d072638 before the schedule kernel (ADR-025) takes it over. Every pin goes through the public
-/// <see cref="AssetOperationsReadService.GetOperationsAsync"/> seam with the bond-reference
-/// substitute pattern used by <c>AssetOperationsReadServiceTests</c>.
+/// Characterization pins for the asset-operations bond projection loop. The SCH-DEF-001, -002 and
+/// -003 pins were recorded against base 7d072638 before the schedule kernel (ADR-025) took the loop
+/// over; the SCH-DEF-010 pins were added when it moved onto the kernel's compounded mode and hold on
+/// both sides of that move. Every pin goes through the public
+/// <see cref="AssetOperationsReadService.GetOperationsAsync"/> seam, with the bond-reference
+/// substitute pattern used by <c>AssetOperationsReadServiceTests</c> or, for the Security
+/// Master-synthesized fallback, with no bond reference service.
 /// </summary>
 /// <remarks>
 /// Tests tagged <c>Category=KnownDefect</c> assert TODAY'S defective behavior from the registry in
 /// <c>tests/fixtures/schedules/KNOWN-DEFECTS.md</c> and name the TARGET behavior in a comment. When a
 /// fix lands the pin fails; the fixing PR flips the assertion and updates the registry in the same
-/// change. The bond projection reads no wall clock when the issue date is retained, so these pins use
-/// fixed dates.
+/// change. The bond projection reads no wall clock when the issue date is retained, and the
+/// synthesized fallback reads it only for an as-of date that terms without a principal schedule or
+/// factor never consult, so these pins use fixed dates.
 /// </remarks>
 public sealed class AssetOperationsBondScheduleCharacterizationTests
 {
@@ -84,6 +88,66 @@ public sealed class AssetOperationsBondScheduleCharacterizationTests
         var coupons = detail.ProjectedCashFlows.Where(static flow => flow.FlowType == "Coupon").ToArray();
         coupons.Should().HaveCount(4);
         coupons.Should().OnlyContain(static flow => flow.Amount == 0.1250m);
+    }
+
+    [Fact]
+    [Trait("Category", "KnownDefect")]
+    public async Task FarDatedMonthEndBond_CurrentBehavior_ThrowsPastTheDateRange_SCH_DEF_010()
+    {
+        // SCH-DEF-010 (asset-operations side). TARGET: the projection returns a bounded schedule or is
+        // blocked with a reason; it never throws. Compounding drifts the 31st to the 28th, so the
+        // closing period starts on 9999-12-28 and its next compounded date falls in January 10000,
+        // past the supported range. The issue-anchored Security Master walk lands on 9999-12-31 for
+        // the same dates and does not throw.
+        var act = () => GetBondOperationsAsync(
+            Guid.Parse("5c4ed010-0000-4000-8000-0000000000a5"),
+            issueDate: new DateOnly(9999, 1, 31),
+            maturityDate: new DateOnly(9999, 12, 31),
+            paymentFrequency: "Monthly",
+            fixedCouponRate: 4m);
+
+        await act.Should().ThrowExactlyAsync<ArgumentOutOfRangeException>(
+            "CURRENT defective behavior: the closing compounded grid date past 9999-12-31 is evaluated and throws");
+    }
+
+    [Fact]
+    [Trait("Category", "KnownDefect")]
+    public async Task FarDatedMonthEndBondWithoutReference_CurrentBehavior_ThrowsPastTheDateRange_SCH_DEF_010()
+    {
+        // SCH-DEF-010 (asset-operations side, Security Master-synthesized fallback). TARGET: as for the
+        // bond-reference path. Without a bond reference the bond is projected from its Security
+        // Master terms through the same compounded loop, so it fails on the same dates.
+        const string displayName = "Far-dated synthesized bond";
+        var securityId = Guid.Parse("5c4ed010-0000-4000-8000-0000000000b6");
+        var securityMaster = Substitute.For<ISecurityMasterQueryService>();
+        securityMaster.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(new SecurityDetailDto(
+                securityId,
+                "Bond",
+                SecurityStatusDto.Active,
+                displayName,
+                "USD",
+                JsonSerializer.SerializeToElement(new { displayName, currency = "USD" }),
+                JsonSerializer.SerializeToElement(new
+                {
+                    issueDate = new DateOnly(9999, 1, 31),
+                    maturityDate = new DateOnly(9999, 12, 31),
+                    par = 100m,
+                    couponRate = 4m,
+                    paymentFrequency = "Monthly",
+                    dayCountConvention = "30/360"
+                }),
+                [new SecurityIdentifierDto(SecurityIdentifierKind.Cusip, "123456789", true, DateTimeOffset.Parse("2026-01-01T00:00:00Z"))],
+                [],
+                1,
+                DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+                null));
+        var service = new AssetOperationsReadService(securityMasterQueryService: securityMaster);
+
+        var act = () => service.GetOperationsAsync(securityId);
+
+        await act.Should().ThrowExactlyAsync<ArgumentOutOfRangeException>(
+            "CURRENT defective behavior: the synthesized bond runs the same compounded loop past 9999-12-31");
     }
 
     private static async Task<AssetOperationsDetailDto> GetBondOperationsAsync(

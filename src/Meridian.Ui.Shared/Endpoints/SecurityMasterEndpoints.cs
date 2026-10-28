@@ -461,7 +461,9 @@ public static partial class SecurityMasterEndpoints
             if (!SecurityTermBlocks.For(current.AssetClass).Any(field => string.Equals(field.Key, blockKey, StringComparison.Ordinal)))
             {
                 return Results.Problem(
-                    $"Asset class '{current.AssetClass}' declares no term block '{blockKey}'.",
+                    SecurityTermBlocks.TryDescribeReadableOnlyBlock(current.AssetClass, blockKey, out var readableOnly)
+                        ? readableOnly
+                        : $"Asset class '{current.AssetClass}' declares no term block '{blockKey}'.",
                     statusCode: StatusCodes.Status400BadRequest);
             }
 
@@ -1424,6 +1426,8 @@ public static partial class SecurityMasterEndpoints
             MapStructuredCreditReclassificationEndpoints(group, jsonOptions);
 
         MapOtcContractEndpoints(group, jsonOptions);
+        MapOtcCollateralEndpoints(app, group, jsonOptions);
+        MapCurveAndValuationEndpoints(app, group, jsonOptions);
 
         if (app.Services.GetService<SecurityMasterExceptionCaseworkService>() is not null)
             MapExceptionAgingEndpoints(group, jsonOptions);

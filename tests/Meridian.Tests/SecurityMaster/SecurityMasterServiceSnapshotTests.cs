@@ -8,7 +8,7 @@ using NSubstitute;
 
 namespace Meridian.Tests.SecurityMaster;
 
-public sealed class SecurityMasterServiceSnapshotTests
+public sealed partial class SecurityMasterServiceSnapshotTests
 {
     [Fact]
     public async Task CreateAsync_SavesCanonicalEconomicSnapshotPayload()

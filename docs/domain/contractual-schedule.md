@@ -2,7 +2,7 @@
 
 **Status:** active guidance
 **Owner:** core-team
-**Reviewed:** 2026-10-23
+**Reviewed:** 2026-10-24
 
 ## Definition
 
@@ -54,8 +54,10 @@ with diagnostics and the calendars it used. The decision record is
   date; it requires forward generation, the anchor-day roll and short stubs, and takes no explicit
   regular dates (`CompoundedModeRestricted`). Day and week tenors step by days, generate forward only and
   take only the anchor-day roll. A grid date past the last representable date (9999-12-31) is
-  treated as an overshoot, never as an error. (The Security Master's issue-anchored walk still
-  evaluates that closing date and throws, as it always has, until SCH-DEF-010 is fixed.)
+  treated as an overshoot, never as an error. (The Security Master's issue-anchored walk and the
+  asset-operations bond projection's compounded walk still evaluate that closing date and throw,
+  as they always have, until SCH-DEF-010 is fixed; the obligation-timeline and fund-structure date
+  steps likewise throw past that date, pinned as SCH-DEF-011.)
 - **Roll.** Anchor day, a fixed day of the month (clamped in short months), end of month, or IMM
   (the third Wednesday). A generation anchor that is not on its roll day is refused
   (`AnchorNotOnRollDay`).
@@ -99,7 +101,8 @@ so the accrual start equals the unadjusted start and the payment date equals the
 | Mode | Spec | Reproduces | Status |
 | --- | --- | --- | --- |
 | Issue-anchored forward | `ScheduleSpec.IssueAnchoredForward` | Security Master cash-flow projection | Routed: `SecurityMasterCashFlowService.BuildPaymentPeriods` delegates to it |
-| Compounded forward | `ScheduleSpec.CompoundedForward`, or `ScheduleGenerator.RollDates` in compounded mode | Asset-operations bond projection, obligation timeline, fund-structure projected dates, both direct-lending projections | Parity proven; call sites unchanged |
+| Compounded forward | `ScheduleSpec.CompoundedForward`, or `ScheduleGenerator.RollDates` in compounded mode, or one `ScheduleTenor.Advance` step at a time | Asset-operations bond projection, obligation timeline, fund-structure projected dates | Routed (increment 3): `AssetOperationsProjectionBuilder.BuildBondProjectedCashFlows` iterates `CompoundedForward` periods; the `AssetObligationProjectionService` steps and `InMemoryFundStructureService.RollProjectedScheduleDates` take `ScheduleTenor` steps |
+| Compounded forward | `ScheduleSpec.CompoundedForward` | Both direct-lending projections | Parity proven; call sites unchanged |
 | Backward, end-of-month roll, short initial stub | `ScheduleSpec.BackwardFromTermination` with `ScheduleRoll.ForAnchor(maturity, true)` and a 1,200-period limit | `FaceValueLot` backward coupon dates, including the quasi-coupon date | Parity proven; call site unchanged |
 | Forward, regular periods only | Forward generation with `ScheduleStubPolicy.RequireRegular` | `FaceValueLot` regular coupon dates | Parity proven; call site unchanged |
 
@@ -124,11 +127,43 @@ so the accrual start equals the unadjusted start and the payment date equals the
 
 Planned in sequence, each behind its own proof:
 
-- A per-class terms upgrade hook, then schedule terms declared on Bond, CertificateOfDeposit,
-  StructuredCredit and swap legs: business-day convention, payment calendars, payment lag, roll,
-  first and last regular dates, direction, stub policy, coupon unit and coupon cash basis, then
-  call and put schedules with notice periods. These arrive expand-then-contract under the terms
-  version policy of [ADR-024](../adr/024-terms-payload-format-and-version-policy.md).
+- Schedule terms declared on Bond, CertificateOfDeposit, StructuredCredit and swap legs arrive
+  expand-then-contract under the terms version policy of
+  [ADR-024](../adr/024-terms-payload-format-and-version-policy.md), through the per-class terms
+  upgrade hook that has landed. The `scheduleConventions` block (business-day convention, payment
+  calendars, payment lag, roll, first and last regular dates, direction, stub policy, coupon unit and
+  coupon cash basis) is readable at the next terms version of each class but not yet writable
+  (increment 4a). Call and put schedules with notice periods, the `callSchedule` and `putSchedule`
+  arrays, are readable at the version after that (increment 4b: version 3 of Bond and
+  CertificateOfDeposit, 4 of StructuredCredit) and are not yet writable either. A later contract
+  step makes the block and the arrays writable.
+- The block's spellings are frozen ([ADR-025](../adr/025-contractual-schedule-kernel.md#applications)):
+  `businessDayConvention` is `Unadjusted`, `Following`, `ModifiedFollowing`, `Preceding` or
+  `ModifiedPreceding` (with `None`, `F`, `MF`, `P` and `MP` accepted); `rollConvention` is
+  `AnchorDay`, `EndOfMonth`, `Imm` or a day of the month from 1 to 31; `stubPolicy` is `Short`,
+  `Long` or `RequireRegular`; `direction` is `Forward` or `Backward`; `couponRateUnit` is `Percent`
+  or `Fraction`; and `couponCashBasis` is `Level` or `DayCount`.
+- The call and put entries are frozen too
+  ([ADR-025](../adr/025-contractual-schedule-kernel.md#applications)). A `callSchedule` entry
+  carries `callDate`, `callEndDate`, `exerciseStyle` (`European`, `American` or `Bermudan`),
+  `exerciseFrequency` (a coupon-frequency spelling), `callPrice`, `priceBasis` (`PercentOfPar` or
+  `PercentOfAccretedValue`), `priceType` (`Fixed` or `MakeWhole`), `makeWholeSpreadBps`,
+  `partialRedemption` (`WholeOnly`, `ProRata` or `ByLot`), `minimumNoticeDays`,
+  `maximumNoticeDays` and `noticeDayType` (`Business` or `Calendar`). A `putSchedule` entry carries
+  `putDate`, `putEndDate`, `exerciseStyle`, `exerciseFrequency`, `putPrice`, `priceBasis` and the
+  three notice members. A put entry is a holder-elective put; a mandatory tender stays
+  `mandatoryPutDate`.
+- In brief, an entry's window runs from its start date through its end date or, without one, to the
+  day before the next entry's start date in date order (to maturity for the last entry). A European
+  entry is exercisable on its start date only, an American one on any business day in the window,
+  and a Bermudan one on dates recurring at `exerciseFrequency`, or on the coupon dates, within it.
+  The price is a clean percentage of par (or of accreted value) with accrued interest paid on top,
+  it applies throughout the window, and for a make-whole call it is the floor; an absent price is
+  not par. Notice falls between `maximumNoticeDays` and `minimumNoticeDays` before the exercise
+  date, counted in calendar days or in business days on the block's payment calendars
+  ([ADR-025](../adr/025-contractual-schedule-kernel.md#applications)). Until increment 8 drives
+  redemption scenarios, the cash ladder's early call, the obligation timeline and the schedule book
+  from the schedules, consumers keep reading the scalar call terms and `mandatoryPutDate`.
 - A file-backed calendar source and a declared mode in the Security Master cash-flow engine.
 - Stable asset-operations flow ids keyed by period, and a schedule book built from engine output in
   both the browser and WPF workstations.
@@ -136,8 +171,11 @@ Planned in sequence, each behind its own proof:
 - Direct-lending projections and servicing accrual on the kernel, behind opt-in engine and formula
   versions, and `FaceValueLot`'s coupon-date generators last.
 
-Calendar data governance, the default flip for records that declare nothing, and the coupon
-conventions for declared records are open decisions.
+Calendar data governance and the default flip for records that declare nothing are open
+decisions. So are the generation of call and put exercise and notice dates and the make-whole
+amount: ADR-025 records proposals for them that increment 8 adopts or amends. The coupon vocabulary
+for declared records is fixed by `couponRateUnit` and `couponCashBasis`; how the cash-flow engine
+applies them is decided with the contract step.
 
 ## Implementation and regression references
 
@@ -145,13 +183,18 @@ conventions for declared records are open decisions.
 - [Schedule spec and legacy factories](../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs)
 - [Period identity](../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs)
 - [Day-count engine and period-context overload](../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs)
-- [First routed consumer](../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs)
+- Routed consumers: [Security Master cash-flow projection](../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs),
+  [asset-operations bond projection](../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs),
+  [obligation timeline](../../src/Meridian.Instruments/AssetOperations/AssetObligationProjectionService.cs) and
+  [fund-structure projected dates](../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs)
+- [Legacy coupon cadence reader](../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs)
 - [Known-defect registry](../../tests/fixtures/schedules/KNOWN-DEFECTS.md)
 - Regression scope: `ScheduleGeneratorTests`, `ScheduleAdjustmentTests`, `SchedulePeriodIdTests`,
   `DayCountConventionsPeriodContextTests`, `ScheduleDayCountTests`,
   `ScheduleKernelLegacyParityTests`, `LegacyOracleFidelityTests`, `FaceValueLotGoldenTests`,
-  `SchedulePeriodRollingRatchetTests`, the KnownDefect pins and the existing
-  `SecurityMasterCashFlowServiceTests`.
+  `SchedulePeriodRollingRatchetTests`, `SecurityTermConventionTests`, the KnownDefect pins and the
+  existing `SecurityMasterCashFlowServiceTests`, `AssetOperationsReadServiceTests`,
+  `AssetObligationProjectionServiceTests` and `Meridian.FundStructure.Tests` schedule pins.
 
 These references identify the implementation and its regression scope. The pull request carries
 actual validation results.

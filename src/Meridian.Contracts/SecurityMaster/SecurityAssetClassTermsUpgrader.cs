@@ -22,6 +22,10 @@ namespace Meridian.Contracts.SecurityMaster;
 /// the current version and payloads stamped newer. It never refuses a payload; refusing a newer
 /// stamp stays <see cref="SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms"/>'s job. It
 /// throws only when a class's declared steps, or one of its transforms, are defective.</para>
+/// <para>"Current" is the class's WRITE version (<see cref="SecurityAssetClassDescriptor.TermsVersion"/>).
+/// A payload stamped above it and within <see cref="SecurityAssetClassDescriptor.ReadsTermsThrough"/>
+/// passes through unchanged: every step from the write version upward is an identity step, so there
+/// is nothing to run, and such a payload is not behind.</para>
 /// </remarks>
 public static class SecurityAssetClassTermsUpgrader
 {
@@ -125,14 +129,7 @@ public static class SecurityAssetClassTermsUpgrader
     private static bool IsFlatCodecPayload(JsonElement payload)
         => SecurityAssetSpecificTermsV0ToCurrentUpcaster.ResolveSchemaVersion(payload) == AssetSpecificTermsSchema.Legacy
            && string.Equals(SecurityTermsEnvelope.ResolveFormat(payload), SecurityTermsFormats.Flat, StringComparison.Ordinal)
-           && !CarriesProfileEnvelope(payload);
-
-    private static bool CarriesProfileEnvelope(JsonElement payload)
-        => (payload.TryGetProperty("customProfileId", out var profileId)
-            && profileId.ValueKind == JsonValueKind.String
-            && !string.IsNullOrWhiteSpace(profileId.GetString()))
-           || (payload.TryGetProperty("profileFields", out var profileFields)
-               && profileFields.ValueKind == JsonValueKind.Object);
+           && !SecurityTermsEnvelope.CarriesProfileEnvelope(payload);
 
     private static SecurityAssetClassTermsUpgrade RequireStep(
         SecurityAssetClassDescriptor descriptor,

@@ -46,7 +46,54 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   first call date, and issuer name in its maturity, coupon, call, and issuer modules, so a replay
   from economic terms alone keeps a callable bond callable.
 - `assetSpecificTermsJson` stamps flat terms with the shared terms-format envelope for every kind
-  except `CustomAsset`, whose profile owns its own document shape.
+  except `CustomAsset`, whose profile owns its own document shape. The stamp is the effective write
+  version: the class's write version, raised to the highest version among the versioned terms the
+  record holds, a declared `scheduleConventions` block or any declared call or put entry (ADR-024,
+  readable before writable). Bond, CertificateOfDeposit and StructuredCredit therefore write in three
+  tiers: with nothing declared, at the write version with none of the readable-only keys
+  (`scheduleConventions`, `callSchedule`, `putSchedule`); with conventions only, at the block's
+  version with the `scheduleConventions` key; with any call or put entry, at the schedules' version
+  (3 on Bond and CertificateOfDeposit, 4 on StructuredCredit) with the block key and both
+  `callSchedule` and `putSchedule`.
+- `BondTerms`, `CertificateOfDepositTerms`, `StructuredCreditTerms` and `SwapLeg` carry a
+  `ScheduleConventions` record (business-day convention, accrual adjustment, payment calendars,
+  payment lag, roll, end-of-month rule, regular dates, direction, stub policy, coupon rate unit and
+  coupon cash basis); `ScheduleConventions.empty` is the undeclared value. It is decoded only from
+  rows stamped at or above the block's readable version, and serialized only from that version
+  upward: `null` when nothing is declared, otherwise all twelve members in alphabetical order (on a
+  swap, on every leg).
+  A declared business-day convention or payment calendar fills the economic `Accrual` module of a
+  bond, CertificateOfDeposit or StructuredCredit: the convention verbatim and the payment calendars
+  as one joint calendar id, with no fallback to the common terms' holiday calendar.
+- `BondTerms`, `CertificateOfDepositTerms` and `StructuredCreditTerms` also carry a
+  `CallPutSchedules` record: `Calls` (`CallScheduleTerm`) and `Puts` (`PutScheduleTerm`), in stored
+  order; `CallPutSchedules.empty` is the undeclared value, and `SwapLeg` carries none. A
+  `CallScheduleTerm` has a required `CallDate` and eleven optional members (window end, exercise
+  style and frequency, price, price basis and type, make-whole spread, partial redemption, minimum
+  and maximum notice days, notice day type); a `PutScheduleTerm` has a required `PutDate` and the
+  eight that apply to a holder put. Text members are kept verbatim, and their meanings are frozen in
+  ADR-025. Both lists are decoded only from rows stamped at or above the schedules' version, and
+  serialized only from that version upward: `[]` when none is declared, otherwise one object per
+  entry in stored order carrying every member in alphabetical order, with `null` for an unset one.
+  The C# write-mode mapping never decodes them and refuses populated ones in a flat payload, so only
+  the read-mode mapping of a flat row stamped at or above the schedules' version fills them.
+- The economic `Call` module of a bond, CertificateOfDeposit or StructuredCredit is filled under one
+  rule, frozen with the schedules (ADR-025). On a bond and a CertificateOfDeposit only the class's
+  scalar call terms feed `IsCallable` and `FirstCallDate` (bond `IsCallable` and `CallDate`,
+  CertificateOfDeposit `CallableDate`), and `CallPrice` stays `None`. Declared entries feed
+  `CallSchedule`, `PutSchedule`, `IsPuttable` and `MakeWholeSpreadBps`, sorted stably by date. An
+  entry's price is carried only for a `Fixed` price on a `PercentOfPar` basis (an absent type or
+  basis counts as each), `IsParCall` marks a carried price of exactly 100, `CallType` is `MakeWhole`
+  for a make-whole entry and otherwise the exercise style, and `MakeWholeSpreadBps` is the spread of
+  the earliest make-whole entry that states one. StructuredCredit has no scalar call terms: it gets a
+  `Call` module only when it declares a call or put, with `IsCallable` true when it declares a call,
+  and `FirstCallDate` and `CallPrice` left `None`; `NonCallPeriodEnd` never feeds it. The fill drops
+  window end dates, exercise frequency, every put's exercise style and a make-whole call's, partial
+  redemption, the notice members, price basis and type beyond the price gate and `CallType`, every
+  make-whole spread but that one (including any on an entry that is not make-whole), stored order,
+  and the price of an entry outside the gate (a make-whole floor or an accreted-value price), so a
+  consumer that needs the full terms reads the domain record's `CallPutSchedules`, not the economic
+  module.
 - `StructuredProductTerms.FactorScheduleReference` carries the StructuredCredit record's free-text
   `factorSchedule` pointer as evidence lineage. The legacy upgrade no longer writes that pointer into
   the coupon payment frequency or the floating-rate reset frequency; both read `None` for
@@ -56,7 +103,11 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   subclass, a CustomAsset whose `category` names a securitised product, or an envelope-less legacy
   custom row read back as OtherSecurity. It carries over par, coupon or index, maturity, seniority
   and the family the label implies; every required term the source lacks and every ambiguous label
-  (`MortgageBacked`, `MBS`) is a blocker, so `ProposedTerms` exists only when nothing blocks.
+  (`MortgageBacked`, `MBS`) is a blocker, so `ProposedTerms` exists only when nothing blocks. A bond
+  that declares schedule conventions is blocked with `structured_credit_schedule_conventions_unwritable`,
+  because they are a StructuredCredit terms version 3 term this node reads but cannot write, and one
+  that declares a call or put entry is blocked with `structured_credit_call_put_schedules_unwritable`,
+  because the schedules are StructuredCredit terms version 4 terms.
 - `IdentifierKind` includes `LoanX` and `Clip` for syndicated-loan identifiers; interop maps
   them to the matching C# `SecurityIdentifierKind` values.
 - `SecurityTermModules` no longer carries `AccountingElections` or `Pci`. Amortization method,
