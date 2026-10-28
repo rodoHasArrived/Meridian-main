@@ -210,13 +210,20 @@ public sealed partial class FileMaintenanceService
                 DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out var date)
                 ? new DateTimeOffset(date, TimeSpan.Zero) : null;
 
-        return Last(relative, @"(?<!\d)(\d{4})-(\d{2})-(\d{2})[_/](\d{2})(?!\d)",
+        // Canonical paths start with the partition date. A date embedded in a source,
+        // instrument symbol or file prefix must not override that owning directory.
+        return Last(relative, @"^(\d{4})/(\d{2})/(\d{2})/",
+                   m => Day(m.Groups[1].Value, m.Groups[2].Value, m.Groups[3].Value)?.AddDays(1))
+            ?? Last(relative, @"(?<!\d)(\d{4})-(\d{2})-(\d{2})[_/](\d{2})(?!\d)",
                    m => int.Parse(m.Groups[4].Value, CultureInfo.InvariantCulture) is var hour && hour < 24
                        ? Day(m.Groups[1].Value, m.Groups[2].Value, m.Groups[3].Value)?.AddHours(hour + 1)
                        : null)
             ?? Last(relative, @"(?<!\d)(\d{4})-(\d{2})-(\d{2})(?!\d)",
                    m => Day(m.Groups[1].Value, m.Groups[2].Value, m.Groups[3].Value)?.AddDays(1))
             ?? Last(relative, @"(?<!\d)(\d{4})(\d{2})(\d{2})(?!\d)",
+                   m => Day(m.Groups[1].Value, m.Groups[2].Value, m.Groups[3].Value)?.AddDays(1))
+            // The canonical layout's yyyy/MM/dd directories are always a daily partition.
+            ?? Last(relative, @"(?<!\d)(\d{4})/(\d{2})/(\d{2})/",
                    m => Day(m.Groups[1].Value, m.Groups[2].Value, m.Groups[3].Value)?.AddDays(1))
             ?? Last(relative, @"(?<!\d)(\d{4})-(\d{2})(?![-\d])",
                    m => Day(m.Groups[1].Value, m.Groups[2].Value, "01")?.AddMonths(1));

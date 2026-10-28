@@ -638,6 +638,28 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                 throw new InvalidOperationException("A retained bank statement's line membership cannot change; use a new statement revision.");
         }
 
+        if (batch.IsTransactionFeed == true)
+        {
+            // A redelivery can carry the same transactions in another order, and each takes its
+            // delivery ordinal. Reassigning them row by row would briefly give two rows one ordinal,
+            // which the immediate (batch_id, line_sequence) unique index rejects. The delivery's own
+            // rows release their ordinals first; the upserts below set the new ones in this
+            // transaction, so a failed delivery leaves the retained ordinals as they were.
+            await using var release = connection.CreateCommand();
+            release.Transaction = transaction;
+            release.CommandText = $"""
+                UPDATE {Qualified("bank_statement_line")} released SET line_sequence = NULL
+                WHERE released.statement_line_id = ANY(@line_ids)
+                  AND released.account_id = @account_id
+                  AND released.line_sequence IS NOT NULL
+                  AND EXISTS (SELECT 1 FROM {Qualified("bank_statement_batch")} retained
+                              WHERE retained.batch_id = released.batch_id AND retained.transaction_feed)
+                """;
+            release.Parameters.AddWithValue("line_ids", lines.Select(static line => line.LineId).ToArray());
+            release.Parameters.AddWithValue("account_id", batch.AccountId);
+            await release.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
+
         foreach (var line in lines)
         {
             await using var cmd = connection.CreateCommand();

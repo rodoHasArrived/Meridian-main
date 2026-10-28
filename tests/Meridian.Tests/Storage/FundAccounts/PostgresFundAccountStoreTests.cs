@@ -16,7 +16,7 @@ namespace Meridian.Tests.Storage.FundAccounts;
 /// across tenants, or lost in the SQL layer.
 /// </summary>
 [Trait("Category", "Integration")]
-public sealed class PostgresFundAccountStoreTests : IClassFixture<FundAccountDatabaseFixture>
+public sealed partial class PostgresFundAccountStoreTests : IClassFixture<FundAccountDatabaseFixture>
 {
     private readonly FundAccountDatabaseFixture _fixture;
 

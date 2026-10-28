@@ -494,6 +494,30 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
         File.Exists(newer + ".sha256").Should().BeTrue();
     }
 
+    [Fact]
+    public async Task RetentionByteBudget_LockedOldestArchive_DeletesTheNextCandidate()
+    {
+        var oldest = Path.Combine(TestDataRoot, "SPY_trade_20260102.jsonl.gz");
+        var middle = Path.Combine(TestDataRoot, "SPY_trade_20260105.jsonl.gz");
+        var newest = Path.Combine(TestDataRoot, "SPY_trade_20260106.jsonl.gz");
+        await WriteArchiveWithChecksumAsync(oldest, DateTime.UtcNow.AddDays(-5));
+        await WriteArchiveWithChecksumAsync(middle, DateTime.UtcNow.AddDays(-3));
+        await WriteArchiveWithChecksumAsync(newest, DateTime.UtcNow.AddDays(-1));
+        // Each archive with its sidecar is the same size; the budget holds two of the three.
+        var perArchive = new FileInfo(newest).Length + new FileInfo(newest + ".sha256").Length;
+        var options = new StorageOptions { RootPath = TestDataRoot, MaxTotalBytes = 2 * perArchive };
+
+        // An appender holds the oldest archive, so retention cannot remove it.
+        using (var appender = new FileStream(ArchiveAppendLock.PathFor(oldest), FileMode.OpenOrCreate,
+                   FileAccess.ReadWrite, FileShare.None))
+        await using (var sink = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot)))
+            sink.RunRetentionCleanup();
+
+        File.Exists(oldest).Should().BeTrue("an appender holds it");
+        File.Exists(middle).Should().BeFalse("the locked oldest archive freed nothing, so the budget is still exceeded");
+        File.Exists(newest).Should().BeTrue();
+    }
+
     private static async Task WriteArchiveWithChecksumAsync(string archive, DateTime lastWriteUtc)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(archive)!);
@@ -636,6 +660,73 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
         await foreach (var evt in new Meridian.Storage.Replay.JsonlReplayer(TestDataRoot).ReadEventsAsync())
             replayed.Add(evt);
         replayed.Select(evt => evt.Sequence).Should().Equal(1, 2);
+    }
+
+    [Fact]
+    public async Task LateAppendToAnArchiveThatLostATrailingMember_IsRefusedAndKeepsItsChecksum()
+    {
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var batchOptions = new JsonlBatchOptions { BatchSize = 1000, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
+        await using (var first = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions))
+        {
+            await first.AppendAsync(CreateTestEvent("AAPL", 1, ClosedDay));
+            await first.FlushAsync();
+        }
+        var dayFile = Directory.GetFiles(TestDataRoot, "*.jsonl").Should().ContainSingle().Subject;
+        await AtomicFileWriter.WriteAsync(dayFile + ".sha256",
+            $"{Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(dayFile))).ToLowerInvariant()}  {Path.GetFileName(dayFile)}");
+        var maintenance = new FileMaintenanceService(options);
+        (await maintenance.CompressAsync(new FileCompressionOptions(BackupBeforeCompression: false))).Success.Should().BeTrue();
+        var archive = dayFile + ".gz";
+        var firstMemberLength = new FileInfo(archive).Length;
+        await using (var second = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions))
+        {
+            await second.AppendAsync(CreateTestEvent("AAPL", 2, ClosedDay));
+            await second.FlushAsync();
+        }
+        var coveringChecksum = await File.ReadAllTextAsync(archive + ".sha256");
+        // The archive loses its complete second member: it still decompresses, but the checksum no longer matches.
+        await using (var shortened = new FileStream(archive, FileMode.Open, FileAccess.Write))
+            shortened.SetLength(firstMemberLength);
+
+        await using var third = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions);
+        await third.AppendAsync(CreateTestEvent("AAPL", 3, ClosedDay));
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => third.FlushAsync());
+        new FileInfo(archive).Length.Should().Be(firstMemberLength);
+        (await File.ReadAllTextAsync(archive + ".sha256")).Should().Be(coveringChecksum,
+            "the retained checksum is the only evidence of the lost member");
+        (await maintenance.RunHealthCheckAsync(new HealthCheckOptions(ValidateChecksums: true, IdentifyCorruption: false))).Issues
+            .Should().Contain(issue => issue.Type == IssueType.ChecksumMismatch && issue.Path == archive);
+    }
+
+    [Fact]
+    public async Task CompressedAppendToAPartitionThatLostATrailingMember_IsRefusedAndKeepsItsChecksum()
+    {
+        var options = new StorageOptions { RootPath = TestDataRoot, Compress = true };
+        var batchOptions = new JsonlBatchOptions { BatchSize = 100, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
+        await using (var first = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot, ".jsonl.gz"), batchOptions))
+        {
+            await first.AppendAsync(CreateTestEvent("TLT", 1));
+            await first.FlushAsync();
+        }
+        var dayFile = Directory.GetFiles(TestDataRoot, "*.jsonl.gz", SearchOption.AllDirectories).Should().ContainSingle().Subject;
+        var firstMemberLength = new FileInfo(dayFile).Length;
+        await using (var second = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot, ".jsonl.gz"), batchOptions))
+        {
+            await second.AppendAsync(CreateTestEvent("TLT", 2));
+            await second.FlushAsync();
+        }
+        var coveringChecksum = await File.ReadAllTextAsync(dayFile + ".sha256");
+        await using (var shortened = new FileStream(dayFile, FileMode.Open, FileAccess.Write))
+            shortened.SetLength(firstMemberLength);
+
+        await using var third = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot, ".jsonl.gz"), batchOptions);
+        await third.AppendAsync(CreateTestEvent("TLT", 3));
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => third.FlushAsync());
+        new FileInfo(dayFile).Length.Should().Be(firstMemberLength);
+        (await File.ReadAllTextAsync(dayFile + ".sha256")).Should().Be(coveringChecksum);
     }
 
     [Fact]

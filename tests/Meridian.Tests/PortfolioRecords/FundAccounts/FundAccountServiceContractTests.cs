@@ -598,6 +598,29 @@ public abstract class FundAccountServiceContractTests
         retained.Should().ContainSingle(line => line.LineId == rent.LineId).Which.ValueDate.Should().Be(asOf);
     }
 
+    protected async Task IngestBankStatementAsync_TransactionFeedRedeliveryInAnotherOrder_ReassignsItsOrdinals_Core()
+    {
+        var service = CreateService();
+        var account = await service.CreateAccountAsync(MakeBankRequest());
+        var asOf = Today();
+        var batchId = Guid.NewGuid();
+        var coffee = MakeBankLine(batchId, account.AccountId, asOf, -25.10m) with { Description = "Coffee" };
+        var rent = MakeBankLine(batchId, account.AccountId, asOf, -900m) with { Description = "Rent" };
+        await service.IngestBankStatementAsync(new IngestBankStatementRequest(
+            batchId, account.AccountId, asOf, "Plaid", null, [coffee, rent], "sync", IsBackfill: true, IsTransactionFeed: true));
+
+        // The same transactions, so the same batch identity, delivered in the other order.
+        var redeliver = () => service.IngestBankStatementAsync(new IngestBankStatementRequest(
+            batchId, account.AccountId, asOf, "Plaid", null, [rent, coffee], "sync", IsBackfill: true, IsTransactionFeed: true));
+
+        await redeliver.Should().NotThrowAsync("a reordered feed delivery must not stall the sync cursor");
+        var retained = await service.GetBankStatementLinesAsync(account.AccountId);
+        retained.Should().HaveCount(2);
+        retained.Select(line => line.LineSequence).Should().OnlyHaveUniqueItems().And.NotContainNulls();
+        retained.Single(line => line.LineId == coffee.LineId).LineSequence.Should().Be(2);
+        retained.Single(line => line.LineId == rent.LineId).LineSequence.Should().Be(1);
+    }
+
     protected async Task IngestBankStatementAsync_TransactionFeedBatches_AreAdditiveAndSupersedeByLineIdentity_Core()
     {
         var service = CreateService();

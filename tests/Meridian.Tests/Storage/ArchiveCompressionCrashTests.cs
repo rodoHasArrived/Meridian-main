@@ -357,11 +357,18 @@ public sealed class ArchiveCompressionCrashTests : TempDirectoryAsyncTestBase
         (await ReadAllAsync(new JsonlReplayer(path + ".gz").ReadEventsAsync())).Should().Equal(ExpectedLines());
     }
 
-    [Fact]
-    public async Task OpenPartitionPeriod_IsDeferredWhilePriorPeriodCompresses()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task OpenPartitionPeriod_IsDeferredWhilePriorPeriodCompresses(bool canonical)
     {
         var prior = await CreateSourceAsync();
-        var current = Path.Combine(TestDataRoot, $"SPY_trade_{DateTime.UtcNow:yyyyMMdd}.jsonl");
+        var today = DateTime.UtcNow;
+        var current = canonical
+            ? Path.Combine(TestDataRoot, today.ToString("yyyy/MM/dd", System.Globalization.CultureInfo.InvariantCulture),
+                "alpaca", "SPY-2024-01-01", "20240101_Trade.jsonl")
+            : Path.Combine(TestDataRoot, $"SPY_trade_{today:yyyyMMdd}.jsonl");
+        Directory.CreateDirectory(Path.GetDirectoryName(current)!);
         await AtomicFileWriter.WriteAsync(current, string.Join("\n", ExpectedLines()) + "\n");
         var currentBytes = await File.ReadAllBytesAsync(current);
         var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
@@ -383,6 +390,9 @@ public sealed class ArchiveCompressionCrashTests : TempDirectoryAsyncTestBase
     [InlineData("SPY_trade_20260102.jsonl", "2026-01-03T00:00:00Z")]
     [InlineData("SPY/2026-01-02_14/trades.jsonl", "2026-01-02T15:00:00Z")]
     [InlineData("SPY/2026-01/trades.jsonl", "2026-02-01T00:00:00Z")]
+    [InlineData("2026/01/02/alpaca/SPY/Trade.jsonl", "2026-01-03T00:00:00Z")]
+    [InlineData("2026/01/02/alpaca/SPY-2025-12-19/Trade.jsonl", "2026-01-03T00:00:00Z")]
+    [InlineData("2026/01/02/alpaca/SPY/20251219_Trade.jsonl", "2026-01-03T00:00:00Z")]
     [InlineData("SPY/trades.jsonl", null)]
     public void PartitionPeriodEnd_ReadsThePeriodEncodedInThePath(string relative, string? expectedEnd)
     {

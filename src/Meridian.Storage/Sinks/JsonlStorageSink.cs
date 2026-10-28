@@ -839,6 +839,7 @@ public sealed class JsonlStorageSink : IStorageSink
             // Retire the archive's checksum before changing its bytes and publish a fresh one
             // after: a crash in between loses coverage rather than reporting false corruption.
             var sidecar = archive + ".sha256";
+            await RequireRetainedChecksumAsync(archive, sidecar, ct).ConfigureAwait(false);
             if (File.Exists(sidecar))
                 File.Delete(sidecar);
             await AtomicFileWriter.AppendAsync(archive, async stream =>
@@ -871,11 +872,30 @@ public sealed class JsonlStorageSink : IStorageSink
             using var appendLease = await JsonlWriteFence.EnterArchiveAppendAsync(_path, ct).ConfigureAwait(false);
             await using var processLease = await ArchiveAppendLock.AcquireAsync(_path, ArchiveAppendLockTimeout, ct).ConfigureAwait(false);
             var sidecar = _path + ".sha256";
+            await RequireRetainedChecksumAsync(_path, sidecar, ct).ConfigureAwait(false);
             if (File.Exists(sidecar))
                 File.Delete(sidecar);
             await AtomicFileWriter.AppendAsync(_path, write, ct).ConfigureAwait(false);
             // Committed: as for a published archive, nothing after this may report failure.
             await RepublishArchiveChecksumAsync(_path, sidecar).ConfigureAwait(false);
+        }
+
+        // Caller holds the archive lock. An archive that lost a complete trailing gzip member still
+        // decompresses, so readability alone cannot prove it holds every committed event; its retained
+        // checksum can. Retiring a mismatched sidecar and republishing one over the shortened archive
+        // would conceal that loss for good, so the append is refused and the evidence left in place.
+        private static async Task RequireRetainedChecksumAsync(string archive, string sidecar, CancellationToken ct)
+        {
+            if (!File.Exists(sidecar))
+                return;
+            // Sidecars are written in sha256sum format ("{checksum}  {filename}").
+            var expected = (await File.ReadAllTextAsync(sidecar, ct).ConfigureAwait(false)).Split(' ', 2)[0].Trim();
+            string actual;
+            await using (var archiveStream = new FileStream(archive, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+                actual = await Sha256Digest.ComputeAsync(archiveStream, ct).ConfigureAwait(false);
+            if (!string.Equals(expected, actual, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException(
+                    $"Refusing to append to {archive}: it no longer matches its retained checksum and may have lost committed events.");
         }
 
         // Best effort and uncancellable. On failure the sidecar stays retired, so health checks
@@ -1065,9 +1085,12 @@ public sealed class JsonlStorageSink : IStorageSink
                     var idx = 0;
                     while (total > _maxBytes && idx < ordered.Count)
                     {
+                        // A file a writer holds stays, so only what was actually removed counts
+                        // toward the budget and the sweep moves on to newer candidates.
                         var target = ordered[idx++];
-                        total -= RetainedBytes(target);
-                        TryDelete(target);
+                        var bytes = RetainedBytes(target);
+                        if (TryDelete(target))
+                            total -= bytes;
                     }
                 }
             }
@@ -1094,8 +1117,9 @@ public sealed class JsonlStorageSink : IStorageSink
         // a late append replaces an archive, a sink extends a plain file. Deleting it then would drop
         // bytes whose append already reported success, so the WAL would commit events no longer on
         // disk. Hold the lock that writer takes, without creating one, and delete only a file that is
-        // still exactly as selected; anything else waits for a later sweep.
-        private void TryDelete(FileInfo file)
+        // still exactly as selected; anything else waits for a later sweep. Returns whether the file
+        // is gone.
+        private bool TryDelete(FileInfo file)
         {
             var selectedWriteUtc = file.LastWriteTimeUtc;
             var selectedLength = file.Length;
@@ -1106,14 +1130,17 @@ public sealed class JsonlStorageSink : IStorageSink
                     ? ArchiveAppendLock.TryAcquire(file.FullName, out lease, createIfMissing: false)
                     : JsonlWriterLock.TryAcquireExclusive(file.FullName, out lease, createIfMissing: false);
                 if (!free)
-                    return;
+                    return false;
                 file.Refresh();
-                if (!file.Exists || file.LastWriteTimeUtc != selectedWriteUtc || file.Length != selectedLength)
-                    return;
+                if (!file.Exists)
+                    return true;
+                if (file.LastWriteTimeUtc != selectedWriteUtc || file.Length != selectedLength)
+                    return false;
                 // Remove the sidecar first: an interruption then leaves a file without a
                 // checksum, never a stale checksum that a later recreated file would fail.
                 File.Delete(file.FullName + ".sha256");
                 file.Delete();
+                return true;
             }
             catch (Exception ex)
             {
@@ -1122,6 +1149,7 @@ public sealed class JsonlStorageSink : IStorageSink
                     "Failed to delete file during retention cleanup: {FilePath}, Size={FileSize} bytes",
                     file.FullName,
                     file.Exists ? file.Length : 0);
+                return false;
             }
             finally
             {

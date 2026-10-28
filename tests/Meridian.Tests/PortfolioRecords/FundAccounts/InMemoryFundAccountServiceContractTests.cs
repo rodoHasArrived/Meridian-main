@@ -100,6 +100,9 @@ public sealed class InMemoryFundAccountServiceContractTests : FundAccountService
     public Task IngestBankStatementAsync_TransactionFeedRedelivery_MovesItsHeaderDate() => IngestBankStatementAsync_TransactionFeedRedelivery_MovesItsHeaderDate_Core();
 
     [Fact]
+    public Task IngestBankStatementAsync_TransactionFeedRedeliveryInAnotherOrder_ReassignsItsOrdinals() => IngestBankStatementAsync_TransactionFeedRedeliveryInAnotherOrder_ReassignsItsOrdinals_Core();
+
+    [Fact]
     public Task ReconcileAccountAsync_CashDivergingFromBankClosingBalance_ProducesCashBreak() => ReconcileAccountAsync_CashDivergingFromBankClosingBalance_ProducesCashBreak_Core();
 
     [Fact]
