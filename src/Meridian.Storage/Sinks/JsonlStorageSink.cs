@@ -839,6 +839,7 @@ public sealed class JsonlStorageSink : IStorageSink
             // Retire the archive's checksum before changing its bytes and publish a fresh one
             // after: a crash in between loses coverage rather than reporting false corruption.
             var sidecar = archive + ".sha256";
+            await RequireRetainedChecksumAsync(archive, sidecar, ct).ConfigureAwait(false);
             if (File.Exists(sidecar))
                 File.Delete(sidecar);
             await AtomicFileWriter.AppendAsync(archive, async stream =>
@@ -871,11 +872,30 @@ public sealed class JsonlStorageSink : IStorageSink
             using var appendLease = await JsonlWriteFence.EnterArchiveAppendAsync(_path, ct).ConfigureAwait(false);
             await using var processLease = await ArchiveAppendLock.AcquireAsync(_path, ArchiveAppendLockTimeout, ct).ConfigureAwait(false);
             var sidecar = _path + ".sha256";
+            await RequireRetainedChecksumAsync(_path, sidecar, ct).ConfigureAwait(false);
             if (File.Exists(sidecar))
                 File.Delete(sidecar);
             await AtomicFileWriter.AppendAsync(_path, write, ct).ConfigureAwait(false);
             // Committed: as for a published archive, nothing after this may report failure.
             await RepublishArchiveChecksumAsync(_path, sidecar).ConfigureAwait(false);
+        }
+
+        // Caller holds the archive lock. An archive that lost a complete trailing gzip member still
+        // decompresses, so readability alone cannot prove it holds every committed event; its retained
+        // checksum can. Retiring a mismatched sidecar and republishing one over the shortened archive
+        // would conceal that loss for good, so the append is refused and the evidence left in place.
+        private static async Task RequireRetainedChecksumAsync(string archive, string sidecar, CancellationToken ct)
+        {
+            if (!File.Exists(sidecar))
+                return;
+            // Sidecars are written in sha256sum format ("{checksum}  {filename}").
+            var expected = (await File.ReadAllTextAsync(sidecar, ct).ConfigureAwait(false)).Split(' ', 2)[0].Trim();
+            string actual;
+            await using (var archiveStream = new FileStream(archive, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+                actual = await Sha256Digest.ComputeAsync(archiveStream, ct).ConfigureAwait(false);
+            if (!string.Equals(expected, actual, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException(
+                    $"Refusing to append to {archive}: it no longer matches its retained checksum and may have lost committed events.");
         }
 
         // Best effort and uncancellable. On failure the sidecar stays retired, so health checks

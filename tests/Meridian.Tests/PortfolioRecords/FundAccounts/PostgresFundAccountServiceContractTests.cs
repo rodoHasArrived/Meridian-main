@@ -114,6 +114,9 @@ public sealed class PostgresFundAccountServiceContractTests : FundAccountService
     public Task IngestBankStatementAsync_TransactionFeedRedelivery_MovesItsHeaderDate() => IngestBankStatementAsync_TransactionFeedRedelivery_MovesItsHeaderDate_Core();
 
     [FundAccountDatabaseFact]
+    public Task IngestBankStatementAsync_TransactionFeedRedeliveryInAnotherOrder_ReassignsItsOrdinals() => IngestBankStatementAsync_TransactionFeedRedeliveryInAnotherOrder_ReassignsItsOrdinals_Core();
+
+    [FundAccountDatabaseFact]
     public Task ReconcileAccountAsync_CashDivergingFromBankClosingBalance_ProducesCashBreak() => ReconcileAccountAsync_CashDivergingFromBankClosingBalance_ProducesCashBreak_Core();
 
     [FundAccountDatabaseFact]
