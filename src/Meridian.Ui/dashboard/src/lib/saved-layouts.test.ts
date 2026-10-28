@@ -142,6 +142,23 @@ describe("saved-layouts store", () => {
 });
 
 describe("createUserLayout", () => {
+  it("round-trips a supported table-state route longer than the old 512-character limit", () => {
+    const route = `/portfolio?view=${"a".repeat(520)}&fundAccountId=fund-a`;
+    const state = captureLayoutState({ ...sampleState, route });
+    const layout = createUserLayout({ id: "long", name: "Long table view", state });
+    expect(layout).not.toBeNull();
+    const storage = memoryStorage();
+    upsertUserLayout(layout!, storage);
+    expect(readUserLayouts(storage)[0]?.state.route).toBe(route);
+  });
+
+  it("refuses invalid or oversized captured layouts instead of saving an unrestorable record", () => {
+    for (const route of ["https://outside.invalid/", `/portfolio?view=${"a".repeat(2200)}`]) {
+      const state = captureLayoutState({ ...sampleState, route });
+      expect(createUserLayout({ id: "invalid", name: "Unrestorable", state })).toBeNull();
+    }
+  });
+
   it("builds a user layout and trims the name", () => {
     const layout = createUserLayout({ id: "x", name: "  My Layout  ", state: sampleState });
     expect(layout?.name).toBe("My Layout");

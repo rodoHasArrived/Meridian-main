@@ -132,6 +132,27 @@ declaring conventions, and its mapping is frozen as `security-master-declared-sc
 
 ## Future Expansion Notes
 
+The internal Application `ScheduleSpecFactory` remains a tested preparatory adapter. It maps
+the decoded F# `ScheduleConventions` to a kernel spec without owning a production consumer. An empty
+block refuses with an instruction to retain the legacy path. For a declaring block, omitted
+schedule members map to forward, anchored, anchor-day, short-stub, unadjusted payment and
+unadjusted accrual, with no lag. Recognized payment frequencies map to their actual day, week,
+month or term tenor; missing and irregular cadences refuse. Explicit payment calendars take
+precedence over the security-level calendar; a common calendar is used only when none are named.
+Any unresolved selected calendar refuses, even on an unadjusted schedule. Adjustment or lag
+without a calendar refuses. `endOfMonthRule=true` selects an end-of-month roll; contradictory
+explicit roll and month-end terms refuse. The kernel validates the resulting grid. Coupon rate
+units and cash basis remain outside this prototype's schedule spec.
+
+The production Contracts `ScheduleSpecFactory` implements the separate frozen increment-5a contract:
+it reads the versioned record and descriptor, accepts monthly-or-longer coupon cadences or AtMaturity,
+and never substitutes the common calendar for the block's calendars. The Security Master engine
+explicitly calls that factory, uses file-backed calendars, and computes declared coupon amounts with
+day-count context. The broader prototype's cases remain covered and never grant a production fallback.
+Write versions remain unchanged; the amortization refusals remain in force. The later 5b write
+validation and version raise, direct-lending migration and the other extensibility priorities
+remain open.
+
 Planned in sequence, each behind its own proof:
 
 - Schedule terms declared on Bond, CertificateOfDeposit, StructuredCredit and swap legs arrive

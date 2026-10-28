@@ -1,14 +1,14 @@
 .workflow-continuity-dock {
   display: grid;
-  grid-template-columns: minmax(13rem, 0.42fr) minmax(24rem, 1fr) max-content;
+  grid-template-columns: minmax(0, 1fr) max-content;
   align-items: center;
   gap: 0.3125rem;
   min-width: 0;
-  border-bottom: 1px solid var(--ws-border, #E4E3DE);
+  border-top: 1px solid var(--ws-border, #E4E3DE);
   background: var(--ws-surface, #FBFAF8);
   color: var(--ws-text, #22252A);
   box-shadow: none;
-  padding: 0.25rem 1rem;
+  padding: 0.375rem 0 0;
 }
 
 .workflow-continuity-context {
@@ -72,7 +72,7 @@
 
 .workflow-continuity-scope-chip {
   display: inline-grid;
-  grid-template-columns: max-content minmax(0, 1fr);
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
   align-items: baseline;
   gap: 0.25rem;
   max-width: 100%;
@@ -86,7 +86,6 @@
 }
 
 .workflow-continuity-scope-chip-inactive {
-  opacity: 0.55;
   border-style: dashed;
 }
 
@@ -537,3 +536,14 @@
   }
 
 }
+
+.workflow-continuity-scope-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+.workflow-continuity-edit { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem; font-size: 0.75rem; color: var(--primary); border-radius: var(--radius-sm); }
+.workflow-continuity-edit:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.workflow-continuity-scope-applicability { font-size: 0.6875rem; color: var(--ws-text-muted); }
+.workflow-continuity-scope-chip dd { overflow-wrap: anywhere; }
+.workflow-continuity-expanded-flow span:last-child,
+.workflow-continuity-expanded-decision p,
+.workflow-continuity-expanded-decision a { white-space: normal; overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: reduce) { .workflow-continuity-disclosure-icon { transition: none; } }
+.workflow-continuity-operator-flow[open] { max-height: 40dvh; overflow-y: auto; }

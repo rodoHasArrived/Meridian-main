@@ -37,7 +37,8 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
   const ready = Boolean(sessionIdentity && selected && editor.status);
   const busy = editor.busy !== null;
   const scopeKey = selected ? credentialOwnershipKey(selected) : "";
-  const isLive = selected?.credentialEnvironment === "live" || selected?.credentialEnvironment === "production";
+  const acknowledgementEnvironment = selected?.credentialEnvironment?.trim().toLowerCase();
+  const isLive = acknowledgementEnvironment === "live" || acknowledgementEnvironment === "production";
 
   function begin() {
     request.current?.abort();

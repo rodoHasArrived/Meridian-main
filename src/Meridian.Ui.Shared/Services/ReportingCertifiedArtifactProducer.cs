@@ -157,7 +157,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
             manifest.OperationalScope!,
             manifest.ImmutableAccessScope!,
             manifest.CertifiedSnapshot,
-            manifest.AuthoritativeSource!,
+            WithheldReplayInputs(manifest.AuthoritativeSource!),
             manifest.Readiness!,
             manifest.Sections,
             manifest.CertifiedDatasetRows.Length,
@@ -585,13 +585,22 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         return Utf8(builder.ToString());
     }
 
+    // The retained ledger population is the complete fund/book history behind the run, while the report
+    // itself may be scoped to one investor, portfolio or entity. Downloadable artifacts carry its identity
+    // and digest, which the checkpoint hash covers; the replay payload stays in the server-side manifest,
+    // so downloading a scoped report never discloses other audiences' journals.
+    private static ReportingAuthoritativeSourceCheckpoint WithheldReplayInputs(ReportingAuthoritativeSourceCheckpoint source) =>
+        source.LedgerPopulation is { } population
+            ? source with { LedgerPopulation = population with { PayloadJson = string.Empty } }
+            : source;
+
     private static byte[] RenderEvidenceVault(ReportingOutputManifest manifest)
     {
         var document = new ReportingEvidenceVaultDocument(
             "meridian.reporting.evidence-vault.v1",
             manifest.RunId,
             manifest.AsOfDate,
-            manifest.AuthoritativeSource!,
+            WithheldReplayInputs(manifest.AuthoritativeSource!),
             manifest.CertifiedSnapshot!,
             manifest.Readiness!,
             manifest.Sections

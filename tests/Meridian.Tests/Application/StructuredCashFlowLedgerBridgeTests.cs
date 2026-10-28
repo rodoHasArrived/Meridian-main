@@ -41,7 +41,7 @@ public sealed class StructuredCashFlowLedgerBridgeTests
     {
         var evidence = new StructuredCashFlowScheduleEvidence(
             ScheduleGenerator.KernelVersion,
-            ScheduleSpecFactory.DeclaredMappingVersion,
+            Meridian.Contracts.SecurityMaster.ScheduleSpecFactory.DeclaredMappingVersion,
             [],
             []);
         var declared = BuildProjection() with { ScheduleEvidence = evidence };

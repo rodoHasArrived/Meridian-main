@@ -7550,17 +7550,19 @@ written, and the owner took its open decisions on 2026-10-28; they are listed at
   listed does. On a `UiServer` host the capability and calendar categories now also reach the
   Serilog file sink from Information; every other category's routing is unchanged.
 - **Composition.** `IBusinessDayCalendarSource` and the hosted service are registered on every host
-  with `TryAdd`. `SecurityMasterCashFlowService` is partial and takes a trailing optional
-  `IBusinessDayCalendarSource`; `NullSecurityMasterCashFlowService` is unaffected.
+  with `TryAdd`. `SecurityMasterCashFlowService` is partial and retains its exact legacy six-argument
+  constructor, forwarding to a calendar-aware overload with a required first `IBusinessDayCalendarSource`.
+  This preserves positional null calls and lets dependency injection select the longer overload when
+  calendars are registered; `NullSecurityMasterCashFlowService` is unaffected.
 - **Contracts: additive.** New public types (`SecurityVersionedTerms`,
   `SecurityVersionedTermDecoding`, `SecurityDeclaredConventionsRead`,
   `SecurityDeclaredConventionsStatus`, `ScheduleConventionTerms`, `ScheduleSpecFactory`,
   `DeclaredScheduleResolution`, `DeclaredScheduleStatus`, `DeclaredScheduleRefusal`,
   `DeclaredScheduleRefusalCode`, `StructuredCashFlowScheduleEvidence`,
   `StructuredCashFlowCalendarEvidence` and `StructuredCashFlowCoverageGap`), the public
-  `SecurityTermsEnvelope.TryGetReadRefusal`, and a trailing optional positional member on
-  `StructuredCashFlowProjectionDto`, so in-solution callers recompile while the JSON is unchanged
-  when it is null. Storage adds `FileBusinessDayCalendarSource` and
+  `SecurityTermsEnvelope.TryGetReadRefusal`, and a nonpositional optional init property on
+  `StructuredCashFlowProjectionDto`, preserving its twelve-argument CLR constructor and twelve-output
+  deconstruction while the JSON is unchanged when it is null. Storage adds `FileBusinessDayCalendarSource` and
   `BusinessDayCalendarFileRefusal`. There is no migration and no `schema_version` or `terms_format`
   change; the schema-control contracts manifest and its generated pages list the thirteen new
   public Contracts types.

@@ -858,6 +858,18 @@ internal static class FundStructureProjector
         IReadOnlyList<OwnershipLinkDto> links) =>
         links.Any(link => link.ChildNodeId == entityId && parentIds.Contains(link.ParentNodeId));
 
+    internal static IReadOnlyList<Guid> AppendUnique(IReadOnlyList<Guid> source, Guid value)
+    {
+        if (source.Contains(value))
+        {
+            return source;
+        }
+
+        var updated = source.ToList();
+        updated.Add(value);
+        return updated;
+    }
+
     internal static bool TryParseGuid(string? value, out Guid guid) =>
         Guid.TryParse(value, out guid);
 

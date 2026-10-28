@@ -59,3 +59,33 @@ describe("reporting queue route focus", () => {
     expect(focusState("?reportingWork=capital", pathname).routeKey).not.toBe(focusState("?reportingWork=board", pathname).routeKey);
   });
 });
+
+
+describe("portfolio table route focus", () => {
+  it.each(["/portfolio", "/portfolio/", "/PORTFOLIO", "/PORTFOLIO/"])("keeps table view updates local on %s", (pathname) => {
+    const initial = focusState("?fundAccountId=fund-a", pathname);
+    expect(focusState("?fundAccountId=fund-a&view=first", pathname).routeKey).toBe(initial.routeKey);
+    expect(focusState("?fundAccountId=fund-a&view=second", pathname).routeKey).toBe(initial.routeKey);
+    expect(focusState("?view=first", pathname).routeKey).toBe(focusState("", pathname).routeKey);
+  });
+
+  it("preserves operating scope and unrelated filters as navigation", () => {
+    const initial = focusState("?fundAccountId=fund-a&asOf=2026-06-30&filter=due&view=first", "/portfolio");
+    expect(initial.routeKey).toBe("/portfolio?fundAccountId=fund-a&asOf=2026-06-30&filter=due");
+    expect(focusState("?fundAccountId=fund-b&asOf=2026-06-30&filter=due&view=second", "/portfolio").routeKey).not.toBe(initial.routeKey);
+    expect(focusState("?fundAccountId=fund-a&asOf=2026-07-31&filter=due&view=second", "/portfolio").routeKey).not.toBe(initial.routeKey);
+    expect(focusState("?fundAccountId=fund-a&asOf=2026-06-30&filter=all&view=second", "/portfolio").routeKey).not.toBe(initial.routeKey);
+  });
+
+  it("preserves explicit evidence hash navigation", () => {
+    const initial = focusState("?view=first", "/portfolio", "#portfolio-position-detail");
+    const updated = focusState("?view=second", "/portfolio", "#portfolio-position-detail");
+    expect(updated.routeKey).toBe(initial.routeKey);
+    expect(updated.targetElementId).toBe("portfolio-position-detail");
+    expect(focusState("?view=second", "/portfolio", "#portfolio-runs").routeKey).not.toBe(initial.routeKey);
+  });
+
+  it.each(["/portfolio/attribution", "/portfolio/brokerage-sync", "/trading", "/reporting"])("preserves view token navigation on %s", (pathname) => {
+    expect(focusState("?view=first", pathname).routeKey).not.toBe(focusState("?view=second", pathname).routeKey);
+  });
+});

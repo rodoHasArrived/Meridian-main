@@ -22,8 +22,8 @@ public static partial class ProviderServiceExtensions
     /// <summary>
     /// Registers built-in capability factories before the container is built. Configuration may
     /// be prepared lazily by the host, but service registration and module discovery are eager.
-    /// The descriptor catalog owns built-in factories; explicitly supplied plugin assemblies own
-    /// their additional modules. Attribute discovery never replaces a configured built-in factory.
+    /// The descriptor catalog identifies factory ownership; module-owned built-ins and explicitly
+    /// supplied plugins register through their modules. Attribute discovery never replaces a factory.
     /// </summary>
     public static IServiceCollection AddProviderServices(
         this IServiceCollection services,
@@ -101,20 +101,26 @@ public static partial class ProviderServiceExtensions
         }
 
         var ownedFamilies = ProviderCapabilityDescriptorCatalog.Descriptors
+            .Where(static descriptor => descriptor.FactoryOwner == ProviderCapabilityFactoryOwner.Descriptor)
+            .Select(static descriptor => descriptor.ProviderId).ToHashSet(StringComparer.Ordinal);
+        var builtInModuleFamilies = ProviderCapabilityDescriptorCatalog.Descriptors
+            .Where(static descriptor => descriptor.FactoryOwner == ProviderCapabilityFactoryOwner.Module)
             .Select(static descriptor => descriptor.ProviderId).ToHashSet(StringComparer.Ordinal);
         registry.RegisterModules(services, ownedFamilies, assemblies);
         // AssemblyBuilder and Type.Assembly can expose different wrappers for the same
         // module. Use module identities so explicitly supplied emitted plugins work too.
         var pluginModules = pluginAssemblies.SelectMany(assembly => assembly.GetModules())
             .Select(module => module.ModuleVersionId).ToHashSet();
-        var pluginInventory = registry.Sources
-            .Where(source => !ownedFamilies.Contains(source.Id) && pluginModules.Contains(source.ImplementationType.Module.ModuleVersionId))
+        var moduleInventory = registry.Sources
+            .Where(source => !ownedFamilies.Contains(source.Id)
+                && (builtInModuleFamilies.Contains(source.Id)
+                    || pluginModules.Contains(source.ImplementationType.Module.ModuleVersionId)))
             .ToArray();
         // Discovery publishes factory descriptors only after the owning module successfully
         // registers. Attribute metadata or an unrelated DI service cannot grant a factory.
-        var pluginRegistrations = registry.ModuleCapabilityRegistrations
+        var moduleRegistrations = registry.ModuleCapabilityRegistrations
             .Where(registration => registrationFactory.IsFamilyEnabled(registration.ProviderId)
-                && pluginInventory.Any(source => source.Id == registration.ProviderId &&
+                && moduleInventory.Any(source => source.Id == registration.ProviderId &&
                     source.ImplementationType == registration.ImplementationType))
             .ToArray();
         services.AddSingleton(registry);
@@ -127,8 +133,9 @@ public static partial class ProviderServiceExtensions
             var factory = sp.GetRequiredService<ProviderFactory>();
             return registrations.Where(r => r.Contract == typeof(IOptionsChainProvider) && factory.IsCapabilityEnabled(r))
                 .Select(r => (IOptionsChainProvider)sp.GetRequiredService(r.Implementation))
-                .Concat(pluginRegistrations.Where(r => r.Contract == typeof(IOptionsChainProvider))
-                    .Select(r => (IOptionsChainProvider)sp.GetRequiredService(r.ImplementationType)))
+                // Module entries appear only after their gates and constructors succeeded.
+                // Reuse those instances instead of retrying a failed module from catalog reads.
+                .Concat(sp.GetRequiredService<ProviderRegistry>().GetProviders<IOptionsChainProvider>())
                 .ToArray();
         });
         services.AddSingleton<IOptionsChainProvider>(sp =>
@@ -160,28 +167,42 @@ public static partial class ProviderServiceExtensions
                 }
             }
 
-            factory.CreateAndRegisterAllAsync(providers).GetAwaiter().GetResult();
-            foreach (var registration in pluginRegistrations)
+            factory.CreateAndRegisterAllAsync(providers, CancellationToken.None, includeModuleOwned: false).GetAwaiter().GetResult();
+            foreach (var implementation in moduleRegistrations.GroupBy(registration => registration.ImplementationType))
             {
-                providers.RegisterCapabilityFactory(registration.ProviderId, registration.Contract,
-                    () => sp.GetRequiredService(registration.ImplementationType));
-            }
-            foreach (var implementation in pluginRegistrations.Select(r => r.ImplementationType).Distinct())
-            {
-                if (sp.GetRequiredService(implementation) is IProviderMetadata metadata)
-                    providers.Register(metadata, ownsLifetime: false);
+                try
+                {
+                    var configured = implementation
+                        .Where(registration => registration.IsConfigured?.Invoke(sp) != false).ToArray();
+                    if (configured.Length == 0)
+                        continue;
+
+                    // Resolve before publishing: a credential may disappear or construction may fail
+                    // after the configuration gate succeeds. Other providers must still initialize.
+                    var instance = sp.GetRequiredService(implementation.Key);
+                    if (instance is IProviderMetadata metadata)
+                        providers.RegisterModuleMetadata(metadata, configured.Select(registration => registration.Contract).ToHashSet());
+                    foreach (var registration in configured)
+                        providers.RegisterCapabilityFactory(registration.ProviderId, registration.Contract,
+                            () => sp.GetRequiredService(registration.ImplementationType));
+                }
+                catch (Exception ex)
+                {
+                    factory.Log.Warning(ex, "Failed to create module provider {Provider} implementation {Implementation}; skipping it for this run",
+                        implementation.First().ProviderId, implementation.Key.Name);
+                }
             }
             ProviderCatalog.InitializeFromRegistry(
-                () => BuildMergedProviderCatalog(providers, sp.GetServices<IOptionsChainProvider>(), pluginInventory),
-                id => GetMergedProviderCatalogEntry(providers, sp.GetServices<IOptionsChainProvider>(), id, pluginInventory));
+                () => BuildMergedProviderCatalog(providers, sp.GetServices<IOptionsChainProvider>(), moduleInventory),
+                id => GetMergedProviderCatalogEntry(providers, sp.GetServices<IOptionsChainProvider>(), id, moduleInventory));
             return providers;
         });
         services.TryAddSingleton<IProviderCatalog>(sp =>
         {
             var providers = sp.GetRequiredService<ProviderRegistry>();
             return new RuntimeProviderCatalog(
-                () => BuildMergedProviderCatalog(providers, sp.GetServices<IOptionsChainProvider>(), pluginInventory),
-                id => GetMergedProviderCatalogEntry(providers, sp.GetServices<IOptionsChainProvider>(), id, pluginInventory));
+                () => BuildMergedProviderCatalog(providers, sp.GetServices<IOptionsChainProvider>(), moduleInventory),
+                id => GetMergedProviderCatalogEntry(providers, sp.GetServices<IOptionsChainProvider>(), id, moduleInventory));
         });
         services.AddSingleton<IEnumerable<IHistoricalDataProvider>>(sp =>
             sp.GetRequiredService<ProviderRegistry>().GetProviders<IHistoricalDataProvider>());

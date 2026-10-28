@@ -58,7 +58,7 @@ class DoctorProfileTests(unittest.TestCase):
         self.write("src/Meridian.Wpf/Meridian.Wpf.csproj", "<Project />\n")
         self.write("build/scripts/docs/requirements.txt", "PyYAML==6.0.2\n")
         self.write("build/scripts/ci/requirements.txt", "-r ../docs/requirements.txt\nPillow==12.3.0\n")
-        self.write("src/Meridian.Ui/dashboard/package.json", json.dumps({"engines": {"node": ">=24 <25"}}))
+        self.write("src/Meridian.Ui/dashboard/package.json", json.dumps({"engines": {"node": "^24.0.0"}}))
         self.write("src/Meridian.Ui/dashboard/package-lock.json", json.dumps({"lockfileVersion": 3}))
         self.available = {"dotnet", "node", "npm", "git", "pwsh", "actionlint", "bash", "promtool", "docker-compose"}
         self.versions = {
@@ -153,8 +153,28 @@ class DoctorProfileTests(unittest.TestCase):
     def test_browser_reads_supported_node_version_from_nvmrc(self) -> None:
         self.write(".nvmrc", "25\n")
         self.assert_actionable_failure(self.row(self.check("browser"), "Node"))
+        self.write("src/Meridian.Ui/dashboard/package.json", json.dumps({"engines": {"node": "^25.0.0"}}))
         self.versions["node"] = (0, "v25.0.0")
         self.assertEqual(self.row(self.check("browser"), "Node").status, "pass")
+
+    def test_browser_enforces_dashboard_runtime_minor_without_pinning_nvmrc(self) -> None:
+        self.write("src/Meridian.Ui/dashboard/package.json", json.dumps({"engines": {"node": "^24.15.0"}}))
+        for version, status in (("v24.14.0", "fail"), ("v24.15.0", "pass"), ("v24.19.0", "pass")):
+            with self.subTest(version=version):
+                self.versions["node"] = (0, version)
+                row = self.row(self.check("browser"), "Node")
+                self.assertEqual(row.status, status)
+                if status == "fail":
+                    self.assert_actionable_failure(row)
+                    self.assertIn("24.15.0", row.fix)
+        self.assertEqual((self.root / ".nvmrc").read_text().strip(), "24")
+
+    def test_browser_rejects_unsupported_runtime_range_and_prerelease(self) -> None:
+        for engine, version in (("~24.15.0", "v24.19.0"), ("^24.15.0", "v24.19.0-rc.1")):
+            with self.subTest(engine=engine, version=version):
+                self.write("src/Meridian.Ui/dashboard/package.json", json.dumps({"engines": {"node": engine}}))
+                self.versions["node"] = (0, version)
+                self.assert_actionable_failure(self.row(self.check("browser"), "Node"))
 
     def test_browser_missing_or_invalid_node_definition_has_a_fix(self) -> None:
         for content in (None, "unsupported"):
@@ -468,7 +488,7 @@ case "$1" in
 esac
 ''')
         self.shim("node", '''printf 'node %s\\n' "$*" >> "$DOCTOR_TEST_LOG"
-if [[ "$1" == --version ]]; then printf '%s\\n' "${DOCTOR_TEST_NODE_VERSION:-v24.9.0}"; fi
+if [[ "$1" == --version ]]; then printf '%s\\n' "${DOCTOR_TEST_NODE_VERSION:-v24.19.0}"; fi
 ''')
         self.shim("npm", '''printf 'npm %s\\n' "$*" >> "$DOCTOR_TEST_LOG"
 if [[ "$1" == --version ]]; then printf '11.6.0\\n'; elif [[ " $* " == *" ci "* ]]; then exit "${DOCTOR_TEST_NPM_EXIT:-42}"; fi

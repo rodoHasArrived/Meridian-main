@@ -248,8 +248,12 @@ public sealed record StructuredCashFlowProjectionDto(
     StructuredCashFlowTerms? TermsUsed = null,
     IReadOnlyList<StructuredCashFlowLegSchedule>? LegSchedules = null,
     string? BlockedReason = null,
-    bool IsNormalizedPer100 = false,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] StructuredCashFlowScheduleEvidence? ScheduleEvidence = null);
+    bool IsNormalizedPer100 = false)
+{
+    /// <summary>Calendar and kernel evidence for a declared projection; absent on legacy projections.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public StructuredCashFlowScheduleEvidence? ScheduleEvidence { get; init; }
+}
 
 /// <summary>
 /// One balanced ledger journal line projected from a structured cash flow accrual.

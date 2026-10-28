@@ -35,12 +35,63 @@ beforeEach(() => {
 });
 
 describe("owned provider credential editor", () => {
+  it.each(["live", "LIVE", " Live ", "production", "Production", " production "])(
+    "requires acknowledgement for retained environment %j while preserving its exact scoped request", async environment => {
+      const retained = { ...owned("retained-live"), credentialEnvironment: environment };
+      api.getProviderRoutingConnections.mockResolvedValue([retained]);
+      api.getProviderConnections.mockImplementation(({ connectionId }) => Promise.resolve([{ ...status(connectionId), environment }]));
+      render(<OwnedProviderCredentialPanel row={row} session={session} />);
+      await select("retained-live"); await fill();
+      const save = screen.getByRole("button", { name: "Save Alpaca credentials" });
+      expect(save).toBeDisabled();
+      await userEvent.click(save);
+      expect(api.putProviderCredentials).not.toHaveBeenCalled();
+      await userEvent.click(screen.getByRole("checkbox", { name: "I understand this save changes the selected live connection credentials." }));
+      expect(save).toBeEnabled();
+      await userEvent.click(save);
+      await screen.findByText("Credentials saved (Configured).");
+      expect(api.putProviderCredentials).toHaveBeenCalledWith("alpaca", {
+        credentials: { KeyId: "key", SecretKey: "secret" }, environment
+      }, expect.objectContaining({ connectionId: "retained-live", allowDevelopmentFallback: false }));
+    }
+  );
+
+  it("loads and saves a retained provider alias through the canonical provider without rewriting its connection", async () => {
+    api.getProviderRoutingConnections.mockResolvedValue([{ ...owned("paper-a"), providerFamilyId: "alpaca-brokerage" }]);
+    render(<OwnedProviderCredentialPanel row={row} session={session} />);
+    await select(); await fill();
+    await userEvent.click(screen.getByRole("button", { name: "Save Alpaca credentials" }));
+    await screen.findByText("Credentials saved (Configured).");
+    expect(api.putProviderCredentials).toHaveBeenCalledWith("alpaca", {
+      credentials: { KeyId: "key", SecretKey: "secret" }, environment: "paper"
+    }, expect.objectContaining({ connectionId: "paper-a", allowDevelopmentFallback: false }));
+    expect(api.getProviderConnections.mock.calls.every(([options]) => options.connectionId === "paper-a")).toBe(true);
+  });
+
+  it.each([
+    { providerFamilyId: "alpaca" }, { tenantId: "other-tenant" },
+    { externalAccountId: "other-account" }, { credentialEnvironment: "live" },
+    { connectionId: "PAPER-A" }
+  ])("blocks changed retained ownership %j even when the provider alias still matches", async changed => {
+    const retained = { ...owned("paper-a"), providerFamilyId: "alpaca-brokerage" };
+    api.getProviderRoutingConnections.mockResolvedValue([retained]);
+    render(<OwnedProviderCredentialPanel row={row} session={session} />);
+    await select(); await fill();
+    api.getProviderRoutingConnections.mockResolvedValue([{ ...retained, ...changed }]);
+    await userEvent.click(screen.getByRole("button", { name: "Save Alpaca credentials" }));
+    await screen.findByText(/Selected ownership changed or was removed/);
+    expect(api.putProviderCredentials).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("Alpaca owned connection")).toHaveValue("");
+    expect(screen.queryByLabelText("Alpaca Secret key")).not.toBeInTheDocument();
+  });
+
   it("requires explicit selection and scopes status, save, verification and confirmed deletion", async () => {
     render(<OwnedProviderCredentialPanel row={row} session={session} />);
     await screen.findByRole("option", { name: /paper-a/ });
     expect(screen.getByRole("button", { name: "Save Alpaca credentials" })).toBeDisabled();
     expect(api.getProviderConnections).not.toHaveBeenCalled();
     await select(); await fill();
+    expect(screen.queryByRole("checkbox", { name: "I understand this save changes the selected live connection credentials." })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Save Alpaca credentials" }));
     await screen.findByText("Credentials saved (Configured).");
     expect(api.putProviderCredentials).toHaveBeenCalledWith("alpaca", { credentials: { KeyId: "key", SecretKey: "secret" }, environment: "paper" }, expect.objectContaining({ connectionId: "paper-a", allowDevelopmentFallback: false }));

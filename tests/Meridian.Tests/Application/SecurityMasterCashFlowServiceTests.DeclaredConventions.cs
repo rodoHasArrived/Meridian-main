@@ -541,13 +541,13 @@ public sealed partial class SecurityMasterCashFlowServiceTests
         var securityId = Guid.NewGuid();
         var logger = new RecordingLogger<SecurityMasterCashFlowService>();
         var service = new SecurityMasterCashFlowService(
+            new StaticBusinessDayCalendarSource([partial]),
             StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet),
             Array.Empty<IStructuredCashFlowProvider>(),
             QueryWith(securityId, DeclaredBond(
                 """{"businessDayConvention":"MF","accrualAdjusted":false,"paymentCalendars":["BRBD"]}""",
                 D(2041, 1, 31), D(2042, 1, 31), "Quarterly")),
-            logger,
-            calendars: new StaticBusinessDayCalendarSource([partial]));
+            logger);
 
         var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
 
@@ -572,11 +572,11 @@ public sealed partial class SecurityMasterCashFlowServiceTests
         SecurityMasterQueryContract query,
         IBusinessDayCalendarSource? calendars)
         => new(
+            calendars,
             store,
             Array.Empty<IStructuredCashFlowProvider>(),
             query,
-            NullLogger<SecurityMasterCashFlowService>.Instance,
-            calendars: calendars);
+            NullLogger<SecurityMasterCashFlowService>.Instance);
 
     private static SecurityDetailDto BuildSecurity(Guid securityId, string assetClass, JsonElement assetSpecificTerms)
         => BuildSecurity(securityId, assetSpecificTerms) with { AssetClass = assetClass };

@@ -85,7 +85,7 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
         if (_capabilityFactories.TryGetValue((key, contract), out var factory))
             return factory();
         var registered = _allProviders.Values
-            .Where(p => p.IsEnabled && p.Name == key && contract.IsInstanceOfType(p.Provider))
+            .Where(p => p.IsEnabled && p.Name == key && contract.IsInstanceOfType(p.Provider) && CanResolve(p, contract))
             .OrderBy(p => p.Priority)
             .ThenBy(p => p.Provider.GetType().FullName, StringComparer.Ordinal)
             .FirstOrDefault();
@@ -121,6 +121,17 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     /// <param name="priorityOverride">Optional priority override.</param>
     /// <param name="ownsLifetime">Whether the registry disposes the instance; false for container-owned module adapters.</param>
     public void Register<T>(T provider, int? priorityOverride = null, bool ownsLifetime = true) where T : IProviderMetadata
+        => RegisterProvider(provider, priorityOverride, ownsLifetime, allowedContracts: null);
+
+    internal void RegisterModuleMetadata(IProviderMetadata provider, IReadOnlySet<Type> allowedContracts)
+        => RegisterProvider(provider, priorityOverride: null, ownsLifetime: false, allowedContracts.ToHashSet());
+
+    private static bool CanResolve(RegisteredProvider provider, Type contract)
+        => contract == typeof(IProviderMetadata)
+            || provider.AllowedContracts is null || provider.AllowedContracts.Contains(contract);
+
+    private void RegisterProvider(IProviderMetadata provider, int? priorityOverride, bool ownsLifetime,
+        IReadOnlySet<Type>? allowedContracts)
     {
         ArgumentNullException.ThrowIfNull(provider);
 
@@ -129,7 +140,7 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
         ValidateName(id);
 
         var registrationKey = CreateRegistrationKey(provider, id);
-        var registered = new RegisteredProvider(id, provider, priority, true, ownsLifetime);
+        var registered = new RegisteredProvider(id, provider, priority, true, ownsLifetime, allowedContracts);
         if (_allProviders.TryAdd(registrationKey, registered))
         {
             MigrationDiagnostics.IncProviderRegistered();
@@ -272,7 +283,7 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     public IReadOnlyList<T> GetProviders<T>() where T : class, IProviderMetadata
     {
         return _allProviders.Values
-            .Where(r => r.IsEnabled && r.Provider is T)
+            .Where(r => r.IsEnabled && r.Provider is T && CanResolve(r, typeof(T)))
              .OrderBy(r => r.Priority)
             .ThenBy(r => r.Name, StringComparer.Ordinal)
             .ThenBy(r => r.Provider.ProviderCapabilities.PrimaryType)
@@ -290,7 +301,8 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     {
         var key = ProviderIdentity.NormalizeId(id);
         return _allProviders.Values
-            .Where(r => r.IsEnabled && string.Equals(r.Name, key, StringComparison.Ordinal) && r.Provider is T)
+            .Where(r => r.IsEnabled && string.Equals(r.Name, key, StringComparison.Ordinal)
+                && r.Provider is T && CanResolve(r, typeof(T)))
             .OrderBy(r => r.Priority)
             .ThenBy(r => r.Provider.ProviderCapabilities.PrimaryType)
             .Select(r => (T)r.Provider)
@@ -308,7 +320,7 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
         where T : class, IProviderMetadata
     {
         var candidates = _allProviders.Values
-            .Where(r => r.IsEnabled && r.Provider is T)
+            .Where(r => r.IsEnabled && r.Provider is T && CanResolve(r, typeof(T)))
             .OrderBy(r => r.Priority)
             .ThenBy(r => r.Name, StringComparer.Ordinal);
 
@@ -317,7 +329,7 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
             var provider = (T)registered.Provider;
             try
             {
-                var isAvailable = await CheckProviderAvailabilityAsync(provider, ct);
+                var isAvailable = await CheckProviderAvailabilityAsync(provider, ct, typeof(T));
                 if (isAvailable)
                 {
                     return provider;
@@ -334,8 +346,13 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     /// <summary>
     /// Checks availability for any provider type using the appropriate method.
     /// </summary>
-    private static async Task<bool> CheckProviderAvailabilityAsync(IProviderMetadata provider, CancellationToken ct)
+    private static async Task<bool> CheckProviderAvailabilityAsync(IProviderMetadata provider, CancellationToken ct,
+        Type? requestedContract = null)
     {
+        if (requestedContract == typeof(ISymbolSearchProvider) && provider is ISymbolSearchProvider searchProvider)
+            return await searchProvider.IsAvailableAsync(ct);
+        if (requestedContract == typeof(IMarketDataClient) && provider is IMarketDataClient streamingProvider)
+            return streamingProvider.IsEnabled;
         return provider switch
         {
             IHistoricalDataProvider backfill => await backfill.IsAvailableAsync(ct),
@@ -368,14 +385,14 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     {
         var results = new Dictionary<string, bool>();
         var candidates = _allProviders.Values
-            .Where(r => r.Provider is T);
+            .Where(r => r.Provider is T && CanResolve(r, typeof(T)));
 
         foreach (var registered in candidates)
         {
             try
             {
                 var isAvailable = registered.IsEnabled &&
-                    await CheckProviderAvailabilityAsync(registered.Provider, ct);
+                    await CheckProviderAvailabilityAsync(registered.Provider, ct, typeof(T));
                 results[registered.Name] = isAvailable && results.GetValueOrDefault(registered.Name, true);
             }
             catch
@@ -597,9 +614,9 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     {
         var providers = _allProviders.Values.ToList();
         return new ProviderRegistrySummary(
-            StreamingCount: providers.Count(p => p.Provider is IMarketDataClient),
-            BackfillCount: providers.Count(p => p.Provider is IHistoricalDataProvider),
-            SymbolSearchCount: providers.Count(p => p.Provider is ISymbolSearchProvider),
+            StreamingCount: providers.Count(p => p.Provider is IMarketDataClient && CanResolve(p, typeof(IMarketDataClient))),
+            BackfillCount: providers.Count(p => p.Provider is IHistoricalDataProvider && CanResolve(p, typeof(IHistoricalDataProvider))),
+            SymbolSearchCount: providers.Count(p => p.Provider is ISymbolSearchProvider && CanResolve(p, typeof(ISymbolSearchProvider))),
             TotalEnabled: providers.Count(p => p.IsEnabled));
     }
 
@@ -653,7 +670,8 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     /// <summary>
     /// Internal record for tracking registered providers in the unified registry.
     /// </summary>
-    private sealed record RegisteredProvider(string Name, IProviderMetadata Provider, int Priority, bool IsEnabled, bool OwnsLifetime);
+    private sealed record RegisteredProvider(string Name, IProviderMetadata Provider, int Priority, bool IsEnabled,
+        bool OwnsLifetime, IReadOnlySet<Type>? AllowedContracts);
 }
 
 /// <summary>

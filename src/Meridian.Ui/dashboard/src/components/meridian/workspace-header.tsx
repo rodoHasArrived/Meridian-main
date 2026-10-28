@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { AlertTriangle, RefreshCcw } from "lucide-react";
+import { AlertTriangle, Info, RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Breadcrumb, type BreadcrumbItem } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,8 @@ interface WorkspaceHeaderProps {
   refreshing?: boolean;
   /** Shell-provided header actions (e.g. copy link, save view), rendered before refresh. */
   actions?: ReactNode;
+  /** Persistent scope and optional workflow disclosure in the compact header. */
+  context?: ReactNode;
 }
 
 export function WorkspaceHeader({
@@ -46,7 +48,8 @@ export function WorkspaceHeader({
   session,
   onRefresh,
   refreshing = false,
-  actions
+  actions,
+  context
 }: WorkspaceHeaderProps) {
   const viewModel = buildWorkspaceHeaderViewModel({
     workspace,
@@ -76,46 +79,52 @@ export function WorkspaceHeader({
           <span className="text-xs leading-5 opacity-80">{viewModel.liveBanner.detail}</span>
         </div>
       ) : null}
-      <div className="workspace-header-shell px-4 py-3 lg:px-6">
-        <div className="space-y-3">
+      <div className="workspace-header-shell workstation-header-compact">
+        <div className="workstation-header-location">
           {breadcrumbItems.length > 0 ? <Breadcrumb items={breadcrumbItems} /> : null}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex min-w-0 flex-col gap-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="eyebrow-label">{viewModel.eyebrow}</div>
-                {viewModel.badges.map((badge) => (
-                  <Badge key={badge.id} variant={badge.variant} aria-label={badge.ariaLabel}>
-                    {badge.label}
-                  </Badge>
-                ))}
-              </div>
-              <h1 className="font-display text-xl font-semibold leading-snug text-foreground">{viewModel.title}</h1>
-              <p className="max-w-3xl text-sm leading-6 text-muted-foreground">{viewModel.description}</p>
-            </div>
-
-            <div className="flex shrink-0 flex-wrap items-center gap-2">
-              {actions}
-              {viewModel.refreshAction && onRefresh ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onRefresh}
-                  title={viewModel.refreshAction.title}
-                  aria-label={viewModel.refreshAction.ariaLabel}
-                  disabled={viewModel.refreshAction.disabled}
-                  disabledReason={viewModel.refreshAction.disabledReason}
-                >
-                  <RefreshCcw
-                    className={`size-4 ${viewModel.refreshAction.busy ? "animate-spin" : ""}`}
-                    aria-hidden="true"
-                  />
-                </Button>
-              ) : null}
-            </div>
+          <div className="workstation-header-title-row">
+            <h1 className="font-display font-semibold text-foreground">{viewModel.title}</h1>
+            {viewModel.badges.map((badge) => (
+              <Badge key={badge.id} variant={badge.variant} aria-label={badge.ariaLabel}>
+                {badge.label}
+              </Badge>
+            ))}
+            <details className="workstation-header-info" onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                event.preventDefault();
+                event.currentTarget.open = false;
+                event.currentTarget.querySelector("summary")?.focus();
+              }
+            }}>
+              <summary aria-label={`About ${workspace.label}`} title={`About ${workspace.label}`}>
+                <Info className="size-4" aria-hidden="true" />
+              </summary>
+              <p>{viewModel.description}</p>
+            </details>
           </div>
-
-          <span className="sr-only" aria-label={viewModel.sessionPillAriaLabel}>{viewModel.sessionLabel}</span>
         </div>
+        <div className="workstation-header-actions">
+          {actions}
+          {viewModel.refreshAction && onRefresh ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onRefresh}
+              title={viewModel.refreshAction.title}
+              aria-label={viewModel.refreshAction.ariaLabel}
+              disabled={viewModel.refreshAction.disabled}
+              disabledReason={viewModel.refreshAction.disabledReason}
+            >
+              <RefreshCcw
+                className={`size-4 ${viewModel.refreshAction.busy ? "animate-spin" : ""}`}
+                aria-hidden="true"
+              />
+              <span>{refreshing ? "Refreshing" : "Refresh"}</span>
+            </Button>
+          ) : null}
+        </div>
+        {context ? <div className="workstation-header-context">{context}</div> : null}
+        <span className="sr-only" aria-label={viewModel.sessionPillAriaLabel}>{viewModel.sessionLabel}</span>
       </div>
       <span className="sr-only" aria-live="polite">{viewModel.liveAnnouncement}</span>
     </header>

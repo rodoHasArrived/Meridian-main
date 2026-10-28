@@ -11,6 +11,15 @@ last_reviewed: 2026-10-21
 
 # src/Meridian.Application
 
+The internal `SecurityMaster/CashFlow/ScheduleSpecFactory` remains a preparatory adapter over decoded
+F# conventions, with its broader day/week cadence and explicit common-calendar fallback tests.
+Production projections explicitly use `Meridian.Contracts.SecurityMaster.ScheduleSpecFactory`:
+that versioned record reader follows the descriptor, requires monthly-or-longer coupon cadences or
+AtMaturity, and resolves only the declaring block's calendars. The prototype is not a production
+fallback; both factories retain their separate refusal and calendar tests. See the
+[contractual schedule rollout](../../docs/domain/contractual-schedule.md#future-expansion-notes)
+for the declared engine and remaining 5b work.
+
 Freshness monitoring begins with live ingress or collector subscription attempts, not configured symbols in an idle workstation. An unused UI monitor does not publish empty snapshots over an active collector's process-wide metrics. Internal reconciliation retains observed `tradeFill.price` only for the single-currency share movement, never a commission leg or a price inferred from fee-inclusive net cash.
 
 
@@ -833,10 +842,16 @@ Core workstation host. Do not introduce a second listener or independent monitor
   at the service boundary; projection never reads persistence or mutates command state.
   `FundStructureProjectionContractTests` exercises these views, effective windows, enrichment,
   and snapshot isolation across both implementations.
-  The PostgreSQL-backed service now supports the same shared
-  governance cash-flow projection path as the local JSON/in-memory service, using stored
-  structure rows plus fund-account snapshots, bank-statement rows, assignment metadata, and
-  optional Security Master economic rules for realized/projected cash-flow evidence.
+  `FundStructureCashFlowReadService` owns shared governance cash-flow orchestration, scope
+  resolution, ladders, variance, trend fallback, and optional Security Master projections.
+  Both persistence services pass captured structure, authorized accounts, shared metadata, and
+  an explicit as-of time; PostgreSQL no longer constructs an in-memory command service to read
+  cash flows. Its existing tenant/account visibility filter applies before account history is
+  read. Public contracts, currency handling, effective windows, and projection evidence remain
+  shared. The reader preserves complete statement revision/sequence authority, admits feed rows
+  by their own value date, refuses conflicting statement evidence, and retains unknown current
+  cash as unavailable rather than zero. `FundStructureCashFlowContractTests` covers both service implementations alongside
+  the existing cash-flow and schedule characterization tests.
   In-memory and PostgreSQL ownership-graph diagnostics share one iterative validator for
   self-links, dangling nodes, and exact cycle participants, avoiding recursion limits and
   implementation drift between persistence lanes.
@@ -1171,8 +1186,11 @@ records `TermBlockAmended`. A block the class only reads (`scheduleConventions`,
 
 `SecurityMasterCashFlowService` follows a record's declared `scheduleConventions` block (ADR-025).
 After the unsupported-class and missing-maturity checks, and before the legacy issue-date fallback,
-it resolves `ScheduleSpecFactory.Resolve` with the node's `IBusinessDayCalendarSource` (a trailing
-optional constructor parameter). A refusal blocks the projection with its reason. A record that
+it resolves `Meridian.Contracts.SecurityMaster.ScheduleSpecFactory.Resolve` with the node's
+`IBusinessDayCalendarSource`. The exact legacy six-argument constructor remains available to compiled
+hosts; the calendar-aware overload requires the source first, avoiding ambiguity in legacy positional
+null calls. Dependency injection selects that seven-argument overload when a source is registered.
+A refusal blocks the projection with its reason. A record that
 declares nothing takes every legacy step unchanged, except that a Bond, CertificateOfDeposit,
 StructuredCredit or Swap row stamped outside 1 to its class's `ReadsTermsThrough` is refused with
 the read guard's reason whether or not it carries a block. A declaring record branches before the

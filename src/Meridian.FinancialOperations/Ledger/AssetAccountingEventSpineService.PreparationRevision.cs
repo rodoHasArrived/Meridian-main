@@ -45,7 +45,10 @@ public sealed partial class AssetAccountingEventSpineService
             request.EventAmount, request.Currency.Trim(), request.Scope, request.EconomicEvent, request.ProjectionLineage,
             request.RetainedEvidence, stages, request.ProjectedEffect, Correction: request.Correction,
             CorporateAction: request.CorporateAction, CapitalReturn: request.CapitalReturn,
-            FactorPaydown: request.FactorPaydown, PreparationRevision: revision);
+            FactorPaydown: request.FactorPaydown)
+        {
+            PreparationRevision = revision
+        };
         var issues = AssetAccountingEventSpineValidator.Validate(projected);
         RequireAssertion(issues.Count == 0, $"Reprepared factor projection is invalid: {string.Join(" ", issues)}");
         AssetAccountingPreparationRevisionValidator.ValidateTransition(previous.Projection, projected);
