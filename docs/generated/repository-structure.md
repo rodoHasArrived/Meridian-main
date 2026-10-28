@@ -2586,6 +2586,7 @@ Meridian-main
 │   │   │   │   │   └── S4-accounting-details.png
 │   │   │   │   ├── credential-ownership.md
 │   │   │   │   ├── credential-ui.md
+│   │   │   │   ├── local-validation.json
 │   │   │   │   ├── lot-acceptance.md
 │   │   │   │   ├── lot-browser-regression.json
 │   │   │   │   ├── mark-close-acceptance.md

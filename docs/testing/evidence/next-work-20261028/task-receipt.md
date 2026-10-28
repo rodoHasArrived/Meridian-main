@@ -2,7 +2,7 @@
 
 **Baseline:** `a5b2589f0395d054bec0b59672a990419ef237ed`  
 **Branch:** `codex/credential-ownership`  
-**Status:** bounded local implementation; required validation in progress; P0 remains open
+**Status:** bounded local implementation; full local gate passed; P0 remains open
 
 | Requested outcome | Result |
 | --- | --- |
@@ -25,7 +25,17 @@ It includes four missing-generation verification cases, the legacy/import/rotati
 the eight-position MARK population case, and six real PostgreSQL successor/amortization cases.
 [Per-test results and TRX digest](selected-dotnet-tests.json) retain the exercised names. Full Windows
 application/XAML/test-source cross-compilation passed with **zero errors and 275 warnings**;
-no Windows runtime tests ran. `bash scripts/ci.sh` is the remaining local gate. Supporting browser packets are linked
+no Windows runtime tests ran.
+
+The complete `bash scripts/ci.sh` gate passed on code candidate `a6943fa561`: **25,615 .NET tests passed,
+zero failed, five registered skips; 4,244 browser tests across 371 files passed; 2,191 script tests
+ran with zero failures/errors and 16 registered skips**. All 19 .NET suites, browser lint/strict
+null checks/build/bundle freshness, documentation and workflow checks passed.
+[Compact gate receipt](local-validation.json) retains counts, identity/log digests, command and
+the initial environment failure. That attempt had 34 worker-starting failures with `DOTNET_ROOT`
+unset; setting the existing SDK root fixed the unchanged test and the complete unchanged gate.
+The gate used `docker-init -s` for child-process reaping; no test or timeout was changed.
+Supporting browser packets are linked
 from each domain receipt and explicitly distinguish mocked responses from live operations.
 
 ## Publication and completion boundary

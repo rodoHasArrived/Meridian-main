@@ -1,11 +1,11 @@
 {
   "total_files": 781,
-  "total_lines": 178641,
+  "total_lines": 178655,
   "orphaned_count": 260,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 315,
-  "average_lines": 228.7,
+  "average_lines": 228.8,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2968,7 +2968,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12913,
+      "line_count": 12914,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4368,7 +4368,7 @@
     },
     {
       "path": "docs/testing/evidence/next-work-20261028/lot-acceptance.md",
-      "line_count": 127,
+      "line_count": 130,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4408,7 +4408,7 @@
     },
     {
       "path": "docs/testing/evidence/next-work-20261028/task-receipt.md",
-      "line_count": 36,
+      "line_count": 46,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

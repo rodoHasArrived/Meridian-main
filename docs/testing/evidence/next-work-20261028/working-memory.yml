@@ -31,6 +31,7 @@ working_memory:
     - Windows host and retained acceptance population are not provisioned; user requests target recommendation.
     - Proposed ADR-023 host-only binding protocol remains unimplemented; scoped changes do not close PRD-002.
   validation_owner: root
+  final_validation: full local quality gate passed on a6943fa561; P0 and live acceptance remain open
   validation_snapshot:
     - command: buildctl test --isolation-key next-work-20261028 (combined focused filter)
       outcome: pass; 906 of 906, zero failures/skips

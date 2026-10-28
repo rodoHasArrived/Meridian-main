@@ -80,7 +80,10 @@ and exact retry, and reversal followed by schedule-preserving rebook. Reporting 
 retained successor origins, signed evidence and altered-authority refusals. The consumer tests
 also exercise Backtesting's canonical-binding adapter inside `Meridian.Tests`; the separate
 `Meridian.Backtesting.Tests/CanonicalLotReliefParityTests` project was not independently run in
-this focused packet.
+this focused packet. The later complete local gate on `a6943fa561` passed all **443**
+Backtesting tests, zero failures/skips, including that parity suite. This verifies the covered
+consumer/compatibility contracts and does not establish missing canonical inputs, retirement
+or live operator acceptance; see [gate receipt](local-validation.json).
 
 The run used `buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --queue
 --isolation-key next-work-20261028` and the combined credential/MARK/SEAM/LOT filter. The full

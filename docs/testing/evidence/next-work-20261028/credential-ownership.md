@@ -45,8 +45,8 @@ roadmap, operator-acceptance or signing status is promoted by these bounded fixe
 
 ## Validation
 
-Coordinator-owned combined .NET run and full local gate are recorded in the task receipt when
-finished. [Workstation evidence](credential-ui.md) separately records browser component checks,
+The selected run passed 906/906 and the complete local gate passed on `a6943fa561`;
+[the task receipt](task-receipt.md) and [gate receipt](local-validation.json) retain the counts and boundaries. [Workstation evidence](credential-ui.md) separately records browser component checks,
 Windows cross-compilation and the lack of live Windows execution. [Operator target recommendation](operator-target.md)
 provides the next concrete environment choice. Publication requires an explicit user request
 under the applied Meridian UI skill; this work is retained locally.

@@ -213,5 +213,40 @@
     "command": "python -m unittest discover -s tests/scripts -p 'test_release_readiness.py' -v",
     "passed": 23,
     "failed": 0
+  },
+  "finalCurrentMainWorkflowRefresh": {
+    "observedAt": "2026-10-28T22:58:26Z",
+    "headSha": "a5b2589f0395d054bec0b59672a990419ef237ed",
+    "boundary": "source main only; does not certify local candidate a6943fa561",
+    "runs": [
+      {
+        "workflow": "Meridian CI",
+        "runId": 40780116840,
+        "attempt": 1,
+        "conclusion": "success",
+        "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/40780116840"
+      },
+      {
+        "workflow": "Production Certification",
+        "runId": 40780116643,
+        "attempt": 1,
+        "conclusion": "success",
+        "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/40780116643"
+      },
+      {
+        "workflow": "Windows Desktop Build",
+        "runId": 40780116619,
+        "attempt": 1,
+        "conclusion": "success",
+        "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/40780116619"
+      },
+      {
+        "workflow": "CodeQL",
+        "runId": 40780116464,
+        "attempt": 1,
+        "conclusion": "success",
+        "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/40780116464"
+      }
+    ]
   }
 }
