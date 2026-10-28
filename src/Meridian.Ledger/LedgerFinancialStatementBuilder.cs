@@ -88,16 +88,18 @@ public static class LedgerFinancialStatementBuilder
         {
             var counterpartLines = LedgerCashFlowAttribution.CashCounterparts(entry,
                     line => MatchesScope(line, financialAccountId, lineDimensions))
-                .Select(line => (line.Account, Amount: line.Credit - line.Debit))
                 .Where(static line => line.Amount != 0m);
 
             // Counterpart credits supply cash; counterpart debits consume it. Preserve each booked
             // amount instead of allocating net cash by unsigned weights, which turns expenses into
             // inflows when a contribution and its payment share a journal. Balanced scoped legs
-            // already reconcile exactly, without another currency-rounding allocation.
-            foreach (var (account, amount) in counterpartLines)
+            // already reconcile exactly, without another currency-rounding allocation. An explicit
+            // producer-retained activity category instead classifies that group's actual net cash;
+            // realized gain/loss and carrying-basis relief are not additional cash movements.
+            foreach (var contribution in counterpartLines)
             {
-                var category = CategorizeCashFlow(account.AccountType);
+                var amount = contribution.Amount;
+                var category = contribution.Category ?? CategorizeCashFlow(contribution.CounterpartyType);
                 switch (category)
                 {
                     case LedgerCashFlowCategory.Operating:
@@ -111,7 +113,7 @@ public static class LedgerFinancialStatementBuilder
                         break;
                 }
 
-                var key = (category, account.Name, account.AccountType);
+                var key = (category, contribution.Description, contribution.CounterpartyType);
                 lineTotals[key] = lineTotals.TryGetValue(key, out var existing) ? existing + amount : amount;
             }
         }

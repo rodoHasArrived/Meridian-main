@@ -408,7 +408,11 @@ public sealed class AccountingPostingCandidateService :
             ? null
             : draft.Write with
             {
-                Entry = WithSecurityMasterLineage(draft.Write.Entry, authority,
+                Entry = WithSecurityMasterLineage(
+                    request.AssetLotMutation is { Intent: AssetLotMutationIntentDto.FactorPaydown }
+                        ? LedgerCashFlowAttribution.WithClassifiedActivity(draft.Write.Entry,
+                            LedgerCashFlowCategory.Investing, "Factor principal repayment")
+                        : draft.Write.Entry, authority,
                     request.AssetLotMutation?.CorporateAction?.ExpectedLot.Acquisition.AcquisitionCurrency
                         ?? request.AssetLotMutation?.CapitalReturn?.ExpectedLot.Acquisition.AcquisitionCurrency
                         ?? request.AssetLotMutation?.FactorPaydown?.Currency ?? request.Currency,

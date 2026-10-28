@@ -330,7 +330,11 @@ the lots of record, refuses a lot not at the position's prior factor, re-runs th
 refuses any client shift of principal or basis between lots, supplies the instruction's components
 to the rule's `LotMutationComponent` formulas only under the `FactorPaydown` intent, binds the
 carrying credit to the lots' exact account and the cash/gain/loss lines to that account's scope,
-and retains the instruction as `LotFactorPaydown`. The spine service rereads every paid-down lot
+and retains the instruction as `LotFactorPaydown`.
+The governed candidate also retains its Investing cash-flow category against every immutable
+journal line ID before approval. Reports classify the actual principal received; premium/discount
+realization and relieved basis do not become separate cash movements. Reversal remaps this evidence.
+The spine service rereads every paid-down lot
 and its carrying credit before drafting; posting dispatches a `FactorPaydown` batch to the atomic
 journal/lot store. A plain factor journal without the lot mutation is not posting authority.
 

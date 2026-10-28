@@ -84,6 +84,13 @@ accounting assertion of attribution, not a conclusion inferred from matching amo
 net-settled cash transaction may retain opposing noncash counterparts in one reviewed group.
 Grouping preserves legitimate zero-net operating/investing/financing activity while excluding
 noncash groups. Line-ID binding survives storage ordering; reversal remaps it to the new line IDs.
+Canonical security trades, typed tax-lot disposal materialization, and governed factor-paydown
+candidates use `WithClassifiedActivity` to retain an Investing category for the actual cash proceeds.
+Their `cash-flow.group.v2.<line-id>` memberships require complete, matching
+`cash-flow.category.v1.<line-id>` evidence; basis relief and realized gains/losses do not invent
+separate cash movements. Missing, unknown, mixed, or partial category evidence refuses reporting.
+Reversals retain the category under their new line IDs. Existing v1 groups keep their signed
+counterpart treatment for activities whose gross cash legs are independently attributable.
 Untagged simple cash journals and pure cash transfers remain supported. Untagged cash journals with
 opposing noncash legs are ambiguous (even with nonzero net cash) and fail closed instead of producing
 invented cash flows. Missing, unknown-version, foreign-line, or unbalanced grouping evidence and

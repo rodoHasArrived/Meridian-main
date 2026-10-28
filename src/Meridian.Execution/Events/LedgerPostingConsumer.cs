@@ -679,7 +679,10 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
                 description))
             .ToArray();
         var metadata = BuildPostingMetadata(evt, securityGate, activityType, lines);
-        return new JournalEntry(journalId, evt.OccurredAt, description, lines, metadata);
+        var entry = new JournalEntry(journalId, evt.OccurredAt, description, lines, metadata);
+        return activityType == TradeFillActivityType
+            ? LedgerCashFlowAttribution.WithClassifiedActivity(entry, LedgerCashFlowCategory.Investing, "Security trade")
+            : entry;
     }
 
     private LedgerJournalEntryWrite BuildDurableWrite(
