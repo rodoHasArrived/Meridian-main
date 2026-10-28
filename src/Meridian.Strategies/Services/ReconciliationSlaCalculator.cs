@@ -4,13 +4,22 @@ namespace Meridian.Strategies.Services;
 
 public static class ReconciliationSlaCalculator
 {
+    private const int MaxCalendarDays = 36600;
     public static ReconciliationSlaComputationResult Compute(
         ReconciliationBreakQueueItem item,
         ReconciliationSlaPolicy policy,
-        DateTimeOffset asOfUtc)
+        DateTimeOffset asOfUtc,
+        IReconciliationSlaCalendarResolver? calendarResolver = null)
     {
         ArgumentNullException.ThrowIfNull(item);
         ArgumentNullException.ThrowIfNull(policy);
+        if (policy.BusinessDayEnd <= policy.BusinessDayStart || policy.DueBusinessHours < 0
+            || policy.DueBusinessHours > MaxCalendarDays * 24 || policy.WarningBusinessHours < 0
+            || policy.WarningBusinessHours > policy.DueBusinessHours)
+            throw new ArgumentException("SLA policies require a positive same-day business window and 0 <= warning hours <= due hours.");
+        var zone = TimeZoneInfo.FindSystemTimeZoneById(policy.TimeZoneId);
+        var calendar = (calendarResolver ?? WeekdayReconciliationSlaCalendarResolver.Instance).Resolve(policy);
+        var occurrenceStart = item.Lineage?.OccurrenceFirstObservedAt ?? item.DetectedAt;
 
         if (policy.PauseAwaitingEvidence &&
             item.LifecycleState == ReconciliationCaseLifecycleState.AwaitingEvidence &&
@@ -18,8 +27,8 @@ public static class ReconciliationSlaCalculator
         {
             return new ReconciliationSlaComputationResult(
                 policy.PolicyId,
-                item.SlaDueAt ?? AddBusinessHours(item.DetectedAt, policy, policy.DueBusinessHours),
-                item.SlaWarningAt ?? AddBusinessHours(item.DetectedAt, policy, policy.WarningBusinessHours),
+                item.SlaDueAt ?? AddBusinessHours(occurrenceStart, policy, policy.DueBusinessHours, zone, calendar),
+                item.SlaWarningAt ?? AddBusinessHours(occurrenceStart, policy, policy.WarningBusinessHours, zone, calendar),
                 item.SlaBreachedAt,
                 ReconciliationCaseSlaState.Paused,
                 BuildAgeBand(item.BusinessAgeHours),
@@ -29,13 +38,13 @@ public static class ReconciliationSlaCalculator
         if ((policy.StopOnResolved && item.LifecycleState is ReconciliationCaseLifecycleState.Resolved or ReconciliationCaseLifecycleState.Superseded) ||
             (policy.StopOnSignedOff && item.LifecycleState == ReconciliationCaseLifecycleState.SignedOff))
         {
-            var due = item.SlaDueAt ?? AddBusinessHours(item.DetectedAt, policy, policy.DueBusinessHours);
+            var due = item.SlaDueAt ?? AddBusinessHours(occurrenceStart, policy, policy.DueBusinessHours, zone, calendar);
             return new ReconciliationSlaComputationResult(policy.PolicyId, due, item.SlaWarningAt ?? due, item.SlaBreachedAt, ReconciliationCaseSlaState.Stopped, BuildAgeBand(item.BusinessAgeHours), item.BusinessAgeHours);
         }
 
-        var dueAt = AddBusinessHours(item.DetectedAt, policy, policy.DueBusinessHours);
-        var warningAt = AddBusinessHours(item.DetectedAt, policy, policy.WarningBusinessHours);
-        var businessAge = CountBusinessHours(item.DetectedAt, asOfUtc, policy);
+        var dueAt = AddBusinessHours(occurrenceStart, policy, policy.DueBusinessHours, zone, calendar);
+        var warningAt = AddBusinessHours(occurrenceStart, policy, policy.WarningBusinessHours, zone, calendar);
+        var businessAge = CountBusinessHours(occurrenceStart, asOfUtc, policy, zone, calendar);
         var state = asOfUtc >= dueAt
             ? ReconciliationCaseSlaState.Breached
             : asOfUtc >= warningAt ? ReconciliationCaseSlaState.Warning : ReconciliationCaseSlaState.OnTrack;
@@ -82,103 +91,69 @@ public static class ReconciliationSlaCalculator
             PauseAwaitingEvidence: true);
     }
 
-    private static DateTimeOffset AddBusinessHours(DateTimeOffset startUtc, ReconciliationSlaPolicy policy, int hours)
+    private static DateTimeOffset AddBusinessHours(DateTimeOffset startUtc, ReconciliationSlaPolicy policy,
+        int hours, TimeZoneInfo zone, IReconciliationSlaCalendar calendar)
     {
-        var zone = ResolveZone(policy.TimeZoneId);
-        var cursor = TimeZoneInfo.ConvertTime(startUtc, zone);
-        var remaining = Math.Max(0, hours);
-
-        while (remaining > 0)
+        var date = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(startUtc, zone).DateTime);
+        long remaining = (long)hours * TimeSpan.TicksPerHour;
+        for (var walked = 0; walked < MaxCalendarDays; walked++)
         {
-            cursor = NormalizeToBusinessTime(cursor, policy);
-            var close = new DateTimeOffset(DateOnly.FromDateTime(cursor.Date).ToDateTime(policy.BusinessDayEnd), cursor.Offset);
-            var available = Math.Max(0, (close - cursor).TotalHours);
-            if (available >= remaining)
+            var businessDay = calendar.IsBusinessDay(date);
+            if (remaining == 0)
+                return startUtc.ToUniversalTime();
+            if (businessDay)
             {
-                cursor = cursor.AddHours(remaining);
-                remaining = 0;
+                var (open, close) = BusinessWindow(date, policy, zone);
+                var segmentStart = open > startUtc ? open : startUtc;
+                var available = Math.Max(0, (close - segmentStart).Ticks);
+                if (available >= remaining)
+                    return segmentStart.AddTicks(remaining);
+                remaining -= available;
             }
-            else
-            {
-                remaining -= (int)Math.Ceiling(available);
-                cursor = NextBusinessStart(cursor.AddDays(1), policy);
-            }
+            date = NextDate(date);
         }
-
-        return TimeZoneInfo.ConvertTime(cursor, TimeZoneInfo.Utc);
+        throw new InvalidOperationException("SLA deadline exceeds the calendar traversal limit.");
     }
 
-    private static double CountBusinessHours(DateTimeOffset fromUtc, DateTimeOffset toUtc, ReconciliationSlaPolicy policy)
+    private static double CountBusinessHours(DateTimeOffset fromUtc, DateTimeOffset toUtc,
+        ReconciliationSlaPolicy policy, TimeZoneInfo zone, IReconciliationSlaCalendar calendar)
     {
         if (toUtc <= fromUtc)
-        {
             return 0;
-        }
-
-        var zone = ResolveZone(policy.TimeZoneId);
-        var cursor = TimeZoneInfo.ConvertTime(fromUtc, zone);
-        var end = TimeZoneInfo.ConvertTime(toUtc, zone);
-        double hours = 0;
-        while (cursor < end)
+        var date = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(fromUtc, zone).DateTime);
+        var endDate = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(toUtc, zone).DateTime);
+        long ticks = 0;
+        for (var walked = 0; walked < MaxCalendarDays; walked++)
         {
-            cursor = NormalizeToBusinessTime(cursor, policy);
-            if (cursor >= end)
+            if (calendar.IsBusinessDay(date))
             {
-                break;
+                var (open, close) = BusinessWindow(date, policy, zone);
+                var start = open > fromUtc ? open : fromUtc;
+                var end = close < toUtc ? close : toUtc;
+                ticks += Math.Max(0, (end - start).Ticks);
             }
-
-            var close = new DateTimeOffset(DateOnly.FromDateTime(cursor.Date).ToDateTime(policy.BusinessDayEnd), cursor.Offset);
-            var segmentEnd = close < end ? close : end;
-            hours += Math.Max(0, (segmentEnd - cursor).TotalHours);
-            cursor = NextBusinessStart(cursor.AddDays(1), policy);
+            if (date >= endDate)
+                return (double)ticks / TimeSpan.TicksPerHour;
+            date = NextDate(date);
         }
-
-        return hours;
+        throw new InvalidOperationException("SLA age exceeds the calendar traversal limit.");
     }
 
-    private static DateTimeOffset NormalizeToBusinessTime(DateTimeOffset value, ReconciliationSlaPolicy policy)
+    private static (DateTimeOffset Open, DateTimeOffset Close) BusinessWindow(DateOnly date,
+        ReconciliationSlaPolicy policy, TimeZoneInfo zone)
     {
-        if (value.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+        DateTimeOffset Boundary(TimeOnly time)
         {
-            return NextBusinessStart(value, policy);
+            var local = date.ToDateTime(time, DateTimeKind.Unspecified);
+            if (zone.IsInvalidTime(local) || zone.IsAmbiguousTime(local))
+                throw new InvalidOperationException("SLA business-window boundary requires an explicit daylight-saving policy decision.");
+            return new DateTimeOffset(TimeZoneInfo.ConvertTimeToUtc(local, zone));
         }
-
-        var start = new DateTimeOffset(DateOnly.FromDateTime(value.Date).ToDateTime(policy.BusinessDayStart), value.Offset);
-        var end = new DateTimeOffset(DateOnly.FromDateTime(value.Date).ToDateTime(policy.BusinessDayEnd), value.Offset);
-        if (value < start)
-        {
-            return start;
-        }
-
-        return value >= end ? NextBusinessStart(value.AddDays(1), policy) : value;
+        return (Boundary(policy.BusinessDayStart), Boundary(policy.BusinessDayEnd));
     }
 
-    private static DateTimeOffset NextBusinessStart(DateTimeOffset value, ReconciliationSlaPolicy policy)
-    {
-        var date = DateOnly.FromDateTime(value.Date);
-        while (date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
-        {
-            date = date.AddDays(1);
-        }
-
-        return new DateTimeOffset(date.ToDateTime(policy.BusinessDayStart), value.Offset);
-    }
-
-    private static TimeZoneInfo ResolveZone(string timeZoneId)
-    {
-        try
-        {
-            return TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-        }
-        catch (TimeZoneNotFoundException)
-        {
-            return TimeZoneInfo.Utc;
-        }
-        catch (InvalidTimeZoneException)
-        {
-            return TimeZoneInfo.Utc;
-        }
-    }
+    private static DateOnly NextDate(DateOnly date) => date == DateOnly.MaxValue
+        ? throw new InvalidOperationException("SLA calendar exceeds the supported date range.") : date.AddDays(1);
 
     private static string BuildAgeBand(double businessAgeHours)
         => businessAgeHours switch

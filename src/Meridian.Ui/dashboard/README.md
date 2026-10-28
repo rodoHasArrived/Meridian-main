@@ -22,6 +22,8 @@ Run or scope changes abort prior requests and discard the previous selection. Re
 development fallback and never calculate support from current Accounting scope or live balances.
 Focused coverage lives in `reporting-retained-amounts.test.tsx` and `report-amount-proof-api.test.ts`.
 
+The reconciliation queue shows source observation and retained occurrence age directly. Clearing is labeled Source cleared and never implies case resolution. Legacy rows explicitly show identity/age unavailable. Queue refresh compares lineage metadata; inspector details include business and comparison scopes.
+
 Historical price charts require a complete successful historical query before showing prices
 or indicators. Failed and partial queries show an explicit incomplete state with failed source
 paths and Retry; incomplete comparison series are withheld and named in an alert. The shared

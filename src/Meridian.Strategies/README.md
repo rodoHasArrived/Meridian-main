@@ -11,6 +11,21 @@ last_reviewed: 2026-08-03
 
 # src/Meridian.Strategies
 
+SLA calculation anchors to OccurrenceFirstObservedAt, resolves named business and holiday calendars, retains fractional hours and resolves timezone boundaries separately for each date. Unknown names, missing coverage and ambiguous/nonexistent shift boundaries are refused. Source clearing leaves casework SLA and approval obligations intact.
+
+
+The source-lineage contract separates optional `IdentityScopeId` (business identity) from
+`ComparisonScopeId` (executed comparison policy). Presence preserves an occurrence across policy
+changes; absence clears only its current comparison policy. Verified legacy receipts preserve
+original lineage IDs, reject changed replays, and refuse ambiguous historical forks. Optional fields
+are omitted from legacy JSON. Source clearing never resolves governed casework.
+Source-subject upgrades use complete retained observation receipts in the exact business scope to
+adopt classification-wrapped historical identities. Transaction identity excludes mapped activity,
+symbol and currency; ambiguous historical classification forks still require independent review.
+An exact run replay may upgrade only that subject representation against its original retained
+receipt; changed run membership, time, comparison policy or authority scope remains refused.
+
+
 Portfolio position read models carry shared mark-freshness assessments. A position snapshot timestamp is not a mark observation date: when historical mark provenance is absent, the projection reports review required rather than treating the snapshot as current valuation evidence.
 
 ## Reconciliation source lineage

@@ -16,6 +16,12 @@ and journal/line identities. Generated amount source evidence additionally carri
 `SourceScope` and `SourceSubjectId`, so historical opening-balance support preserves its own posted
 period while the shared proof drawer and guarded source route remain bound to the selected report.
 
+The source-lineage contract separates optional `IdentityScopeId` (business identity) from
+`ComparisonScopeId` (executed comparison policy). Presence preserves an occurrence across policy
+changes; absence clears only its current comparison policy. Verified legacy receipts preserve
+original lineage IDs, reject changed replays, and refuse ambiguous historical forks. Optional fields
+are omitted from legacy JSON. Source clearing never resolves governed casework.
+
 `SecurityMaster/ISecurityMasterQueryService.cs` is the single query contract for application,
 browser, WPF, reporting, and QuantScript consumers. The former Application interface has been
 removed; source consumers must import `Meridian.Contracts.SecurityMaster`. Configured and

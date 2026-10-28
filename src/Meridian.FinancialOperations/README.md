@@ -11,6 +11,8 @@ last_reviewed: 2026-10-14
 
 # src/Meridian.FinancialOperations
 
+All six shipped statement connectors capture executed mapping semantics at parse time. Display labels and review notes do not change that fingerprint; fields, activity mappings, culture, date formats and CSV options do. The retained import supplies comparison proof on replay. Legacy artifact upgrade verifies the original shape and adopts retained bytes without inventing mapping evidence.
+
 `AccountCashReconciliationService` adds a bounded two-source cash-balance continuity aggregate.
 Exact tenant/company/account/book, source identities and currency determine a stable case;
 amounts, row IDs and tolerance versions remain observation evidence. Corrected sources change

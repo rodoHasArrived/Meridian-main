@@ -11,6 +11,11 @@ last_reviewed: 2026-10-06
 
 # src/Meridian.Ui.Shared
 
+Source comparison requires a completed recovery checkpoint with matching run/import IDs, artifact hashes and counts, plus executed mapping proof shared by the import and match artifact. Failed or running recovery cannot clear observations. Named SLA calendars load once per host from DataRoot/reconciliation/sla-calendars.json; see the reconciliation operating procedure.
+An unfinished recovery refuses publication so the report workflow can retry after completion.
+Transaction lineage uses the retained external transaction identity; changed break classifications,
+mapped activity, symbols and currencies remain comparison evidence rather than forking its occurrence.
+
 Late-adjustment review requires the authenticated operator's built-in role or named role profile
 to match the review role retained on the adjustment's materiality policy, alongside ledger mutation
 permission and an independent requester/reviewer. Administrative mutation permission does not
