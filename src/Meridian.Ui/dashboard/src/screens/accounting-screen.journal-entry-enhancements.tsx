@@ -83,8 +83,8 @@ export function ManualJournalHealthBar({
       </div>
       <div className="accounting-journal-health-actions">
         <Button size="sm" variant="outline" busy={view.saveBusy} disabled={hasInvalidAmountEdits || Boolean(view.draft.assetAccountingDraft)} disabledReason={view.draft.assetAccountingDraft ? "This retained asset draft is immutable. Repair its governed source before creating another candidate." : hasInvalidAmountEdits ? invalidAmountReason : null} onClick={() => void view.save()}>Save draft</Button>
-        <Button size="sm" variant="outline" busy={view.validateBusy} disabled={hasInvalidAmountEdits} disabledReason={hasInvalidAmountEdits ? invalidAmountReason : null} onClick={() => void view.validate()}>Validate</Button>
-        <Button size="sm" busy={view.submitBusy} disabled={!view.canSubmit || hasInvalidAmountEdits} disabledReason={hasInvalidAmountEdits ? invalidAmountReason : view.submitDisabledReason} onClick={() => void view.submit()}>{view.draft.assetAccountingDraft ? "Submit for review" : "Submit approval"}</Button>
+        <Button size="sm" variant="outline" busy={view.validateBusy} disabled={hasInvalidAmountEdits || !!view.assetWorkflow?.pendingAction || view.assetWorkflow?.hasPendingPost} disabledReason={view.assetWorkflow?.pendingAction || view.assetWorkflow?.hasPendingPost ? "Resolve the retained asset command before validation." : hasInvalidAmountEdits ? invalidAmountReason : null} onClick={() => void view.validate()}>Validate</Button>
+        <Button size="sm" busy={view.submitBusy} disabled={!view.canSubmit || hasInvalidAmountEdits || !!view.assetWorkflow?.pendingAction || view.assetWorkflow?.hasPendingPost} disabledReason={view.assetWorkflow?.pendingAction || view.assetWorkflow?.hasPendingPost ? "Resolve the retained asset command before submission." : hasInvalidAmountEdits ? invalidAmountReason : view.submitDisabledReason} onClick={() => void view.submit()}>{view.draft.assetAccountingDraft ? "Submit for review" : "Submit approval"}</Button>
       </div>
       {view.recoveryStatusText ? (
         <div className="accounting-journal-recovery-status">

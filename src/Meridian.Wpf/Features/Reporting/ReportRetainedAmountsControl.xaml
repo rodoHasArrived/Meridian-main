@@ -1,0 +1,33 @@
+<UserControl x:Class="Meridian.Wpf.Features.Reporting.ReportRetainedAmountsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Meridian.Wpf.Controls"
+             AutomationProperties.Name="Retained report amount proof">
+    <StackPanel Margin="0,12,0,0">
+        <TextBlock Text="Retained trial-balance amounts" FontWeight="SemiBold" />
+        <TextBlock Text="Balances belong to the selected retained run. Opening proof verifies every contributing source."
+                   TextWrapping="Wrap" Margin="0,4,0,8" />
+        <Button Content="Refresh retained amounts" Command="{Binding RefreshCommand}" HorizontalAlignment="Left"
+                AutomationProperties.AutomationId="RefreshRetainedReportAmounts" />
+        <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap" Margin="0,8,0,8"
+                   AutomationProperties.LiveSetting="Polite" AutomationProperties.AutomationId="RetainedReportAmountsStatus" />
+        <ItemsControl ItemsSource="{Binding Rows}" AutomationProperties.AutomationId="RetainedReportAmountRows">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border BorderThickness="0,0,0,1" BorderBrush="{DynamicResource ConsoleBorderBrush}" Padding="0,8">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Label}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding SupportLabel}" TextWrapping="Wrap" />
+                            <Button Content="{Binding AmountLabel}" IsEnabled="{Binding CanInspect}" HorizontalAlignment="Left"
+                                    Command="{Binding DataContext.InspectCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                    CommandParameter="{Binding}" AutomationProperties.Name="{Binding Label}"
+                                    AutomationProperties.AutomationId="InspectRetainedReportAmount" />
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <controls:LedgerAmountProofDrawer DataContext="{Binding ProofDrawer}"
+            Visibility="{Binding ProofDrawer.IsOpen, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0,12,0,0" />
+    </StackPanel>
+</UserControl>

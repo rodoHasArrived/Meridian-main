@@ -4,6 +4,8 @@ using System.Text;
 using System.Text.Json;
 using System.Windows.Controls;
 using Meridian.Contracts.Configuration;
+using Meridian.Contracts.Api;
+using ProviderConnectionDto = Meridian.Contracts.Api.ProviderConnectionDto;
 using ProviderIdentity = Meridian.Infrastructure.Adapters.Core.ProviderIdentity;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
@@ -14,7 +16,7 @@ using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Tests.Views;
 
-public sealed class AddProviderWizardPageTests
+public sealed partial class AddProviderWizardPageTests
 {
     [Theory]
     [InlineData("alpaca")]
@@ -37,9 +39,11 @@ public sealed class AddProviderWizardPageTests
             fixture.Writes.Should().ContainSingle();
             fixture.Writes[0].ProviderId.Should().Be(ProviderIdentity.NormalizeId(providerId));
             fixture.VerificationCalls.Should().Be(1);
-            fixture.StatusQueries.Should().HaveCount(2).And.OnlyContain(query => query == "?scope=provider");
+            fixture.StatusQueries.Should().HaveCount(3);
+            fixture.StatusQueries.Skip(1).Should().OnlyContain(query => query == "?connectionId=" + Fixture.ConnectionId(providerId));
+            fixture.Writes[0].ConnectionId.Should().Be(Fixture.ConnectionId(providerId));
             fixture.ViewModel.ConnectionTestStatusText.Should().Contain("Credentials verified");
-            fixture.ViewModel.SaveStatusText.Should().Contain("configured successfully");
+            fixture.ViewModel.SaveStatusText.Should().Contain("Credentials saved for owned connection");
             fixture.Records[ProviderIdentity.NormalizeId(providerId)].Verified.Should().BeTrue();
         });
     }
@@ -188,7 +192,7 @@ public sealed class AddProviderWizardPageTests
             fixture.Key.Text.Should().BeEmpty();
             fixture.Secret.Secret.Should().BeEmpty();
             fixture.ViewModel.ConnectionTestStatusText.Should().Contain("not verified");
-            fixture.ViewModel.SaveStatusText.Should().Contain("configured successfully");
+            fixture.ViewModel.SaveStatusText.Should().Contain("Credentials saved for owned connection");
         });
     }
 
@@ -260,7 +264,7 @@ public sealed class AddProviderWizardPageTests
     }
 
     private sealed record RetainedCredentials(bool Configured, bool Verified, DateTimeOffset? LastVerifiedAt);
-    private sealed record Write(string ProviderId, Dictionary<string, string?> Fields);
+    private sealed record Write(string ProviderId, Dictionary<string, string?> Fields, string ConnectionId);
 
     private sealed class Fixture : IDisposable
     {
@@ -288,6 +292,12 @@ public sealed class AddProviderWizardPageTests
             ["polygon"] = new(false, false, null),
             ["nasdaq"] = new(false, false, null)
         };
+        public List<ProviderConnectionDto> OwnedConnections { get; } = [Connection("alpaca"), Connection("polygon"), Connection("nasdaq")];
+        public List<string> DeletedConnections { get; } = [];
+        public static string ConnectionId(string provider) => "owned-" + ProviderIdentity.NormalizeId(provider);
+        public static ProviderConnectionDto Connection(string provider, string? id = null) => new(id ?? ConnectionId(provider),
+            ProviderIdentity.NormalizeId(provider), "Owned " + provider, "Broker", "Paper", true, null, null,
+            "account-" + provider, null, [], null, false, "tenant-a", "paper");
         public int VerificationCalls { get; private set; }
         public bool RefuseWrites { get; set; }
         public bool RefuseStatus { get; set; }
@@ -297,15 +307,17 @@ public sealed class AddProviderWizardPageTests
         public TaskCompletionSource WriteStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource VerificationStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public static async Task<Fixture> CreateAsync(string selectedProvider = "alpaca")
+        public static async Task<Fixture> CreateAsync(string selectedProvider = "alpaca", bool selectOwned = true, Action<Fixture>? configure = null)
         {
             var fixture = new Fixture();
+            configure?.Invoke(fixture);
             await fixture.Page.LoadProviderCatalogAsync();
             // This credential regression has no backfill configuration side effects.
             fixture.ViewModel.LoadProviderCatalog(SettingsConfigurationService.Instance.GetProviderCatalog()
                 .Where(provider => fixture.Records.ContainsKey(ProviderIdentity.NormalizeId(provider.Id)))
                 .Select(provider => provider with { SupportsHistorical = false }), []);
             fixture.Page.SelectProvider(selectedProvider);
+            if (selectOwned) await fixture.Page.SelectOwnedConnectionAsync(ConnectionId(selectedProvider));
             return fixture;
         }
 
@@ -317,14 +329,21 @@ public sealed class AddProviderWizardPageTests
 
         private async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request)
         {
+            if (request.Method == HttpMethod.Get && request.RequestUri!.AbsolutePath == UiApiRoutes.ProviderRoutingConnections)
+                return Json(OwnedConnections);
+            var connectionId = request.RequestUri!.Query.StartsWith("?connectionId=", StringComparison.Ordinal)
+                ? Uri.UnescapeDataString(request.RequestUri.Query[14..]) : string.Empty;
+            var owned = OwnedConnections.SingleOrDefault(connection => connection.ConnectionId == connectionId);
             if (request.Method == HttpMethod.Get)
             {
                 StatusQueries.Add(request.RequestUri!.Query);
                 if (RefuseStatus)
                     return Json(new { }, HttpStatusCode.Forbidden);
-                return Json(Records.Select(pair => new
+                if (connectionId.Length > 0 && owned is null) return Json(new { }, HttpStatusCode.NotFound);
+                return Json(Records.Where(pair => connectionId.Length == 0 || pair.Key == (connectionId == ConnectionId(owned!.ProviderFamilyId)
+                    ? ProviderIdentity.NormalizeId(owned.ProviderFamilyId) : connectionId)).Select(pair => new
                 {
-                    providerId = pair.Key,
+                    providerId = connectionId.Length > 0 ? owned!.ProviderFamilyId : pair.Key,
                     displayName = pair.Key,
                     credentialState = pair.Value.Configured ? ProviderCredentialStateDto.Configured : ProviderCredentialStateDto.Missing,
                     verificationState = pair.Value.Verified ? ProviderVerificationStateDto.Verified : ProviderVerificationStateDto.NotVerified,
@@ -338,17 +357,25 @@ public sealed class AddProviderWizardPageTests
             }
 
             var providerId = request.RequestUri!.Segments[^2].Trim('/');
+            if (owned is null || !ProviderIdentity.EqualsId(owned.ProviderFamilyId, providerId)) return Json(new { }, HttpStatusCode.Forbidden);
+            var recordKey = connectionId == ConnectionId(providerId) ? providerId : connectionId;
+            if (request.Method == HttpMethod.Delete)
+            {
+                DeletedConnections.Add(connectionId);
+                Records[recordKey] = new(false, false, null);
+                return Json(new { providerId, credentialState = ProviderCredentialStateDto.Missing });
+            }
             if (request.Method == HttpMethod.Put)
             {
                 var payload = JsonSerializer.Deserialize<ProviderCredentialUpsertRequestDto>(
                     await request.Content!.ReadAsStringAsync(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
-                Writes.Add(new(providerId, new Dictionary<string, string?>(payload.Credentials!)));
+                Writes.Add(new(providerId, new Dictionary<string, string?>(payload.Credentials!), connectionId));
                 WriteStarted.TrySetResult();
                 if (PendingWrite is not null)
                     await PendingWrite.Task;
                 if (RefuseWrites)
                     return Json(new { }, HttpStatusCode.Forbidden);
-                Records[providerId] = new(true, false, null);
+                Records[recordKey] = new(true, false, null);
                 return Json(new { providerId, credentialState = ProviderCredentialStateDto.Configured });
             }
 
@@ -359,7 +386,7 @@ public sealed class AddProviderWizardPageTests
             if (FailVerification)
                 return Json(new { providerId, success = false, verificationState = ProviderVerificationStateDto.Failed });
             var verifiedAt = DateTimeOffset.UtcNow;
-            Records[providerId] = new(true, true, verifiedAt);
+            Records[recordKey] = new(true, true, verifiedAt);
             return Json(new
             {
                 providerId,

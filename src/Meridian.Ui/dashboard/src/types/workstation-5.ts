@@ -1647,6 +1647,8 @@ export interface TreasuryLedgerContext {
 export interface ManualJournalEntryDraft {
   /** Opaque server-retained asset candidate authority; the browser never authors it. */
   assetAccountingDraft?: unknown | null;
+  assetAccountingPostIntent?: unknown | null;
+  assetAccountingPostingResult?: unknown | null;
   journalEntryId: string;
   status: ManualJournalEntryStatus;
   fundProfileId: string;

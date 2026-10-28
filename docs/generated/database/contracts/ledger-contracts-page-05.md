@@ -2,11 +2,44 @@
 
 # `ledger-contracts` data objects - page 5 of 5
 
-Objects 321-341 of 341. References crossing pages remain available in the dependency manifest.
+Objects 321-344 of 344. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_RealizedGainLossReportDto["RealizedGainLossReportDto"] {
+        +AccountingCertificationStateDto CertificationState
+        +string Currency
+        +LedgerDimensionSetDto Dimensions
+        +IReadOnlyList~string~ EvidenceLinks
+        +string FundProfileId
+        +Guid? LedgerBookId
+        +string PeriodId
+        +decimal RealizedGainLoss
+        +string ReportId
+    }
+    class Meridian_Contracts_Ledger_ReopenClosePeriodRequestDto["ReopenClosePeriodRequestDto"] {
+        +OperationsActionOriginDto ActionOrigin
+        +string Actor
+        +string ApprovalReference
+        +string? CorrelationId
+        +IReadOnlyList~string~ EvidenceLinks
+        +long ExpectedWorkflowVersion
+        +string ImpactSummary
+        +string IncidentId
+        +string Justification
+        +string Rationale
+        +string Role
+        +Guid WorkflowId
+    }
+    class Meridian_Contracts_Ledger_ReopenLedgerPeriodRequest["ReopenLedgerPeriodRequest"] {
+        +OperationsActionOriginDto ActionOrigin
+        +string ApprovalReference
+        +IReadOnlyList~string~ EvidenceLinks
+        +string Reason
+        +string ReopenedBy
+        +string Role
+    }
     class Meridian_Contracts_Ledger_ReportCertificationDto["ReportCertificationDto"] {
         +string Actor
         +string CertificationId

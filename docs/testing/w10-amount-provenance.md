@@ -68,6 +68,16 @@ blocks the complete amount and removes inspectable source routes. Opening a veri
 rechecks the report population, all contributors, and source bytes before returning the manifest.
 Old runs without retained populations expose no generated amount proof and require recertification.
 
+The WPF governed-run detail also consumes this exact retained catalogue through
+`ReportRetainedAmountsViewModel` and the shared `LedgerAmountProofDrawerViewModel`. It verifies
+run scope/checkpoint and complete journal/line coverage before opening report proof. Historical
+contributors use their original subject and period when validating manifests; no synthetic journal
+identity or current-ledger fallback is introduced. Report titles preserve the exact `G29` amount.
+Run selection invalidates pending proof, and each parent workflow response carries its initiating
+operation revision so stale success, failure or cleanup cannot restore an earlier run. The existing
+single-operation policy is unchanged. Current-candidate Windows runtime and live acceptance must
+still be recorded separately from source tests and cross-compilation.
+
 The source regression pauses capture, commits backdated period and historical postings, and proves
 period rows, statements, provenance, artifact contents, and signature reproduce from the original
 serialized population. A second capture sees the later postings. The PostgreSQL test also commits a

@@ -53,21 +53,29 @@ public sealed partial class ManualJournalEntryWorkbenchService
     {
         if (existing?.AssetAccountingDraft is not null)
             throw new InvalidOperationException("Asset accounting review drafts are immutable; repair the governed source and create a new candidate.");
-        if (draft.AssetAccountingDraft is not null && !trustedAutomatedIntake)
+        if ((draft.AssetAccountingDraft is not null || draft.AssetAccountingApproval is not null ||
+             draft.AssetAccountingPostIntent is not null || draft.AssetAccountingPostingResult is not null) && !trustedAutomatedIntake)
             throw new InvalidOperationException("Asset accounting authority can be retained only by governed server intake.");
     }
 
-    private static void EnsureAssetAccountingLifecycleAuthority(ManualJournalEntryDraftDto draft, JournalEntryLifecycleActionDto action)
+    private void EnsureAssetAccountingLifecycleAuthority(ManualJournalEntryDraftDto draft, JournalEntryLifecycleActionDto action)
     {
-        if (draft.AssetAccountingDraft is not null && action is not (JournalEntryLifecycleActionDto.Validate or
-            JournalEntryLifecycleActionDto.Submit or JournalEntryLifecycleActionDto.Reject))
+        if (draft.AssetAccountingDraft is not null &&
+            ((action == JournalEntryLifecycleActionDto.Approve && _assetAccountingSource is null) ||
+             (action == JournalEntryLifecycleActionDto.Post && (_assetCandidatePosting is null || _assetEvidenceArtifacts is null)) ||
+             action is not (JournalEntryLifecycleActionDto.Validate or JournalEntryLifecycleActionDto.Submit or
+                JournalEntryLifecycleActionDto.Reject or JournalEntryLifecycleActionDto.Approve or JournalEntryLifecycleActionDto.Post)))
             throw new InvalidOperationException("Asset accounting drafts require typed retained approval evidence and the governed asset posting workflow; generic manual approval, posting and corrections are unavailable.");
     }
 
     private static void EnsureAssetAccountingDraftMatchesSource(ManualJournalEntryDraftDto draft)
     {
         if (draft.AssetAccountingDraft is not { } retained)
+        {
+            if (draft.AssetAccountingApproval is not null || draft.AssetAccountingPostIntent is not null || draft.AssetAccountingPostingResult is not null)
+                throw new InvalidOperationException("Asset accounting receipts require their immutable governed source draft.");
             return;
+        }
         var source = retained.Spine.DraftedCandidate
             ?? throw new InvalidOperationException("The asset review draft has no retained candidate authority.");
         var scope = retained.Spine.Scope;

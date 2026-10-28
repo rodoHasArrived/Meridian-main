@@ -290,6 +290,8 @@ export interface ProviderRouteScope {
 }
 
 export interface ProviderRoutingConnection {
+  tenantId?: string | null;
+  credentialEnvironment?: string | null;
   connectionId: string;
   providerFamilyId: string;
   displayName: string;

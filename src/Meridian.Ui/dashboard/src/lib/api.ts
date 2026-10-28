@@ -1,3 +1,4 @@
+import { providerConnectionScopeEndpoint, type ProviderCredentialRequestOptions } from "@/lib/provider-credential-scope";
 import {
   mapQuantRunResponseToCellResult,
   quantContextToParameters,
@@ -3799,8 +3800,8 @@ export function getAlpacaConnectionStatus(options: ApiRequestOptions = {}) {
   return getJson<BrokerageConnectionStatus>(brokerageConnectionStatusEndpoint("alpaca"), options);
 }
 
-export function getProviderConnections(options: ApiRequestOptions = {}) {
-  return getJson<ProviderConnectionRow[]>(PROVIDER_API_ENDPOINTS.connections, options);
+export function getProviderConnections(options: ProviderCredentialRequestOptions = {}) {
+  return getJson<ProviderConnectionRow[]>(providerConnectionScopeEndpoint(PROVIDER_API_ENDPOINTS.connections, options.connectionId), options);
 }
 
 export function getProviderReadiness(options: ApiRequestOptions = {}) {
@@ -3810,17 +3811,17 @@ export function getProviderReadiness(options: ApiRequestOptions = {}) {
 export function putProviderCredentials(
   providerId: string,
   request: ProviderCredentialUpsertRequest,
-  options: ApiRequestOptions = {}
+  options: ProviderCredentialRequestOptions = {}
 ) {
-  return putJson<ProviderCredentialMutationResult>(providerCredentialEndpoint(providerId), request, options);
+  return putJson<ProviderCredentialMutationResult>(providerConnectionScopeEndpoint(providerCredentialEndpoint(providerId), options.connectionId), request, options);
 }
 
-export function verifyProviderConnection(providerId: string, options: ApiRequestOptions = {}) {
-  return postJson<ProviderCredentialVerificationResult>(providerVerifyEndpoint(providerId), undefined, options);
+export function verifyProviderConnection(providerId: string, options: ProviderCredentialRequestOptions = {}) {
+  return postJson<ProviderCredentialVerificationResult>(providerConnectionScopeEndpoint(providerVerifyEndpoint(providerId), options.connectionId), undefined, options);
 }
 
-export function deleteProviderCredentials(providerId: string, options: ApiRequestOptions = {}) {
-  return deleteJson<ProviderCredentialMutationResult>(providerCredentialEndpoint(providerId), options);
+export function deleteProviderCredentials(providerId: string, options: ProviderCredentialRequestOptions = {}) {
+  return deleteJson<ProviderCredentialMutationResult>(providerConnectionScopeEndpoint(providerCredentialEndpoint(providerId), options.connectionId), options);
 }
 
 export function connectAlpacaConnection(

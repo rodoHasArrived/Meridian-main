@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Integrity;
@@ -67,12 +68,24 @@ public sealed class LedgerAmountProofDrawerViewModel : BindableBase
         Warnings.Add(reason);
     }
 
-    public async Task OpenAsync(PostedLedgerAmountSelection selection, CancellationToken ct = default)
+    public Task OpenAsync(PostedLedgerAmountSelection selection, CancellationToken ct = default)
+        => OpenCoreAsync(new AmountProofSelection(selection.SubjectId, selection.LedgerBookId, selection.PeriodId,
+            selection.FundProfileId, selection.Side, selection.Amount, selection.Currency, selection.AccountName), ct);
+
+    public Task OpenReportAsync(ReportLedgerAmountSelection selection, CancellationToken ct = default)
+        => OpenCoreAsync(new AmountProofSelection(selection.SubjectId, selection.Scope.LedgerBookId, selection.Scope.PeriodId,
+            selection.Scope.FundProfileId, "report balance", selection.Amount, selection.Currency, selection.Label,
+            selection.Scope, selection.JournalEntryIds, selection.LedgerEntryIds), ct);
+
+    private async Task OpenCoreAsync(AmountProofSelection selection, CancellationToken ct)
     {
         Close();
         var revision = _revision;
         IsOpen = true;
-        Title = $"{selection.AccountName} · {selection.Side} {PostedLedgerProjection.FormatAmount(selection.Amount, selection.Currency)}";
+        var amountLabel = selection.ReportScope is null
+            ? PostedLedgerProjection.FormatAmount(selection.Amount, selection.Currency)
+            : $"{selection.Amount.ToString("G29", CultureInfo.InvariantCulture)} {selection.Currency}";
+        Title = $"{selection.AccountName} · {selection.Side} {amountLabel}";
         SubjectId = selection.SubjectId;
         StatusText = "Review required · loading retained evidence";
         if (_client is null || string.IsNullOrWhiteSpace(selection.FundProfileId) ||
@@ -106,7 +119,8 @@ public sealed class LedgerAmountProofDrawerViewModel : BindableBase
                 proof.SubjectId != selection.SubjectId || proof.Scope.LedgerBookId != selection.LedgerBookId ||
                 proof.Scope.PeriodId != selection.PeriodId || proof.Scope.FundProfileId != selection.FundProfileId ||
                 string.IsNullOrWhiteSpace(proof.Scope.TenantId) || string.IsNullOrWhiteSpace(proof.Scope.CompanyId) ||
-                proof.Amount != selection.Amount || proof.Currency != selection.Currency)
+                proof.Amount != selection.Amount || proof.Currency != selection.Currency ||
+                (selection.ReportScope is not null && (proof.Scope != selection.ReportScope || proof.Status != packet.Completeness.Status)))
             {
                 StatusText = "Blocked";
                 Warnings.Add("The evidence response does not match the selected amount and its exact scope.");
@@ -140,6 +154,12 @@ public sealed class LedgerAmountProofDrawerViewModel : BindableBase
                 return;
             }
 
+            if (selection.ReportScope is not null && !ReportContributorsMatch(selection, proof))
+            {
+                ShowBlocked("Supporting journal identities do not match the retained report amount binding.");
+                return;
+            }
+
             foreach (var item in proof.Evidence)
             {
                 if (item.Status == EvidenceStatusDto.Ready && item.RetainedAt is not null &&
@@ -163,16 +183,18 @@ public sealed class LedgerAmountProofDrawerViewModel : BindableBase
                 Warnings.Add("No retained supporting evidence is available for this amount.");
             }
             _scope = proof.Scope;
-            var retainedSubject = $"{Uri.EscapeDataString(proof.Scope.FundProfileId)}:{proof.Scope.LedgerBookId:D}:{proof.Scope.PeriodId:D}:{proof.SubjectId}";
             foreach (var item in Evidence)
             {
                 if (item.Kind == "ledger-record")
                 {
                     continue;
                 }
+                var sourceScope = selection.ReportScope is null ? proof.Scope : item.SourceScope!;
+                var sourceSubject = selection.ReportScope is null ? proof.SubjectId : item.SourceSubjectId!;
+                var artifactSubject = $"{Uri.EscapeDataString(sourceScope.FundProfileId)}:{sourceScope.LedgerBookId:D}:{sourceScope.PeriodId:D}:{sourceSubject}";
                 var nodes = packet.Nodes.Where(node => node?.EvidenceId == item.EvidenceId).ToArray();
                 if (nodes.Length != 1 || nodes[0].Subject?.SubjectKind != "ledger-amount" ||
-                    nodes[0].Subject?.SubjectId != proof.SubjectId || nodes[0].ArtifactRefs is null)
+                    nodes[0].Subject?.SubjectId != sourceSubject || nodes[0].ArtifactRefs is null)
                 {
                     ShowBlocked("Supporting evidence does not identify this exact retained amount and scope.");
                     return;
@@ -180,7 +202,7 @@ public sealed class LedgerAmountProofDrawerViewModel : BindableBase
                 var artifacts = nodes[0].ArtifactRefs.Where(artifact => artifact?.ArtifactId == item.EvidenceId).ToArray();
                 if (artifacts.Length != 1 || artifacts[0].Kind != item.Kind || !artifacts[0].Retained ||
                     artifacts[0].Route != item.Route || artifacts[0].CanonicalSubjectKind != "ledger-amount" ||
-                    artifacts[0].CanonicalSubjectId != retainedSubject || artifacts[0].GeneratedAt != item.RetainedAt ||
+                    artifacts[0].CanonicalSubjectId != artifactSubject || artifacts[0].GeneratedAt != item.RetainedAt ||
                     !Sha256Digest.FixedEquals(artifacts[0].Hash, item.ContentHash) || !ManifestRouteMatchesScope(item))
                 {
                     ShowBlocked("Supporting evidence does not identify this exact retained amount and scope.");
@@ -213,6 +235,36 @@ public sealed class LedgerAmountProofDrawerViewModel : BindableBase
                 IsLoading = false;
             }
         }
+    }
+
+    private sealed record AmountProofSelection(string SubjectId, Guid LedgerBookId, Guid PeriodId,
+        string FundProfileId, string Side, decimal Amount, string Currency, string AccountName,
+        LedgerAmountScopeDto? ReportScope = null, IReadOnlyList<Guid>? JournalEntryIds = null,
+        IReadOnlyList<Guid>? LedgerEntryIds = null);
+
+    private static bool ReportContributorsMatch(AmountProofSelection selection, LedgerAmountProofDto proof)
+    {
+        if (!selection.SubjectId.StartsWith("report:", StringComparison.Ordinal) ||
+            selection.JournalEntryIds is not { Count: > 0 } journals || selection.LedgerEntryIds is not { Count: > 0 } lines)
+            return false;
+        var observed = new HashSet<Guid>();
+        var observedJournals = new HashSet<Guid>();
+        foreach (var item in proof.Evidence)
+        {
+            if (item.Kind == "ledger-record") continue;
+            var source = item.SourceScope;
+            var parts = item.SourceSubjectId?.Split(':');
+            if (source is null || source.TenantId != proof.Scope.TenantId || source.CompanyId != proof.Scope.CompanyId ||
+                source.FundProfileId != proof.Scope.FundProfileId || source.LedgerBookId != proof.Scope.LedgerBookId ||
+                source.PeriodId == Guid.Empty || parts is not { Length: 3 } ||
+                !Guid.TryParseExact(parts[0], "D", out var journal) || !journals.Contains(journal) ||
+                !Guid.TryParseExact(parts[1], "D", out var line) || !lines.Contains(line) ||
+                parts[2] is not ("debit" or "credit"))
+                return false;
+            observed.Add(line);
+            observedJournals.Add(journal);
+        }
+        return lines.All(observed.Contains) && journals.All(observedJournals.Contains);
     }
 
     private bool CanOpenManifest(LedgerAmountProofEvidenceDto? item)
@@ -272,3 +324,8 @@ public sealed class LedgerAmountProofDrawerViewModel : BindableBase
                 : null;
     }
 }
+
+/// <summary>An exact generated amount selected from the governed report's retained catalogue.</summary>
+public sealed record ReportLedgerAmountSelection(string SubjectId, LedgerAmountScopeDto Scope,
+    decimal Amount, string Currency, string Label, IReadOnlyList<Guid> JournalEntryIds,
+    IReadOnlyList<Guid> LedgerEntryIds);

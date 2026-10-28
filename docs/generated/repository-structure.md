@@ -5454,6 +5454,7 @@ Meridian-main
 │   │   │   ├── AccountingPostingCandidatePostService.CapitalReturn.cs
 │   │   │   ├── AccountingPostingCandidatePostService.cs
 │   │   │   ├── AccountingPostingCandidatePostService.FactorPaydown.cs
+│   │   │   ├── AccountingPostingCandidatePostService.FactorPaydownReplay.cs
 │   │   │   ├── AccountingPostingCandidatePostService.JournalIntentBinding.cs
 │   │   │   ├── AccountingPostingCandidatePostService.ReferenceAuthority.cs
 │   │   │   ├── AccountingPostingCandidateService.CashFlow.cs
@@ -7449,6 +7450,8 @@ Meridian-main
 │   │   │   │   │   │   ├── accounting-onboarding.api.test.ts
 │   │   │   │   │   │   ├── accounting-onboarding.api.ts
 │   │   │   │   │   │   ├── archive-maintenance.api.ts
+│   │   │   │   │   │   ├── asset-accounting-workflow.api.test.ts
+│   │   │   │   │   │   ├── asset-accounting-workflow.api.ts
 │   │   │   │   │   │   ├── audit-integrity.api.ts
 │   │   │   │   │   │   ├── banking-payments.api.test.ts
 │   │   │   │   │   │   ├── banking-payments.api.ts
@@ -7573,6 +7576,8 @@ Meridian-main
 │   │   │   │   │   ├── mark-freshness.ts
 │   │   │   │   │   ├── onboarding.ts
 │   │   │   │   │   ├── plaid-link.ts
+│   │   │   │   │   ├── provider-credential-scope.test.ts
+│   │   │   │   │   ├── provider-credential-scope.ts
 │   │   │   │   │   ├── provider-integration-setup-validation.test.ts
 │   │   │   │   │   ├── provider-integration-setup-validation.ts
 │   │   │   │   │   ├── provider-integration-workbench.ts
@@ -7678,6 +7683,9 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.account-oversight.test.tsx
 │   │   │   │   │   ├── accounting-screen.account-oversight.tsx
 │   │   │   │   │   ├── accounting-screen.approvals.ts
+│   │   │   │   │   ├── accounting-screen.asset-workflow-panel.tsx
+│   │   │   │   │   ├── accounting-screen.asset-workflow.test.ts
+│   │   │   │   │   ├── accounting-screen.asset-workflow.ts
 │   │   │   │   │   ├── accounting-screen.audit-integrity.test.tsx
 │   │   │   │   │   ├── accounting-screen.audit-integrity.tsx
 │   │   │   │   │   ├── accounting-screen.audit-integrity.view-model.test.ts
@@ -7720,6 +7728,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.journal-entries.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.journal-entries.view-model.ts
 │   │   │   │   │   ├── accounting-screen.journal-entry-enhancements.tsx
+│   │   │   │   │   ├── accounting-screen.journal-lifecycle.ts
 │   │   │   │   │   ├── accounting-screen.linked-context.ts
 │   │   │   │   │   ├── accounting-screen.mark-preview.test.tsx
 │   │   │   │   │   ├── accounting-screen.mark-preview.tsx
@@ -7960,6 +7969,8 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.workbench-context.tsx
 │   │   │   │   │   ├── reporting-screen.workflow-continuity.ts
 │   │   │   │   │   ├── settings-mutation-confirm-dialog.tsx
+│   │   │   │   │   ├── settings-owned-provider-credentials.test.tsx
+│   │   │   │   │   ├── settings-owned-provider-credentials.tsx
 │   │   │   │   │   ├── settings-profile-backed-security.test.ts
 │   │   │   │   │   ├── settings-profile-backed-security.ts
 │   │   │   │   │   ├── settings-route-state.test.ts
@@ -8057,6 +8068,7 @@ Meridian-main
 │   │   │   │   │   ├── fixtures
 │   │   │   │   │   │   ├── loan-portfolio.host.json
 │   │   │   │   │   │   └── quant-run-response.json
+│   │   │   │   │   ├── asset-approval-fixtures.ts
 │   │   │   │   │   ├── fixtures.ts
 │   │   │   │   │   ├── ledger-amount-proof-fixtures.ts
 │   │   │   │   │   ├── render.tsx
@@ -8068,6 +8080,7 @@ Meridian-main
 │   │   │   │   │   ├── account-oversight.ts
 │   │   │   │   │   ├── accounting-onboarding.ts
 │   │   │   │   │   ├── archive-maintenance.types.ts
+│   │   │   │   │   ├── asset-accounting-workflow.ts
 │   │   │   │   │   ├── audit-integrity.ts
 │   │   │   │   │   ├── banking-payments.types.ts
 │   │   │   │   │   ├── brokerage-recovery.ts
@@ -8627,6 +8640,10 @@ Meridian-main
 │   │   │   ├── ManualJournalEntryDraftStores.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.AccountingCloseReceipts.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.AssetAccounting.cs
+│   │   │   ├── ManualJournalEntryWorkbenchService.AssetApproval.cs
+│   │   │   ├── ManualJournalEntryWorkbenchService.AssetApprovalEvidence.cs
+│   │   │   ├── ManualJournalEntryWorkbenchService.AssetCapabilities.cs
+│   │   │   ├── ManualJournalEntryWorkbenchService.AssetPosting.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.Consolidation.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.Lifecycle.cs
@@ -8921,7 +8938,11 @@ Meridian-main
 │   │   │   │   ├── ReportingFeatureModule.cs
 │   │   │   │   ├── ReportingGovernanceApiClient.cs
 │   │   │   │   ├── ReportingGovernanceWorkbenchViewModel.cs
-│   │   │   │   └── ReportingRunRequestBuilder.cs
+│   │   │   │   ├── ReportingRunRequestBuilder.cs
+│   │   │   │   ├── ReportRetainedAmountsApiClient.cs
+│   │   │   │   ├── ReportRetainedAmountsControl.xaml
+│   │   │   │   ├── ReportRetainedAmountsControl.xaml.cs
+│   │   │   │   └── ReportRetainedAmountsViewModel.cs
 │   │   │   ├── Settings
 │   │   │   │   ├── Shell
 │   │   │   │   │   ├── SettingsWorkspaceShellModels.cs
@@ -9161,12 +9182,14 @@ Meridian-main
 │   │   │   │   ├── AccountingConfigureViewModel.cs
 │   │   │   │   ├── AccountingConfigureViewModel.GovernedQueues.cs
 │   │   │   │   ├── AuditChainIntegrityViewModel.cs
+│   │   │   │   ├── FactorPaydownViewModel.Approval.cs
 │   │   │   │   ├── FactorPaydownViewModel.cs
 │   │   │   │   ├── FactorPaydownViewModel.RetainedDrafts.cs
 │   │   │   │   └── RecurringJournalQueueViewModel.cs
 │   │   │   ├── AccountPortfolioViewModel.cs
 │   │   │   ├── ActivityLogViewModel.cs
 │   │   │   ├── AddProviderWizardViewModel.cs
+│   │   │   ├── AddProviderWizardViewModel.OwnedConnections.cs
 │   │   │   ├── AdminMaintenanceViewModel.cs
 │   │   │   ├── AdvancedAnalyticsViewModel.cs
 │   │   │   ├── AggregatePortfolioViewModel.cs
@@ -9297,6 +9320,7 @@ Meridian-main
 │   │   │   ├── AccountPortfolioPage.xaml.cs
 │   │   │   ├── ActivityLogPage.xaml
 │   │   │   ├── ActivityLogPage.xaml.cs
+│   │   │   ├── AddProviderWizardPage.OwnedConnections.cs
 │   │   │   ├── AddProviderWizardPage.xaml
 │   │   │   ├── AddProviderWizardPage.xaml.cs
 │   │   │   ├── AdminMaintenancePage.xaml
@@ -11659,6 +11683,7 @@ Meridian-main
 │   │   │   ├── AtomicTaxLotJournalStoreTests.AcquisitionAdmission.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.AdvanceRefundingReport.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.Amortization.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.AssetApprovalBridge.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.AverageCost.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.BackfillLockOrder.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.CapitalReturn.cs
@@ -11932,6 +11957,7 @@ Meridian-main
 │   │   │   ├── AlpacaCredentialEnvironmentCollection.cs
 │   │   │   ├── ApiHostOptionsDeploymentModeTests.cs
 │   │   │   ├── ArchiveMaintenanceEndpointsTests.cs
+│   │   │   ├── AssetAccountingApprovalBridgeTests.cs
 │   │   │   ├── AuditTrailExplorerServiceTests.cs
 │   │   │   ├── AutomatedJournalCapitalAccountReconciliationResolverTests.cs
 │   │   │   ├── AutomatedJournalDraftIntakeServiceTests.cs
@@ -12266,7 +12292,8 @@ Meridian-main
 │   │   │   ├── Reporting
 │   │   │   │   ├── ReportingFeatureModuleTests.cs
 │   │   │   │   ├── ReportingGovernanceWorkbenchViewModelTests.cs
-│   │   │   │   └── ReportingWorkspaceGovernanceSurfaceTests.cs
+│   │   │   │   ├── ReportingWorkspaceGovernanceSurfaceTests.cs
+│   │   │   │   └── ReportRetainedAmountsViewModelTests.cs
 │   │   │   ├── Settings
 │   │   │   │   ├── Shell
 │   │   │   │   │   ├── SettingsWorkspaceShellCredentialPostureTests.cs
@@ -12309,6 +12336,7 @@ Meridian-main
 │   │   │   ├── DesktopWorkflowReadScopeResolverTests.cs
 │   │   │   ├── DesktopWorkstationTenantContextAccessorTests.cs
 │   │   │   ├── ExportPresetServiceTests.cs
+│   │   │   ├── FactorPaydownApiClientTests.Approval.cs
 │   │   │   ├── FactorPaydownApiClientTests.cs
 │   │   │   ├── FirstRunServiceTests.cs
 │   │   │   ├── FundLedgerReadServiceTests.cs
@@ -12392,6 +12420,7 @@ Meridian-main
 │   │   │   ├── EventReplayViewModelTests.cs
 │   │   │   ├── EvidenceWorkbenchViewModelTests.cs
 │   │   │   ├── ExportPresetsViewModelTests.cs
+│   │   │   ├── FactorPaydownViewModelTests.Approval.cs
 │   │   │   ├── FactorPaydownViewModelTests.cs
 │   │   │   ├── FinancialRecordExplorerViewModelTests.cs
 │   │   │   ├── FundAccountsViewModelTests.cs
@@ -12469,6 +12498,7 @@ Meridian-main
 │   │   │   ├── AccountingWorkspaceShellPageTests.cs
 │   │   │   ├── AccountingWorkspaceShellSmokeTests.cs
 │   │   │   ├── AddProviderWizardPageTests.cs
+│   │   │   ├── AddProviderWizardPageTests.OwnedConnections.cs
 │   │   │   ├── ApplicationPrimitiveControlsTests.cs
 │   │   │   ├── DashboardPageSmokeTests.cs
 │   │   │   ├── DataQualityPageSmokeTests.cs

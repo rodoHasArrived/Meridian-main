@@ -73,29 +73,18 @@ command availability and retain the current editor values for an explicit retry.
 fields the operator filled in, because the vault treats a blank value as a deletion; rotating one secret
 keeps the other retained fields.
 
-The add-provider wizard saves and tests credentials through the same authenticated service, writing the
-provider-wide vault record, and reads provider-wide status for its badges and blank-save check, so
-credentials held only on the tenant's own connections never make a provider-wide save look complete. It no longer reads or writes Windows user environment variables, its editors
-start blank, and a test reports success only when the service verifies the credentials. Saved but
-unverified credentials are shown as a warning. Every provider and credential endpoint requires tenant
-scope, so a company-less desktop account sees an explicit refusal naming that requirement. While a test
-or save awaits the service, provider selection and the other command are ignored, and backfill inputs
-are captured before the first await. The wizard and credential management build their editors from the
-vault field schema the service reports with each status row, not from the local provider catalog, whose
-names differ (Tiingo's local field is `Token`, the vault accepts `ApiKey`). A provider the service reports
-without a schema, such as NYSE, shows no editors and cannot be saved from the wizard. A provider whose
-schema has no required fields, such as Interactive Brokers, tests as ready without a verification call. A
-blank save for a provider with required fields succeeds only when the service reports credentials already
-configured. Opening the credential-management editor before the selected connection's schema arrives (or
-after Test All superseded that read) starts a fresh status read and rebuilds the open editor when it
-completes. Credential management also lists owned connections for managed providers the local catalog omits,
-and matches a connection's status to the single row the service reports for it, so a retained alias still
-resolves. The settings shell counts unavailable credential status
-separately from missing credentials, so a refused or failed status read is shown as unknown readiness.
-After a confirmed wizard save, only unchanged submitted secret editors are cleared. Test then Save
-therefore reuses the persisted credentials and rereads provider-wide verification without replacing
-them. Edits during persistence or verification remain in the editor and require another test; refused
-saves retain editor values for retry. External rotation or removal is reflected by the final status read.
+The add-provider wizard requires explicit selection of an existing owned connection for managed
+credentials. It loads that connection's retained schema and uses its `connectionId` for status,
+save, verification and confirmed removal. Ownership is rechecked before mutations; missing, changed,
+foreign or unavailable selections cannot fall back to provider-wide credentials. An empty owned
+connection list gives an onboarding/unavailable state without creating ownership. Connection changes
+clear secret editors, verification and save state, cancel old requests and ignore delayed responses.
+Only unchanged submitted secrets are cleared after a confirmed save, so newer edits survive and
+require another test. The credential editor does not create connections or activate subscriptions or
+runtime routing; those remain separate workflows. Credential-free providers show that no managed
+credentials are required. The wizard and credential management use the service's vault field schema,
+not local catalog field names, and never read secrets back into editors or write environment variables.
+
 Provider badges and selections join canonical IDs, including retained aliases. Credential management
 retains a selected connection's field schema when a status read finishes during or after verification,
 without replacing the newer verification result with an older status label.
@@ -647,6 +636,15 @@ report-line evidence and provenance review. Its home chrome stays compact: the D
 puts the shared summary text, writer, approval, and delivery posture beside direct report-pack, run
 status, evidence, and export routes before the decision queue instead of rendering a separate
 page-level hero.
+The Reporting governance detail also reads the selected run's retained trial-balance amount catalogue
+through `ReportingGovernedRunAmounts`. Amount IDs, contributor journal/line IDs, tenant/company,
+fund/book/period and source-checkpoint hash must match the retained run before inspection is enabled.
+The existing amount proof drawer handles `report:{runId}:{amountId}` subjects and preserves each
+historical contributor's original posting-period scope when opening a guarded source manifest.
+Missing, legacy, unverified or foreign support remains review-required or blocked; no live balance
+or label-based fallback is used. Run/revision changes, refresh and navigation discard old proof and
+late responses. Windows runtime and operator acceptance remain separate from source implementation.
+
 The same Reporting shell now hosts a thin canonical governance workbench over shared reporting
 contracts and API routes. Desktop operators can round-trip exact template/version, fund/entity,
 book, period, as-of, accounting-basis, currency, consolidation, output, finality, schedule,
@@ -1003,8 +1001,11 @@ the reviewed preparation fingerprint and retains the real workbench draft with i
 The factor-paydown panel alone reloads retained drafts and submits the exact selected server version
 through authenticated HTTP. Existing desktop-local journal workbench records remain available in their
 original lane. The server draft can be selected and submitted for review; its lines and context cannot be edited through the
-manual editor. Generic approval, posting and corrections remain blocked until typed retained approval
-and atomic asset posting are supported. The desktop never posts from this review panel. Refusals remain visible and uncertain draft requests
+manual editor. Generic journal approval, posting and corrections remain blocked. The factor panel
+loads versioned server authorization before offering independent approval or atomic asset posting;
+missing or older capability responses leave those actions read-only. It displays retained approval
+bytes and their verified digest, independent reviewer, exact retry command/version, and actual
+canonical posting receipt. A server-retained pending post command is replayed unchanged for recovery. Refusals remain visible and uncertain draft requests
 instruct the operator to inspect retained history before retrying. Windows runtime proof is required
 before claiming live desktop acceptance.
 

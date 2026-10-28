@@ -19,8 +19,10 @@ namespace Meridian.Tests.FinancialOperations.Ledger;
 /// </summary>
 public sealed partial class AssetAccountingEventSpineServiceTests
 {
-    [Fact]
-    public async Task FactorPaydown_RequiresRetainedInstructionAndIndependentApproval_ThenPostsAtomicallyAndReplays()
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    public async Task FactorPaydown_RequiresRetainedInstructionAndIndependentApproval_ThenPostsAtomicallyAndReplays(int retentionDelaySeconds)
     {
         var harness = BuildFactorPaydownSpineHarness();
         var (service, postService, fixture, instruction) = (harness.Service, harness.PostService, harness.Fixture, harness.Instruction);
@@ -41,12 +43,23 @@ public sealed partial class AssetAccountingEventSpineServiceTests
         await harness.Atomic.DidNotReceiveWithAnyArgs().AppendAssetPostingAsync(default!, default);
 
         var request = harness.ApprovedPostRequest(candidate, drafted.Spine.DraftedCandidateFingerprint!);
+        var reviewedAtUtc = request.ApprovalEvidence.Single().ReviewedAtUtc;
+        var retainedAtUtc = reviewedAtUtc.AddSeconds(retentionDelaySeconds);
+        request = request with
+        {
+            ApprovalEvidence = [request.ApprovalEvidence.Single() with { RetainedAtUtc = retainedAtUtc }]
+        };
         var posted = await postService.PostCandidateAsync(request);
         var replay = await postService.PostCandidateAsync(request);
 
         posted.WasReplay.Should().BeFalse();
         replay.WasReplay.Should().BeTrue();
         replay.PostedJournal.Should().BeEquivalentTo(posted.PostedJournal);
+        replay.LifecycleStages.Should().BeEquivalentTo(posted.LifecycleStages);
+        var approved = posted.LifecycleStages.Single(stage => stage.Stage == AssetAccountingLifecycleStageDto.Approved);
+        approved.AttestedAtUtc.Should().Be(retainedAtUtc);
+        approved.Evidence.Single().ReviewedAtUtc.Should().Be(reviewedAtUtc);
+        approved.Evidence.Single().RetainedAtUtc.Should().Be(retainedAtUtc);
         var committed = harness.CommittedCommand!;
         committed.MutationKind.Should().Be(AtomicTaxLotMutationKind.FactorPaydown);
         committed.FactorPaydown.Should().BeEquivalentTo(instruction);
@@ -67,6 +80,30 @@ public sealed partial class AssetAccountingEventSpineServiceTests
             AssetAccountingLifecycleStageDto.Approved, AssetAccountingLifecycleStageDto.Posted);
         harness.Retained[5].Projection.TaxLotMutationBatchId.Should().Be(posted.TaxLotMutationBatchId);
         harness.Retained[5].Projection.FactorPaydown.Should().BeEquivalentTo(instruction);
+        harness.Retained[5].Projection.Stages.Single(stage => stage.Stage == AssetAccountingLifecycleStageDto.Approved)
+            .Should().BeEquivalentTo(approved);
+    }
+
+    [Fact]
+    public async Task FactorPaydown_PostRefusesFutureApprovalRetentionBeforeAtomicPosting()
+    {
+        var harness = BuildFactorPaydownSpineHarness();
+        await harness.Service.ProjectAsync(harness.Fixture.Request);
+        var drafted = await harness.Service.BuildPostingCandidateAsync(BuildCandidateRequest(harness.Fixture) with
+        {
+            LotMutation = FactorPaydownLotMutation(harness.Instruction)
+        });
+        var request = harness.ApprovedPostRequest(drafted.Spine.DraftedCandidate!, drafted.Spine.DraftedCandidateFingerprint!);
+        request = request with
+        {
+            ApprovalEvidence = [request.ApprovalEvidence.Single() with { RetainedAtUtc = DateTimeOffset.UtcNow.AddHours(1) }]
+        };
+
+        var post = () => harness.PostService.PostCandidateAsync(request);
+
+        await post.Should().ThrowAsync<InvalidOperationException>().WithMessage("*before its evidence was reviewed and retained*");
+        await harness.Atomic.DidNotReceiveWithAnyArgs().AppendAssetPostingAsync(default!, default);
+        harness.Retained.Should().HaveCount(3, "future evidence cannot retain an Approved or Posted stage");
     }
 
     [Theory]
@@ -134,6 +171,9 @@ public sealed partial class AssetAccountingEventSpineServiceTests
         public AtomicTaxLotJournalCommand? CommittedCommand { get; set; }
         public List<JournalEntry> RebuiltJournals { get; } = [];
         public Func<JournalEntry, JournalEntry>? CandidateMutation { get; set; }
+        public Func<LedgerJournalEntryRecord, LedgerJournalEntryRecord>? CommittedJournalMutation { get; set; }
+        public Func<AtomicTaxLotJournalResult, AtomicTaxLotJournalResult>? CommittedReceiptMutation { get; set; }
+        public bool MissingAtomicReceipt { get; set; }
 
         public PostPostingRuleJournalCandidateRequestDto ApprovedPostRequest(PostingRuleJournalCandidateRequestDto candidate, string draftedFingerprint)
         {
@@ -276,7 +316,14 @@ public sealed partial class AssetAccountingEventSpineServiceTests
                 false, journal, [], [], command.RetainedEvidence, FactorPaydown: command.FactorPaydown);
         });
         ledger.GetByAggregateAsync(lot.LedgerBookId, Arg.Any<CancellationToken>())
-            .Returns(_ => committed is null ? [] : new[] { committed.Journal });
+            .Returns(_ => committed is null ? [] : new[]
+            {
+                harness.CommittedJournalMutation is { } mutate ? mutate(committed.Journal) : committed.Journal
+            });
+        ledger.GetAtomicTaxLotPostingAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(call => committed is null || harness.MissingAtomicReceipt || call.ArgAt<Guid>(0) != committed.MutationBatchId
+                ? null
+                : harness.CommittedReceiptMutation is { } mutate ? mutate(committed) : committed);
         return harness;
     }
 
@@ -299,7 +346,10 @@ public sealed partial class AssetAccountingEventSpineServiceTests
                     "rule-valuation", "Valuation revaluation", "v2", 100,
                     IsMatched: true, Explanations: ["matched"], ValidationIssues: [])
             ],
-            GeneratedLines: [],
+            GeneratedLines: projected.Lines.Select(line => new AccountingJournalPreviewLineDto(
+                line.AccountId, line.AccountId,
+                line.Debit > 0m ? AccountingTemplateLineSideDto.Debit : AccountingTemplateLineSideDto.Credit,
+                line.Debit > 0m ? line.Debit : line.Credit, line.Currency)).ToArray(),
             ValidationIssues: [],
             GeneratedPostingLines: projected.Lines.Select((line, index) => new GeneratedPostingLineDto(
                 $"L{index + 1}", line.AccountId,
@@ -331,7 +381,8 @@ public sealed partial class AssetAccountingEventSpineServiceTests
                 EffectiveDate: item.EffectiveDate, EvidenceVersion: item.EvidenceVersion, ReviewStatus: item.ReviewStatus,
                 SubjectType: item.SubjectType)).ToArray()
         };
-        var generated = BuildFactorPaydownDryRun(fixture).GeneratedPostingLines;
+        var dryRun = BuildFactorPaydownDryRun(fixture);
+        var generated = dryRun.GeneratedPostingLines;
         var lines = generated.Select(line =>
         {
             var dimensions = line.Dimensions!;
@@ -362,6 +413,7 @@ public sealed partial class AssetAccountingEventSpineServiceTests
         var entry = new JournalEntry(write.Entry.JournalEntryId, write.Entry.Timestamp, write.Entry.Description, lines, metadata);
         return new AccountingPostingCandidateWriteResult(result.Candidate with
         {
+            DryRunResult = dryRun,
             PostingCommand = command,
             GeneratedPostingLines = generated,
             TotalDebits = lines.Sum(line => line.Debit),

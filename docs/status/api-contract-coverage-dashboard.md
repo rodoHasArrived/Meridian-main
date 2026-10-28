@@ -11,10 +11,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 20.5% |
-| Endpoint coverage | 31.4% |
+| Weighted score | 20.4% |
+| Endpoint coverage | 31.3% |
 | Workstation contract coverage | 4.1% |
-| Endpoints documented | 228 / 727 |
+| Endpoints documented | 228 / 728 |
 | Workstation contracts documented | 39 / 962 |
 
 ## Endpoint Coverage
@@ -291,8 +291,9 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/close-price-sets/{valuationDate}/{snapshotId:guid}/approval` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:155` |
 | `GET` | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/oversight/context` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:39` |
 | `POST` | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/oversight/provision` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:52` |
-| `POST` | `/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/draft` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:41` |
-| `POST` | `/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/prepare` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:25` |
+| `POST` | `/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/draft` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:74` |
+| `GET` | `/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/drafts/{journalEntryId:guid}/capabilities` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:25` |
+| `POST` | `/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/prepare` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:58` |
 | `POST` | `/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/apply` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.OpenLotBackfill.cs:112` |
 | `POST` | `/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/evidence` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.OpenLotBackfill.cs:73` |
 | `GET` | `/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/evidence/{evidenceRecordId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.OpenLotBackfill.cs:51` |
@@ -1718,7 +1719,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 ## Follow-up Queue
 
-- Document or intentionally suppress 499 mapped endpoint gap(s).
+- Document or intentionally suppress 500 mapped endpoint gap(s).
 - Document or intentionally suppress 923 workstation contract gap(s).
 
 ---

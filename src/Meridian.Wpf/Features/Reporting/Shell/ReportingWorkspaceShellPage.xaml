@@ -5,6 +5,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:views="clr-namespace:Meridian.Wpf.Views"
       xmlns:controls="clr-namespace:Meridian.Wpf.Controls"
+      xmlns:reporting="clr-namespace:Meridian.Wpf.Features.Reporting"
       mc:Ignorable="d"
       d:DesignHeight="900"
       d:DesignWidth="1400"
@@ -405,6 +406,7 @@
                                                Margin="0,4,0,0"
                                                FontWeight="SemiBold"
                                                AutomationProperties.AutomationId="ReportingGovernanceLifecycleState" />
+                                    <reporting:ReportRetainedAmountsControl DataContext="{Binding Governance.RetainedAmounts}" />
                                     <TextBox Text="{Binding Governance.ApprovalDecisionNote, UpdateSourceTrigger=PropertyChanged}"
                                              Margin="0,8,0,0"
                                              MinHeight="32"

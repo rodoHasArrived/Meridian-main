@@ -142,6 +142,12 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         var existing = await FindExistingPostingAsync(journalStore, ledgerBookId, sourceEventId, ct).ConfigureAwait(false);
         var hasAtomicLotMutation = isAssetAccountingEvent &&
                                    assetAuthority?.Drafted.Projection.DraftedLotMutation is { Intent: not AssetLotMutationIntentDto.None };
+        if (existing is not null && assetAuthority?.Drafted.Projection.DraftedLotMutation is
+            { Intent: AssetLotMutationIntentDto.FactorPaydown })
+        {
+            return await ReplayRetainedFactorPaydownAsync(assetAuthority, request, existing, ledgerBook, actor, ct)
+                .ConfigureAwait(false);
+        }
         var completedAcquisition = SpineAcquisitionLotCompletion.Resolve(request);
         if (existing is null && hasAtomicLotMutation && completedAcquisition is { } newAcquisition)
             SpineAcquisitionLotFacts.RequireCompleteNewAcquisition(newAcquisition);
@@ -903,7 +909,7 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
                               record.PostingKind == candidate.PostingKind &&
                               PayloadEquals(record.AdjustmentApproval, candidate.AdjustmentApproval),
             "Existing durable journal lineage, period, policy, rule, or correction semantics do not match the retained Drafted candidate.");
-        RequireAssetAssertion(record.Entry.Timestamp == candidate.AccountingTimestamp &&
+        RequireAssetAssertion(RetainedPostingEquivalence.AccountingTimestampsMatch(record.Entry.Timestamp, candidate.AccountingTimestamp) &&
                               string.Equals(record.Entry.Description, candidate.Description, StringComparison.Ordinal) &&
                               record.Entry.Metadata.EffectiveDate == candidate.EffectiveDate &&
                               string.Equals(record.Entry.Metadata.IdempotencyKey, pending.IdempotencyKey, StringComparison.Ordinal),
@@ -1442,7 +1448,10 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         string actor)
         => new(
             AssetAccountingLifecycleStageDto.Approved,
-            request.ApprovalEvidence.Max(static evidence => evidence.ReviewedAtUtc),
+            // This is the durable evidence attestation, not the original human decision time.
+            // Both actual review and actual retention must exist before this stage can attest them.
+            request.ApprovalEvidence.Max(static evidence =>
+                evidence.RetainedAtUtc > evidence.ReviewedAtUtc ? evidence.RetainedAtUtc : evidence.ReviewedAtUtc),
             actor,
             request.ApprovalEvidence,
             request.ApprovalId,

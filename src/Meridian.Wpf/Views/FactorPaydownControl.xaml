@@ -4,7 +4,7 @@
              AutomationProperties.AutomationId="FactorPaydownReview">
     <StackPanel>
         <TextBlock Text="Factor paydown" Style="{StaticResource CardHeaderStyle}" />
-        <TextBlock Text="Prepare principal and basis relief from retained lots. Drafts may be submitted for review. Typed approval and atomic lot posting remain unavailable."
+        <TextBlock Text="Prepare principal and basis relief from retained lots. Approval and atomic lot posting require current server authorization and retained independent review."
                    TextWrapping="Wrap" Margin="0,6,0,0" />
         <TextBlock Text="{Binding ScopeText}" TextWrapping="Wrap" Margin="0,6,0,0" />
         <Expander Header="Factor observation and retained support" Margin="0,12,0,0">
@@ -54,6 +54,25 @@
         </DataGrid>
         <Button Content="Submit selected draft for review" Command="{Binding SubmitRetainedDraftCommand}" HorizontalAlignment="Left"
                 Style="{StaticResource SecondaryButtonStyle}" AutomationProperties.AutomationId="SubmitFactorPaydownDraftButton" />
+        <TextBlock Text="Independent approval and atomic posting" Style="{StaticResource CardHeaderStyle}" Margin="0,16,0,0" />
+        <Button Content="Reload approval and posting status" Command="{Binding ReloadApprovalStateCommand}" HorizontalAlignment="Left" Margin="0,8,0,8"
+                Style="{StaticResource SecondaryButtonStyle}" AutomationProperties.AutomationId="ReloadFactorPaydownApprovalButton" />
+        <TextBlock Text="{Binding ApprovalStateText}" TextWrapping="Wrap" />
+        <TextBlock Text="Review rationale" Margin="0,10,0,4" />
+        <TextBox Text="{Binding ApprovalNotes, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanEditApprovalNotes}" AcceptsReturn="True" TextWrapping="Wrap"
+                 AutomationProperties.Name="Factor paydown independent review rationale" />
+        <CheckBox Content="I independently reviewed the retained draft lines and source evidence." IsChecked="{Binding ApprovalConfirmed}" Margin="0,8,0,8" />
+        <Button Content="Retain independent approval" Command="{Binding ApproveRetainedDraftCommand}" HorizontalAlignment="Left"
+                Style="{StaticResource SecondaryButtonStyle}" AutomationProperties.AutomationId="ApproveFactorPaydownDraftButton" />
+        <Expander Header="Retained approval proof" Margin="0,10,0,8">
+            <TextBox Text="{Binding ApprovalProofText, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True"
+                     AutomationProperties.Name="Retained factor paydown approval receipt" />
+        </Expander>
+        <CheckBox Content="Post the approved paydown and update its retained lots atomically." IsChecked="{Binding PostingConfirmed}" Margin="0,8,0,8" />
+        <Button Content="Post approved paydown" Command="{Binding PostRetainedDraftCommand}" HorizontalAlignment="Left"
+                Style="{StaticResource SecondaryButtonStyle}" AutomationProperties.AutomationId="PostFactorPaydownDraftButton" />
+        <TextBlock Text="{Binding PendingCommandText}" TextWrapping="Wrap" Margin="0,8,0,0" />
+        <TextBlock Text="{Binding CanonicalPostingText}" TextWrapping="Wrap" Margin="0,8,0,0" AutomationProperties.AutomationId="FactorPaydownCanonicalPosting" />
         <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap" Margin="0,10,0,0"
                    AutomationProperties.AutomationId="FactorPaydownStatus" />
     </StackPanel>

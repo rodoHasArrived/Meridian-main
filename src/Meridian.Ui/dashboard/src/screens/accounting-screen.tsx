@@ -1,3 +1,4 @@
+import { AssetAccountingWorkflowPanel } from "./accounting-screen.asset-workflow-panel";
 import { sourceObservationLabel, sourceObservationAge } from "./reconciliation-source-observation";
 import { BookCheck, Copy, Landmark, Network, Paperclip, RefreshCcw, Search, ShieldCheck, UserCheck, WalletCards, X } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -1645,7 +1646,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
   const cashFlow = useAccountingCashFlowViewModel(data?.cashFlow ?? null, pathname, workstream);
   const reporting = useAccountingReportingViewModel(data?.reporting ?? null);
   const configuration = useAccountingConfigurationViewModel(undefined, sectionVisibility.showConfiguration);
-  const journalEntries = useManualJournalEntryWorkbenchViewModel(workstream === "journal-entries", undefined, search);
+  const journalEntries = useManualJournalEntryWorkbenchViewModel(workstream === "journal-entries", undefined, search, session?.displayName.trim() ? JSON.stringify([session.displayName, session.role, session.environment]) : null);
   const capitalAccountWorkbench = useCapitalAccountWorkbenchViewModel(workstream === "capital-accounts", search);
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
   const selectSecurityFromExplorer = useCallback((recordId: string) => {
@@ -4551,7 +4552,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
         </div>
       ) : null}
 
-      {view.draft.assetAccountingDraft ? <p role="status" className="rounded border border-warning/30 bg-warning/10 p-3 text-sm">This is an immutable asset accounting review draft. Validate and submit it for review here. Approval, posting and corrections require retained approval evidence through the governed asset workflow and remain unavailable in this workbench.</p> : null}
+      {view.draft.assetAccountingDraft ? <p role="status" className="rounded border border-warning/30 bg-warning/10 p-3 text-sm">{view.assetWorkflow?.capability ? "This asset accounting draft is immutable. Available approval and posting decisions use the authenticated governed asset workflow below. Corrections remain unavailable here." : "This is an immutable asset accounting review draft. Validate and submit it for review here. Approval, posting and corrections require retained approval evidence through the governed asset workflow and remain unavailable until supported workflow capabilities are loaded."}</p> : null}
       <ManualJournalHealthBar view={view} hasInvalidAmountEdits={hasInvalidAmountEdits} invalidAmountReason={invalidAmountReason} />
 
       <div className="grid gap-4 xl:grid-cols-[minmax(14rem,0.28fr)_minmax(0,1fr)]">
@@ -4905,6 +4906,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
                     size="sm"
                     variant="outline"
                     busy={view.attachEvidenceBusy}
+                    disabled={!!view.assetWorkflow?.pendingAction || view.assetWorkflow?.hasPendingPost}
                     busyLabel="Attaching evidence"
                     onClick={() => void view.addAttachment()}
                   >
@@ -4962,6 +4964,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
                 {view.statusLabel}
               </Badge>
             </div>
+            {view.draft.assetAccountingDraft && view.assetWorkflow ? <AssetAccountingWorkflowPanel view={view.assetWorkflow} /> : null}
             <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
               {view.lifecycleCommands.map((command) => (
                 <Button

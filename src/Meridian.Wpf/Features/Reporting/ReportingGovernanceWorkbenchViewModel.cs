@@ -89,6 +89,18 @@ public sealed class ReportingGovernanceWorkbenchViewModel : BindableBase
     private string _templateParametersText = string.Empty;
 
     private string _currentRunId = string.Empty;
+    private long _runSelectionRevision;
+    private readonly AsyncLocal<ReportingOperation?> _operationContext = new();
+    private ReportingOperation? _activeOperation;
+
+    private sealed class ReportingOperation(long selectionRevision)
+    {
+        public long SelectionRevision { get; set; } = selectionRevision;
+    }
+
+    private bool OwnsOperation(ReportingOperation operation) => ReferenceEquals(_activeOperation, operation);
+    private bool IsCurrentOperation(ReportingOperation operation)
+        => OwnsOperation(operation) && operation.SelectionRevision == _runSelectionRevision;
     private GovernedReportingRunDto? _currentRun;
     private ReportingRunReadinessDto? _readiness;
     private ReportingGovernanceRestatementDto? _currentRestatement;
@@ -118,9 +130,11 @@ public sealed class ReportingGovernanceWorkbenchViewModel : BindableBase
     private string _lastIssuedRecipientAccessUri = string.Empty;
     private string _lastIssuedGrantStatus = "No recipient access grant has been issued in this desktop session.";
 
-    public ReportingGovernanceWorkbenchViewModel(IReportingGovernanceApiClient apiClient)
+    public ReportingGovernanceWorkbenchViewModel(IReportingGovernanceApiClient apiClient,
+        IReportRetainedAmountsApiClient? retainedAmountsClient = null, Meridian.Wpf.Services.ILedgerReportsApiClient? proofClient = null)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+        RetainedAmounts = new ReportRetainedAmountsViewModel(retainedAmountsClient, proofClient);
 
         AssessReadinessCommand = new AsyncRelayCommand(AssessReadinessAsync, CanAssessReadiness);
         GenerateGovernedRunCommand = new AsyncRelayCommand(GenerateGovernedRunAsync, CanGenerateGovernedRun);
@@ -292,6 +306,13 @@ public sealed class ReportingGovernanceWorkbenchViewModel : BindableBase
                 return;
             }
 
+            _runSelectionRevision++;
+            RetainedAmounts.SetRun(null);
+            if (IsBusy)
+            {
+                ErrorText = string.Empty;
+                StatusText = "Run selection changed; load its retained state. Check retained history before retrying the earlier command.";
+            }
             if (_currentRun is not null && !string.Equals(_currentRun.RunId, normalized.Trim(), StringComparison.Ordinal))
             {
                 _currentRestatement = null;
@@ -492,6 +513,8 @@ public sealed class ReportingGovernanceWorkbenchViewModel : BindableBase
                 : Finality == ReportingFinalityDto.Draft && !Readiness.CanGenerateDraft
                     ? ReadinessBlockerText
                     : "Generate from the certified server snapshot and attach canonical governance.";
+
+    public ReportRetainedAmountsViewModel RetainedAmounts { get; }
 
     public GovernedReportingRunDto? CurrentRun => _currentRun;
     public bool HasCurrentRun => CurrentRun is not null;
@@ -735,7 +758,7 @@ public sealed class ReportingGovernanceWorkbenchViewModel : BindableBase
             async () =>
             {
                 var runResult = RequireData(await _apiClient.RunAsync(request!, ct).ConfigureAwait(true), "Reporting run");
-                CurrentRunId = runResult.Run.RunId;
+                AdoptGeneratedRun(runResult.Run.RunId);
                 StatusText = "Certified run completed; attaching canonical governance…";
                 var governed = RequireData(
                     await _apiClient.GovernCompletedRunAsync(CurrentRunId, ct).ConfigureAwait(true),
@@ -751,9 +774,14 @@ public sealed class ReportingGovernanceWorkbenchViewModel : BindableBase
             "Loading governed reporting state…",
             async () =>
             {
+                var selectedRunId = CurrentRunId.Trim();
+                var revision = _runSelectionRevision;
                 var governed = RequireData(
-                    await _apiClient.GetGovernedRunAsync(CurrentRunId.Trim(), ct).ConfigureAwait(true),
+                    await _apiClient.GetGovernedRunAsync(selectedRunId, ct).ConfigureAwait(true),
                     "Governed run load");
+                if (revision != _runSelectionRevision || CurrentRunId.Trim() != selectedRunId) return;
+                if (governed.RunId != selectedRunId)
+                    throw new InvalidOperationException("The governed report response does not match the selected run.");
                 ApplyCurrentRun(governed);
                 await RefreshDistributionCapabilitiesCoreAsync(ct).ConfigureAwait(true);
                 StatusText = $"Loaded {governed.RunId} at version {governed.Version}.";
@@ -764,9 +792,14 @@ public sealed class ReportingGovernanceWorkbenchViewModel : BindableBase
             "Attaching canonical governance…",
             async () =>
             {
+                var selectedRunId = CurrentRunId.Trim();
+                var revision = _runSelectionRevision;
                 var governed = RequireData(
-                    await _apiClient.GovernCompletedRunAsync(CurrentRunId.Trim(), ct).ConfigureAwait(true),
+                    await _apiClient.GovernCompletedRunAsync(selectedRunId, ct).ConfigureAwait(true),
                     "Governance attachment");
+                if (revision != _runSelectionRevision || CurrentRunId.Trim() != selectedRunId) return;
+                if (governed.RunId != selectedRunId)
+                    throw new InvalidOperationException("The governed report response does not match the selected run.");
                 ApplyCurrentRun(governed);
                 await RefreshDistributionCapabilitiesCoreAsync(ct).ConfigureAwait(true);
                 StatusText = $"Governed reporting run {governed.RunId} is {governed.GovernanceState}.";
@@ -994,19 +1027,24 @@ public sealed class ReportingGovernanceWorkbenchViewModel : BindableBase
         }
         catch
         {
-            ApplyDistributionCapabilities(null);
-            ApplyDistributionHistory([], []);
+            if (_operationContext.Value is not { } operation || IsCurrentOperation(operation))
+            {
+                ApplyDistributionCapabilities(null);
+                ApplyDistributionHistory([], []);
+            }
             throw;
         }
     }
 
     private async Task ExecuteAsync(string progress, Func<Task> action)
     {
-        if (IsBusy)
-        {
-            return;
-        }
-
+        // Preserve the existing single-operation policy. A competing Load or command cannot
+        // replace an in-flight invocation or take ownership of its busy indicator.
+        if (IsBusy) return;
+        var operation = new ReportingOperation(_runSelectionRevision);
+        var previousContext = _operationContext.Value;
+        _activeOperation = operation;
+        _operationContext.Value = operation;
         ClearIssuedRecipientLink();
         IsBusy = true;
         ErrorText = string.Empty;
@@ -1015,19 +1053,40 @@ public sealed class ReportingGovernanceWorkbenchViewModel : BindableBase
         {
             await action().ConfigureAwait(true);
         }
+        catch (StaleReportingSelectionException)
+        {
+            // The user's newer selection owns its status. The server's completed command
+            // remains retained; its late callback cannot replace the newer presentation.
+        }
         catch (OperationCanceledException)
         {
+            if (!IsCurrentOperation(operation)) return;
             StatusText = "Reporting operation cancelled.";
             throw;
         }
         catch (Exception ex)
         {
-            SetError(ex.Message);
+            if (IsCurrentOperation(operation)) SetError(ex.Message);
         }
         finally
         {
-            IsBusy = false;
+            if (OwnsOperation(operation))
+            {
+                _activeOperation = null;
+                IsBusy = false;
+            }
+            if (ReferenceEquals(_operationContext.Value, operation)) _operationContext.Value = previousContext;
         }
+    }
+
+    private void AdoptGeneratedRun(string runId)
+    {
+        var operation = _operationContext.Value;
+        if (operation is null || !IsCurrentOperation(operation)) throw new StaleReportingSelectionException();
+        CurrentRunId = runId;
+        if (CurrentRunId.Trim() != runId) throw new StaleReportingSelectionException();
+        // Only this still-current invocation may intentionally adopt its newly generated run.
+        operation.SelectionRevision = _runSelectionRevision;
     }
 
     private string BuildDistributionCapabilityStatusText()
@@ -1254,6 +1313,7 @@ public sealed class ReportingGovernanceWorkbenchViewModel : BindableBase
             && run is not null
             && !string.Equals(_currentRun.RunId, run.RunId, StringComparison.Ordinal);
         _currentRun = run;
+        RetainedAmounts.SetRun(run);
         if (runChanged)
         {
             _lastDelivery = null;
@@ -1396,8 +1456,9 @@ public sealed class ReportingGovernanceWorkbenchViewModel : BindableBase
         && !string.IsNullOrWhiteSpace(GrantRevocationReason);
 
     private ReportingGovernanceActionAvailabilityDto? RunActionCandidate(string action) =>
-        CurrentRun?.ActionAvailability?.FirstOrDefault(candidate =>
-            string.Equals(candidate.Action, action, StringComparison.OrdinalIgnoreCase));
+        CurrentRun is { } selected && selected.RunId == CurrentRunId.Trim()
+            ? selected.ActionAvailability?.FirstOrDefault(candidate =>
+            string.Equals(candidate.Action, action, StringComparison.OrdinalIgnoreCase)) : null;
 
     private ReportingGovernanceActionAvailabilityDto? RestatementActionCandidate(string action) =>
         CurrentRestatement?.ActionAvailability?.FirstOrDefault(candidate =>
@@ -1469,7 +1530,8 @@ public sealed class ReportingGovernanceWorkbenchViewModel : BindableBase
             : throw new InvalidOperationException(RestatementActionBlockedReason(action));
 
     private GovernedReportingRunDto RequireCurrentRun() =>
-        CurrentRun ?? throw new InvalidOperationException("No governed reporting run is loaded.");
+        CurrentRun is { } run && run.RunId == CurrentRunId.Trim()
+            ? run : throw new InvalidOperationException("Load the exact selected governed reporting run before issuing a command.");
 
     private void NotifyCommandStates()
     {
@@ -1534,8 +1596,16 @@ public sealed class ReportingGovernanceWorkbenchViewModel : BindableBase
         StatusText = "Action failed; review the server response and retry after correcting the blocker.";
     }
 
-    private static T RequireData<T>(ApiResponse<T> response, string operation) where T : class
+    private sealed class StaleReportingSelectionException : Exception { }
+
+    private T RequireData<T>(ApiResponse<T> response, string operation) where T : class
     {
+        // Every server response crosses this gate before it can mutate the selected run,
+        // restatement, distribution, or retained-amount presentation.
+        if (_operationContext.Value is { } operationContext && !IsCurrentOperation(operationContext))
+            throw new StaleReportingSelectionException();
+        if (response.Success && response.Data is GovernedReportingRunDto returned && returned.RunId != CurrentRunId.Trim())
+            throw new InvalidOperationException("The governed report response does not match the selected run.");
         if (response.Success && response.Data is not null)
         {
             return response.Data;

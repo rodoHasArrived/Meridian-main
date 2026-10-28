@@ -16,18 +16,19 @@ public sealed partial class FactorPaydownViewModel
         {
             if (value is not null && !RetainedDrafts.Contains(value)) return;
             if (!SetProperty(ref _selectedRetainedDraft, value)) return;
+            InvalidateApprovalState(clearCommands: true);
             RaisePropertyChanged(nameof(RetainedDraftStatusText));
             RaisePropertyChanged(nameof(RetainedDraftLines));
             NotifyCommands();
         }
     }
     public bool CanSelectRetainedDraft => !IsBusy;
-    public bool CanSubmitRetainedDraft => !IsBusy && _client is not null && _selectedRetainedDraft is
+    public bool CanSubmitRetainedDraft => !IsBusy && _capabilities?.HasPendingPost != true && _client is not null && _selectedRetainedDraft is
         { Version: > 0, Status: ManualJournalEntryStatusDto.Draft, AssetAccountingDraft: not null };
     public IReadOnlyList<ManualJournalEntryLineDto> RetainedDraftLines => _selectedRetainedDraft?.Lines ?? [];
     public string RetainedDraftStatusText => _selectedRetainedDraft is { } draft
         ? $"Server draft {draft.JournalEntryId:D} · {draft.Status} · version {draft.Version} · {draft.AccountingBasis}. "
-          + "May be submitted for review. Typed approval and atomic lot posting are unavailable; generic approval, posting and corrections are blocked."
+          + "Review current server authorization below before approval or atomic lot posting. Generic journal posting and corrections remain blocked."
         : "Reload and select a retained server factor-paydown draft. Existing desktop-local journal records remain in the journal workbench.";
 
     private void ClearRetainedDraftSelection()
@@ -97,7 +98,7 @@ public sealed partial class FactorPaydownViewModel
                 throw new InvalidOperationException("The submitted draft does not match its retained server identity.");
             RetainedDrafts[RetainedDrafts.IndexOf(draft)] = submitted;
             SelectedRetainedDraft = submitted;
-            StatusText = $"Server draft {submitted.JournalEntryId:D} returned {submitted.Status}. Review submission does not approve or post; typed approval and atomic lot posting remain unavailable.";
+            StatusText = $"Server draft {submitted.JournalEntryId:D} returned {submitted.Status}. Review submission does not approve or post. Reload approval status to inspect current authorization.";
         }
         catch (OperationCanceledException) { if (generation == _generation) StatusText = "Review submission cancelled. Reload retained drafts before retrying."; }
         catch (Exception ex) { if (generation == _generation) StatusText = $"Review submission blocked: {ex.Message}. Reload retained drafts before retrying."; }

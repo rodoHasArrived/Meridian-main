@@ -7,7 +7,7 @@ using Meridian.Wpf.ViewModels.Accounting;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 
-public sealed class FactorPaydownViewModelTests
+public sealed partial class FactorPaydownViewModelTests
 {
     private static readonly Guid BookId = Guid.NewGuid();
     private static readonly Guid SecurityId = Guid.NewGuid();
@@ -26,7 +26,7 @@ public sealed class FactorPaydownViewModelTests
         view.CanCreateDraft.Should().BeTrue();
         await view.CreateDraftCommand.ExecuteAsync(null);
         client.Drafts.Should().ContainSingle().Which.ExpectedPreparationFingerprint.Should().Be("review-fingerprint");
-        view.StatusText.Should().Contain("Draft ").And.Contain("submit for review").And.Contain("Typed approval and posting are unavailable").And.Contain("Nothing has posted");
+        view.StatusText.Should().Contain("Draft ").And.Contain("submit for review").And.Contain("current server authorization").And.Contain("Nothing has posted");
         view.CanCreateDraft.Should().BeFalse();
     }
 
@@ -219,6 +219,16 @@ public sealed class FactorPaydownViewModelTests
             ServerDrafts[index] = submitted;
             return Task.FromResult(submitted);
         }
+        public Func<string, Guid, Guid, CancellationToken, Task<AssetAccountingDraftCapabilitiesDto?>>? Capabilities { get; set; }
+        public Func<JournalEntryLifecycleActionRequestDto, CancellationToken, Task<JournalEntryLifecycleActionResultDto>>? Apply { get; set; }
+        public List<JournalEntryLifecycleActionRequestDto> Actions { get; } = [];
+        public Task<AssetAccountingDraftCapabilitiesDto?> GetCapabilitiesAsync(string fund, Guid book, Guid journal, CancellationToken ct)
+            => Capabilities?.Invoke(fund, book, journal, ct) ?? Task.FromResult<AssetAccountingDraftCapabilitiesDto?>(null);
+        public Task<JournalEntryLifecycleActionResultDto> ApplyLifecycleAsync(JournalEntryLifecycleActionRequestDto request, CancellationToken ct)
+        {
+            Actions.Add(request);
+            return Apply?.Invoke(request, ct) ?? throw new InvalidOperationException("No lifecycle support");
+        }
         public Task<FactorPaydownPreparationDto> PrepareAsync(PrepareFactorPaydownRequestDto request, CancellationToken ct)
         {
             Preparations++;
@@ -229,7 +239,7 @@ public sealed class FactorPaydownViewModelTests
             Drafts.Add(request);
             if (FailDraftOnce && Drafts.Count == 1) throw new IOException("Connection interrupted");
             var spine = new AssetAccountingEventSpineDto(Guid.NewGuid(), default, 1, 1, new(2026, 10, 28), 100m, "USD", Scope(), null!, null!)
-                { FactorPaydown = Preview().Instruction };
+                { FactorPaydown = Preview().Instruction, DraftedCandidateFingerprint = "candidate-fingerprint" };
             var candidate = new PostingRuleJournalCandidateResultDto(null!, "rule", "1", [], null, Guid.NewGuid(),
                 100m, 100m, 0m, true, false, true, false, [], []);
             var authority = new AssetAccountingPostingCandidateDto(spine, candidate);

@@ -22,6 +22,39 @@ public static partial class LedgerEndpoints
     {
         jsonOptions = new JsonSerializerOptions(jsonOptions);
         jsonOptions.Converters.Insert(0, new AccountOversightDecimalJsonConverter());
+        app.MapGet(UiApiRoutes.LedgerFactorPaydownDraftCapabilities, async (
+            Guid ledgerBookId, Guid journalEntryId, string fundProfileId, HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context) || !TryResolveActor(context, out var actor))
+                return EndpointHelpers.Forbidden();
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var books = ResolveService(context);
+            var owners = context.RequestServices.GetService<IFundProfileTenancyRegistry>();
+            if (!HasAccountingPackageTenantScope(tenant) || books is null || owners is null)
+                return EndpointHelpers.Forbidden();
+            var book = await books.GetBookAsync(ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            if (book is null || book.LedgerBookId != ledgerBookId || book.FundProfileId != fundProfileId)
+                return EndpointHelpers.Forbidden();
+            var owner = await owners.ResolveAsync(book.FundProfileId, context.RequestAborted).ConfigureAwait(false);
+            if (owner is null || owner.FundProfileId != book.FundProfileId || !CloseWorkflowOwnerMatches(owner, tenant))
+                return EndpointHelpers.Forbidden();
+            if (ResolveManualJournalEntryWorkbenchService(context) is not ManualJournalEntryWorkbenchService workbench)
+                return ServiceUnavailable("The governed asset posting workflow is unavailable.");
+            var queue = await workbench.GetWorkbenchAsync(fundProfileId, ledgerBookId, context.RequestAborted,
+                tenant.TenantId, tenant.CompanyId).ConfigureAwait(false);
+            var draft = queue.Drafts.SingleOrDefault(item => item.JournalEntryId == journalEntryId &&
+                item.LedgerBookId == ledgerBookId && item.FundProfileId == fundProfileId && item.AssetAccountingDraft is not null);
+            if (draft is null)
+                return Results.NotFound();
+            return Results.Json(await workbench.GetAssetAccountingCapabilitiesAsync(draft, actor,
+                HasLedgerCertificationPermission(context), context.RequestAborted).ConfigureAwait(false), jsonOptions);
+        })
+        .WithName("GetLedgerFactorPaydownDraftCapabilities")
+        .RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending,
+            UserPermission.ManageLedgerReports)
+        .RequireWorkstationTenantCompanyScope().RequireAuthenticatedSession()
+        .Produces<AssetAccountingDraftCapabilitiesDto>(StatusCodes.Status200OK);
+
         app.MapPost(UiApiRoutes.LedgerFactorPaydownPreparation, async (
             Guid ledgerBookId, PrepareFactorPaydownRequestDto request, HttpContext context) =>
             await ExecuteFactorPaydownAsync(context, ledgerBookId, request, async (prepared, _) =>

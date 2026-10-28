@@ -12,7 +12,7 @@ using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Tests.Services;
 
-public sealed class FactorPaydownApiClientTests
+public sealed partial class FactorPaydownApiClientTests
 {
     [Fact]
     public async Task PreparationUsesGovernedRouteAndReadsExactDecimalStrings()

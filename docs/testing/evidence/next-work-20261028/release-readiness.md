@@ -224,3 +224,92 @@ hosted load passed locally without widening its 30-second subprocess timeout.
 The mirror retains the full generated dimension lineage and typed source candidate. Structured
 posting-account identities not exposed by `GeneratedPostingLineDto` are not reconstructed from
 labels; this review surface is not a complete posting-account projection.
+
+## Validated review milestone — cef39213
+
+Hosted validation completed on feature head
+`cef392130bc6e88d0ef11227bccb9a705cadb78c`, tested as PR merge
+`d01a64bdfba47613c7f5d88ff38d284746d98db5` against main
+`a6ad3fe1575530dc740167923ffd3bafeb27e7dd`. All hosted workflows on that head completed
+successfully, including Meridian CI quality/integration gates, CodeQL, Windows Desktop Build,
+Golden Path, documentation generation/validation, PostgreSQL schema control, pipeline budget,
+demo smoke and screenshot validation. Expected conditional jobs remained skipped.
+
+The following downloaded artifacts were checked against their published SHA-256 digests.
+Counts come from their retained TRX or test-summary JSON, not compilation alone.
+
+| Run / artifact | Verified results | Artifact ID / SHA-256 |
+| --- | --- | --- |
+| [Meridian CI 40683943291](https://github.com/rodoHasArrived/Meridian-main/actions/runs/40683943291), `meridian-ci-dotnet-6004-1` | 24,965 passed, zero failed, five registered skips across 19 TRX files | `12815457208` / `8aca091fe35f61edbcd6243bc7ee699f4aee4baa427196cfc30595f4ba16a7c0` |
+| Same run, `meridian-ci-browser-6004-1` | 4,057 passed, zero failed or skipped | `12815490714` / `559045b671cd4a39238b9ca4b80a9773ea69ae02b65b7317bd973878521875fb` |
+| Same run, `meridian-ci-integrations-6004-1` | 1,380 PostgreSQL tests passed, zero failed or skipped: 1,367 Meridian and 13 Direct Lending | `12815586206` / `c765e6a93c3f3044e7aebaaf02b20c496d31f60a09521b7e0780e15f8eff6dab` |
+| [Windows Desktop Build 40683943060](https://github.com/rodoHasArrived/Meridian-main/actions/runs/40683943060), `windows-desktop-validation-5521` | Native full WPF suite: 2,510 passed, zero failed, one registered skip. All 18 factor-paydown cases passed: six API-client and 12 view-model cases. The unchanged compact-action-chrome assertion passed. All six Windows validation groups passed. | `12815420258` / `2a8c0d77a653ab2766eac4e3a46e829d6dfc79e28e2ffab42f1e7fe3a9555ba3` |
+
+This milestone validates the immutable factor-paydown **review/submission** implementation only.
+Its generic approval, posting and correction paths remain blocked. It does not validate the new
+isolated typed-approval adapter, subsequent WPF report-provenance work or later credential changes
+in the approval worktree. Those changes require their own candidate-bound evidence.
+
+The full local `bash scripts/ci.sh` run on this same head subsequently passed: 24,965 .NET tests
+with zero failures and five registered skips, 4,057 browser tests with zero failures or skips,
+and 2,184 repository script tests with zero failures and 16 registered skips. It used the pinned
+Python dependencies, cleared demo-only environment flags and ran under `docker-init -s`; no
+test, timeout or governance rule was changed. The earlier `5aa74aaab0` pass remains historical.
+
+No Production Certification run, live Windows operator acceptance, signing or supported release
+is claimed here.
+
+## Receipt-backed posting and client parity — implementation validation
+
+The subsequent implementation extends the validated review milestone with actual independent
+approval and canonical posting. The authenticated decision bytes bind source/candidate identity,
+tenant/company, fund/book/period/basis, actor and time. A pending post retains the exact original
+request before financial publication. Vault content is reopened and verified, and only the canonical
+candidate/atomic lot service can publish the journal. Generic source edits and corrections remain
+blocked. Capability responses carry the actual authenticated actor; a session change between review
+and command submission refuses the stale intention rather than approving under another actor.
+
+The real PostgreSQL path exposed three issues not established by stub tests. Canonical approval
+now attests at `max(actual review, actual retention)` without changing either fact or backdating the
+Vault. Factor replay requires the immutable original journal, Drafted authority and atomic receipt
+before consulting the storage exact-replay rail, rather than rebuilding economics from mutated
+lots. Existing schema-owned timestamp comparison handles PostgreSQL microsecond representation;
+the exact original timestamp and decimal representation remain authoritative for fingerprints.
+Missing or changed authority still refuses; future retention and new-write staleness checks remain.
+
+The expanded local packet passed **645 tests with zero failures or skips**, including the real
+PostgreSQL approval → post → restart/replay with deliberately nonzero submicrosecond time. The
+round trip retained one canonical journal/workbench ID and mutation batch, changed factor
+`0.95 → 0.90`, and booked cash `50,000`, basis relief `50,750` and realized loss `750`.
+Altered candidate, instruction, evidence, actor and tenant retries made no additional writes.
+Preparation still requires a qualified retained factor observation and prospective economic model.
+The fixture seeds them through the supported governed projection pipeline and uses a recorded-as-of
+reference adapter for its controlled population; it does not certify historical ingestion.
+
+The new browser lifecycle checks passed **135 tests**; scoped credential API/editor and existing
+Settings/accessibility checks passed **71 tests**. Strict types, lint, route/barrel/parity and file-size
+checks passed; lint retained 104 existing warnings. Two canonical production builds produced
+identical paths and SHA-256 digests for all **129 files**. Mocked Chromium checks at 1920×1080,
+1440×900 and 1366×768 exercised approval, retained receipt inspection, interrupted-post reload,
+exact prior-version resume, canonical journal navigation, and owned credential save/verify/removal.
+The new workflow/editor checks found no overflow, unexpected page errors or axe violations; the
+post-recovery exercise explicitly injected one 503. These are rendering tests with mocked APIs.
+
+Full WPF application/XAML and complete Windows test sources cross-compiled with **zero errors and
+18 warnings**, including factor approval/posting, explicit owned credential selection, and generated
+report amount proof. Report proof requires complete declared journal/line coverage, preserves exact
+amounts and historical source manifest identity, and uses invocation-local response guards under
+the existing single-operation policy. This compilation is not native Windows runtime evidence.
+
+Schema-control applied all **152 migrations** with zero migration or policy errors. Physical schema,
+migration and policy manifests were unchanged; public contracts/dependencies were regenerated.
+The three new public contracts are the approval receipt, per-draft capabilities and pending post
+intent. Temporary schema reports were retained outside the checkout before documentation refresh.
+
+This packet describes the working implementation after `cef39213`; it is not covered by that
+milestone's hosted results. The final integrated commit still requires its own full local gate and
+GitHub Actions results. LOT/MARK/SEAM live acceptance, independent Accounting/Ledger and Storage
+review, broader LOT/correction/consumer parity, other report amount families, host credential
+binding, ownership creation and explicit legacy migration remain open. Andrew Rowden is the stated
+release-signing owner; an accessible Windows acceptance target and protected signing readiness
+remain unprovided. No release certification, tag or PR merge is claimed.

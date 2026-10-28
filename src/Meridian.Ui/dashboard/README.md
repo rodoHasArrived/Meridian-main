@@ -11,18 +11,34 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.Ui/dashboard
 
+Provider credential editors require explicit selection of an existing owned connection. Status,
+save, verification and deletion use the same retained connection; account and environment come
+from authenticated ownership. Missing or changed ownership blocks changes without provider-wide
+fallback. Refresh or session changes clear secret drafts and invalidate delayed responses. This
+client increment does not create ownership, migrate legacy secrets or bind host runtime providers.
+
 Accounting Ledger Explorer includes a governed factor-paydown workbench. Exact factor text and
 existing retained evidence identities go to the shared preparation endpoint; the server supplies
 principal, basis relief, realized results and per-lot allocation as exact decimal strings. Creating
 a review draft requires an explicit description and confirmation of the preview. The shared draft
 adapter rechecks its fingerprint and retains the accounting-event candidate plus its exact journal
 workbench draft. The scoped link selects that exact draft for validation and review submission.
-Asset-linked drafts are immutable: editing, Save, generic approval, posting and corrections remain
-unavailable until the governed asset workflow supports retained approval evidence. The browser
-never posts, approves, calculates financial amounts or roundtrips numeric lot instructions. Book,
+Asset-linked drafts remain immutable. The journal lifecycle panel loads authenticated protocol-1
+capabilities for the exact draft, book, period, version and authenticated actor; old, absent or
+mismatched capabilities keep approval and posting unavailable. Supported decisions require explicit
+review and a rationale.
+The server retains the real independent approver, candidate fingerprint and receipt bytes; the
+browser checks their SHA-256 digest before offering the receipt download. Uncertain outcomes retain
+one exact command and UUID in session recovery; session changes and actor mismatches clear prior
+operator retry state. Pending posting resumes the server's original command unchanged, even when
+the recovery version advances, and blocks all other mutations.
+Canonical posted journal links come only from the returned durable posting receipt. Editing, Save,
+reversal, rebook and close-lock remain unavailable. The browser submits reviewed decisions to the
+shared governed workflow and never calculates financial amounts or roundtrips numeric lot instructions. Book,
 period and tab changes discard preparation, stale responses are ignored, and uncertain writes keep
 the same reviewed request for retry. Focused tests are in
-`accounting-screen.factor-paydown-panel.test.tsx` and `factor-paydown.api.test.ts`.
+`accounting-screen.factor-paydown-panel.test.tsx`, `factor-paydown.api.test.ts`,
+`accounting-screen.asset-workflow.test.ts` and `asset-accounting-workflow.api.test.ts`.
 
 Report Run Detail exposes retained trial-balance account balances from the exact run's ledger
 checkpoint through `/api/fund-structure/reporting/runs/{runId}/amounts`. Each balance opens the

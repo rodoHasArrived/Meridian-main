@@ -203,7 +203,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
     private async Task PersistMutationAsync<T>(
         IReadOnlyList<ManualJournalEntryDraftDto> drafts, IReadOnlyList<string> actions,
         string actor, string? correlationId, IReadOnlyList<string>? principals, T result,
-        CancellationToken ct, LedgerJournalEntryWrite? posting = null)
+        CancellationToken ct, LedgerJournalEntryWrite? posting = null, string? assetPostPlanForCommandKey = null)
     {
         var command = _mutationCommand ?? throw new InvalidOperationException("Manual journal mutation requires a command lease.");
         var session = _mutationSession ?? throw new InvalidOperationException("Manual journal mutation requires a recovery session.");
@@ -227,7 +227,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
         }
         var intent = new ManualJournalMutationIntent(command.Key, command.RequestHash, command.ScopeKey,
             command.JournalEntryId, before, drafts, audits, posting,
-            JsonSerializer.SerializeToElement(result, result!.GetType(), ManualJournalMutationJsonContext.Default));
+            JsonSerializer.SerializeToElement(result, result!.GetType(), ManualJournalMutationJsonContext.Default))
+        { AssetPostPlanForCommandKey = assetPostPlanForCommandKey };
         await session.RetainAsync(intent, ct).ConfigureAwait(false);
         if (posting is not null)
         {
@@ -258,6 +259,20 @@ public sealed partial class ManualJournalEntryWorkbenchService
             allBefore &= DraftMatches(actual, intent.Before[index]);
             allAfter &= DraftMatches(actual, expected);
         }
+        if (intent.AssetPostPlanForCommandKey is not null)
+        {
+            if (intent.After.Count != 1 || intent.Before[0] is not { } prior ||
+                prior.Status != ManualJournalEntryStatusDto.Approved || intent.After[0].Status != ManualJournalEntryStatusDto.Approved ||
+                intent.After[0].AssetAccountingPostIntent?.OriginalCommandHash != intent.RequestHash ||
+                intent.After[0].Version != prior.Version + 1 || (!allBefore && !allAfter))
+                throw new InvalidOperationException("The retained canonical asset posting plan conflicts with draft authority.");
+            EnsureAssetAccountingDraftMatchesSource(intent.After[0]);
+            _ = ValidateAssetApprovalReceipt(intent.After[0]);
+            if (allBefore)
+                await _draftStore.SaveBatchAsync(intent.After, ct).ConfigureAwait(false);
+            await CompleteMutationAsync(intent, session, ct).ConfigureAwait(false);
+            return true;
+        }
         var posted = await VerifyCommittedPostingAsync(intent, requirePresent: false, ct).ConfigureAwait(false);
         if (allBefore && !posted)
             return false;
@@ -283,6 +298,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
 
     private async Task<bool> VerifyCommittedPostingAsync(ManualJournalMutationIntent intent, bool requirePresent, CancellationToken ct)
     {
+        if (intent.After.Any(static draft => draft.AssetAccountingPostingResult is not null))
+            return await VerifyCommittedAssetPostingAsync(intent, ct).ConfigureAwait(false);
         if (intent.Posting is not { } write)
             return false;
         var store = _journalStore ?? throw new InvalidOperationException("The journal store is required for manual posting recovery.");

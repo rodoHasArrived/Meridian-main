@@ -40,3 +40,40 @@ public sealed record CreateFactorPaydownDraftRequestDto(
     PrepareFactorPaydownRequestDto Request,
     string ExpectedPreparationFingerprint,
     string Description);
+
+/// <summary>Bytes retained by an actual authenticated independent approval command.</summary>
+public sealed record AssetAccountingApprovalReceiptDto(
+    string ApprovalId,
+    string Approver,
+    DateTimeOffset ApprovedAtUtc,
+    string CandidateFingerprint,
+    string SubjectId,
+    string CanonicalContentBase64,
+    string ContentHashSha256);
+
+/// <summary>An exact original posting command retained before any canonical financial side effect.</summary>
+public sealed record AssetAccountingPostIntentDto(
+    string OriginalCommandHash,
+    JournalEntryLifecycleActionRequestDto OriginalCommand,
+    PostPostingRuleJournalCandidateRequestDto CanonicalRequest,
+    string VaultId,
+    string DocumentId);
+
+/// <summary>Caller-specific capability. Missing or unknown protocol remains read-only.</summary>
+public sealed record AssetAccountingDraftCapabilitiesDto(
+    int ProtocolVersion,
+    Guid JournalEntryId,
+    int DraftVersion,
+    string FundProfileId,
+    Guid LedgerBookId,
+    Guid PeriodId,
+    string CandidateFingerprint,
+    bool CanApprove,
+    bool CanPost,
+    string? ApproveBlockedReason,
+    string? PostBlockedReason,
+    AssetAccountingApprovalReceiptDto? Approval,
+    bool HasPendingPost,
+    JournalEntryLifecycleActionRequestDto? PendingPostCommand,
+    PostedLedgerJournalEntryResultDto? PostedJournal,
+    string? AuthenticatedActor = null);

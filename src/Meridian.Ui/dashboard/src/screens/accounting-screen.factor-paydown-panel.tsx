@@ -95,7 +95,7 @@ function FactorPaydownScopePanel({ bookId, periodId, periodVersion, fundProfileI
         description.trim(), { signal: requestController.signal });
       if (!requestController.signal.aborted) {
         setDraft(result); setUncertain(false);
-        setMessage(result.candidate.journalEntryId ? "Review draft retained. Submit it for review in the journal workbench. Approval and posting require the governed asset workflow and remain unavailable here."
+        setMessage(result.candidate.journalEntryId ? "Review draft retained. Open the journal workbench for validation and review submission. Approval and posting are available only when the authenticated governed asset workflow permits them."
           : "The server did not retain an eligible draft. Inspect its blockers before preparing again.");
       }
     } catch (cause) {
@@ -115,7 +115,7 @@ function FactorPaydownScopePanel({ bookId, periodId, periodVersion, fundProfileI
   }
   const locked = busy === "draft" || uncertain || !!draft?.candidate.journalEntryId;
   return <Card className="panel-surface min-w-0" role="region" aria-label="Factor paydown">
-    <CardHeader><CardTitle>Factor paydown</CardTitle><CardDescription>Prepare principal repayment and lot basis relief from a retained factor observation. Same-currency active long positions only. Retained drafts support validation and review submission; generic approval and posting remain unavailable.</CardDescription></CardHeader>
+    <CardHeader><CardTitle>Factor paydown</CardTitle><CardDescription>Prepare principal repayment and lot basis relief from a retained factor observation. Same-currency active long positions only. Retained drafts support review, independent approval and canonical posting when authenticated workflow capabilities permit.</CardDescription></CardHeader>
     <CardContent className="space-y-4">
       {!bookId || !periodId || periodVersion === null || !fundProfileId ? <p role="status">Select a ledger book and period to prepare a factor paydown.</p> : <>
         <p className="break-all text-xs text-muted-foreground">Book {bookId} · Period {periodId} · {accountingBasis}</p>

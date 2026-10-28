@@ -316,8 +316,14 @@ repreparation and governed candidate creation. Component and nested decimal resp
 exact strings on these HTTP routes, and factor input fields accept decimal strings.
 `ManualJournalEntryDraftDto.AssetAccountingDraft` retains the exact typed asset candidate and source
 fingerprints in the review queue. It is omitted on historical manual drafts and cannot be introduced,
-removed or edited by a client. Submission preserves it; generic approval/posting/corrections remain
-blocked pending the governed typed approval-evidence bridge.
+removed or edited by a client. Submission preserves it. Optional `AssetAccountingApproval` retains
+the actual authenticated decision bytes/hash and exact candidate scope; `AssetAccountingPostIntent`
+binds the original command before canonical posting; `AssetAccountingPostingResult` contains only
+the actual durable financial receipt. These fields are omitted when null on legacy drafts.
+`AssetAccountingDraftCapabilitiesDto` is caller-, scope- and version-specific; missing/unknown
+protocols remain read-only. Pending post commands must be retried unchanged, including their
+original optimistic version. Approval/posting require the same independent certified operator;
+financial edits and generic corrections remain unavailable for asset-linked drafts.
 
 ## Purpose
 

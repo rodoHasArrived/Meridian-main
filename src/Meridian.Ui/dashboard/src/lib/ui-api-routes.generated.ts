@@ -747,6 +747,7 @@ export const UI_API_ROUTES = {
   LedgerAccountingConfigurationPostingRuleCandidates: "/api/ledger/accounting-configuration/posting-rules/candidates",
   LedgerAccountingConfigurationAssetAccountingCandidates: "/api/ledger/accounting-configuration/posting-rules/candidates/asset-accounting",
   LedgerFactorPaydownPreparation: "/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/prepare",
+  LedgerFactorPaydownDraftCapabilities: "/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/drafts/{journalEntryId:guid}/capabilities",
   LedgerFactorPaydownDrafts: "/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/draft",
   LedgerAssetAccountingEventProjections: "/api/ledger/accounting-configuration/asset-accounting/events/project",
   LedgerAssetAccountingEventLifecycle: "/api/ledger/accounting-configuration/asset-accounting/events/lifecycle",

@@ -115,8 +115,8 @@ with its OCO and deferred risk-journal/read-surface/WPF-parity reservations reta
 `DEC-W9-DONE-001`. `W10-JRNL-001` is in progress under the 2026-10-01 evidence carried by
 merged PR #3040; its operator acceptance and production certification remain open.
 `W10-PROV-001` remains in progress: posted-ledger and governed generated trial-balance
-amount bindings use the shared evidence surface; generated-report WPF activation, other amount
-families and live acceptance remain open. `W10-RECON-001` is now in progress under the incoming
+amount bindings use the shared evidence surface in browser and WPF; other amount families,
+current-candidate verification and live acceptance remain open. `W10-RECON-001` is now in progress under the incoming
 registry: stable lineage, distinct recurrence, executed mapping proof and SLA-calendar support
 are implemented; focused hosted, Windows and rendered operator verification remain required.
 The user-requested queue retains LOT, then MARK, then SEAM before advancing RECON in this queue;
@@ -151,25 +151,40 @@ read-side increment authorizes a write-version promotion or a production-readine
 
 ### Next-work implementation — 2026-10-28
 
-The current implementation adds governed factor-paydown preparation and draft routes, consumed by
-browser Ledger Explorer and WPF Accounting Configuration. The server resolves ownership and
-period authority, derives exact amounts from retained lots, and binds draft creation to the
-reviewed preparation fingerprint. The existing spine/candidate controls retain the source candidate, and the adapter mirrors it
-into the real manual journal review queue under the same journal ID. The immutable source context
-survives restart, retry, validation and submission for review. Generic editing, approval, posting
-and corrections are refused until the typed retained-approval bridge exists. This is a bounded LOT activation
-increment, not LOT closure, live shadow-operation acceptance or release certification.
+The factor-paydown workflow prepares exact amounts from retained lots and creates an immutable
+journal workbench draft under the canonical journal ID. Browser Ledger Explorer and WPF Accounting
+Configuration validate, submit and independently approve that draft. Approval retains the actual
+authenticated decision bytes; posting verifies their scoped Vault content and delegates exclusively
+to canonical atomic journal/lot publication. Pending commands survive restart and resume the exact
+original request. Server capabilities and the authenticated actor bind client actions to the selected
+draft; old hosts remain read-only. Generic edits and corrections remain blocked. Legacy WPF local
+journals retain their existing service lane.
 
-Legacy provider setup now refuses provider-wide credential operations for retained owned or
-ambiguous connections, holding the configuration lease through its ownership read and vault
-operations and rechecking ownership before configuration publication. This closes a bounded
-fallback path; browser/WPF wizard migration, the default runtime resolver and the remaining
-`PRD-002` evidence requirements stay open.
+The real PostgreSQL round trip exposed and corrected approval-attestation chronology, immutable
+factor replay after lots change, and retained timestamp/decimal representation. The expanded local
+packet passed 645 tests, including real approval/post/restart replay and authority/tamper refusals.
+Preparation still requires a qualified retained factor observation and prospective economic model;
+it cannot invent upstream source authority. Broader LOT actions, corrections, consumer parity,
+independent review and live shadow-operation acceptance remain open.
+
+Legacy provider setup refuses provider-wide credential operations for retained owned or ambiguous
+connections while holding the configuration lease through ownership and vault operations. Browser
+Settings and the WPF provider wizard now require explicit existing-owned connection selection for
+credential status, save, verification and removal. Missing or changed ownership blocks operations;
+there is no provider-wide retry or automatic ownership. Credential edits do not activate the global
+runtime. Ownership creation, host-default binding, explicit legacy migration/rollback and complete
+`PRD-002` release evidence remain open.
+
+WPF governed reporting now opens retained generated trial-balance amounts through the shared proof
+drawer. Every declared journal and line must have support; historical contributors retain original
+posting-period manifest identity, amounts remain exact, and old run responses cannot restore proof
+for an abandoned selection. Legacy reports without retained populations remain review-required.
 
 The [next-work evidence receipt](../testing/evidence/next-work-20261028/release-readiness.md)
-records external release blockers, MARK/SEAM operator scenarios, report-amount contribution-map
-prerequisites and the compatibility backtesting factor-authority limit. These findings preserve
-the LOT → MARK → SEAM queue and do not advance RECON ahead of those acceptance gates.
+separates the green review/submission milestone from later implementation validation. It also
+records external release blockers, MARK/SEAM operator scenarios and the compatibility backtesting
+factor-authority limit. No LOT/MARK/SEAM acceptance, RECON queue advancement or release
+certification follows from these code changes.
 
 ### Historical Implementation and Release Evidence
 

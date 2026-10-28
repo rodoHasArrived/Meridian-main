@@ -13,9 +13,11 @@ public interface IFactorPaydownApiClient
     Task<AssetAccountingPostingCandidateDto> CreateDraftAsync(CreateFactorPaydownDraftRequestDto request, CancellationToken ct);
     Task<ManualJournalEntryWorkbenchDto> GetRetainedDraftsAsync(string fundProfileId, Guid ledgerBookId, CancellationToken ct);
     Task<ManualJournalEntryDraftDto> SubmitForReviewAsync(SubmitManualJournalEntryApprovalRequest request, CancellationToken ct);
+    Task<AssetAccountingDraftCapabilitiesDto?> GetCapabilitiesAsync(string fundProfileId, Guid ledgerBookId, Guid journalEntryId, CancellationToken ct);
+    Task<JournalEntryLifecycleActionResultDto> ApplyLifecycleAsync(JournalEntryLifecycleActionRequestDto request, CancellationToken ct);
 }
 
-/// <summary>Uses governed preparation and candidate intake; never approves or posts.</summary>
+/// <summary>Uses governed factor preparation, draft intake and server-authorized lifecycle routes.</summary>
 public sealed class FactorPaydownApiClient(ApiClientService apiClient) : IFactorPaydownApiClient
 {
     // This route preserves decimals as strings for browser precision. Keep its reader local rather
@@ -44,6 +46,19 @@ public sealed class FactorPaydownApiClient(ApiClientService apiClient) : IFactor
 
     public Task<ManualJournalEntryDraftDto> SubmitForReviewAsync(SubmitManualJournalEntryApprovalRequest request, CancellationToken ct)
         => PostAsync<ManualJournalEntryDraftDto>(UiApiRoutes.LedgerManualJournalEntrySubmitApproval, request, ct);
+
+    public async Task<AssetAccountingDraftCapabilitiesDto?> GetCapabilitiesAsync(string fundProfileId, Guid ledgerBookId, Guid journalEntryId, CancellationToken ct)
+    {
+        var route = UiApiRoutes.LedgerFactorPaydownDraftCapabilities.Replace("{ledgerBookId:guid}", ledgerBookId.ToString("D"))
+            .Replace("{journalEntryId:guid}", journalEntryId.ToString("D")) + "?fundProfileId=" + Uri.EscapeDataString(fundProfileId);
+        var response = await apiClient.GetWithResponseAsync<AssetAccountingDraftCapabilitiesDto>(route, ct).ConfigureAwait(false);
+        if (response.StatusCode is 404 or 501) return null;
+        return response.Success && response.Data is { } data ? data
+            : throw new InvalidOperationException(response.ErrorMessage ?? "Approval and posting authorization is unavailable.");
+    }
+
+    public Task<JournalEntryLifecycleActionResultDto> ApplyLifecycleAsync(JournalEntryLifecycleActionRequestDto request, CancellationToken ct)
+        => PostAsync<JournalEntryLifecycleActionResultDto>(UiApiRoutes.LedgerManualJournalEntryLifecycleAction, request, ct);
 
     private async Task<T> PostAsync<T>(string route, object request, CancellationToken ct) where T : class
     {

@@ -1158,6 +1158,10 @@ versions, group membership, and category values through the existing ordered lin
 Fresh draft GUIDs can replay the same posting without excluding attribution from comparison.
 Unknown, malformed, partial, or changed evidence refuses replay; all unrelated metadata, ordered
 economics, and posting scope retain their existing checks. Retained IDs and journal bytes do not change.
+`RetainedPostingEquivalence.AccountingTimestampsMatch` exposes the same schema-owned timestamp
+comparison to canonical asset replay: PostgreSQL microsecond precision, including pre-epoch and
+infinity handling. It adds no tolerance. Original command timestamps remain bound to their immutable
+fingerprints; comparisons against stored values do not replace them with a current or rounded clock.
 `LedgerJournalStoreHydrationExtensions` rebuilds an in-memory `Meridian.Ledger.Ledger` from that
 durable journal-read seam, including an as-of helper that scopes by ledger book and upper occurrence
 timestamp so restart, close, and reporting projections can hydrate from the stored spine before

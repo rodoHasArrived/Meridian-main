@@ -506,7 +506,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
         var issues = new List<AccountingConfigurationValidationIssueDto>();
         if (draft.AssetAccountingDraft is not null)
             issues.Add(Issue("manual-je.asset-approval-workflow-required", AccountingConfigurationValidationSeverityDto.Warning,
-                "Asset candidate retained for review and submission only; generic manual approval and posting are unavailable.",
+                "Asset candidate source and financial lines are immutable; approval and posting require fresh server capabilities.",
                 "assetAccountingDraft", "Use the governed asset workflow with typed retained approval evidence."));
         var lines = new List<ManualJournalEntryLineDto>(draft.Lines.Count);
         if (draft.RequiresRecurringJournalEvidence || draft.RecurringJournalEvidenceJson is not null ||

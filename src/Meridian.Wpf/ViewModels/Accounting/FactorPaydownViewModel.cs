@@ -41,6 +41,9 @@ public sealed partial class FactorPaydownViewModel : BindableBase
         CreateDraftCommand = new AsyncRelayCommand(CreateDraftAsync, () => CanCreateDraft);
         ReloadRetainedDraftsCommand = new AsyncRelayCommand(ReloadRetainedDraftsAsync, () => !IsBusy && _client is not null && _bookId.HasValue);
         SubmitRetainedDraftCommand = new AsyncRelayCommand(SubmitRetainedDraftAsync, () => CanSubmitRetainedDraft);
+        ReloadApprovalStateCommand = new AsyncRelayCommand(ReloadApprovalStateAsync, () => !IsBusy && _client is not null && SelectedRetainedDraft is not null);
+        ApproveRetainedDraftCommand = new AsyncRelayCommand(() => ApplyRetainedDraftActionAsync(JournalEntryLifecycleActionDto.Approve), () => CanApproveRetainedDraft);
+        PostRetainedDraftCommand = new AsyncRelayCommand(() => ApplyRetainedDraftActionAsync(JournalEntryLifecycleActionDto.Post), () => CanPostRetainedDraft);
     }
 
     public ObservableCollection<FactorPaydownInput> Fields { get; }
@@ -125,7 +128,7 @@ public sealed partial class FactorPaydownViewModel : BindableBase
             RaisePropertyChanged(nameof(PreviewText));
             StatusText = result.Candidate.HasBlockingIssues
                 ? "Candidate blocked: " + string.Join("; ", result.Candidate.Issues.Select(issue => issue.Message))
-                : $"Draft {result.Candidate.JournalEntryId:D} retained for event {result.Spine.EventId:D}. Reload retained server drafts below and select it to submit for review. Typed approval and posting are unavailable; generic approval, posting and corrections are blocked. Nothing has posted.";
+                : $"Draft {result.Candidate.JournalEntryId:D} retained for event {result.Spine.EventId:D}. Reload retained server drafts below and select it to submit for review. Approval and posting require current server authorization below; generic journal posting and corrections remain blocked. Nothing has posted.";
             if (!result.Candidate.HasBlockingIssues)
             {
                 try { await LoadRetainedDraftsCoreAsync(generation, result.Candidate.JournalEntryId, operation.Token); }
@@ -171,6 +174,7 @@ public sealed partial class FactorPaydownViewModel : BindableBase
     {
         if (_busy && (_preview is not null || _submittingRetainedDraft))
             status += " A draft request may have reached the server. Check retained history before retrying.";
+        InvalidateApprovalState();
         Interlocked.Increment(ref _generation);
         _operation?.Cancel();
         _operation = null;
@@ -194,6 +198,13 @@ public sealed partial class FactorPaydownViewModel : BindableBase
         SubmitRetainedDraftCommand?.NotifyCanExecuteChanged();
         RaisePropertyChanged(nameof(CanSubmitRetainedDraft));
         RaisePropertyChanged(nameof(CanSelectRetainedDraft));
+        ReloadApprovalStateCommand?.NotifyCanExecuteChanged();
+        ApproveRetainedDraftCommand?.NotifyCanExecuteChanged();
+        PostRetainedDraftCommand?.NotifyCanExecuteChanged();
+        RaisePropertyChanged(nameof(CanApproveRetainedDraft));
+        RaisePropertyChanged(nameof(CanPostRetainedDraft));
+        RaisePropertyChanged(nameof(CanEditApprovalNotes));
+        RaisePropertyChanged(nameof(PendingCommandText));
     }
 
     private static void Publish(Action action)

@@ -72,9 +72,22 @@ and lot versions, then uses the existing Asset Accounting Event Spine projection
 builder and persists the same journal identity in the manual review workbench. Interrupted handoffs
 resume from retained lineage; retries repair a missing workbench mirror without duplicating it.
 The immutable `AssetAccountingDraft` context preserves source fingerprints, lot instructions and
-evidence through review submission. Generic manual edits, approval, posting and corrections refuse
-these drafts: the typed retained approval-evidence bridge remains an implementation gap. These
-routes never approve or post journal/lot changes.
+evidence through review submission. Generic manual edits and corrections refuse these drafts. Draft construction also requires the exact reviewed factor event, lineage and retained
+evidence already associated with the authoritative position. An acquisition-only position is not
+eligible: read-only preparation does not invent source authority.
+Approval and posting use the existing authenticated lifecycle route only when the caller-specific
+protocol-1 capability reports support. An independent `AdminMaintenance` approval retains exact
+canonical decision bytes, candidate fingerprint and scope in the durable draft/audit command receipt.
+The same approver posts: scoped Evidence Vault publication reuses the one exact approval document,
+reopens and verifies its original bytes, then delegates exclusively to the canonical candidate
+posting service. The canonical `Approved` stage attests when review and retention are both complete;
+its timestamp is the later of the actual decision and artifact capture times. The decision receipt
+keeps the original human approval time and the Vault keeps its actual later retention time.
+A durable approved-state checkpoint precedes that financial side effect; uncertain
+responses resume the exact original command while other mutations remain blocked. Actual canonical
+journal/atomic-lot receipts alone establish posted status, and recovery verifies the retained journal
+before repairing a missing queue/audit outcome. Missing source, Vault or posting authority stays
+read-only or blocks posting. Factor prepare/draft routes themselves never approve or post changes.
 
 `LedgerEndpoints.AccountOversight` provides shared account-owned ledger-book routes for durable
 cash cases, retained replay/assignment, independently approved close-price sets and cash forecasts.

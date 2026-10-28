@@ -43,7 +43,10 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         IGovernedLedgerPostingTarget? postingTarget = null,
         IManualJournalMutationRecoveryStore? mutationRecovery = null,
         IRecurringJournalStore? recurringStore = null,
-        IConsolidationDraftGuard? consolidationGuard = null)
+        IConsolidationDraftGuard? consolidationGuard = null,
+        Meridian.Ui.Shared.Evidence.IEvidenceArtifactStore? evidenceArtifacts = null,
+        Meridian.FinancialOperations.Ledger.IAccountingPostingCandidatePostService? assetCandidatePosting = null,
+        Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService? assetAccountingSource = null)
     {
         _draftStore = draftStore ?? throw new ArgumentNullException(nameof(draftStore));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
@@ -56,6 +59,9 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         _mutationRecovery = mutationRecovery ?? DefaultMutationRecoveryFor(draftStore);
         _recurringStore = recurringStore;
         _consolidationGuard = consolidationGuard;
+        _assetEvidenceArtifacts = evidenceArtifacts;
+        _assetCandidatePosting = assetCandidatePosting;
+        _assetAccountingSource = assetAccountingSource;
     }
 
     public async Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default)
@@ -428,6 +434,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         if (existing?.AssetAccountingDraft is not null)
         {
             EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, existing, requireScopeForBookScopedDraft: true);
+            EnsureNoPendingAssetPost(existing);
             if (request.Draft.Version != existing.Version)
                 throw new InvalidOperationException("Asset accounting review draft version is stale.");
             return await NormalizeAndValidateAsync(existing, allowIncomplete: false, ct,
@@ -587,6 +594,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             throw new InvalidOperationException($"Manual journal evidence attachment references missing line '{normalizedAttachment.LineId}'.");
         }
 
+        EnsureNoPendingAssetPost(draft);
         var attachments = (draft.EvidenceAttachments ?? [])
             .Where(item => !string.Equals(item.AttachmentId, normalizedAttachment.AttachmentId, StringComparison.OrdinalIgnoreCase))
             .Append(normalizedAttachment)
@@ -633,6 +641,18 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct, request.TenantId, request.CompanyId).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Manual journal entry '{request.JournalEntryId:D}' was not found.");
         EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft);
+        if (draft.AssetAccountingDraft is not null && request.Action is (JournalEntryLifecycleActionDto.Approve or JournalEntryLifecycleActionDto.Post) &&
+            request.AuthenticatedActorAssertion is not null &&
+            !string.Equals(request.AuthenticatedActorAssertion, request.Actor, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("The authenticated operator changed; reload asset capabilities before approving or posting.");
+        if (draft.AssetAccountingDraft is not null && request.RebookLines.Count != 0)
+            throw new InvalidOperationException("Asset accounting lifecycle commands cannot supply or replace financial lines.");
+        if (HasPendingAssetPost(draft))
+        {
+            if (request.Action != JournalEntryLifecycleActionDto.Post)
+                throw new InvalidOperationException("A retained canonical asset posting must finish before any other lifecycle action.");
+            return await PostAssetAccountingDraftAsync(draft, request, ct).ConfigureAwait(false);
+        }
         var serverPeriodIsHardClosed = await ResolveAuthoritativeHardClosedPeriodAsync(draft, ct)
             .ConfigureAwait(false);
         var idempotent = await TryBuildIdempotentLifecycleResultAsync(fundProfileId, draft, request, ct).ConfigureAwait(false);
@@ -669,6 +689,11 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             allowHardClosedCloseLock: request.Action == JournalEntryLifecycleActionDto.LockAfterClose &&
                                       serverPeriodIsHardClosed).ConfigureAwait(false);
         var now = DateTimeOffset.UtcNow;
+        if (validated.AssetAccountingDraft is not null && request.Action == JournalEntryLifecycleActionDto.Approve)
+            return await ApproveAssetAccountingDraftAsync(RequireStatus(validated, ManualJournalEntryStatusDto.Submitted, request.Action),
+                RequireLifecycleDecisionNotes(request), now, ct).ConfigureAwait(false);
+        if (validated.AssetAccountingDraft is not null && request.Action == JournalEntryLifecycleActionDto.Post)
+            return await PostAssetAccountingDraftAsync(RequireStatus(validated, ManualJournalEntryStatusDto.Approved, request.Action), request, ct).ConfigureAwait(false);
         return request.Action switch
         {
             JournalEntryLifecycleActionDto.Validate => await ApplyStatusTransitionAsync(

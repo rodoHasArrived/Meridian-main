@@ -7,6 +7,7 @@ import type {
   ManualJournalEntryWorkbenchServices,
 } from "@/screens/accounting-screen.view-model";
 import type {
+  JournalEntryLifecycleActionResult,
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
   SecurityMasterEntry,
@@ -1608,6 +1609,65 @@ describe("accounting-screen journal-entry view model", () => {
     expect(result.current.draft.status).toBe("Submitted");
     expect(result.current.lifecycleCommands.find((command) => command.action === "Approve")?.disabledReason).toContain("governed asset workflow");
     expect(result.current.lifecycleCommands.find((command) => command.action === "Reject")?.disabledReason).toBeNull();
+  });
+
+  it("enables the governed Approve adapter only after scoped server support and explicit review", async () => {
+    const assetDraft = { ...manualJournalDraft, status: "Submitted" as const, validationIssues: [], evidenceLinks: ["retained:source"], assetAccountingDraft: {} };
+    const services = createJournalServices({ getWorkbench: vi.fn().mockResolvedValue({ ...manualJournalWorkbench, drafts: [assetDraft] }),
+      getAssetCapabilities: vi.fn().mockImplementation(scope => Promise.resolve({ ...scope, protocolVersion: 1, authenticatedActor: "independent-checker", candidateFingerprint: "a".repeat(64), canApprove: true, canPost: false, approveBlockedReason: null, postBlockedReason: "Approval required", approval: null, hasPendingPost: false, pendingPostCommand: null, postedJournal: null })),
+      applyLifecycleAction: vi.fn().mockImplementation(request => Promise.resolve({ journalEntry: { ...assetDraft, status: "Approved", version: assetDraft.version + 1 }, transition: { transitionId: "governed-approve", fromStatus: "Submitted", toStatus: "Approved", action: "Approve", actor: "independent-checker", recordedAtUtc: "2026-10-28T00:00:00Z", correlationId: request.correlationId, evidenceLinks: [] }, generatedJournalEntries: [] })) });
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services, "", "checker-session"));
+    await waitFor(() => expect(result.current.assetWorkflow?.capability).not.toBeNull());
+    expect(result.current.lifecycleCommands.find(command => command.action === "Approve")?.disabledReason).toContain("Confirm review");
+    act(() => { result.current.assetWorkflow!.setReviewNote("Reviewed exact retained candidate"); result.current.assetWorkflow!.setConfirmed(true); });
+    expect(result.current.lifecycleCommands.find(command => command.action === "Approve")?.disabledReason).toBeNull();
+    await act(async () => result.current.applyLifecycleAction("Approve"));
+    expect(services.applyLifecycleAction).toHaveBeenCalledWith(expect.objectContaining({ journalEntryId: assetDraft.journalEntryId, fundProfileId: assetDraft.fundProfileId, ledgerBookId: assetDraft.ledgerBookId, version: assetDraft.version, action: "Approve", notes: "Reviewed exact retained candidate" }));
+    expect(result.current.draft.status).toBe("Approved");
+    expect(result.current.lifecycleCommands.find(command => command.action === "Reverse")?.disabledReason).not.toBeNull();
+  });
+
+  it("blocks validation, submission and rejection while any canonical post intent is pending", async () => {
+    const assetDraft = { ...manualJournalDraft, validationIssues: [], assetAccountingDraft: {} };
+    const services = createJournalServices({ getWorkbench: vi.fn().mockResolvedValue({ ...manualJournalWorkbench, drafts: [assetDraft] }),
+      getAssetCapabilities: vi.fn().mockImplementation(scope => Promise.resolve({ ...scope, protocolVersion: 1, authenticatedActor: "independent-checker", candidateFingerprint: "a".repeat(64), canApprove: false, canPost: false, approveBlockedReason: "Posting recovery pending", postBlockedReason: "Only original approver can recover", approval: null, hasPendingPost: true, pendingPostCommand: null, postedJournal: null })) });
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
+    await waitFor(() => expect(result.current.assetWorkflow?.hasPendingPost).toBe(true));
+    await act(async () => { await result.current.validate(); await result.current.submit(); await result.current.applyLifecycleAction("Reject"); });
+    expect(services.validateDraft).not.toHaveBeenCalled(); expect(services.submitApproval).not.toHaveBeenCalled(); expect(services.applyLifecycleAction).not.toHaveBeenCalled();
+    expect(result.current.lifecycleCommands.find(command => command.action === "Reject")?.disabledReason).not.toBeNull();
+  });
+
+  it("deactivates asset decisions immediately when a new route scope is still loading", async () => {
+    const assetDraft = { ...manualJournalDraft, status: "Submitted" as const, validationIssues: [], assetAccountingDraft: {} };
+    let resolveCommand!: (result: JournalEntryLifecycleActionResult) => void;
+    let rejectRefresh!: (reason: Error) => void;
+    const services = createJournalServices({
+      getWorkbench: vi.fn().mockResolvedValueOnce({ ...manualJournalWorkbench, drafts: [assetDraft] })
+        .mockImplementationOnce(() => new Promise((_resolve, reject) => { rejectRefresh = reject; })),
+      getAssetCapabilities: vi.fn().mockImplementation(scope => Promise.resolve({ ...scope, protocolVersion: 1, authenticatedActor: "independent-checker", candidateFingerprint: "a".repeat(64), canApprove: true, canPost: false, approveBlockedReason: null, postBlockedReason: "Approval required", approval: null, hasPendingPost: false, pendingPostCommand: null, postedJournal: null })),
+      applyLifecycleAction: vi.fn().mockImplementation(() => new Promise(resolve => { resolveCommand = resolve; }))
+    });
+    const view = renderHook(({ search }) => useManualJournalEntryWorkbenchViewModel(true, services, search, "checker-session"), { initialProps: { search: "" } });
+    await waitFor(() => expect(view.result.current.assetWorkflow?.capability).not.toBeNull());
+    act(() => { view.result.current.assetWorkflow!.setReviewNote("Review current route candidate"); view.result.current.assetWorkflow!.setConfirmed(true); });
+    const capturedRun = view.result.current.assetWorkflow!.run;
+    let command!: Promise<void>;
+    act(() => { command = view.result.current.applyLifecycleAction("Approve"); });
+    view.rerender({ search: "?fundProfileId=fund-beta&ledgerBookId=book-beta" });
+    expect(view.result.current.assetWorkflow?.capability).toBeNull();
+    const request = vi.mocked(services.applyLifecycleAction).mock.calls[0][0];
+    await act(async () => {
+      await capturedRun("Approve");
+      resolveCommand({ journalEntry: { ...assetDraft, status: "Approved", version: assetDraft.version + 1 }, transition: { transitionId: "late-approve", fromStatus: "Submitted", toStatus: "Approved", action: "Approve", actor: "independent-checker", recordedAtUtc: "2026-10-28T00:00:00Z", correlationId: request.correlationId, evidenceLinks: [] }, generatedJournalEntries: [] });
+      await command;
+    });
+    expect(services.applyLifecycleAction).toHaveBeenCalledTimes(1);
+    expect(view.result.current.draft.version).toBe(assetDraft.version);
+    expect(view.result.current.draft.status).toBe("Submitted");
+    await act(async () => { rejectRefresh(new Error("new scoped workbench unavailable")); });
+    expect(view.result.current.assetWorkflow?.capability).toBeNull();
+    expect(view.result.current.available).toBe(false);
   });
 
   it("autosaves editable changes and reports saved health after the debounce", async () => {
