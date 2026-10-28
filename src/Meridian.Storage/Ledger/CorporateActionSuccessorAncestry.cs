@@ -52,7 +52,7 @@ internal static class CorporateActionSuccessorAncestry
                 var legacyReceipt = await LoadAsync(cursor.LastMutationBatchId.Value).ConfigureAwait(false);
                 if (legacyReceipt.MutationKind is not (AtomicTaxLotMutationKind.Disposal
                     or AtomicTaxLotMutationKind.BasisRedistribution or AtomicTaxLotMutationKind.Amortization
-                    or AtomicTaxLotMutationKind.CapitalReturn))
+                    or AtomicTaxLotMutationKind.CapitalReturn or AtomicTaxLotMutationKind.FactorPaydown))
                     throw Unproved();
                 var changed = legacyReceipt.Mutations.Where(item => item.TaxLotRecordId == cursor.TaxLotRecordId).ToArray();
                 if (changed.Length != 1 || changed[0].LotBefore is not { } prior || prior.Version >= cursor.Version
@@ -67,6 +67,17 @@ internal static class CorporateActionSuccessorAncestry
                         throw Unproved();
                     if (OpenLotSuccessors.GetSourceCorporateActionId(capitalReturn.Projection) == sourceActionId)
                         throw new LedgerValidationException("A successor cannot repeat a source corporate action retained anywhere in its immutable predecessor ancestry.");
+                }
+                if (legacyReceipt.MutationKind == AtomicTaxLotMutationKind.FactorPaydown)
+                {
+                    // A paydown restates every lot of its scope; this lot's entry must re-project
+                    // exactly from the prior snapshot to the cursor.
+                    var entry = legacyReceipt.FactorPaydown?.Lots.FirstOrDefault(item => item.ExpectedLot.TaxLotRecordId == cursor.TaxLotRecordId);
+                    if (legacyReceipt.FactorPaydown is not { } paydown || entry is null
+                        || legacyReceipt.CorrectsMutationBatchId is not null || !SameAcquisition(cursor, prior)
+                        || !OpenLotAmortization.SameLot(prior.ToOpenLot(), entry.ExpectedLot)
+                        || !OpenLotAmortization.SameLot(cursor.ToOpenLot(), OpenLotFactorPaydown.Project(paydown)[entry.Ordinal]))
+                        throw Unproved();
                 }
                 cursor = prior;
                 continue;

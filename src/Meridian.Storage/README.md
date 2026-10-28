@@ -164,7 +164,19 @@ projection batch rebuilds append in the same transaction as the change, and an o
 cannot approve values they staged. Migration `051_security_governance_events_underlying_graph_stream.sql`
 adds the `UnderlyingGraph` stream: `PostgresSecurityUnderlyingGraphStore` records each declaration,
 amendment (with the replaced state) and removal of a declared underlying link, naming the actor,
-in the same transaction as the change to `security_underlying_links`. The event store and projection store join
+in the same transaction as the change to `security_underlying_links`. Migration `052_security_curves.sql`
+adds stored market curves: `security_curves` (write-once identity, key unique ignoring case) and
+`security_curve_versions` (append-only versions with economic `as_of`, knowledge `recorded_at`,
+actor, jsonb points and a content hash); one reject function refuses update, delete and truncate on
+both tables by trigger (SQL state 23514).
+Migration `053_security_governance_events_curves_stream.sql` adds the `Curves` stream, and
+`PostgresSecurityCurveStore` appends `CurveDefined` and `CurveVersionPublished` (with a null
+`security_id` and the curve id in the payload) in the same transaction as each write; identical
+content for the same curve and as-of returns the retained version and writes nothing, the latest
+version as of a date is read with the pricing lane's `as_of`/`recorded_at` predicate, and
+`GetVersionByIdAsync` reads one version on the primary key, guarded by its curve id.
+`ISecurityGovernanceEventReader.GetForStreamAsync` reads one stream by global sequence for subjects
+that are not securities. The event store and projection store join
 `PostgresSecurityMasterCanonicalWriteScope` when one is active. Equity, FxSpot, Future, Swap,
 Commodity and Bond projections are now declarative registry plans rather than hand-written writers;
 Bond's `bond_projection` parent and its `bond_lifecycle_projection`,
@@ -218,6 +230,39 @@ the contract marks Required; the tables are created empty and populate as record
 Migration `047_rate_option_and_note_terms_projections.sql` does the same for `swaption_projection`,
 `cap_floor_projection` and `structured_note_projection` (31 of 32 classes projected); strike and
 rate columns are signed because negative strikes are valid in negative-rate currencies.
+
+Security Master migration `050_otc_contracts.sql` creates the OTC contract model (master
+agreements, collateral agreements, netting sets, bilateral contracts) written by
+`PostgresOtcContractStore`. Migration `054_otc_exposure_and_collateral.sql` adds
+`otc_exposure_snapshots` (append-only: recomputing a date appends the next version under a unique
+`(netting_set_id, as_of_date, version)`, and a trigger rejects update and delete),
+`otc_collateral_balances` and `otc_margin_calls` (partial unique indexes keep one open call per
+netting set, mover and movement kind, and one uncancelled call per snapshot movement); migration `055_security_governance_events_otc_collateral_stream.sql` admits
+the `OtcCollateral` governance stream. `PostgresOtcCollateralStore` serializes computations and
+calls per netting set with transaction-scoped advisory locks (`OtcAdvisoryLocks` states them and
+the one order they are taken in: an issue takes the netting set's snapshot, call and contracts
+locks and the collateral agreement's balances lock before any row lock, and every contract or
+balance write takes the contracts or balances lock it touches first; the issue also locks the
+collateral agreement row for update, so no netting set can start referencing it meanwhile, and
+no agreement, netting set, contract or balance the snapshot was computed from can change between
+the check and the commit; price and pricing hierarchy writers take no OTC lock, so the market data
+check reads what they have committed when it runs). It refuses a call from a superseded snapshot,
+from one dated after the current UTC date, from one when a later date up to the current one has
+been valued (a stray future-dated snapshot is ignored), from one computed under a master
+agreement, collateral agreement or version the netting set no longer has or that another netting
+set now also references, from one whose recorded inputs (the netting set, its contracts and the
+agreement's balances, each at a version) no longer match the stored rows, from one with a price
+observation or pricing hierarchy version for a valued security, bearing on its as-of date,
+recorded in `security_raw_prices` or `security_pricing_hierarchy(_history)` after its knowledge
+time, and from a replay (knowledge time earlier than the computation). Recorded times are writer
+transaction starts on the database clock, compared with a knowledge time on the application clock,
+so a price or hierarchy write that began before the knowledge time and committed after the
+computation read its market data, or one clock skew places before it, is not detected. It resolves eligible
+collateral and currency against the agreement inside the write transaction, stores each
+snapshot's jsonb payload with a digest reproducible from the payload, and appends a governance
+event (snapshot recorded, balance recorded or amended with the changed fields, call issued,
+agreed, disputed, settled or cancelled with the replaced state) in the same transaction, naming
+the actor.
 
 Security Master migration `042_security_master_terms_format_column.sql` promotes the terms-payload
 family to a queryable `securities.terms_format` column (ADR-024). The backfill never rewrites the
@@ -561,6 +606,50 @@ New canonical postings also lock the book before reference rows in compatibility
 after exact replay, so their lock order cannot oppose a backfill holding that book.
 `OpenLotBackfillPostgresTests` covers physical row-lock contention, cancellation, stale
 reference versions, rollback and restart replay using real reference stores.
+
+`V_ledger_052__tax_lot_current_factor.sql` adds the nullable `current_factor` the lot of record
+holds after a paydown: null while the lot is still at its booked factor (every lot until a paydown
+posts), never stamped at acquisition so retained digests stay stable, and movable only by a
+governed decline (`ck_tax_lots_current_factor`, `protect_open_lot_current_factor`).
+`LedgerTaxLotRecord.CurrentFactor` is read at ordinal 26 on every lot path and
+`LedgerTaxLotFaceValueTerms.ToFaceValueLot` rehydrates the aggregate at that factor, so
+`FaceOutstanding` is the paid-down face. V052 alone had the as-of read and the corporate-action
+successor fail closed on a paid-down lot; V053 below replaced that guard with exact factor dating
+and successor inheritance. Focused proof: `AtomicTaxLotJournalStoreTests.CurrentFactor`,
+`HistoricalTaxLotQuantityTests`.
+
+`V_ledger_053__atomic_lot_factor_paydown.sql` adds the governed `FactorPaydown` mutation that moves
+that factor. One batch restates every lot open in the (security, book position) scope as of the
+paydown date: `current_factor` is set to the new factor, open basis is relieved pro rata to the
+principal repaid (`basis x new / prior`, rounded once per lot in the lot's currency), and the
+difference between principal and relieved functional basis posts as realized gain or loss on the
+carrying account's exact scoped accounts. The position principal is the lots' held par face x
+(prior - new) rounded once and is spread across the lots by largest remainder, so across several
+lots the currency rounding of principal and basis is part of the realized result. A partial paydown preserves quantity (face per 100 is
+factor-invariant); a new factor of zero is a full paydown that closes the lot (`open_quantity = 0`,
+`current_factor = 0`) so it leaves open-lot and as-of reads from that date while its receipt stays
+retained. The migration adds the nullable `factor_paydown_instruction`, widens the batch, mutation
+and `ck_tax_lots_current_factor` checks to strict supersets (`current_factor >= 0`) and replaces
+`protect_open_lot_current_factor` so a factor moves only through a `FactorPaydown` batch of the
+same book/security/position that restates the lot's basis in the same batch. A lot may open with a
+factor only when its birth batch is a `CorporateAction` batch of the same book; the trigger checks
+that birth batch and the typed store (`OpenLotSuccessors`) verifies the inherited value. The
+serializable transaction locks Security Master and book-position authority, loads the
+instruction's lots, requires every lot at the prior factor with one shared carrying account,
+refuses a partial scope ("every lot open in the scope") and lots not stated in the as-of read's
+acquired-date, lot-id order (the allocation's rounding depends on that order), refuses a paydown
+preceding retained mutations, and asserts each lot after the CAS reproduces the reviewed
+projection. The journal must debit cash for the principal, credit the carrying account for
+the basis relieved (no line when nothing is relieved) and carry exactly one realized line when the
+difference is non-zero; journal-only append refuses the instruction. `HistoricalTaxLotQuantity`
+dates the factor from `lot_snapshot_after.currentFactor`, so an as-of read before the paydown
+returns the booked factor and full face, and a corporate-action successor inherits and may later
+pay down the factor it was born with. Later disposals relieve the reduced basis. A paid-down lot
+is not amortized: `OpenLotAmortization.Project` refuses an expected lot that holds a
+`CurrentFactor`, and the amortization basis-history guard refuses a lot whose latest adjustment is
+a `FactorPaydown`, so its premium or discount is realized through paydowns and disposal. Focused proof:
+`AtomicTaxLotJournalStoreTests.FactorPaydown`, `AtomicTaxLotJournalStoreTests.FactorPaydownPublication`,
+`AtomicTaxLotSuccessorMigrationTests.FactorPaydown`, `OpenLotFactorPaydownTests`.
 
 Durable disposal now uses the canonical decimal relief guard. Missing identity, quantity basis, or acquisition FX blocks relief and authoritative reporting until repaired. Reporting carries canonical lot evidence alongside retained disposal history; current market FX never substitutes for acquisition FX. Durable AverageCost posting remains refused until remaining-lot basis redistribution has its own atomic proof.
 

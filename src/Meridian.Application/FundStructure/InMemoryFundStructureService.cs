@@ -4,6 +4,7 @@ using Meridian.Application.Composition;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.SecurityMaster.Schedules;
 using Meridian.Core.Logging;
 using Meridian.Entities.FundStructure;
 using Meridian.FSharp.CashFlowInterop;
@@ -2355,7 +2356,22 @@ public sealed partial class InMemoryFundStructureService : INonProductionOnlySer
                 : [];
         }
 
+        return RollProjectedScheduleDates(anchorDate, frequency, projectionWindowStart, projectionWindowEnd);
+    }
+
+    // The projected dates in [projectionWindowStart, projectionWindowEnd): the anchor (the window's
+    // start date when there is none), then each date one kernel tenor step after the previous one,
+    // for at most 256 dates. Compounding lets a month-end anchor drift (SCH-DEF-007). An unrecognised
+    // spelling projects the anchor alone. The step past 9999-12-31 throws ArgumentOutOfRangeException,
+    // even on the 256th date, whose successor is never used (SCH-DEF-011).
+    private static IReadOnlyList<DateTimeOffset> RollProjectedScheduleDates(
+        DateOnly? anchorDate,
+        string? frequency,
+        DateTimeOffset projectionWindowStart,
+        DateTimeOffset projectionWindowEnd)
+    {
         var schedule = new List<DateTimeOffset>();
+        var tenor = ResolveProjectedScheduleTenor(frequency);
         var nextDate = anchorDate ?? DateOnly.FromDateTime(projectionWindowStart.UtcDateTime);
         var guard = 0;
         while (guard < 256)
@@ -2367,63 +2383,31 @@ public sealed partial class InMemoryFundStructureService : INonProductionOnlySer
                 schedule.Add(eventDate);
             }
 
-            if (eventDate >= projectionWindowEnd)
+            if (eventDate >= projectionWindowEnd || tenor is not { } step)
             {
                 break;
             }
 
-            if (!TryAdvanceByFrequency(nextDate, frequency, out nextDate))
-            {
-                break;
-            }
+            nextDate = step.Advance(nextDate, 1);
         }
 
         return schedule;
     }
 
-    private static bool TryAdvanceByFrequency(DateOnly current, string? frequency, out DateOnly next)
-    {
-        next = current;
-        if (string.IsNullOrWhiteSpace(frequency))
+    // The forecast's own frequency spellings; any other spelling (BiMonthly, AtMaturity, "3M") has no
+    // tenor, so the recognised set never widens with the Security Master's vocabulary.
+    private static ScheduleTenor? ResolveProjectedScheduleTenor(string? frequency)
+        => frequency?.Trim().ToLowerInvariant() switch
         {
-            return false;
-        }
-
-        switch (frequency.Trim().ToLowerInvariant())
-        {
-            case "daily":
-                next = current.AddDays(1);
-                return true;
-            case "weekly":
-                next = current.AddDays(7);
-                return true;
-            case "biweekly":
-            case "bi-weekly":
-                next = current.AddDays(14);
-                return true;
-            case "monthly":
-                next = current.AddMonths(1);
-                return true;
-            case "quarterly":
-                next = current.AddMonths(3);
-                return true;
-            case "semiannual":
-            case "semi-annual":
-            case "semiannually":
-            case "semi-annually":
-            case "halfyearly":
-            case "half-yearly":
-                next = current.AddMonths(6);
-                return true;
-            case "annual":
-            case "annually":
-            case "yearly":
-                next = current.AddYears(1);
-                return true;
-            default:
-                return false;
-        }
-    }
+            "daily" => ScheduleTenor.Days(1),
+            "weekly" => ScheduleTenor.Weeks(1),
+            "biweekly" or "bi-weekly" => ScheduleTenor.Weeks(2),
+            "monthly" => ScheduleTenor.Months(1),
+            "quarterly" => ScheduleTenor.Months(3),
+            "semiannual" or "semi-annual" or "semiannually" or "semi-annually" or "halfyearly" or "half-yearly" => ScheduleTenor.Months(6),
+            "annual" or "annually" or "yearly" => ScheduleTenor.Years(1),
+            _ => null
+        };
 
     private static string? DetermineSecurityIncomeEventKind(SecurityEconomicDefinitionRecord economic)
     {

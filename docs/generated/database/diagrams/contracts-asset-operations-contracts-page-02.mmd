@@ -71,6 +71,8 @@ classDiagram
         +Guid? SecurityId
         +string? SourceContentHash
     }
+    class Meridian_Contracts_AssetOperations_FactorPaydownProjectionIdentity["FactorPaydownProjectionIdentity"] {
+    }
     class Meridian_Contracts_AssetOperations_IAccountCashForecastService["IAccountCashForecastService"] {
     }
     class Meridian_Contracts_AssetOperations_IAccountCashForecastStore["IAccountCashForecastStore"] {
@@ -242,9 +244,9 @@ classDiagram
         +decimal EventAmount
         +AssetAccountingEventKindDto EventKind
         +long ExpectedPeriodVersion
+        +Meridian_Contracts_Accounting_Lots_OpenLotFactorPaydownInstructionDto? FactorPaydown
         +string? Notes
         +DateTimeOffset ProjectedAtUtc
-        +ProjectedAccountingEffectDto ProjectedEffect
     }
     class Meridian_Contracts_AssetOperations_ProjectedAccountingEffectDto["ProjectedAccountingEffectDto"] {
         +string Currency
