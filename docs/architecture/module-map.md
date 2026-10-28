@@ -179,3 +179,12 @@ The current product direction is the W1-W5 operational record baseline: data con
   - Validation/policy: account status policy (`EnsureAllowed`) and request invariants.
   - Workflow orchestration: account lifecycle sequencing around reconciliation and synchronization state.
   - Storage concerns: snapshot capture/load/save and in-memory aggregate persistence.
+
+## Shared outstanding-principal calculation
+
+`Meridian.Application/SecurityMaster/CashFlow/SecurityPrincipalBalance.cs` owns the
+opening outstanding face used by calculated cash flows and quoted-price valuation.
+Dated factors absorb principal through their evidence date; later completed principal
+payments reduce the balance. Future-dated scalar factors do not price an earlier date,
+and an undated current factor is not reduced twice. This calculation is separate from
+posting a lot-factor paydown and does not activate its operator route.
