@@ -79,7 +79,19 @@ def promotion_status(receipt: dict | None, expected: dict) -> dict:
     action = 'Inspect verify-and-publish-release-evidence and its upstream jobs; rerun the complete coordinator at this commit.'
     if receipt is None:
         return row('Certified package evidence', 'blocked', 'release-gate-evidence.json is missing.', action)
-    if not bound(receipt, expected) or type(receipt.get('schemaVersion')) is not int or receipt['schemaVersion'] != 1:
+    certification = dict(expected)
+    schema = receipt.get('schemaVersion')
+    if schema == 2:
+        certified_attempt = str(receipt.get('runAttempt', ''))
+        publication_attempt = str(receipt.get('publicationRunAttempt', certified_attempt))
+        if (not re.fullmatch('[1-9][0-9]*', certified_attempt)
+                or publication_attempt != expected['runAttempt']
+                or int(certified_attempt) > int(publication_attempt)):
+            return row('Certified package evidence', 'blocked', 'Certification/publication attempts do not match.', action)
+        if certified_attempt != publication_attempt and not re.fullmatch('[0-9a-f]{64}', str(receipt.get('certifiedGateSha256', ''))):
+            return row('Certified package evidence', 'blocked', 'Resumed certification lacks its original gate digest.', action)
+        certification['runAttempt'] = certified_attempt
+    if not bound(receipt, certification) or type(schema) is not int or schema not in (1, 2):
         return row('Certified package evidence', 'blocked', 'Promotion receipt identity or schema does not match.', action)
     validations = receipt.get('validations', {})
     if not isinstance(validations, dict) or any(not isinstance(validations.get(gate), dict) or validations[gate].get('result') != 'success' for gate in promotion.GATES):
@@ -96,7 +108,7 @@ def promotion_status(receipt: dict | None, expected: dict) -> dict:
             package = item.get('currentPackage', {})
             if (item.get('status') != 'passed' or item.get('sourceCommit') != expected['commitSha']
                     or str(item.get('workflowRunId')) != expected['runId']
-                    or str(item.get('workflowRunAttempt')) != expected['runAttempt']
+                    or str(item.get('workflowRunAttempt')) != certification['runAttempt']
                     or not isinstance(package, dict) or assets.get(package.get('name')) != package.get('sha256')
                     or not package.get('sha256')):
                 return row('Certified package evidence', 'blocked', 'Lifecycle identity, result or package digest does not match.', action)
@@ -108,12 +120,13 @@ def promotion_status(receipt: dict | None, expected: dict) -> dict:
     if (families != promotion.FAMILIES or not isinstance(lifecycle, list) or len(lifecycle) != 3
             or not isinstance(startup, dict) or startup.get('commitSha') != expected['commitSha']
             or str(startup.get('workflowRunId')) != expected['runId']
-            or str(startup.get('workflowRunAttempt')) != expected['runAttempt']
+            or str(startup.get('workflowRunAttempt')) != certification['runAttempt']
             or startup.get('project') != 'web-workstation' or startup.get('runtime') != 'win-x64'
             or not isinstance(startup.get('validationLanes'), list)
             or 'web-workstation-installed-startup' not in startup['validationLanes']):
         return row('Certified package evidence', 'blocked', 'Required lifecycle or installed-startup evidence is incomplete.', action)
-    return row('Certified package evidence', 'ready', 'Promotion verifier retained matching commit, attempt, lifecycle and package digest evidence.')
+    return row('Certified package evidence', 'ready',
+               f"Promotion verifier retained matching source, lifecycle and package digests; certification attempt {certification['runAttempt']}, publication attempt {expected['runAttempt']}.")
 
 
 def runner_status(snapshot: dict | None, expected: dict, now: datetime) -> list[dict]:
@@ -158,7 +171,16 @@ def report(mode: str, needs: dict, expected: dict, signing: dict | None, gate: d
         rows.append(promotion_status(gate, expected))
     else:
         rows.extend(runner_status(runners, expected, now))
-    rows.append(certificate_status(signing, expected, now, warning_days))
+    resumed = (mode == 'coordinator' and isinstance(gate, dict) and gate.get('schemaVersion') == 2
+               and str(gate.get('runAttempt')) != expected['runAttempt']
+               and promotion_status(gate, expected)['status'] == 'ready'
+               and needs.get('release', {}).get('result') == 'success')
+    if signing is None and resumed:
+        rows.append(row('Signing certificate', 'observed',
+                        f"Publication reused packages certified in attempt {gate['runAttempt']} and reverified their attestations; no signing occurred in this attempt. Current signing readiness was not rechecked.",
+                        'Use Release Readiness to inspect current signing prerequisites.'))
+    else:
+        rows.append(certificate_status(signing, expected, now, warning_days))
     statuses = {item['status'] for item in rows}
     status = next((value for value in ('blocked', 'unknown', 'warning') if value in statuses), 'ready')
     return dict(schemaVersion=1, **expected, mode=mode, status=status, observedAt=now.isoformat(), checks=rows,

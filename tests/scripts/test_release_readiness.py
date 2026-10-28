@@ -81,6 +81,30 @@ class ReleaseReadinessTests(unittest.TestCase):
                 gate[key] = invalid
                 self.assertEqual(readiness.promotion_status(gate, self.expected)['status'], 'blocked')
 
+    def test_resumed_publication_preserves_original_certification_attempt(self):
+        self.gate.update(schemaVersion=2, publicationRunAttempt='3', certifiedGateSha256='d' * 64)
+        self.expected['runAttempt'] = '3'
+        self.signing = None
+        result = self.report()
+        self.assertEqual(result['status'], 'ready')
+        promotion = next(item for item in result['checks'] if item['name'] == 'Certified package evidence')
+        self.assertIn('certification attempt 2, publication attempt 3', promotion['detail'])
+        signing = next(item for item in result['checks'] if item['name'] == 'Signing certificate')
+        self.assertEqual(signing['status'], 'observed')
+        self.assertIn('Current signing readiness was not rechecked', signing['detail'])
+        self.assertFalse(result['publicationAuthorized'])
+
+    def test_resume_binding_still_rejects_wrong_run_commit_attempt_and_lifecycle(self):
+        self.gate.update(schemaVersion=2, publicationRunAttempt='3', certifiedGateSha256='d' * 64)
+        self.expected['runAttempt'] = '3'
+        for changes in (dict(commitSha='b' * 40), dict(runId='43'), dict(publicationRunAttempt='4'),
+                        dict(runAttempt='4'), dict(certifiedGateSha256=None)):
+            with self.subTest(changes=changes):
+                receipt = dict(self.gate, **changes)
+                self.assertEqual(readiness.promotion_status(receipt, self.expected)['status'], 'blocked')
+        self.gate['lifecycle'][0]['workflowRunAttempt'] = '3'
+        self.assertEqual(readiness.promotion_status(self.gate, self.expected)['status'], 'blocked')
+
     def test_lifecycle_failure_missing_family_wrong_digest_and_startup_are_blockers(self):
         mutations = [
             lambda gate: gate['lifecycle'].pop(),

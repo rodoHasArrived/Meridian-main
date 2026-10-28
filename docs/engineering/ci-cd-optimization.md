@@ -2,7 +2,7 @@
 
 **Status:** staged implementation; human governance review required  
 **Owner:** core-team  
-**Reviewed:** 2026-10-15
+**Reviewed:** 2026-10-20
 
 ## Coverage ownership
 
@@ -61,6 +61,61 @@ review and a successful PR/merge-group rollout. This change does not alter repos
 or replace the existing `quality-gate` requirement.
 
 ## Measurement and promotion
+
+The October 20 implementation adds policy-driven generated conflict recovery and version 2
+reviewed README fingerprints. The coverage report's protected handwritten suffix is merged
+three ways rather than replaced with an incoming generated file. The shared maintained-generation
+catalog now owns canonical and hosted documentation generation; Roadmap Source Docs retains
+phase/schema validation and uses shared generation for standalone manual runs.
+
+Meridian CI and Documentation Automation separate manual execution from ordinary push cancellation.
+Coordinated releases reuse Meridian CI's integration receipt through the service-backed workflow,
+which revalidates raw test results, coverage, schema evidence, file digests, exact commit, caller
+workflow, run and attempt. Standalone certification still executes its integrations. Production
+certification waits for the coordinated CI result; reduced execution duplication does not by itself
+prove reduced release latency. A partial rerun cannot reuse an earlier attempt's receipt.
+
+Generated-repair publisher and refresh results retain a structured `outcome` separately from
+legacy routing `status`: `published`, `noop`, `ineligible`, `review-required`, `stale-retry`,
+`trusted-generation-requested`, `configuration-missing`, and `failed` distinguish operational reasons. Readiness/generation and
+refresh results remain distinct. Outcomes are retained for 30 days in
+`generated-repair-outcome-publish-<run>-<attempt>` and
+`generated-repair-outcome-refresh-<run>-<attempt>` artifacts. A published repair is not proof
+that its resulting revision passed authoritative CI.
+
+`CI Operational Metrics` runs daily at 04:43 UTC and on manual dispatch. It collects every attempt
+from the previous complete UTC day and retains raw API evidence and reports for 30 days.
+Missing workflow, attempt, job or check evidence fails reporting. Unreadable protection policy
+and unavailable historical change boundaries remain explicit unavailable data with the original
+collection errors retained; they cannot establish required-check success or comparative savings.
+Repair outcome counts verify each publisher artifact's run,
+attempt and revision. Repair success is evaluated only when the published commit can be linked to
+complete, applicable, App-bound required-check evidence. Reports identify the observed cohort,
+policy provenance, evaluated denominator and unavailable observations; publication success is not
+a substitute. Backlog age is a lower bound from consecutive observed head/base pairs within the
+collected window, not an inferred timestamp for when a PR first became stale.
+
+Dependabot groups weekly pip updates across the four maintained requirements directories.
+`Dependency Lock Candidates` validates restore-input PRs and manual runs on Linux portable,
+Windows portable, Windows x64 and Windows ARM64 profiles. It generates candidates and proves
+locked restore in disposable checkouts before uploading manifests, lockfiles and logs.
+Ordinary restores remain unchanged until native profiles are reviewed and adopted:
+
+```bash
+python build/scripts/ci/dependency-locks.py generate --profile linux-portable --output artifacts/locks-candidate
+python build/scripts/ci/dependency-locks.py adopt --candidate artifacts/locks-candidate
+python build/scripts/ci/dependency-locks.py verify --profile linux-portable --output artifacts/locks-verified
+```
+
+Use a fresh output directory for each command. Adoption checks the pinned revision, all tracked
+restore inputs, complete solution coverage and every lock digest. After adoption, the explicit
+`-p:MeridianNuGetLockProfile=linux-portable` selects that profile; each native Windows profile
+needs its own proof before adoption or enforcement. Caches include the profile lockfile names.
+
+The approved rollout still requires administrator verification of the App/environment and all
+effective protection settings, plus a successful eligible repair and merge-group check.
+Configuration changes, protected-rule changes, and production releases are not performed by these
+implementation workflows.
 
 The [October 5 Actions storage audit](actions-storage-audit-2026-10-05.md) inventories workflow
 uploads, measures recent artifacts, and separates routine retention savings from protected
@@ -398,7 +453,7 @@ and the following configuration:
 
 | Setting | Purpose |
 | --- | --- |
-| Variable `GENERATED_REPAIR_APP_ID` | ID of the GitHub App installed only on the intended repository. |
+| Repository variable `GENERATED_REPAIR_APP_ID` | Nonsecret ID of the GitHub App installed only on the intended repository; visible to the read-only generator as a dispatch capability signal. |
 | Environment `generated-repair` | Restrict allowed deployment branches to the default branch (`main`); both trusted publishers use this environment. |
 | Environment secret `GENERATED_REPAIR_APP_PRIVATE_KEY` | App private key stored only in `generated-repair`, so unreviewed branch workflows cannot access it. |
 | App repository permissions | Contents: write and Pull requests: write for repair/maintenance commits and maintenance PRs; Actions: write for bounded repair re-dispatch. |
@@ -410,13 +465,22 @@ administrator policy; the default-branch deployment restriction is required.
 Do not use a default `GITHUB_TOKEN` push as a fallback: its commits do not trigger the fresh checks
 required on repaired revisions. No App permission allows a workflow to bypass branch protections.
 
-`generated-repair.yml` produces evidence without write credentials on PR open, synchronize and
-reopen. Candidate dependencies and generators run in a restricted container with only a disposable
+`generated-repair.yml` accepts read-only requests on PR open, synchronize and reopen, including
+conflicted PRs. With the repository App variable configured, an eligible same-repository target
+event requests generation dispatched on the default branch. Forks and unconfigured requests
+still produce artifact-only candidates. The publisher never publishes a target-event candidate.
+Only a default-branch dispatch whose server-owned execution SHA/repository/ref match the version 2
+run metadata and trusted workflow bytes can authorize publication. PR head/base inputs remain
+separate from that execution identity; the target event's REST `head_sha` is not workflow-origin
+proof. Orchestration checkout pins `github.workflow_sha`.
+
+Candidate dependencies and generators run in a restricted container with only a disposable
 clone and raw output mounts, excluding host Actions/cache credentials and the Docker socket. The
 trusted host exports only bounded regular files without links after the container exits.
 `generated-repair-publish.yml` validates the completed run and artifact using trusted base tooling,
 recreates the pinned merge, independently derives the generated delta and rereads head/base before a
-normal branch push. The App is used only after these checks. A post-push base reread catches a base
+normal branch push. App writes require these checks; the initial trusted-generation dispatch
+does not consume a stale-ref retry. A post-push base reread catches a base
 advance in the final write window and requeues within the retry bound; GitHub offers no atomic
 comparison-and-update transaction across both refs. Stale revisions allow at most two automatic
 requeues. Repair commit markers suppress self-triggered loops only for an already-current base;
@@ -454,6 +518,20 @@ queue delay and execution cost. The main repair measure is the fraction of first
 revisions passing authoritative CI without manual regeneration, with unchanged validation coverage.
 
 ## Release evidence
+
+Release promotion retains a digest-bound upstream evidence bundle alongside the certified
+packages. Tag publication stages a draft, verifies the exact asset inventory and downloaded bytes,
+and verifies package attestations before making the release visible. Existing conflicting bytes
+are refused rather than overwritten. Failed publication retries must reuse the original validated
+artifact and certification attempt; a publication attempt is recorded separately. Manual and
+scheduled signed rehearsals cannot publish production releases.
+
+Rerun the failed tag-publication job to restore its original same-run `validated-release` archive.
+Missing or expired certification evidence stops recovery. An empty GitHub `starter` asset from an
+interrupted upload also stops publication with its asset ID: a release owner must inspect and
+remove that incomplete upload before retrying. Automation never deletes or replaces a release
+asset. The retained bundle includes upstream CI/security/certification archives and package
+attestations, so the published release remains auditable after Actions retention expires.
 
 `release-readiness.yml` runs Monday at 08:23 UTC and on manual dispatch. It checks signing
 certificate metadata through the existing protected `desktop-release-signing` environment and

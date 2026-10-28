@@ -2,6 +2,13 @@ name: Meridian CI
 
 on:
   workflow_call:
+    outputs:
+      integration-artifact-id:
+        value: ${{ jobs.integration-gate.outputs.artifact-id }}
+      integration-artifact-name:
+        value: ${{ jobs.integration-gate.outputs.artifact-name }}
+      integration-receipt-sha256:
+        value: ${{ jobs.integration-gate.outputs.receipt-sha256 }}
   pull_request:
     branches:
       - main
@@ -15,8 +22,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-meridian-ci-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-meridian-ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'latest' }}
+  cancel-in-progress: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}
 
 env:
   CI: true
@@ -59,7 +66,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
+          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/*.packages.lock.json', '**/NuGet.Config', 'global.json') }}
           restore-keys: |
             ${{ runner.os }}-nuget-v1-
 
@@ -132,7 +139,7 @@ jobs:
   verify-docs:
     name: verify-docs
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
 
     steps:
       - name: Check out repository
@@ -154,6 +161,13 @@ jobs:
       - name: Install docs script dependencies
         run: python -m pip install --requirement build/scripts/docs/requirements.txt
 
+      - name: Set up maintained diagram toolchain
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+
       # `promtool check rules` proves the alert file parses; `promtool test rules` proves each
       # rule fires on the condition it claims. Only the second catches a rate() window that
       # goes quiet while the fault persists, which is the shape of every alert regression here.
@@ -166,6 +180,7 @@ jobs:
           set -euo pipefail
           curl -sSfL -o /tmp/prometheus.tar.gz \
             "https://github.com/prometheus/prometheus/releases/download/v${PROMETHEUS_VERSION}/prometheus-${PROMETHEUS_VERSION}.linux-amd64.tar.gz"
+          echo "9a9d1e115d1745826b13aec3f1409780b9fcf1d4206746cb4faee46ca5add70c  /tmp/prometheus.tar.gz" | sha256sum --check
           tar -xzf /tmp/prometheus.tar.gz -C /tmp --wildcards '*/promtool' --strip-components=1
           sudo install -m 0755 /tmp/promtool /usr/local/bin/promtool
           promtool --version
@@ -183,6 +198,8 @@ jobs:
             docs/status/docs-automation-summary.json
             docs/status/todo-scan-results.json
             artifacts/ci-summary/
+            artifacts/docs/
+            artifacts/maintained-generation/
           if-no-files-found: ignore
           compression-level: 1
           retention-days: 14
@@ -295,6 +312,10 @@ jobs:
     needs: service-backed-integrations
     if: always()
     timeout-minutes: 5
+    outputs:
+      artifact-id: ${{ needs.service-backed-integrations.outputs.artifact-id }}
+      artifact-name: ${{ needs.service-backed-integrations.outputs.artifact-name }}
+      receipt-sha256: ${{ needs.service-backed-integrations.outputs.receipt-sha256 }}
     steps:
       - name: Evaluate service-backed integration evidence
         env:
