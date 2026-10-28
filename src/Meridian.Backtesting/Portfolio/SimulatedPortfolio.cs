@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 
 namespace Meridian.Backtesting.Portfolio;
@@ -11,6 +12,7 @@ namespace Meridian.Backtesting.Portfolio;
 internal sealed class SimulatedPortfolio
 {
     private readonly BacktestLedger? _ledger;
+    private readonly IReadOnlyDictionary<string, (SecurityLotUnitKind UnitKind, decimal Multiplier)> _lotConventions;
     private readonly string _defaultBrokerageAccountId;
     private readonly Dictionary<string, AccountState> _accounts;
     private readonly Dictionary<string, decimal> _lastPrices = new(StringComparer.OrdinalIgnoreCase);
@@ -57,12 +59,21 @@ internal sealed class SimulatedPortfolio
         string defaultBrokerageAccountId,
         ICommissionModel commission,
         BacktestLedger? ledger = null,
-        DateTimeOffset startTimestamp = default)
+        DateTimeOffset startTimestamp = default,
+        IReadOnlyDictionary<string, (SecurityLotUnitKind UnitKind, decimal Multiplier)>? lotConventions = null)
     {
         ArgumentNullException.ThrowIfNull(accounts);
         ArgumentException.ThrowIfNullOrWhiteSpace(defaultBrokerageAccountId);
 
         _ledger = ledger;
+        _lotConventions = lotConventions is null
+            ? new Dictionary<string, (SecurityLotUnitKind UnitKind, decimal Multiplier)>(StringComparer.OrdinalIgnoreCase)
+            : new Dictionary<string, (SecurityLotUnitKind UnitKind, decimal Multiplier)>(lotConventions, StringComparer.OrdinalIgnoreCase);
+        foreach (var convention in _lotConventions.Values)
+        {
+            if (convention.UnitKind is not (SecurityLotUnitKind.Shares or SecurityLotUnitKind.Units) || convention.Multiplier != 1m)
+                throw new NotSupportedException("The simulated portfolio requires share or fund-unit pricing with multiplier 1.");
+        }
         _defaultBrokerageAccountId = defaultBrokerageAccountId.Trim();
         _accounts = accounts
             .Select(account => account.Normalize())
@@ -112,6 +123,9 @@ internal sealed class SimulatedPortfolio
         var account = ResolveBrokerageAccount(fill.AccountId);
         var accountId = account.Account.AccountId;
         var symbol = fill.Symbol;
+        var (lotUnit, lotMultiplier) = _lotConventions.TryGetValue(symbol, out var convention)
+            ? convention
+            : (SecurityLotUnitKind.Shares, 1m); // Legacy symbol-only replay explicitly assumes equity.
         var qty = fill.FilledQuantity;
         var price = fill.FillPrice;
         var commission = fill.Commission;
@@ -150,6 +164,8 @@ internal sealed class SimulatedPortfolio
             if (longBuyQty > 0)
                 lots.AddLast(new OpenLot(Guid.NewGuid(), symbol, longBuyQty, price, fill.FilledAt, fill.FillId, account.Account.AccountId)
                 {
+                    UnitKind = lotUnit,
+                    Multiplier = lotMultiplier,
                     EntryCommission = existingQty >= 0 ? commission
                         : commission - commission * Math.Min(qty, -existingQty) / qty
                 });
@@ -189,6 +205,8 @@ internal sealed class SimulatedPortfolio
                 fill.FillId,
                 account.Account.AccountId)
             {
+                UnitKind = lotUnit,
+                Multiplier = lotMultiplier,
                 IsShort = true,
                 EntryCommission = existingQty <= 0 ? commission
                     : commission - commission * Math.Min(-qty, existingQty) / -qty
@@ -1525,6 +1543,8 @@ internal sealed class SimulatedPortfolio
                 lot.LotId, symbol, quantity, closedEntryPrice, lot.OpenedAt,
                 lot.OpenFillId, sellPrice, closedAt, closeFillId, account.Account.AccountId)
             {
+                UnitKind = lot.UnitKind,
+                Multiplier = lot.Multiplier,
                 CostBasis = basisRemoved,
                 EntryCommission = entryCommission,
                 ExitCommission = closeCommission
@@ -1589,6 +1609,8 @@ internal sealed class SimulatedPortfolio
                 lot.LotId, symbol, lotClose, closedEntryPrice, lot.OpenedAt,
                 lot.OpenFillId, coverPrice, closedAt, closeFillId, account.Account.AccountId, IsShort: true)
             {
+                UnitKind = lot.UnitKind,
+                Multiplier = lot.Multiplier,
                 CostBasis = lotProceeds,
                 EntryCommission = entryCommission,
                 ExitCommission = closeCommission

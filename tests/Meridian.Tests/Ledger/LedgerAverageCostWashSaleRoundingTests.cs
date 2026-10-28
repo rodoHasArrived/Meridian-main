@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using FluentAssertions;
 using Meridian.Ledger;
 using Xunit;
@@ -22,7 +23,7 @@ public sealed class LedgerAverageCostWashSaleRoundingTests
     {
         var input = CreateInput(
             Enumerable.Range(1, 4)
-                .Select(index => new LedgerTaxLot($"lot-{index}", new DateOnly(2026, 1, index), 1m, unitCost, SecurityId))
+                .Select(index => new LedgerTaxLot($"lot-{index}", new DateOnly(2026, 1, index), 1m, unitCost, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m })
                 .ToArray(), 4m, salePrice);
 
         var projection = LedgerTaxLotReliefProjector.Project(input);
@@ -62,7 +63,7 @@ public sealed class LedgerAverageCostWashSaleRoundingTests
     {
         var input = CreateInput(
             Enumerable.Range(1, 3)
-                .Select(index => new LedgerTaxLot($"lot-{index}", new DateOnly(2026, 1, index), 1m, 100m / 3m, SecurityId))
+                .Select(index => new LedgerTaxLot($"lot-{index}", new DateOnly(2026, 1, index), 1m, 100m / 3m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m })
                 .ToArray(), 2m, 40m);
 
         var projection = LedgerTaxLotReliefProjector.Project(input);

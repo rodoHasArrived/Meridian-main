@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
@@ -106,6 +107,8 @@ public sealed class StrategyRunMetricSerializationTests
         var lot = new ClosedLot(Guid.NewGuid(), "XYZ", 3, 100m / 3m, opened, Guid.NewGuid(),
             40m, closed, Guid.NewGuid(), account.AccountId)
         {
+            UnitKind = SecurityLotUnitKind.Shares,
+            Multiplier = 1m,
             CostBasis = 100m,
             EntryCommission = 2m,
             ExitCommission = 3m

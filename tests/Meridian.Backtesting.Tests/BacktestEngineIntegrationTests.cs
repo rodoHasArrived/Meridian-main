@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Core.Serialization;
@@ -491,8 +492,14 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
     {
         WriteBarJsonl("SPY", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 3), basePrice: 470m);
 
-        var progressReports = new List<BacktestProgressEvent>();
-        var progress = new Progress<BacktestProgressEvent>(e => progressReports.Add(e));
+        var progressReports = new ConcurrentQueue<BacktestProgressEvent>();
+        var completionReported = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var progress = new Progress<BacktestProgressEvent>(e =>
+        {
+            progressReports.Enqueue(e);
+            if (e.ProgressFraction >= 1.0)
+                completionReported.TrySetResult();
+        });
 
         var request = new BacktestRequest(
             From: new DateOnly(2024, 1, 2),
@@ -501,11 +508,12 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
 
         await _engine.RunAsync(request, new NoOpStrategy(), progress);
 
-        // Allow the progress delegate to fire (it's posted to the thread pool by Progress<T>)
-        await Task.Delay(50);
+        // Progress<T> posts callbacks asynchronously; await the actual completion report.
+        await completionReported.Task.WaitAsync(TimeSpan.FromSeconds(10));
 
-        progressReports.Should().NotBeEmpty("progress must be reported at least once");
-        progressReports.Should().Contain(e => e.ProgressFraction >= 1.0,
+        var reports = progressReports.ToArray();
+        reports.Should().NotBeEmpty("progress must be reported at least once");
+        reports.Should().Contain(e => e.ProgressFraction >= 1.0,
             "a completion event with FractionComplete=1 must be reported");
     }
 

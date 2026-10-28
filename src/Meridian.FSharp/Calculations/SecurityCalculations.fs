@@ -37,12 +37,7 @@ module DayCount =
 
     /// Dispatch to the appropriate day-count fraction for the given convention.
     let fractionFor (convention: DayCountConvention) (startDate: DateOnly) (endDate: DateOnly) : decimal =
-        match convention with
-        | Actual360          -> actual360 startDate endDate
-        | Actual365          -> actual365 startDate endDate
-        | Thirty360          -> thirty360 startDate endDate
-        | Business252        -> actual365 startDate endDate // simplified; full Biz/252 requires trading calendar
-        | OtherDayCount _    -> actual365 startDate endDate // safe fallback
+        Meridian.Contracts.SecurityMaster.DayCountConventions.Fraction(convention, startDate, endDate)
 
 
 /// Core Clearwater-aligned security calculations.

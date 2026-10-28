@@ -192,30 +192,8 @@ type BondSubclass =
     | Vrdn
     /// Auction Rate Security — rate resets at periodic auction; vendor pricing conventions may hold it at par.
     | AuctionRate
-    // --- Bank / leveraged finance ---
-    /// Syndicated or bilateral bank loan; floating rate, principal schedule per credit agreement.
-    | BankLoan
-    // --- Asset-backed / structured credit ---
-    /// Generic asset-backed security (auto loans, credit cards, student loans, etc.).
-    | AssetBacked
-    /// Agency or non-agency residential mortgage-backed security (pass-through pool).
-    | MortgageBacked
-    /// Agency MBS guaranteed by Fannie Mae, Freddie Mac, or Ginnie Mae.
-    | AgencyMbs
-    /// Commercial mortgage-backed security.
-    | CommercialMbs
-    /// Collateralized Mortgage Obligation — a CMO tranche carved from an MBS pool.
-    | Cmo
-    /// Collateralized Loan Obligation — CLO tranche backed by leveraged loans.
-    | Clo
-    /// Collateralized Debt Obligation — generic CDO tranche.
-    | Cdo
-    /// Principal-Only strip: receives only scheduled and unscheduled principal cash flows.
-    | PrincipalOnly
-    /// Interest-Only strip: receives only interest cash flows; notional-referenced.
-    | InterestOnly
-    /// Inverse Interest-Only strip: leveraged IO with inverse-floating coupon.
-    | InverseInterestOnly
+    // Loans belong in DirectLoan; securitized products belong in StructuredCredit.
+    // Historical labels survive only through Other for tolerant record reconstruction.
     | Other of string
 
 [<RequireQualifiedAccess>]
@@ -239,16 +217,16 @@ type StepCouponEntry = {
 
 [<RequireQualifiedAccess>]
 type BondCouponStructure =
-    | Fixed of rate: decimal * dayCount: string option
-    | Floating of index: string * spreadBps: decimal option * capRate: decimal option * floorRate: decimal option * dayCount: string option
+    | Fixed of rate: decimal * dayCount: DayCountConvention option
+    | Floating of index: string * spreadBps: decimal option * capRate: decimal option * floorRate: decimal option * dayCount: DayCountConvention option
     | ZeroCoupon
     /// Step-rate coupon: a contractual dated rate schedule (step-up notes, step coupons around
     /// call dates). The schedule is the coupon — there is no single scalar rate.
-    | Step of schedule: StepCouponEntry list * dayCount: string option
+    | Step of schedule: StepCouponEntry list * dayCount: DayCountConvention option
     /// Inflation-linked coupon (TIPS, linkers): a real rate accruing on index-adjusted principal.
     /// <c>indexName</c> names the reference index (e.g. "CPI-U"); <c>baseIndexValue</c> is the
     /// index level at issue and <c>indexRatio</c> the current index ratio applied to principal.
-    | InflationLinked of realRate: decimal * indexName: string * baseIndexValue: decimal option * indexRatio: decimal option * dayCount: string option
+    | InflationLinked of realRate: decimal * indexName: string * baseIndexValue: decimal option * indexRatio: decimal option * dayCount: DayCountConvention option
 
 /// A scheduled principal repayment (amortizing instalment, sinking-fund payment, or term-loan
 /// instalment). Shared by bond and direct-loan terms.
@@ -510,7 +488,7 @@ type DepositTerms = {
     InstitutionName: string
     Maturity: DateOnly option
     InterestRate: decimal option
-    DayCount: string option
+    DayCount: DayCountConvention option
     IsCallable: bool
 }
 
@@ -526,7 +504,7 @@ type CertificateOfDepositTerms = {
     Maturity: DateOnly
     CouponRate: decimal option
     CallableDate: DateOnly option
-    DayCount: string option
+    DayCount: DayCountConvention option
     /// Declared schedule conventions (asset-class terms version 2); empty until declared.
     ScheduleConventions: ScheduleConventions
     /// Declared call and put schedules (asset-class terms version 3); empty until declared.
@@ -537,7 +515,7 @@ type CommercialPaperTerms = {
     IssuerName: string
     Maturity: DateOnly
     DiscountRate: decimal option
-    DayCount: string option
+    DayCount: DayCountConvention option
     IsAssetBacked: bool
 }
 
@@ -601,7 +579,7 @@ type SwapLeg = {
     CurrentIndexRate: decimal option
     Notional: decimal option
     PaymentFrequency: string option
-    DayCount: string option
+    DayCount: DayCountConvention option
     /// Whether principal exchanges are part of the leg's contractual terms.
     ExchangesPrincipal: bool
     /// Dated notional steps for an amortizing or accreting leg; empty for a constant notional.
@@ -891,7 +869,7 @@ type CreditDefaultSwapTerms = {
     EffectiveDate: DateOnly
     MaturityDate: DateOnly
     PaymentFrequency: string option
-    DayCount: string option
+    DayCount: DayCountConvention option
     /// Seniority of the reference obligation (e.g. "SeniorUnsecured", "Subordinated").
     Seniority: string option
     /// ISDA restructuring clause (e.g. "ModR", "ModModR", "XR", "CR").
@@ -919,7 +897,7 @@ type SwaptionTerms = {
     Notional: decimal
     FloatingIndex: string option
     FixedLegPaymentFrequency: string option
-    FixedLegDayCount: string option
+    FixedLegDayCount: DayCountConvention option
     /// Settlement method label ("Physical" enters the swap, "Cash" pays its value).
     SettlementType: string option
 }
@@ -937,7 +915,7 @@ type CapFloorTerms = {
     EffectiveDate: DateOnly
     MaturityDate: DateOnly
     ResetFrequency: string option
-    DayCount: string option
+    DayCount: DayCountConvention option
     PremiumAmount: decimal option
 }
 
@@ -1004,7 +982,7 @@ type SecurityKind =
     /// Mutual fund, ETF, hedge fund, REIT, or closed-end fund.
     /// Market value = units × NAV (or market price); no amortization in general.
     | InvestmentFund of InvestmentFundTerms
-    /// Governed profile-backed custom asset (MBS/ABS/CLO/CMBS and private assets modeled via
+    /// Governed profile-backed custom asset (private and other assets modeled via
     /// approved custom profiles). Terms are carried as an opaque, verbatim document.
     | CustomAsset of CustomAssetTerms
 

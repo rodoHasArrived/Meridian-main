@@ -11,6 +11,13 @@ last_reviewed: 2026-10-21
 
 # src/Meridian.Application
 
+`SecurityMasterOperationalReadinessService` consumes the asset-pack registry for all class-specific
+readiness metadata. It publishes every catalog class and keeps catalog-derived fallback profiles
+under review even when retained evidence is ready. Requests and scoped evidence share canonical
+alias resolution, so securitized evidence cannot satisfy Bond or CustomAsset requirements.
+Profile-based reclassification also reads registry mappings and refuses contradictory classification
+metadata in both the envelope and nested profile fields.
+
 The internal `SecurityMaster/CashFlow/ScheduleSpecFactory` remains a preparatory adapter over decoded
 F# conventions, with its broader day/week cadence and explicit common-calendar fallback tests.
 Production projections explicitly use `Meridian.Contracts.SecurityMaster.ScheduleSpecFactory`:

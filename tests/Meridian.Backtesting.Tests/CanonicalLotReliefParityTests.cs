@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using FluentAssertions;
 using Meridian.Backtesting.Portfolio;
 using Meridian.Contracts.Accounting.Lots;
@@ -38,7 +39,8 @@ public sealed class CanonicalLotReliefParityTests
             _ => TaxLotSelectors.SpecificId(ids!)
         };
         var execution = executionSelector.Relieve(before.Select(static lot => new TaxLot(
-            lot.LotId, lot.Symbol, lot.Quantity, lot.EntryPrice, lot.OpenedAt)).ToArray(), 5, 150m);
+            lot.LotId, lot.Symbol, lot.Quantity, lot.EntryPrice, lot.OpenedAt)
+        { UnitKind = lot.UnitKind, Multiplier = lot.Multiplier }).ToArray(), 5, 150m);
 
         portfolio.ProcessFill(Fill(-5, 150m, AcquiredAt.AddDays(2), ids?[0]));
 

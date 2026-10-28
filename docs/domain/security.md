@@ -98,3 +98,19 @@ PostgreSQL lock, then verifies incompatible-date rejection, approval exclusion d
 creation, SQL-failure rollback, cancellation rollback, concurrent reads and composition guards.
 The service-backed GitHub Actions integration lane is the required database proof; skipped local
 PostgreSQL tests do not satisfy it.
+
+## Asset-class operational wiring
+
+The domain `SecurityKind` union, C# asset catalog, schema, codec, validators, relational projections,
+lot conventions and pack membership are held in parity by `SecurityAssetClassRegistryCoverageTests`,
+`SecurityAssetTermsSchemaRoundTripTests` and `SecurityAssetClassParityGuardTests`.
+`SecurityAssetClassOperationalWiringTests` extends that guard through actual readiness rows and aliases.
+
+Readiness definitions, depth targets, profile identities and classification keywords are owned by
+`SecurityAssetPackRegistry`. Every catalog class receives a row. A new class without a specialized
+operational profile stays `ReviewRequired`, including after provider evidence is retained; adding a
+class never silently removes it from readiness. Broad operational vocabulary is scoped to readiness,
+while canonical aliases are shared through the asset catalog. MBS, ABS, CLO and CMBS evidence belongs
+only to StructuredCredit. Profile metadata, including nested fields, cannot contradict the registered
+profile's canonical class. Custom profile documents still require explicit typed-term integration to
+produce contractual schedules; a readiness row alone does not supply that integration.

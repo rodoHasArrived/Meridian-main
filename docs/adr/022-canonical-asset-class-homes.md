@@ -38,12 +38,16 @@ One canonical home per instrument family, enforced by the asset-class validators
    pipelines cannot act on. The Bond validator raises Error-severity
    `SM_BOND_SECURITIZED_SUBCLASS_NONCANONICAL` for the ten securitized subclasses, which blocks
    governed workflows until the record is re-modeled through a governed amendment. The subclasses
-   remain in the `BondSubclass` union for read tolerance — existing rows stay readable and
-   re-playable — but they are no longer an accepted destination.
+   are removed from the `BondSubclass` union. Existing flat documents reconstruct as
+   `BondSubclass.Other` with their original labels, so they remain readable and re-playable;
+   command invariants reject those labels, including vendor aliases. `BankLoan` is likewise
+   removed: bank loans must use `DirectLoan` and its borrower, commitment and covenant terms.
 2. **Profile-backed securitized records must resolve to `StructuredCredit`.** A `CustomAsset`
    pinned to a registered reclassifying profile (e.g. `structured-credit-io-po`) already resolves
    to `StructuredCredit` at the write seam; a generic `CustomAsset` whose classification metadata
-   names a securitized product raises Warning-severity `SM_CUSTOM_ASSET_SECURITIZED_NONCANONICAL`.
+   names a securitized product raises Error-severity `SM_CUSTOM_ASSET_SECURITIZED_NONCANONICAL`.
+   Command invariants also check category, subtype and accounting classification metadata inside profile fields, preventing a
+   generic custom profile from bypassing the canonical home.
    `CustomAsset` remains the home for private and other assets with no first-class kind.
 3. **Stable-NAV money-market vehicles are modeled as `MoneyMarketFund`.** `InvestmentFund` is the
    generic wrapper for ETFs, mutual funds, hedge funds, REITs, and closed-end funds; a record
@@ -61,8 +65,8 @@ One canonical home per instrument family, enforced by the asset-class validators
 | Component | Location | Purpose |
 |-----------|----------|---------|
 | Enforcement rules | `src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs` | `DisallowedStringValuesRule` / `DiscouragedTrueBooleanRule` and the Bond, InvestmentFund, and CustomAsset entries |
-| Readiness catalog | `src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs` | StructuredCredit named the securitized home; CustomAsset relabeled |
-| Profile reclassification | `src/Meridian.Application/SecurityMaster/SecurityMasterService.cs` | `KnownProfileAssetClasses` maps `structured-credit-io-po` → StructuredCredit |
+| Readiness catalog | `src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs` | Pack-owned readiness specifications and evidence aliases route securitized products to StructuredCredit |
+| Profile reclassification | `src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Profiles.cs` | `ProfileAssetClasses` maps `structured-credit-io-po` → StructuredCredit; the application service enforces profile consistency |
 | Legacy reclassification report | `src/Meridian.FSharp/Domain/SecurityMasterLegacyUpgrade.fs`, `src/Meridian.Application/SecurityMaster/SecurityMasterStructuredCreditReclassificationService.cs` | `proposeStructuredCreditReclassification` derives StructuredCredit terms for securitised `Bond` and `CustomAsset` rows and lists blockers instead of guessing; the service serves the report at `POST /api/security-master/structured-credit-reclassification/report` (AdminMaintenance). Report only: applying a proposal is a governed amendment |
 | Asset family | `src/Meridian.FSharp/Domain/SecurityClassification.fs` | `AssetFamily.SecuritizedCredit` is the securitized family; `StructuredCash` reverts to naming cash vehicles only, so the two no longer share a label |
 | Accounting classification | `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs` | `AccountingInstrumentClass` declares StructuredCredit's accounting home, so every vendor spelling of a securitized tranche posts under one class |
@@ -118,7 +122,10 @@ three routes to coexist.
 
 ### Neutral
 
-- `BondSubclass` keeps its securitized members for read tolerance; the union is not shrunk.
+- Historical securitized and bank-loan labels remain losslessly readable through `BondSubclass.Other`;
+  callers using the removed named union members must select the canonical first-class kind.
+- Existing records are not automatically converted: ambiguous kinds and missing tranche economics
+  continue to appear as blockers in the governed reclassification report.
 
 ## Compliance
 
@@ -127,8 +134,9 @@ three routes to coexist.
 ```csharp
 // The Bond validator must reject securitized subclasses:
 // SM_BOND_SECURITIZED_SUBCLASS_NONCANONICAL (Error) — see AssetClassValidatorRegistry.
-// InvestmentFund stable-NAV and CustomAsset securitized metadata raise Warning-severity
-// SM_INVESTMENT_FUND_STABLE_NAV_NONCANONICAL / SM_CUSTOM_ASSET_SECURITIZED_NONCANONICAL.
+// CustomAsset securitized metadata is Error-severity SM_CUSTOM_ASSET_SECURITIZED_NONCANONICAL.
+// BankLoan labels are Error-severity SM_BOND_BANK_LOAN_SUBCLASS_NONCANONICAL.
+// InvestmentFund stable-NAV metadata retains Warning-severity SM_INVESTMENT_FUND_STABLE_NAV_NONCANONICAL.
 ```
 
 ### Runtime Verification
@@ -142,4 +150,4 @@ three routes to coexist.
 
 ---
 
-*Last Updated: 2026-08-24*
+*Last Updated: 2026-10-28*

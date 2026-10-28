@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.OperationsContinuity;
@@ -46,7 +47,7 @@ public sealed class StrictTenantMutationPostgresTests
         lookup.Replacements.Should().ContainSingle().Which.Account.Should().Be(sibling);
         var projection = LedgerTaxLotReliefProjector.Project(new LedgerTaxLotReliefInput(
             account, saleDate, 100m, 80m, LedgerTaxLotReliefMethod.Fifo,
-            [new("same-lot", saleDate, 100m, 100m, securityId)],
+            [new("same-lot", saleDate, 100m, 100m, securityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }],
             washSalePolicy: query.Policy, replacementAcquisitions: lookup.Replacements));
         projection.DisallowedWashSaleLoss.Should().Be(2000m);
         projection.WashSale!.BasisIncreases.Should().ContainSingle().Which.ReplacementAccount.Should().Be(sibling);

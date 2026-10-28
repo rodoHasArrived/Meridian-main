@@ -280,6 +280,47 @@ public sealed class BacktestTrustworthinessTests : IDisposable
         result.BiasDisclosure!.SymbolsMissingFromSecurityMaster.Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData("Bond")]
+    [InlineData("Option")]
+    public async Task KnownNonShareSecurity_RejectsIncompatiblePricingBeforeReplay(string assetClass)
+    {
+        var from = new DateOnly(2024, 1, 2);
+        var to = new DateOnly(2024, 1, 3);
+        var cutoff = new DateTimeOffset(2024, 1, 3, 0, 0, 0, TimeSpan.Zero);
+        WriteBars("X", from, to, basePrice: 100m);
+        var identity = new DatedIdentityQuery(Guid.NewGuid(), cutoff, assetClass);
+        var engine = new BacktestEngine(NullLogger<BacktestEngine>.Instance,
+            new StorageCatalogService(_dataRoot, new StorageOptions()),
+            new RecordingTradingParametersQuery(), securityIdentityQueryService: identity);
+        var request = new BacktestRequest(From: from, To: to, Symbols: ["X"], DataRoot: _dataRoot);
+
+        var act = () => engine.RunAsync(request, new BuyOnFirstBarStrategy("X", 10));
+
+        await act.Should().ThrowAsync<NotSupportedException>()
+            .WithMessage("*compatible asset pricing model*");
+    }
+
+    [Fact]
+    public async Task KnownFundSecurity_OpensUnitsFromSecurityDefinition()
+    {
+        var from = new DateOnly(2024, 1, 2);
+        var to = new DateOnly(2024, 1, 3);
+        var cutoff = new DateTimeOffset(2024, 1, 3, 0, 0, 0, TimeSpan.Zero);
+        WriteBars("FUND", from, to, basePrice: 100m);
+        var identity = new DatedIdentityQuery(Guid.NewGuid(), cutoff, "InvestmentFund");
+        var engine = new BacktestEngine(NullLogger<BacktestEngine>.Instance,
+            new StorageCatalogService(_dataRoot, new StorageOptions()),
+            new RecordingTradingParametersQuery(), securityIdentityQueryService: identity);
+        var request = new BacktestRequest(From: from, To: to, Symbols: ["FUND"], DataRoot: _dataRoot);
+
+        var result = await engine.RunAsync(request, new BuyOnFirstBarStrategy("FUND", 10));
+
+        var lot = result.Snapshots.Last().Positions["FUND"].OpenLots!.Should().ContainSingle().Which;
+        lot.UnitKind.Should().Be(SecurityLotUnitKind.Units);
+        lot.Multiplier.Should().Be(1m);
+    }
+
     [Fact]
     public async Task EmptyUniverse_ResultStillCarriesDisclosure()
     {
@@ -298,7 +339,7 @@ public sealed class BacktestTrustworthinessTests : IDisposable
     // Fixture helpers
     // ────────────────────────────────────────────────────────────────────────
 
-    private sealed class DatedIdentityQuery(Guid securityId, DateTimeOffset cutoff) : ISecurityIdentityQueryService
+    private sealed class DatedIdentityQuery(Guid securityId, DateTimeOffset cutoff, string assetClass = "Equity") : ISecurityIdentityQueryService
     {
         public List<DateTimeOffset?> AsOfRequests { get; } = [];
 
@@ -309,8 +350,8 @@ public sealed class BacktestTrustworthinessTests : IDisposable
             AsOfRequests.Add(asOfUtc);
             SecurityDetailDto? detail = asOfUtc == cutoff
                 ? new SecurityDetailDto(
-                    securityId, "Equity", SecurityStatusDto.Active, identifierValue, "USD",
-                    JsonSerializer.SerializeToElement(new { }), JsonSerializer.SerializeToElement(new { }),
+                    securityId, assetClass, SecurityStatusDto.Active, identifierValue, "USD",
+                    JsonSerializer.SerializeToElement(new { }), JsonSerializer.SerializeToElement(new { multiplier = 100m }),
                     [], [], 1L, cutoff.AddYears(-1), null)
                 : null;
             return Task.FromResult(detail);

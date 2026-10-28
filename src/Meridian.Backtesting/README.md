@@ -47,6 +47,13 @@ optional arguments for existing compiled callers.
 
 ## Important workflows
 
+The native engine resolves lot denomination from each available Security Master definition
+before replay. Fund definitions retain `Units` and equities retain `Shares`, both with multiplier
+1. Definitions requiring face, notional, commitment, currency, or contract pricing are refused
+until a compatible pricing model exists; replay cannot silently apply equity calculations to
+them. Legacy runs without a resolved security definition explicitly retain the symbol-only
+equity assumption. Lot snapshots require explicit units and positive multipliers.
+
 Long sales and short covers use Ledger's `LotBasisRelief` allocator over the shared decimal
 consumption walk. Composite lots supply their exact retained component basis; full closure never
 reconstructs that basis from a rounded entry quote. FIFO/LIFO/HIFO ordering and the simulation's

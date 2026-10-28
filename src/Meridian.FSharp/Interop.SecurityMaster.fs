@@ -339,7 +339,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    inflationIndex = inflationIndex
                    inflationBaseIndexValue = inflationBaseIndexValue
                    inflationIndexRatio = inflationIndexRatio
-                   dayCount = BondTerms.dayCount terms
+                   dayCount = BondTerms.dayCount terms |> Option.map Meridian.Contracts.SecurityMaster.DayCountConventions.TermLabel
                    isCallable = terms.IsCallable
                    callDate = terms.CallDate
                    issuerName = terms.IssuerName
@@ -378,7 +378,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    institutionName = terms.InstitutionName
                    maturity = terms.Maturity
                    interestRate = terms.InterestRate
-                   dayCount = terms.DayCount
+                   dayCount = terms.DayCount |> Option.map Meridian.Contracts.SecurityMaster.DayCountConventions.TermLabel
                    isCallable = terms.IsCallable |})
         | SecurityKind.MoneyMarketFund terms ->
             JsonSerializer.Serialize(
@@ -394,7 +394,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    maturity = terms.Maturity
                    couponRate = terms.CouponRate
                    callableDate = terms.CallableDate
-                   dayCount = terms.DayCount |}
+                   dayCount = terms.DayCount |> Option.map Meridian.Contracts.SecurityMaster.DayCountConventions.TermLabel |}
             if writesCallPutSchedules () then
                 JsonSerializer.Serialize(
                     {| payload with
@@ -412,7 +412,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    issuerName = terms.IssuerName
                    maturity = terms.Maturity
                    discountRate = terms.DiscountRate
-                   dayCount = terms.DayCount
+                   dayCount = terms.DayCount |> Option.map Meridian.Contracts.SecurityMaster.DayCountConventions.TermLabel
                    isAssetBacked = terms.IsAssetBacked |})
         | SecurityKind.TreasuryBill terms ->
             JsonSerializer.Serialize(
@@ -458,7 +458,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    currentIndexRate = leg.CurrentIndexRate
                    notional = leg.Notional
                    paymentFrequency = leg.PaymentFrequency
-                   dayCount = leg.DayCount
+                   dayCount = leg.DayCount |> Option.map Meridian.Contracts.SecurityMaster.DayCountConventions.TermLabel
                    exchangesPrincipal = leg.ExchangesPrincipal
                    notionalSchedule =
                        leg.NotionalSchedule
@@ -646,7 +646,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    effectiveDate = terms.EffectiveDate
                    maturityDate = terms.MaturityDate
                    paymentFrequency = terms.PaymentFrequency
-                   dayCount = terms.DayCount
+                   dayCount = terms.DayCount |> Option.map Meridian.Contracts.SecurityMaster.DayCountConventions.TermLabel
                    seniority = terms.Seniority
                    restructuringClause = terms.RestructuringClause
                    upfrontPoints = terms.UpfrontPoints
@@ -664,7 +664,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    notional = terms.Notional
                    floatingIndex = terms.FloatingIndex
                    fixedLegPaymentFrequency = terms.FixedLegPaymentFrequency
-                   fixedLegDayCount = terms.FixedLegDayCount
+                   fixedLegDayCount = terms.FixedLegDayCount |> Option.map Meridian.Contracts.SecurityMaster.DayCountConventions.TermLabel
                    settlementType = terms.SettlementType |})
         | SecurityKind.CapFloor terms ->
             JsonSerializer.Serialize(
@@ -677,7 +677,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    effectiveDate = terms.EffectiveDate
                    maturityDate = terms.MaturityDate
                    resetFrequency = terms.ResetFrequency
-                   dayCount = terms.DayCount
+                   dayCount = terms.DayCount |> Option.map Meridian.Contracts.SecurityMaster.DayCountConventions.TermLabel
                    premiumAmount = terms.PremiumAmount |})
         | SecurityKind.StructuredNote terms ->
             JsonSerializer.Serialize(

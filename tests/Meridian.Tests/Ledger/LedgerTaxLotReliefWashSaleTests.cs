@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using FluentAssertions;
 using Meridian.Ledger;
 using Xunit;
@@ -33,8 +34,8 @@ public sealed class LedgerTaxLotReliefWashSaleTests
             salePrice: 150m,
             LedgerTaxLotReliefMethod.AverageCost,
             [
-                new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 100m, 100m, SecurityId),
-                new LedgerTaxLot("lot-b", new DateOnly(2026, 2, 1), 100m, 140m, SecurityId),
+                new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 100m, 100m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
+                new LedgerTaxLot("lot-b", new DateOnly(2026, 2, 1), 100m, 140m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
             ]);
 
         var projection = LedgerTaxLotReliefProjector.Project(input);
@@ -55,8 +56,8 @@ public sealed class LedgerTaxLotReliefWashSaleTests
             salePrice: 150m,
             LedgerTaxLotReliefMethod.AverageCost,
             [
-                new LedgerTaxLot("lot-new", new DateOnly(2026, 2, 1), 100m, 140m, SecurityId),
-                new LedgerTaxLot("lot-old", new DateOnly(2026, 1, 1), 100m, 100m, SecurityId),
+                new LedgerTaxLot("lot-new", new DateOnly(2026, 2, 1), 100m, 140m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
+                new LedgerTaxLot("lot-old", new DateOnly(2026, 1, 1), 100m, 100m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
             ]);
 
         var projection = LedgerTaxLotReliefProjector.Project(input);
@@ -89,8 +90,8 @@ public sealed class LedgerTaxLotReliefWashSaleTests
             salePrice: 130m,
             LedgerTaxLotReliefMethod.AverageCost,
             [
-                new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 100m, 100m, SecurityId),
-                new LedgerTaxLot("lot-b", new DateOnly(2026, 2, 1), 100m, 140m, SecurityId),
+                new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 100m, 100m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
+                new LedgerTaxLot("lot-b", new DateOnly(2026, 2, 1), 100m, 140m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
             ]);
 
         var projection = LedgerTaxLotReliefProjector.Project(input);
@@ -115,9 +116,9 @@ public sealed class LedgerTaxLotReliefWashSaleTests
             salePrice: 40m,
             LedgerTaxLotReliefMethod.AverageCost,
             [
-                new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 1m, 100m / 3m, SecurityId),
-                new LedgerTaxLot("lot-b", new DateOnly(2026, 1, 2), 1m, 100m / 3m, SecurityId),
-                new LedgerTaxLot("lot-c", new DateOnly(2026, 1, 3), 1m, 100m / 3m, SecurityId),
+                new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 1m, 100m / 3m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
+                new LedgerTaxLot("lot-b", new DateOnly(2026, 1, 2), 1m, 100m / 3m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
+                new LedgerTaxLot("lot-c", new DateOnly(2026, 1, 3), 1m, 100m / 3m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
             ]);
 
         var projection = LedgerTaxLotReliefProjector.Project(input);
@@ -139,7 +140,7 @@ public sealed class LedgerTaxLotReliefWashSaleTests
             quantitySold: 1m,
             salePrice: 40m,
             LedgerTaxLotReliefMethod.AverageCost,
-            [new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 3m, 100m / 3m, SecurityId)]);
+            [new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 3m, 100m / 3m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }]);
 
         var projection = LedgerTaxLotReliefProjector.Project(input);
 
@@ -173,7 +174,7 @@ public sealed class LedgerTaxLotReliefWashSaleTests
             quantitySold: 100m,
             salePrice: 150m, // gain
             LedgerTaxLotReliefMethod.Fifo,
-            [new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 100m, 100m, SecurityId)],
+            [new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 100m, 100m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }],
             washSalePolicy: WashSalePolicy.UnitedStates,
             replacementAcquisitions:
             [
@@ -366,9 +367,9 @@ public sealed class LedgerTaxLotReliefWashSaleTests
             salePrice: 100m,
             LedgerTaxLotReliefMethod.Fifo,
             [
-                new LedgerTaxLot("lot-gain", new DateOnly(2024, 1, 1), 10m, gainLotUnitCost, SecurityId),
+                new LedgerTaxLot("lot-gain", new DateOnly(2024, 1, 1), 10m, gainLotUnitCost, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
                 new LedgerTaxLot("lot-loss", new DateOnly(2026, 1, 1), 10m, 140m, SecurityId,
-                    holdingPeriodStartDate: new DateOnly(2025, 5, 4)),
+                    holdingPeriodStartDate: new DateOnly(2025, 5, 4)) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
             ],
             washSalePolicy: WashSalePolicy.UnitedStates,
             replacementAcquisitions:
@@ -482,8 +483,8 @@ public sealed class LedgerTaxLotReliefWashSaleTests
             salePrice: 1m,
             LedgerTaxLotReliefMethod.Fifo,
             [
-                new LedgerTaxLot("loss-a", new DateOnly(2026, 1, 1), 3m, 3.02m / 3m, SecurityId),
-                new LedgerTaxLot("loss-b", new DateOnly(2026, 1, 2), 3m, 3.02m / 3m, SecurityId),
+                new LedgerTaxLot("loss-a", new DateOnly(2026, 1, 1), 3m, 3.02m / 3m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
+                new LedgerTaxLot("loss-b", new DateOnly(2026, 1, 2), 3m, 3.02m / 3m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
             ],
             washSalePolicy: WashSalePolicy.UnitedStates,
             replacementAcquisitions: Enumerable.Range(1, 5)
@@ -664,8 +665,8 @@ public sealed class LedgerTaxLotReliefWashSaleTests
             salePrice: 100m,
             LedgerTaxLotReliefMethod.Fifo,
             [
-                new LedgerTaxLot("loss-a", new DateOnly(2026, 1, 1), 20m, 120m, SecurityId),
-                new LedgerTaxLot("loss-b", new DateOnly(2026, 1, 2), 20m, 140m, OtherSecurityId),
+                new LedgerTaxLot("loss-a", new DateOnly(2026, 1, 1), 20m, 120m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
+                new LedgerTaxLot("loss-b", new DateOnly(2026, 1, 2), 20m, 140m, OtherSecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
             ],
             washSalePolicy: WashSalePolicy.UnitedStates,
             replacementAcquisitions:
@@ -700,7 +701,7 @@ public sealed class LedgerTaxLotReliefWashSaleTests
     {
         // The only known security belongs to the gain lot, so fallback must inspect all
         // selections while preserving the unidentified loss lot as the exact source evidence.
-        var lossLot = new LedgerTaxLot("loss", new DateOnly(2026, 1, 2), 10m, 140m);
+        var lossLot = new LedgerTaxLot("loss", new DateOnly(2026, 1, 2), 10m, 140m) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m };
         var replacement = new WashSaleReplacementAcquisition("replacement", new DateOnly(2026, 3, 5),
             10m, matchingReplacement ? SecurityId : OtherSecurityId);
         var input = new LedgerTaxLotReliefInput(
@@ -709,7 +710,7 @@ public sealed class LedgerTaxLotReliefWashSaleTests
             quantitySold: 20m,
             salePrice: 100m,
             LedgerTaxLotReliefMethod.Fifo,
-            [new LedgerTaxLot("gain", new DateOnly(2026, 1, 1), 10m, gainLotUnitCost, SecurityId), lossLot],
+            [new LedgerTaxLot("gain", new DateOnly(2026, 1, 1), 10m, gainLotUnitCost, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }, lossLot],
             washSalePolicy: WashSalePolicy.UnitedStates,
             replacementAcquisitions: matchingReplacement
                 ? [replacement]
@@ -744,14 +745,14 @@ public sealed class LedgerTaxLotReliefWashSaleTests
     [InlineData(true)]
     public void WashSale_AllUnidentifiedLots_PreserveCallerScopedReplacementMatching(bool identifiedReplacement)
     {
-        var lossLot = new LedgerTaxLot("loss", new DateOnly(2026, 1, 2), 10m, 140m);
+        var lossLot = new LedgerTaxLot("loss", new DateOnly(2026, 1, 2), 10m, 140m) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m };
         var input = new LedgerTaxLotReliefInput(
             Account,
             new DateOnly(2026, 3, 1),
             quantitySold: 20m,
             salePrice: 100m,
             LedgerTaxLotReliefMethod.Fifo,
-            [new LedgerTaxLot("gain", new DateOnly(2026, 1, 1), 10m, 40m), lossLot],
+            [new LedgerTaxLot("gain", new DateOnly(2026, 1, 1), 10m, 40m) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }, lossLot],
             washSalePolicy: WashSalePolicy.UnitedStates,
             replacementAcquisitions:
             [new("replacement", new DateOnly(2026, 3, 5), 10m, identifiedReplacement ? OtherSecurityId : null)]);
@@ -780,7 +781,7 @@ public sealed class LedgerTaxLotReliefWashSaleTests
             salePrice: 0.006m,
             LedgerTaxLotReliefMethod.Fifo,
             Enumerable.Range(1, 4)
-                .Select(index => new LedgerTaxLot($"lot-{index}", new DateOnly(2026, 1, index), 1m, 0m, SecurityId))
+                .Select(index => new LedgerTaxLot($"lot-{index}", new DateOnly(2026, 1, index), 1m, 0m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m })
                 .ToArray(),
             washSalePolicy: WashSalePolicy.UnitedStates,
             replacementAcquisitions:
@@ -810,7 +811,8 @@ public sealed class LedgerTaxLotReliefWashSaleTests
             Account, new DateOnly(2026, 3, 1), 4m, 0.006m, LedgerTaxLotReliefMethod.Fifo,
             Enumerable.Range(0, 4).Select(index => new LedgerTaxLot(
                 $"lot-{index}", new DateOnly(2026, 1, index + 1), 1m,
-                index == basisIndex ? 0.005m : 0m, SecurityId)).ToArray(),
+                index == basisIndex ? 0.005m : 0m, SecurityId)
+            { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }).ToArray(),
             washSalePolicy: WashSalePolicy.UnitedStates,
             replacementAcquisitions: [new("replacement", new DateOnly(2026, 3, 5), 4m, SecurityId)]);
 
@@ -834,7 +836,8 @@ public sealed class LedgerTaxLotReliefWashSaleTests
             Account, new DateOnly(2026, 3, 1), 4m, 0.004m, LedgerTaxLotReliefMethod.Fifo,
             Enumerable.Range(0, 4).Select(index => new LedgerTaxLot(
                 $"lot-{index}", new DateOnly(2026, 1, index + 1), 1m,
-                index == 3 ? 0.006m : 0m, SecurityId)).ToArray(),
+                index == 3 ? 0.006m : 0m, SecurityId)
+            { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }).ToArray(),
             washSalePolicy: WashSalePolicy.UnitedStates,
             replacementAcquisitions: [new("replacement", new DateOnly(2026, 3, 5), 4m, SecurityId)]);
 
@@ -854,7 +857,8 @@ public sealed class LedgerTaxLotReliefWashSaleTests
         var input = new LedgerTaxLotReliefInput(
             Account, new DateOnly(2026, 3, 1), 4m, price, LedgerTaxLotReliefMethod.Fifo,
             Enumerable.Range(1, 4).Select(index => new LedgerTaxLot(
-                $"lot-{index}", new DateOnly(2026, 1, index), 1m, cost, SecurityId)).ToArray());
+                $"lot-{index}", new DateOnly(2026, 1, index), 1m, cost, SecurityId)
+            { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }).ToArray());
 
         var project = () => LedgerTaxLotReliefProjector.Project(input);
 
@@ -901,7 +905,7 @@ public sealed class LedgerTaxLotReliefWashSaleTests
             salePrice: 0.006m,
             LedgerTaxLotReliefMethod.AverageCost,
             Enumerable.Range(1, 4)
-                .Select(index => new LedgerTaxLot($"lot-{index}", new DateOnly(2026, 1, index), 1m, 0.006m, SecurityId))
+                .Select(index => new LedgerTaxLot($"lot-{index}", new DateOnly(2026, 1, index), 1m, 0.006m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m })
                 .ToArray(),
             washSalePolicy: WashSalePolicy.UnitedStates,
             replacementAcquisitions:
@@ -931,7 +935,7 @@ public sealed class LedgerTaxLotReliefWashSaleTests
             quantitySold: 100m,
             salePrice: 80m, // 100 @ cost 100 sold at 80 -> 2,000 loss
             LedgerTaxLotReliefMethod.Fifo,
-            [new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 100m, 100m, SecurityId)],
+            [new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 100m, 100m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }],
             washSalePolicy: washSalePolicy,
             replacementAcquisitions: replacements);
 
@@ -955,8 +959,8 @@ public sealed class LedgerTaxLotReliefWashSaleTests
             salePrice: 100m,
             LedgerTaxLotReliefMethod.Fifo,
             [
-                new LedgerTaxLot("loss-a", new DateOnly(2026, 1, 1), 20m, 120m, SecurityId),
-                new LedgerTaxLot("loss-b", new DateOnly(2026, 1, 2), 20m, 140m, SecurityId),
+                new LedgerTaxLot("loss-a", new DateOnly(2026, 1, 1), 20m, 120m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
+                new LedgerTaxLot("loss-b", new DateOnly(2026, 1, 2), 20m, 140m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
             ],
             washSalePolicy: policy ?? WashSalePolicy.UnitedStates,
             replacementAcquisitions: replacements);

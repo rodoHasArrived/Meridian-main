@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using FluentAssertions;
 using FsCheck.Xunit;
 using Meridian.Backtesting.Portfolio;
@@ -254,7 +255,7 @@ public sealed class LotLevelTrackingTests
     [Fact]
     public void OpenLot_UnrealizedPnl_CalculatesCorrectly()
     {
-        var lot = new OpenLot(Guid.NewGuid(), "AAPL", 10, 100m, DateTimeOffset.UtcNow, Guid.NewGuid());
+        var lot = new OpenLot(Guid.NewGuid(), "AAPL", 10, 100m, DateTimeOffset.UtcNow, Guid.NewGuid()) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m };
         lot.UnrealizedPnl(150m).Should().Be(500m);
         lot.UnrealizedPnl(80m).Should().Be(-200m);
     }
@@ -270,6 +271,8 @@ public sealed class LotLevelTrackingTests
             DateTimeOffset.UtcNow,
             Guid.NewGuid())
         {
+            UnitKind = SecurityLotUnitKind.Shares,
+            Multiplier = 1m,
             IsShort = true
         };
 
@@ -281,7 +284,8 @@ public sealed class LotLevelTrackingTests
     public void OpenLot_IsLongTerm_WhenOlderThan365Days()
     {
         var lot = new OpenLot(Guid.NewGuid(), "X", 1, 100m,
-            DateTimeOffset.UtcNow.AddDays(-400), Guid.NewGuid());
+            DateTimeOffset.UtcNow.AddDays(-400), Guid.NewGuid())
+        { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m };
         lot.IsLongTerm(DateTimeOffset.UtcNow).Should().BeTrue();
     }
 

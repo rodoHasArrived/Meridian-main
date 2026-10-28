@@ -3,7 +3,7 @@ namespace Meridian.Contracts.SecurityMaster;
 /// <summary>
 /// Registry metadata for introducing asset packs without changing core ledger contracts.
 /// </summary>
-public static class SecurityAssetPackRegistry
+public static partial class SecurityAssetPackRegistry
 {
     private static readonly IReadOnlyList<string> StandardLifecycleEvents =
     [

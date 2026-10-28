@@ -2,11 +2,15 @@
 
 # `security-master-contracts` data objects - page 3 of 6
 
-Objects 161-240 of 456. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 460. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_ISecurityMasterDataQualityService["ISecurityMasterDataQualityService"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ISecurityMasterPricingService["ISecurityMasterPricingService"] {
+    }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService["ISecurityMasterQueryService"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterReportingQueryService["ISecurityMasterReportingQueryService"] {
@@ -74,6 +78,18 @@ classDiagram
         +decimal Amount
         +decimal Multiplier
         +SecurityLotUnitKind UnitKind
+    }
+    class Meridian_Contracts_SecurityMaster_MultiAssetCoverageSpecification["MultiAssetCoverageSpecification"] {
+        +string AssetClass
+        +string DisplayName
+        +IReadOnlyList~string~ EconomicTerms
+        +bool HardBlocker
+        +string LedgerClassification
+        +IReadOnlyList~string~ ProviderFeeds
+        +IReadOnlyList~string~ ReconciliationSignals
+        +IReadOnlyList~string~ RequiredIdentifiers
+        +bool RequiresOperationalProfileReview
+        +string Summary
     }
     class Meridian_Contracts_SecurityMaster_NotionalLot["NotionalLot"] {
         +decimal CurrentNotional
@@ -484,12 +500,6 @@ classDiagram
         +IReadOnlyList~string~ PaymentCalendars
         +int? PaymentLagBusinessDays
         +string? RollConvention
-    }
-    class Meridian_Contracts_SecurityMaster_ScheduleSpecFactory["ScheduleSpecFactory"] {
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleAnchorMode["ScheduleAnchorMode"] {
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarPurpose["ScheduleCalendarPurpose"] {
     }
     Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService --> Meridian_Contracts_SecurityMaster_ISecurityTradingParametersQueryService
     Meridian_Contracts_SecurityMaster_IssueOtcMarginCallRequest --> Meridian_Contracts_SecurityMaster_OtcMovementKind

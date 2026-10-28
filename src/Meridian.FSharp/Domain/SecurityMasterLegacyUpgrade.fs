@@ -75,8 +75,6 @@ module SecurityMasterLegacyUpgrade =
         | "SimpleInterest" -> CouponKind.OtherCoupon "SimpleInterest"
         | other -> CouponKind.OtherCoupon other
 
-    let private mapDayCount = Option.map DayCountConvention.OtherDayCount
-
     let private mapSweepVehicle = function
         | "MoneyMarketFund" -> SweepVehicle.MoneyMarketFund
         | "BankDeposit" -> SweepVehicle.BankDeposit
@@ -238,12 +236,7 @@ module SecurityMasterLegacyUpgrade =
             }
         | SecurityKind.Bond terms ->
             let isStructured =
-                match terms.Subclass with
-                | BondSubclass.MortgageBacked | BondSubclass.AgencyMbs | BondSubclass.CommercialMbs
-                | BondSubclass.Cmo | BondSubclass.Clo | BondSubclass.Cdo
-                | BondSubclass.AssetBacked
-                | BondSubclass.PrincipalOnly | BondSubclass.InterestOnly | BondSubclass.InverseInterestOnly -> true
-                | _ -> false
+                Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes.IsSecuritizedLabel(BondSubclass.label terms.Subclass)
             let structuredTerms =
                 if isStructured then
                     Some {
@@ -258,10 +251,9 @@ module SecurityMasterLegacyUpgrade =
                         PrepaymentAssumption = None
                         AverageLifeYears = None
                         IsInterestOnly =
-                            match terms.Subclass with
-                            | BondSubclass.InterestOnly | BondSubclass.InverseInterestOnly -> true
-                            | _ -> false
-                        IsPrincipalOnly = terms.Subclass = BondSubclass.PrincipalOnly
+                            [ "INTERESTONLY"; "INVERSEINTERESTONLY" ]
+                            |> List.contains (Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes.NormalizeLabel(BondSubclass.label terms.Subclass))
+                        IsPrincipalOnly = Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes.NormalizeLabel(BondSubclass.label terms.Subclass) = "PRINCIPALONLY"
                         NotionalBalance = None
                         Originator = None
                         CreditEnhancementPct = None
@@ -287,7 +279,7 @@ module SecurityMasterLegacyUpgrade =
                                       | _ -> CouponKind.Fixed)
                             CouponRate = BondTerms.couponRate terms
                             PaymentFrequency = terms.PaymentFrequency
-                            DayCount = BondTerms.dayCount terms |> mapDayCount
+                            DayCount = BondTerms.dayCount terms
                         }
                     Accrual = accrualFromConventions terms.ScheduleConventions
                     // Call and issuer terms are carried like the other callable / issued classes
@@ -323,7 +315,7 @@ module SecurityMasterLegacyUpgrade =
                             CouponType = Some (mapCouponKind "SimpleInterest")
                             CouponRate = terms.InterestRate
                             PaymentFrequency = None
-                            DayCount = terms.DayCount |> mapDayCount
+                            DayCount = terms.DayCount
                         }
                     Call =
                         Some {
@@ -371,7 +363,7 @@ module SecurityMasterLegacyUpgrade =
                             CouponType = Some CouponKind.Fixed
                             CouponRate = terms.CouponRate
                             PaymentFrequency = None
-                            DayCount = terms.DayCount |> mapDayCount
+                            DayCount = terms.DayCount
                         }
                     Accrual = accrualFromConventions terms.ScheduleConventions
                     Call = Some (callFromSchedules terms.CallableDate.IsSome terms.CallableDate terms.CallPutSchedules)
@@ -405,7 +397,7 @@ module SecurityMasterLegacyUpgrade =
                             CouponType = Some (mapCouponKind "Discount")
                             CouponRate = None
                             PaymentFrequency = None
-                            DayCount = terms.DayCount |> mapDayCount
+                            DayCount = terms.DayCount
                         }
                     Issuer =
                         Some {
@@ -778,7 +770,7 @@ module SecurityMasterLegacyUpgrade =
                             // Running coupon quoted in basis points per annum; the economic module carries a rate.
                             CouponRate = Some (terms.FixedCouponBps / 10000m)
                             PaymentFrequency = terms.PaymentFrequency |> Option.map PaymentFrequency.parse
-                            DayCount = terms.DayCount |> mapDayCount
+                            DayCount = terms.DayCount
                         }
             }
         | SecurityKind.Swaption terms ->
@@ -874,10 +866,6 @@ module SecurityMasterLegacyUpgrade =
 
     // ── Structured-credit reclassification (ADR-022, report first) ──────────────────────────────
 
-    /// Category labels the CustomAsset validator treats as naming a securitised product.
-    let private securitizedCustomCategories =
-        [ "MBS"; "ABS"; "CLO"; "CMBS"; "StructuredCredit" ]
-
     let private blocker code message : StructuredCreditReclassificationBlocker =
         { Code = code; Message = message }
 
@@ -895,33 +883,26 @@ module SecurityMasterLegacyUpgrade =
     /// MBS without an agency/non-agency qualifier and inverse IO strips are reported as blockers:
     /// the former is ambiguous, the latter has no typed kind.
     let private kindFromBondSubclass subclass =
-        match subclass with
-        | BondSubclass.AssetBacked -> Ok StructuredCreditKind.AssetBacked
-        | BondSubclass.AgencyMbs -> Ok StructuredCreditKind.AgencyMbs
-        | BondSubclass.CommercialMbs -> Ok StructuredCreditKind.CommercialMbs
-        | BondSubclass.Cmo -> Ok StructuredCreditKind.Cmo
-        | BondSubclass.Clo -> Ok StructuredCreditKind.Clo
-        | BondSubclass.Cdo -> Ok StructuredCreditKind.Cdo
-        | BondSubclass.PrincipalOnly -> Ok StructuredCreditKind.PrincipalOnly
-        | BondSubclass.InterestOnly -> Ok StructuredCreditKind.InterestOnly
-        | BondSubclass.MortgageBacked -> Error (kindAmbiguous "MortgageBacked" "AgencyMbs or NonAgencyMbs")
-        | BondSubclass.InverseInterestOnly -> Error (kindUnrepresentable "InverseInterestOnly")
-        | other -> Error (kindUnrepresentable (BondSubclass.label other))
+        match Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes.NormalizeLabel(BondSubclass.label subclass) with
+        | "ASSETBACKED" | "ASSETBACKEDSECURITY" | "ABS" -> Ok StructuredCreditKind.AssetBacked
+        | "AGENCYMBS" -> Ok StructuredCreditKind.AgencyMbs
+        | "NONAGENCYMBS" -> Ok StructuredCreditKind.NonAgencyMbs
+        | "COMMERCIALMBS" | "CMBS" | "COMMERCIALMORTGAGEBACKED" | "COMMERCIALMORTGAGEBACKEDSECURITY" -> Ok StructuredCreditKind.CommercialMbs
+        | "CMO" -> Ok StructuredCreditKind.Cmo
+        | "CLO" | "COLLATERALIZEDLOANOBLIGATION" -> Ok StructuredCreditKind.Clo
+        | "CDO" -> Ok StructuredCreditKind.Cdo
+        | "PRINCIPALONLY" -> Ok StructuredCreditKind.PrincipalOnly
+        | "INTERESTONLY" -> Ok StructuredCreditKind.InterestOnly
+        | "MORTGAGEBACKED" | "MORTGAGEBACKEDSECURITY" | "MBS" -> Error (kindAmbiguous (BondSubclass.label subclass) "AgencyMbs or NonAgencyMbs")
+        | _ -> Error (kindUnrepresentable (BondSubclass.label subclass))
 
     let private isSecuritizedBondSubclass subclass =
-        match subclass with
-        | BondSubclass.AssetBacked | BondSubclass.MortgageBacked | BondSubclass.AgencyMbs
-        | BondSubclass.CommercialMbs | BondSubclass.Cmo | BondSubclass.Clo | BondSubclass.Cdo
-        | BondSubclass.PrincipalOnly | BondSubclass.InterestOnly | BondSubclass.InverseInterestOnly -> true
-        | _ -> false
+        Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes.IsSecuritizedLabel(BondSubclass.label subclass)
 
     let private kindFromCustomCategory (category: string) =
-        match category.Trim().ToUpperInvariant() with
-        | "ABS" -> Ok StructuredCreditKind.AssetBacked
-        | "CLO" -> Ok StructuredCreditKind.Clo
-        | "CMBS" -> Ok StructuredCreditKind.CommercialMbs
-        | "MBS" -> Error (kindAmbiguous category "AgencyMbs or NonAgencyMbs")
-        | _ -> Error (kindAmbiguous category "one structured-credit-kind taxonomy value")
+        match Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes.NormalizeLabel(category) with
+        | "STRUCTUREDCREDIT" -> Error (kindAmbiguous category "one structured-credit-kind taxonomy value")
+        | _ -> kindFromBondSubclass (BondSubclass.Other category)
 
     /// A typed kind supplied by the source record wins over the kind implied by its label, but only
     /// when the label is one of the named taxonomy cases; a free-text label stays a blocker.
@@ -1078,8 +1059,7 @@ module SecurityMasterLegacyUpgrade =
         | None -> read name document
 
     let private isSecuritizedCategory (category: string) =
-        securitizedCustomCategories
-        |> List.exists (fun known -> String.Equals(known, category.Trim(), StringComparison.OrdinalIgnoreCase))
+        Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes.IsSecuritizedLabel(category)
 
     let private proposeFromCustomDocument securityId (category: string) (document: JsonElement) =
         let kind, kindBlockers =

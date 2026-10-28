@@ -479,6 +479,21 @@ public sealed class PaperTradingGateway :
 
         var report = BuildReport(request, orderId, gatewayOrderId, ExecutionReportType.Fill,
             OrderStatus.Filled, filledQuantity: request.Quantity, fillPrice, costs, rejectReason: null);
+        var lotConvention = await _tradingParameters.ResolveLotConventionAsync(request.Symbol, ct).ConfigureAwait(false);
+        if (lotConvention is { } convention)
+        {
+            report = report with
+            {
+                AssetClass = convention.AssetClass,
+                LotUnitKind = convention.UnitKind,
+                LotMultiplier = convention.Multiplier,
+                UsesFaceValuePercentageOfPar = convention.UnitKind == SecurityLotUnitKind.FaceValue
+            };
+        }
+        else if (request.OptionContract is not null)
+        {
+            report = report with { LotUnitKind = SecurityLotUnitKind.Contracts };
+        }
 
         _logger.LogInformation(
             "Paper fill: {Symbol} {Side} {Quantity} @ {Price} (commission {Commission}, fees {Fees}, slippage {Slippage})",

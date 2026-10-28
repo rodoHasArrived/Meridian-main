@@ -13,7 +13,7 @@ namespace Meridian.Execution.Sdk;
 /// Lot quantity in <see cref="UnitKind"/> units (positive = long, negative = short). Decimal, so
 /// fractional shares, fund units and face amounts are representable.
 /// </param>
-/// <param name="CostBasis">Per-share or per-contract cost basis at the time of acquisition.</param>
+/// <param name="CostBasis">Raw acquisition quote per unit; percent of par for face-value lots and before multiplier for contracts.</param>
 /// <param name="OpenedAt">Wall-clock timestamp when the lot was opened.</param>
 /// <param name="FinancialAccountId">
 ///     Optional brokerage account ID this lot belongs to.
@@ -26,14 +26,29 @@ public sealed record TaxLot(
     DateTimeOffset OpenedAt,
     string? FinancialAccountId = null) : IUnitizedLot
 {
-    /// <summary>What one unit of <see cref="Quantity"/> measures; shares unless stated.</summary>
-    public SecurityLotUnitKind UnitKind { get; init; } = SecurityLotUnitKind.Shares;
+    private SecurityLotUnitKind _unitKind;
+    private decimal _multiplier;
 
-    /// <summary>Contract multiplier scaling one unit to economic exposure; 1 unless stated.</summary>
-    public decimal Multiplier { get; init; } = 1m;
+    /// <summary>What one unit of <see cref="Quantity"/> measures. Must be supplied explicitly.</summary>
+    public required SecurityLotUnitKind UnitKind
+    {
+        get => _unitKind;
+        init => _unitKind = Enum.IsDefined(value)
+            ? value
+            : throw new ArgumentOutOfRangeException(nameof(UnitKind), value, "A defined lot unit is required.");
+    }
 
-    /// <summary>Total cost of the entire lot (|Quantity| × CostBasis).</summary>
-    public decimal TotalCost => Math.Abs(Quantity) * CostBasis;
+    /// <summary>Positive contract multiplier scaling one unit to economic exposure. Supply 1 for unscaled units.</summary>
+    public required decimal Multiplier
+    {
+        get => _multiplier;
+        init => _multiplier = value > 0m
+            ? value
+            : throw new ArgumentOutOfRangeException(nameof(Multiplier), value, "A positive lot multiplier is required.");
+    }
+
+    /// <summary>Total cost of the entire lot, applying its denomination and multiplier.</summary>
+    public decimal TotalCost => new LotQuantity(Math.Abs(Quantity), UnitKind, Multiplier).ValueAtPrice(CostBasis);
 
     /// <summary><c>true</c> when this lot represents a short position.</summary>
     public bool IsShort => Quantity < 0;

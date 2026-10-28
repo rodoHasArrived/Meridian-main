@@ -9226,6 +9226,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.AssetClassDepthRouteKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.AssetClassDepthTargetSpec"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet"
     },
     {
@@ -10240,6 +10252,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.MultiAssetCoverageSpecification"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.NotionalLot"
     },
     {
@@ -11003,6 +11021,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes"
     },
     {
       "kind": "contract-set-member",
@@ -23020,6 +23044,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.AssetClassDepthRouteKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.AssetClassDepthTargetSpec"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet"
     },
     {
@@ -24034,6 +24070,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.MultiAssetCoverageSpecification"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.NotionalLot"
     },
     {
@@ -24797,6 +24839,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes"
     },
     {
       "kind": "contract-set-member",
@@ -35915,6 +35963,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.ApproveCorporateActionCaseAccountingRequestDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.AssetClassDepthTargetSpec",
+      "target": "contract:Meridian.Contracts.SecurityMaster.AssetClassDepthRouteKind"
     },
     {
       "kind": "contract-reference",
@@ -54147,7 +54201,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "d07e0b0b39c4977b0eeecbaaf1808446dadfaffbef96cdc32c9003c6b65f1c5a",
+  "fingerprint": "0a125ac4e24102282d2e109a7cd931b99d945234a1915187ad834b7325094a25",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -63423,6 +63477,18 @@
       "label": "Meridian.Contracts.SecurityMaster.ApproveSecurityClosePriceSetRequest"
     },
     {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.AssetClassDepthRouteKind",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.AssetClassDepthRouteKind"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.AssetClassDepthTargetSpec",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.AssetClassDepthTargetSpec"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet",
       "kind": "contract-type",
@@ -64438,6 +64504,12 @@
     },
     {
       "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.MultiAssetCoverageSpecification",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.MultiAssetCoverageSpecification"
+    },
+    {
+      "classification": "record",
       "id": "contract:Meridian.Contracts.SecurityMaster.NotionalLot",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.NotionalLot"
@@ -65203,6 +65275,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes"
     },
     {
       "classification": "enum",
@@ -79195,11 +79273,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3460,
-    "contract_set_memberships": 4284,
-    "edges": 8996,
+    "contract_references": 3461,
+    "contract_set_memberships": 4292,
+    "edges": 9005,
     "foreign_keys": 154,
     "logical_references": 6,
-    "nodes": 4346
+    "nodes": 4350
   }
 }

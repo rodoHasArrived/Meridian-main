@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using FluentAssertions;
 using FsCheck.Xunit;
 using Meridian.FSharp.Ledger;
@@ -1654,8 +1655,8 @@ public sealed class LedgerIntegrationTests
             salePrice: 120m,
             LedgerTaxLotReliefMethod.Hifo,
             [
-                new LedgerTaxLot("lot-low", new DateOnly(2026, 1, 10), 4m, 90m),
-                new LedgerTaxLot("lot-high", new DateOnly(2026, 2, 10), 5m, 100m),
+                new LedgerTaxLot("lot-low", new DateOnly(2026, 1, 10), 4m, 90m) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
+                new LedgerTaxLot("lot-high", new DateOnly(2026, 2, 10), 5m, 100m) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
             ]));
 
         // A wash-sale-deferred loss: 10 @ 100 sold at 80 (loss 200) with a matching replacement
@@ -1666,7 +1667,7 @@ public sealed class LedgerIntegrationTests
             quantitySold: 10m,
             salePrice: 80m,
             LedgerTaxLotReliefMethod.Fifo,
-            [new LedgerTaxLot("lot-wash", new DateOnly(2026, 1, 5), 10m, 100m)],
+            [new LedgerTaxLot("lot-wash", new DateOnly(2026, 1, 5), 10m, 100m) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }],
             washSalePolicy: WashSalePolicy.UnitedStates,
             replacementAcquisitions: [new WashSaleReplacementAcquisition("lot-rep", new DateOnly(2026, 5, 22), 10m)]));
 
@@ -2624,9 +2625,9 @@ public sealed class LedgerIntegrationTests
             salePrice: 130m,
             policy.ReliefMethod,
             [
-                new LedgerTaxLot("lot-low", new DateOnly(2026, 1, 1), 10m, 90m),
-                new LedgerTaxLot("lot-high", new DateOnly(2026, 2, 1), 8m, 110m),
-                new LedgerTaxLot("lot-mid", new DateOnly(2026, 3, 1), 10m, 100m),
+                new LedgerTaxLot("lot-low", new DateOnly(2026, 1, 1), 10m, 90m) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
+                new LedgerTaxLot("lot-high", new DateOnly(2026, 2, 1), 8m, 110m) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
+                new LedgerTaxLot("lot-mid", new DateOnly(2026, 3, 1), 10m, 100m) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
             ]);
 
         var projection = LedgerTaxLotReliefProjector.Project(input);
@@ -2651,8 +2652,8 @@ public sealed class LedgerIntegrationTests
         var account = LedgerAccounts.Securities("MSFT", "broker-2");
         var openLots = new[]
         {
-            new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 5m, 200m),
-            new LedgerTaxLot("lot-b", new DateOnly(2026, 2, 1), 5m, 210m),
+            new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 5m, 200m) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
+            new LedgerTaxLot("lot-b", new DateOnly(2026, 2, 1), 5m, 210m) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
         };
         var projection = LedgerTaxLotReliefProjector.Project(new LedgerTaxLotReliefInput(
             account,
@@ -2692,7 +2693,7 @@ public sealed class LedgerIntegrationTests
             quantitySold: 8m,
             salePrice: 185m,
             LedgerTaxLotReliefMethod.Fifo,
-            [new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 5m, 150m)]);
+            [new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 5m, 150m) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }]);
 
         var act = () => LedgerTaxLotReliefProjector.Project(input);
 

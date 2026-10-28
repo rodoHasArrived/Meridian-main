@@ -11,6 +11,13 @@ last_reviewed: 2026-10-21
 
 # src/Meridian.Contracts
 
+`SecurityAssetPackRegistry` owns operational readiness specifications, depth targets, registered
+profile-to-class mappings and profile classification keywords. Every catalog class receives a
+readiness row; classes without a specialized profile carry a persistent operational-profile review
+requirement. Canonical aliases live in `SecurityAssetClassCatalog`; broad legacy vocabulary such as
+Debt and SPV is scoped to readiness so it cannot classify imports or accounting records. Securitized
+aliases resolve exclusively to StructuredCredit, and BankLoan resolves to DirectLoan.
+
 `ReportLedgerAmountBindingDtos` retains generated trial-balance amounts with exact accounting scope
 and journal/line identities. Generated amount source evidence additionally carries its original
 `SourceScope` and `SourceSubjectId`, so historical opening-balance support preserves its own posted

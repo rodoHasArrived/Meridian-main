@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using FluentAssertions;
 using Meridian.Ledger;
 using Xunit;
@@ -18,7 +19,7 @@ public sealed class LedgerTaxLotBasisAdjusterTests
     [Fact]
     public void Apply_WithNoAdjustments_ReturnsSameInstance()
     {
-        IReadOnlyList<LedgerTaxLot> lots = [new("lot-a", new DateOnly(2026, 1, 1), 10m, 90m, SecurityId)];
+        IReadOnlyList<LedgerTaxLot> lots = [new("lot-a", new DateOnly(2026, 1, 1), 10m, 90m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }];
 
         var result = LedgerTaxLotBasisAdjuster.Apply(lots, []);
 
@@ -28,7 +29,7 @@ public sealed class LedgerTaxLotBasisAdjusterTests
     [Fact]
     public void Apply_ForwardSplit_ScalesQuantityUpAndUnitCostDown_PreservingTotalBasis()
     {
-        IReadOnlyList<LedgerTaxLot> lots = [new("lot-a", new DateOnly(2026, 1, 1), 10m, 90m, SecurityId)];
+        IReadOnlyList<LedgerTaxLot> lots = [new("lot-a", new DateOnly(2026, 1, 1), 10m, 90m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }];
         var split = new LedgerTaxLotBasisAdjustment(
             LedgerTaxLotBasisAdjustmentKind.Split, 2m, new DateOnly(2026, 2, 1), SecurityId);
 
@@ -43,7 +44,7 @@ public sealed class LedgerTaxLotBasisAdjusterTests
     [Fact]
     public void Apply_ReverseSplit_ScalesQuantityDownAndUnitCostUp()
     {
-        IReadOnlyList<LedgerTaxLot> lots = [new("lot-a", new DateOnly(2026, 1, 1), 10m, 9m, SecurityId)];
+        IReadOnlyList<LedgerTaxLot> lots = [new("lot-a", new DateOnly(2026, 1, 1), 10m, 9m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }];
         var reverse = new LedgerTaxLotBasisAdjustment(
             LedgerTaxLotBasisAdjustmentKind.Split, 0.1m, new DateOnly(2026, 2, 1), SecurityId);
 
@@ -57,7 +58,7 @@ public sealed class LedgerTaxLotBasisAdjusterTests
     public void Apply_DoesNotAdjustLotsAcquiredOnOrAfterEffectiveDate()
     {
         // A lot acquired on the ex-date already reflects the post-split terms.
-        IReadOnlyList<LedgerTaxLot> lots = [new("lot-a", new DateOnly(2026, 2, 1), 10m, 90m, SecurityId)];
+        IReadOnlyList<LedgerTaxLot> lots = [new("lot-a", new DateOnly(2026, 2, 1), 10m, 90m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }];
         var split = new LedgerTaxLotBasisAdjustment(
             LedgerTaxLotBasisAdjustmentKind.Split, 2m, new DateOnly(2026, 2, 1), SecurityId);
 
@@ -72,8 +73,8 @@ public sealed class LedgerTaxLotBasisAdjusterTests
     {
         IReadOnlyList<LedgerTaxLot> lots =
         [
-            new("lot-a", new DateOnly(2026, 1, 1), 10m, 50m, SecurityId),
-            new("lot-b", new DateOnly(2026, 1, 1), 10m, 3m, SecurityId),
+            new("lot-a", new DateOnly(2026, 1, 1), 10m, 50m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
+            new("lot-b", new DateOnly(2026, 1, 1), 10m, 3m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
         ];
         var roc = new LedgerTaxLotBasisAdjustment(
             LedgerTaxLotBasisAdjustmentKind.ReturnOfCapital, 5m, new DateOnly(2026, 2, 1), SecurityId);
@@ -87,7 +88,7 @@ public sealed class LedgerTaxLotBasisAdjusterTests
     [Fact]
     public void Apply_FactorPaydown_ScalesFaceWhileKeepingUnitCost()
     {
-        IReadOnlyList<LedgerTaxLot> lots = [new("lot-a", new DateOnly(2026, 1, 1), 100m, 99m, SecurityId)];
+        IReadOnlyList<LedgerTaxLot> lots = [new("lot-a", new DateOnly(2026, 1, 1), 100m, 99m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }];
         var factor = new LedgerTaxLotBasisAdjustment(
             LedgerTaxLotBasisAdjustmentKind.Factor, 0.8m, new DateOnly(2026, 6, 1), SecurityId);
 
@@ -101,7 +102,7 @@ public sealed class LedgerTaxLotBasisAdjusterTests
     [Fact]
     public void Apply_FactorPaydownToNearZero_DropsLot()
     {
-        IReadOnlyList<LedgerTaxLot> lots = [new("lot-a", new DateOnly(2026, 1, 1), 1m, 100m, SecurityId)];
+        IReadOnlyList<LedgerTaxLot> lots = [new("lot-a", new DateOnly(2026, 1, 1), 1m, 100m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }];
         var factor = new LedgerTaxLotBasisAdjustment(
             LedgerTaxLotBasisAdjustmentKind.Factor, 0.00000000001m, new DateOnly(2026, 6, 1), SecurityId);
 
@@ -113,7 +114,7 @@ public sealed class LedgerTaxLotBasisAdjusterTests
     [Fact]
     public void Apply_PremiumAmortization_MovesUnitCostTowardParDown()
     {
-        IReadOnlyList<LedgerTaxLot> lots = [new("lot-a", new DateOnly(2026, 1, 1), 100m, 102m, SecurityId)];
+        IReadOnlyList<LedgerTaxLot> lots = [new("lot-a", new DateOnly(2026, 1, 1), 100m, 102m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }];
         var amortization = new LedgerTaxLotBasisAdjustment(
             LedgerTaxLotBasisAdjustmentKind.Amortization, -1m, new DateOnly(2026, 6, 1), SecurityId);
 
@@ -125,7 +126,7 @@ public sealed class LedgerTaxLotBasisAdjusterTests
     [Fact]
     public void Apply_DiscountAccretion_MovesUnitCostTowardParUp()
     {
-        IReadOnlyList<LedgerTaxLot> lots = [new("lot-a", new DateOnly(2026, 1, 1), 100m, 98m, SecurityId)];
+        IReadOnlyList<LedgerTaxLot> lots = [new("lot-a", new DateOnly(2026, 1, 1), 100m, 98m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }];
         var accretion = new LedgerTaxLotBasisAdjustment(
             LedgerTaxLotBasisAdjustmentKind.Amortization, 1m, new DateOnly(2026, 6, 1), SecurityId);
 
@@ -139,8 +140,8 @@ public sealed class LedgerTaxLotBasisAdjusterTests
     {
         IReadOnlyList<LedgerTaxLot> lots =
         [
-            new("lot-match", new DateOnly(2026, 1, 1), 10m, 90m, SecurityId),
-            new("lot-other", new DateOnly(2026, 1, 1), 10m, 90m, OtherSecurityId),
+            new("lot-match", new DateOnly(2026, 1, 1), 10m, 90m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
+            new("lot-other", new DateOnly(2026, 1, 1), 10m, 90m, OtherSecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
         ];
         var split = new LedgerTaxLotBasisAdjustment(
             LedgerTaxLotBasisAdjustmentKind.Split, 2m, new DateOnly(2026, 2, 1), SecurityId);
@@ -156,8 +157,8 @@ public sealed class LedgerTaxLotBasisAdjusterTests
     {
         IReadOnlyList<LedgerTaxLot> lots =
         [
-            new("lot-a", new DateOnly(2026, 1, 1), 100m, 102m, SecurityId),
-            new("lot-b", new DateOnly(2026, 1, 1), 100m, 102m, SecurityId),
+            new("lot-a", new DateOnly(2026, 1, 1), 100m, 102m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
+            new("lot-b", new DateOnly(2026, 1, 1), 100m, 102m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
         ];
         var amortization = new LedgerTaxLotBasisAdjustment(
             LedgerTaxLotBasisAdjustmentKind.Amortization, -2m, new DateOnly(2026, 6, 1), SecurityId, LotId: "lot-a");
@@ -171,7 +172,7 @@ public sealed class LedgerTaxLotBasisAdjusterTests
     [Fact]
     public void Apply_InvalidSplitRatio_Throws()
     {
-        IReadOnlyList<LedgerTaxLot> lots = [new("lot-a", new DateOnly(2026, 1, 1), 10m, 90m, SecurityId)];
+        IReadOnlyList<LedgerTaxLot> lots = [new("lot-a", new DateOnly(2026, 1, 1), 10m, 90m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }];
         var invalid = new LedgerTaxLotBasisAdjustment(
             LedgerTaxLotBasisAdjustmentKind.Split, 0m, new DateOnly(2026, 2, 1), SecurityId);
 
@@ -190,7 +191,7 @@ public sealed class LedgerTaxLotBasisAdjusterTests
             quantitySold: 12m,
             salePrice: 50m,
             LedgerTaxLotReliefMethod.Fifo,
-            [new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 10m, 90m, SecurityId)],
+            [new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 10m, 90m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }],
             basisAdjustments:
             [
                 new LedgerTaxLotBasisAdjustment(LedgerTaxLotBasisAdjustmentKind.Split, 2m, new DateOnly(2026, 2, 1), SecurityId),
@@ -219,7 +220,7 @@ public sealed class LedgerTaxLotBasisAdjusterTests
             quantitySold: 40m,
             salePrice: 101m,
             LedgerTaxLotReliefMethod.Fifo,
-            [new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 100m, 100m, SecurityId)],
+            [new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 100m, 100m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }],
             basisAdjustments:
             [
                 new LedgerTaxLotBasisAdjustment(LedgerTaxLotBasisAdjustmentKind.Factor, 0.5m, new DateOnly(2026, 6, 30), SecurityId),
@@ -242,7 +243,7 @@ public sealed class LedgerTaxLotBasisAdjusterTests
             quantitySold: 60m,
             salePrice: 101m,
             LedgerTaxLotReliefMethod.Fifo,
-            [new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 100m, 100m, SecurityId)],
+            [new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 100m, 100m, SecurityId) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }],
             basisAdjustments:
             [
                 new LedgerTaxLotBasisAdjustment(LedgerTaxLotBasisAdjustmentKind.Factor, 0.5m, new DateOnly(2026, 6, 30), SecurityId),
