@@ -1798,6 +1798,7 @@ Meridian-main
 │   │   │   ├── desktop-workstation-screen-blueprint.md
 │   │   │   ├── god-file-burn-down-plan.md
 │   │   │   ├── README.md
+│   │   │   ├── security-master-review-remediation-plan.md
 │   │   │   ├── web-ui-improvements-implementation-plan-2026-07.md
 │   │   │   └── wpf-web-ui-alignment-plan.md
 │   │   ├── actions-local-benchmarks-2026-10-05.json

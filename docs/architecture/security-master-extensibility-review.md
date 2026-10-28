@@ -2,8 +2,8 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-10
-**Review history:** resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Reviewed:** 2026-10-28
+**Review history:** consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -43,6 +43,209 @@ Future review work should update this record with changed source, a dated findin
 and validation evidence. An unchanged interval needs no new review PR. Reuse an open consolidation
 PR while it is awaiting review. This queue policy does not claim that the external scheduler has
 been disabled; no matching local automation was found during this consolidation.
+
+---
+
+## Consolidated October review and dispositions — 2026-10-28
+
+This pass reconciles the October review queue against source snapshot
+`6bcc7a0262ab0870cee32cb2cb344851e9da7e89` (main after #3290). It supersedes the queued
+passes' **current priorities and proposed remedies**, while retaining their dated observations.
+The September queue and every landed resolution section below remain historical evidence.
+The [remediation working plan](../engineering/plans/security-master-review-remediation-plan.md)
+owns the remaining proposed slices; delivery status stays in the roadmap registry.
+
+### Retained inputs and coverage
+
+Finding labels are local to their date and PR. The immutable copies below preserve the original
+wording and citations, including statements corrected by this consolidation. Closing their PRs
+removes duplicate review work; it does not certify their proposed fixes or erase their evidence.
+
+| Dated input and reviewed source | Immutable review artifact | Coverage in this pass |
+| --- | --- | --- |
+| 2026-10-07, #3111; source `2bc041f1` | [Audit at `6d97f163`](https://github.com/rodoHasArrived/Meridian-main/blob/6d97f16367d3c9182e390cc53e78cca8824a4c79/docs/engineering/security-master-architecture-audit-2026-10-07.md) | R1/R4/R8 and N3 → D9; R2/R3/R6/R7 and N1/N2/N4 → D1; R5 → D7. The incorrect swap-leg assertion is corrected in D1. |
+| 2026-10-17, #3188; source `e447587e` | [Pass at `c6ac4119`](https://github.com/rodoHasArrived/Meridian-main/blob/c6ac41199da6af2e0a1f82a5dc9064b871ed8143/docs/architecture/security-master-extensibility-review.md) | E1 → D2; E2 → D4/D11; E3 → D3/D9; E4 → D1/D7. All four review corrections are stated below. |
+| 2026-10-17 addendum, #3196; source `0342643d` | [Addendum at `4ee830a4`](https://github.com/rodoHasArrived/Meridian-main/blob/4ee830a4a0daa47474bcbef6858b3aff12ba078e/docs/architecture/security-master-extensibility-review.md) | E3 narrowing, E5 and E6 → D3. Reverse mapping, projector coverage, conditional rules and the Deposit claim are corrected there. |
+| 2026-10-19, #3220; source `bb4a0899` | [Pass at `aed9ee77`](https://github.com/rodoHasArrived/Meridian-main/blob/aed9ee778f0f7f43d0bdd0a95fc3ed1e015d4ce3/docs/architecture/security-master-extensibility-review.md) | Projection/format dispositions → D1; E1/E5/E6 → D2/D3; E2 → D4; A4 and N4/N5 → D9; read-tolerance classifiers remain an ingress concern. Also retained in #3240's ancestry. |
+| 2026-10-20, #3234; source `a9d470c3` | [Pass at `1ebef74b`](https://github.com/rodoHasArrived/Meridian-main/blob/1ebef74bbfa0d7d1bff58e0450e199c738e587dc/docs/architecture/security-master-extensibility-review.md) | F1/F2 accounting/consumer dispositions → D10/D4; F3 OTC identity → D11; F4 form/codec duplication → D9; F5 MIC/listing identity → D8. Also retained in #3240's ancestry. |
+| 2026-10-20 post-merge, #3240; source `d158363d` | [Re-check](https://github.com/rodoHasArrived/Meridian-main/blob/b2a547fe8afbd3116c8328a464e285058eb48fc9/docs/architecture/security-master-extensibility-review.md) and [original proposed plan](https://github.com/rodoHasArrived/Meridian-main/blob/b2a547fe8afbd3116c8328a464e285058eb48fc9/docs/engineering/plans/security-master-review-remediation-plan-2026-10-20.md) | Closed E1/E5/E6/Bond writer → D1–D3; G1 rate ambiguity and F1 → D10; profile routing, term roles and pack decision → D9; OTC identity and Option/codec standing items → D11/D1. The original five-slice design is a historical proposal, not an accepted unit or migration policy. |
+| 2026-10-21 afternoon, #3247; source `c51c5d8d` | [Pass at `0fb31445`](https://github.com/rodoHasArrived/Meridian-main/blob/0fb31445a5c72433563ca28868e57a42467cd995/docs/architecture/security-master-extensibility-review.md) | H1/H5 classification → D6; H2 economic-event/identifier audit → D7; H3 independent profile approval → D5; H4 multiplier → D3; carried-forward lot/graph/schedule gaps → D11. |
+| 2026-10-23, #3263; source `6ca5515b` | [Pass at `ddd6f29f`](https://github.com/rodoHasArrived/Meridian-main/blob/ddd6f29fa5d6bb540a53ce7ac9334a7d0ad86d40/docs/architecture/security-master-extensibility-review.md) | I1/I2 governed writes → D5; I3 serialization → D7; I4 identifiers → D8. Its carried-forward graph/curves/lot/upcaster statements are superseded by the later resolution sections, summarized in D11. |
+
+### D1 — Schema, projections and declared formats: substantial resolutions, bounded gaps
+
+The current [projection registry](../../src/Meridian.Storage/SecurityMaster/SecurityTermsProjectionRegistry.cs)
+and generic `PostgresReferenceProjectionReader` replace the old per-class write/read backlog;
+Option remains a specialized writer and CustomAsset remains the declared projection gap. The
+2026-10-15 resolution records the registry, typed factors, versioned event envelopes, retained
+legacy economics and schema-driven passport forms. Later resolution sections record the per-class
+upgrader and schedule contracts. These replace #3111's old counts and the October 19 backlog.
+
+**Correction to #3111 N2:** swap-leg element fields and `SwapLegRoundTripTests` already existed at
+its pinned snapshot. The assertion that all swap-leg keys were decode-test-only was false.
+Current `SecurityAssetTermsSchema.ElementFieldsByPath` also declares the schedule-array shapes;
+future codec generation must preserve retained economic fields and explicit unreadable-state
+refusals rather than recreate an old, already-reduced backlog. A generic reader does not make
+Option's quote-keyed tables or CustomAsset's projection a delivered capability.
+
+`SecurityTermsEnvelope.ResolveFormat` now has production callers, and writes require compatible
+format/version declarations. **Correction to #3188 E4:** do not strip or refuse every reserved key;
+`schemaVersion`, `termsFormat` and `assetClassTermsVersion` are required metadata on valid envelopes.
+Reject invalid client metadata or replace it with the authoritative value. Legacy/snapshot reads
+remain a separate compatibility surface; their existence is not proof of every read-path guarantee.
+
+### D2 — Direct term-block lost update: resolved by an explicit base-version fence
+
+[SecurityMasterService](../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs)
+checks `EnsurePatchBaseMatchesExpectedVersion` before preferred, convertible and generic term-block
+patch construction; the event append still checks the expected stream version. This closes the
+specific E1 stale-projection failure described in #3188/#3220/#3234. **Correction to the original
+alternative remedy:** moving a rebuild into another method is insufficient unless the rebuild and
+patch construction share the amendment gate, or an explicit base-version equality check remains.
+This is distinct from the governed draft/publish gap in D5.
+
+### D3 — Catalog consumers: retain the remaining mappings, correct the alleged drift
+
+The quality service now derives generic required terms from the schema and retains conditional
+`MA002` for fixed-coupon rates. **Correction to #3196 E5/E6:** Deposit's old descriptor declared no
+Asset Operations capability; its omission alone did not prove predicate/catalog drift. Required
+schema fields cannot replace conditional coupon rules; the historical option expiry rule was
+`MA004`, and optional Warrant terms were not generic required fields. Current behavior must be
+assessed against each descriptor's explicit capability and conditional domain rules.
+
+The workbench multiplier check now reads `LotUnit`/`LotMultiplierTermKey`. The WPF
+`RequiresContractMultiplier` substring predicate remains in
+[SecurityMasterViewModel](../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs).
+The reverse `SecurityKindMapping` table and readiness `ProjectorsFor` switch remain independently
+maintained; #3191's coverage did not close them. The reverse-mapping round-trip test still skips
+unmapped enum values, so it does not prove complete reverse coverage.
+
+**Correction to #3188 E3:** Security Details persists operator overrides, including enrichment
+fields that are not asset-specific economic terms. Keep its override field contract and existing
+stored keys; derive catalog grouping only where the semantics agree. Replacing all override fields
+with the passport term schema would remove valid operator data.
+
+### D4 — Follow-on types do not establish consumer acceptance
+
+The October 17 observations about income projection, typed corporate actions, factor history,
+unitized quantity, ledger/NAV/risk use and client consumption are retained as integration questions.
+Curves and the current lot factor have since landed (D11), so the old blanket "endpoint only" and
+"no provider" conclusions no longer apply. For every remaining consumer, identify its actual
+source and arithmetic, then pin a retained end-to-end example before claiming convergence.
+A descriptor's optional downstream disposition must distinguish a supported consumer from an
+intentional outside-slice result; adding a type, endpoint or registry row alone is insufficient.
+
+### D5 — Governed write controls: still open on the reviewed source
+
+`RequireGovernedTermAmendments` is checked at HTTP; the WPF editor calls
+`ISecurityMasterService.AmendTermsAsync` in process. The service does not enforce this option.
+An enabled deployment therefore needs a shared authority check that distinguishes approved merge
+commands from direct edits; simply turning the option on at every call would block the approved
+publisher too.
+
+[ApprovedFieldEditCanonicalMergeHandler](../../src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs)
+uses the projection version read at publish time, while `SecurityMasterRevisionRecord` carries no
+draft base version. Capture a draft base or field-level predecessor and reject/reopen an approval
+whose field changed. Preserve concurrent changes to unrelated fields. **Attribution correction to
+#3263 I2:** the canonical event already links to the revision through `SourceRecordId`; maker and
+checker history is recoverable through that link. `UpdatedBy` names the publisher. Any requirement
+for explicit role fields must preserve that lineage. Unsupported merge shapes currently produce an
+Information log; expose the canonical-merge outcome to the operator before calling it complete.
+
+[SecurityAssetProfileGovernanceService](../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs)
+still approves a matching draft without comparing the approver to its drafter. Store and enforce
+independent review at the shared write boundary. No policy-default change is accepted by this
+review; deployment defaults and legacy draft handling require a separate decision.
+
+### D6 — Classification labels: still open, including historical payload policy
+
+[SecurityEconomicDefinitionAdapter](../../src/Meridian.Application/SecurityMaster/SecurityEconomicDefinitionAdapter.cs)
+still persists F# option/union `ToString()` output for family/subtype. Use declared label helpers
+and pin every catalog class's serialized labels. `InstrumentTypeDescriptorCatalog` separately
+retains labels such as Deposit `DemandDeposit`, FxSpot `BankProduct` and Warrant `OptionContract`;
+compare their intended semantics with the F# registry rather than assume the two taxonomies are
+interchangeable. Decide how already-retained `Some(...)`/`OtherSubType ...` values are displayed
+and replayed; do not rewrite append-only economic events to clean up labels.
+
+### D7 — Audit history and serialization: distinguish current state from retained evidence
+
+Canonical writes and field attribution share a PostgreSQL transaction, and provenance upserts are
+version-guarded. That resolves neither a complete provenance history contract nor every host's
+composition. Cash-flow-source, entitlement, provenance and conflict-resolution rows need an explicit
+classification as reconstructible current state or independently retained audit evidence. Include
+**field provenance** in this decision; #3188's migration priority omitted its own E4 finding.
+The in-process WPF provenance composition remains part of this audit scope. Keep caller-authored
+source, effective-date and client-confirmation fields distinct from authenticated actor attribution;
+a declared source is evidence supplied by the caller, not independent source verification. The old
+override-expiry and patch-version questions also require explicit retained-state acceptance proof.
+
+The current migration set has no append-only trigger on `security_events`; identifier replacement
+still deletes/reinserts the current identifier rows. Preserve economic replay and distinguish
+valid-time identifiers from recorded history before designing a revision store. The already-merged
+039 payload backfill does not authorize future event rewrites.
+
+[SecurityGovernanceEventLog](../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs)
+still serializes an `object` payload without a generated contract. Several audit/pricing/workbench
+stores use local reflection options. Define versioned payload types and compatible readers before
+changing serialization. A naming-policy change or a blanket serializer ban without retained-payload
+fixtures could break audit reads; this review makes no source-generation compatibility claim.
+
+### D8 — Identifier normalization and listing identity: still open, scoped carefully
+
+F# `SecurityIdentifier.normalizeValue` trims/upper-cases; the C# kind-aware normalizer also removes
+permitted punctuation. The F# duplicate invariant can therefore disagree with the lookup boundary.
+The unused F# `validateLei` rotates four characters before MOD 97, unlike ISO 17442's LEI order;
+no production caller was found in this pass. Consolidate authority at a dependency-safe seam and
+pin F#, C# and SQL compatibility, without introducing a project-reference cycle. Listing MIC,
+ListingId and venue identifiers represent different concepts; preserve their semantics and define
+consistency rules rather than flatten them into one free-string field.
+
+### D9 — Profile routing, term aliases and pack policy: remaining extensibility work
+
+`KnownProfileAssetClasses`/`AssetClassMetadataKeywords`, resolver alias arrays, legacy economics
+and the pack registry's prose/substring policy remain. Profile `IsProjected`/`IsSearchable` flags
+currently contribute counts rather than implement a profile-driven projection. Keep their
+promotion intent separate from delivered projection behavior. Derive routing and cash-flow roles
+from declared profile/schema facts only after defining precedence, conditional rules and retained
+legacy compatibility. The browser form model and shared term-form model also need a parity contract;
+mirrored field lists alone do not establish it. Preserve explicit loss/refusal behavior while
+considering codec generation.
+The October 20 plan's pack-registry removal is a proposal, not permission to delete its consumers;
+choose a typed runtime purpose or a documented informational purpose first.
+
+### D10 — Rate units and accounting disposition: decisions remain unaccepted
+
+The cash-flow and accounting readers still interpret `0.5` as a fraction, while Asset Operations
+uses the class's rate convention and otherwise percentage points. This is a concrete disagreement;
+its financial impact depends on the declared source meaning. The October 20 proposal to make all
+rates fractions, refuse values outside `[0,1]`, and rewrite legacy handling is **not accepted** here:
+negative rates, leverage/participation and basis-point spreads need field-specific semantics, and
+a sub-one value cannot reveal its legacy unit by magnitude. The readable schedule conventions
+already include rate-unit terms, so a new design must reuse that contract and its rollout rules.
+
+StructuredNote still has no explicit accounting class, and `ResolveAccountingInstrumentClass` can
+fall back to a supplied taxonomy. Pin actual caller precedence and distinguish an intentionally
+outside-slice class from a missing mapping. Do not assert that every StructuredNote currently
+posts as a bond, or assign new accounting treatment through a documentation cleanup.
+
+### D11 — Later implementations supersede old structural absence claims
+
+The resolution sections below now record generic projections, one lot model, schema-generated
+validation, deterministic/date-aware identifier lookup, the underlying graph, governed graph
+changes, OTC contracts/CSA/netting sets, stored curves/valuation, current-factor paydowns and
+readable schedule/upgrader increments. #3290 also incorporates the schedule-convention refusal,
+write-refusal HTTP classification and outstanding-principal quotation corrections. Preserve those
+bounded claims and their stated remaining gates. Earlier "no graph/OTC/curve/upgrader/current
+factor" statements are historical, not current blockers. Schedule writers, call/put behavior,
+consumer integration, regulatory trade identifiers (including UTI/UPI/RED), collateral scope and
+operator acceptance still need explicit coverage and retain the limitations stated
+in their owning resolution sections and ADRs.
+
+**Validation of this consolidation.** Static source and immutable-diff review only; no .NET tests
+were run for these documentation changes. Focused documentation checks and their results belong
+in the integrating PR. Existing test names and older hosted results are evidence references, not
+new execution claims. No roadmap status, policy default, schema, production code or acceptance
+criterion is changed by this consolidation.
 
 ---
 

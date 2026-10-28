@@ -1,11 +1,11 @@
 {
-  "total_files": 753,
-  "total_lines": 170940,
+  "total_files": 754,
+  "total_lines": 171252,
   "orphaned_count": 250,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 309,
-  "average_lines": 227.0,
+  "average_lines": 227.1,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1654,7 +1654,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 7236,
+      "line_count": 7439,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2310,7 +2310,7 @@
     },
     {
       "path": "docs/engineering/blueprints/README.md",
-      "line_count": 239,
+      "line_count": 240,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2446,7 +2446,15 @@
     },
     {
       "path": "docs/engineering/plans/README.md",
-      "line_count": 22,
+      "line_count": 23,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/plans/security-master-review-remediation-plan.md",
+      "line_count": 106,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2910,7 +2918,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12513,
+      "line_count": 12514,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
