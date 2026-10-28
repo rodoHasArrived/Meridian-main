@@ -1,7 +1,7 @@
 # Throughput Refinement Evidence
 
-**Status:** narrow validation-planning threshold met; overall delivery impact unproven  
-**Owner:** core-team  
+**Status:** narrow validation-planning threshold met; overall delivery impact unproven
+**Owner:** core-team
 **Reviewed:** 2026-10-28
 
 The refined workflow was faster in **6/6 validation-planning pairs**, with a **71.436% median
@@ -61,7 +61,9 @@ are covered by unit tests rather than this corpus. See [solver assignments](vali
 - Render duplicate excerpts once, retain every equivalent path/hash and all JSON context, and
   consolidate command presentation. The [same-input rendering comparison](packet-rendering/comparison.json)
   reduced Markdown from 24,143 to 5,659 characters (76.56%). Characters are not measured tokens
-  or latency. Optional excerpt bodies remain available in JSON.
+  or latency. Optional excerpt bodies remain available in JSON. Exact measured bytes are retained
+  in `.md.gz` snapshots; reviewable `.md` copies use one terminal newline for repository whitespace
+  checks. Snapshot hashes document this formatting-only difference.
 - For an already located shared-guidance edit, use the generator directly. Reserve packets for
   discovery, cross-module work, and resumption. This avoids imposing packet cost on every task.
 - Add validated completion as a metric; use a common telemetry helper with `sys.executable`,

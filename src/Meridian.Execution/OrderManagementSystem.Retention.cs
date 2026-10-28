@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
-using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Execution;
@@ -16,7 +15,7 @@ public sealed partial class OrderManagementSystem
     private readonly ConcurrentDictionary<string, byte> _brokerageSubmittingOrderIds = new(StringComparer.Ordinal);
 
     private IDisposable? TrackBrokerageSubmissionForRetention(string orderId) =>
-        _gateway is IBrokerageGateway || _recoveryStore is not null
+        _gateway is IBrokerageGateway || _recoveryJournal.HasStore
             ? new BrokerageSubmissionRetentionLease(this, orderId)
             : null;
 
@@ -41,15 +40,11 @@ public sealed partial class OrderManagementSystem
     {
 
         // A fill that has left the order book but not yet reached the portfolio still needs
-        // its tracked state and its sidecars. ProcessFillReportAsync reads the contract
+        // its tracked state and its sidecars. OrderFillProcessor.ProcessAsync reads the contract
         // multiplier from _orderContractMultipliers, so evicting an option order in that
         // window makes the fill fall back to 1 and books a standard contract at a hundredth
         // of its exposure; losing the order entirely can also leave the report untracked.
-        var pendingFillOrderIds = _pendingFillReservations.Keys
-            .Concat(_fillProcessing.Where(static entry => !entry.Value.IsComplete).Select(static entry => entry.Key))
-            .Select(static report => report.ClientOrderId ?? report.OrderId)
-            .Where(static id => !string.IsNullOrWhiteSpace(id))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var pendingFillOrderIds = _fillProcessor.GetIncompleteOrderIds();
 
         var removableOrderIds = _orders.Values
             .Where(order => order.Status is
@@ -65,7 +60,7 @@ public sealed partial class OrderManagementSystem
             .Where(order => !_parkedOrderIds.ContainsKey(order.OrderId))
             .Where(order => !_brokerageSubmittingOrderIds.ContainsKey(order.OrderId))
             .Where(order => !_inFlightDispatches.ContainsKey(order.OrderId))
-            .Where(order => !_recoveryOrderIds.ContainsKey(order.OrderId))
+            .Where(order => !_recoveryJournal.RequiresRecovery(order.OrderId))
             .Where(order => !pendingFillOrderIds.Contains(order.OrderId))
             .OrderBy(static order => order.LastUpdatedAt ?? order.CreatedAt)
             .ToArray();
@@ -75,34 +70,22 @@ public sealed partial class OrderManagementSystem
             if (_orders.Count <= _options.ValidatedMaxRetainedOrders)
                 break;
             var removableOrderId = order.OrderId;
-            lock (_brokerageRecoveryStateSync)
+            try
             {
-                if (_recoveryOrderIds.ContainsKey(removableOrderId))
-                    continue;
-                if (_dispatchedOrderIds.ContainsKey(removableOrderId))
-                {
-                    // Durable identity and cumulative fills outlive the bounded display cache.
-                    // Cancelled/expired orders still need their account and sizing for late fills;
-                    // the store only compacts full fills or definitive pre-acceptance rejections.
-                    try
-                    {
-                        if (_recoveryStore?.TryCompact(removableOrderId) != true)
-                            continue;
-                    }
-                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-                    {
-                        _logger.LogWarning(ex, "Cannot compact retained brokerage order {OrderId}; keeping recovery evidence",
-                            LogSanitizer.Sanitize(removableOrderId));
-                        continue;
-                    }
-                    _compactedBrokerageOrders[removableOrderId] = new BrokerageOrderTombstone(
-                        removableOrderId, order.Status, order.Quantity, order.FilledQuantity);
-                    _brokerageRecoveryVersions.Remove(removableOrderId);
-                }
-                if (!_orders.TryRemove(new KeyValuePair<string, OrderState>(removableOrderId, order)))
+                // Durable identity and cumulative fills outlive the bounded display cache.
+                // The journal rechecks recovery and compacts only safe terminal evidence
+                // while holding the same lock as this expected-state removal.
+                if (!_recoveryJournal.TryCompactAndRemove(order,
+                    () => _orders.TryRemove(new KeyValuePair<string, OrderState>(removableOrderId, order))))
                     continue;
             }
-            _orderBrokerIds.TryRemove(removableOrderId, out _);
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _logger.LogWarning(ex, "Cannot compact retained brokerage order {OrderId}; keeping recovery evidence",
+                    LogSanitizer.Sanitize(removableOrderId));
+                continue;
+            }
+            _brokerIdentities.ForgetActiveId(removableOrderId);
             _orderSessionIds.TryRemove(removableOrderId, out _);
             _orderFinancialAccountIds.TryRemove(removableOrderId, out _);
             _orderContractMultipliers.TryRemove(removableOrderId, out _);
@@ -113,17 +96,17 @@ public sealed partial class OrderManagementSystem
 
     private bool IsCompactedBrokerageReport(ExecutionReport report)
     {
-        if (!_compactedBrokerageOrders.TryGetValue(report.ClientOrderId ?? report.OrderId, out var tombstone))
-            return false;
-        if (report.FilledQuantity > tombstone.FilledQuantity)
+        try
+        {
+            return _recoveryJournal.IsCompactedReport(report);
+        }
+        catch (InvalidDataException failure)
         {
             // A compacted order has no legitimate remaining execution. Do not adopt a
             // contradictory callback as an unrelated external order with missing scope.
-            var failure = new InvalidDataException("Broker execution contradicts a completed order recovery watermark.");
             MarkTerminalReportPumpFailure(failure, "Compacted brokerage order received inconsistent execution evidence.");
-            throw failure;
+            throw;
         }
-        return true;
     }
 
     private sealed class BrokerageSubmissionRetentionLease : IDisposable

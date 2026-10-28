@@ -2002,6 +2002,7 @@ Meridian-main
 │   │   │   ├── next-work-determination-2026-10-20.md
 │   │   │   ├── next-work-determination-2026-10-24.md
 │   │   │   ├── next-work-determination-2026-10-25.md
+│   │   │   ├── next-work-determination-2026-10-27.md
 │   │   │   ├── product-roadmap-priorities-2026-07.md
 │   │   │   ├── production-readiness-backlog-2026-08.md
 │   │   │   ├── README.md
@@ -2489,6 +2490,75 @@ Meridian-main
 │   │   │   │   ├── report.json
 │   │   │   │   ├── report.md
 │   │   │   │   └── verify-pilot.py
+│   │   │   ├── ai-throughput-pilot-2026-10-28-refinement
+│   │   │   │   ├── events
+│   │   │   │   │   ├── r2-pair-1-baseline.jsonl
+│   │   │   │   │   ├── r2-pair-1-treatment.jsonl
+│   │   │   │   │   ├── r2-pair-2-baseline.jsonl
+│   │   │   │   │   ├── r2-pair-2-treatment.jsonl
+│   │   │   │   │   ├── r2-pair-3-baseline.jsonl
+│   │   │   │   │   ├── r2-pair-3-treatment.jsonl
+│   │   │   │   │   ├── r2-pair-4-baseline.jsonl
+│   │   │   │   │   ├── r2-pair-4-treatment.jsonl
+│   │   │   │   │   ├── r2-pair-5-baseline.jsonl
+│   │   │   │   │   ├── r2-pair-5-treatment.jsonl
+│   │   │   │   │   ├── r2-pair-6-baseline.jsonl
+│   │   │   │   │   └── r2-pair-6-treatment.jsonl
+│   │   │   │   ├── packet-rendering
+│   │   │   │   │   ├── comparison-input-packet.json
+│   │   │   │   │   ├── comparison.json
+│   │   │   │   │   ├── refined.md
+│   │   │   │   │   ├── refined.md.gz
+│   │   │   │   │   ├── same-input-baseline.md
+│   │   │   │   │   ├── same-input-baseline.md.gz
+│   │   │   │   │   └── snapshot-formatting.json
+│   │   │   │   ├── recommendation-benchmark
+│   │   │   │   │   ├── lazy-only
+│   │   │   │   │   │   ├── raw-observations.jsonl
+│   │   │   │   │   │   └── summary.json
+│   │   │   │   │   ├── benchmark_recommendations.py
+│   │   │   │   │   ├── plans.json
+│   │   │   │   │   ├── raw-observations.jsonl
+│   │   │   │   │   ├── summary.json
+│   │   │   │   │   └── validation_plan_baseline.py
+│   │   │   │   ├── validation-planning
+│   │   │   │   │   ├── confirmation-events
+│   │   │   │   │   │   ├── vc-pair-1-baseline.jsonl
+│   │   │   │   │   │   ├── vc-pair-1-treatment.jsonl
+│   │   │   │   │   │   ├── vc-pair-2-baseline.jsonl
+│   │   │   │   │   │   ├── vc-pair-2-treatment.jsonl
+│   │   │   │   │   │   ├── vc-pair-3-baseline.jsonl
+│   │   │   │   │   │   ├── vc-pair-3-treatment.jsonl
+│   │   │   │   │   │   ├── vc-pair-4-baseline.jsonl
+│   │   │   │   │   │   ├── vc-pair-4-treatment.jsonl
+│   │   │   │   │   │   ├── vc-pair-5-baseline.jsonl
+│   │   │   │   │   │   ├── vc-pair-5-treatment.jsonl
+│   │   │   │   │   │   ├── vc-pair-6-baseline.jsonl
+│   │   │   │   │   │   └── vc-pair-6-treatment.jsonl
+│   │   │   │   │   ├── events
+│   │   │   │   │   │   ├── vp-pair-1-baseline.jsonl
+│   │   │   │   │   │   └── vp-pair-1-treatment.jsonl
+│   │   │   │   │   ├── assess-confirmation.py
+│   │   │   │   │   ├── confirmation-assessment.json
+│   │   │   │   │   ├── confirmation-protocol.json
+│   │   │   │   │   ├── confirmation-report.json
+│   │   │   │   │   ├── confirmation-report.md
+│   │   │   │   │   ├── expected.json
+│   │   │   │   │   ├── independent-revalidation.json
+│   │   │   │   │   ├── initial-attempt-notes.json
+│   │   │   │   │   ├── protocol.json
+│   │   │   │   │   ├── reporter-provenance.json
+│   │   │   │   │   ├── reporter-wording.patch
+│   │   │   │   │   ├── runner-initial.py
+│   │   │   │   │   ├── runner.py
+│   │   │   │   │   ├── solver-assignments.json
+│   │   │   │   │   └── verify-trial.py
+│   │   │   │   ├── assessment.json
+│   │   │   │   ├── protocol.json
+│   │   │   │   ├── README.md
+│   │   │   │   ├── report.json
+│   │   │   │   ├── report.md
+│   │   │   │   └── verify-trial.py
 │   │   │   ├── program-state-20261014
 │   │   │   │   └── main-validation.json
 │   │   │   ├── w10-615abde9
@@ -4267,6 +4337,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterQueryService.cs
 │   │   │   ├── SecurityMasterService.AheadOfWriteTerms.cs
 │   │   │   ├── SecurityMasterService.cs
+│   │   │   ├── SecurityMasterService.WriteRefusals.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassificationService.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Discard.cs
@@ -4274,6 +4345,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Overrides.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.ProfileFieldValidation.cs
 │   │   │   ├── SecurityMasterWorkbenchOptions.cs
+│   │   │   ├── SecurityMasterWriteRefusedException.cs
 │   │   │   ├── SecurityResolver.cs
 │   │   │   └── SymbolResolutionMismatchTracker.cs
 │   │   ├── Services
@@ -5180,6 +5252,19 @@ Meridian-main
 │   │   │   ├── IFxRateProvider.cs
 │   │   │   ├── InMemoryFxRateProvider.cs
 │   │   │   └── MultiCurrencyCashBalance.cs
+│   │   ├── OrderManagement
+│   │   │   ├── AccountingHandoffCoordinator.cs
+│   │   │   ├── BrokerageOrderCheckpointEvidence.cs
+│   │   │   ├── BrokerageOrderRecoveryJournal.cs
+│   │   │   ├── ExecutionFailureState.cs
+│   │   │   ├── ExecutionReportHub.cs
+│   │   │   ├── OrderAdmissionPolicy.cs
+│   │   │   ├── OrderAuditMetadata.cs
+│   │   │   ├── OrderBrokerIdentityIndex.cs
+│   │   │   ├── OrderExecutionAudit.cs
+│   │   │   ├── OrderFillContext.cs
+│   │   │   ├── OrderFillProcessor.cs
+│   │   │   └── OrderRiskSizingPolicy.cs
 │   │   ├── PaperMatching
 │   │   │   ├── PaperMarketObservation.cs
 │   │   │   ├── PaperOrderMatchingPolicy.cs
@@ -5222,8 +5307,6 @@ Meridian-main
 │   │   ├── IRiskValidator.cs
 │   │   ├── ISecurityMasterGate.cs
 │   │   ├── Meridian.Execution.csproj
-│   │   ├── OrderManagementSystem.AccountingHandoff.cs
-│   │   ├── OrderManagementSystem.Audit.cs
 │   │   ├── OrderManagementSystem.BrokerageLimits.cs
 │   │   ├── OrderManagementSystem.Cancellation.cs
 │   │   ├── OrderManagementSystem.ChildOrders.cs
@@ -5270,6 +5353,7 @@ Meridian-main
 │   │   ├── IOrderManager.cs
 │   │   ├── IPosition.cs
 │   │   ├── IPositionTracker.cs
+│   │   ├── IPreassignedReplacementReferenceGateway.cs
 │   │   ├── KillSwitchSweepResult.cs
 │   │   ├── Meridian.Execution.Sdk.csproj
 │   │   ├── Models.cs
@@ -8244,6 +8328,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterEndpoints.Curves.cs
 │   │   │   ├── SecurityMasterEndpoints.OtcCollateral.cs
 │   │   │   ├── SecurityMasterEndpoints.OtcContracts.cs
+│   │   │   ├── SecurityMasterEndpoints.WriteRefusals.cs
 │   │   │   ├── StatusEndpoints.cs
 │   │   │   ├── StorageEndpoints.cs
 │   │   │   ├── StorageQualityEndpoints.cs
@@ -10361,6 +10446,7 @@ Meridian-main
 │   │   │   │   ├── BestOfBreedProviderSelectorTests.cs
 │   │   │   │   ├── KernelObservabilityServiceTests.cs
 │   │   │   │   ├── ProviderRoutingServiceTests.cs
+│   │   │   │   ├── ProviderSetupOwnershipTests.cs
 │   │   │   │   └── ProviderTrustScoringServiceTests.cs
 │   │   │   ├── Reconciliation
 │   │   │   │   ├── BusinessDayAccountingCalendarTests.cs
@@ -10638,18 +10724,21 @@ Meridian-main
 │   │   │   │   └── TaxLotAccountingTests.cs
 │   │   │   ├── MultiCurrency
 │   │   │   │   └── InMemoryFxRateProviderTests.cs
+│   │   │   ├── AccountingHandoffCoordinatorTests.cs
 │   │   │   ├── AlpacaStreamedFillLoopTests.cs
 │   │   │   ├── BrokerageExecutionAdmissionLimitTests.cs
 │   │   │   ├── BrokerageExecutionReconciliationServiceTests.cs
 │   │   │   ├── BrokerageExecutionRegistrationRecoveryTests.cs
 │   │   │   ├── BrokerageGatewayAdapterTests.cs
 │   │   │   ├── BrokerageOrderPlacementGateTests.cs
+│   │   │   ├── BrokerageOrderRecoveryJournalTests.cs
 │   │   │   ├── BrokerageOrderRecoveryTests.cs
 │   │   │   ├── BrokerageOrderRecoveryTests.Retention.cs
 │   │   │   ├── BrokerageValidationEvaluatorTests.cs
 │   │   │   ├── DurableFillDeliveryBoundaryTests.cs
 │   │   │   ├── ExecutionAuditTrailServiceTests.cs
 │   │   │   ├── ExecutionOrderMetadataPolicyTests.cs
+│   │   │   ├── ExecutionReportHubTests.cs
 │   │   │   ├── FileBrokerageOrderRecoveryStoreTests.cs
 │   │   │   ├── FixedIncomeFillBookingTests.cs
 │   │   │   ├── HostedBrokerageGatewayRegistrationTests.cs
@@ -10660,6 +10749,9 @@ Meridian-main
 │   │   │   ├── LogSanitizerTests.cs
 │   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
 │   │   │   ├── OmsGovernedBrokerageOrderGatewayTests.cs
+│   │   │   ├── OrderAdmissionPolicyTests.cs
+│   │   │   ├── OrderBrokerIdentityIndexTests.cs
+│   │   │   ├── OrderFillProcessorTests.cs
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.cs
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.Outcomes.cs
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.RejectedSuccessor.cs
@@ -10668,7 +10760,9 @@ Meridian-main
 │   │   │   ├── OrderManagementSystemGovernanceTests.cs
 │   │   │   ├── OrderManagementSystemLifecycleTests.cs
 │   │   │   ├── OrderManagementSystemReportStreamTests.cs
+│   │   │   ├── OrderManagementSystemSubscriptionFailureTests.cs
 │   │   │   ├── OrderManagementSystemTests.cs
+│   │   │   ├── OrderRiskSizingPolicyTests.cs
 │   │   │   ├── PaperExecutionGatewayLotSizeTests.cs
 │   │   │   ├── PaperFillEnvelopeRegressionTests.cs
 │   │   │   ├── PaperGatewayLiveFeedPricingTests.cs
@@ -10816,6 +10910,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementTerms.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementTrail.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.SendBoundary.cs
+│   │   │   │   ├── AlpacaBrokerageGatewayTests.StatementAmounts.cs
 │   │   │   │   ├── AlpacaConnectionReadinessTests.cs
 │   │   │   │   ├── AlpacaCorporateActionProviderTests.cs
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs
@@ -11118,7 +11213,8 @@ Meridian-main
 │   │   │   │   ├── StatementImportServiceTests.cs
 │   │   │   │   ├── StatementIngressLimitsTests.cs
 │   │   │   │   ├── StatementMappingProfileLoaderTests.cs
-│   │   │   │   └── StatementMappingProfileStoreTests.cs
+│   │   │   │   ├── StatementMappingProfileStoreTests.cs
+│   │   │   │   └── StructuredStatementAmountTests.cs
 │   │   │   ├── Fixtures
 │   │   │   │   ├── statement-clean-reconciles.csv
 │   │   │   │   ├── statement-invalid-blockers.csv
@@ -11830,6 +11926,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterWorkbenchEndpointsTests.cs
 │   │   │   ├── SecurityMasterWorkbenchOptionsBindingTests.cs
 │   │   │   ├── SecurityMasterWorkbenchQueryServiceCallScheduleTests.cs
+│   │   │   ├── SecurityMasterWriteRefusalEndpointsTests.cs
 │   │   │   ├── SpreadsheetFormulaGuardTests.cs
 │   │   │   ├── StatementImportEvidenceBridgeTests.cs
 │   │   │   ├── StatementReconciliationAuthorityCompositionTests.cs
@@ -12264,6 +12361,7 @@ Meridian-main
 │   │   │   └── web-dev
 │   │   │       ├── launcher.mjs
 │   │   │       └── process-tree.mjs
+│   │   ├── __init__.py
 │   │   ├── README.md
 │   │   ├── setup-verification.sh
 │   │   ├── test_actions_collector.py
@@ -12412,6 +12510,7 @@ Meridian-main
 │   │   └── CorporateActions
 │   │       ├── GoldenCorporateActionScenario.cs
 │   │       └── GoldenCorporateActionScenarioLoader.cs
+│   ├── __init__.py
 │   ├── coverlet.runsettings
 │   ├── Directory.Build.props
 │   ├── setup-script-tests.md

@@ -106,4 +106,3 @@ Full optional excerpts remain in the JSON packet; open these only when relevant.
 - `docs/reference/verified-operation-outcomes.md:9`: subsystem required doc; SHA-256 `ab6baa0612da0ac37b0a806530258efa9e5a484f9c7becbbe142a6ac87de76a0`
 
 Omitted context: 23 entries; paths and reasons remain in the JSON packet.
-

@@ -366,7 +366,7 @@ public static partial class SecurityMasterEndpoints
         /// Creates a new security record with initial asset class-specific terms and identifiers.
         /// </summary>
         /// <remarks>
-        /// <para>Returns 201 Created with the new security detail including generated UUID and version 1.</para>
+        /// <para>Returns 201 Created with the new security detail including generated UUID and version 1, or 400 with the refusal reason as the Problem Details <c>detail</c> when the terms are refused.</para>
         /// <para>Asset classes: Equity, Bond, Option, Future, FxSpot, Deposit, MoneyMarketFund, CertificateOfDeposit, CommercialPaper, TreasuryBill, Repo, CashSweep, Swap, DirectLoan, OtherSecurity.</para>
         /// <para>At least one identifier (ISIN, CUSIP, Ticker, etc.) is recommended.</para>
         /// </remarks>
@@ -387,6 +387,7 @@ public static partial class SecurityMasterEndpoints
         })
         .WithName("CreateSecurityMaster").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityDetailDto>(StatusCodes.Status201Created)
+        .AnswerWriteRefusalsWith400()
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
@@ -398,7 +399,7 @@ public static partial class SecurityMasterEndpoints
         /// <remarks>
         /// <para>Must provide the current version number. If the version no longer matches, returns 409 Conflict.</para>
         /// <para>Amended terms create a new event in the audit trail and increment the version by 1.</para>
-        /// <para>Supports all asset class-specific term updates (coupon, strike, maturity, etc.).</para>
+        /// <para>Supports all asset class-specific term updates (coupon, strike, maturity, etc.). A refused amendment returns 400 with the reason as the Problem Details <c>detail</c>.</para>
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterAmend, async (
             AmendSecurityTermsRequest request,
@@ -421,6 +422,7 @@ public static partial class SecurityMasterEndpoints
         })
         .WithName("AmendSecurityMaster").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
+        .AnswerWriteRefusalsWith400()
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
@@ -433,7 +435,7 @@ public static partial class SecurityMasterEndpoints
         /// <remarks>
         /// <para>The declared blocks are the Object and Array fields of the asset-class registry
         /// (<c>/api/security-master/asset-classes/{assetClass}</c>). Returns 400 for an undeclared block
-        /// or a JSON kind that does not match, and 404 for an unknown security.</para>
+        /// or a JSON kind that does not match, 400 with the reason as the Problem Details detail for a refused amendment, and 404 for an unknown security.</para>
         /// </remarks>
         group.MapPut(UiApiRoutes.SecurityMasterTermBlock, async (
             Guid securityId,
@@ -486,7 +488,7 @@ public static partial class SecurityMasterEndpoints
         .WithName("AmendSecurityMasterTermBlock").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<AmendSecurityTermBlockRequest>("application/json")
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
+        .AnswerWriteRefusalsWith400()
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status409Conflict)
@@ -612,7 +614,7 @@ public static partial class SecurityMasterEndpoints
         /// Replaces the preferred-equity term definition for a security while preserving any non-preferred equity metadata already attached to the security.
         /// </summary>
         /// <remarks>
-        /// <para>Returns 404 for missing securities or equities without preferred terms.</para>
+        /// <para>Returns 404 for missing securities or equities without preferred terms, and 400 with the reason as the Problem Details detail for a refused amendment.</para>
         /// <para>This route updates the current preferred term snapshot only; dividend schedule and yield projections remain separate follow-on APIs.</para>
         /// </remarks>
         group.MapPatch(UiApiRoutes.SecurityMasterPreferredEquityTerms, async (
@@ -648,6 +650,7 @@ public static partial class SecurityMasterEndpoints
         .WithName("AmendSecurityMasterPreferredEquityTerms").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<AmendPreferredEquityTermsRequest>("application/json")
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
+        .AnswerWriteRefusalsWith400()
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status409Conflict)
@@ -680,7 +683,7 @@ public static partial class SecurityMasterEndpoints
         /// Replaces the convertible-equity term definition for a security while preserving any non-convertible equity metadata already attached to the security.
         /// </summary>
         /// <remarks>
-        /// <para>Returns 404 for missing securities or equities without convertible terms.</para>
+        /// <para>Returns 404 for missing securities or equities without convertible terms, and 400 with the reason as the Problem Details detail for a refused amendment.</para>
         /// <para>This route updates the current convertible term snapshot only.</para>
         /// </remarks>
         group.MapPatch(UiApiRoutes.SecurityMasterConvertibleEquityTerms, async (
@@ -716,6 +719,7 @@ public static partial class SecurityMasterEndpoints
         .WithName("AmendSecurityMasterConvertibleEquityTerms").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<AmendConvertibleEquityTermsRequest>("application/json")
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
+        .AnswerWriteRefusalsWith400()
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status409Conflict)
@@ -1394,6 +1398,7 @@ public static partial class SecurityMasterEndpoints
         })
         .WithName("PatchSecurityPreferredTerms").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
+        .AnswerWriteRefusalsWith400()
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status409Conflict)

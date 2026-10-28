@@ -228,7 +228,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
 
         failed.Which.FailedHandlers.Should().Equal(nameof(ApprovedFieldEditCanonicalMergeHandler));
         publish.Amender.Failures.Should().ContainSingle("the merge reached the canonical amend seam exactly once")
-            .Which.Should().BeOfType<InvalidOperationException>()
+            .Which.Should().BeOfType<SecurityMasterWriteRefusedException>()
             .Which.Message.Should().Be(
                 AheadOfWriteFixtures.NotYetWritableReason("Swap", "legs[1].scheduleConventions", sinceVersion: 2, writes: 1));
         (await publish.Revisions.GetAsync(publish.Request.RevisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Approved);
