@@ -5244,6 +5244,7 @@ Meridian-main
 │   │   │   ├── ITradeEventPublisher.cs
 │   │   │   ├── LedgerPostingConsumer.cs
 │   │   │   ├── TradeExecutedEvent.cs
+│   │   │   ├── TradeFillCashFlowReplayCompatibility.cs
 │   │   │   ├── TradeFillHandoffFailureStore.cs
 │   │   │   ├── TradeFillLedgerPostingTarget.cs
 │   │   │   └── TradeFillPostingStore.cs
@@ -6060,6 +6061,7 @@ Meridian-main
 │   │   ├── LedgerBalancePoint.cs
 │   │   ├── LedgerBookKey.cs
 │   │   ├── LedgerCashFlowAttribution.Categories.cs
+│   │   ├── LedgerCashFlowAttribution.Comparison.cs
 │   │   ├── LedgerCashFlowAttribution.cs
 │   │   ├── LedgerCashFlowStatement.cs
 │   │   ├── LedgerChartBalance.cs
@@ -10814,6 +10816,7 @@ Meridian-main
 │   │   │   │   ├── DerivativePositionTests.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.CashFlow.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.cs
+│   │   │   │   ├── EventDrivenDecouplingTests.LegacyCashFlowReplay.cs
 │   │   │   │   ├── MarginModelTests.cs
 │   │   │   │   ├── MultiCurrencyTests.cs
 │   │   │   │   └── TaxLotAccountingTests.cs
@@ -10926,6 +10929,7 @@ Meridian-main
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.Successors.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.AcquisitionAdmission.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.CapitalReturn.cs
+│   │   │   │   ├── AssetAccountingEventSpineServiceTests.CashFlowReplay.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.Direction.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.FactorPaydown.cs
@@ -11597,6 +11601,7 @@ Meridian-main
 │   │   │   ├── FundAccounts
 │   │   │   │   ├── FundAccountDatabaseFactAttribute.cs
 │   │   │   │   ├── FundAccountDatabaseFixture.cs
+│   │   │   │   ├── PostgresFundAccountStorePlaidMigrationTests.cs
 │   │   │   │   ├── PostgresFundAccountStoreTenantAdmissionTests.cs
 │   │   │   │   └── PostgresFundAccountStoreTests.cs
 │   │   │   ├── FundStructure
@@ -11606,6 +11611,7 @@ Meridian-main
 │   │   │   │   ├── FileProviderIntegrationManifestStoreTests.ManifestVersions.cs
 │   │   │   │   └── FileProviderIntegrationManifestStoreTests.Provenance.cs
 │   │   │   ├── Ledger
+│   │   │   │   ├── RetainedPostingEquivalenceTests.CashFlow.cs
 │   │   │   │   └── RetainedPostingEquivalenceTests.cs
 │   │   │   ├── Maintenance
 │   │   │   │   ├── ScheduledArchiveMaintenanceServiceTests.Compression.cs
