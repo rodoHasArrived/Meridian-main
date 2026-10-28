@@ -48,7 +48,7 @@ public sealed class StrategyFeatureServiceRegistrationTests
 
         var adjustment = provider.GetRequiredService<CorporateActionAdjustmentService>();
         provider.GetRequiredService<ICorporateActionAdjustmentService>().Should().BeSameAs(adjustment);
-        provider.GetRequiredService<ILivePositionCorporateActionAdjuster>().Should().BeSameAs(adjustment);
+        provider.GetRequiredService<Meridian.Contracts.SecurityMaster.ILivePositionCorporateActionAdjuster>().Should().BeSameAs(adjustment);
         provider.GetRequiredService<CorporateActionAdjustmentService>().Should().BeSameAs(adjustment);
         await adjustment.PrepareAsync([], "SPY", new DateTimeOffset(2026, 1, 2, 0, 0, 0, TimeSpan.Zero));
 
