@@ -2,6 +2,9 @@ using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Infrastructure.Adapters.Edgar;
 
+/// <summary>
+/// Fetches SEC EDGAR ticker, filer, XBRL fact, and security reference data.
+/// </summary>
 public interface IEdgarReferenceDataProvider
 {
     Task<IReadOnlyList<EdgarTickerAssociation>> FetchTickerAssociationsAsync(CancellationToken ct = default);

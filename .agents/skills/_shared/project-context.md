@@ -11,8 +11,10 @@
 > The section between the `shared-context` markers is identical in all three copies:
 > `.claude/skills/_shared/project-context.md` (canonical, edit it first),
 > `.codex/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md`.
-> Copy any change to the other two; `build/scripts/docs/check-ai-inventory.py` fails when they
-> diverge. Host-specific guidance goes after the shared section.
+> After editing the canonical section, run `python build/scripts/ai/generate-guidance.py --write`.
+> Check freshness with `python build/scripts/ai/generate-guidance.py --check`; the existing
+> `build/scripts/docs/check-ai-inventory.py` gate also detects drift. Host-specific guidance stays
+> outside the generated section and is preserved byte-for-byte.
 
 <!-- shared-context:begin — identical in .claude/, .codex/, and .agents/ copies; check-ai-inventory.py enforces it -->
 

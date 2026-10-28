@@ -15,6 +15,9 @@ using Meridian.Infrastructure.Shared;
 
 namespace Meridian.Infrastructure.Adapters.Synthetic;
 
+/// <summary>
+/// Publishes simulated trades, quotes, order books, and reference data for offline development.
+/// </summary>
 [DataSource("synthetic", "Synthetic Market Data", DataSources.DataSourceType.Realtime, DataSourceCategory.Free, Description = "Deterministic synthetic real-time market data for offline development.")]
 public sealed class SyntheticMarketDataClient : IMarketDataClient, ISymbolSearchProvider
 {

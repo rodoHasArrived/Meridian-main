@@ -6,6 +6,9 @@ using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Features.Reporting.Shell;
 
+/// <summary>
+/// Provides the desktop page to prepare report packs, dashboards, analysis exports, and export presets.
+/// </summary>
 public partial class ReportingWorkspaceShellPage : ReportingWorkspaceShellPageBase
 {
     public ReportingWorkspaceShellPage(

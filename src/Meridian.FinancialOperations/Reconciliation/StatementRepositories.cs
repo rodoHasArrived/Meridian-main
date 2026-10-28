@@ -8,6 +8,9 @@ using Meridian.Storage.Archival;
 
 namespace Meridian.FinancialOperations.Reconciliation;
 
+/// <summary>
+/// Saves statement-run manifests and retrieves runs by identifier or account.
+/// </summary>
 public interface IStatementRunRepository
 {
     Task SaveAsync(StatementRunManifest manifest, CancellationToken ct = default);
@@ -15,24 +18,36 @@ public interface IStatementRunRepository
     Task<IReadOnlyList<StatementRunManifest>> ListAsync(string? fundAccountId = null, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Saves and retrieves validation issues for a statement run.
+/// </summary>
 public interface IStatementValidationIssueRepository
 {
     Task SaveAsync(string runId, IReadOnlyList<StatementValidationIssueDto> issues, CancellationToken ct = default);
     Task<IReadOnlyList<StatementValidationIssueDto>> GetAsync(string runId, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Saves and retrieves normalized statement entities for a run.
+/// </summary>
 public interface IStatementNormalizedEntityRepository
 {
     Task SaveAsync(string runId, StatementNormalizedEntities entities, CancellationToken ct = default);
     Task<StatementNormalizedEntities?> GetAsync(string runId, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Saves and retrieves statement matching result artifacts by run.
+/// </summary>
 public interface IStatementMatchResultRepository
 {
     Task SaveAsync(string runId, StatementMatchResultArtifact result, CancellationToken ct = default);
     Task<StatementMatchResultArtifact?> GetAsync(string runId, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Creates, reads, and updates recovery checkpoints for statement workflows.
+/// </summary>
 public interface IStatementRunRecoveryRepository
 {
     Task<StatementRunRecoveryCheckpoint?> GetAsync(string runId, CancellationToken ct = default);
@@ -84,6 +99,9 @@ public sealed record StatementRunRecoveryCheckpoint(
     public const int CurrentSchemaVersion = 1;
 }
 
+/// <summary>
+/// Indicates conflicting retained state during statement-run recovery.
+/// </summary>
 public sealed class StatementRunRecoveryConflictException(string message) : InvalidOperationException(message)
 {
 }
@@ -254,6 +272,9 @@ public sealed record StatementCaseLink(
     DateTimeOffset LinkedAtUtc,
     string LinkReason);
 
+/// <summary>
+/// Persists statement-run manifests in local files and supports account-filtered listing.
+/// </summary>
 public sealed class FileStatementRunRepository : IStatementRunRepository
 {
     private readonly StatementRepositoryPaths _paths;
@@ -317,6 +338,9 @@ public sealed class FileStatementRunRepository : IStatementRunRepository
     }
 }
 
+/// <summary>
+/// Persists run-scoped statement validation issues in local files.
+/// </summary>
 public sealed class FileStatementValidationIssueRepository : IStatementValidationIssueRepository
 {
     private readonly StatementRepositoryPaths _paths;
@@ -351,6 +375,9 @@ public sealed class FileStatementValidationIssueRepository : IStatementValidatio
     }
 }
 
+/// <summary>
+/// Persists normalized statement entities in local run artifacts.
+/// </summary>
 public sealed class FileStatementNormalizedEntityRepository : IStatementNormalizedEntityRepository
 {
     private readonly StatementRepositoryPaths _paths;
@@ -388,6 +415,9 @@ public sealed class FileStatementNormalizedEntityRepository : IStatementNormaliz
     }
 }
 
+/// <summary>
+/// Persists statement matching results in local run artifacts.
+/// </summary>
 public sealed class FileStatementMatchResultRepository : IStatementMatchResultRepository
 {
     private readonly StatementRepositoryPaths _paths;
@@ -435,6 +465,9 @@ public sealed class FileStatementMatchResultRepository : IStatementMatchResultRe
     }
 }
 
+/// <summary>
+/// Maintains statement-run recovery checkpoints in process.
+/// </summary>
 public sealed class InMemoryStatementRunRecoveryRepository : IStatementRunRecoveryRepository
 {
     private readonly ConcurrentDictionary<string, StatementRunRecoveryCheckpoint> _checkpoints =
@@ -513,6 +546,9 @@ public sealed class InMemoryStatementRunRecoveryRepository : IStatementRunRecove
     }
 }
 
+/// <summary>
+/// Persists statement-run recovery checkpoints with guarded create and update operations.
+/// </summary>
 public sealed class FileStatementRunRecoveryRepository : IStatementRunRecoveryRepository
 {
     private static readonly ConcurrentDictionary<string, SemaphoreSlim> Gates =

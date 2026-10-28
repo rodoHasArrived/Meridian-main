@@ -8,6 +8,9 @@ using System.Text.Json;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Resolves authoritative report-pack readiness for an Operations Continuity workflow.
+/// </summary>
 public interface IOperationsReportPackAuthority
 {
     Task<OperationsReportPackReadinessDto> ResolveAsync(

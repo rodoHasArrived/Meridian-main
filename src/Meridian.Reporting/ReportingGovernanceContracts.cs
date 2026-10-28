@@ -425,6 +425,7 @@ public interface IReportingGovernanceRepository
         CancellationToken cancellationToken = default);
 }
 
+/// <summary>Coordinates authority-scoped persistence operations for reporting governance aggregates and audit evidence.</summary>
 public interface IReportingGovernanceTransaction
 {
     public const int MaximumRunReadBatchSize = 200;
@@ -503,6 +504,7 @@ public interface IReportingGovernanceTransaction
         CancellationToken cancellationToken = default);
 }
 
+/// <summary>Represents a rejected or failed reporting governance operation.</summary>
 public class ReportingGovernanceException : InvalidOperationException
 {
     public ReportingGovernanceException(string message) : base(message)
@@ -515,6 +517,7 @@ public class ReportingGovernanceException : InvalidOperationException
     }
 }
 
+/// <summary>Indicates that the caller lacks authority for a reporting governance operation.</summary>
 public sealed class ReportingGovernanceAuthorizationException : ReportingGovernanceException
 {
     public ReportingGovernanceAuthorizationException(string message) : base(message)
@@ -522,6 +525,7 @@ public sealed class ReportingGovernanceAuthorizationException : ReportingGoverna
     }
 }
 
+/// <summary>Indicates a conflicting concurrent change to reporting governance state.</summary>
 public sealed class ReportingGovernanceConcurrencyException : ReportingGovernanceException
 {
     public ReportingGovernanceConcurrencyException(string message) : base(message)
@@ -529,6 +533,7 @@ public sealed class ReportingGovernanceConcurrencyException : ReportingGovernanc
     }
 }
 
+/// <summary>Indicates that the requested reporting governance resource was not found.</summary>
 public sealed class ReportingGovernanceNotFoundException : ReportingGovernanceException
 {
     public ReportingGovernanceNotFoundException(string message) : base(message)

@@ -494,21 +494,33 @@ public sealed class ArchiveHealthService
     }
 }
 
+/// <summary>
+/// Carries the archive health status published by the archive health service.
+/// </summary>
 public sealed class ArchiveHealthEventArgs : EventArgs
 {
     public ArchiveHealthStatus? Status { get; set; }
 }
 
+/// <summary>
+/// Carries the archive verification job whose state has changed.
+/// </summary>
 public sealed class VerificationJobEventArgs : EventArgs
 {
     public VerificationJob? Job { get; set; }
 }
 
+/// <summary>
+/// Carries an archive issue reported by the archive health service.
+/// </summary>
 public sealed class ArchiveIssueEventArgs : EventArgs
 {
     public ArchiveIssue? Issue { get; set; }
 }
 
+/// <summary>
+/// Reports archive verification file counts, progress, current file, and processing rate.
+/// </summary>
 public sealed class VerificationProgress
 {
     public int ProcessedFiles { get; set; }

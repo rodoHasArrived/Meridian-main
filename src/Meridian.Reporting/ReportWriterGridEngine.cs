@@ -4,6 +4,7 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.Reporting;
 
+/// <summary>Renders configured report grids from normalized dataset rows.</summary>
 public static class ReportWriterGridEngine
 {
     public static IReadOnlyList<ReportWriterGridRenderDto> RenderGrids(

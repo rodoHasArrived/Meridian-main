@@ -4,6 +4,9 @@ using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Persists and queries data vendor entitlement records in PostgreSQL.
+/// </summary>
 public sealed class PostgresDataVendorEntitlementStore : IDataVendorEntitlementStore
 {
     private readonly SecurityMasterOptions _options;

@@ -337,6 +337,9 @@ public static class OtcContractRules
     private static string Actor(string? value) => string.IsNullOrWhiteSpace(value) ? "unknown" : value.Trim();
 }
 
+/// <summary>
+/// Provides source-generated JSON metadata for OTC instrument and agreement contracts.
+/// </summary>
 [JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Metadata)]
 [JsonSerializable(typeof(OtcEligibleCollateralDto[]))]
 public sealed partial class OtcContractsJsonContext : JsonSerializerContext;

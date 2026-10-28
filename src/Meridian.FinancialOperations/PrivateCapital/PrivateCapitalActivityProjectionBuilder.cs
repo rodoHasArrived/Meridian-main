@@ -23,6 +23,9 @@ public sealed record PostedPrivateCapitalActivityProjection(
     PrivateCapitalFundEventLedgerProjection Projection,
     IReadOnlyDictionary<Guid, string> JournalEntryCurrencies);
 
+/// <summary>
+/// Builds private-capital activity views from fund events and associated accounting evidence.
+/// </summary>
 public static class PrivateCapitalActivityProjectionBuilder
 {
     private const decimal BalanceTolerance = LedgerToleranceConstants.Balance;

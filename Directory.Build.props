@@ -14,6 +14,11 @@
   <PropertyGroup>
     <!-- Allow resolving Windows-targeted TFMs on non-Windows CI runners to avoid NETSDK1100 -->
     <EnableWindowsTargeting Condition="'$([MSBuild]::IsOSPlatform(&quot;Windows&quot;))' != 'true'">true</EnableWindowsTargeting>
+    <!-- Opt-in, reviewed OS/RID lock baselines. Candidate generation and adoption are
+         owned by build/scripts/ci/dependency-locks.py; ordinary restores are unchanged. -->
+    <NuGetLockFilePath Condition="'$(MeridianNuGetLockProfile)' != ''">$(MSBuildThisFileDirectory)build/nuget-locks/$(MeridianNuGetLockProfile)/$(MSBuildProjectName).packages.lock.json</NuGetLockFilePath>
+    <RestorePackagesWithLockFile Condition="'$(MeridianNuGetLockProfile)' != ''">true</RestorePackagesWithLockFile>
+    <RestoreLockedMode Condition="'$(MeridianNuGetLockProfile)' != '' and '$(MeridianGenerateNuGetLocks)' != 'true'">true</RestoreLockedMode>
     <!-- Optional per-run isolation root for automation or concurrent local builds. -->
     <MeridianBuildIsolationKey Condition="'$(MeridianBuildIsolationKey)' == ''"></MeridianBuildIsolationKey>
     <BaseIntermediateOutputPath Condition="'$(MeridianBuildIsolationKey)' != ''">$(MSBuildThisFileDirectory)artifacts/obj/$(MeridianBuildIsolationKey)/$(MSBuildProjectName)/</BaseIntermediateOutputPath>

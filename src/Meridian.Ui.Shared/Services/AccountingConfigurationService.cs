@@ -14,6 +14,9 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Manages accounting configuration, posting-rule previews, activation validation, and action audit history.
+/// </summary>
 public sealed partial class AccountingConfigurationService : IAccountingConfigurationService
 {
     private const string DefaultFundProfileId = "default-fund";

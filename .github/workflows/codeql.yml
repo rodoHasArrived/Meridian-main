@@ -64,7 +64,7 @@ jobs:
         run: dotnet restore Meridian.WebWorkstation.slnf /p:EnableWindowsTargeting=true
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4
+        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
@@ -78,6 +78,16 @@ jobs:
         run: dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore /p:EnableWindowsTargeting=true /p:UseAppHost=false /p:RunAnalyzers=false
 
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4
+        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4
         with:
           category: "/language:${{ matrix.language }}"
+          output: artifacts/codeql/${{ matrix.language }}
+
+      - name: Retain CodeQL reports for release audit evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: codeql-${{ matrix.language }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/codeql/${{ matrix.language }}/*.sarif
+          if-no-files-found: error
+          retention-days: 90

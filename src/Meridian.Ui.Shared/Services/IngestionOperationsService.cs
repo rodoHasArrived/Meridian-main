@@ -8,6 +8,9 @@ using Meridian.Ui.Shared.Evidence;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Applies workstation ingestion actions through the owning ingestion services.
+/// </summary>
 public sealed class IngestionOperationsService
 {
     private static readonly TimeSpan IdempotencyRetention = TimeSpan.FromHours(24);

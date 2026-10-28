@@ -51,6 +51,7 @@ class MeridianCiCacheContractTests(unittest.TestCase):
             "**/*.props",
             "**/*.targets",
             "**/packages.lock.json",
+            "**/*.packages.lock.json",
             "global.json",
         ):
             with self.subTest(input=input_pattern):

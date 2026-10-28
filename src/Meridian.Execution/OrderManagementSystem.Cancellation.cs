@@ -1,5 +1,6 @@
 using Meridian.Execution.Sdk;
 
+
 namespace Meridian.Execution;
 
 public sealed partial class OrderManagementSystem
@@ -18,7 +19,7 @@ public sealed partial class OrderManagementSystem
     {
         if (!_orders.TryGetValue(orderId, out var state))
         {
-            await RecordOrderLifecycleAuditAsync(
+            await _executionAudit.RecordLifecycleAsync(
                 action: "OrderCancelRejected",
                 outcome: "Rejected",
                 orderId: orderId,
@@ -38,7 +39,7 @@ public sealed partial class OrderManagementSystem
         }
 
         gatewayOrderId ??= _gateway is IExplicitOrderCancellationGateway
-            && _orderBrokerIds.TryGetValue(orderId, out var knownBrokerId) ? knownBrokerId : null;
+            && _brokerIdentities.TryGetActiveId(orderId, out var knownBrokerId) ? knownBrokerId : null;
         var cancellationIdentifier = string.IsNullOrWhiteSpace(gatewayOrderId)
             ? new OrderCancellationIdentifier(orderId, OrderCancellationIdentifierKind.ClientOrderId)
             : new OrderCancellationIdentifier(gatewayOrderId, OrderCancellationIdentifierKind.BrokerOrderId);
@@ -94,7 +95,7 @@ public sealed partial class OrderManagementSystem
             var observedState = _orders.TryGetValue(orderId, out var currentState)
                 ? currentState
                 : state;
-            await RecordOrderLifecycleAuditAsync(
+            await _executionAudit.RecordLifecycleAsync(
                 action: "OrderCancelRejected",
                 outcome: report.ReportType is ExecutionReportType.CancelRejected ? "Rejected" : report.OrderStatus.ToString(),
                 orderId: orderId,
@@ -118,7 +119,7 @@ public sealed partial class OrderManagementSystem
         // execution before the locally tracked order becomes a completed cancellation result.
         await ProcessGatewayReportAsync(report, CancellationToken.None).ConfigureAwait(false);
         var updated = _orders.TryGetValue(orderId, out var current) ? current : state;
-        await RecordOrderLifecycleAuditAsync(
+        await _executionAudit.RecordLifecycleAsync(
             action: "OrderCancelled",
             outcome: updated.Status.ToString(),
             orderId: orderId,
@@ -212,33 +213,8 @@ public sealed partial class OrderManagementSystem
             ? explicitCancellationGateway.CancelOrderAsync(identifier, ct)
             : _gateway.CancelOrderAsync(identifier.Value, ct);
 
-    private void RememberBrokerOrderId(string localOrderId, ExecutionReport report)
-    {
-        if (report.ReportType is ExecutionReportType.ModificationPending)
-            return;
-        var brokerOrderId = report.GatewayOrderId;
-        if (string.IsNullOrWhiteSpace(brokerOrderId)
-            && !string.IsNullOrWhiteSpace(report.ClientOrderId)
-            && !string.Equals(report.OrderId, report.ClientOrderId, StringComparison.Ordinal))
-        {
-            brokerOrderId = report.OrderId;
-        }
-
-        if (!string.IsNullOrWhiteSpace(localOrderId) && !string.IsNullOrWhiteSpace(brokerOrderId))
-        {
-            // A late report from an earlier chain member must keep the current routing ID.
-            var rejectedReplacement = report.ReportType is ExecutionReportType.ModificationRejected or ExecutionReportType.Rejected
-                && report.ReplacesOrderId is { Length: > 0 };
-            if (!rejectedReplacement && (!_orderBrokerIds.TryGetValue(localOrderId, out var currentBrokerId)
-                || !_brokerOrderAliases.ContainsKey(brokerOrderId)
-                    && (string.IsNullOrWhiteSpace(report.ReplacesOrderId)
-                        || string.Equals(report.ReplacesOrderId, currentBrokerId, StringComparison.Ordinal))))
-                _orderBrokerIds[localOrderId] = brokerOrderId;
-            _brokerOrderAliases.TryAdd(brokerOrderId, localOrderId);
-            if (report.ReplacesOrderId is { Length: > 0 } replaced)
-                _brokerOrderAliases.TryAdd(replaced, localOrderId);
-        }
-    }
+    private void RememberBrokerOrderId(string localOrderId, ExecutionReport report) =>
+        _brokerIdentities.Remember(localOrderId, report);
 
     private static bool HasCumulativeFillEvidence(ExecutionReport report)
         => report.FilledQuantity > 0m && report.FillPrice is not null;

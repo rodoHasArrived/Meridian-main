@@ -2,6 +2,9 @@ using Meridian.Contracts.Ledger;
 
 namespace Meridian.FinancialOperations.PrivateCapital;
 
+/// <summary>
+/// Builds ledger record views for private-capital fund events.
+/// </summary>
 public static class PrivateCapitalFundEventLedgerRecordBuilder
 {
     public static IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> Build(

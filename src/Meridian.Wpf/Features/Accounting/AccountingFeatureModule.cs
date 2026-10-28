@@ -41,6 +41,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Meridian.Wpf.Features.Accounting;
 
+/// <summary>
+/// Registers accounting desktop services and contributes the feature's navigation pages and workspace metadata.
+/// </summary>
 public sealed class AccountingFeatureModule : IDesktopFeatureModule
 {
     private static readonly WorkspaceCapabilityDescriptor Capability = ShellNavigationCatalog.BuildAccountingCapability();

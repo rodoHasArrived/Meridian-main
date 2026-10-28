@@ -4,17 +4,26 @@ using Meridian.Contracts.Operations;
 
 namespace Meridian.Workflow.Runbooks;
 
+/// <summary>
+/// Executes or inspects a runbook definition and returns its verified execution result.
+/// </summary>
 public interface IRunbookExecutor
 {
     Task<RunbookExecutionResult> ExecuteAsync(RunbookDefinition definition, bool dryRun, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Executes one supported runbook step kind and returns a verified operation outcome.
+/// </summary>
 public interface IRunbookStepHandler
 {
     string Kind { get; }
     Task<VerifiedOperationOutcome> ExecuteAsync(RunbookStep step, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Coordinates runbook inspection or step execution and retains verified outcomes in operational case history.
+/// </summary>
 public sealed class RunbookExecutor : IRunbookExecutor
 {
     private const string RunbookCaseType = "runbook-execution";

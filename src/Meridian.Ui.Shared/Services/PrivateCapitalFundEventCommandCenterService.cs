@@ -3,6 +3,9 @@ using Meridian.Contracts.Text;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Builds private-capital fund-event command-center projections with readiness and published-output evidence.
+/// </summary>
 public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapitalFundEventCommandCenterService
 {
     private static readonly IReadOnlyList<string> LiveCapabilities =

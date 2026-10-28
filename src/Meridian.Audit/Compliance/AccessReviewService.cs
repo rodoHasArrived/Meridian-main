@@ -84,6 +84,9 @@ public sealed class UserAccountAccessRoleAssignmentStore(IUserAccountStore accou
     }
 }
 
+/// <summary>
+/// Assesses dormant role assignments and records remediation outcomes verified against the role store.
+/// </summary>
 public sealed class AccessReviewService
 {
     private static readonly TimeSpan DormancyThreshold = TimeSpan.FromDays(90);

@@ -6,6 +6,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Hosts position review and position-related drilldowns.
+/// </summary>
 public partial class PositionBlotterPage : Page
 {
     private readonly PositionBlotterViewModel _viewModel;

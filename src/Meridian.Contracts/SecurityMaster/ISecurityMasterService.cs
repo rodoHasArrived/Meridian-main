@@ -1,5 +1,8 @@
 namespace Meridian.Contracts.SecurityMaster;
 
+/// <summary>
+/// Creates securities and applies governed changes to their reference terms and lifecycle.
+/// </summary>
 public interface ISecurityMasterService
 {
     Task<SecurityDetailDto> CreateAsync(CreateSecurityRequest request, CancellationToken ct = default);

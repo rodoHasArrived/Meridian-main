@@ -14,6 +14,7 @@ public interface IReconciliationBreakQueueAuthorityProbe
     Task VerifyAsync(CancellationToken ct = default);
 }
 
+/// <summary>Persists reconciliation break casework and coordinates governed updates and close-scope access.</summary>
 public interface IReconciliationBreakQueueRepository
 {
     Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAllAsync(ReconciliationBreakQueueStatus? status = null, CancellationToken ct = default);
@@ -326,6 +327,7 @@ public sealed record ReconciliationCloseScopeHistoryEntry(
     DateTimeOffset SealedAtUtc,
     ReconciliationCloseScopeReopenReceipt ReopenReceipt);
 
+/// <summary>Holds exclusive close-scope coordination while validating and sealing reconciliation state.</summary>
 public interface IReconciliationCloseScopeLease : IAsyncDisposable
 {
     ReconciliationCloseScope Scope { get; }

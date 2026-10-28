@@ -7,6 +7,7 @@ using Meridian.ProviderSdk.AccountingSystem;
 
 namespace Meridian.DataIntegration.AccountingSystem.QuickBooks;
 
+/// <summary>Imports read-only QuickBooks Online accounting evidence and exposes connection verification and metadata.</summary>
 public sealed class QuickBooksOnlineAccountingProvider :
     IAccountingSystemProvider,
     IAccountingSystemConnectionMetadataProvider,
@@ -202,6 +203,7 @@ public sealed class QuickBooksOnlineAccountingProvider :
         => string.Concat(value.Select(static ch => char.IsLetterOrDigit(ch) ? char.ToLowerInvariant(ch) : '-')).Trim('-');
 }
 
+/// <summary>Reads QuickBooks connection credentials and metadata and persists rotated refresh tokens.</summary>
 public interface IQuickBooksOnlineConnectionStore
 {
     Task<QuickBooksOnlineConnection?> ReadAsync(CancellationToken ct = default);
@@ -226,6 +228,7 @@ public sealed record QuickBooksOnlineConnection(
     string Environment,
     string? CompanyName);
 
+/// <summary>Exchanges QuickBooks OAuth tokens and retrieves accounting evidence through the provider API.</summary>
 public interface IQuickBooksOnlineClient
 {
     Task<QuickBooksOnlineTokenExchangeResult> ExchangeAuthorizationCodeAsync(
@@ -262,6 +265,7 @@ public sealed record QuickBooksOnlineCompanyEvidence(
     IReadOnlyList<string> EvidenceReferences,
     IReadOnlyList<string> Warnings);
 
+/// <summary>Implements QuickBooks OAuth and accounting API requests for sandbox and production environments.</summary>
 public sealed class QuickBooksOnlineHttpClient : IQuickBooksOnlineClient
 {
     private const string TokenEndpoint = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer";

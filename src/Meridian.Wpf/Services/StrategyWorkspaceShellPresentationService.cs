@@ -10,6 +10,9 @@ using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Builds strategy workspace context and commands from strategy briefing and run state.
+/// </summary>
 public sealed class StrategyWorkspaceShellPresentationService : IWorkspaceScopedService
 {
     private readonly StrategyRunWorkspaceService _runService;

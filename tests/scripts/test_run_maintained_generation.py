@@ -95,119 +95,74 @@ class MaintainedGenerationTests(unittest.TestCase):
             generation.changes(before, generation.snapshot(self.repo)),
         )
 
-    def test_discovery_covers_workflow_generators_in_order_and_skips_checks_and_installs(self) -> None:
-        self.write(
-            ".github/workflows/documentation.yml",
-            """jobs:
+    def test_catalog_preserves_required_producers_without_duplicate_commands(self) -> None:
+        steps = generation.discover_steps(self.repo)
+        required = [step.command for step in steps if not step.optional]
+        self.assertEqual(len(required), len(set(required)))
+        flattened = "\n".join(" ".join(command) for command in required)
+        for producer in (
+            "generate-ui-api-routes-ts.py", "generate-workspace-catalog-ts.py",
+            "dashboard run build", "validate-roadmap-registry.py", "validate-source-readmes.py",
+            "scan-source-todos.py", "render-adapter-readiness.py", "render-roadmap-docs.py",
+            "render-source-docs.py", "render-roadmap-diagrams.py", "render-source-diagrams.py",
+            "npm run generate-diagrams", "generate-structure-docs.py --workflows-only",
+            "run-docs-automation.py --profile core",
+        ):
+            with self.subTest(producer=producer):
+                self.assertIn(producer, flattened)
+        self.assertNotIn("generate-workflow-manifest.py", flattened,
+                         "The core profile owns this producer; do not execute it twice per pass")
+        self.assertEqual(["Render UML diagrams"], [step.name for step in steps if step.optional])
+        advisory = next(step.command[-1] for step in steps if step.optional)
+        self.assertIn("-tpng", advisory)
+        self.assertIn("-tsvg", advisory)
+        self.assertRegex(generation.PLANTUML_IMAGE, r"^plantuml/plantuml@sha256:[0-9a-f]{64}$")
+        self.assertEqual(2, advisory.count(generation.PLANTUML_IMAGE))
+
+    def test_workflow_commands_cannot_extend_or_recurse_into_catalog(self) -> None:
+        expected = generation.discover_steps(self.repo)
+        self.write(".github/workflows/documentation.yml", """jobs:
   regenerate-docs:
     steps:
-      - uses: actions/checkout@fixture
-      - name: Install docs script dependencies
-        run: python -m pip install --requirement build/scripts/docs/requirements.txt
-      - name: Install diagram dependencies
-        run: npm ci --no-fund --no-audit
-      - name: Run docs automation profile
-        run: |
-          python3 build/scripts/docs/run-docs-automation.py \\
-            --profile core \\
-            --summary-output docs/status/docs-automation-summary.md \\
-            --json-output docs/status/docs-automation-summary.json
-      - name: Render Mermaid diagrams
-        run: |
-          python3 build/scripts/docs/render-roadmap-diagrams.py --summary
-          python3 build/scripts/docs/render-source-diagrams.py --summary
-      - name: Render WPF UI diagrams
-        run: npm run generate-diagrams
-      - name: Render future maintained report
-        run: python3 build/scripts/docs/new-maintained-report.py
-      - name: Render UML diagrams
-        continue-on-error: true
-        run: |
-          docker run --rm plantuml/plantuml -tpng /data/*.puml
-          docker run --rm plantuml/plantuml -tsvg /data/*.puml
-      - name: Refresh workflow overview
-        run: python3 build/scripts/docs/generate-structure-docs.py --workflows-only
-      - name: Refresh workflow manifest outputs
-        run: python3 build/scripts/docs/generate-workflow-manifest.py
-      - name: Compare dashboard readiness deltas vs previous commit
-        shell: python
-        run: print('comparison only')
-      - name: Check generated docs are current
-        run: git diff --exit-code -- .
-      - name: Check whitespace
-        run: git diff --check
-""",
-        )
+      - run: python3 build/scripts/run-maintained-generation.py --docs-only
+      - run: make unrelated-command
+""")
+        self.assertEqual(expected, generation.discover_steps(self.repo))
+        self.assertFalse(any("run-maintained-generation.py" in step.command
+                             for step in expected))
 
-        steps = generation.discover_steps(self.repo)
-        commands = [" ".join(step.command) for step in steps]
-        flattened = "\n".join(commands)
-        expected_order = [
-            "generate-ui-api-routes-ts.py",
-            "generate-workspace-catalog-ts.py",
-            "npm --prefix src/Meridian.Ui/dashboard run build",
-            "render-adapter-readiness.py",
-            "render-roadmap-docs.py",
-            "render-source-docs.py",
-            "run-docs-automation.py",
-            "render-roadmap-diagrams.py",
-            "render-source-diagrams.py",
-            "npm run generate-diagrams",
-            "new-maintained-report.py",
-            "-tpng",
-            "-tsvg",
-            "generate-structure-docs.py",
-            "generate-workflow-manifest.py",
-        ]
-        locations = [flattened.index(command) for command in expected_order]
-        self.assertEqual(sorted(locations), locations)
-        self.assertNotIn("pip install", flattened)
-        self.assertNotIn("npm ci", flattened)
-        self.assertNotIn("git diff", flattened)
-        self.assertNotIn("comparison only", flattened)
-        uml_steps = [step for step in steps if "plantuml/plantuml" in " ".join(step.command)]
-        self.assertEqual(1, len(uml_steps))
-        self.assertTrue(all(step.optional for step in uml_steps))
-
-    def test_discovery_follows_an_additional_generator_in_the_actual_workflow(self) -> None:
-        actual_root = SCRIPT.parents[2]
-        workflow = generation.yaml.safe_load((actual_root / generation.WORKFLOW).read_text(encoding="utf-8"))
-        original = generation.discover_steps(actual_root)
-        workflow["jobs"]["regenerate-docs"]["steps"].append({
-            "name": "Render newly maintained summary",
-            "run": "python3 build/scripts/docs/render-future-summary.py --summary",
-        })
-        self.write(generation.WORKFLOW, generation.yaml.safe_dump(workflow))
-
-        discovered = generation.discover_steps(self.repo)
-
-        self.assertEqual(original, discovered[:-1])
-        self.assertIn("build/scripts/docs/render-future-summary.py", discovered[-1].command)
-        self.assertFalse(discovered[-1].optional)
-
-    def test_discovery_rejects_an_unrecognized_generation_command(self) -> None:
-        actual_root = SCRIPT.parents[2]
-        workflow = generation.yaml.safe_load((actual_root / generation.WORKFLOW).read_text(encoding="utf-8"))
-        workflow["jobs"]["regenerate-docs"]["steps"].append({
-            "name": "Unrecognized new generator",
-            "run": "make generate-new-output",
-        })
-        self.write(generation.WORKFLOW, generation.yaml.safe_dump(workflow))
-
-        with self.assertRaisesRegex(ValueError, "Unsupported generation command"):
-            generation.discover_steps(self.repo)
-
-    def test_docs_only_keeps_documentation_producers_without_recursive_or_browser_execution(self) -> None:
-        actual_root = SCRIPT.parents[2]
-        commands = [step.command for step in generation.discover_steps(actual_root, docs_only=True)]
-        flattened = "\n".join(" ".join(command) for command in commands)
-        self.assertNotIn("run-maintained-generation.py", flattened)
+    def test_docs_only_is_the_same_required_catalog_without_browser_generation(self) -> None:
+        full = generation.discover_steps(self.repo)
+        docs = generation.discover_steps(self.repo, docs_only=True)
+        self.assertEqual(full[len(generation.BROWSER_STEPS):], docs)
+        self.assertEqual(full[:len(generation.BROWSER_STEPS)], list(generation.BROWSER_STEPS))
+        flattened = "\n".join(" ".join(step.command) for step in docs)
         self.assertNotIn("generate-ui-api-routes-ts.py", flattened)
         self.assertNotIn("generate-workspace-catalog-ts.py", flattened)
         self.assertNotIn("dashboard run build", flattened)
-        for producer in ("render-source-docs.py", "render-roadmap-docs.py", "render-adapter-readiness.py",
-                         "run-docs-automation.py", "generate-workflow-manifest.py", "generate-diagrams"):
-            self.assertIn(producer, flattened)
+        self.assertIn("generate-diagrams", flattened)
+
+    def test_core_profile_keeps_validation_and_report_coverage(self) -> None:
+        path = SCRIPT.parent / "docs/run-docs-automation.py"
+        spec = importlib.util.spec_from_file_location("docs_profile_under_test", path)
+        profile = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = profile
+        self.addCleanup(sys.modules.pop, spec.name, None)
+        spec.loader.exec_module(profile)
+        expected = {
+            "scan-todos", "validate-docs-structure", "check-docfx-navigation",
+            "validate-agent-definitions", "validate-adapter-readiness",
+            "check-adapter-readiness-matrix", "generate-structure-docs",
+            "generate-health-dashboard", "validate-examples", "check-ai-inventory",
+            "check-ai-handoff-strict", "check-ai-contract-drift", "prompt-route-linter",
+            "handoff-packet-generator", "check-handoff-packet-schema", "check-ai-routing-parity",
+            "check-mode-escalation", "generate-coverage", "generate-pilot-readiness-dashboard",
+            "generate-paper-replay-reliability-dashboard", "generate-evidence-continuity-dashboard",
+            "generate-governance-readiness-dashboard", "generate-api-contract-coverage-dashboard",
+            "generate-workflow-manifest",
+        }
+        self.assertTrue(expected.issubset(profile.PROFILE_CONFIG["core"]))
+        self.assertEqual(1, profile.PROFILE_CONFIG["core"].count("generate-workflow-manifest"))
 
     def test_late_producer_reaches_fixed_point_and_second_invocation_is_empty(self) -> None:
         self.write(STRUCTURE, "old registry\n")

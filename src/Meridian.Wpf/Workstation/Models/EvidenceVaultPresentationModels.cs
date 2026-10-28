@@ -43,6 +43,9 @@ public sealed record EvidenceVaultManifestSnapshotModel(
     WorkstationReadinessTone ReadinessTone,
     string Tone);
 
+/// <summary>
+/// Projects evidence-vault documents and manifest snapshots into desktop queue and readiness presentation.
+/// </summary>
 public static class EvidenceVaultPresentationMapper
 {
     public static EvidenceVaultDocumentQueuePresentationModel BuildDocumentQueue(

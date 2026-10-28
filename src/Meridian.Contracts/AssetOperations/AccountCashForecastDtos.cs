@@ -85,12 +85,18 @@ public sealed record AccountCashForecastSnapshotDto(
     PortfolioCashLadderDto ForecastLadder,
     IReadOnlyList<AccountCashForecastIssueDto> Blockers);
 
+/// <summary>
+/// Retains account-scoped cash forecast snapshots and retrieves their captured history.
+/// </summary>
 public interface IAccountCashForecastStore
 {
     Task<AccountCashForecastSnapshotDto> AppendAsync(AccountCashForecastSnapshotDto snapshot, CancellationToken ct = default);
     Task<IReadOnlyList<AccountCashForecastSnapshotDto>> GetHistoryAsync(AccountCashForecastScopeDto scope, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Captures account cash forecasts and retrieves snapshots within an explicit account and book scope.
+/// </summary>
 public interface IAccountCashForecastService
 {
     Task<AccountCashForecastSnapshotDto> CaptureAsync(AccountCashForecastRequestDto request, CancellationToken ct = default);

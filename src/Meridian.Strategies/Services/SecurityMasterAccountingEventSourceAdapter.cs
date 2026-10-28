@@ -7,6 +7,7 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.Strategies.Services;
 
+/// <summary>Assembles period accounting-event inputs from Security Master and asset-operations services.</summary>
 public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMasterAccountingEventSourceAdapter
 {
     private readonly ISecurityMasterQueryService? _securityMasterQueryService;

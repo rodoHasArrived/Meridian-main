@@ -4,6 +4,9 @@ using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.Workstation.Controls;
 
+/// <summary>
+/// Displays a workstation diagnostics checklist through its bound presentation model.
+/// </summary>
 public partial class DiagnosticsChecklistControl : UserControl
 {
     public static readonly DependencyProperty ChecklistProperty =

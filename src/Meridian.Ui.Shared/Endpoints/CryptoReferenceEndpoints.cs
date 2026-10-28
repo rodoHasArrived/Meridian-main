@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps cryptocurrency reference queries with Security Master permission checks.
+/// </summary>
 public static class CryptoReferenceEndpoints
 {
     public static void MapCryptoReferenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)

@@ -8,6 +8,9 @@ using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Shell.Session;
 
+/// <summary>
+/// Persists desktop window state to disk and reloads it for session restoration.
+/// </summary>
 public sealed class WindowStateStore : IWindowStateStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new()

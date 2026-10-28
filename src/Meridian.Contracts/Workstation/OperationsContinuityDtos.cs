@@ -1513,6 +1513,9 @@ public sealed record PrivateCapitalCloseCockpitDto(
         EvidencePackages ?? [];
 }
 
+/// <summary>
+/// Builds the scoped private capital close cockpit read model.
+/// </summary>
 public interface IPrivateCapitalCloseCockpitService
 {
     Task<PrivateCapitalCloseCockpitDto> GetCockpitAsync(

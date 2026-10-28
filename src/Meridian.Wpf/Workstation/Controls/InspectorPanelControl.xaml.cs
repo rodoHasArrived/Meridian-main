@@ -4,6 +4,9 @@ using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.Workstation.Controls;
 
+/// <summary>
+/// Displays the selected record's facts, badge, and detail through a bound inspector presentation model.
+/// </summary>
 public partial class InspectorPanelControl : UserControl
 {
     public static readonly DependencyProperty PanelProperty =

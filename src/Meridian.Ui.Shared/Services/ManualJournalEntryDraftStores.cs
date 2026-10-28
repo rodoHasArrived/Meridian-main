@@ -13,6 +13,9 @@ using Meridian.Storage.Store;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Stores manual journal drafts and draft batches in process memory.
+/// </summary>
 public sealed class InMemoryManualJournalEntryDraftStore :
     IManualJournalEntryDraftStore,
     Meridian.Application.Composition.INonProductionOnlyService
@@ -124,6 +127,9 @@ public sealed class InMemoryManualJournalEntryDraftStore :
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
 
+/// <summary>
+/// Persists manual journal drafts and exposes the directory used for mutation recovery.
+/// </summary>
 public sealed class FileManualJournalEntryDraftStore :
     JsonFileSnapshotStore<FileManualJournalEntryDraftStore.ManualJournalEntryDraftSnapshot>,
     IManualJournalEntryDraftStore

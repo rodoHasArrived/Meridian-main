@@ -15,6 +15,9 @@ public sealed record WorkstationWorkspaceDefinition(
     string DesktopTileSummary,
     string DesktopShellDisplayName);
 
+/// <summary>
+/// Defines the shared root workspace keys, labels, and descriptions used by workstation clients.
+/// </summary>
 public static class WorkstationWorkspaceCatalog
 {
     public const string TradingKey = "trading";

@@ -4,6 +4,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
+/// <summary>
+/// Hands staged integration evidence to reconciliation and reads retained handoff history.
+/// </summary>
 public sealed class ProviderIntegrationReconciliationHandoffService
 {
     private const string PromotionTarget = "reconciliation-staging";

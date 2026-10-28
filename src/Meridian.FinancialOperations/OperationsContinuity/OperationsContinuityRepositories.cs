@@ -9,6 +9,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.FinancialOperations.OperationsContinuity;
 
+/// <summary>
+/// Saves and retrieves operations continuity workflows and filtered workflow lists.
+/// </summary>
 public interface IOperationsContinuityRepository
 {
     Task SaveAsync(OperationsContinuityWorkflow workflow, CancellationToken ct = default);
@@ -21,12 +24,18 @@ public interface IOperationsContinuityRepository
         Guid? ledgerBookId = null);
 }
 
+/// <summary>
+/// Appends operations workflow audit entries and reads their retained timelines.
+/// </summary>
 public interface IOperationsWorkflowAuditStore
 {
     Task<OperationsWorkflowAuditDto> AppendAsync(OperationsWorkflowAuditDraft draft, CancellationToken ct = default);
     Task<IReadOnlyList<OperationsWorkflowAuditDto>> GetTimelineAsync(Guid workflowId, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Commits workflow transitions together with their audit evidence.
+/// </summary>
 public interface IOperationsContinuityTransitionCommitStore
 {
     Task<OperationsContinuityTransactionalCommitResult> CommitWorkflowTransitionAsync(
@@ -36,6 +45,9 @@ public interface IOperationsContinuityTransitionCommitStore
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Commits ledger posting and workflow transition evidence through a shared transactional boundary.
+/// </summary>
 public interface IOperationsContinuityTransactionalCommitStore : IOperationsContinuityTransitionCommitStore
 {
     Task<OperationsContinuityTransactionalCommitResult> CommitLedgerPostingAsync(
@@ -45,6 +57,9 @@ public interface IOperationsContinuityTransactionalCommitStore : IOperationsCont
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Commits a newly started workflow together with its initial audit evidence.
+/// </summary>
 public interface IOperationsContinuityWorkflowStartCommitStore
 {
     Task<OperationsContinuityTransactionalCommitResult> CommitWorkflowStartAsync(
@@ -74,6 +89,9 @@ public sealed record OperationsWorkflowAuditDraft(
     OperationsContinuityCorrelationKeysDto? CorrelationKeys = null,
     Meridian.Contracts.Operations.VerifiedOperationOutcome? Outcome = null);
 
+/// <summary>
+/// Stores operations workflow snapshots in process and derives their status on reads.
+/// </summary>
 public sealed class InMemoryOperationsContinuityRepository : IOperationsContinuityRepository
 {
     private readonly Dictionary<Guid, OperationsContinuityWorkflow> _workflows = [];
@@ -159,6 +177,9 @@ public sealed class InMemoryOperationsContinuityRepository : IOperationsContinui
     }
 }
 
+/// <summary>
+/// Maintains workflow audit timelines and commits supported workflow mutations in process.
+/// </summary>
 public sealed class InMemoryOperationsWorkflowAuditStore : IOperationsWorkflowAuditStore
 {
     private readonly Dictionary<Guid, List<OperationsWorkflowAuditDto>> _events = [];
@@ -285,6 +306,9 @@ internal sealed class InMemoryOperationsContinuityTransitionCommitStore(
     }
 }
 
+/// <summary>
+/// Persists operations workflows in local files and supports coordinated workflow commits.
+/// </summary>
 public sealed class FileOperationsContinuityRepository :
     IOperationsContinuityRepository,
     IOperationsContinuityWorkflowStartCommitStore,
@@ -560,6 +584,9 @@ public sealed class FileOperationsContinuityRepository :
         };
 }
 
+/// <summary>
+/// Persists workflow audit envelopes and validates their retained hash-chain evidence.
+/// </summary>
 public sealed class FileOperationsWorkflowAuditStore : IOperationsWorkflowAuditStore
 {
     private readonly string _dataDirectory;

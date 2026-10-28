@@ -4,6 +4,9 @@ using Meridian.Ui.Shared.Workflows;
 
 namespace Meridian.Ui.Shared.Extensibility;
 
+/// <summary>
+/// Exposes workflow definitions as extension catalog registrations.
+/// </summary>
 public sealed class WorkflowExtensibilityCatalogProvider : IExtensibilityCatalogProvider
 {
     private static readonly ExtensibilityScopeDto GlobalScope = new(ExtensibilityScopeKindDto.Global, null, "Global workflow catalog");

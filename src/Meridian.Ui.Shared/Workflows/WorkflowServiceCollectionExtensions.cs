@@ -3,6 +3,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Workflows;
 
+/// <summary>
+/// Registers workflow definitions, the workflow registry, and file-backed workflow presets.
+/// </summary>
 public static class WorkflowServiceCollectionExtensions
 {
     public static IServiceCollection AddWorkflowLibrary(this IServiceCollection services)

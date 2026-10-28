@@ -17,6 +17,9 @@ using static Meridian.Ui.Shared.Evidence.EvidenceContributionHelpers;
 
 namespace Meridian.Ui.Shared.Evidence;
 
+/// <summary>
+/// Adds trading readiness gates and their supporting evidence to an evidence graph.
+/// </summary>
 public sealed class TradingReadinessEvidenceContributor : IEvidenceContributor
 {
     private readonly IServiceProvider _services;
@@ -103,6 +106,9 @@ public sealed class TradingReadinessEvidenceContributor : IEvidenceContributor
     }
 }
 
+/// <summary>
+/// Adds reconciliation runs, breaks, and casework evidence to an evidence graph.
+/// </summary>
 public sealed partial class ReconciliationEvidenceContributor : IEvidenceContributor
 {
     private readonly IServiceProvider _services;
@@ -160,6 +166,9 @@ public sealed partial class ReconciliationEvidenceContributor : IEvidenceContrib
 
 }
 
+/// <summary>
+/// Adds report-pack lifecycle and supporting output evidence to an evidence graph.
+/// </summary>
 public sealed class ReportPackEvidenceContributor : IEvidenceContributor
 {
     private readonly IServiceProvider _services;
@@ -348,6 +357,9 @@ public sealed class ReportPackEvidenceContributor : IEvidenceContributor
         => $"/api/workstation/evidence/subjects/{EvidenceSubjectResolver.ReportPackDeliveryKind}/{Uri.EscapeDataString(deliverySubjectId)}/packet";
 }
 
+/// <summary>
+/// Adds retained report-pack delivery attempts and artifacts to an evidence graph.
+/// </summary>
 public sealed class ReportPackDeliveryEvidenceContributor : IEvidenceContributor
 {
     private readonly IServiceProvider _services;
@@ -953,6 +965,9 @@ public sealed class ReportPackDeliveryEvidenceContributor : IEvidenceContributor
                 StringSplitOptions.RemoveEmptyEntries));
 }
 
+/// <summary>
+/// Adds provider trust and readiness observations to an evidence graph.
+/// </summary>
 public sealed class ProviderTrustEvidenceContributor : IEvidenceContributor
 {
     private readonly IServiceProvider _services;
@@ -1005,6 +1020,9 @@ public sealed class ProviderTrustEvidenceContributor : IEvidenceContributor
     }
 }
 
+/// <summary>
+/// Adds analysis-export evidence for portfolio reporting review.
+/// </summary>
 public sealed class ExportEvidenceContributor : IEvidenceContributor
 {
     public string ContributorId => "analysis-export";
@@ -1035,6 +1053,9 @@ public sealed class ExportEvidenceContributor : IEvidenceContributor
     }
 }
 
+/// <summary>
+/// Adds Security Master conflict and resolution evidence to an evidence graph.
+/// </summary>
 public sealed class SecurityMasterConflictEvidenceContributor : IEvidenceContributor
 {
     private readonly IServiceProvider _services;
@@ -1178,6 +1199,9 @@ public sealed class SecurityMasterConflictEvidenceContributor : IEvidenceContrib
         => $"security-master:conflict:{conflictId:N}";
 }
 
+/// <summary>
+/// Adds operational approval decisions and their linked evidence to an evidence graph.
+/// </summary>
 public sealed class OperationsApprovalEvidenceContributor : IEvidenceContributor
 {
     private readonly IServiceProvider _services;
@@ -1479,6 +1503,9 @@ public sealed class OperationsApprovalEvidenceContributor : IEvidenceContributor
             : string.Join("-", value.Trim().Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries));
 }
 
+/// <summary>
+/// Adds private-capital fund-event workflow and output evidence to an evidence graph.
+/// </summary>
 public sealed class PrivateCapitalFundEventEvidenceContributor : IEvidenceContributor
 {
     private readonly IServiceProvider _services;
@@ -1743,6 +1770,9 @@ public sealed class PrivateCapitalFundEventEvidenceContributor : IEvidenceContri
                 StringSplitOptions.RemoveEmptyEntries));
 }
 
+/// <summary>
+/// Adds payment-intent bank, reconciliation, and audit evidence to an evidence graph.
+/// </summary>
 public sealed class PaymentIntentEvidenceContributor : IEvidenceContributor
 {
     private readonly IServiceProvider _services;
@@ -2504,6 +2534,9 @@ public sealed class PaymentIntentEvidenceContributor : IEvidenceContributor
                 StringSplitOptions.RemoveEmptyEntries));
 }
 
+/// <summary>
+/// Adds retained Evidence Vault documents, review status, and linked artifacts to an evidence graph.
+/// </summary>
 public sealed class EvidenceVaultEvidenceContributor : IEvidenceContributor
 {
     private readonly IServiceProvider _services;

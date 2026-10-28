@@ -6,6 +6,9 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.Workflow.Workflows;
 
+/// <summary>
+/// Processes fund workflow transitions and retains accepted or rejected command evidence in operational case history.
+/// </summary>
 public sealed class FundWorkflowCommandHandler
 {
     private const string CaseType = "fund-workflow";

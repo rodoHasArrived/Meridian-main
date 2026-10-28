@@ -142,6 +142,9 @@ public sealed record BrokerStatementImportRequest(
         };
 }
 
+/// <summary>
+/// Builds normalized statement deduplication keys from account, period, and retained artifact hashes.
+/// </summary>
 public static class StatementDuplicateKey
 {
     public static string Create(
@@ -307,6 +310,9 @@ public static class StatementDuplicateKey
         => value.Trim().ToUpperInvariant();
 }
 
+/// <summary>
+/// Reports a duplicate statement import and identifies the previously retained import.
+/// </summary>
 public sealed class StatementAlreadyImportedException : InvalidOperationException
 {
     public StatementAlreadyImportedException(string existingImportId)
@@ -335,12 +341,18 @@ public sealed record MatchOutcome(
     public string? ToleranceRuleId { get; init; }
 }
 
+/// <summary>
+/// Validates and imports broker statement requests into canonical statement rows and metadata.
+/// </summary>
 public interface IBrokerStatementService
 {
     Task<BrokerStatementValidationResult> ValidateAsync(BrokerStatementImportRequest request, CancellationToken ct = default);
     Task<BrokerStatementImportResult> ImportAsync(BrokerStatementImportRequest request, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Creates and manages reconciliation case status, assignments, comments, and open-case queries.
+/// </summary>
 public interface IReconciliationCaseService
 {
     Task<IReadOnlyList<ReconciliationCase>> CreateOpenCasesAsync(string importId, IReadOnlyList<MatchOutcome> outcomes, CancellationToken ct = default);

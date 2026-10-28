@@ -8,6 +8,9 @@ on:
         required: false
         default: "PR1"
   pull_request:
+    # Phase is supplied in the PR body or labels. Metadata corrections need a new
+    # event payload; rerunning an old workflow keeps its original phase metadata.
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
     paths:
       - "docs/roadmap/**"
       - "docs/source/**"
@@ -37,8 +40,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: roadmap-source-docs-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: roadmap-source-docs-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'latest' }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 env:
   PYTHONUNBUFFERED: "1"
@@ -53,7 +56,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
 
@@ -96,6 +99,7 @@ jobs:
   schema:
     runs-on: ubuntu-latest
     needs: scope-gate
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -103,7 +107,7 @@ jobs:
           fetch-depth: 1
 
       - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
 
@@ -119,20 +123,39 @@ jobs:
       - name: Scan source TODOs
         run: python3 build/scripts/docs/scan-source-todos.py --summary
 
-      - name: Render roadmap docs
-        run: python3 build/scripts/docs/render-roadmap-docs.py --summary
+      # Documentation Automation owns required generation on every PR/main push.
+      # Keep phase/schema validation above; standalone manual requests need the
+      # same complete generation/freshness contract without another workflow.
+      - name: Set up Node.js for manual generation
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: "package-lock.json"
 
-      - name: Render source docs
-        run: python3 build/scripts/docs/render-source-docs.py --summary
+      - name: Install diagram dependencies for manual generation
+        if: github.event_name == 'workflow_dispatch'
+        run: npm ci --no-fund --no-audit
 
-      - name: Render diagrams
-        run: |
-          python3 build/scripts/docs/render-roadmap-diagrams.py --summary
-          python3 build/scripts/docs/render-source-diagrams.py --summary
+      - name: Converge maintained documentation
+        if: github.event_name == 'workflow_dispatch'
+        run: python3 build/scripts/run-maintained-generation.py --docs-only --report artifacts/docs/generation.json
 
       - name: Check generated docs are current
-        run: |
-          git diff --exit-code
+        if: github.event_name == 'workflow_dispatch'
+        run: python3 build/scripts/ci/check-generated-output.py
 
       - name: Check whitespace
         run: git diff --check
+
+      - name: Upload manual documentation repair evidence
+        if: always() && github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: roadmap-documentation-repair-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            artifacts/docs/
+            artifacts/maintained-generation/
+          if-no-files-found: ignore
+          retention-days: 7

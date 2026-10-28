@@ -23,6 +23,9 @@ public sealed class ProviderConnectionsConfigDto
     public ProviderCertificationConfigDto[]? Certifications { get; set; }
 }
 
+/// <summary>
+/// Describes a tenant's provider connection, credential environment, operating mode, and readiness.
+/// </summary>
 public sealed class ProviderConnectionConfigDto
 {
     [JsonPropertyName("tenantId")]
@@ -71,6 +74,9 @@ public sealed class ProviderConnectionConfigDto
     public bool ProductionReady { get; set; }
 }
 
+/// <summary>
+/// Binds a provider capability to a connection and target scope, including priority and failover connections.
+/// </summary>
 public sealed class ProviderBindingConfigDto
 {
     [JsonPropertyName("bindingId")]
@@ -101,6 +107,9 @@ public sealed class ProviderBindingConfigDto
     public string? Notes { get; set; }
 }
 
+/// <summary>
+/// Configures capability selection safeguards and permitted provider failover choices.
+/// </summary>
 public sealed class ProviderPolicyConfigDto
 {
     [JsonPropertyName("policyId")]
@@ -128,6 +137,9 @@ public sealed class ProviderPolicyConfigDto
     public string? Description { get; set; }
 }
 
+/// <summary>
+/// Groups named provider policies and highlights into a selectable configuration preset.
+/// </summary>
 public sealed class ProviderPresetConfigDto
 {
     [JsonPropertyName("presetId")]
@@ -152,6 +164,9 @@ public sealed class ProviderPresetConfigDto
     public bool IsEnabled { get; set; }
 }
 
+/// <summary>
+/// Carries the checks, validity period, and production readiness of a provider connection certification.
+/// </summary>
 public sealed class ProviderCertificationConfigDto
 {
     [JsonPropertyName("connectionId")]
@@ -176,6 +191,9 @@ public sealed class ProviderCertificationConfigDto
     public string[]? Notes { get; set; }
 }
 
+/// <summary>
+/// Identifies the workspace and financial entity or account scope targeted by a provider binding.
+/// </summary>
 public sealed class ProviderScopeDto
 {
     [JsonPropertyName("workspace")]

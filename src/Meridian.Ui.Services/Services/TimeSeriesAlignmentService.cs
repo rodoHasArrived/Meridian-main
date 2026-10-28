@@ -384,6 +384,9 @@ public sealed class TimeSeriesAlignmentService
 }
 
 
+/// <summary>
+/// Supplies time-series alignment progress, current symbol, and processed record count.
+/// </summary>
 public sealed class AlignmentProgressEventArgs : EventArgs
 {
     public double Progress { get; set; }
@@ -432,6 +435,9 @@ public enum GapStrategy : byte
 
 
 
+/// <summary>
+/// Configures time-series scope, interval, aggregation, gap handling, calendar settings, and output artifact.
+/// </summary>
 public sealed class AlignmentOptions
 {
     public List<string>? Symbols { get; set; }
@@ -449,6 +455,9 @@ public sealed class AlignmentOptions
     public bool IncludeMetadata { get; set; } = true;
 }
 
+/// <summary>
+/// Reports alignment success, output location, record and gap counts, duration, and metadata.
+/// </summary>
 public sealed class AlignmentResult
 {
     public bool Success { get; set; }
@@ -462,6 +471,9 @@ public sealed class AlignmentResult
     public AlignmentMetadata? Metadata { get; set; }
 }
 
+/// <summary>
+/// Summarizes aligned records and gaps by symbol with time coverage and interval totals.
+/// </summary>
 public sealed class AlignmentMetadata
 {
     public Dictionary<string, long>? RecordsBySymbol { get; set; }
@@ -472,6 +484,9 @@ public sealed class AlignmentMetadata
     public double CoveragePercent { get; set; }
 }
 
+/// <summary>
+/// Describes a selectable alignment interval with its display label and length in seconds.
+/// </summary>
 public sealed class AlignmentInterval
 {
     public TimeSeriesInterval Value { get; set; }
@@ -479,6 +494,9 @@ public sealed class AlignmentInterval
     public int Seconds { get; set; }
 }
 
+/// <summary>
+/// Describes a selectable aggregation method, its explanation, and the fields it produces.
+/// </summary>
 public sealed class AggregationMethod
 {
     public AggregationType Value { get; set; }
@@ -487,6 +505,9 @@ public sealed class AggregationMethod
     public string[]? Fields { get; set; }
 }
 
+/// <summary>
+/// Describes a selectable missing-interval policy with its display label, explanation, and icon.
+/// </summary>
 public sealed class GapHandlingStrategy
 {
     public GapStrategy Value { get; set; }
@@ -495,6 +516,9 @@ public sealed class GapHandlingStrategy
     public string Icon { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Provides a reusable interval, aggregation, gap-handling, and market-hours configuration.
+/// </summary>
 public sealed class AlignmentPreset
 {
     public string Name { get; set; } = string.Empty;
@@ -507,6 +531,9 @@ public sealed class AlignmentPreset
     public bool MarketHoursOnly { get; set; } = true;
 }
 
+/// <summary>
+/// Reports expected alignment output, gap counts, artifact size, and source records or a preview error.
+/// </summary>
 public sealed class AlignmentPreview
 {
     public bool Success { get; set; }
@@ -518,6 +545,9 @@ public sealed class AlignmentPreview
     public int IntervalCount { get; set; }
 }
 
+/// <summary>
+/// Collects errors and warnings from validating time-series alignment options.
+/// </summary>
 public sealed class AlignmentValidationResult
 {
     public bool IsValid { get; set; }
@@ -527,6 +557,9 @@ public sealed class AlignmentValidationResult
 
 
 
+/// <summary>
+/// Carries API alignment artifact details, record and gap totals, duration, and metadata.
+/// </summary>
 public sealed class AlignmentResponse
 {
     public bool Success { get; set; }
@@ -539,6 +572,9 @@ public sealed class AlignmentResponse
     public AlignmentMetadata? Metadata { get; set; }
 }
 
+/// <summary>
+/// Carries API estimates for alignment records, gaps, artifact bytes, and intervals.
+/// </summary>
 public sealed class AlignmentPreviewResponse
 {
     public long TotalSourceRecords { get; set; }

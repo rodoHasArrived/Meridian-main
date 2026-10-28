@@ -3,6 +3,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Hosts time-series alignment configuration and export.
+/// </summary>
 public partial class TimeSeriesAlignmentPage : Page
 {
     public TimeSeriesAlignmentPage()

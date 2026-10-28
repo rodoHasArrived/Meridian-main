@@ -3,6 +3,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Workstation.Commands;
 
+/// <summary>
+/// Adds busy, error, and cancellation presentation to an asynchronous workstation command.
+/// </summary>
 public sealed class AsyncCommandViewModel : BindableBase
 {
     private CommandViewModel _command = new();

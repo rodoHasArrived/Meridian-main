@@ -8,6 +8,9 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.Application.Integrations;
 
+/// <summary>
+/// Runs due provider synchronization work using retained connection configuration.
+/// </summary>
 public sealed class ProviderIntegrationSyncOrchestrationService
 {
     private readonly ILogger<ProviderIntegrationSyncOrchestrationService> logger;

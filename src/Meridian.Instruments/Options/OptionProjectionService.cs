@@ -4,6 +4,9 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Instruments.Options;
 
+/// <summary>
+/// Reads option projections and persists normalized option-chain snapshots.
+/// </summary>
 public sealed class OptionProjectionService : IOptionReferenceService, IOptionChainImportService
 {
     private readonly IOptionReferenceProjectionStore _projectionStore;
@@ -139,6 +142,9 @@ public sealed class OptionProjectionService : IOptionReferenceService, IOptionCh
         => value.Trim().ToUpperInvariant();
 }
 
+/// <summary>
+/// Returns absent or empty option reference data when the reference service is unavailable.
+/// </summary>
 public sealed class NullOptionReferenceService : IOptionReferenceService
 {
     public Task<OptionContractReferenceDto?> GetContractAsync(string contractSymbol, CancellationToken ct = default)
@@ -157,6 +163,9 @@ public sealed class NullOptionReferenceService : IOptionReferenceService
         => Task.FromResult<IReadOnlyList<DateOnly>>(Array.Empty<DateOnly>());
 }
 
+/// <summary>
+/// Returns an empty normalized option-chain result without persisting the supplied snapshot.
+/// </summary>
 public sealed class NullOptionChainImportService : IOptionChainImportService
 {
     public Task<OptionChainSnapshotDto> ImportSnapshotAsync(OptionChainSnapshot snapshot, CancellationToken ct = default)

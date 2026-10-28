@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Globalization;
+using System.Diagnostics;
 using Meridian.Contracts.Integrity;
 using Meridian.Core.ReferenceData;
 using Meridian.Domain.Reconciliation;
@@ -115,6 +116,9 @@ internal static class BrokerStatementSourceSnapshot
     }
 }
 
+/// <summary>
+/// Retains canonical statement imports and rows and supports checksum and duplicate-key lookup.
+/// </summary>
 public interface ICanonicalStatementStore
 {
     Task<bool> ImportExistsByChecksumAsync(string checksum, CancellationToken ct = default);
@@ -159,6 +163,9 @@ internal static class ReconciliationRecordFileName
         => Sha256Digest.ComputeUtf8(value);
 }
 
+/// <summary>
+/// Persists canonical statement imports and rows as JSON files under the data root.
+/// </summary>
 public sealed class JsonCanonicalStatementStore : ICanonicalStatementStore
 {
     private readonly IAtomicFileWriter _atomicFileWriter;
@@ -214,7 +221,12 @@ public sealed class JsonCanonicalStatementStore : ICanonicalStatementStore
                 stream.Flush(flushToDisk: true);
             }
             ct.ThrowIfCancellationRequested();
-            // The no-overwrite rename is the cross-process uniqueness and visibility boundary.
+            // Unix no-overwrite moves can check destination absence before an ordinary rename.
+            // Serialize publication across processes, retaining the lock inode for future writers.
+            await using var publicationClaim = await AcquirePublicationClaimAsync(targetPath, ct).ConfigureAwait(false);
+            ct.ThrowIfCancellationRequested();
+            if (File.Exists(targetPath))
+                return false;
             try
             {
                 File.Move(temporaryPath, targetPath, overwrite: false);
@@ -232,6 +244,25 @@ public sealed class JsonCanonicalStatementStore : ICanonicalStatementStore
             if (File.Exists(temporaryPath))
             {
                 File.Delete(temporaryPath);
+            }
+        }
+    }
+
+    private static async Task<FileStream> AcquirePublicationClaimAsync(string targetPath, CancellationToken ct)
+    {
+        var lockPath = targetPath + ".lock";
+        var started = Stopwatch.GetTimestamp();
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                return new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            }
+            catch (IOException) when (File.Exists(lockPath)
+                && Stopwatch.GetElapsedTime(started) < TimeSpan.FromSeconds(30))
+            {
+                await Task.Delay(25, ct).ConfigureAwait(false);
             }
         }
     }
@@ -288,6 +319,9 @@ public sealed class JsonCanonicalStatementStore : ICanonicalStatementStore
         IReadOnlyList<CanonicalStatementRow>? rows = null);
 }
 
+/// <summary>
+/// Validates and imports bounded CSV broker statements into canonical statement records.
+/// </summary>
 public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : IBrokerStatementService
 {
     private const long MaximumStatementBytes = 32L * 1024 * 1024;
@@ -673,6 +707,9 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
         string.Equals(source, "custodian", StringComparison.OrdinalIgnoreCase);
 }
 
+/// <summary>
+/// Retains reconciliation breaks and materializes their run and casework projections.
+/// </summary>
 public interface IReconciliationBreakStore
 {
     Task WriteAsync(IReadOnlyList<ReconciliationBreakRecord> records, CancellationToken ct = default);
@@ -759,6 +796,9 @@ public sealed record StatementBreakCaseworkAuditEvent(
     DateTimeOffset OccurredAtUtc,
     string InputHashSha256);
 
+/// <summary>
+/// Persists reconciliation breaks and casework projections in JSON files.
+/// </summary>
 public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
 {
     private readonly IAtomicFileWriter _atomicFileWriter;

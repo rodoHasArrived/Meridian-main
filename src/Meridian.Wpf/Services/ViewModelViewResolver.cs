@@ -7,6 +7,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Uses page conventions and explicit mappings to resolve and attach view models from dependency injection.
+/// </summary>
 public sealed class ViewModelViewResolver : IViewModelViewResolver
 {
     private readonly IServiceProviderIsService? _serviceLookup;

@@ -305,6 +305,9 @@ public sealed class ScheduleManagerViewModel : BindableBase
     }
 }
 
+/// <summary>
+/// Defines backfill and maintenance schedule discovery, templates, and cron-expression validation.
+/// </summary>
 public interface IScheduleManagerClient
 {
     Task<List<BackfillSchedule>?> GetBackfillSchedulesAsync(CancellationToken ct = default);
@@ -316,6 +319,9 @@ public interface IScheduleManagerClient
     Task<CronValidationResult?> ValidateCronExpressionAsync(string cronExpression, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Adapts shared scheduling APIs for desktop schedule and template discovery and cron validation.
+/// </summary>
 public sealed class ScheduleManagerClient : IScheduleManagerClient
 {
     private readonly ScheduleManagerService _scheduleService;

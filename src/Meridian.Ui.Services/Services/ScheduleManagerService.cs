@@ -216,6 +216,9 @@ public sealed class ScheduleManagerService
 
 // DTO classes for schedule management
 
+/// <summary>
+/// Describes a recurring historical-data request with cron timing, symbols, provider, and execution history totals.
+/// </summary>
 public sealed class BackfillSchedule
 {
     public string Id { get; set; } = string.Empty;
@@ -239,6 +242,9 @@ public sealed class BackfillSchedule
     public DateTime UpdatedAt { get; set; }
 }
 
+/// <summary>
+/// Defines a new historical-data schedule's cron timing, scope, provider, and enabled state.
+/// </summary>
 public sealed class CreateBackfillScheduleRequest
 {
     public string Name { get; set; } = string.Empty;
@@ -253,6 +259,9 @@ public sealed class CreateBackfillScheduleRequest
     public bool IsEnabled { get; set; } = true;
 }
 
+/// <summary>
+/// Carries optional changes to a historical-data schedule's timing, scope, provider, and priority.
+/// </summary>
 public sealed class UpdateBackfillScheduleRequest
 {
     public string? Name { get; set; }
@@ -266,6 +275,9 @@ public sealed class UpdateBackfillScheduleRequest
     public List<string>? Tags { get; set; }
 }
 
+/// <summary>
+/// Describes scheduled storage maintenance, retry limits, timing, and execution history totals.
+/// </summary>
 public sealed class MaintenanceSchedule
 {
     public string Id { get; set; } = string.Empty;
@@ -288,6 +300,9 @@ public sealed class MaintenanceSchedule
     public DateTime UpdatedAt { get; set; }
 }
 
+/// <summary>
+/// Defines a new maintenance schedule's operation, cron timing, target, and execution limits.
+/// </summary>
 public sealed class CreateMaintenanceScheduleRequest
 {
     public string Name { get; set; } = string.Empty;
@@ -301,6 +316,9 @@ public sealed class CreateMaintenanceScheduleRequest
     public bool IsEnabled { get; set; } = true;
 }
 
+/// <summary>
+/// Carries optional changes to a maintenance schedule's timing, target, priority, and execution limits.
+/// </summary>
 public sealed class UpdateMaintenanceScheduleRequest
 {
     public string? Name { get; set; }
@@ -312,6 +330,9 @@ public sealed class UpdateMaintenanceScheduleRequest
     public int? MaxRetries { get; set; }
 }
 
+/// <summary>
+/// Records a scheduled execution's timing, status, processed records, failure details, and duration.
+/// </summary>
 public sealed class ScheduleExecutionLog
 {
     public string Id { get; set; } = string.Empty;
@@ -327,6 +348,9 @@ public sealed class ScheduleExecutionLog
     public Dictionary<string, object> Details { get; set; } = new();
 }
 
+/// <summary>
+/// Reports a schedule execution request's success, execution identity, and message.
+/// </summary>
 public sealed class ScheduleExecutionResult
 {
     public bool Success { get; set; }
@@ -334,6 +358,9 @@ public sealed class ScheduleExecutionResult
     public string Message { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Describes a reusable named cron schedule with its category and human-readable timing.
+/// </summary>
 public sealed class ScheduleTemplate
 {
     public string Id { get; set; } = string.Empty;
@@ -344,6 +371,9 @@ public sealed class ScheduleTemplate
     public string Category { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Reports cron-expression validity, a timing description, and upcoming execution dates.
+/// </summary>
 public sealed class CronValidationResult
 {
     public bool IsValid { get; set; }
@@ -352,12 +382,18 @@ public sealed class CronValidationResult
     public List<DateTime> NextRuns { get; set; } = new();
 }
 
+/// <summary>
+/// Carries the API success flag and message for schedule deletion.
+/// </summary>
 public sealed class DeleteResponse
 {
     public bool Success { get; set; }
     public string Message { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Carries API schedule-toggle success and the resulting enabled state.
+/// </summary>
 public sealed class EnableResponse
 {
     public bool Success { get; set; }

@@ -18,6 +18,9 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.Core.Serialization;
 
+/// <summary>
+/// Provides source-generated JSON metadata and serialization options for Security Master contracts and reference-data records.
+/// </summary>
 [JsonSourceGenerationOptions(
     WriteIndented = false,
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,

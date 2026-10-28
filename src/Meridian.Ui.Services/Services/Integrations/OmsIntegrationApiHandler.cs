@@ -6,6 +6,9 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.Ui.Services.Services.Integrations;
 
+/// <summary>
+/// Handles OMS/EMS ingestion with bounded in-memory deduplication, diagnostics, signing keys, and audit history.
+/// </summary>
 public sealed class OmsIntegrationApiHandler : IOmsIntegrationApiHandler
 {
     private const int MaxTrackedMessages = 10_000;

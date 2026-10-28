@@ -3,6 +3,9 @@ using Meridian.Reporting;
 
 namespace Meridian.Ui.Shared.Extensibility;
 
+/// <summary>
+/// Exposes reporting templates and their metadata as extension catalog registrations.
+/// </summary>
 public sealed class ReportingTemplateExtensibilityCatalogProvider : IExtensibilityCatalogProvider
 {
     private static readonly ExtensibilityScopeDto GlobalScope = new(

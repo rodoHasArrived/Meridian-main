@@ -9,6 +9,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Shell.ViewModels;
 
+/// <summary>
+/// Presents a primary workflow summary and expandable secondary summaries with navigation targets.
+/// </summary>
 public sealed class WorkflowSummaryStripViewModel : BindableBase
 {
     private readonly ObservableCollection<WorkspaceWorkflowSummary> _summaries = [];

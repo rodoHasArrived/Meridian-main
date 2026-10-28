@@ -4,6 +4,9 @@ using System.Linq;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Exposes bindable state and commands to replay event streams to review sequence and signal behavior.
+/// </summary>
 public sealed class EventReplayViewModel : BindableBase, IDataErrorInfo
 {
     private EventReplaySession? _selectedReplay;
@@ -177,6 +180,9 @@ public sealed class EventReplayViewModel : BindableBase, IDataErrorInfo
     }
 }
 
+/// <summary>
+/// Presents an event replay's name, status, and last-run text.
+/// </summary>
 public sealed class EventReplaySession : BindableBase
 {
     private string _status;

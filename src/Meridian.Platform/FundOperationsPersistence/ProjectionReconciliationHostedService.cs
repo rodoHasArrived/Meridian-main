@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Platform.FundOperationsPersistence;
 
+/// <summary>Periodically runs registered domain projection reconciliation jobs and logs discrepancies.</summary>
 public sealed class ProjectionReconciliationHostedService(
     IEnumerable<IDomainProjectionReconciliationJob> jobs,
     ILogger<ProjectionReconciliationHostedService> logger) : BackgroundService

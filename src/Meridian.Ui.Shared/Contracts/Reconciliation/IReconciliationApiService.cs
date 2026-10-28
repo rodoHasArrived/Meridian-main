@@ -16,6 +16,9 @@ public sealed record StatementReconciliationRunAuthorization(
     DateOnly PeriodStart,
     DateOnly PeriodEnd);
 
+/// <summary>
+/// Defines scope-authorized statement import, reconciliation-run, and casework API operations.
+/// </summary>
 public interface IReconciliationApiService
 {
     Task<IReadOnlyList<StatementImportSummaryDto>> ListImportsAsync(

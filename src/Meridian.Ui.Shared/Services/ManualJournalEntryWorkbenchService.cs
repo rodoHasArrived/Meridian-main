@@ -15,6 +15,9 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Coordinates manual journal draft editing, validation, evidence, approval submission, and lifecycle actions.
+/// </summary>
 public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalEntryWorkbenchService, IManualJournalEntryLifecycleService
 {
     private const string DefaultFundProfileId = "default-fund";

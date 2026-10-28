@@ -18,6 +18,9 @@ namespace Meridian.Ui.Shared.Services;
 
 public sealed record ReportingScheduleStoreOptions(string SnapshotPath);
 
+/// <summary>
+/// Stores reporting schedules and coordinates execution claims and leases.
+/// </summary>
 [Obsolete(
     "Use Meridian.Reporting.IReportingScheduleStore. This compatibility interface will be removed after legacy UI Shared callers migrate.")]
 public interface IReportingScheduleStore : Meridian.Reporting.IReportingScheduleStore
@@ -154,6 +157,9 @@ internal sealed class ReportingScheduleIdentityComparer : IEqualityComparer<Repo
 }
 
 #pragma warning disable CS0618
+/// <summary>
+/// Persists reporting schedules, execution authority, and legacy schedule recovery evidence.
+/// </summary>
 public sealed partial class FileReportingScheduleStore : IReportingScheduleStore, INonProductionOnlyService
 {
     private const string SchemaVersion = "meridian.reporting.schedule-store.v2";
@@ -1036,6 +1042,9 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
 }
 #pragma warning restore CS0618
 
+/// <summary>
+/// Manages scoped reporting schedules and coordinates their governed execution state.
+/// </summary>
 public sealed partial class ReportingScheduleService
 {
     private readonly IReportingOrchestrationService _orchestrationService;

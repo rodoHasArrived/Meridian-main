@@ -4,6 +4,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Exposes the shell posture used to style the desktop frame.
+/// </summary>
 public class InstitutionalShellFrameControl : UserControl
 {
     public static readonly DependencyProperty ShellPostureProperty =

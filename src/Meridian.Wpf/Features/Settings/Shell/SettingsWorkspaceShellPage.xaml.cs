@@ -7,6 +7,9 @@ using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Features.Settings.Shell;
 
+/// <summary>
+/// Hosts settings readiness, operational configuration, and support navigation.
+/// </summary>
 public partial class SettingsWorkspaceShellPage : SettingsWorkspaceShellPageBase
 {
     private bool _viewModelEventsAttached;

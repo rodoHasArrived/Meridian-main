@@ -91,6 +91,9 @@ public sealed class LiveDataService
 
 // DTOs for live data
 
+/// <summary>
+/// Carries a live trade's symbol, price, size, venue, sequence, and reported side.
+/// </summary>
 public sealed class TradeEvent
 {
     public string Symbol { get; set; } = string.Empty;
@@ -103,6 +106,9 @@ public sealed class TradeEvent
     public string Side { get; set; } = string.Empty; // Buy/Sell/Unknown
 }
 
+/// <summary>
+/// Carries a live symbol quote with bid and ask sizes, venues, spread, and midpoint.
+/// </summary>
 public sealed class QuoteEvent
 {
     public string Symbol { get; set; } = string.Empty;
@@ -117,6 +123,9 @@ public sealed class QuoteEvent
     public decimal MidPrice { get; set; }
 }
 
+/// <summary>
+/// Groups bid and ask depth levels with top-of-book prices, volume totals, and imbalance.
+/// </summary>
 public sealed class OrderBookSnapshot
 {
     public string Symbol { get; set; } = string.Empty;
@@ -132,6 +141,9 @@ public sealed class OrderBookSnapshot
     public decimal Imbalance { get; set; }
 }
 
+/// <summary>
+/// Describes aggregated size, order count, and venue at one order-book price level.
+/// </summary>
 public sealed class OrderBookLevel
 {
     public decimal Price { get; set; }
@@ -140,6 +152,9 @@ public sealed class OrderBookLevel
     public string Exchange { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Describes a symbol's best bid and offer with spread, midpoint, and observation time.
+/// </summary>
 public sealed class BboQuote
 {
     public string Symbol { get; set; } = string.Empty;
@@ -153,6 +168,9 @@ public sealed class BboQuote
     public DateTime Timestamp { get; set; }
 }
 
+/// <summary>
+/// Summarizes a symbol's trade flow, volume imbalance, and VWAP over a period.
+/// </summary>
 public sealed class OrderFlowStats
 {
     public string Symbol { get; set; } = string.Empty;
@@ -168,6 +186,9 @@ public sealed class OrderFlowStats
     public DateTime PeriodEnd { get; set; }
 }
 
+/// <summary>
+/// Describes a live symbol subscription's identity, type, activity, and received-event rate.
+/// </summary>
 public sealed class SubscriptionInfo
 {
     public string Symbol { get; set; } = string.Empty;
@@ -180,6 +201,9 @@ public sealed class SubscriptionInfo
     public double EventsPerSecond { get; set; }
 }
 
+/// <summary>
+/// Selects live trade, quote, and depth subscriptions and the requested depth levels.
+/// </summary>
 public sealed class SubscribeRequest
 {
     public string Symbol { get; set; } = string.Empty;
@@ -189,6 +213,9 @@ public sealed class SubscribeRequest
     public int DepthLevels { get; set; } = 10;
 }
 
+/// <summary>
+/// Reports subscription creation success, assigned identity, and an explanatory message.
+/// </summary>
 public sealed class SubscriptionResult
 {
     public bool Success { get; set; }
@@ -196,11 +223,17 @@ public sealed class SubscriptionResult
     public string Message { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Carries the API success flag for removing a live subscription.
+/// </summary>
 public sealed class UnsubscribeResponse
 {
     public bool Success { get; set; }
 }
 
+/// <summary>
+/// Summarizes live-stream health, stream counts, overall latency, and individual stream diagnostics.
+/// </summary>
 public sealed class DataStreamHealth
 {
     public bool IsHealthy { get; set; }
@@ -211,6 +244,9 @@ public sealed class DataStreamHealth
     public List<StreamHealthInfo> Streams { get; set; } = new();
 }
 
+/// <summary>
+/// Describes a symbol stream's health, latency, event rate, latest event, and issue.
+/// </summary>
 public sealed class StreamHealthInfo
 {
     public string Symbol { get; set; } = string.Empty;

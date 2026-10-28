@@ -3,6 +3,9 @@ using System.Windows.Controls;
 
 namespace Meridian.Wpf.Workstation.Primitives;
 
+/// <summary>
+/// Hosts workstation content with separate navigation, header, and status content slots.
+/// </summary>
 public sealed class WorkstationShellControl : ContentControl
 {
     public static readonly DependencyProperty NavigationContentProperty =
@@ -33,6 +36,9 @@ public sealed class WorkstationShellControl : ContentControl
     }
 }
 
+/// <summary>
+/// Hosts workspace content with separate context, toolbar, and detail content slots.
+/// </summary>
 public sealed class WorkspaceHostControl : ContentControl
 {
     public static readonly DependencyProperty ContextContentProperty =
@@ -63,38 +69,65 @@ public sealed class WorkspaceHostControl : ContentControl
     }
 }
 
+/// <summary>
+/// Provides an items-control surface for workspace toolbar actions.
+/// </summary>
 public sealed class WorkspaceToolbarControl : ItemsControl
 {
 }
 
+/// <summary>
+/// Provides an items-control surface for workstation status indicators.
+/// </summary>
 public sealed class StatusRibbonControl : ItemsControl
 {
 }
 
+/// <summary>
+/// Provides a styled content surface for metric values.
+/// </summary>
 public sealed class MetricTileControl : ContentControl
 {
 }
 
+/// <summary>
+/// Provides a styled content surface for health-status presentation.
+/// </summary>
 public sealed class HealthBadgeControl : ContentControl
 {
 }
 
+/// <summary>
+/// Provides a content surface for trust-status presentation.
+/// </summary>
 public sealed class TrustBadgeControl : ContentControl
 {
 }
 
+/// <summary>
+/// Provides a content surface for connection-status presentation.
+/// </summary>
 public sealed class ConnectionStatusIndicatorControl : ContentControl
 {
 }
 
+/// <summary>
+/// Provides a content surface for loading overlays.
+/// </summary>
 public sealed class LoadingOverlayControl : ContentControl
 {
 }
 
+/// <summary>
+/// Provides a content surface for an empty-state explanation and action.
+/// </summary>
 public sealed class EmptyStatePanelControl : ContentControl
 {
 }
 
+/// <summary>
+/// Provides a content surface for an error explanation and recovery action.
+/// </summary>
 public sealed class ErrorStatePanelControl : ContentControl
 {
 }

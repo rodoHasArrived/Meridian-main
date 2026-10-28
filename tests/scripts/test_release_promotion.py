@@ -244,16 +244,24 @@ class ReleasePromotionTests(unittest.TestCase):
 
     def test_promoted_evidence_retains_consumer_receipt_and_resolved_predecessor(self):
         output = self.root / 'publish'
-        environment = {'RELEASE_NEEDS': json.dumps(self.needs), 'GITHUB_SHA': 'abc',
+        environment = {'RELEASE_NEEDS': json.dumps(self.needs), 'GITHUB_SHA': 'abc', 'GITHUB_RUN_NUMBER': '7',
                        'GITHUB_RUN_ID': '42', 'GITHUB_RUN_ATTEMPT': '2', 'GITHUB_REPOSITORY': 'test/repo'}
         args = ['verify-release-promotion.py', '--root', str(self.root), '--receipts', str(self.receipts),
                 '--smoke', str(self.smoke), '--output', str(output)]
-        with patch.dict(os.environ, environment), patch('sys.argv', args):
+        def collected(path, **kwargs):
+            with zipfile.ZipFile(path, 'w') as archive:
+                archive.writestr('manifest.json', json.dumps(kwargs))
+            return [{'name': 'upstream-test-evidence'}]
+        with patch.dict(os.environ, environment), patch('sys.argv', args), \
+                patch.object(self.gate, 'collect_upstream_evidence', side_effect=collected):
             self.gate.main()
         evidence = json.loads((output / 'release-gate-evidence.json').read_text())
         consumer = next(receipt for receipt in evidence['lifecycle'] if receipt.get('project') == 'consumer-setup')
         self.assertEqual(consumer, json.loads(self.consumer_receipt.read_text()))
         self.assertEqual(self.gate.digest(output / 'Meridian-Setup.exe'), consumer['currentPackage']['sha256'])
+        self.assertEqual(evidence['schemaVersion'], 2)
+        self.assertEqual(evidence['assets']['release-audit-evidence.zip'],
+                         self.gate.digest(output / 'release-audit-evidence.zip'))
 
     def test_consumer_receipt_rejects_malformed_evidence_and_unexpected_exceptions(self):
         original = json.loads(self.consumer_receipt.read_text())
@@ -352,7 +360,8 @@ class ReleasePromotionTests(unittest.TestCase):
         self.assertIn('$certificate.Subject -eq $manifest.Package.Identity.Publisher', prerequisite)
         self.assertIn('$certificate.NotAfter.ToUniversalTime() -le [DateTime]::UtcNow', prerequisite)
         self.assertIn("if ($receipt.status -ne 'passed') { exit 1 }", prerequisite)
-        for job in ('ci', 'secrets', 'codeql', 'production', 'smoke', 'release-preflight'):
+        for job in ('ci', 'secrets', 'codeql', 'smoke', 'release-preflight'):
             self.assertEqual(jobs[job]['needs'], 'eligibility')
+        self.assertEqual(jobs['production']['needs'], ['eligibility', 'ci'])
         self.assertEqual(jobs['smoke']['with']['project'], 'web-workstation')
         self.assertEqual(jobs['smoke']['with']['runtime'], 'win-x64')

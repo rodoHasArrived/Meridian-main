@@ -1,5 +1,8 @@
 namespace Meridian.Contracts.FundStructure;
 
+/// <summary>
+/// Configures account persistence and the amount and statement-age tolerances used in reconciliation.
+/// </summary>
 public sealed class AccountManagementOptions
 {
     public string ConnectionString { get; set; } = string.Empty;

@@ -32,6 +32,9 @@ public interface IReportPackDeliveryRecordStore
     void Save(IReadOnlyList<ReportPackDeliveryAttemptDto> attempts);
 }
 
+/// <summary>
+/// Persists report-pack delivery attempts and retained artifact content to disk.
+/// </summary>
 public sealed class FileReportPackDeliveryRecordStore : IReportPackDeliveryRecordStore
 {
     private const int CurrentSnapshotSchemaVersion = 2;
@@ -650,6 +653,9 @@ public sealed class FileReportPackDeliveryRecordStore : IReportPackDeliveryRecor
         string? ContentBase64 = null);
 }
 
+/// <summary>
+/// Coordinates report-pack delivery attempts, retained packages, and artifact access.
+/// </summary>
 public sealed partial class ReportPackDeliveryService
 {
     private static readonly TimeSpan PackageAccessWindow = TimeSpan.FromDays(14);

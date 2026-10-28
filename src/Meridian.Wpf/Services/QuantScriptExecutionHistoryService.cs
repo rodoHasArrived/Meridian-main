@@ -21,6 +21,9 @@ public sealed record QuantScriptExecutionRecordRequest(
     List<string> PlotTitles,
     IReadOnlyList<BacktestResult> CapturedBacktests);
 
+/// <summary>
+/// Records QuantScript executions in strategy-run history and exports retained execution records.
+/// </summary>
 public sealed class QuantScriptExecutionHistoryService
 {
     private readonly ConfigService _configService;

@@ -4,6 +4,9 @@ using System.Windows.Controls;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Provides consistent dialog titles, subtitles, content slots, and automation identifiers.
+/// </summary>
 public class WorkspaceDialogChromeControl : ContentControl
 {
     public static readonly DependencyProperty DialogAutomationIdProperty =

@@ -8,6 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps compliance approval requests and decisions with authenticated actor context.
+/// </summary>
 public static class ComplianceEndpoints
 {
     public static WebApplication MapComplianceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)

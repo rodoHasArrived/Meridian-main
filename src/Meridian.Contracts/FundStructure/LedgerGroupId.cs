@@ -87,6 +87,9 @@ public readonly record struct LedgerGroupId
     public override string ToString() => Value;
 }
 
+/// <summary>
+/// Reads ledger group identifiers from string or object JSON forms and writes their canonical representation.
+/// </summary>
 public sealed class LedgerGroupIdJsonConverter : JsonConverter<LedgerGroupId>
 {
     public override LedgerGroupId Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

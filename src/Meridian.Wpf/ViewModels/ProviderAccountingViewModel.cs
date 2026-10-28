@@ -310,6 +310,9 @@ public sealed record ProviderRegistrationFailurePresentation(
     string Module,
     string Error);
 
+/// <summary>
+/// Presents provider quota usage, remaining capacity, reset timing, and failure detail for an accounting surface.
+/// </summary>
 public sealed class ProviderRateLimitPresentation : BindableBase
 {
     private string _resetCountdown;

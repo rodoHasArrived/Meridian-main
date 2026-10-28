@@ -486,6 +486,7 @@ public sealed class ApiDocumentationService
 }
 
 
+/// <summary>Represents the generated OpenAPI document with API metadata, servers, paths, and components.</summary>
 public sealed class OpenApiSpec
 {
     public string OpenApi { get; set; } = "3.0.3";
@@ -496,6 +497,7 @@ public sealed class OpenApiSpec
     public OpenApiComponents? Components { get; set; }
 }
 
+/// <summary>Carries the title, description, version, contact, and license metadata for an OpenAPI document.</summary>
 public sealed class OpenApiInfo
 {
     public string? Title { get; set; }
@@ -505,30 +507,35 @@ public sealed class OpenApiInfo
     public OpenApiLicense? License { get; set; }
 }
 
+/// <summary>Carries the API contact name and URL in generated OpenAPI metadata.</summary>
 public sealed class OpenApiContact
 {
     public string? Name { get; set; }
     public string? Url { get; set; }
 }
 
+/// <summary>Carries the license name and URL in generated OpenAPI metadata.</summary>
 public sealed class OpenApiLicense
 {
     public string? Name { get; set; }
     public string? Url { get; set; }
 }
 
+/// <summary>Describes a server URL and its purpose in generated OpenAPI documentation.</summary>
 public sealed class OpenApiServer
 {
     public string? Url { get; set; }
     public string? Description { get; set; }
 }
 
+/// <summary>Describes a named operation group in generated OpenAPI documentation.</summary>
 public sealed class OpenApiTag
 {
     public string? Name { get; set; }
     public string? Description { get; set; }
 }
 
+/// <summary>Groups supported HTTP operations for a documented API path.</summary>
 public sealed class OpenApiPathItem
 {
     public OpenApiOperation? Get { get; set; }
@@ -537,6 +544,7 @@ public sealed class OpenApiPathItem
     public OpenApiOperation? Delete { get; set; }
 }
 
+/// <summary>Describes an API operation, including tags, parameters, request body, and responses.</summary>
 public sealed class OpenApiOperation
 {
     public string[]? Tags { get; set; }
@@ -548,6 +556,7 @@ public sealed class OpenApiOperation
     public Dictionary<string, OpenApiResponse>? Responses { get; set; }
 }
 
+/// <summary>Describes a named API parameter, its location, required status, and schema.</summary>
 public sealed class OpenApiParameter
 {
     public string? Name { get; set; }
@@ -557,6 +566,7 @@ public sealed class OpenApiParameter
     public OpenApiSchema? Schema { get; set; }
 }
 
+/// <summary>Describes an API request body and its supported media-type schemas.</summary>
 public sealed class OpenApiRequestBody
 {
     public string? Description { get; set; }
@@ -564,22 +574,26 @@ public sealed class OpenApiRequestBody
     public Dictionary<string, OpenApiMediaType>? Content { get; set; }
 }
 
+/// <summary>Associates an OpenAPI content media type with its payload schema.</summary>
 public sealed class OpenApiMediaType
 {
     public OpenApiSchema? Schema { get; set; }
 }
 
+/// <summary>Describes an API response and its supported content schemas.</summary>
 public sealed class OpenApiResponse
 {
     public string? Description { get; set; }
     public Dictionary<string, OpenApiMediaType>? Content { get; set; }
 }
 
+/// <summary>Holds reusable schemas referenced by the generated OpenAPI document.</summary>
 public sealed class OpenApiComponents
 {
     public Dictionary<string, OpenApiSchema>? Schemas { get; set; }
 }
 
+/// <summary>Describes an OpenAPI data shape, including type, format, references, and nested values.</summary>
 public sealed class OpenApiSchema
 {
     public string? Type { get; set; }

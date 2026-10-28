@@ -205,6 +205,9 @@ public interface IAccountScopedPortfolioExposureProvider : IPortfolioExposurePro
     PortfolioExposureSnapshot GetSnapshot(Guid? fundAccountId);
 }
 
+/// <summary>
+/// Resolves account-scoped exposure when supported and otherwise uses the provider aggregate snapshot.
+/// </summary>
 public static class PortfolioExposureProviderExtensions
 {
     /// <summary>Legacy paper providers retain their existing aggregate behavior.</summary>

@@ -2,6 +2,9 @@ using System.Text.Json;
 
 namespace Meridian.Contracts.AssetOperations;
 
+/// <summary>
+/// Configures the PostgreSQL connection and schema used for asset operations persistence.
+/// </summary>
 public sealed class AssetOperationsOptions
 {
     public string ConnectionString { get; set; } = string.Empty;
@@ -289,6 +292,9 @@ public sealed record AssetOperationsWriteApprovalDto(
     string Rationale,
     DateTimeOffset ApprovedAt);
 
+/// <summary>
+/// Retrieves security-level asset operations details and operational readiness.
+/// </summary>
 public interface IAssetOperationsQueryService
 {
     Task<AssetOperationsDetailDto?> GetOperationsAsync(Guid securityId, CancellationToken ct = default);
@@ -296,6 +302,9 @@ public interface IAssetOperationsQueryService
     Task<AssetOperationsReadinessDto?> GetReadinessAsync(Guid securityId, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Writes asset operations projections together with their approval authority.
+/// </summary>
 public interface IAssetOperationsCommandService
 {
     Task<AssetOperationsDetailDto> UpsertProjectionAsync(

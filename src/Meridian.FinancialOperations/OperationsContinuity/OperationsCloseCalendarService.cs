@@ -7,6 +7,9 @@ using System.Text.Json.Serialization;
 
 namespace Meridian.FinancialOperations.OperationsContinuity;
 
+/// <summary>
+/// Reads close calendar items and updates workflow-linked calendar controls.
+/// </summary>
 public interface IOperationsCloseCalendarService
 {
     Task<OperationsCloseCalendarDto> GetCalendarAsync(
@@ -20,6 +23,9 @@ public interface IOperationsCloseCalendarService
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Projects workflow deadlines into a close calendar and applies calendar item updates.
+/// </summary>
 public sealed class OperationsCloseCalendarService : IOperationsCloseCalendarService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)

@@ -353,6 +353,9 @@ public interface IQuotaEnforcementService
 }
 
 // Quota types
+/// <summary>
+/// Carries byte, file, and daily event counts used when evaluating storage quotas.
+/// </summary>
 public sealed class QuotaUsage
 {
     public long TotalBytes { get; set; }

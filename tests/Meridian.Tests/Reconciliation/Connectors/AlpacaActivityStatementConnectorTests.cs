@@ -97,6 +97,48 @@ public sealed class AlpacaActivityStatementConnectorTests : IDisposable
         result.Issues.Should().ContainSingle(issue => issue.Code == "ACCOUNT_SCOPE_MISMATCH");
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(null)]
+    public async Task Parse_PortfolioNotMarkedComplete_FailsClosedEvenWithoutIssues(bool? isComplete)
+    {
+        var snapshot = System.Text.Json.Nodes.JsonNode.Parse(
+            StatementConnectorTestData.ReadFixture("alpaca-combined-snapshot.json"))!;
+        var portfolio = snapshot["portfolio"]!.AsObject();
+        portfolio.Remove("completenessIssues");
+        portfolio.Remove("isComplete");
+        if (isComplete is { } flag)
+        {
+            portfolio["isComplete"] = flag;
+        }
+
+        var result = await CreateConnector().ParseAsync(new StatementSourceDocument(
+            "alpaca-incomplete.json", System.Text.Encoding.UTF8.GetBytes(snapshot.ToJsonString())));
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty();
+        result.Issues.Should().ContainSingle(issue => issue.Code == "INCOMPLETE_PORTFOLIO");
+    }
+
+    [Theory]
+    [InlineData("quantity")]
+    [InlineData("price")]
+    public async Task Parse_LegacyFillMissingAmount_FailsClosed(string omitted)
+    {
+        var snapshot = System.Text.Json.Nodes.JsonNode.Parse(
+            StatementConnectorTestData.ReadFixture("alpaca-combined-snapshot.json"))!;
+        var activity = snapshot["activity"]!.AsObject();
+        activity.Remove("activities");
+        activity["fills"]!.AsArray()[0]!.AsObject().Remove(omitted);
+
+        var result = await CreateConnector().ParseAsync(new StatementSourceDocument(
+            "alpaca-legacy-fill.json", System.Text.Encoding.UTF8.GetBytes(snapshot.ToJsonString())));
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty();
+        result.Issues.Should().Contain(issue => issue.Code == "ALPACA_INVALID_AMOUNT");
+    }
+
     [Fact]
     public void Descriptor_WithoutGateways_DegradesToFileOnly()
     {
@@ -296,7 +338,8 @@ public sealed class AlpacaActivityStatementConnectorTests : IDisposable
                 [
                     new BrokeragePositionSnapshotDto("AAPL", 10m, 187.25m, 190.10m, 1901.00m, 28.50m, "us_equity")
                 ],
-                retrievedAt));
+                retrievedAt,
+                IsComplete: true));
         }
     }
 
