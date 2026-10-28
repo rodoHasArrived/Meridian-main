@@ -1,6 +1,5 @@
-using System.Collections.Concurrent;
+using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Sdk;
-using Meridian.Execution.Services;
 
 namespace Meridian.Execution;
 
@@ -17,6 +16,8 @@ public sealed partial class OrderManagementSystem
         decimal? locallyAuthorizedModifiedQuantity = null,
         decimal? pendingExecutionLimit = null)
     {
+        ValidateBrokerAccountEvidence(current, report);
+        var brokerAccount = current.BrokerAccountId ?? report.BrokerAccountId;
         var authorizedQuantity = report.ReportType is ExecutionReportType.Modified
             && report.OrderStatus is not OrderStatus.Rejected
             && locallyAuthorizedModifiedQuantity is > 0m
@@ -41,6 +42,7 @@ public sealed partial class OrderManagementSystem
                 FilledQuantity = filled,
                 AverageFillPrice = ComputeAverageFillPrice(current, filled, report.FillPrice),
                 Status = filled >= terminalQuantity ? OrderStatus.Filled : current.Status,
+                BrokerAccountId = brokerAccount,
                 LastUpdatedAt = report.Timestamp
             };
         }
@@ -53,12 +55,20 @@ public sealed partial class OrderManagementSystem
         return current with
         {
             Status = report.OrderStatus,
+            BrokerAccountId = brokerAccount,
             Quantity = authorizedQuantity,
             FilledQuantity = Math.Min(authorizedQuantity, Math.Max(report.FilledQuantity, current.FilledQuantity)),
             AverageFillPrice = ComputeAverageFillPrice(current,
                 Math.Min(authorizedQuantity, Math.Max(report.FilledQuantity, current.FilledQuantity)), report.FillPrice),
             LastUpdatedAt = report.Timestamp
         };
+    }
+
+    private static void ValidateBrokerAccountEvidence(OrderState current, ExecutionReport report)
+    {
+        if (current.BrokerAccountId is { } retainedAccount && report.BrokerAccountId is { } reportedAccount
+            && !string.Equals(retainedAccount, reportedAccount, StringComparison.Ordinal))
+            throw new InvalidDataException("Broker order evidence names a different external account.");
     }
 
     private static decimal? ComputeAverageFillPrice(OrderState current, decimal filledQuantity, decimal? incrementPrice)
@@ -71,12 +81,6 @@ public sealed partial class OrderManagementSystem
         return (current.FilledQuantity * current.AverageFillPrice.Value + increment * incrementPrice.Value) / filledQuantity;
     }
 
-    private readonly FileBrokerageOrderRecoveryStore? _recoveryStore;
-    private readonly ConcurrentDictionary<string, byte> _dispatchedOrderIds = new(StringComparer.Ordinal);
-    private readonly ConcurrentDictionary<string, byte> _recoveryOrderIds = new(StringComparer.Ordinal);
-    private readonly ConcurrentDictionary<string, BrokerageOrderTombstone> _compactedBrokerageOrders = new(StringComparer.Ordinal);
-    private readonly object _brokerageRecoveryStateSync = new();
-    private readonly Dictionary<string, long> _brokerageRecoveryVersions = new(StringComparer.Ordinal);
     // Recovery lookups and the live report stream share the same cumulative-fill watermark.
     // Serial admission keeps both from booking the same missing increment concurrently.
     private readonly SemaphoreSlim _brokerageRecoveryReportGate = new(1, 1);
@@ -97,11 +101,11 @@ public sealed partial class OrderManagementSystem
 
     /// <summary>Retained dispatches requiring authoritative broker evidence before resuming.</summary>
     public IReadOnlyList<OrderState> GetRecoveryOrders(Guid? fundAccountId = null) =>
-        GetRetainedBrokerageOrders(fundAccountId).Where(order => _recoveryOrderIds.ContainsKey(order.OrderId)).ToArray();
+        GetRetainedBrokerageOrders(fundAccountId).Where(order => _recoveryJournal.RequiresRecovery(order.OrderId)).ToArray();
 
     /// <summary>Working and completed broker-dispatched identities retained for recovery.</summary>
     public IReadOnlyList<OrderState> GetRetainedBrokerageOrders(Guid? fundAccountId = null) =>
-        _orders.Values.Where(order => _dispatchedOrderIds.ContainsKey(order.OrderId)
+        _orders.Values.Where(order => _recoveryJournal.IsDispatched(order.OrderId)
             && (fundAccountId is null || order.FundAccountId == fundAccountId)).ToArray();
 
     /// <summary>Uncapped state snapshot, including registered orders awaiting dispatch and adopted fills.</summary>
@@ -109,28 +113,15 @@ public sealed partial class OrderManagementSystem
 
     private void RestoreBrokerageOrders()
     {
-        if (_recoveryStore is null)
+        if (!_recoveryJournal.HasStore)
             return;
-        if (!string.Equals(_recoveryStore.GatewayId, _gateway.GatewayId, StringComparison.Ordinal))
-            throw new InvalidOperationException("Brokerage recovery store does not match the active gateway.");
-        foreach (var tombstone in _recoveryStore.LoadTombstones())
-        {
-            _compactedBrokerageOrders[tombstone.OrderId] = tombstone;
-            _dispatchedOrderIds[tombstone.OrderId] = 0;
-            foreach (var alias in tombstone.BrokerOrderAliases ?? [])
-            {
-                if (string.IsNullOrWhiteSpace(alias)
-                    || !_brokerOrderAliases.TryAdd(alias, tombstone.OrderId))
-                    throw new InvalidDataException("Retired broker aliases conflict with another order identity.");
-            }
-        }
-        foreach (var retained in _recoveryStore.Load())
+        var restored = _recoveryJournal.Restore(_gateway.GatewayId);
+        foreach (var tombstone in restored.Tombstones)
+            _brokerIdentities.Restore(tombstone);
+        foreach (var retained in restored.Orders)
         {
             var state = retained.State;
             _orders[state.OrderId] = state;
-            _dispatchedOrderIds[state.OrderId] = 0;
-            if (retained.RequiresRecovery || state.Status is not (OrderStatus.Filled or OrderStatus.Rejected))
-                _recoveryOrderIds[state.OrderId] = 0;
             if (retained.PendingAmendment is { } pending)
             {
                 _pendingModificationOrderIds[state.OrderId] = pending;
@@ -138,18 +129,7 @@ public sealed partial class OrderManagementSystem
             }
             else if (retained.RequiresAmendmentRecovery)
                 _pendingModificationOrderIds[state.OrderId] = new PendingOrderAmendment(state, state, retained.BrokerOrderId);
-            if (!string.IsNullOrWhiteSpace(retained.BrokerOrderId))
-            {
-                _orderBrokerIds[state.OrderId] = retained.BrokerOrderId;
-                _brokerOrderAliases[retained.BrokerOrderId] = state.OrderId;
-            }
-            foreach (var alias in retained.BrokerOrderAliases ?? [])
-            {
-                if (string.IsNullOrWhiteSpace(alias)
-                    || _brokerOrderAliases.TryGetValue(alias, out var owner) && owner != state.OrderId)
-                    throw new InvalidDataException("Retained broker aliases conflict with another order identity.");
-                _brokerOrderAliases[alias] = state.OrderId;
-            }
+            _brokerIdentities.Restore(retained);
             if (state.FundAccountId is { } accountId)
                 _orderFinancialAccountIds[state.OrderId] = accountId.ToString("D");
             _orderContractMultipliers[state.OrderId] = state.ContractMultiplier;
@@ -162,11 +142,8 @@ public sealed partial class OrderManagementSystem
     private void RetainBrokerageDispatch(OrderState state)
     {
         EnsureBrokerageRecoveryScope();
-        _orderBrokerIds.TryGetValue(state.OrderId, out var brokerOrderId);
-        _recoveryStore?.Save(new RetainedBrokerageOrder(state, brokerOrderId, true)
-        { BrokerOrderAliases = GetBrokerOrderAliases(state.OrderId) });
-        _dispatchedOrderIds[state.OrderId] = 0;
-        _recoveryOrderIds[state.OrderId] = 0;
+        _brokerIdentities.TryGetActiveId(state.OrderId, out var brokerOrderId);
+        _recoveryJournal.RetainDispatch(state, brokerOrderId, GetBrokerOrderAliases(state.OrderId));
     }
 
     /// <summary>Refuses recovery/routing across a broker account or paper/live environment change.</summary>
@@ -174,68 +151,39 @@ public sealed partial class OrderManagementSystem
     {
         if (gateway is not null && !ReferenceEquals(_gateway, gateway))
             throw new InvalidOperationException("Order recovery must use the OMS active brokerage gateway.");
-        if (_gateway is IBrokerageConnectionState connection && _recoveryStore is not null)
+        if (_gateway is IBrokerageConnectionState connection && _recoveryJournal.HasStore)
         {
             if (string.IsNullOrWhiteSpace(connection.ScopeIdentity))
                 throw new InvalidOperationException("The brokerage account and trading environment have not been verified for order recovery.");
-            _recoveryStore.BindScope(connection.ScopeIdentity);
+            _recoveryJournal.BindScope(connection.ScopeIdentity);
         }
     }
 
-    private void MarkBrokerageRecoveryRequired(string orderId)
-    {
-        if (!_dispatchedOrderIds.ContainsKey(orderId))
-            return;
-        lock (_brokerageRecoveryStateSync)
-        {
-            _brokerageRecoveryVersions[orderId] = _brokerageRecoveryVersions.GetValueOrDefault(orderId) + 1;
-            _recoveryOrderIds[orderId] = 0;
-            // Keep the last fully processed cumulative fill watermark; an in-flight report may
-            // already have advanced the in-memory state without completing its durable handoff.
-            _recoveryStore?.RequireRecovery(orderId);
-        }
-    }
+    private void MarkBrokerageRecoveryRequired(string orderId) => _recoveryJournal.RequireRecovery(orderId);
 
-    private long GetBrokerageRecoveryVersion(string orderId)
-    {
-        lock (_brokerageRecoveryStateSync)
-            return _brokerageRecoveryVersions.GetValueOrDefault(orderId);
-    }
+    private long GetBrokerageRecoveryVersion(string orderId) => _recoveryJournal.CaptureVersion(orderId);
 
     private void RetainProcessedBrokerageOrder(string orderId, ExecutionReport report, long observedRecoveryVersion)
     {
-        if (!_dispatchedOrderIds.ContainsKey(orderId) || !_orders.TryGetValue(orderId, out var state))
+        if (!_recoveryJournal.IsDispatched(orderId) || !_orders.TryGetValue(orderId, out var state))
             return;
-        // A delayed acknowledgement must not checkpoint a newer fill whose own side effects
-        // are still running, or invalidate the recovery evidence of an already processed fill.
-        if (report.FilledQuantity < state.FilledQuantity && report.ReportType is not ExecutionReportType.ModificationPending)
-            return;
-        lock (_brokerageRecoveryStateSync)
+        // Submit acknowledgments do not hold the shared report gate. Sample these owners at
+        // the journal's lock boundary so a wait cannot overwrite a newer amendment or alias.
+        var brokerIdentities = _brokerIdentities;
+        var pendingAmendments = _pendingModificationOrderIds;
+        _recoveryJournal.CheckpointProcessed(state, report, observedRecoveryVersion, () =>
         {
-            // Completing a report that began before a later disconnect cannot reconcile that
-            // newer uncertainty. Persist its completed fills while retaining the newer block.
-            var requiresAmendmentRecovery = _pendingModificationOrderIds.ContainsKey(orderId)
-                || report.ReportType is ExecutionReportType.ModificationPending;
-            var requiresRecovery = requiresAmendmentRecovery
-                || observedRecoveryVersion != _brokerageRecoveryVersions.GetValueOrDefault(orderId);
-            _orderBrokerIds.TryGetValue(orderId, out var brokerOrderId);
-            _recoveryStore?.Save(new RetainedBrokerageOrder(state, brokerOrderId, requiresRecovery)
-            {
-                BrokerOrderAliases = GetBrokerOrderAliases(orderId),
-                RequiresAmendmentRecovery = requiresAmendmentRecovery,
-                PendingAmendment = GetPendingAmendmentForRecovery(orderId)
-            });
-            if (requiresRecovery)
-                _recoveryOrderIds[orderId] = 0;
-            else
-                _recoveryOrderIds.TryRemove(orderId, out _);
-        }
+            var hasPendingAmendment = pendingAmendments.ContainsKey(orderId);
+            brokerIdentities.TryGetActiveId(orderId, out var brokerOrderId);
+            return new BrokerageOrderCheckpointEvidence(brokerOrderId, brokerIdentities.GetAliases(orderId),
+                hasPendingAmendment, pendingAmendments.GetValueOrDefault(orderId));
+        });
     }
 
     /// <summary>Applies broker-proven recovery evidence through the ordinary idempotent fill path.</summary>
     private bool RetainedForAnotherOrder(string? brokerOrderId, string orderId)
         => brokerOrderId is { Length: > 0 }
-            && _brokerOrderAliases.TryGetValue(brokerOrderId, out var owner)
+            && _brokerIdentities.TryResolveAlias(brokerOrderId, out var owner)
             && !string.Equals(owner, orderId, StringComparison.Ordinal);
 
     public async Task ReconcileRecoveryOrderAsync(ExecutionReport report, CancellationToken ct = default)
@@ -266,7 +214,7 @@ public sealed partial class OrderManagementSystem
                     return;
                 var maximumQuantity = Math.Max(pendingTerms.Original.Quantity, pendingTerms.Proposed.Quantity);
                 if (!_orders.TryGetValue(orderId, out var pendingState)
-                    || !_dispatchedOrderIds.ContainsKey(orderId)
+                    || !_recoveryJournal.IsDispatched(orderId)
                     || !string.Equals(pendingState.Symbol, report.Symbol, StringComparison.OrdinalIgnoreCase)
                     || pendingState.Side != report.Side
                     || report.FilledQuantity < pendingState.FilledQuantity
@@ -285,7 +233,7 @@ public sealed partial class OrderManagementSystem
             var rejectedSuccessor = pending is not null && report.ReportType is ExecutionReportType.ModificationRejected
                 && !string.Equals(report.GatewayOrderId ?? report.OrderId, pending.OriginalBrokerOrderId, StringComparison.Ordinal);
             if (!_orders.TryGetValue(orderId, out var state)
-                || !_dispatchedOrderIds.ContainsKey(orderId)
+                || !_recoveryJournal.IsDispatched(orderId)
                 || !string.Equals(state.Symbol, report.Symbol, StringComparison.OrdinalIgnoreCase)
                 || state.Side != report.Side
                 || report.FilledQuantity < state.FilledQuantity
@@ -328,8 +276,7 @@ public sealed partial class OrderManagementSystem
                 }
                 if (report.GatewayOrderId is { Length: > 0 } confirmedBrokerId)
                 {
-                    _orderBrokerIds[orderId] = confirmedBrokerId;
-                    _brokerOrderAliases.TryAdd(confirmedBrokerId, orderId);
+                    _brokerIdentities.Confirm(orderId, confirmedBrokerId);
                 }
             }
             await ProcessGatewayReportCoreAsync(report, ct).ConfigureAwait(false);

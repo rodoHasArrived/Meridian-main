@@ -61,7 +61,9 @@ their `OrderStatus` describes the actual order and does not imply terminal rejec
 consumers retain cumulative fills and original client identity across broker replacements.
 `ModificationPending` retains an uncertain replacement attempt for reconciliation. Durable pending
 amendments preserve original and proposed terms, broker identities, and provider recovery evidence
-until authoritative reconciliation selects an outcome. Reported order terms are explicitly marked
+until authoritative reconciliation selects an outcome. Gateways implementing
+`IPreassignedReplacementReferenceGateway` honor `OrderModification.ReplacementClientOrderId`, and
+`PendingOrderAmendment.PriorChainBrokerOrderIds` names the replacement chain's earlier members. Reported order terms are explicitly marked
 as evidence; provisional prices and quantities cannot silently become confirmed terms. Snapshot
 averages set `FillPriceIsCumulativeAverage`; the OMS derives the executed increment's price before
 publishing accounting fills. Optional replacement and average fields preserve legacy payloads
@@ -73,6 +75,10 @@ that match by a client-supplied reference, so a different instrument, side or ty
 reference is refused before any route is installed for the match.
 `IBrokerageConnectionState` exposes an opaque connection generation and verified account/environment
 scope so synchronization and durable recovery revoke evidence when the active connection changes.
+`ExecutionReport.BrokerAccountId` carries the external account actually reported by the broker.
+The OMS retains it in `OrderState.BrokerAccountId` for exact account-qualified restart recovery;
+it is distinct from internal `FundAccountId` and cannot be supplied through caller routing metadata.
+Both fields are omitted when null, so old recovery snapshots remain readable without inventing ownership.
 Brokerage activity fill snapshots can carry explicit provider-reported realized P&L when a broker
 or custodian supplies it; callers should leave the field null rather than infer it from fill
 notional. Activity snapshots can also carry provider corporate-action/factor events such as

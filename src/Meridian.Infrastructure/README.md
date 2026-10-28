@@ -33,7 +33,16 @@ open-order snapshot, matched by orderRef: echoed terms select the amendment outc
 ambiguous orders stay unresolved, evidence read across a reconnect is refused, and recovered
 orders can be cancelled but not amended. The gateway exposes `IBrokerageConnectionState`: its
 scope is the trading environment plus the accounts IB reports via `managedAccounts` for the current
-login, so retained orders bind to that scope and recovery matches only orders in a verified account.
+login. Recovery requires the exact external account retained from the order's broker acknowledgement,
+or an explicitly host-pinned `recoveryAccountId` for legacy records. Membership in the login's managed
+account set never substitutes for order ownership. Unknown ownership stays unresolved before lookup.
+The bounded environment policy supports numeric `DU` paper and `U` live individual accounts, verified
+from broker callbacks and checked against `UsePaperTrading`. Unknown/advisor prefixes, mixed environments,
+and configured-environment contradictions leave the recovery scope unavailable. Multi-account recovery
+requires retained or pinned exact-account evidence. Host/port configuration is not environment proof.
+See [IB's paper-account identification](https://www.interactivebrokers.co.jp/en/support/customer-service.php?p=contact)
+and [TradeStation Global's IB live/paper account guide](https://www.tradestation-international.com/global/simulated-trading/).
+These references ground the narrow supported convention; other account classes require separate broker evidence.
 Its connection generation also advances when the client loses or automatically restores the
 transport, and cancellation routes are installed only for evidence from the current session.
 Recovery stays unresolved for a fill price that is not confirmed cumulative, for any amendment that
@@ -51,7 +60,9 @@ positions by account plus qualified contract identity. Robinhood replacement sub
 confirmed cancellation with cumulative fill evidence, for the intended total less chain fills.
 Unconfirmed Robinhood replacement attempts retain their reference and reconcile exact broker
 history before further operations. Empty, incomplete, or ambiguous history remains unresolved;
-confirmed candidates restore replacement-chain routing and cumulative fill economics.
+confirmed candidates restore replacement-chain routing and cumulative fill economics. Robinhood
+submits replacements under the OMS-persisted reference, and restart recovery reads each earlier
+chain member's final fills so a predecessor fill the store never booked is attributed exactly.
 
 Running Robinhood read-only account, portfolio, and activity synchronization reads the current
 host-owned OAuth token for each request, including connection, rotation, and revocation. Polling
@@ -133,11 +144,14 @@ applies shared trade, quote, and aggregate quality validation. Source time remai
 receipt metadata on published events; receipt time never substitutes for missing source evidence.
 
 Canonical statement imports stream JSON to an exclusive temporary file, force its contents to
-disk, then publish with a no-overwrite rename and the host-supplied `IAtomicFileWriter`
-directory-sync policy. Caller
+disk, then acquire a persistent per-import exclusive file lock before checking existence, publishing
+with a no-overwrite rename, and completing the host-supplied `IAtomicFileWriter` directory-sync
+policy. The lock file stays in place so later writers reuse the same inode; process termination
+releases its open-handle claim. Caller
 cancellation is checked before publication and is not observed after the rename commits.
 Subprocess tests cover interrupted serialization, restart after acknowledged publication,
-and concurrent writers claiming one complete import. These are process-crash tests; they do
+termination while holding the publication claim during directory sync, and concurrent writers
+claiming one complete import. These are process-crash tests; they do
 not certify physical power-loss behavior on every filesystem or storage device.
 
 Backfill request admission captures the current activity context; queued worker execution restores
@@ -166,11 +180,18 @@ non-fill currencies stay missing; cash, dividends, fees, corrections, and busts 
 fill-specific binding. Direct canonical CSV intake validates currency against Core's shared
 recognized-code catalog before retaining an import.
 
+Alpaca statement activity synchronization validates source numeric strings before constructing
+typed snapshots. Malformed supplied quantity, price, cash, or commission values fail the fetch;
+fills require quantity and price, and cash activity requires a net amount. Portfolio completeness
+uses the same decimal grammar as conversion, so unsupported notation cannot validate and then
+become zero. Statement intake refuses snapshots carrying completeness diagnostics.
+
 Canonical CSV import requires the currency column in the header and at least one data row.
 Header-only statements cannot validate or persist as empty imports; every admitted row retains
 explicit currency and invariant decimal evidence.
 
-Canonical CSV statement imports require an explicit three-letter currency on every row.
+Canonical CSV statement imports require an explicit currency recognized by `CurrencyCodeCatalog`
+on every row; unknown three-letter codes such as `ZZZ` are refused before persistence.
 Older seven-column files must be regenerated with source-backed currency evidence; the
 importer does not supply USD. Quantity, price, cash and nonblank fees use invariant decimal
 notation without grouping separators. Missing optional fees remain absent, while malformed

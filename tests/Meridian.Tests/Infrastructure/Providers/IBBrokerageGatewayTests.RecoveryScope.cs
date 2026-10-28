@@ -144,9 +144,10 @@ public sealed partial class IBBrokerageGatewayTests
     }
 
     [Theory]
-    [InlineData("DU654321", true)]   // another account of the same multi-account login
+    [InlineData("DU123456", true)]   // the explicitly pinned account
+    [InlineData("DU654321", false)]  // another account of the same multi-account login
     [InlineData("U9999999", false)]  // an account this login does not hold
-    public async Task OrderRecovery_MultiAccountLogin_MatchesOnlyOrdersInTheLoginsAccounts(string orderAccount, bool recovered)
+    public async Task OrderRecovery_MultiAccountLogin_MatchesOnlyThePinnedAccount(string orderAccount, bool recovered)
     {
         var client = new FakeIbBrokerageClient
         {
@@ -165,7 +166,7 @@ public sealed partial class IBBrokerageGatewayTests
 
         Connection(sut).ScopeIdentity.Should().Be("paper:DU123456,DU654321", "the scope names every account of the login");
         if (recovered)
-            report.Should().NotBeNull("a linked account of the verified login is in scope");
+            report.Should().NotBeNull("the explicitly pinned account is verified by the broker");
         else
             report.Should().BeNull("an order outside the login's accounts never matches by orderRef alone");
     }

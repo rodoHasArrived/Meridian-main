@@ -44,6 +44,9 @@ public sealed partial class IBBrokerageGateway
     // explicitly reconnected, never on an automatic restore: IB reports them during the reconnect
     // handshake, which can complete before ConnectionRestored is raised, and may not repeat them.
     private volatile IReadOnlySet<string> _verifiedAccounts = NoVerifiedAccounts;
+    // A trusted host may explicitly pin legacy recovery to one broker account. Never choose the
+    // first managed account: an orderRef is unique only inside its actual external account.
+    private readonly string? _recoveryAccountId;
 
     /// <inheritdoc />
     public long ConnectionGeneration => Volatile.Read(ref _connectionEpoch);
@@ -55,9 +58,38 @@ public sealed partial class IBBrokerageGateway
     /// The trading environment and the broker-reported accounts of this login. Null until IB has
     /// reported them for the current session, so retained orders are never bound to a guess.
     /// </summary>
-    public string? ScopeIdentity => IsConnected && _verifiedAccounts is { Count: > 0 } accounts
-        ? $"{(ExecutionMode == Meridian.Execution.Sdk.ExecutionMode.Live ? "live" : "paper")}:{string.Join(',', accounts.Order(StringComparer.OrdinalIgnoreCase))}"
-        : null;
+    public string? ScopeIdentity
+    {
+        get
+        {
+            var accounts = _verifiedAccounts;
+            return IsConnected && TryGetVerifiedEnvironment(accounts, out var environment)
+                ? $"{environment}:{string.Join(',', accounts.Order(StringComparer.OrdinalIgnoreCase))}"
+                : null;
+        }
+    }
+
+    private bool TryGetVerifiedEnvironment(IReadOnlySet<string> accounts, out string environment)
+    {
+        environment = string.Empty;
+        if (accounts.Count == 0)
+            return false;
+        foreach (var account in accounts)
+        {
+            // Bounded individual-account support: IB documents DU paper accounts; its introducing
+            // broker documents U live accounts. Advisor, mixed and unknown account forms refuse.
+            var prefix = account.StartsWith("DU", StringComparison.Ordinal) ? "DU"
+                : account.StartsWith('U') ? "U" : string.Empty;
+            if (prefix.Length == 0 || account.Length == prefix.Length
+                || account.Skip(prefix.Length).Any(character => character is < '0' or > '9'))
+                return false;
+            var observed = prefix == "DU" ? "paper" : "live";
+            if (environment.Length > 0 && environment != observed)
+                return false;
+            environment = observed;
+        }
+        return environment == (_options.UsePaperTrading ? "paper" : "live");
+    }
 
     // The first report of a session (after a loss forgot the accounts) verifies the scope. A later
     // report naming a different set is another login's scope without a transport edge: routes
@@ -181,17 +213,31 @@ public sealed partial class IBBrokerageGateway
         // The broker-verified accounts for this session. An orderRef is only unique within an
         // account, so a snapshot from another login or environment must never match.
         var verifiedAccounts = _verifiedAccounts;
+        var retainedAccount = retainedOrder?.BrokerAccountId;
+        if (retainedAccount is not null && _recoveryAccountId is not null
+            && !string.Equals(retainedAccount, _recoveryAccountId, StringComparison.Ordinal))
+            return RefuseAuthority("Retained broker account disagrees with the host-pinned recovery account.");
+        var expectedAccount = retainedAccount ?? _recoveryAccountId;
+        if (string.IsNullOrWhiteSpace(expectedAccount))
+            return RefuseAuthority("IB recovery requires a retained broker acknowledgement account or an explicitly pinned account; legacy ownership is unknown.");
+        if (!TryGetVerifiedEnvironment(verifiedAccounts, out _))
+            return RefuseAuthority("IB recovery requires broker-reported U/DU individual accounts matching the configured live/paper environment; unknown, advisor and mixed environments are unresolved.");
+        if (!verifiedAccounts.Contains(expectedAccount))
+            return RefuseAuthority("The retained or pinned broker account is not verified in the current IB login.");
         // An execution withheld from here on may be a fill the snapshot this recovery reads omits.
         var executionsBefore = Interlocked.Read(ref _withheldExecutionSequence);
 
         var open = await GetOpenOrdersAsync(ct).ConfigureAwait(false);
-        var matches = open.Where(order => string.Equals(order.ClientOrderId, clientOrderId, StringComparison.Ordinal)).ToArray();
+        var matches = open.Where(order => string.Equals(order.ClientOrderId, clientOrderId, StringComparison.Ordinal)
+            && int.TryParse(order.OrderId, out var id)
+            && _openOrderAccounts.TryGetValue(id, out var account)
+            && string.Equals(expectedAccount, account, StringComparison.Ordinal)).ToArray();
         if (matches.Length != 1 || !int.TryParse(matches[0].OrderId, out var gatewayOrderId))
             return Current(null);
         var order = matches[0];
         if (verifiedAccounts.Count == 0
             || !_openOrderAccounts.TryGetValue(gatewayOrderId, out var orderAccount)
-            || !verifiedAccounts.Contains(orderAccount))
+            || !string.Equals(expectedAccount, orderAccount, StringComparison.Ordinal))
             return Current(null);
         if (amendment?.OriginalBrokerOrderId is { Length: > 0 } brokerId
             && !string.Equals(brokerId, order.OrderId, StringComparison.Ordinal))
@@ -254,6 +300,7 @@ public sealed partial class IBBrokerageGateway
             fillPriceIsCumulativeAverage: true) with
         {
             OrderId = clientOrderId,
+            BrokerAccountId = orderAccount,
             HasOrderTerms = true,
             OrderLimitPrice = order.LimitPrice,
             OrderStopPrice = order.StopPrice
@@ -294,6 +341,12 @@ public sealed partial class IBBrokerageGateway
             }
         }
         return report;
+
+        ExecutionReport? RefuseAuthority(string reason)
+        {
+            _logger.LogWarning("IB restart recovery refused: {RecoveryRefusal}", reason);
+            return Current(null);
+        }
 
         ExecutionReport? Current(ExecutionReport? result) => Volatile.Read(ref _connectionEpoch) == epoch
             ? result

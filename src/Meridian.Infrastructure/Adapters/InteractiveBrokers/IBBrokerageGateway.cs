@@ -73,10 +73,21 @@ public sealed partial class IBBrokerageGateway :
         IBOptions options,
         ILogger<IBBrokerageGateway> logger,
         IIBBrokerageClient? client = null)
+        : this(options, logger, client, recoveryAccountId: null)
+    {
+    }
+
+    /// <summary>Constructs an IB gateway with a trusted host's explicit legacy recovery account pin.</summary>
+    public IBBrokerageGateway(
+        IBOptions options,
+        ILogger<IBBrokerageGateway> logger,
+        IIBBrokerageClient? client,
+        string? recoveryAccountId)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _client = client ?? CreateBrokerageClient(options);
+        _recoveryAccountId = string.IsNullOrWhiteSpace(recoveryAccountId) ? null : recoveryAccountId.Trim();
         _reportChannel = EventPipelinePolicy.CompletionQueue.CreateChannel<ExecutionReport>();
 
         _client.NextValidIdReceived += OnNextValidIdReceived;
@@ -104,8 +115,8 @@ public sealed partial class IBBrokerageGateway :
     public string BrokerDisplayName => "Interactive Brokers";
 
     /// <summary>
-    /// Exposes the actual runtime posture to the OMS. A guidance build is explicitly simulation,
-    /// which prevents a configuration-only promotion from treating it as a live broker.
+    /// Exposes the configured dispatch posture to the OMS. Broker-reported recovery scope separately
+    /// refuses environment contradictions. A guidance build is explicitly simulation.
     /// </summary>
     public Meridian.Execution.Sdk.ExecutionMode ExecutionMode
     {
@@ -1021,6 +1032,7 @@ public sealed partial class IBBrokerageGateway :
             latest?.FillPriceIsCumulativeAverage ?? false) with
         {
             HasOrderTerms = amendmentConfirmed,
+            BrokerAccountId = string.IsNullOrWhiteSpace(update.Account) ? null : update.Account.Trim(),
             OrderLimitPrice = amendmentConfirmed ? context?.LimitPrice : null,
             OrderStopPrice = amendmentConfirmed ? context?.StopPrice : null
         };

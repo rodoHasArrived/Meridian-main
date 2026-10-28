@@ -57,8 +57,55 @@ public sealed class StatementImportServiceTests : IDisposable
         _service = new StatementImportService(_registry, _catalog, _workflow, _root);
     }
 
+    [Theory]
+    [InlineData("incomplete-portfolio")]
+    [InlineData("malformed-json-amount")]
+    public async Task MonthEndAlpacaSnapshot_MalformedFinancialEvidenceFailsBeforeRetention(string defect)
+    {
+        var snapshot = JsonNode.Parse(StatementConnectorTestData.ReadFixture("alpaca-combined-snapshot.json"))!;
+        if (defect == "incomplete-portfolio")
+        {
+            snapshot["portfolio"]!["isComplete"] = false;
+            snapshot["portfolio"]!["completenessIssues"] = new JsonArray("Broker position quantity was missing or invalid.");
+        }
+        else
+        {
+            snapshot["activity"]!["fills"]![0]!["quantity"] = "1,25";
+        }
+        var document = new StatementSourceDocument("invalid-alpaca.json", Encoding.UTF8.GetBytes(snapshot.ToJsonString()));
+
+        (await _service.ValidateAsync(document, null)).IsValid.Should().BeFalse();
+        (await _service.PreviewAsync(document, null)).Status.Should().Be("NeedsAttention");
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(CommitRequest(document)));
+        (await _workflow.ListImportsAsync()).Should().BeEmpty();
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
+    }
+
     private static StatementSourceDocument FixtureDocument(string fileName, string? mappingProfileId = null)
         => new(fileName, StatementConnectorTestData.ReadFixture(fileName), mappingProfileId);
+
+    [Theory]
+    [InlineData("commission", "1,25")]
+    [InlineData("commission", "invalid")]
+    [InlineData("quantity", null)]
+    [InlineData("price", null)]
+    public async Task MonthEndAlpacaSnapshot_RichMalformedAmountsFailBeforeRetention(string field, string? value)
+    {
+        var original = RichAlpacaDocument("USD");
+        var snapshot = JsonNode.Parse(original.Content.Span)!;
+        var activity = snapshot["activity"]!["activities"]![0]!;
+        if (field == "commission")
+            activity["metadata"]![field] = value;
+        else
+            activity.AsObject().Remove(field);
+        var document = original with { Content = Encoding.UTF8.GetBytes(snapshot.ToJsonString()) };
+
+        (await _service.ValidateAsync(document, null)).IsValid.Should().BeFalse();
+        (await _service.PreviewAsync(document, null)).Status.Should().Be("NeedsAttention");
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(CommitRequest(document)));
+        (await _workflow.ListImportsAsync()).Should().BeEmpty();
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
+    }
 
     private static StatementSourceDocument RichAlpacaDocument(
         string? currency,
@@ -460,7 +507,8 @@ public sealed class StatementImportServiceTests : IDisposable
     [InlineData(null)]
     [InlineData("")]
     [InlineData(" ")]
-    public async Task MonthEndFlexActivity_MissingCurrencyCannotBecomeUsd(string? currency)
+    [InlineData("ZZZ")]
+    public async Task MonthEndFlexActivity_UnknownCurrencyFailsBeforeRetention(string? currency)
     {
         var attribute = currency is null ? string.Empty : $" currency=\"{currency}\"";
         var content = "<FlexQueryResponse><FlexStatements><FlexStatement accountId=\"FUND-A\">"
@@ -488,6 +536,52 @@ public sealed class StatementImportServiceTests : IDisposable
         var result = await _service.CommitAsync(CommitRequest(document, connectorId: IbFlexStatementConnector.ConnectorId));
         result.RecordCount.Should().Be(1);
         (await File.ReadAllTextAsync(Path.Combine(_root, result.RetainedCanonicalPath))).Should().Contain(",GBP,-25,INT-1");
+    }
+
+    [Theory]
+    [InlineData("account", "ZZZ")]
+    [InlineData("account", null)]
+    [InlineData("account", " ")]
+    [InlineData("lot", "ZZZ")]
+    [InlineData("lot", null)]
+    [InlineData("lot", " ")]
+    [InlineData("borrow", "ZZZ")]
+    [InlineData("borrow", null)]
+    [InlineData("borrow", " ")]
+    [InlineData("account", "GBP")]
+    [InlineData("lot", "GBP")]
+    [InlineData("borrow", "GBP")]
+    public async Task MonthEndFlexSidecars_RequireRecognizedCurrencyBeforeRetention(string kind, string? currency)
+    {
+        var attribute = currency is null ? string.Empty : $" currency=\"{currency}\"";
+        var sidecar = kind switch
+        {
+            "account" => $"<AccountInformation accountId=\"FUND-A\" cashBalance=\"100\"{attribute} />",
+            "lot" => $"<OpenLot accountId=\"FUND-A\" symbol=\"AAPL\" quantity=\"10\" costBasis=\"800\" acquiredDate=\"20260601\"{attribute} />",
+            _ => $"<SecurityBorrowed accountId=\"FUND-A\" symbol=\"GME\" quantity=\"10\" feeAmount=\"2\"{attribute} />"
+        };
+        var content = "<FlexQueryResponse><FlexStatements><FlexStatement accountId=\"FUND-A\" toDate=\"20260630\">"
+            + "<CashTransactions><CashTransaction type=\"Deposits/Withdrawals\" amount=\"25\" currency=\"USD\" dateTime=\"20260602\" /></CashTransactions>"
+            + sidecar + "</FlexStatement></FlexStatements></FlexQueryResponse>";
+        var document = new StatementSourceDocument("sidecar-currency.xml", Encoding.UTF8.GetBytes(content));
+        var parsed = await new IbFlexStatementConnector(_catalog).ParseAsync(document);
+        ((parsed.AccountSnapshots?.Count ?? 0) + (parsed.TaxLots?.Count ?? 0) + (parsed.BorrowPositions?.Count ?? 0))
+            .Should().Be(1, "the supplemental currency must reach the retention boundary");
+
+        if (currency == "GBP")
+        {
+            (await _service.ValidateAsync(document, null)).IsValid.Should().BeTrue();
+            var result = await _service.CommitAsync(CommitRequest(document));
+            var evidencePath = Path.Combine(_root, Path.GetDirectoryName(result.RetainedCanonicalPath)!, "canonical-evidence.json");
+            (await File.ReadAllTextAsync(evidencePath)).Should().Contain("GBP");
+            return;
+        }
+
+        (await _service.ValidateAsync(document, null)).IsValid.Should().BeFalse();
+        (await _service.PreviewAsync(document, null)).Status.Should().Be("NeedsAttention");
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(CommitRequest(document)));
+        (await _workflow.ListImportsAsync()).Should().BeEmpty();
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
     }
 
     [Fact]

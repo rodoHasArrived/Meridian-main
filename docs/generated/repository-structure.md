@@ -1991,6 +1991,7 @@ Meridian-main
 │   │   │   ├── next-work-determination-2026-10-20.md
 │   │   │   ├── next-work-determination-2026-10-24.md
 │   │   │   ├── next-work-determination-2026-10-25.md
+│   │   │   ├── next-work-determination-2026-10-27.md
 │   │   │   ├── product-roadmap-priorities-2026-07.md
 │   │   │   ├── production-readiness-backlog-2026-08.md
 │   │   │   ├── README.md
@@ -4143,6 +4144,7 @@ Meridian-main
 │   │   │   └── ScheduledBackfillService.cs
 │   │   ├── SecurityMaster
 │   │   │   ├── CashFlow
+│   │   │   │   ├── SecurityPrincipalBalance.cs
 │   │   │   │   ├── StructuredCashFlowLedgerBridge.cs
 │   │   │   │   └── StructuredCashFlowLedgerGate.cs
 │   │   │   ├── CorporateActions
@@ -4235,6 +4237,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterQueryService.cs
 │   │   │   ├── SecurityMasterService.AheadOfWriteTerms.cs
 │   │   │   ├── SecurityMasterService.cs
+│   │   │   ├── SecurityMasterService.WriteRefusals.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassificationService.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Discard.cs
@@ -4242,6 +4245,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Overrides.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.ProfileFieldValidation.cs
 │   │   │   ├── SecurityMasterWorkbenchOptions.cs
+│   │   │   ├── SecurityMasterWriteRefusedException.cs
 │   │   │   ├── SecurityResolver.cs
 │   │   │   └── SymbolResolutionMismatchTracker.cs
 │   │   ├── Services
@@ -5148,6 +5152,19 @@ Meridian-main
 │   │   │   ├── IFxRateProvider.cs
 │   │   │   ├── InMemoryFxRateProvider.cs
 │   │   │   └── MultiCurrencyCashBalance.cs
+│   │   ├── OrderManagement
+│   │   │   ├── AccountingHandoffCoordinator.cs
+│   │   │   ├── BrokerageOrderCheckpointEvidence.cs
+│   │   │   ├── BrokerageOrderRecoveryJournal.cs
+│   │   │   ├── ExecutionFailureState.cs
+│   │   │   ├── ExecutionReportHub.cs
+│   │   │   ├── OrderAdmissionPolicy.cs
+│   │   │   ├── OrderAuditMetadata.cs
+│   │   │   ├── OrderBrokerIdentityIndex.cs
+│   │   │   ├── OrderExecutionAudit.cs
+│   │   │   ├── OrderFillContext.cs
+│   │   │   ├── OrderFillProcessor.cs
+│   │   │   └── OrderRiskSizingPolicy.cs
 │   │   ├── PaperMatching
 │   │   │   ├── PaperMarketObservation.cs
 │   │   │   ├── PaperOrderMatchingPolicy.cs
@@ -5190,8 +5207,6 @@ Meridian-main
 │   │   ├── IRiskValidator.cs
 │   │   ├── ISecurityMasterGate.cs
 │   │   ├── Meridian.Execution.csproj
-│   │   ├── OrderManagementSystem.AccountingHandoff.cs
-│   │   ├── OrderManagementSystem.Audit.cs
 │   │   ├── OrderManagementSystem.BrokerageLimits.cs
 │   │   ├── OrderManagementSystem.Cancellation.cs
 │   │   ├── OrderManagementSystem.ChildOrders.cs
@@ -5239,6 +5254,7 @@ Meridian-main
 │   │   ├── IOrderManager.cs
 │   │   ├── IPosition.cs
 │   │   ├── IPositionTracker.cs
+│   │   ├── IPreassignedReplacementReferenceGateway.cs
 │   │   ├── KillSwitchSweepResult.cs
 │   │   ├── Meridian.Execution.Sdk.csproj
 │   │   ├── Models.cs
@@ -8214,6 +8230,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterEndpoints.Curves.cs
 │   │   │   ├── SecurityMasterEndpoints.OtcCollateral.cs
 │   │   │   ├── SecurityMasterEndpoints.OtcContracts.cs
+│   │   │   ├── SecurityMasterEndpoints.WriteRefusals.cs
 │   │   │   ├── StatusEndpoints.cs
 │   │   │   ├── StorageEndpoints.cs
 │   │   │   ├── StorageQualityEndpoints.cs
@@ -10331,6 +10348,7 @@ Meridian-main
 │   │   │   │   ├── BestOfBreedProviderSelectorTests.cs
 │   │   │   │   ├── KernelObservabilityServiceTests.cs
 │   │   │   │   ├── ProviderRoutingServiceTests.cs
+│   │   │   │   ├── ProviderSetupOwnershipTests.cs
 │   │   │   │   └── ProviderTrustScoringServiceTests.cs
 │   │   │   ├── Reconciliation
 │   │   │   │   ├── BusinessDayAccountingCalendarTests.cs
@@ -10608,18 +10626,21 @@ Meridian-main
 │   │   │   │   └── TaxLotAccountingTests.cs
 │   │   │   ├── MultiCurrency
 │   │   │   │   └── InMemoryFxRateProviderTests.cs
+│   │   │   ├── AccountingHandoffCoordinatorTests.cs
 │   │   │   ├── AlpacaStreamedFillLoopTests.cs
 │   │   │   ├── BrokerageExecutionAdmissionLimitTests.cs
 │   │   │   ├── BrokerageExecutionReconciliationServiceTests.cs
 │   │   │   ├── BrokerageExecutionRegistrationRecoveryTests.cs
 │   │   │   ├── BrokerageGatewayAdapterTests.cs
 │   │   │   ├── BrokerageOrderPlacementGateTests.cs
+│   │   │   ├── BrokerageOrderRecoveryJournalTests.cs
 │   │   │   ├── BrokerageOrderRecoveryTests.cs
 │   │   │   ├── BrokerageOrderRecoveryTests.Retention.cs
 │   │   │   ├── BrokerageValidationEvaluatorTests.cs
 │   │   │   ├── DurableFillDeliveryBoundaryTests.cs
 │   │   │   ├── ExecutionAuditTrailServiceTests.cs
 │   │   │   ├── ExecutionOrderMetadataPolicyTests.cs
+│   │   │   ├── ExecutionReportHubTests.cs
 │   │   │   ├── FileBrokerageOrderRecoveryStoreTests.cs
 │   │   │   ├── FixedIncomeFillBookingTests.cs
 │   │   │   ├── HostedBrokerageGatewayRegistrationTests.cs
@@ -10630,6 +10651,9 @@ Meridian-main
 │   │   │   ├── LogSanitizerTests.cs
 │   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
 │   │   │   ├── OmsGovernedBrokerageOrderGatewayTests.cs
+│   │   │   ├── OrderAdmissionPolicyTests.cs
+│   │   │   ├── OrderBrokerIdentityIndexTests.cs
+│   │   │   ├── OrderFillProcessorTests.cs
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.cs
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.Outcomes.cs
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.RejectedSuccessor.cs
@@ -10638,7 +10662,9 @@ Meridian-main
 │   │   │   ├── OrderManagementSystemGovernanceTests.cs
 │   │   │   ├── OrderManagementSystemLifecycleTests.cs
 │   │   │   ├── OrderManagementSystemReportStreamTests.cs
+│   │   │   ├── OrderManagementSystemSubscriptionFailureTests.cs
 │   │   │   ├── OrderManagementSystemTests.cs
+│   │   │   ├── OrderRiskSizingPolicyTests.cs
 │   │   │   ├── PaperExecutionGatewayLotSizeTests.cs
 │   │   │   ├── PaperFillEnvelopeRegressionTests.cs
 │   │   │   ├── PaperGatewayLiveFeedPricingTests.cs
@@ -10786,6 +10812,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementTerms.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementTrail.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.SendBoundary.cs
+│   │   │   │   ├── AlpacaBrokerageGatewayTests.StatementAmounts.cs
 │   │   │   │   ├── AlpacaConnectionReadinessTests.cs
 │   │   │   │   ├── AlpacaCorporateActionProviderTests.cs
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs
@@ -10824,6 +10851,7 @@ Meridian-main
 │   │   │   │   ├── IBBrokerageGatewayTests.PositionIdentity.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.PreDispatch.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.Recovery.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.RecoveryAuthority.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.RecoveryEvidence.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.RecoveryIdentity.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.RecoveryScope.cs
@@ -11094,7 +11122,8 @@ Meridian-main
 │   │   │   │   ├── StatementImportServiceTests.cs
 │   │   │   │   ├── StatementIngressLimitsTests.cs
 │   │   │   │   ├── StatementMappingProfileLoaderTests.cs
-│   │   │   │   └── StatementMappingProfileStoreTests.cs
+│   │   │   │   ├── StatementMappingProfileStoreTests.cs
+│   │   │   │   └── StructuredStatementAmountTests.cs
 │   │   │   ├── Fixtures
 │   │   │   │   ├── statement-clean-reconciles.csv
 │   │   │   │   ├── statement-invalid-blockers.csv
@@ -11806,6 +11835,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterWorkbenchEndpointsTests.cs
 │   │   │   ├── SecurityMasterWorkbenchOptionsBindingTests.cs
 │   │   │   ├── SecurityMasterWorkbenchQueryServiceCallScheduleTests.cs
+│   │   │   ├── SecurityMasterWriteRefusalEndpointsTests.cs
 │   │   │   ├── SpreadsheetFormulaGuardTests.cs
 │   │   │   ├── StatementImportEvidenceBridgeTests.cs
 │   │   │   ├── StatementReconciliationAuthorityCompositionTests.cs
