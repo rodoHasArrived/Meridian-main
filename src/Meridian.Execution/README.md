@@ -6,7 +6,7 @@ module_id: SRC-EXECUTION
 path: src/Meridian.Execution
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-10-14
+last_reviewed: 2026-10-21
 ---
 
 # src/Meridian.Execution
@@ -71,9 +71,39 @@ This layer implements execution behavior and broker-facing runtime services whil
 ## Key folders and files
 
 - `Interfaces/` - order gateway and execution abstractions.
+- `OrderManagement/` - internal OMS policies and owners of recovery, fill progress, accounting handoff, report delivery, and audit evidence.
 - `Services/` - execution services and orchestration.
 - `Models/`, `Events/`, and `Serialization/` - execution payloads and event contracts.
 - `Allocation/`, `Margin/`, `Derivatives/`, and `TaxLotAccounting/` - execution support domains.
+
+## OMS ownership
+
+`OrderManagementSystem` remains the public facade and lifecycle owner. Its internal collaborators
+own specific policies and state; they do not receive the OMS instance as a general callback target.
+
+| Owner | Responsibility |
+| --- | --- |
+| `OrderManagementSystem` and its partials | Public commands, live order state and sidecars, startup/shutdown, broker-report and pre-trade admission gates, risk reservation settlement, amendment/recovery orchestration, cancellation, and kill-switch coordination. |
+| `OrderAdmissionPolicy`, `OrderRiskSizingPolicy` | Prepare request snapshots and evaluate routing gates; calculate order/amendment sizing from explicit evidence. The facade still registers orders, takes and settles risk reservations, audits decisions, and dispatches. |
+| `OrderBrokerIdentityIndex` | Active broker routing identities and permanent replacement aliases, with the existing ordinal comparison and report-normalization rules. |
+| `BrokerageOrderRecoveryJournal` | Recovery-store access, dispatched identities, recovery requirements and versions, processed-order checkpoints, tombstones, and the recovery-state lock. |
+| `OrderFillProcessor`, `OrderFillContext` | Per-report progress, fill exposure awaiting portfolio application, and ordered portfolio/accounting/session/report effects. The context reads current order ownership and sizing; the facade retains mutations. |
+| `AccountingHandoffCoordinator` | Publisher scope checks, durable accounting acceptance, independent fallback retention, and retained-handoff replay. The facade starts and drains replay. |
+| `ExecutionReportHub`, `ExecutionFailureState` | Authoritative subscriber delivery and recovery, the best-effort observer channel, and the first terminal consumer failure shared with operation admission. The facade controls registration closure and shutdown ordering. |
+| `OrderAuditMetadata`, `OrderExecutionAudit` | Audit metadata construction and lifecycle/unresolved-fill evidence from explicit snapshots. Command decisions and their audit timing stay with their callers. |
+
+The shared broker-report gate still serializes live callbacks, explicit recovery, amendment
+resolution, and retention. The journal holds its recovery-state lock through durable compaction
+and the facade's synchronous expected-state removal; sidecar cleanup follows only a successful
+removal. Recovery versions prevent a completed older report from clearing newer uncertainty.
+Fill progress keeps its own gate and resumes only unfinished effects, in the existing order:
+portfolio application, accounting acceptance, session persistence, authoritative delivery, then
+observer publication. Accepted fills and their required handoffs drain before shutdown completes.
+
+These boundaries preserve public APIs, durable recovery formats, order and fill identities,
+comparison rules, and lock ordering. Command/risk/amendment coordination still spans the facade
+and its collaborators; the extraction does not move the whole order state machine into one new
+service.
 
 ## Important workflows
 
