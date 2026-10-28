@@ -56,7 +56,7 @@ public sealed record AccountingPostingCandidateWriteResult(
     PostingRuleJournalCandidateResultDto Candidate,
     LedgerJournalEntryWrite? Write);
 
-public sealed class AccountingPostingCandidateService :
+public sealed partial class AccountingPostingCandidateService :
     IAccountingPostingCandidateService,
     IAccountingPostingCandidateWriteBuilder,
     IAccountingPostingCandidateAuthorityBuilder
@@ -409,10 +409,7 @@ public sealed class AccountingPostingCandidateService :
             : draft.Write with
             {
                 Entry = WithSecurityMasterLineage(
-                    request.AssetLotMutation is { Intent: AssetLotMutationIntentDto.FactorPaydown }
-                        ? LedgerCashFlowAttribution.WithClassifiedActivity(draft.Write.Entry,
-                            LedgerCashFlowCategory.Investing, "Factor principal repayment")
-                        : draft.Write.Entry, authority,
+                    WithCanonicalCashFlow(draft.Write.Entry, request, authority, dryRun.GeneratedPostingLines), authority,
                     request.AssetLotMutation?.CorporateAction?.ExpectedLot.Acquisition.AcquisitionCurrency
                         ?? request.AssetLotMutation?.CapitalReturn?.ExpectedLot.Acquisition.AcquisitionCurrency
                         ?? request.AssetLotMutation?.FactorPaydown?.Currency ?? request.Currency,

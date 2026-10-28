@@ -268,6 +268,11 @@ Governed disposal posting forwards the approved instruction's optional `Disposal
 atomic tax-lot command. Storage validates that price against supported cash journal proceeds and
 retains the allocation convention; aggregate-only instructions retain no quote and reporting derives
 their canonical price from the journal and retained wash-sale deferrals.
+Under resolved Asset Accounting Event Spine authority, the exact cash/carrying/optional realized
+result disposal shape retains an Investing category for actual proceeds before approval. Carrying
+relief must equal the spine's selected-lot basis assertions and cash must equal the retained event
+amount. Compound/custom journals and mismatched basis remain unclassified and fail closed when
+their opposing noncash legs reach reporting; an arbitrary `Dispose` label is not attribution.
 
 Factor-paydown candidates require lot quantity as of the event effective date, reconstructed by
 the journal store from retained mutation history. Missing or inconsistent historical quantity
