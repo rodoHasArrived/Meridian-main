@@ -121,6 +121,31 @@ public sealed class FactorPaydownProjectionServiceTests
         result.Issues.Should().ContainSingle(issue => issue.Code == "factor-paydown.unroundable-currency-result");
     }
 
+    [Theory]
+    [InlineData("CLF", "12.3457")]
+    [InlineData("uyw", "12.3457")]
+    [InlineData("USD", "12.35")]
+    [InlineData("KWD", "12.346")]
+    [InlineData("JPY", "12")]
+    public void Project_RoundsPrincipalWithTheSharedContractsMinorUnits(string currency, string expected)
+    {
+        // 1,000 of held face paying 1 -> 0.987654321 repays 12.345679; the projector rounds it with
+        // the same minor units the per-lot allocation and the atomic store use, including the
+        // four-decimal CLF and UYW units its private table once rounded to two.
+        var result = _sut.Project(CreateRequest() with
+        {
+            HeldFace = 1_000m,
+            PriorFactor = 1m,
+            CurrentFactor = 0.987654321m,
+            Currency = currency
+        });
+
+        result.Status.Should().Be(FactorPaydownProjectionStatus.Projected);
+        result.PrincipalPaydown.Should().Be(decimal.Parse(expected, CultureInfo.InvariantCulture));
+        result.PrincipalPaydown.Should().Be(decimal.Round(12.345679m,
+            Meridian.Contracts.Ledger.CurrencyMinorUnits.GetPrecision(currency.ToUpperInvariant()), MidpointRounding.AwayFromZero));
+    }
+
     [Fact]
     public void Project_ShouldRejectVersionOverflow()
     {

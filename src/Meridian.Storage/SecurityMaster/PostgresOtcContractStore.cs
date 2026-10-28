@@ -9,6 +9,9 @@ namespace Meridian.Storage.SecurityMaster;
 /// PostgreSQL store for the OTC contract model (migration 050): master agreements, collateral
 /// agreements, netting sets and bilateral contracts. Every write passes <see cref="OtcContractRules"/>
 /// first, so the database constraints are a backstop rather than the first line of validation.
+/// Each write locks the row it versions before writing it; a contract write first takes the
+/// contracts lock of each netting set it touches (<see cref="OtcAdvisoryLocks"/>), so it cannot
+/// change a netting set while a margin call is being issued on it.
 /// </summary>
 public sealed class PostgresOtcContractStore : IOtcContractStore
 {
@@ -185,7 +188,7 @@ public sealed class PostgresOtcContractStore : IOtcContractStore
     public async Task<OtcCollateralAgreementDto?> GetCollateralAgreementAsync(Guid collateralAgreementId, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        return await ReadCollateralAgreementAsync(connection, null, collateralAgreementId, ct).ConfigureAwait(false);
+        return await ReadCollateralAgreementAsync(connection, null, _options.Schema, collateralAgreementId, ct).ConfigureAwait(false);
     }
 
     public async Task<OtcNettingSetDto> UpsertNettingSetAsync(UpsertOtcNettingSetRequest request, CancellationToken ct = default)
@@ -197,7 +200,7 @@ public sealed class PostgresOtcContractStore : IOtcContractStore
         await RequireRowAsync(connection, transaction, "otc_master_agreements", "agreement_id", normalized.MasterAgreementId, "master agreement", ct).ConfigureAwait(false);
         if (normalized.CollateralAgreementId is { } csaId)
         {
-            var csa = await ReadCollateralAgreementAsync(connection, transaction, csaId, ct).ConfigureAwait(false)
+            var csa = await ReadCollateralAgreementAsync(connection, transaction, _options.Schema, csaId, ct).ConfigureAwait(false)
                 ?? throw new ArgumentException($"Collateral agreement {csaId:D} does not exist.", nameof(request));
             if (csa.MasterAgreementId != normalized.MasterAgreementId)
                 throw new ArgumentException("A netting set's collateral agreement must sit under the same master agreement.", nameof(request));
@@ -256,7 +259,7 @@ public sealed class PostgresOtcContractStore : IOtcContractStore
 
         var master = (await ReadMasterAgreementsAsync(connection, null, "where agreement_id = @id", ("id", nettingSet.MasterAgreementId), ct).ConfigureAwait(false))[0];
         var csa = nettingSet.CollateralAgreementId is { } csaId
-            ? await ReadCollateralAgreementAsync(connection, null, csaId, ct).ConfigureAwait(false)
+            ? await ReadCollateralAgreementAsync(connection, null, _options.Schema, csaId, ct).ConfigureAwait(false)
             : null;
         var contracts = await ReadContractsAsync(connection, null, "where netting_set_id = @id", nettingSetId, ct).ConfigureAwait(false);
         return new OtcNettingSetViewDto(nettingSet, master, csa, contracts);
@@ -277,8 +280,18 @@ public sealed class PostgresOtcContractStore : IOtcContractStore
         long version;
         if (normalized.ContractId is not null)
         {
-            var existing = (await ReadContractsAsync(connection, transaction, "where contract_id = @id", id, ct).ConfigureAwait(false)).SingleOrDefault()
+            // A write waits for, and is waited on by, a margin call being issued on the netting set it
+            // leaves or joins, so an issue cannot miss a contract amended, added or moved while it
+            // checks the snapshot's inputs. The contract is read once to learn its netting set, both
+            // netting sets are locked in id order before any row lock (see OtcAdvisoryLocks), and the
+            // row is read again under lock: a move made in between is refused rather than overwritten.
+            var probe = (await ReadContractsAsync(connection, transaction, "where contract_id = @id", id, ct).ConfigureAwait(false)).SingleOrDefault()
                 ?? throw new ArgumentException($"Contract {id:D} does not exist.", nameof(request));
+            await OtcAdvisoryLocks.LockNettingSetContractsAsync(connection, transaction, [probe.NettingSetId, normalized.NettingSetId], ct).ConfigureAwait(false);
+            var existing = (await ReadContractsAsync(connection, transaction, "where contract_id = @id", id, ct, forUpdate: true).ConfigureAwait(false)).SingleOrDefault()
+                ?? throw new ArgumentException($"Contract {id:D} does not exist.", nameof(request));
+            if (existing.NettingSetId != probe.NettingSetId)
+                throw new InvalidOperationException($"Contract {id:D} moved to another netting set under the write; retry.");
             if (OtcContractRules.IsClosed(existing.Status))
                 throw new ArgumentException($"Contract {id:D} is {existing.Status} and can no longer be amended.", nameof(request));
             if (existing.SecurityId != normalized.SecurityId)
@@ -287,6 +300,7 @@ public sealed class PostgresOtcContractStore : IOtcContractStore
         }
         else
         {
+            await OtcAdvisoryLocks.LockNettingSetContractsAsync(connection, transaction, [normalized.NettingSetId], ct).ConfigureAwait(false);
             version = 1;
         }
 
@@ -442,7 +456,12 @@ public sealed class PostgresOtcContractStore : IOtcContractStore
         return rows;
     }
 
-    private async Task<OtcCollateralAgreementDto?> ReadCollateralAgreementAsync(NpgsqlConnection connection, NpgsqlTransaction? transaction, Guid id, CancellationToken ct)
+    /// <summary>
+    /// Reads one collateral agreement with the caller's connection and transaction. Shared with
+    /// <see cref="PostgresOtcCollateralStore"/>, which resolves eligible collateral and currency
+    /// against the agreement inside its own write transaction.
+    /// </summary>
+    internal static async Task<OtcCollateralAgreementDto?> ReadCollateralAgreementAsync(NpgsqlConnection connection, NpgsqlTransaction? transaction, string schema, Guid id, CancellationToken ct)
     {
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
@@ -451,7 +470,7 @@ public sealed class PostgresOtcContractStore : IOtcContractStore
             select collateral_agreement_id, master_agreement_id, currency, threshold_ours, threshold_theirs,
                    minimum_transfer_amount, independent_amount, rounding_amount, valuation_frequency,
                    eligible_collateral, effective_date, termination_date, notes, version, updated_by, updated_at
-            from {_options.Schema}.otc_collateral_agreements
+            from {schema}.otc_collateral_agreements
             where collateral_agreement_id = @id;
             """;
         command.Parameters.AddWithValue("id", id);
@@ -505,7 +524,7 @@ public sealed class PostgresOtcContractStore : IOtcContractStore
             Utc(reader.GetDateTime(7)));
     }
 
-    private async Task<IReadOnlyList<OtcContractDto>> ReadContractsAsync(NpgsqlConnection connection, NpgsqlTransaction? transaction, string whereClause, Guid id, CancellationToken ct)
+    private async Task<IReadOnlyList<OtcContractDto>> ReadContractsAsync(NpgsqlConnection connection, NpgsqlTransaction? transaction, string whereClause, Guid id, CancellationToken ct, bool forUpdate = false)
     {
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
@@ -515,7 +534,7 @@ public sealed class PostgresOtcContractStore : IOtcContractStore
                    trade_date, effective_date, termination_date, status, confirmation_reference, notes, version, updated_by, updated_at
             from {_options.Schema}.otc_contracts
             {whereClause}
-            order by trade_date, contract_id;
+            order by trade_date, contract_id{(forUpdate ? " for update" : string.Empty)};
             """;
         command.Parameters.AddWithValue("id", id);
 

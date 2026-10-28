@@ -1,6 +1,5 @@
-using System.Globalization;
 using Meridian.Contracts.AssetOperations;
-using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Ledger;
 
 namespace Meridian.Instruments.AssetOperations;
 
@@ -56,8 +55,8 @@ public sealed record FactorPaydownProjectionResult(
 
 public sealed class FactorPaydownProjectionService : IFactorPaydownProjectionService
 {
-    public const string EventType = "MbsFactorPaydown";
-    public const string ModelKey = "mbs-factor-paydown";
+    public const string EventType = FactorPaydownProjectionIdentity.EventType;
+    public const string ModelKey = FactorPaydownProjectionIdentity.ModelKey;
     public const string ModelVersion = "1.0.0";
     public const string EngineVersion = "factor-paydown-projection-v1";
 
@@ -102,7 +101,9 @@ public sealed class FactorPaydownProjectionService : IFactorPaydownProjectionSer
                 "The factor-paydown economics exceed the supported decimal or version range."));
         }
 
-        var scale = CurrencyMinorUnits(request.Currency);
+        // The shared Contracts minor units, so the position principal rounds exactly as the per-lot
+        // allocation and the atomic store round it (CLF and UYW carry four decimals).
+        var scale = CurrencyMinorUnits.GetPrecision(request.Currency.Trim().ToUpperInvariant());
         var principal = decimal.Round(rawPrincipal, scale, MidpointRounding.AwayFromZero);
         if (rawPrincipal > 0m && principal <= 0m)
         {
@@ -111,7 +112,8 @@ public sealed class FactorPaydownProjectionService : IFactorPaydownProjectionSer
                 $"The projected principal cannot be represented in {request.Currency.ToUpperInvariant()} minor units."));
         }
 
-        var eventId = DeterministicGuid(BuildIdentity(request));
+        var eventId = FactorPaydownProjectionIdentity.EventId(request.SecurityId, request.PositionId,
+            request.EffectiveDate, request.PriorFactor, request.CurrentFactor, request.SourceContentHash);
         var normalizedCurrency = request.Currency.Trim().ToUpperInvariant();
         var normalizedHash = request.SourceContentHash.Trim().ToLowerInvariant();
         var normalizedDomain = request.SourceDomain.Trim();
@@ -218,36 +220,12 @@ public sealed class FactorPaydownProjectionService : IFactorPaydownProjectionSer
     private static FactorPaydownProjectionResult Rejected(IReadOnlyList<FactorPaydownProjectionIssue> issues)
         => new(FactorPaydownProjectionStatus.Rejected, null, null, null, null, issues);
 
-    private static string BuildIdentity(FactorPaydownProjectionRequest request)
-        => string.Join(
-            '|',
-            request.SecurityId.ToString("N"),
-            request.PositionId.ToString("N"),
-            request.EffectiveDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-            request.PriorFactor.ToString("G29", CultureInfo.InvariantCulture),
-            request.CurrentFactor.ToString("G29", CultureInfo.InvariantCulture),
-            request.SourceContentHash.Trim().ToLowerInvariant());
-
-    private static Guid DeterministicGuid(string value)
-    {
-        var hash = Sha256Digest.ComputeBytesUtf8(value);
-        Span<byte> bytes = stackalloc byte[16];
-        hash.AsSpan(0, 16).CopyTo(bytes);
-        bytes[6] = (byte)((bytes[6] & 0x0f) | 0x50);
-        bytes[8] = (byte)((bytes[8] & 0x3f) | 0x80);
-        return new Guid(bytes);
-    }
+    // The event identity and the lineage identities derived from it share one rule with the
+    // Contracts paydown instruction, which recomputes the event id before any lot is touched.
+    private static Guid DeterministicGuid(string value) => FactorPaydownProjectionIdentity.DeterministicGuid(value);
 
     private static bool IsSupportedCurrency(string currency)
         => !string.IsNullOrWhiteSpace(currency) &&
            currency.Trim().Length == 3 &&
            currency.Trim().All(static character => character is >= 'A' and <= 'Z' or >= 'a' and <= 'z');
-
-    private static int CurrencyMinorUnits(string currency)
-        => currency.Trim().ToUpperInvariant() switch
-        {
-            "BHD" or "IQD" or "JOD" or "KWD" or "LYD" or "OMR" or "TND" => 3,
-            "BIF" or "CLP" or "DJF" or "GNF" or "ISK" or "JPY" or "KMF" or "KRW" or "PYG" or "RWF" or "UGX" or "UYI" or "VND" or "VUV" or "XAF" or "XOF" or "XPF" => 0,
-            _ => 2
-        };
 }

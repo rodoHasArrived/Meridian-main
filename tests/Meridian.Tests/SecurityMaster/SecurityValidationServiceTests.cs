@@ -1373,6 +1373,17 @@ public sealed class SecurityValidationServiceTests
         { "StructuredCredit", """{"schemaVersion":3,"customProfileId":"structured-credit-v1","profileVersion":1,"profileFields":{"tranche":"A-1"}}""" },
         { "StructuredCredit", """{"schemaVersion":2,"termsFormat":"economic","maturity":{"maturityDate":"2031-06-15"}}""" },
         { "StructuredCredit", """{"schemaVersion":2,"termsFormat":"flat","assetClassTermsVersion":1,"tranche":"A-1"}""" },
+        // Stamped above the write version and within what the node reads (ADR-024, readable before
+        // writable): written by a newer node, so not behind. An unstamped version-1 class is current.
+        { "Bond", """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":2,"maturity":"2030-01-15","isCallable":false,"scheduleConventions":{"stubPolicy":"Short"}}""" },
+        { "CertificateOfDeposit", """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":2,"issuerName":"First Meridian Bank","maturity":"2027-09-30","scheduleConventions":null}""" },
+        { "Swap", """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":2,"effectiveDate":"2026-01-15","maturityDate":"2031-01-15","legs":[{"legId":"fixed","legType":"Fixed","scheduleConventions":{"paymentCalendars":["USNY"]}}]}""" },
+        { "CertificateOfDeposit", """{"schemaVersion":1,"issuerName":"First Meridian Bank","maturity":"2027-09-30"}""" },
+        // At each class's read ceiling, which also declares the call and put schedules: still above
+        // the write version, so not behind.
+        { "Bond", """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":3,"maturity":"2031-06-15","isCallable":true,"callSchedule":[{"callDate":"2030-06-15","callPrice":101}],"putSchedule":[{"putDate":"2029-06-15"}]}""" },
+        { "CertificateOfDeposit", """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":3,"issuerName":"First Meridian Bank","maturity":"2027-09-30","putSchedule":[{"putDate":"2026-09-30"}]}""" },
+        { "StructuredCredit", """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":4,"tranche":"A-1","callSchedule":[],"putSchedule":null}""" },
     };
 
     [Theory]

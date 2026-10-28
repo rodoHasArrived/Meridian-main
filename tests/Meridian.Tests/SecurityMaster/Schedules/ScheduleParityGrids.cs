@@ -112,6 +112,57 @@ internal static class ScheduleParityGrids
     }
 
     /// <summary>
+    /// The fund-structure forecast's frequency spellings: every recognised spelling in assorted casing
+    /// and padding, four unrecognised ones (BiMonthly and AtMaturity are Security Master frequencies
+    /// the forecast never stepped) and two blanks.
+    /// </summary>
+    public static readonly string?[] FundStructureSpellings =
+    [
+        "daily", "Weekly", "biweekly", "Bi-Weekly", "monthly", "MONTHLY", " Quarterly ", "semiannual", "Semi-Annual",
+        "semiannually", "semi-annually", "HalfYearly", "half-yearly", "annual", "Annually", "yearly",
+        "BiMonthly", "AtMaturity", "3M", "semi annual", null, "  ",
+    ];
+
+    /// <summary>Days from the anchor to the start of the fund-structure projection window.</summary>
+    public static readonly int[] FundStructureWindowStartOffsets = [-400, -1, 0, 1, 45];
+
+    /// <summary>Fund-structure projection window lengths in days; the longest reaches the 256-date guard.</summary>
+    public static readonly int[] FundStructureWindowLengths = [1, 31, 400, 3660];
+
+    /// <summary>The UTC hour a fund-structure window opens at: midnight, or noon so a roll date on the window's first day falls before it.</summary>
+    public static readonly int[] FundStructureWindowStartHours = [0, 12];
+
+    /// <summary>
+    /// Every fund-structure forecast roll: each anchor from <see cref="ForwardStartFrom"/> to
+    /// <see cref="ForwardStartTo"/> × <see cref="FundStructureSpellings"/> × a window opening
+    /// <see cref="FundStructureWindowStartOffsets"/> days after the anchor at
+    /// <see cref="FundStructureWindowStartHours"/> UTC and lasting <see cref="FundStructureWindowLengths"/> days
+    /// × the anchor given or absent (the roll then starts on the window's start date): 909,920 cases.
+    /// </summary>
+    public static IEnumerable<FundStructureCase> FundStructureCases()
+    {
+        for (var anchor = ForwardStartFrom; anchor <= ForwardStartTo; anchor = anchor.AddDays(1))
+        {
+            foreach (var frequency in FundStructureSpellings)
+            {
+                foreach (var startOffset in FundStructureWindowStartOffsets)
+                {
+                    foreach (var length in FundStructureWindowLengths)
+                    {
+                        foreach (var startHour in FundStructureWindowStartHours)
+                        {
+                            var windowStart = LegacyScheduleOracles.FundStructureToDateTimeOffset(anchor.AddDays(startOffset)).AddHours(startHour);
+                            var windowEnd = windowStart.AddDays(length);
+                            yield return new FundStructureCase(anchor, frequency, windowStart, windowEnd);
+                            yield return new FundStructureCase(null, frequency, windowStart, windowEnd);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
     /// A deterministic sample of <paramref name="size"/> cases: every <paramref name="stride"/>-th case
     /// from the start of <paramref name="grid"/>. A prime stride walks every combination of the grid's
     /// inner offsets instead of repeating a subset of them.
@@ -124,4 +175,7 @@ internal static class ScheduleParityGrids
 
     /// <summary>One FaceValueLot schedule: an acquisition date, a maturity and a coupon frequency.</summary>
     public readonly record struct FaceValueLotCase(DateOnly AcquiredDate, DateOnly Maturity, int PaymentsPerYear);
+
+    /// <summary>One fund-structure forecast roll: an optional anchor, a frequency spelling and a projection window.</summary>
+    public readonly record struct FundStructureCase(DateOnly? Anchor, string? Frequency, DateTimeOffset WindowStart, DateTimeOffset WindowEnd);
 }

@@ -389,6 +389,14 @@ public static class UiApiRoutes
     public const string SecurityMasterOtcNettingSet = "/api/security-master/otc/netting-sets/{nettingSetId:guid}";
     public const string SecurityMasterOtcContracts = "/api/security-master/otc/contracts";
     public const string SecurityMasterOtcContract = "/api/security-master/otc/contracts/{contractId:guid}";
+    public const string SecurityMasterOtcNettingSetExposureSnapshots = "/api/security-master/otc/netting-sets/{nettingSetId:guid}/exposure-snapshots";
+    public const string SecurityMasterOtcExposureSnapshot = "/api/security-master/otc/exposure-snapshots/{snapshotId:guid}";
+    public const string SecurityMasterOtcCollateralBalances = "/api/security-master/otc/collateral-balances";
+    public const string SecurityMasterOtcCollateralAgreementBalances = "/api/security-master/otc/collateral-agreements/{collateralAgreementId:guid}/collateral-balances";
+    public const string SecurityMasterOtcMarginCalls = "/api/security-master/otc/margin-calls";
+    public const string SecurityMasterOtcMarginCall = "/api/security-master/otc/margin-calls/{callId:guid}";
+    public const string SecurityMasterOtcMarginCallTransition = "/api/security-master/otc/margin-calls/{callId:guid}/transition";
+    public const string SecurityMasterOtcNettingSetMarginCalls = "/api/security-master/otc/netting-sets/{nettingSetId:guid}/margin-calls";
     public const string SecurityMasterCorporateActionsIngest = "/api/security-master/corporate-actions/ingest";
     public const string SecurityMasterCorporateActionsInbox = "/api/security-master/corporate-actions/inbox";
     public const string SecurityMasterCorporateActionsInboxApply = "/api/security-master/corporate-actions/inbox/apply";
@@ -434,6 +442,13 @@ public static class UiApiRoutes
     // Structured cash flow source assignments
     public const string SecurityMasterCashFlowSource = "/api/security-master/{securityId:guid}/cashflow-source";
     public const string SecurityMasterCashFlowProjections = "/api/security-master/{securityId:guid}/cashflow-projections";
+
+    // Market curves and valuation (G4)
+    public const string SecurityMasterCurves = "/api/security-master/curves";
+    public const string SecurityMasterCurve = "/api/security-master/curves/{curveId:guid}";
+    public const string SecurityMasterCurveVersions = "/api/security-master/curves/{curveId:guid}/versions";
+    public const string SecurityMasterCurveVersion = "/api/security-master/curves/{curveId:guid}/versions/{version:long}";
+    public const string SecurityMasterValuation = "/api/security-master/{securityId:guid}/valuation";
 
     // Data vendor entitlements
     public const string DataVendorEntitlements = "/api/security-master/data-entitlements";

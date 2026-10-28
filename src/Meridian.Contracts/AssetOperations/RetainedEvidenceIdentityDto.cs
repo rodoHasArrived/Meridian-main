@@ -45,7 +45,8 @@ public static class AssetAccountingEvidenceSubjects
         bool requireInstruction,
         Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? corporateAction = null,
         bool allowRetainedAmortizationCorrection = false,
-        Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? capitalReturn = null)
+        Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? capitalReturn = null,
+        Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? factorPaydown = null)
     {
         if (evidence.EffectiveDate == eventDate)
             return true;
@@ -54,6 +55,11 @@ public static class AssetAccountingEvidenceSubjects
             if (evidence.SubjectType is not ("OpenLotAcquisition" or "SecurityMasterProjection")
                 || !Guid.TryParseExact(evidence.SubjectId, "D", out var subjectId) || subjectId == Guid.Empty)
                 return false;
+            // Factor evidence is dated on the paydown date itself; only the paid-down lots' own
+            // acquisition evidence may carry an earlier date.
+            if (factorPaydown is not null)
+                return corporateAction is null && capitalReturn is null
+                    && factorPaydown.Lots.Any(lot => lot.ExpectedLot.Acquisition.Evidence.Contains(evidence));
             if (capitalReturn is not null)
                 return corporateAction is null && capitalReturn.ExpectedLot.Acquisition.Evidence.Contains(evidence);
             return corporateAction is null ? !requireInstruction

@@ -41,6 +41,10 @@ public sealed class SecurityAssetClassBehaviorFactsTests
             .Should().BeEquivalentTo(["Swap", "FxForward", "NonDeliverableForward", "CreditDefaultSwap", "Swaption", "CapFloor", "Repo", "Cfd"]);
 
     [Fact]
+    public void DefaultValuationModel_DiscountedCashFlow_IsBondAndSwap()
+        => Classes(static d => d.DefaultValuationModel == SecurityValuationModelKind.DiscountedCashFlow).Should().BeEquivalentTo(["Bond", "Swap"]);
+
+    [Fact]
     public void SingleClassBehaviours_ResolveTheClassTheSitesNamed()
     {
         Classes(static d => d.CashFlowBehavior == SecurityCashFlowBehavior.SwapLegs).Should().Equal("Swap");
