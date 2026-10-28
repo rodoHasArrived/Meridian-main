@@ -6,7 +6,7 @@ module_id: SRC-EXECUTION
 path: src/Meridian.Execution
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-10-21
+last_reviewed: 2026-10-28
 ---
 
 # src/Meridian.Execution
@@ -69,29 +69,38 @@ This layer implements execution behavior and broker-facing runtime services whil
 ## Key folders and files
 
 - `Interfaces/` - order gateway and execution abstractions.
-- `OrderManagement/` - internal OMS policies and owners of recovery, fill progress, accounting handoff, report delivery, and audit evidence.
+- `OrderManagement/` - internal OMS policies and owners of lifecycle, amendments, dispatch tracking, broker sweeps, approval reservations, recovery, fill progress, accounting handoff, report delivery, and audit evidence.
 - `Services/` - execution services and orchestration.
 - `Models/`, `Events/`, and `Serialization/` - execution payloads and event contracts.
 - `Allocation/`, `Margin/`, `Derivatives/`, and `TaxLotAccounting/` - execution support domains.
 
 ## OMS ownership
 
-`OrderManagementSystem` remains the public facade and lifecycle owner. Its internal collaborators
-own specific policies and state; they do not receive the OMS instance as a general callback target.
+`OrderManagementSystem` remains the public command and lifecycle facade. Its internal collaborators
+own specific policies and state; named callbacks and live read-only views connect the owners without
+passing the OMS instance as a general callback target.
 
 | Owner | Responsibility |
 | --- | --- |
-| `OrderManagementSystem` and its partials | Public commands, live order state and sidecars, startup/shutdown, broker-report and pre-trade admission gates, risk reservation settlement, amendment/recovery orchestration, cancellation, and kill-switch coordination. |
+| `OrderManagementSystem` and its partials | Public commands and lifecycle delegation, live order state and sidecars, broker-report and pre-trade reservation gates, risk reservation settlement, amendment/recovery orchestration, tracked cancellation, sweep concurrency, and final kill-switch outcomes. |
+| `OrderManagementLifecycleCoordinator` | Startup and terminal shutdown, operation leases and admission, subscription admission, report/replay worker lifetime, working-reduction probe attachment, and ordered drain of operations, workers, and subscribers. The facade supplies report-pump and live-reduction callbacks. |
 | `OrderAdmissionPolicy`, `OrderRiskSizingPolicy` | Prepare request snapshots and evaluate routing gates; calculate order/amendment sizing from explicit evidence. The facade still registers orders, takes and settles risk reservations, audits decisions, and dispatches. |
+| `OrderAmendmentBook` | Pending attempts, restored-attempt provenance, broker outcome evidence, report preparation, and conservative exposure projections over a live read-only order view. The facade applies transitions, persists evidence, and removes resolved attempts after fill processing succeeds. |
+| `OrderDispatchRegistry` | In-flight submission leases and bounded waits over the dispatches present when a sweep starts. Each lease settles only its own attempt after the facade publishes the gateway outcome. |
+| `BrokerOrderSweep` | Broker open-order snapshots, matching tracked client and broker IDs, residual cancellation, and cancellation audit evidence. The facade retains tracked-order updates, sweep concurrency, and final reconciliation of outcomes. |
+| `OrderApprovalReservations` | Client IDs reserved by governed approvals, restart rehydration, approval-token checks, rearming, and queue withdrawal before releasing a live reservation. Order state, session effects, audits, and pre-trade risk-capacity settlement remain with the facade. |
 | `OrderBrokerIdentityIndex` | Active broker routing identities and permanent replacement aliases, with the existing ordinal comparison and report-normalization rules. |
 | `BrokerageOrderRecoveryJournal` | Recovery-store access, dispatched identities, recovery requirements and versions, processed-order checkpoints, tombstones, and the recovery-state lock. |
 | `OrderFillProcessor`, `OrderFillContext` | Per-report progress, fill exposure awaiting portfolio application, and ordered portfolio/accounting/session/report effects. The context reads current order ownership and sizing; the facade retains mutations. |
-| `AccountingHandoffCoordinator` | Publisher scope checks, durable accounting acceptance, independent fallback retention, and retained-handoff replay. The facade starts and drains replay. |
-| `ExecutionReportHub`, `ExecutionFailureState` | Authoritative subscriber delivery and recovery, the best-effort observer channel, and the first terminal consumer failure shared with operation admission. The facade controls registration closure and shutdown ordering. |
+| `AccountingHandoffCoordinator` | Publisher scope checks, durable accounting acceptance, independent fallback retention, and retained-handoff replay. The lifecycle coordinator starts and drains replay. |
+| `ExecutionReportHub`, `ExecutionFailureState` | Authoritative subscriber delivery and recovery, the best-effort observer channel, and the first terminal consumer failure shared with operation admission. The lifecycle coordinator controls registration closure and shutdown ordering. |
 | `OrderAuditMetadata`, `OrderExecutionAudit` | Audit metadata construction and lifecycle/unresolved-fill evidence from explicit snapshots. Command decisions and their audit timing stay with their callers. |
 
 The shared broker-report gate still serializes live callbacks, explicit recovery, amendment
-resolution, and retention. The journal holds its recovery-state lock through durable compaction
+resolution, and retention. Amendment preparation keeps original/proposed snapshot identity and
+broker outcome evidence distinct from the expected-entry comparison used for removal. Recovery
+checkpoints read the pending flag, broker identity/aliases, and pending snapshot inside the
+journal's recovery-state lock. The journal holds that lock through durable compaction
 and the facade's synchronous expected-state removal; sidecar cleanup follows only a successful
 removal. Recovery versions prevent a completed older report from clearing newer uncertainty.
 Fill progress keeps its own gate and resumes only unfinished effects, in the existing order:
@@ -107,7 +116,8 @@ service.
 
 Use this module for paper session execution, broker gateway behavior, order lifecycle, and execution evidence.
 
-`OrderManagementSystem` implements `IOrderManagementLifecycle`: construction restores retained
+`OrderManagementSystem` implements `IOrderManagementLifecycle` through
+`OrderManagementLifecycleCoordinator`: construction restores retained
 order identities but leaves report intake and accounting-handoff replay inactive. Call `StartAsync`
 before submitting, amending, cancelling, or reconciling orders; concurrent starts launch one pair
 of pumps. `AddBrokerageExecution` registers a hosted lifecycle owner for the resolved `IOrderManager`,

@@ -1,22 +1,15 @@
+using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using static Meridian.Execution.OrderManagement.OrderAuditMetadata;
 using static Meridian.Execution.OrderManagement.OrderRiskSizingPolicy;
+using static Meridian.Execution.OrderManagement.OrderAmendmentBook;
 
 namespace Meridian.Execution;
 
 public sealed partial class OrderManagementSystem
 {
-    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, PendingOrderAmendment> _pendingModificationOrderIds = new(StringComparer.Ordinal);
-
-    private static string? DescribeInvalidModification(OrderState state, OrderModification modification) =>
-        modification.NewQuantity is <= 0m ? "Amended quantity must be positive."
-        : modification.NewQuantity is { } quantity && quantity < state.FilledQuantity
-            ? "Amended quantity cannot be below the quantity already filled."
-        : modification.NewLimitPrice is <= 0m ? "Amended limit price must be positive."
-        : modification.NewStopPrice is <= 0m ? "Amended stop price must be positive."
-        : modification.NewTrail is <= 0m ? "Amended trail must be positive."
-        : null;
+    private readonly OrderAmendmentBook _amendmentBook;
 
     /// <inheritdoc />
     public async Task<OrderResult> ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default)
@@ -36,7 +29,7 @@ public sealed partial class OrderManagementSystem
 
             return new OrderResult { Success = false, OrderId = orderId, ErrorMessage = "Order not found" };
         }
-        if (_pendingModificationOrderIds.ContainsKey(orderId) || IsTerminal(state.Status))
+        if (_amendmentBook.Contains(orderId) || IsTerminal(state.Status))
             return new OrderResult
             {
                 Success = false,
@@ -269,7 +262,7 @@ public sealed partial class OrderManagementSystem
         // now holds, so they travel with the accepted result — not only with a refusal.
         return new OrderResult
         {
-            Success = !_pendingModificationOrderIds.ContainsKey(orderId),
+            Success = !_amendmentBook.Contains(orderId),
             OrderId = orderId,
             OrderState = updated,
             RiskWarnings = amendmentWarnings
