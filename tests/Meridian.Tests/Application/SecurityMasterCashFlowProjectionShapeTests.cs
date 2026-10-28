@@ -17,20 +17,24 @@ namespace Meridian.Tests.Application;
 /// case goes through the public <see cref="SecurityMasterCashFlowService.GetProjectionAsync"/> seam and
 /// is serialized with the UI endpoints' options (<see cref="UiEndpoints.CreateEndpointJsonOptions"/>).
 /// Increment 5a must leave every undeclared projection as it is: the same twelve top-level members,
-/// the same <c>termsUsed</c> members, and a row carrying a stray or malformed block projecting exactly
-/// as its clean twin. Only a declared projection may add <c>scheduleEvidence</c>.
+/// the same <c>termsUsed</c> members, the same nested members in every row it writes, and a row
+/// carrying a stray or malformed block projecting exactly as its clean twin. Only a declared projection
+/// may add <c>scheduleEvidence</c>.
 /// </summary>
 /// <remarks>
 /// The service reads the wall clock for its as-of date and drops periods paid before it, so every case
-/// anchors on the first day of the current UTC month and matures years later.
+/// anchors on the first day of the UTC month the run starts in and matures years later.
 /// </remarks>
 [Trait("Category", "Unit")]
 public sealed class SecurityMasterCashFlowProjectionShapeTests
 {
     private static readonly Guid SecurityId = Guid.Parse("5a5a0001-0000-4000-8000-0000000005a0");
 
-    // One source timestamp for every case, so twin projections compare equal member for member.
+    // One source timestamp and one issue date for every case, so twin projections compare equal
+    // member for member even when the run crosses midnight or a month boundary.
     private static readonly DateTimeOffset SourceLastUpdatedUtc = DateTimeOffset.UtcNow.AddHours(-1);
+
+    private static readonly DateOnly IssueDate = FirstDayOfCurrentUtcMonth();
 
     private static readonly JsonSerializerOptions EndpointOptions = UiEndpoints.CreateEndpointJsonOptions();
 
@@ -71,6 +75,65 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
         "hasPrincipalSchedule",
         "hasStepCouponSchedule",
     ];
+
+    // The member paths of the rows a projection writes, array indices collapsed to [], so a member
+    // added to a nested record fails the pin as a top-level one does.
+    private static readonly string[] ScheduleRowPaths =
+    [
+        "schedule[].periodDate",
+        "schedule[].principalAmount",
+        "schedule[].interestAmount",
+        "schedule[].factor",
+    ];
+
+    private static readonly string[] SwapLegPaths =
+    [
+        "legSchedules[].legId",
+        "legSchedules[].rateKind",
+        "legSchedules[].direction",
+        "legSchedules[].schedule",
+        "legSchedules[].schedule[].periodDate",
+        "legSchedules[].schedule[].principalAmount",
+        "legSchedules[].schedule[].interestAmount",
+        "legSchedules[].schedule[].factor",
+        "legSchedules[].rateSource",
+        "termsUsed.legs[].legId",
+        "termsUsed.legs[].rateKind",
+        "termsUsed.legs[].direction",
+        "termsUsed.legs[].fixedRate",
+        "termsUsed.legs[].indexName",
+        "termsUsed.legs[].spreadBps",
+        "termsUsed.legs[].currentIndexRate",
+        "termsUsed.legs[].notional",
+        "termsUsed.legs[].paymentFrequency",
+        "termsUsed.legs[].dayCountConvention",
+        "termsUsed.legs[].exchangesPrincipal",
+        "termsUsed.legs[].notionalSchedule",
+        "termsUsed.legs[].resetSchedule",
+    ];
+
+    private static readonly string[] PrincipalScheduleRowPaths =
+    [
+        "termsUsed.principalSchedule[].paymentDate",
+        "termsUsed.principalSchedule[].amount",
+    ];
+
+    // The rows each case writes beyond the top-level and termsUsed members. No case writes a factor
+    // schedule, a step-coupon schedule, or a leg notional or reset schedule.
+    private static readonly IReadOnlyDictionary<string, string[][]> RowsWritten =
+        new Dictionary<string, string[][]>(StringComparer.Ordinal)
+        {
+            ["Bond.fixedBullet"] = [ScheduleRowPaths],
+            ["Bond.atMaturity"] = [ScheduleRowPaths],
+            ["Bond.contractualSchedule"] = [ScheduleRowPaths, PrincipalScheduleRowPaths],
+            ["CertificateOfDeposit"] = [ScheduleRowPaths],
+            ["StructuredCredit.flat"] = [ScheduleRowPaths],
+            ["Swap.twoLeg"] = [ScheduleRowPaths, SwapLegPaths],
+            ["Bond.blocked"] = [],
+            ["Bond.stampOneStrayBlock"] = [ScheduleRowPaths],
+            ["Bond.stampTwoBlockAsNumber"] = [ScheduleRowPaths],
+            ["Swap.stampOneStrayLegBlocks"] = [ScheduleRowPaths, SwapLegPaths],
+        };
 
     // A fully-populated scheduleConventions block, as a node that writes it would store it.
     private const string PopulatedBlock =
@@ -145,6 +208,20 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
                 $"the undeclared '{caseName}' projection reports the same resolved terms");
     }
 
+    [Theory]
+    [MemberData(nameof(UndeclaredCases))]
+    public async Task UndeclaredProjection_SerializesTheSameNestedMembers(string caseName)
+    {
+        var projection = await ProjectAsync(caseName);
+
+        var expected = TopLevelMembers
+            .Concat(TermsUsedMembers.Select(static member => $"termsUsed.{member}"))
+            .Concat(RowsWritten[caseName].SelectMany(static rows => rows));
+        MemberPaths(projection).Should().BeEquivalentTo(
+            expected,
+            $"the undeclared '{caseName}' projection writes the same members in every row");
+    }
+
     [Fact]
     public async Task BlockedCase_KeepsTheShapeAndCarriesItsReason()
     {
@@ -175,13 +252,12 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
     private static async Task<JsonObject> ProjectAsync(string caseName)
     {
         var (assetClass, sourceKind, buildTerms) = Cases[caseName];
-        var issue = IssueDate();
         var store = Substitute.For<ISecurityMasterCashFlowStore>();
         store.GetSourceAsync(SecurityId, Arg.Any<CancellationToken>())
             .Returns(new SecurityCashFlowSourceDto(SecurityId, sourceKind, SourceLastUpdatedUtc, false, null, null));
         var query = Substitute.For<SecurityMasterQueryContract>();
         query.GetByIdAsync(SecurityId, Arg.Any<CancellationToken>())
-            .Returns(Security(assetClass, issue, JsonSerializer.SerializeToElement(buildTerms(issue))));
+            .Returns(Security(assetClass, IssueDate, JsonSerializer.SerializeToElement(buildTerms(IssueDate))));
         var service = new SecurityMasterCashFlowService(
             store,
             Array.Empty<IStructuredCashFlowProvider>(),
@@ -192,6 +268,37 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
 
         projection.Should().NotBeNull($"the '{caseName}' security has a calculated source");
         return JsonSerializer.SerializeToNode(projection, EndpointOptions)!.AsObject();
+    }
+
+    // Every member path in the serialized projection, array indices collapsed to [].
+    private static IReadOnlyCollection<string> MemberPaths(JsonObject projection)
+    {
+        var paths = new SortedSet<string>(StringComparer.Ordinal);
+        Collect(projection, string.Empty);
+        return paths;
+
+        void Collect(JsonNode? node, string path)
+        {
+            switch (node)
+            {
+                case JsonObject members:
+                    foreach (var (key, value) in members)
+                    {
+                        var memberPath = path.Length == 0 ? key : $"{path}.{key}";
+                        paths.Add(memberPath);
+                        Collect(value, memberPath);
+                    }
+
+                    break;
+                case JsonArray items:
+                    foreach (var item in items)
+                    {
+                        Collect(item, $"{path}[]");
+                    }
+
+                    break;
+            }
+        }
     }
 
     private static JsonObject FixedBond(DateOnly issue, string paymentFrequency)
@@ -306,7 +413,7 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
     private static string Date(DateOnly date) => date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
 
     // The first day of the current UTC month: whole 30/360 periods, all ahead of the service's as-of.
-    private static DateOnly IssueDate()
+    private static DateOnly FirstDayOfCurrentUtcMonth()
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
         return new DateOnly(today.Year, today.Month, 1);

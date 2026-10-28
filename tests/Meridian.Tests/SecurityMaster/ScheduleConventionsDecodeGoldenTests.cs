@@ -141,6 +141,14 @@ public sealed class ScheduleConventionsDecodeGoldenTests
             .Select(static calendar => calendar!.GetValue<string>())
             .Should().Equal(" USNY ", "GBLO\t");
 
+        // A blank or whitespace-only string member decodes as absent. The block's string getter keeps it
+        // and the mapping's conversion to an F# option (ToOption) drops it. Increment 5a's shared reader
+        // keeps blank strings so the declared engine can refuse a blank spelling; the mapping's
+        // conversion of that reader's block to the F# record must keep dropping them for these
+        // entries to stay empty.
+        decoded["Bond.stamp2.blankStrings"].Should().Be(Empty);
+        decoded["Bond.stamp2.whitespaceStrings"].Should().Be(Empty);
+
         // A Bond is never profile-governed, so its untagged customProfileId and profileFields envelope
         // decodes the root block by its own stamp, as a flat Bond row does.
         decoded["Bond.untaggedProfileEnvelope.stamp2.canonical"].Should().NotBe(Empty)
