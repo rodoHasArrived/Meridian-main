@@ -109,7 +109,7 @@ public sealed class SecurityMasterAssetClassSupportTests
     public async Task CreateAsync_UnrecognizedAssetClass_IsRefusedInsteadOfPersistingAsOtherSecurity(string assetClass)
     {
         // Read tolerance must not become write tolerance. Amend and deactivate refuse an
-        // unrecognized class through EnsureAssetClassRoundTripsSafely; create had no guard, so the
+        // unrecognized class through EnsureAssetClassIsRecognizedHere; create had no guard, so the
         // request degraded through the OtherSecurity read fallback and persisted silently — and
         // because OtherSecurity IS a catalog class, every later amend passed the guard and the
         // misclassification was permanent.
@@ -153,9 +153,75 @@ public sealed class SecurityMasterAssetClassSupportTests
                 "unrecognized asset class"),
             CancellationToken.None);
 
-        await act.Should().ThrowAsync<InvalidOperationException>()
+        await act.Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
             .WithMessage($"*'{assetClass}'*")
             .WithMessage("*OtherSecurity*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+        await store.DidNotReceive().UpsertProjectionAsync(
+            Arg.Any<SecurityProjectionRecord>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AmendTermsAsync_StoredRecordOfAnUnrecognizedAssetClass_IsRefusedInsteadOfRewritingItsClass()
+    {
+        // The read side of the create refusal above: a stored row whose class this node cannot
+        // deserialize reads through the OtherSecurity fallback, so amending it here would persist the
+        // fallback under OtherSecurity. The refusal names the node that can apply the change.
+        var securityId = Guid.NewGuid();
+        var now = DateTimeOffset.UtcNow;
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>()).Returns(new SecurityProjectionRecord(
+            securityId,
+            "EsotericBasketCertificate",
+            SecurityStatusDto.Active,
+            "Unknown-class security",
+            "USD",
+            "InternalCode",
+            "UNKNOWN-1",
+            JsonSerializer.SerializeToElement(new { displayName = "Unknown-class security", currency = "USD" }),
+            JsonSerializer.SerializeToElement(new { subType = "Basket", issuerName = "Structured Issuer AG", maturity = "2032-06-30" }),
+            JsonSerializer.SerializeToElement(new { sourceSystem = "test", updatedBy = "codex", asOf = now }),
+            2,
+            now.AddDays(-1),
+            null,
+            [new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "UNKNOWN-1", true, now.AddDays(-1))],
+            []));
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            new SecurityMasterAggregateRebuilder(eventStore, snapshotStore),
+            new SecurityMasterOptions { SnapshotIntervalVersions = 50, ResolveInactiveByDefault = true },
+            NullLogger<SecurityMasterService>.Instance);
+
+        var act = () => service.AmendTermsAsync(
+            new AmendSecurityTermsRequest(
+                securityId,
+                2,
+                CommonTerms: JsonSerializer.SerializeToElement(new { displayName = "Renamed basket", currency = "USD" }),
+                AssetSpecificTermsPatch: null,
+                IdentifiersToAdd: [],
+                IdentifiersToExpire: [],
+                EffectiveFrom: now,
+                SourceSystem: "test",
+                UpdatedBy: "codex",
+                SourceRecordId: null,
+                Reason: "rename"),
+            CancellationToken.None);
+
+        await act.Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
+            .WithMessage(
+                $"Security '{securityId:D}' has asset class 'EsotericBasketCertificate', which this node does not recognize. " +
+                "Amending or deactivating it here would re-serialize the record through the OtherSecurity fallback and rewrite its " +
+                "asset class, so the write is refused. Apply the change from a node that supports this asset class.");
 
         await eventStore.DidNotReceive().AppendAsync(
             Arg.Any<Guid>(),

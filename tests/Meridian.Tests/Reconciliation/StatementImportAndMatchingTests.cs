@@ -334,6 +334,7 @@ public sealed class StatementStoreDurabilityTests
     [Trait("Category", "Integration")]
     [InlineData("mid-write", false)]
     [InlineData("published", true)]
+    [InlineData("publication-sync", true)]
     public async Task KilledWriter_ExposesOnlyCompleteImportsAndAllowsSafeRecovery(string stage, bool published)
     {
         var root = Path.Combine(Path.GetTempPath(), $"meridian-statement-crash-{Guid.NewGuid():N}");
@@ -351,6 +352,14 @@ public sealed class StatementStoreDurabilityTests
                 var partial = Assert.Single(Directory.GetFiles(folder, "*.tmp"));
                 Assert.True(new FileInfo(partial).Length > 0, "The child must have written bytes before it is killed.");
                 Assert.Empty(Directory.GetFiles(folder, "*.json"));
+            }
+            if (stage == "publication-sync")
+            {
+                Assert.Throws<IOException>(() =>
+                {
+                    using var competingClaim = new FileStream(Path.Combine(folder, "durable-import.json.lock"),
+                        FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+                });
             }
             child.Kill(entireProcessTree: true);
             await child.WaitForExitAsync(timeout.Token);
@@ -474,6 +483,7 @@ public sealed class CsvStatementEvidenceTests : IDisposable
     [InlineData("currency-missing")]
     [InlineData("currency-blank")]
     [InlineData("currency-invalid")]
+    [InlineData("currency-unrecognized")]
     [InlineData("quantity-comma")]
     [InlineData("price-comma")]
     [InlineData("cash-comma")]
@@ -495,6 +505,9 @@ public sealed class CsvStatementEvidenceTests : IDisposable
                 break;
             case "currency-invalid":
                 values[8] = "???";
+                break;
+            case "currency-unrecognized":
+                values[8] = "ZZZ";
                 break;
             case "quantity-comma":
                 values[2] = "1,25";

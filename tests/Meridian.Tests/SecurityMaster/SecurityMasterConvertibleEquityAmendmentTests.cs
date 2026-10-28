@@ -113,7 +113,7 @@ public sealed class SecurityMasterConvertibleEquityAmendmentTests
 
         var act = () => service.AmendConvertibleEquityTermsAsync(securityId, request);
 
-        await act.Should().ThrowAsync<InvalidOperationException>()
+        await act.Should().ThrowExactlyAsync<InvalidOperationException>()
             .WithMessage("*not an equity*");
     }
 
@@ -143,7 +143,7 @@ public sealed class SecurityMasterConvertibleEquityAmendmentTests
 
         var act = () => service.AmendConvertibleEquityTermsAsync(securityId, request);
 
-        await act.Should().ThrowAsync<InvalidOperationException>()
+        await act.Should().ThrowExactlyAsync<InvalidOperationException>()
             .WithMessage("*does not currently have convertible-equity terms*");
     }
 
