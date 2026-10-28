@@ -284,6 +284,24 @@ public sealed class SecurityVersionedTermsTests
         SecurityVersionedTerms.ReadDeclaredLegScheduleConventions("Swap", Swap(2, $"\"swapLegs\":[],\"cashFlowLegs\":null"))
             .Status.Should().Be(SecurityDeclaredConventionsStatus.None);
 
+        // The refusal stops at the malformed key: a declaring alias after it is not read instead.
+        var legsObjectFirst = Swap(2, $"\"legs\":{longLeg},\"swapLegs\":[{FixedLeg},{shortLeg}]");
+        SecurityVersionedTerms.ReadDeclaredLegScheduleConventions("Swap", legsObjectFirst)
+            .Status.Should().Be(SecurityDeclaredConventionsStatus.None);
+        FluentActions.Invoking(() => SecurityMasterMapping.ToRecord(
+                SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Swap", legsObjectFirst)))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage("Swap leg container 'legs' must be a JSON array.");
+
+        // The container is found case-insensitively, as the mapping finds it.
+        var caseVariantContainer = Swap(2, $"\"Legs\":[{FixedLeg},{longLeg}]");
+        var caseVariant = SecurityVersionedTerms.ReadDeclaredLegScheduleConventions("Swap", caseVariantContainer);
+        caseVariant.Status.Should().Be(SecurityDeclaredConventionsStatus.Declared);
+        caseVariant.ElementBlocks.Select(static block => block.StubPolicy).Should().Equal(new string?[] { "Long" });
+        var caseVariantMapped = (FSharpDomain.SecurityKind.Swap)SecurityMasterMapping.ToRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Swap", caseVariantContainer)).Kind;
+        caseVariantMapped.Item.Legs.Select(static leg => leg.ScheduleConventions.StubPolicy?.Value).Should().Equal(new string?[] { null, "Long" });
+
         // Below the block's version, and in a leg that declares nothing, nothing is declared.
         SecurityVersionedTerms.ReadDeclaredLegScheduleConventions("Swap", Swap(1, $"\"legs\":[{FixedLeg},{longLeg}]"))
             .Status.Should().Be(SecurityDeclaredConventionsStatus.None);
