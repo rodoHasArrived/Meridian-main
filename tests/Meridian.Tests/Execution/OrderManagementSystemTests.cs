@@ -1022,7 +1022,7 @@ public sealed class OrderManagementSystemTests : IDisposable
     [Fact]
     public async Task ModifyOrderAsync_NotionalSizedOrder_KeepsItsDollarClassificationInTheProbe()
     {
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(RiskValidationResult.Approved());
         using var oms = new OrderManagementSystem(
@@ -1089,7 +1089,7 @@ public sealed class OrderManagementSystemTests : IDisposable
     [Fact]
     public async Task ModifyOrderAsync_NotionalSizedOrder_DropsDollarSizingWhenQuantityIsAmended()
     {
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(RiskValidationResult.Approved());
         using var oms = new OrderManagementSystem(
@@ -1425,7 +1425,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     public async Task PlaceOrderAsync_CallerFaceValueSizingMarker_IsStrippedBeforeRisk()
     {
         OrderRequest? validatedRequest = null;
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(callInfo =>
             {
@@ -1500,7 +1500,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     [Fact]
     public async Task PlaceOrderAsync_GateRejectedReuseOfTerminalOrderId_PreservesTerminalState()
     {
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(RiskValidationResult.Approved());
         using var oms = new OrderManagementSystem(
@@ -1541,7 +1541,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     [Fact]
     public async Task PlaceOrderAsync_GateRejectionWithFreshId_StillRecordsRejectedState()
     {
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(RiskValidationResult.Rejected("limit breach"));
         using var oms = new OrderManagementSystem(
@@ -1567,7 +1567,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     [Fact]
     public async Task PlaceOrderAsync_RiskEscalation_ReturnsTypedParkedOutcome()
     {
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(RiskValidationResult.Escalated("Parked for governed approval (esc-1): above band", "esc-1"));
         using var oms = new OrderManagementSystem(
@@ -1595,7 +1595,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     [Fact]
     public async Task PlaceOrderAsync_RiskRejectionWithWarnings_CarriesWarningsOnResult()
     {
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(RiskValidationResult.Rejected("limit breach") with
             {
@@ -1642,7 +1642,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
         };
         queue.TryConsumeApproval(releaseRequest).Should().NotBeNull();
 
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(RiskValidationResult.Approved() with { ConsumedApprovalId = parked.EscalationId });
 
@@ -1673,7 +1673,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     [Fact]
     public async Task ModifyOrderAsync_RiskIncreasingAmendment_IsRevalidated()
     {
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(RiskValidationResult.Approved());
         using var oms = new OrderManagementSystem(
@@ -1711,7 +1711,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
         OrderType orderType,
         OrderSide side)
     {
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(RiskValidationResult.Approved());
         using var oms = new OrderManagementSystem(
@@ -1762,7 +1762,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
         };
 
         IReadOnlyDictionary<string, string>? seenByRisk = null;
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(call =>
             {
@@ -1816,7 +1816,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
         };
 
         IReadOnlyList<OrderLeg>? seenByRisk = null;
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(call =>
             {
@@ -1879,7 +1879,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
         double amendedPrice,
         string because)
     {
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(RiskValidationResult.Approved());
         using var oms = new OrderManagementSystem(
@@ -1933,7 +1933,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     [Fact]
     public async Task ModifyOrderAsync_RiskRefusal_RecordsTheViolationsBehindTheHeadline()
     {
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(RiskValidationResult.Approved());
         var tempRoot = Path.Combine(Path.GetTempPath(), "meridian-amend-violations-" + Guid.NewGuid().ToString("N"));
@@ -2004,7 +2004,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     [Fact]
     public async Task ModifyOrderAsync_UncappedQuantityIncreaseWithLowerPrice_IsNotTreatedAsZeroExposure()
     {
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(RiskValidationResult.Approved());
         using var oms = new OrderManagementSystem(
@@ -2056,7 +2056,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     [Fact]
     public async Task ModifyOrderAsync_SellQuantityIncrease_StillCarriesTheFullAmendedOrder()
     {
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(RiskValidationResult.Approved());
         using var oms = new OrderManagementSystem(
@@ -2101,7 +2101,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     [Fact]
     public async Task ModifyOrderAsync_ExplicitUnchangedPrice_IsRevalidated()
     {
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(RiskValidationResult.Approved());
         using var oms = new OrderManagementSystem(
@@ -2178,7 +2178,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             });
 
         var validatedRequests = new List<OrderRequest>();
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator.ValidateOrderAsync(
                 Arg.Do<OrderRequest>(validatedRequests.Add),
                 Arg.Any<CancellationToken>())
@@ -2220,7 +2220,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     [Fact]
     public async Task ModifyOrderAsync_ApprovedAmendment_CarriesRiskWarningsToTheCaller()
     {
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(RiskValidationResult.Approved());
         using var oms = new OrderManagementSystem(
@@ -2253,7 +2253,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     [Fact]
     public async Task ModifyOrderAsync_WhenTheOrderChangesUnderTheGate_RefusesInsteadOfRoutingUnreserved()
     {
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(RiskValidationResult.Approved());
 
@@ -2295,7 +2295,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     [Fact]
     public async Task ModifyOrderAsync_RiskReducingAmendment_SkipsRevalidation()
     {
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(RiskValidationResult.Approved());
         using var oms = new OrderManagementSystem(
@@ -2346,7 +2346,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             }
         }).Should().HaveCount(2);
 
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(RiskValidationResult.Approved() with { ConsumedApprovalId = tokens });
 
@@ -2384,7 +2384,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             NullLogger<RiskEscalationQueueService>.Instance,
             options: new RiskEscalationQueueOptions(
                 Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator
             .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(call =>
@@ -2460,7 +2460,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             NullLogger<RiskEscalationQueueService>.Instance,
             options: new RiskEscalationQueueOptions(
                 Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator
             .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(call =>
@@ -2505,7 +2505,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             NullLogger<RiskEscalationQueueService>.Instance,
             options: new RiskEscalationQueueOptions(
                 Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator
             .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(call =>
@@ -2573,7 +2573,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             NullLogger<RiskEscalationQueueService>.Instance,
             options: new RiskEscalationQueueOptions(
                 Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator
             .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(call =>
@@ -2627,7 +2627,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             ClientOrderId = "CLIENT-RELEASE"
         };
 
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         var parkOnFirstCall = true;
         riskValidator
             .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
@@ -2687,7 +2687,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             ClientOrderId = "CLIENT-SURVIVES-RESTART"
         };
 
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator
             .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(call =>
@@ -2713,7 +2713,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
         var restartedQueue = new RiskEscalationQueueService(
             NullLogger<RiskEscalationQueueService>.Instance,
             options: options);
-        var approveEverything = Substitute.For<IRiskValidator>();
+        var approveEverything = RiskValidatorSubstitute.Create();
         approveEverything.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(RiskValidationResult.Approved());
 
@@ -2759,7 +2759,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             ClientOrderId = "CLIENT-PENDING-REPLAY"
         };
 
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         var parkNext = true;
         riskValidator
             .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
@@ -2807,7 +2807,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             NullLogger<RiskEscalationQueueService>.Instance,
             options: new RiskEscalationQueueOptions(
                 Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
-        var riskValidator = Substitute.For<IRiskValidator>();
+        var riskValidator = RiskValidatorSubstitute.Create();
         riskValidator
             .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(call =>

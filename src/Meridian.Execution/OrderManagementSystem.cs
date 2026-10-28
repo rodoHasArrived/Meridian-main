@@ -176,7 +176,9 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 metadata: refusal.Metadata).ConfigureAwait(false);
         }
         var usesFaceValuePercentageOfPar = admission.UsesFaceValuePercentageOfPar;
-        var riskRequest = admission.RiskRequest;
+        var resolvedOrder = admission.ResolvedOrder
+            ?? throw new InvalidOperationException("Approved admission must carry a gateway-resolved order.");
+        safeRequest = resolvedOrder.Request;
         var liveOrderReadinessDecision = admission.LiveReadinessDecision;
         var operatorControlDecision = admission.OperatorControlDecision;
 
@@ -202,7 +204,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         await _preTradeReservationGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var brokerageLimitRefusal = await EvaluateBrokerageAdmissionLimitsAsync(riskRequest, ct).ConfigureAwait(false);
+            var brokerageLimitRefusal = await EvaluateBrokerageAdmissionLimitsAsync(resolvedOrder, ct).ConfigureAwait(false);
             if (brokerageLimitRefusal is not null)
             {
                 return await RejectOrderAsync(
@@ -214,7 +216,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
 
             if (_riskValidator is not null)
             {
-                var riskResult = await _riskValidator.ValidateOrderAsync(riskRequest, ct).ConfigureAwait(false);
+                var riskResult = await _riskValidator.ValidateResolvedOrderAsync(resolvedOrder, ct).ConfigureAwait(false);
                 riskDecision = riskResult;
                 if (!riskResult.IsApproved)
                 {
@@ -298,7 +300,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 RunId = runId,
                 // Broker-native notional orders route dollars and discard quantity; the
                 // exposure reserve for this working order must value what actually routes.
-                RoutedNotional = BrokerNotionalMetadata.TryRead(safeRequest.Metadata, safeRequest.Quantity),
+                RoutedNotional = (resolvedOrder.Sizing as OrderSizing.BrokerNotional)?.Amount,
                 UsesFaceValuePercentageOfPar = usesFaceValuePercentageOfPar,
                 // A working option order reserves contract notional, not share notional:
                 // 100 contracts at a $5 limit hold back $50k, not $500. The derivative

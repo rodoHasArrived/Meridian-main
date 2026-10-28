@@ -8,6 +8,17 @@ namespace Meridian.Execution;
 public interface IRiskValidator
 {
     /// <summary>
+    /// Validates a new submission after structural validation and gateway sizing resolution.
+    /// Existing validators and rules retain their request contract through this adapter.
+    /// Reservation ownership is identical to <see cref="ValidateOrderAsync"/>.
+    /// </summary>
+    Task<RiskValidationResult> ValidateResolvedOrderAsync(GatewayResolvedOrder order, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(order);
+        return ValidateOrderAsync(order.ToRiskRequest(), ct);
+    }
+
+    /// <summary>
     /// Validates an order against risk rules.
     /// <para>
     /// The returned result carries ownership of any capacity a stateful rule reserved while
