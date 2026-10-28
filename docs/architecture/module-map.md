@@ -83,7 +83,7 @@ flowchart LR
 - Design tokens and shared UI patterns should come from the Meridian Design
   System or local shared dashboard primitives, not one-off screen styling.
 
-## OMS Runtime Lifecycle
+## OMS Runtime Ownership and Lifecycle
 
 `OrderManagementSystem` implements `IOrderManagementLifecycle`. Construction restores retained
 identity evidence without starting background work. `StartAsync` starts gateway-report intake and
@@ -94,8 +94,41 @@ A stopped instance cannot restart.
 
 `AddBrokerageExecution` registers the hosted lifecycle owner for the resolved `IOrderManager`.
 Direct callers must start the OMS explicitly and await stop/disposal before releasing its gateway
-or accounting dependencies. Order transitions, risk checks, fill booking, and persistence remain
-in their existing owners pending the larger OMS decomposition.
+or accounting dependencies.
+
+Internal collaborators under `Meridian.Execution/OrderManagement` now own bounded parts of the
+runtime. The facade retains public commands, live order state and sidecars, the shared broker-report
+and pre-trade admission gates, and command/risk-reservation/amendment/cancellation/kill-switch
+coordination.
+
+```mermaid
+flowchart LR
+  OMS["OMS facade and lifecycle"] --> Policy["OrderAdmissionPolicy / OrderRiskSizingPolicy"]
+  OMS --> Recovery["OrderBrokerIdentityIndex / BrokerageOrderRecoveryJournal"]
+  OMS --> Fills["OrderFillProcessor"]
+  Fills --> Context["OrderFillContext: read-only state access"]
+  Fills --> Accounting["AccountingHandoffCoordinator"]
+  Fills --> Reports["ExecutionReportHub"]
+  Fills --> Audit["OrderExecutionAudit / OrderAuditMetadata"]
+  Reports --> Failure["ExecutionFailureState"]
+  OMS --> Failure
+  OMS --> Audit
+```
+
+The recovery journal owns durable checkpoints, permanent dispatched identities, tombstones, and
+the recovery-version lock; the identity index owns active broker IDs and replacement aliases.
+The fill processor owns progress and pending exposure while reading order ownership/sizing
+through `OrderFillContext`. Accounting acceptance and replay belong to the handoff coordinator;
+subscriber delivery and observer publication belong to the report hub. Admission and delivery
+share the first terminal consumer failure. Audit helpers consume explicit snapshots.
+
+The facade's shared report gate still protects live reports, recovery, amendment resolution, and
+retention. The journal's guarded compaction persists the tombstone and performs expected-state
+removal under one recovery lock; the facade then removes sidecars. Existing APIs, persistence
+formats, alias and fill identity rules, effect ordering, and shutdown drain semantics are
+preserved. These are scoped ownership boundaries, with command coordination still in the facade;
+see the [execution module README](../../src/Meridian.Execution/README.md#oms-ownership) for the
+detailed ownership map.
 
 ## Operational Record Boundaries
 
@@ -146,3 +179,12 @@ The current product direction is the W1-W5 operational record baseline: data con
   - Validation/policy: account status policy (`EnsureAllowed`) and request invariants.
   - Workflow orchestration: account lifecycle sequencing around reconciliation and synchronization state.
   - Storage concerns: snapshot capture/load/save and in-memory aggregate persistence.
+
+## Shared outstanding-principal calculation
+
+`Meridian.Application/SecurityMaster/CashFlow/SecurityPrincipalBalance.cs` owns the
+opening outstanding face used by calculated cash flows and quoted-price valuation.
+Dated factors absorb principal through their evidence date; later completed principal
+payments reduce the balance. Future-dated scalar factors do not price an earlier date,
+and an undated current factor is not reduced twice. This calculation is separate from
+posting a lot-factor paydown and does not activate its operator route.

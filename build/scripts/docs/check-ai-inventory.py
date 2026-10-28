@@ -921,8 +921,9 @@ def check_shared_project_context(root: Path) -> list[Finding]:
                 path=rel_path,
                 expected_doc=SHARED_CONTEXT_CANONICAL,
                 message=(
-                    f"{rel_path} {reason} from {SHARED_CONTEXT_CANONICAL}; copy the canonical shared "
-                    "section and keep host-specific guidance after the end marker."
+                    f"{rel_path} {reason} from {SHARED_CONTEXT_CANONICAL}; run "
+                    "python build/scripts/ai/generate-guidance.py --write after restoring any "
+                    "missing markers. Host-specific guidance is preserved outside the shared section."
                 ),
             )
         )

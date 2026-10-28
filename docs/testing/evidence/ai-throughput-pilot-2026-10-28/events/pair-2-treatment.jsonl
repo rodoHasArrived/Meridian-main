@@ -1,0 +1,8 @@
+{"cohort": "treatment", "event": "task_started", "pair": "pair-2", "timestamp": "2026-10-28T06:47:47.686689+00:00", "trial": "pair-2-treatment"}
+{"event": "file_read", "path": "AGENTS.md", "sha256": "bc32d7027df6881147acf76f506a2ffc28fcd0dd977f392bd36399c6557e10ca", "timestamp": "2026-10-28T06:47:47.846172+00:00", "trial": "pair-2-treatment"}
+{"event": "file_read", "path": "artifacts/context.md", "sha256": "627a94e22f48835c66b089029a8d8a0ef205ece81d8e0907c0332fa8d577051b", "timestamp": "2026-10-28T06:47:47.889744+00:00", "trial": "pair-2-treatment"}
+{"event": "file_read", "path": ".claude/skills/_shared/project-context.md", "sha256": "a5655d379c48de8c6919f3086cafbb7144f62bc4bacbac6624df772695613c92", "timestamp": "2026-10-28T06:48:01.649020+00:00", "trial": "pair-2-treatment"}
+{"event": "useful_edit", "path": ".claude/skills/_shared/project-context.md", "sha256": "9ade1958e1f788de5a41a39e3ce2de95d9ebbd9bc2b647fd7da7342b111a7385", "timestamp": "2026-10-28T06:48:01.692439+00:00", "trial": "pair-2-treatment"}
+{"event": "validation_started", "timestamp": "2026-10-28T06:48:01.769470+00:00", "trial": "pair-2-treatment", "validationId": "final"}
+{"event": "validation_finished", "result": "pass", "timestamp": "2026-10-28T06:48:01.831864+00:00", "trial": "pair-2-treatment", "validationId": "final"}
+{"event": "task_finished", "instrumentationComplete": true, "timestamp": "2026-10-28T06:48:01.884491+00:00", "trial": "pair-2-treatment"}

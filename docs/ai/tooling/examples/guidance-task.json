@@ -1,0 +1,16 @@
+{
+  "desiredBehavior": "Changing the canonical shared context synchronizes both host mirrors while preserving all host-specific text.",
+  "acceptanceExample": "Given a one-line change inside the Claude shared-context block, --check reports drift, --write updates the Codex and Agents shared blocks, and a second --check succeeds without changing host-specific bytes.",
+  "ownedPaths": [
+    "build/scripts/ai/generate_guidance.py",
+    "tests/scripts/test_generate_guidance.py"
+  ],
+  "exclusions": [
+    "Do not change root policy, CI workflows, or host-specific instructions.",
+    "Do not change product runtime behavior."
+  ],
+  "validationCommands": [
+    "python -m unittest tests.scripts.test_generate_guidance",
+    "python build/scripts/ai/generate-guidance.py --check --summary"
+  ]
+}

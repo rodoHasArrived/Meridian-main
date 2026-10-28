@@ -1,0 +1,86 @@
+[
+  {
+    "task": "vp-pair-1",
+    "cohort": "baseline",
+    "exitCode": 0,
+    "output": "PASS: exact affected-test set and both consumer flags verified",
+    "answerSha256": "85cb00ff1ad458507e3f706e8f60706bd09b945fb148b6fb2ea016af9499259c"
+  },
+  {
+    "task": "vp-pair-1",
+    "cohort": "treatment",
+    "exitCode": 0,
+    "output": "PASS: exact affected-test set and both consumer flags verified",
+    "answerSha256": "85cb00ff1ad458507e3f706e8f60706bd09b945fb148b6fb2ea016af9499259c"
+  },
+  {
+    "task": "vp-pair-2",
+    "cohort": "baseline",
+    "exitCode": 0,
+    "output": "PASS: exact affected-test set and both consumer flags verified",
+    "answerSha256": "51ad1ab5820d48dcf2c16748b6f37ccfe945604f0377d61bb995368119e6d6a9"
+  },
+  {
+    "task": "vp-pair-2",
+    "cohort": "treatment",
+    "exitCode": 0,
+    "output": "PASS: exact affected-test set and both consumer flags verified",
+    "answerSha256": "51ad1ab5820d48dcf2c16748b6f37ccfe945604f0377d61bb995368119e6d6a9"
+  },
+  {
+    "task": "vp-pair-3",
+    "cohort": "baseline",
+    "exitCode": 0,
+    "output": "PASS: exact affected-test set and both consumer flags verified",
+    "answerSha256": "89aca98e34fc2ff242de1c7a6f48ff64fb7f64daa81383d778c194392bd7a208"
+  },
+  {
+    "task": "vp-pair-3",
+    "cohort": "treatment",
+    "exitCode": 0,
+    "output": "PASS: exact affected-test set and both consumer flags verified",
+    "answerSha256": "89aca98e34fc2ff242de1c7a6f48ff64fb7f64daa81383d778c194392bd7a208"
+  },
+  {
+    "task": "vp-pair-4",
+    "cohort": "baseline",
+    "exitCode": 0,
+    "output": "PASS: exact affected-test set and both consumer flags verified",
+    "answerSha256": "eb957b7f071381d4980c531cfb6874b7580bf6c114b721c8cb983cd19294fad8"
+  },
+  {
+    "task": "vp-pair-4",
+    "cohort": "treatment",
+    "exitCode": 0,
+    "output": "PASS: exact affected-test set and both consumer flags verified",
+    "answerSha256": "eb957b7f071381d4980c531cfb6874b7580bf6c114b721c8cb983cd19294fad8"
+  },
+  {
+    "task": "vp-pair-5",
+    "cohort": "baseline",
+    "exitCode": 0,
+    "output": "PASS: exact affected-test set and both consumer flags verified",
+    "answerSha256": "eb957b7f071381d4980c531cfb6874b7580bf6c114b721c8cb983cd19294fad8"
+  },
+  {
+    "task": "vp-pair-5",
+    "cohort": "treatment",
+    "exitCode": 0,
+    "output": "PASS: exact affected-test set and both consumer flags verified",
+    "answerSha256": "eb957b7f071381d4980c531cfb6874b7580bf6c114b721c8cb983cd19294fad8"
+  },
+  {
+    "task": "vp-pair-6",
+    "cohort": "baseline",
+    "exitCode": 0,
+    "output": "PASS: exact affected-test set and both consumer flags verified",
+    "answerSha256": "51ad1ab5820d48dcf2c16748b6f37ccfe945604f0377d61bb995368119e6d6a9"
+  },
+  {
+    "task": "vp-pair-6",
+    "cohort": "treatment",
+    "exitCode": 0,
+    "output": "PASS: exact affected-test set and both consumer flags verified",
+    "answerSha256": "51ad1ab5820d48dcf2c16748b6f37ccfe945604f0377d61bb995368119e6d6a9"
+  }
+]

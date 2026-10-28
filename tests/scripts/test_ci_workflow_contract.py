@@ -29,9 +29,12 @@ class CiWorkflowContractTests(unittest.TestCase):
         for check in ("Validate AI contract drift", "Validate provider-validation script tests",
                       "Validate AI navigation freshness", "Validate AI handoff checklist schema",
                       "Enforce mode escalation policy", "Enforce validation-floor guard",
-                      "Validate roadmap registry", "Validate source READMEs", "Scan source TODOs",
                       "Workstation bundle freshness gate", "Reject whole-repo generated documentation drift"):
             self.assertIn(check, script)
+        catalog = (REPO_ROOT / "build/scripts/run-maintained-generation.py").read_text(encoding="utf-8")
+        self.assertIn("build/scripts/run-maintained-generation.py", script)
+        for check in ("Validate roadmap registry", "Validate source READMEs", "Scan source TODOs"):
+            self.assertIn(check, catalog)
         self.assertIn("--collect:\"XPlat Code Coverage\"", self.workflow)
         self.assertIn("  merge_group:", self.workflow)
 

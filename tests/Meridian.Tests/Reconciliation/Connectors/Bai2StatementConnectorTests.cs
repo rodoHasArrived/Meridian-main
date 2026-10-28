@@ -12,6 +12,39 @@ public sealed class Bai2StatementConnectorTests
     private readonly Bai2StatementConnector _connector = new();
 
     [Fact]
+    public async Task Parse_Bai2_ClosingAvailableIsUsedWhenClosingLedgerIsAbsent()
+    {
+        var source = Encoding.UTF8.GetString(StatementConnectorTestData.ReadFixture("bai2-sample.bai"))
+            .Replace("015,1234567", "045,1234567");
+
+        var result = await _connector.ParseAsync(new StatementSourceDocument("available-balance.bai", Encoding.UTF8.GetBytes(source)));
+
+        result.HasErrors.Should().BeFalse();
+        result.Records.Single(record => record.Kind == StatementRecordKind.CashBalance).CashAmount.Should().Be(12345.67m);
+    }
+
+    [Theory]
+    [InlineData("045,015,,", "0.15")]
+    [InlineData("045,045,,", "0.45")]
+    [InlineData("010,015,,,045,200,,", "2.00")]
+    [InlineData("100,015,045,,045,200,,", "2.00")]
+    [InlineData("100,100,1,S,015,045,40,045,200,,", "2.00")]
+    [InlineData("100,100,1,V,260531,015,045,200,,", "2.00")]
+    [InlineData("100,100,1,D,2,0,015,1,045,045,200,,", "2.00")]
+    [InlineData("045,200,,,015,300,,", "3.00")]
+    public async Task Parse_Bai2_BalanceStatusComesFromTupleBoundaries(string statusFields, string expectedAmount)
+    {
+        var source = Encoding.UTF8.GetString(StatementConnectorTestData.ReadFixture("bai2-sample.bai"))
+            .Replace("015,1234567,,/", $"{statusFields}/");
+
+        var result = await _connector.ParseAsync(new StatementSourceDocument("balance-fields.bai", Encoding.UTF8.GetBytes(source)));
+
+        result.HasErrors.Should().BeFalse();
+        result.Records.Single(record => record.Kind == StatementRecordKind.CashBalance).CashAmount
+            .Should().Be(decimal.Parse(expectedAmount, CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
     public async Task Parse_Bai2_YieldsClosingLedgerBalanceAndSignedTransactions()
     {
         var document = new StatementSourceDocument(

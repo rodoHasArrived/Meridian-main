@@ -1,0 +1,84 @@
+{
+  "vp-pair-1": {
+    "testProjects": [
+      "tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj",
+      "tests/Meridian.DesignModules.Tests/Meridian.DesignModules.Tests.csproj",
+      "tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj",
+      "tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj",
+      "tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj",
+      "tests/Meridian.Lifecycle.Tests/Meridian.Lifecycle.Tests.csproj",
+      "tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj",
+      "tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj",
+      "tests/Meridian.Tests/Meridian.Tests.csproj",
+      "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj",
+      "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj"
+    ],
+    "browser": true,
+    "wpf": true
+  },
+  "vp-pair-2": {
+    "testProjects": [
+      "tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj",
+      "tests/Meridian.DesignModules.Tests/Meridian.DesignModules.Tests.csproj",
+      "tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj",
+      "tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj",
+      "tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj",
+      "tests/Meridian.Lifecycle.Tests/Meridian.Lifecycle.Tests.csproj",
+      "tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj",
+      "tests/Meridian.Tests/Meridian.Tests.csproj",
+      "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj",
+      "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj"
+    ],
+    "browser": false,
+    "wpf": true
+  },
+  "vp-pair-3": {
+    "testProjects": [
+      "tests/Meridian.Tests/Meridian.Tests.csproj",
+      "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj",
+      "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj"
+    ],
+    "browser": true,
+    "wpf": true
+  },
+  "vp-pair-4": {
+    "testProjects": [
+      "tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj",
+      "tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj",
+      "tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj",
+      "tests/Meridian.Tests/Meridian.Tests.csproj",
+      "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj",
+      "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj"
+    ],
+    "browser": false,
+    "wpf": true
+  },
+  "vp-pair-5": {
+    "testProjects": [
+      "tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj",
+      "tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj",
+      "tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj",
+      "tests/Meridian.Tests/Meridian.Tests.csproj",
+      "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj",
+      "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj"
+    ],
+    "browser": false,
+    "wpf": true
+  },
+  "vp-pair-6": {
+    "testProjects": [
+      "tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj",
+      "tests/Meridian.DesignModules.Tests/Meridian.DesignModules.Tests.csproj",
+      "tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj",
+      "tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj",
+      "tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj",
+      "tests/Meridian.Lifecycle.Tests/Meridian.Lifecycle.Tests.csproj",
+      "tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj",
+      "tests/Meridian.Tests/Meridian.Tests.csproj",
+      "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj",
+      "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj"
+    ],
+    "browser": false,
+    "wpf": true
+  }
+}

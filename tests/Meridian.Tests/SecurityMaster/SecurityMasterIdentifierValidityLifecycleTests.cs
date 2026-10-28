@@ -361,9 +361,14 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
     private static async Task UntilAsync(Func<bool> condition)
     {
         var deadline = DateTime.UtcNow.AddSeconds(5);
-        while (!condition() && DateTime.UtcNow < deadline)
+        var observed = condition();
+        while (!observed && DateTime.UtcNow < deadline)
+        {
             await Task.Delay(5);
-        condition().Should().BeTrue("the asynchronous validity worker should complete after manual time advances");
+            observed = condition();
+        }
+        // A scheduled timer may be replaced after it was observed; retain that successful observation.
+        observed.Should().BeTrue("the asynchronous validity worker should complete after manual time advances");
     }
 
     private sealed class Host : IAsyncDisposable
