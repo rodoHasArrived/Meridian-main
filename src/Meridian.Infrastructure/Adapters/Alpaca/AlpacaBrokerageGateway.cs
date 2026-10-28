@@ -363,6 +363,15 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
             RequirePortfolioDecimal(account?.Cash, "account cash", completenessIssues);
             RequirePortfolioDecimal(account?.Equity, "account equity", completenessIssues);
             RequirePortfolioDecimal(account?.BuyingPower, "account buying power", completenessIssues);
+            RequireOptionalPortfolioDecimal(account?.Multiplier, "account multiplier", completenessIssues);
+            RequireOptionalPortfolioDecimal(account?.RegTBuyingPower, "account Reg T buying power", completenessIssues);
+            RequireOptionalPortfolioDecimal(account?.InitialMargin, "account initial margin", completenessIssues);
+            RequireOptionalPortfolioDecimal(account?.MaintenanceMargin, "account maintenance margin", completenessIssues);
+            RequireOptionalPortfolioDecimal(account?.LastMaintenanceMargin, "account last maintenance margin", completenessIssues);
+            RequireOptionalPortfolioDecimal(account?.SpecialMemorandumAccount, "account SMA", completenessIssues);
+            RequireOptionalPortfolioDecimal(account?.LongMarketValue, "account long market value", completenessIssues);
+            RequireOptionalPortfolioDecimal(account?.ShortMarketValue, "account short market value", completenessIssues);
+            RequireOptionalPortfolioDecimal(account?.NonMarginableBuyingPower, "account non-marginable buying power", completenessIssues);
             if (string.IsNullOrWhiteSpace(account?.Currency))
                 completenessIssues.Add("Account currency was not reported.");
             if (string.IsNullOrWhiteSpace(account?.Status))
@@ -426,6 +435,8 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 RequirePortfolioDecimal(position.AvgEntryPrice, "position entry price", completenessIssues);
                 RequirePortfolioDecimal(position.CurrentPrice, "position market price", completenessIssues);
                 RequirePortfolioDecimal(position.MarketValue, "position market value", completenessIssues);
+                RequireOptionalPortfolioDecimal(position.UnrealizedPl, "position unrealized P&L", completenessIssues);
+                RequireOptionalPortfolioDecimal(position.AccruedInterest, "position accrued interest", completenessIssues);
             }
         }
 
@@ -602,6 +613,13 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         if (untilExclusive.HasValue)
         {
             activities = EnforceHalfOpenActivityWindow(activities, since, untilExclusive.Value);
+        }
+
+        // Validate the provider strings before the typed snapshot can replace malformed
+        // monetary evidence with zero or null. Statement intake only sees the typed values.
+        foreach (var activity in activities)
+        {
+            ValidateStatementActivityAmounts(activity);
         }
 
         var fills = activities
@@ -1434,6 +1452,35 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
     private static decimal? ParseNullableDecimal(string? value) =>
         decimal.TryParse(value, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign,
             CultureInfo.InvariantCulture, out var result) ? result : null;
+
+    private static void ValidateStatementActivityAmounts(AlpacaAccountActivityResponse activity)
+    {
+        var code = activity.ActivityType?.Trim().ToUpperInvariant() ?? "UNKNOWN";
+        var (_, subtype) = MapActivityType(code, activity.Description);
+        var isFill = subtype == BrokerageActivitySubtype.TradeFill;
+        var requiresCash = subtype is BrokerageActivitySubtype.CashDeposit or BrokerageActivitySubtype.CashWithdrawal
+            or BrokerageActivitySubtype.Fee or BrokerageActivitySubtype.CryptoFee
+            or BrokerageActivitySubtype.PassThroughCharge or BrokerageActivitySubtype.PassThroughRebate
+            or BrokerageActivitySubtype.CreditInterest or BrokerageActivitySubtype.MarginInterest
+            or BrokerageActivitySubtype.BorrowFee or BrokerageActivitySubtype.BorrowRebate
+            or BrokerageActivitySubtype.CashDividend or BrokerageActivitySubtype.CapitalGainDistribution
+            or BrokerageActivitySubtype.ReturnOfCapital or BrokerageActivitySubtype.DividendWithholding
+            or BrokerageActivitySubtype.CashTransfer or BrokerageActivitySubtype.AcatsCash
+            or BrokerageActivitySubtype.CashJournal or BrokerageActivitySubtype.TaxWithholding;
+
+        Validate(activity.Qty, "qty", isFill);
+        Validate(activity.Price ?? activity.PerShareAmount, "price", isFill);
+        Validate(activity.NetAmount, "net_amount", requiresCash);
+        Validate(activity.Commission, "commission", required: false);
+        // Validate both supplied fields even when price takes precedence over per_share_amount.
+        Validate(activity.PerShareAmount, "per_share_amount", required: false);
+
+        static void Validate(string? value, string field, bool required)
+        {
+            if ((required || value is not null) && !ParseNullableDecimal(value).HasValue)
+                throw new InvalidDataException($"Alpaca statement activity has missing or malformed '{field}' evidence.");
+        }
+    }
 
     private static IReadOnlyList<string> BuildAccountRestrictions(AccountInfo account)
     {
