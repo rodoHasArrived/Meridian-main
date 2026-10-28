@@ -1473,6 +1473,20 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             SyncHistory = account.SyncHistory ?? [],
             MarginSnapshots = account.MarginSnapshots ?? []
         };
+        // Plaid deliveries persisted before transaction feeds existed carry no feed flag, but the sync now
+        // redelivers them as feeds, which a complete statement's guards refuse. They are recognised as
+        // migration 008 recognises them: the bank name the sync records and no statement balance.
+        var legacyFeeds = normalized.BankBatches
+            .Where(batch => batch.IsTransactionFeed is null && string.Equals(batch.BankName, "Plaid", StringComparison.Ordinal)
+                && !normalized.BankLines.Any(line => line.BatchId == batch.BatchId && line.ClosingBalance.HasValue))
+            .Select(static batch => batch.BatchId)
+            .ToHashSet();
+        for (var i = 0; i < normalized.BankBatches.Count; i++)
+            if (legacyFeeds.Contains(normalized.BankBatches[i].BatchId))
+                normalized.BankBatches[i] = normalized.BankBatches[i] with { IsTransactionFeed = true };
+        for (var i = 0; i < normalized.BankLines.Count; i++)
+            if (legacyFeeds.Contains(normalized.BankLines[i].BatchId))
+                normalized.BankLines[i] = normalized.BankLines[i] with { IsTransactionFeed = true };
         var history = new List<AccountReconciliationResultDto>();
         foreach (var run in normalized.ReconciliationRuns.OrderBy(run => run.RequestedAt))
         {

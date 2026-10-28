@@ -1,3 +1,5 @@
+using FluentAssertions;
+using Meridian.Contracts.FundStructure;
 using Meridian.PortfolioRecords.FundAccounts;
 using Xunit;
 
@@ -11,6 +13,39 @@ namespace Meridian.Tests.PortfolioRecords.FundAccounts;
 public sealed class InMemoryFundAccountServiceContractTests : FundAccountServiceContractTests
 {
     protected override IFundAccountService CreateService() => new InMemoryFundAccountService();
+
+    [Fact]
+    public async Task PersistedPlaidBatchFromBeforeFeeds_AcceptsTheNextFeedDeliveryAfterRestart()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"meridian-fund-accounts-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "fund-accounts.json");
+        try
+        {
+            var original = new InMemoryFundAccountService(path);
+            var account = await original.CreateAccountAsync(MakeBankRequest());
+            var asOf = DateOnly.FromDateTime(DateTime.UtcNow);
+            var batchId = Guid.NewGuid();
+            var coffee = new BankStatementLineDto(Guid.NewGuid(), batchId, account.AccountId, asOf, asOf, -25.10m, "USD",
+                "DEBIT", "Coffee", "txn-1", null);
+            // Before transaction feeds existed, the Plaid sync stored its deliveries as plain statements.
+            await original.IngestBankStatementAsync(new IngestBankStatementRequest(
+                batchId, account.AccountId, asOf, "Plaid", null, [coffee], "sync", IsBackfill: true));
+
+            var reloaded = new InMemoryFundAccountService(path);
+            var redeliver = () => reloaded.IngestBankStatementAsync(new IngestBankStatementRequest(
+                batchId, account.AccountId, asOf, "Plaid", null, [coffee with { Amount = -27.10m }], "sync",
+                IsBackfill: true, IsTransactionFeed: true));
+
+            await redeliver.Should().NotThrowAsync("a Plaid batch persisted before feeds existed must not stall the sync cursor");
+            (await reloaded.GetBankStatementLinesAsync(account.AccountId)).Should().ContainSingle()
+                .Which.Amount.Should().Be(-27.10m);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
 
     [Fact]
     public Task CreateAccountAsync_NewAccount_ReturnsActiveSummaryAndIsReadable() => CreateAccountAsync_NewAccount_ReturnsActiveSummaryAndIsReadable_Core();

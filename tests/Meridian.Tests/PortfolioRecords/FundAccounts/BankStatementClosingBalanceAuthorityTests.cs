@@ -58,6 +58,49 @@ public sealed class BankStatementClosingBalanceAuthorityTests
     }
 
     [Fact]
+    public void SelectAuthoritativeLines_MultiDayStatement_SupersedesTheFeedCopyOfATransactionItContains()
+    {
+        var account = Guid.NewGuid();
+        var october8 = new DateOnly(2026, 10, 8);
+        var october31 = new DateOnly(2026, 10, 31);
+        var november2 = new DateOnly(2026, 11, 2);
+        // A monthly statement dated October 31 lists the October 8 transaction a Plaid feed also delivered.
+        var statementBatch = Guid.NewGuid();
+        BankStatementLineDto Statement(DateOnly posted, decimal amount, int sequence) => Line(0m) with
+        {
+            BatchId = statementBatch,
+            AccountId = account,
+            TransactionDate = posted,
+            ValueDate = posted,
+            StatementAsOfDate = october31,
+            Amount = amount,
+            ClosingBalance = null,
+            LineSequence = sequence,
+            StatementRevision = 1
+        };
+        var coffee = Statement(october8, -25m, 1);
+        var deposit = Statement(new DateOnly(2026, 10, 20), 100m, 2) with { ClosingBalance = 575m };
+        BankStatementLineDto Feed(DateOnly posted, decimal amount) => Line(0m) with
+        {
+            AccountId = account,
+            TransactionDate = posted,
+            ValueDate = posted,
+            StatementAsOfDate = posted,
+            Amount = amount,
+            ClosingBalance = null,
+            IsTransactionFeed = true
+        };
+        var feedCoffee = Feed(october8, -25m);
+        var afterStatement = Feed(november2, 5m);
+
+        var selected = BankStatementClosingBalanceAuthority.SelectAuthoritativeLines([feedCoffee, coffee, deposit, afterStatement]);
+
+        selected.Should().BeEquivalentTo(new[] { coffee, deposit, afterStatement },
+            "the statement already contains the October 8 transaction; only the later feed delta adds to it");
+        selected!.Sum(line => line.Amount).Should().Be(80m);
+    }
+
+    [Fact]
     public void SelectAuthoritativeLines_FeedTransactionOnAStatementDate_IsSupersededWhateverItsDeliveryDate()
     {
         var account = Guid.NewGuid();

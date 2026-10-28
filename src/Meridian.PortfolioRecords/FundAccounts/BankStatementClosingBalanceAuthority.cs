@@ -27,27 +27,27 @@ public static class BankStatementClosingBalanceAuthority
 
     /// <summary>
     /// Projects one complete, highest-revision batch per account/header date; competing statement batches
-    /// remain unavailable. Transaction-feed deltas are additive and apply only to dates without a statement.
+    /// remain unavailable. Transaction-feed deltas are additive and apply only outside the span a complete
+    /// statement covers.
     /// </summary>
     public static IReadOnlyList<BankStatementLineDto>? SelectAuthoritativeLines(
         IEnumerable<BankStatementLineDto> lines, string? currency = null, DateOnly? fromValueDate = null, DateOnly? throughValueDate = null)
     {
+        var all = lines.ToArray();
         var selected = new List<BankStatementLineDto>();
-        // A feed delivery's header date is the latest date it happened to carry, so a feed transaction
-        // belongs to the date it posted on. The complete statement for that date supersedes it, however
-        // the transactions were grouped into deliveries.
-        foreach (var group in lines.GroupBy(static line =>
-                     (line.AccountId, Date: line.IsTransactionFeed == true ? line.TransactionDate : line.StatementDate)))
+        // A complete statement lists every transaction from its earliest one through its header date, so
+        // it supersedes the feed deltas posted in that span: a monthly statement dated the 31st contains the
+        // 8th's transaction that a feed also delivered. A feed delivery's own header date is only the latest
+        // date it happened to carry, so a feed transaction is placed by the date it posted on.
+        var covered = new List<(Guid AccountId, DateOnly From, DateOnly Through)>();
+        foreach (var group in all.Where(static line => line.IsTransactionFeed != true)
+                     .GroupBy(static line => (line.AccountId, line.StatementDate)))
         {
-            var statement = group.Where(static line => line.IsTransactionFeed != true).ToArray();
-            if (statement.Length == 0)
-            {
-                // Feed deliveries are deltas, and each transaction is retained once by its line identity.
-                selected.AddRange(group);
-                continue;
-            }
-            var revision = statement.Max(static line => line.StatementRevision ?? 0);
-            var candidates = statement.Where(line => (line.StatementRevision ?? 0) == revision).ToArray();
+            var revision = group.Max(static line => line.StatementRevision ?? 0);
+            var candidates = group.Where(line => (line.StatementRevision ?? 0) == revision).ToArray();
+            var earliest = candidates.Min(static line => line.TransactionDate);
+            covered.Add((group.Key.AccountId, earliest < group.Key.StatementDate ? earliest : group.Key.StatementDate,
+                group.Key.StatementDate));
             if (!candidates.Any(line => (currency is null || string.Equals(line.Currency, currency, StringComparison.OrdinalIgnoreCase))
                 && (fromValueDate is null || line.ValueDate >= fromValueDate)
                 && (throughValueDate is null || line.ValueDate <= throughValueDate)))
@@ -56,6 +56,10 @@ public static class BankStatementClosingBalanceAuthority
                 return null;
             selected.AddRange(candidates);
         }
+        // Feed deliveries are deltas, and each transaction is retained once by its line identity.
+        selected.AddRange(all.Where(static line => line.IsTransactionFeed == true)
+            .Where(line => !covered.Any(span => span.AccountId == line.AccountId
+                && line.TransactionDate >= span.From && line.TransactionDate <= span.Through)));
         return selected;
     }
 
