@@ -226,6 +226,7 @@ internal static class AssetAccountingEventProjectionRules
             !PayloadEquals(previous.ProjectionLineage, next.ProjectionLineage) ||
             !PayloadEquals(previous.CorporateAction, next.CorporateAction) ||
             !PayloadEquals(previous.CapitalReturn, next.CapitalReturn) ||
+            !PayloadEquals(previous.FactorPaydown, next.FactorPaydown) ||
             !PayloadEquals(previous.RetainedEvidence, next.RetainedEvidence) ||
             (projectedEffectChanged &&
              !(isExpectedToProjectedTransition &&
@@ -428,7 +429,9 @@ internal static class AssetAccountingEventProjectionRules
             (expectedMutationKind == AtomicTaxLotMutationKind.CorporateAction &&
              !MatchesCorporateActionMutationAuthority(projection, batch)) ||
             (expectedMutationKind == AtomicTaxLotMutationKind.CapitalReturn &&
-             !MatchesCapitalReturnMutationAuthority(projection, batch)))
+             !MatchesCapitalReturnMutationAuthority(projection, batch)) ||
+            (expectedMutationKind == AtomicTaxLotMutationKind.FactorPaydown &&
+             !MatchesFactorPaydownMutationAuthority(projection, batch)))
         {
             throw new InvalidOperationException(
                 "Posted tax-lot mutation batch did not resolve to the exact durable journal, event, book, period, security, and position authority.");
@@ -445,10 +448,11 @@ internal static class AssetAccountingEventProjectionRules
             throw new InvalidOperationException(
                 "Posted tax-lot mutation batch evidence does not exactly match the retained lifecycle evidence.");
         }
-        // Retained successor and capital-return batches prove the reviewed position independently of its
-        // subsequent version. This permits recovery of a missing Posted append after commit;
-        // unposted projections and other event kinds retain the current-position CAS guard.
-        return expectedMutationKind is AtomicTaxLotMutationKind.CorporateAction or AtomicTaxLotMutationKind.CapitalReturn;
+        // Retained successor, capital-return and factor-paydown batches prove the reviewed position
+        // independently of its subsequent version. This permits recovery of a missing Posted append
+        // after commit; unposted projections and other event kinds retain the current-position CAS guard.
+        return expectedMutationKind is AtomicTaxLotMutationKind.CorporateAction or AtomicTaxLotMutationKind.CapitalReturn
+            or AtomicTaxLotMutationKind.FactorPaydown;
     }
 
     private static AtomicTaxLotMutationKind? RequiredTaxLotMutationKind(AssetAccountingEventSpineDto projection)
@@ -464,6 +468,10 @@ internal static class AssetAccountingEventProjectionRules
                 when projection.CapitalReturn is not null
                     || projection.DraftedLotMutation?.Intent == AssetLotMutationIntentDto.CapitalReturn
                 => AtomicTaxLotMutationKind.CapitalReturn,
+            AssetAccountingEventKindDto.CorporateAction
+                when projection.FactorPaydown is not null
+                    || projection.DraftedLotMutation?.Intent == AssetLotMutationIntentDto.FactorPaydown
+                => AtomicTaxLotMutationKind.FactorPaydown,
             AssetAccountingEventKindDto.DepreciationAmortization
                 when projection.DraftedLotMutation?.Intent == AssetLotMutationIntentDto.Amortize
                 => AtomicTaxLotMutationKind.Amortization,
@@ -495,6 +503,50 @@ internal static class AssetAccountingEventProjectionRules
             LastMutationBatchId = batch.MutationBatchId,
             UpdatedAt = mutation.RecordedAt
         });
+    }
+
+    private static bool MatchesFactorPaydownMutationAuthority(AssetAccountingEventSpineDto projection, AtomicTaxLotJournalResult batch)
+    {
+        var instruction = projection.FactorPaydown;
+        if (instruction is null || !PayloadEquals(batch.FactorPaydown, instruction)
+            || !PayloadEquals(projection.DraftedLotMutation?.FactorPaydown, instruction)
+            || batch.Journal.Entry.Metadata.Tags?.GetValueOrDefault(OpenLotFactorPaydown.JournalFingerprintTag)
+                != OpenLotFactorPaydown.Fingerprint(instruction)
+            || batch.Mutations.Count != instruction.Lots.Count)
+            return false;
+        IReadOnlyList<OpenLotDto> projected;
+        try
+        { projected = OpenLotFactorPaydown.Project(instruction); }
+        catch (ArgumentException)
+        { return false; }
+        for (var index = 0; index < instruction.Lots.Count; index++)
+        {
+            var lot = instruction.Lots[index];
+            var mutation = batch.Mutations.SingleOrDefault(candidate => candidate.TaxLotRecordId == lot.ExpectedLot.TaxLotRecordId);
+            if (mutation?.LotBefore is not { } before || !PayloadEquals(before.ToOpenLot(), lot.ExpectedLot)
+                || mutation.SelectionOrdinal != lot.Ordinal || mutation.ExpectedVersion != before.Version
+                || mutation.ResultVersion != before.Version + 1 || mutation.QuantityBefore != before.OpenQuantity
+                || mutation.QuantityAfter != mutation.LotAfter.OpenQuantity
+                || (instruction.NewFactor == 0m
+                    ? mutation.QuantityAfter != 0m || mutation.QuantityDelta != -before.OpenQuantity
+                    : mutation.QuantityAfter != before.OpenQuantity || mutation.QuantityDelta != 0m)
+                || mutation.CostBasis != lot.ExpectedLot.OpenFunctionalCostBasis - lot.FunctionalBasisAfter
+                || mutation.LotAfter.CurrentFactor != instruction.NewFactor
+                || mutation.LotAfter.BasisAdjustment is not { Reason: OpenLotBasisAdjustmentReasons.FactorPaydown } adjustment
+                || adjustment.MutationBatchId != batch.MutationBatchId || !PayloadEquals(adjustment.FactorPaydown, instruction)
+                || !PayloadEquals(mutation.LotAfter.ToOpenLot(), projected[index])
+                || !PayloadEquals(mutation.LotAfter, before with
+                {
+                    OpenQuantity = mutation.QuantityAfter,
+                    BasisAdjustment = adjustment,
+                    CurrentFactor = instruction.NewFactor,
+                    Version = before.Version + 1,
+                    LastMutationBatchId = batch.MutationBatchId,
+                    UpdatedAt = mutation.RecordedAt
+                }))
+                return false;
+        }
+        return true;
     }
 
     private static bool MatchesCorporateActionMutationAuthority(

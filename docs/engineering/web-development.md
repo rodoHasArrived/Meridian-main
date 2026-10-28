@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-05
+**Reviewed:** 2026-10-28
 
 Run the browser workstation with one launcher on Windows, macOS, or Linux. It coordinates the
 seeded development host, backend source watching, Vite readiness, and owned-process cleanup.
@@ -10,8 +10,9 @@ Run the following commands from the repository root.
 
 ## Install and choose a mode
 
-Use Node.js 22.12 or newer and npm. Backend-connected mode also requires the .NET 10 SDK on
-`PATH`; fixture-only mode does not need .NET or a database. Windows uses the built-in Windows
+Use Node.js 24 and npm to match the dev container and browser CI. Backend-connected mode also
+requires the .NET SDK selected by [global.json](../../global.json) on `PATH`; fixture-only mode
+does not need .NET or a database. Windows uses the built-in Windows
 PowerShell to establish process ownership before starting a service.
 
 ```sh
@@ -42,6 +43,17 @@ commands above when you need an explicit fixture-only or backend-connected sessi
 For named API states, use the [shared browser scenario guide](../development/browser-scenarios.md).
 The accounting preview URL selector, Vitest helper, and Playwright capture consume the same typed
 scenario modules, including explicit empty, delayed, forbidden, and failed responses.
+
+## Common setup failures
+
+| Symptom | Check and recovery |
+| --- | --- |
+| SDK not found or incompatible SDK | Run `dotnet --version` from the repository root and compare with `global.json`. Install a compatible .NET 10 SDK before using backend-connected mode, or use `npm run dev:fixtures` for browser-only work. |
+| Missing Vite or a platform-specific native package | Rerun `npm ci` and `npm --prefix src/Meridian.Ui/dashboard ci --include=optional` on the current OS. Keep both lockfiles; avoid sharing `node_modules` between Windows, WSL, and containers. |
+| Address already in use | Stop the owning session with Ctrl+C, or choose free `--port` and `--backend-port` values. The launcher deliberately refuses to reuse another server. |
+| Host fails before readiness | Inspect the labelled seed/backend output for restore, build, database, or authentication failures. Existing environment settings override the demo defaults; check the [environment reference](../reference/environment-variables.md) and [dev container database setup](../start/README.md#dev-container). |
+| Cold restore/build exceeds the deadline | Increase `--startup-timeout`, for example `npm run dev -- --startup-timeout 900000`, after checking the reported build errors. |
+| Backend file edits do not trigger a restart | Enable the polling watcher described below before launching on mounted filesystems or hosts with limited file watches. |
 
 ## Options and readiness
 

@@ -1,5 +1,6 @@
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Ui.Shared.Services;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -81,21 +82,10 @@ public static partial class WorkstationEndpoints
 
     /// <summary>
     /// Derives the most specific sub-type available from the asset-class string without requiring
-    /// a full aggregate rebuild. Returns null for asset classes that may map to multiple sub-types.
+    /// a full aggregate rebuild. Delegates to the single table in
+    /// <see cref="SecurityMasterSecurityReferenceLookup.DeriveSubType"/> so the two workstation
+    /// read models cannot drift apart.
     /// </summary>
-    private static string? DeriveSubType(string? assetClass) => assetClass switch
-    {
-        "Bond" => "Bond",
-        "TreasuryBill" => "TreasuryBill",
-        "Option" => "OptionContract",
-        "Future" => "FutureContract",
-        "Swap" => "SwapContract",
-        "DirectLoan" => "DirectLoan",
-        "Deposit" => "Deposit",
-        "MoneyMarketFund" => "MoneyMarket",
-        "CertificateOfDeposit" => "CertificateOfDeposit",
-        "CommercialPaper" => "CommercialPaper",
-        "Repo" => "Repo",
-        _ => null
-    };
+    internal static string? DeriveSubType(string? assetClass)
+        => SecurityMasterSecurityReferenceLookup.DeriveSubType(assetClass);
 }

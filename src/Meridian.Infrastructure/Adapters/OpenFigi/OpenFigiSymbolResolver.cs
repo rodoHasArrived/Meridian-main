@@ -50,7 +50,12 @@ public sealed class OpenFigiSymbolResolver : ISymbolResolver, IDisposable
     public async Task<SymbolResolution?> ResolveAsync(string symbol, string? exchange = null, CancellationToken ct = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        ct.ThrowIfCancellationRequested();
+        if (string.IsNullOrWhiteSpace(symbol))
+            return null;
 
+        symbol = symbol.Trim().ToUpperInvariant();
+        exchange = NormalizeExchangeCode(exchange);
         var cacheKey = $"{symbol}:{exchange ?? "ANY"}";
         if (_cache.TryGetValue(cacheKey, out var cached))
         {
@@ -68,7 +73,9 @@ public sealed class OpenFigiSymbolResolver : ISymbolResolver, IDisposable
                 {
                     IdType = "TICKER",
                     IdValue = symbol.ToUpperInvariant(),
-                    ExchCode = exchange,
+                    // NASDAQ spans Global Select (UW), Global (UQ), and Capital (UR).
+                    // Filter those candidates locally instead of querying only one venue.
+                    ExchCode = exchange == "NASDAQ" ? null : exchange,
                     MarketSecDes = "Equity"
                 }
             };
@@ -85,11 +92,15 @@ public sealed class OpenFigiSymbolResolver : ISymbolResolver, IDisposable
             }
 
             var results = await response.Content.ReadFromJsonAsync<List<OpenFigiResponse>>(ct).ConfigureAwait(false);
-            var mapping = results?.FirstOrDefault()?.Data?.FirstOrDefault();
+            var result = results?.Count == 1 ? results[0] : null;
+            var mapping = string.IsNullOrWhiteSpace(result?.Error)
+                ? ChooseUnambiguousMapping(result?.Data, symbol, exchange)
+                : null;
 
             if (mapping is null)
             {
-                _log.Debug("No FIGI mapping found for {Symbol}", symbol);
+                _log.Debug("No unambiguous FIGI mapping found for {Symbol} on {Exchange}",
+                    symbol.Replace('\r', '_').Replace('\n', '_'), exchange?.Replace('\r', '_').Replace('\n', '_'));
                 return null;
             }
 
@@ -102,7 +113,7 @@ public sealed class OpenFigiSymbolResolver : ISymbolResolver, IDisposable
                 Exchange: mapping.ExchCode,
                 ExchangeCode: mapping.ExchCode,
                 MarketSector: mapping.MarketSector,
-                SecurityType: mapping.SecurityType2,
+                SecurityType: string.IsNullOrWhiteSpace(mapping.SecurityType2) ? mapping.SecurityType : mapping.SecurityType2,
                 Currency: null
             )
             {
@@ -121,12 +132,73 @@ public sealed class OpenFigiSymbolResolver : ISymbolResolver, IDisposable
 
             return resolution;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             _log.Error(ex, "Failed to resolve symbol {Symbol}", symbol);
             return null;
         }
     }
+
+    private static OpenFigiMapping? ChooseUnambiguousMapping(
+        IReadOnlyList<OpenFigiMapping>? mappings,
+        string symbol,
+        string? exchange)
+    {
+        if (mappings is null)
+            return null;
+
+        // These results become durable registry identities. A shared composite or share-class
+        // FIGI does not establish which listing is intended, and response order is not evidence.
+        var candidates = mappings.Where(mapping =>
+            string.Equals(mapping.Ticker?.Trim(), symbol, StringComparison.OrdinalIgnoreCase)
+            && (exchange is null || string.IsNullOrWhiteSpace(mapping.ExchCode)
+                || MatchesExchangeScope(mapping.ExchCode, exchange))
+            && (string.IsNullOrWhiteSpace(mapping.MarketSector)
+                || string.Equals(mapping.MarketSector.Trim(), "Equity", StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+
+        if (candidates.Count == 0 || candidates.Any(mapping =>
+            string.IsNullOrWhiteSpace(mapping.Figi)
+            || string.IsNullOrWhiteSpace(mapping.ExchCode)
+            || string.IsNullOrWhiteSpace(mapping.MarketSector)
+            || (string.IsNullOrWhiteSpace(mapping.SecurityType) && string.IsNullOrWhiteSpace(mapping.SecurityType2))))
+        {
+            return null;
+        }
+
+        var identities = candidates.GroupBy(mapping => (
+            Figi: NormalizeIdentity(mapping.Figi),
+            Composite: NormalizeIdentity(mapping.CompositeFigi),
+            ShareClass: NormalizeIdentity(mapping.ShareClassFigi),
+            Exchange: NormalizeExchangeCode(mapping.ExchCode),
+            SecurityType: NormalizeIdentity(mapping.SecurityType),
+            SecurityType2: NormalizeIdentity(mapping.SecurityType2)))
+            .ToList();
+
+        // Repeated identical mappings are harmless; conflicting identifiers or instrument
+        // metadata require more information than the ticker/exchange interface provides.
+        return identities.Count == 1
+            ? identities[0].OrderBy(mapping => mapping.Name, StringComparer.Ordinal).First()
+            : null;
+    }
+
+    private static string? NormalizeIdentity(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim().ToUpperInvariant();
+
+    private static bool MatchesExchangeScope(string exchangeCode, string exchangeScope)
+        => exchangeScope == "NASDAQ"
+            ? NormalizeExchangeCode(exchangeCode) is "UW" or "UQ" or "UR"
+            : NormalizeExchangeCode(exchangeCode) == exchangeScope;
+
+    private static string? NormalizeExchangeCode(string? exchange)
+        => NormalizeIdentity(exchange) switch
+        {
+            "NASDAQ" or "XNAS" => "NASDAQ",
+            "NYSE" or "XNYS" => "UN",
+            "NYSE ARCA" or "NYSEARCA" or "ARCA" or "ARCX" => "UP",
+            "NYSE AMERICAN" or "NYSEAMERICAN" or "AMEX" or "XASE" => "UA",
+            var code => code
+        };
 
     public async Task<string?> MapSymbolAsync(string symbol, string fromProvider, string toProvider, CancellationToken ct = default)
     {
@@ -207,6 +279,7 @@ public sealed class OpenFigiSymbolResolver : ISymbolResolver, IDisposable
         public string? IdValue { get; set; }
 
         [JsonPropertyName("exchCode")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? ExchCode { get; set; }
 
         [JsonPropertyName("micCode")]

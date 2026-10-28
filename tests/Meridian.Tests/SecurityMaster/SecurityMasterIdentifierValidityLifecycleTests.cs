@@ -90,7 +90,9 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
         await host.WaitForTimerAsync(T0.AddSeconds(20));
 
         host.Clock.Advance(TimeSpan.FromSeconds(10));
-        await UntilAsync(() => host.Registry.GetProviderSymbol("VALIDITY", "vendor") is null);
+        // The seed publishes its next boundary after every registry index has refreshed.
+        await UntilAsync(() => host.Seed.NextValidityTransitionUtc is null);
+        host.Registry.GetProviderSymbol("VALIDITY", "vendor").Should().BeNull();
         foreach (var value in new[] { "GENERIC", "US0000000001", "123456789", "BBG000VALID", "1234567" })
             host.Registry.ResolveToCanonical(value).Should().BeNull("ValidTo is exclusive and no projection was written");
         var expired = host.Registry.GetDefinition("VALIDITY")!;

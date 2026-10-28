@@ -35,70 +35,87 @@ public sealed class SymbolImportExportService
         options ??= new BulkImportOptions(HasHeader: false);
         var stopwatch = Stopwatch.StartNew();
 
-        var errors = new List<ImportError>();
-        var imported = new List<string>();
-        var skipped = 0;
-
         var lines = textContent.Split('\n', StringSplitOptions.RemoveEmptyEntries);
         if (lines.Length == 0)
         {
             return new BulkImportResult(0, 0, 0, Array.Empty<ImportError>(), Array.Empty<string>(), 0);
         }
 
-        var cfg = _configStore.Load();
-        var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
-            .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
-
-        var symbolsToAdd = new List<SymbolConfig>();
         var defaults = options.Defaults ?? new ImportDefaults();
 
-        for (var i = 0; i < lines.Length; i++)
+        var (errors, imported, skipped) = await _configStore.UpdateAsync(cfg =>
         {
-            var lineNumber = i + 1;
-            var line = lines[i].Trim();
+            var errors = new List<ImportError>();
+            var imported = new List<string>();
+            var skipped = 0;
 
-            // Skip empty lines and full-line comments
-            if (string.IsNullOrWhiteSpace(line))
-                continue;
-            if (line.StartsWith('#') || line.StartsWith(';') || line.StartsWith("//"))
-                continue;
+            var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
+                .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
 
-            // Strip inline comments
-            var commentIndex = line.IndexOf('#');
-            if (commentIndex > 0)
-                line = line[..commentIndex].Trim();
-            commentIndex = line.IndexOf(';');
-            if (commentIndex > 0)
-                line = line[..commentIndex].Trim();
-            commentIndex = line.IndexOf("//");
-            if (commentIndex > 0)
-                line = line[..commentIndex].Trim();
+            var symbolsToAdd = new List<SymbolConfig>();
 
-            // Handle comma-separated or whitespace-separated symbols on same line
-            var symbols = Regex.Split(line, @"[\s,]+")
-                .Where(s => !string.IsNullOrWhiteSpace(s))
-                .Select(s => s.Trim().ToUpperInvariant())
-                .ToArray();
-
-            foreach (var symbol in symbols)
+            for (var i = 0; i < lines.Length; i++)
             {
-                if (string.IsNullOrWhiteSpace(symbol))
+                var lineNumber = i + 1;
+                var line = lines[i].Trim();
+
+                // Skip empty lines and full-line comments
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+                if (line.StartsWith('#') || line.StartsWith(';') || line.StartsWith("//"))
                     continue;
 
-                if (options.ValidateSymbols && !IsValidSymbol(symbol))
-                {
-                    errors.Add(new ImportError(lineNumber, symbol, "Invalid symbol format"));
-                    continue;
-                }
+                // Strip inline comments
+                var commentIndex = line.IndexOf('#');
+                if (commentIndex > 0)
+                    line = line[..commentIndex].Trim();
+                commentIndex = line.IndexOf(';');
+                if (commentIndex > 0)
+                    line = line[..commentIndex].Trim();
+                commentIndex = line.IndexOf("//");
+                if (commentIndex > 0)
+                    line = line[..commentIndex].Trim();
 
-                if (existingSymbols.ContainsKey(symbol))
+                // Handle comma-separated or whitespace-separated symbols on same line
+                var symbols = Regex.Split(line, @"[\s,]+")
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                    .Select(s => s.Trim().ToUpperInvariant())
+                    .ToArray();
+
+                foreach (var symbol in symbols)
                 {
-                    if (options.SkipExisting && !options.UpdateExisting)
+                    if (string.IsNullOrWhiteSpace(symbol))
+                        continue;
+
+                    if (options.ValidateSymbols && !IsValidSymbol(symbol))
                     {
-                        skipped++;
+                        errors.Add(new ImportError(lineNumber, symbol, "Invalid symbol format"));
                         continue;
                     }
-                    if (options.UpdateExisting)
+
+                    if (existingSymbols.ContainsKey(symbol))
+                    {
+                        if (options.SkipExisting && !options.UpdateExisting)
+                        {
+                            skipped++;
+                            continue;
+                        }
+                        if (options.UpdateExisting)
+                        {
+                            var symbolConfig = new SymbolConfig(
+                                Symbol: symbol,
+                                SubscribeTrades: defaults.SubscribeTrades,
+                                SubscribeDepth: defaults.SubscribeDepth,
+                                DepthLevels: defaults.DepthLevels,
+                                SecurityType: defaults.SecurityType,
+                                Exchange: defaults.Exchange,
+                                Currency: defaults.Currency
+                            );
+                            existingSymbols[symbol] = symbolConfig;
+                            imported.Add(symbol);
+                        }
+                    }
+                    else
                     {
                         var symbolConfig = new SymbolConfig(
                             Symbol: symbol,
@@ -109,35 +126,20 @@ public sealed class SymbolImportExportService
                             Exchange: defaults.Exchange,
                             Currency: defaults.Currency
                         );
-                        existingSymbols[symbol] = symbolConfig;
+                        symbolsToAdd.Add(symbolConfig);
+                        existingSymbols[symbol] = symbolConfig; // Prevent duplicates in same file
                         imported.Add(symbol);
                     }
                 }
-                else
-                {
-                    var symbolConfig = new SymbolConfig(
-                        Symbol: symbol,
-                        SubscribeTrades: defaults.SubscribeTrades,
-                        SubscribeDepth: defaults.SubscribeDepth,
-                        DepthLevels: defaults.DepthLevels,
-                        SecurityType: defaults.SecurityType,
-                        Exchange: defaults.Exchange,
-                        Currency: defaults.Currency
-                    );
-                    symbolsToAdd.Add(symbolConfig);
-                    existingSymbols[symbol] = symbolConfig; // Prevent duplicates in same file
-                    imported.Add(symbol);
-                }
             }
-        }
 
-        // Save changes
-        if (symbolsToAdd.Count > 0 || options.UpdateExisting)
-        {
+            // Save changes
+            if (symbolsToAdd.Count == 0 && !options.UpdateExisting)
+                return (cfg, (errors, imported, skipped));
+
             var allSymbols = existingSymbols.Values.ToList();
-            var next = cfg with { Symbols = allSymbols.ToArray() };
-            await _configStore.SaveAsync(next);
-        }
+            return (cfg with { Symbols = allSymbols.ToArray() }, (errors, imported, skipped));
+        }, ct);
 
         stopwatch.Stop();
 
@@ -185,10 +187,6 @@ public sealed class SymbolImportExportService
         options ??= new BulkImportOptions();
         var stopwatch = Stopwatch.StartNew();
 
-        var errors = new List<ImportError>();
-        var imported = new List<string>();
-        var skipped = 0;
-
         var lines = csvContent.Split('\n', StringSplitOptions.RemoveEmptyEntries);
         if (lines.Length == 0)
         {
@@ -204,67 +202,72 @@ public sealed class SymbolImportExportService
             startIndex = 1;
         }
 
-        var cfg = _configStore.Load();
-        var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
-            .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
-
-        var symbolsToAdd = new List<SymbolConfig>();
-
-        for (var i = startIndex; i < lines.Length; i++)
+        var (errors, imported, skipped) = await _configStore.UpdateAsync(cfg =>
         {
-            var lineNumber = i + 1;
-            var line = lines[i].Trim();
-            if (string.IsNullOrWhiteSpace(line))
-                continue;
+            var errors = new List<ImportError>();
+            var imported = new List<string>();
+            var skipped = 0;
 
-            try
+            var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
+                .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
+
+            var symbolsToAdd = new List<SymbolConfig>();
+
+            for (var i = startIndex; i < lines.Length; i++)
             {
-                var symbol = ParseCsvLine(line, columnMap, options.Defaults);
-                if (symbol is null)
-                {
-                    errors.Add(new ImportError(lineNumber, null, "Failed to parse line"));
+                var lineNumber = i + 1;
+                var line = lines[i].Trim();
+                if (string.IsNullOrWhiteSpace(line))
                     continue;
-                }
 
-                if (options.ValidateSymbols && !IsValidSymbol(symbol.Symbol))
+                try
                 {
-                    errors.Add(new ImportError(lineNumber, symbol.Symbol, "Invalid symbol format"));
-                    continue;
-                }
-
-                if (existingSymbols.ContainsKey(symbol.Symbol))
-                {
-                    if (options.SkipExisting && !options.UpdateExisting)
+                    var symbol = ParseCsvLine(line, columnMap, options.Defaults);
+                    if (symbol is null)
                     {
-                        skipped++;
+                        errors.Add(new ImportError(lineNumber, null, "Failed to parse line"));
                         continue;
                     }
-                    if (options.UpdateExisting)
+
+                    if (options.ValidateSymbols && !IsValidSymbol(symbol.Symbol))
                     {
-                        existingSymbols[symbol.Symbol] = symbol;
+                        errors.Add(new ImportError(lineNumber, symbol.Symbol, "Invalid symbol format"));
+                        continue;
+                    }
+
+                    if (existingSymbols.ContainsKey(symbol.Symbol))
+                    {
+                        if (options.SkipExisting && !options.UpdateExisting)
+                        {
+                            skipped++;
+                            continue;
+                        }
+                        if (options.UpdateExisting)
+                        {
+                            existingSymbols[symbol.Symbol] = symbol;
+                            imported.Add(symbol.Symbol);
+                        }
+                    }
+                    else
+                    {
+                        symbolsToAdd.Add(symbol);
                         imported.Add(symbol.Symbol);
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    symbolsToAdd.Add(symbol);
-                    imported.Add(symbol.Symbol);
+                    errors.Add(new ImportError(lineNumber, null, ex.Message));
                 }
             }
-            catch (Exception ex)
-            {
-                errors.Add(new ImportError(lineNumber, null, ex.Message));
-            }
-        }
 
-        // Save changes
-        if (symbolsToAdd.Count > 0 || options.UpdateExisting)
-        {
+            // Save changes
+            if (symbolsToAdd.Count == 0 && !options.UpdateExisting)
+                return (cfg, (errors, imported, skipped));
+
             var allSymbols = existingSymbols.Values.ToList();
             allSymbols.AddRange(symbolsToAdd);
-            var next = cfg with { Symbols = allSymbols.ToArray() };
-            await _configStore.SaveAsync(next);
-        }
+            return (cfg with { Symbols = allSymbols.ToArray() }, (errors, imported, skipped));
+        }, ct);
 
         stopwatch.Stop();
 

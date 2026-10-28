@@ -41,6 +41,11 @@ public enum SecurityIdentifierKind
     /// </summary>
     Clip,
     /// <summary>
+    /// Listing identity — a ticker on a specific ISO 10383 market, written <c>TICKER:MIC</c>
+    /// (for example <c>AAPL:XNAS</c>); see <see cref="Meridian.Contracts.Domain.ListingId"/>.
+    /// </summary>
+    ListingId,
+    /// <summary>
     /// Read-tolerance member: a kind written by a newer node that this node does not recognize.
     /// Rows carrying it stay readable (mixed-version rollout) but cannot be written back as-is —
     /// the command mapping rejects <see cref="Unknown"/> so unrecognized kinds are never silently

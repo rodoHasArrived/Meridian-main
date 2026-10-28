@@ -945,6 +945,7 @@ describe("PortfolioScreen", () => {
   it("loads shared selected-run portfolio drill-in evidence on demand", async () => {
     vi.spyOn(api, "getRunAttribution").mockResolvedValue({
       runId: "run-1",
+      mode: "Paper",
       totalRealizedPnl: 120,
       totalUnrealizedPnl: 80,
       totalCommissions: 5,
@@ -984,6 +985,7 @@ describe("PortfolioScreen", () => {
     });
     vi.spyOn(api, "getRunFills").mockResolvedValue({
       runId: "run-1",
+      mode: "Paper",
       totalFills: 2,
       totalCommissions: 5,
       fills: []
@@ -1010,6 +1012,7 @@ describe("PortfolioScreen", () => {
   it("charts the daily-return distribution from a multi-point drill-in equity curve", async () => {
     vi.spyOn(api, "getRunAttribution").mockResolvedValue({
       runId: "run-1",
+      mode: "Paper",
       totalRealizedPnl: 120,
       totalUnrealizedPnl: 80,
       totalCommissions: 5,
@@ -1053,6 +1056,7 @@ describe("PortfolioScreen", () => {
     });
     vi.spyOn(api, "getRunFills").mockResolvedValue({
       runId: "run-1",
+      mode: "Paper",
       totalFills: 0,
       totalCommissions: 0,
       fills: []

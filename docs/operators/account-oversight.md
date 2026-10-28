@@ -2,7 +2,7 @@
 title: Bounded account oversight
 status: active
 owner: core-team
-reviewed: 2026-10-14
+reviewed: 2026-10-17
 audience: operators
 ---
 
@@ -23,9 +23,34 @@ account-owned book.
 The route prefix is `/api/ledger/books/{ledgerBookId}/accounts/{accountId}` using canonical GUIDs.
 An administrator sends `POST oversight/provision` under that prefix to provision the two local
 history stores before capture. Provisioning initializes empty stores only; missing/corrupt initialized
-state requires restoring retained history. Back up the complete configured data root, including
+state requires restoring retained history. Retrying provisioning after an interrupted first attempt
+completes it only when the store holds no retained history. Corrupt or missing history and a store
+lock held for more than 30 seconds return 503. Back up the complete configured data root, including
 `reconciliation/account-cash-continuity`, `asset-operations/account-cash-forecasts` and Evidence Vault.
-Close-price snapshots require the existing PostgreSQL Security Master and migration 037.
+Close-price snapshots require the existing PostgreSQL Security Master and migration 037; migration 043 hardens its approval guard against payloads missing `Blockers` or `CreatedBy`.
+
+Both file stores partition retained history per exact account scope. Each store directory holds the
+`initialized` provisioning marker, a `scope-index.json` registry of retained scopes, and one
+`scopes/<sha256>.json` history file plus `scopes/<sha256>.lock` per scope, where the hash is the
+canonical scope identity (tenant, company, account and ledger book, plus base currency for forecasts).
+A corrupt or missing scope file blocks only that scope's reads and captures; other accounts continue
+to read and capture. Provisioning is store-wide: `POST oversight/provision` validates every registered
+scope file and migration baseline in both stores, so it answers `503` for any account while any
+scope's retained state is corrupt or missing, until that scope is restored.
+The `scope-index.json` registry and the `initialized` marker are read before any scope is selected,
+so a corrupt or missing index or marker blocks every account in that store until it is restored.
+These stores live on the host's local data root and are not shared between hosts: run the account
+oversight API on a single host against one data root. Multi-host deployments are a known constraint
+and the planned follow-on is a PostgreSQL-backed store.
+
+The per-scope migration is automatic and one-way. The first provisioning or scoped operation served
+by a per-scope binary renames the legacy `state.json` or `snapshots.json` to `.migrated` while
+keeping the same `initialized` marker, and a pre-partition binary then accepts the marker but fails
+every cash-continuity and forecast operation because its state file is absent. Before deploying:
+back up both store directories, stop every process that uses the data root, and never run
+pre-partition and per-scope binaries against one data root, including during a rolling restart.
+Rolling back to a pre-partition binary requires restoring that pre-migration backup; records captured
+after the migration live only in the per-scope layout and are lost to the older binary.
 
 ## Shared routes
 
@@ -66,6 +91,7 @@ executed tolerance versions. Select an observation to replay its original rows a
 An owner handoff requires a rationale and the retained case version; after a conflict, refresh
 before retrying. Import a complete comparison handoff, inspect its structured preview, then
 capture it explicitly. A failed capture retains the imported run identity for a safe retry.
+Save or discard an owner assignment draft before capturing a comparison.
 
 Use **Close prices** to prepare an explicit security population at elapsed UTC cutoffs, review
 selected and competing observations, and inspect units, overrides and blockers. Select retained
@@ -74,7 +100,12 @@ corrections retain the same security population and link the latest version. Aft
 capture outcome, reload the original valuation date's history, then use **Verify retained price
 capture** or **Retry same price capture** to submit the unchanged command with its retained
 request identity. New captures and approvals stay locked until that command is confirmed.
-After an uncertain approval outcome, reload history and inspect the retained review.
+After an uncertain approval outcome, return to the approval's valuation date and reload its
+history; the workbench verifies that the retained review carries your reviewer identity and
+rationale before unlocking further actions. If another reviewer's approval was retained for that
+snapshot instead, the lock stays and the banner states that your decision was not recorded.
+When Security Master is not configured, close-price routes report unavailability rather than
+empty history.
 
 Use **Cash forecast** to import a scoped forecast handoff, inspect its opening/closing cash,
 expected and actual flows, three dates, declared FX, source reviews and factor revisions, then
@@ -114,7 +145,11 @@ and retry under these controls. Their stored case state and history are not rewr
 any prior `SourceCleared` result and submit a new run with independently sourced observations and
 new source versions where the retained source content changes.
 
-Run again after a source correction with a new run ID and later observation time. The amount,
+Run again after a source correction with a new run ID, later observation time and a business
+date no earlier than the retained head; new run IDs cannot contain whitespace or `/ \ ? # %`, at
+least one cash tolerance rule is required, and reformatted or reordered copies of a source payload remain
+dependent evidence. These rules apply only to new runs: runs retained before them still replay
+and re-submit under their original IDs and tolerance contents. The amount,
 row ID, business date and tolerance version do not create a different case. The case retains its
 original first-seen time and owner. Equal or tolerated balances mark `SourceCleared`; missing
 balances cannot clear an existing case. Recurrence reopens the same case while earlier resolution
@@ -206,6 +241,47 @@ account/book/period. Reintroducing an unchanged revision preserves its original 
 Preserve the original run/snapshot ID and response. Conflicting input under an existing run ID
 requires a new correction, rather than replacement. On missing/corrupt durable state, stop capture
 and restore the complete history from backup; provisioning is not a history-reset operation.
+A corrupt or missing scope file answers `503` for both forecasts and cash continuity on the affected
+account's scoped reads and captures only; provisioning for any account answers `503` while it exists,
+because provisioning validates every registered scope and baseline before completing. A corrupt or
+missing `scope-index.json` answers `503` for every account in that store, because the index is read
+before any scope is selected. Unprovisioned retained history answers `409`,
+including a `.migrated` legacy file left without its marker, index and scope files: provisioning never
+recreates an empty layout beside retained evidence. While the marker and index survive, every scope
+the `.migrated` file retains must stay registered with its scope file; a lost file for such a scope
+answers `503` for that scope and fails provisioning until it is restored, so the migrated history can
+never be restarted as new.
+Migration also retains per-scope baseline envelopes in `migration-baselines/<sha256>.json`.
+Scoped operations compare only their active file and baseline; provisioning cross-checks the full
+`.migrated` artifact and all baselines before writing recovery state. Older partitioned layouts
+materialize these baselines during provisioning, or once per scope under the store lease on first
+access after verifying the active prefix. A corrupt baseline affects its scope; a corrupt global
+artifact refuses provisioning and cold bootstrap while existing scoped baselines remain usable.
+A nonempty baseline proves its active file previously existed: if that file is missing, migration
+refuses reconstruction even if its index entry was also lost. Restore the scope files, baselines,
+index and marker from the complete backup set; retained baseline-only history cannot be provisioned
+as empty, including beside an empty unmarked legacy file. A baseline is committed only beside its
+scope's active file (first-time use after migration validates the scope but persists no baseline until
+its file exists), so any baseline whose scope file is missing is lost history, even an empty one:
+provisioning answers `409` beside a lost marker and index, and `503` while the marker survives.
+Both provisioning and scoped reads/writes compare active history with the retained migrated evidence.
+Forecast snapshots and reconciliation runs must preserve that evidence as an exact ordered prefix;
+case observation and assignment histories must preserve their prefixes and immutable case identity.
+Later appends, owner assignments, source resolution and reopening remain valid. A separately valid
+replacement file with missing or conflicting migrated records answers `503` until restored.
+Moving the migrated file back to its legacy name cannot repair a registered scope whose file is
+missing: migration refuses before writing files or changing the index, because the old snapshot
+cannot establish whether post-migration records were lost. Restore the complete backup set instead.
+Restore the affected `scopes/<sha256>.json` file together with `scope-index.json` and `initialized`
+from the same backup; never delete a scope file to clear a failure, because a registered scope
+without its file also fails closed. A scope file without its index entry is an interrupted first
+write (the file is committed before its registration): the next provisioning or scoped use registers
+it, so no manual recovery is needed, while a file whose content does not name its own scope is refused. On first use after upgrading from the single-file layout, each
+store validates its legacy `state.json` or `snapshots.json`, writes the per-scope files, and renames
+the legacy file to `state.json.migrated` or `snapshots.json.migrated`. Keep the `.migrated` file with
+the backup set. A corrupt legacy file is never split or renamed; restore it before retrying. Do not
+leave both a legacy file and its `.migrated` sibling in place; that state also requires restoring one
+retained history.
 Acceptance proof is in `AccountCashReconciliationContinuityTests`,
 `SecurityMasterClosePriceServiceTests`, `PostgresSecurityMasterClosePriceTests`,
 `AccountCashForecastTests` and the account oversight endpoint/source-adapter tests.

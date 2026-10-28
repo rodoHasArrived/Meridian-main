@@ -84,7 +84,12 @@ node scripts/dev/capture-web-screenshots.mjs --scenario accounting.normal --stri
 
 `--scenario` selects the accounting reconciliation capture automatically when no `--capture`
 selector is supplied. The Playwright adapter intercepts API calls before navigation, applies the
-shared statuses and delays, and waits for the scenario's readiness text. `--strict` fails capture
+shared statuses and delays. Readiness stays bound to the selected capture: normal and delayed
+captures retain their route headings, text and selector checks, and the scenario's preview route
+also checks its declared state. Empty and failed preview states replace populated body-text
+checks with the scenario's state-specific text. For example, `--scenario accounting.normal
+--capture W03I4` keeps the Approval Inbox checks instead of waiting for reconciliation strategy
+names. `--strict` fails capture
 on an unexpected API request and reports its scenario, method, and URL. The manifest records the
 selected scenario and preview URL. To use an already installed system Chromium, set
 `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to its executable path before running capture.

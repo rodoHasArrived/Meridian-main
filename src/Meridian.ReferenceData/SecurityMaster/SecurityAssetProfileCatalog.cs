@@ -195,6 +195,8 @@ internal static class SecurityAssetProfileSeeds
     private static IReadOnlyList<string> Taxonomy(string taxonomyKey)
         => SecurityReferenceTaxonomyCatalog.Default.GetValues(taxonomyKey);
 
+    // The projected/searchable arguments record promotion intent only (see the parameter docs on
+    // SecurityAssetProfileFieldDefinitionDto): nothing projects or indexes a profile field today.
     private static SecurityAssetProfileFieldDefinitionDto RequiredText(string key, string label, bool projected, bool searchable = false)
         => Field(key, label, SecurityAssetProfileFieldTypeDto.Text, true, [], null, null, projected, searchable);
 

@@ -113,7 +113,7 @@ public sealed class SecurityMasterConvertibleEquityAmendmentTests
 
         var act = () => service.AmendConvertibleEquityTermsAsync(securityId, request);
 
-        await act.Should().ThrowAsync<InvalidOperationException>()
+        await act.Should().ThrowExactlyAsync<InvalidOperationException>()
             .WithMessage("*not an equity*");
     }
 
@@ -129,7 +129,7 @@ public sealed class SecurityMasterConvertibleEquityAmendmentTests
 
         var service = CreateService(eventStore, snapshotStore, store);
         var request = new AmendConvertibleEquityTermsRequest(
-            ExpectedVersion: 1,
+            ExpectedVersion: 7,
             UnderlyingSecurityId: Guid.NewGuid(),
             ConversionRatio: 2.0m,
             ConversionPrice: null,
@@ -143,7 +143,7 @@ public sealed class SecurityMasterConvertibleEquityAmendmentTests
 
         var act = () => service.AmendConvertibleEquityTermsAsync(securityId, request);
 
-        await act.Should().ThrowAsync<InvalidOperationException>()
+        await act.Should().ThrowExactlyAsync<InvalidOperationException>()
             .WithMessage("*does not currently have convertible-equity terms*");
     }
 

@@ -60,6 +60,7 @@ public sealed class BrokerageExecutionRegistrationRecoveryTests
             await using (var provider = services.BuildServiceProvider())
             {
                 var oms = provider.GetRequiredService<IOrderManager>();
+                await ((IOrderManagementLifecycle)oms).StartAsync();
                 var result = await oms.PlaceOrderAsync(request);
 
                 result.Success.Should().BeFalse();
@@ -74,6 +75,7 @@ public sealed class BrokerageExecutionRegistrationRecoveryTests
             recoveredServices.AddSingleton(new FileBrokerageOrderRecoveryStore(path, recoveredGateway.GatewayId));
             await using var recoveredProvider = recoveredServices.BuildServiceProvider();
             var recovered = recoveredProvider.GetRequiredService<IOrderManager>();
+            await ((IOrderManagementLifecycle)recovered).StartAsync();
 
             recovered.GetOpenOrders().Should().ContainSingle(order =>
                 order.OrderId == request.ClientOrderId && order.Quantity == request.Quantity);
@@ -104,6 +106,7 @@ public sealed class BrokerageExecutionRegistrationRecoveryTests
         gateway.Should().BeOfType<PaperTradingGateway>();
         await gateway.ConnectAsync();
         var oms = provider.GetRequiredService<IOrderManager>();
+        await ((IOrderManagementLifecycle)oms).StartAsync();
         var result = await oms.PlaceOrderAsync(Request("paper-without-broker-recovery"));
 
         result.Success.Should().BeTrue();

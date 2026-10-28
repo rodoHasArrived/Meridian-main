@@ -106,6 +106,40 @@ test("scenario captures carry the preview selector and derive readiness from the
   assert.ok(normal.waitForTexts.includes(source.module.accountingPayload.reconciliationQueue[0].strategyName));
 });
 
+test("populated scenarios preserve each selected route's readiness contract", async () => {
+  const routeConfig = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-routes.json"), "utf8"));
+  const inbox = routeConfig.captures.find((capture) => capture.id === "W03I4");
+  const reconciliation = routeConfig.captures.find((capture) => capture.id === "W03A");
+  for (const id of ["accounting.normal", "accounting.delayed"]) {
+    const scenario = source.module.getScenario(id);
+    const selectedInbox = scenarioCapture(inbox, scenario, source.module);
+    assert.equal(selectedInbox.waitForText, inbox.waitForText);
+    assert.deepEqual(selectedInbox.waitForTexts, inbox.waitForTexts);
+    assert.ok(!selectedInbox.waitForTexts.includes(source.module.accountingPayload.reconciliationQueue[0].strategyName));
+
+    const selectedReconciliation = scenarioCapture(reconciliation, scenario, source.module);
+    assert.equal(selectedReconciliation.waitForText, reconciliation.waitForText);
+    for (const text of [...reconciliation.waitForTexts, ...scenario.waitForTexts]) {
+      assert.ok(selectedReconciliation.waitForTexts.includes(text), `Missing readiness text: ${text}`);
+    }
+    assert.ok(selectedReconciliation.waitForTexts.includes("Statement runs"));
+  }
+});
+
+test("scenario selection retains selectors and stale-state checks from the selected capture", () => {
+  const capture = {
+    name: "accounting-inbox",
+    path: "/accounting/approvals/inbox",
+    waitForText: "Approval Inbox",
+    waitForTexts: ["Reviewer checklist"],
+    waitForSelectors: ["[data-approval-ready]"],
+    waitForAbsentTexts: ["Loading approvals"]
+  };
+  const selected = scenarioCapture(capture, source.module.getScenario("accounting.normal"), source.module);
+  assert.deepEqual(selected.waitForSelectors, capture.waitForSelectors);
+  assert.deepEqual(selected.waitForAbsentTexts, capture.waitForAbsentTexts);
+});
+
 function pageStub() {
   let handler;
   return {

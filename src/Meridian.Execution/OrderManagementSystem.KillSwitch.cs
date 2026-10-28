@@ -2,6 +2,7 @@ using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 
+
 namespace Meridian.Execution;
 
 /// <summary>
@@ -163,7 +164,7 @@ public sealed partial class OrderManagementSystem
                         var confirmedBrokerOrderId = gatewayOrderId;
                         if (string.IsNullOrWhiteSpace(confirmedBrokerOrderId))
                         {
-                            _orderBrokerIds.TryGetValue(order.OrderId, out confirmedBrokerOrderId);
+                            _brokerIdentities.TryGetActiveId(order.OrderId, out confirmedBrokerOrderId);
                         }
                         confirmedCancellations.Add(new ConfirmedCancellation(
                             order.OrderId,
@@ -470,7 +471,7 @@ public sealed partial class OrderManagementSystem
             sweepTargets.Select(static order => order.OrderId),
             StringComparer.Ordinal);
         var trackedByBrokerId = sweepTargets
-            .Select(order => _orderBrokerIds.TryGetValue(order.OrderId, out var brokerOrderId)
+            .Select(order => _brokerIdentities.TryGetActiveId(order.OrderId, out var brokerOrderId)
                 ? (order.OrderId, BrokerOrderId: brokerOrderId)
                 : (order.OrderId, BrokerOrderId: (string?)null))
             .Where(static mapping => !string.IsNullOrWhiteSpace(mapping.BrokerOrderId))
@@ -554,7 +555,7 @@ public sealed partial class OrderManagementSystem
         // broker cancellation into a reported failure, or abandon the rest of the sweep.
         try
         {
-            await RecordOrderLifecycleAuditAsync(
+            await _executionAudit.RecordLifecycleAsync(
                 action: failure is null ? "OrderCancelled" : "OrderCancelRejected",
                 outcome: failure is null ? nameof(OrderStatus.Cancelled) : "Rejected",
                 orderId: order.OrderId,

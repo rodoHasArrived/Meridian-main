@@ -67,16 +67,25 @@ export function scenarioCapture(capture, scenario, module) {
     : scenario.id.endsWith(".empty")
       ? ["Reconciliation Casework", "No reconciliation runs are available for this accounting scope."]
       : ["Reconciliation Casework", "Open breaks", payload?.reconciliationQueue?.at(-1)?.strategyName];
+  // Scenario readiness describes its preview route. Other routes (for example the
+  // Approval Inbox) have their own headings, payload rows and selector checks.
+  const isPreviewRoute = url.pathname === new URL(scenario.previewPath, "http://meridian.local").pathname;
+  const populated = sharedResponse?.status < 400 && !scenario.id.endsWith(".empty");
+  const captureTexts = isPreviewRoute && !populated ? [] : capture.waitForTexts ?? [];
   return {
     ...capture,
     path: `${url.pathname}${url.search}${url.hash}`,
     name: `${capture.name}-${scenario.id.replaceAll(".", "-")}`,
     scenario: scenario.id,
     previewUrl: module.scenarioPreviewUrl(scenario),
-    waitForText: undefined,
-    waitForTexts: scenario.waitForTexts ?? fallbackTexts.filter(Boolean),
-    waitForAbsentTexts: scenario.waitForAbsentTexts ?? [],
-    waitForSelectors: []
+    waitForTexts: [...new Set([
+      ...captureTexts,
+      ...(isPreviewRoute ? scenario.waitForTexts ?? fallbackTexts.filter(Boolean) : [])
+    ])],
+    waitForAbsentTexts: [...new Set([
+      ...(capture.waitForAbsentTexts ?? []),
+      ...(isPreviewRoute ? scenario.waitForAbsentTexts ?? [] : [])
+    ])]
   };
 }
 

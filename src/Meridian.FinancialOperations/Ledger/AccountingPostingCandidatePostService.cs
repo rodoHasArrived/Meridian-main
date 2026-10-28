@@ -813,61 +813,6 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
             "Rebuilt journal identity or posting command does not match the retained Drafted candidate.");
     }
 
-    private static LedgerJournalEntryWrite BindAssetPostingIntentToJournal(
-        LedgerJournalEntryWrite write,
-        AssetPostingAuthoritySnapshot authority)
-    {
-        var projection = authority.Drafted.Projection;
-        var tags = write.Entry.Metadata.Tags is null
-            ? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            : new Dictionary<string, string>(write.Entry.Metadata.Tags, StringComparer.OrdinalIgnoreCase);
-        tags["assetAccountingDraftFingerprint"] = RequireText(
-            projection.DraftedCandidateFingerprint,
-            nameof(projection.DraftedCandidateFingerprint));
-        tags["assetAccountingDraftResultFingerprint"] = RequireText(
-            projection.DraftedCandidateResultFingerprint,
-            nameof(projection.DraftedCandidateResultFingerprint));
-        if (!string.IsNullOrWhiteSpace(projection.DraftedLotMutationFingerprint))
-            tags["assetAccountingLotMutationFingerprint"] = projection.DraftedLotMutationFingerprint;
-        if (projection.DraftedLotMutation?.CorporateAction is { } successorInstruction)
-            tags[OpenLotSuccessors.JournalFingerprintTag] = OpenLotSuccessors.Fingerprint(successorInstruction);
-        if (projection.DraftedLotMutation?.CapitalReturn is { } capitalReturnInstruction)
-            tags[OpenLotCapitalReturn.JournalFingerprintTag] = OpenLotCapitalReturn.Fingerprint(capitalReturnInstruction);
-
-        var generatedLines = projection.DraftedCandidateResult?.GeneratedPostingLines
-            ?? throw new InvalidOperationException("The retained Drafted candidate is missing generated posting lines.");
-        RequireAssetAssertion(generatedLines.Count == write.Entry.Lines.Count,
-            "The retained Drafted candidate line count does not match the journal write.");
-        var lines = write.Entry.Lines.Select((line, index) =>
-        {
-            var generated = generatedLines[index];
-            RequireAssetAssertion(string.Equals(generated.Currency, projection.Currency, StringComparison.OrdinalIgnoreCase),
-                "Foreign-currency generated asset lines require explicit FX authority and cannot be posted as functional currency.");
-            return new LedgerEntry(
-                line.EntryId,
-                line.JournalEntryId,
-                line.Timestamp,
-                line.Account,
-                line.Debit,
-                line.Credit,
-                line.Description,
-                line.Dimensions,
-                new LedgerEntryCurrency(
-                    projection.Currency,
-                    projection.Currency,
-                    line.Debit,
-                    line.Credit,
-                    1m));
-        }).ToArray();
-        var entry = new JournalEntry(
-            write.Entry.JournalEntryId,
-            write.Entry.Timestamp,
-            write.Entry.Description,
-            lines,
-            write.Entry.Metadata with { Tags = tags });
-        return write with { Entry = entry };
-    }
-
     private static PostingRuleJournalCandidateResultDto BuildApprovedAssetCandidateResult(
         AssetPostingAuthoritySnapshot authority,
         PostPostingRuleJournalCandidateRequestDto request,
@@ -1110,7 +1055,8 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         if ((instruction.Intent == AssetLotMutationIntentDto.Acquire && eventKind != AssetAccountingEventKindDto.Acquisition) ||
             (instruction.Intent == AssetLotMutationIntentDto.Dispose && eventKind != AssetAccountingEventKindDto.Disposal) ||
             (instruction.Intent == AssetLotMutationIntentDto.Amortize && eventKind != AssetAccountingEventKindDto.DepreciationAmortization) ||
-            (instruction.Intent is AssetLotMutationIntentDto.CorporateAction or AssetLotMutationIntentDto.CapitalReturn && eventKind != AssetAccountingEventKindDto.CorporateAction))
+            (instruction.Intent is AssetLotMutationIntentDto.CorporateAction or AssetLotMutationIntentDto.CapitalReturn
+                or AssetLotMutationIntentDto.FactorPaydown && eventKind != AssetAccountingEventKindDto.CorporateAction))
         {
             throw new InvalidOperationException(
                 "Asset lot mutation intent must match the canonical acquisition or disposal event kind.");
@@ -1265,6 +1211,11 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
             ValidateCapitalReturnPosting(instruction, request, approvedWrite, ledgerBook, sourceEventId, authority);
             mutationKind = AtomicTaxLotMutationKind.CapitalReturn;
         }
+        else if (instruction.Intent == AssetLotMutationIntentDto.FactorPaydown)
+        {
+            ValidateFactorPaydownPosting(instruction, request, approvedWrite, ledgerBook, sourceEventId, authority);
+            mutationKind = AtomicTaxLotMutationKind.FactorPaydown;
+        }
         else if (instruction.Intent == AssetLotMutationIntentDto.CorporateAction)
         {
             var inputs = instruction.CorporateAction
@@ -1308,7 +1259,8 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
             instruction.DisposalSalePrice,
             instruction.Amortization,
             instruction.CorporateAction,
-            instruction.CapitalReturn);
+            instruction.CapitalReturn,
+            factorPaydown: instruction.FactorPaydown);
         command = await BindRetainedReferenceVersionsAsync(command, authority.Context, hasExistingJournal, ct).ConfigureAwait(false);
         return await atomicStore.AppendAssetPostingAsync(command, ct).ConfigureAwait(false);
     }

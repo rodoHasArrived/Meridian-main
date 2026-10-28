@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Contracts.Futures;
 
@@ -28,4 +29,12 @@ public sealed record FutureReferenceDto(
     string? DeliveryLocationCode,
     FutureLifecycleStat LifecycleStat,
     string PrimaryIdentifier,
-    long Version);
+    long Version)
+{
+    /// <summary>
+    /// <see cref="SettlementType"/> as a typed convention, or null when the stored text is absent or
+    /// names no recognized settlement method. The raw text stays on <see cref="SettlementType"/>.
+    /// </summary>
+    public SecuritySettlementMethod? SettlementMethod
+        => SecurityTermConventions.TryParseSettlementMethod(SettlementType, out var method) ? method : null;
+}
