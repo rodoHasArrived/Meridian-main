@@ -10333,6 +10333,7 @@ Meridian-main
 │   │   │   │   ├── BestOfBreedProviderSelectorTests.cs
 │   │   │   │   ├── KernelObservabilityServiceTests.cs
 │   │   │   │   ├── ProviderRoutingServiceTests.cs
+│   │   │   │   ├── ProviderSetupOwnershipTests.cs
 │   │   │   │   └── ProviderTrustScoringServiceTests.cs
 │   │   │   ├── Reconciliation
 │   │   │   │   ├── BusinessDayAccountingCalendarTests.cs
