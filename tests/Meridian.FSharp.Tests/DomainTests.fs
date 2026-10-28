@@ -1172,6 +1172,7 @@ let ``IO strip StructuredProductTerms sets IsInterestOnly true`` () =
         Originator = None
         CreditEnhancementPct = None
         FactorScheduleReference = None
+        FactorScheduleEntries = []
     }
 
     sp.IsInterestOnly |> should equal true
@@ -2230,7 +2231,7 @@ let ``ScheduleConventions.isEmpty is true only for the empty block`` () =
         (memberName, ScheduleConventions.isEmpty conventions) |> should equal (memberName, false)
 
 [<Fact>]
-let ``Flat writer stamps every class at its write version and omits scheduleConventions when nothing is declared`` () =
+let ``Flat writer stamps every class at its S2 document floor and omits scheduleConventions when nothing is declared`` () =
     // The registry table, plus the readable-ahead classes it does not carry and a swap with legs.
     let kinds =
         (registrySampleKinds |> List.map fst)
@@ -2246,7 +2247,7 @@ let ``Flat writer stamps every class at its write version and omits scheduleConv
             (assetClass, hasProperty "assetClassTermsVersion" payload) |> should equal (assetClass, false)
         | _ ->
             (assetClass, termsStamp payload)
-            |> should equal (assetClass, Meridian.Contracts.SecurityMaster.SecurityAssetClassCatalog.GetTermsVersion(assetClass))
+            |> should equal (assetClass, Meridian.Contracts.SecurityMaster.SecurityAssetClassCatalog.GetStampFloor(assetClass))
 
         // Below the block's version the key is absent, at the root and on every leg.
         (assetClass, hasProperty "scheduleConventions" payload) |> should equal (assetClass, false)
@@ -2369,7 +2370,7 @@ let ``Reclassification proposal blocks a bond that declares schedule conventions
         "structured_credit_tranche_required"
         "structured_credit_collateral_type_required" ]
     (proposal.Blockers |> List.find (fun blocker -> blocker.Code = "structured_credit_schedule_conventions_unwritable")).Message
-    |> should equal "The bond declares scheduleConventions, a StructuredCredit terms version 3 term this node cannot write; reclassify from a node that writes StructuredCredit version 3."
+    |> should equal "The bond declares scheduleConventions, but the StructuredCredit schema has no top-level issueDate or paymentFrequency; repair the declared schedule before reclassification."
     proposal.ProposedTerms |> should equal None
     // The draft still reports what the bond carries.
     proposal.Draft.Kind |> should equal (Some StructuredCreditKind.AgencyMbs)
@@ -2701,7 +2702,7 @@ let ``Economic call fill reproduces the scalar-only call terms exactly when no s
     economicCallFor (scheduleStructuredCredit ScheduleConventions.empty) |> should equal None
 
 [<Fact>]
-let ``Reclassification proposal blocks a bond that declares call or put schedules`` () =
+let ``Reclassification proposal retains the conventions blocker after call and put schedules become writable`` () =
     let agencyBond conventions schedules =
         match securitizedBond (BondSubclass.Other "AgencyMbs") (BondCouponStructure.Fixed(5.5m, None)) (Some 1000m) with
         | SecurityKind.Bond terms -> SecurityKind.Bond { terms with ScheduleConventions = conventions; CallPutSchedules = schedules }
@@ -2715,27 +2716,23 @@ let ``Reclassification proposal blocks a bond that declares call or put schedule
     let calls = proposalFor ScheduleConventions.empty (callsOnly [ firstCall ])
     blockerCodes calls
     |> should equal [
-        "structured_credit_call_put_schedules_unwritable"
         "structured_credit_tranche_required"
         "structured_credit_collateral_type_required" ]
-    messageOf "structured_credit_call_put_schedules_unwritable" calls
-    |> should equal "The bond declares callSchedule or putSchedule, StructuredCredit terms version 4 terms this node cannot write; reclassify from a node that writes StructuredCredit version 4."
+    blockerCodes calls |> List.contains "structured_credit_call_put_schedules_unwritable" |> should equal false
     calls.ProposedTerms |> should equal None
     // The draft still reports what the bond carries.
     calls.Draft.Kind |> should equal (Some StructuredCreditKind.AgencyMbs)
 
-    // Conventions and puts raise both blockers, the conventions one first, and 4a's text holds.
+    // Conventions remain unrepresentable because the class has no issue-date/frequency anchors.
     let both = proposalFor { ScheduleConventions.empty with StubPolicy = Some "Short" } (putsOnly [ firstPut ])
     blockerCodes both
     |> should equal [
         "structured_credit_schedule_conventions_unwritable"
-        "structured_credit_call_put_schedules_unwritable"
         "structured_credit_tranche_required"
         "structured_credit_collateral_type_required" ]
     messageOf "structured_credit_schedule_conventions_unwritable" both
-    |> should equal "The bond declares scheduleConventions, a StructuredCredit terms version 3 term this node cannot write; reclassify from a node that writes StructuredCredit version 3."
-    messageOf "structured_credit_call_put_schedules_unwritable" both
-    |> should equal "The bond declares callSchedule or putSchedule, StructuredCredit terms version 4 terms this node cannot write; reclassify from a node that writes StructuredCredit version 4."
+    |> should equal "The bond declares scheduleConventions, but the StructuredCredit schema has no top-level issueDate or paymentFrequency; repair the declared schedule before reclassification."
+    blockerCodes both |> List.contains "structured_credit_call_put_schedules_unwritable" |> should equal false
     both.ProposedTerms |> should equal None
 
     let plain = proposalFor ScheduleConventions.empty CallPutSchedules.empty

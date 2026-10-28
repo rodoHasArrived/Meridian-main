@@ -43,7 +43,7 @@ public static class SecurityAssetClassTermsUpgrader
         => TryUpgradeForRead(descriptor, payload, out var upgraded) ? upgraded : payload;
 
     /// <summary>
-    /// True, with a new payload stamped at the class's current terms version, only when at least one
+    /// True, with a new payload stamped at the class's S2 transform floor, only when at least one
     /// transform step applies. Otherwise false, with <paramref name="upgraded"/> set to
     /// <paramref name="payload"/> itself, so a caller can branch without comparing
     /// <see cref="JsonElement"/> values.
@@ -182,7 +182,7 @@ public static class SecurityAssetClassTermsUpgrader
                     $"The terms upgrade from version {step.FromVersion} for asset class '{descriptor.AssetClass}' returned no payload.");
         }
 
-        using var document = JsonDocument.Parse(SecurityTermsEnvelope.StampFlat(node.ToJsonString(), current));
+        using var document = JsonDocument.Parse(SecurityTermsEnvelope.StampFlat(node.ToJsonString(), SecurityAssetClassCatalog.GetStampFloor(descriptor)));
         var result = document.RootElement;
         var hadSchemaVersion = payload.TryGetProperty(SecurityTermsEnvelope.SchemaVersionKey, out _);
         var hasSchemaVersion = result.TryGetProperty(SecurityTermsEnvelope.SchemaVersionKey, out _);

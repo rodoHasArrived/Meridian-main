@@ -69,3 +69,8 @@ Preserve accounting evidence and test direct-lending calculations with scenario 
 
 - `docs/source/generated/source-roadmap-traceability.md`
 - `docs/status/contract-compatibility-matrix.md`
+
+Contract activation and amendment preserve collateral, unamortized discount/premium and the PIK
+toggle. The SCH-DEF-008 characterization now asserts that preservation. No servicing formula or event
+shape changes; scheduled PIK/resets still require an explicit persisted schedule/fixing policy and
+versioned formula/residual state rather than assumptions based on payment frequency.

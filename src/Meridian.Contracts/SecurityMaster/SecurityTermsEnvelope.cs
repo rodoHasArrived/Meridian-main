@@ -138,24 +138,39 @@ public static class SecurityTermsEnvelope
 
     /// <summary>
     /// Stamps <see cref="FormatKey"/> = <see cref="SecurityTermsFormats.Flat"/> and the asset class's
-    /// current <see cref="AssetClassTermsVersionKey"/> onto a serialized flat terms document,
-    /// immediately after its <c>schemaVersion</c>. Keys the document already carries are replaced, so
+    /// S2 floor <see cref="AssetClassTermsVersionKey"/> onto a scalar-only flat terms document.
+    /// A writer holding versioned declarations supplies their actual version through the explicit overload.
+    /// The keys appear immediately after its <c>schemaVersion</c>. Keys the document already carries are replaced, so
     /// stamping is idempotent. Non-object JSON is returned unchanged.
     /// </summary>
     public static string StampFlat(string json, string assetClass)
-        => StampFlat(json, SecurityAssetClassCatalog.GetTermsVersion(assetClass));
+        => StampFlat(json, SecurityAssetClassCatalog.GetStampFloor(assetClass));
+
+    /// <summary>
+    /// The S2 stamp this node would write for the terms a retained document actually decodes.
+    /// Containers above its own stamp remain stray keys and never raise the result.
+    /// </summary>
+    public static int GetDocumentStampVersion(string assetClass, JsonElement payload)
+    {
+        var floor = SecurityAssetClassCatalog.GetStampFloor(assetClass);
+        var decoding = SecurityVersionedTerms.Decoding(assetClass, payload, writeMode: false);
+        return SecurityAssetTermsSchema.PopulatedTermsAbove(assetClass, payload, floor)
+            .Where(term => decoding.Decodes(term.Field))
+            .Select(term => term.Field.SinceTermsVersion)
+            .DefaultIfEmpty(floor).Max();
+    }
 
     /// <summary>
     /// <see cref="StampFlat(string, string)"/> at the version a writer's populated terms need: the
-    /// class's write version, or, when the record carries terms introduced above it, the highest
-    /// readable version among them (a row read from a node that writes the newer version). Throws
-    /// when the version is below the write version or above <see cref="SecurityAssetClassCatalog.GetReadsTermsThrough"/>.
+    /// document's highest held versioned-term version, floored at its S2 stamp floor. Throws
+    /// when the version is below the stamp floor or above <see cref="SecurityAssetClassCatalog.GetReadsTermsThrough"/>.
     /// </summary>
     public static string StampFlat(string json, string assetClass, int assetClassTermsVersion)
     {
         var writes = SecurityAssetClassCatalog.GetTermsVersion(assetClass);
+        var floor = SecurityAssetClassCatalog.GetStampFloor(assetClass);
         var reads = SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass);
-        if (assetClassTermsVersion < writes || assetClassTermsVersion > reads)
+        if (assetClassTermsVersion < floor || assetClassTermsVersion > reads)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(assetClassTermsVersion),

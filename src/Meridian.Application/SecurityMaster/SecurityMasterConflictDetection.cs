@@ -9,7 +9,7 @@ namespace Meridian.Application.SecurityMaster;
 /// the store layer decides how detected candidates are persisted and whether existing resolution state
 /// is preserved.
 /// </summary>
-internal static class SecurityMasterConflictDetection
+internal static partial class SecurityMasterConflictDetection
 {
     private const string IdentifierAmbiguityKind = SecurityMasterConflictKinds.IdentifierAmbiguity;
     private const string UnknownProvider = SecurityMasterProvenanceReader.UnknownSource;
@@ -295,6 +295,8 @@ internal static class SecurityMasterConflictDetection
         string fieldPath,
         Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null)
     {
+        if (IsVersionedContainerPath(fieldPath))
+            return ReadVersionedContainerValues(detail).GetValueOrDefault(fieldPath);
         var terms = StructuredCashFlowTermsResolver.Resolve(detail);
         return fieldPath switch
         {
@@ -386,6 +388,10 @@ internal static class SecurityMasterConflictDetection
                 && persisted.Length == 0
                 && candidate.Length == 0;
         }
+
+        if (IsVersionedContainerPath(fieldPath))
+            return string.Equals(NormalizeVersionedConflictText(fieldPath, persisted),
+                NormalizeVersionedConflictText(fieldPath, candidate), StringComparison.Ordinal);
 
         if (string.Equals(fieldPath, "EconomicTerms.dayCountConvention", StringComparison.Ordinal))
         {
@@ -610,6 +616,11 @@ internal static class SecurityMasterConflictDetection
             SecurityTermReader.ReadString(current.CommonTerms, "countryOfRisk"),
             SecurityTermReader.ReadString(incoming.CommonTerms, "countryOfRisk"));
         CompareProfileFields();
+        var containersA = ReadVersionedContainerValues(SecurityMasterMapping.ToDetail(current));
+        var containersB = ReadVersionedContainerValues(SecurityMasterMapping.ToDetail(incoming));
+        foreach (var path in containersA.Keys.Union(containersB.Keys).OrderBy(path => path, StringComparer.Ordinal))
+            CompareText(path, SecurityMasterConflictKinds.EconomicTermMismatch,
+                containersA.GetValueOrDefault(path), containersB.GetValueOrDefault(path), StringComparison.Ordinal);
 
         return conflicts;
 

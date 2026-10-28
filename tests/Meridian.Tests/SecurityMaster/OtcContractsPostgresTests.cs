@@ -14,7 +14,7 @@ namespace Meridian.Tests.SecurityMaster;
 /// closed contracts are history.
 /// </summary>
 [Trait("Category", "Integration")]
-public sealed class OtcContractsPostgresTests : IClassFixture<SecurityMasterDatabaseFixture>
+public sealed partial class OtcContractsPostgresTests : IClassFixture<SecurityMasterDatabaseFixture>
 {
     private static readonly DateOnly Trade = new(2026, 3, 2);
     private readonly SecurityMasterDatabaseFixture _fixture;

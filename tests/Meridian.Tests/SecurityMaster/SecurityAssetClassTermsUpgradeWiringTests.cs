@@ -281,7 +281,7 @@ public sealed class SecurityAssetClassTermsUpgradeWiringTests
 
         var flattened = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms;
         flattened.GetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey).GetInt32()
-            .Should().Be(SecurityAssetClassCatalog.GetTermsVersion("StructuredCredit"));
+            .Should().Be(SecurityAssetClassCatalog.GetStampFloor("StructuredCredit"));
     }
 
     [Fact]

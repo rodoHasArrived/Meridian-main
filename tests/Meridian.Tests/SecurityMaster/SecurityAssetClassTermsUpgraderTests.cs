@@ -136,19 +136,19 @@ public sealed class SecurityAssetClassTermsUpgraderTests
     public void TryGetPendingUpgrade_ReportsTheDeclaredAndCurrentVersions()
     {
         SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("StructuredCredit", Json(V1Text), out var declared, out var current).Should().BeTrue();
-        (declared, current).Should().Be((1, 2));
+        (declared, current).Should().Be((1, 4));
 
         SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("StructuredCredit", Json(UnstampedText), out declared, out current).Should().BeTrue();
-        (declared, current).Should().Be((1, 2));
+        (declared, current).Should().Be((1, 4));
 
         SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("MBS", Json(V1Text), out declared, out current).Should().BeTrue("an alias reads as its class");
-        (declared, current).Should().Be((1, 2));
+        (declared, current).Should().Be((1, 4));
 
-        SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("StructuredCredit", Json(V2Text), out declared, out current).Should().BeFalse();
-        (declared, current).Should().Be((2, 2));
+        SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("StructuredCredit", Json(V2Text), out declared, out current).Should().BeTrue();
+        (declared, current).Should().Be((2, 4));
 
-        SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("Bond", Json(V1Text), out _, out current).Should().BeFalse();
-        current.Should().Be(1);
+        SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("Bond", Json(V1Text), out _, out current).Should().BeTrue();
+        current.Should().Be(3);
     }
 
     // ── The missing test: version 1 reads exactly as version 2 ──────────────────────────────────
@@ -473,6 +473,8 @@ public sealed class SecurityAssetClassTermsUpgraderTests
     [Fact]
     public void PendingUpgrade_IsFalseForAPayloadStampedAboveTheWriteVersion()
     {
+        var oldBond = SecurityAssetClassCatalog.GetOrDefault("Bond") with { TermsVersion = 1, ReadableTermsVersion = 3 };
+        var oldStructuredCredit = StructuredCredit with { TermsVersion = 2, ReadableTermsVersion = 4 };
         var bond = JsonSerializer.SerializeToElement(new Dictionary<string, object?>
         {
             ["schemaVersion"] = 1,
@@ -499,24 +501,24 @@ public sealed class SecurityAssetClassTermsUpgraderTests
             [SecurityTermsEnvelope.AssetClassTermsVersionKey] = 4,
         });
 
-        SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("Bond", bond, out _, out _).Should().BeFalse();
-        SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("StructuredCredit", structuredCredit, out _, out _).Should().BeFalse();
-        SecurityAssetClassTermsUpgrader.UpgradeForRead("Bond", bond).Should().Be(bond, "a readable-ahead stamp passes through unchanged");
+        SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade(oldBond, bond, out _, out _).Should().BeFalse();
+        SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade(oldStructuredCredit, structuredCredit, out _, out _).Should().BeFalse();
+        SecurityAssetClassTermsUpgrader.UpgradeForRead(oldBond, bond).Should().Be(bond, "a readable-ahead stamp passes through unchanged");
 
         // Bond writes version 1, so this row leaves at the write-version-1 shortcut before the stamp is
         // read; the Bond-writes-2 rows below exercise the stamp comparison on the same payload.
-        SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("Bond", bondThree, out _, out _).Should().BeFalse();
-        SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("StructuredCredit", structuredCreditFour, out var declared, out var current).Should().BeFalse();
+        SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade(oldBond, bondThree, out _, out _).Should().BeFalse();
+        SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade(oldStructuredCredit, structuredCreditFour, out var declared, out var current).Should().BeFalse();
         (declared, current).Should().Be((4, 2), "a payload stamped 4 is ahead of the write version, not behind it");
-        SameInstance(SecurityAssetClassTermsUpgrader.UpgradeForRead("Bond", bondThree), bondThree).Should().BeTrue("a readable-ahead stamp passes through unchanged");
-        SameInstance(SecurityAssetClassTermsUpgrader.UpgradeForRead("StructuredCredit", structuredCreditFour), structuredCreditFour)
+        SameInstance(SecurityAssetClassTermsUpgrader.UpgradeForRead(oldBond, bondThree), bondThree).Should().BeTrue("a readable-ahead stamp passes through unchanged");
+        SameInstance(SecurityAssetClassTermsUpgrader.UpgradeForRead(oldStructuredCredit, structuredCreditFour), structuredCreditFour)
             .Should().BeTrue("a readable-ahead stamp passes through unchanged");
         SameInstance(bondThree, Copy(bondThree)).Should().BeFalse("the identity check must discriminate a copy from the stored element");
         SameInstance(structuredCreditFour, Copy(structuredCreditFour)).Should().BeFalse("the identity check must discriminate a copy from the stored element");
 
         // Once Bond writes 2, a payload stamped 3 is still ahead of the write version; the control
         // stamped 1 is pending on the same descriptor, so the stamp is what decides.
-        var bondWritesTwo = SecurityAssetClassCatalog.GetOrDefault("Bond") with { TermsVersion = 2 };
+        var bondWritesTwo = SecurityAssetClassCatalog.GetOrDefault("Bond") with { TermsVersion = 2, ReadableTermsVersion = 3 };
         var bondOne = JsonSerializer.SerializeToElement(new Dictionary<string, object?>
         {
             ["schemaVersion"] = 1,
@@ -536,6 +538,7 @@ public sealed class SecurityAssetClassTermsUpgraderTests
         var calls = 0;
         var descriptor = StructuredCredit with
         {
+            TermsVersion = 2,
             ReadableTermsVersion = 4,
             TermsUpgrades =
             [
@@ -585,8 +588,8 @@ public sealed class SecurityAssetClassTermsUpgraderTests
     public void ReadsTermsThrough_IsTheReadableVersionAboveTheWriteVersion_AndTheWriteVersionOtherwise()
     {
         StructuredCredit.ReadsTermsThrough.Should().Be(4);
-        (StructuredCredit with { ReadableTermsVersion = null }).ReadsTermsThrough.Should().Be(2);
-        (StructuredCredit with { ReadableTermsVersion = 1 }).ReadsTermsThrough.Should().Be(2, "a node always reads what it writes");
+        (StructuredCredit with { ReadableTermsVersion = null }).ReadsTermsThrough.Should().Be(4);
+        (StructuredCredit with { ReadableTermsVersion = 1 }).ReadsTermsThrough.Should().Be(4, "a node always reads what it writes");
         (StructuredCredit with { ReadableTermsVersion = 5 }).ReadsTermsThrough.Should().Be(5);
         (StructuredCredit with { TermsVersion = 4 }).ReadsTermsThrough
             .Should().Be(4, "the contract step raises the write version to meet the readable one");
@@ -595,8 +598,8 @@ public sealed class SecurityAssetClassTermsUpgraderTests
     [Fact]
     public void GetTermsVersion_ResolvesThroughTheCatalog()
     {
-        SecurityAssetClassCatalog.GetTermsVersion("StructuredCredit").Should().Be(2);
-        SecurityAssetClassCatalog.GetTermsVersion(" mbs ").Should().Be(2);
+        SecurityAssetClassCatalog.GetTermsVersion("StructuredCredit").Should().Be(4);
+        SecurityAssetClassCatalog.GetTermsVersion(" mbs ").Should().Be(4);
         SecurityAssetClassCatalog.GetTermsVersion(null).Should().Be(1);
         SecurityAssetClassCatalog.GetTermsVersion("Nope").Should().Be(1);
 

@@ -125,7 +125,7 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
            "cannot carry a patch, so repair it first.";
 
     [Fact]
-    public async Task Create_StampedAboveTheWriteVersion_Returns400WithTheWriteVersionReason()
+    public async Task Create_StampedAboveTheReadableVersion_Returns400WithTheUnsupportedVersionReason()
     {
         var securityId = Guid.NewGuid();
         using var harness = new CanonicalServiceHarness();
@@ -133,10 +133,11 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
 
         using var response = await app.GetTestClient().PostAsJsonAsync(
             "/api/security-master",
-            CreateRequest(securityId, "Bond", AheadOfWriteFixtures.BondTerms(stamp: 2, withBlock: false)),
+            CreateRequest(securityId, "Bond", AheadOfWriteFixtures.BondTerms(stamp: 4, withBlock: false)),
             WebJson);
 
-        await AssertRefusedAsync(response, AheadOfWriteFixtures.BondWriteVersionReason);
+        await AssertRefusedAsync(response,
+            "Unsupported assetClassTermsVersion '4' for asset class 'Bond'; this node reads versions 1 through 3.");
         await harness.AssertNothingWrittenAsync();
     }
 
@@ -255,17 +256,23 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
         // amendment carries over from the stored row. This answered 500 before.
         var securityId = Guid.NewGuid();
         var queryService = Substitute.For<ISecurityMasterQueryService>();
-        queryService.GetByIdAsync(securityId, Arg.Any<CancellationToken>()).Returns(BondDetail(securityId));
+        var terms = JsonNode.Parse(AheadOfWriteFixtures.SwapAtWriteVersion)!.AsObject();
+        terms[SecurityTermsEnvelope.AssetClassTermsVersionKey] = 2;
+        var swapTerms = JsonSerializer.SerializeToElement(terms);
+        queryService.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(Detail(securityId, "Swap", swapTerms, version: 2));
         using var harness = new CanonicalServiceHarness();
-        harness.Seed(securityId, "Bond", AheadOfWriteFixtures.BondTerms(stamp: 2, withBlock: false));
+        harness.Seed(securityId, "Swap", swapTerms);
         await using var app = await CreateAppAsync(queryService, harness.Service);
 
         using var response = await app.GetTestClient().PutAsJsonAsync(
-            $"/api/security-master/{securityId}/terms/principalSchedule",
-            TermBlockRequest(expectedVersion: 2, AheadOfWriteFixtures.Parse("""[{"paymentDate":"2029-01-01","amount":500}]""")),
+            $"/api/security-master/{securityId}/terms/legs",
+            TermBlockRequest(expectedVersion: 2, swapTerms.GetProperty("legs")),
             WebJson);
 
-        await AssertRefusedAsync(response, AheadOfWriteFixtures.BondWriteVersionReason);
+        await AssertRefusedAsync(response,
+            "assetClassTermsVersion '2' for asset class 'Swap' is readable but not writable on this node: it reads " +
+            "versions 1 through 2 and writes version 1. Submit the terms at version 1, or apply the change from a node that writes version 2.");
         await harness.AssertNothingWrittenAsync();
     }
 

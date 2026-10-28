@@ -1035,7 +1035,9 @@ public sealed record MultiAssetPackCoverageDto(
     IReadOnlyList<AssetPackRegistryValidationIssue>? RegistryValidationIssues = null,
     // Coverage the pack anticipates but the Security Master cannot represent yet. Reported apart
     // from AssetClasses so a readiness reader never mistakes planned coverage for present coverage.
-    IReadOnlyList<string>? PlannedAssetClasses = null)
+    IReadOnlyList<string>? PlannedAssetClasses = null,
+    string AdmissionEnforcement = "NotEnforced",
+    string AdmissionSchemaSource = "DescriptiveMetadata")
 {
     public IReadOnlyList<AssetPackRegistryValidationIssue> RegistryValidationIssues { get; init; } = RegistryValidationIssues ?? [];
 

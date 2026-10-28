@@ -26,8 +26,9 @@ and [ADR-025](../adr/025-contractual-schedule-kernel.md#applications).
 
 Out of scope: installing calendar data, which follows
 [Business-Day Calendar Files](business-day-calendar-files.md) and waits on a named operations
-owner; and the capability floor and the remediation of a 5b gate hit, which the 5b pull requests
-add to the placeholders below. This procedure follows the writer-inventory and drain precedent of
+owner; and the remediation of a 5b gate hit, which the 5b pull requests add below.
+The capability-floor foundation described here is reviewable code; it does not establish that any
+node has been deployed or that floor activation is authorized. This procedure follows the writer-inventory and drain precedent of
 the [governed edit rollout](security-master-governed-edit-rollout.md).
 
 ## Prerequisites
@@ -92,8 +93,17 @@ Security Master terms capability: declared mapping security-master-declared-sche
 
 - `declared mapping` names the frozen declared-schedule mapping; every node must name the same one.
 - `terms versions` lists each class whose read (`r`) and write (`w`) terms versions differ. The
-  list above is 5a's, and 5b-1's, which raises nothing. 5b-2 is expected to drop Bond,
-  CertificateOfDeposit and StructuredCredit from it; its pull request records its exact line here.
+  list above is 5a's, and 5b-1's, which raises nothing. The current 5b-2 source drops Bond,
+  CertificateOfDeposit and StructuredCredit from it because their read and write ceilings agree.
+  With no calendar files, its exact line after the capability floor is accepted is:
+
+  ```text
+  Security Master terms capability: declared mapping security-master-declared-schedule-v1, schedule kernel contractual-schedule-kernel-v1, terms versions Swap r2/w1, business-day calendars 0: none
+  ```
+
+  This expected output is a source contract, not a captured deployment receipt. Document stamp
+  floors remain Bond 1, CertificateOfDeposit 1 and StructuredCredit 2 under S2; the line reports
+  catalog ceilings, not the stamp of every stored record.
 - `business-day calendars` gives the count of loaded calendar files and lists each as
   `ID v{version} {hash}`, sorted by id. The built-in `WEEKENDS` is never listed.
 
@@ -319,8 +329,46 @@ run it before 5b-1 deploys as well.
 - **Owner confirmations and companion changes.** The change record cites the owner's confirmation
   of the declared semantics (2026-10-28) and the merge of the HTTP 400 refusal change that 5b-1 is
   built on.
-- **Capability floor.** *Placeholder: increment 5b-1 adds the floor table and its startup check,
-  and 5b-2 adds the step that writes the floor row as the deploy's first action.*
+- **Capability floor (5b-1 foundation; activation belongs to 5b-2).** Migration 057 creates the
+  empty `security_master_terms_capability_floor` singleton table. It does not insert a row, raise
+  write versions, or enable declarations. The same hosted service in the server/shared host and
+  WPF desktop checks it whenever that graph has configured `SecurityMasterOptions`.
+  Before a catalog write-version raise, a missing table or empty table logs a warning and permits
+  only the existing pre-contract writer. This preserves the 5a rolling-migration and rollback
+  window. Once any schedule-conventions/call/put container is writable, either state refuses
+  startup. An active floor is always checked, including by pre-contract writers: this release
+  accepts only its exact frozen declared-mapping/kernel tokens. Unknown/newer tokens, corrupt
+  rows, permission/connectivity failures and other database errors refuse configured-writer
+  startup. Null/unconfigured hosts perform no floor database read. The same verifier performs a
+  fresh read before canonical creates, amendments and deactivations (including the typed amendment
+  helpers that delegate to that path). A visible desktop shell cannot write while its hosted
+  startup check is pending, and a successful startup/earlier command is never cached as authority
+  for a later write. Configured direct/manual writers also verify if the DI argument was omitted.
+
+  **Do not activate from this code change alone.** After the fleet inventory, calendars and data
+  gates above are recorded and reviewed, 5b-2's first deployment action is the floor insertion.
+  The following statement is a review template, not evidence or permission to deploy. Replace
+  the schema identifier, change-record reference and actor with the reviewed environment facts;
+  run it only through that deployment's approved process. An unexpected existing row must be
+  inspected rather than overwritten or lowered.
+
+  ```sql
+  begin;
+  insert into <deployment_schema>.security_master_terms_capability_floor (
+      singleton, minimum_declared_mapping_version, minimum_kernel_version, change_record, updated_by)
+  values (
+      true, 'security-master-declared-schedule-v1', 'contractual-schedule-kernel-v1',
+      '<reviewed-deployment-change-record>', '<deployment-operator>');
+  select minimum_declared_mapping_version, minimum_kernel_version, change_record, updated_by, updated_at
+  from <deployment_schema>.security_master_terms_capability_floor;
+  commit;
+  ```
+
+  Record the returned row and each node's accepted-floor/capability lines in the change record.
+  Keep the row through rollback; after the first declaring write, no rollback below 5a is allowed.
+  This startup check does not inventory or evict already running nodes and cannot replace the
+  required all-node proof, desktops included. Future capability releases must explicitly declare
+  which older opaque floor tokens they satisfy; they must not order these strings lexically.
 
 ### 5. During the 5b-2 rollout: edit routing and drains
 
@@ -344,7 +392,9 @@ run it before 5b-1 deploys as well.
 | 5a (with 5a-0 beneath it) | Rolls forward and back freely until 5b-2's first declaring write; from then on no node, desktops included, may run below 5a | A 4b node would ignore the block in projections, let them post and amortize a block-only declaring Bond on the bullet grid; a 5a-0 node would refuse the amortization but project and post the legacy dates |
 | 5b-2 | May roll back to 5b-1 or 5a, never lower; drain staged container edits first | Declaring rows stay readable on 5a, which reads through 3 (4 for StructuredCredit), and are followed or blocked identically |
 
-Each floor is observable from the capability line; 5b-1's capability floor is to enforce it.
+The capability line and retained deployment record identify the build floor; the persisted
+capability verifier enforces its supported mapping/kernel tokens for configured writers. It cannot
+prove that an older already-running process has been drained.
 
 ## Expected Results
 

@@ -2,9 +2,9 @@
 
 # `security_master` schema
 
-- Relations: 125
-- Functions/procedures: 9
-- Triggers: 20
+- Relations: 127
+- Functions/procedures: 11
+- Triggers: 23
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -869,6 +869,17 @@ erDiagram
         text updated_by
         timestamp_with_time_zone updated_at
     }
+    security_master_otc_contract_lifecycle_events {
+        uuid event_id PK
+        uuid contract_id FK
+        bigint contract_version
+        text event_type
+        date effective_date
+        text actor
+        timestamp_with_time_zone recorded_at
+        integer payload_version
+        jsonb payload
+    }
     security_master_otc_contracts {
         uuid contract_id PK
         uuid security_id FK
@@ -1340,6 +1351,14 @@ erDiagram
         text field_value
         boolean field_value_recorded
     }
+    security_master_security_master_terms_capability_floor {
+        boolean singleton PK
+        text minimum_declared_mapping_version
+        text minimum_kernel_version
+        text change_record
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
     security_master_security_operator_overrides {
         uuid security_id PK,FK
         jsonb values
@@ -1714,6 +1733,7 @@ erDiagram
     security_master_otc_collateral_agreements ||--o{ security_master_otc_exposure_snapshots : "otc_exposure_snapshots_collateral_agreement_id_fkey"
     security_master_otc_collateral_agreements ||--o{ security_master_otc_margin_calls : "otc_margin_calls_collateral_agreement_id_fkey"
     security_master_otc_collateral_agreements ||--o{ security_master_otc_netting_sets : "otc_netting_sets_collateral_agreement_id_fkey"
+    security_master_otc_contracts ||--o{ security_master_otc_contract_lifecycle_events : "otc_contract_lifecycle_events_contract_id_fkey"
     security_master_otc_exposure_snapshots ||--o{ security_master_otc_margin_calls : "otc_margin_calls_snapshot_id_fkey"
     security_master_otc_master_agreements ||--o{ security_master_otc_collateral_agreements : "otc_collateral_agreements_master_agreement_id_fkey"
     security_master_otc_master_agreements ||--o{ security_master_otc_netting_sets : "otc_netting_sets_master_agreement_id_fkey"
@@ -1827,6 +1847,7 @@ erDiagram
 | `option_series_projection` | table | 6 | `option_chain_id`, `contract_symbol` | 1 | 1 | - |
 | `otc_collateral_agreements` | table | 16 | `collateral_agreement_id` | 1 | 2 | Credit support annexes under a master agreement: thresholds, minimum transfer amount, independent amount, rounding, valuation cadence and eligible collateral with haircuts. |
 | `otc_collateral_balances` | table | 17 | `balance_id` | 2 | 2 | Collateral posted by the fund or received from the counterparty under a collateral agreement: eligible-collateral line, quantity, unit value, valued amount, the haircut copied from the agreement and the valuation date. A zero quantity is a fully returned line. |
+| `otc_contract_lifecycle_events` | table | 9 | `event_id` | 1 | 3 | Immutable versioned contract servicing facts, with explicit event identity, source and actor, and exact predecessor/successor snapshots. Written atomically with the contract version; no ledger posting or cash movement is implied. |
 | `otc_contracts` | table | 16 | `contract_id` | 2 | 4 | Bilateral contracts: one trade against a counterparty on a Security Master instrument, in a netting set, with its notional, direction, dates and lifecycle status. Many contracts share one instrument. |
 | `otc_exposure_snapshots` | table | 18 | `snapshot_id` | 2 | 3 | Append-only exposure and credit support snapshots of one netting set on one date: valued contracts, netting basis, gross and net exposure, collateral held and the movement each side implies. Recomputing a date appends the next version. |
 | `otc_margin_calls` | table | 19 | `call_id` | 3 | 4 | Margin calls issued from an exposure snapshot: one movement (delivery or return, by the fund or the counterparty) with its called, agreed and settled amounts and its lifecycle status. At most one call per netting set, mover and movement kind is open at a time. |
@@ -1865,6 +1886,7 @@ erDiagram
 | `security_master_quality_reports` | table | 3 | `id` | 0 | 2 | - |
 | `security_master_quality_reports_id_seq` | sequence | 0 | - | 0 | 0 | - |
 | `security_master_revisions` | table | 13 | `revision_id` | 0 | 2 | - |
+| `security_master_terms_capability_floor` | table | 6 | `singleton` | 0 | 1 | One reviewed minimum declared-mapping/kernel capability floor for configured Security Master writers. Empty during 5b-1; activated only after the fleet inventory and data gates, before 5b-2. Server and WPF writer startup refuse unknown/newer active floors. Does not enable declared terms or authorize deployment. |
 | `security_operator_overrides` | table | 9 | `security_id` | 1 | 1 | - |
 | `security_price_selection_receipts` | table | 6 | `receipt_id` | 1 | 2 | Immutable golden-copy evaluation result, exact hierarchy snapshot, and quote comparisons; scoped receipt replay is the reproducibility authority. |
 | `security_pricing_hierarchy` | table | 6 | `security_id`, `account_id` | 1 | 2 | - |

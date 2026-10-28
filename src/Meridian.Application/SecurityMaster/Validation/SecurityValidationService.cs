@@ -291,12 +291,9 @@ public sealed class SecurityValidationService : ISecurityValidationService
 
     /// <summary>
     /// An informational notice for a flat payload stamped (or, unstamped, read as) below its class's
-    /// current terms version: exactly the payloads <see cref="SecurityAssetClassTermsUpgrader"/> reads
-    /// through the class's upgrade steps, among those whose <c>schemaVersion</c> is an integer. It
-    /// measures the backlog of older per-class versions (ADR-024) and never blocks: the record reads
-    /// correctly, and workflow gates drop informational issues. "Current" is the version this node
-    /// writes; a payload stamped above it and within what the node reads is neither behind nor
-    /// reported.
+    /// S2 document stamp: the decoded held terms floored at the descriptor's stamp floor. The
+    /// upgrader still owns the valid flat-codec domain and transform execution; a raised write
+    /// ceiling alone does not make an undeclared document behind. This notice never blocks.
     /// </summary>
     private static IReadOnlyList<SecurityValidationIssueDto> ValidateAssetClassTermsVersion(SecurityProjectionRecord record)
     {
@@ -304,10 +301,13 @@ public sealed class SecurityValidationService : ISecurityValidationService
                 record.AssetClass,
                 record.AssetSpecificTerms,
                 out var declared,
-                out var current))
+                out _))
         {
             return [];
         }
+        var current = SecurityTermsEnvelope.GetDocumentStampVersion(record.AssetClass, record.AssetSpecificTerms);
+        if (declared >= current)
+            return [];
 
         var key = SecurityTermsEnvelope.AssetClassTermsVersionKey;
         var stamped = record.AssetSpecificTerms.TryGetProperty(key, out var stamp)

@@ -37,7 +37,7 @@ public sealed class SecurityTermsVersioningTests
             SecurityTermsEnvelope.AssetClassTermsVersionKey,
             "maturity");
         Json(once).GetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey).GetInt32()
-            .Should().Be(SecurityAssetClassCatalog.GetOrDefault("Bond").TermsVersion);
+            .Should().Be(SecurityAssetClassCatalog.GetStampFloor("Bond"));
     }
 
     [Theory]
@@ -193,10 +193,10 @@ public sealed class SecurityTermsVersioningTests
     }
 
     [Theory]
-    [InlineData("Bond", 1, 3)]
-    [InlineData("CertificateOfDeposit", 1, 3)]
+    [InlineData("Bond", 3, 3)]
+    [InlineData("CertificateOfDeposit", 3, 3)]
     [InlineData("Swap", 1, 2)]
-    [InlineData("StructuredCredit", 2, 4)]
+    [InlineData("StructuredCredit", 4, 4)]
     [InlineData("Equity", 1, 1)]
     [InlineData("Option", 1, 1)]
     public void EnsureReadable_AcceptsEveryStampThroughWhatTheClassReads_AndRefusesTheNext(string assetClass, int writes, int reads)
@@ -229,7 +229,7 @@ public sealed class SecurityTermsVersioningTests
     [InlineData("StructuredCredit", 3)]
     [InlineData("StructuredCredit", 4)]
     [InlineData("Equity", 1)]
-    public void StampFlat_AtAVersionBetweenTheWriteAndReadVersions_IsTheExplicitVersionOverload_ByteForByte(string assetClass, int version)
+    public void StampFlat_AtAVersionBetweenTheStampFloorAndReadVersions_IsTheExplicitVersionOverload_ByteForByte(string assetClass, int version)
     {
         foreach (var json in new[]
                  {
@@ -244,11 +244,11 @@ public sealed class SecurityTermsVersioningTests
     }
 
     [Theory]
-    [InlineData("Bond", 4, 1, 3)]
-    [InlineData("StructuredCredit", 1, 2, 4)]
-    [InlineData("StructuredCredit", 5, 2, 4)]
+    [InlineData("Bond", 4, 3, 3)]
+    [InlineData("StructuredCredit", 1, 4, 4)]
+    [InlineData("StructuredCredit", 5, 4, 4)]
     [InlineData("Equity", 2, 1, 1)]
-    public void StampFlat_OutsideTheWriteToReadRange_IsRefused(string assetClass, int version, int writes, int reads)
+    public void StampFlat_OutsideTheStampFloorToReadRange_IsRefused(string assetClass, int version, int writes, int reads)
     {
         var stamp = () => SecurityTermsEnvelope.StampFlat("""{"schemaVersion":1}""", assetClass, version);
 
@@ -260,22 +260,18 @@ public sealed class SecurityTermsVersioningTests
     }
 
     [Fact]
-    public void DescribeNotYetWritable_NamesThePathTheVersionsAndTheWayOut()
+    public void RepairTextFormatter_NamesCurrentWriteCeilings_WithoutGrantingOrRefusingAuthority()
     {
-        SecurityTermsEnvelope.DescribeNotYetWritable("Bond", "scheduleConventions", 2).Should().Be(
-            "'scheduleConventions' is an asset-class terms version 2 term of 'Bond'. This node reads it but writes " +
-            "assetClassTermsVersion 1, so a create, amend, import or field edit cannot set it yet. Leave it absent, null or empty (ADR-024).");
-        SecurityTermsEnvelope.DescribeNotYetWritable("Swap", "legs[1].scheduleConventions", 2)
-            .Should().Be(NotYetWritable("Swap", "legs[1].scheduleConventions", 2, 1));
-        SecurityTermsEnvelope.DescribeNotYetWritable("StructuredCredit", "scheduleConventions", 3)
-            .Should().Be(NotYetWritable("StructuredCredit", "scheduleConventions", 3, 2));
-        SecurityTermsEnvelope.DescribeNotYetWritable("Bond", "callSchedule", 3).Should().Be(
-            "'callSchedule' is an asset-class terms version 3 term of 'Bond'. This node reads it but writes " +
-            "assetClassTermsVersion 1, so a create, amend, import or field edit cannot set it yet. Leave it absent, null or empty (ADR-024).");
-        SecurityTermsEnvelope.DescribeNotYetWritable("CertificateOfDeposit", "putSchedule", 3)
-            .Should().Be(NotYetWritable("CertificateOfDeposit", "putSchedule", 3, 1));
-        SecurityTermsEnvelope.DescribeNotYetWritable("StructuredCredit", "callSchedule", 4)
-            .Should().Be(NotYetWritable("StructuredCredit", "callSchedule", 4, 2));
+        foreach (var (assetClass, path, since) in new[]
+        {
+            ("Bond", "scheduleConventions", 2), ("Swap", "legs[1].scheduleConventions", 2),
+            ("StructuredCredit", "scheduleConventions", 3), ("Bond", "callSchedule", 3),
+            ("CertificateOfDeposit", "putSchedule", 3), ("StructuredCredit", "callSchedule", 4)
+        })
+        {
+            SecurityTermsEnvelope.DescribeNotYetWritable(assetClass, path, since)
+                .Should().Be(NotYetWritable(assetClass, path, since, SecurityAssetClassCatalog.GetTermsVersion(assetClass)));
+        }
     }
 
     private const string SwapDates = "\"effectiveDate\":\"2026-01-15\",\"maturityDate\":\"2031-01-15\"";
@@ -487,17 +483,25 @@ public sealed class SecurityTermsVersioningTests
 
     [Theory]
     [MemberData(nameof(RefusedWrites))]
-    public void TryGetWriteRefusal_RefusesWhatThisNodeReadsButCannotWrite_WithAPreciseReason(string assetClass, string payloadText, string expected)
+    public void WriteVersionGate_TracksReadableOnlyVersusContractStepAuthority(string assetClass, string payloadText, string expected)
     {
         var payload = Json(payloadText);
 
-        SecurityTermsEnvelope.TryGetWriteRefusal(assetClass, payload, out var reason).Should().BeTrue();
-        reason.Should().Be(expected);
-
+        var stillReadOnly = SecurityAssetClassCatalog.GetTermsVersion(assetClass) < SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass);
+        SecurityTermsEnvelope.TryGetWriteRefusal(assetClass, payload, out var reason).Should().Be(stillReadOnly);
         var read = () => SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms(assetClass, payload);
-        read.Should().NotThrow("a payload refused on write is still readable");
+        read.Should().NotThrow();
         var write = () => SecurityTermsEnvelope.EnsureWritableAsAssetSpecificTerms(assetClass, payload);
-        write.Should().Throw<InvalidOperationException>().Which.Message.Should().Be(expected);
+        if (stillReadOnly)
+        {
+            reason.Should().Be(expected);
+            write.Should().Throw<InvalidOperationException>().Which.Message.Should().Be(expected);
+        }
+        else
+        {
+            reason.Should().BeNull();
+            write.Should().NotThrow("the contract step raised the version gate; schema and semantic write rules validate the contents separately");
+        }
     }
 
     public static TheoryData<string, string> AcceptedWrites() => new()
@@ -680,7 +684,26 @@ public sealed class SecurityTermsVersioningTests
     private static JsonElement WithSchedule(string assetClass, string key, string schedule)
     {
         var terms = JsonSerializer.SerializeToNode(SecurityAssetTermsSchemaRoundTripTests.FullPayloads[assetClass])!.AsObject();
-        terms[key] = JsonNode.Parse(schedule);
+        terms.Remove("scheduleConventions");
+        terms.Remove("callSchedule");
+        terms.Remove("putSchedule");
+        var entries = JsonNode.Parse(schedule)!.AsArray();
+        foreach (var entry in entries.OfType<JsonObject>())
+            entry["exerciseStyle"] = "Bermudan";
+        terms[key] = entries;
+        terms["maturity"] = "2031-12-31";
+        if (SecurityAssetTermsSchema.Field(assetClass, "paymentFrequency") is not null)
+            terms["paymentFrequency"] = "SemiAnnual";
+        if (key == "callSchedule")
+        {
+            var first = entries[0]!["callDate"]!.GetValue<string>();
+            if (SecurityAssetTermsSchema.Field(assetClass, "isCallable") is not null)
+                terms["isCallable"] = true;
+            if (SecurityAssetTermsSchema.Field(assetClass, "callDate") is not null)
+                terms["callDate"] = first;
+            if (SecurityAssetTermsSchema.Field(assetClass, "callableDate") is not null)
+                terms["callableDate"] = first;
+        }
         return Json(terms.ToJsonString());
     }
 
@@ -710,7 +733,7 @@ public sealed class SecurityTermsVersioningTests
 
     [Theory]
     [MemberData(nameof(FlatSchedulesWithAnUnschedulableExerciseCadence))]
-    public void ToCreateCommand_RefusesAReadableOnlySchedule_BeforeAnyEntryConventionIsChecked(
+    public void ToCreateCommand_RejectsAnUnschedulableExerciseCadenceThroughCurrentWriteRules(
         string assetClass, string key, string schedule, string expected)
     {
         // The entry's exerciseFrequency carries the coupon-frequency convention, which refuses a
@@ -718,7 +741,9 @@ public sealed class SecurityTermsVersioningTests
         // refuses it first with the not-yet-writable reason, never the convention's.
         var create = () => SecurityMasterMapping.ToCreateCommand(CreateRequest(assetClass, WithSchedule(assetClass, key, schedule)));
 
-        create.Should().Throw<InvalidOperationException>().Which.Message.Should().Be(expected);
+        var message = create.Should().Throw<InvalidOperationException>().Which.Message;
+        message.Should().NotContain("readable but not writable").And.NotContain("reads it but writes");
+        message.Should().ContainAny("Invalid declared schedule terms", "SM_TERM_TYPE_INVALID", "recognized coupon frequency");
     }
 
     // A decodable StructuredCredit profile envelope: its profileFields carry the class's required terms,
@@ -756,13 +781,12 @@ public sealed class SecurityTermsVersioningTests
     [Theory]
     [InlineData(3, "\"Fortnightly\"")]
     [InlineData(4, "3")]
-    public void ToCreateCommand_RefusesTheSameProfileEnvelopeStampedAboveTheWriteVersion_ByItsStamp(int stamp, string exerciseFrequency)
+    public void ToCreateCommand_AcceptsTheSameProfileEnvelopeAtTheContractStepWriteVersion(int stamp, string exerciseFrequency)
     {
         var create = () => SecurityMasterMapping.ToCreateCommand(
             CreateRequest("StructuredCredit", ProfileEnvelopeWithSchedules(stamp, exerciseFrequency)));
 
-        create.Should().Throw<InvalidOperationException>().Which.Message
-            .Should().Be(ReadableButNotWritable("StructuredCredit", stamp, 4, 2));
+        create.Should().NotThrow("the class now writes through version 4 and profiles keep their own field rules");
     }
 
     [Theory]
@@ -837,7 +861,21 @@ public sealed class SecurityTermsVersioningTests
             LegacyAssetSpecificTerms = null
         };
 
-        var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(olderEvent);
+        terms["call"]!["callSchedule"]!.AsArray().Should().ContainSingle();
+        FluentActions.Invoking(() => SecurityEconomicDefinitionAdapter.ToProjection(olderEvent))
+            .Should().Throw<InvalidOperationException>().WithMessage("*Declared schedule economic replay requires retained legacy asset-specific terms*");
+        // Ordinary scalar economics remain recoverable and retain unexpressible scalar/redemption
+        // fields. Exercise-window information above requires the authoritative retained flat terms.
+        terms["call"]!["callSchedule"] = new JsonArray();
+        terms["call"]!["putSchedule"] = new JsonArray();
+        terms["call"]!["callPrice"] = 102m;
+        if (terms["accrual"] is JsonObject accrual)
+        {
+            accrual["businessDayConvention"] = null;
+            accrual["holidayCalendarId"] = null;
+        }
+        var ordinaryEvent = olderEvent with { EconomicTerms = Json(terms.ToJsonString()) };
+        var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(ordinaryEvent);
         SecurityTermsEnvelope.TryGetRetainedEconomicTerms(rebuilt.AssetSpecificTerms, out _).Should().BeTrue();
 
         // The amend path re-serializes through the domain codec, which knows only flat keys.
@@ -847,8 +885,8 @@ public sealed class SecurityTermsVersioningTests
 
         var nextEvent = SecurityEconomicDefinitionAdapter.ToEconomicRecord(carried).EconomicTerms;
 
-        nextEvent.GetProperty("call").GetProperty("callSchedule").GetArrayLength().Should().Be(1);
-        nextEvent.GetProperty("call").GetProperty("callSchedule")[0].GetProperty("callPx").GetDecimal().Should().Be(102.0m);
+        nextEvent.GetProperty("call").GetProperty("callSchedule").GetArrayLength().Should().Be(0);
+        nextEvent.GetProperty("call").GetProperty("callPrice").GetDecimal().Should().Be(102m);
         nextEvent.GetProperty("redemption").GetProperty("isAmortizing").GetBoolean().Should().BeTrue();
         nextEvent.GetProperty(SecurityTermsEnvelope.FormatKey).GetString().Should().Be(SecurityTermsFormats.Economic);
     }

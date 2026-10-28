@@ -29,16 +29,19 @@ public sealed class SecurityMasterTermBlockEndpointsTests
     private const string SignedInOperator = "casey.doyle";
 
     [Theory]
-    [InlineData("Bond", 2, 1)]
-    [InlineData("CertificateOfDeposit", 2, 1)]
-    [InlineData("StructuredCredit", 3, 2)]
-    public async Task PutScheduleConventions_OnAClassThatOnlyReadsIt_Returns400WithTheNotYetWritableReason(
-        string assetClass, int since, int writes)
+    [InlineData("Bond", 3)]
+    [InlineData("CertificateOfDeposit", 3)]
+    [InlineData("StructuredCredit", 4)]
+    public async Task PutScheduleConventions_OnAWritableClass_DelegatesValidationWithTheSessionActor(
+        string assetClass, int writes)
     {
         var securityId = Guid.NewGuid();
         var queryService = Substitute.For<ISecurityMasterQueryService>();
         var service = Substitute.For<ISecurityMasterService>();
         queryService.GetByIdAsync(securityId, Arg.Any<CancellationToken>()).Returns(CreateDetail(securityId, assetClass));
+        service.AmendTermBlockAsync(securityId, "scheduleConventions", Arg.Any<AmendSecurityTermBlockRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateDetail(securityId, assetClass));
+        SecurityAssetClassCatalog.GetTermsVersion(assetClass).Should().Be(writes);
 
         await using var app = await CreateAppAsync(queryService, service);
 
@@ -47,32 +50,35 @@ public sealed class SecurityMasterTermBlockEndpointsTests
             BuildRequest(JsonSerializer.SerializeToElement(new { stubPolicy = "Short", paymentCalendars = new[] { "USNY" } })),
             WebJson);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        problem.RootElement.GetProperty("detail").GetString().Should().Be(
-            $"'scheduleConventions' is an asset-class terms version {since} term of '{assetClass}'. This node reads it but writes " +
-            $"assetClassTermsVersion {writes}, so a create, amend, import or field edit cannot set it yet. " +
-            "Leave it absent, null or empty (ADR-024).");
-        await service.DidNotReceiveWithAnyArgs().AmendTermBlockAsync(default, default!, default!, default);
+        // The route now offers this block; the canonical service remains the authority for anchor
+        // availability and full schedule semantics, including class-specific refusals.
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        await service.Received(1).AmendTermBlockAsync(securityId, "scheduleConventions",
+            Arg.Is<AmendSecurityTermBlockRequest>(candidate => candidate.ExpectedVersion == 7
+                && candidate.UpdatedBy == SignedInOperator
+                && candidate.Block.GetProperty("stubPolicy").GetString() == "Short"
+                && candidate.Block.GetProperty("paymentCalendars")[0].GetString() == "USNY"),
+            Arg.Any<CancellationToken>());
     }
 
     [Theory]
-    [InlineData("Bond", "callSchedule", 3, 1, """[{"callDate":"2030-06-15","callPrice":101}]""")]
-    [InlineData("Bond", "callSchedule", 3, 1, "[]")]
-    [InlineData("Bond", "putSchedule", 3, 1, """[{"putDate":"2029-06-15"}]""")]
-    [InlineData("CertificateOfDeposit", "callSchedule", 3, 1, """[{"callDate":"2026-09-30"}]""")]
-    [InlineData("CertificateOfDeposit", "putSchedule", 3, 1, """[{"putDate":"2026-09-30"}]""")]
-    [InlineData("StructuredCredit", "callSchedule", 4, 2, """[{"callDate":"2030-06-15","callPrice":101}]""")]
-    [InlineData("StructuredCredit", "putSchedule", 4, 2, "[]")]
-    public async Task PutCallOrPutSchedule_OnAClassThatOnlyReadsIt_Returns400WithTheNotYetWritableReason(
-        string assetClass, string blockKey, int since, int writes, string block)
+    [InlineData("Bond", "callSchedule", 3, """[{"callDate":"2030-06-15","callPrice":101,"exerciseStyle":"European"}]""")]
+    [InlineData("Bond", "callSchedule", 3, "[]")]
+    [InlineData("Bond", "putSchedule", 3, """[{"putDate":"2029-06-15","exerciseStyle":"European"}]""")]
+    [InlineData("CertificateOfDeposit", "callSchedule", 3, """[{"callDate":"2026-09-30","exerciseStyle":"European"}]""")]
+    [InlineData("CertificateOfDeposit", "putSchedule", 3, """[{"putDate":"2026-09-30","exerciseStyle":"European"}]""")]
+    [InlineData("StructuredCredit", "callSchedule", 4, """[{"callDate":"2030-06-15","callPrice":101,"exerciseStyle":"European"}]""")]
+    [InlineData("StructuredCredit", "putSchedule", 4, "[]")]
+    public async Task PutCallOrPutSchedule_OnAWritableClass_DelegatesTheUnchangedArrayWithTheSessionActor(
+        string assetClass, string blockKey, int writes, string block)
     {
-        // The arrays are declared one version above scheduleConventions and, like it, are refused
-        // before the service is reached, whether the array carries entries or is empty.
         var securityId = Guid.NewGuid();
         var queryService = Substitute.For<ISecurityMasterQueryService>();
         var service = Substitute.For<ISecurityMasterService>();
         queryService.GetByIdAsync(securityId, Arg.Any<CancellationToken>()).Returns(CreateDetail(securityId, assetClass));
+        service.AmendTermBlockAsync(securityId, blockKey, Arg.Any<AmendSecurityTermBlockRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateDetail(securityId, assetClass));
+        SecurityAssetClassCatalog.GetTermsVersion(assetClass).Should().Be(writes);
 
         await using var app = await CreateAppAsync(queryService, service);
 
@@ -81,13 +87,40 @@ public sealed class SecurityMasterTermBlockEndpointsTests
             BuildRequest(JsonDocument.Parse(block).RootElement.Clone()),
             WebJson);
 
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        await service.Received(1).AmendTermBlockAsync(securityId, blockKey,
+            Arg.Is<AmendSecurityTermBlockRequest>(candidate => candidate.ExpectedVersion == 7
+                && candidate.UpdatedBy == SignedInOperator && candidate.Block.GetRawText() == block),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData("Bond", "scheduleConventions", "12", JsonValueKind.Number)]
+    [InlineData("Bond", "callSchedule", "false", JsonValueKind.False)]
+    [InlineData("Swap", "legs", "{\"legType\":\"Fixed\"}", JsonValueKind.Object)]
+    public async Task PutMalformedBlock_PreservesTheCallerShapeAndReturnsTheCanonicalRefusal(
+        string assetClass, string blockKey, string block, JsonValueKind suppliedKind)
+    {
+        var securityId = Guid.NewGuid();
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        var service = Substitute.For<ISecurityMasterService>();
+        queryService.GetByIdAsync(securityId, Arg.Any<CancellationToken>()).Returns(CreateDetail(securityId, assetClass));
+        const string reason = "The supplied block has the wrong declared JSON type.";
+        service.AmendTermBlockAsync(securityId, blockKey, Arg.Any<AmendSecurityTermBlockRequest>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<SecurityDetailDto>(new ArgumentException(reason)));
+        await using var app = await CreateAppAsync(queryService, service);
+
+        using var response = await app.GetTestClient().PutAsJsonAsync(
+            $"/api/security-master/{securityId}/terms/{blockKey}",
+            BuildRequest(JsonSerializer.Deserialize<JsonElement>(block)), WebJson);
+
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        problem.RootElement.GetProperty("detail").GetString().Should().Be(
-            $"'{blockKey}' is an asset-class terms version {since} term of '{assetClass}'. This node reads it but writes " +
-            $"assetClassTermsVersion {writes}, so a create, amend, import or field edit cannot set it yet. " +
-            "Leave it absent, null or empty (ADR-024).");
-        await service.DidNotReceiveWithAnyArgs().AmendTermBlockAsync(default, default!, default!, default);
+        problem.RootElement.GetProperty("detail").GetString().Should().Be(reason);
+        await service.Received(1).AmendTermBlockAsync(securityId, blockKey,
+            Arg.Is<AmendSecurityTermBlockRequest>(candidate => candidate.Block.ValueKind == suppliedKind
+                && candidate.Block.GetRawText() == block && candidate.UpdatedBy == SignedInOperator),
+            Arg.Any<CancellationToken>());
     }
 
     [Theory]

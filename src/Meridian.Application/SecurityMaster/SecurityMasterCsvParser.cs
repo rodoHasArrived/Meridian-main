@@ -224,7 +224,7 @@ public sealed class SecurityMasterCsvParser
         {
             ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
             [SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.Flat,
-            [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetTermsVersion(assetClass)
+            [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetStampFloor(assetClass)
         });
 
     /// <summary>

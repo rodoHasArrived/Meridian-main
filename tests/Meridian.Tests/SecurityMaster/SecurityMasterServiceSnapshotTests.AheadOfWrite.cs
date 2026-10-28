@@ -207,16 +207,28 @@ public sealed partial class SecurityMasterServiceSnapshotTests
 
     [Theory]
     [MemberData(nameof(CanonicalRowsAndOperations))]
-    public async Task RowStampedAboveTheWriteVersion_WithADecodableBlock_PersistsTheBlockAndStampByteForByte(
+    public async Task RetainedDeclaredBlock_IsPreservedByDeactivation_AndRevalidatedByAmendment(
         string assetClass,
         string operation)
     {
         // The node read the block (decoding is gated on the stamp) and the writer stamps the version
         // the record's populated terms need, so re-serializing the row reproduces it exactly.
         var (terms, accrualConvention) = CanonicalAheadOfWriteRows[assetClass];
+        if (operation == AmendWithoutTermsPatch && assetClass == "Bond")
+            terms = ValidDeclaredBondTerms(terms);
         var securityId = Guid.NewGuid();
         var harness = new ServiceHarness();
         harness.Seed(securityId, assetClass, terms);
+
+        if (operation == AmendWithoutTermsPatch && assetClass is "CertificateOfDeposit" or "StructuredCredit")
+        {
+            await FluentActions.Invoking(() => RunAsync(harness, securityId, operation))
+                .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
+                .WithMessage("*terms declare no issueDate*");
+            harness.Appended.Should().BeEmpty();
+            harness.Upserted.Should().BeEmpty();
+            return;
+        }
 
         await RunAsync(harness, securityId, operation);
 
@@ -259,7 +271,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
 
     [Theory]
     [MemberData(nameof(UnreproducibleRowsAndOperations))]
-    public async Task RowStampedAboveTheWriteVersion_WhoseBlockCannotBeReproduced_RefusesTheWrite(
+    public async Task RowStampedAboveTheDocumentFloor_WhoseBlockCannotBeReproduced_RefusesTheWrite(
         string shape,
         string operation)
     {
@@ -274,17 +286,18 @@ public sealed partial class SecurityMasterServiceSnapshotTests
 
         await FluentActions.Invoking(() => RunAsync(harness, securityId, operation))
             .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
-            .WithMessage(
-                $"Security '{securityId:D}' is stamped assetClassTermsVersion {stamp}, which this node reads but does not write, " +
-                $"and re-serializing it here would change '{changedPath}'. Apply the change from a node that writes that " +
-                $"version, or amend it with terms at version {WriteVersionTerms[assetClass].Version} that settle its versioned terms.");
+            .WithMessage(stamp <= SecurityAssetClassCatalog.GetTermsVersion(assetClass)
+                ? $"Security '{securityId:D}' is stamped assetClassTermsVersion {stamp}, but re-serializing it here would change '{changedPath}'. Amend it with explicit complete terms that settle its versioned terms."
+                : $"Security '{securityId:D}' is stamped assetClassTermsVersion {stamp}, which this node reads but does not write, " +
+                  $"and re-serializing it here would change '{changedPath}'. Apply the change from a node that writes that " +
+                  $"version, or amend it with terms at version {WriteVersionTerms[assetClass].Version} that settle its versioned terms.");
 
         harness.Appended.Should().BeEmpty();
         harness.Upserted.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task AmendTermsAsync_TermsPatchReSubmittingStampTwo_IsRefusedWithTheWriteVersionReason()
+    public async Task AmendTermsAsync_TermsPatchReSubmittingAnInvalidDeclaredBlock_IsRefusedByCurrentSemanticRules()
     {
         // A terms patch replaces the kind wholesale and maps in Write mode: the round-trip guard
         // stands aside, and the write guard refuses a stamp this node reads but does not write.
@@ -294,14 +307,14 @@ public sealed partial class SecurityMasterServiceSnapshotTests
 
         await harness.Service.Invoking(service => service.AmendTermsAsync(AmendRequest(securityId, Parse(BondAtVersion2))))
             .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
-            .WithMessage(BondWriteVersionRefusal(2));
+            .WithMessage("Invalid declared schedule terms:*");
 
         harness.Appended.Should().BeEmpty();
         harness.Upserted.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task AmendTermBlockAsync_OnABondStampedTwo_IsRefusedWithTheWriteVersionReason()
+    public async Task AmendTermBlockAsync_WithAnInvalidStoredDeclaredBlock_IsRefusedByCurrentSemanticRules()
     {
         // The block amendment carries every other stored term, the stamp included, into its patch.
         var securityId = Guid.NewGuid();
@@ -320,7 +333,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
                     SourceRecordId: null,
                     Reason: "replace the principal schedule")))
             .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
-            .WithMessage(BondWriteVersionRefusal(2));
+            .WithMessage("Invalid declared schedule terms:*");
 
         harness.Appended.Should().BeEmpty();
         harness.Upserted.Should().BeEmpty();
@@ -371,7 +384,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
-    public async Task AmendTermsAsync_TermsPatchAtVersionOneStillPopulatingTheBlock_IsRefusedAsNotYetWritable()
+    public async Task AmendTermsAsync_LoweringTheStampDoesNotBypassDeclaredBlockSemanticValidation()
     {
         // Dropping the stamp is not a way to write the block: a populated block is refused on every
         // write path until a contract step raises the write version.
@@ -383,10 +396,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
 
         await harness.Service.Invoking(service => service.AmendTermsAsync(AmendRequest(securityId, Parse(patch.ToJsonString()))))
             .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
-            .WithMessage(
-                "'scheduleConventions' is an asset-class terms version 2 term of 'Bond'. This node reads it but writes " +
-                "assetClassTermsVersion 1, so a create, amend, import or field edit cannot set it yet. Leave it absent, " +
-                "null or empty (ADR-024).");
+            .WithMessage("Invalid declared schedule terms:*");
 
         harness.Appended.Should().BeEmpty();
         harness.Upserted.Should().BeEmpty();
@@ -517,14 +527,15 @@ public sealed partial class SecurityMasterServiceSnapshotTests
         // exactly: every entry in stored order, every member in canonical order.
         var securityId = Guid.NewGuid();
         var harness = new ServiceHarness();
-        harness.Seed(securityId, "Bond", BondAtVersion3);
+        var terms = operation == AmendWithoutTermsPatch ? ValidDeclaredBondTerms(BondAtVersion3) : BondAtVersion3;
+        harness.Seed(securityId, "Bond", terms);
 
         await RunAsync(harness, securityId, operation);
 
-        harness.Upserted.Should().ContainSingle().Which.AssetSpecificTerms.GetRawText().Should().Be(BondAtVersion3,
+        harness.Upserted.Should().ContainSingle().Which.AssetSpecificTerms.GetRawText().Should().Be(terms,
             "a row this node reads re-serializes in the canonical form of the version it was stamped at");
         var economic = SecurityMasterMapping.FromEventEnvelope(harness.Appended.Should().ContainSingle().Subject);
-        JsonNode.DeepEquals(JsonNode.Parse(economic.LegacyAssetSpecificTerms!.Value.GetRawText()), JsonNode.Parse(BondAtVersion3))
+        JsonNode.DeepEquals(JsonNode.Parse(economic.LegacyAssetSpecificTerms!.Value.GetRawText()), JsonNode.Parse(terms))
             .Should().BeTrue("the economic event retains the flat terms it was written from");
         var call = economic.EconomicTerms.GetProperty("call");
         call.GetProperty("callSchedule").GetArrayLength().Should().Be(2, "both declared calls reach the economic call module");
@@ -574,6 +585,15 @@ public sealed partial class SecurityMasterServiceSnapshotTests
         var harness = new ServiceHarness();
         harness.Seed(securityId, assetClass, terms);
 
+        if (operation == AmendWithoutTermsPatch)
+        {
+            await FluentActions.Invoking(() => RunAsync(harness, securityId, operation))
+                .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
+                .WithMessage("*Retained undeclared 'callSchedule' cannot be promoted by an unrelated amendment*");
+            harness.Appended.Should().BeEmpty();
+            harness.Upserted.Should().BeEmpty();
+            return;
+        }
         await RunAsync(harness, securityId, operation);
 
         harness.Upserted.Should().ContainSingle().Which.AssetSpecificTerms.GetRawText().Should().Be(
@@ -632,7 +652,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
     [InlineData(3, "3")]
     [InlineData(4, "\"Fortnightly\"")]
     [InlineData(4, "3")]
-    public async Task CreateAsync_ProfileEnvelopeCarryingSchedulesStampedAboveTheWriteVersion_IsRefusedByItsStamp(
+    public async Task CreateAsync_ProfileEnvelopeCarryingSchedulesAtTheContractStepWriteVersion_PersistsVerbatim(
         int stamp,
         string exerciseFrequency)
     {
@@ -642,19 +662,14 @@ public sealed partial class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var envelope = ProfileEnvelopeWithSchedules(stamp, exerciseFrequency);
 
-        await harness.Service.Invoking(service => service.CreateAsync(ProfileEnvelopeCreateRequest(securityId, envelope)))
-            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
-            .WithMessage(
-                $"assetClassTermsVersion '{stamp}' for asset class 'StructuredCredit' is readable but not writable on this node: " +
-                "it reads versions 1 through 4 and writes version 2. Submit the terms at version 2, or apply the change from a " +
-                $"node that writes version {stamp}.");
-
-        harness.Appended.Should().BeEmpty();
-        harness.Upserted.Should().BeEmpty();
+        await harness.Service.CreateAsync(ProfileEnvelopeCreateRequest(securityId, envelope));
+        harness.Appended.Should().ContainSingle();
+        harness.Upserted.Should().ContainSingle().Which.AssetSpecificTerms.GetRawText().Should().Be(envelope,
+            "class schedule containers remain outside profile-governed semantics after the write ceiling is raised");
     }
 
     [Fact]
-    public async Task AmendTermsAsync_TermsPatchReSubmittingStampThree_IsRefusedWithTheWriteVersionReason()
+    public async Task AmendTermsAsync_TermsPatchReSubmittingInvalidDeclaredSchedules_IsRefusedByCurrentSemanticRules()
     {
         // A terms patch maps in Write mode: the round-trip guard stands aside, and the write guard
         // refuses a stamp this node reads but does not write.
@@ -664,7 +679,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
 
         await harness.Service.Invoking(service => service.AmendTermsAsync(AmendRequest(securityId, Parse(BondAtVersion3))))
             .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
-            .WithMessage(BondWriteVersionRefusal(3));
+            .WithMessage("Invalid declared schedule terms:*");
 
         harness.Appended.Should().BeEmpty();
         harness.Upserted.Should().BeEmpty();
@@ -673,9 +688,10 @@ public sealed partial class SecurityMasterServiceSnapshotTests
     [Theory]
     [InlineData("callSchedule", """[{"callDate":"2031-06-15","callPrice":101}]""")]
     [InlineData("putSchedule", """[{"putDate":"2029-06-15","putPrice":100}]""")]
-    public async Task AmendTermBlockAsync_ScheduleOnABondStampedThree_IsRefusedAsNotYetWritable(string blockKey, string block)
+    public async Task AmendTermBlockAsync_ScheduleReplacementCannotBypassOtherDeclaredBlockConflicts(string blockKey, string block)
     {
-        // A schedule this node only reads is not a block it amends, even on a row that declares it.
+        // Schedules are writable after 5b-2, but editing one cannot bypass a conflicting
+        // retained conventions block in the resulting full document.
         var securityId = Guid.NewGuid();
         var harness = new ServiceHarness();
         harness.Seed(securityId, "Bond", BondAtVersion3);
@@ -691,11 +707,8 @@ public sealed partial class SecurityMasterServiceSnapshotTests
                     UpdatedBy: "codex",
                     SourceRecordId: null,
                     Reason: "replace the schedule")))
-            .Should().ThrowAsync<ArgumentException>()
-            .WithMessage(
-                $"'{blockKey}' is an asset-class terms version 3 term of 'Bond'. This node reads it but writes " +
-                "assetClassTermsVersion 1, so a create, amend, import or field edit cannot set it yet. " +
-                "Leave it absent, null or empty (ADR-024). (Parameter 'blockKey')");
+            .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
+            .WithMessage("*rollConvention*conflicts with endOfMonthRule*");
 
         harness.Appended.Should().BeEmpty();
         harness.Upserted.Should().BeEmpty();
@@ -783,6 +796,21 @@ public sealed partial class SecurityMasterServiceSnapshotTests
     /// <summary>The version-2 bond restamped at version 3, carrying <paramref name="callSchedule"/>.</summary>
     private static string StampedThreeWithCalls(string callSchedule)
         => Stamped(BondAtVersion2, 3, terms => terms["callSchedule"] = JsonNode.Parse(callSchedule));
+
+    // Historical literals above remain lossless deactivation fixtures. A positive amendment must
+    // also satisfy today's write semantics, including the roll and callable scalar agreement.
+    private static string ValidDeclaredBondTerms(string historical)
+    {
+        var terms = JsonNode.Parse(historical)!.AsObject();
+        terms["scheduleConventions"]!["direction"] = "Forward";
+        terms["scheduleConventions"]!["rollConvention"] = "AnchorDay";
+        if (terms["callSchedule"] is JsonArray { Count: > 0 })
+        {
+            terms["isCallable"] = true;
+            terms["callDate"] = "2026-01-01";
+        }
+        return terms.ToJsonString();
+    }
 
     /// <summary>
     /// The stored stray row behind a step-1 golden key, rebuilt as SecurityTermsWriteGoldenTests builds

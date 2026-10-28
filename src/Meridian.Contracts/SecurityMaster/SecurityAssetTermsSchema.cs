@@ -764,6 +764,48 @@ public static class SecurityAssetTermsSchema
                 // writable: ADR-024).
                 Opt("scheduleConventions", SecurityAssetTermFieldType.Object).Since(2)
             ],
+            ["Swap.legs.notionalSchedule"] =
+            [
+                Req("effectiveDate", SecurityAssetTermFieldType.Date, "date"),
+                Req("notional", SecurityAssetTermFieldType.Decimal, "amount")
+            ],
+            ["Swap.legs.resetSchedule"] =
+            [
+                Req("resetDate", SecurityAssetTermFieldType.Date, "effectiveDate", "date"),
+                Opt("fixingRate", SecurityAssetTermFieldType.Decimal, "indexRate", "rate")
+            ],
+            ["Bond.principalSchedule"] =
+            [
+                Req("paymentDate", SecurityAssetTermFieldType.Date),
+                Req("amount", SecurityAssetTermFieldType.Decimal)
+            ],
+            ["DirectLoan.principalSchedule"] =
+            [
+                Req("paymentDate", SecurityAssetTermFieldType.Date),
+                Req("amount", SecurityAssetTermFieldType.Decimal)
+            ],
+            ["Bond.stepSchedule"] =
+            [
+                Req("effectiveDate", SecurityAssetTermFieldType.Date, "stepDate", "date"),
+                Req("rate", SecurityAssetTermFieldType.Decimal, "couponRate")
+            ],
+            ["DirectLoan.covenants"] =
+            [
+                Req("covenantType", SecurityAssetTermFieldType.String),
+                Req("threshold", SecurityAssetTermFieldType.String),
+                Opt("notes", SecurityAssetTermFieldType.String)
+            ],
+            ["CommitmentGuarantee.covenants"] =
+            [
+                Req("covenantType", SecurityAssetTermFieldType.String),
+                Req("threshold", SecurityAssetTermFieldType.String),
+                Opt("notes", SecurityAssetTermFieldType.String)
+            ],
+            ["StructuredCredit.factorScheduleEntries"] =
+            [
+                Req("asOfDate", SecurityAssetTermFieldType.Date, "factorDate", "effectiveDate", "date"),
+                Req("factor", SecurityAssetTermFieldType.Decimal, "currentFactor")
+            ],
             ["Swap.legs.scheduleConventions"] = ScheduleConventionFields,
             ["Bond.scheduleConventions"] = ScheduleConventionFields,
             ["CertificateOfDeposit.scheduleConventions"] = ScheduleConventionFields,
