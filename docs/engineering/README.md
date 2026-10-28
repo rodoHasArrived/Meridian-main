@@ -162,13 +162,17 @@ results. Missing or unsupported prerequisites fail even with `--no-fail-on-warn`
 | `unit-test` | Python 3.11+, the SDK selected by `global.json`, Git, and .NET repository inputs. No provider credentials, runtime configuration, Docker, PostgreSQL, Node, or Python extras. |
 | `browser` | Python 3.11+, Node 24 from `.nvmrc`, npm, Git, and dashboard package manifests/lockfile. Run `npm --prefix src/Meridian.Ui/dashboard ci --include=optional` to install dashboard packages afterward. |
 | `desktop` | Python 3.11+, the selected .NET SDK, Git, PowerShell 7+, Windows, and WPF project inputs. |
-| `full-quality-gate` | The .NET and browser toolchains, PowerShell 7+, actionlint, and the pinned Python packages in `build/scripts/ci/requirements.txt`, including its docs requirements. |
+| `full-quality-gate` | The .NET and browser toolchains, Bash, PowerShell 7+, actionlint 1.7.12, and the pinned Python packages in `build/scripts/ci/requirements.txt`, including its docs requirements. |
 
 `build/python/prerequisites.py` owns these definitions. Both doctor implementations, `scripts/ci.sh`,
 and the AI setup scripts consume them. `make setup-dev` and `make verify-setup` use the unit-test
 prerequisites before restoring or building. CI checks the complete selected lane before its first restore,
 build, or npm install, so missing packages are reported together with the install command for the
 running interpreter. The full gate requires PyYAML and Pillow at their requirements-file versions.
+Every canonical CI lane checks Bash, including on Windows where Git Bash or WSL supplies it.
+The Linux x64 `build/scripts/install/install.sh --agent-tools` bootstrap reads Node's supported
+major from `.nvmrc`, installs the CI Python requirements and checksum-verified actionlint release,
+then checks the full prerequisite profile before warming restore or reporting setup complete.
 Monitoring tools remain advisory for local CI and required under `GITHUB_ACTIONS`; these checks do
 not require a Docker daemon. Doctor treats warnings as a nonzero result by default; use
 `--no-fail-on-warn` to permit those optional local monitoring warnings. Passing prerequisites
@@ -177,7 +181,8 @@ and gate to verify the change.
 
 Make also exposes `doctor-unit-test`, `doctor-browser`, `doctor-desktop`, and
 `doctor-full-quality-gate`, or `make doctor PROFILE=browser`. The unprofiled doctor retains runtime
-health diagnostics. Setup installs a missing .NET SDK before checking its compatibility, honors
+health diagnostics; a requested restore blocked by prerequisite failures remains a failure even
+with `--no-fail-on-warn`. Setup installs a missing .NET SDK before checking its compatibility, honors
 `--skip-node` and `--skip-restore`, and stops on prerequisite failures even without `--strict`.
 
 For local .NET tests, prefer the contention-aware runner over raw `dotnet test`:

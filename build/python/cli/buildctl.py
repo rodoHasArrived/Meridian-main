@@ -1130,6 +1130,8 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 
     if prerequisite_failed or failures:
         _print_check("dotnet restore", False, True, "Skipped: fix prerequisite failures before restoring")
+        if not quick:
+            failures.append("Restore: prerequisite failures prevented the requested solution restore")
     else:
         ok, is_warn, detail = _check_solution_restore(quick)
         _print_check("dotnet restore", ok, is_warn, detail)

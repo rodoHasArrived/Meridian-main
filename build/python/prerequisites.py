@@ -23,6 +23,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PYTHON_MIN = (3, 11)
+ACTIONLINT_VERSION = "1.7.12"
 
 
 @dataclass
@@ -50,7 +51,7 @@ PROFILES = {
     "browser": Profile(("node", "npm", "git"), _BROWSER_FILES),
     "desktop": Profile(("dotnet", "git", "pwsh"), _DOTNET_FILES + ("src/Meridian.Wpf/Meridian.Wpf.csproj",), windows=True),
     "full-quality-gate": Profile(
-        ("dotnet", "node", "npm", "git", "pwsh", "actionlint"),
+        ("dotnet", "node", "npm", "git", "pwsh", "actionlint", "bash"),
         _DOTNET_FILES + _BROWSER_FILES,
         "build/scripts/ci/requirements.txt",
         monitoring=True,
@@ -59,11 +60,11 @@ PROFILES = {
 PROFILE_NAMES = tuple(PROFILES)
 LANES = {
     "quality-gate": PROFILES["full-quality-gate"],
-    "verify-fast": Profile(("dotnet", "node", "npm", "git"), _DOTNET_FILES + _BROWSER_FILES),
-    "verify-dotnet": PROFILES["unit-test"],
-    "verify-browser": PROFILES["browser"],
-    "verify-docs": Profile(("git",), requirements="build/scripts/docs/requirements.txt", monitoring=True),
-    "verify-workflows": Profile(("git", "pwsh", "actionlint"), requirements="build/scripts/ci/requirements.txt"),
+    "verify-fast": Profile(("dotnet", "node", "npm", "git", "bash"), _DOTNET_FILES + _BROWSER_FILES),
+    "verify-dotnet": Profile(("dotnet", "git", "bash"), _DOTNET_FILES),
+    "verify-browser": Profile(("node", "npm", "git", "bash"), _BROWSER_FILES),
+    "verify-docs": Profile(("git", "bash"), requirements="build/scripts/docs/requirements.txt", monitoring=True),
+    "verify-workflows": Profile(("git", "pwsh", "actionlint", "bash"), requirements="build/scripts/ci/requirements.txt"),
 }
 
 
@@ -162,7 +163,8 @@ def _check_tool(tool: str, root: Path) -> CheckResult:
         "npm": ("npm", ["npm", "--version"], "npm available", "Install the supported Node.js version from .nvmrc with npm from https://nodejs.org/ and put npm on PATH."),
         "git": ("Git", ["git", "--version"], "Git 2.x or newer", "Install Git from https://git-scm.com/downloads and put git on PATH."),
         "pwsh": ("PowerShell", ["pwsh", "-NoProfile", "-Command", "$PSVersionTable.PSVersion.ToString()"], "PowerShell 7+ (pwsh)", "Install PowerShell 7 from https://learn.microsoft.com/powershell/scripting/install/installing-powershell and put pwsh on PATH."),
-        "actionlint": ("actionlint", ["actionlint", "-version"], "actionlint available", "Install actionlint from https://github.com/rhysd/actionlint/releases and put actionlint on PATH."),
+        "actionlint": ("actionlint", ["actionlint", "-version"], f"actionlint {ACTIONLINT_VERSION} (CI pin)", f"Install actionlint {ACTIONLINT_VERSION} from https://github.com/rhysd/actionlint/releases/tag/v{ACTIONLINT_VERSION} and put it on PATH."),
+        "bash": ("Bash", ["bash", "--version"], "Bash for scripts/ci.sh", "Install Git Bash from https://git-scm.com/downloads or WSL on Windows; install Bash with your system package manager on Linux, and put bash on PATH."),
     }[tool]
     if not shutil.which(tool):
         return CheckResult(name, "fail", f"{tool} not found on PATH", expected, fix)
@@ -171,6 +173,8 @@ def _check_tool(tool: str, root: Path) -> CheckResult:
     ok = rc == 0 and version is not None
     if ok and tool in ("pwsh", "git"):
         ok = version[0] >= (7 if tool == "pwsh" else 2)
+    if ok and tool == "actionlint":
+        ok = output.splitlines()[0].strip() == ACTIONLINT_VERSION
     return CheckResult(name, "pass" if ok else "fail", f"Installed: {output or 'version unavailable'}", expected, None if ok else fix)
 
 
@@ -256,12 +260,16 @@ def main(argv: list[str] | None = None) -> int:
     selection.add_argument("--lane", choices=tuple(LANES))
     selection.add_argument("--dotnet-channel", action="store_true")
     selection.add_argument("--python-version-ok", action="store_true", help="Check an interpreter for shell bootstrap selection.")
+    selection.add_argument("--actionlint-version", action="store_true", help="Print the actionlint release required by CI and agent setup.")
     parser.add_argument("--skip-python-packages", action="store_true", help="Setup only: packages will be installed separately.")
     parser.add_argument("--skip-dotnet", action="store_true", help="Setup only: .NET restore is disabled.")
     parser.add_argument("--json", action="store_true", help="Emit structured diagnostic results.")
     args = parser.parse_args(argv)
     if args.python_version_ok:
         return int(check_python().status != "pass")
+    if args.actionlint_version:
+        print(ACTIONLINT_VERSION)
+        return 0
     if args.dotnet_channel:
         try:
             print(dotnet_channel(REPO_ROOT))

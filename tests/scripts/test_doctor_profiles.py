@@ -58,14 +58,15 @@ class DoctorProfileTests(unittest.TestCase):
         self.write("build/scripts/ci/requirements.txt", "-r ../docs/requirements.txt\nPillow==12.3.0\n")
         self.write("src/Meridian.Ui/dashboard/package.json", json.dumps({"engines": {"node": ">=24 <25"}}))
         self.write("src/Meridian.Ui/dashboard/package-lock.json", json.dumps({"lockfileVersion": 3}))
-        self.available = {"dotnet", "node", "npm", "git", "pwsh", "actionlint", "promtool", "docker-compose"}
+        self.available = {"dotnet", "node", "npm", "git", "pwsh", "actionlint", "bash", "promtool", "docker-compose"}
         self.versions = {
             "dotnet": (0, "10.0.100"),
             "node": (0, "v24.9.0"),
             "npm": (0, "11.6.0"),
             "git": (0, "git version 2.50.0"),
             "pwsh": (0, "7.5.2"),
-            "actionlint": (0, "1.7.9\ninstalled by test fixture"),
+            "actionlint": (0, "1.7.12\ninstalled by test fixture"),
+            "bash": (0, "GNU bash, version 5.2.15(1)-release"),
             "docker-compose": (0, "Docker Compose version v2.39.4"),
         }
         self.packages = {"PyYAML": "6.0.2", "Pillow": "12.3.0"}
@@ -163,7 +164,7 @@ class DoctorProfileTests(unittest.TestCase):
                 self.assert_actionable_failure(self.row(self.check("browser"), "Node"))
 
     def test_required_tool_missing_and_unreadable_versions_have_fixes(self) -> None:
-        names = {"dotnet": ".NET", "node": "Node", "npm": "npm", "git": "Git", "pwsh": "PowerShell", "actionlint": "actionlint"}
+        names = {"dotnet": ".NET", "node": "Node", "npm": "npm", "git": "Git", "pwsh": "PowerShell", "actionlint": "actionlint", "bash": "Bash"}
         for tool, name in names.items():
             with self.subTest(tool=tool, failure="missing"):
                 self.available.remove(tool)
@@ -175,6 +176,27 @@ class DoctorProfileTests(unittest.TestCase):
                     self.versions[tool] = outcome
                     self.assert_actionable_failure(self.row(self.check(), name))
                     self.versions[tool] = original
+
+    def test_actionlint_requires_the_exact_hosted_ci_pin(self) -> None:
+        workflow = (REPO_ROOT / ".github/workflows/meridian-ci.yml").read_text(encoding="utf-8")
+        self.assertIn(f"/v{prerequisites.ACTIONLINT_VERSION}/actionlint_{prerequisites.ACTIONLINT_VERSION}_linux_amd64.tar.gz", workflow)
+        for version in ("1.7.9", "1.7.11", "1.7.13", "1.7.12-dev", "2.0.0"):
+            with self.subTest(version=version):
+                self.versions["actionlint"] = (0, version)
+                row = self.row(self.check(), "actionlint")
+                self.assert_actionable_failure(row)
+                self.assertIn(prerequisites.ACTIONLINT_VERSION, row.expected)
+                self.assertIn(prerequisites.ACTIONLINT_VERSION, row.fix)
+
+    def test_every_canonical_ci_lane_requires_bash_with_a_windows_fix(self) -> None:
+        self.available.remove("bash")
+        for lane in prerequisites.LANES:
+            with self.subTest(lane=lane):
+                result = self.row(self.check(lane), "Bash")
+                self.assert_actionable_failure(result)
+                self.assertIn("scripts/ci.sh", result.expected)
+                self.assertIn("Git Bash", result.fix)
+                self.assertIn("WSL", result.fix)
 
     def test_unit_test_requires_only_python_dotnet_and_git(self) -> None:
         self.available = {"dotnet", "git"}
@@ -317,6 +339,29 @@ class DoctorProfileTests(unittest.TestCase):
         self.assertIn("3.11", output.getvalue())
         self.assertIn("Python", output.getvalue())
 
+    def test_unprofiled_doctor_cannot_pass_when_required_sdk_warnings_suppress_restore(self) -> None:
+        for warning_function in ("_check_dotnet", "_check_global_json"):
+            with self.subTest(warning_function=warning_function), ExitStack() as stack:
+                for function in ("_check_python", "_check_dotnet", "_check_git"):
+                    stack.enter_context(patch.object(self.buildctl, function, return_value=(True, False, "available")))
+                for function in ("_check_docker_daemon", "_check_postgres", "_check_global_json", "_check_packages_props"):
+                    stack.enter_context(patch.object(self.buildctl, function, return_value=(True, False, "available", None)))
+                warning = (True, True, "Unsupported SDK")
+                if warning_function == "_check_global_json":
+                    warning += ("Install the pinned SDK",)
+                stack.enter_context(patch.object(self.buildctl, warning_function, return_value=warning))
+                stack.enter_context(patch.object(self.buildctl, "check_node", return_value=prerequisites.CheckResult("Node.js", "pass", "available", "supported")))
+                for function in ("_check_env_vars", "_check_files", "_check_dirs"):
+                    stack.enter_context(patch.object(self.buildctl, function, return_value=[]))
+                restore = stack.enter_context(patch.object(self.buildctl, "_check_solution_restore"))
+                args = self.buildctl.build_parser().parse_args(["doctor", "--no-fail-on-warn"])
+                output = io.StringIO()
+                with redirect_stdout(output):
+                    self.assertEqual(self.buildctl.cmd_doctor(args), 1)
+                restore.assert_not_called()
+                self.assertIn("prevented the requested solution restore", output.getvalue())
+                self.assertNotIn("Environment check passed", output.getvalue())
+
     def test_diagnostics_profiles_skip_credentials_services_network_and_restore(self) -> None:
         for profile in prerequisites.PROFILE_NAMES:
             with self.subTest(profile=profile), self.environment(), ExitStack() as stack:
@@ -424,7 +469,7 @@ if [[ "$1" == --version ]]; then printf '11.6.0\\n'; elif [[ " $* " == *" ci "* 
         self.shim("git", '''if [[ "$1" == rev-parse ]]; then pwd; else printf 'git version 2.50.0\\n'; fi
 ''')
         self.shim("pwsh", "printf '7.5.2\\n'\n")
-        self.shim("actionlint", "printf '1.7.9\\n'\n")
+        self.shim("actionlint", "printf '1.7.12\\n'\n")
         self.shim("promtool", "exit 0\n")
         self.shim("docker-compose", "printf 'Docker Compose version v2.39.4\\n'\n")
 

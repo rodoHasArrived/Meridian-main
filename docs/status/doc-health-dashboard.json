@@ -1,6 +1,6 @@
 {
   "total_files": 753,
-  "total_lines": 170986,
+  "total_lines": 170992,
   "orphaned_count": 250,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -2494,7 +2494,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 512,
+      "line_count": 517,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2910,7 +2910,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12516,
+      "line_count": 12517,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
