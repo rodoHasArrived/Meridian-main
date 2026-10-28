@@ -86,7 +86,8 @@ public sealed partial class LedgerJournalInternalTransactionSourceTests
                 result.Breaks.Should().BeEmpty();
                 var group = retained!.MatchGroups.Should().ContainSingle().Subject;
                 group.MatchTier.Should().Be("Tolerance", "equal net cash and transaction IDs cannot hide a retained price difference");
-                group.RuleIds.Should().Equal("journal-retained-price");
+                group.RuleIds.Should().Equal(["journal-retained-price", "statement-transaction-tolerance-v1"],
+                    "a configured match retains the selected price policy and the executed tolerance stage");
             }
             else
             {
