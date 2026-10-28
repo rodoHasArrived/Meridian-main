@@ -2,11 +2,22 @@
 
 # `security-master-contracts` data objects - page 5 of 6
 
-Objects 321-400 of 434. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 437. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityFactorHistoryProjector["SecurityFactorHistoryProjector"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityFactorSource["SecurityFactorSource"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityFieldProvenance["SecurityFieldProvenance"] {
+        +DateTimeOffset? AsOf
+        +decimal? Confidence
+        +string FieldPath
+        +string SourceSystem
+        +string? UpdatedBy
+    }
     class Meridian_Contracts_SecurityMaster_SecurityFieldProvenanceOrigins["SecurityFieldProvenanceOrigins"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityFieldProvenanceRecord["SecurityFieldProvenanceRecord"] {
@@ -417,34 +428,6 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityValuationObservability["SecurityValuationObservability"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityValuationRequest["SecurityValuationRequest"] {
-        +string? AccountId
-        +DateTimeOffset AsOf
-        +IReadOnlyList~SecurityValuationCurveInput~? Curves
-        +DateTimeOffset? KnownAt
-        +SecurityValuationModelKind? Model
-        +IReadOnlyDictionary~string__string~? Parameters
-        +decimal? Quantity
-        +Guid SecurityId
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityValuationResult["SecurityValuationResult"] {
-        +DateTimeOffset AsOf
-        +IReadOnlyList~SecurityValuationBlockerDto~ Blockers
-        +string Currency
-        +IReadOnlyList~string~ Diagnostics
-        +IReadOnlyList~SecurityValuationInputDto~ Inputs
-        +DateTimeOffset KnowledgeAsOf
-        +decimal? MarketValue
-        +SecurityValuationModelKind Model
-        +string ModelKey
-        +string ModelVersion
-        +SecurityValuationObservability Observability
-        +DateTimeOffset? ObservedAsOf
-    }
-    class Meridian_Contracts_SecurityMaster_SplitCorporateActionTerms["SplitCorporateActionTerms"] {
-        +string EventType
-        +decimal? Ratio
-    }
     Meridian_Contracts_SecurityMaster_SecurityForwardCurve --> Meridian_Contracts_SecurityMaster_SecurityForwardCurvePoint
     Meridian_Contracts_SecurityMaster_SecurityIdentifierDto --> Meridian_Contracts_SecurityMaster_SecurityIdentifierKind
     Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlow --> Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlowKind
@@ -474,11 +457,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityValidationReportDto
     Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto
     Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotRequestDto --> Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto
-    Meridian_Contracts_SecurityMaster_SecurityValuationRequest --> Meridian_Contracts_SecurityMaster_SecurityValuationCurveInput
-    Meridian_Contracts_SecurityMaster_SecurityValuationRequest --> Meridian_Contracts_SecurityMaster_SecurityValuationModelKind
-    Meridian_Contracts_SecurityMaster_SecurityValuationResult --> Meridian_Contracts_SecurityMaster_SecurityPriceUnit
-    Meridian_Contracts_SecurityMaster_SecurityValuationResult --> Meridian_Contracts_SecurityMaster_SecurityValuationBlockerDto
-    Meridian_Contracts_SecurityMaster_SecurityValuationResult --> Meridian_Contracts_SecurityMaster_SecurityValuationInputDto
-    Meridian_Contracts_SecurityMaster_SecurityValuationResult --> Meridian_Contracts_SecurityMaster_SecurityValuationModelKind
-    Meridian_Contracts_SecurityMaster_SecurityValuationResult --> Meridian_Contracts_SecurityMaster_SecurityValuationObservability
 ```

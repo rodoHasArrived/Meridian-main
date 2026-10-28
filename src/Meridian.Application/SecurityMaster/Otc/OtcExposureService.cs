@@ -9,7 +9,10 @@ namespace Meridian.Application.SecurityMaster.Otc;
 /// reference that agreement, values each contract that enters the exposure through the registered
 /// <see cref="IOtcContractValuationSource"/> at one knowledge time (the request's, else the
 /// computation instant the snapshot is stamped with), applies <see cref="OtcExposureRules.Compute"/>
-/// and appends the result as the next snapshot version for the date.
+/// and appends the result as the next snapshot version for the date. The knowledge time is recorded
+/// on the snapshot's inputs, so a call is refused once market data for a valued security is
+/// recorded after it, or when it is earlier than the computation (a replay). An as-of date after
+/// the current UTC date is refused before anything is read or valued.
 /// </summary>
 public sealed class OtcExposureService : IOtcExposureService
 {
@@ -36,6 +39,7 @@ public sealed class OtcExposureService : IOtcExposureService
             throw new ArgumentException("An exposure computation names the netting set it values.", nameof(nettingSetId));
         if (asOfDate == default)
             throw new ArgumentException("An exposure computation states the date it values.", nameof(asOfDate));
+        OtcExposureRules.RequireNotFutureDated(asOfDate, DateTimeOffset.UtcNow);
         var computedBy = OtcCollateralRules.RequireActor(actor);
 
         var view = await _contracts.GetNettingSetAsync(nettingSetId, ct).ConfigureAwait(false);
@@ -63,7 +67,7 @@ public sealed class OtcExposureService : IOtcExposureService
             valuations.Add(await _valuation.ValueAsync(new OtcContractValuationRequest(contract, asOfDate, currency, knowledgeTime), ct).ConfigureAwait(false));
         }
 
-        var computed = OtcExposureRules.Compute(view, valuations, balances, nettingSetsUnderAgreement, asOfDate, computedBy, computedAt);
+        var computed = OtcExposureRules.Compute(view, valuations, balances, nettingSetsUnderAgreement, asOfDate, computedBy, computedAt, knowledgeTime);
         var stored = await _collateral.AppendExposureSnapshotAsync(computed, ct).ConfigureAwait(false);
         _logger.LogInformation(
             "Recorded OTC exposure snapshot {SnapshotId} version {Version} for netting set {NettingSetId} as of {AsOfDate}: {Status} on a {NettingBasis} basis, net exposure {NetExposure} {Currency}, {MovementCount} movement(s), {BlockerCount} blocker(s).",

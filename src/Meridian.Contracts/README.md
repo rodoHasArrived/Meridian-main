@@ -1886,10 +1886,17 @@ netting by master form, the two-sided credit support amount with the agreement's
 amount read as the fund's, holdings adjusted by the agreement's current eligible-line haircut, the
 minimum-transfer test before rounding, the fail-closed blockers (among them an agreement shared
 with another netting set, a positive balance valued after the as-of date and a balance no longer
-eligible), null credit support sides when there is no agreement, and a reproducible payload
-digest. `OtcCollateral.cs` adds `OtcCollateralBalanceDto` (haircut copied from the agreement's
+eligible), null credit support sides when there is no agreement, the refusal of an as-of date
+after the current UTC date (`RequireNotFutureDated`), what the computation read
+(`OtcExposureSnapshotInputsDto`: the netting set, each of its contracts, each balance under the
+agreement and the netting sets that reference it, each at a version, plus the securities valued
+and the knowledge time of their market data) and a reproducible payload digest.
+`OtcCollateral.cs` adds `OtcCollateralBalanceDto` (haircut copied from the agreement's
 eligible line when written, valued amount computed, valuation date required), `OtcMarginCallDto`
-(amount copied from a snapshot movement) and the lifecycle in `OtcMarginCallRules` behind
+(amount copied from a snapshot movement of a date that has come, refused by
+`OtcMarginCallRules.RequireUnchangedInputs` once any recorded input has changed, once market data
+for a valued security is recorded after `MarketDataKnownAt` (`OtcMarketDataRecordDto`), or when the
+snapshot replays an earlier knowledge time) and the lifecycle in `OtcMarginCallRules` behind
 `IOtcCollateralStore`, which also lists the netting sets that reference an agreement;
 `IOtcExposureService` computes and records snapshots. The domain page is
 [Credit Support](../../docs/domain/credit-support.md).

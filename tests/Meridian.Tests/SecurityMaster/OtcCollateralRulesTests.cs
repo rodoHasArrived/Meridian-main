@@ -12,6 +12,12 @@ public sealed class OtcCollateralRulesTests
     private static readonly DateOnly AsOf = new(2026, 3, 31);
     private static readonly Guid CsaId = Guid.NewGuid();
     private static readonly Guid NettingSetId = Guid.NewGuid();
+    private static readonly Guid BuyId = Guid.NewGuid();
+    private static readonly Guid SellId = Guid.NewGuid();
+    private static readonly Guid CashId = Guid.NewGuid();
+    private static readonly Guid TreasuriesId = Guid.NewGuid();
+    private static readonly Guid SwapId = Guid.NewGuid();
+    private const string Recompute = "Recompute the snapshot before issuing a call.";
 
     [Fact]
     public void Balance_IsNormalized_AndTheActorIsRequired()
@@ -136,6 +142,9 @@ public sealed class OtcCollateralRulesTests
             .Should().Throw<ArgumentException>().WithMessage("*computes no Delivery by the Counterparty*");
         FluentActions.Invoking(() => OtcMarginCallRules.Issue(snapshot, Request() with { IssuedOn = AsOf.AddDays(-1) }, [], DateTimeOffset.UtcNow))
             .Should().Throw<ArgumentException>().WithMessage("*before the date its snapshot values*");
+        FluentActions.Invoking(() => OtcMarginCallRules.Issue(snapshot, Request() with { IssuedOn = AsOf.AddDays(1) }, [], new DateTimeOffset(2026, 3, 30, 23, 0, 0, TimeSpan.Zero)))
+            .Should().Throw<ArgumentException>("a snapshot dated after the current UTC date is not yet a valuation, even for a forward-dated call")
+            .WithMessage($"Snapshot {snapshot.SnapshotId:D} values 2026-03-31, after the current date 2026-03-30 (UTC)*");
         FluentActions.Invoking(() => OtcMarginCallRules.Issue(snapshot, Request() with { DueOn = AsOf.AddDays(-1) }, [], DateTimeOffset.UtcNow))
             .Should().Throw<ArgumentException>().WithMessage("*fall due before*");
         FluentActions.Invoking(() => OtcMarginCallRules.Issue(snapshot, Request() with { SnapshotId = Guid.NewGuid() }, [], DateTimeOffset.UtcNow))
@@ -158,6 +167,123 @@ public sealed class OtcCollateralRulesTests
         OtcMarginCallRules.Issue(snapshot, Request(), [open with { Mover = OtcMovementParty.Counterparty }], DateTimeOffset.UtcNow).Should().NotBeNull("the other mover's call does not block");
         OtcMarginCallRules.Issue(snapshot, Request(), [open with { Kind = OtcMovementKind.Return }], DateTimeOffset.UtcNow).Should().NotBeNull("the same mover's open return is a distinct obligation and does not block its delivery");
         OtcMarginCallRules.Issue(snapshot, Request(), [open with { NettingSetId = Guid.NewGuid(), SnapshotId = Guid.NewGuid() }], DateTimeOffset.UtcNow).Should().NotBeNull("another netting set's call, issued from its own snapshot, does not block");
+    }
+
+    [Fact]
+    public void UnchangedInputs_AreAccepted_InAnyOrder()
+    {
+        var snapshot = Snapshot(OtcExposureSnapshotStatus.Complete, DataProvenance.Real);
+        var recorded = snapshot.Inputs!;
+
+        FluentActions.Invoking(() => OtcMarginCallRules.RequireUnchangedInputs(snapshot, recorded with { }, []))
+            .Should().NotThrow();
+        var reordered = recorded with
+        {
+            Contracts = recorded.Contracts.Reverse().ToArray(),
+            CollateralBalances = recorded.CollateralBalances.Reverse().ToArray()
+        };
+        FluentActions.Invoking(() => OtcMarginCallRules.RequireUnchangedInputs(snapshot, reordered, []))
+            .Should().NotThrow("the store reads the same records in its own order");
+    }
+
+    [Fact]
+    public void ChangedInputs_AreRefused_NamingEachChange()
+    {
+        var snapshot = Snapshot(OtcExposureSnapshotStatus.Complete, DataProvenance.Real);
+        var recorded = snapshot.Inputs!;
+        var added = Guid.NewGuid();
+        var other = Guid.NewGuid();
+        void Refused(OtcExposureSnapshotInputsDto current, string expected, string because)
+            => FluentActions.Invoking(() => OtcMarginCallRules.RequireUnchangedInputs(snapshot, current, []))
+                .Should().Throw<ArgumentException>(because)
+                .WithMessage($"Exposure snapshot {snapshot.SnapshotId:D} was computed from records that have changed since: {expected}. {Recompute}");
+
+        Refused(recorded with { NettingSetVersion = 2 },
+            $"netting set {NettingSetId:D} was amended (version 1 to 2)", "a netting set amendment can move contracts or terms");
+        Refused(recorded with { Contracts = [.. recorded.Contracts, new OtcExposureInputVersionDto(added, 1)] },
+            $"contract(s) added: {added:D}", "a contract booked into the netting set changes the exposure");
+        Refused(recorded with { Contracts = recorded.Contracts.Where(i => i.Id != SellId).ToArray() },
+            $"contract(s) removed: {SellId:D}", "a contract moved out of the netting set changes the exposure");
+        Refused(recorded with { Contracts = recorded.Contracts.Select(i => i.Id == BuyId ? i with { Version = 2 } : i).ToArray() },
+            $"contract(s) amended: {BuyId:D} (version 1 to 2)", "an amended notional, status or trade date changes the exposure");
+        Refused(recorded with { CollateralBalances = [.. recorded.CollateralBalances, new OtcExposureInputVersionDto(added, 1)] },
+            $"collateral balance(s) recorded: {added:D}", "collateral recorded after the computation changes what is held");
+        Refused(recorded with { CollateralBalances = recorded.CollateralBalances.Select(i => i.Id == CashId ? i with { Version = 3 } : i).ToArray() },
+            $"collateral balance(s) amended: {CashId:D} (version 2 to 3)", "a returned or revalued balance changes what is held");
+        Refused(recorded with { CollateralBalances = recorded.CollateralBalances.Where(i => i.Id != TreasuriesId).ToArray() },
+            $"collateral balance(s) removed: {TreasuriesId:D}", "a balance no longer recorded changes what is held");
+        Refused(recorded with { NettingSetsUnderAgreement = [NettingSetId, other] },
+            $"netting set(s) now referencing collateral agreement {CsaId:D}: {other:D}", "a second netting set would be credited the same collateral");
+        Refused(recorded with { NettingSetsUnderAgreement = [] },
+            $"netting set(s) no longer referencing collateral agreement {CsaId:D}: {NettingSetId:D}", "the agreement no longer secures this netting set");
+
+        var both = new[] { added, other }.Order().Select(id => id.ToString("D")).ToArray();
+        var several = recorded with
+        {
+            NettingSetVersion = 2,
+            Contracts = [.. recorded.Contracts, new OtcExposureInputVersionDto(added, 1), new OtcExposureInputVersionDto(other, 1)],
+            CollateralBalances = recorded.CollateralBalances.Select(i => i with { Version = i.Version + 1 }).ToArray()
+        };
+        Refused(several,
+            $"netting set {NettingSetId:D} was amended (version 1 to 2); contract(s) added: {both[0]}, {both[1]}; " +
+            $"collateral balance(s) amended: {string.Join(", ", recorded.CollateralBalances.Select(i => $"{i.Id:D} (version {i.Version} to {i.Version + 1})"))}",
+            "every change is named, in a stable order");
+    }
+
+    [Fact]
+    public void ASnapshotWithoutRecordedInputs_IsRefused()
+    {
+        var snapshot = Snapshot(OtcExposureSnapshotStatus.Complete, DataProvenance.Real);
+
+        FluentActions.Invoking(() => OtcMarginCallRules.RequireUnchangedInputs(snapshot with { Inputs = null }, snapshot.Inputs!, []))
+            .Should().Throw<ArgumentException>("a payload stored without its inputs cannot be shown to be current")
+            .WithMessage($"Exposure snapshot {snapshot.SnapshotId:D} does not record the versions of the records it was computed from*{Recompute}");
+        FluentActions.Invoking(() => OtcMarginCallRules.RequireUnchangedInputs(snapshot with { Inputs = snapshot.Inputs! with { CollateralBalances = null! } }, snapshot.Inputs!, []))
+            .Should().Throw<ArgumentException>().WithMessage($"*does not record the versions*{Recompute}");
+        FluentActions.Invoking(() => OtcMarginCallRules.RequireUnchangedInputs(snapshot with { Inputs = snapshot.Inputs! with { KnowledgeAsOf = default } }, snapshot.Inputs!, []))
+            .Should().Throw<ArgumentException>("without a knowledge time no later market data can be told apart").WithMessage($"*knowledge time of its market data*{Recompute}");
+        FluentActions.Invoking(() => OtcMarginCallRules.RequireUnchangedInputs(snapshot with { Inputs = snapshot.Inputs! with { Securities = null } }, snapshot.Inputs!, []))
+            .Should().Throw<ArgumentException>("without the valued securities their market data cannot be checked").WithMessage($"*does not record the versions*{Recompute}");
+    }
+
+    [Fact]
+    public void MarketDataRecordedAfterTheKnowledgeTime_IsRefused_NamingEachRecord()
+    {
+        var snapshot = Snapshot(OtcExposureSnapshotStatus.Complete, DataProvenance.Real);
+        var knownAt = snapshot.ComputedAt.UtcDateTime.ToString("O");
+        var priceAsOf = new DateTimeOffset(2026, 3, 31, 16, 0, 0, TimeSpan.Zero);
+        var later = snapshot.ComputedAt.AddMinutes(5);
+        var first = new Guid("00000000-0000-0000-0000-00000000000a");
+        var second = new Guid("00000000-0000-0000-0000-00000000000b");
+        OtcMarketDataRecordDto[] recorded =
+        [
+            new(second, "price from vendor-b", priceAsOf, later),
+            new(first, "pricing hierarchy", priceAsOf.AddDays(-1), later.AddMinutes(1)),
+            new(first, "price from vendor-a", priceAsOf, later)
+        ];
+        static string Named(OtcMarketDataRecordDto r) => $"security {r.SecurityId:D} {r.Record} effective {r.EffectiveAt.UtcDateTime:O} (recorded {r.RecordedAt.UtcDateTime:O})";
+
+        FluentActions.Invoking(() => OtcMarginCallRules.RequireUnchangedInputs(snapshot, snapshot.Inputs!, recorded))
+            .Should().Throw<ArgumentException>("a corrected or late price, or a changed hierarchy, may change what a recomputation selects")
+            .WithMessage($"Exposure snapshot {snapshot.SnapshotId:D} was computed from records that have changed since: market data recorded after {knownAt}: " +
+                $"{Named(recorded[2])}, {Named(recorded[1])}, {Named(recorded[0])}. {Recompute}", "each record is named by security, then by when it was recorded");
+        OtcMarginCallRules.MarketDataKnownAt(snapshot).Should().Be(snapshot.ComputedAt);
+        OtcMarginCallRules.MarketDataKnownAt(snapshot with { Inputs = snapshot.Inputs! with { KnowledgeAsOf = snapshot.ComputedAt.AddHours(1) } })
+            .Should().Be(snapshot.ComputedAt, "with a knowledge time after the computation, what was recorded meanwhile may or may not have been read");
+    }
+
+    [Fact]
+    public void ASnapshotValuedAtAnEarlierKnowledgeTime_IsAReplay_AndIsRefused()
+    {
+        var snapshot = Snapshot(OtcExposureSnapshotStatus.Complete, DataProvenance.Real);
+        var replay = snapshot with { Inputs = snapshot.Inputs! with { KnowledgeAsOf = snapshot.ComputedAt.AddHours(-15) } };
+
+        FluentActions.Invoking(() => OtcMarginCallRules.RequireUnchangedInputs(replay, snapshot.Inputs!, []))
+            .Should().Throw<ArgumentException>("a replay of what was known yesterday evening is evidence, not a live call")
+            .WithMessage($"Exposure snapshot {snapshot.SnapshotId:D} was valued with market data as known at {replay.Inputs!.KnowledgeAsOf.UtcDateTime:O}, before it was computed at {snapshot.ComputedAt.UtcDateTime:O}: it replays what was known then*Recompute the snapshot without a knowledge time before issuing a call.");
+        OtcMarginCallRules.MarketDataKnownAt(replay).Should().Be(replay.Inputs.KnowledgeAsOf);
+        FluentActions.Invoking(() => OtcMarginCallRules.RequireUnchangedInputs(snapshot with { Inputs = snapshot.Inputs! with { KnowledgeAsOf = snapshot.ComputedAt.AddHours(1) } }, snapshot.Inputs!, []))
+            .Should().NotThrow("a knowledge time after the computation reads at least what the computation could");
     }
 
     [Theory]
@@ -278,10 +404,18 @@ public sealed class OtcCollateralRulesTests
         var movement = new OtcCollateralMovementDto(OtcMovementKind.Delivery, OtcMovementParty.Fund, 330_000m, "USD");
         var fund = new OtcCreditSupportSideDto(OtcMovementParty.Fund, 75_000m, 0m, 1_000_000m, 250_000m, 0m, 0m, 0m, 0m, null);
         var counterparty = new OtcCreditSupportSideDto(OtcMovementParty.Counterparty, -75_000m, 1_000_000m, 0m, 0m, 925_000m, 596_245m, 328_755m, -328_755m, movement);
+        var computedAt = DateTimeOffset.UtcNow;
+        var inputs = new OtcExposureSnapshotInputsDto(
+            1,
+            new[] { new OtcExposureInputVersionDto(BuyId, 1), new OtcExposureInputVersionDto(SellId, 1) }.OrderBy(i => i.Id).ToArray(),
+            new[] { new OtcExposureInputVersionDto(CashId, 2), new OtcExposureInputVersionDto(TreasuriesId, 1) }.OrderBy(i => i.Id).ToArray(),
+            [NettingSetId],
+            computedAt,
+            [SwapId]);
         return new OtcExposureSnapshotDto(
             Guid.NewGuid(), NettingSetId, Guid.NewGuid(), CsaId, AsOf, 1, OtcExposureRules.RuleVersion, "USD",
             OtcNettingBasis.CloseOutNet, status, provenance, 1, 2, [], 125_000m, 50_000m, 75_000m, fund, counterparty, [], [movement], [],
-            new string('0', 64), "casey", DateTimeOffset.UtcNow);
+            inputs, new string('0', 64), "casey", computedAt);
     }
 
     private static OtcMarginCallDto Call(OtcMarginCallStatus status)

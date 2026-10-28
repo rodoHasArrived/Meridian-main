@@ -10270,6 +10270,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcExposureInputVersionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcExposureRules"
     },
     {
@@ -10277,6 +10283,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcExposureSnapshotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcExposureSnapshotInputsDto"
     },
     {
       "kind": "contract-set-member",
@@ -10307,6 +10319,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcMarginCallStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcMarketDataRecordDto"
     },
     {
       "kind": "contract-set-member",
@@ -23878,6 +23896,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcExposureInputVersionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcExposureRules"
     },
     {
@@ -23885,6 +23909,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcExposureSnapshotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcExposureSnapshotInputsDto"
     },
     {
       "kind": "contract-set-member",
@@ -23915,6 +23945,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcMarginCallStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcMarketDataRecordDto"
     },
     {
       "kind": "contract-set-member",
@@ -36196,6 +36232,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.OtcExposureSnapshotDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcExposureSnapshotInputsDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.OtcExposureSnapshotDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcExposureSnapshotStatus"
     },
     {
@@ -36209,6 +36251,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.OtcExposureSnapshotDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcValuationBlockerDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.OtcExposureSnapshotInputsDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcExposureInputVersionDto"
     },
     {
       "kind": "contract-reference",
@@ -53533,7 +53581,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "adc24812f272cc14ed50d41d02e5863270daa45e5ee6f7767afa3a9dd2c7765d",
+  "fingerprint": "af2917df79b79fb02bdf6d431401cb40811733e7aea1e94d5d13b7cb65b74c7a",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -63853,6 +63901,12 @@
       "label": "Meridian.Contracts.SecurityMaster.OtcEligibleCollateralDto"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcExposureInputVersionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcExposureInputVersionDto"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Contracts.SecurityMaster.OtcExposureRules",
       "kind": "contract-type",
@@ -63863,6 +63917,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.OtcExposureSnapshotDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.OtcExposureSnapshotDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcExposureSnapshotInputsDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcExposureSnapshotInputsDto"
     },
     {
       "classification": "enum",
@@ -63893,6 +63953,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.OtcMarginCallStatus",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.OtcMarginCallStatus"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcMarketDataRecordDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcMarketDataRecordDto"
     },
     {
       "classification": "dto",
@@ -78345,11 +78411,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3427,
-    "contract_set_memberships": 4223,
-    "edges": 8894,
+    "contract_references": 3429,
+    "contract_set_memberships": 4229,
+    "edges": 8902,
     "foreign_keys": 152,
     "logical_references": 6,
-    "nodes": 4305
+    "nodes": 4308
   }
 }

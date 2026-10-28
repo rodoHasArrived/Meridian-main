@@ -438,6 +438,81 @@ public sealed class OtcExposureRulesTests
     }
 
     [Fact]
+    public void Compute_RecordsTheVersionOfEveryRecordItRead_InIdOrder()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002);
+        var closed = Contract(Guid.NewGuid(), OtcContractDirection.Sell, 1_000_000m, OtcContractStatus.Terminated, Trade.AddYears(-1), Trade.AddYears(4)) with { Version = 4, SecurityId = Guid.NewGuid() };
+        var untraded = Contract(Guid.NewGuid(), OtcContractDirection.Buy, 2_000_000m, OtcContractStatus.Pending, AsOf.AddDays(1), AsOf.AddYears(5)) with { Version = 2, SecurityId = Guid.NewGuid() };
+        view = view with { NettingSet = view.NettingSet with { Version = 7 }, Contracts = [untraded, .. view.Contracts, closed] };
+        var balances = Balances(400_000m);
+        var returned = balances[0] with { BalanceId = Guid.NewGuid(), Quantity = 0m, ValuedAmount = 0m, Version = 3 };
+        var revalued = balances[1] with { BalanceId = Guid.NewGuid(), ValuedAsOf = AsOf.AddDays(1), Version = 5 };
+        var elsewhere = balances[0] with { BalanceId = Guid.NewGuid(), CollateralAgreementId = Guid.NewGuid() };
+        var other = Guid.NewGuid();
+        var computedAt = DateTimeOffset.UtcNow;
+
+        var snapshot = OtcExposureRules.Compute(
+            view, [Valued(view.Contracts[1], 1.25m), Valued(view.Contracts[2], 1.25m)], [revalued, .. balances, elsewhere, returned], [other, NettingSetId, other], AsOf, "casey", computedAt);
+
+        var inputs = snapshot.Inputs!;
+        inputs.NettingSetVersion.Should().Be(7);
+        inputs.Contracts.Should().Equal(
+            view.Contracts.Select(c => new OtcExposureInputVersionDto(c.ContractId, c.Version)).OrderBy(i => i.Id),
+            "a closed or not-yet-traded contract is an input too: changing its status or trade date changes which contracts enter");
+        inputs.Contracts.Should().Contain(new[] { new OtcExposureInputVersionDto(closed.ContractId, 4), new OtcExposureInputVersionDto(untraded.ContractId, 2) });
+        inputs.CollateralBalances.Should().Equal(
+            new[] { balances[0], balances[1], returned, revalued }.Select(b => new OtcExposureInputVersionDto(b.BalanceId, b.Version)).OrderBy(i => i.Id),
+            "a fully returned balance and one blocked for its valuation date are inputs too; a balance under another agreement is not");
+        inputs.NettingSetsUnderAgreement.Should().Equal(new[] { other, NettingSetId }.Order());
+        inputs.Securities.Should().Equal(new[] { SwapId }, "the market data read is that of the securities valued; a closed or untraded contract's security is not priced");
+        inputs.KnowledgeAsOf.Should().Be(computedAt, "with no knowledge time the valuations read market data as known at the computation instant");
+        snapshot.Contracts.Should().HaveCount(2, "only the contracts that enter are valued");
+        snapshot.Status.Should().Be(OtcExposureSnapshotStatus.Incomplete, "the shared agreement and the revalued balance still block");
+
+        var versioned = snapshot with { Version = 1 };
+        var payload = OtcExposureRules.SerializePayload(versioned);
+        var read = System.Text.Json.JsonSerializer.Deserialize(payload, OtcCollateralJsonContext.Default.OtcExposureSnapshotDto)!;
+        read.Inputs.Should().BeEquivalentTo(inputs, o => o.WithStrictOrdering());
+        OtcExposureRules.Digest(read).Should().Be(OtcExposureRules.Digest(versioned), "the inputs round-trip through the payload");
+        OtcExposureRules.Digest(versioned with { Inputs = inputs with { NettingSetVersion = 8 } }).Should().NotBe(OtcExposureRules.Digest(versioned), "the digest covers the inputs");
+        OtcExposureRules.Digest(versioned with { Inputs = inputs with { KnowledgeAsOf = computedAt.AddTicks(-1) } }).Should().NotBe(OtcExposureRules.Digest(versioned), "and the knowledge time");
+    }
+
+    [Fact]
+    public void Compute_RecordsASuppliedKnowledgeTime_AndRefusesADateThatHasNotCome()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002);
+        IReadOnlyList<OtcContractValuationDto> valuations = [Valued(view.Contracts[0], 1.25m), Valued(view.Contracts[1], 1.25m)];
+        var computedAt = new DateTimeOffset(2026, 4, 1, 9, 30, 0, TimeSpan.Zero);
+        var knownAt = new DateTimeOffset(2026, 3, 31, 18, 0, 0, TimeSpan.Zero);
+
+        var replay = OtcExposureRules.Compute(view, valuations, Balances(400_000m), NotShared, AsOf, "casey", computedAt, knownAt);
+        replay.Inputs!.KnowledgeAsOf.Should().Be(knownAt, "a replay records the knowledge time its valuations used, so it can be told from a live valuation");
+        replay.ComputedAt.Should().Be(computedAt);
+
+        FluentActions.Invoking(() => OtcExposureRules.Compute(view, valuations, Balances(400_000m), NotShared, AsOf, "casey", new DateTimeOffset(2026, 3, 30, 23, 59, 0, TimeSpan.Zero)))
+            .Should().Throw<ArgumentException>("an append-only snapshot of a date to come would stand as the latest valuation for good")
+            .WithMessage("An exposure computation cannot value 2026-03-31, after the current date 2026-03-30 (UTC)*");
+        OtcExposureRules.Compute(view, valuations, Balances(400_000m), NotShared, AsOf, "casey", new DateTimeOffset(2026, 3, 31, 0, 0, 0, TimeSpan.Zero))
+            .AsOfDate.Should().Be(AsOf, "the as-of date has come from its first UTC instant");
+        FluentActions.Invoking(() => OtcExposureRules.RequireNotFutureDated(AsOf, new DateTimeOffset(2026, 3, 31, 8, 0, 0, TimeSpan.FromHours(10))))
+            .Should().Throw<ArgumentException>("the current date is the UTC one: 08:00 on the 31st at UTC+10 is still the 30th in UTC");
+    }
+
+    [Fact]
+    public void WithoutACollateralAgreement_OnlyTheNettingSetAndItsContractsAreRecorded()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002) with { CollateralAgreement = null };
+
+        var snapshot = OtcExposureRules.Compute(view, [Valued(view.Contracts[0], 1.25m), Valued(view.Contracts[1], 1.25m)], Balances(400_000m), [NettingSetId], AsOf, "casey", DateTimeOffset.UtcNow);
+
+        snapshot.Inputs!.NettingSetVersion.Should().Be(view.NettingSet.Version);
+        snapshot.Inputs.Contracts.Select(i => i.Id).Should().BeEquivalentTo(new[] { BuyId, SellId });
+        snapshot.Inputs.CollateralBalances.Should().BeEmpty("no balance belongs to a missing agreement");
+        snapshot.Inputs.NettingSetsUnderAgreement.Should().BeEmpty();
+    }
+
+    [Fact]
     public void Compute_RequiresAnActor_AndACurrency()
     {
         var view = View(OtcMasterAgreementType.Isda2002);

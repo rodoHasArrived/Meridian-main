@@ -6765,8 +6765,8 @@ PostgreSQL 16, with the Security Master, ratchet and layer-boundary suites.
 
 | Finding | What landed |
 | --- | --- |
-| The contract model held the facts but did not value them; exposure, collateral balances and calls stayed with the workstation collateral exposure read model | Exposure snapshots, collateral balances and margin calls on the contract records (migrations 054 and 055, [domain page](../domain/credit-support.md)). `OtcExposureRules` (Contracts, pure) selects the open contracts of a netting set traded on or before the as-of, nets them when the master permits close-out netting (`Isda1992`, `Isda2002`, `Gmra`, `Gmsla`; `Other` is gross, fail closed), and computes the credit support amount each way in the ISDA 1994 form, `max(0, exposure + IA_pledgor − IA_securedParty − threshold_pledgor)`, against the collateral the secured party holds, adjusted by the haircut of the CSA's current eligible-collateral line for each balance; the minimum transfer amount is tested on the unrounded delivery or return, then rounded up for a delivery and down for a return. Any unvalued contract or snapshot-level blocker (`NoCollateralAgreement`, `CollateralAgreementNotYetEffective`, `CollateralAgreementTerminated`, `SharedCollateralAgreement`, `PastTermination`, `CurrencyMismatch`, `MissingValuation`, `CollateralValuationAfterAsOf`, `IneligibleCollateral`, `CollateralCurrencyMismatch`, …) makes the snapshot `Incomplete`: exposures are reported, no movement is computed; with no CSA both credit support sides are null (exposures only). `OtcExposureSnapshotDto` is append-only and versioned per (netting set, as-of date), carries every valuation, blocker, held collateral line and movement, and a SHA-256 over its canonical serialization (`otc_exposure_snapshots`, update and delete refused). `OtcCollateralBalanceDto` (`otc_collateral_balances`) records cash or securities posted or received under a CSA, with the haircut copied from the CSA's eligible-collateral line when written, the valued amount computed, never supplied, and a required valuation date. `OtcMarginCallDto` (`otc_margin_calls`) is issued only from a `Complete`, real-provenance, latest-version snapshot computed under the netting set's current master agreement and CSA at their current versions, with no other netting set referencing that CSA, copies the movement's amount and currency, and moves `Issued → Agreed | Disputed | Cancelled`, `Disputed → Agreed | Cancelled`, `Agreed → Settled | Cancelled`, one open call per netting set, mover and movement kind (a party's delivery and its return are distinct obligations) and one uncancelled call per snapshot movement (a settled movement is called again only from a recomputed snapshot), each enforced by rule and by a partial unique index. |
-| No valuation reached a contract | `IOtcContractValuationSource` (Contracts) values one contract as of a date in a stated currency, signed from the fund's side with `Direction` applied, or says why not. `PricingStoreOtcContractValuationSource` (Application, `otc-mtm-observed-price-v1`) reads the golden-copy price as of the date with the knowledge cutoff: a `PercentOfPar` observation is value per 100 of notional to the buyer, so `MarkToMarket = sign × Notional × price ÷ 100`; `CurrencyPerUnit` and `Unspecified` quotes are `UnitMismatch`, a stale fallback is `StaleInput`, no price is `MissingInput`, and a currency other than the CSA's is `CurrencyMismatch` before any receipt is retained. Provenance follows the selected source (a simulated origin is reported, and a call cannot be issued from it). A valued mark for another date or another instrument is not folded in (`MissingValuation`). `OtcExposureService` orchestrates netting set → CSA → balances and the netting sets that reference the CSA → valuations → `Compute` → append, stamping the actor; it refuses a default as-of date and values every contract at one knowledge time (the request's cutoff, else the computation instant the snapshot is stamped with). |
+| The contract model held the facts but did not value them; exposure, collateral balances and calls stayed with the workstation collateral exposure read model | Exposure snapshots, collateral balances and margin calls on the contract records (migrations 054 and 055, [domain page](../domain/credit-support.md)). `OtcExposureRules` (Contracts, pure) selects the open contracts of a netting set traded on or before the as-of, nets them when the master permits close-out netting (`Isda1992`, `Isda2002`, `Gmra`, `Gmsla`; `Other` is gross, fail closed), and computes the credit support amount each way in the ISDA 1994 form, `max(0, exposure + IA_pledgor − IA_securedParty − threshold_pledgor)`, against the collateral the secured party holds, adjusted by the haircut of the CSA's current eligible-collateral line for each balance; the minimum transfer amount is tested on the unrounded delivery or return, then rounded up for a delivery and down for a return. Any unvalued contract or snapshot-level blocker (`NoCollateralAgreement`, `CollateralAgreementNotYetEffective`, `CollateralAgreementTerminated`, `SharedCollateralAgreement`, `PastTermination`, `CurrencyMismatch`, `MissingValuation`, `CollateralValuationAfterAsOf`, `IneligibleCollateral`, `CollateralCurrencyMismatch`, …) makes the snapshot `Incomplete`: exposures are reported, no movement is computed; with no CSA both credit support sides are null (exposures only). `OtcExposureSnapshotDto` is append-only and versioned per (netting set, as-of date), carries every valuation, blocker, held collateral line and movement, and a SHA-256 over its canonical serialization (`otc_exposure_snapshots`, update and delete refused). `OtcCollateralBalanceDto` (`otc_collateral_balances`) records cash or securities posted or received under a CSA, with the haircut copied from the CSA's eligible-collateral line when written, the valued amount computed, never supplied, and a required valuation date. `OtcMarginCallDto` (`otc_margin_calls`) is issued only from a `Complete`, real-provenance snapshot of a date that has come (not after the current UTC date) that is the netting set's latest valuation (the latest version for its date, and no snapshot for a later date up to the current one) and whose every input still stands: the netting set's current master agreement and CSA at their current versions, no other netting set referencing that CSA, the netting set, each of its contracts and each balance under the CSA at the version the snapshot recorded, and no price observation or pricing hierarchy version for a valued security, bearing on the as-of date, recorded after the snapshot's knowledge time, which must not be earlier than its computation (`OtcExposureSnapshotDto.Inputs`, checked by `OtcMarginCallRules.RequireUnchangedInputs`); it copies the movement's amount and currency, and moves `Issued → Agreed | Disputed | Cancelled`, `Disputed → Agreed | Cancelled`, `Agreed → Settled | Cancelled`, one open call per netting set, mover and movement kind (a party's delivery and its return are distinct obligations) and one uncancelled call per snapshot movement (a settled movement is called again only from a recomputed snapshot), each enforced by rule and by a partial unique index. |
+| No valuation reached a contract | `IOtcContractValuationSource` (Contracts) values one contract as of a date in a stated currency, signed from the fund's side with `Direction` applied, or says why not. `PricingStoreOtcContractValuationSource` (Application, `otc-mtm-observed-price-v1`) reads the golden-copy price as of the date with the knowledge cutoff: a `PercentOfPar` observation is value per 100 of notional to the buyer, so `MarkToMarket = sign × Notional × price ÷ 100`; `CurrencyPerUnit` and `Unspecified` quotes are `UnitMismatch`, a stale fallback is `StaleInput`, no price is `MissingInput`, and a currency other than the CSA's is `CurrencyMismatch` before any receipt is retained. Provenance follows the selected source (a simulated origin is reported, and a call cannot be issued from it). A valued mark for another date or another instrument is not folded in (`MissingValuation`). `OtcExposureService` orchestrates netting set → CSA → balances and the netting sets that reference the CSA → valuations → `Compute` → append, stamping the actor; it refuses a default as-of date and one after the current UTC date before reading anything, and values every contract at one knowledge time (the request's cutoff, else the computation instant the snapshot is stamped with), which the snapshot records. |
 | Collateral and call writes were ungoverned | Migration 055 admits the `OtcCollateral` stream; `ExposureSnapshotRecorded`, `CollateralBalanceRecorded`, `CollateralBalanceAmended` (with the field changes), `MarginCallIssued`, `MarginCallAgreed`, `MarginCallDisputed`, `MarginCallSettled` and `MarginCallCancelled` append in the same transaction as the row with a non-blank actor and the netting set or CSA in the payload; `ISecurityGovernanceEventReader.GetForStreamAsync` reads them. |
 | No route exposed any of it | `SecurityMasterEndpoints.OtcCollateral.cs`: `POST/GET /api/security-master/otc/netting-sets/{id}/exposure-snapshots`, `GET /otc/exposure-snapshots/{snapshotId}`, `POST /otc/collateral-balances`, `GET /otc/collateral-agreements/{id}/collateral-balances`, `POST /otc/margin-calls`, `POST /otc/margin-calls/{callId}/transition`, `GET /otc/margin-calls/{callId}` and `GET /otc/netting-sets/{id}/margin-calls`; writes take the session actor, Modify permission and the mutation rate limit (rule failure 400; computing for an unknown netting set 404; issuing from an unknown snapshot or transitioning an unknown call 400, the store refusing it as a rule failure), reads need View (unknown snapshot or call 404). The routes map only when `IOtcCollateralStore` and `IOtcExposureService` are registered, so a host without the Security Master database leaves them unavailable rather than failing each request. |
 
@@ -6779,10 +6779,42 @@ notional to the buyer of that instrument as `OtcContractDirection` defines buyin
 which lists every stream in force (`OperatorOverrides`, `Aliases`, `ProjectionRebuild`,
 `UnderlyingGraph`, `Curves`, `OtcCollateral`). `Compute` leaves the version and digest to the store,
 which assigns both under an advisory lock on the netting set. A `Cancel` reason is appended to the
-call's notes, the DTO carrying no cancel-reason field. Issuing from a superseded snapshot version is
-refused; the issue takes the snapshot lock before the call lock, so a concurrent recompute cannot
-supersede the snapshot between the check and the commit (no other path takes both, so there is no
-lock-order cycle). A snapshot-level blocker makes the snapshot `Incomplete`, not only an unvalued
+call's notes, the DTO carrying no cancel-reason field. Issuing from a superseded snapshot version, or
+from a snapshot when the netting set has one (of any status) for a later date no later than the
+current UTC date, is refused. A computation refuses an as-of date after the current UTC date
+(`OtcExposureRules.RequireNotFutureDated`, in the service before anything is read and in `Compute`),
+since an append-only snapshot of a date still to come would otherwise stand as the latest valuation
+and lock calls from real ones out until that date; the later-date check also ignores any snapshot
+dated after today, and a call is refused from such a snapshot itself, so a future-dated row stored
+earlier neither blocks nor is called. Each snapshot records the
+version of every record it was computed from: the netting set, every contract in it (closed and
+not-yet-traded ones too, since a status or trade-date change alters which contracts enter), every
+balance under the CSA (fully returned ones too) and the netting sets that reference the CSA, each
+list in id order and covered by the digest, together with the securities of the contracts valued and
+the knowledge time their market data was read at. A call is refused, naming what changed, once any
+record differs from what the store holds, or once a price observation in `security_raw_prices`
+(observed by the end of the as-of date) or a pricing hierarchy version for any account (in effect by
+then) is recorded for a valued security after `OtcMarginCallRules.MarketDataKnownAt` (the earlier of
+the knowledge time and the computation instant); a snapshot without recorded inputs is refused the
+same way, and a replay (knowledge time earlier than the computation, as when a caller supplies an
+earlier cutoff to reproduce what was known then) is refused outright: it is evidence, not a call.
+Price and hierarchy writers take no OTC lock, so that check sees what has committed when it runs.
+One gap remains: a recorded time is the writer's transaction start on the database clock, compared,
+as the valuation's own cutoff is, with a knowledge time on the application clock, so a write that
+began before the knowledge time and committed after the computation read its market data, or one
+that clock skew places before it, is neither valued nor detected. The
+issue takes, in this order and before any row lock, the netting set's snapshot lock, its call lock,
+its contracts lock and the CSA's balances lock; every contract write takes the contracts lock of each
+netting set it touches (two for a move, in id order) and every balance write the balances lock of its
+CSA, also before any row lock, so no contract or balance can be added, amended or moved while a call
+is being checked and issued. The issue then share-locks the netting set, master, contract and balance
+rows it reads and locks the CSA row for update, which also blocks a netting set from being created
+under, or re-pointed to, the CSA until the call commits. Every path takes its advisory locks in that
+one order before any row lock, an issue never waits on a contract or balance row (their writers hold
+the advisory lock it holds), and the agreement and netting set writers lock only the row they write
+before the key-share locks on the rows they reference, so no lock-order cycle can form. Concurrent
+amendments of one contract are now serialized too, so two can no longer write the same version. A
+snapshot-level blocker makes the snapshot `Incomplete`, not only an unvalued
 contract. With no CSA the computation currency is that of the first contract that enters the
 exposure, not of a closed or untraded one, and both credit support sides are null. A positive
 balance valued after the as-of date blocks (`CollateralValuationAfterAsOf`) instead of being
@@ -6794,8 +6826,12 @@ the CSA's current eligible-line haircut, and a balance no longer eligible blocks
 index is added because migration 050 is already applied. A positive balance in a currency other
 than the computation currency blocks (`CollateralCurrencyMismatch`), since there is no FX. A call is
 refused when the netting set's master agreement, CSA or either version is no longer the one the
-snapshot was computed under, when the CSA is now shared (recompute the snapshot), or when the
-snapshot's movement was already called and not cancelled.
+snapshot was computed under, when the CSA is now shared, when the netting set, any of its contracts
+or any balance under the CSA has been added, amended, moved or removed since the computation, when
+market data for a valued security has been recorded since its knowledge time, when the snapshot is
+a replay, or when the netting set has been valued for a later date up to today (in each case
+recompute the snapshot and issue from the new one), when the snapshot is dated after today, or when
+the snapshot's movement was already called and not cancelled.
 
 **Behaviour changes.** None to existing surfaces: the workstation collateral exposure read model
 (`CollateralExposureService`, `GET /api/workstation/collateral/exposure`) is untouched and stays an
@@ -6817,10 +6853,16 @@ play); each is called separately and both calls may be open at once.
 
 **Validation.** `OtcExposureRulesTests` (the design's worked cases A–H, netting, selection,
 rounding, the shared-CSA, after-as-of, ineligible and current-haircut collateral cases, mismatched
-marks, null sides with no CSA and their payload round trip), `OtcExposureServiceTests` (Unit: the
-refusals, an unknown netting set, the no-CSA branch, one knowledge time, the sharing fact reaching
-the rules), `OtcCollateralRulesTests` (balance normalization, call issue and the full transition
-matrix, `GetForStreamAsync` guards), `OtcCollateralMigrationTests` (three tables, the single drop,
+marks, null sides with no CSA and their payload round trip, the recorded input versions in id order
+with closed, untraded, returned and blocked records included, the valued securities and knowledge
+time recorded, a future as-of date refused against the UTC date), `OtcExposureServiceTests` (Unit:
+the refusals, a future date among them before anything is read or valued, an unknown netting set,
+the no-CSA branch, one knowledge time and its record, the sharing fact reaching the rules, the
+records read becoming the recorded inputs), `OtcCollateralRulesTests` (balance normalization, call
+issue and the full transition matrix, a future-dated snapshot refused, unchanged inputs accepted in
+any order and each kind of change refused by name, later market data refused naming each record in a
+stable order, a replay refused, a snapshot without inputs or knowledge time refused,
+`GetForStreamAsync` guards), `OtcCollateralMigrationTests` (three tables, the single drop,
 the exact six-stream list), `PricingStoreOtcContractValuationSourceTests`,
 `SecurityMasterOtcCollateralEndpointsTests` (403 on every write, 400 on issue and transition, routes
 unmapped without the services) and `OtcCollateralPostgresTests` (Integration: balances and their
@@ -6828,5 +6870,11 @@ events, two snapshot versions for one date, the refused update, the fund-deliver
 agreed and settled with its events in order, the refused second open call and the refused call
 from an `Incomplete` snapshot; a call refused after the CSA is amended and again once a second
 netting set shares it, the recomputed snapshot applying the amended haircut, and an exposures-only
-snapshot with null sides round-tripping) against a disposable PostgreSQL 16, with the existing OTC
+snapshot with null sides round-tripping; a call refused once collateral is received after the
+computation and the recomputed call following the new movement; calls refused after a contract is
+amended or booked, the netting set amended, or a later date valued; a call refused once a corrected
+price for the date or a pricing hierarchy is recorded after the computation (a price observed after
+the date is not counted), and from a replay; a future date refused at computation, and a stray
+future-dated snapshot neither blocking the call from the latest real one nor callable; and balance
+and contract writes and an issue waiting for each other's locks) against a disposable PostgreSQL 16, with the existing OTC
 contract, behaviour-facts, ratchet, layer-boundary and workstation collateral suites.

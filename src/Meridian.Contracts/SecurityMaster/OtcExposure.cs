@@ -165,11 +165,47 @@ public sealed record OtcCreditSupportSideDto(
     decimal ReturnRaw,
     OtcCollateralMovementDto? Movement);
 
+/// <summary>The version of one record an exposure snapshot was computed from.</summary>
+public sealed record OtcExposureInputVersionDto(Guid Id, long Version);
+
+/// <summary>
+/// What an exposure snapshot was computed from, besides the master and collateral agreement
+/// versions the snapshot carries itself. The records, each at the version read: the netting set;
+/// every contract in it, closed and not-yet-traded ones included, because a change of status or
+/// trade date changes which contracts enter; every collateral balance under the collateral
+/// agreement, fully returned ones included; and the netting sets that reference the agreement. The
+/// market data: <see cref="Securities"/>, the securities of the contracts that were valued, whose
+/// prices and pricing hierarchy the valuations read as known at <see cref="KnowledgeAsOf"/>. Each
+/// list is in id order, so the digest is the same however the records were read. A call is issued
+/// from the snapshot only while every record is unchanged, no market data for those securities
+/// bearing on the as-of date has been recorded since, and the knowledge time is not earlier than
+/// the computation (<see cref="OtcMarginCallRules.RequireUnchangedInputs"/>). The knowledge time
+/// and the securities describe the computation rather than a stored record, so the record set a
+/// store reads back for that check leaves them at their defaults.
+/// </summary>
+public sealed record OtcExposureSnapshotInputsDto(
+    long NettingSetVersion,
+    IReadOnlyList<OtcExposureInputVersionDto> Contracts,
+    IReadOnlyList<OtcExposureInputVersionDto> CollateralBalances,
+    IReadOnlyList<Guid> NettingSetsUnderAgreement,
+    DateTimeOffset KnowledgeAsOf = default,
+    IReadOnlyList<Guid>? Securities = null);
+
+/// <summary>
+/// A market data record for a security a snapshot valued that was recorded after the snapshot's
+/// knowledge time: a price observation (<see cref="Record"/> names its source) or a pricing
+/// hierarchy version, with the instant it takes effect and the instant it was recorded.
+/// </summary>
+public sealed record OtcMarketDataRecordDto(Guid SecurityId, string Record, DateTimeOffset EffectiveAt, DateTimeOffset RecordedAt);
+
 /// <summary>
 /// The append-only valuation of one netting set on one date: the contracts valued, the netting
 /// basis, gross and net exposure, the collateral held on each side, the credit support each side's
 /// terms imply and the movements that follow. Recomputing a date appends the next version. With no
 /// collateral agreement the snapshot reports exposures only and both credit support sides are null.
+/// <see cref="Inputs"/> records the version of every record the computation read and the market
+/// data knowledge time; it is null only on a payload stored without it, and such a snapshot cannot
+/// be called.
 /// </summary>
 public sealed record OtcExposureSnapshotDto(
     Guid SnapshotId,
@@ -194,11 +230,16 @@ public sealed record OtcExposureSnapshotDto(
     IReadOnlyList<OtcCollateralHeldLineDto> CollateralHeld,
     IReadOnlyList<OtcCollateralMovementDto> Movements,
     IReadOnlyList<OtcValuationBlockerDto> Blockers,
+    OtcExposureSnapshotInputsDto? Inputs,
     string PayloadSha256,
     string ComputedBy,
     DateTimeOffset ComputedAt);
 
-/// <summary>Asks for a netting set's exposure to be computed and recorded as of a date.</summary>
+/// <summary>
+/// Asks for a netting set's exposure to be computed and recorded as of a date. A
+/// <see cref="KnowledgeAsOf"/> earlier than the computation replays what was known then; the
+/// snapshot is recorded as evidence and no call is issued from it.
+/// </summary>
 public sealed record ComputeOtcExposureSnapshotRequest(DateOnly AsOfDate, DateTimeOffset? KnowledgeAsOf = null);
 
 /// <summary>Computes and records exposure snapshots for a netting set.</summary>
@@ -208,9 +249,11 @@ public interface IOtcExposureService
     /// Values the netting set's open contracts as of <paramref name="asOfDate"/>, applies its
     /// credit support terms and appends the result as the next snapshot version for that date.
     /// Every contract is valued at one knowledge time: <paramref name="knowledgeAsOf"/>, else the
-    /// instant the snapshot is stamped as computed. Returns null when the netting set does not
-    /// exist; an empty netting set id, a default as-of date or a blank actor is an
-    /// <see cref="ArgumentException"/>.
+    /// instant the snapshot is stamped as computed. A knowledge time earlier than that instant
+    /// replays what was known then: the snapshot is recorded as evidence, and no call is issued from
+    /// it. Returns null when the netting set does not exist; an empty netting set id, a default
+    /// as-of date, an as-of date after the current UTC date or a blank actor is an
+    /// <see cref="ArgumentException"/>, refused before anything is read.
     /// </summary>
     Task<OtcExposureSnapshotDto?> ComputeAsync(Guid nettingSetId, DateOnly asOfDate, string actor, DateTimeOffset? knowledgeAsOf = null, CancellationToken ct = default);
 }
@@ -324,7 +367,13 @@ public static class OtcExposureRules
     /// agreement both credit support sides are null. <c>nettingSetsUnderAgreement</c> is every
     /// netting set that references the collateral agreement, as the store reports it (empty with no
     /// agreement); any netting set other than this one is a
-    /// <see cref="OtcValuationBlockerCodes.SharedCollateralAgreement"/> blocker. The returned
+    /// <see cref="OtcValuationBlockerCodes.SharedCollateralAgreement"/> blocker. The snapshot's
+    /// <see cref="OtcExposureSnapshotDto.Inputs"/> record the netting set version, every contract in
+    /// the view, every balance under the collateral agreement and the netting sets under it, each
+    /// with the version read, and the securities valued with <paramref name="knowledgeAsOf"/> (the
+    /// knowledge time the valuations used, else <paramref name="computedAt"/>), so a call can be
+    /// refused once any of them changes. An as-of date after the UTC date of
+    /// <paramref name="computedAt"/> is refused (<see cref="RequireNotFutureDated"/>). The returned
     /// snapshot carries no version and no digest; the store assigns both.
     /// </summary>
     public static OtcExposureSnapshotDto Compute(
@@ -334,7 +383,8 @@ public static class OtcExposureRules
         IReadOnlyCollection<Guid> nettingSetsUnderAgreement,
         DateOnly asOfDate,
         string computedBy,
-        DateTimeOffset computedAt)
+        DateTimeOffset computedAt,
+        DateTimeOffset? knowledgeAsOf = null)
     {
         ArgumentNullException.ThrowIfNull(view);
         ArgumentNullException.ThrowIfNull(valuations);
@@ -342,6 +392,7 @@ public static class OtcExposureRules
         ArgumentNullException.ThrowIfNull(nettingSetsUnderAgreement);
         if (string.IsNullOrWhiteSpace(computedBy))
             throw new ArgumentException("An exposure snapshot names who computed it.", nameof(computedBy));
+        RequireNotFutureDated(asOfDate, computedAt);
 
         var currency = ResolveCurrency(view, asOfDate);
         var csa = view.CollateralAgreement;
@@ -508,9 +559,59 @@ public static class OtcExposureRules
             held,
             movements,
             blockers,
+            RecordInputs(view, selected, balances, nettingSetsUnderAgreement, knowledgeAsOf ?? computedAt),
             string.Empty,
             computedBy.Trim(),
             computedAt);
+    }
+
+    /// <summary>
+    /// Refuses an as-of date after the UTC date of <paramref name="now"/>. A snapshot values a date
+    /// that has come: one for a later date would stand as the netting set's latest valuation before
+    /// that date arrives, and since snapshots are append-only it could never be withdrawn.
+    /// </summary>
+    public static void RequireNotFutureDated(DateOnly asOfDate, DateTimeOffset now)
+    {
+        var today = DateOnly.FromDateTime(now.UtcDateTime);
+        if (asOfDate > today)
+            throw new ArgumentException($"An exposure computation cannot value {asOfDate:yyyy-MM-dd}, after the current date {today:yyyy-MM-dd} (UTC); a snapshot values a date that has come.", nameof(asOfDate));
+    }
+
+    /// <summary>
+    /// The versions of the records a computation read, each list in id order, with the securities
+    /// of the contracts that entered and the knowledge time their market data was read at. Every
+    /// contract in the view is recorded, not only those that enter, and every balance under the
+    /// collateral agreement, not only those held: closing a contract, moving its trade date, or
+    /// returning or revaluing a balance changes the result as surely as amending a held one. A
+    /// balance under another agreement is never part of the computation, so it is not recorded; with
+    /// no collateral agreement no balance or netting set is.
+    /// </summary>
+    private static OtcExposureSnapshotInputsDto RecordInputs(
+        OtcNettingSetViewDto view,
+        IReadOnlyList<OtcContractDto> valued,
+        IReadOnlyList<OtcCollateralBalanceDto> balances,
+        IReadOnlyCollection<Guid> nettingSetsUnderAgreement,
+        DateTimeOffset knowledgeAsOf)
+    {
+        var csa = view.CollateralAgreement;
+        return new OtcExposureSnapshotInputsDto(
+            view.NettingSet.Version,
+            view.Contracts
+                .Select(contract => new OtcExposureInputVersionDto(contract.ContractId, contract.Version))
+                .OrderBy(input => input.Id)
+                .ThenBy(input => input.Version)
+                .ToArray(),
+            csa is null
+                ? []
+                : balances
+                    .Where(balance => balance.CollateralAgreementId == csa.CollateralAgreementId)
+                    .Select(balance => new OtcExposureInputVersionDto(balance.BalanceId, balance.Version))
+                    .OrderBy(input => input.Id)
+                    .ThenBy(input => input.Version)
+                    .ToArray(),
+            csa is null ? [] : nettingSetsUnderAgreement.Distinct().Order().ToArray(),
+            knowledgeAsOf,
+            valued.Select(contract => contract.SecurityId).Distinct().Order().ToArray());
     }
 
     /// <summary>

@@ -11,7 +11,9 @@ namespace Meridian.Tests.SecurityMaster;
 /// The exposure orchestrator against substitute stores: it refuses an empty netting set, a default
 /// as-of date and a blank actor before reading anything, answers null for an unknown netting set,
 /// reads no balances without a collateral agreement, values only the contracts that enter, values
-/// every contract at one knowledge time and passes the netting sets that share the agreement to the rules.
+/// every contract at one knowledge time, passes the netting sets that share the agreement to the
+/// rules and records the version of every record it read, the securities valued and the knowledge
+/// time on the snapshot. An as-of date after the current UTC date is refused before anything is read.
 /// </summary>
 [Trait("Category", "Unit")]
 public sealed class OtcExposureServiceTests
@@ -47,8 +49,11 @@ public sealed class OtcExposureServiceTests
         await service.Invoking(s => s.ComputeAsync(NettingSetId, default, "casey")).Should().ThrowAsync<ArgumentException>()
             .WithMessage("*states the date it values*", "an omitted asOfDate binds to 0001-01-01 and must not be computed");
         await service.Invoking(s => s.ComputeAsync(NettingSetId, AsOf, " ")).Should().ThrowAsync<ArgumentException>().WithMessage("*names the operator*");
+        await service.Invoking(s => s.ComputeAsync(NettingSetId, DateOnly.FromDateTime(DateTime.UtcNow).AddDays(1), "casey")).Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*after the current date*", "a snapshot of a date to come would stand as the latest valuation and could never be withdrawn");
 
         await _contracts.DidNotReceiveWithAnyArgs().GetNettingSetAsync(default, default);
+        await _valuation.DidNotReceiveWithAnyArgs().ValueAsync(default!, default);
         await _collateral.DidNotReceiveWithAnyArgs().AppendExposureSnapshotAsync(default!, default);
     }
 
@@ -101,6 +106,7 @@ public sealed class OtcExposureServiceTests
         var snapshot = (await Service().ComputeAsync(NettingSetId, AsOf, "casey", knownAt))!;
 
         _requests.Should().HaveCount(2).And.OnlyContain(r => r.KnowledgeAsOf == knownAt && r.AsOfDate == AsOf && r.Currency == "USD");
+        snapshot.Inputs!.KnowledgeAsOf.Should().Be(knownAt, "the knowledge time is recorded, so a replay can be told from a live valuation");
         snapshot.Status.Should().Be(OtcExposureSnapshotStatus.Complete);
         snapshot.Movements.Should().ContainSingle().Which.Amount.Should().Be(330_000m, "case A through the orchestrator");
     }
@@ -115,6 +121,7 @@ public sealed class OtcExposureServiceTests
         _requests.Should().HaveCount(2);
         _requests.Select(r => r.KnowledgeAsOf).Distinct().Should().ContainSingle("one knowledge time for the whole snapshot")
             .Which.Should().Be(snapshot.ComputedAt, "the knowledge time is the instant the snapshot is stamped with");
+        snapshot.Inputs!.KnowledgeAsOf.Should().Be(snapshot.ComputedAt);
     }
 
     [Fact]
@@ -129,6 +136,24 @@ public sealed class OtcExposureServiceTests
         snapshot.Status.Should().Be(OtcExposureSnapshotStatus.Incomplete);
         snapshot.Blockers.Should().ContainSingle(b => b.Code == OtcValuationBlockerCodes.SharedCollateralAgreement && b.Reason.Contains(other.ToString("D")));
         snapshot.Movements.Should().BeEmpty();
+        snapshot.Inputs!.NettingSetsUnderAgreement.Should().Equal(new[] { NettingSetId, other }.Order(), "the sharing fact is recorded as an input");
+    }
+
+    [Fact]
+    public async Task TheRecordsTheServiceRead_AreTheSnapshotsRecordedInputs()
+    {
+        var view = View();
+        _contracts.GetNettingSetAsync(NettingSetId, Arg.Any<CancellationToken>()).Returns(view);
+        var balances = Balances();
+        _collateral.ListCollateralBalancesAsync(CsaId, Arg.Any<CancellationToken>()).Returns(balances);
+
+        var snapshot = (await Service().ComputeAsync(NettingSetId, AsOf, "casey"))!;
+
+        snapshot.Inputs!.NettingSetVersion.Should().Be(view.NettingSet.Version);
+        snapshot.Inputs.Contracts.Should().Equal(view.Contracts.Select(c => new OtcExposureInputVersionDto(c.ContractId, c.Version)).OrderBy(i => i.Id));
+        snapshot.Inputs.CollateralBalances.Should().Equal(balances.Select(b => new OtcExposureInputVersionDto(b.BalanceId, b.Version)).OrderBy(i => i.Id));
+        snapshot.Inputs.NettingSetsUnderAgreement.Should().Equal(NettingSetId);
+        snapshot.Inputs.Securities.Should().Equal(new[] { SwapId }, "the securities valued, whose market data a call is checked against");
     }
 
     private OtcExposureService Service() => new(_contracts, _collateral, _valuation, NullLogger<OtcExposureService>.Instance);

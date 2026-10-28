@@ -166,10 +166,25 @@ agreements, collateral agreements, netting sets, bilateral contracts) written by
 `otc_collateral_balances` and `otc_margin_calls` (partial unique indexes keep one open call per
 netting set, mover and movement kind, and one uncancelled call per snapshot movement); migration `055_security_governance_events_otc_collateral_stream.sql` admits
 the `OtcCollateral` governance stream. `PostgresOtcCollateralStore` serializes computations and
-calls per netting set with transaction-scoped advisory locks (an issue takes the snapshot lock and
-then the call lock, so a concurrent recompute cannot supersede the snapshot it checks), refuses a
-call from a superseded snapshot or one computed under a collateral agreement or agreement version
-the netting set no longer has, or that another netting set now also references, resolves eligible
+calls per netting set with transaction-scoped advisory locks (`OtcAdvisoryLocks` states them and
+the one order they are taken in: an issue takes the netting set's snapshot, call and contracts
+locks and the collateral agreement's balances lock before any row lock, and every contract or
+balance write takes the contracts or balances lock it touches first; the issue also locks the
+collateral agreement row for update, so no netting set can start referencing it meanwhile, and
+no agreement, netting set, contract or balance the snapshot was computed from can change between
+the check and the commit; price and pricing hierarchy writers take no OTC lock, so the market data
+check reads what they have committed when it runs). It refuses a call from a superseded snapshot,
+from one dated after the current UTC date, from one when a later date up to the current one has
+been valued (a stray future-dated snapshot is ignored), from one computed under a master
+agreement, collateral agreement or version the netting set no longer has or that another netting
+set now also references, from one whose recorded inputs (the netting set, its contracts and the
+agreement's balances, each at a version) no longer match the stored rows, from one with a price
+observation or pricing hierarchy version for a valued security, bearing on its as-of date,
+recorded in `security_raw_prices` or `security_pricing_hierarchy(_history)` after its knowledge
+time, and from a replay (knowledge time earlier than the computation). Recorded times are writer
+transaction starts on the database clock, compared with a knowledge time on the application clock,
+so a price or hierarchy write that began before the knowledge time and committed after the
+computation read its market data, or one clock skew places before it, is not detected. It resolves eligible
 collateral and currency against the agreement inside the write transaction, stores each
 snapshot's jsonb payload with a digest reproducible from the payload, and appends a governance
 event (snapshot recorded, balance recorded or amended with the changed fields, call issued,

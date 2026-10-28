@@ -13,7 +13,11 @@ namespace Meridian.Storage.SecurityMaster;
 /// stream (migration 055) in the same transaction, naming the actor, so the change and its record
 /// commit or roll back together. Every write passes the pure rules first
 /// (<see cref="OtcExposureRules"/>, <see cref="OtcCollateralRules"/>, <see cref="OtcMarginCallRules"/>),
-/// so the database constraints are a backstop rather than the first line of validation.
+/// so the database constraints are a backstop rather than the first line of validation. A call is
+/// issued only from the netting set's latest snapshot, and only while every record the snapshot
+/// was computed from is unchanged and no market data for its valued securities has been recorded
+/// since its knowledge time; <see cref="OtcAdvisoryLocks"/> states the locks that keep the record
+/// check true until the call commits and the order they are taken in.
 /// </summary>
 public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
 {
@@ -57,7 +61,7 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
 
         // Computations for one netting set are serialized so concurrent recomputations of one date
         // take distinct versions rather than colliding on the unique index.
-        await LockAsync(connection, transaction, "otc-exposure-snapshot:" + snapshot.NettingSetId.ToString("D"), ct).ConfigureAwait(false);
+        await OtcAdvisoryLocks.LockAsync(connection, transaction, OtcAdvisoryLocks.ExposureSnapshot(snapshot.NettingSetId), ct).ConfigureAwait(false);
         await RequireRowAsync(connection, transaction, "otc_netting_sets", "netting_set_id", snapshot.NettingSetId, "netting set", ct).ConfigureAwait(false);
         if (snapshot.CollateralAgreementId is { } collateralAgreementId)
             await RequireRowAsync(connection, transaction, "otc_collateral_agreements", "collateral_agreement_id", collateralAgreementId, "collateral agreement", ct).ConfigureAwait(false);
@@ -169,6 +173,10 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
 
+        // Balance writes under one agreement wait for, and are waited on by, a call being issued
+        // under it, so an issue cannot miss a balance recorded or amended while it checks the
+        // snapshot's inputs. Taken before any row lock (see OtcAdvisoryLocks for the order).
+        await OtcAdvisoryLocks.LockAsync(connection, transaction, OtcAdvisoryLocks.CollateralBalances(normalized.CollateralAgreementId), ct).ConfigureAwait(false);
         var agreement = await PostgresOtcContractStore.ReadCollateralAgreementAsync(connection, transaction, _options.Schema, normalized.CollateralAgreementId, ct).ConfigureAwait(false)
             ?? throw new ArgumentException($"The collateral agreement {normalized.CollateralAgreementId:D} does not exist.", nameof(request));
         var eligible = OtcCollateralRules.ResolveEligible(agreement, normalized.EligibleCollateralDescription);
@@ -295,18 +303,37 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
         var snapshot = await ReadSnapshotAsync(connection, transaction, request.SnapshotId, ct).ConfigureAwait(false)
             ?? throw new ArgumentException($"The exposure snapshot {request.SnapshotId:D} does not exist.", nameof(request));
 
-        // The snapshot lock comes first so a concurrent recompute cannot append a later version
-        // between the latest-version check and this call's commit. Issues and transitions for one
-        // netting set are then serialized under the call lock, taken before any row lock, so the
-        // one-open-call-per-mover-and-kind rule is checked against a settled picture. Only this path
-        // takes both locks (an append takes the snapshot lock alone, a transition the call lock
-        // alone), always in this order, so there is no lock-order cycle.
-        await LockAsync(connection, transaction, "otc-exposure-snapshot:" + snapshot.NettingSetId.ToString("D"), ct).ConfigureAwait(false);
-        await LockAsync(connection, transaction, "otc-margin-call:" + snapshot.NettingSetId.ToString("D"), ct).ConfigureAwait(false);
+        // Every lock is taken before any row lock, in the order OtcAdvisoryLocks states. The snapshot
+        // lock comes first so a concurrent recompute cannot append a later version or a later date
+        // between the checks below and this call's commit. The call lock serializes issues and
+        // transitions for the netting set, so the one-open-call-per-mover-and-kind rule is checked
+        // against a settled picture. The contracts and balances locks hold off every contract and
+        // balance write the snapshot's inputs cover, including ones that would add a row, so the
+        // input check cannot be overtaken before this call commits. Price and hierarchy writers take
+        // no OTC lock; the market data check reads what they have committed (see
+        // ReadMarketDataRecordedSinceAsync).
+        await OtcAdvisoryLocks.LockAsync(connection, transaction, OtcAdvisoryLocks.ExposureSnapshot(snapshot.NettingSetId), ct).ConfigureAwait(false);
+        await OtcAdvisoryLocks.LockAsync(connection, transaction, OtcAdvisoryLocks.MarginCall(snapshot.NettingSetId), ct).ConfigureAwait(false);
+        await OtcAdvisoryLocks.LockNettingSetContractsAsync(connection, transaction, [snapshot.NettingSetId], ct).ConfigureAwait(false);
+        if (snapshot.CollateralAgreementId is { } snapshotAgreementId)
+            await OtcAdvisoryLocks.LockAsync(connection, transaction, OtcAdvisoryLocks.CollateralBalances(snapshotAgreementId), ct).ConfigureAwait(false);
+
+        var now = DateTimeOffset.UtcNow;
         var latest = await LatestVersionAsync(connection, transaction, snapshot.NettingSetId, snapshot.AsOfDate, ct).ConfigureAwait(false);
         if (latest != snapshot.Version)
             throw new ArgumentException($"Exposure snapshot {snapshot.SnapshotId:D} (version {snapshot.Version}) has been superseded by version {latest} for {snapshot.AsOfDate:yyyy-MM-dd}; issue the call from the latest snapshot.", nameof(request));
-        await RequireCurrentTermsAsync(connection, transaction, snapshot, ct).ConfigureAwait(false);
+        if (await LaterSnapshotAsync(connection, transaction, snapshot, DateOnly.FromDateTime(now.UtcDateTime), ct).ConfigureAwait(false) is { } later)
+        {
+            throw new ArgumentException(
+                $"Exposure snapshot {snapshot.SnapshotId:D} values {snapshot.AsOfDate:yyyy-MM-dd}, but netting set {snapshot.NettingSetId:D} also has snapshot {later.SnapshotId:D} " +
+                $"(version {later.Version}, {later.Status}) for the later date {later.AsOfDate:yyyy-MM-dd}; a call is issued only from the netting set's latest valuation, " +
+                "so issue it from the latest snapshot for that date, recomputing the date if that snapshot cannot be called.", nameof(request));
+        }
+
+        var terms = await RequireCurrentTermsAsync(connection, transaction, snapshot, ct).ConfigureAwait(false);
+        var inputs = await ReadCurrentInputsAsync(connection, transaction, snapshot, terms, ct).ConfigureAwait(false);
+        var marketData = await ReadMarketDataRecordedSinceAsync(connection, transaction, snapshot, ct).ConfigureAwait(false);
+        OtcMarginCallRules.RequireUnchangedInputs(snapshot, inputs, marketData);
 
         // The open calls of the netting set and every call already issued from this snapshot, so the
         // rule can refuse both a second open call and a repeat of a movement already called.
@@ -317,7 +344,7 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
             ct,
             ("id", snapshot.NettingSetId),
             ("snapshot_id", snapshot.SnapshotId)).ConfigureAwait(false);
-        var call = OtcMarginCallRules.Issue(snapshot, request with { UpdatedBy = actor }, existingCalls, DateTimeOffset.UtcNow);
+        var call = OtcMarginCallRules.Issue(snapshot, request with { UpdatedBy = actor }, existingCalls, now);
 
         await using (var command = connection.CreateCommand())
         {
@@ -364,7 +391,7 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
 
         var probe = (await ReadCallsAsync(connection, transaction, "where call_id = @id", ("id", request.CallId), ct).ConfigureAwait(false)).SingleOrDefault()
             ?? throw new ArgumentException($"The margin call {request.CallId:D} does not exist.", nameof(request));
-        await LockAsync(connection, transaction, "otc-margin-call:" + probe.NettingSetId.ToString("D"), ct).ConfigureAwait(false);
+        await OtcAdvisoryLocks.LockAsync(connection, transaction, OtcAdvisoryLocks.MarginCall(probe.NettingSetId), ct).ConfigureAwait(false);
         var current = (await ReadCallsAsync(connection, transaction, "where call_id = @id", ("id", request.CallId), ct, forUpdate: true).ConfigureAwait(false)).Single();
         var next = OtcMarginCallRules.Transition(current, request with { UpdatedBy = actor }, DateTimeOffset.UtcNow);
 
@@ -530,15 +557,6 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
         command.Parameters.AddWithValue("updated_at", call.UpdatedAt.UtcDateTime);
     }
 
-    private static async Task LockAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, string scope, CancellationToken ct)
-    {
-        await using var command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText = "select pg_advisory_xact_lock(hashtextextended(@lock_scope, 0));";
-        command.Parameters.AddWithValue("lock_scope", scope);
-        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-    }
-
     private async Task RequireRowAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, string table, string keyColumn, Guid id, string noun, CancellationToken ct)
     {
         await using var command = connection.CreateCommand();
@@ -551,25 +569,34 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
 
     /// <summary>
     /// Refuses a call from a snapshot computed under credit support terms that no longer stand: the
-    /// netting set now points at another collateral agreement (or none), the agreement has been
-    /// amended since, or another netting set now references it. The netting set and agreement rows
-    /// are share-locked, so an amendment of either waits for this call to commit (or this call for
-    /// the amendment); the contract store locks one such row per write, so no cycle can form.
+    /// netting set now points at another collateral agreement (or none), the master agreement or
+    /// the collateral agreement has been amended since, or another netting set now references the
+    /// collateral agreement. Returns the netting set's current version and the netting sets under
+    /// its agreement for the input check. The netting set and master rows are share-locked, so an
+    /// amendment of either waits for this call to commit (or this call for the amendment). The
+    /// collateral agreement row is locked for update: besides holding off an amendment, that
+    /// conflicts with the key-share lock the foreign key takes when a netting set is created under
+    /// the agreement or re-pointed to it, so no netting set can start referencing it before this
+    /// call commits. Each contract-store write locks only the row it writes before the key-share
+    /// locks on the rows it references, and this call never locks another netting set's row, so no
+    /// cycle can form.
     /// </summary>
-    private async Task RequireCurrentTermsAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, OtcExposureSnapshotDto snapshot, CancellationToken ct)
+    private async Task<CurrentTerms> RequireCurrentTermsAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, OtcExposureSnapshotDto snapshot, CancellationToken ct)
     {
         Guid? currentAgreementId;
         Guid currentMasterId;
+        long nettingSetVersion;
         await using (var command = connection.CreateCommand())
         {
             command.Transaction = transaction;
-            command.CommandText = $"select collateral_agreement_id, master_agreement_id from {_options.Schema}.otc_netting_sets where netting_set_id = @id for share;";
+            command.CommandText = $"select collateral_agreement_id, master_agreement_id, version from {_options.Schema}.otc_netting_sets where netting_set_id = @id for share;";
             command.Parameters.AddWithValue("id", snapshot.NettingSetId);
             await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
             if (!await reader.ReadAsync(ct).ConfigureAwait(false))
                 throw new ArgumentException($"The netting set {snapshot.NettingSetId:D} does not exist.");
             currentAgreementId = reader.IsDBNull(0) ? null : reader.GetGuid(0);
             currentMasterId = reader.GetGuid(1);
+            nettingSetVersion = reader.GetInt64(2);
         }
 
         // The master agreement decides close-out netting versus gross exposure, so an amendment of it
@@ -595,7 +622,7 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
         {
             await using var command = connection.CreateCommand();
             command.Transaction = transaction;
-            command.CommandText = $"select version from {_options.Schema}.otc_collateral_agreements where collateral_agreement_id = @id for share;";
+            command.CommandText = $"select version from {_options.Schema}.otc_collateral_agreements where collateral_agreement_id = @id for update;";
             command.Parameters.AddWithValue("id", agreementId);
             currentAgreementVersion = await command.ExecuteScalarAsync(ct).ConfigureAwait(false) is long version ? version : null;
         }
@@ -607,11 +634,11 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
                 $"netting set {snapshot.NettingSetId:D} is now under {Terms(currentAgreementId, currentAgreementVersion)}. Recompute the snapshot before issuing a call.");
         }
 
+        IReadOnlyList<Guid> nettingSetsUnderAgreement = [];
         if (currentAgreementId is { } sharedAgreementId)
         {
-            var others = (await ReadNettingSetIdsUnderAgreementAsync(connection, transaction, sharedAgreementId, ct).ConfigureAwait(false))
-                .Where(id => id != snapshot.NettingSetId)
-                .ToArray();
+            nettingSetsUnderAgreement = await ReadNettingSetIdsUnderAgreementAsync(connection, transaction, sharedAgreementId, ct).ConfigureAwait(false);
+            var others = nettingSetsUnderAgreement.Where(id => id != snapshot.NettingSetId).ToArray();
             if (others.Length > 0)
             {
                 throw new ArgumentException(
@@ -620,11 +647,142 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
             }
         }
 
+        return new CurrentTerms(nettingSetVersion, nettingSetsUnderAgreement);
+
         static string Terms(Guid? agreementId, long? version)
             => agreementId is { } id
                 ? $"collateral agreement {id:D} version {version?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "unknown"}"
                 : "no collateral agreement";
     }
+
+    /// <summary>
+    /// The snapshot's input records as the store holds them now: the netting set version and the
+    /// netting sets under its agreement from <see cref="RequireCurrentTermsAsync"/>, every contract
+    /// in the netting set and every balance under the snapshot's collateral agreement, each with its
+    /// version. The contract and balance rows are share-locked; the contracts and balances advisory
+    /// locks this call already holds keep any writer from adding to either set before it commits.
+    /// </summary>
+    private async Task<OtcExposureSnapshotInputsDto> ReadCurrentInputsAsync(
+        NpgsqlConnection connection, NpgsqlTransaction transaction, OtcExposureSnapshotDto snapshot, CurrentTerms terms, CancellationToken ct)
+    {
+        var contracts = await ReadInputVersionsAsync(
+            connection,
+            transaction,
+            $"select contract_id, version from {_options.Schema}.otc_contracts where netting_set_id = @id order by contract_id for share;",
+            snapshot.NettingSetId,
+            ct).ConfigureAwait(false);
+        IReadOnlyList<OtcExposureInputVersionDto> balances = snapshot.CollateralAgreementId is { } agreementId
+            ? await ReadInputVersionsAsync(
+                connection,
+                transaction,
+                $"select balance_id, version from {_options.Schema}.otc_collateral_balances where collateral_agreement_id = @id order by balance_id for share;",
+                agreementId,
+                ct).ConfigureAwait(false)
+            : [];
+        return new OtcExposureSnapshotInputsDto(terms.NettingSetVersion, contracts, balances, terms.NettingSetsUnderAgreement);
+    }
+
+    private static async Task<IReadOnlyList<OtcExposureInputVersionDto>> ReadInputVersionsAsync(
+        NpgsqlConnection connection, NpgsqlTransaction transaction, string sql, Guid id, CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = sql;
+        command.Parameters.AddWithValue("id", id);
+        var rows = new List<OtcExposureInputVersionDto>();
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            rows.Add(new OtcExposureInputVersionDto(reader.GetGuid(0), reader.GetInt64(1)));
+        return rows;
+    }
+
+    /// <summary>
+    /// The latest version of the netting set's latest snapshot for a date after the snapshot's and
+    /// no later than <paramref name="today"/>, whatever its status, or null when there is none. A
+    /// snapshot dated after today is not yet a valuation of the netting set (computations refuse such
+    /// a date; <see cref="OtcExposureRules.RequireNotFutureDated"/>), so a stray one cannot shadow
+    /// the real latest valuation and lock calls out until its date comes.
+    /// </summary>
+    private async Task<LaterSnapshot?> LaterSnapshotAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, OtcExposureSnapshotDto snapshot, DateOnly today, CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select snapshot_id, as_of_date, version, status
+            from {_options.Schema}.otc_exposure_snapshots
+            where netting_set_id = @id and as_of_date > @as_of and as_of_date <= @today
+            order by as_of_date desc, version desc
+            limit 1;
+            """;
+        command.Parameters.AddWithValue("id", snapshot.NettingSetId);
+        command.Parameters.AddWithValue("as_of", snapshot.AsOfDate);
+        command.Parameters.AddWithValue("today", today);
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        return await reader.ReadAsync(ct).ConfigureAwait(false)
+            ? new LaterSnapshot(reader.GetGuid(0), reader.GetFieldValue<DateOnly>(1), reader.GetInt32(2), reader.GetString(3))
+            : null;
+    }
+
+    /// <summary>
+    /// Every price observation and pricing hierarchy version for the snapshot's valued securities
+    /// recorded after <see cref="OtcMarginCallRules.MarketDataKnownAt"/> that bears on its as-of
+    /// date: a price observed by the end of that date, or a hierarchy, for any account, in effect
+    /// by then. Any of them may change what a recomputation selects, so each refuses the call.
+    /// Price and hierarchy writers take no OTC lock, so this reads what has committed when it runs;
+    /// a write committing after that is later than the call, as one committing after the call is.
+    /// One gap remains: a record's recorded time is its writer's transaction start on the database
+    /// clock, compared here, as by the valuation, with a knowledge time on the application clock,
+    /// so a write that began before the knowledge time but committed only after the computation had
+    /// read the market data, or one the clocks' skew places before it, is neither read by the
+    /// valuation nor counted here.
+    /// </summary>
+    private async Task<IReadOnlyList<OtcMarketDataRecordDto>> ReadMarketDataRecordedSinceAsync(
+        NpgsqlConnection connection, NpgsqlTransaction transaction, OtcExposureSnapshotDto snapshot, CancellationToken ct)
+    {
+        if (snapshot.Inputs?.Securities is not { Count: > 0 } securities)
+            return [];
+
+        const string hierarchy = "case when account_id = '' then 'pricing hierarchy' else 'pricing hierarchy for account ' || account_id end";
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select security_id, 'price from ' || source_id, price_as_of, recorded_at
+            from {_options.Schema}.security_raw_prices
+            where security_id = any(@securities) and price_as_of < @valued_until and recorded_at > @known_at
+            union
+            select security_id, {hierarchy}, as_of, recorded_at
+            from {_options.Schema}.security_pricing_hierarchy_history
+            where security_id = any(@securities) and as_of < @valued_until and recorded_at > @known_at
+            union
+            select security_id, {hierarchy}, as_of, recorded_at
+            from {_options.Schema}.security_pricing_hierarchy
+            where security_id = any(@securities) and as_of < @valued_until and recorded_at > @known_at
+            order by 1, 4, 2, 3;
+            """;
+        command.Parameters.AddWithValue("securities", securities.ToArray());
+        command.Parameters.AddWithValue("valued_until", snapshot.AsOfDate.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
+        command.Parameters.AddWithValue("known_at", OtcMarginCallRules.MarketDataKnownAt(snapshot).UtcDateTime);
+        var records = new List<OtcMarketDataRecordDto>();
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            records.Add(new OtcMarketDataRecordDto(
+                reader.GetGuid(0),
+                reader.GetString(1),
+                reader.GetFieldValue<DateTimeOffset>(2),
+                reader.GetFieldValue<DateTimeOffset>(3)));
+        }
+
+        return records;
+    }
+
+    /// <summary>What <see cref="RequireCurrentTermsAsync"/> read that the input check also needs.</summary>
+    private sealed record CurrentTerms(long NettingSetVersion, IReadOnlyList<Guid> NettingSetsUnderAgreement);
+
+    /// <summary>A snapshot of the netting set for a later date than the one being called.</summary>
+    private sealed record LaterSnapshot(Guid SnapshotId, DateOnly AsOfDate, int Version, string Status);
 
     private async Task<IReadOnlyList<Guid>> ReadNettingSetIdsUnderAgreementAsync(NpgsqlConnection connection, NpgsqlTransaction? transaction, Guid collateralAgreementId, CancellationToken ct)
     {

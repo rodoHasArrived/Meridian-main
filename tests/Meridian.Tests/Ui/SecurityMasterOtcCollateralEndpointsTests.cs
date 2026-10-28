@@ -64,7 +64,9 @@ public sealed class SecurityMasterOtcCollateralEndpointsTests
         await using var app = await CreateAppAsync(store, Substitute.For<IOtcExposureService>());
         var client = app.GetTestClient();
 
-        (await client.GetFromJsonAsync<OtcExposureSnapshotDto>($"/api/security-master/otc/exposure-snapshots/{snapshot.SnapshotId}", Json))!.Movements.Should().ContainSingle();
+        var read = (await client.GetFromJsonAsync<OtcExposureSnapshotDto>($"/api/security-master/otc/exposure-snapshots/{snapshot.SnapshotId}", Json))!;
+        read.Movements.Should().ContainSingle();
+        read.Inputs.Should().BeEquivalentTo(snapshot.Inputs, "the recorded input versions reach the client");
         (await client.GetFromJsonAsync<List<OtcExposureSnapshotDto>>($"/api/security-master/otc/netting-sets/{nettingSetId}/exposure-snapshots", Json)).Should().ContainSingle("latest version only by default");
         (await client.GetFromJsonAsync<List<OtcExposureSnapshotDto>>($"/api/security-master/otc/netting-sets/{nettingSetId}/exposure-snapshots?asOfDate=2026-03-31&latestVersionOnly=false", Json)).Should().HaveCount(2);
         (await client.GetAsync($"/api/security-master/otc/exposure-snapshots/{Guid.NewGuid()}")).StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -192,10 +194,11 @@ public sealed class SecurityMasterOtcCollateralEndpointsTests
         var movement = new OtcCollateralMovementDto(OtcMovementKind.Delivery, OtcMovementParty.Fund, 330_000m, "USD");
         var fund = new OtcCreditSupportSideDto(OtcMovementParty.Fund, 75_000m, 0m, 1_000_000m, 250_000m, 0m, 0m, 0m, 0m, null);
         var counterparty = new OtcCreditSupportSideDto(OtcMovementParty.Counterparty, -75_000m, 1_000_000m, 0m, 0m, 925_000m, 596_245m, 328_755m, -328_755m, movement);
+        var inputs = new OtcExposureSnapshotInputsDto(1, [new OtcExposureInputVersionDto(Guid.NewGuid(), 1)], [new OtcExposureInputVersionDto(Guid.NewGuid(), 2)], [nettingSetId]);
         return new OtcExposureSnapshotDto(
             Guid.NewGuid(), nettingSetId, Guid.NewGuid(), Guid.NewGuid(), AsOf, 2, OtcExposureRules.RuleVersion, "USD",
             OtcNettingBasis.CloseOutNet, OtcExposureSnapshotStatus.Complete, DataProvenance.Real, 1, 1, [], 125_000m, 50_000m, 75_000m,
-            fund, counterparty, [], [movement], [], new string('a', 64), "casey.doyle", DateTimeOffset.UtcNow);
+            fund, counterparty, [], [movement], [], inputs, new string('a', 64), "casey.doyle", DateTimeOffset.UtcNow);
     }
 
     private static OtcCollateralBalanceDto Balance(Guid csaId)

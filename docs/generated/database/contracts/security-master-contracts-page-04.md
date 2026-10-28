@@ -2,11 +2,34 @@
 
 # `security-master-contracts` data objects - page 4 of 6
 
-Objects 241-320 of 434. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 437. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleRoll["ScheduleRoll"] {
+        +ScheduleRoll AnchorDay
+        +int DayOfMonth
+        +ScheduleRoll EndOfMonth
+        +ScheduleRoll Imm
+        +ScheduleRollKind Kind
+    }
+    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleRollKind["ScheduleRollKind"] {
+    }
+    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec["ScheduleSpec"] {
+        +BusinessDayAdjustment? AccrualAdjustment
+        +ScheduleAnchorMode AnchorMode
+        +ScheduleDirection Direction
+        +DateOnly EffectiveDate
+        +BusinessDayAdjustment? EffectiveDateAdjustment
+        +DateOnly? FirstRegularDate
+        +DateOnly? LastRegularDate
+        +int? MaxPeriods
+        +BusinessDayAdjustment? PaymentAdjustment
+        +int PaymentLagBusinessDays
+        +ScheduleRoll Roll
+        +ScheduleStubPolicy StubPolicy
+    }
     class Meridian_Contracts_SecurityMaster_Schedules_ScheduleStubPolicy["ScheduleStubPolicy"] {
     }
     class Meridian_Contracts_SecurityMaster_Schedules_ScheduleTenor["ScheduleTenor"] {
@@ -476,17 +499,10 @@ classDiagram
         +decimal Factor
         +SecurityFactorSource Source
     }
-    class Meridian_Contracts_SecurityMaster_SecurityFactorHistoryProjector["SecurityFactorHistoryProjector"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityFactorSource["SecurityFactorSource"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityFieldProvenance["SecurityFieldProvenance"] {
-        +DateTimeOffset? AsOf
-        +decimal? Confidence
-        +string FieldPath
-        +string SourceSystem
-        +string? UpdatedBy
-    }
+    Meridian_Contracts_SecurityMaster_Schedules_ScheduleRoll --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleRollKind
+    Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleRoll
+    Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleStubPolicy
+    Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleTenor
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleTenor --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleTenorUnit
     Meridian_Contracts_SecurityMaster_SecurityAliasDto --> Meridian_Contracts_SecurityMaster_SecurityAliasScope
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor
@@ -540,5 +556,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityFactorHistoryConflict --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint
     Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryConflict
     Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint
-    Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint --> Meridian_Contracts_SecurityMaster_SecurityFactorSource
 ```

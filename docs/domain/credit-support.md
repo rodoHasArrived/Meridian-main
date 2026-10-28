@@ -35,7 +35,8 @@ Security Master governance log on the `OtcCollateral` stream in the same transac
   value per 100 of notional to the buyer, so the mark is `sign(direction) × notional × price / 100`.
   Other sources plug into the same seam; no asset-class name is compared anywhere. Every contract
   in one snapshot is valued at one knowledge time: the request's cutoff, else the instant the
-  snapshot is stamped as computed.
+  snapshot is stamped as computed. A cutoff earlier than that instant replays what was known then:
+  the snapshot is evidence, and no call is issued from it.
 - A Collateral Balance may name the Security posted; a Margin Call cites the snapshot it was
   issued from and the collateral agreement it is called under.
 - Nothing here reaches the Ledger: a snapshot is a derived valuation record, not a ledger
@@ -54,7 +55,8 @@ Security Master governance log on the `OtcCollateral` stream in the same transac
 - **Which contracts enter.** Open contracts (not terminated, novated or matured) traded on or before
   the as-of date, including `Pending` ones. An open contract past its termination date is a blocker
   (`PastTermination`); nothing matures contracts automatically. A computation states its as-of date;
-  the default date is refused.
+  the default date is refused, and so is a date after the current UTC date, since an append-only
+  snapshot of a date still to come would stand as the netting set's latest valuation for good.
 - **Netting.** ISDA 1992, ISDA 2002, GMRA and GMSLA masters net on close-out: each side's exposure
   is the signed sum of marks. `Other` masters do not net (fail closed): each side's exposure is the
   sum of the marks in its favour. The basis is recorded on the snapshot.
@@ -94,18 +96,39 @@ Security Master governance log on the `OtcCollateral` stream in the same transac
 - **Calls.** A call copies the amount and currency of the snapshot's movement for its kind and
   mover, is issued on or after the snapshot date, falls due on or after it is issued, and is
   refused while the netting set has another open call of the same kind for the same mover (a
-  party's delivery and its return are distinct obligations and may both be open), when that
+  party's delivery and its return are distinct obligations and may both be open), or when that
   snapshot's movement was already called and the call was not cancelled (a settled movement is
-  called again only from a recomputed snapshot), when the snapshot has been superseded by a later
-  version for its date, or when the netting set's master agreement or collateral agreement is no
-  longer the one, at the version, the snapshot was computed under, or the collateral agreement is
-  now shared with another netting set (recompute the snapshot first). Issued → Agreed | Disputed | Cancelled;
+  called again only from a recomputed snapshot). A call is issued only from the netting set's
+  latest valuation of a date that has come: it is refused when the snapshot has been superseded by
+  a later version for its date, when the netting set has a snapshot (of any status) for a later
+  date no later than the current UTC date, or when the snapshot itself is dated after the current
+  UTC date. A future-dated snapshot stored before computations refused such dates therefore
+  neither blocks calls from the real latest valuation nor can be called. A call is also refused
+  when an input of the snapshot has changed since: the netting set's master agreement or
+  collateral agreement is no longer the one, at the version, the snapshot used; the collateral
+  agreement is now shared with another netting set; the netting set was amended; a contract was
+  added to it, moved out of it or amended (closed and not-yet-traded contracts count); a
+  collateral balance under the agreement was recorded or amended (fully returned balances count);
+  or a price observation or pricing hierarchy version for a valued contract's security, bearing
+  on the as-of date (a price observed by its end, a hierarchy in effect by then, for any account),
+  was recorded after the snapshot's knowledge time. A replayed snapshot (knowledge time earlier
+  than its computation) is refused outright. The refusal names what changed; recompute the
+  snapshot and issue from the new one. Writes to the netting set's contracts and the agreement's
+  balances wait while a call is being issued, so none can slip in between the check and the call.
+  Price and hierarchy writers do not wait: the check sees what they have committed when it runs.
+  One gap remains: a record's recorded time is its writer's transaction start, read against the
+  application's clock, so a price or hierarchy write that began before the knowledge time but
+  committed only after the computation read its market data (or one hidden by clock skew between
+  the application and the database) is neither valued nor detected. Issued → Agreed | Disputed | Cancelled;
   Disputed → Agreed | Cancelled; Agreed → Settled | Cancelled; Settled and Cancelled are terminal.
   Agreement defaults to the called amount, settlement to the agreed amount; a dispute or a
   cancellation states its reason; a settlement states its date.
 - **Evidence.** Every snapshot names its rule version (`otc-exposure-rules-v1`), each contract's
-  valuation method and inputs (the golden-copy selection receipt for the observed-price mark) and a
-  SHA-256 digest of its payload; the governance log names the actor on every write.
+  valuation method and inputs (the golden-copy selection receipt for the observed-price mark), the
+  version of every record it was computed from (the netting set, each contract in it, each balance
+  under the agreement and the netting sets that reference the agreement), the securities valued
+  and the knowledge time of their market data, and a SHA-256 digest of its payload, which covers
+  all of these; the governance log names the actor on every write.
 
 ## Examples
 

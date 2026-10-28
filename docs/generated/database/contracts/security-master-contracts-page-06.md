@@ -2,11 +2,39 @@
 
 # `security-master-contracts` data objects - page 6 of 6
 
-Objects 401-434 of 434. References crossing pages remain available in the dependency manifest.
+Objects 401-437 of 437. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityValuationRequest["SecurityValuationRequest"] {
+        +string? AccountId
+        +DateTimeOffset AsOf
+        +IReadOnlyList~SecurityValuationCurveInput~? Curves
+        +DateTimeOffset? KnownAt
+        +SecurityValuationModelKind? Model
+        +IReadOnlyDictionary~string__string~? Parameters
+        +decimal? Quantity
+        +Guid SecurityId
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityValuationResult["SecurityValuationResult"] {
+        +DateTimeOffset AsOf
+        +IReadOnlyList~SecurityValuationBlockerDto~ Blockers
+        +string Currency
+        +IReadOnlyList~string~ Diagnostics
+        +IReadOnlyList~SecurityValuationInputDto~ Inputs
+        +DateTimeOffset KnowledgeAsOf
+        +decimal? MarketValue
+        +SecurityValuationModelKind Model
+        +string ModelKey
+        +string ModelVersion
+        +SecurityValuationObservability Observability
+        +DateTimeOffset? ObservedAsOf
+    }
+    class Meridian_Contracts_SecurityMaster_SplitCorporateActionTerms["SplitCorporateActionTerms"] {
+        +string EventType
+        +decimal? Ratio
+    }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerLine["StructuredCashFlowLedgerLine"] {
         +string Account
         +string AccountType

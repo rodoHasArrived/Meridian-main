@@ -164,6 +164,14 @@ public interface IOtcCollateralStore
     /// </summary>
     Task<IReadOnlyList<Guid>> ListNettingSetsUnderCollateralAgreementAsync(Guid collateralAgreementId, CancellationToken ct = default);
 
+    /// <summary>
+    /// Issues the call for one movement of a snapshot. Besides <see cref="OtcMarginCallRules.Issue"/>,
+    /// the store refuses a snapshot that is not the netting set's latest valuation (a later version
+    /// for its date, or a snapshot for a later date no later than the current one) and one whose
+    /// terms, recorded inputs or market data no longer match what it holds
+    /// (<see cref="OtcMarginCallRules.RequireUnchangedInputs"/>), and keeps the terms, contracts and
+    /// balances from changing until the call is recorded.
+    /// </summary>
     Task<OtcMarginCallDto> IssueMarginCallAsync(IssueOtcMarginCallRequest request, CancellationToken ct = default);
     Task<OtcMarginCallDto> TransitionMarginCallAsync(TransitionOtcMarginCallRequest request, CancellationToken ct = default);
     Task<OtcMarginCallDto?> GetMarginCallAsync(Guid callId, CancellationToken ct = default);
@@ -246,10 +254,12 @@ public static class OtcCollateralRules
 
 /// <summary>
 /// The margin call lifecycle as pure functions. A call is issued from a complete, real snapshot
-/// whose movement has not already been called (a cancelled call aside); the store also requires
-/// the snapshot to be the latest version for its date and computed under the netting set's current
-/// master agreement version and current, unshared collateral agreement version. It copies the
-/// movement's amount and then moves Issued → Agreed | Disputed | Cancelled,
+/// of a date that has come, whose movement has not already been called (a cancelled call aside);
+/// the store also requires the snapshot to be the latest version for its date, with no snapshot of
+/// the netting set for a later date up to the current one, computed under the netting set's current
+/// master agreement version and current, unshared collateral agreement version, and computed from
+/// records and market data none of which has changed since (<see cref="RequireUnchangedInputs"/>).
+/// It copies the movement's amount and then moves Issued → Agreed | Disputed | Cancelled,
 /// Disputed → Agreed | Cancelled, Agreed → Settled | Cancelled, and Settled and Cancelled are
 /// terminal. Settlement does not move a balance; the operator records the resulting balance.
 /// </summary>
@@ -282,6 +292,8 @@ public static class OtcMarginCallRules
             throw new ArgumentException($"Snapshot {snapshot.SnapshotId:D} has no collateral agreement to call under.", nameof(request));
         var movement = snapshot.Movements.FirstOrDefault(candidate => candidate.Kind == request.Kind && candidate.Mover == request.Mover)
             ?? throw new ArgumentException($"Snapshot {snapshot.SnapshotId:D} computes no {request.Kind} by the {request.Mover}.", nameof(request));
+        if (snapshot.AsOfDate > DateOnly.FromDateTime(issuedAt.UtcDateTime))
+            throw new ArgumentException($"Snapshot {snapshot.SnapshotId:D} values {snapshot.AsOfDate:yyyy-MM-dd}, after the current date {DateOnly.FromDateTime(issuedAt.UtcDateTime):yyyy-MM-dd} (UTC); a call is issued only from a valuation of a date that has come.", nameof(request));
         if (request.IssuedOn < snapshot.AsOfDate)
             throw new ArgumentException("A call cannot be issued before the date its snapshot values.", nameof(request));
         if (request.DueOn is { } dueOn && dueOn < request.IssuedOn)
@@ -317,6 +329,76 @@ public static class OtcMarginCallRules
             1,
             actor,
             issuedAt);
+    }
+
+    /// <summary>
+    /// Refuses a call from a snapshot when anything it was computed from has changed since: the
+    /// netting set amended; a contract added to, removed from or amended in the netting set; a
+    /// collateral balance recorded, amended or removed under the collateral agreement; a netting
+    /// set that now references the agreement, or no longer does; or market data for a valued
+    /// security recorded after <see cref="MarketDataKnownAt"/>. <paramref name="current"/> is the
+    /// same record set as the store now holds it (its knowledge time and securities are not read);
+    /// <paramref name="marketDataRecordedSince"/> is every price observation and pricing hierarchy
+    /// version for the snapshot's securities, bearing on its as-of date, recorded after that instant.
+    /// A snapshot that does not record its inputs is refused, since it cannot be shown to be current,
+    /// and so is one valued at a knowledge time earlier than its computation: it replays what was
+    /// known then and is evidence, not a current valuation. The message names every change with its
+    /// ids and versions.
+    /// </summary>
+    public static void RequireUnchangedInputs(
+        OtcExposureSnapshotDto snapshot,
+        OtcExposureSnapshotInputsDto current,
+        IReadOnlyCollection<OtcMarketDataRecordDto> marketDataRecordedSince)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        ArgumentNullException.ThrowIfNull(current);
+        ArgumentNullException.ThrowIfNull(marketDataRecordedSince);
+        const string remedy = "Recompute the snapshot before issuing a call.";
+        if (snapshot.Inputs is not { Contracts: not null, CollateralBalances: not null, NettingSetsUnderAgreement: not null, Securities: not null } recorded
+            || recorded.KnowledgeAsOf == default)
+            throw new ArgumentException($"Exposure snapshot {snapshot.SnapshotId:D} does not record the versions of the records it was computed from and the knowledge time of its market data, so it cannot be shown to be current. {remedy}");
+        if (recorded.KnowledgeAsOf < snapshot.ComputedAt)
+            throw new ArgumentException($"Exposure snapshot {snapshot.SnapshotId:D} was valued with market data as known at {Instant(recorded.KnowledgeAsOf)}, before it was computed at {Instant(snapshot.ComputedAt)}: it replays what was known then and is evidence, not a current valuation, so no call is issued from it. Recompute the snapshot without a knowledge time before issuing a call.");
+
+        var changes = new List<string>();
+        if (recorded.NettingSetVersion != current.NettingSetVersion)
+            changes.Add($"netting set {snapshot.NettingSetId:D} was amended (version {Number(recorded.NettingSetVersion)} to {Number(current.NettingSetVersion)})");
+        CompareVersions(recorded.Contracts, current.Contracts ?? [], "contract(s) added", "contract(s) removed", "contract(s) amended", changes);
+        CompareVersions(recorded.CollateralBalances, current.CollateralBalances ?? [], "collateral balance(s) recorded", "collateral balance(s) removed", "collateral balance(s) amended", changes);
+
+        var agreement = snapshot.CollateralAgreementId is { } agreementId ? $"collateral agreement {agreementId:D}" : "the collateral agreement";
+        var nettingSetsBefore = recorded.NettingSetsUnderAgreement.ToHashSet();
+        var nettingSetsNow = (current.NettingSetsUnderAgreement ?? []).ToHashSet();
+        AddIds(changes, $"netting set(s) now referencing {agreement}", nettingSetsNow.Where(id => !nettingSetsBefore.Contains(id)));
+        AddIds(changes, $"netting set(s) no longer referencing {agreement}", nettingSetsBefore.Where(id => !nettingSetsNow.Contains(id)));
+
+        var laterMarketData = marketDataRecordedSince
+            .OrderBy(record => record.SecurityId)
+            .ThenBy(record => record.RecordedAt)
+            .ThenBy(record => record.Record, StringComparer.Ordinal)
+            .ThenBy(record => record.EffectiveAt)
+            .Select(record => $"security {record.SecurityId:D} {record.Record} effective {Instant(record.EffectiveAt)} (recorded {Instant(record.RecordedAt)})")
+            .ToArray();
+        if (laterMarketData.Length > 0)
+            changes.Add($"market data recorded after {Instant(MarketDataKnownAt(snapshot))}: {string.Join(", ", laterMarketData)}");
+
+        if (changes.Count > 0)
+            throw new ArgumentException($"Exposure snapshot {snapshot.SnapshotId:D} was computed from records that have changed since: {string.Join("; ", changes)}. {remedy}");
+    }
+
+    /// <summary>
+    /// The instant after which a price observation or pricing hierarchy version for the snapshot's
+    /// securities counts as new: the earlier of its recorded knowledge time and its computation
+    /// instant. The valuations read nothing recorded after the knowledge time; with a knowledge time
+    /// later than the computation they may have read what was recorded meanwhile, or not, so that
+    /// counts as new too.
+    /// </summary>
+    public static DateTimeOffset MarketDataKnownAt(OtcExposureSnapshotDto snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        return snapshot.Inputs is { } inputs && inputs.KnowledgeAsOf != default && inputs.KnowledgeAsOf < snapshot.ComputedAt
+            ? inputs.KnowledgeAsOf
+            : snapshot.ComputedAt;
     }
 
     /// <summary>The call after one lifecycle action, with its version bumped.</summary>
@@ -383,6 +465,38 @@ public static class OtcMarginCallRules
         OtcMarginCallAction.Cancel => "MarginCallCancelled",
         _ => throw new ArgumentException($"'{action}' is not a margin call action.", nameof(action))
     };
+
+    private static void CompareVersions(
+        IReadOnlyList<OtcExposureInputVersionDto> recorded,
+        IReadOnlyList<OtcExposureInputVersionDto> current,
+        string addedLabel,
+        string removedLabel,
+        string amendedLabel,
+        List<string> changes)
+    {
+        var before = recorded.GroupBy(input => input.Id).ToDictionary(group => group.Key, group => group.First().Version);
+        var now = current.GroupBy(input => input.Id).ToDictionary(group => group.Key, group => group.First().Version);
+        AddIds(changes, addedLabel, now.Keys.Where(id => !before.ContainsKey(id)));
+        AddIds(changes, removedLabel, before.Keys.Where(id => !now.ContainsKey(id)));
+        var amended = before
+            .Where(entry => now.TryGetValue(entry.Key, out var version) && version != entry.Value)
+            .OrderBy(entry => entry.Key)
+            .Select(entry => $"{entry.Key:D} (version {Number(entry.Value)} to {Number(now[entry.Key])})")
+            .ToArray();
+        if (amended.Length > 0)
+            changes.Add($"{amendedLabel}: {string.Join(", ", amended)}");
+    }
+
+    private static void AddIds(List<string> changes, string label, IEnumerable<Guid> ids)
+    {
+        var ordered = ids.Order().Select(id => id.ToString("D")).ToArray();
+        if (ordered.Length > 0)
+            changes.Add($"{label}: {string.Join(", ", ordered)}");
+    }
+
+    private static string Number(long value) => value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    private static string Instant(DateTimeOffset value) => value.UtcDateTime.ToString("O", System.Globalization.CultureInfo.InvariantCulture);
 
     private static void RequireFrom(OtcMarginCallDto current, OtcMarginCallAction action, params OtcMarginCallStatus[] allowed)
     {

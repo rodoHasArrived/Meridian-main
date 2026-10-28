@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 3 of 6
 
-Objects 161-240 of 434. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 437. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -201,6 +201,10 @@ classDiagram
         +string Description
         +decimal HaircutPercent
     }
+    class Meridian_Contracts_SecurityMaster_OtcExposureInputVersionDto["OtcExposureInputVersionDto"] {
+        +Guid Id
+        +long Version
+    }
     class Meridian_Contracts_SecurityMaster_OtcExposureRules["OtcExposureRules"] {
     }
     class Meridian_Contracts_SecurityMaster_OtcExposureSnapshotDto["OtcExposureSnapshotDto"] {
@@ -216,6 +220,14 @@ classDiagram
         +string Currency
         +OtcCreditSupportSideDto? FundAsSecuredParty
         +decimal GrossNegative
+    }
+    class Meridian_Contracts_SecurityMaster_OtcExposureSnapshotInputsDto["OtcExposureSnapshotInputsDto"] {
+        +IReadOnlyList~OtcExposureInputVersionDto~ CollateralBalances
+        +IReadOnlyList~OtcExposureInputVersionDto~ Contracts
+        +DateTimeOffset KnowledgeAsOf
+        +IReadOnlyList~Guid~ NettingSetsUnderAgreement
+        +long NettingSetVersion
+        +IReadOnlyList~Guid~? Securities
     }
     class Meridian_Contracts_SecurityMaster_OtcExposureSnapshotStatus["OtcExposureSnapshotStatus"] {
     }
@@ -238,6 +250,12 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_OtcMarginCallRules["OtcMarginCallRules"] {
     }
     class Meridian_Contracts_SecurityMaster_OtcMarginCallStatus["OtcMarginCallStatus"] {
+    }
+    class Meridian_Contracts_SecurityMaster_OtcMarketDataRecordDto["OtcMarketDataRecordDto"] {
+        +DateTimeOffset EffectiveAt
+        +string Record
+        +DateTimeOffset RecordedAt
+        +Guid SecurityId
     }
     class Meridian_Contracts_SecurityMaster_OtcMasterAgreementDto["OtcMasterAgreementDto"] {
         +DateOnly AgreementDate
@@ -478,29 +496,6 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriodKind["SchedulePeriodKind"] {
     }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleRoll["ScheduleRoll"] {
-        +ScheduleRoll AnchorDay
-        +int DayOfMonth
-        +ScheduleRoll EndOfMonth
-        +ScheduleRoll Imm
-        +ScheduleRollKind Kind
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleRollKind["ScheduleRollKind"] {
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec["ScheduleSpec"] {
-        +BusinessDayAdjustment? AccrualAdjustment
-        +ScheduleAnchorMode AnchorMode
-        +ScheduleDirection Direction
-        +DateOnly EffectiveDate
-        +BusinessDayAdjustment? EffectiveDateAdjustment
-        +DateOnly? FirstRegularDate
-        +DateOnly? LastRegularDate
-        +int? MaxPeriods
-        +BusinessDayAdjustment? PaymentAdjustment
-        +int PaymentLagBusinessDays
-        +ScheduleRoll Roll
-        +ScheduleStubPolicy StubPolicy
-    }
     Meridian_Contracts_SecurityMaster_IssueOtcMarginCallRequest --> Meridian_Contracts_SecurityMaster_OtcMovementKind
     Meridian_Contracts_SecurityMaster_IssueOtcMarginCallRequest --> Meridian_Contracts_SecurityMaster_OtcMovementParty
     Meridian_Contracts_SecurityMaster_NotionalLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
@@ -523,9 +518,11 @@ classDiagram
     Meridian_Contracts_SecurityMaster_OtcExposureSnapshotDto --> Meridian_Contracts_SecurityMaster_OtcCollateralMovementDto
     Meridian_Contracts_SecurityMaster_OtcExposureSnapshotDto --> Meridian_Contracts_SecurityMaster_OtcContractValuationDto
     Meridian_Contracts_SecurityMaster_OtcExposureSnapshotDto --> Meridian_Contracts_SecurityMaster_OtcCreditSupportSideDto
+    Meridian_Contracts_SecurityMaster_OtcExposureSnapshotDto --> Meridian_Contracts_SecurityMaster_OtcExposureSnapshotInputsDto
     Meridian_Contracts_SecurityMaster_OtcExposureSnapshotDto --> Meridian_Contracts_SecurityMaster_OtcExposureSnapshotStatus
     Meridian_Contracts_SecurityMaster_OtcExposureSnapshotDto --> Meridian_Contracts_SecurityMaster_OtcNettingBasis
     Meridian_Contracts_SecurityMaster_OtcExposureSnapshotDto --> Meridian_Contracts_SecurityMaster_OtcValuationBlockerDto
+    Meridian_Contracts_SecurityMaster_OtcExposureSnapshotInputsDto --> Meridian_Contracts_SecurityMaster_OtcExposureInputVersionDto
     Meridian_Contracts_SecurityMaster_OtcMarginCallDto --> Meridian_Contracts_SecurityMaster_OtcMarginCallStatus
     Meridian_Contracts_SecurityMaster_OtcMarginCallDto --> Meridian_Contracts_SecurityMaster_OtcMovementKind
     Meridian_Contracts_SecurityMaster_OtcMarginCallDto --> Meridian_Contracts_SecurityMaster_OtcMovementParty
@@ -541,10 +538,5 @@ classDiagram
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnostic
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailure
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriod
-    Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec
     Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriod --> Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriodKind
-    Meridian_Contracts_SecurityMaster_Schedules_ScheduleRoll --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleRollKind
-    Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleAnchorMode
-    Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleDirection
-    Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleRoll
 ```

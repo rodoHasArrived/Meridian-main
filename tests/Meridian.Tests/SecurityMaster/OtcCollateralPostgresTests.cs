@@ -15,8 +15,12 @@ namespace Meridian.Tests.SecurityMaster;
 /// balances are recorded with the agreement's haircut and every write appends to the governance
 /// log; a computation appends a versioned, append-only snapshot whose digest is reproducible; a
 /// call copies the snapshot's movement, is agreed and settled with an event on each step, and is
-/// refused for a second open call, an incomplete snapshot, a superseded one, or one computed under
-/// collateral agreement terms that have since changed or become shared with another netting set.
+/// refused for a second open call, an incomplete snapshot, a superseded one, one with a later-dated
+/// snapshot, one computed under collateral agreement terms that have since changed or become shared
+/// with another netting set, one whose contracts, netting set or collateral balances have changed
+/// since, one with market data recorded after its knowledge time, a replay, and a future-dated one,
+/// which neither is computed nor shadows the latest valuation; balance and contract writes and an
+/// issue wait for each other's locks.
 /// </summary>
 [Trait("Category", "Integration")]
 public sealed class OtcCollateralPostgresTests : IClassFixture<SecurityMasterDatabaseFixture>
@@ -193,10 +197,7 @@ public sealed class OtcCollateralPostgresTests : IClassFixture<SecurityMasterDat
         var contracts = new PostgresOtcContractStore(_fixture.Options);
         var collateral = new PostgresOtcCollateralStore(_fixture.Options);
         var (nettingSet, csa, swapId) = await BuildFixtureAsync(contracts);
-        await collateral.UpsertCollateralBalanceAsync(new UpsertOtcCollateralBalanceRequest(
-            null, csa.CollateralAgreementId, OtcCollateralDirection.Posted, OtcCollateralKind.Cash, "USD cash", null, "USD", 400_000m, 1m, AsOf.AddDays(-1), null, null, "casey"));
-        var treasuries = await collateral.UpsertCollateralBalanceAsync(new UpsertOtcCollateralBalanceRequest(
-            null, csa.CollateralAgreementId, OtcCollateralDirection.Posted, OtcCollateralKind.Security, "US Treasuries", swapId, "USD", 2_000m, 100.125m, AsOf.AddDays(-1), null, null, "casey"));
+        var treasuries = await PostCaseACollateralAsync(collateral, csa, swapId);
         var service = new OtcExposureService(contracts, collateral, new FixedPriceValuationSource(_ => 1.25m), NullLogger<OtcExposureService>.Instance);
         (await collateral.ListNettingSetsUnderCollateralAgreementAsync(csa.CollateralAgreementId)).Should().Equal(nettingSet.NettingSetId);
 
@@ -255,6 +256,254 @@ public sealed class OtcCollateralPostgresTests : IClassFixture<SecurityMasterDat
         var read = await collateral.GetExposureSnapshotAsync(exposuresOnly.SnapshotId);
         read.Should().BeEquivalentTo(exposuresOnly, "null sides round-trip through jsonb");
         OtcExposureRules.Digest(read!).Should().Be(exposuresOnly.PayloadSha256);
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task ACall_IsRefused_OnceCollateralIsRecordedAfterComputation_AndFollowsTheRecomputedMovement()
+    {
+        var contracts = new PostgresOtcContractStore(_fixture.Options);
+        var collateral = new PostgresOtcCollateralStore(_fixture.Options);
+        var (nettingSet, csa, _) = await BuildFixtureAsync(contracts);
+        var service = new OtcExposureService(contracts, collateral, new FixedPriceValuationSource(_ => 25m), NullLogger<OtcExposureService>.Instance);
+        IssueOtcMarginCallRequest CounterpartyDelivery(OtcExposureSnapshotDto snapshot) => new(snapshot.SnapshotId, OtcMovementKind.Delivery, OtcMovementParty.Counterparty, AsOf, null, null, "casey");
+
+        // Nothing is held: net exposure 1,500,000, so the counterparty owes the fund 250,000.
+        var beforeReceipt = (await service.ComputeAsync(nettingSet.NettingSetId, AsOf, "casey"))!;
+        beforeReceipt.Status.Should().Be(OtcExposureSnapshotStatus.Complete);
+        beforeReceipt.FundAsSecuredParty!.Held.Should().Be(0m);
+        beforeReceipt.Movements.Should().ContainSingle().Which.Should().BeEquivalentTo(new OtcCollateralMovementDto(OtcMovementKind.Delivery, OtcMovementParty.Counterparty, 250_000m, "USD"));
+        beforeReceipt.Inputs!.CollateralBalances.Should().BeEmpty();
+
+        // The delivery arrives and is recorded before the call goes out: the snapshot no longer stands.
+        var received = await collateral.UpsertCollateralBalanceAsync(new UpsertOtcCollateralBalanceRequest(
+            null, csa.CollateralAgreementId, OtcCollateralDirection.Received, OtcCollateralKind.Cash, "USD cash", null, "USD", 250_000m, 1m, AsOf, null, null, "casey"));
+        await collateral.Invoking(s => s.IssueMarginCallAsync(CounterpartyDelivery(beforeReceipt)))
+            .Should().ThrowAsync<ArgumentException>("the snapshot would otherwise demand collateral the fund already holds")
+            .WithMessage($"*collateral balance(s) recorded: {received.BalanceId:D}. Recompute the snapshot before issuing a call.");
+
+        // Recomputed, the fund holds what it was owed and there is nothing to call.
+        var afterReceipt = (await service.ComputeAsync(nettingSet.NettingSetId, AsOf, "casey"))!;
+        afterReceipt.FundAsSecuredParty!.Held.Should().Be(250_000m);
+        afterReceipt.Movements.Should().BeEmpty();
+        await collateral.Invoking(s => s.IssueMarginCallAsync(CounterpartyDelivery(afterReceipt)))
+            .Should().ThrowAsync<ArgumentException>().WithMessage("*computes no Delivery by the Counterparty*");
+
+        // Part of it is returned: the amendment changes the input again, and the recomputed call is for the shortfall.
+        var partlyReturned = await collateral.UpsertCollateralBalanceAsync(new UpsertOtcCollateralBalanceRequest(
+            received.BalanceId, csa.CollateralAgreementId, OtcCollateralDirection.Received, OtcCollateralKind.Cash, "USD cash", null, "USD", 100_000m, 1m, AsOf, null, null, "casey"));
+        await collateral.Invoking(s => s.IssueMarginCallAsync(CounterpartyDelivery(afterReceipt)))
+            .Should().ThrowAsync<ArgumentException>().WithMessage($"*collateral balance(s) amended: {received.BalanceId:D} (version 1 to {partlyReturned.Version}). Recompute the snapshot*");
+        var afterReturn = (await service.ComputeAsync(nettingSet.NettingSetId, AsOf, "casey"))!;
+        afterReturn.Movements.Should().ContainSingle().Which.Amount.Should().Be(150_000m);
+        var call = await collateral.IssueMarginCallAsync(CounterpartyDelivery(afterReturn));
+        call.AmountCalled.Should().Be(150_000m, "the call follows the movement recomputed from the balance now held");
+        call.SnapshotId.Should().Be(afterReturn.SnapshotId);
+        (await collateral.ListMarginCallsAsync(nettingSet.NettingSetId)).Should().ContainSingle().Which.CallId.Should().Be(call.CallId);
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task ACall_IsRefused_OnceAContractOrTheNettingSetChanges_OrALaterDateIsValued()
+    {
+        var contracts = new PostgresOtcContractStore(_fixture.Options);
+        var collateral = new PostgresOtcCollateralStore(_fixture.Options);
+        var (nettingSet, csa, swapId) = await BuildFixtureAsync(contracts);
+        await PostCaseACollateralAsync(collateral, csa, swapId);
+        var service = new OtcExposureService(contracts, collateral, new FixedPriceValuationSource(_ => 1.25m), NullLogger<OtcExposureService>.Instance);
+        IssueOtcMarginCallRequest FundDelivery(OtcExposureSnapshotDto snapshot) => new(snapshot.SnapshotId, OtcMovementKind.Delivery, OtcMovementParty.Fund, snapshot.AsOfDate, null, null, "casey");
+
+        // The sold contract's notional is amended after the computation.
+        var computed = (await service.ComputeAsync(nettingSet.NettingSetId, AsOf, "casey"))!;
+        computed.Movements.Should().ContainSingle().Which.Amount.Should().Be(330_000m);
+        var sell = (await contracts.GetNettingSetAsync(nettingSet.NettingSetId))!.Contracts.Single(c => c.Direction == OtcContractDirection.Sell);
+        var amendedSell = await contracts.UpsertContractAsync(new UpsertOtcContractRequest(
+            sell.ContractId, sell.SecurityId, nettingSet.NettingSetId, sell.ExternalTradeId, OtcContractDirection.Sell, 5_000_000m, "USD",
+            sell.TradeDate, sell.EffectiveDate, sell.TerminationDate, sell.Status, sell.ConfirmationReference, null, "casey"));
+        amendedSell.Version.Should().Be(sell.Version + 1);
+        await collateral.Invoking(s => s.IssueMarginCallAsync(FundDelivery(computed)))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage($"*contract(s) amended: {sell.ContractId:D} (version {sell.Version} to {amendedSell.Version}). Recompute the snapshot before issuing a call.");
+
+        // A contract is booked into the netting set after the recomputation.
+        var afterAmendment = (await service.ComputeAsync(nettingSet.NettingSetId, AsOf, "casey"))!;
+        afterAmendment.NetExposure.Should().Be(62_500m);
+        afterAmendment.Movements.Should().ContainSingle().Which.Amount.Should().Be(350_000m);
+        var booked = await contracts.UpsertContractAsync(new UpsertOtcContractRequest(
+            null, swapId, nettingSet.NettingSetId, "BB-0004-" + swapId.ToString("N")[..6], OtcContractDirection.Buy, 1_000_000m, "USD", Trade, Trade.AddDays(2), Trade.AddYears(5), OtcContractStatus.Confirmed, null, null, "casey"));
+        await collateral.Invoking(s => s.IssueMarginCallAsync(FundDelivery(afterAmendment)))
+            .Should().ThrowAsync<ArgumentException>().WithMessage($"*contract(s) added: {booked.ContractId:D}. Recompute the snapshot*");
+
+        // The netting set itself is amended after the next recomputation.
+        var afterBooking = (await service.ComputeAsync(nettingSet.NettingSetId, AsOf, "casey"))!;
+        var renamed = await contracts.UpsertNettingSetAsync(new UpsertOtcNettingSetRequest(nettingSet.NettingSetId, nettingSet.MasterAgreementId, csa.CollateralAgreementId, "Big Bank ISDA (renamed)", null, "casey"));
+        await collateral.Invoking(s => s.IssueMarginCallAsync(FundDelivery(afterBooking)))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage($"*netting set {nettingSet.NettingSetId:D} was amended (version {nettingSet.Version} to {renamed.Version}). Recompute the snapshot*");
+
+        // A later date is valued: the earlier snapshot is no longer the netting set's latest valuation.
+        var current = (await service.ComputeAsync(nettingSet.NettingSetId, AsOf, "casey"))!;
+        var nextDay = (await service.ComputeAsync(nettingSet.NettingSetId, AsOf.AddDays(1), "casey"))!;
+        await collateral.Invoking(s => s.IssueMarginCallAsync(FundDelivery(current)))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage($"*values 2026-03-31, but netting set {nettingSet.NettingSetId:D} also has snapshot {nextDay.SnapshotId:D} (version 1, Complete) for the later date 2026-04-01; a call is issued only from the netting set's latest valuation*");
+
+        var call = await collateral.IssueMarginCallAsync(FundDelivery(nextDay));
+        call.AmountCalled.Should().Be(330_000m, "net exposure is back to 75,000 with the booked contract");
+        (await collateral.ListMarginCallsAsync(nettingSet.NettingSetId)).Should().ContainSingle("every earlier issue was refused");
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task ContractAndBalanceWrites_AndAnIssue_WaitForEachOther()
+    {
+        var contracts = new PostgresOtcContractStore(_fixture.Options);
+        var collateral = new PostgresOtcCollateralStore(_fixture.Options);
+        var (nettingSet, csa, swapId) = await BuildFixtureAsync(contracts);
+        var service = new OtcExposureService(contracts, collateral, new FixedPriceValuationSource(_ => 25m), NullLogger<OtcExposureService>.Instance);
+        var sell = (await contracts.GetNettingSetAsync(nettingSet.NettingSetId))!.Contracts.Single(c => c.Direction == OtcContractDirection.Sell);
+
+        // While the scopes an issue takes are held, a balance write, a new contract and an amendment wait.
+        await using (var connection = new NpgsqlConnection(_fixture.Options.ConnectionString))
+        {
+            await connection.OpenAsync();
+            await using var transaction = await connection.BeginTransactionAsync();
+            await OtcAdvisoryLocks.LockNettingSetContractsAsync(connection, transaction, [nettingSet.NettingSetId], CancellationToken.None);
+            await OtcAdvisoryLocks.LockAsync(connection, transaction, OtcAdvisoryLocks.CollateralBalances(csa.CollateralAgreementId), CancellationToken.None);
+
+            var balanceWrite = collateral.UpsertCollateralBalanceAsync(new UpsertOtcCollateralBalanceRequest(
+                null, csa.CollateralAgreementId, OtcCollateralDirection.Received, OtcCollateralKind.Cash, "USD cash", null, "USD", 1_000m, 1m, AsOf, null, null, "casey"));
+            var contractWrite = contracts.UpsertContractAsync(new UpsertOtcContractRequest(
+                null, swapId, nettingSet.NettingSetId, "BB-0005-" + swapId.ToString("N")[..6], OtcContractDirection.Buy, 1_000_000m, "USD", Trade, Trade.AddDays(2), Trade.AddYears(5), OtcContractStatus.Confirmed, null, null, "casey"));
+            var amendment = contracts.UpsertContractAsync(new UpsertOtcContractRequest(
+                sell.ContractId, sell.SecurityId, nettingSet.NettingSetId, sell.ExternalTradeId, OtcContractDirection.Sell, sell.Notional, "USD",
+                sell.TradeDate, sell.EffectiveDate, sell.TerminationDate, sell.Status, sell.ConfirmationReference, "amended under the lock", "casey"));
+            await Task.Delay(300);
+            balanceWrite.IsCompleted.Should().BeFalse("a balance write under the agreement waits for the issue");
+            contractWrite.IsCompleted.Should().BeFalse("a contract booked into the netting set waits for the issue");
+            amendment.IsCompleted.Should().BeFalse("a contract amended in the netting set waits for the issue");
+
+            await transaction.CommitAsync();
+            await Task.WhenAll(balanceWrite, contractWrite, amendment).WaitAsync(TimeSpan.FromSeconds(30));
+        }
+
+        // While a balance write under the agreement is in flight, an issue waits for it, then sees it.
+        var recomputed = (await service.ComputeAsync(nettingSet.NettingSetId, AsOf, "casey"))!;
+        recomputed.Status.Should().Be(OtcExposureSnapshotStatus.Complete);
+        var balanceId = Guid.NewGuid();
+        await using (var connection = new NpgsqlConnection(_fixture.Options.ConnectionString))
+        {
+            await connection.OpenAsync();
+            await using var transaction = await connection.BeginTransactionAsync();
+            await OtcAdvisoryLocks.LockAsync(connection, transaction, OtcAdvisoryLocks.CollateralBalances(csa.CollateralAgreementId), CancellationToken.None);
+            await using (var insert = new NpgsqlCommand(
+                $"""
+                insert into {_fixture.Options.Schema}.otc_collateral_balances (
+                    balance_id, collateral_agreement_id, direction, kind, eligible_collateral_description, currency,
+                    quantity, unit_value, valued_amount, haircut_percent, valued_as_of, version, updated_by, updated_at)
+                values (@id, @csa, 'Received', 'Cash', 'USD cash', 'USD', 5000, 1, 5000, 0, @as_of, 1, 'casey', now());
+                """, connection, transaction))
+            {
+                insert.Parameters.AddWithValue("id", balanceId);
+                insert.Parameters.AddWithValue("csa", csa.CollateralAgreementId);
+                insert.Parameters.AddWithValue("as_of", AsOf);
+                await insert.ExecuteNonQueryAsync();
+            }
+
+            var issue = collateral.IssueMarginCallAsync(new IssueOtcMarginCallRequest(recomputed.SnapshotId, OtcMovementKind.Delivery, OtcMovementParty.Counterparty, AsOf, null, null, "casey"));
+            await Task.Delay(300);
+            issue.IsCompleted.Should().BeFalse("the issue waits for the balance write in flight under the agreement");
+
+            await transaction.CommitAsync();
+            await issue.Awaiting(t => t.WaitAsync(TimeSpan.FromSeconds(30)))
+                .Should().ThrowAsync<ArgumentException>().WithMessage($"*collateral balance(s) recorded: {balanceId:D}. Recompute the snapshot*");
+        }
+
+        (await collateral.ListMarginCallsAsync(nettingSet.NettingSetId)).Should().BeEmpty();
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task ACall_IsRefused_OnceMarketDataIsRecordedAfterTheKnowledgeTime_OrFromAReplay()
+    {
+        var contracts = new PostgresOtcContractStore(_fixture.Options);
+        var collateral = new PostgresOtcCollateralStore(_fixture.Options);
+        var pricing = new PostgresSecurityMasterPricingStore(_fixture.Options);
+        var (nettingSet, csa, swapId) = await BuildFixtureAsync(contracts);
+        await PostCaseACollateralAsync(collateral, csa, swapId);
+        var service = new OtcExposureService(contracts, collateral, new FixedPriceValuationSource(_ => 1.25m), NullLogger<OtcExposureService>.Instance);
+        IssueOtcMarginCallRequest FundDelivery(OtcExposureSnapshotDto snapshot) => new(snapshot.SnapshotId, OtcMovementKind.Delivery, OtcMovementParty.Fund, AsOf, null, null, "casey");
+        var close = new DateTimeOffset(AsOf.ToDateTime(new TimeOnly(16, 0)), TimeSpan.Zero);
+
+        var computed = (await service.ComputeAsync(nettingSet.NettingSetId, AsOf, "casey"))!;
+        computed.Inputs!.Securities.Should().Equal(swapId);
+        computed.Inputs.KnowledgeAsOf.Should().Be(computed.ComputedAt);
+
+        // A price observed after the as-of date bears on no valuation of it; a corrected close for
+        // the date, recorded after the computation, would change what a recomputation selects.
+        await pricing.RecordRawPriceAsync(new RecordRawPriceRequest(swapId, "vendor-b", 1.30m, close.AddDays(1), "casey", SecurityPriceUnit.PercentOfPar));
+        await pricing.RecordRawPriceAsync(new RecordRawPriceRequest(swapId, "vendor-a", 1.30m, close, "casey", SecurityPriceUnit.PercentOfPar));
+        (await collateral.Invoking(s => s.IssueMarginCallAsync(FundDelivery(computed)))
+                .Should().ThrowAsync<ArgumentException>("the call would otherwise go out on a superseded price")
+                .WithMessage($"*market data recorded after {computed.ComputedAt.UtcDateTime:O}: security {swapId:D} price from vendor-a effective {close.UtcDateTime:O} (recorded *). Recompute the snapshot before issuing a call."))
+            .Which.Message.Should().NotContain("vendor-b");
+
+        // Recomputed, the price is part of what was known; a pricing hierarchy changed afterwards is new again.
+        var repriced = (await service.ComputeAsync(nettingSet.NettingSetId, AsOf, "casey"))!;
+        await pricing.UpsertHierarchyAsync(new SecurityPricingHierarchyDto(swapId, null, [new PricingHierarchyEntryDto(1, "vendor-a", "Vendor A", 3)], close.AddDays(-1), "casey"));
+        (await collateral.Invoking(s => s.IssueMarginCallAsync(FundDelivery(repriced)))
+                .Should().ThrowAsync<ArgumentException>()
+                .WithMessage($"*market data recorded after {repriced.ComputedAt.UtcDateTime:O}: security {swapId:D} pricing hierarchy effective {close.AddDays(-1).UtcDateTime:O} (recorded *). Recompute the snapshot*"))
+            .Which.Message.Should().NotContain("price from", "the price recorded before this computation was known to it");
+
+        // A replay of what was known an hour ago is appended as the latest version, but is evidence, not a call.
+        var replay = (await service.ComputeAsync(nettingSet.NettingSetId, AsOf, "casey", DateTimeOffset.UtcNow.AddHours(-1)))!;
+        replay.Status.Should().Be(OtcExposureSnapshotStatus.Complete);
+        replay.Inputs!.KnowledgeAsOf.Should().BeBefore(replay.ComputedAt);
+        await collateral.Invoking(s => s.IssueMarginCallAsync(FundDelivery(replay)))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage($"Exposure snapshot {replay.SnapshotId:D} was valued with market data as known at *, before it was computed at *: it replays what was known then*");
+
+        var live = (await service.ComputeAsync(nettingSet.NettingSetId, AsOf, "casey"))!;
+        var call = await collateral.IssueMarginCallAsync(FundDelivery(live));
+        call.AmountCalled.Should().Be(330_000m);
+        (await collateral.ListMarginCallsAsync(nettingSet.NettingSetId)).Should().ContainSingle("every earlier issue was refused");
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task AFutureDate_IsNotComputed_AndAStrayFutureDatedSnapshot_NeitherShadowsTheLatestValuation_NorIsCalled()
+    {
+        var contracts = new PostgresOtcContractStore(_fixture.Options);
+        var collateral = new PostgresOtcCollateralStore(_fixture.Options);
+        var (nettingSet, csa, swapId) = await BuildFixtureAsync(contracts);
+        await PostCaseACollateralAsync(collateral, csa, swapId);
+        var service = new OtcExposureService(contracts, collateral, new FixedPriceValuationSource(_ => 1.25m), NullLogger<OtcExposureService>.Instance);
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        await service.Invoking(s => s.ComputeAsync(nettingSet.NettingSetId, today.AddMonths(1), "casey"))
+            .Should().ThrowAsync<ArgumentException>("a mistyped month must not be stored for good").WithMessage("*after the current date*");
+        (await collateral.ListExposureSnapshotsAsync(nettingSet.NettingSetId)).Should().BeEmpty();
+
+        // A future-dated snapshot stored before the refusal existed stays, since snapshots are append-only.
+        var computed = (await service.ComputeAsync(nettingSet.NettingSetId, AsOf, "casey"))!;
+        var stray = await collateral.AppendExposureSnapshotAsync(computed with { SnapshotId = Guid.NewGuid(), AsOfDate = today.AddMonths(1), Version = 0, PayloadSha256 = string.Empty });
+        (await collateral.ListExposureSnapshotsAsync(nettingSet.NettingSetId)).Select(s => s.AsOfDate).Should().Equal(stray.AsOfDate, AsOf);
+
+        // It is not yet a valuation: it neither blocks the call from the latest real one nor can be called itself.
+        var call = await collateral.IssueMarginCallAsync(new IssueOtcMarginCallRequest(computed.SnapshotId, OtcMovementKind.Delivery, OtcMovementParty.Fund, AsOf, null, null, "casey"));
+        call.AmountCalled.Should().Be(330_000m);
+        await collateral.Invoking(s => s.IssueMarginCallAsync(new IssueOtcMarginCallRequest(stray.SnapshotId, OtcMovementKind.Delivery, OtcMovementParty.Fund, stray.AsOfDate, null, null, "casey")))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage($"Snapshot {stray.SnapshotId:D} values {stray.AsOfDate:yyyy-MM-dd}, after the current date {today:yyyy-MM-dd} (UTC)*");
+        (await collateral.ListMarginCallsAsync(nettingSet.NettingSetId)).Should().ContainSingle().Which.CallId.Should().Be(call.CallId);
+    }
+
+    /// <summary>
+    /// Case A's collateral: the fund has posted 400,000 cash and 2,000 Treasuries at 100.125, 596,245
+    /// after the haircut. Returns the Treasuries balance.
+    /// </summary>
+    private static async Task<OtcCollateralBalanceDto> PostCaseACollateralAsync(PostgresOtcCollateralStore collateral, OtcCollateralAgreementDto csa, Guid securityId)
+    {
+        await collateral.UpsertCollateralBalanceAsync(new UpsertOtcCollateralBalanceRequest(
+            null, csa.CollateralAgreementId, OtcCollateralDirection.Posted, OtcCollateralKind.Cash, "USD cash", null, "USD", 400_000m, 1m, AsOf.AddDays(-1), null, null, "casey"));
+        return await collateral.UpsertCollateralBalanceAsync(new UpsertOtcCollateralBalanceRequest(
+            null, csa.CollateralAgreementId, OtcCollateralDirection.Posted, OtcCollateralKind.Security, "US Treasuries", securityId, "USD", 2_000m, 100.125m, AsOf.AddDays(-1), null, null, "casey"));
     }
 
     private async Task<(OtcNettingSetDto NettingSet, OtcCollateralAgreementDto Csa, Guid SwapId)> BuildFixtureAsync(PostgresOtcContractStore store)
