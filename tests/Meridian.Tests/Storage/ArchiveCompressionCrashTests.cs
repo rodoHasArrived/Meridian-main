@@ -148,9 +148,13 @@ public sealed class ArchiveCompressionCrashTests : TempDirectoryAsyncTestBase
         snapshot.Should().ContainSingle().Which.Should().Be(path);
         var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
         (await service.CompressAsync(new FileCompressionOptions())).Success.Should().BeTrue();
+        File.Exists(path).Should().BeFalse();
 
-        await using var file = await JsonlArchiveFiles.OpenReadAsync(snapshot.Single(), CancellationToken.None);
-        file.Name.Should().Be(path + ".gz");
+        await using (var file = await JsonlArchiveFiles.OpenReadAsync(snapshot.Single(), CancellationToken.None))
+            file.Name.Should().Be(path + ".gz");
+
+        // The representation probe must release its handle before replay takes its
+        // exclusive closed-capture lease on the surviving archive.
         (await ReadAllAsync(new JsonlReplayer(path).ReadEventsAsync())).Should().Equal(ExpectedLines());
     }
 
@@ -231,15 +235,23 @@ public sealed class ArchiveCompressionCrashTests : TempDirectoryAsyncTestBase
         (await ReadAllAsync(Read(reader))).Should().Equal(ExpectedLines());
     }
 
-    [Fact]
-    public async Task SameArchiveNameInDifferentDirectories_RemainsTwoIndependentInputs()
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public async Task SameArchiveNameInDifferentDirectories_RemainsTwoIndependentInputs(int reader)
     {
         var first = await CreateSourceAsync("alpaca");
         var second = await CreateSourceAsync("polygon");
         await WriteGzipAsync(first + ".gz", await File.ReadAllBytesAsync(first));
         await WriteGzipAsync(second + ".gz", await File.ReadAllBytesAsync(second));
-        for (var reader = 0; reader < 4; reader++)
-            (await ReadAllAsync(Read(reader))).Should().Equal(ExpectedLines().Concat(ExpectedLines()));
+        // Replay globally orders both independent inputs by UTC timestamp. Query readers
+        // retain file order; every reader must preserve both copies of each event.
+        var expected = reader == 0
+            ? ExpectedLines().SelectMany(line => new[] { line, line })
+            : ExpectedLines().Concat(ExpectedLines());
+        (await ReadAllAsync(Read(reader))).Should().Equal(expected);
     }
 
     [Fact]
