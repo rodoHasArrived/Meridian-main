@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps equity reference and exchange queries to HTTP endpoints.
+/// </summary>
 public static class EquityReferenceEndpoints
 {
     public static void MapEquityReferenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)

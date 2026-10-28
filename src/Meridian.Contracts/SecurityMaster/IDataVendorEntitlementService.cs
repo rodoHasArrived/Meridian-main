@@ -2,6 +2,9 @@ using System.Collections.Generic;
 
 namespace Meridian.Contracts.SecurityMaster;
 
+/// <summary>
+/// Queries, updates, and deactivates data vendor entitlements and identifies approaching expirations.
+/// </summary>
 public interface IDataVendorEntitlementService
 {
     Task<IReadOnlyList<DataVendorEntitlementDto>> GetAllAsync(CancellationToken ct = default);

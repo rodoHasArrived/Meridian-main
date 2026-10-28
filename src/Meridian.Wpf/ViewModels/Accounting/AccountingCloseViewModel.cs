@@ -10,6 +10,9 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Wpf.ViewModels.Accounting;
 
+/// <summary>
+/// Exposes bindable state and commands to edit close plans, dependencies, sign-offs, adjustments, evidence, blockers, and locks.
+/// </summary>
 public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableBase
 {
     private readonly IAccountingProjectionQueryService _queryService;

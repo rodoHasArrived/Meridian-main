@@ -445,6 +445,9 @@ public sealed partial class ArchiveHealthPage : Page
 
 }
 
+/// <summary>
+/// Presents an archive issue's severity, suggested action, and automatic-fix availability.
+/// </summary>
 public sealed class IssueDisplayItem
 {
     private readonly ArchiveIssue _issue;

@@ -645,6 +645,9 @@ public sealed class ReportingReconciliationEvidenceMigrationRequiredException :
     }
 }
 
+/// <summary>
+/// Stores exact reporting reconciliation evidence receipts in process memory.
+/// </summary>
 public sealed class InMemoryReportingReconciliationEvidenceStore :
     IReportingReconciliationEvidenceRetentionStore,
     Meridian.Application.Composition.INonProductionOnlyService

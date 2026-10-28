@@ -273,6 +273,9 @@ public sealed partial class FundContextService : IFundProfileCatalog
     };
 }
 
+/// <summary>
+/// Carries the fund profile selected by a fund-context change.
+/// </summary>
 public sealed class FundProfileChangedEventArgs : EventArgs
 {
     public FundProfileChangedEventArgs(FundProfileDetail profile)

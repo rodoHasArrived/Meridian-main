@@ -2,6 +2,9 @@ using Meridian.Contracts.Commodities;
 
 namespace Meridian.Instruments.Commodities;
 
+/// <summary>
+/// Queries commodity reference data by security identifier and supported asset-specific filters.
+/// </summary>
 public interface ICommodityReferenceService
 {
     Task<CommodityReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default);

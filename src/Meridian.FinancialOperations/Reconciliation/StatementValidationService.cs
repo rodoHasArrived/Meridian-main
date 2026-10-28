@@ -3,6 +3,9 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.Reconciliation;
 
+/// <summary>
+/// Validates statement entities against configured rules and reference-data checks.
+/// </summary>
 public sealed class StatementValidationService(IStatementValidationReferenceData referenceData)
 {
     private static readonly string[] DefaultRequiredFields =
@@ -380,6 +383,10 @@ public sealed class StatementValidationService(IStatementValidationReferenceData
         new(code, blocker ? StatementValidationIssueSeverity.Blocker : StatementValidationIssueSeverity.Soft, rowNumber, field, message);
 }
 
+/// <summary>
+/// Supplies account, mapping, import, currency, and other reference checks for statement
+/// validation.
+/// </summary>
 public interface IStatementValidationReferenceData
 {
     Task<bool> AccountExistsAsync(string accountId, CancellationToken ct = default);
@@ -477,6 +484,9 @@ public enum StatementValidationIssueCode
     OutOfPeriodRow
 }
 
+/// <summary>
+/// Defines canonical field names used in statement validation issues.
+/// </summary>
 public static class StatementValidationFields
 {
     public const string Account = "account";

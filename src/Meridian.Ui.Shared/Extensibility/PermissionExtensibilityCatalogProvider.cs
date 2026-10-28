@@ -3,6 +3,9 @@ using Meridian.Identity.Auth;
 
 namespace Meridian.Ui.Shared.Extensibility;
 
+/// <summary>
+/// Exposes permission definitions as extension catalog registrations.
+/// </summary>
 public sealed class PermissionExtensibilityCatalogProvider : IExtensibilityCatalogProvider
 {
     private static readonly ExtensibilityScopeDto GlobalScope = new(

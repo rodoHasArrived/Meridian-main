@@ -116,6 +116,9 @@ internal static class BrokerStatementSourceSnapshot
     }
 }
 
+/// <summary>
+/// Retains canonical statement imports and rows and supports checksum and duplicate-key lookup.
+/// </summary>
 public interface ICanonicalStatementStore
 {
     Task<bool> ImportExistsByChecksumAsync(string checksum, CancellationToken ct = default);
@@ -160,6 +163,9 @@ internal static class ReconciliationRecordFileName
         => Sha256Digest.ComputeUtf8(value);
 }
 
+/// <summary>
+/// Persists canonical statement imports and rows as JSON files under the data root.
+/// </summary>
 public sealed class JsonCanonicalStatementStore : ICanonicalStatementStore
 {
     private readonly IAtomicFileWriter _atomicFileWriter;
@@ -313,6 +319,9 @@ public sealed class JsonCanonicalStatementStore : ICanonicalStatementStore
         IReadOnlyList<CanonicalStatementRow>? rows = null);
 }
 
+/// <summary>
+/// Validates and imports bounded CSV broker statements into canonical statement records.
+/// </summary>
 public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : IBrokerStatementService
 {
     private const long MaximumStatementBytes = 32L * 1024 * 1024;
@@ -698,6 +707,9 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
         string.Equals(source, "custodian", StringComparison.OrdinalIgnoreCase);
 }
 
+/// <summary>
+/// Retains reconciliation breaks and materializes their run and casework projections.
+/// </summary>
 public interface IReconciliationBreakStore
 {
     Task WriteAsync(IReadOnlyList<ReconciliationBreakRecord> records, CancellationToken ct = default);
@@ -784,6 +796,9 @@ public sealed record StatementBreakCaseworkAuditEvent(
     DateTimeOffset OccurredAtUtc,
     string InputHashSha256);
 
+/// <summary>
+/// Persists reconciliation breaks and casework projections in JSON files.
+/// </summary>
 public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
 {
     private readonly IAtomicFileWriter _atomicFileWriter;

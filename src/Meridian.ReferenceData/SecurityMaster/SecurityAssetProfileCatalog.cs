@@ -2,6 +2,9 @@ using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.ReferenceData.SecurityMaster;
 
+/// <summary>
+/// Resolves security asset profile versions and approved profiles eligible for an effective date.
+/// </summary>
 public interface ISecurityAssetProfileCatalog
 {
     IReadOnlyList<SecurityAssetProfileDefinitionDto> GetProfiles();
@@ -23,6 +26,9 @@ public interface ISecurityAssetProfileCatalog
             .ToArray();
 }
 
+/// <summary>
+/// Resolves security asset profile versions from a fixed collection ordered by profile and version.
+/// </summary>
 public sealed class StaticSecurityAssetProfileCatalog : ISecurityAssetProfileCatalog
 {
     private readonly IReadOnlyList<SecurityAssetProfileDefinitionDto> _profiles;

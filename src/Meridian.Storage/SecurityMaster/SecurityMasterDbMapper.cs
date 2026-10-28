@@ -2,6 +2,9 @@ using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Maps persisted Security Master projections to public security summary and detail contracts.
+/// </summary>
 public static class SecurityMasterDbMapper
 {
     public static SecuritySummaryDto ToSummary(SecurityProjectionRecord record)

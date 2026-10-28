@@ -30,6 +30,9 @@ public readonly struct TrendStatistics
     public double ScoreChange { get; init; }
 }
 
+/// <summary>
+/// Exposes symbol quality, gaps, alerts, anomalies, and issue drilldowns for desktop review.
+/// </summary>
 public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActionBarProvider
 {
     private static readonly string[] s_anomalyTypeNames =

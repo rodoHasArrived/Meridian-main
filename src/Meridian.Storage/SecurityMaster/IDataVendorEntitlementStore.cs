@@ -3,6 +3,9 @@ using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Persists vendor entitlement records and queries their validity and expiration.
+/// </summary>
 public interface IDataVendorEntitlementStore
 {
     Task<IReadOnlyList<DataVendorEntitlementDto>> GetAllAsync(CancellationToken ct = default);

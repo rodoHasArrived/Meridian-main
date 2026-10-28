@@ -1,5 +1,8 @@
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Queries certificate of deposit reference projections by security, issuer, and maturity.
+/// </summary>
 public interface ICertificateOfDepositReferenceProjectionStore
 {
     Task<CertificateOfDepositProjectionRow?> GetCertificateOfDepositAsync(Guid securityId, CancellationToken ct = default);

@@ -8,6 +8,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.DirectLending;
 
+/// <summary>
+/// Processes retained direct-lending outbox work through command, query, and accounting services.
+/// </summary>
 public sealed class DirectLendingOutboxDispatcher : BackgroundService
 {
     private const int MinimumOutboxBatchSize = 1;

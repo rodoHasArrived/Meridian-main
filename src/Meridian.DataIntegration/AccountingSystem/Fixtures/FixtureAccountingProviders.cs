@@ -3,6 +3,7 @@ using Meridian.ProviderSdk.AccountingSystem;
 
 namespace Meridian.DataIntegration.AccountingSystem.Fixtures;
 
+/// <summary>Supplies deterministic Xero-style accounting fixtures for import and export-validation workflows.</summary>
 public sealed class XeroFixtureAccountingProvider : IAccountingSystemProvider
 {
     public const string Id = "xero-fixture";
@@ -137,6 +138,7 @@ public sealed class XeroFixtureAccountingProvider : IAccountingSystemProvider
     }
 }
 
+/// <summary>Supplies deterministic NetSuite-style accounting fixtures for import and export-validation workflows.</summary>
 public sealed class NetSuiteFixtureAccountingProvider : IAccountingSystemProvider
 {
     public const string Id = "netsuite-fixture";

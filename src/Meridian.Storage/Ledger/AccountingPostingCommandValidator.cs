@@ -9,6 +9,9 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.Ledger;
 
+/// <summary>
+/// Normalizes ledger posting commands and validates their required identities and accounting context.
+/// </summary>
 public static class AccountingPostingCommandValidator
 {
     internal const string PostingCommandFingerprintTag = "postingCommandFingerprint";

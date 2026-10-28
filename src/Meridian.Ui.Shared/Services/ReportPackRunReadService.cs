@@ -10,6 +10,9 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Builds report-pack run projections and reporting datasets from retained runs and workflow records.
+/// </summary>
 public sealed partial class ReportPackRunReadService
 {
     private const int DefaultRecentRunLimit = 12;

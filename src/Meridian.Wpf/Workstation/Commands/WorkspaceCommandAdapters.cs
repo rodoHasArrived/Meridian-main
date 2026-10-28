@@ -2,6 +2,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Workstation.Commands;
 
+/// <summary>
+/// Converts workspace command groups into executable desktop command descriptors.
+/// </summary>
 public static class WorkspaceCommandAdapters
 {
     public static IReadOnlyList<CommandViewModel> ToCommandDescriptors(WorkspaceCommandGroup? group)

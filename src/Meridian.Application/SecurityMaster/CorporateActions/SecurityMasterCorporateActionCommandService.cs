@@ -4,6 +4,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.SecurityMaster.CorporateActions;
 
+/// <summary>
+/// Appends corporate actions through the Security Master command boundary.
+/// </summary>
 public sealed class SecurityMasterCorporateActionCommandService : ISecurityMasterCorporateActionCommandService
 {
     private readonly ISecurityMasterEventStore _eventStore;

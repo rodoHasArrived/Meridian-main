@@ -3,6 +3,9 @@ using Meridian.Ledger;
 
 namespace Meridian.Storage.Ledger;
 
+/// <summary>
+/// Reconstructs a ledger from queried journal entries, including as-of and accounting period views.
+/// </summary>
 public static class LedgerJournalStoreHydrationExtensions
 {
     public static async Task<Meridian.Ledger.Ledger> HydrateLedgerAsync(

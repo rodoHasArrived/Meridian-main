@@ -6,6 +6,9 @@ using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Features.Portfolio.Shell;
 
+/// <summary>
+/// Provides the desktop page to review account, aggregate, fund, lending, and import workflows.
+/// </summary>
 public partial class PortfolioWorkspaceShellPage : PortfolioWorkspaceShellPageBase
 {
     public PortfolioWorkspaceShellPage(

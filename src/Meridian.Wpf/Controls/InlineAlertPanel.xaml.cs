@@ -6,6 +6,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Controls;
 
+/// <summary>
+/// Displays a status-toned alert with an optional action.
+/// </summary>
 public partial class InlineAlertPanel : UserControl
 {
     public static readonly DependencyProperty TitleProperty =

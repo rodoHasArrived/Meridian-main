@@ -6,6 +6,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.Features.Portfolio;
 
+/// <summary>
+/// Registers portfolio desktop services and contributes the feature's navigation pages and workspace metadata.
+/// </summary>
 public sealed class PortfolioFeatureModule : IDesktopFeatureModule
 {
     private static readonly WorkspaceCapabilityDescriptor Capability = ShellNavigationCatalog.BuildPortfolioCapability();

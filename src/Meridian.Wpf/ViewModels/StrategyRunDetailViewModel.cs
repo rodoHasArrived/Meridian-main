@@ -7,6 +7,9 @@ using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Presents the selected strategy run and its parameters with summary and parameter inspectors.
+/// </summary>
 public sealed class StrategyRunDetailViewModel : BindableBase
 {
     private readonly StrategyRunWorkspaceService _runService;

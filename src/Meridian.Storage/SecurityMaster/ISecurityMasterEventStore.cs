@@ -35,6 +35,9 @@ public sealed class SecurityMasterStreamVersionConflictException : InvalidOperat
     public bool IsAlreadyCreated => ExpectedVersion == 0 && CurrentVersion > 0;
 }
 
+/// <summary>
+/// Appends version-checked Security Master events and reads individual or sequenced event streams.
+/// </summary>
 public interface ISecurityMasterEventStore
 {
     Task AppendAsync(Guid securityId, long expectedVersion, IReadOnlyList<SecurityMasterEventEnvelope> events, CancellationToken ct = default);

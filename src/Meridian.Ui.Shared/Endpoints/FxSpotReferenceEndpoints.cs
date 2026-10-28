@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps spot foreign-exchange reference and currency-pair queries to HTTP endpoints.
+/// </summary>
 public static class FxSpotReferenceEndpoints
 {
     public static void MapFxSpotReferenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)

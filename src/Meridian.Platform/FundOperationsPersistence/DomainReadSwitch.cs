@@ -1,5 +1,6 @@
 namespace Meridian.Platform.FundOperationsPersistence;
 
+/// <summary>Selects legacy or persisted-projection readers according to the domain cutover configuration.</summary>
 public static class DomainReadSwitch
 {
     public static T Select<T>(

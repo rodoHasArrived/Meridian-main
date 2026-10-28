@@ -2,6 +2,9 @@ using Meridian.Contracts.Ledger;
 
 namespace Meridian.FinancialOperations.PrivateCapital;
 
+/// <summary>
+/// Groups fund-event and capital-account evidence into private-capital evidence categories.
+/// </summary>
 public static class PrivateCapitalEvidenceCategoryBuilder
 {
     public static IReadOnlyList<PrivateCapitalEvidenceCategoryDto> BuildForFundEvent(

@@ -2,6 +2,9 @@ using Meridian.Contracts.FundStructure;
 
 namespace Meridian.Entities.FundStructure;
 
+/// <summary>
+/// Builds an account mapping workbench with ledger resolution, coverage counts, and recommended mapping actions.
+/// </summary>
 public static class LedgerMappingWorkbenchService
 {
     public static LedgerMappingWorkbenchDto Build(

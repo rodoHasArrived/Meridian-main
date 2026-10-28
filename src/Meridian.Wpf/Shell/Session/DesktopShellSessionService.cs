@@ -12,6 +12,9 @@ public sealed record DesktopShellSessionRestorePlan(
     string? DeferredPageTag,
     string TargetPageTag);
 
+/// <summary>
+/// Coordinates retained desktop session state with window placement and workspace restoration.
+/// </summary>
 public sealed class DesktopShellSessionService
 {
     private readonly WorkspaceService _workspaceService;

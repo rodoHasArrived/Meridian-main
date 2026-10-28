@@ -4,6 +4,9 @@ using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.Workstation.Controls;
 
+/// <summary>
+/// Displays loading, empty, error, or readiness state with evidence and action content.
+/// </summary>
 public partial class WorkstationStatePanelControl : UserControl
 {
     public static readonly DependencyProperty StateProperty =

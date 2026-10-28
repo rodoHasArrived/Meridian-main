@@ -8,6 +8,9 @@ using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Appends version-checked Security Master event streams and reads retained events from PostgreSQL.
+/// </summary>
 public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
 {
     private readonly SecurityMasterOptions _options;

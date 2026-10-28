@@ -3,6 +3,9 @@ using Meridian.Execution.Sdk;
 
 namespace Meridian.Infrastructure.Adapters.Tradier;
 
+/// <summary>
+/// Normalizes Tradier equity, option, order status, and error payloads into canonical adapter models.
+/// </summary>
 public static class TradierCanonicalMappers
 {
     public static TradierCanonicalEquity NormalizeEquityPayload(TradierEquityPayload payload)

@@ -66,6 +66,9 @@ public enum EtlRecordDisposition : byte
     SkippedOutOfRange = 3
 }
 
+/// <summary>
+/// Defines an ETL flow's source, destination, partner schema, and processing scope.
+/// </summary>
 public sealed class EtlJobDefinition
 {
     [JsonPropertyName("jobId")]
@@ -126,6 +129,9 @@ public sealed class EtlJobDefinition
     public DateTime CreatedAtUtc { get; init; } = DateTime.UtcNow;
 }
 
+/// <summary>
+/// Configures an ETL input location, file selection, credentials, and post-processing policy.
+/// </summary>
 public sealed class EtlSourceDefinition
 {
     [JsonPropertyName("kind")]
@@ -159,6 +165,9 @@ public sealed class EtlSourceDefinition
     public string? HostKeySha256Fingerprint { get; init; }
 }
 
+/// <summary>
+/// Configures an ETL output location, transfer mode, package format, and credentials.
+/// </summary>
 public sealed class EtlDestinationDefinition
 {
     [JsonPropertyName("kind")]
@@ -198,6 +207,9 @@ public sealed class EtlDestinationDefinition
     public string? HostKeySha256Fingerprint { get; init; }
 }
 
+/// <summary>
+/// Records the file and record position needed to resume an ETL job.
+/// </summary>
 public sealed class EtlCheckpointToken
 {
     [JsonPropertyName("currentFileName")]
@@ -222,6 +234,9 @@ public sealed class EtlCheckpointToken
     public DateTime CapturedAtUtc { get; init; } = DateTime.UtcNow;
 }
 
+/// <summary>
+/// Identifies a staged ETL file by relative path, SHA-256 checksum, and size.
+/// </summary>
 public sealed class EtlFileManifest
 {
     [JsonPropertyName("fileName")]
@@ -240,6 +255,9 @@ public sealed class EtlFileManifest
     public DateTime StagedAtUtc { get; init; } = DateTime.UtcNow;
 }
 
+/// <summary>
+/// Carries a parsed partner record together with its source file, checksum, and record index.
+/// </summary>
 public sealed class PartnerRecordEnvelope
 {
     [JsonPropertyName("partnerSchemaId")]
@@ -261,6 +279,9 @@ public sealed class PartnerRecordEnvelope
     public string? RawLine { get; init; }
 }
 
+/// <summary>
+/// Captures a rejected ETL record with its source position and rejection reason.
+/// </summary>
 public sealed class EtlRejectRecord
 {
     [JsonPropertyName("sourceFileName")]
@@ -317,6 +338,9 @@ public sealed class EtlStagedFile
     public long SizeBytes { get; init; }
 }
 
+/// <summary>
+/// Records a timestamped message for a stage of ETL processing.
+/// </summary>
 public sealed class EtlAuditEvent
 {
     [JsonPropertyName("stage")]
@@ -359,6 +383,9 @@ public interface IPartnerFileParser
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Describes a field or row issue found while previewing an ETL file.
+/// </summary>
 public sealed class EtlFilePreviewIssue
 {
     [JsonPropertyName("severity")]
@@ -374,6 +401,9 @@ public sealed class EtlFilePreviewIssue
     public int? RowNumber { get; init; }
 }
 
+/// <summary>
+/// Carries a file's preview disposition, sampled rows, validation issues, and content identity.
+/// </summary>
 public sealed class EtlFilePreview
 {
     [JsonPropertyName("sourceFile")]
@@ -401,6 +431,9 @@ public sealed class EtlFilePreview
     public string? IdempotencyKey { get; init; }
 }
 
+/// <summary>
+/// Aggregates previewed ETL files and errors for a source and partner schema.
+/// </summary>
 public sealed class EtlPreviewResult
 {
     [JsonPropertyName("success")]

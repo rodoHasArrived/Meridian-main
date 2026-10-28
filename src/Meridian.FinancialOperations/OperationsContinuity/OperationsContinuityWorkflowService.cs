@@ -12,6 +12,10 @@ using Meridian.Storage.Ledger;
 
 namespace Meridian.FinancialOperations.OperationsContinuity;
 
+/// <summary>
+/// Defines governed operations workflow creation, transitions, checklist controls, and close-
+/// readiness actions.
+/// </summary>
 public interface IOperationsContinuityWorkflowService
 {
     Task<OperationsTransitionResultDto> StartWorkflowAsync(OperationsStartWorkflowRequestDto request, CancellationToken ct = default);
@@ -113,6 +117,9 @@ public interface IOperationsContinuityWorkflowService
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Coordinates governed operations workflow transitions, checklist controls, and close readiness.
+/// </summary>
 public sealed partial class OperationsContinuityWorkflowService : IOperationsContinuityWorkflowService
 {
 

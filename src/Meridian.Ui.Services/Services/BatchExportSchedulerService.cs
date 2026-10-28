@@ -782,6 +782,9 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
 }
 
 
+/// <summary>
+/// Retains an export definition, schedule, execution status, cumulative totals, and run history.
+/// </summary>
 public sealed class ExportJob
 {
     public string Id { get; init; } = "";
@@ -894,6 +897,9 @@ public enum ScheduleFrequency : byte
     Monthly
 }
 
+/// <summary>
+/// Supplies the export job and optional run associated with a lifecycle notification.
+/// </summary>
 public sealed class ExportJobEventArgs : EventArgs
 {
     public ExportJob Job { get; }
@@ -906,6 +912,9 @@ public sealed class ExportJobEventArgs : EventArgs
     }
 }
 
+/// <summary>
+/// Supplies file-processing progress and percentage completion for an export job.
+/// </summary>
 public sealed class ExportJobProgressEventArgs : EventArgs
 {
     public ExportJob Job { get; }

@@ -5,6 +5,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.Composition.Startup;
 
+/// <summary>
+/// Defines one named participant in the ordered runtime shutdown sequence.
+/// </summary>
 public interface IRuntimeShutdownParticipant
 {
     string Id { get; }
@@ -15,6 +18,9 @@ public interface IRuntimeShutdownParticipant
     ValueTask ExecuteAsync(CancellationToken ct);
 }
 
+/// <summary>
+/// Runs shutdown participants and returns a lifecycle shutdown receipt.
+/// </summary>
 public interface IRuntimeShutdownSequence
 {
     ValueTask<LifecycleShutdownReceiptDto> ExecuteAsync(CancellationToken ct = default);
@@ -25,6 +31,9 @@ public sealed record RuntimeShutdownOptions
     public TimeSpan ParticipantTimeout { get; init; } = TimeSpan.FromSeconds(10);
 }
 
+/// <summary>
+/// Executes ordered shutdown participants with bounded execution and retained outcome details.
+/// </summary>
 public sealed class RuntimeShutdownSequence : IRuntimeShutdownSequence
 {
     private readonly IRuntimeLifecycleControlPlane _lifecycle;

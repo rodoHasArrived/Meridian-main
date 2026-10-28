@@ -7,11 +7,17 @@ using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Accepts the resolved shell page tag when a page is reused for multiple workspace routes.
+/// </summary>
 public interface IWorkspaceShellPageContextAware
 {
     void ApplyWorkspaceShellPageTag(string pageTag);
 }
 
+/// <summary>
+/// Displays the capability overview for the workspace selected by its shell page tag.
+/// </summary>
 public sealed class WorkspaceCapabilityHomePage : Page, IWorkspaceShellPageContextAware
 {
     private readonly Meridian.Wpf.Services.NavigationService? _navigationService;

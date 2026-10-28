@@ -9,6 +9,29 @@ registries:
     url: https://api.nuget.org/v3/index.json
 
 updates:
+  # Keep the shared PyYAML pin and CI/schema/rendering requirements in one update.
+  - package-ecosystem: "pip"
+    directories:
+      - "/build/scripts/ci"
+      - "/build/scripts/docs"
+      - "/tools/source_docs"
+      - "/tools/schema_control"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "06:23"
+      timezone: "UTC"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "deps(python)"
+      include: "scope"
+    labels: ["dependencies"]
+    reviewers: ["rodoHasArrived"]
+    groups:
+      python-tooling:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
   # npm tooling dependencies
   - package-ecosystem: "npm"
     directory: "/"

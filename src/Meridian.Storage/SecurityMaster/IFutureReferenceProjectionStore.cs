@@ -1,5 +1,8 @@
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Queries futures reference projections by security identity and root symbol.
+/// </summary>
 public interface IFutureReferenceProjectionStore
 {
     Task<FutureProjectionRow?> GetFutureAsync(Guid securityId, CancellationToken ct = default);

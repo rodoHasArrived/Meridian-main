@@ -38,7 +38,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
       - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
       - name: Install trusted parser dependency
@@ -84,11 +84,20 @@ jobs:
         if: >-
           vars.GENERATED_REPAIR_APP_ID == ''
           && (steps.inspect.outputs.status == 'ready' || steps.inspect.outputs.status == 'retry')
-        run: |
-          echo 'Automatic publishing is not configured. Download repair.patch from the Generated Repair run. Configure the generated-repair environment and App credentials to enable branch repair and bounded stale-ref retries.' >> "$GITHUB_STEP_SUMMARY"
+        run: >-
+          python -I build/scripts/ci/generated_repair.py artifact-only
+          --result "$RUNNER_TEMP/generated-repair-result.json"
+      - name: Retain structured publication outcome
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: generated-repair-outcome-publish-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/generated-repair-result.json
+          if-no-files-found: warn
+          retention-days: 30
 
   refresh:
-    if: github.event_name != 'workflow_run' && vars.GENERATED_REPAIR_APP_ID != ''
+    if: github.event_name != 'workflow_run'
     name: Refresh stale open PR branches after main advances
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -100,6 +109,7 @@ jobs:
           ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
       - name: Create dispatch-only repository token
+        if: vars.GENERATED_REPAIR_APP_ID != ''
         id: app
         uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
@@ -111,6 +121,7 @@ jobs:
           permission-contents: read
           permission-pull-requests: read
       - name: Dispatch at most ten new head/base pairs
+        if: steps.app.outputs.token != ''
         env:
           GH_TOKEN: ${{ steps.app.outputs.token }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
@@ -118,3 +129,16 @@ jobs:
           python -I build/scripts/ci/generated_repair.py refresh
           --default-branch "$DEFAULT_BRANCH"
           --result "$RUNNER_TEMP/generated-repair-refresh.json"
+      - name: Explain unconfigured refresh
+        if: vars.GENERATED_REPAIR_APP_ID == ''
+        run: >-
+          python -I build/scripts/ci/generated_repair.py artifact-only
+          --result "$RUNNER_TEMP/generated-repair-refresh.json"
+      - name: Retain structured refresh outcome
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: generated-repair-outcome-refresh-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/generated-repair-refresh.json
+          if-no-files-found: warn
+          retention-days: 30

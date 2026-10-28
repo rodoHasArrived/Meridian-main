@@ -5,6 +5,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Provides the desktop page to inspect ledger rows, proof actions, report usage, and audit relationships.
+/// </summary>
 public partial class FinancialRecordExplorerPage : Page, IWorkspaceShellPageContextAware
 {
     private readonly FinancialRecordExplorerViewModel _viewModel;

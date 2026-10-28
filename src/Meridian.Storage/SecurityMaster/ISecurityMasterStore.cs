@@ -2,6 +2,9 @@ using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Maintains Security Master projections and exposes persisted reference data for lookup.
+/// </summary>
 public interface ISecurityMasterStore
 {
     Task UpsertProjectionAsync(SecurityProjectionRecord record, CancellationToken ct = default);

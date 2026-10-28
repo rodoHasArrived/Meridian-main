@@ -9,6 +9,9 @@ using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Binds derived pages to the  workspace shell definition.
+/// </summary>
 public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
     where TStateProvider : class, IWorkspaceShellStateProvider
     where TViewModel : WorkspaceShellViewModelBase
@@ -273,6 +276,9 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
     }
 }
 
+/// <summary>
+/// Binds derived pages to the strategy workspace shell definition.
+/// </summary>
 public class StrategyWorkspaceShellPageBase : WorkspaceShellPageBase<StrategyWorkspaceShellStateProvider, StrategyWorkspaceShellViewModel>
 {
     protected StrategyWorkspaceShellPageBase(
@@ -284,6 +290,9 @@ public class StrategyWorkspaceShellPageBase : WorkspaceShellPageBase<StrategyWor
     }
 }
 
+/// <summary>
+/// Binds derived pages to the trading workspace shell definition.
+/// </summary>
 public class TradingWorkspaceShellPageBase : WorkspaceShellPageBase<TradingWorkspaceShellStateProvider, TradingWorkspaceShellViewModel>
 {
     protected TradingWorkspaceShellPageBase(
@@ -295,6 +304,9 @@ public class TradingWorkspaceShellPageBase : WorkspaceShellPageBase<TradingWorks
     }
 }
 
+/// <summary>
+/// Binds derived pages to the data workspace shell definition.
+/// </summary>
 public class DataWorkspaceShellPageBase : WorkspaceShellPageBase<DataWorkspaceShellStateProvider, Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellViewModel>
 {
     protected DataWorkspaceShellPageBase(
@@ -306,6 +318,9 @@ public class DataWorkspaceShellPageBase : WorkspaceShellPageBase<DataWorkspaceSh
     }
 }
 
+/// <summary>
+/// Binds derived pages to the accounting workspace shell definition.
+/// </summary>
 public class AccountingWorkspaceShellPageBase : WorkspaceShellPageBase<AccountingWorkspaceShellStateProvider, AccountingWorkspaceShellViewModel>
 {
     protected AccountingWorkspaceShellPageBase(
@@ -317,6 +332,9 @@ public class AccountingWorkspaceShellPageBase : WorkspaceShellPageBase<Accountin
     }
 }
 
+/// <summary>
+/// Binds derived pages to the settings workspace shell definition.
+/// </summary>
 public class SettingsWorkspaceShellPageBase : WorkspaceShellPageBase<SettingsWorkspaceShellStateProvider, Meridian.Wpf.Features.Settings.Shell.SettingsWorkspaceShellViewModel>
 {
     protected SettingsWorkspaceShellPageBase(
@@ -328,6 +346,9 @@ public class SettingsWorkspaceShellPageBase : WorkspaceShellPageBase<SettingsWor
     }
 }
 
+/// <summary>
+/// Binds derived pages to the portfolio workspace shell definition.
+/// </summary>
 public class PortfolioWorkspaceShellPageBase : WorkspaceShellPageBase<PortfolioWorkspaceShellStateProvider, PortfolioWorkspaceShellViewModel>
 {
     protected PortfolioWorkspaceShellPageBase(
@@ -339,6 +360,9 @@ public class PortfolioWorkspaceShellPageBase : WorkspaceShellPageBase<PortfolioW
     }
 }
 
+/// <summary>
+/// Binds derived pages to the reporting workspace shell definition.
+/// </summary>
 public class ReportingWorkspaceShellPageBase : WorkspaceShellPageBase<ReportingWorkspaceShellStateProvider, ReportingWorkspaceShellViewModel>
 {
     protected ReportingWorkspaceShellPageBase(

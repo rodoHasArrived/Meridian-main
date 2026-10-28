@@ -3,6 +3,9 @@ using System.Linq;
 
 namespace Meridian.Backtesting.Sdk.Strategies.AdvancedCarry;
 
+/// <summary>
+/// Builds carry portfolio targets, risk assessments, rebalance instructions, and execution plans from configured market inputs.
+/// </summary>
 public sealed partial class AdvancedCarryDecisionEngine
 {
     private const double TradingDaysPerYear = 252.0;

@@ -791,6 +791,9 @@ public sealed record HealthSummary(
     int OrphanedFiles
 );
 
+/// <summary>
+/// Aggregates storage file counts, sizes, corruption, compression, fragmentation, and age statistics.
+/// </summary>
 public sealed class HealthStatistics
 {
     public int TotalFiles { get; set; }

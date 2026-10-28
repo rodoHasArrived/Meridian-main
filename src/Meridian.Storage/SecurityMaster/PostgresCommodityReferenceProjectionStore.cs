@@ -3,6 +3,9 @@ using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Reads commodity reference projections from PostgreSQL by security, type, and exchange.
+/// </summary>
 public sealed class PostgresCommodityReferenceProjectionStore : ICommodityReferenceProjectionStore
 {
     internal const string AssetClass = "Commodity";

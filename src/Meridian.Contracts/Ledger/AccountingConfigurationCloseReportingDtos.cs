@@ -1004,6 +1004,9 @@ public sealed record ActivateAccountingConfigurationRequest(
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
     string? TenantId = null);
 
+/// <summary>
+/// Retrieves and updates scoped accounting configuration and its supporting templates and mappings.
+/// </summary>
 public interface IAccountingConfigurationService
 {
     Task<AccountingConfigurationWorkspaceDto> GetWorkspaceAsync(
@@ -1057,6 +1060,9 @@ public interface IAccountingConfigurationService
         string? companyId = null);
 }
 
+/// <summary>
+/// Applies governed lifecycle actions to manual journal entry drafts.
+/// </summary>
 public interface IManualJournalEntryLifecycleService
 {
     Task<JournalEntryLifecycleActionResultDto> ApplyLifecycleActionAsync(
@@ -1064,6 +1070,9 @@ public interface IManualJournalEntryLifecycleService
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Builds scoped manual journal entry workbenches and private capital activity projections.
+/// </summary>
 public interface IManualJournalEntryWorkbenchService
 {
     Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default);
@@ -1103,6 +1112,9 @@ public interface IManualJournalEntryWorkbenchService
     }
 }
 
+/// <summary>
+/// Builds a capital account workbench filtered by fund, book, event, investor, and currency.
+/// </summary>
 public interface ICapitalAccountWorkbenchService
 {
     Task<CapitalAccountWorkbenchDto> GetWorkbenchAsync(
@@ -1115,6 +1127,9 @@ public interface ICapitalAccountWorkbenchService
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Builds the command center view for a specific private capital fund event.
+/// </summary>
 public interface IPrivateCapitalFundEventCommandCenterService
 {
     Task<PrivateCapitalFundEventCommandCenterDto?> GetCommandCenterAsync(
@@ -1124,6 +1139,9 @@ public interface IPrivateCapitalFundEventCommandCenterService
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Persists and retrieves manual journal entry drafts within their fund, tenant, and company scope.
+/// </summary>
 public interface IManualJournalEntryDraftStore
 {
     Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default);
@@ -1153,6 +1171,9 @@ public interface IManualJournalEntryDraftStore
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Loads and saves scoped accounting configuration workspaces.
+/// </summary>
 public interface IAccountingConfigurationStore
 {
     Task<AccountingConfigurationWorkspaceDto?> GetAsync(
@@ -1165,6 +1186,9 @@ public interface IAccountingConfigurationStore
     Task SaveAsync(AccountingConfigurationWorkspaceDto workspace, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Retains content-validated accounting action audit events and retrieves their history.
+/// </summary>
 public interface IAccountingActionAuditStore
 {
     /// <summary>Retains an audit event.</summary>

@@ -14,6 +14,9 @@ public sealed record ReportingProviderReceiptAuthenticationRequest(
     SecureReportingDeliveryReceiptCommand Receipt,
     ReportingProviderReceiptAuthentication Authentication);
 
+/// <summary>
+/// Authenticates provider callbacks before reporting delivery receipts are retained.
+/// </summary>
 public interface IReportingProviderReceiptAuthenticator
 {
     ValueTask<bool> AuthenticateAsync(

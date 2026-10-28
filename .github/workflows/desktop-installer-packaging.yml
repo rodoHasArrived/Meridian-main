@@ -56,7 +56,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
           ref: ${{ github.sha }}
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
       - name: Validate signing prerequisites before builds
@@ -87,6 +87,8 @@ jobs:
   secrets:
     needs: eligibility
     uses: ./.github/workflows/ci.yml
+    with:
+      release-evidence: true
 
   codeql:
     needs: eligibility
@@ -97,8 +99,13 @@ jobs:
     uses: ./.github/workflows/codeql.yml
 
   production:
-    needs: eligibility
+    needs: [eligibility, ci]
     uses: ./.github/workflows/production-certification.yml
+    with:
+      integration-artifact-id: ${{ needs.ci.outputs.integration-artifact-id }}
+      integration-artifact-name: ${{ needs.ci.outputs.integration-artifact-name }}
+      integration-receipt-sha256: ${{ needs.ci.outputs.integration-receipt-sha256 }}
+      integration-result: ${{ needs.ci.result }}
 
   smoke:
     needs: eligibility
@@ -128,7 +135,7 @@ jobs:
           global-json-file: global.json
 
       - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
 
@@ -137,7 +144,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
+          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/*.packages.lock.json', '**/NuGet.Config', 'global.json') }}
           restore-keys: |
             ${{ runner.os }}-nuget-v1-
 
@@ -150,7 +157,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: desktop-release-preflight-test-results-${{ github.run_number }}
+          name: desktop-release-preflight-test-results-${{ github.run_number }}-${{ github.run_attempt }}
           path: artifacts/test-results/desktop-release-preflight/
           if-no-files-found: ignore
           retention-days: 14
@@ -187,7 +194,7 @@ jobs:
       # `Generate release evidence manifest` below shells out to `python`; pin it rather than
       # depending on whatever the runner image happens to expose on PATH.
       - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
 
@@ -196,7 +203,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
+          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/*.packages.lock.json', '**/NuGet.Config', 'global.json') }}
           restore-keys: |
             ${{ runner.os }}-nuget-v1-
 
@@ -310,12 +317,21 @@ jobs:
             Set-Content -LiteralPath (Join-Path $root 'desktop-installer-${{ matrix.runtime }}-SHA256SUMS') -Encoding ascii
 
       - name: Attest signed installer and SBOM
+        id: attestation
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
           subject-path: |
             artifacts/release/${{ matrix.runtime }}/*.msix
             artifacts/release/${{ matrix.runtime }}/*.msixbundle
           sbom-path: artifacts/release/${{ matrix.runtime }}/desktop-installer-${{ matrix.runtime }}-sbom.spdx.json
+
+      - name: Retain installer attestation bundle for durable release evidence
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-attestation-desktop-installer-${{ matrix.runtime }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.attestation.outputs.bundle-path }}
+          if-no-files-found: error
+          retention-days: 90
 
       - name: Upload packaged installer artifact
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -359,7 +375,7 @@ jobs:
 
       # `Generate consumer release evidence` below shells out to `python`.
       - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
 
@@ -431,10 +447,19 @@ jobs:
             Set-Content -LiteralPath artifacts/consumer-setup/consumer-setup-win-x64-SHA256SUMS -Encoding ascii
 
       - name: Attest signed consumer setup and SBOM
+        id: attestation
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
           subject-path: artifacts/consumer-setup/Meridian-Setup.exe
           sbom-path: artifacts/consumer-setup/consumer-setup-win-x64-sbom.spdx.json
+
+      - name: Retain consumer attestation bundle for durable release evidence
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-attestation-consumer-setup-win-x64-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.attestation.outputs.bundle-path }}
+          if-no-files-found: error
+          retention-days: 90
 
       - name: Upload consumer setup artifact
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -590,7 +615,7 @@ jobs:
           fetch-depth: 1
 
       - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
 
@@ -645,43 +670,58 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: write
+      actions: read
+      attestations: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           ref: ${{ github.sha }}
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
+      - name: Restore original certified bytes on a publication retry
+        id: resume
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && github.run_attempt > 1
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python build/scripts/ci/publish-certified-release.py --prepare-resume --root artifacts/publish-release
       - name: Download packaged installer artifacts
+        if: steps.resume.outputs.restored != 'true'
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: meridian-desktop-installer-*-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/release
       - name: Download consumer setup artifact
+        if: steps.resume.outputs.restored != 'true'
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: meridian-consumer-setup-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/release/consumer
       - name: Download native lifecycle evidence
+        if: steps.resume.outputs.restored != 'true'
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: desktop-install-certification-*-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/certification
           merge-multiple: true
       - name: Download consumer EXE lifecycle evidence
+        if: steps.resume.outputs.restored != 'true'
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: consumer-install-certification-win-x64-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/certification
       - name: Download installed startup evidence
+        if: steps.resume.outputs.restored != 'true'
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: meridian-web-workstation-win-x64-${{ github.run_number }}-${{ github.run_attempt }}
           path: artifacts/startup
       - name: Verify dependency results, commit identities and certified package digests
+        if: steps.resume.outputs.restored != 'true'
         env:
           RELEASE_NEEDS: ${{ toJSON(needs) }}
+          GH_TOKEN: ${{ github.token }}
         run: python build/scripts/ci/verify-release-promotion.py --root artifacts/release --receipts artifacts/certification --smoke artifacts/startup/release-evidence.json --output artifacts/publish-release
       - name: Retain validated release or rehearsal evidence
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -691,20 +731,21 @@ jobs:
           if-no-files-found: error
           retention-days: 90
       - name: Retain compact promotion receipt for readiness reporting
+        # This copy records the publication attempt without mutating the original
+        # certification manifest or the bytes already staged in a draft release.
+        run: python build/scripts/ci/publish-certified-release.py --root artifacts/publish-release --readiness-output artifacts/promotion-readiness/release-gate-evidence.json
+      - name: Upload compact promotion receipt for readiness reporting
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-promotion-readiness-${{ github.run_id }}-${{ github.run_attempt }}
-          path: artifacts/publish-release/release-gate-evidence.json
+          path: artifacts/promotion-readiness/release-gate-evidence.json
           if-no-files-found: error
           retention-days: 90
       - name: Publish exact certified GitHub release assets
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
-        with:
-          files: artifacts/publish-release/*
-          fail_on_unmatched_files: true
-          generate_release_notes: true
-          prerelease: ${{ contains(github.ref_name, '-') }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python build/scripts/ci/publish-certified-release.py --root artifacts/publish-release
 
   readiness-summary:
     name: release-readiness-summary
@@ -720,7 +761,7 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ github.sha }}
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
       - name: Collect available readiness receipts

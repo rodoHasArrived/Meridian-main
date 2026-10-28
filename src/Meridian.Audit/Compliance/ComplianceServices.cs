@@ -6,11 +6,17 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Audit.Compliance;
 
+/// <summary>
+/// Evaluates whether an actor may perform a sensitive action using compliance policy and approval evidence.
+/// </summary>
 public interface ICompliancePolicyEngine
 {
     (bool Allowed, string Reason) Evaluate(ActorContext actor, ComplianceActionRequest request);
 }
 
+/// <summary>
+/// Checks privileged permissions and enforces MFA, bound approval evidence, and segregation of duties for sensitive actions.
+/// </summary>
 public sealed class CompliancePolicyEngine : ICompliancePolicyEngine
 {
     // Sensitive actions gate on Meridian.Identity permissions so compliance gating stays aligned
@@ -129,6 +135,9 @@ public sealed class CompliancePolicyEngine : ICompliancePolicyEngine
            && string.Equals(approval.EntityId, NormalizeOptional(request.EntityId), StringComparison.Ordinal);
 }
 
+/// <summary>
+/// Appends hash-linked audit events and verifies their integrity, with optional durable JSONL persistence.
+/// </summary>
 public sealed class ImmutableAuditLogService
 {
     private static readonly JsonSerializerOptions PersistenceOptions =

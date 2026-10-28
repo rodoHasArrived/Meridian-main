@@ -19,6 +19,9 @@ public interface IAccountingPositionSnapshotCaptureService
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Captures brokerage synchronization positions as scoped accounting position snapshots.
+/// </summary>
 public sealed class AccountingPositionSnapshotCaptureService : IAccountingPositionSnapshotCaptureService
 {
     private readonly IPositionSnapshotStore? _snapshotStore;

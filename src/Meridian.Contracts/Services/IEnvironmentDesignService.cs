@@ -2,6 +2,9 @@ using Meridian.Contracts.EnvironmentDesign;
 
 namespace Meridian.Contracts.Services;
 
+/// <summary>
+/// Creates, retrieves, and saves environment design drafts.
+/// </summary>
 public interface IEnvironmentDesignService
 {
     Task<IReadOnlyList<EnvironmentDraftDto>> ListDraftsAsync(CancellationToken ct = default);

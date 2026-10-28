@@ -5,6 +5,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Provides the desktop page to review continuity workflows, gates, close calendar, and governed approval policy.
+/// </summary>
 public partial class OperationsContinuityPage : Page
 {
     private readonly OperationsContinuityViewModel _viewModel;

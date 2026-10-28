@@ -2,6 +2,9 @@ using Meridian.Contracts.DirectLending;
 
 namespace Meridian.Application.DirectLending;
 
+/// <summary>
+/// Adapts durable direct-lending command and query services to the combined service contract.
+/// </summary>
 public sealed partial class PostgresDirectLendingService : IDirectLendingService
 {
     private readonly IDirectLendingCommandService _commandService;

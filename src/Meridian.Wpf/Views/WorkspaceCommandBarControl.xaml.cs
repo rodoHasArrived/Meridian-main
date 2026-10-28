@@ -6,6 +6,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Carries the workspace command selected by the operator.
+/// </summary>
 public sealed class WorkspaceCommandInvokedEventArgs : EventArgs
 {
     public WorkspaceCommandInvokedEventArgs(WorkspaceCommandItem command)
@@ -16,6 +19,9 @@ public sealed class WorkspaceCommandInvokedEventArgs : EventArgs
     public WorkspaceCommandItem Command { get; }
 }
 
+/// <summary>
+/// Displays primary and secondary workspace commands and raises command invocation events.
+/// </summary>
 public partial class WorkspaceCommandBarControl : UserControl
 {
     public static readonly DependencyProperty CommandGroupProperty =

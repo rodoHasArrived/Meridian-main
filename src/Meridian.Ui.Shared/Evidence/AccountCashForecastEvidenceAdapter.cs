@@ -20,6 +20,9 @@ public sealed record AccountCashSourceFlow(string FlowId, string VersionId, Acco
     string? SupersedesVersionId = null);
 public sealed record AccountCashSourceFx(string Currency, string BaseCurrency, DateOnly ConversionDate, decimal BaseUnitsPerCurrencyUnit);
 
+/// <summary>
+/// Indicates that cash-forecast source evidence could not satisfy its authority requirements.
+/// </summary>
 public sealed class AccountCashForecastSourceAuthorityException(string message) : MeridianException(message);
 
 /// <summary>Exact supported source economics and accepted review, scoped to a single account/book.</summary>

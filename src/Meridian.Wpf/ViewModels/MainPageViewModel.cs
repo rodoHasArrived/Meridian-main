@@ -2280,6 +2280,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         string WorkspaceId,
         string Glyph);
 
+    /// <summary>
+    /// Describes a navigable workspace tile with active-state and automation metadata.
+    /// </summary>
     public sealed class WorkspaceTileItem : BindableBase
     {
         private bool _isActive;

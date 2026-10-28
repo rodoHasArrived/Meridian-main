@@ -879,6 +879,9 @@ public sealed partial class SettingsViewModel
     }
 }
 
+/// <summary>
+/// Presents an asset profile's identity, version, status, category, and field count.
+/// </summary>
 public sealed class SettingsAssetProfileRow
 {
     public SettingsAssetProfileRow(SecurityAssetProfileDefinitionDto profile)
@@ -919,6 +922,9 @@ public sealed class SettingsAssetProfileRow
         : $"{Profile.EffectiveFrom:yyyy-MM-dd} to {Profile.EffectiveTo:yyyy-MM-dd}";
 }
 
+/// <summary>
+/// Exposes asset-profile field metadata, allowed values, and editable input state.
+/// </summary>
 public sealed class SettingsAssetProfileFieldInput : BindableBase
 {
     private readonly Action _changed;

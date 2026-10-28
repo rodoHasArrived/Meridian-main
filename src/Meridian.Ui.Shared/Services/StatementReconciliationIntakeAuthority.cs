@@ -35,6 +35,9 @@ public sealed record StatementReconciliationIntakeReceipt(
     int PublishedCaseCount,
     IReadOnlyList<string> EvidenceReferences);
 
+/// <summary>
+/// Resolves accounting scope and publishes retained statement intake to governed reconciliation workflows.
+/// </summary>
 public interface IStatementReconciliationIntakeAuthority
 {
     Task<StatementAccountingScope> ResolveAccountingScopeAsync(
@@ -53,6 +56,9 @@ public interface IStatementReconciliationIntakeAuthority
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Carries a coded failure from statement reconciliation intake authorization or publication.
+/// </summary>
 public sealed class StatementReconciliationIntakeAuthorityException(
     string code,
     string message,

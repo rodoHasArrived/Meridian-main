@@ -13,6 +13,9 @@ using Meridian.Storage.Store;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Stores accounting configuration workspaces in process memory.
+/// </summary>
 public sealed class InMemoryAccountingConfigurationStore :
     IAccountingConfigurationStore,
     Meridian.Application.Composition.INonProductionOnlyService
@@ -49,6 +52,9 @@ public sealed class InMemoryAccountingConfigurationStore :
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
 
+/// <summary>
+/// Appends and queries accounting action audit events in process memory.
+/// </summary>
 public sealed class InMemoryAccountingActionAuditStore :
     IAccountingActionAuditStore,
     Meridian.Application.Composition.INonProductionOnlyService
@@ -111,6 +117,9 @@ public sealed class InMemoryAccountingActionAuditStore :
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
 
+/// <summary>
+/// Persists accounting workspaces and audit history with audit-chain verification.
+/// </summary>
 public sealed class FileAccountingConfigurationStore :
     JsonFileSnapshotStore<FileAccountingConfigurationStore.AccountingConfigurationSnapshot>,
     IAccountingConfigurationStore,

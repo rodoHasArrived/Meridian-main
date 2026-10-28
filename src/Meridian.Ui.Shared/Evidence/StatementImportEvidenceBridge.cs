@@ -16,6 +16,9 @@ public sealed record StatementImportEvidenceBridgeRequest(
     public string? WorkflowId { get; init; }
 }
 
+/// <summary>
+/// Retains statement-import content as evidence for later verification and review.
+/// </summary>
 public interface IStatementImportEvidenceRetainer
 {
     Task<StatementImportCommitResultDto> RetainAsync(

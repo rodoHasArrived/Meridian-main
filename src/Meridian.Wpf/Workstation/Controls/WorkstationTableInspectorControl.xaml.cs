@@ -6,6 +6,9 @@ using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.Workstation.Controls;
 
+/// <summary>
+/// Combines a selectable workstation table with filtering context and a detail inspector.
+/// </summary>
 public partial class WorkstationTableInspectorControl : UserControl
 {
     public static readonly DependencyProperty TableProperty =

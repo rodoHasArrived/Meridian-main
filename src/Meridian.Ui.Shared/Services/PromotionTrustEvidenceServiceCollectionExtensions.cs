@@ -4,6 +4,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Registers promotion trust evidence services in the dependency injection container.
+/// </summary>
 public static class PromotionTrustEvidenceServiceCollectionExtensions
 {
     /// <summary>Registers the same source-backed promotion trust provider for browser and desktop hosts.</summary>

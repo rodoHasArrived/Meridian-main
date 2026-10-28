@@ -28,12 +28,18 @@ public sealed record StatementReconciliationCheckpoint(
     DateTimeOffset UpdatedAtUtc,
     IReadOnlyList<StatementRunEvidenceLink>? EvidenceLinks = null);
 
+/// <summary>
+/// Reads and updates account-scoped statement reconciliation checkpoints.
+/// </summary>
 public interface IStatementReconciliationCheckpointStore
 {
     Task<StatementReconciliationCheckpoint?> GetAsync(Guid accountId, CancellationToken ct);
     Task UpsertAsync(StatementReconciliationCheckpoint checkpoint, CancellationToken ct);
 }
 
+/// <summary>
+/// Retains account reconciliation checkpoints in process.
+/// </summary>
 public sealed class InMemoryStatementReconciliationCheckpointStore : IStatementReconciliationCheckpointStore
 {
     private readonly ConcurrentDictionary<Guid, StatementReconciliationCheckpoint> _checkpoints = new();
@@ -47,6 +53,9 @@ public sealed class InMemoryStatementReconciliationCheckpointStore : IStatementR
     }
 }
 
+/// <summary>
+/// Runs incremental account statement reconciliation and updates its checkpoint.
+/// </summary>
 public sealed class StatementReconciliationOrchestrator(
     IStatementReconciliationValidationService validationService,
     IDataIntegrationIngestionService ingestionService,

@@ -3,6 +3,9 @@ using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Reads certificate of deposit reference projections from PostgreSQL by security, issuer, and maturity.
+/// </summary>
 public sealed class PostgresCertificateOfDepositReferenceProjectionStore : ICertificateOfDepositReferenceProjectionStore
 {
     internal const string AssetClass = "CertificateOfDeposit";

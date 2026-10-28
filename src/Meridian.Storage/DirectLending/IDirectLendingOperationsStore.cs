@@ -70,6 +70,9 @@ public sealed record OperationsWorkflowAuditAppendRequest(
     string Severity,
     IReadOnlyList<string> Tags);
 
+/// <summary>
+/// Persists direct lending operational cash transactions, allocations, fees, and projection runs.
+/// </summary>
 public interface IDirectLendingOperationsStore
 {
     Task<IReadOnlyList<CashTransactionDto>> GetCashTransactionsAsync(Guid loanId, CancellationToken ct = default);

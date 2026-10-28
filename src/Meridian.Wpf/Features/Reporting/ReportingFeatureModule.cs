@@ -7,6 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.Features.Reporting;
 
+/// <summary>
+/// Registers reporting desktop services and contributes the feature's navigation pages and workspace metadata.
+/// </summary>
 public sealed class ReportingFeatureModule : IDesktopFeatureModule
 {
     private static readonly WorkspaceCapabilityDescriptor Capability = ShellNavigationCatalog.BuildReportingCapability();

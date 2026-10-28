@@ -4,6 +4,9 @@ using MeridianLedger = Meridian.Ledger.Ledger;
 
 namespace Meridian.FinancialOperations.LedgerTextJournal;
 
+/// <summary>
+/// Parses ledger text journal lines into a structured journal document.
+/// </summary>
 public static class LedgerTextJournalParser
 {
     private static readonly string[] s_dateFormats = ["yyyy/MM/dd", "yyyy-MM-dd"];

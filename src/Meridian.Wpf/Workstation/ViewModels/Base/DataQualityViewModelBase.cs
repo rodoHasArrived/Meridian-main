@@ -1,5 +1,8 @@
 namespace Meridian.Wpf.Workstation.ViewModels.Base;
 
+/// <summary>
+/// Adds an observable quality summary to workspace view models.
+/// </summary>
 public abstract class DataQualityViewModelBase : WorkspaceViewModelBase
 {
     private string _qualitySummary = string.Empty;

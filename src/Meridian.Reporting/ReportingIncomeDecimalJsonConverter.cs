@@ -33,6 +33,7 @@ public sealed class ReportingIncomeDecimalJsonConverter : JsonConverter<decimal>
     }
 }
 
+/// <summary>Serializes nullable income amounts as invariant decimal strings while preserving null values.</summary>
 public sealed class ReportingIncomeNullableDecimalJsonConverter : JsonConverter<decimal?>
 {
     public override decimal? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>

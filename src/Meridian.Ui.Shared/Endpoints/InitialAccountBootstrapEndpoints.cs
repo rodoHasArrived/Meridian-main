@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps initial account provisioning and bootstrap operations for the workstation.
+/// </summary>
 public static class InitialAccountBootstrapEndpoints
 {
     public static void MapInitialAccountBootstrapEndpoints(this WebApplication app)

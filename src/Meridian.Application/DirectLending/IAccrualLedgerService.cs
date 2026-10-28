@@ -5,6 +5,9 @@ using Meridian.Storage.Ledger;
 
 namespace Meridian.Application.DirectLending;
 
+/// <summary>
+/// Defines journal projection for daily loan accruals and accrual reversals.
+/// </summary>
 public interface IAccrualLedgerService
 {
     Task<IReadOnlyList<LedgerJournalEntryWrite>> AccrueAsync(

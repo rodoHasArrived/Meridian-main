@@ -4,6 +4,7 @@ using Meridian.Identity.Auth;
 
 namespace Meridian.Identity;
 
+/// <summary>Resolves organization, fund, and account ancestry from the fund-structure service for scoped authorization.</summary>
 public sealed class FundStructureAccessScopeLineageProvider : IAccessScopeLineageProvider
 {
     private readonly IFundStructureService _fundStructureService;

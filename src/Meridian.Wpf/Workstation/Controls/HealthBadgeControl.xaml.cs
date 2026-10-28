@@ -7,6 +7,9 @@ using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.Workstation.Controls;
 
+/// <summary>
+/// Displays a workstation health badge through its bound presentation model.
+/// </summary>
 public partial class HealthBadgeControl : UserControl
 {
     public static readonly DependencyProperty BadgeProperty =

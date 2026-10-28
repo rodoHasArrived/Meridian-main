@@ -6,6 +6,9 @@ using Meridian.Storage.Ledger;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Verifies recurring-journal subject membership against the authoritative book and date.
+/// </summary>
 public interface IRecurringJournalSubjectAuthority
 {
     Task VerifyAsync(RecurringJournalScope scope, LedgerBookRecord book, DateOnly date, CancellationToken ct);

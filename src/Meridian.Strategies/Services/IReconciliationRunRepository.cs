@@ -2,6 +2,7 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.Strategies.Services;
 
+/// <summary>Retains reconciliation run details and coordinates observation continuity against run history.</summary>
 public interface IReconciliationRunRepository
 {
     Task SaveAsync(ReconciliationRunDetail detail, CancellationToken ct = default);

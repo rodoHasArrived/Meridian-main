@@ -28,6 +28,9 @@ public sealed record AccessContext(
 
 public sealed record PolicyDecision(bool Allowed, string Reason, bool RequiresDualApproval, bool RequiresPrivilegedRole, bool RequiresMfa);
 
+/// <summary>
+/// Evaluates sensitive-action policy requirements from the actor, role, MFA, and approval context.
+/// </summary>
 public sealed class SensitiveActionPolicyEngine
 {
     public PolicyDecision Evaluate(SensitiveActionType action, AccessContext context)

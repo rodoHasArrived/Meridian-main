@@ -10,6 +10,9 @@ using Meridian.Strategies.Services;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Applies single or bulk casework changes and hands their results back to statement-owned workflows.
+/// </summary>
 public interface IStatementReconciliationCaseworkHandoffService
 {
     Task<ReconciliationBreakQueueTransitionResult> ApplyAsync(
@@ -23,6 +26,9 @@ public interface IStatementReconciliationCaseworkHandoffService
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Carries a coded failure from statement reconciliation casework handoff.
+/// </summary>
 public sealed class StatementReconciliationCaseworkHandoffException(
     string code,
     string message,
@@ -1273,6 +1279,9 @@ public enum StatementCaseworkCommitFaultPoint
     CompletionRetained
 }
 
+/// <summary>
+/// Provides fault-injection callbacks at retained statement casework commit boundaries.
+/// </summary>
 public interface IStatementCaseworkCommitFaultInjector
 {
     Task OnPointAsync(

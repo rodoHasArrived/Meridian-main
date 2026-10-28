@@ -7,6 +7,7 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Reporting;
 
+/// <summary>Executes reporting jobs and exposes retained run manifests and lifecycle operations.</summary>
 public interface IReportingOrchestrationService
 {
     Task<ReportingOutputManifest> ExecuteAsync(ReportingJobContract contract, CancellationToken cancellationToken);
@@ -42,6 +43,7 @@ public interface IReportingOrchestrationService
     Task<bool> TransitionApprovalAsync(string runId, ReportingRunStatus target, string actor, string role, string notes, CancellationToken cancellationToken);
 }
 
+/// <summary>Resolves reporting template metadata by identifier, version, and operational scope.</summary>
 public interface IReportingTemplateCatalog
 {
     ReportingTemplateMetadata Get(string templateId);
@@ -76,11 +78,13 @@ public interface IReportingTemplateCatalog
     IReadOnlyList<ReportingTemplateMetadata> ListTemplates();
 }
 
+/// <summary>Builds a reporting section manifest and lineage for a specific run attempt.</summary>
 public interface IReportingSectionRenderer
 {
     ReportingSectionManifest RenderSection(string runId, ReportingJobContract contract, ReportingTemplateMetadata template, string sectionId, int attempt);
 }
 
+/// <summary>Coordinates reporting run creation, section rendering, persistence, and governed lifecycle transitions.</summary>
 public sealed class ReportingOrchestrationService : IReportingOrchestrationService
 {
     private static readonly TimeSpan RunCreateLeaseDuration = TimeSpan.FromMinutes(15);
@@ -1593,6 +1597,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         ReportingOutputManifest? ReleasedHead);
 }
 
+/// <summary>Builds reproducible section manifests and hashes from reporting contract snapshot lineage.</summary>
 public sealed class DeterministicReportingSectionRenderer : IReportingSectionRenderer
 {
     public ReportingSectionManifest RenderSection(string runId, ReportingJobContract contract, ReportingTemplateMetadata template, string sectionId, int attempt)

@@ -5,6 +5,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Controls;
 
+/// <summary>
+/// Displays a short status label and optional glyph using a configured visual tone.
+/// </summary>
 public partial class ToneBadge : UserControl
 {
     public static readonly DependencyProperty TextProperty =
