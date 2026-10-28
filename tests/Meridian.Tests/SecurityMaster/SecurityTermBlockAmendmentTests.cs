@@ -102,6 +102,160 @@ public sealed class SecurityTermBlockAmendmentTests
             Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task AmendTermBlockAsync_StaleExpectedVersion_RejectsBeforeBuildingThePatch()
+    {
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(CreateProjection(securityId, "ConvertiblePreferred", Guid.NewGuid()));
+        var service = CreateService(eventStore, snapshotStore, store);
+
+        var act = () => service.AmendTermBlockAsync(securityId, "preferredTerms", new AmendSecurityTermBlockRequest(
+            ExpectedVersion: 6,
+            Block: JsonSerializer.SerializeToElement(new { dividendRate = 6.25m, dividendType = "Fixed" }),
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            SourceSystem: "test",
+            UpdatedBy: "codex",
+            SourceRecordId: null,
+            Reason: "edit based on an older version"));
+
+        var thrown = await act.Should().ThrowAsync<SecurityMasterConcurrencyException>();
+        thrown.Which.ExpectedVersion.Should().Be(6);
+        thrown.Which.CurrentVersion.Should().Be(7);
+        await eventStore.DidNotReceiveWithAnyArgs().AppendAsync(default, default, default!, default);
+    }
+
+    // ── Readable before writable (ADR-024) ─────────────────────────────────────────────────────
+
+    [Fact]
+    public void For_OffersOnlyTheBlocksTheNodeWrites()
+    {
+        // scheduleConventions, callSchedule and putSchedule are declared (the node reads them) but are
+        // above each class's write version, so none is a block a term-block amendment can replace.
+        SecurityTermBlocks.For("Bond").Select(static field => field.Key).Should().Equal("stepSchedule", "principalSchedule");
+        SecurityTermBlocks.For("CertificateOfDeposit").Should().BeEmpty();
+        SecurityTermBlocks.For("StructuredCredit").Select(static field => field.Key).Should().Equal("factorScheduleEntries");
+        SecurityTermBlocks.For("Swap").Select(static field => field.Key).Should().Equal("legs");
+        foreach (var assetClass in new[] { "Bond", "CertificateOfDeposit", "StructuredCredit" })
+        {
+            foreach (var key in new[] { "scheduleConventions", "callSchedule", "putSchedule" })
+            {
+                SecurityAssetTermsSchema.Field(assetClass, key).Should().NotBeNull($"{assetClass}.{key}");
+                SecurityTermBlocks.For(assetClass).Should().NotContain(field => field.Key == key, $"{assetClass}.{key}");
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData("Bond", "scheduleConventions", 2, 1, """{"stubPolicy":"Short","paymentCalendars":["USNY"]}""", "{}")]
+    [InlineData("CertificateOfDeposit", "scheduleConventions", 2, 1, """{"stubPolicy":"Short","paymentCalendars":["USNY"]}""", "{}")]
+    [InlineData("StructuredCredit", "scheduleConventions", 3, 2, """{"stubPolicy":"Short","paymentCalendars":["USNY"]}""", "{}")]
+    [InlineData("Bond", "callSchedule", 3, 1, """[{"callDate":"2030-06-15","callPrice":101}]""", "[]")]
+    [InlineData("Bond", "putSchedule", 3, 1, """[{"putDate":"2029-06-15"}]""", "[]")]
+    [InlineData("CertificateOfDeposit", "callSchedule", 3, 1, """[{"callDate":"2026-09-30"}]""", "[]")]
+    [InlineData("CertificateOfDeposit", "putSchedule", 3, 1, """[{"putDate":"2026-09-30"}]""", "[]")]
+    [InlineData("StructuredCredit", "callSchedule", 4, 2, """[{"callDate":"2030-06-15","callPrice":101}]""", "[]")]
+    [InlineData("StructuredCredit", "putSchedule", 4, 2, """[{"putDate":"2029-06-15"}]""", "[]")]
+    public void BuildPatch_ReadableOnlyBlock_ThrowsTheNotYetWritableReason(
+        string assetClass, string blockKey, int since, int writes, string populatedBlock, string emptyBlock)
+    {
+        var reason =
+            $"'{blockKey}' is an asset-class terms version {since} term of '{assetClass}'. This node reads it but writes " +
+            $"assetClassTermsVersion {writes}, so a create, amend, import or field edit cannot set it yet. " +
+            "Leave it absent, null or empty (ADR-024).";
+        var current = JsonSerializer.SerializeToElement(new { maturity = "2031-06-15" });
+
+        SecurityTermBlocks.TryDescribeReadableOnlyBlock(assetClass, blockKey, out var described).Should().BeTrue();
+        described.Should().Be(reason);
+
+        // A populated block, an empty one and a clear are all refused: the block is not writable at all.
+        foreach (var block in new[] { populatedBlock, emptyBlock, "null" })
+        {
+            var act = () => SecurityTermBlocks.BuildPatch(assetClass, current, blockKey, JsonDocument.Parse(block).RootElement.Clone());
+
+            act.Should().Throw<ArgumentException>().WithMessage($"{reason} (Parameter 'blockKey')")
+                .Which.ParamName.Should().Be("blockKey");
+        }
+    }
+
+    [Theory]
+    // A case variant of the readable-only key, the swap leg's element field (not a block of the
+    // class), a writable block, a scalar and a class that declares no such field all keep today's
+    // undeclared-block text, or pass, rather than the readable-only reason.
+    [InlineData("Bond", "ScheduleConventions")]
+    [InlineData("Swap", "scheduleConventions")]
+    [InlineData("Bond", "principalSchedule")]
+    [InlineData("Bond", "maturity")]
+    [InlineData("Equity", "scheduleConventions")]
+    // The same holds for the call and put schedules: a case variant, and classes that declare neither.
+    [InlineData("Bond", "CallSchedule")]
+    [InlineData("CertificateOfDeposit", "PutSchedule")]
+    [InlineData("StructuredCredit", "CALLSCHEDULE")]
+    [InlineData("Swap", "callSchedule")]
+    [InlineData("Swap", "putSchedule")]
+    [InlineData("Equity", "callSchedule")]
+    [InlineData("Equity", "putSchedule")]
+    public void TryDescribeReadableOnlyBlock_IsFalse_OutsideAReadableOnlyBlockKey(string assetClass, string blockKey)
+    {
+        SecurityTermBlocks.TryDescribeReadableOnlyBlock(assetClass, blockKey, out var reason).Should().BeFalse();
+        reason.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("Bond", "ScheduleConventions", "stepSchedule, principalSchedule")]
+    [InlineData("Swap", "scheduleConventions", "legs")]
+    [InlineData("CertificateOfDeposit", "sinkingFundSchedule", "none")]
+    [InlineData("Bond", "CallSchedule", "stepSchedule, principalSchedule")]
+    public void BuildPatch_UndeclaredBlock_KeepsTheDeclaredBlocksText_WithoutTheReadableOnlyBlock(
+        string assetClass, string blockKey, string declaredBlocks)
+    {
+        var current = JsonSerializer.SerializeToElement(new { maturity = "2031-06-15" });
+
+        var act = () => SecurityTermBlocks.BuildPatch(assetClass, current, blockKey, JsonSerializer.SerializeToElement(new { }));
+
+        act.Should().Throw<ArgumentException>().WithMessage(
+            $"Asset class '{assetClass}' declares no term block '{blockKey}'. Declared blocks: {declaredBlocks}. (Parameter 'blockKey')");
+    }
+
+    [Fact]
+    public async Task AmendTermBlockAsync_ReadableOnlyBlock_IsRefusedBeforeAnythingIsAppended()
+    {
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(CreateProjection(securityId, "Common", Guid.NewGuid()) with
+            {
+                AssetClass = "Bond",
+                AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+                {
+                    schemaVersion = 1,
+                    maturity = "2031-06-15",
+                    isCallable = false
+                })
+            });
+        var service = CreateService(eventStore, snapshotStore, store);
+
+        var act = () => service.AmendTermBlockAsync(securityId, "scheduleConventions", new AmendSecurityTermBlockRequest(
+            ExpectedVersion: 7,
+            Block: JsonSerializer.SerializeToElement(new { stubPolicy = "Short" }),
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            SourceSystem: "test",
+            UpdatedBy: "codex",
+            SourceRecordId: null,
+            Reason: "set conventions ahead of the write version"));
+
+        await act.Should().ThrowAsync<ArgumentException>().WithMessage(
+            "'scheduleConventions' is an asset-class terms version 2 term of 'Bond'. This node reads it but writes " +
+            "assetClassTermsVersion 1, so a create, amend, import or field edit cannot set it yet. " +
+            "Leave it absent, null or empty (ADR-024). (Parameter 'blockKey')");
+        await eventStore.DidNotReceiveWithAnyArgs().AppendAsync(default, default, default!, default);
+    }
+
     private static SecurityMasterService CreateService(
         ISecurityMasterEventStore eventStore,
         ISecurityMasterSnapshotStore snapshotStore,

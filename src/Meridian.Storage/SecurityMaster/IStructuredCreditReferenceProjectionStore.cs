@@ -42,7 +42,17 @@ public sealed record StructuredCreditProjectionRow(
     string? FactorScheduleReference,
     DateOnly? MaturityDate,
     string PrimaryIdentifierValue,
-    long Version);
+    long Version,
+    // Typed tranche terms (asset-class terms version 2, migration 045).
+    string? StructuredCreditKind = null,
+    string? Seniority = null,
+    decimal? AttachmentPoint = null,
+    decimal? DetachmentPoint = null,
+    decimal? WeightedAverageCoupon = null,
+    int? WeightedAverageMaturityMonths = null,
+    int? WeightedAverageLoanAgeMonths = null,
+    DateOnly? ReinvestmentPeriodEnd = null,
+    DateOnly? NonCallPeriodEnd = null);
 
 public sealed record StructuredCreditFactorScheduleRow(
     Guid SecurityId,

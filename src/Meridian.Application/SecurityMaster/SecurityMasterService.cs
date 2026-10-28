@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.SecurityMaster;
 
-public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMasterAmender, IDisposable
+public sealed partial class SecurityMasterService : ISecurityMasterService, ISecurityMasterAmender, IDisposable
 {
     /// <summary>
     /// Per-security amendment serialization from the conflict pre-check (which reads per-field
@@ -86,8 +86,13 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             ?? throw new InvalidOperationException($"Security '{request.SecurityId}' was not found.");
 
         var currentProjection = SecurityEconomicDefinitionAdapter.ToProjection(current, aliasProjection?.Aliases);
-        EnsureAssetClassRoundTripsSafely(currentProjection, request.AssetSpecificTermsPatch);
+        // An unrecognized class is refused before the decode: its repair is on a node that supports the
+        // class, whose terms this node may not decode. The other guards' repair is an amendment here, so
+        // they run after the decode; a row this node cannot decode is a fault, and no amendment can
+        // succeed here.
+        EnsureAssetClassIsRecognizedHere(currentProjection);
         var currentRecord = SecurityMasterMapping.ToRecord(currentProjection);
+        EnsureAssetClassRoundTripsSafely(currentProjection, request.AssetSpecificTermsPatch);
         // The SUBMITTED envelope's profile decides which kind parses the patch: a record already
         // reclassified to a first-class kind can be repinned to a different profile, and parsing
         // the new envelope through the OLD class would demand the old class's fields (repinning
@@ -111,7 +116,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         // strict-mapping error the write-mode kind mapping would raise first.
         var assetClassOverride = GetProfileBackedAssetClassOverride(currentProjection, request.AssetSpecificTermsPatch);
         var assetTermsOverride = GetProfileBackedAssetSpecificTermsOverride(currentProjection, request.AssetSpecificTermsPatch);
-        var result = SecurityMasterCommandFacade.Amend(currentRecord, SecurityMasterMapping.ToAmendCommand(request, kindSourceProjection));
+        var result = SecurityMasterCommandFacade.Amend(currentRecord, MapRequestOrRefuse(() => SecurityMasterMapping.ToAmendCommand(request, kindSourceProjection)));
         var projection = SecurityEconomicDefinitionAdapter.CarryRetainedEconomicTerms(
             currentProjection,
             CreateProjectionFromResult(
@@ -233,6 +238,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     {
         var currentProjection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Security '{securityId}' was not found.");
+        EnsurePatchBaseMatchesExpectedVersion(currentProjection, request.ExpectedVersion);
 
         var amendRequest = new AmendSecurityTermsRequest(
             SecurityId: securityId,
@@ -254,6 +260,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     {
         var currentProjection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Security '{securityId}' was not found.");
+        EnsurePatchBaseMatchesExpectedVersion(currentProjection, request.ExpectedVersion);
 
         var amendRequest = new AmendSecurityTermsRequest(
             SecurityId: securityId,
@@ -276,6 +283,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         ArgumentNullException.ThrowIfNull(request);
         var currentProjection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Security '{securityId}' was not found.");
+        EnsurePatchBaseMatchesExpectedVersion(currentProjection, request.ExpectedVersion);
 
         var amendRequest = new AmendSecurityTermsRequest(
             SecurityId: securityId,
@@ -294,6 +302,20 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         return await AmendTermsInternalAsync(amendRequest, eventType: SecurityTermBlocks.AmendedEventType, ct).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Patch-building amends merge the caller's change into terms read from the projection. If that
+    /// projection is not the version the caller edited, the merged patch would silently carry (or
+    /// drop) a concurrent writer's changes, so reject it before building the patch. The event-store
+    /// append still enforces ExpectedVersion for races after this read.
+    /// </summary>
+    private static void EnsurePatchBaseMatchesExpectedVersion(SecurityProjectionRecord currentProjection, long expectedVersion)
+    {
+        if (currentProjection.Version != expectedVersion)
+        {
+            throw new SecurityMasterConcurrencyException(currentProjection.SecurityId, expectedVersion, currentProjection.Version);
+        }
+    }
+
     public async Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default)
     {
         var aliasProjection = await _store.GetProjectionAsync(request.SecurityId, ct).ConfigureAwait(false);
@@ -301,8 +323,10 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             ?? throw new InvalidOperationException($"Security '{request.SecurityId}' was not found.");
 
         var currentProjection = SecurityEconomicDefinitionAdapter.ToProjection(current, aliasProjection?.Aliases);
-        EnsureAssetClassRoundTripsSafely(currentProjection);
+        // Ordered as in an amendment: the class check, the decode, then the round-trip guards.
+        EnsureAssetClassIsRecognizedHere(currentProjection);
         var currentRecord = SecurityMasterMapping.ToRecord(currentProjection);
+        EnsureAssetClassRoundTripsSafely(currentProjection);
         var result = SecurityMasterCommandFacade.Deactivate(currentRecord, SecurityMasterMapping.ToDeactivateCommand(request));
         var projection = SecurityEconomicDefinitionAdapter.CarryRetainedEconomicTerms(
             currentProjection,
@@ -353,7 +377,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
     private async Task<SecurityDetailDto> ExecuteCreateAsync(CreateSecurityRequest request, CancellationToken ct)
     {
-        var result = SecurityMasterCommandFacade.Create(SecurityMasterMapping.ToCreateCommand(request));
+        var result = SecurityMasterCommandFacade.Create(MapRequestOrRefuse(() => SecurityMasterMapping.ToCreateCommand(request)));
         var projection = CreateProjectionFromResult(
             result,
             aliases: null,
@@ -905,21 +929,29 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// write instead — the record stays readable, and the change must come from a node that
     /// supports the class.
     /// </summary>
-    private static void EnsureAssetClassRoundTripsSafely(
-        SecurityProjectionRecord projection,
-        JsonElement? assetSpecificTermsPatch = null)
+    private static void EnsureAssetClassIsRecognizedHere(SecurityProjectionRecord projection)
     {
         if (!SecurityAssetClassCatalog.AssetClasses.Contains(projection.AssetClass, StringComparer.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException(
+            throw new SecurityMasterWriteRefusedException(
                 $"Security '{projection.SecurityId:D}' has asset class '{projection.AssetClass}', which this node does not recognize. " +
                 "Amending or deactivating it here would re-serialize the record through the OtherSecurity fallback and rewrite its " +
                 "asset class, so the write is refused. Apply the change from a node that supports this asset class.");
         }
+    }
 
+    /// <summary>
+    /// The guards whose repair is an amendment on this node, run on a stored row that decodes: values
+    /// and structure the codec would drop or rewrite when it re-serializes the record.
+    /// </summary>
+    private static void EnsureAssetClassRoundTripsSafely(
+        SecurityProjectionRecord projection,
+        JsonElement? assetSpecificTermsPatch = null)
+    {
         EnsureDeclaredVocabulariesRoundTripSafely(projection, assetSpecificTermsPatch);
         EnsureBondCouponPayloadRoundTripsSafely(projection, assetSpecificTermsPatch);
         EnsureCustomAssetEnvelopeRoundTripsSafely(projection, assetSpecificTermsPatch);
+        EnsureAheadOfWriteTermsRoundTripSafely(projection, assetSpecificTermsPatch);
     }
 
     /// <summary>
@@ -949,7 +981,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             return;
         }
 
-        var isCustomAsset = string.Equals(projection.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase);
+        var isCustomAsset = SecurityAssetClassCatalog.GetOrDefault(projection.AssetClass).RequiresProfileReference;
         var terms = projection.AssetSpecificTerms;
         var referencesProfile = terms.ValueKind == JsonValueKind.Object
             && terms.TryGetProperty("customProfileId", out var profileId)
@@ -972,19 +1004,19 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         if (errors.Length > 0)
         {
             var summary = string.Join("; ", errors.Select(static issue => $"[{issue.Code}] {issue.Message}"));
-            throw new InvalidOperationException(
+            throw new SecurityMasterWriteRefusedException(
                 $"Security '{projection.SecurityId:D}' references an asset profile that fails catalog validation, " +
                 $"so the write is refused: {summary}");
         }
 
         if (!isCustomAsset)
         {
-            var kind = SecurityMasterMapping.ToRecord(projection).Kind;
+            var kind = MapRequestOrRefuse(() => SecurityMasterMapping.ToRecord(projection)).Kind;
             var invariantErrors = SecurityMasterCommandFacade.ValidateKindInvariants(kind);
             if (invariantErrors.Length > 0)
             {
                 var summary = string.Join("; ", invariantErrors.Select(static e => $"[{e.Code}] {e.Message}"));
-                throw new InvalidOperationException(
+                throw new SecurityMasterWriteRefusedException(
                     $"Security '{projection.SecurityId:D}' resolved to asset class '{projection.AssetClass}' but its " +
                     $"terms violate that class's domain invariants, so the write is refused: {summary}");
             }
@@ -1006,7 +1038,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         SecurityProjectionRecord projection,
         JsonElement? assetSpecificTermsPatch)
     {
-        if (!string.Equals(projection.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase))
+        if (!SecurityAssetClassCatalog.GetOrDefault(projection.AssetClass).RequiresProfileReference)
         {
             return;
         }
@@ -1031,7 +1063,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             return;
         }
 
-        throw new InvalidOperationException(
+        throw new SecurityMasterWriteRefusedException(
             $"Security '{projection.SecurityId:D}' is a CustomAsset without a profile envelope (no customProfileId), " +
             "so it reads through the OtherSecurity salvage path. Amending or deactivating it here would re-serialize " +
             "that fallback and drop its custom fields, so the write is refused. Migrate the record by amending it with " +
@@ -1165,7 +1197,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             SecurityAssetTermVocabularyEscape? escape = unreadableToken ? null : field.Escape;
             if (escape is null)
             {
-                throw new InvalidOperationException(
+                throw new SecurityMasterWriteRefusedException(
                     $"Security '{projection.SecurityId:D}' has {field.Key} '{raw}', which this node does not recognize and " +
                     $"cannot carry — the declared values are {string.Join(", ", field.AllowedValues)}. Re-serializing it here " +
                     "would rewrite it as one of those and drop the terms that depend on it, so the write is refused." +
@@ -1177,7 +1209,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                 .ToArray();
             if (dependentKeys.Length > 0)
             {
-                throw new InvalidOperationException(
+                throw new SecurityMasterWriteRefusedException(
                     $"Security '{projection.SecurityId:D}' has {field.Key} '{raw}', which this node does not recognize, and " +
                     $"it carries {string.Join(" and ", dependentKeys)} tied to that value. Re-serializing it here would " +
                     $"degrade {field.Key} to '{escape.Value}' and drop those blocks, so the write is refused. Apply the " +
@@ -1237,7 +1269,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             : $"the record loads with no {field.Key} and re-serializing would write a document without the " +
                 "stray key";
 
-        throw new InvalidOperationException(
+        throw new SecurityMasterWriteRefusedException(
             $"Security '{projection.SecurityId:D}' carries {string.Join(" and ", variants)} where this node reads " +
             $"only '{field.Key}', matched case-sensitively, so the codec cannot see that value at all: " +
             $"{canonicalOutcome}, dropping it. The write is refused. To repair the record here, amend it with a " +
@@ -1277,7 +1309,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// nested-coupon fallback, so the record reads as <c>Fixed(couponRate ?? 0)</c> and
     /// re-serializing flattens it to <c>couponType: "Fixed"</c>, dropping the nested index, spread,
     /// and day count. Nothing in this repo writes that shape, but the projection store reads it
-    /// deliberately — <c>PostgresSecurityMasterStore.TryBuildBondProjection</c> falls back to
+    /// deliberately — the Bond descriptor in <c>SecurityTermsProjectionRegistry</c> falls back to
     /// <c>coupon.kind</c>/<c>rate</c>/<c>index</c> "for externally-authored payloads that still use
     /// it", with a regression test pinning the behaviour — so such rows are expected to exist.
     /// <para>The same hole is open one step wider, and a present <c>couponType</c> does not close
@@ -1298,7 +1330,8 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         JsonElement? assetSpecificTermsPatch)
     {
         var terms = projection.AssetSpecificTerms;
-        if (!string.Equals(projection.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase)
+        var descriptor = SecurityAssetClassCatalog.GetOrDefault(projection.AssetClass);
+        if (!descriptor.CarriesBondCouponStructure
             || terms.ValueKind != JsonValueKind.Object)
         {
             return;
@@ -1320,7 +1353,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             var submitted = OrphanedCouponStructure(patch);
             if (submitted.Length > 0)
             {
-                throw new InvalidOperationException(
+                throw new SecurityMasterWriteRefusedException(
                     $"The amendment for security '{projection.SecurityId:D}' submits a bond document whose " +
                     $"{string.Join(" and ", submitted)} the canonical codec does not read for the coupon type the " +
                     "document declares, so the amendment would persist the record without them. The write is " +
@@ -1343,7 +1376,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             return;
         }
 
-        throw new InvalidOperationException(
+        throw new SecurityMasterWriteRefusedException(
             $"Security '{projection.SecurityId:D}' is a bond carrying {string.Join(" and ", orphaned)} that the " +
             "canonical codec does not read for the coupon structure the record resolves to, so re-serializing it " +
             "here would drop that structure. The write is refused. To repair the record here, amend it with a " +
@@ -1398,7 +1431,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
     /// <summary>
     /// The legacy nested <c>coupon</c> members and the flat key each corresponds to, mirroring the
-    /// per-field fallback in <c>PostgresSecurityMasterStore.TryBuildBondProjection</c>. That
+    /// per-field fallback in the Bond descriptor in <c>SecurityTermsProjectionRegistry</c>. That
     /// per-field shape is why the nested object cannot be judged present-or-absent: a row can carry
     /// its discriminant flat and one value only nested.
     /// </summary>
@@ -1470,7 +1503,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// InflationLinked arms, and those arms READ the key, so they are judged by
     /// <see cref="CodecCanRead"/> and never reach this branch at all. The arms that do reach it
     /// leave <c>BondTerms.couponRate</c> as <c>None</c>, so re-serializing writes
-    /// <c>couponRate: null</c> while <c>TryBuildBondProjection</c> reads the flat key without
+    /// <c>couponRate: null</c> while the Bond projection reads the flat key without
     /// consulting the arm — a stored <c>fixed_coupon_rate</c> of 0 becomes NULL. That is a stated
     /// value turning into an absence, refused like any other.</para>
     /// </summary>
@@ -1733,8 +1766,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     {
         if (!result.IsSuccess || result.Snapshot is null)
         {
-            var errorText = string.Join("; ", result.ErrorDetails.Select(e => $"[{e.Code}] {e.Message}"));
-            throw new InvalidOperationException(errorText);
+            throw CommandRejection(result);
         }
 
         var projection = SecurityMasterMapping.ToProjection(result.Snapshot, aliases);
@@ -1783,8 +1815,8 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             return resolvedAssetClass;
         }
 
-        return string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
-            ? "CustomAsset"
+        return SecurityAssetClassCatalog.GetOrDefault(assetClass) is { RequiresProfileReference: true } profileBacked
+            ? profileBacked.AssetClass
             : null;
     }
 
@@ -1809,7 +1841,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         // profileFields) or use the governed workbench field-edit route.
         if (assetSpecificTermsPatch is not null)
         {
-            throw new InvalidOperationException(
+            throw new SecurityMasterWriteRefusedException(
                 $"Security '{currentProjection.SecurityId:D}' is profile-backed: asset-specific term amendments must " +
                 "carry the pinned profile envelope (customProfileId, profileVersion, profileFields). Submit the full " +
                 "envelope with the updated profileFields, or edit individual fields through the workbench field-edit route.");
@@ -1825,13 +1857,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
     private static bool IsProfileBackedCustomAsset(string? assetClass, JsonElement assetSpecificTerms)
         => (string.IsNullOrWhiteSpace(assetClass)
-            || string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "StructuredCredit", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "PrivateFundInterest", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "PrivateCompanyEquity", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "RealEstateHolding", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "CommitmentGuarantee", StringComparison.OrdinalIgnoreCase))
+            || SecurityAssetClassCatalog.GetOrDefault(assetClass).SupportsProfileBackedTerms)
            && assetSpecificTerms.ValueKind == System.Text.Json.JsonValueKind.Object
            && assetSpecificTerms.TryGetProperty("customProfileId", out var customProfileId)
            && customProfileId.ValueKind == System.Text.Json.JsonValueKind.String
@@ -1898,7 +1924,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                 || string.Equals(accountingClassification, keyword, StringComparison.OrdinalIgnoreCase));
             if (conflicting is not null)
             {
-                throw new InvalidOperationException(
+                throw new SecurityMasterWriteRefusedException(
                     $"Profile '{profileId}' resolves to asset class '{resolvedClass}', but the envelope's " +
                     $"classification metadata ('{conflicting}') belongs to '{candidateClass}'. The profile is " +
                     "the identity of a profile-backed record — correct the category/subType/accountingClassification " +

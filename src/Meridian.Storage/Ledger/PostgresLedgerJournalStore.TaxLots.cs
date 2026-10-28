@@ -19,6 +19,12 @@ public sealed partial class PostgresLedgerJournalStore
         RequireWriteTenant();
         ValidateTaxLot(lot);
 
+        if (_options.RequireGovernedPostingCommand)
+        {
+            throw new LedgerValidationException(
+                "Production tax-lot writes require IAtomicTaxLotJournalStore; standalone lot saves are restricted to compatibility stores.");
+        }
+
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
         await EnsureBookWriteAuthorityAsync(connection, transaction, lot.LedgerBookId, ct).ConfigureAwait(false);
@@ -137,7 +143,8 @@ public sealed partial class PostgresLedgerJournalStore
                       booked_factor,
                       par_basis,
                       acquisition_terms,
-                      basis_adjustment;
+                      basis_adjustment,
+                      current_factor;
             """;
         command.Parameters.AddWithValue("tax_lot_record_id", lot.TaxLotRecordId);
         command.Parameters.AddWithValue("ledger_book_id", lot.LedgerBookId);
@@ -224,13 +231,14 @@ public sealed partial class PostgresLedgerJournalStore
                    booked_factor,
                    par_basis,
                    acquisition_terms,
-                   basis_adjustment
+                   basis_adjustment,
+                   current_factor
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and account_name = @account_name
               and account_type = @account_type
               and symbol is not distinct from @symbol
-              and financial_account_id is not distinct from @financial_account_id
+              and lower(financial_account_id) is not distinct from lower(@financial_account_id)
               and open_quantity > 0
             order by acquired_date, lot_id;
             """;
@@ -297,7 +305,8 @@ public sealed partial class PostgresLedgerJournalStore
                    booked_factor,
                    par_basis,
                    acquisition_terms,
-                   basis_adjustment
+                   basis_adjustment,
+                   current_factor
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and tax_lot_record_id = any(@tax_lot_record_ids)
@@ -305,6 +314,83 @@ public sealed partial class PostgresLedgerJournalStore
             """;
         command.Parameters.AddWithValue("ledger_book_id", ledgerBookId);
         command.Parameters.AddWithValue("tax_lot_record_ids", ids);
+
+        var lots = new List<LedgerTaxLotRecord>(ids.Length);
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            lots.Add(ReadTaxLot(reader));
+        }
+
+        return lots;
+    }
+
+    public async Task<IReadOnlyList<LedgerTaxLotRecord>> GetTaxLotsByLotIdsAsync(
+        Guid ledgerBookId,
+        LedgerAccount account,
+        IReadOnlyList<string> lotIds,
+        CancellationToken ct = default)
+    {
+        RequireWriteTenant();
+        if (ledgerBookId == Guid.Empty)
+        {
+            throw new ArgumentException("Ledger book id is required.", nameof(ledgerBookId));
+        }
+
+        ArgumentNullException.ThrowIfNull(account);
+        ArgumentNullException.ThrowIfNull(lotIds);
+        var ids = lotIds.Distinct(StringComparer.Ordinal).ToArray();
+        if (ids.Length == 0 || ids.Any(string.IsNullOrWhiteSpace))
+        {
+            throw new ArgumentException(
+                "At least one distinct non-empty lot label is required.",
+                nameof(lotIds));
+        }
+
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await EnsureBookWriteAuthorityAsync(connection, null, ledgerBookId, ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select tax_lot_record_id,
+                   ledger_book_id,
+                   account_name,
+                   account_type,
+                   symbol,
+                   financial_account_id,
+                   lot_id,
+                   acquired_date,
+                   original_quantity,
+                   open_quantity,
+                   unit_cost,
+                   currency,
+                   source_journal_entry_id,
+                   evidence_ref,
+                   version,
+                   originating_mutation_batch_id,
+                   last_mutation_batch_id,
+                   created_at,
+                   updated_at,
+                   security_id,
+                   book_position_id,
+                   original_face,
+                   booked_factor,
+                   par_basis,
+                   acquisition_terms,
+                   basis_adjustment,
+                   current_factor
+            from {Qualified("tax_lots")}
+            where ledger_book_id = @ledger_book_id
+              and account_name = @account_name
+              and account_type = @account_type
+              and coalesce(symbol, '') = coalesce(@symbol, '')
+              and lower(coalesce(financial_account_id, '')) = lower(coalesce(@financial_account_id, ''))
+              and lot_id = any(@lot_ids)
+            order by tax_lot_record_id;
+            """;
+        command.Parameters.AddWithValue("ledger_book_id", ledgerBookId);
+        AddAccountParameters(command, account);
+        command.Parameters.AddWithValue("lot_ids", ids);
 
         var lots = new List<LedgerTaxLotRecord>(ids.Length);
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
@@ -373,6 +459,12 @@ public sealed partial class PostgresLedgerJournalStore
             throw new LedgerValidationException(
                 "Atomic tax-lot mutation lineage can only be written through IAtomicTaxLotJournalStore.");
         }
+
+        if (lot.CurrentFactor is not null)
+        {
+            throw new LedgerValidationException(
+                "A lot of record opens at its booked factor; a paydown factor is applied only through IAtomicTaxLotJournalStore.");
+        }
     }
 
     private static LedgerTaxLotRecord ReadTaxLot(NpgsqlDataReader reader)
@@ -399,7 +491,8 @@ public sealed partial class PostgresLedgerJournalStore
             reader.IsDBNull(22) ? null : reader.GetDecimal(22),
             reader.IsDBNull(23) ? null : reader.GetDecimal(23),
             reader.IsDBNull(24) ? null : System.Text.Json.JsonSerializer.Deserialize<Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto>(reader.GetString(24)),
-            ReadBasisAdjustment(reader));
+            ReadBasisAdjustment(reader),
+            ReadCurrentFactor(reader));
 
     // Every lot query selects basis_adjustment at ordinal 25. Requiring it by name means a query
     // that omits it fails loudly instead of projecting a restated lot at its acquisition basis.
@@ -415,6 +508,20 @@ public sealed partial class PostgresLedgerJournalStore
         return reader.IsDBNull(Ordinal)
             ? null
             : System.Text.Json.JsonSerializer.Deserialize<Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentDto>(reader.GetString(Ordinal));
+    }
+
+    // Likewise current_factor at ordinal 26: a query that omits it would silently rehydrate a
+    // paid-down lot at its booked factor, the exact mis-scaling the column exists to remove.
+    private static decimal? ReadCurrentFactor(NpgsqlDataReader reader)
+    {
+        const int Ordinal = 26;
+        if (reader.FieldCount <= Ordinal ||
+            !string.Equals(reader.GetName(Ordinal), "current_factor", StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("Tax-lot queries must select current_factor at ordinal 26.");
+        }
+
+        return reader.IsDBNull(Ordinal) ? null : reader.GetDecimal(Ordinal);
     }
 
     /// <summary>

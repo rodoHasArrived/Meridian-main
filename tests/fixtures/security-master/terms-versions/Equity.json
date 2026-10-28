@@ -1,0 +1,40 @@
+{
+  "assetClass": "Equity",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "classification",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "convertibleTerms",
+          "type": "Object",
+          "required": false
+        },
+        {
+          "key": "otherClassification",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "preferredTerms",
+          "type": "Object",
+          "required": false
+        },
+        {
+          "key": "shareClass",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "votingRightsCat",
+          "type": "String",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -54,6 +54,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   accountingConfigurationPostingRuleTestCases: UI_API_ROUTES.LedgerAccountingConfigurationPostingRuleTestCases,
   accountingConfigurationActivate: UI_API_ROUTES.LedgerAccountingConfigurationActivate,
   accountingConfigurationAudit: UI_API_ROUTES.LedgerAccountingConfigurationAudit,
+  ledgerAuditIntegrity: UI_API_ROUTES.LedgerAuditIntegrity,
   closeManagementPeriodPlan: UI_API_ROUTES.LedgerCloseManagementPeriodPlan,
   closeManagementPeriodPlanConfiguration: UI_API_ROUTES.LedgerCloseManagementPeriodPlanConfiguration,
   closeManagementLateAdjustments: UI_API_ROUTES.LedgerCloseManagementLateAdjustments,

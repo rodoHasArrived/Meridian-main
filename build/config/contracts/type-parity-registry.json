@@ -620,6 +620,42 @@
       "csharp_record": "ProviderSetupResult",
       "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
       "typescript_interface": "ProviderSetupResult"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs",
+      "csharp_record": "AccountingAuditIntegrityReportDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/audit-integrity.ts",
+      "typescript_interface": "AccountingAuditIntegrityReportDto"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs",
+      "csharp_record": "AuditChainIntegrityResultDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/audit-integrity.ts",
+      "typescript_interface": "AuditChainIntegrityResultDto"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "PortfolioPositionSummary",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
+      "typescript_interface": "PortfolioPositionSummary"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "PortfolioSummary",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
+      "typescript_interface": "PortfolioSummary"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "RunAttributionSummary",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "RunAttributionSummary"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "RunFillSummary",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "RunFillSummary"
     }
   ],
   "known_divergences": [
@@ -692,20 +728,6 @@
       "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
       "typescript_interface": "PlaidPublicTokenExchangeResult",
       "problem_count": 4
-    },
-    {
-      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
-      "csharp_record": "PortfolioPositionSummary",
-      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
-      "typescript_interface": "PortfolioPositionSummary",
-      "problem_count": 8
-    },
-    {
-      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
-      "csharp_record": "PortfolioSummary",
-      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
-      "typescript_interface": "PortfolioSummary",
-      "problem_count": 15
     },
     {
       "csharp_file": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs",
@@ -783,20 +805,6 @@
       "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
       "typescript_interface": "ReviewReconciliationBreakRequest",
       "problem_count": 3
-    },
-    {
-      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
-      "csharp_record": "RunAttributionSummary",
-      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
-      "typescript_interface": "RunAttributionSummary",
-      "problem_count": 1
-    },
-    {
-      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
-      "csharp_record": "RunFillSummary",
-      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
-      "typescript_interface": "RunFillSummary",
-      "problem_count": 1
     },
     {
       "csharp_file": "src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs",

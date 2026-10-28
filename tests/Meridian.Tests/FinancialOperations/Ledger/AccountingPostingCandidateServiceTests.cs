@@ -1,11 +1,14 @@
 using FluentAssertions;
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Instruments.AssetOperations;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using Meridian.Tests.AssetOperations;
 using Meridian.Ui.Shared.Services;
 
 namespace Meridian.Tests.FinancialOperations.Ledger;
@@ -678,226 +681,6 @@ public sealed partial class AccountingPostingCandidateServiceTests
             issue.Code == "posting-candidate.book-context-resolver-required" && issue.BlocksCandidate);
         result.Issues.Should().Contain(issue =>
             issue.Code == "posting-candidate.rule-pack-resolver-required" && issue.BlocksCandidate);
-    }
-
-    [Fact]
-    public async Task BuildCandidateAsync_MbsFactorPaydown_RecalculatesPersistedProjectionBeforeDrafting()
-    {
-        var harness = await CreateAuthoritativeFactorHarnessAsync();
-
-        var result = await harness.Service.BuildCandidateAsync(harness.Request);
-
-        result.HasBlockingIssues.Should().BeFalse();
-        result.PostingCommand.Should().NotBeNull();
-        result.PostingCommand!.EconomicEvent!.EventId.Should().Be(harness.Request.SourceEventId!.Value);
-        result.TotalDebits.Should().Be(1_750m);
-        result.TotalCredits.Should().Be(1_750m);
-    }
-
-    [Fact]
-    public async Task BuildCandidateAsync_MbsFactorPaydown_TamperedAmountFailsClosedAgainstServerCalculation()
-    {
-        var harness = await CreateAuthoritativeFactorHarnessAsync();
-
-        var result = await harness.Service.BuildCandidateAsync(harness.Request with { EventAmount = 1m });
-
-        result.HasBlockingIssues.Should().BeTrue();
-        result.PostingCommand.Should().BeNull();
-        result.Issues.Should().Contain(issue =>
-            issue.Code == "posting-candidate.factor-paydown-amount-mismatch" && issue.BlocksCandidate);
-        result.DryRunResult.GeneratedPostingLines.Should().OnlyContain(line => Math.Abs(line.Amount) == 1_750m);
-    }
-
-    [Fact]
-    public async Task BuildCandidateAsync_MbsFactorPaydown_ScalesHeldFaceByTheLotsBookedFactor()
-    {
-        // The pool was bought when the factor was already 0.98: 98,000 of face was booked, which is
-        // 100,000 of original face. Held face restated to a factor of 1 is therefore 100,000 and the
-        // 0.98 -> 0.9625 paydown is 1,750 — the same amount the caller used to have to supply by
-        // hand. Sourcing it from the lot is what makes the booked factor participate at all; reading
-        // the booked face as though it were original face would understate the paydown by 2%.
-        var harness = await CreateAuthoritativeFactorHarnessAsync();
-        var scope = harness.TaxLots.OpenLots[0];
-        harness.TaxLots.OpenLots[0] = BuildFaceLotOfRecord(
-            scope.LedgerBookId,
-            scope.SecurityId,
-            scope.BookPositionId,
-            originalFace: 98_000m,
-            bookedFactor: 0.98m,
-            parBasis: 100m);
-
-        var result = await harness.Service.BuildCandidateAsync(harness.Request);
-
-        result.HasBlockingIssues.Should().BeFalse();
-        result.TotalDebits.Should().Be(1_750m);
-        result.TotalCredits.Should().Be(1_750m);
-    }
-
-    [Fact]
-    public async Task BuildCandidateAsync_MbsFactorPaydown_PartiallyRelievedLotContributesOnlyItsOpenFace()
-    {
-        // Half the lot has already been relieved, so only half its face is still held and only half
-        // the principal pays down. A held face taken from the position projection could not see this.
-        var harness = await CreateAuthoritativeFactorHarnessAsync();
-        var scope = harness.TaxLots.OpenLots[0];
-        harness.TaxLots.OpenLots[0] = BuildFaceLotOfRecord(
-            scope.LedgerBookId,
-            scope.SecurityId,
-            scope.BookPositionId,
-            originalFace: 100_000m,
-            bookedFactor: 1m,
-            parBasis: 100m,
-            openQuantity: 500m);
-
-        var result = await harness.Service.BuildCandidateAsync(harness.Request with { EventAmount = 875m });
-
-        result.HasBlockingIssues.Should().BeFalse();
-        result.TotalDebits.Should().Be(875m);
-    }
-
-    [Fact]
-    public async Task BuildCandidateAsync_MbsFactorPaydown_IgnoresLotsAcquiredAfterTheEffectiveDate()
-    {
-        // Pool factors publish after the fact, so a paydown is always posted with a lag. A second
-        // piece of the same pool bought between the effective date and the posting did not hold the
-        // position over the paydown period; counting it would double the principal. The factor half
-        // of the projection is selected as-of the effective date, and the face half must be too.
-        var harness = await CreateAuthoritativeFactorHarnessAsync();
-        var scope = harness.TaxLots.OpenLots[0];
-        harness.TaxLots.OpenLots.Add(BuildFaceLotOfRecord(
-            scope.LedgerBookId,
-            scope.SecurityId,
-            scope.BookPositionId,
-            originalFace: 96_250m,
-            bookedFactor: 0.9625m,
-            parBasis: 100m,
-            acquiredDate: new DateOnly(2026, 6, 10),
-            lotId: "lot-fnpool1-2026-06"));
-
-        var result = await harness.Service.BuildCandidateAsync(harness.Request);
-
-        result.HasBlockingIssues.Should().BeFalse();
-        result.TotalDebits.Should().Be(1_750m, "the later lot did not hold the position over the paydown period");
-    }
-
-    [Fact]
-    public async Task BuildCandidateAsync_MbsFactorPaydown_LotWithoutRecordedFaceTermsFailsClosed()
-    {
-        // A lot booked before the par conventions were retained states nothing rather than
-        // defaulting to a price-per-100 quote at factor 1. The candidate must refuse to guess.
-        var harness = await CreateAuthoritativeFactorHarnessAsync();
-        var scope = harness.TaxLots.OpenLots[0];
-        harness.TaxLots.OpenLots[0] = BuildFaceLotOfRecord(
-            scope.LedgerBookId,
-            scope.SecurityId,
-            scope.BookPositionId,
-            originalFace: 100_000m,
-            bookedFactor: 1m,
-            parBasis: 100m,
-            withFaceTerms: false);
-
-        var result = await harness.Service.BuildCandidateAsync(harness.Request);
-
-        result.HasBlockingIssues.Should().BeTrue();
-        result.Issues.Should().Contain(issue =>
-            issue.Code == "posting-candidate.instrument-lot-face-terms-missing" && issue.BlocksCandidate);
-    }
-
-    [Fact]
-    public async Task BuildCandidateAsync_MbsFactorPaydown_PositionWithNoOpenLotFailsClosed()
-    {
-        var harness = await CreateAuthoritativeFactorHarnessAsync();
-        harness.TaxLots.OpenLots.Clear();
-
-        var result = await harness.Service.BuildCandidateAsync(harness.Request);
-
-        result.HasBlockingIssues.Should().BeTrue();
-        result.Issues.Should().Contain(issue =>
-            issue.Code == "posting-candidate.instrument-lot-of-record-missing" && issue.BlocksCandidate);
-    }
-
-    [Fact]
-    public async Task BuildCandidateAsync_MbsFactorPaydown_WithoutALotOfRecordResolverFailsClosed()
-    {
-        // The lot of record is now a required resolver for typed factor-paydown candidates; a
-        // composition that omits it must refuse the candidate rather than fall back to the caller.
-        var harness = await CreateAuthoritativeFactorHarnessAsync();
-        var withoutLots = new AccountingPostingCandidateService(
-            harness.Configuration,
-            harness.Drafts,
-            harness.LedgerBooks,
-            harness.Policies,
-            harness.AssetOperations,
-            harness.Projector);
-
-        var result = await withoutLots.BuildCandidateAsync(harness.Request);
-
-        result.HasBlockingIssues.Should().BeTrue();
-        result.Issues.Should().Contain(issue =>
-            issue.Code == "posting-candidate.instrument-projection-resolver-required" && issue.BlocksCandidate);
-    }
-
-    [Fact]
-    public async Task BuildCandidateAsync_MbsFactorPaydown_MissingHolderRoleFailsClosed()
-    {
-        var harness = await CreateAuthoritativeFactorHarnessAsync();
-        harness.AssetOperations.Detail = harness.AssetOperations.Detail! with { InstrumentRoles = [] };
-
-        var result = await harness.Service.BuildCandidateAsync(harness.Request);
-
-        result.HasBlockingIssues.Should().BeTrue();
-        result.Issues.Should().Contain(issue =>
-            issue.Code == "posting-candidate.instrument-holder-role-required" && issue.BlocksCandidate);
-    }
-
-    [Fact]
-    public async Task BuildCandidateAsync_MbsFactorPaydown_OmittedLineageCannotBypassAuthoritativeRecalculation()
-    {
-        var harness = await CreateAuthoritativeFactorHarnessAsync();
-
-        var result = await harness.Service.BuildCandidateAsync(harness.Request with
-        {
-            EventAmount = 1m,
-            ProjectionLineage = null
-        });
-
-        result.HasBlockingIssues.Should().BeTrue();
-        result.PostingCommand.Should().BeNull();
-        result.Issues.Should().Contain(issue =>
-            issue.Code == "posting-candidate.instrument-factor-lineage-required" && issue.BlocksCandidate);
-    }
-
-    [Fact]
-    public async Task BuildCandidateAsync_MbsFactorPaydown_ClientSelectedModelCannotBypassAuthoritativeRecalculation()
-    {
-        var harness = await CreateAuthoritativeFactorHarnessAsync();
-
-        var result = await harness.Service.BuildCandidateAsync(harness.Request with
-        {
-            EventAmount = 1m,
-            ProjectionLineage = harness.Request.ProjectionLineage! with { ModelKey = "client-selected-model" }
-        });
-
-        result.HasBlockingIssues.Should().BeTrue();
-        result.PostingCommand.Should().BeNull();
-        result.Issues.Should().Contain(issue =>
-            issue.Code == "posting-candidate.instrument-factor-lineage-required" && issue.BlocksCandidate);
-    }
-
-    [Fact]
-    public async Task BuildCandidateAsync_MbsFactorPaydown_MissingRulePackReferenceFailsClosed()
-    {
-        var harness = await CreateAuthoritativeFactorHarnessAsync();
-
-        var result = await harness.Service.BuildCandidateAsync(harness.Request with
-        {
-            RulePackReference = null
-        });
-
-        result.HasBlockingIssues.Should().BeTrue();
-        result.PostingCommand.Should().BeNull();
-        result.Issues.Should().Contain(issue =>
-            issue.Code == "posting-candidate.rule-pack-reference-required" && issue.BlocksCandidate);
     }
 
     [Fact]
@@ -1744,229 +1527,12 @@ public sealed partial class AccountingPostingCandidateServiceTests
         return new TypedCandidateHarness(service, configurationService, draftService, request);
     }
 
-    private static async Task<AuthoritativeFactorHarness> CreateAuthoritativeFactorHarnessAsync()
-    {
-        var ledgerBookId = Guid.Parse("c1000000-0000-4000-8000-000000000001");
-        var periodId = Guid.Parse("c1000000-0000-4000-8000-000000000002");
-        var ownerNodeId = Guid.Parse("c1000000-0000-4000-8000-000000000003");
-        var securityId = Guid.Parse("c1000000-0000-4000-8000-000000000004");
-        var roleId = Guid.Parse("c1000000-0000-4000-8000-000000000005");
-        var positionId = Guid.Parse("c1000000-0000-4000-8000-000000000006");
-        var correlationId = Guid.Parse("c1000000-0000-4000-8000-000000000007");
-        var effectiveDate = new DateOnly(2026, 5, 31);
-        const string evidence = "evidence://factor/mbs-2026-05";
-        var dimensions = new LedgerDimensionSetDto(
-            "fund-alpha",
-            "entity-master",
-            InstrumentId: securityId,
-            BookId: ledgerBookId.ToString("D"))
-        {
-            PositionId = positionId
-        };
-        var bookContext = new AccountingBookContextDto(
-            ledgerBookId,
-            "fund-alpha",
-            ownerNodeId,
-            FundStructureNodeKindDto.Fund,
-            "Fund Alpha GAAP",
-            "USD",
-            AccountingBasisKindDto.Gaap,
-            "gaap-mbs-v1",
-            "v1",
-            periodId,
-            dimensions);
-        var projector = new FactorPaydownProjectionService();
-        var projection = projector.Project(new FactorPaydownProjectionRequest(
-            securityId,
-            positionId,
-            4,
-            4,
-            100_000m,
-            0.9800m,
-            0.9625m,
-            "USD",
-            effectiveDate,
-            DateTimeOffset.Parse("2026-05-31T00:00:00Z"),
-            "SecurityMaster",
-            "mbs-factor-row-2026-05",
-            "sha256:mbs-factor-row-2026-05",
-            [evidence],
-            correlationId));
-        var role = new InstrumentRoleDto(
-            roleId,
-            securityId,
-            "fund-alpha",
-            "Fund",
-            InstrumentRoleKinds.Holder,
-            InstrumentAccountingSides.Debit,
-            InstrumentEconomicSides.Asset,
-            new DateOnly(2026, 1, 1),
-            Version: 2,
-            EvidenceLinks: [evidence]);
-        var position = new BookPositionDto(
-            positionId,
-            securityId,
-            roleId,
-            bookContext,
-            BookPositionSides.Long,
-            "Active",
-            new DateOnly(2026, 1, 1),
-            Version: 4,
-            CurrentEconomicState: projection.EconomicState,
-            ProjectionLineage: projection.Lineage,
-            EvidenceLinks: [evidence]);
-        var subject = new AssetOperationSubjectDto(
-            securityId,
-            "MortgageBackedSecurity",
-            "Agency MBS Pool",
-            "FNPOOL1",
-            ["FactorProcessing"]);
-        var readiness = new AssetOperationsReadinessDto(
-            securityId,
-            "Ready",
-            [],
-            [],
-            [],
-            [],
-            DateTimeOffset.Parse("2026-05-31T01:00:00Z"),
-            "AssetOperations",
-            positionId.ToString("D"));
-        var detail = new AssetOperationsDetailDto(subject, [], [], [], [], [], [], [], [], readiness, [])
-        {
-            InstrumentRoles = [role],
-            BookPositions = [position],
-            PositionEconomicStates = [projection.EconomicState!],
-            ProjectionLineages = [projection.Lineage!]
-        };
-
-        var configurationService = new AccountingConfigurationService(
-            new InMemoryAccountingConfigurationStore(),
-            new InMemoryAccountingActionAuditStore());
-        await SeedCandidateConfigurationAsync(
-            configurationService,
-            ledgerBookId,
-            ruleId: "posting.mbs-factor-paydown",
-            generatedLineDimensions: dimensions,
-            sourceEventType: FactorPaydownProjectionService.EventType);
-        var policyService = new AccountingPolicyService();
-        await policyService.CreatePolicyAsync(new CreateAccountingPolicyRequest(
-            AccountingBasisKindDto.Gaap,
-            "gaap-mbs-v1",
-            "v1",
-            "GAAP MBS factor treatment",
-            new DateOnly(2026, 1, 1),
-            RulePack: new AccountingPolicyRulePackDto(
-                "gaap-mbs-rules",
-                "v1",
-                [
-                    new AccountingPolicyRuleDto(
-                        "posting.mbs-factor-paydown",
-                        AccountingTreatmentKindDto.Amortization,
-                        "v1",
-                        FactorPaydownProjectionService.EventType,
-                        RequiresEvidence: true,
-                        RequiresApproval: true,
-                        AllowsAutoPosting: false)
-                ])));
-        var ledgerBook = new LedgerBookDto(
-            ledgerBookId,
-            "fund-alpha",
-            ownerNodeId,
-            FundStructureNodeKindDto.Fund,
-            "Fund Alpha GAAP",
-            "USD",
-            DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
-            DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
-            AccountingBasis: AccountingBasisKindDto.Gaap,
-            AccountingPolicyId: "gaap-mbs-v1",
-            AccountingPolicyVersion: "v1");
-        var period = new LedgerPeriodDto(
-            periodId,
-            ledgerBookId,
-            2026,
-            5,
-            "May 2026",
-            new DateOnly(2026, 5, 1),
-            effectiveDate,
-            LedgerPeriodStatusDto.Open,
-            DateTimeOffset.Parse("2026-05-01T00:00:00Z"),
-            null,
-            1,
-            AccountingBasisKindDto.Gaap,
-            "gaap-mbs-v1",
-            "v1");
-        var request = new PostingRuleJournalCandidateRequestDto(
-            "fund-alpha",
-            FactorPaydownProjectionService.EventType,
-            1_750m,
-            "USD",
-            effectiveDate,
-            "preparer@meridian.local",
-            ledgerBookId,
-            periodId,
-            DateTimeOffset.Parse("2026-05-31T12:00:00Z"),
-            "MBS factor principal paydown",
-            AccountingBasisKindDto.Gaap,
-            ledgerBookId,
-            dimensions,
-            InstrumentSymbol: "FNPOOL1",
-            CorrelationId: correlationId,
-            SourceEventId: projection.EconomicEvent!.EventId,
-            PolicyId: "gaap-mbs-v1",
-            TreatmentKind: AccountingTreatmentKindDto.Amortization,
-            EvidenceLinks: [evidence])
-        {
-            BookContext = bookContext,
-            BookPositionId = positionId,
-            EconomicEvent = projection.EconomicEvent,
-            ProjectionLineage = projection.Lineage,
-            RulePackReference = new AccountingRulePackReferenceDto(
-                "gaap-mbs-rules",
-                "v1",
-                "posting.mbs-factor-paydown",
-                "v1")
-        };
-        var assetOperations = new StaticAssetOperationsQueryService { Detail = detail };
-        var draftService = new AccountingJournalDraftService(
-            policyService,
-            new AccountingBasisProjectionService(policyService));
-
-        // The lot of record supplies held face. A pool booked at factor 1 with 100,000 of face
-        // restates to 100,000 at factor 1, which is the basis the projection above was built on --
-        // so the posted paydown stays 1,750 while its source moves from the caller to the lot.
-        var taxLotStore = new StaticTaxLotStore();
-        taxLotStore.OpenLots.Add(BuildFaceLotOfRecord(
-            ledgerBookId,
-            securityId,
-            positionId,
-            originalFace: 100_000m,
-            bookedFactor: 1m,
-            parBasis: 100m));
-
-        var ledgerBookService = new StaticLedgerBookService(ledgerBook, period);
-        var service = new AccountingPostingCandidateService(
-            configurationService,
-            draftService,
-            ledgerBookService,
-            policyService,
-            assetOperations,
-            projector,
-            taxLotStore);
-        return new AuthoritativeFactorHarness(
-            service,
-            request,
-            assetOperations,
-            taxLotStore,
-            configurationService,
-            draftService,
-            ledgerBookService,
-            policyService,
-            projector);
-    }
-
     /// <summary>
-    /// Builds an open lot of record carrying its acquisition-time par conventions, priced at par so
-    /// the quantity/unit-cost and face/par-basis statements of the same acquisition tie exactly.
+    /// Builds an open lot of record carrying its acquisition-time par conventions and the retained
+    /// acquisition facts that project it to a canonical open lot: quantity is face per 100, unit cost
+    /// is the per-100 price, so the quantity/unit-cost and face/par-basis statements of the same
+    /// acquisition tie exactly. A lot without face terms also records no acquisition facts, as a lot
+    /// booked before the par conventions were retained.
     /// </summary>
     private static LedgerTaxLotRecord BuildFaceLotOfRecord(
         Guid ledgerBookId,
@@ -1978,26 +1544,40 @@ public sealed partial class AccountingPostingCandidateServiceTests
         decimal? openQuantity = null,
         bool withFaceTerms = true,
         DateOnly? acquiredDate = null,
-        string lotId = "lot-fnpool1-2026-01")
+        string lotId = "lot-fnpool1-2026-01",
+        decimal pricePercentOfPar = 100m,
+        decimal? currentFactor = null)
     {
         var quantity = originalFace / LedgerTaxLotFaceValueTerms.LedgerLotParBasis;
+        var unitCost = pricePercentOfPar * LedgerTaxLotFaceValueTerms.LedgerLotParBasis / parBasis;
+        var acquired = acquiredDate ?? new DateOnly(2026, 1, 1);
+        var recordId = Guid.Parse($"c1000000-0000-4000-8000-{lotId.GetHashCode(StringComparison.Ordinal) & 0xffffff:x12}");
+        var basis = quantity * unitCost;
+        var acquisition = withFaceTerms
+            ? new OpenLotAcquisitionDto(LotQuantityBasis.Face, "USD", "USD", 1m, basis, basis, acquired,
+                new FaceValueAcquisitionTermsDto(parBasis, bookedFactor, BondAmortizationMethod.NoAmortization, null),
+                [FactorPaydownTestData.AcquisitionEvidence(recordId, acquired)])
+            : null;
         return new LedgerTaxLotRecord(
-            Guid.Parse($"c1000000-0000-4000-8000-{lotId.GetHashCode(StringComparison.Ordinal) & 0xffffff:x12}"),
+            recordId,
             ledgerBookId,
             new LedgerAccount("Investments", LedgerAccountType.Asset, "FNPOOL1"),
             lotId,
-            acquiredDate ?? new DateOnly(2026, 1, 1),
+            acquired,
             quantity,
             openQuantity ?? quantity,
-            UnitCost: 100m,
+            unitCost,
             "USD",
             DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
             DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+            Version: 1,
             SecurityId: securityId,
             BookPositionId: positionId,
             OriginalFace: withFaceTerms ? originalFace : null,
             BookedFactor: withFaceTerms ? bookedFactor : null,
-            ParBasis: withFaceTerms ? parBasis : null);
+            ParBasis: withFaceTerms ? parBasis : null,
+            Acquisition: acquisition,
+            CurrentFactor: currentFactor);
     }
 
     private static async Task<AccountingPostingCandidateService> CreateSeededCandidateServiceAsync(
@@ -2450,17 +2030,6 @@ public sealed partial class AccountingPostingCandidateServiceTests
         IAccountingJournalDraftService DraftService,
         PostingRuleJournalCandidateRequestDto Request);
 
-    private sealed record AuthoritativeFactorHarness(
-        AccountingPostingCandidateService Service,
-        PostingRuleJournalCandidateRequestDto Request,
-        StaticAssetOperationsQueryService AssetOperations,
-        StaticTaxLotStore TaxLots,
-        AccountingConfigurationService Configuration,
-        AccountingJournalDraftService Drafts,
-        StaticLedgerBookService LedgerBooks,
-        AccountingPolicyService Policies,
-        FactorPaydownProjectionService Projector);
-
     private sealed class StaticAssetOperationsQueryService : IAssetOperationsQueryService
     {
         public AssetOperationsDetailDto? Detail { get; set; }
@@ -2536,6 +2105,14 @@ public sealed partial class AccountingPostingCandidateServiceTests
                               lot.BookPositionId == bookPositionId &&
                               lot.AcquiredDate <= effectiveDate &&
                               lot.OpenQuantity > 0m)
+                .ToArray());
+
+        public Task<IReadOnlyList<LedgerTaxLotRecord>> GetTaxLotsByIdsAsync(
+            Guid ledgerBookId,
+            IReadOnlyList<Guid> taxLotRecordIds,
+            CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<LedgerTaxLotRecord>>(OpenLots
+                .Where(lot => lot.LedgerBookId == ledgerBookId && taxLotRecordIds.Contains(lot.TaxLotRecordId))
                 .ToArray());
 
         public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)

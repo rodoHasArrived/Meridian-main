@@ -1,18 +1,22 @@
-# Meridian Design Document — Version 1.1
+# Meridian Design Document — Version 1.4
 
-**Status:** canonical
+**Status:** active
+**Placement:** canonical
 **Owner:** core-team
-**Reviewed:** 2026-09-28
-**Supersedes:** Version 1.0 (registry snapshot 2026-08-03) and Version 0.25 (full text preserved at
+**Reviewed:** 2026-10-19
+**Supersedes:** Version 1.3 (structure and registered W11 direction), Version 1.2 (status refresh in the same review cycle), Version 1.1 (registry snapshot 2026-09-28), Version 1.0 (registry snapshot
+2026-08-03), and Version 0.25 (full text preserved at
 [`archive/docs/design/meridian-design-document-v0.25.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/design/meridian-design-document-v0.25.md))
 **Source:** Ground-up rewrite of the 0.15–0.25 charter lineage. Grounded in the roadmap registry
-(`docs/roadmap/data/*.yml`, snapshot 2026-09-28), the program state and P0 readiness tracker, the
-source-module registry, repository measurements taken 2026-07-28, the 2026-07 adversarial program
+(`docs/roadmap/data/*.yml`, reviewed 2026-10-19; program snapshot 2026-10-14), the program state and P0 readiness tracker
+(reviewed 2026-10-14), the source-module registry, repository measurements taken 2026-10-16, the 2026-07 adversarial program
 review (`docs/product/adversarial-program-review-2026-07.md`), the accepted W9 priority slate
 (`docs/product/plans/product-roadmap-priorities-2026-07.md`, decision `DEC-PRIORITY-SLATE-001`), the
 W9 acceptance decisions (`DEC-W9-ACCEPTANCE-001` through `-005`, `DEC-W9-DONE-001`), and the W10
 depth slate (`docs/product/plans/w10-depth-slate-2026-07.md`, decision `DEC-DEPTH-SLATE-001`). The
-version-by-version history is summarized in Section 25.
+version-by-version history is summarized in Section 25. Version 1.4 clarifies financial authority,
+proof semantics, and acceptance requirements, and adds user-requested complementary design
+candidates; it does not adopt those candidates into the delivery roadmap or certify new capability.
 
 > **Status facts in this charter are snapshots.** Where a registry row and this document disagree,
 > the registry (`docs/roadmap/data/roadmap-items.yml`) wins; fix this document rather than citing
@@ -23,17 +27,28 @@ version-by-version history is summarized in Section 25.
 
 | If you need… | Read |
 | --- | --- |
-| What Meridian sells and why it wins | Sections 1–3 |
-| Who uses it and what each decision must retain | Section 4 |
-| What is built, accepted, and in flight today | Section 5 (status snapshot) |
-| Domain scope, ownership, and MVP boundaries | Sections 6–10 |
-| Non-negotiable invariants (records, ledger, tenancy, permissions, AI) | Sections 11–16, 20–21 |
-| Integration, reporting, and evidence strategy | Sections 17–19 |
-| Target architecture, market wedge, and foundational slice | Sections 22–23 |
-| What may be claimed and what is out of scope | Section 24 |
+| What Meridian sells and why it wins | [Value proposition](#1-value-proposition), [delivery strategy](#2-value-delivery-strategy), [customers](#3-market-and-customers) |
+| Who uses it and what each decision must retain | [Operating journeys](#4-users-stakeholders-and-operating-journeys) |
+| What is built, accepted, and in flight today | [Implementation baseline](#5-current-implementation-baseline) and [current roadmap](../roadmap/generated/ROADMAP_SUMMARY.md) |
+| Domain scope, ownership, and initial package boundaries | [Domain catalog](#6-functional-domain-catalog) through [business object model](#10-core-business-object-model) |
+| Non-negotiable records, access, and automation rules | [System of record](#11-system-of-record-strategy), [tenancy](#13-tenancy-strategy), [permissions](#14-permission-strategy), [configuration](#20-extensibility-and-configuration-strategy), [AI](#21-governed-autonomy-and-responsible-ai) |
+| Integration, reporting, and evidence strategy | [Integrations](#17-integration-strategy), [reporting](#18-reporting-strategy), [evidence](#19-document-and-evidence-strategy) |
+| Target architecture, Number Passport, and first package | [Target architecture and wedge](#22-target-architecture-and-product-wedge), [foundational slice](#23-foundational-product-slice) |
+| What may be claimed and what is out of scope | [Scope gates and claim rules](#24-roadmap-alignment-scope-gates-and-claim-rules) |
+| Shared evidence/accounting states and operational requirements | [State vocabulary](#118-canonical-state-vocabulary), [operational requirements](#123-operational-and-non-functional-requirements) |
+| Metric definitions and calculation safeguards | [Metrics](#15-north-star-metrics), [measurement contract](#16-measurement-contract) |
+| Complementary capabilities to evaluate next | [Design candidates](#253-complementary-capability-candidates) |
 
 Normative words: **must / must never** mark invariants that hold in every profile; **direction**
-marks an accepted hardening target tied to a registry row that is not yet complete.
+marks an accepted hardening target tied to a registry row that is not yet complete. **Candidate**
+marks a design proposal, not adopted scope, a delivery date, or implementation evidence.
+Normative requirements describe the required behavior; their presence does not establish that the
+current implementation satisfies them. The owning roadmap and readiness evidence establish that.
+
+**Status lives in one place.** Registry status words (`planned`, `in_progress`,
+`ready_for_acceptance`, `accepted`, `done`) and the decisions behind them appear only in
+Section 5.3. Other sections describe capability posture and intent and point to Section 5.3, so a
+status refresh edits one table.
 
 ---
 
@@ -47,14 +62,16 @@ general ledger, and deliverables are re-typed into Excel and PDF at the end of e
 is assembled by hand: operators reconcile after the fact, controllers sign what they cannot fully
 trace, and auditors reconstruct lineage months later at billable rates.
 
-The market has tools for every fragment and no product for the whole proof:
+Meridian's positioning hypothesis is that customers still spend too much effort assembling proof
+across otherwise capable tools:
 
-* Portfolio systems **show** numbers but cannot prove them.
-* Accounting systems **record** numbers but do not carry the operational evidence behind them.
-* Close-management tools **track tasks** around numbers but do not own the data or the ledger.
-* Fund administrators **certify** numbers as a service, at service-provider speed and cost.
+* Portfolio systems show holdings and performance; cross-system evidence may require separate work.
+* Accounting systems record entries; operational source evidence may live outside the ledger.
+* Close-management tools coordinate tasks across data and accounting systems.
+* Fund administrators provide certification services with their own review and delivery cycles.
 
-The unserved product is the number itself, delivered with its proof attached.
+The opportunity is the number delivered with its proof attached. These are customer-discovery
+hypotheses, not verified claims that every competing product lacks a capability.
 
 ### 1.2 The Product Promise
 
@@ -101,9 +118,10 @@ concepts — organization, entity, portfolio, account, book, period, transaction
 obligation, evidence, approval, journal, report, audit trail — and reserve fund, investor, capital
 account, and fund event for workflows that are explicitly fund/private-capital specific.
 
-For ledger records, **Meridian is the source of all ledger truth**. External accounting systems
-contribute read-only evidence and reconciliation signals unless an approved publishing workflow
-explicitly exports Meridian-owned entries.
+For Meridian-posted books, **Meridian is the source of all ledger truth**. During shadow adoption,
+the customer's external official books retain their authority until a governed cutover; Meridian
+owns the parallel records it posts and the evidence it retains. External accounting imports never
+overwrite Meridian-posted entries. Section 11.3 defines the authority boundary by adoption phase.
 
 Meridian is **not**:
 
@@ -130,11 +148,12 @@ as eFront and SS&C Advent Geneva, and ledger APIs such as Modern Treasury):
 2. **Truthful-by-construction operations.** The product never lies about its own state. Simulated,
    sample, or synthetic data is loudly labeled; unsupported persistence fails closed; missing or
    stale evidence renders as `review-required` or `blocked`, never as implicit success. Honesty is
-   a feature competitors cannot retrofit cheaply (Section 2.3).
+   a design requirement to validate in every supported workflow (Section 2.3).
 3. **Decision-to-delivery continuity on one spine.** The same governed evidence model spans
    strategy research, backtesting, paper validation, live-promotion governance, execution records,
-   reconciliation, the ledger, the close, and stakeholder delivery. Close tools have no trading
-   lane; trading platforms have no close. Meridian's codebase already carries both (Section 5).
+   reconciliation, the ledger, the close, and stakeholder delivery. Meridian's codebase carries
+   both trading and close capabilities (Section 5); customer evaluation must establish the value
+   of connecting them relative to the customer's existing tools.
 4. **Whole-balance-sheet modeling.** Assets, liabilities, commitments, guarantees, collateral, tax
    obligations, intercompany balances, and contingent exposures are modeled as equal citizens
    through contract packs (Section 22).
@@ -155,13 +174,62 @@ Verified Coverage is the primary metric; the others make it actionable. All are 
 targets that must be implemented as honest, evidence-backed telemetry — none are shipped-metric
 claims until the roadmap registry accepts them.
 
-| Metric | Definition | What it drives |
-| --- | --- | --- |
-| **Verified Coverage** (primary) | Percentage of reported assets and liabilities that are current, reconciled, approved, and linked to supporting evidence. | The product promise itself; the sales demo; the renewal story. |
-| Time to First Proof | Elapsed time from a fresh install to the first evidence-backed, reconciled, reportable number. | Onboarding quality; the one-command seeded demo on durable storage (`W9-DEMO-002`, `done`) is the baseline this metric is measured from. |
-| Proof Latency | Elapsed time from source arrival to verified (reconciled + approved) state for a record class. | Operational speed; close compression. |
-| Governed Touchless Rate | Share of routine, policy-eligible items advanced without per-item operator touch, always inside approved policy, materiality caps, and retained evidence (Section 21). | Operating leverage without governance erosion. |
-| Activation Ratio | Share of shipped capability reachable by an operator in the running product. | The activation-over-expansion strategy (Section 2.1); keeps built-but-unwired capability visible as debt, not as breadth. |
+| Metric | What it drives |
+| --- | --- |
+| **Verified Coverage** (primary) | The product promise itself; the sales demo; the renewal story. |
+| Time to First Proof | Onboarding quality; the one-command seeded demo on durable storage (`W9-DEMO-002`) is the baseline it is measured from. |
+| Proof Latency | Operational speed; close compression. |
+| Governed Touchless Rate | Operating leverage without governance erosion. |
+| Activation Ratio | The activation-over-expansion strategy (Section 2.1); keeps built-but-unwired capability visible as debt, not as breadth. |
+
+**Definitions.** Each metric is computed for a declared scope (tenant, plus entity, book, and
+period where they apply) and must be reproducible: recomputing from the same retained snapshot gives
+the same value, and every published value records the snapshot, policy version, and computation
+time it came from. None is computed today; the registry row that implements each one is named.
+
+| Metric | Formula | Counted as verified / in scope | Owner lane | Implementing row |
+| --- | --- | --- | --- | --- |
+| Verified Coverage | **By value** (headline): Σ\|amount\| of verified items ÷ Σ\|amount\| of all reported asset and liability items at period end. **By count**: verified items ÷ all items. Both are shown together, so a few large verified balances cannot hide many small unverified ones. | An item is verified only when all four hold: its Number Passport evidence status is `Ready` (Section 11.8); a completed reconciliation covers it for the period with no open break above tolerance; its approval is recorded; and its supporting evidence is retained. Items derived from simulated, sample, fixture, or demo inputs stay in the denominator and never in the numerator. | Accounting and Ledger | `W11-COVER-001` |
+| Time to First Proof | Time from the first successful host start on durable storage to the first item that becomes verified (as above) on non-simulated data. The seeded demo is measured separately and labeled as such. | One measurement per tenant onboarding. | Data Confidence and Validation | Not registered |
+| Proof Latency | For each record class, the median and 95th percentile of (verified-at − source-received-at) over items verified in the period. | Only items that became verified in the period; items still unverified are reported as an aging count beside it, not dropped. | Data Confidence and Validation | Not registered |
+| Governed Touchless Rate | Items advanced under an active, approved straight-through policy with no per-item human action ÷ all policy-eligible items in the period. | Eligibility follows Section 21: material or high-risk classes are never eligible and are excluded from both terms. A sampled-and-reviewed item still counts as touchless; an item a reviewer changed does not. | Accounting and Ledger | Not registered |
+| Activation Ratio | Capabilities reachable from an operator surface in a supported profile ÷ all shipped capabilities. | Shipped means a registry row that is `accepted` or `done`, plus each supported foundation listed in Section 2.1. Reachable means an operator can start it from the browser or WPF workstation without a developer tool. | Core Team | Not registered |
+
+### 1.6 Measurement Contract
+
+Section 1.5 owns the formulas, scope, owners, and implementing rows. These safeguards refine their
+calculation without changing the value-weighted Verified Coverage headline, accompanying count,
+onboarding clock, sampled-review treatment, or shipped-capability inventory. Every observation
+retains its eligible population, exclusions, source events, definition/policy version, and evaluated
+snapshot. Baselines and numerical targets remain unmeasured/unset until recorded evidence and a
+product decision establish them.
+
+For coverage, identify distinct leaf asset/liability assertions by owner scope, financial object,
+book, basis, and as-of date. Repeated display lines and parent totals do not create extra items.
+Freeze the inventory before evaluation: missing evidence, unmatched records, and simulated inputs
+remain in the denominator, with simulated items never verified. Incomplete inventories or unknown
+valuations make the corresponding coverage provisional; do not omit them to manufacture 100%.
+
+Value coverage uses the absolute amounts defined in Section 1.5 in a declared reporting currency
+and valuation basis. Do not net liabilities against assets. Show asset and liability breakdowns
+alongside the combined value and count figures; unavailable FX limits the value-based result.
+A zero denominator is not applicable, never 100%. An item requires the canonical `Ready` evidence
+state plus the reconciliation and approval conditions in Section 1.5; unknown requirements and
+waived failures cannot silently become verified.
+
+Worked example: 6 of 8 asset items and 3 of 4 liability items are verified: combined count coverage
+is 9/12, or 75%. If verified absolute value is 900 of 1,200 in the declared currency, value coverage
+is also 75%. A correction invalidating one verified item worth 100 makes current count coverage
+8/12 (66.7%) and value coverage 800/1,200 (66.7%). The original released package retains its dated
+assessment. An item lacking a required statement remains in the inventory; the statement itself
+is supporting evidence, not an extra denominator item.
+
+Keep customer-data onboarding and seeded-demo measurements separate. Proof-latency readouts show
+pending-item ages alongside completed-record median and p95. Touchless-rate readouts identify the
+terminal step and policy eligibility at intake, count retries once, and retain sampled-review
+results; a draft-completion rate never implies posting approval. Activation evidence records the
+supported profile and browser/WPF reachability separately, using Section 1.5's shared inventory;
+a library test or shared API alone cannot establish operator reachability.
 
 ---
 
@@ -177,32 +245,38 @@ The adversarial review's headline finding: the codebase is dramatically more cap
 running product. High-value capabilities exist as well-tested libraries that were never wired into
 the live path. The highest-return engineering available is therefore **activation** — connecting,
 labeling, and proving what is already built — not net-new surface. The prior charter lineage grew
-scope across nine versions; this version grows none.
+scope across nine versions; Versions 1.0–1.2 grew none, and Version 1.3 adds direction only as
+registered `planned` rows (Section 22.4). Version 1.4 adds complementary design candidates
+for evaluation (Section 25.3) without changing those adopted rows or their order.
 
-The activation register (status labels follow Section 24's claim rules; "supported foundation"
-means the capability exists in source with tests but is not the wired operator path):
+The activation register records capability posture, not registry status ("supported foundation"
+means the capability exists in source with tests but is not the wired operator path; the row's
+status and decision are in Section 5.3):
 
-| Dormant capability (source evidence) | Status | Activation lane |
+| Dormant capability (source evidence) | Posture | Activation lane |
 | --- | --- | --- |
-| Sided statement-vs-ledger reconciliation matching (`StatementMatchingEngine`, `src/Meridian.FinancialOperations/`) | Supported foundation; live path still uses a weaker per-row check | `W9-INGEST-009` |
-| Institutional bank formats (`Bai2StatementConnector`, `Camt053StatementConnector`, `src/Meridian.FinancialOperations/Reconciliation/Connectors/`) | Supported foundation in source; activation remains `in_progress` in the registry | `W9-INGEST-009` |
-| Client-grade PDF/XLSX rendering (`ClientGradeReportRenderer`, `FinancialReportDocumentRenderer`, `src/Meridian.Documents/`) | Activated; deterministic PDF/XLSX is the certified reporting path, with the bespoke partners-capital layout delivered. Accepted 2026-08-29 (`DEC-W9-ACCEPTANCE-001`) | `W9-REPORT-005` |
-| Unitized NAV, fee accruals with hurdles, European waterfall, preferred return, clawback, equalization (`NavPerUnitCalculator`, `EuropeanDistributionWaterfall`, `PreferredReturnCalculator`, `CarriedInterestClawbackCalculator`, `EqualizationCalculator`, `src/Meridian.Ledger/`) | Activated; ledger-backed economics with golden-file worked examples. Accepted 2026-08-29 (`DEC-W9-ACCEPTANCE-001`) | `W9-NAV-006` |
-| Broker fill streaming into order and ledger state (`AlpacaBrokerageGateway`, `src/Meridian.Execution/`) | Activated; accepted 2026-09-01 (`DEC-W9-ACCEPTANCE-003`) after the three held fill-path caveats (idle-account submission, reconnect backfill overlap, restart accounting handoff) were closed | `W9-ALPACA-004` |
-| Realistic fill and cost models (`MarketImpactFillModel`, `OrderBookFillModel`, commission models, `src/Meridian.Backtesting/`) | Activated; both paper gateways match and cost through the shared documented policy. Accepted 2026-08-29 (`DEC-W9-ACCEPTANCE-001`) | `W9-PAPER-003` |
-| Kill-switch, cancel-all, and pre-trade fat-finger/notional/collar controls | Activated; accepted 2026-09-11 (`DEC-W9-ACCEPTANCE-004`) with an OCO reservation and risk-journal work deferred | `W9-SAFETY-007` |
-| Hash-chained audit for the accounting ledger; route-level authorization; fail-closed tenancy (`AuditChainService` exists for storage; the journal ledger chain and blanket route coverage do not) | Partial foundation | `W9-GOV-008` |
-| Asset accounting event spine with atomic lot posting (`AssetAccountingEventSpineService`, `src/Meridian.FinancialOperations/Ledger/`) | Complete | `W9-ASSET-010` |
-| Corporate action approval and posting lane (`CorporateActionOperationsService` in `src/Meridian.Application/SecurityMaster/CorporateActions/`, `CorporateActionAccountingProjectionService` in `src/Meridian.Instruments/AssetOperations/`, `PostgresCorporateActionOperationsStore` in `src/Meridian.Storage/SecurityMaster/`) | Delivered and proven end to end on PostgreSQL (post and replay included); `ready_for_acceptance` since 2026-09-22 after `DEC-W9-ACCEPTANCE-002` reopened acceptance | `W9-CORPACT-011` |
-| Operational Evidence Graph as a shared product surface | Planned; explorer, proof-drawer, and manifest primitives exist | `W5X-OEG-001` |
+| Sided statement-vs-ledger reconciliation matching (`StatementMatchingEngine`, `src/Meridian.FinancialOperations/`) | Activated on the live path: `StatementRunMatcher` routes pair and bounded split stages through `ReconciliationMatchKernel`, against a journal-projected ledger-transaction population (`LedgerJournalInternalTransactionSource`); accepted 2026-10-18 (`DEC-W9-ACCEPTANCE-006`) | `W9-INGEST-009` |
+| Institutional bank formats (`Bai2StatementConnector`, `Camt053StatementConnector`, `src/Meridian.FinancialOperations/Reconciliation/Connectors/`) | Activated: both connectors are registered on the statement-import path with bounded streaming parsing and golden-file casework evidence; accepted 2026-10-18 (`DEC-W9-ACCEPTANCE-006`) | `W9-INGEST-009` |
+| Client-grade PDF/XLSX rendering (`ClientGradeReportRenderer`, `FinancialReportDocumentRenderer`, `src/Meridian.Documents/`) | Activated; deterministic PDF/XLSX is the certified reporting path, with the bespoke partners-capital layout delivered | `W9-REPORT-005` |
+| Unitized NAV, fee accruals with hurdles, European waterfall, preferred return, clawback, equalization (`NavPerUnitCalculator`, `EuropeanDistributionWaterfall`, `PreferredReturnCalculator`, `CarriedInterestClawbackCalculator`, `EqualizationCalculator`, `src/Meridian.Ledger/`) | Activated; ledger-backed economics with golden-file worked examples | `W9-NAV-006` |
+| Broker fill streaming into order and ledger state (`AlpacaBrokerageGateway`, `src/Meridian.Execution/`) | Activated; the three held fill-path caveats (idle-account submission, reconnect backfill overlap, restart accounting handoff) are closed in source | `W9-ALPACA-004` |
+| Realistic fill and cost models (`MarketImpactFillModel`, `OrderBookFillModel`, commission models, `src/Meridian.Backtesting/`) | Activated; both paper gateways match and cost through the shared documented policy | `W9-PAPER-003` |
+| Kill-switch, cancel-all, and pre-trade fat-finger/notional/collar controls | Activated, with an OCO reservation and the risk journal, risk read surface, and their WPF parity deferred | `W9-SAFETY-007` |
+| Hash-chained audit for the accounting ledger; route-level authorization; fail-closed tenancy (accounting-action chain on both the file and PostgreSQL stores, PostgreSQL ledger-event chain, read-only verification at `GET /api/ledger/audit-integrity`, zero-entry route authorization ratchets, and fail-closed tenancy as the default posture) | Activated and accepted 2026-10-18 (`DEC-W9-ACCEPTANCE-006`), including the live-installation tenancy cutover on the operator's statement; browser verification panel in Accounting → Configuration | `W9-GOV-008` |
+| Asset accounting event spine with atomic lot posting (`AssetAccountingEventSpineService`, `src/Meridian.FinancialOperations/Ledger/`) | Activated | `W9-ASSET-010` |
+| Corporate action approval and posting lane (`CorporateActionOperationsService` in `src/Meridian.Application/SecurityMaster/CorporateActions/`, `CorporateActionAccountingProjectionService` in `src/Meridian.Instruments/AssetOperations/`, `PostgresCorporateActionOperationsStore` in `src/Meridian.Storage/SecurityMaster/`) | Activated and accepted 2026-10-19 (`DEC-W9-ACCEPTANCE-007`); proven end to end on PostgreSQL (post and replay included), with unsupported branches deliberately blocked and posting permission assigned only through governed custom roles | `W9-CORPACT-011` |
+| Operational Evidence Graph as a shared product surface | Not yet a product surface; explorer, proof-drawer, and manifest primitives exist, and the first shared proof drawer over posted ledger amounts is being built under `W10-PROV-001` | `W5X-OEG-001` |
+| Registry-driven Security Master asset classes (`SecurityAssetClassRegistry`, versioned terms and event payloads, typed day-count and settlement conventions, typed corporate-action economics, income and factor-history projections, append-only governance write log) | Supported foundation in source as of 2026-10-16, with no acceptance gate. It is the nearest in-source precursor to contract packs (Section 22.2) | `W11-PACK-001` (governs the pack lifecycle built on it) |
 
-With most of the first-order W9 slate accepted, the open activation work is governance
-(`W9-GOV-008`), institutional intake (`W9-INGEST-009`), and the corporate-action acceptance decision
-(`W9-CORPACT-011`). Section 2.6 describes the depth work that follows activation.
+Governance (`W9-GOV-008`) and institutional intake (`W9-INGEST-009`) were accepted on 2026-10-18
+under `DEC-W9-ACCEPTANCE-006`, and the corporate-action approval and posting lane (`W9-CORPACT-011`)
+on 2026-10-19 under `DEC-W9-ACCEPTANCE-007`. No W9 activation decision remains open. Section 2.6 describes the depth work
+that follows activation.
 
 Rules of the doctrine:
 
-* New scope requires a roadmap registry row; activation of existing scope is the default lane.
+* Adopting new implementation scope requires a roadmap registry row; activation of existing scope
+  is the default lane. Design candidates may be evaluated before adoption, with no delivery claim.
 * An activated capability must replace its weaker predecessor on the live path, not sit beside it.
 * Capability that stays dormant must be visibly labeled as unwired in operator-facing coverage
   surfaces — unwired and finished must never look identical.
@@ -289,15 +363,22 @@ invariant:
 | --- | --- | --- |
 | Stale inputs fail closed | `W10-MARK-001` (stale-mark policy and mark-age surfacing) | Truth discipline (2.3); per-datum provenance (11.4) |
 | Breaks with memory | `W10-RECON-001` (durable break lineage and run-over-run diff), `W10-RECON-002` (clustering and bulk resolution), `W10-RECON-003` (unified tolerances and what-if replay), `W10-RECON-004` (operator-taught match rules behind a promotion gate) | Reconciliation strategy (11.6); a close that compounds (1.2) |
-| Proof on every amount | `W10-PROV-001` (ledger-amount evidence subject and shared proof drawer) | Number Passport (22) |
+| Proof on every amount | `W10-PROV-001` (ledger-amount evidence subject and shared proof drawer) | Number Passport (22.1) |
 | One close-readiness truth | `W10-SEAM-001` (unified close-readiness projection behind one shared contract) | Shared seam (5.4); NAV Readiness Packet (4.4) |
 | Governed routine throughput | `W10-JRNL-001` (durable recurring journal schedules and draft runner) | Policy-approved straight-through lanes (21) |
-| Accounting depth | `W10-TAX-001` (tax character, wash-sale, lot relief), `W10-LOT-002` (security-identified open-lot convergence), `W10-PERF-001` (portfolio and investor returns), `W10-CONSOL-001` (intercompany elimination) | Treasury ledger principles (11.7); whole-balance-sheet modeling (1.4) |
+| Accounting depth | `W10-LOT-002` (security-identified open-lot convergence), `W10-TAX-001` (tax character, wash-sale, lot relief), `W10-PERF-001` (portfolio and investor returns), `W10-CONSOL-001` (intercompany elimination) | Treasury ledger principles (11.7); whole-balance-sheet modeling (1.4) |
 | Maintainability | `W10-DEBT-001` (god-file burn-down against the file-size ratchet) | Modular monolith boundaries (12) |
 
 Operator-taught rules (`W10-RECON-004`) and recurring journals (`W10-JRNL-001`) are the first
 concrete test of Section 21: learned or scheduled behavior produces drafts or candidate rules that
-require a promotion gate, never self-approved postings.
+require a promotion gate, never self-approved postings. The recurring-journal runner being built
+already honors that boundary: it materializes due occurrences as drafts through the existing
+journal-intake path, claims each schedule and effective date once, and never submits, approves, or
+posts.
+
+`W10-CONSOL-001` has a first two-entity, single-currency elimination slice in source (reviewed
+drafts on the existing approval rail, perimeter and freshness guards, gross versus eliminated
+views), but its governed exit criteria are not met and it must not be described as delivered.
 
 ---
 
@@ -424,6 +505,39 @@ the Operational Evidence Graph — never ad hoc attachments.
 Consulted and informed parties follow the owning workflow's evidence packet; auditors and
 stakeholders are informed through governed delivery only.
 
+### 4.6 Interaction and Acceptance Contract
+
+Every governed journey must show the current scope, financial basis, source/freshness, acting
+principal, allowed next actions, and the reason an action remains blocked. Preserve filters,
+selection, and return context while moving between a queue, record, proof drawer, and evidence.
+An acknowledgement, assignment, or handover is not an approval or a transfer of authority.
+
+| Condition | Required operator behavior and acceptance evidence |
+| --- | --- |
+| Initial, loading, or empty | Distinguish no records from an unfinished or failed load; offer a permitted next action. Never substitute zero balances or fabricated success. |
+| Partial, stale, or degraded | Identify unavailable contributors and their last successful observation; explain which outputs/actions are blocked and which retained records remain inspectable. |
+| Read-only, locked, or permission-denied | Explain the applicable scope or lock without leaking restricted records; provide the authorized review/reopen route where one exists. |
+| Validation error or concurrent change | Keep recoverable user input, identify the failed condition, refresh authoritative versions, and require a new preview when consequences changed. A retry must not duplicate an accepted operation. |
+| Bulk action | Show selected scope, per-item eligibility, material consequences, partial failures, and retained results. Recheck permission, version, and approval rules for every item at execution. |
+| Success, correction, or reversal | Show durable record identity and audit evidence; offer the supported correction route. Never describe deletion of posted history as undo. |
+
+Use [Programmed Institutionalism][meridian-design-system] and its
+[accessibility guidance][meridian-accessibility].
+Browser acceptance targets WCAG 2.2 AA: keyboard completion, visible focus, accessible table/form
+semantics, non-color-only status, readable zoom/scaling, and reduced motion. Validate Chrome/Edge
+on Windows or the closest available Chromium environment at desktop and smaller laptop sizes.
+The shared service must own business-state transitions; workstation presentation cannot invent
+readiness or approval. Record browser and WPF workflow evidence separately: shared API acceptance
+does not establish desktop parity. No mobile development lane is introduced.
+
+A representative acceptance scenario follows one missing statement from its blocked close item
+to permitted intake, retained reconciliation evidence, independent review, and report eligibility.
+Repeat with a stale version and a principal lacking approval authority; both must preserve the
+blocker and the original evidence. This is a required validation scenario, not a current pass claim.
+
+[meridian-design-system]: <../../Meridian Design System/README.md>
+[meridian-accessibility]: <../../Meridian Design System/guidelines/accessibility.card.html>
+
 ---
 
 ## 5. Current Implementation Baseline
@@ -436,36 +550,49 @@ it, not to widen it.
 
 Implementation claims in this section are grounded in:
 
-* `docs/roadmap/data/*.yml` and `docs/roadmap/generated/ROADMAP_SUMMARY.md` (registry snapshot 2026-09-28),
+* `docs/roadmap/data/*.yml` and `docs/roadmap/generated/ROADMAP_SUMMARY.md` (program snapshot 2026-10-14),
 * `docs/source/data/source-modules.yml` and registered `src/**/README.md` files,
 * `docs/architecture/module-map.md` and `docs/architecture/project-structure.md`,
-* repository measurements taken 2026-07-28 (project, route, and test counts below).
+* repository measurements taken 2026-10-16 (project, route, and test counts below).
 
 Roadmap acceptance is bounded to the named capability. It does not by itself certify any deployment
 profile or production release. Production readiness is currently **blocked**; the release gate is
-every P0 row in `docs/product/implementation-todo-list.md` complete on the same release commit.
+every P0 row in `docs/product/implementation-todo-list.md` complete on the same release commit. As
+of the tracker's 2026-10-14 review, Meridian CI and Production Certification passed on reviewed
+`main` commit `e0ecd952`, but no P0 row is production-certified: 14 are historically
+implementation-complete, 6 are evidence-gated on the frozen-release evidence set, and `PRD-002` is
+reopened for implementation. A green run on `main` is a baseline, not a release.
 
 ### 5.2 Scale of the Existing Foundation
 
-Measured from the repository on 2026-07-28:
+Measured from the repository on 2026-10-16 (2026-07-28 figures in parentheses where the same
+counting basis was reproduced):
 
 | Dimension | Measure |
 | --- | --- |
-| Source projects | 41 under `src/` (52 projects in `Meridian.sln` including tests and benchmarks) |
-| Application code | ~242,000 lines of C# (2,902 files); 12,736 lines of F# across four deterministic calculation projects |
-| Browser workstation | ~295,000 lines of TypeScript/TSX (720 files; 165 screen modules; 264 test files) |
-| Desktop workstation | 497 C# files and 147 XAML views (`src/Meridian.Wpf/`) |
-| API surface | 845 distinct `/api/...` routes (855 route constants in `UiApiRoutes.cs`; 1,164 endpoint mappings across 137 endpoint files) |
-| Provider integrations | 22 provider adapter families under `src/Meridian.Infrastructure/Adapters/` |
+| Source projects | 42 under `src/` (41); 59 projects in `Meridian.sln` including tests and benchmarks (52) |
+| Application code | 3,378 C# files (2,906) totalling ~957,000 physical lines (~806,000)¹; 13,466 lines of F# across four deterministic calculation projects (12,736) |
+| Browser workstation | ~343,000 lines of TypeScript/TSX (~296,000) in 951 files (722); 230 screen modules (165); 345 test files (264) |
+| Desktop workstation | 538 C# files (497) and 154 XAML views (147) in `src/Meridian.Wpf/` |
+| API surface | 912 distinct `/api/...` routes (845); 922 route constants in `UiApiRoutes.cs` (855); 1,251 endpoint mappings (1,164) |
+| Provider integrations | 22 provider adapter families under `src/Meridian.Infrastructure/Adapters/` (22) |
 | Statement connectors | 6 formats in source: declarative CSV, OFX, IB Flex XML, Alpaca, BAI2, CAMT.053 |
-| Ledger library | 142 classes in `src/Meridian.Ledger/` (journals, multi-currency, capital accounts, waterfalls, tax lots, close, pricing, report packs) |
-| Tests | ~12,900 xUnit facts/theories across 12 .NET test projects plus 264 browser test files |
-| Durability | Write-ahead log, atomic file writes (110 call sites), checksum and audit-chain services in `src/Meridian.Storage/` |
+| Ledger library | 154 source files in `src/Meridian.Ledger/` (142): journals, multi-currency, capital accounts, waterfalls, tax lots, valuation freshness, close, pricing, report packs |
+| Tests | ~18,200 C# xUnit facts/theories (~12,950) plus ~460 F# tests across 14 .NET test projects (12), and 345 browser test files (264) |
+| Durability | Write-ahead log, atomic file writes (142 source files using `AtomicFileWriter`, up from 110), checksum and audit-chain services in `src/Meridian.Storage/`; append-only governance and write-event logs for Security Master and Asset Operations |
+
+¹ The 2026-07-28 edition reported "~242,000 lines of C#"; that basis could not be reproduced.
+Both figures here count physical lines in `src/**/*.cs`, including comments and blank lines, and are
+comparable with each other only.
 
 The breadth is an asset only insofar as it is activated (Section 2.1): parts of this foundation are
 not yet the wired operator path, and the W9 slate exists precisely to close that gap.
 
-### 5.3 Wave Posture
+### 5.3 Registry Status
+
+This is the only place in the charter that states registry status (program snapshot 2026-10-14,
+plus the W11 rows registered 2026-10-16). When it disagrees with `docs/roadmap/data/roadmap-items.yml`,
+the registry wins; fix this section and nothing else.
 
 **Closed baselines** (registry status `done`, evidence complete). W1-W5 form the accepted
 operational record baseline:
@@ -490,48 +617,52 @@ Status vocabulary: `accepted` means an operator decision accepted the implementa
 `done` additionally requires the lane-owned release or status documentation. Neither certifies a
 production deployment profile (Section 5.1).
 
-**Accepted, not yet `done`**: `W9-TRUTH-001`, `W9-PAPER-003`, `W9-ALPACA-004`, `W9-REPORT-005`,
-`W9-NAV-006`, `W9-SAFETY-007` (see the ranked slate below for decision references).
+**Every open row**, in wave order and adopted rank within the wave:
 
-**Active** (registry status `in_progress` or `ready_for_acceptance`):
+| Rank | ID | Status | Decision | Capability |
+| --- | --- | --- | --- | --- |
+| — | `W5X-OEG-001` | `planned` | — | Operational Evidence Graph as a shared product surface |
+| — | `W8-WPF-PARITY-001` | `in_progress` | `DEC-UI-CONSOLIDATION-001` | WPF desktop workstation web-UI parity over shared contracts (`docs/engineering/plans/wpf-web-ui-alignment-plan.md`) |
+| — | `W8-UX-CONSOL-001` | `in_progress` | `DEC-UI-CONSOLIDATION-001` | Browser workstation screen consolidation behind the seven charter roots (retired routes remain redirects) |
+| W9 · 1 | `W9-TRUTH-001` | `accepted` | `DEC-W9-ACCEPTANCE-005` | Loud, fail-closed handling of simulated data and in-memory persistence |
+| W9 · 3 | `W9-PAPER-003` | `accepted` | `DEC-W9-ACCEPTANCE-001` | Paper-trading realism: limit/stop matching and trading costs |
+| W9 · 4 | `W9-ALPACA-004` | `accepted` | `DEC-W9-ACCEPTANCE-003` | Broker fill streaming into order and ledger state |
+| W9 · 5 | `W9-REPORT-005` | `accepted` | `DEC-W9-ACCEPTANCE-001` | Client-grade PDF/XLSX exports and partners-capital statement |
+| W9 · 6 | `W9-NAV-006` | `accepted` | `DEC-W9-ACCEPTANCE-001` | Unitized NAV and real fee, waterfall, and capital-call economics |
+| W9 · 7 | `W9-SAFETY-007` | `accepted` | `DEC-W9-ACCEPTANCE-004` | Kill-switch cancel-all; fat-finger, notional, and collar rules (OCO reservation; risk journal deferred) |
+| W9 · 8 | `W9-GOV-008` | `accepted` | `DEC-W9-ACCEPTANCE-006` | Route-level authorization, fail-closed tenancy, and hash-chained accounting and ledger audit |
+| W9 · 9 | `W9-INGEST-009` | `accepted` | `DEC-W9-ACCEPTANCE-006` | Institutional statement ingestion (CAMT.053/BAI2) and deterministic split matching on the live path |
+| W9 · 11 | `W9-CORPACT-011` | `accepted` | `DEC-W9-ACCEPTANCE-007` | Corporate-action approval and posting lane (unsupported branches blocked; posting role assigned by governed custom profile) |
+| W10 · 1 | `W10-MARK-001` | `in_progress` | `DEC-DEPTH-SLATE-001` | Fail-closed stale-mark policy: one shared valuation freshness policy, blocking by default, mark age shown in browser and WPF |
+| W10 · 2 | `W10-RECON-001` | `planned` | `DEC-DEPTH-SLATE-001` | Durable break lineage identity and run-over-run break diff |
+| W10 · 3 | `W10-PROV-001` | `in_progress` | `DEC-DEPTH-SLATE-001` | Ledger-amount evidence subject and shared proof drawer; first slice covers posted debit and credit amounts in the browser Ledger Explorer and WPF Posted Ledger |
+| W10 · 4 | `W10-RECON-002` | `planned` | `DEC-DEPTH-SLATE-001` | Break clustering and bulk resolution |
+| W10 · 5 | `W10-JRNL-001` | `in_progress` | `DEC-DEPTH-SLATE-001` | Durable recurring journal schedules and a draft-only runner that never submits, approves, or posts |
+| W10 · 6 | `W10-TAX-001` | `planned` | `DEC-DEPTH-SLATE-001` | Tax character, wash-sale, and lot-relief operator surface |
+| W10 · 7 | `W10-SEAM-001` | `in_progress` | `DEC-DEPTH-SLATE-001` | Unified close-readiness projection behind one shared contract, bound to a declared close scope |
+| W10 · 8 | `W10-RECON-003` | `planned` | `DEC-DEPTH-SLATE-001` | Unified tolerance model and what-if replay |
+| W10 · 9 | `W10-RECON-004` | `planned` | `DEC-DEPTH-SLATE-001` | Operator-taught match rules behind a promotion gate |
+| W10 · 10 | `W10-PERF-001` | `planned` | `DEC-DEPTH-SLATE-001` | Portfolio and investor return measurement |
+| W10 · 11 | `W10-CONSOL-001` | `planned` | `DEC-DEPTH-SLATE-001` | Intercompany elimination; a first two-entity, single-currency slice exists in source (Section 2.6) |
+| W10 · 12 | `W10-LOT-002` | `in_progress` (priority critical) | `DEC-DEPTH-SLATE-001` | Security-identified open-lot convergence: acquisition, backfill, relief, and face-lot amortization on one durable lot and immutable-journal boundary |
+| — | `W10-DEBT-001` | `planned` | — | God-file burn-down against the file-size ratchet (unranked hygiene row) |
+| W11 · 1 | `W11-PASSPORT-001` | `planned` | `DEC-CHARTER-DIRECTION-001` | Number Passport contract across amount surfaces (Section 22.1) |
+| W11 · 2 | `W11-COVER-001` | `planned` | `DEC-CHARTER-DIRECTION-001` | Verified Coverage measurement and operator surface (Sections 1.5, 22.3) |
+| W11 · 3 | `W11-STAKE-001` | `planned` | `DEC-CHARTER-DIRECTION-001` | Governed stakeholder verification access on delivered packages (Section 22.3) |
+| W11 · 4 | `W11-SHADOW-001` | `planned` | `DEC-CHARTER-DIRECTION-001` | Shadow-mode onboarding with opening-balance reconciliation (Section 22.3) |
+| W11 · 5 | `W11-PACK-001` | `planned` | `DEC-CHARTER-DIRECTION-001` | Governed contract-pack lifecycle on the Security Master asset-class registry (Section 22.2) |
+| W11 · 6 | `W11-EXEC-001` | `planned` | `DEC-CHARTER-DIRECTION-001` | Trading & Execution bounded-context ownership (Section 7.1) |
 
-| ID | Capability |
-| --- | --- |
-| `W8-WPF-PARITY-001` | WPF desktop workstation web-UI parity over shared contracts (`docs/engineering/plans/wpf-web-ui-alignment-plan.md`) |
-| `W8-UX-CONSOL-001` | Browser workstation screen consolidation behind the seven charter roots (retired routes remain redirects) |
-| `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting and ledger audit |
-| `W9-INGEST-009` | Institutional statement ingestion and deterministic split matching on the live path |
-| `W9-CORPACT-011` | Corporate-action approval and posting lane, `ready_for_acceptance` since 2026-09-22; acceptance is a fresh operator decision after `DEC-W9-ACCEPTANCE-002` |
-| `W10-MARK-001` | Fail-closed stale-mark policy and mark-age surfacing |
-| `W10-SEAM-001` | Unified close-readiness projection behind one shared contract |
-| `W10-LOT-002` | Security-identified open-lot convergence |
-
-**Planned** (registry status `planned`): `W5X-OEG-001` (Operational Evidence Graph product surface)
-and the remaining W10 depth rows (Section 2.6).
-
-The original ranked W9 first-order slate keeps its adopted order below; the status column records
-current registry state rather than presenting the slate as still planned:
-
-| Rank | ID | Status | Improvement |
-| --- | --- | --- | --- |
-| 1 | `W9-TRUTH-001` | `accepted` (`DEC-W9-ACCEPTANCE-005`) | Loud, fail-closed handling of simulated data and in-memory persistence |
-| 2 | `W9-DEMO-002` | `done` (`DEC-W9-DONE-001`) | One-command seeded demo on durable storage |
-| 3 | `W9-PAPER-003` | `accepted` (`DEC-W9-ACCEPTANCE-001`) | Paper-trading realism: limit/stop matching and trading costs |
-| 4 | `W9-ALPACA-004` | `accepted` (`DEC-W9-ACCEPTANCE-003`) | Broker fill streaming into order and ledger state |
-| 5 | `W9-REPORT-005` | `accepted` (`DEC-W9-ACCEPTANCE-001`) | Client-grade PDF/XLSX exports and partners-capital statement |
-| 6 | `W9-NAV-006` | `accepted` (`DEC-W9-ACCEPTANCE-001`) | Unitized NAV and real fee, waterfall, and capital-call economics |
-| 7 | `W9-SAFETY-007` | `accepted` (`DEC-W9-ACCEPTANCE-004`) | Kill-switch cancel-all; fat-finger, notional, and collar rules |
-| 8 | `W9-GOV-008` | `in_progress` | Route-level authorization, fail-closed tenancy, hash-chained accounting audit |
-| 9 | `W9-INGEST-009` | `in_progress` | Institutional file ingestion (CAMT.053/BAI2) and the sided reconciliation matcher on the live path |
-
-`W9-ASSET-010` is `done`. The later-registered `W9-CORPACT-011` reached `ready_for_acceptance` on
-2026-09-22, after `DEC-W9-ACCEPTANCE-002` had reopened its acceptance on corrected evidence. The
-remaining open ranks (8–9) are sequenced by `DEC-W9-CLOSEOUT-001`.
+`W9-DEMO-002` (rank 2) and `W9-ASSET-010` are `done` and listed with the closed baselines above.
+No roadmap decision was recorded between the 2026-09-28 and 2026-10-14 snapshots; the changes in
+that interval are rows moving into implementation, not acceptances. `DEC-CHARTER-DIRECTION-001`
+(2026-10-16) registers the W11 rows only; registration is not implementation or acceptance.
 
 The W9 ordering is strategy, not backlog trivia: truth before demonstration, honest gates before
 surface, deliverables before breadth, safety and governance never overpromised, trusted intake
 widened last. The W10 depth slate (Section 2.6) follows the same logic one level down: deepen what
-is already proven before widening.
+is already proven before widening. The W11 direction rows build on W10 rather than beside it:
+`W11-PASSPORT-001` follows `W10-PROV-001`, and `W11-COVER-001` follows it and `W10-SEAM-001`.
 
 ### 5.4 Active Product Surfaces
 
@@ -569,7 +700,9 @@ allowed only to keep the browser workstation usable.
 
 ### 5.5 Capability Posture by Domain
 
-"Implemented evidence" means the repository has accepted evidence for the capability baseline.
+"Implemented evidence" below means the repository has accepted evidence for a bounded capability
+baseline, not the entire domain. Read it together with the named baseline in Section 5.3 and its
+roadmap row; it is not an additional lifecycle status.
 "Supported foundation" means models, routes, services, or workflow concepts exist but the operator
 product is not complete. "Planned productization" must never be presented as shipped.
 
@@ -580,20 +713,20 @@ product is not complete. "Planned productization" must never be presented as shi
 | Treasury & Payments | Supported foundation | Cash-flow views, payment-intent design, account/ledger seams; live payment execution remains later productization |
 | Portfolio & Investment Operations | Implemented evidence | Portfolio, fund-structure, brokerage sync, positions, paper sessions, valuation evidence, ledger-backed workflows |
 | Reference Data | Implemented evidence | Security Master contracts, provider-to-security mapping, asset profiles, trust/conflict summaries |
-| Instrument, Contract & Obligation Management | Implemented evidence | Security Master, direct-lending and F# rule kernels, factor/corporate-action evidence, multi-asset blockers |
+| Instrument, Contract & Obligation Management | Implemented evidence | Security Master, direct-lending and F# rule kernels, factor/corporate-action evidence, multi-asset blockers; the registry-driven asset-class model and versioned terms (Section 6.6) are a supported foundation without a roadmap row |
 | Entity & Relationship Management | Supported foundation | Fund-structure setup, ownership graph, legal entities, vehicles, assignments |
 | Alternative Asset Management | Supported foundation | Private-credit models, governed custom asset profiles, structured/private asset coverage |
 | Financing & Capital Structure Analysis | Design-led foundation | Partial support through fund, vehicle, account, and ledger models |
 | Planning, Forecasting & Decision Support | Design-led foundation | Strategy, run comparison, and reporting evidence exist; engines remain future work |
 | Research & Analytics | Implemented evidence | Strategy lifecycle, QuantScript, realistic backtesting runtime, promotion evidence, and the bounded `W6-BTSTUDIO-001` Covered Call scoped-Vault-to-governed-Paper evidence loop; broader Studio UX remains deferred |
-| Risk Management | Supported foundation | Pre-trade risk rules, accepted kill-switch/cancel-all and fat-finger/notional/collar controls (`W9-SAFETY-007`), live-readiness controls; enterprise risk remains expansion work |
+| Risk Management | Supported foundation | Pre-trade risk rules, activated kill-switch/cancel-all and fat-finger/notional/collar controls (`W9-SAFETY-007`), live-readiness controls; enterprise risk remains expansion work |
 | Client & Stakeholder Reporting | Implemented evidence | Governed report packs, provenance, export evidence, publication/restatement lifecycle |
 | Collaboration & Communication | Design-led foundation | Workflow assignment, comments, audit events, queue state |
 | Administration & Governance | Implemented evidence | Settings, policy, provider setup, audit trail, approval controls, governed stage gates |
 | Audit, Compliance & Regulatory | Implemented evidence | Audit events, evidence manifests, report provenance, approval history, controlled close/report workflows |
 | Workflow & Process Automation | Supported foundation | Shared workflow DTOs, operator queues, lifecycle transitions, acceptance gates |
 | Document & Knowledge Management | Implemented evidence | Evidence Vault identity/intake/query/review/manifest/audit baseline and browser-first statement onboarding are closed; broader document portal and collaboration remain deferred |
-| Reporting & Analytics Platform | Implemented evidence | Report-pack workflow, line provenance, trial-balance reporting, export evidence; client-grade PDF/XLSX rendering accepted as `W9-REPORT-005` |
+| Reporting & Analytics Platform | Implemented evidence | Report-pack workflow, line provenance, trial-balance reporting, export evidence; client-grade PDF/XLSX rendering activated under `W9-REPORT-005` |
 
 ---
 
@@ -689,6 +822,20 @@ Supported financial objects span public securities, fixed income, loans and dire
 derivatives, structured products, private fund interests, real assets, deposits, guarantees, and
 commitments — recorded widely, automated narrowly, per contract packs (Section 22).
 
+Current source foundation (supported, not accepted): one `SecurityAssetClassRegistry` composes the
+asset-class descriptor table with the term schema and is locked by coverage tests to the F#
+`SecurityKind` union, the validator registry, and the storage writers. Each descriptor owns lot unit
+and multiplier, cash-flow behavior, and projection kind; ten of the eleven projection writers are
+declarative (Option remains specialized; Bond moved onto registry satellite tables). Terms and security-event payloads declare their
+family and version, and replay checks them before decoding. Day-count and settlement conventions
+are typed; corporate-action economics are typed per event family; declared dividend and fund
+distribution income and a dated factor history are projected from effective corporate actions.
+Governance writes (override decisions, alias revisions, projection rebuilds) append to an
+append-only log in the same transaction as the change. Browser and WPF passport editors build
+their term forms from the same registry. These are engineering foundations recorded in
+[`docs/architecture/security-master-extensibility-review.md`](../architecture/security-master-extensibility-review.md);
+no registry row yet accepts them as a product capability.
+
 ### 6.7 Entity & Relationship Management
 
 People, organizations, trusts, funds, SPVs, beneficiaries, and their ownership and authority
@@ -731,8 +878,11 @@ checklist id, keyed evidence exactly matching the source run, and an exact same-
 whose parent and strategy identities match. Missing, rejected, foreign, or mismatched evidence or
 lineage remains review-required or rejected; metric eligibility and generic paper-session creation
 cannot satisfy the checklist.
-`BacktestStudioRunOrchestrator` is not host-composed, and the Strategy Designer currently fails
-closed when its production compiler captures no result, so neither is evidence for W6 closure.
+`BacktestStudioRunOrchestrator` is not host-composed, so it is not evidence for W6 closure. The
+Strategy Designer now has a designer-document live strategy source over a closed expression
+grammar in which every unsupported construct fails closed into the operator-visible
+`ActivationDeferred` state (the `PRD-020` closure candidate); that is a safety property of
+activation, not evidence for W6 closure or broader Studio UX.
 
 ### 6.12 Risk Management
 
@@ -813,6 +963,7 @@ language.
 | Planning & Forecasting | Forecast models, scenarios, assumptions, stress tests, planning cases, decision records |
 | Research & Analytics | Research notes, watchlists, investment theses, backtests, strategy runs, analytical workspaces |
 | Risk Management | Risk rules, metrics, limits, exposure calculations, concentration checks, breaches |
+| Trading & Execution | Orders and order lifecycle, fills, broker gateway sessions, paper sessions, kill-switch and cancel-all actions, pre-trade check outcomes, paper-to-live promotion gates. Risk rule definitions stay in Risk Management; fills reach the ledger only through a published posting contract, and the ledger remains the only accounting truth |
 | Workflow & Task | Tasks, assignments, statuses, approvals, escalations, SLA tracking |
 | Audit & Compliance | Audit events, control evidence, approval history, compliance checks, retention policies |
 | Reporting & Client Delivery | Reports, dashboards, statements, client packages, investor packages, delivery history |
@@ -823,11 +974,22 @@ language.
 AI & Automation was removed as a standalone business domain. AI is a cross-cutting implementation
 capability governed by Section 21; it is not part of the formal domain model.
 
+### 7.3 Contexts Owned by Projects Outside the Module Target
+
+Trading & Execution was added in Version 1.3. Orders, fills, broker gateways, paper sessions, and
+the kill switch already ship with accepted W2, W7, and W9 evidence, but until then no context
+owned them, even though Section 1.4 sells research-to-close continuity. It has no module in the
+Section 12.1 target. Today it is owned by `src/Meridian.Execution/`, `src/Meridian.Execution.Sdk/`,
+`src/Meridian.Risk/` (pre-trade enforcement), `src/Meridian.Strategies/`, and
+`src/Meridian.Backtesting/`. Enforcing that ownership in the architecture maps and in a dependency
+test is `W11-EXEC-001`. The accounting ledger is in the same position: it belongs to Financial
+Operations and Portfolio Records but lives in `src/Meridian.Ledger/` and its F# kernels.
+
 ---
 
 ## 8. Context Ownership Matrix
 
-| Bounded context | Owns data | Owns rules | Exposes APIs | Has UI | MVP |
+| Bounded context | Owns data | Owns rules | Exposes APIs | Has UI | Initial package emphasis |
 | --- | --: | --: | --: | --: | --: |
 | Identity & Access | Yes | Yes | Yes | Yes | Yes |
 | Entity & Relationship | Yes | Yes | Yes | Yes | Yes |
@@ -842,16 +1004,39 @@ capability governed by Section 21; it is not part of the formal domain model.
 | Planning & Forecasting | Yes | Yes | Yes | Yes | Later |
 | Research & Analytics | Yes | Yes | Yes | Yes | Later |
 | Risk Management | Yes | Yes | Yes | Yes | Later |
+| Trading & Execution | Yes | Yes | Yes | Yes | Later |
 | Workflow & Task | Yes | Yes | Yes | Yes | Yes |
 | Audit & Compliance | Yes | Yes | Yes | Yes | Yes |
 | Reporting & Client Delivery | Partial | Yes | Yes | Yes | Yes |
 | Document & Knowledge | Yes | Yes | Yes | Yes | Yes |
 
+This is a target ownership/package matrix, not an implementation inventory. "Later" refers to
+the broader package described in Section 9.2; it does not undo acceptance of bounded capabilities.
+The conceptual owners below resolve finance-specific boundaries without adding a new context:
+
+| Responsibility | Authoritative owner |
+| --- | --- |
+| Security identity and identifiers | Reference Data / Security Master |
+| Contract terms, obligations, and projected economic state | Instruments / Asset Operations, keyed to canonical security identity |
+| Posting candidates, book-context resolution, and approval readiness | Financial Operations |
+| Immutable journals, balanced entries, posting guards, and durable append | Ledger and Storage, reached through the governed Financial Operations workflow |
+| Tasks and routing | Workflow; domain transitions remain with the owning financial context |
+| Report snapshots and delivery | Reporting; source financial records retain their original owner |
+
+The [domain model](../architecture/meridian-domain-model.md#instrument-and-accounting-ownership)
+and [module conformance map](../architecture/design-module-conformance.md) own detailed boundaries
+and current physical-project mappings.
+
 ---
 
 ## 9. Recommended MVP Contexts
 
-The first build focuses on the operational foundation.
+The first build focuses on the operational foundation. "Later" below is the sequencing of that
+first build, not a statement that a context is absent: Research & Analytics, Risk Management, and
+Trading & Execution already carry bounded, accepted evidence (W2, W3, W6, W7, and the W9 paper,
+fill-streaming, and safety rows) ahead of this MVP order, as Section 5.5 records. The MVP order
+still governs which contexts must be complete before Meridian claims the foundational slice
+(Section 23).
 
 ### 9.1 MVP Contexts
 
@@ -871,6 +1056,11 @@ The first build focuses on the operational foundation.
 
 ### 9.2 Later Expansion Contexts
 
+These are broader package extensions, not blanket deferrals of every capability in each domain.
+Accepted research-to-paper, live-governance, multi-asset, and pre-trade safety slices remain part
+of the existing baseline. Broader enterprise risk, forecasting, payment execution, and alternative
+asset automation retain their separate evidence and reopening gates.
+
 ```text
 1. Treasury & Payments
 2. Alternative Assets
@@ -878,6 +1068,7 @@ The first build focuses on the operational foundation.
 4. Planning & Forecasting
 5. Research & Analytics
 6. Risk Management
+7. Trading & Execution
 ```
 
 ### 9.3 MVP Screen Inventory
@@ -888,7 +1079,7 @@ screens behind these roots; retired routes remain redirects.
 
 | Screen | Workspace | Bounded context |
 | --- | --- | --- |
-| Home Dashboard | Trading | Platform Runtime |
+| Home Dashboard | Trading | Cross-cutting: aggregates runtime and readiness status from other contexts and owns no records |
 | Provider Center | Data | Data Provider & Integration |
 | Import Runs | Data | Data Provider & Integration |
 | Data Quality | Data | Data Provider & Integration |
@@ -911,11 +1102,11 @@ screens behind these roots; retired routes remain redirects.
 ### 10.1 Core Object Hierarchy
 
 ```text
-Tenant / Organization
+Tenant (isolation boundary)
         ↓
-Entity
+Organization (operating group) → Entity / Portfolio
         ↓
-Account / Capital Account / Ledger Account
+Book + Period + Basis; Account / Capital Account / Ledger Account
         ↓
 Position / Contract / Obligation
         ↓
@@ -926,12 +1117,22 @@ Actual Transaction / Actual Cash Flow / Journal Entry
 Reconciliation / Reporting / Audit
 ```
 
+This is a scope and lineage guide, not a strict containment schema. Books can serve declared
+entity, portfolio, or account scopes; relationships can cross entities within permitted scope.
+An expected cash flow, a business transaction, a posting candidate, and a posted journal remain
+different objects. The [domain model](../architecture/meridian-domain-model.md) owns their detailed
+relationships; the dictionary owns individual business definitions.
+
 ### 10.2 Core Objects
 
 | Object | Purpose | Examples |
 | --- | --- | --- |
 | Tenant | Customer environment | Fund administrator, RIA, family office |
+| Organization | Operating group governed within a tenant | Administrator operating company, advisory organization |
 | Entity | Legal or economic party | Fund, trust, LLC, individual, SPV |
+| Portfolio | Investment or operating grouping | Strategy sleeve, treasury portfolio |
+| Book | Governed accounting or operational record set | Statutory book, shadow book, reporting book |
+| Period | Effective accounting interval with governed close posture | Open month, locked quarter |
 | Relationship | Link between entities | Owner, beneficiary, advisor, custodian, lender, borrower |
 | Account | Container where assets, cash, or activity live | Bank account, custody account, investment account, GL account |
 | Capital Account | Economic record for investor or owner activity | Commitment, contribution, distribution, allocation, NAV share |
@@ -940,8 +1141,9 @@ Reconciliation / Reporting / Audit
 | Contract | Defines rights and obligations | Loan agreement, bond indenture, lease, credit facility |
 | Obligation | Future duty or right to pay or receive | Coupon, principal, rent, capital call, distribution |
 | Expected Cash Flow | Forecasted cash movement from terms | Scheduled interest, maturity payment, rent payment |
-| Fund Event | Operational event requiring accounting evidence | Closing, investment, capital call, distribution, expense |
-| Transaction | Actual observed activity | Trade, wire, coupon receipt, journal entry |
+| Operational Event | Customer-neutral event connecting evidence, workflow, and potential accounting impact | Trade, fee, receipt, corporate action, valuation |
+| Fund Event | Fund/private-capital specialization of Operational Event | Closing, investment, capital call, distribution, expense |
+| Transaction | Actual business activity; not interchangeable with its journal | Trade, wire, coupon receipt |
 | Journal Entry | Balanced accounting record owned by Meridian | Accrual, valuation adjustment, cash receipt, capital activity |
 | Position | Ownership or exposure at a point in time | Shares, par value, LP interest, loan balance |
 | Valuation | Value assigned to an object | Market value, NAV, appraisal, fair value |
@@ -962,7 +1164,12 @@ page before broad code generation.
 
 ```text
 Tenant
- └── Entity
+ └── Organization
+      └── Entity (related to portfolios and other entities)
+           ├── Book → Period → Journal Entry → Ledger Entry
+           └── Account / Contract / Document / Relationship (detail below)
+
+Entity
       ├── Account
       │    ├── Position
       │    │    └── Instrument
@@ -1017,6 +1224,22 @@ Source hierarchy rules are configurable per tenant:
 4. **Approved system of record** — Meridian's official internal record for operations, reporting,
    reconciliation, forecasting, and audit.
 
+"Approved internal record" does not alone designate the customer's official statutory books.
+Authority is explicit per organization, book, basis, and effective period:
+
+| Adoption phase or record | Authority and transition rule |
+| --- | --- |
+| External official books during shadow adoption | The customer-designated external system remains official. Retained exports are immutable comparison evidence; Meridian reports disclose external authority, source version, and reconciliation posture. |
+| Meridian shadow book | Meridian owns its approved parallel records and posted journals. Shadow approval verifies the bounded record; it neither silently changes official-book designation nor authorizes external posting. |
+| Cutover to a Meridian-native official book | A Controller/CFO or configured accountable book owner approves scope, effective period, reconciled opening balances, unresolved exceptions, retained prior-book references, and operating controls. A failed tie-out or missing authority blocks cutover. |
+| Meridian-native official book | Meridian's posted journals are authoritative. Corrections follow reversal/adjustment controls; external GL data remains read-only evidence. |
+| Graph, warehouse, search, or UI projection | A rebuildable view of named authoritative versions. It cannot post, approve, overwrite books, or confer official-book authority. |
+
+Retain the original designation, cutover decision, opening-balance proof, and prior-period comparison
+basis. Reversing a designation is a new governed decision, not deletion of the original history.
+These product requirements refine `W11-SHADOW-001` (Section 22.3); its bounded adoption and
+acceptance gates still govern the migration workflow.
+
 ### 11.4 Lineage and Provenance
 
 Every system-of-record value carries lineage:
@@ -1061,8 +1284,9 @@ Three reconciliation dimensions:
 | Expected-to-Actual | Expected coupon vs actual coupon received |
 | Internal-to-Official | Meridian record vs general ledger |
 
-Reconciliation is a **sided** comparison — statement side versus ledger side — never a self-check
-of one side against itself. Matching prefers strong identifiers (internal ID, CUSIP, ISIN, SEDOL,
+Reconciliation is a **sided** comparison of two explicitly identified populations — for example,
+statement versus ledger, source versus source, or expected versus actual — never a self-check of
+one population against itself. Matching prefers strong identifiers (internal ID, CUSIP, ISIN, SEDOL,
 FIGI, provider ID) before ticker+exchange+currency; ticker alone is not sufficient. Cross-currency
 reconciliation requires an implemented FX rate source on the live path.
 
@@ -1092,8 +1316,43 @@ workflows, or close packages:
 | Payment linkage | Payment requests, bank orders, confirmations, returns, and reversals link to ledger transactions, but payment processors do not become the source of ledger truth. |
 | Audit reconstruction | Every ledger balance in a report package can drill back to entries, source records, approvals, documents, and any reversal chain. |
 
-Hardening direction (`W9-GOV-008`): the authoritative accounting audit trail becomes hash-chained
-so tampering is detectable, complementing the existing storage-layer audit chain.
+Accounting-audit hardening (`W9-GOV-008`) uses hash chains and retained verification receipts
+to detect tampering in supported accounting paths, complementing the storage-layer audit chain.
+Its bounded acceptance is recorded in Section 5.3; neither chain replaces source evidence.
+
+### 11.8 Canonical State Vocabulary
+
+Three vocabularies recur across the product. Every surface, contract, and document uses these
+names and meanings, and both workstations render them the same way. A new state needs a contract
+change and an update here; a surface must not invent a synonym.
+
+**Evidence status** (`EvidenceStatusDto`, `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs`).
+This is the status of support behind any displayed value, proof drawer, Number Passport, or
+readiness contribution.
+
+| State | Meaning | What the operator can do |
+| --- | --- | --- |
+| `Ready` | Support is present, scoped to the subject, current, and verified. | Proceed. The only state that counts toward Verified Coverage. |
+| `ReviewRequired` | Support exists but needs a human decision (ambiguous match, unknown observation date, extracted field below confidence). | Review, then accept, correct, or escalate. Downstream approval waits. |
+| `Blocked` | A rule forbids proceeding (stale mark outside policy, locked period, scope mismatch, foreign evidence). | Fix the cause; it cannot be waived from the surface that shows it. |
+| `Stale` | Support was valid but is older than its freshness policy allows. | Refresh the source or obtain a governed override. |
+| `Missing` | Required support is absent. | Supply it; the value must not render as if supported. |
+| `Unknown` | Status could not be determined. | Treat as not ready; surfaces fail closed rather than default to `Ready`. |
+
+**Accounting lifecycle stage** (`AssetAccountingLifecycleStageDto`,
+`src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs`): `Expected → Projected →
+Drafted → Approved → Posted → Reconciled → Reported`. Each stage is an independent attestation; a
+later stage never rewrites an earlier one. Only `Posted`
+affects ledger balances; only `Reconciled` and later count as reconciled for Verified Coverage.
+
+**Roadmap status** (`docs/roadmap/status-taxonomy.md`): `planned → in_progress →
+ready_for_acceptance → accepted → done`. `accepted` means an operator decision accepted the
+evidence. `done` additionally requires the lane's release or status documentation. Neither
+certifies a production deployment (Section 5.1). Section 5.3 is the only place this charter states
+it.
+
+Prose that says `review-required` or `blocked` (for example Section 2.3) means the evidence states
+`ReviewRequired` and `Blocked` above.
 
 ---
 
@@ -1123,12 +1382,24 @@ Meridian.Documents
 ```
 
 These names are the bounded-context module target; every module has a physical project under
-`src/`. Project adaptation is tracked through
+`src/`. Physical conformance does not prove that every implementation has moved into its target
+owner: existing code remains in mapped layer-oriented projects until behavior-preserving
+extraction slices move it. The no-cross-owner-write rule is the normative boundary, not a claim
+of completed migration. Project adaptation is tracked through
 [`docs/architecture/design-document-adaptation.md`](../architecture/design-document-adaptation.md),
 with physical conformance in
 [`docs/architecture/design-module-conformance.md`](../architecture/design-module-conformance.md).
 New implementation work selects the bounded-context module first, then uses those maps to choose
 the physical project, current source owner, contracts, UI surface, and validation lane.
+
+The target covers only part of `src/`. Large capability projects sit outside it and are owned by a
+bounded context rather than by a module of the same name: `src/Meridian.Ledger/` and the F#
+calculation kernels (Financial Operations and Portfolio Records); `src/Meridian.Execution/`,
+`src/Meridian.Execution.Sdk/`, `src/Meridian.Risk/`, `src/Meridian.Strategies/`, and
+`src/Meridian.Backtesting/` (Trading & Execution and Research & Analytics, Section 7.3); and the
+Security Master under `src/Meridian.Application/SecurityMaster/` and `src/Meridian.Storage/SecurityMaster/`
+(Instrument, Contract & Obligation). Adding a module to this list requires a physical project and
+descriptor that the design-module validators can check; this charter does not add one by naming it.
 
 Each module carries:
 
@@ -1145,6 +1416,23 @@ Tests
 
 Other modules may read through published APIs, views, or events, but they must not directly write
 another module's owned records.
+
+### 12.3 Operational and Non-Functional Requirements
+
+These requirements hold for every supported production release. Where a target is not yet set,
+the gap is stated rather than filled with a guess; the readiness tracker
+([`docs/product/implementation-todo-list.md`](implementation-todo-list.md)) owns closure evidence.
+
+| Area | Requirement | Current state |
+| --- | --- | --- |
+| Supported deployment | One supported envelope at a time. v1 is a single-operator, single-company, single-node local workstation on Windows 11 x64 and .NET 10, installed through the desktop installer. It runs one Meridian host under an unelevated per-user lifecycle supervisor, with a dedicated local PostgreSQL where a domain requires it. Every other posture (remote `ProductionApi`, containers, systemd, multi-node, shared multi-tenant) must fail closed with a diagnostic naming the prohibited bindings. | Defined in ADR-019 (Proposed); typed posture validation exists in source. Sign-off is `PRD-000`. |
+| Recovery | Recovery point objective 3,600 seconds and recovery time objective 7,200 seconds, both proven by an evaluated drill receipt, not by archive durations. Backups are encrypted and authenticated, cover PostgreSQL and the full data root as one unit, and restore fail-closed into a clean target with overwritten data quarantined. | Automation exists; no receipt is yet `proven` on a release commit (`PRD-015`). |
+| Durability | Governed writes use the write-ahead log, atomic file writes, or a single database transaction. A canonical write and its audit or attribution record commit together or not at all. Append-only logs reject update, delete, and truncate. | In source across storage, ledger, and Security Master. Cleanups must never bypass these paths. |
+| Retention and legal hold | Every document, evidence item, audit event, and manifest carries a retention class (Section 6.16). Disposal honors the class, and a legal hold overrides disposal everywhere the held item appears. | Retention classes exist; **durations per class are not yet set** and must be defined, with owner approval, before a production release. |
+| Secrets | Secrets live only in credential references, encrypted at rest, scoped to tenant, connection, account, and environment, and never written to files, logs, manifests, or API responses. Non-Windows key protection uses an OS keyring or KMS. | Reopened for implementation (`PRD-002`). |
+| Authentication and tenancy | Authentication is required outside development and test. One company per isolated deployment until tenant partitioning is certified, and a request without resolvable tenant scope receives no data (Section 13). | Packaged builds default to required authentication; route-level coverage is `W9-GOV-008`. |
+| Certification | A release is certified only when every P0 row is complete on the same frozen commit, including a green Production Certification run with zero skipped tests and signed release artifacts. | CI and Production Certification green on `main` (Section 5.1); the release itself is blocked. |
+| Performance | Ingestion and pipeline throughput are measured against the benchmark budgets in `docs/engineering/pipeline-benchmark.md`. Operator-facing latency targets are **not yet set**. | Benchmark lane exists; interactive latency budgets remain an open gap. |
 
 ---
 
@@ -1207,9 +1495,14 @@ T?** Scoped access is recorded as governed `UserAccessAssignment` records bindin
 revocation evidence, and a linked audit event — maintained with optimistic concurrency and
 fail-closed behavior.
 
-Direction (`W9-GOV-008`): every mapped route carries an explicit authorization requirement;
+Requirement (`W9-GOV-008`): every mapped route declares its authorization requirement or documented
+open/permissionless boundary;
 segregation-of-duties and dual-approval checks are enforced on money-affecting paths (payment
 release, break closure, material journals), not advisory.
+
+Route-declaration ratchets, runtime mutation enforcement, scoped tenancy, and accounting-audit
+verification have bounded implementation evidence. Section 5.3 records the current acceptance;
+the source and retained verification receipts define the supported scope.
 
 ---
 
@@ -1354,10 +1647,15 @@ Engineering boundaries live in
 [`docs/architecture/core-extensibility-model.md`](../architecture/core-extensibility-model.md); the
 shared contract seam is `src/Meridian.Contracts/Extensibility/`.
 
-**Stable core objects** (consistent across tenants): Tenant, Entity, Relationship, Account,
+**Stable extension-contract objects** (consistent across tenants): Tenant, Entity, Relationship, Account,
 Instrument, Contract, Obligation, Expected Cash Flow, Transaction, Position, Valuation,
 Reconciliation, Exception, Capital Account, Ledger Account, Journal Entry, Fund Event, Document,
 Task, Report Package, Audit Event.
+
+This names the existing extension-contract vocabulary, not the entire conceptual domain model.
+Organization, Portfolio, Book, Period, Operational Event, and accounting book context remain
+first-class concepts in Section 10 and the canonical domain model. Adding a conceptual label
+does not silently add a contract enum, schema, or implementation.
 
 **Configurable areas**: workflows, rules, integrations and mapping profiles, report templates and
 schedules, permissions and scopes, classifications, custom fields, source priority, ledger controls
@@ -1430,7 +1728,7 @@ operator evidence are out of scope absent a roadmap decision.
 
 ## 22. Target Architecture and Product Wedge
 
-The durable architecture is a common financial core (~70% of the technology: multi-book ledger
+The target architecture is a common financial core (multi-book ledger
 records, positions, valuations, source vault, documents, workflows, reconciliations, reporting,
 data connections, evidence graph, governed permissions) with vertical packages:
 
@@ -1438,22 +1736,12 @@ data connections, evidence graph, governed permissions) with vertical packages:
 | --- | --- | --- |
 | Ledger, positions, valuations, vault, documents, workflows, reconciliations, reporting, connectors, evidence graph, permissions | Commitments, closings, allocations, equalization, waterfalls, carry, fees, partner capital accounts, NAV workflows, investor onboarding, statements, notices | Entity accounting, consolidations, eliminations, trusts, household views, intercompany activity, liquidity planning, liabilities, guarantees, advisor coordination |
 
-The authoritative ledger remains the financial source of truth. Object storage preserves raw
-payloads; an event bus distributes normalized business events; a columnar warehouse serves
-analytics; a graph projection supports ownership and evidence navigation; a search index supports
-discovery. The graph and warehouse are **projections, not competing books of record**.
-
-**Contract packs.** Assets and liabilities are economic contracts, not hard-coded product
-categories. The common spine defines identity, ownership, entity, book, evidence, lifecycle,
-valuation, accounting, reconciliation, permission, and reporting hooks; versioned packs define
-contract schema, lifecycle events, valuation methods, accounting rules, validations, and reporting
-taxonomy. Launch prefers wide capture and narrow automation.
-
-**Number Passport.** The signature evidence object for every balance, performance figure, capital
-account value, report total, dashboard metric, close variance, or liquidity forecast: amount,
-currency, book, basis, dates, underlying positions, journal entries, source records and documents,
-extracted fields, transformation and allocation rules, valuation methodology, reconciliation state,
-preparer/reviewer/approval history, period-over-period change, confidence, and freshness.
+The authoritative ledger remains the financial source of truth within its designated book scope.
+Target infrastructure roles are raw-payload retention in object storage, normalized business-event
+distribution, columnar analytics, ownership/evidence graph navigation, and search. These are
+architectural roles, not assertions that all components are deployed or independently required.
+The graph and warehouse are **projections, not competing books of record**; current composition and
+migration ownership follow Section 12.
 
 **Market-entry wedge.** The first packaged product is the **Close, Data and Evidence Control
 Tower**: entity and ownership graphs, asset/liability registry, document and source-data vault,
@@ -1464,7 +1752,148 @@ Stage two becomes the native accounting system (multi-book ledger, private-capit
 Stage three builds the ecosystem: connector SDK, certified asset packs, policy and report template
 marketplace, and controlled AI agents.
 
+The initial commercial evaluation centers on a financial-operations preparer and a Controller/CFO
+reviewing one entity/book/period from customer source intake through a reconciled close-support
+package. Inputs are retained source files, account mappings, opening balances, and an explicit
+designation of official versus shadow books. The acceptance artifact is a reviewable package with
+line-level proof and a truthful list of unresolved blockers; an incomplete package cannot be
+advertised as a completed close. This bounded workflow is the first proof of the broader Control
+Tower, not a claim that its full inventory ships at once.
+
+Product discovery must still select the first buyer segment from Section 3, validate source access
+and customer effort, and establish willingness to pay. Product owns that decision; domain owners
+and the operator sponsor own the bounded acceptance. No numerical onboarding target, pricing,
+competitive superiority, or segment preference is established without recorded evidence. Trading
+research and execution records support the operational proof chain; Meridian's first package does
+not promise broad OMS/EMS replacement.
+
 The north-star metric is **Verified Coverage** (Section 1.5).
+
+### 22.1 Number Passport
+
+The Number Passport is the signature evidence object behind every balance, performance figure,
+capital-account value, report total, dashboard metric, close variance, or liquidity forecast. It is
+one versioned contract, not a per-screen view. The first slice, for posted ledger amounts, is being
+built under `W10-PROV-001`; generalizing it to every amount surface is `W11-PASSPORT-001`.
+
+Minimal contract. Every passport carries:
+
+| Field group | Contents |
+| --- | --- |
+| Identity | Stable subject identifier and subject kind (ledger amount, report line, capital-account value, position valuation, metric), plus contract version |
+| Amount | Amount, currency, basis (book, tax, statutory), as-of date, and effective date |
+| Scope | The complete declared scope: tenant, organization, entity, fund, book, and period. A passport never infers scope from labels or names |
+| Status | Evidence status from Section 11.8 plus freshness (age against the governing policy) |
+| Lineage | Links to journal entries, source records and documents, extracted fields, transformation and allocation rules, and valuation methodology |
+| Control | Reconciliation state, accounting lifecycle stage (Section 11.8), and preparer, reviewer, and approval history |
+| Change | Period-over-period change computed from retained snapshots, never recomputed from current state |
+
+Invariants:
+
+* A passport is served through the subject-addressed evidence API, not a parallel endpoint family.
+  Both workstations open it through one shared component.
+* A passport whose subject, scope, or evidence cannot be resolved exactly is `ReviewRequired`,
+  `Blocked`, `Stale`, or `Missing` and names the broken link. It is never `Ready` by default.
+* A passport is read-only. Correcting the number goes through the owning workflow (a reversing or
+  adjusting journal, a governed override), and the passport then shows the correction chain.
+
+A passport identifies a financial subject, not merely a formatted amount. It binds immutable
+record/version identifiers to authenticated owner scope, book, basis, currency or unit, effective
+date, evaluated-as-of time, and the exact inputs/calculation versions. A ledger amount also binds
+journal, entry, and debit/credit side when it represents an individual entry amount, as in the
+bounded `W10-PROV-001` contract. Aggregate balances and report totals instead bind the contributing
+subject/version identifiers and aggregation/calculation version. Non-currency
+figures use an explicit unit and calculation basis. The passport is a composed proof view over
+owning records; it cannot become another ledger or approval authority.
+
+The accounting lifecycle and evidence assessment remain separate, using Section 11.8's
+canonical states. A posted journal remains `Posted` when changed evidence makes its current
+support `ReviewRequired`, `Blocked`, `Stale`, `Missing`, or `Unknown`. Verification for coverage
+requires `Ready` plus the other conditions in Section 1.5; it is not a new record lifecycle state.
+
+Each assessment retains policy version, evidence references/digests, evaluated record versions,
+reviewer authority, missing requirements, and its own timestamp. Changed inputs, expired evidence,
+revoked approval, or incomplete lineage require reassessment; unavailable dependency coverage
+cannot produce a clean verification claim. An entitled reader sees only permitted evidence, with
+restricted or omitted support identified without disclosing protected content.
+
+Published packages retain their frozen proof assessment and original inputs. Current operational
+freshness is shown separately; a later correction does not rewrite the original package or erase
+what was approved at release. Example: a corrected custodian statement arrives after publication.
+Retain both source versions, identify affected records and report lines, reassess current proof,
+and route any accounting correction and amendment/restatement through independent approval.
+Preserve original delivery and supersession links. Automated cross-record impact previews are a
+candidate in Section 25.3, not implied complete by this contract.
+
+### 22.2 Contract Packs
+
+Assets and liabilities are economic contracts, not hard-coded product categories. The common spine
+defines identity, ownership, entity, book, evidence, lifecycle, valuation, accounting,
+reconciliation, permission, and reporting hooks. Versioned packs define contract schema, lifecycle
+events, valuation methods, accounting rules, validations, and reporting taxonomy. Launch prefers
+wide capture and narrow automation.
+
+The path runs from the Security Master asset-class registry (Section 6.6). What it already has, and
+what a governed pack adds (`W11-PACK-001`):
+
+| Pack element | Registry today (supported foundation) | Governed pack adds |
+| --- | --- | --- |
+| Term schema and editors | One schema per asset class, typed conventions, schema-driven browser and WPF editors | Content-hashed pack version that records keep for life |
+| Lot units and cash-flow behavior | Owned by the class descriptor | Unchanged; carried into the pack |
+| Lifecycle events | Typed corporate-action families per event type | Declared per pack, with validations |
+| Projections and storage | Nine of eleven writers declarative | Writers bound to the pack version |
+| Valuation methods | Not carried | Declared methods with an approved default |
+| Accounting rules | Not carried | Bindings to posting rules and journal templates |
+| Reporting taxonomy | Not carried | Classification used by report packs |
+| Lifecycle | Compile-time table | `Draft → Tested → Reviewed → Approved → Active → Superseded → Retired` (Section 20), activation gated by pack tests and approval |
+
+Pack invariants: activating a new pack version never reinterprets existing records. Migrating
+records to a new version is an explicit, audited operation. The coverage tests that lock the
+registry to the F# `SecurityKind` union, validators, and storage writers extend to every active
+pack.
+
+### 22.3 Planned Direction
+
+Three capabilities the charter already promises have no specification yet. Each is a registered
+`planned` row (Section 5.3) and none may be described as shipped.
+
+**Verified Coverage view** (`W11-COVER-001`). A deterministic projection that computes Verified
+Coverage exactly as Section 1.5 defines it, per declared entity, book, and period. It shows the
+value and count figures together, with drill-through from every excluded item to the reason it is
+excluded. It reads Number Passports (22.1) and the unified close-readiness projection
+(`W10-SEAM-001`), and computes nothing locally in either workstation. It is the product form of the
+north-star metric and the live demo of the promise.
+
+**Shadow-mode onboarding** (`W11-SHADOW-001`). The entry posture of the Control Tower wedge and
+the lower-risk adoption claim in Section 1.4:
+
+1. A tenant, entity, or book is designated *shadow*. Shadow records are labeled wherever they
+   appear, cannot be published as the official record, and cannot release reports or payments as
+   the book of record.
+2. Opening balances import from the customer's general ledger or administrator with retained
+   source evidence and reconcile against Meridian's records with sided matching (Section 11.6),
+   producing a governed opening-balance reconciliation report.
+3. Each shadow period reconciles against the official books, and close readiness reports the
+   agreement.
+4. Promotion to official books is a recorded operator decision with the final reconciliation
+   attached, and is itself an audit event.
+
+**Stakeholder verification access** (`W11-STAKE-001`). The distribution wedge in Section 2.4. A
+grant binds one external principal (auditor, LP, trustee, advisor) to one delivered package version,
+with expiry, grantor, rationale, and an audit event, through the scoped-access model (Section 14).
+The recipient can drill read-only from a package line to its passport and retained evidence and
+sees nothing outside that frozen package, including later amendments unless separately granted.
+Every view and download is recorded on the package's delivery record. A grant can never approve,
+comment on, or change a governed record. This is deliberately narrower than the deferred broad
+client portal (Section 24).
+
+### 22.4 Direction Registration
+
+`DEC-CHARTER-DIRECTION-001` (2026-10-16) registered the direction above as wave W11, in this rank:
+`W11-PASSPORT-001`, `W11-COVER-001`, `W11-STAKE-001`, `W11-SHADOW-001`, `W11-PACK-001`,
+`W11-EXEC-001`. Registration is not implementation or acceptance. It does not reopen a deferred
+lane or precede production certification, and it leaves every W9 and W10 sequence and the
+operator-session plan unchanged.
 
 ---
 
@@ -1493,7 +1922,7 @@ shared manual journal entry workbench over retained private-capital fund events.
 full alternative asset operations; forecasting and enterprise risk engines; proof-layer expansion
 beyond the accepted W5X control-center boundary; complex capital structure modeling; full client
 portal; no-code workflow designer; full live-trading readiness; Backtesting Studio beyond
-evidence linking; mobile applications.
+evidence linking. Mobile applications remain a **closed lane**, not a sequenced expansion item.
 
 **Why this slice works** — it proves the core value chain:
 
@@ -1512,15 +1941,22 @@ Fragmented data
 
 ## 24. Roadmap Alignment, Scope Gates, and Claim Rules
 
-**Canonical truth order:** `docs/roadmap/data/*.yml` → `docs/roadmap/generated/*` → this design
-charter → `docs/product/README.md`. Execution, evidence, and readiness status belongs in
-`docs/product/implementation-todo-list.md`, not in this document.
+**Authority follows the question**, as defined in the [Product index](README.md#canonical-product-truth-order):
+
+| Question | Owning source |
+| --- | --- |
+| Product intent, invariants, and candidate design | This charter; candidates do not establish adopted delivery scope |
+| Delivery state, acceptance, sequencing, and adopted scope | `docs/roadmap/data/*.yml`; generated views are derived from it |
+| Release-readiness execution and P0 evidence | [Implementation and Readiness Tracker](implementation-todo-list.md) |
+| Implemented behavior and physical ownership | Owning source, tests, and [source documentation mesh](../source/README.md) |
+| Historical rationale and evaluation inputs | Dated product reviews and plans; recheck against current evidence |
 
 **Active scope gate.** A capability belongs in active scope when current source evidence, roadmap
 status, or user direction supports it. New work must strengthen data confidence, reconciliation,
 approvals, accounting records, close support, retained evidence, workflow controls, or governed
 reporting before expanding research, live trading, payments, forecasting, risk, portal,
-workflow-designer, mobile, or scale-out lanes. Prior baselines are sequencing anchors and evidence,
+workflow-designer, or scale-out lanes. Mobile remains closed unless explicitly reopened through
+its separate roadmap decision. Prior baselines are sequencing anchors and evidence,
 not development ceilings — but under the activation doctrine (Section 2.1), expansion competes
 against activation and activation usually wins.
 
@@ -1530,6 +1966,8 @@ against activation and activation usually wins.
 * *Supported foundation / experimental* — named in this charter with supporting source or design
   artifacts, no acceptance gate yet.
 * *Planned* — registry state explicit; never presented as shipped.
+* *Candidate* — proposed design only; neither adopted scope nor a roadmap status. Adoption requires
+  an owning lane, bounded outcome, dependencies, exit criteria, and evidence in a registry row.
 * Roadmap acceptance is bounded to the named capability; release claims additionally require the
   P0 tracker, packaging, operator preflight, and required GitHub Actions evidence on one commit.
 
@@ -1538,9 +1976,14 @@ evidence defined in `docs/product/deferred-expansion-boundaries.md`): native liv
 execution; full alternative-asset operations beyond the accepted multi-asset baseline; enterprise
 risk; forecasting and scenario engines; complex capital-structure modeling; broad administration
 dashboards; broader self-service reporting and analytics beyond the governed platform baseline
-(`W9-REPORT-005` client-grade output is delivered and accepted; what remains deferred is self-service reporting and analytics beyond it); broad client portal; no-code workflow
+(`W9-REPORT-005` client-grade output is delivered; what remains deferred is self-service reporting and analytics beyond it); broad client portal; no-code workflow
 designer; document-portal collaboration beyond the Evidence Vault boundary; broad collaboration
 tooling; mobile (closed).
+
+**Planned direction is not reopened scope.** The W11 rows (Section 22.4) are bounded so they do
+not reopen a deferred lane: `W11-STAKE-001` grants read-only access to one delivered package and is
+not the broad client portal; `W11-SHADOW-001` reconciles against the customer's books and moves no
+money; `W11-PACK-001` governs packs for already-modeled classes and adds no asset-operations lane.
 
 **Prohibited as scope creep** from external inspiration: full cap-table system, outsourced services
 operation, live payment processor, broad investor portal, autonomous-agent workflows bypassing
@@ -1559,8 +2002,25 @@ and truth-discipline doctrines motivated by the 2026-07 adversarial program revi
 enter through the roadmap registry, never through this document alone. Detailed execution tracking
 stays in [`docs/product/implementation-todo-list.md`](implementation-todo-list.md).
 
-Version 1.1 keeps the same discipline: it refreshes registry facts to snapshot 2026-09-28 and adds
+Version 1.1 kept the same discipline: it refreshed registry facts to snapshot 2026-09-28 and added
 the W10 depth slate only as already-registered rows mapped to existing invariants.
+
+Version 1.2 is a status and measurement refresh with no new product scope. It moves to the
+2026-10-14 program snapshot, re-measures the foundation, and records unregistered Security Master
+foundation work as a supported foundation rather than a delivered capability.
+
+Version 1.3 is the first version since 0.25 to add direction. It does so only through rows
+registered in the same change (`DEC-CHARTER-DIRECTION-001`), so the charter still never adds scope
+on its own. It also restructures the charter so status lives in one table (Section 5.3), metrics
+have exact definitions (Section 1.5), and the shared state vocabulary (Section 11.8) and
+operational requirements (Section 12.3) are written down.
+
+Version 1.4 preserves Version 1.3's registered W11 direction, metric definitions, state vocabulary,
+and operational targets while clarifying financial authority, measurement safeguards, domain
+ownership, and operator acceptance. Six complementary design candidates extend exploration without
+changing adopted scope, ranking, or acceptance. Synchronize the
+[adaptation map](../architecture/design-document-adaptation.yml) when versions or referenced
+sections change, and validate versions, anchors, and local links alongside the design validators.
 
 The superseded Version 0.25 text — including the Executive Marketecture Deck and the v0.15–v0.20
 addenda in their original form — is preserved at
@@ -1583,4 +2043,188 @@ addenda in their original form — is preserved at
 | 0.24 | WPF product/UI work marked deferred |
 | 0.25 | WPF desktop workstation reactivated as a co-equal lane focused on web-UI parity (`W8-WPF-PARITY-001`), superseding all earlier WPF-deferral statements |
 | 1.0 | Ground-up rewrite: proven-numbers value proposition; activation-over-expansion, proven-slice, and truth-discipline doctrines; W9 slate and current registry posture incorporated; structure consolidated from 27 sections to 25 with all normative invariants preserved |
-| **1.1** | **Registry refresh to snapshot 2026-09-28: W9 acceptance decisions (`DEC-W9-ACCEPTANCE-001`–`005`, `DEC-W9-DONE-001`) reflected; W10 depth slate added as Section 2.6 and mapped to charter invariants; reading guide, normative-word convention, and accepted-vs-done vocabulary added. No new product scope** |
+| 1.1 | Registry refresh to snapshot 2026-09-28: W9 acceptance decisions (`DEC-W9-ACCEPTANCE-001`–`005`, `DEC-W9-DONE-001`) reflected; W10 depth slate added as Section 2.6 and mapped to charter invariants; reading guide, normative-word convention, and accepted-vs-done vocabulary added. No new product scope |
+| 1.2 | Refresh to program snapshot 2026-10-14: `W10-PROV-001` and `W10-JRNL-001` now in progress alongside MARK, SEAM, and LOT; W10 statuses shown in Section 2.6; `W10-CONSOL-001` first slice noted while the row stays planned; production-readiness baseline updated (CI and Production Certification green on `e0ecd952`, release still blocked); scale table re-measured 2026-10-16 with the counting basis stated; registry-driven Security Master asset-class foundation recorded in Sections 2.1, 5.5, 6.6, and 22 as unregistered; Strategy Designer note updated for the `PRD-020` fail-closed live source. No new product scope |
+| 1.3 | Structure and direction: registry status consolidated into one table (Section 5.3) and removed from Sections 2.1, 2.6, and 5.5; exact formulas, scope, owners, and implementing rows for all five north-star metrics (1.5); Trading & Execution added as a bounded context, with projects outside the module target named (7.1, 7.3, 8, 9, 12.1); MVP "Later" clarified against shipped evidence, and Home Dashboard marked cross-cutting (9); canonical state vocabulary (11.8); operational and non-functional requirements (12.3); Number Passport minimal contract (22.1), contract-pack path (22.2), and planned Verified Coverage view, shadow-mode onboarding, and stakeholder verification access (22.3), registered as W11 rows under `DEC-CHARTER-DIRECTION-001` (22.4) |
+| **1.4** | **Integrated clarification and complementary design: financial authority, measurement safeguards preserving W11 formulas, domain ownership, interaction acceptance, and retained passport proof; six bounded capability candidates with dependencies and acceptance scenarios. Existing W9/W10/W11 direction and acceptance preserved** |
+
+### 25.3 Complementary Capability Candidates
+
+These six capabilities extend the value of existing records, evidence, and workflows. They are
+**design candidates for evaluation**, not adopted roadmap scope, scheduled work, or implemented
+capability claims. Before implementation, an adopted candidate needs a registry row with its owning
+lane, bounded outcome, dependencies, exit criteria, and required evidence. Any deferred product
+area also needs its explicit reopening decision. A cited foundation may itself be incomplete:
+reuse of its contracts does not bypass its acceptance gates.
+
+All candidates use the existing seven workspaces, shared domain services and read models, and
+browser/WPF-specific acceptance evidence. They do not expand the current single-company/local
+release envelope in Section 12.3 or authorize remote multi-tenant access. They preserve scoped access, evidence retention,
+independent approval, posted immutability, and deterministic financial calculations. None confers
+new posting, payment, report-release, or cross-tenant authority. Before adopting a candidate,
+inspect current source for already-delivered portions and register only the incremental outcome.
+
+#### 25.3.1 Correction Impact and Remediation Preview
+
+**Operator outcome:** see what a corrected source, mapping, or approved accounting rule version
+would affect before accepting the change. From `Data`, `Accounting`, or an existing proof drawer,
+inspect affected reconciliations, posting candidates, journals, approvals, close checks, report
+lines, and delivered packages, with responsible owners and required next actions.
+
+**Composition and boundary:** build on the explorer's existing usage/impact links (`W5X-FREX-001`),
+ledger-amount proof (`W10-PROV-001`), generalized passports (`W11-PASSPORT-001`), and
+evidence-graph projections (`W5X-OEG-001`). The increment
+is a retained, version-bound preview and downstream reassessment workflow, not a second graph.
+Financial Operations owns remediation; each source domain retains its own transition authority.
+Start with a corrected statement affecting one book/period and one report package.
+
+**Acceptance scenario:** after publication, a corrected statement produces a preview binding old
+and replacement versions, affected records, coverage limits, and proposed actions. Accepting the
+source correction marks affected open work for reassessment while preserving the published
+package. Accounting correction and package amendment remain separately approved. A changed
+dependency or permission invalidates the preview; missing lineage is explicit, never "no impact."
+The preview cannot automatically reverse journals, reopen periods, post, or reissue packages.
+
+**Adoption decision:** establish the supported dependency coverage and materiality policy with
+Financial Operations and Reporting before claiming a complete impact assessment.
+
+#### 25.3.2 Close Dependency Worklist
+
+**Operator outcome:** identify the next eligible action and which close/report outputs it would
+unblock, within the existing `Accounting` close cockpit. Show owners, due dates, prerequisite
+evidence, and why an apparently urgent action cannot yet proceed.
+
+**Composition and boundary:** deepen the accepted Financial Operations queues/calendars
+(`W5X-FINOPS-001`) and shared close-readiness contract (`W10-SEAM-001`). Add dependency-aware
+ordering and revalidation, not another readiness score, generic workflow designer, or promise of
+a predicted completion time. Financial Operations owns the projection; Workflow owns routing.
+Begin with declared import → reconciliation → review → package dependencies for one close.
+
+**Acceptance scenario:** a missing statement blocks reconciliation and package release. The
+worklist identifies the permitted source request, names affected outputs, and recomputes after
+retained evidence arrives. Cycles, missing contributors, stale assessments, and ambiguous scope
+remain visible blockers. Completion of a prerequisite never grants approval of its dependants.
+Retain dependency/policy versions and the observations behind each recommendation. Any displayed
+coverage reuses `W11-COVER-001`; the worklist does not calculate a competing metric.
+
+**Adoption decision:** select explicit dependency rules and a representative close dataset; prove
+that ordering uses the same readiness truth as both workstations and the release checks.
+
+#### 25.3.3 Evidence-Backed Balance Variance Bridges
+
+**Operator outcome:** explain the movement between two retained balance snapshots in `Reporting`
+and `Accounting`, with drill-through from each explained component to its supporting records.
+Show posted activity, supported valuation/FX movements, approved and posted adjustments, and an explicit
+unexplained residual rather than substituting plausible narrative for missing support.
+
+**Composition and boundary:** reuse immutable journals, frozen report versions, deterministic
+calculations, and Number Passports (`W11-PASSPORT-001`). Valuation components depend on supported mark policy
+(`W10-MARK-001`). Reporting composes the bridge; Ledger and valuation owners supply the amounts.
+Start with one comparable account/book/basis and currency. This explains balance changes; it does
+not duplicate return calculation (`W10-PERF-001`) or introduce performance attribution/forecasting.
+Unposted adjustments belong in a separately labeled preview, outside an official-balance bridge.
+
+**Acceptance scenario:** opening balance 1,000 and closing balance 1,120 have supported net
+activity of 100. The bridge shows `1,000 + 100 + 20 unexplained = 1,120`; the residual remains a
+review item. The same retained inputs reproduce the same components and total. Declare dates,
+scope, currency, basis, sign convention, and rounding; prevent double counting across components.
+Incomparable bases or unavailable FX block the affected comparison. AI may draft commentary from
+the computed bridge, but cannot manufacture amounts or certify the residual.
+
+**Adoption decision:** agree the first accounting identity and component taxonomy, the treatment
+of corrections and rounding, and the evidence required to call a component explained.
+
+#### 25.3.4 Close and Exception Handover Packets
+
+**Operator outcome:** transfer responsibility across preparers, reviewers, shifts, or
+administrator/CFO teams without losing unresolved judgments. In existing `Accounting` and
+`Reporting` views, retain scope, open items, due dates, evidence links, outgoing/incoming owners,
+and acknowledgement of the exact transferred version.
+
+**Composition and boundary:** extend Section 4's evidence packets and RACI, FINOPS assignment/audit
+controls, and the shared readiness projection (`W10-SEAM-001`). Financial Operations owns the
+handover workflow. The increment is a versioned continuity record, not a new approval system,
+messaging platform, or production-certification process. Begin with one incomplete period close.
+
+**Acceptance scenario:** the receiving operator acknowledges a packet naming two unresolved
+exceptions. Later material activity makes that acknowledgement stale and requires a new retained
+version. The original ownership and acknowledgement history remain inspectable. Only eligible
+principals may receive assignments; a handover never inherits the outgoing user's permissions,
+approves their work, removes blockers, or releases a report. Missing acknowledgement remains visible.
+The outgoing owner remains responsible until the acknowledged assignment is committed; revising
+a packet cannot orphan existing case ownership.
+
+**Adoption decision:** define material-change triggers, escalation timing, and acknowledgement
+responsibilities without confusing operational continuity with accounting sign-off.
+
+#### 25.3.5 Contract-to-Cash Obligation Monitoring
+
+**Operator outcome:** follow an approved contractual due item from expected amount through actual
+receipt/payment evidence, partial settlements, remaining obligation, lateness, and exception owner.
+Use the existing `Portfolio` instrument detail and `Accounting` casework surfaces.
+
+**Composition and boundary:** connect Section 6.6's contracts, obligations, and supported schedule
+calculations to Section 11.6's expected-to-actual reconciliation and retained bank evidence.
+Instruments owns the contractual expectation; Financial Operations owns reconciliation and cases.
+Start with one already-supported fixed coupon or loan-interest obligation class, chosen after
+source review. This adds an obligation-discharge workflow, not payment execution or a new forecast
+engine. An expected amount is never presented as received cash or a posted accrual.
+
+**Acceptance scenario:** a 100 obligation receives 60 in confirmed evidence; show 40 outstanding
+and the governing due-date/calendar rule. Duplicate intake cannot settle another 60. An approved
+term amendment preserves the original schedule and reassesses affected open items with version
+and approval history. Disputed cash, unsupported terms/calendars, missing FX, and unidentified
+payments remain unresolved. No synthetic receipt, automatic posting, or bank release is allowed.
+
+**Adoption decision:** choose the supported obligation class, matching/allocation rules, settlement
+finality criteria, and treatment of amendments, reversals, and overpayments.
+
+#### 25.3.6 Portable Scoped Proof Verification
+
+**Operator outcome:** let an authorized recipient verify the included evidence for a frozen report
+package without broad workstation access. `Reporting` prepares a recipient-scoped bundle with
+the report version, included-file manifest/digests, calculation references, disclosed omissions,
+verification instructions, and export audit record.
+
+**Composition and boundary:** extend governed stakeholder access (`W11-STAKE-001`), Evidence
+Vault manifests, and evidence-graph export (`W5X-OEG-001`). Reporting owns packaging; Identity and Document owners enforce
+recipient permission and disclosure policy. The addition is a documented verification procedure
+and completeness/disclosure contract, not a new investor portal or another evidence store.
+Begin with one report package and its permitted retained support.
+
+**Acceptance scenario:** a recipient can reproduce manifest checks, detect an altered or missing
+included artifact, and distinguish deliberately omitted/restricted support from a complete proof
+chain. A digest proves integrity relative to the manifest, not the manifest's origin; the design
+must specify an authenticated manifest delivery or signature-verification mechanism before
+claiming authenticity. Recheck scope and permissions before export; record permitted redactions
+without changing the original retained evidence.
+
+Offline verification establishes a dated snapshot's integrity within its stated coverage. It does
+not prove present freshness, current permission, or continuing correctness of the source facts.
+Hosted-grant revocation blocks hosted views and new downloads immediately. Previously downloaded
+files cannot be described as remotely revocable, and offline views cannot automatically satisfy
+the hosted every-view audit requirement of `W11-STAKE-001`. Missing calculation inputs
+limit reproducibility and must be disclosed rather than hidden behind a successful hash check.
+
+**Adoption decision:** agree supported verification tooling, manifest authenticity, recipient
+disclosure rules, and the limits of offline verification with Reporting and security owners.
+Adopt an explicit offline-export boundary before implementation; do not weaken the registered
+hosted revocation/audit requirements or claim this candidate completes `W11-STAKE-001`.
+
+#### 25.3.7 Combined Workflow and Evaluation Order
+
+One late or partial contractual receipt can create a reconciliation case; a corrected statement
+can then trigger an impact preview, reprioritize the close dependency worklist, change the balance
+bridge, and require a revised handover. After independent review and governed release, the scoped
+proof bundle lets the recipient inspect the retained result. The same identities, versions, and
+evidence connect these steps; none bypasses the owning domain's controls.
+
+Evaluate correction impact and close dependency work first, then variance bridges and handovers;
+evaluate obligation monitoring and portable verification when their source and permission
+dependencies are demonstrated. This is a proposed discovery order, not a change to W9/W10/W11 ranking
+or an engineering schedule. Product and owning lanes must record adoption separately.
+
+For each evaluation, retain one representative operator scenario, current-source overlap review,
+failure/permission cases, browser/WPF acceptance scope, and the intended improvement to Section
+1.6's measures. Do not invent percentage gains. Generic tolerance replay and learned-rule promotion
+remain with `W10-RECON-003` and `W10-RECON-004`; they are dependencies to reuse, not new candidates.

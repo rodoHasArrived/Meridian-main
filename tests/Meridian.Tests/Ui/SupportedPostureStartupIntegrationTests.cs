@@ -347,9 +347,15 @@ public sealed class SupportedPostureStartupIntegrationTests
 
             Action act = () => _ = new UiServer(configPath, port: 0, apiHostOptions: options);
 
-            act.Should().Throw<InvalidOperationException>()
+            var refusal = act.Should().Throw<InvalidOperationException>()
                 .WithMessage("*rejected non-production DI registrations*")
                 .WithMessage("*InMemory*");
+            if (!OperatingSystem.IsWindows())
+            {
+                // ADR-019 platform fail-closed: the real host, undeclared, reports the running OS
+                // and refuses the production posture outside the Windows envelope in the same message.
+                refusal.WithMessage("*rejected the host platform for posture 'ProductionApi'*ADR-019*");
+            }
         }
         finally
         {

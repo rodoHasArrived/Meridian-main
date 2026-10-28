@@ -147,6 +147,17 @@ public sealed class YahooFinanceHistoricalDataProvider : BaseHistoricalDataProvi
         var period2 = to.HasValue
             ? new DateTimeOffset(to.Value.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero).ToUnixTimeSeconds()
             : DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+        // Exchange metadata arrives with the response. Fetch a UTC day on either
+        // side of daily date bounds so positive-offset sessions (such as Sydney)
+        // are not excluded before we can filter by their exchange-local date.
+        if (interval == "1d")
+        {
+            if (from.HasValue && from.Value > DateOnly.MinValue)
+                period1 -= (long)TimeSpan.FromDays(1).TotalSeconds;
+            if (to.HasValue && to.Value < DateOnly.MaxValue)
+                period2 += (long)TimeSpan.FromDays(1).TotalSeconds + 1;
+        }
         var url =
             $"{ApiBaseUrl}/{Uri.EscapeDataString(normalizedSymbol)}?period1={period1}&period2={period2}&interval={interval}&includePrePost={includePrePost.ToString().ToLowerInvariant()}";
         return includeEvents ? $"{url}&events=div,splits" : url;
@@ -165,7 +176,7 @@ public sealed class YahooFinanceHistoricalDataProvider : BaseHistoricalDataProvi
 
         for (var i = 0; i < timestamps.Length; i++)
         {
-            var sessionDate = DateOnly.FromDateTime(DateTimeOffset.FromUnixTimeSeconds(timestamps[i]).Date);
+            var sessionDate = GetExchangeLocalDate(DateTimeOffset.FromUnixTimeSeconds(timestamps[i]), chartResult.Meta);
             if (from.HasValue && sessionDate < from.Value)
                 continue;
             if (to.HasValue && sessionDate > to.Value)
@@ -556,7 +567,27 @@ public sealed class YahooFinanceHistoricalDataProvider : BaseHistoricalDataProvi
     }
 
     private static DateOnly GetExchangeLocalDate(DateTimeOffset timestamp, YahooMeta? meta)
-        => GetExchangeLocalDate(timestamp, meta?.GmtOffset);
+    {
+        var exchangeTimezoneName = meta?.ExchangeTimezoneName;
+        if (!string.IsNullOrWhiteSpace(exchangeTimezoneName))
+        {
+            try
+            {
+                var exchangeTimeZone = TimeZoneInfo.FindSystemTimeZoneById(exchangeTimezoneName);
+                return DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(timestamp, exchangeTimeZone).DateTime);
+            }
+            catch (TimeZoneNotFoundException)
+            {
+                // Older payloads and hosts may only support the supplied UTC offset.
+            }
+            catch (InvalidTimeZoneException)
+            {
+                // Fall back to the provider offset when zone rules are unavailable.
+            }
+        }
+
+        return GetExchangeLocalDate(timestamp, meta?.GmtOffset);
+    }
 
     private static DateOnly GetExchangeLocalDate(DateTimeOffset timestamp, long? offsetSeconds)
     {
@@ -673,6 +704,9 @@ public sealed class YahooFinanceHistoricalDataProvider : BaseHistoricalDataProvi
 
     private sealed class YahooMeta
     {
+        [JsonPropertyName("exchangeTimezoneName")]
+        public string? ExchangeTimezoneName { get; set; }
+
         [JsonPropertyName("gmtoffset")]
         public long? GmtOffset { get; set; }
 

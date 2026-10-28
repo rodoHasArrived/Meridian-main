@@ -162,6 +162,9 @@ public sealed partial class PostgresLedgerJournalStore
         LedgerTaxLotRecord? capitalReturnLot = null;
         if (command.MutationKind == AtomicTaxLotMutationKind.CapitalReturn)
             capitalReturnLot = await LockCapitalReturnAuthorityAsync(connection, transaction, command, ct).ConfigureAwait(false);
+        IReadOnlyList<LedgerTaxLotRecord>? factorPaydownLots = null;
+        if (command.MutationKind == AtomicTaxLotMutationKind.FactorPaydown)
+            factorPaydownLots = await LockFactorPaydownAuthorityAsync(connection, transaction, command, ct).ConfigureAwait(false);
         // LockAmortizationAuthorityAsync has already checked the immutable original receipt,
         // exact inverse lines and current reference hash before this private exception is set.
         await AppendJournalWithinTransactionAsync(connection, transaction, command.Journal, ct,
@@ -191,6 +194,14 @@ public sealed partial class PostgresLedgerJournalStore
             var mutation = await ApplyCapitalReturnAsync(connection, transaction, command, capitalReturnLot!, recordedAt, ct)
                 .ConfigureAwait(false);
             await InsertTaxLotMutationAsync(connection, transaction, mutation, ct).ConfigureAwait(false);
+        }
+        else if (command.MutationKind == AtomicTaxLotMutationKind.FactorPaydown)
+        {
+            var mutations = await ApplyFactorPaydownAsync(connection, transaction, command, factorPaydownLots!, recordedAt, ct)
+                .ConfigureAwait(false);
+            ValidateAtomicJournalLotEconomics(command, mutations);
+            foreach (var mutation in mutations)
+                await InsertTaxLotMutationAsync(connection, transaction, mutation, ct).ConfigureAwait(false);
         }
         else if (command.MutationKind == AtomicTaxLotMutationKind.CorporateAction)
         {
@@ -389,6 +400,10 @@ public sealed partial class PostgresLedgerJournalStore
             && (normalizedJournal.PostingCommand?.LotCapitalReturn is not null
                 || normalizedJournal.Entry.Metadata.Tags?.ContainsKey(OpenLotCapitalReturn.JournalFingerprintTag) == true))
             throw new LedgerValidationException("Capital-return journals require a capital-return mutation batch.");
+        if (command.MutationKind != AtomicTaxLotMutationKind.FactorPaydown
+            && (normalizedJournal.PostingCommand?.LotFactorPaydown is not null
+                || normalizedJournal.Entry.Metadata.Tags?.ContainsKey(OpenLotFactorPaydown.JournalFingerprintTag) == true))
+            throw new LedgerValidationException("Factor-paydown journals require a factor-paydown mutation batch.");
         _ = ResolveAtomicAssetScope(normalizedJournal);
         var normalizedCommand = command with
         {
@@ -423,6 +438,10 @@ public sealed partial class PostgresLedgerJournalStore
         {
             ValidateAtomicCapitalReturn(normalizedCommand);
         }
+        else if (command.MutationKind == AtomicTaxLotMutationKind.FactorPaydown)
+        {
+            ValidateAtomicFactorPaydown(normalizedCommand);
+        }
         else
         {
             throw new LedgerValidationException(
@@ -435,6 +454,8 @@ public sealed partial class PostgresLedgerJournalStore
             throw new LedgerValidationException("Only corporate-action batches may retain successor inputs.");
         if (command.MutationKind != AtomicTaxLotMutationKind.CapitalReturn && command.CapitalReturn is not null)
             throw new LedgerValidationException("Only capital-return batches may retain capital-return inputs.");
+        if (command.MutationKind != AtomicTaxLotMutationKind.FactorPaydown && command.FactorPaydown is not null)
+            throw new LedgerValidationException("Only factor-paydown batches may retain factor-paydown inputs.");
         return normalizedCommand with
         {
             DisposalSelections = disposalSelections
@@ -457,6 +478,9 @@ public sealed partial class PostgresLedgerJournalStore
 
         if (lot.BasisAdjustment is not null)
             throw new LedgerValidationException("Atomic acquisition cannot introduce a basis adjustment; use a governed basis mutation.");
+
+        if (lot.CurrentFactor is not null)
+            throw new LedgerValidationException("Atomic acquisition opens a lot at its booked factor; a paydown factor is applied by a governed lot mutation.");
 
         ArgumentNullException.ThrowIfNull(lot.Account);
         if ((lot.Acquisition?.Direction ?? OpenLotDirection.Long) != command.Direction)
@@ -659,7 +683,8 @@ public sealed partial class PostgresLedgerJournalStore
                    security_id,
                    book_position_id,
                    corporate_action_instruction::text,
-                   capital_return_instruction::text
+                   capital_return_instruction::text,
+                   factor_paydown_instruction::text
             from {Qualified("atomic_tax_lot_posting_batches")}
             where mutation_batch_id = @mutation_batch_id
                or journal_entry_id = @journal_entry_id
@@ -865,7 +890,8 @@ public sealed partial class PostgresLedgerJournalStore
                    booked_factor,
                    par_basis,
                    acquisition_terms,
-                   basis_adjustment
+                   basis_adjustment,
+                   current_factor
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and tax_lot_record_id = any(@tax_lot_record_ids)
@@ -918,7 +944,7 @@ public sealed partial class PostgresLedgerJournalStore
               and account_name = @account_name
               and account_type = @account_type
               and symbol is not distinct from @symbol
-              and financial_account_id is not distinct from @financial_account_id
+              and lower(financial_account_id) is not distinct from lower(@financial_account_id)
               and effective_date <= @effective_date
             order by effective_date desc, updated_at desc, policy_id desc, policy_record_id desc
             limit 1
@@ -973,12 +999,13 @@ public sealed partial class PostgresLedgerJournalStore
                    booked_factor,
                    par_basis,
                    acquisition_terms,
-                   basis_adjustment
+                   basis_adjustment,
+                   current_factor
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and account_name = @account_name
               and account_type = @account_type
-              and financial_account_id is not distinct from @financial_account_id
+              and lower(financial_account_id) is not distinct from lower(@financial_account_id)
               and ((security_id = @security_id and book_position_id = @book_position_id)
                    or security_id is null or security_id = '00000000-0000-0000-0000-000000000000'::uuid
                    or book_position_id is null or book_position_id = '00000000-0000-0000-0000-000000000000'::uuid)
@@ -1044,7 +1071,8 @@ public sealed partial class PostgresLedgerJournalStore
                 proceeds_allocation_version,
                 disposal_sale_price,
                 corporate_action_instruction,
-                capital_return_instruction)
+                capital_return_instruction,
+                factor_paydown_instruction)
             values (
                 @mutation_batch_id,
                 @ledger_book_id,
@@ -1065,7 +1093,8 @@ public sealed partial class PostgresLedgerJournalStore
                 @proceeds_allocation_version,
                 @disposal_sale_price,
                 @corporate_action_instruction,
-                @capital_return_instruction);
+                @capital_return_instruction,
+                @factor_paydown_instruction);
             """;
         AddAtomicBatchIdentityParameters(insert, command);
         insert.Parameters.AddWithValue("period_id", command.Journal.PeriodId);
@@ -1091,6 +1120,8 @@ public sealed partial class PostgresLedgerJournalStore
             ? DBNull.Value : JsonSerializer.Serialize(command.CorporateAction, JsonOptions);
         insert.Parameters.Add("capital_return_instruction", NpgsqlDbType.Jsonb).Value = command.CapitalReturn is null
             ? DBNull.Value : JsonSerializer.Serialize(command.CapitalReturn, JsonOptions);
+        insert.Parameters.Add("factor_paydown_instruction", NpgsqlDbType.Jsonb).Value = command.FactorPaydown is null
+            ? DBNull.Value : JsonSerializer.Serialize(command.FactorPaydown, JsonOptions);
         await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
@@ -1144,7 +1175,8 @@ public sealed partial class PostgresLedgerJournalStore
                 booked_factor,
                 par_basis,
                 acquisition_terms,
-                basis_adjustment)
+                basis_adjustment,
+                current_factor)
             values (
                 @tax_lot_record_id,
                 @ledger_book_id,
@@ -1171,7 +1203,8 @@ public sealed partial class PostgresLedgerJournalStore
                 @booked_factor,
                 @par_basis,
                 @acquisition_terms,
-                @basis_adjustment)
+                @basis_adjustment,
+                @current_factor)
             returning tax_lot_record_id,
                       ledger_book_id,
                       account_name,
@@ -1197,7 +1230,8 @@ public sealed partial class PostgresLedgerJournalStore
                       booked_factor,
                       par_basis,
                       acquisition_terms,
-                      basis_adjustment;
+                      basis_adjustment,
+                      current_factor;
             """;
         AddAtomicTaxLotParameters(insert, acquired);
         AddBasisAdjustmentParameter(insert, acquired.BasisAdjustment);
@@ -1288,7 +1322,8 @@ public sealed partial class PostgresLedgerJournalStore
                       booked_factor,
                       par_basis,
                       acquisition_terms,
-                      basis_adjustment;
+                      basis_adjustment,
+                      current_factor;
             """;
         update.Parameters.AddWithValue("tax_lot_record_id", selection.TaxLotRecordId);
         update.Parameters.AddWithValue("ledger_book_id", command.LedgerBookId);
@@ -1417,6 +1452,18 @@ public sealed partial class PostgresLedgerJournalStore
                 || assetLines[0].Debit != Math.Max(movement, 0m) || assetLines[0].Credit != Math.Max(-movement, 0m))
                 throw new LedgerValidationException("Amortization journal asset movement must exactly equal the canonical lot carrying-basis change.");
             ValidateAmortizationAssetCurrency(command, assetLines[0]);
+            return;
+        }
+        if (command.MutationKind == AtomicTaxLotMutationKind.FactorPaydown)
+        {
+            // The carrying credit is the functional basis relieved across every paid-down lot, not
+            // the principal; a scope whose lots already carry no basis relieves nothing and books no
+            // carrying line, so the whole principal is realized.
+            if (expectedCostBasis < 0m || (expectedCostBasis == 0m
+                    ? assetLines.Length != 0
+                    : assetLines.Length != 1 || assetLines[0].Credit != expectedCostBasis || assetLines[0].Debit != 0m))
+                throw new LedgerValidationException(
+                    "Factor-paydown journal requires one exact carrying-account credit equal to the functional basis relieved across the paid-down lots.");
             return;
         }
         var hasExpectedMovement = assetLines.Length == 1 &&
@@ -1567,7 +1614,8 @@ public sealed partial class PostgresLedgerJournalStore
                    booked_factor,
                    par_basis,
                    acquisition_terms,
-                   basis_adjustment
+                   basis_adjustment,
+                   current_factor
             from {Qualified("tax_lots")}
             where tax_lot_record_id = @tax_lot_record_id
               and ledger_book_id = @ledger_book_id
@@ -1625,7 +1673,8 @@ public sealed partial class PostgresLedgerJournalStore
             batch.ReliefMethod,
             batch.PolicyRevision,
             batch.CorporateAction,
-            batch.CapitalReturn);
+            batch.CapitalReturn,
+            batch.FactorPaydown);
     }
 
     private async Task<StoredAtomicTaxLotBatch?> LoadAtomicTaxLotBatchAsync(
@@ -1655,7 +1704,8 @@ public sealed partial class PostgresLedgerJournalStore
                    security_id,
                    book_position_id,
                    corporate_action_instruction::text,
-                   capital_return_instruction::text
+                   capital_return_instruction::text,
+                   factor_paydown_instruction::text
             from {Qualified("atomic_tax_lot_posting_batches")}
             where mutation_batch_id = @mutation_batch_id;
             """;
@@ -1778,7 +1828,8 @@ public sealed partial class PostgresLedgerJournalStore
             reader.GetGuid(14),
             reader.GetGuid(15),
             reader.IsDBNull(16) ? null : JsonSerializer.Deserialize<OpenLotSuccessorInstructionDto>(reader.GetString(16), JsonOptions),
-            reader.IsDBNull(17) ? null : JsonSerializer.Deserialize<OpenLotCapitalReturnInstructionDto>(reader.GetString(17), JsonOptions));
+            reader.IsDBNull(17) ? null : JsonSerializer.Deserialize<OpenLotCapitalReturnInstructionDto>(reader.GetString(17), JsonOptions),
+            reader.IsDBNull(18) ? null : JsonSerializer.Deserialize<OpenLotFactorPaydownInstructionDto>(reader.GetString(18), JsonOptions));
 
     private static void AddAtomicBatchIdentityParameters(
         NpgsqlCommand databaseCommand,
@@ -1822,6 +1873,9 @@ public sealed partial class PostgresLedgerJournalStore
         databaseCommand.Parameters.AddWithValue("par_basis", (object?)lot.ParBasis ?? DBNull.Value);
         databaseCommand.Parameters.AddWithValue("acquisition_terms", NpgsqlTypes.NpgsqlDbType.Jsonb,
             lot.Acquisition is null ? DBNull.Value : System.Text.Json.JsonSerializer.Serialize(lot.Acquisition));
+        // Null for every new acquisition (ValidateAtomicAcquisition refuses a stated factor); a
+        // corporate-action successor inherits its predecessor's factor and the trigger admits it.
+        databaseCommand.Parameters.AddWithValue("current_factor", (object?)lot.CurrentFactor ?? DBNull.Value);
     }
 
     private static (Guid SecurityId, Guid BookPositionId) ResolveAtomicAssetScope(
@@ -1906,5 +1960,6 @@ public sealed partial class PostgresLedgerJournalStore
         Guid SecurityId,
         Guid BookPositionId,
         OpenLotSuccessorInstructionDto? CorporateAction,
-        OpenLotCapitalReturnInstructionDto? CapitalReturn);
+        OpenLotCapitalReturnInstructionDto? CapitalReturn,
+        OpenLotFactorPaydownInstructionDto? FactorPaydown);
 }

@@ -64,6 +64,11 @@ public interface ILedgerJournalStore
         => Task.FromException<IReadOnlyList<LedgerAccountTaxLotPolicyRecord>>(
             new NotSupportedException("This ledger journal store does not support tax-lot policy persistence."));
 
+    /// <summary>
+    /// Saves a non-atomic compatibility lot. Governed production stores reject this operation;
+    /// use <see cref="IAtomicTaxLotJournalStore"/> for journal-backed lot mutations and the
+    /// reviewed backfill workflow for retained legacy acquisition facts.
+    /// </summary>
     Task<LedgerTaxLotRecord> SaveTaxLotAsync(
         LedgerTaxLotRecord lot,
         CancellationToken ct = default)
@@ -83,6 +88,15 @@ public interface ILedgerJournalStore
         CancellationToken ct = default)
         => Task.FromException<IReadOnlyList<LedgerTaxLotRecord>>(
             new NotSupportedException("This ledger journal store does not support authoritative tax-lot identity reads."));
+
+    /// <summary>Finds retained labels across open and closed lots in the exact ledger book and account key.</summary>
+    Task<IReadOnlyList<LedgerTaxLotRecord>> GetTaxLotsByLotIdsAsync(
+        Guid ledgerBookId,
+        LedgerAccount account,
+        IReadOnlyList<string> lotIds,
+        CancellationToken ct = default)
+        => Task.FromException<IReadOnlyList<LedgerTaxLotRecord>>(
+            new NotSupportedException("This ledger journal store does not support authoritative retained lot-label reads."));
 
     /// <summary>
     /// Lists the lots of record open under one (security, book position) scope and acquired on or
@@ -394,7 +408,12 @@ public sealed record LedgerTaxLotRecord(
     Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto? Acquisition = null,
     // The latest governed open-basis restatement; absent on every lot that was never restated.
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentDto? BasisAdjustment = null)
+    Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentDto? BasisAdjustment = null,
+    // The paydown factor the lot currently holds; absent while the lot is still at its booked
+    // factor, which is every lot that has absorbed no governed paydown. Never stamped at
+    // acquisition, even when it would equal the booked factor, so retained digests stay stable.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    decimal? CurrentFactor = null)
 {
     /// <summary>
     /// True when the lot recorded the acquisition-time par conventions
@@ -414,7 +433,10 @@ public enum AtomicTaxLotMutationKind
     BasisRedistribution = 2,
     Amortization = 3,
     CorporateAction = 4,
-    CapitalReturn = 5
+    CapitalReturn = 5,
+    // Every open face lot of one (security, position) scope restated to a lower paydown factor,
+    // its basis relieved pro rata; a new factor of zero closes the lots.
+    FactorPaydown = 6
 }
 
 public sealed record LedgerTaxLotDisposalSelection(
@@ -457,7 +479,9 @@ public sealed record AtomicTaxLotJournalCommand(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     OpenLotDirection Direction = OpenLotDirection.Long,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    AtomicLotReferenceVersions? ReferenceVersions = null)
+    AtomicLotReferenceVersions? ReferenceVersions = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null)
 {
     public static AtomicTaxLotJournalCommand Create(
         Guid mutationBatchId,
@@ -478,7 +502,8 @@ public sealed record AtomicTaxLotJournalCommand(
         Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? corporateAction = null,
         Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? capitalReturn = null,
         OpenLotDirection direction = OpenLotDirection.Long,
-        AtomicLotReferenceVersions? referenceVersions = null)
+        AtomicLotReferenceVersions? referenceVersions = null,
+        Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? factorPaydown = null)
     {
         var command = new AtomicTaxLotJournalCommand(
             mutationBatchId,
@@ -500,7 +525,8 @@ public sealed record AtomicTaxLotJournalCommand(
             corporateAction,
             capitalReturn,
             direction,
-            referenceVersions);
+            referenceVersions,
+            factorPaydown);
         return command.WithComputedFingerprint();
     }
 
@@ -550,4 +576,6 @@ public sealed record AtomicTaxLotJournalResult(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? CorporateAction = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn = null);
+    Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null);

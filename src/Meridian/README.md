@@ -63,6 +63,8 @@ all instances sharing that state observe revocation without restarting.
 Hosted brokerage composition registers concrete Alpaca, Interactive Brokers, and Robinhood gateways
 by keyed runtime ID (`alpaca`, `ibkr`, `robinhood`), retains `ib` as an Interactive Brokers
 compatibility alias, and registers StockSharp only when the connector runtime type is present.
+Robinhood read-only synchronization resolves its access token from the shared host configuration
+for every request, so OAuth connect, rotation, and revocation affect already-resolved adapters.
 `HostedBrokerageGatewayRuntimeSurfaceCatalog` reports the hosted registration surface for Alpaca,
 Interactive Brokers, the `ib` compatibility alias, Robinhood, and optional
 StockSharp: concrete gateway type, declared gateway id, runtime-key match status,

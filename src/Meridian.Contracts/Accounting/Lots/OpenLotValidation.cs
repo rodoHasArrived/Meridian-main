@@ -63,6 +63,11 @@ public static class OpenLotValidation
             || !Enum.IsDefined(face.AmortizationMethod)
             || (face.AmortizationMethod == BondAmortizationMethod.ConstantYield && face.EffectiveYield is null)))
             throw new ArgumentException("Face acquisition terms must retain par basis, factor, and the selected amortization inputs.");
+        // A current factor is stated only after a governed paydown, so it is strictly below the
+        // booked factor; zero is a fully repaid pool. A unit lot has no factor to hold.
+        if (lot.CurrentFactor is { } currentFactor
+            && (face is null || currentFactor < 0m || currentFactor >= face.BookedFactor))
+            throw new ArgumentException("A current paydown factor requires face terms and lies in [0, booked factor).");
     }
 
     private static bool Currency(string value) => value is { Length: 3 } && value.All(c => c is >= 'A' and <= 'Z');

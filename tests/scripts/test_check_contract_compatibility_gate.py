@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
+from contextlib import contextmanager
+import os
 import tempfile
 import sys
 import unittest
@@ -13,6 +15,24 @@ assert SPEC and SPEC.loader
 gate = importlib.util.module_from_spec(SPEC)
 sys.modules["check_contract_compatibility_gate"] = gate
 SPEC.loader.exec_module(gate)
+
+
+@contextmanager
+def governance_dto_fixture(body: str):
+    # Keep real file reads and repository-relative contract paths without writing
+    # fixtures into the checkout or depending on the caller's working directory.
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        relative_path = Path("src/Meridian.Contracts/Workstation/GovernanceInstrumentContractDto.cs")
+        fixture = root / relative_path
+        fixture.parent.mkdir(parents=True)
+        fixture.write_text(body, encoding="utf-8")
+        previous_directory = Path.cwd()
+        try:
+            os.chdir(root)
+            yield relative_path.as_posix()
+        finally:
+            os.chdir(previous_directory)
 
 
 class ContractCompatibilityGateTests(unittest.TestCase):
@@ -111,10 +131,10 @@ diff --git a/src/Meridian.Contracts/Workstation/LedgerContinuityDtos.cs b/src/Me
 
 
     def test_find_missing_security_master_instrument_references_flags_governance_dto_without_identity_fields(self) -> None:
-        with tempfile.TemporaryDirectory(dir="src/Meridian.Contracts/Workstation") as tmp_dir:
-            temp_path = Path(tmp_dir) / "GovernanceInstrumentContractDto.cs"
-            temp_path.write_text("public sealed record GovernanceInstrumentContractDto(string InstrumentTicker);", encoding="utf-8")
-            changed_files = [temp_path.resolve().relative_to(Path.cwd().resolve()).as_posix()]
+        with governance_dto_fixture(
+            "public sealed record GovernanceInstrumentContractDto(string InstrumentTicker);"
+        ) as path:
+            changed_files = [path]
             patch = f"""
 diff --git a/{changed_files[0]} b/{changed_files[0]}
 --- a/{changed_files[0]}
@@ -127,12 +147,10 @@ diff --git a/{changed_files[0]} b/{changed_files[0]}
 
 
     def test_find_missing_security_master_instrument_references_allows_security_master_linked_dto(self) -> None:
-        with tempfile.TemporaryDirectory(dir="src/Meridian.Contracts/Workstation") as tmp_dir:
-            temp_path = Path(tmp_dir) / "GovernanceInstrumentContractDto.cs"
-            temp_path.write_text(
-                "public sealed record GovernanceInstrumentContractDto(string InstrumentTicker, Guid SecurityId, string SecurityMasterSource);",
-                encoding="utf-8")
-            changed_files = [temp_path.resolve().relative_to(Path.cwd().resolve()).as_posix()]
+        with governance_dto_fixture(
+            "public sealed record GovernanceInstrumentContractDto(string InstrumentTicker, Guid SecurityId, string SecurityMasterSource);"
+        ) as path:
+            changed_files = [path]
             patch = f"""
 diff --git a/{changed_files[0]} b/{changed_files[0]}
 --- a/{changed_files[0]}

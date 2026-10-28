@@ -23,11 +23,50 @@ binds its complete normalized source content across all retained runs; rebinding
 the store lease before any case changes. Unchanged revisions can be reused; corrections require
 new versions. Null cash-tolerance entries are rejected before rule evaluation. Explicitly
 provision `FileAccountCashReconciliationStore.InitializeAsync` before use; loss of retained state
-cannot silently restart history. Source clearing confers no governed close approval.
+cannot silently restart history. A retry adopts only a valid empty state left by interrupted
+provisioning; unmarked retained history still requires recovery. The store partitions retained runs
+and cases per exact tenant/company/account/ledger-book scope into content-hashed
+`scopes/<sha256>.json` files with per-scope locks and a `scope-index.json` registry under
+`reconciliation/account-cash-continuity`, so one scope's corruption or size never blocks another's reads
+or mutations (provisioning validates every scope and baseline, so it fails store-wide until the
+corrupt scope is restored, and a corrupt or missing index or marker blocks the whole store); a legacy single-file `state.json` is split
+losslessly and renamed `state.json.migrated`, and a `.migrated` file left beside a lost layout refuses
+provisioning rather than restarting history (a scope it retains is never treated as new while its scope
+file is missing). A validated mutation commits its first scope file and then its
+registration under one store lease regardless of request cancellation, and an interrupted first commit
+is completed by the next provisioning or scoped use, and every store read shares delete
+so concurrent atomic replacements succeed on Windows. Corrupt or
+missing initialized state raises `InvalidDataException`, and each writer lease times out after 30
+seconds with `TimeoutException`. The data root remains host-local (PostgreSQL is the multi-host
+follow-on). The migration is automatic and one-way: a pre-partition binary fails every operation once
+the legacy file is renamed, so stop every process on the data root before deploying, never mix
+pre-partition and per-scope binaries on one data root (rolling restarts included), and roll back only
+by restoring the pre-migration backup, which drops records captured after the migration. Source
+clearing confers no governed close approval.
 See [account oversight evidence](../../docs/domain/account-oversight-evidence.md) and
 `AccountCashReconciliationContinuityTests` for the first `W10-RECON-001` acceptance slice.
+Migration also retains per-scope baseline envelopes in `migration-baselines/<sha256>.json`.
+Scoped operations compare only their active file and baseline; provisioning cross-checks the full
+`.migrated` artifact and all baselines before writing recovery state. Older partitioned layouts
+materialize these baselines during provisioning, or once per scope under the store lease on first
+access after verifying the active prefix. A corrupt baseline affects its scope; a corrupt global
+artifact refuses provisioning and cold bootstrap while existing scoped baselines remain usable.
+A nonempty baseline proves its active file previously existed: if that file is missing, migration
+refuses reconstruction even if its index entry was also lost. Restore the scope files, baselines,
+index and marker from the complete backup set; retained baseline-only history cannot be provisioned
+as empty, including beside an empty unmarked legacy file. A baseline is committed only beside its
+scope's active file (first-time use after migration validates the scope but persists no baseline until
+its file exists), so any baseline whose scope file is missing is lost history, even an empty one:
+provisioning answers `409` beside a lost marker and index, and `503` while the marker survives.
+Retained migrated runs must remain an exact prefix of the active scope document. Migrated cases
+retain their identity and observation/assignment prefixes; subsequent observations, assignments,
+resolution and reopening may advance the current case metadata. Provisioning, reads and writes
+refuse contradictory or incomplete restored histories, even when each file has a valid hash.
+Migration refuses any registered scope whose file is missing before writing recovery state;
+a stale legacy snapshot cannot reconstruct post-migration activity.
 Tolerance profile IDs and versions also bind immutable complete rules across the scoped history.
 Owner assignment timestamps cannot precede the latest case observation or assignment.
+New runs also require at least one cash rule, no null position/transaction rules, a run ID that round-trips replay routes, a business date no earlier than the retained head, and JSON payloads that stay distinct after reformatting or property reordering; these admission rules apply only when a new run is accepted, so runs retained before them still replay and re-submit idempotently. Decimal overflow during comparison is rejected as invalid input.
 
 `AccountingPostingCandidatePostService` passes the retained approved Security Master and position
 versions into new atomic acquisitions/disposals. Storage revalidates and holds that authority in
@@ -149,7 +188,10 @@ refused during validation and preview even when they name the same account or in
 Case-equivalent account identifiers remain valid within a single containing statement.
 
 Statement preview, validation and commit require currency from the shared recognized-code catalog
-before retaining connector artifacts. Canonical CSV and bank connectors apply the same catalog;
+before retaining connector artifacts, including supplemental account, tax-lot, and borrow-position
+evidence. Activity events retained only as activity evidence, such as IB Flex commission details,
+need their own recognized currency; an event mirrored by a canonical row may rely on that row's
+proven currency. Canonical CSV and bank connectors apply the same catalog;
 BAI2 validates before converting minor units, including zero-decimal UYI and four-decimal CLF/UYW.
 Recognized units with no defined ISO minor-unit scale are refused for BAI2 integer amounts.
 Historical currencies remain available for statement evidence. Service-level diagnostics omit a
@@ -159,6 +201,10 @@ Alpaca trade fills may inherit explicit USD from the same account's verified por
 through both legacy fills and rich Trade/TradeFill activities. Explicit activity currencies remain
 authoritative. Missing or non-USD account evidence cannot supply a fill currency; cash, dividends,
 fees, corrections, and busts still require their own currency evidence before import retention.
+Legacy fills with a zero quantity or nonpositive price are refused, because an omitted JSON amount
+deserializes as zero. A portfolio snapshot counts as complete evidence only when it is explicitly
+marked complete and lists no completeness issues. In IB Flex, an explicitly blank amount that
+would otherwise default to zero (cash and activity net amounts) is refused as malformed.
 
 Statement runs pass the accounting scope retained on their import to the internal population
 provider, preserving the fund, ledger book, and exact period selected by governed intake during
@@ -260,6 +306,30 @@ batch to the atomic journal/lot store; ordinary journal append cannot consume th
 Corrections and distributions beyond remaining carrying basis remain blocked pending separate
 reviewed policy and implementation.
 
+MBS/ABS factor paydowns post the same way. `FactorPaydownLotInstructionService` loads the
+Security Master record, book position and the lots of record open in the scope as of the factor
+date, runs the registered `FactorPaydownProjectionService` over the lots' par face, allocates the
+principal across the lots with `OpenLotFactorPaydown.Allocate` (largest remainder in the store's
+lot order, so no lot goes negative) and prepares the canonical `AssetAccounting.CorporateAction`
+spine request whose `FactorPaydown` instruction, lineage and projected effect travel through
+Projected and Drafted unchanged. The effect has two or three lines: cash for the principal, the
+carrying relief when any basis is relieved, and one realized gain or loss line when the result is
+not zero. `LedgerFeatureRegistration` composes the service next to `CanonicalLotAmortizationService`
+with nullable authorities, and preparation refuses a missing ledger, Security Master, position or
+projector authority before reading anything; no operator route calls it yet. The spine event and
+its lineage trigger are typed `AssetAccounting.CorporateAction` and the lineage keeps the model key
+`mbs-factor-paydown`; the model's own `MbsFactorPaydown` event type stays on the projector's output
+and the persisted Asset Operations lineage. `AccountingPostingCandidateService` requires the
+governed lot instruction for every factor-paydown candidate: it accepts one only under spine
+authority and only with the `FactorPaydown` lot mutation, recomputes held face and principal from
+the lots of record, refuses a lot not at the position's prior factor, re-runs the allocation and
+refuses any client shift of principal or basis between lots, supplies the instruction's components
+to the rule's `LotMutationComponent` formulas only under the `FactorPaydown` intent, binds the
+carrying credit to the lots' exact account and the cash/gain/loss lines to that account's scope,
+and retains the instruction as `LotFactorPaydown`. The spine service rereads every paid-down lot
+and its carrying credit before drafting; posting dispatches a `FactorPaydown` batch to the atomic
+journal/lot store. A plain factor journal without the lot mutation is not posting authority.
+
 ## Purpose
 
 OFX duplicate account or currency tags cannot overwrite conflicting evidence. A row account may
@@ -269,7 +339,8 @@ validation omits source row numbers when a connector does not provide them, avoi
 locations based on the retained-record index.
 
 Bank statement currency is source evidence. BAI2 requires an explicit account or containing-group
-currency before converting minor units, and each group resets inherited currency. camt.053 uses
+currency recognized by `CurrencyCodeCatalog` before converting minor units, and each group resets
+inherited currency. camt.053 uses
 explicit amount currency or an explicit account currency when the attribute is absent; a blank
 amount attribute remains invalid. Neither parser supplies USD when all currency evidence is missing.
 IB Flex preserves absent account, activity, lot and borrow currency as unknown instead of
@@ -277,13 +348,22 @@ supplying USD; canonical activity rows without currency fail before artifact ret
 
 Canonical CSV connector validation rejects blank required amounts, ambiguous grouped decimals, malformed nonblank fees,
 and missing or invalid currency before rendering financial values. Statement import preview,
-validation, and commit all require explicit three-letter currency before retaining artifacts.
+validation, and commit all require explicit currency recognized by `CurrencyCodeCatalog` before
+retaining artifacts. Alphabetic but unknown codes such as `ZZZ` are refused, including before
+BAI2 minor-unit conversion and camt.053 amount admission.
 OFX statement currency fills only absent row currency; explicit blank or self-closing row tags
 remain invalid; mixed explicit and inherited currency rows map through the same canonical key.
 Alpaca legacy fills use the account currency verified against the snapshot identity. Position
 currency must be supplied by the gateway; missing or blank row currency cannot borrow the account
 currency. Missing account currency remains a refusal. Month-end upload regressions
 in `StatementImportServiceTests` exercise these rules through the actual retention boundary.
+
+Structured statement amounts fail closed before retention. camt.053 requires unsigned invariant
+magnitudes and derives the sign from the credit/debit indicator; BAI2 rejects malformed closing
+balances and detail amounts instead of importing a partial statement. OFX and IB Flex require
+invariant amounts regardless of mapping-profile culture and refuse malformed fees and rich Flex
+numeric evidence. Cash movements may omit inapplicable quantity and price. Alpaca intake rejects
+reported portfolio completeness failures instead of retaining zeroed malformed provider values.
 
 Physical bounded-context module project for reconciliation, accounting records, payment approvals,
 bank-transaction records, accounting-basis policy, ledger text-journal reporting, close workflows,
@@ -915,6 +995,12 @@ create-only successors, reference versions and exact allocation. Before projecti
 source Security Master record must cover the event's effective date within its inclusive UTC
 effective-date interval, even when a later accounting timestamp falls within that interval.
 Before `Drafted` is retained, each successor record must also cover the event date.
+Successor source authority uses the economic date even if the source has expired by the later
+accounting timestamp; the strict recorded-as-of lookup remains required. Preparation and drafting
+compare complete source and target projection hashes with the reviewed instruction. Drafting also
+rejects labels reserved by any open or closed lot in the complete carrying account and ledger book.
+Successor journal lines preserve that entire account identity, and incompatible mapped accounts
+fail before drafting. Atomic posting rechecks these guards under its transaction locks.
 Drafting also requires retained wash-sale deferral reads across all sale
 dates and follows at most 32 same-book predecessor lots, using immutable acquisition lineage,
 the legacy successor instruction, or the retained immutable birth receipt. Any separately retained

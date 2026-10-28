@@ -2,6 +2,7 @@ using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 
+
 namespace Meridian.Execution;
 
 // Gateway-created child orders (bracket TP/SL legs) join the tracked book here so their
@@ -70,7 +71,7 @@ public sealed partial class OrderManagementSystem
 
             if (!string.IsNullOrWhiteSpace(child.OrderId))
             {
-                _orderBrokerIds[childOrderId] = child.OrderId;
+                _brokerIdentities.Confirm(childOrderId, child.OrderId);
             }
 
             // The same per-order side tables the parent got at registration, so child fills book
@@ -90,7 +91,7 @@ public sealed partial class OrderManagementSystem
                 _orderContractMultipliers[childOrderId] = parentMultiplier;
             }
 
-            if (_dispatchedOrderIds.ContainsKey(parentOrderId))
+            if (_recoveryJournal.IsDispatched(parentOrderId))
                 RetainBrokerageDispatch(childState);
 
             // Deliberately the broker-reported leg symbol, not childState.Symbol: the registered

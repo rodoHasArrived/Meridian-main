@@ -14,7 +14,6 @@ using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.Http;
-using Meridian.Platform.Monitoring;
 using Meridian.Storage;
 using Meridian.Storage.Policies;
 using Microsoft.Extensions.DependencyInjection;
@@ -124,7 +123,7 @@ public sealed class HostStartup : IAsyncDisposable
         try
         {
             // The production guard resolves factory-backed singletons while validating the final
-            // graph. Initialize these static routers before StartAsync so those factories cannot
+            // graph. Initialize the HTTP client factory bridge before StartAsync so factories cannot
             // permanently capture fallback HTTP clients.
             InitializeHttpClientFactory(host.Services, log);
             await host.StartAsync(cancellationToken).ConfigureAwait(false);
@@ -398,8 +397,6 @@ public sealed class HostStartup : IAsyncDisposable
 
     /// <summary>
     /// Initializes HttpClientFactory for proper HTTP client lifecycle management.
-    /// Also wires the CircuitBreakerCallbackRouter so that Polly state-change callbacks
-    /// can forward to CircuitBreakerStatusService at request time.
     /// </summary>
     private static void InitializeHttpClientFactory(IServiceProvider serviceProvider, Serilog.ILogger log)
     {
@@ -408,14 +405,6 @@ public sealed class HostStartup : IAsyncDisposable
         {
             HttpClientFactoryProvider.Initialize(serviceProvider);
             log.Debug("HttpClientFactory initialized with named clients for all data providers");
-        }
-
-        // Wire the circuit breaker callback router if the service is registered.
-        var cbService = serviceProvider.GetService<CircuitBreakerStatusService>();
-        if (cbService != null)
-        {
-            CircuitBreakerCallbackRouter.Initialize(cbService);
-            log.Debug("CircuitBreakerCallbackRouter initialized - circuit breaker states will be tracked");
         }
     }
 

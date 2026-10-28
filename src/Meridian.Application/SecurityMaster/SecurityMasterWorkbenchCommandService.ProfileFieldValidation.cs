@@ -138,8 +138,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService
         string? proposedValue,
         JsonElement? proposedReplacementRoot)
     {
-        if (string.Equals(projection.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(projection.AssetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase))
+        if (SecurityAssetClassCatalog.GetOrDefault(projection.AssetClass).RequiresGovernedProfile)
         {
             // A CustomAsset overlay is governed by the pinned profile alone; there is no resolved
             // kind whose invariants could tighten the profile's declared field rules.
@@ -162,6 +161,13 @@ public sealed partial class SecurityMasterWorkbenchCommandService
 
             envelope["profileFields"] = effectiveFields;
             var effectiveTerms = JsonSerializer.SerializeToElement(envelope);
+            // A profile envelope keeps only its stamp check (ADR-024): one stamped above the class's
+            // write version is readable here but would be refused by the Write-mode merge.
+            if (SecurityTermsEnvelope.TryGetWriteRefusal(projection.AssetClass, effectiveTerms, out var writeRefusal))
+            {
+                throw new ArgumentException(writeRefusal);
+            }
+
             var kind = SecurityMasterMapping.ToRecord(projection with { AssetSpecificTerms = effectiveTerms }).Kind;
             var invariantErrors = Meridian.FSharp.SecurityMasterInterop.SecurityMasterCommandFacade.ValidateKindInvariants(kind);
             if (invariantErrors.Length > 0)

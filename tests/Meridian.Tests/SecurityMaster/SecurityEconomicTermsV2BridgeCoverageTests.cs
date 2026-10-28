@@ -62,7 +62,8 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
             "factor": 0.8125, "factorDate": "2026-01-01", "weightedAvgCoupon": 5.1, "weightedAvgMaturityMonths": 320,
             "weightedAvgLoanAgeMos": 40, "collateralType": "Residential", "poolIdentifier": "FN-123456", "trancheClass": "A1",
             "prepaymentAssumption": { "model": "Psa", "speed": 150 }, "averageLifeYears": 6.5, "isInterestOnly": false,
-            "isPrincipalOnly": false, "notionalBalance": 25000000, "originator": "Acme Mortgage", "creditEnhancementPct": 12.5
+            "isPrincipalOnly": false, "notionalBalance": 25000000, "originator": "Acme Mortgage", "creditEnhancementPct": 12.5,
+            "factorScheduleReference": "trustee-report-2026-01"
         }
     }
     """);

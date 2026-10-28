@@ -225,6 +225,48 @@ class ContractTypeParityTests(unittest.TestCase):
             "a pair cannot be both enforced and exempt",
         )
 
+    def test_portfolio_and_run_provenance_contracts_are_enforced(self) -> None:
+        registry = json.loads(REPO_REGISTRY.read_text(encoding="utf-8"))
+        entries = {entry["typescript_interface"]: entry for entry in registry["pairs"]}
+        required_members = {
+            "PortfolioPositionSummary": (
+                "accountScopeId", "entityScopeId", "sleeveScopeId", "vehicleScopeId",
+            ),
+            "PortfolioSummary": (
+                "accountScopeId", "entityScopeId", "sleeveScopeId", "vehicleScopeId",
+                "accountingBasis", "accountingPolicyId", "accountingPolicyVersion",
+                "ruleId", "ruleVersion", "sourceEventId", "sourceJournalEntryId",
+            ),
+            "RunFillSummary": ("mode",),
+            "RunAttributionSummary": ("mode",),
+        }
+        for name, members in required_members.items():
+            with self.subTest(contract=name):
+                self.assertIn(name, entries, "repaired contracts must not return to exemptions")
+                entry = entries[name]
+                csharp = MODULE.parse_csharp_record(
+                    (MODULE.REPO_ROOT / entry["csharp_file"]).read_text(encoding="utf-8"),
+                    entry["csharp_record"],
+                )
+                typescript = MODULE.parse_typescript_interface(
+                    (MODULE.REPO_ROOT / entry["typescript_file"]).read_text(encoding="utf-8"),
+                    name,
+                )
+                self.assertIsNotNone(csharp)
+                self.assertIsNotNone(typescript)
+                self.assertEqual([], MODULE.compare(entry, csharp, typescript))
+                for member in members:
+                    with self.subTest(member=member):
+                        self.assertIn(member, typescript)
+                        missing_member = {key: value for key, value in typescript.items() if key != member}
+                        self.assertTrue(
+                            any(
+                                f"'{member}' has no TypeScript declaration" in problem
+                                for problem in MODULE.compare(entry, csharp, missing_member)
+                            ),
+                            "ownership, accounting provenance and execution mode must fail on drift",
+                        )
+
 
 class DocumentedMemberParsingTests(unittest.TestCase):
     """A documented member must be compared, not skipped.

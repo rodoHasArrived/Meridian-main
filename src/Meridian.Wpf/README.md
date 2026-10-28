@@ -24,6 +24,15 @@ path. Shared-state failures remain unavailable, and late responses cannot replac
 `RecurringJournalQueueViewModelTests` and `WorkstationRecurringJournalQueueClientTests` cover
 retained identity, scope checks, lock remediation, unavailable reads and retry recovery.
 
+Accounting Configure also carries the on-demand Audit Chain Integrity card, the desktop twin of
+the browser Configuration panel (W9-GOV-008 verification tooling). `AccountingAuditIntegrityApiClient`
+calls `GET /api/ledger/audit-integrity` and returns `403`, `409` (a run in progress) and `429` (the
+shared rate limit) as distinct refusals rather than failures; `AuditChainIntegrityViewModel` shows
+each chain's server verdict without rolling an unchecked chain into a passing one, clears the
+previous verdict when a new check starts, and the page cancels a running check when it unloads so
+the server releases the chain locks. `AuditChainIntegrityViewModelTests` and
+`AccountingAuditIntegrityApiClientTests` cover verdicts, refusals and cancellation.
+
 The desktop workstation is installed as part of the single Meridian product and opened
 on demand from the browser workstation. It is not a separate end-user package or Start
 Menu product.
@@ -371,6 +380,9 @@ type, and close/report impact labels instead of deriving those operator fields l
 Private-capital presets attach the shared
 treasury ledger context expected by the approval service, including effective date, idempotency,
 fund-event, capital-account, investor, payment, and settlement references.
+Accounting composition supplies the complete Security Master store to the shared event spine
+for reviewed successor hash validation. Economic-date and retained-lot-label checks remain
+shared service rules, including when desktop composition runs independently.
 Registration stays feature-owned in `Features/Accounting/AccountingFeatureModule.cs`; the
 desktop fallback stores configuration/audit state in `workstation/accounting/accounting-configuration.json`
 manual journal drafts in `workstation/accounting/manual-journal-drafts.json`, and retained migration

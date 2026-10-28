@@ -11,6 +11,46 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Infrastructure
 
+Broker amendment and cancellation failures retain the broker-observed order status and use
+operation-specific reports. Alpaca amendments resolve explicit client/broker identifier namespaces
+and retain replacement aliases. Successful PATCH responses remain provisional until independent
+replacement evidence confirms the successor, and a linked successor confirms the amendment only when
+its quantity and prices match the requested terms, and a requested trail only when the successor's
+`trail_price`/`trail_percent` is known and equal (a trailing stop's derived `stop_price` is not compared);
+otherwise it stays pending. A refused PATCH whose
+re-read shows a replacement link is reconciled the same way instead of being reported as refused.
+Robinhood's cancel-then-replace crosses two send boundaries: failures before the predecessor's cancel are
+not sent, and failures after the confirmed cancel but before the replacement POST report the known outcome
+(cancelled, no successor); outcomes after the cancel are always delivered. Reconnect FILL-activity reports carry the broker's `replaces` link so a
+successor's fill stays bound to its original order after a restart. While a replacement is unconfirmed, cancellation also
+cancels the candidate successor and stays pending until it is proven inactive. A candidate that executed before
+that cancellation publishes its cumulative fills through the replacement chain first. Order and
+amendment recovery refuse evidence read across a connection change, rechecked before every report, and `accepted_for_bidding` is a valid provisional
+snapshot state. Durable trade-update hashes omit derived metadata
+while serialized pending reports retain it, preserving replay identities across upgrades.
+Interactive Brokers retains uncertain amendment context for late acknowledgements, sizes execution
+fills against pending exposure, keeps cancellation available, and keys
+positions by account plus qualified contract identity. Robinhood replacement submits only after
+confirmed cancellation with cumulative fill evidence, for the intended total less chain fills.
+Unconfirmed Robinhood replacement attempts retain their reference and reconcile exact broker
+history before further operations. Empty, incomplete, or ambiguous history remains unresolved;
+confirmed candidates restore replacement-chain routing and cumulative fill economics. Robinhood
+submits replacements under the OMS-persisted reference, and restart recovery reads each earlier
+chain member's final fills so a predecessor fill the store never booked is attributed exactly.
+
+Running Robinhood read-only account, portfolio, and activity synchronization reads the current
+host-owned OAuth token for each request, including connection, rotation, and revocation. Polling
+distinguishes lifetime cancellation from request timeouts and retains authentication, throttling,
+and outage classifications for failed batches.
+
+Alpha Vantage adjusted OHLC uses the adjusted-close/raw-close ratio independently of the session's
+split coefficient. Yahoo daily history includes boundary padding and uses historical exchange
+timezone rules for session dates, falling back to the supplied offset and then UTC when absent.
+Alpaca symbol search initializes authentication after credentials are assigned. OpenFIGI resolution
+learns canonical identities only from complete, unambiguous exchange and instrument evidence;
+broad NASDAQ requests include UW, UQ, and UR while exact venue requests remain distinct;
+discovery can still return candidate lists. These corrections support `W1-DATA-001` and `W7-LIVE-001`.
+
 Local ETL post-processing requires the checksum, length and file timestamps captured while staging. Replacement deliveries at the same filename fail cleanup without being deleted or archived. Destructive cleanup atomically claims the original directory entry and verifies it again before acting; a conflicting new drop remains in place, and an interrupted claim is restored or retained for explicit recovery.
 
 Robinhood read-only synchronization logs failed HTTP status codes without endpoint URLs or response
@@ -57,8 +97,19 @@ Corporate-action adapters receive the resolved context explicitly, while legacy 
 still supports environment lookup. `ProviderFactoryCredentialIsolationTests` exercises actual
 adapter construction and outbound request credentials across rotation, deletion and owner scopes.
 
+Tracked HTTP clients resolve circuit-breaker callbacks through their owning service provider.
+Each named breaker is a provider-local singleton, retaining state across requests and handler
+renewal while keeping independent hosts isolated. Composition regression coverage is in
+`HttpClientFeatureRegistrationTests`; this supports `W1-DATA-001` provider-health reporting.
+
 Streaming readiness requires acknowledged authentication and successful subscription replay on both
-initial connection and recovery. Alpaca reconciles subscriptions against the current transport,
+initial connection and recovery. Alpaca validates the provider's full subscription acknowledgment
+before confirming replay or live subscription changes; rejected or timed-out changes invalidate
+readiness. Transient provider control errors remain retryable instead of becoming credential failures.
+Acknowledgments allow Alpaca's automatic correction and cancel/error channels only for requested
+trade symbols. Invalid syntax, symbol-limit, and unsupported-channel errors remain non-retryable
+configuration failures, so reconnect attempts cannot exhaust their budgets on a permanent request.
+Alpaca reconciles subscriptions against the current transport,
 sends explicit unsubscribe frames after the last local reference is removed, and replays only
 remaining subscriptions. WebSocket application messages, heartbeats, and close frames share a
 per-connection send gate; canceled queued writes cannot move to a replacement connection.
@@ -76,11 +127,14 @@ applies shared trade, quote, and aggregate quality validation. Source time remai
 receipt metadata on published events; receipt time never substitutes for missing source evidence.
 
 Canonical statement imports stream JSON to an exclusive temporary file, force its contents to
-disk, then publish with a no-overwrite rename and the host-supplied `IAtomicFileWriter`
-directory-sync policy. Caller
+disk, then acquire a persistent per-import exclusive file lock before checking existence, publishing
+with a no-overwrite rename, and completing the host-supplied `IAtomicFileWriter` directory-sync
+policy. The lock file stays in place so later writers reuse the same inode; process termination
+releases its open-handle claim. Caller
 cancellation is checked before publication and is not observed after the rename commits.
 Subprocess tests cover interrupted serialization, restart after acknowledged publication,
-and concurrent writers claiming one complete import. These are process-crash tests; they do
+termination while holding the publication claim during directory sync, and concurrent writers
+claiming one complete import. These are process-crash tests; they do
 not certify physical power-loss behavior on every filesystem or storage device.
 
 Backfill request admission captures the current activity context; queued worker execution restores
@@ -109,11 +163,18 @@ non-fill currencies stay missing; cash, dividends, fees, corrections, and busts 
 fill-specific binding. Direct canonical CSV intake validates currency against Core's shared
 recognized-code catalog before retaining an import.
 
+Alpaca statement activity synchronization validates source numeric strings before constructing
+typed snapshots. Malformed supplied quantity, price, cash, or commission values fail the fetch;
+fills require quantity and price, and cash activity requires a net amount. Portfolio completeness
+uses the same decimal grammar as conversion, so unsupported notation cannot validate and then
+become zero. Statement intake refuses snapshots carrying completeness diagnostics.
+
 Canonical CSV import requires the currency column in the header and at least one data row.
 Header-only statements cannot validate or persist as empty imports; every admitted row retains
 explicit currency and invariant decimal evidence.
 
-Canonical CSV statement imports require an explicit three-letter currency on every row.
+Canonical CSV statement imports require an explicit currency recognized by `CurrencyCodeCatalog`
+on every row; unknown three-letter codes such as `ZZZ` are refused before persistence.
 Older seven-column files must be regenerated with source-backed currency evidence; the
 importer does not supply USD. Quantity, price, cash and nonblank fees use invariant decimal
 notation without grouping separators. Missing optional fees remain absent, while malformed

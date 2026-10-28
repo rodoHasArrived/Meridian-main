@@ -422,6 +422,14 @@ export interface PortfolioPositionSummary {
   unrealizedPnl: number;
   isShort: boolean;
   security: WorkstationSecurityReference | null;
+  accountScopeId?: string | null;
+  accountScopeDisplayName?: string | null;
+  entityScopeId?: string | null;
+  entityScopeDisplayName?: string | null;
+  sleeveScopeId?: string | null;
+  sleeveScopeDisplayName?: string | null;
+  vehicleScopeId?: string | null;
+  vehicleScopeDisplayName?: string | null;
 }
 
 export interface PortfolioSummary {
@@ -441,6 +449,21 @@ export interface PortfolioSummary {
   positions: PortfolioPositionSummary[];
   securityResolvedCount: number;
   securityMissingCount: number;
+  accountScopeId?: string | null;
+  accountScopeDisplayName?: string | null;
+  entityScopeId?: string | null;
+  entityScopeDisplayName?: string | null;
+  sleeveScopeId?: string | null;
+  sleeveScopeDisplayName?: string | null;
+  vehicleScopeId?: string | null;
+  vehicleScopeDisplayName?: string | null;
+  accountingBasis: AccountingBasisKind;
+  accountingPolicyId: string;
+  accountingPolicyVersion: string;
+  ruleId?: string | null;
+  ruleVersion?: string | null;
+  sourceEventId?: string | null;
+  sourceJournalEntryId?: string | null;
 }
 
 // --- Ledger types ---
@@ -465,7 +488,7 @@ export type AccountingTemplateLineSide = "Debit" | "Credit";
 export type ManualJournalEntryStatus = "Draft" | "NeedsFix" | "Submitted" | "Approved" | "Rejected" | "Posted" | "Reversed" | "Rebooked" | "CloseLocked";
 export type AccountingRuleConditionOperator = "Equals" | "NotEquals" | "Contains" | "AmountGreaterThanOrEqual" | "AmountLessThanOrEqual" | "AmountBetween" | "IsPresent";
 export type AccountingRuleConditionGroupOperator = "All" | "Any";
-export type AccountingRuleFormulaKind = "FixedAmount" | "SourceAmount" | "PercentageOfSourceAmount" | "AllocationResidual";
+export type AccountingRuleFormulaKind = "FixedAmount" | "SourceAmount" | "PercentageOfSourceAmount" | "AllocationResidual" | "LotMutationComponent";
 export type AllocationRuleBasis = "FixedPercent" | "InvestorCommitment" | "CapitalAccountBalance" | "StrategyWeight" | "CustomFormula";
 export type JournalEntryLifecycleAction = "Validate" | "Submit" | "Approve" | "Reject" | "Post" | "Reverse" | "Rebook" | "LockAfterClose";
 export type PrivateCapitalFundEventLedgerReadiness =

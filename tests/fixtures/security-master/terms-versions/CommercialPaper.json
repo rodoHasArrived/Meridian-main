@@ -1,0 +1,35 @@
+{
+  "assetClass": "CommercialPaper",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "dayCount",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "discountRate",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "isAssetBacked",
+          "type": "Boolean",
+          "required": true
+        },
+        {
+          "key": "issuerName",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "maturity",
+          "type": "Date",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

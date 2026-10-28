@@ -39,8 +39,7 @@ public sealed partial class AccountingPostingCandidateServiceTests
         foreach (var successor in fixture.Instruction.Successors)
         {
             var line = write.Entry.Lines.Single(item => item.Dimensions!.InstrumentId == successor.Lot.SecurityId);
-            line.Account.Should().Be(new LedgerAccount("Successor investments", LedgerAccountType.Asset,
-                FinancialAccountId: "custody-account-alpha"));
+            line.Account.Should().Be(fixture.Predecessor.Account);
             line.Dimensions!.PositionId.Should().Be(successor.Lot.BookPositionId);
             line.Debit.Should().Be(successor.Lot.OpenFunctionalCostBasis);
         }
@@ -90,7 +89,18 @@ public sealed partial class AccountingPostingCandidateServiceTests
             item.Code.StartsWith("posting-candidate.book-context-generated-line-", StringComparison.Ordinal));
     }
 
-    private static async Task<SuccessorCandidateFixture> CreateSuccessorCandidateFixtureAsync(bool advanceRefunding)
+    [Theory]
+    [InlineData("name")]
+    [InlineData("type")]
+    public async Task BuildAuthoritativeCandidateWriteAsync_MappedSuccessorAccountMustMatchPredecessor(string mismatch)
+    {
+        var fixture = await CreateSuccessorCandidateFixtureAsync(false, mismatch);
+        var build = () => fixture.Service.BuildAuthoritativeCandidateWriteAsync(fixture.Request, fixture.Authority);
+        await build.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("The mapped successor account must match the durable predecessor lot carrying account.");
+    }
+
+    private static async Task<SuccessorCandidateFixture> CreateSuccessorCandidateFixtureAsync(bool advanceRefunding, string? accountMismatch = null)
     {
         var source = OpenLotSuccessorTestData.Predecessor();
         var targets = advanceRefunding
@@ -134,7 +144,9 @@ public sealed partial class AccountingPostingCandidateServiceTests
             .Returns(new AccountingConfigurationWorkspaceDto(scope.FundProfileId, source.LedgerBookId,
                 AccountingConfigurationStatusDto.Active, "v1", now, [book],
                 [new ChartOfAccountsNodeDto("predecessor", "assets/predecessor", "Original investments", "Asset"),
-                 new ChartOfAccountsNodeDto("successor", "assets/successor", "Successor investments", "Asset")],
+                 new ChartOfAccountsNodeDto("successor", "assets/successor",
+                     accountMismatch == "name" ? "Other investments" : "Original investments",
+                     accountMismatch == "type" ? "Liability" : "Asset")],
                 [], [], [], []));
         var predecessor = new LedgerTaxLotRecord(source.TaxLotRecordId, source.LedgerBookId,
             new LedgerAccount("Original investments", LedgerAccountType.Asset, "PREDECESSOR-EUR", "custody-account-alpha"),

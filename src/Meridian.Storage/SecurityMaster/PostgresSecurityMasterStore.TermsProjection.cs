@@ -37,18 +37,32 @@ public sealed partial class PostgresSecurityMasterStore
     /// <summary>
     /// A fully decoded relational projection, ready to bind. Building it is pure — no connection, no
     /// schema, no SQL — so the decode half of a schema-driven projection is unit-testable in the same
-    /// way <c>TryBuildBondProjection</c> is, rather than only reachable through an integration test
+    /// way the hand-written decoders were, rather than only reachable through an integration test
     /// (the CI gate excludes <c>Category=Integration</c>, so a decode regression would otherwise
     /// surface no earlier than the weekly certification run).
     /// </summary>
     internal sealed record SecurityTermsProjectionPlan(
         string TableName,
         IReadOnlyList<SecurityTermsProjectionValue> Columns,
-        IReadOnlyList<SecurityTermsProjectionChildRows> Children)
+        IReadOnlyList<SecurityTermsProjectionChildRows> Children,
+        IReadOnlyList<SecurityTermsProjectionSatelliteRow> Satellites)
     {
         /// <summary>The bound value for <paramref name="columnName"/>, or null when the column is not projected.</summary>
         internal object? Value(string columnName)
             => Columns.FirstOrDefault(column =>
+                string.Equals(column.ColumnName, columnName, StringComparison.OrdinalIgnoreCase))?.Value;
+
+        /// <summary>
+        /// The bound columns planned for satellite table <paramref name="tableName"/>, or null when
+        /// the satellite's condition excludes the record (its row is deleted) or no such satellite exists.
+        /// </summary>
+        internal IReadOnlyList<SecurityTermsProjectionValue>? SatelliteColumns(string tableName)
+            => Satellites.FirstOrDefault(satellite =>
+                string.Equals(satellite.TableName, tableName, StringComparison.OrdinalIgnoreCase))?.Columns;
+
+        /// <summary>The bound value of <paramref name="columnName"/> on satellite <paramref name="tableName"/>, or null.</summary>
+        internal object? SatelliteValue(string tableName, string columnName)
+            => SatelliteColumns(tableName)?.FirstOrDefault(column =>
                 string.Equals(column.ColumnName, columnName, StringComparison.OrdinalIgnoreCase))?.Value;
 
         /// <summary>The rows planned for child table <paramref name="tableName"/>, or an empty list.</summary>
@@ -57,12 +71,22 @@ public sealed partial class PostgresSecurityMasterStore
                 string.Equals(child.TableName, tableName, StringComparison.OrdinalIgnoreCase))?.Rows ?? [];
     }
 
+    /// <summary>
+    /// The row planned for one satellite table: its bound columns, or null when the satellite's
+    /// condition excludes the record and the writer deletes any row it holds instead.
+    /// </summary>
+    internal sealed record SecurityTermsProjectionSatelliteRow(
+        string TableName,
+        IReadOnlyList<SecurityTermsProjectionValue>? Columns);
+
     /// <summary>The statements one descriptor needs against one schema.</summary>
     private sealed record SecurityTermsProjectionSql(
         string Upsert,
         string DeleteParent,
         IReadOnlyDictionary<string, string> ChildInserts,
-        IReadOnlyDictionary<string, string> ChildDeletes);
+        IReadOnlyDictionary<string, string> ChildDeletes,
+        IReadOnlyDictionary<string, string> SatelliteUpserts,
+        IReadOnlyDictionary<string, string> SatelliteDeletes);
 
     /// <summary>
     /// Decodes <paramref name="record"/> into the relational projection <paramref name="descriptor"/>
@@ -91,23 +115,98 @@ public sealed partial class PostgresSecurityMasterStore
             return false;
         }
 
+        // Columns decode the payload at the class's current terms version (ADR-024); the stored blob,
+        // and the schema_version and terms_format columns UpsertProjectionAsync derives from it, are untouched.
+        if (SecurityAssetClassTermsUpgrader.TryUpgradeForRead(record.AssetClass, record.AssetSpecificTerms, out var upgradedTerms))
+        {
+            record = record with { AssetSpecificTerms = upgradedTerms };
+        }
+
         var terms = record.AssetSpecificTerms;
         var profileFields = ResolveProfileFields(descriptor.AssetClass, terms);
-        var columns = new List<SecurityTermsProjectionValue>(
+        if (!TryBuildTableColumns(
+                record,
+                profileFields,
+                descriptor.Columns,
+                descriptor.ProjectsDisplayName,
+                descriptor.ProjectsCurrency,
+                descriptor.ProjectsPrimaryIdentifier,
+                out var columns))
+        {
+            return false;
+        }
+
+        var children = new List<SecurityTermsProjectionChildRows>(descriptor.ChildTables.Count);
+        foreach (var child in descriptor.ChildTables)
+        {
+            if (!TryBuildChildRows(terms, profileFields, record.SecurityId, child, out var rows))
+            {
+                return false;
+            }
+
+            children.Add(new(child.TableName, rows));
+        }
+
+        // A satellite never decides whether the projection exists: its columns cannot gate (the
+        // registry validation refuses one that does), so the only outcome per satellite is a row or,
+        // when its condition excludes the record, a delete.
+        var satellites = new List<SecurityTermsProjectionSatelliteRow>(descriptor.Satellites.Count);
+        foreach (var satellite in descriptor.Satellites)
+        {
+            if (satellite.Condition is { } condition && !condition(record))
+            {
+                satellites.Add(new(satellite.TableName, null));
+                continue;
+            }
+
+            TryBuildTableColumns(
+                record,
+                profileFields,
+                satellite.Columns,
+                satellite.ProjectsDisplayName,
+                satellite.ProjectsCurrency,
+                satellite.ProjectsPrimaryIdentifier,
+                out var satelliteColumns);
+            satellites.Add(new(satellite.TableName, satelliteColumns));
+        }
+
+        plan = new(descriptor.TableName, columns, children, satellites);
+        return true;
+    }
+
+    /// <summary>
+    /// Binds one <c>security_id</c>-keyed table's row: the identity spine the table declares around
+    /// its class columns. False when a gating column is unsatisfied.
+    /// </summary>
+    private static bool TryBuildTableColumns(
+        SecurityProjectionRecord record,
+        JsonElement? profileFields,
+        IReadOnlyList<SecurityTermsProjectionColumn> declaredColumns,
+        bool projectsDisplayName,
+        bool projectsCurrency,
+        bool projectsPrimaryIdentifier,
+        out List<SecurityTermsProjectionValue> columns)
+    {
+        var terms = record.AssetSpecificTerms;
+        columns = new List<SecurityTermsProjectionValue>(
             SecurityTermsProjectionRegistry.LeadingIdentityColumns.Count
-            + descriptor.Columns.Count
+            + declaredColumns.Count
             + SecurityTermsProjectionRegistry.TrailingIdentityColumns.Count)
         {
             new("security_id", record.SecurityId),
-            new("display_name", record.DisplayName),
         };
 
-        if (descriptor.ProjectsCurrency)
+        if (projectsDisplayName)
+        {
+            columns.Add(new("display_name", record.DisplayName));
+        }
+
+        if (projectsCurrency)
         {
             columns.Add(new("currency", record.Currency ?? string.Empty));
         }
 
-        foreach (var column in descriptor.Columns)
+        foreach (var column in declaredColumns)
         {
             var value = column.Compute is { } compute
                 ? compute(record)
@@ -125,21 +224,12 @@ public sealed partial class PostgresSecurityMasterStore
             columns.Add(new(column.ColumnName, value ?? column.DefaultWhenAbsent ?? DBNull.Value));
         }
 
-        columns.Add(new("primary_identifier_value", record.PrimaryIdentifierValue));
-        columns.Add(new("version", record.Version));
-
-        var children = new List<SecurityTermsProjectionChildRows>(descriptor.ChildTables.Count);
-        foreach (var child in descriptor.ChildTables)
+        if (projectsPrimaryIdentifier)
         {
-            if (!TryBuildChildRows(terms, profileFields, record.SecurityId, child, out var rows))
-            {
-                return false;
-            }
-
-            children.Add(new(child.TableName, rows));
+            columns.Add(new("primary_identifier_value", record.PrimaryIdentifierValue));
         }
 
-        plan = new(descriptor.TableName, columns, children);
+        columns.Add(new("version", record.Version));
         return true;
     }
 
@@ -289,6 +379,9 @@ public sealed partial class PostgresSecurityMasterStore
             SecurityAssetTermFieldType.Date => element.ValueKind == JsonValueKind.String && DateOnly.TryParse(element.GetString(), out var date)
                 ? date.ToDateTime(TimeOnly.MinValue)
                 : null,
+            SecurityAssetTermFieldType.Guid => element.ValueKind == JsonValueKind.String && Guid.TryParse(element.GetString(), out var guid)
+                ? guid
+                : null,
             _ => null
         };
 
@@ -331,10 +424,20 @@ public sealed partial class PostgresSecurityMasterStore
     internal static string BuildTermsProjectionUpsertSql(SecurityTermsProjectionDescriptor descriptor, string schema)
     {
         ArgumentNullException.ThrowIfNull(descriptor);
+        return BuildUpsertSql(descriptor.TableName, ProjectedColumnNames(descriptor), schema);
+    }
 
-        var columns = ProjectedColumnNames(descriptor);
+    /// <summary>Builds a satellite table's upsert: the same shape as the parent's, over the spine the satellite declares.</summary>
+    internal static string BuildTermsProjectionSatelliteUpsertSql(SecurityTermsProjectionSatelliteTable satellite, string schema)
+    {
+        ArgumentNullException.ThrowIfNull(satellite);
+        return BuildUpsertSql(satellite.TableName, SecurityTermsProjectionRegistry.SatelliteColumnNames(satellite), schema);
+    }
+
+    private static string BuildUpsertSql(string tableName, IReadOnlyList<string> columns, string schema)
+    {
         var builder = new StringBuilder()
-            .Append("insert into ").Append(schema).Append('.').Append(descriptor.TableName).Append(" (")
+            .Append("insert into ").Append(schema).Append('.').Append(tableName).Append(" (")
             .AppendJoin(", ", columns)
             .Append(')')
             .Append(" values (")
@@ -359,9 +462,7 @@ public sealed partial class PostgresSecurityMasterStore
     {
         ArgumentNullException.ThrowIfNull(child);
 
-        var columns = SecurityTermsProjectionRegistry.ChildKeyColumns
-            .Concat(child.Columns.Select(static column => column.ColumnName))
-            .ToArray();
+        var columns = SecurityTermsProjectionRegistry.ChildColumnNames(child);
 
         return new StringBuilder()
             .Append("insert into ").Append(schema).Append('.').Append(child.TableName).Append(" (")
@@ -377,10 +478,7 @@ public sealed partial class PostgresSecurityMasterStore
         => $"delete from {schema}.{tableName} where security_id = @security_id;";
 
     private static IReadOnlyList<string> ProjectedColumnNames(SecurityTermsProjectionDescriptor descriptor)
-        => SecurityTermsProjectionRegistry.LeadingIdentityColumnsFor(descriptor)
-            .Concat(descriptor.Columns.Select(static column => column.ColumnName))
-            .Concat(SecurityTermsProjectionRegistry.TrailingIdentityColumns)
-            .ToArray();
+        => SecurityTermsProjectionRegistry.ParentColumnNames(descriptor);
 
     private SecurityTermsProjectionSql GetTermsProjectionSql(SecurityTermsProjectionDescriptor descriptor)
         => TermsProjectionSqlCache.GetOrAdd(
@@ -395,6 +493,14 @@ public sealed partial class PostgresSecurityMasterStore
                 state.Descriptor.ChildTables.ToDictionary(
                     static child => child.TableName,
                     child => BuildTermsProjectionDeleteSql(child.TableName, state.Schema),
+                    StringComparer.Ordinal),
+                state.Descriptor.Satellites.ToDictionary(
+                    static satellite => satellite.TableName,
+                    satellite => BuildTermsProjectionSatelliteUpsertSql(satellite, state.Schema),
+                    StringComparer.Ordinal),
+                state.Descriptor.Satellites.ToDictionary(
+                    static satellite => satellite.TableName,
+                    satellite => BuildTermsProjectionDeleteSql(satellite.TableName, state.Schema),
                     StringComparer.Ordinal)),
             (Descriptor: descriptor, Schema: _options.Schema));
 
@@ -424,6 +530,12 @@ public sealed partial class PostgresSecurityMasterStore
             foreach (var child in descriptor.ChildTables.Where(static child => !child.CascadesFromParent))
             {
                 await ExecuteBySecurityIdAsync(connection, transaction, sql.ChildDeletes[child.TableName], record.SecurityId, ct)
+                    .ConfigureAwait(false);
+            }
+
+            foreach (var satellite in descriptor.Satellites.Where(static satellite => !satellite.CascadesFromParent))
+            {
+                await ExecuteBySecurityIdAsync(connection, transaction, sql.SatelliteDeletes[satellite.TableName], record.SecurityId, ct)
                     .ConfigureAwait(false);
             }
 
@@ -466,6 +578,28 @@ public sealed partial class PostgresSecurityMasterStore
 
                 await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
             }
+        }
+
+        // Satellites hold one row per security, so each is upserted in place, or deleted when its
+        // condition excludes this record while the parent projection stands.
+        foreach (var satellite in plan.Satellites)
+        {
+            if (satellite.Columns is null)
+            {
+                await ExecuteBySecurityIdAsync(connection, transaction, sql.SatelliteDeletes[satellite.TableName], record.SecurityId, ct)
+                    .ConfigureAwait(false);
+                continue;
+            }
+
+            await using var upsert = connection.CreateCommand();
+            upsert.Transaction = transaction;
+            upsert.CommandText = sql.SatelliteUpserts[satellite.TableName];
+            foreach (var column in satellite.Columns)
+            {
+                upsert.Parameters.AddWithValue(column.ColumnName, column.Value);
+            }
+
+            await upsert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
     }
 

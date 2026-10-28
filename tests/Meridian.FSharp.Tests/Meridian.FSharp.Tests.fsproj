@@ -29,6 +29,7 @@
     <Compile Include="PeriodManagementTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Ledger'" />
     <Compile Include="DeterministicInvariantTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Ledger' Or '$(FSharpTestSlice)' == 'Operations'" />
     <Compile Include="DirectLendingInteropTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'DirectLending'" />
+    <Compile Include="DirectLendingScheduleCharacterizationTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'DirectLending'" />
     <Compile Include="CashFlowProjectorTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'DirectLending'" />
     <Compile Include="SettlementInstructionCommandsTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'DirectLending'" />
   </ItemGroup>

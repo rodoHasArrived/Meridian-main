@@ -54,6 +54,11 @@ public interface ISecurityMasterStore
         IReadOnlyList<SecurityIdentifierDto> identifiers,
         IReadOnlyCollection<Guid> excludedSecurityIds,
         CancellationToken ct = default);
+    /// <summary>
+    /// Returns an offset page in deterministic order, using the unique security ID to break
+    /// equal relevance and display-name ties. Repeated pages over unchanged projections must
+    /// neither omit nor repeat a security. Separate requests do not share a database snapshot.
+    /// </summary>
     Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default);
     Task<IReadOnlyList<SecurityProjectionRecord>> LoadAllAsync(CancellationToken ct = default);
     Task<IReadOnlyList<SecurityProjectionRecord>> LoadActiveAsync(CancellationToken ct = default);

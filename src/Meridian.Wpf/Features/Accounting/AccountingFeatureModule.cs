@@ -94,6 +94,8 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         // background workers that have not yet migrated.
         services.AddSingleton<IWorkstationAccountingApiClient, WorkstationAccountingApiClient>();
         services.AddSingleton<IWorkstationAccountingCloseApiClient, WorkstationAccountingCloseApiClient>();
+        // Audit-chain verification (W9-GOV-008) is read-only and AdminMaintenance-gated server side.
+        services.AddSingleton<IAccountingAuditIntegrityApiClient, AccountingAuditIntegrityApiClient>();
         // Passport Workbench governed-write editor (Phase 4 desktop parity).
         services.AddTransient<Meridian.Wpf.ViewModels.SecurityPassportEditorViewModel>();
         services.AddTransient<Meridian.Wpf.Views.SecurityPassportEditorPage>();
@@ -291,7 +293,8 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetService<IAccountingPolicyService>(),
                 sp.GetService<IAccountingConfigurationService>(),
                 sp.GetService<IAccountingPostingCandidateAuthorityBuilder>(),
-                sp.GetService<ILedgerJournalStore>())!);
+                sp.GetService<ILedgerJournalStore>(),
+                sp.GetService<Meridian.Storage.SecurityMaster.ISecurityMasterStore>())!);
         services.TryAddSingleton<IAccountingPostingCandidatePostService>(sp =>
             new AccountingPostingCandidatePostService(
                 sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>(),

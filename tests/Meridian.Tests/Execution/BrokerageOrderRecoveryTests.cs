@@ -251,8 +251,10 @@ public sealed partial class BrokerageOrderRecoveryTests
         recoveredGateway.SubmitCount.Should().Be(0);
     }
 
-    [Fact]
-    public async Task RecoveryAfterPartialFill_UsesMissingFillEconomicsFromBrokerCumulativeAverage()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RecoveryAfterPartialFill_UsesMissingFillEconomicsFromBrokerCumulativeAverage(bool marksCumulativeAverage)
     {
         using var directory = new RecoveryDirectory();
         var request = Request("recover-cumulative-average");
@@ -275,7 +277,8 @@ public sealed partial class BrokerageOrderRecoveryTests
 
         // Broker lookup reports cumulative economics: 10 shares at a $150.20 average.
         // After the retained 4 at $149, the missing 6 shares therefore executed at $151.
-        var evidence = Report(request.ClientOrderId!, OrderStatus.Filled, 10m) with { FillPrice = 150.2m };
+        var evidence = Report(request.ClientOrderId!, OrderStatus.Filled, 10m) with
+        { FillPrice = 150.2m, FillPriceIsCumulativeAverage = marksCumulativeAverage };
         await recovered.ReconcileRecoveryOrderAsync(evidence);
         var increment = await ReadFillAsync(recovered);
 
@@ -447,7 +450,9 @@ public sealed partial class BrokerageOrderRecoveryTests
         PaperTradingPortfolio? portfolio = null,
         string? recoveryPath = null,
         ITradeEventPublisher? publisher = null,
-        OrderManagementSystemOptions? options = null) => new(
+        OrderManagementSystemOptions? options = null)
+    {
+        var oms = new OrderManagementSystem(
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio,
@@ -456,6 +461,9 @@ public sealed partial class BrokerageOrderRecoveryTests
             recoveryStore: recoveryPath is null
                 ? null
                 : new FileBrokerageOrderRecoveryStore(recoveryPath, gateway.GatewayId));
+        oms.StartAsync().GetAwaiter().GetResult();
+        return oms;
+    }
 
     private static OrderRequest Request(string clientOrderId) => new()
     {

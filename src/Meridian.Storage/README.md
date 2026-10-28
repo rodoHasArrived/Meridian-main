@@ -16,14 +16,52 @@ Tier migration decodes compressed input with the production JSONL replay decoder
 `PostgresSecurityMasterPricingStore.ClosePrices` extends retained pricing receipts with immutable
 account/book/date price snapshots and separate independent-review records (Security Master
 migration 037). Source receipts must match exactly; scoped advisory locks fence approvals and
-linked corrections. Database guards refuse replacement, deletion and truncation. The schema
+linked corrections. Database guards refuse replacement, deletion and truncation; migration
+`043_security_master_close_price_approval_null_guards.sql` replaces the approval guard function so a
+snapshot payload lacking `Blockers` or `CreatedBy` is rejected instead of passing a NULL check. The schema
 inventory exception records only the lexical false positive from `BEFORE TRUNCATE` rejection
 triggers and requires independent schema/storage review.
 
-`FileAccountCashForecastStore` retains append-only scoped forecast history with content hashes,
-atomic replacement and a process-independent writer lease. Explicit `InitializeAsync` provisioning
-is required; missing/corrupt initialized history cannot silently restart. Financial Operations
-owns cash-balance case semantics and delegates file replacement to Storage's shared writer.
+`FileAccountCashForecastStore` retains append-only forecast history partitioned per exact
+tenant/company/account/book/base-currency scope: one content-hashed `scopes/<sha256>.json` file and
+`.lock` per scope under `asset-operations/account-cash-forecasts`, a `scope-index.json` registry
+rewritten only when a scope first appears, atomic replacement and a 30-second cross-process lease.
+Explicit `InitializeAsync` provisioning is required; a missing or corrupt scope file fails closed for
+that scope's reads and appends without blocking other scopes (provisioning validates every scope and
+baseline, so it fails for the whole store until that scope is restored), a missing or corrupt index
+or marker fails closed for the whole store, and neither can silently restart history. A legacy single-file `snapshots.json` is
+validated, split losslessly and renamed `snapshots.json.migrated`, never deleted; a `.migrated` file
+left beside a lost layout refuses provisioning rather than restarting history, and a scope it retains
+is never treated as new while its scope file is missing. Once an append is
+validated, the first scope-file write and its registration run under one store lease, file first, and
+ignore request cancellation: an interruption between the two leaves a valid unregistered scope file
+that the next provisioning or scoped use registers, never an indexed scope without its file; every store read shares delete so a concurrent atomic replacement
+(a first registration rewriting the index, or a scope write overlapping provisioning's validation)
+succeeds on Windows. The data root remains host-local; multi-host deployments need the PostgreSQL follow-on.
+The migration is automatic and one-way: a pre-partition binary fails every operation once the legacy
+file is renamed, so stop every process on the data root before deploying, never mix pre-partition and
+per-scope binaries on one data root (rolling restarts included), and roll back only by restoring the
+pre-migration backup, which drops records captured after the migration.
+Financial Operations owns cash-balance case semantics and delegates file replacement to Storage's
+shared writer.
+Migration also retains per-scope baseline envelopes in `migration-baselines/<sha256>.json`.
+Scoped operations compare only their active file and baseline; provisioning cross-checks the full
+`.migrated` artifact and all baselines before writing recovery state. Older partitioned layouts
+materialize these baselines during provisioning, or once per scope under the store lease on first
+access after verifying the active prefix. A corrupt baseline affects its scope; a corrupt global
+artifact refuses provisioning and cold bootstrap while existing scoped baselines remain usable.
+A nonempty baseline proves its active file previously existed: if that file is missing, migration
+refuses reconstruction even if its index entry was also lost. Restore the scope files, baselines,
+index and marker from the complete backup set; retained baseline-only history cannot be provisioned
+as empty, including beside an empty unmarked legacy file. A baseline is committed only beside its
+scope's active file (first-time use after migration validates the scope but persists no baseline until
+its file exists), so any baseline whose scope file is missing is lost history, even an empty one:
+provisioning answers `409` beside a lost marker and index, and `503` while the marker survives.
+Retained migrated snapshots must remain an exact ordered prefix, including their outputs, of each
+active scope history. Provisioning, reads and appends refuse incomplete or contradictory restored
+histories even when the replacement files have valid hashes. Migration refuses any registered scope
+whose file is missing before writing recovery state; a stale legacy snapshot cannot replace
+post-migration appends. Existing files with a consistent migrated prefix retain their later records.
 Forecast corrections resolve a flow's last retained revision across temporarily omitted runs,
 separately for expected and actual cash, while retaining the latest snapshot predecessor.
 Close-price history uses one exact account/book/date query ordered by version and shares the
@@ -48,13 +86,126 @@ opening-age tax rules from silently certifying a short cover.
 
 Security Master migration `040_security_master_governance_events.sql` adds the append-only
 `security_governance_events` log (streams `OperatorOverrides`, `Aliases`, `ProjectionRebuild`);
-triggers refuse update and delete. Override patches and decisions, alias revisions and
+triggers refuse update and delete, and migration `041_security_master_governance_events_truncate_guard.sql` adds a statement-level BEFORE TRUNCATE rejection. Override patches and decisions, alias revisions and
 projection batch rebuilds append in the same transaction as the change, and an override reviewer
-cannot approve values they staged. The event store and projection store join
-`PostgresSecurityMasterCanonicalWriteScope` when one is active. Equity, FxSpot, Future, Swap and
-Commodity projections are now declarative registry plans rather than hand-written writers.
+cannot approve values they staged. Migration `051_security_governance_events_underlying_graph_stream.sql`
+adds the `UnderlyingGraph` stream: `PostgresSecurityUnderlyingGraphStore` records each declaration,
+amendment (with the replaced state) and removal of a declared underlying link, naming the actor,
+in the same transaction as the change to `security_underlying_links`. Migration `052_security_curves.sql`
+adds stored market curves: `security_curves` (write-once identity, key unique ignoring case) and
+`security_curve_versions` (append-only versions with economic `as_of`, knowledge `recorded_at`,
+actor, jsonb points and a content hash); one reject function refuses update, delete and truncate on
+both tables by trigger (SQL state 23514).
+Migration `053_security_governance_events_curves_stream.sql` adds the `Curves` stream, and
+`PostgresSecurityCurveStore` appends `CurveDefined` and `CurveVersionPublished` (with a null
+`security_id` and the curve id in the payload) in the same transaction as each write; identical
+content for the same curve and as-of returns the retained version and writes nothing, the latest
+version as of a date is read with the pricing lane's `as_of`/`recorded_at` predicate, and
+`GetVersionByIdAsync` reads one version on the primary key, guarded by its curve id.
+`ISecurityGovernanceEventReader.GetForStreamAsync` reads one stream by global sequence for subjects
+that are not securities. The event store and projection store join
+`PostgresSecurityMasterCanonicalWriteScope` when one is active. Equity, FxSpot, Future, Swap,
+Commodity and Bond projections are now declarative registry plans rather than hand-written writers;
+Bond's `bond_projection` parent and its `bond_lifecycle_projection`,
+`bond_accrual_convention_projection` and `bond_issuer_projection` satellites are written by one
+`SecurityTermsProjectionRegistry` descriptor. Only the Option writer remains hand-written, because
+its tables are keyed by `contract_symbol` and are also written from the quote path.
+
+Projection fan-out is keyed by asset class. `UpsertProjectionCoreAsync` reads the security's stored
+`asset_class` under the row lock the upsert takes anyway and runs only the writers that write can
+affect: the current class's writer (which publishes, or clears its own rows when a gate fails) and,
+when the class changed, the prior class's writer (which clears the rows it left behind). A
+projection row for class X exists only while the stored class is X, so the other writers have
+nothing to delete; running all of them cost ~28 no-op deletes per record once migration 044 brought
+the registry to 25 writers.
+
+The reference-projection read side is shared as well. Every `Postgres*ReferenceProjectionStore`
+composes `PostgresReferenceProjectionReader` for its connection, command and row plumbing, and a
+store whose table is a `SecurityTermsProjectionRegistry` descriptor (Equity, Future, FxSpot, Swap,
+Commodity, CryptoCurrency, Deposit, MoneyMarketFund, CertificateOfDeposit, DirectLoan,
+StructuredCredit and their child tables) selects the descriptor's column list rather than
+restating it, mapping rows by column name through `ProjectionRow`. The registry is therefore the
+single statement of a projection table's columns on the write and read sides. Two stores still
+carry their own select lists: `PostgresBondReferenceProjectionStore`, whose registry-written parent
+table predates the identity spine and so joins `securities` for display name and primary
+identifier alongside its three satellites, and the specialized Option store. The per-class store
+interfaces and row records are unchanged, so `*ProjectionService` consumers and DI registrations
+did not move.
+
+Security Master migration `045_structured_credit_typed_tranche_terms.sql` widens
+`structured_credit_projection` with the typed tranche terms StructuredCredit asset-class terms
+version 2 adds (`structured_credit_kind`, `seniority`, `attachment_point`, `detachment_point`,
+`weighted_average_coupon`, `weighted_average_maturity_months`, `weighted_average_loan_age_months`,
+`reinvestment_period_end`, `non_call_period_end`), all nullable and projected by the registry
+descriptor; rows written before the migration keep nulls until their next projection write.
+
+Security Master migration `044_security_master_declarative_terms_projections.sql` gives the twelve
+remaining unprojected classes (CommercialPaper, TreasuryBill, Repo, CashSweep, OtherSecurity, Cfd,
+Warrant, InvestmentFund, PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding,
+CommitmentGuarantee) a relational projection written by the same declarative
+`SecurityTermsProjectionRegistry` descriptor path, so every catalog class except the
+profile-governed CustomAsset is now projected (25 of 26). Guid-typed terms project as `uuid`
+columns. The tables are created empty; an existing database populates them through
+`SecurityMasterRebuildOrchestrator.RebuildAssetClassAsync` per class.
+
+Security Master migration `046_otc_derivative_terms_projections.sql` creates `fx_forward_projection`,
+`ndf_projection` and `credit_default_swap_projection` for the OTC derivative classes FxForward,
+NonDeliverableForward and CreditDefaultSwap, written by the same declarative
+`SecurityTermsProjectionRegistry` descriptor path from the day the classes are modeled (28 of 29
+catalog classes projected; CustomAsset remains the deliberate gap). NOT NULL columns are the terms
+the contract marks Required; the tables are created empty and populate as records are persisted.
+Migration `047_rate_option_and_note_terms_projections.sql` does the same for `swaption_projection`,
+`cap_floor_projection` and `structured_note_projection` (31 of 32 classes projected); strike and
+rate columns are signed because negative strikes are valid in negative-rate currencies.
+
+Security Master migration `050_otc_contracts.sql` creates the OTC contract model (master
+agreements, collateral agreements, netting sets, bilateral contracts) written by
+`PostgresOtcContractStore`. Migration `054_otc_exposure_and_collateral.sql` adds
+`otc_exposure_snapshots` (append-only: recomputing a date appends the next version under a unique
+`(netting_set_id, as_of_date, version)`, and a trigger rejects update and delete),
+`otc_collateral_balances` and `otc_margin_calls` (partial unique indexes keep one open call per
+netting set, mover and movement kind, and one uncancelled call per snapshot movement); migration `055_security_governance_events_otc_collateral_stream.sql` admits
+the `OtcCollateral` governance stream. `PostgresOtcCollateralStore` serializes computations and
+calls per netting set with transaction-scoped advisory locks (`OtcAdvisoryLocks` states them and
+the one order they are taken in: an issue takes the netting set's snapshot, call and contracts
+locks and the collateral agreement's balances lock before any row lock, and every contract or
+balance write takes the contracts or balances lock it touches first; the issue also locks the
+collateral agreement row for update, so no netting set can start referencing it meanwhile, and
+no agreement, netting set, contract or balance the snapshot was computed from can change between
+the check and the commit; price and pricing hierarchy writers take no OTC lock, so the market data
+check reads what they have committed when it runs). It refuses a call from a superseded snapshot,
+from one dated after the current UTC date, from one when a later date up to the current one has
+been valued (a stray future-dated snapshot is ignored), from one computed under a master
+agreement, collateral agreement or version the netting set no longer has or that another netting
+set now also references, from one whose recorded inputs (the netting set, its contracts and the
+agreement's balances, each at a version) no longer match the stored rows, from one with a price
+observation or pricing hierarchy version for a valued security, bearing on its as-of date,
+recorded in `security_raw_prices` or `security_pricing_hierarchy(_history)` after its knowledge
+time, and from a replay (knowledge time earlier than the computation). Recorded times are writer
+transaction starts on the database clock, compared with a knowledge time on the application clock,
+so a price or hierarchy write that began before the knowledge time and committed after the
+computation read its market data, or one clock skew places before it, is not detected. It resolves eligible
+collateral and currency against the agreement inside the write transaction, stores each
+snapshot's jsonb payload with a digest reproducible from the payload, and appends a governance
+event (snapshot recorded, balance recorded or amended with the changed fields, call issued,
+agreed, disputed, settled or cancelled with the replaced state) in the same transaction, naming
+the actor.
+
+Security Master migration `042_security_master_terms_format_column.sql` promotes the terms-payload
+family to a queryable `securities.terms_format` column (ADR-024). The backfill never rewrites the
+payload: a declared `termsFormat` wins and an untagged row is classified by the same shape rule
+`SecurityTermsEnvelope.ResolveFormat` applies on read. `PostgresSecurityMasterStore` derives the
+column from the stored payload on every upsert and refuses an unknown declared format before the
+column's check constraint does.
+Migration `048_security_master_listing_mic.sql` adds the nullable `securities.listing_mic` column
+(ISO 10383) beside the free-text `exchange_code`, which is left unchanged. A well-formed
+`commonTerms.primaryListingMic` wins; otherwise `exchange_code` resolves through the bundled
+`MicReference` codes and exchange names. Routing labels and unknown names stay null. The upsert
+derives the column with the same rule (`PostgresSecurityMasterStore.ResolveListingMic`), and
+`ListingMicColumnTests` holds the backfill to the `MicReference` tables.
 Asset-operations migration `005_asset_operations_write_events.sql` adds an append-only write-event
-log for direct projection writes.
+log for direct projection writes; migration `006_asset_operations_write_events_truncate_guard.sql`
+rejects TRUNCATE on it as well.
 
 Security Master migration `039_security_master_event_payload_version.sql` adds non-null
 `payload_type`/`payload_version` columns to `security_events`, backfilled from the stored payload
@@ -152,6 +303,11 @@ individual reads, avoiding a separate transaction for every retained comparison 
 `Archival/AtomicFileWriterAdapter.cs`, `EtlStagingStore` in `Etl/EtlStores.cs`, and `Backfill/JsonlBackfillBarWriter.cs`
 implement lower-level persistence ports consumed by Infrastructure. Application/host composition
 owns their construction; atomic durability, staging and JSONL naming policies remain in Storage.
+`AtomicFileWriter` commits every write by renaming a fsynced temp file over the destination. On
+Windows every rename it performs, including `ReplaceAsync`'s backup and restore moves, is retried
+briefly (ten attempts, growing from 20 ms) when another handle without delete sharing, such as an
+antivirus or indexer scan, still holds the file; a handle that never closes still fails the write
+and removes the temp file. POSIX renames never wait.
 
 `LedgerAccountTaxLotPolicyRecord.EffectiveWashSalePolicy` carries the existing `PolicyId` revision
 into wash-sale projection evidence together with the configured window, scope and activation date.
@@ -162,6 +318,12 @@ or mutation is retained. Existing exact receipts are resolved first, so a commit
 acquisition without those facts still replays after restart or a later period-version change.
 Changed fingerprints remain collisions. Legacy enrichment uses reviewed backfill, never replay;
 this admission change introduces no schema migration or synthetic acquisition defaults.
+
+Production stores also reject standalone `SaveTaxLotAsync` inserts and updates before opening a
+connection, whether the supplied lot has legacy or complete canonical acquisition facts. The
+existing `RequireGovernedPostingCommand` production setting requires journal-backed lot mutations
+through `IAtomicTaxLotJournalStore`. Explicit compatibility stores retain the historical save
+behavior; reviewed legacy backfill and immutable atomic receipt replay use their existing paths.
 
 Partial W10-LOT-002 amortization uses migration `V_ledger_040` and the existing atomic posting transaction. Period, Security Master, book-position and lot locks bind the reviewed state through commit. A CAS open-basis adjustment and zero-quantity append-only mutation preserve acquisition facts, tie exactly to the journal carrying movement, and replay without another journal or mutation. PostgreSQL reference stores must share the ledger database.
 Amortization requires the canonical depreciation/amortization source type, the exact reviewed
@@ -196,6 +358,10 @@ book-position authority, checks the predecessor snapshot/version and empty targe
 locks any retained target labels under the full book/account-name/type/symbol/financial-account key.
 Closed lots still reserve their labels, and the check uses the same trimmed labels as acquisition
 persistence. A collision fails through governed validation before any journal write. The transaction
+is preceded by an all-status candidate lookup through `GetTaxLotsByLotIdsAsync`, matching the
+complete account/book key including null/empty symbol and financial-account equivalence.
+Unsupported journal stores reject that lookup rather than certifying labels as available. The
+preview does not reserve labels or replace the locked atomic check. The transaction
 commits the reclassification journal, predecessor CAS, every successor and immutable mutation
 snapshot together. Both currency bases reconcile to the retained allocation while acquisition FX,
 holding dates and original acquisition evidence remain intact. Exact retries return the retained
@@ -309,6 +475,10 @@ The same limitation applies to coordinated rewriting of facts, their event hashe
 head; a locally recomputed chain is not independent authentication of its history.
 Coverage permits new SQL columns but compares retained column values, including nested JSON, exactly.
 `LedgerEventAuditPostgresTests` exercises these boundaries; hosted PostgreSQL proof is required.
+`PostgresLedgerJournalStore` (`ILedgerEventAuditVerifier`) and `PostgresAccountingConfigurationStore`
+(`IAccountingAuditChainVerifier`) also expose read-only verification that runs the same full scan
+under the head lock and commits nothing; a break is reported, never repaired. It is subject to the
+same limits as the append-time scan above.
 
 Audit actors come from validated posting commands or period transitions. Missing legacy attribution
 remains null. The period-creation endpoint stamps the authenticated creator; generated candidate
@@ -368,6 +538,50 @@ New canonical postings also lock the book before reference rows in compatibility
 after exact replay, so their lock order cannot oppose a backfill holding that book.
 `OpenLotBackfillPostgresTests` covers physical row-lock contention, cancellation, stale
 reference versions, rollback and restart replay using real reference stores.
+
+`V_ledger_052__tax_lot_current_factor.sql` adds the nullable `current_factor` the lot of record
+holds after a paydown: null while the lot is still at its booked factor (every lot until a paydown
+posts), never stamped at acquisition so retained digests stay stable, and movable only by a
+governed decline (`ck_tax_lots_current_factor`, `protect_open_lot_current_factor`).
+`LedgerTaxLotRecord.CurrentFactor` is read at ordinal 26 on every lot path and
+`LedgerTaxLotFaceValueTerms.ToFaceValueLot` rehydrates the aggregate at that factor, so
+`FaceOutstanding` is the paid-down face. V052 alone had the as-of read and the corporate-action
+successor fail closed on a paid-down lot; V053 below replaced that guard with exact factor dating
+and successor inheritance. Focused proof: `AtomicTaxLotJournalStoreTests.CurrentFactor`,
+`HistoricalTaxLotQuantityTests`.
+
+`V_ledger_053__atomic_lot_factor_paydown.sql` adds the governed `FactorPaydown` mutation that moves
+that factor. One batch restates every lot open in the (security, book position) scope as of the
+paydown date: `current_factor` is set to the new factor, open basis is relieved pro rata to the
+principal repaid (`basis x new / prior`, rounded once per lot in the lot's currency), and the
+difference between principal and relieved functional basis posts as realized gain or loss on the
+carrying account's exact scoped accounts. The position principal is the lots' held par face x
+(prior - new) rounded once and is spread across the lots by largest remainder, so across several
+lots the currency rounding of principal and basis is part of the realized result. A partial paydown preserves quantity (face per 100 is
+factor-invariant); a new factor of zero is a full paydown that closes the lot (`open_quantity = 0`,
+`current_factor = 0`) so it leaves open-lot and as-of reads from that date while its receipt stays
+retained. The migration adds the nullable `factor_paydown_instruction`, widens the batch, mutation
+and `ck_tax_lots_current_factor` checks to strict supersets (`current_factor >= 0`) and replaces
+`protect_open_lot_current_factor` so a factor moves only through a `FactorPaydown` batch of the
+same book/security/position that restates the lot's basis in the same batch. A lot may open with a
+factor only when its birth batch is a `CorporateAction` batch of the same book; the trigger checks
+that birth batch and the typed store (`OpenLotSuccessors`) verifies the inherited value. The
+serializable transaction locks Security Master and book-position authority, loads the
+instruction's lots, requires every lot at the prior factor with one shared carrying account,
+refuses a partial scope ("every lot open in the scope") and lots not stated in the as-of read's
+acquired-date, lot-id order (the allocation's rounding depends on that order), refuses a paydown
+preceding retained mutations, and asserts each lot after the CAS reproduces the reviewed
+projection. The journal must debit cash for the principal, credit the carrying account for
+the basis relieved (no line when nothing is relieved) and carry exactly one realized line when the
+difference is non-zero; journal-only append refuses the instruction. `HistoricalTaxLotQuantity`
+dates the factor from `lot_snapshot_after.currentFactor`, so an as-of read before the paydown
+returns the booked factor and full face, and a corporate-action successor inherits and may later
+pay down the factor it was born with. Later disposals relieve the reduced basis. A paid-down lot
+is not amortized: `OpenLotAmortization.Project` refuses an expected lot that holds a
+`CurrentFactor`, and the amortization basis-history guard refuses a lot whose latest adjustment is
+a `FactorPaydown`, so its premium or discount is realized through paydowns and disposal. Focused proof:
+`AtomicTaxLotJournalStoreTests.FactorPaydown`, `AtomicTaxLotJournalStoreTests.FactorPaydownPublication`,
+`AtomicTaxLotSuccessorMigrationTests.FactorPaydown`, `OpenLotFactorPaydownTests`.
 
 Durable disposal now uses the canonical decimal relief guard. Missing identity, quantity basis, or acquisition FX blocks relief and authoritative reporting until repaired. Reporting carries canonical lot evidence alongside retained disposal history; current market FX never substitutes for acquisition FX. Durable AverageCost posting remains refused until remaining-lot basis redistribution has its own atomic proof.
 
@@ -569,6 +783,11 @@ lookup paths, and evidence trails those layers rely on.
 
 ## Important workflows
 
+Security Master PostgreSQL searches break equal display names and full-text ranks with the unique
+security ID, so offset scans such as corporate-action backfills visit every unchanged matching
+projection exactly once. Search closes its ID reader before hydrating those projections on the
+same connection. Separate page requests do not share a database snapshot when projections change.
+
 Portfolio Records creates accounts with `IFundAccountStore.TryCreateAccountAsync`, an atomic
 insert-only operation. A duplicate account ID returns false and retains the existing record;
 account updates and reviewed legacy imports continue to use the separate upsert operation.
@@ -765,6 +984,11 @@ flow through the existing soft-close adjustment approval guard.
 Ledger tax-lot state is stored as account-scoped policy records plus open-lot records in the ledger
 schema. The storage layer keeps the FIFO/LIFO/HIFO/SpecificId policy inputs and open-lot balances;
 relief projection, approval workflow, and tax-reporting exports remain outside this project.
+Migration `V_ledger_051` keys lot-label and policy uniqueness, the open-lot index, and the store's
+open-lot, label, policy and successor-label lookups on `lower(financial_account_id)` so storage agrees
+with `LedgerAccount`'s case-insensitive `FinancialAccountId` equality; stored casing is preserved, and
+the migration raises with the conflicting group and row counts before any DDL when retained rows
+already collide under the case-insensitive key. Focused proof: `TaxLotAccountCasingPostgresTests`.
 Closed-period trial-balance financials now preserve the dimension envelope available on retained
 journal metadata when building report rows. The ledger book service groups balances by account and
 dimension key, then fills the book fund profile as the default fund dimension, so entity,

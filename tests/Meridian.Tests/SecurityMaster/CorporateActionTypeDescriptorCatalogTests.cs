@@ -141,6 +141,17 @@ public sealed class CorporateActionTypeDescriptorCatalogTests
     }
 
     [Fact]
+    public void FindByAssetClass_StructuredNote_OwesRedemptionAtMaturity()
+    {
+        // A structured note matures (the asset-class catalog requires its maturity), so it owes the
+        // same redemption evidence as the other maturing fixed-income classes; this is the catalog
+        // fact that routes it through factor/coupon-schedule readiness instead of a name match.
+        CorporateActionTypeDescriptorCatalog.FindByAssetClass("StructuredNote")
+            .Select(static descriptor => descriptor.CanonicalName)
+            .Should().Contain(CorporateActionEventTypes.BondMaturityRedemption);
+    }
+
+    [Fact]
     public void All_RedemptionKinds_RequireRedemptionPriceAndPostRedemptionMemo()
     {
         foreach (var canonical in new[]

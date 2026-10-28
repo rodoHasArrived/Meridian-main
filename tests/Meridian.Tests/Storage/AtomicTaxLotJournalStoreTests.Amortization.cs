@@ -913,12 +913,22 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         public Guid BookId { get; } = Guid.NewGuid();
         public Guid PositionId { get; } = Guid.NewGuid();
         public LedgerAccountingPeriod Period { get; private set; } = null!;
+        public LedgerAccountingPeriod AcquisitionPeriod { get; private set; } = null!;
         public LedgerTaxLotRecord Lot { get; private set; } = null!;
         private AccountingBookContextDto BookContext { get; set; } = null!;
 
+        /// <summary>
+        /// A same-currency USD pool booked below factor one (the worked factor-paydown lot) instead
+        /// of the EUR/USD bullet bond with a partial disposal; the journal and successor builders
+        /// follow <see cref="TransactionCurrency"/> and <see cref="FxRate"/> accordingly.
+        /// </summary>
+        public bool FactorPool { get; }
+        public string TransactionCurrency => FactorPool ? "USD" : "EUR";
+        public decimal FxRate => FactorPool ? 1m : 1.1m;
+
         private AmortFixture(PostgresTestServer server, LedgerJournalStoreOptions options,
             PostgresSecurityMasterStore securities, PostgresAssetOperationsProjectionStore positions,
-            AccountingBasisKindDto accountingBasis, Guid? organizationId)
+            AccountingBasisKindDto accountingBasis, Guid? organizationId, bool factorPool)
         {
             _server = server;
             Options = options;
@@ -926,6 +936,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             Positions = positions;
             AccountingBasis = accountingBasis;
             OrganizationId = organizationId;
+            FactorPool = factorPool;
             Store = Restart();
         }
 
@@ -943,7 +954,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         }
 
         public static async Task<AmortFixture> CreateAsync(bool premium,
-            AccountingBasisKindDto accountingBasis = AccountingBasisKindDto.Primary, Guid? organizationId = null)
+            AccountingBasisKindDto accountingBasis = AccountingBasisKindDto.Primary, Guid? organizationId = null,
+            bool factorPool = false)
         {
             var server = await PostgresTestServer.CreateAsync("MERIDIAN_LEDGER_CONNECTION_STRING");
             var options = new LedgerJournalStoreOptions
@@ -965,7 +977,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 await new LedgerMigrationRunner(options).EnsureMigratedAsync();
                 await new SecurityMasterMigrationRunner(securityOptions).EnsureMigratedAsync();
                 await new AssetOperationsMigrationRunner(assetOptions).EnsureMigratedAsync();
-                var fixture = new AmortFixture(server, options, new(securityOptions), new(assetOptions), accountingBasis, organizationId)
+                var fixture = new AmortFixture(server, options, new(securityOptions), new(assetOptions), accountingBasis, organizationId, factorPool)
                 { SecuritySchema = securityOptions.Schema };
                 await fixture.SeedAsync(premium);
                 return fixture;
@@ -982,9 +994,12 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 AccountingPolicyId: "amort-policy", AccountingPolicyVersion: "1"));
             var acquisitionPeriod = await Store.SavePeriodAsync(new(Guid.NewGuid(), BookId, 2025, 1, "2025",
                 AmortAcquired, new DateOnly(2025, 12, 31), "Open", at, null, 0), 0);
+            AcquisitionPeriod = acquisitionPeriod;
             Period = await Store.SavePeriodAsync(new(Guid.NewGuid(), BookId, 2026, 1, "2026",
                 AmortAsOf, new DateOnly(2026, 12, 31), "Open", at, null, 0), 0);
-            Security = AmortSecurity(Guid.NewGuid());
+            Security = FactorPool
+                ? AmortSecurity(Guid.NewGuid()) with { Currency = "USD", DisplayName = "Worked factor pool" }
+                : AmortSecurity(Guid.NewGuid());
             await Securities.UpsertProjectionAsync(Security);
             Security = (await Securities.GetProjectionAsync(Security.SecurityId))!;
             var evidence = BuildEvidence("amort-owned-source", 'a') with { EffectiveDate = AmortAcquired };
@@ -1004,6 +1019,15 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             await Positions.UpsertAsync(role, new BookPositionDto(PositionId, Security.SecurityId, roleId, book,
                 BookPositionSides.Long, "Active", AmortAcquired, OriginEvent: origin, EvidenceLinks: [evidence.EvidenceUri])
             { RetainedEvidence = [evidence] }, null, 0, new("independent-controller", "evidence://position-approval", "Review owned position", at));
+            if (FactorPool)
+            {
+                // The worked lot: 1,000,000 of par booked at factor 0.95 (950,000 of face) at 101.5,
+                // cost 964,250, USD throughout; nothing has been relieved yet.
+                Lot = await AcquireFactorLotAsync("factor-pool-lot", 950_000m, AmortAcquired);
+                await Store.SaveTaxLotPolicyAsync(new(Guid.NewGuid(), BookId, AmortAccount, LedgerTaxLotReliefMethod.Fifo,
+                    "amort-fifo-v1", AmortAcquired, at, at));
+                return;
+            }
             var price = premium ? 110m : 90m;
             var lotId = Guid.NewGuid();
             var source = BuildEvidence("amort-acquisition", 'a') with
@@ -1026,6 +1050,35 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 disposalJournal.SourceEventId!.Value, "amort-partial-disposal", acquisitionPeriod.Version, AtomicTaxLotMutationKind.Disposal,
                 [source], disposalSelections: [new(Lot.TaxLotRecordId, Lot.LotId, Lot.Version, 100m, 40m, 0,
                     source.EvidenceId, price * 1.1m, price * 44m)], reliefMethod: "Fifo", policyRevision: "amort-fifo-v1", referenceVersions: new(Security.Version, 1)))).MutatedLots.Single();
+        }
+
+        /// <summary>
+        /// Acquires a same-currency USD face lot booked at factor 0.95 at 101.5 into the fixture
+        /// account (or <paramref name="account"/>): quantity is face per 100, so a 950,000 booked face
+        /// is 9,500 units at unit cost 101.5. The lot opens at its booked factor.
+        /// </summary>
+        public async Task<LedgerTaxLotRecord> AcquireFactorLotAsync(string lotId, decimal originalFace, DateOnly acquired,
+            LedgerAccount? account = null, decimal pricePercentOfPar = 101.5m, decimal bookedFactor = 0.95m)
+        {
+            var at = new DateTimeOffset(acquired.ToDateTime(new TimeOnly(12, 0)), TimeSpan.Zero);
+            var id = Guid.NewGuid();
+            var basis = originalFace * pricePercentOfPar / 100m;
+            var quantity = originalFace / LedgerTaxLotFaceValueTerms.LedgerLotParBasis;
+            var source = BuildEvidence("factor-acquisition-" + id.ToString("N"), 'a') with
+            { EffectiveDate = acquired, SubjectType = "OpenLotAcquisition", SubjectId = id.ToString("D") };
+            var acquisition = new OpenLotAcquisitionDto(LotQuantityBasis.Face, "USD", "USD", 1m, basis, basis, acquired,
+                new(100m, bookedFactor, BondAmortizationMethod.NoAmortization, null), [source]);
+            var batchId = Guid.NewGuid();
+            var journal = Journal(AcquisitionPeriod, acquired, "factor-acquisition:" + id.ToString("N"), basis, basis, assetDebit: true,
+                account ?? AmortAccount);
+            var raw = new LedgerTaxLotRecord(id, BookId, account ?? AmortAccount, lotId, acquired, quantity, quantity, pricePercentOfPar,
+                "USD", at, at, journal.Entry.JournalEntryId, source.EvidenceId, 1, batchId, batchId, Security.SecurityId, PositionId,
+                OriginalFace: originalFace, BookedFactor: bookedFactor, ParBasis: 100m, Acquisition: acquisition);
+            var position = (await Positions.GetBookPositionAsync(PositionId))!;
+            return (await Store.AppendAssetPostingAsync(AtomicTaxLotJournalCommand.Create(batchId, BookId, journal,
+                journal.SourceEventId!.Value, journal.Entry.Metadata.IdempotencyKey!, AcquisitionPeriod.Version,
+                AtomicTaxLotMutationKind.Acquisition, [source], acquisitionLot: raw,
+                referenceVersions: new(Security.Version, position.Version)))).MutatedLots.Single();
         }
 
         public AtomicTaxLotJournalCommand Command(decimal amountOffset = 0m, OpenLotDto? expectedLot = null,
@@ -1125,7 +1178,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         }
 
         private LedgerJournalEntryWrite Journal(LedgerAccountingPeriod period, DateOnly date, string key,
-            decimal transactionAmount, decimal functionalAmount, bool assetDebit)
+            decimal transactionAmount, decimal functionalAmount, bool assetDebit, LedgerAccount? assetAccount = null)
         {
             var id = Guid.NewGuid();
             var sourceId = Guid.NewGuid();
@@ -1136,8 +1189,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 : new LedgerAccount("Cash", LedgerAccountType.Asset);
             LedgerEntry Leg(LedgerAccount account, bool debit) => new(Guid.NewGuid(), id, at, account,
                 debit ? functionalAmount : 0m, debit ? 0m : functionalAmount, "Canonical lot movement", dimensions: dimensions,
-                currency: new("EUR", "USD", debit ? transactionAmount : 0m, debit ? 0m : transactionAmount, 1.1m));
-            var entry = new JournalEntry(id, at, "Canonical lot movement", [Leg(AmortAccount, assetDebit), Leg(offset, !assetDebit)],
+                currency: new(TransactionCurrency, "USD", debit ? transactionAmount : 0m, debit ? 0m : transactionAmount, FxRate));
+            var entry = new JournalEntry(id, at, "Canonical lot movement", [Leg(assetAccount ?? AmortAccount, assetDebit), Leg(offset, !assetDebit)],
                 new(SecurityId: Security.SecurityId, EffectiveDate: date, IdempotencyKey: key, Tags: SecurityMasterLineageTags(Security.SecurityId)));
             var posting = new AccountingPostingCommandDto(Guid.NewGuid(), BookId, period.PeriodId, date, at, key,
                 AccountingPostingIntentDto.Adjustment, sourceId, ExpectedVersion: period.Version,
