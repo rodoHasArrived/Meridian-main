@@ -6661,13 +6661,24 @@ precondition that every node runs 5a covers this change, because 5a is built on 
 - **AQ1, stored securities.** Replace `<deployment_schema>` with the Security Master schema. The
   class filter matches what `SecurityAssetClassCatalog.GetOrDefault` resolves to a bullet class:
   the names in any casing, Bond's aliases `CorporateBond` and `MunicipalBond`, and the surrounding
-  whitespace .NET trims, Unicode spaces included (the `\u` escapes need the UTF8 database the
-  schema-control check already requires). The `profileFields` source takes an object under any casing, so a row carrying two
+  whitespace .NET trims, Unicode spaces included. Names and keys are folded under the C collation,
+  as .NET's ordinal comparison folds them, so a database with a Turkish default collation still
+  matches `TREASURYBILL`. The Unicode escapes match code points only in a UTF8 database, which nothing
+  in Meridian enforces, so the block first refuses any other encoding. The `profileFields` source takes an object under any casing, so a row carrying two
   spellings of it is over-counted rather than missed.
 
   ```sql
-  select lower(regexp_replace(s.asset_class, '^[\s\u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]+|[\s\u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]+$', '', 'g'))
-         as asset_class, src.source, lower(kv.key) as term, count(distinct s.security_id)
+  do $encoding$
+  begin
+      if current_setting('server_encoding') <> 'UTF8' then
+          raise exception 'AQ1 trims Unicode spaces only in a UTF8 database; this one is %',
+              current_setting('server_encoding');
+      end if;
+  end
+  $encoding$;
+
+  select lower(regexp_replace(s.asset_class collate "C", '^[\s\u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]+|[\s\u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]+$', '', 'g'))
+         as asset_class, src.source, lower(kv.key collate "C") as term, count(distinct s.security_id)
   from <deployment_schema>.securities s
   cross join lateral (
       select 'root', case when jsonb_typeof(s.asset_specific_terms) = 'object'
@@ -6676,17 +6687,17 @@ precondition that every node runs 5a covers this change, because 5a is built on 
       select 'profileFields', pf.value
       from jsonb_each(case when jsonb_typeof(s.asset_specific_terms) = 'object'
                            then s.asset_specific_terms else '{}'::jsonb end) pf
-      where lower(pf.key) = 'profilefields' and jsonb_typeof(pf.value) = 'object'
+      where lower(pf.key collate "C") = 'profilefields' and jsonb_typeof(pf.value) = 'object'
       union all
       select 'commonTerms', case when jsonb_typeof(s.common_terms) = 'object'
                                  then s.common_terms else '{}'::jsonb end
   ) src(source, terms)
   cross join lateral jsonb_each(src.terms) kv
-  where lower(regexp_replace(s.asset_class, '^[\s\u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]+|[\s\u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]+$', '', 'g'))
+  where lower(regexp_replace(s.asset_class collate "C", '^[\s\u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]+|[\s\u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]+$', '', 'g'))
           in ('bond', 'corporatebond', 'municipalbond', 'treasurybill', 'commercialpaper')
-    and ((lower(kv.key) = 'scheduleconventions'
+    and ((lower(kv.key collate "C") = 'scheduleconventions'
           and jsonb_path_exists(kv.value, '$.** ? (@.type() != "null" && @.type() != "array" && @.type() != "object")'))
-      or (lower(kv.key) in ('callschedule', 'putschedule')
+      or (lower(kv.key collate "C") in ('callschedule', 'putschedule')
           and jsonb_typeof(kv.value) <> 'null'
           and (jsonb_typeof(kv.value) <> 'array' or jsonb_array_length(kv.value) > 0)))
   group by 1, 2, 3;
@@ -6755,13 +6766,36 @@ precondition that every node runs 5a covers this change, because 5a is built on 
   $gate$;
   ```
 
-Both checks were run on PostgreSQL 16 against synthetic rows. AQ1 counted a declaring block in each
-source and casing, under `CorporateBond`, a padded `MunicipalBond`, an upper-case `TREASURYBILL` and
-class names padded with a no-break, em or ideographic space, a call entry `[{}]` and a put `{}`, and
-skipped unset spellings, `[]` blocks and an Equity row. AQ2 found snapshots nested in arrays and
-objects in a ledger table and in a partitioned asset-operations table (counted once), skipped unset
-spellings and a dropped column, and raised an error for a placeholder left in place, for the
-unquoted name of a schema created in mixed case, for an existing schema without its marker table,
-and for the ledger name given twice; its warnings survived `client_min_messages = warning`.
+Both checks were run, as written here, on PostgreSQL 16 against synthetic rows, in a UTF8 database
+with the C collation and in one whose default collation is ICU Turkish. AQ1 counted a declaring
+block in each source and casing (upper-case keys included), under `CorporateBond`, a padded
+`MunicipalBond`, an upper-case `TREASURYBILL` and class names padded with a no-break, em or
+ideographic space, a call entry `[{}]` and a put `{}`, and skipped unset spellings, `[]` and `[{}]`
+blocks and an Equity row; both databases gave the same counts, and a SQL_ASCII database was refused.
+AQ2 found snapshots nested in arrays and objects in a ledger table and in a partitioned
+asset-operations table (counted once), skipped unset spellings and a dropped column, and raised an
+error for a placeholder left in place, for the unquoted name of a schema created in mixed case, for
+an existing schema without its marker table, and for the ledger name given twice; its warnings
+survived `client_min_messages = warning`.
 
-<!-- sm5a0-validation-results -->
+**Validation.** `AmortizationLotInstructionContractTests` passes (92), including the new casing,
+cross-source, malformed and unset cases. The amortization, asset-operations, cash-flow, tax-lot and
+asset-accounting filter passed (1,191). The whole `Meridian.Tests` suite ran with 21,621 passed, 609
+skipped and 2 failed: the isolated QuantScript worker behind one strategy-design test, which has
+failed in every full run in this container since increment 3, and an allocation-budget test that
+measured allocations while other builds ran and passed alone (9 of 9). Two mutations each failed the
+tests written for them: reading call and put schedules through the first spelling found again failed
+the four cross-source and casing cases, and dropping the `scheduleConventions` check failed all nine
+of its cases. The format, file-size, inline SHA-256, duplicate-helper, test-skip,
+warning-suppression and endpoint-cancellation guards pass, `validate-doc-hashes` is clean and the
+`verify-docs` lane passes.
+
+The change went through two adversarial reviews, with two skeptics trying to refute each finding.
+They changed the deploy gate, not the code: the gate text now says what a hit breaks (a declaring
+retained snapshot makes its spine event unreadable and uncorrectable, so a hit is remediated first)
+and which retained instructions are not checked again (a reversal's own snapshot); AQ2 reports
+through warnings, resolves its schemas as identifiers and requires each schema's marker table, so a
+mistyped or wrong schema fails instead of passing silently; AQ1 matches Bond's catalog aliases,
+trims the Unicode spaces .NET trims and folds case under the C collation; and the README and the
+not-covered note say exactly what declares nothing and what the retained economic terms leave
+unread.
