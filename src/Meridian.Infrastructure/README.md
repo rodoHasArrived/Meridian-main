@@ -169,7 +169,7 @@ targeted evidence, ownership, and next actions. Readiness describes the implemen
 evidence; live-provider validation and operator sign-off remain governed by the
 [provider validation matrix](../../docs/reference/provider-validation-matrix.md).
 
-`ProviderCapabilityDescriptorCatalog` owns built-in adapter types and factories for streaming,
+`ProviderCapabilityDescriptorCatalog` inventories built-in adapter types and factory ownership for streaming,
 historical backfill, symbol search, corporate actions, options, and brokerage. `ProviderFactory`
 and `AddProviderServices` consume those same descriptors; the merged catalog derives its six
 factory flags from them without constructing disabled adapters. Module discovery runs before
@@ -182,6 +182,19 @@ capability registrations, so attribute metadata and unrelated DI registrations c
 module configuration or failed registration. External discovery metadata projects module-only corporate-action and
 brokerage families into inventory without constructing them, including when disabled or awaiting
 configuration. Synthetic, Polygon and NYSE compatibility data sources are also recorded.
+`FredProviderModule` owns FRED historical and series-search registration, construction, and
+capability declarations through the existing `IProviderModule` mechanism. Historical backfill
+retains its explicit opt-in; search retains its credential-based default. Family disable settings
+and configured/stored/environment credential precedence apply before construction. The module's
+late configuration gate uses the final host credential resolver without contacting FRED; absent
+credentials leave runtime capabilities unavailable while inventory remains visible. Hosted
+resolution reuses container-owned singletons. Standalone `ProviderFactory` compatibility calls
+delegate to module-owned factories, while hosted composition cannot recreate a failed or skipped
+module through that compatibility path. Runtime registration retains the enabled contract set
+for multi-capability adapters and isolates construction failures from other providers.
+Options enumeration reuses successfully constructed module entries rather than retrying failed
+factories during catalog reads.
+`FredProviderModuleCompositionTests` and `ProviderModuleCompositionTests` cover these seams.
 OpenFIGI's `ISymbolResolver` remains in the adapter inventory, while the operator matrix
 projects only its six supported surfaces and omits resolver-only rows. Streaming instrument coverage is independently
 declared, so Polygon's Forex/Crypto/Index historical coverage does not advertise unsupported

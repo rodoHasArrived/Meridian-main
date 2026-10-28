@@ -11,4 +11,8 @@ namespace Meridian.Infrastructure.DataSources;
 public sealed record ProviderModuleCapabilityRegistration(
     string ProviderId,
     Type Contract,
-    Type ImplementationType);
+    Type ImplementationType)
+{
+    /// <summary>Optional late configuration gate; false means the factory must not be resolved.</summary>
+    public Func<IServiceProvider, bool>? IsConfigured { get; init; }
+}

@@ -24,6 +24,7 @@ public sealed partial class ProviderFactory
     private readonly IReadOnlyDictionary<string, ProviderModuleContext>? _moduleContexts;
 
     internal AppConfig Config => _config;
+    internal Serilog.ILogger Log => _log;
 
     internal object CreateAdapter(Type implementation)
         => ActivatorUtilities.CreateInstance(Services, implementation);

@@ -6,7 +6,6 @@ using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Finnhub;
-using Meridian.Infrastructure.Adapters.Fred;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.OpenFigi;
@@ -22,7 +21,6 @@ using Meridian.Infrastructure.Contracts;
 using Serilog;
 using AlphaVantageBackfillConfig = Meridian.Core.Config.AlphaVantageConfig;
 using FinnhubBackfillConfig = Meridian.Core.Config.FinnhubConfig;
-using FredBackfillConfig = Meridian.Core.Config.FredConfig;
 using NasdaqBackfillConfig = Meridian.Core.Config.NasdaqDataLinkConfig;
 using PolygonBackfillConfig = Meridian.Core.Config.PolygonConfig;
 using StooqBackfillConfig = Meridian.Core.Config.StooqConfig;
@@ -74,6 +72,12 @@ public sealed partial class ProviderFactory
     public Task<ProviderCreationResult> CreateAndRegisterAllAsync(
         ProviderRegistry registry,
         CancellationToken ct = default)
+        => CreateAndRegisterAllAsync(registry, ct, includeModuleOwned: true);
+
+    internal Task<ProviderCreationResult> CreateAndRegisterAllAsync(
+        ProviderRegistry registry,
+        CancellationToken ct,
+        bool includeModuleOwned)
     {
         ArgumentNullException.ThrowIfNull(registry);
 
@@ -84,7 +88,7 @@ public sealed partial class ProviderFactory
 
         // Create and register backfill providers
         MigrationDiagnostics.IncBackfillFactoryHit();
-        var backfillProviders = CreateBackfillProviders();
+        var backfillProviders = CreateProviders<IHistoricalDataProvider>(static p => p.Priority, "backfill", includeModuleOwned);
         foreach (var provider in backfillProviders)
         {
             registry.Register(provider);
@@ -93,7 +97,7 @@ public sealed partial class ProviderFactory
 
         // Create and register symbol search providers
         MigrationDiagnostics.IncSymbolSearchFactoryHit();
-        var searchProviders = CreateSymbolSearchProviders();
+        var searchProviders = CreateProviders<ISymbolSearchProvider>(static p => p.Priority, "symbol search", includeModuleOwned);
         foreach (var provider in searchProviders)
         {
             registry.Register(provider);
@@ -123,11 +127,12 @@ public sealed partial class ProviderFactory
 
     private IReadOnlyList<T> CreateProviders<T>(
         Func<T, int> priority,
-        string providerKind)
+        string providerKind,
+        bool includeModuleOwned = true)
         where T : class
     {
         var providers = new List<T>();
-        foreach (var registration in ProviderCapabilityDescriptorCatalog.Descriptors.SelectMany(static d => d.Registrations()))
+        foreach (var registration in ProviderCapabilityDescriptorCatalog.Descriptors.SelectMany(d => d.Registrations(includeModuleOwned)))
         {
             if (registration.Contract != typeof(T) || !IsCapabilityEnabled(registration))
                 continue;
@@ -263,13 +268,6 @@ public sealed partial class ProviderFactory
             cfg?.ApiKey,
             apiKey => new AlphaVantageHistoricalDataProvider(apiKey: apiKey, log: _log));
 
-    internal IHistoricalDataProvider? CreateFredBackfillProvider(FredBackfillConfig? cfg)
-        => CreateCredentialGatedBackfillProvider<FredHistoricalDataProvider>(
-            EnabledWhenOptedIn(cfg?.Enabled),
-            "FRED_API_KEY",
-            cfg?.ApiKey,
-            apiKey => new FredHistoricalDataProvider(apiKey: apiKey, log: _log));
-
     internal IHistoricalDataProvider? CreateNasdaqBackfillProvider(NasdaqBackfillConfig? cfg)
     {
         if (!EnabledByDefault(cfg?.Enabled))
@@ -350,13 +348,6 @@ public sealed partial class ProviderFactory
             "TWELVEDATA_API_KEY",
             configuredValue: null,
             apiKey => new TwelveDataSymbolSearchProvider(apiKey, httpClient: null, log: _log));
-
-    internal ISymbolSearchProvider? CreateFredSearchProvider(FredBackfillConfig? cfg)
-        => CreateCredentialGatedSearchProvider<FredHistoricalDataProvider>(
-            EnabledByDefault(cfg?.Enabled),
-            "FRED_API_KEY",
-            cfg?.ApiKey,
-            apiKey => new FredSymbolSearchProvider(apiKey, httpClient: null, log: _log));
 
     internal ISymbolSearchProvider? CreateNasdaqSearchProvider(NasdaqBackfillConfig? cfg)
         => CreateCredentialGatedSearchProvider<NasdaqDataLinkHistoricalDataProvider>(
@@ -443,7 +434,7 @@ public sealed partial class ProviderFactory
         => CreateCredentialGatedProvider<TCredentialSource, ISymbolSearchProvider>(
             enabled, credentialName, configuredValue, factory);
 
-    private ICredentialContext CreateCredentialContext<TProvider>(params (string Name, string? Value)[] configuredValues)
+    internal ICredentialContext CreateCredentialContext<TProvider>(params (string Name, string? Value)[] configuredValues)
     {
         IReadOnlyDictionary<string, string?>? configuredLookup = null;
         if (configuredValues.Length > 0)
