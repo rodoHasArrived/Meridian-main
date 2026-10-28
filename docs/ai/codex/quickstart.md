@@ -98,6 +98,11 @@ selects explicit offline fixtures. The guide includes readiness and shutdown acc
 
 ## Read Budget
 
+For the optional task-context and generated-guidance pilot, follow
+[`../tooling/throughput-pilot.md`](../tooling/throughput-pilot.md). Assemble a scoped packet before
+discovery, verify its source hashes before reuse, and retain the raw task-event log. Packets aid
+routing; applicable instructions, current source, and required validation remain authoritative.
+
 Load only enough context to route and validate the task.
 Progress updates should use the canonical AI User Notification template in
 `../assistant-workflow-contract.md`: phase, intent understood, current action, evidence/source, next
