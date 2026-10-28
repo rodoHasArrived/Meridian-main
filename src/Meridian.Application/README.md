@@ -11,6 +11,14 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Application
 
+`SecurityMaster/CashFlow/ScheduleSpecFactory` prepares the declared-schedule integration by mapping
+decoded F# conventions to the Contracts kernel. It refuses unresolved calendars, unknown cadence
+and contradictory roll terms, while leaving grid validation to the kernel. Its tests cover calendar
+precedence, joint holidays, payment lag, accrual adjustment and exact cadence mapping. The adapter
+is not yet called by projections; production still follows the existing paths. See the
+[contractual schedule rollout](../../docs/domain/contractual-schedule.md#future-expansion-notes)
+for the remaining 5a and 5b work.
+
 `SecurityMasterPricingService.ClosePrices` builds independently reviewed immutable close-price
 sets through the existing hierarchy and retained selection receipts. Exact account/book/UTC
 valuation date, quote units, source observations, override support and blocker assessments are
