@@ -142,3 +142,32 @@ decision per criterion. At the documented default (maximum age 3 days, minimum M
 complete coverage and observed date required), the planned unrepaired population expects eight
 assessed positions, five blocked and two affected valuation batches; after owned repairs it
 expects eight assessed and zero blocked. These remain expected shapes, not observed results.
+
+## Local implementation validation
+
+The implementation adds factor-paydown preparation and governed draft routes plus browser/WPF
+review controls and the bounded legacy credential-ownership guard. These results describe local
+working-tree proof, not hosted certification or operator acceptance:
+
+- The selected .NET run passed **312 tests**, with no failures or skips, covering factor paydowns,
+  PostgreSQL atomic posting/replay, provider setup ownership/routing, endpoint authorization and
+  read declarations, valuation freshness and close-readiness contributors. PostgreSQL ran in an
+  owned disposable PostgreSQL 16 container with isolated test schemas.
+- Full WPF application/XAML and complete WPF test-project sources cross-compiled with zero
+  errors and 49 warnings. The build explicitly selected `IsWindows=true`,
+  `EnableWindowsTargeting=true` and `--full-wpf-build`; no Windows runtime tests ran on Linux.
+- Browser API, panel, Ledger Explorer integration and posted-ledger hook checks passed **89 tests**.
+  Strict type checking and production bundling passed. Full lint reported zero errors and 105
+  existing warnings; new files passed lint without warnings.
+- Playwright Chromium exercised preparation, keyboard review confirmation, governed draft and
+  journal-approval navigation at 1920×1080, 1440×900 and 1366×768. API responses were mocked;
+  no page errors or horizontal overflow were observed and axe reported no violations.
+- The complete `bash scripts/ci.sh` gate remains separately recorded by its run result. The first
+  attempt stopped at formatting in the new endpoint; scoped formatting corrected those errors.
+
+The selected .NET filter was `FactorPaydown`, `ProviderSetupOwnershipTests`,
+`ProviderRoutingEndpointsTests`, `ValuationFreshnessAcceptanceTests`,
+`CloseReadinessSubjectSourceTests`, `DailyValuationPositionServiceTests`,
+`PrivateCapitalCloseCockpitServiceTests`, `EndpointAuthorization` and `EndpointReadDeclaration`
+joined with `FullyQualifiedName~` alternatives. No category exclusion was used, so the paydown
+PostgreSQL tests were executed rather than silently skipped.
