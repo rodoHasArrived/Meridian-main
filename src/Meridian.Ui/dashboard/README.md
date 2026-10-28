@@ -1806,7 +1806,9 @@ its supporting facts. Existing service permission checks, operator identity, rat
 casework outcomes and financial calculations remain authoritative. Exceptions reuses the queue
 pattern without constraining its cross-run casework to one run.
 
-`accounting-screen.reconciliation-workbench.tsx` owns the work surface. Supporting account
+`accounting-screen.reconciliation-workbench.tsx` owns the work surface.
+`accounting-screen.reconciliation-resolve-dialog.ts` owns rationale and confirmation state;
+existing view-model exports remain compatible. Supporting account
 oversight, calibration/history, readiness, source comparison and run evidence remain available in
 labelled disclosures. Statement import IDs and strategy reconciliation run IDs remain distinct;
 the UI does not infer a mapping between them.
@@ -1820,7 +1822,9 @@ Screen-local controls retain keyboard focus instead of triggering shell navigati
 
 Filtering preserves the selected inspector even when its row is outside the results. A missing
 explicit selection remains unavailable with a notice instead of silently selecting another record.
-Scope revisions invalidate old rows and pending results, including A–B–A navigation. Pending or
+Scope revisions invalidate old rows and pending results, including A–B–A navigation.
+Committed same-scope outcomes update the queue across run changes while obsolete action notices
+stay suppressed. Pending or
 failed queue reads disable actions; view state never stores financial authority or approvals.
 Urgency sorting uses the supplied SLA state and case priority, not displayed amounts or currency.
 

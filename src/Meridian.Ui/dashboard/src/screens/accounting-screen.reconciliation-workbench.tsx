@@ -522,7 +522,7 @@ export function ReconciliationStatementRuns({ reconciliation, initiallyOpen = fa
   return (
     <div className="reconciliation-run-context">
       <label className="reconciliation-run-picker">
-        Reconciliation run
+        <span>Reconciliation run</span>
         <select value={reconciliation.reconciliationQueue.some((run) => run.runId === reconciliation.selectedRunId) ? reconciliation.selectedRunId ?? "" : ""} onChange={(event) => reconciliation.selectRun(event.target.value || null)}>
           <option value="">Choose a reconciliation run</option>
           {reconciliation.reconciliationQueue.map((run) => <option key={run.runId} value={run.runId}>{run.strategyName} · {run.openBreakCount} open</option>)}

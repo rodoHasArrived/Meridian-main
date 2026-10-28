@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { buildSuccessfulVerifiedOperationOutcome } from "@/test/verified-operation-outcome";
@@ -40,6 +41,60 @@ function services(): AccountingReconciliationServices {
 }
 
 describe("reconciliation selection continuity", () => {
+  it.each(["assign", "resolve"] as const)("retains a committed %s response when operators return to its run", async (command) => {
+    const api = services();
+    let completeAction!: (value: ReconciliationCaseworkOperationResult) => void;
+    const operation = new Promise<ReconciliationCaseworkOperationResult>((resolve) => { completeAction = resolve; });
+    if (command === "assign") api.reviewBreak = vi.fn().mockReturnValue(operation);
+    else api.resolveBreak = vi.fn().mockReturnValue(operation);
+    const { result, rerender } = renderHook(({ runId }) => useAccountingReconciliationViewModel(data, "reconciliation", api, null, null,
+      { ...selection("scope-a"), selectedRunId: runId }), { initialProps: { runId: "run-a" } });
+    await waitFor(() => expect(result.current.rows).toHaveLength(1));
+    let pending!: Promise<void>;
+    act(() => {
+      pending = command === "assign" ? result.current.assignBreak("break-a")
+        : result.current.resolveBreak("break-a", "Resolved", "Source evidence reviewed.");
+    });
+    rerender({ runId: "run-b" });
+    expect(result.current.breakAction).toBeNull();
+    const updatedItem: ReconciliationBreakQueueItem = {
+      ...item, assignedTo: "confirmed-owner", status: command === "assign" ? "InReview" : "Resolved"
+    };
+    await act(async () => { completeAction(successfulCaseworkOperation(updatedItem)); await pending; });
+    expect(result.current.rows).toEqual([]);
+    expect(result.current.actionErrorText).toBeNull();
+    rerender({ runId: "run-a" });
+    expect(result.current.rows[0]).toMatchObject({ ownerLabel: "confirmed-owner", status: updatedItem.status });
+    expect(api.getBreakQueue).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([null, "run-b"])("retains Exceptions assignment when selecting a break changes run context from %s", async (initialRun) => {
+    const api = services();
+    let completeAction!: (value: ReconciliationCaseworkOperationResult) => void;
+    api.reviewBreak = vi.fn().mockReturnValue(new Promise<ReconciliationCaseworkOperationResult>((resolve) => { completeAction = resolve; }));
+    const { result } = renderHook(() => {
+      const [runId, setRunId] = useState<string | null>(initialRun);
+      const [breakId, setBreakId] = useState<string | null>(null);
+      return useAccountingReconciliationViewModel(data, "exceptions", api, null, null, {
+        scopeKey: "scope-a", selectedRunId: runId, selectedBreakId: breakId, selectRun: setRunId,
+        selectBreak: (selectedBreak, selectedRun) => { setBreakId(selectedBreak); if (selectedRun) setRunId(selectedRun); }
+      });
+    });
+    await waitFor(() => expect(result.current.rows[0]?.canAssign).toBe(true));
+    expect(result.current.selectedRunId).toBe(initialRun);
+    expect(result.current.selectedBreakId).toBe("break-a");
+    let pending!: Promise<void>;
+    act(() => { result.current.selectBreak("break-a"); pending = result.current.assignBreak("break-a"); });
+    expect(result.current.selectedRunId).toBe("run-a");
+    await act(async () => {
+      completeAction(successfulCaseworkOperation({ ...item, assignedTo: "exceptions-owner", status: "InReview" }));
+      await pending;
+    });
+    expect(result.current.rows[0]).toMatchObject({ ownerLabel: "exceptions-owner", status: "InReview" });
+    expect(result.current.actionErrorText).toBeNull();
+    expect(api.getBreakQueue).toHaveBeenCalledTimes(1);
+  });
+
   it("clears pending action state on run changes and ignores a late error after returning to the run", async () => {
     const api = services();
     let rejectAction!: (error: Error) => void;

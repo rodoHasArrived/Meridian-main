@@ -76,7 +76,6 @@ import {
   buildReconciliationDetailActions,
   buildReconciliationDetailViewState,
   buildReconciliationQueuePanelViewState,
-  buildReconciliationResolveDialogState,
   buildReconciliationStatementRunsViewState,
   sortStatementRunsNewestFirst,
   resolveSelectedReconciliation,
@@ -222,7 +221,8 @@ export type {
 } from "./accounting-screen.task-mode-view-model";
 
 export type ReconciliationBreakCommand = "assign" | "resolve" | "dismiss";
-export type ReconciliationBreakResolutionStatus = ResolveReconciliationBreakRequest["status"];
+export type { ReconciliationBreakResolutionStatus, ReconciliationResolveDialogState, ReconciliationResolveDialogViewModel } from "./accounting-screen.reconciliation-resolve-dialog";
+export { useReconciliationResolveDialogViewModel } from "./accounting-screen.reconciliation-resolve-dialog";
 export type SecurityConflictResolution = ResolveConflictRequest["resolution"];
 
 export interface SecurityMasterServices {
@@ -1405,38 +1405,6 @@ export interface ReconciliationBreakQueueState {
   actionErrorText: string | null;
   actionErrorDetails: string[];
   statusAnnouncement: string;
-}
-
-export interface ReconciliationResolveDialogState {
-  breakId: string;
-  status: ReconciliationBreakResolutionStatus;
-  rationale: string;
-  inputId: string;
-  helpId: string;
-  formAriaLabel: string;
-  label: string;
-  placeholder: string;
-  helpText: string;
-  submitLabel: string;
-  submitAriaLabel: string;
-  submitDisabledReason: string | null;
-  cancelLabel: string;
-  cancelAriaLabel: string;
-  isSubmitDisabled: boolean;
-}
-
-export interface ReconciliationResolveDialogViewModel {
-  active: ReconciliationResolveDialogState | null;
-  open: (breakId: string, status: ReconciliationBreakResolutionStatus) => void;
-  close: () => void;
-  updateRationale: (value: string) => void;
-  submit: () => Promise<void>;
-  isOpenFor: (breakId: string) => boolean;
-  getActionDisabledReason: (
-    breakId: string,
-    command: ReconciliationBreakCommand,
-    baseDisabledReason?: string | null
-  ) => string | null;
 }
 
 export interface ReconciliationDetailActionsViewModel {
@@ -4111,8 +4079,8 @@ export function useAccountingReconciliationViewModel(
 
   const canActOnCurrentQueue = useCallback((breakId: string) => !selectionState || (
     breakQueueReadScope === scopeRevision && !breakQueueLoading && !breakQueueError
-    && breakQueue.some((item) => item.breakId === breakId && (!selectedRunId || item.runId === selectedRunId))
-  ), [breakQueue, breakQueueError, breakQueueLoading, breakQueueReadScope, scopeRevision, selectedRunId, selectionState]);
+    && breakQueue.some((item) => item.breakId === breakId && (workstream !== "reconciliation" || !selectedRunId || item.runId === selectedRunId))
+  ), [breakQueue, breakQueueError, breakQueueLoading, breakQueueReadScope, scopeRevision, selectedRunId, selectionState, workstream]);
 
   const assignBreak = useCallback(async (breakId: string) => {
     if (!canActOnCurrentQueue(breakId)) {
@@ -4130,7 +4098,8 @@ export function useAccountingReconciliationViewModel(
         ...(operatorIdentity ? { assignedTo: operatorIdentity, reviewedBy: operatorIdentity } : {})
       });
       const updated = requireSuccessfulReconciliationCasework(operation);
-      if (activeScopeRef.current !== requestScope || actionContextRef.current.revision !== requestActionContext) return;
+      // A committed result remains authoritative for this queue when the operator changes runs.
+      if (activeScopeRef.current !== requestScope) return;
       setBreakQueue((current) => replaceBreakQueueItem(current, updated));
     } catch (err) {
       if (activeScopeRef.current === requestScope && actionContextRef.current.revision === requestActionContext) setBreakActionError(describeApiError(err, "Break assignment failed."));
@@ -4172,7 +4141,8 @@ export function useAccountingReconciliationViewModel(
         operatorRationale: trimmedRationale
       });
       const updated = requireSuccessfulReconciliationCasework(operation);
-      if (activeScopeRef.current !== requestScope || actionContextRef.current.revision !== requestActionContext) return;
+      // A committed result remains authoritative for this queue when the operator changes runs.
+      if (activeScopeRef.current !== requestScope) return;
       setBreakQueue((current) => replaceBreakQueueItem(current, updated));
       void recordActivationOutcome(ACTIVATION_OUTCOME_KEYS.validationResolved);
     } catch (err) {
@@ -4439,68 +4409,6 @@ export function useGovernanceReconciliationViewModel(
   services: AccountingReconciliationServices = defaultAccountingReconciliationServices
 ) {
   return useAccountingReconciliationViewModel(data, workstream, services);
-}
-
-export function useReconciliationResolveDialogViewModel(
-  resolveBreak: (
-    breakId: string,
-    status: ReconciliationBreakResolutionStatus,
-    operatorRationale: string
-  ) => Promise<void>
-): ReconciliationResolveDialogViewModel {
-  const [dialog, setDialog] = useState<{ breakId: string; status: ReconciliationBreakResolutionStatus } | null>(null);
-  const [rationale, setRationale] = useState("");
-
-  const close = useCallback(() => {
-    setDialog(null);
-    setRationale("");
-  }, []);
-
-  const open = useCallback((breakId: string, status: ReconciliationBreakResolutionStatus) => {
-    setDialog({ breakId, status });
-    setRationale("");
-  }, []);
-
-  const submit = useCallback(async () => {
-    if (!dialog || !rationale.trim()) {
-      return;
-    }
-
-    await resolveBreak(dialog.breakId, dialog.status, rationale);
-    close();
-  }, [close, dialog, rationale, resolveBreak]);
-
-  const active = useMemo(
-    () => (dialog ? buildReconciliationResolveDialogState(dialog.breakId, dialog.status, rationale) : null),
-    [dialog, rationale]
-  );
-
-  const isOpenFor = useCallback((breakId: string) => dialog?.breakId === breakId, [dialog]);
-  const getActionDisabledReason = useCallback((
-    breakId: string,
-    command: ReconciliationBreakCommand,
-    baseDisabledReason: string | null = null
-  ) => {
-    if (baseDisabledReason) {
-      return baseDisabledReason;
-    }
-
-    if (dialog?.breakId === breakId && (command === "resolve" || command === "dismiss")) {
-      return "Enter the rationale or cancel the open queue action before choosing another action.";
-    }
-
-    return null;
-  }, [dialog]);
-
-  return {
-    active,
-    open,
-    close,
-    updateRationale: setRationale,
-    submit,
-    isOpenFor,
-    getActionDisabledReason
-  };
 }
 
 const securitySearchResultColumns: SecuritySearchResultColumnViewModel[] = [
