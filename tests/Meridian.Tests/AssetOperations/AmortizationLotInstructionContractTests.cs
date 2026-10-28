@@ -173,7 +173,7 @@ public sealed class AmortizationLotInstructionContractTests
     [InlineData("\"ModifiedFollowing\"")]
     [InlineData("[{\"businessDayConvention\":\"Following\"}]")]
     [InlineData("false")]
-    public void MalformedScheduleConventions_AreNotReadAsUnset(string json)
+    public void PopulatedMalformedScheduleConventions_AreNotReadAsUnset(string json)
         => Validate(WithTerms(Inputs(), terms => terms["scheduleConventions"] = Json(json)))
             .Should().Contain(issue => issue.Contains("declared schedule conventions"));
 
@@ -182,6 +182,8 @@ public sealed class AmortizationLotInstructionContractTests
     [InlineData("{}")]
     [InlineData("[]")]
     [InlineData("{\"businessDayConvention\":null,\"paymentCalendars\":[]}")]
+    [InlineData("[{}]")]
+    [InlineData("[null]")]
     public void UnsetScheduleConventions_DeclareNothing(string json)
         => Validate(WithTerms(Inputs(), terms => terms["scheduleConventions"] = Json(json))).Should().BeEmpty();
 
