@@ -95,7 +95,7 @@
   </ItemGroup>
 
   <ItemGroup Label="CLI Tools">
-    <PackageVersion Include="System.CommandLine" Version="2.0.12" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.14" />
   </ItemGroup>
 
   <ItemGroup Label="System Libraries">
