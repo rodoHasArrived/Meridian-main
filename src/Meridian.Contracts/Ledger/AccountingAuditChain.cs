@@ -335,6 +335,7 @@ public static class AccountingAuditChain
         var linkedEventIds = new HashSet<Guid>();
         string? previousHash = null;
         var expectedSequence = state.GenesisSequence;
+        var linksVerified = 0;
         foreach (var link in state.Links)
         {
             if (link.Sequence != expectedSequence)
@@ -342,6 +343,7 @@ public static class AccountingAuditChain
                 return Fail(
                     AccountingAuditChainStatus.BrokenSequence,
                     state,
+                    linksVerified,
                     expectedSequence,
                     $"Expected sequence {expectedSequence.ToString(CultureInfo.InvariantCulture)} "
                     + $"but found {link.Sequence.ToString(CultureInfo.InvariantCulture)}.");
@@ -352,6 +354,7 @@ public static class AccountingAuditChain
                 return Fail(
                     AccountingAuditChainStatus.MissingEvent,
                     state,
+                    linksVerified,
                     link.Sequence,
                     $"Audit event '{link.AuditEventId.ToString("D", CultureInfo.InvariantCulture)}' is no longer retained.");
             }
@@ -363,6 +366,7 @@ public static class AccountingAuditChain
                 return Fail(
                     AccountingAuditChainStatus.UnlinkedEvent,
                     state,
+                    linksVerified,
                     link.Sequence,
                     $"Audit event '{link.AuditEventId.ToString("D", CultureInfo.InvariantCulture)}' is claimed by more than one link.");
             }
@@ -372,6 +376,7 @@ public static class AccountingAuditChain
                 return Fail(
                     AccountingAuditChainStatus.EventMutated,
                     state,
+                    linksVerified,
                     link.Sequence,
                     $"Audit event '{link.AuditEventId.ToString("D", CultureInfo.InvariantCulture)}' no longer matches its recorded digest.");
             }
@@ -385,12 +390,14 @@ public static class AccountingAuditChain
                 return Fail(
                     AccountingAuditChainStatus.BrokenLink,
                     state,
+                    linksVerified,
                     link.Sequence,
                     "The link does not bind to its predecessor.");
             }
 
             previousHash = link.EntryHash;
             expectedSequence++;
+            linksVerified++;
         }
 
         // The loop above proves every LINK points at a real, unmutated event. It says nothing about
@@ -409,7 +416,10 @@ public static class AccountingAuditChain
             return Fail(
                 AccountingAuditChainStatus.UnlinkedEvent,
                 state,
-                state.Head?.Sequence ?? state.GenesisSequence,
+                linksVerified,
+                // An unlinked event has no chain sequence, and every link verified, so no position
+                // is named rather than pointing at a link that is intact.
+                null,
                 $"{auditEvents.Count.ToString(CultureInfo.InvariantCulture)} events are retained but "
                 + $"{expectedEventCount.ToString(CultureInfo.InvariantCulture)} are accounted for "
                 + $"({state.PreChainEventCount.ToString(CultureInfo.InvariantCulture)} before the genesis "
@@ -531,12 +541,17 @@ public static class AccountingAuditChain
             head?.Sequence ?? anchor.Sequence);
     }
 
+    /// <param name="linksVerified">
+    /// Links that verified before the failure, so a report never claims coverage the scan did not
+    /// reach.
+    /// </param>
     private static AccountingAuditChainVerification Fail(
         AccountingAuditChainStatus status,
         AccountingAuditChainState state,
-        long sequence,
+        int linksVerified,
+        long? sequence,
         string detail)
-        => new(status, state.Links.Count, state.PreChainEventCount, detail, sequence);
+        => new(status, linksVerified, state.PreChainEventCount, detail, sequence);
 
     /// <summary>Ticks per microsecond — the finest resolution both retention postures preserve.</summary>
     private const long TicksPerMicrosecond = 10;

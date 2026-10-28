@@ -99,7 +99,12 @@ public sealed record OAuthRefreshResult(
     OAuthToken? Token = null,
     string? Error = null,
     DateTimeOffset? RefreshedAt = null,
-    DateTimeOffset? NextRefreshAt = null
+    DateTimeOffset? NextRefreshAt = null,
+    /// <summary>
+    /// The replacement token is durable but its audit record could not be appended yet and is
+    /// journaled for replay. The refresh succeeded; callers must not retry the remote rotation.
+    /// </summary>
+    bool AuditDeferred = false
 );
 
 /// <summary>Data Integration-owned encrypted persistence for refreshable OAuth tokens.</summary>

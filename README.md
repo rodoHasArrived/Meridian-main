@@ -209,8 +209,8 @@ dotnet run --project src/Meridian.Mcp/Meridian.Mcp.csproj
 
 The WPF desktop shell is an active, co-equal product/UI lane. Its immediate focus is closing
 browser-first parity gaps under `W8-WPF-PARITY-001`. It shares contracts, read models, and API seams
-with the browser workstation. On non-Windows, the project builds as a stub for CI compatibility
-unless the full WPF build flag is enabled on Windows.
+with the browser workstation. WPF runs on Windows; non-Windows builds compile a stub for CI
+compatibility and do not validate desktop behavior.
 
 ```bash
 pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development

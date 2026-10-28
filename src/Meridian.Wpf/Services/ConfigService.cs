@@ -108,74 +108,66 @@ public sealed class ConfigService : ConfigServiceBase
     /// <summary>
     /// Saves the full data sources configuration. Replaces all sources.
     /// </summary>
-    public async Task SaveDataSourcesAsync(DataSourcesConfigDto dataSources, CancellationToken ct = default)
-    {
-        var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
-        config.DataSources = dataSources;
-        await SaveConfigCoreAsync(config, ct);
-    }
+    public Task SaveDataSourcesAsync(DataSourcesConfigDto dataSources, CancellationToken ct = default)
+        => MutateConfigAsync(config => config.DataSources = dataSources, ct);
 
     /// <summary>
     /// Adds a new data source or updates an existing one (matched by <see cref="DataSourceConfigDto.Id"/>).
     /// </summary>
-    public new async Task AddOrUpdateDataSourceAsync(DataSourceConfigDto source, CancellationToken ct = default)
-    {
-        var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
-        config.DataSources ??= new DataSourcesConfigDto();
+    public new Task AddOrUpdateDataSourceAsync(DataSourceConfigDto source, CancellationToken ct = default)
+        => MutateConfigAsync(config =>
+        {
+            config.DataSources ??= new DataSourcesConfigDto();
 
-        var sources = (config.DataSources.Sources ?? Array.Empty<DataSourceConfigDto>()).ToList();
-        var index = sources.FindIndex(s => s.Id == source.Id);
-        if (index >= 0)
-            sources[index] = source;
-        else
-            sources.Add(source);
+            var sources = (config.DataSources.Sources ?? Array.Empty<DataSourceConfigDto>()).ToList();
+            var index = sources.FindIndex(s => s.Id == source.Id);
+            if (index >= 0)
+                sources[index] = source;
+            else
+                sources.Add(source);
 
-        config.DataSources.Sources = sources.ToArray();
-        await SaveConfigCoreAsync(config, ct);
-    }
+            config.DataSources.Sources = sources.ToArray();
+        }, ct);
 
     /// <summary>
     /// Deletes the data source with the specified <paramref name="id"/>.
     /// </summary>
-    public new async Task DeleteDataSourceAsync(string id, CancellationToken ct = default)
-    {
-        var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
-        if (config.DataSources?.Sources == null)
-            return;
+    public new Task DeleteDataSourceAsync(string id, CancellationToken ct = default)
+        => MutateConfigAsync<object?>(config =>
+        {
+            if (config.DataSources?.Sources == null)
+                return (false, null);
 
-        config.DataSources.Sources = config.DataSources.Sources
-            .Where(s => s.Id != id)
-            .ToArray();
-        await SaveConfigCoreAsync(config, ct);
-    }
+            config.DataSources.Sources = config.DataSources.Sources
+                .Where(s => s.Id != id)
+                .ToArray();
+            return (true, null);
+        }, ct);
 
     /// <summary>
     /// Sets the default real-time or historical data source.
     /// </summary>
-    public new async Task SetDefaultDataSourceAsync(string id, bool isHistorical, CancellationToken ct = default)
-    {
-        var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
-        config.DataSources ??= new DataSourcesConfigDto();
+    public new Task SetDefaultDataSourceAsync(string id, bool isHistorical, CancellationToken ct = default)
+        => MutateConfigAsync(config =>
+        {
+            config.DataSources ??= new DataSourcesConfigDto();
 
-        if (isHistorical)
-            config.DataSources.DefaultHistoricalSourceId = id;
-        else
-            config.DataSources.DefaultRealTimeSourceId = id;
-
-        await SaveConfigCoreAsync(config, ct);
-    }
+            if (isHistorical)
+                config.DataSources.DefaultHistoricalSourceId = id;
+            else
+                config.DataSources.DefaultRealTimeSourceId = id;
+        }, ct);
 
     /// <summary>
     /// Updates the failover settings (enabled flag and timeout).
     /// </summary>
-    public new async Task UpdateFailoverSettingsAsync(bool enabled, int timeoutSeconds, CancellationToken ct = default)
-    {
-        var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
-        config.DataSources ??= new DataSourcesConfigDto();
-        config.DataSources.EnableFailover = enabled;
-        config.DataSources.FailoverTimeoutSeconds = timeoutSeconds;
-        await SaveConfigCoreAsync(config, ct);
-    }
+    public new Task UpdateFailoverSettingsAsync(bool enabled, int timeoutSeconds, CancellationToken ct = default)
+        => MutateConfigAsync(config =>
+        {
+            config.DataSources ??= new DataSourcesConfigDto();
+            config.DataSources.EnableFailover = enabled;
+            config.DataSources.FailoverTimeoutSeconds = timeoutSeconds;
+        }, ct);
 
     /// <summary>
     /// Returns null when no active source is set.
@@ -208,8 +200,16 @@ public sealed class ConfigService : ConfigServiceBase
     public Task WriteConfigAsync(AppConfigDto config, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(config);
-        return SaveConfigCoreAsync(config, ct);
+        return ReplaceConfigAsync(config, ct);
     }
+
+    /// <summary>
+    /// The WPF shell shares <c>appsettings.json</c> with the browser host in the installed
+    /// two-process workstation, so every section edit here holds the same cross-process lock the
+    /// host's <c>ConfigStore.UpdateAsync</c> holds (PRD-002 concurrent configuration writes).
+    /// </summary>
+    protected override async Task<IDisposable?> AcquireConfigurationWriteLeaseAsync(CancellationToken ct)
+        => await new Meridian.Application.UI.ConfigStore(ConfigPath).AcquireWriteLeaseAsync(ct).ConfigureAwait(false);
 
     /// <summary>
     /// Validates a single provider's options inline (for real-time field validation).

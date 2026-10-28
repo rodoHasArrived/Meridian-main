@@ -2,11 +2,22 @@
 
 **Status:** canonical-registry
 **Owner:** core-team
-**Reviewed:** 2026-09-28
+**Reviewed:** 2026-10-28
 
 This directory is the structured source of truth for Meridian roadmap status.
 Human-facing status pages may summarize it, but durable roadmap truth belongs in
 `docs/roadmap/data/*.yml`.
+
+## Read the roadmap
+
+- [Roadmap summary](generated/ROADMAP_SUMMARY.md) lists delivery status, health, priority, and owner lane.
+- [Roadmap register](generated/roadmap-register.md) gives each item's current summary, exit criteria, and evidence review date.
+- [Development roadmap map](../architecture/diagrams/meridian-development-roadmap.mmd) shows item status and health in generated wave/rank order. Its arrows connect adjacent displayed rows; they do not declare implementation prerequisites or override recorded delivery priorities. Unranked engineering hygiene remains outside the ranked product slate.
+- [Product plans](../product/plans/README.md#next-work-determinations) owns the latest prioritization pointer.
+- [Implementation and Readiness Tracker](../product/implementation-todo-list.md) owns production-release blockers and the separate P0 evidence gate.
+
+An accepted or done capability does not certify a production release. Snapshot dates describe the
+registry view; individual items and the production-readiness baseline retain their own review dates.
 
 ## Directory contract
 
@@ -17,14 +28,19 @@ Human-facing status pages may summarize it, but durable roadmap truth belongs in
 
 ## Maintenance
 
-Install the standard YAML parser, then run the validation and render lane after editing roadmap data:
+Install the standard YAML parser, then validate and regenerate both the Markdown views and the
+development roadmap map after editing roadmap data:
 
 ```bash
 python3 -m pip install --requirement build/scripts/docs/requirements.txt
 python3 build/scripts/docs/validate-roadmap-registry.py --summary
 python3 build/scripts/docs/render-roadmap-docs.py --summary
+python3 build/scripts/docs/render-roadmap-diagrams.py --summary
 ```
 
+The Markdown renderer also updates the compatibility summary at `docs/status/ROADMAP_SUMMARY.md`
+and the generated manifest. The diagram renderer owns
+`docs/architecture/diagrams/meridian-development-roadmap.mmd`.
 Generated files are derived artifacts. Update the registry or renderer instead of editing generated outputs by hand.
 
 ### Two things that will fail a PR if you miss them

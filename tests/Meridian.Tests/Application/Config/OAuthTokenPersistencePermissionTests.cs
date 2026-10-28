@@ -96,6 +96,54 @@ public sealed class OAuthTokenPersistencePermissionTests : IDisposable
         (await new FileProviderCredentialStore(_root).ReadOAuthTokensAsync()).Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ScopedService_RestrictsInterruptedMigrationWithoutClaimingOrErasingIt(bool retainOriginal)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(TokenPath)!);
+        const string cleanup = "unassigned-interrupted-migration-secret";
+        await File.WriteAllTextAsync(TokenPath + ".migrated", cleanup);
+        if (retainOriginal)
+            await File.WriteAllTextAsync(TokenPath, "unassigned-original-secret");
+        if (!OperatingSystem.IsWindows())
+        {
+            File.SetUnixFileMode(TokenPath + ".migrated", UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.OtherRead);
+            if (retainOriginal)
+                File.SetUnixFileMode(TokenPath, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead);
+        }
+        await using var scoped = new OAuthTokenRefreshService(_root,
+            ownershipScope: new ProviderCredentialScope("tenant", "connection", "account", "paper"));
+        await scoped.InitializeAsync();
+        (await File.ReadAllTextAsync(TokenPath + ".migrated")).Should().Be(cleanup);
+        if (retainOriginal)
+            (await File.ReadAllTextAsync(TokenPath)).Should().Be("unassigned-original-secret");
+        if (!OperatingSystem.IsWindows())
+        {
+            File.GetUnixFileMode(TokenPath + ".migrated").Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+            if (retainOriginal)
+                File.GetUnixFileMode(TokenPath).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        }
+        (await new FileProviderCredentialStore(_root).ReadOAuthTokensAsync()).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ScopedRestriction_PropagatesPermissionWriteFailure()
+    {
+        var failure = new UnauthorizedAccessException("permission change refused");
+        var restrict = () => LegacyCredentialFileMigration.RestrictOwnerOnly(TokenPath,
+            _ => UnixFileMode.UserRead | UnixFileMode.OtherRead, (_, _) => throw failure);
+        restrict.Should().Throw<UnauthorizedAccessException>().Which.Should().BeSameAs(failure);
+    }
+
+    [Fact]
+    public void ScopedRestriction_RefusesUnverifiedPermissionChange()
+    {
+        var restrict = () => LegacyCredentialFileMigration.RestrictOwnerOnly(TokenPath,
+            _ => UnixFileMode.UserRead | UnixFileMode.OtherRead, (_, _) => { });
+        restrict.Should().Throw<UnauthorizedAccessException>();
+    }
+
     [Fact]
     public async Task LegacyMigration_PreservesNewerVaultTokenAndRemovesPlaintext()
     {

@@ -980,6 +980,72 @@ public sealed class SecurityMasterViewModelTests
     }
 
     [Fact]
+    public void LoadSelectedTrustSnapshotAsync_ShouldNotCountInformationalValidationIssuesAsAdvisory()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = NavigationService.Instance;
+            navigation.ResetForTests();
+            navigation.Initialize(new Frame());
+
+            // An Info notice (the terms-version backlog notice) needs no action: the WPF lane counts
+            // it the way the shared workbench posture does, so the two UI lanes agree.
+            var informationOnlyId = Guid.Parse("abababab-2222-2222-2222-222222222222");
+            var mixedId = Guid.Parse("abababab-3333-3333-3333-333333333333");
+            var information = new SecurityValidationIssueDto(
+                Severity: SecurityValidationSeverityDto.Info,
+                Code: "SM_ASSET_CLASS_TERMS_VERSION_BEHIND",
+                Title: "Asset-specific terms are stamped below the class's current terms version",
+                Message: "The stored terms are read through the declared upgrade steps.",
+                AffectedFields: ["assetSpecificTerms"],
+                SuggestedAction: "No action is needed.",
+                EvidenceLinks: []);
+            var blocking = new SecurityValidationIssueDto(
+                Severity: SecurityValidationSeverityDto.Error,
+                Code: "SM_IDENTIFIER_DUPLICATE_ACTIVE",
+                Title: "Duplicate active identifier exists on the record",
+                Message: "The record contains duplicate active identifier 'Ticker|AAPL|'.",
+                AffectedFields: ["identifiers"],
+                SuggestedAction: "Expire duplicate identifiers.",
+                EvidenceLinks: []);
+            var snapshotClient = new StubWorkstationSecurityMasterApiClient
+            {
+                SnapshotFactory = (securityId, _) =>
+                {
+                    var withBlocking = securityId == mixedId;
+                    return CreateTrustSnapshot(securityId) with
+                    {
+                        ValidationReport = new SecurityValidationReportDto(
+                            SecurityId: securityId,
+                            Scope: "Security",
+                            EvaluatedAtUtc: new DateTimeOffset(2026, 10, 23, 10, 5, 0, TimeSpan.Zero),
+                            HasBlockingIssues: withBlocking,
+                            CriticalIssueCount: 0,
+                            ErrorIssueCount: withBlocking ? 1 : 0,
+                            Issues: withBlocking ? [information, blocking] : [information])
+                    };
+                }
+            };
+
+            using var viewModel = CreateViewModel(navigation, snapshotClient);
+
+            await viewModel.LoadSelectedTrustSnapshotAsync(informationOnlyId);
+
+            viewModel.ValidationIssues.Should().ContainSingle().Which.Code.Should().Be("SM_ASSET_CLASS_TERMS_VERSION_BEHIND");
+            viewModel.ValidationIssuesStatusText.Should().Be("Validation report loaded with no blocking or advisory issues.");
+            viewModel.CompanyCoverageFields.Should().Contain(field =>
+                field.Label == "Validation" && field.Value == "No validation issues detected.");
+
+            await viewModel.LoadSelectedTrustSnapshotAsync(mixedId);
+
+            viewModel.ValidationIssues.Should().HaveCount(2);
+            viewModel.ValidationIssuesStatusText.Should().Be("1 blocking issue and 0 advisory issues loaded.");
+            viewModel.CompanyCoverageFields.Should().Contain(field =>
+                field.Label == "Validation" && field.Value == "1 blocking issue(s)");
+        });
+    }
+
+    [Fact]
     public void LoadSelectedTrustSnapshotAsync_ShouldLoadInstrumentPassportFromFallbackEndpoint()
     {
         WpfTestThread.Run(async () =>

@@ -65,6 +65,56 @@ public abstract class ConfigServiceBase
     protected abstract void LogError(string message, Exception? exception = null);
 
     /// <summary>
+    /// Acquires the cross-process configuration write lock for one read-modify-write cycle, or
+    /// returns <c>null</c> when the platform has no shared lock. Derived services that share the
+    /// configuration file with the browser host (the WPF shell) return the host's lock lease so
+    /// a section edit on one side cannot overwrite an edit on the other.
+    /// </summary>
+    protected virtual Task<IDisposable?> AcquireConfigurationWriteLeaseAsync(CancellationToken ct)
+        => Task.FromResult<IDisposable?>(null);
+
+    /// <summary>
+    /// Read-modify-write of the configuration document under the configuration write lock. The
+    /// document is loaded inside the lock, handed to <paramref name="mutate"/>, and saved only when
+    /// the callback returns <c>true</c>. Every section-level mutation goes through here so no
+    /// caller persists a snapshot loaded before the lock was held.
+    /// </summary>
+    protected async Task<T> MutateConfigAsync<T>(Func<AppConfigDto, (bool Save, T Result)> mutate, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(mutate);
+        using var lease = await AcquireConfigurationWriteLeaseAsync(ct).ConfigureAwait(false);
+        var config = await LoadConfigCoreAsync(ct).ConfigureAwait(false) ?? new AppConfigDto();
+        var (save, result) = mutate(config);
+        if (save)
+        {
+            await SaveConfigCoreAsync(config, ct).ConfigureAwait(false);
+        }
+        return result;
+    }
+
+    /// <summary>Always-saving form of <see cref="MutateConfigAsync{T}"/>.</summary>
+    protected Task MutateConfigAsync(Action<AppConfigDto> mutate, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(mutate);
+        return MutateConfigAsync<object?>(config =>
+        {
+            mutate(config);
+            return (true, null);
+        }, ct);
+    }
+
+    /// <summary>
+    /// Whole-document replacement under the configuration write lock. Last writer wins by design;
+    /// reserved for callers that own the entire document.
+    /// </summary>
+    protected async Task ReplaceConfigAsync(AppConfigDto config, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(config);
+        using var lease = await AcquireConfigurationWriteLeaseAsync(ct).ConfigureAwait(false);
+        await SaveConfigCoreAsync(config, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Validates the current configuration.
     /// </summary>
     public async Task<ConfigValidationResultDetail> ValidateConfigDetailAsync(CancellationToken ct = default)
@@ -145,80 +195,76 @@ public abstract class ConfigServiceBase
     /// <summary>
     /// Adds or updates a data source configuration.
     /// </summary>
-    public async Task AddOrUpdateDataSourceAsync(DataSourceConfigDto dataSource, CancellationToken ct = default)
-    {
-        var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
-        var dataSources = config.DataSources ?? new DataSourcesConfigDto();
-        var sources = dataSources.Sources?.ToList() ?? new List<DataSourceConfigDto>();
-
-        var existingIndex = sources.FindIndex(s =>
-            string.Equals(s.Id, dataSource.Id, StringComparison.OrdinalIgnoreCase));
-
-        if (existingIndex >= 0)
+    public Task AddOrUpdateDataSourceAsync(DataSourceConfigDto dataSource, CancellationToken ct = default)
+        => MutateConfigAsync(config =>
         {
-            sources[existingIndex] = dataSource;
-        }
-        else
-        {
-            sources.Add(dataSource);
-        }
+            var dataSources = config.DataSources ?? new DataSourcesConfigDto();
+            var sources = dataSources.Sources?.ToList() ?? new List<DataSourceConfigDto>();
 
-        dataSources.Sources = sources.ToArray();
-        config.DataSources = dataSources;
-        await SaveConfigCoreAsync(config, ct);
-    }
+            var existingIndex = sources.FindIndex(s =>
+                string.Equals(s.Id, dataSource.Id, StringComparison.OrdinalIgnoreCase));
+
+            if (existingIndex >= 0)
+            {
+                sources[existingIndex] = dataSource;
+            }
+            else
+            {
+                sources.Add(dataSource);
+            }
+
+            dataSources.Sources = sources.ToArray();
+            config.DataSources = dataSources;
+        }, ct);
 
     /// <summary>
     /// Deletes a data source by ID.
     /// </summary>
-    public async Task DeleteDataSourceAsync(string id, CancellationToken ct = default)
-    {
-        var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
-        var dataSources = config.DataSources ?? new DataSourcesConfigDto();
-        var sources = dataSources.Sources?.ToList() ?? new List<DataSourceConfigDto>();
+    public Task DeleteDataSourceAsync(string id, CancellationToken ct = default)
+        => MutateConfigAsync(config =>
+        {
+            var dataSources = config.DataSources ?? new DataSourcesConfigDto();
+            var sources = dataSources.Sources?.ToList() ?? new List<DataSourceConfigDto>();
 
-        sources.RemoveAll(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
+            sources.RemoveAll(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
 
-        dataSources.Sources = sources.ToArray();
-        config.DataSources = dataSources;
-        await SaveConfigCoreAsync(config, ct);
-    }
+            dataSources.Sources = sources.ToArray();
+            config.DataSources = dataSources;
+        }, ct);
 
     /// <summary>
     /// Sets the default data source for real-time or historical data.
     /// </summary>
-    public async Task SetDefaultDataSourceAsync(string id, bool isHistorical, CancellationToken ct = default)
-    {
-        var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
-        var dataSources = config.DataSources ?? new DataSourcesConfigDto();
-
-        if (isHistorical)
+    public Task SetDefaultDataSourceAsync(string id, bool isHistorical, CancellationToken ct = default)
+        => MutateConfigAsync(config =>
         {
-            dataSources.DefaultHistoricalSourceId = id;
-        }
-        else
-        {
-            dataSources.DefaultRealTimeSourceId = id;
-        }
+            var dataSources = config.DataSources ?? new DataSourcesConfigDto();
 
-        config.DataSources = dataSources;
-        await SaveConfigCoreAsync(config, ct);
-    }
+            if (isHistorical)
+            {
+                dataSources.DefaultHistoricalSourceId = id;
+            }
+            else
+            {
+                dataSources.DefaultRealTimeSourceId = id;
+            }
+
+            config.DataSources = dataSources;
+        }, ct);
 
     /// <summary>
     /// Updates failover settings for data sources.
     /// </summary>
-    public async Task UpdateFailoverSettingsAsync(bool enableFailover, int failoverTimeoutSeconds, CancellationToken ct = default)
-    {
-        var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
-        var dataSources = config.DataSources ?? new DataSourcesConfigDto();
+    public Task UpdateFailoverSettingsAsync(bool enableFailover, int failoverTimeoutSeconds, CancellationToken ct = default)
+        => MutateConfigAsync(config =>
+        {
+            var dataSources = config.DataSources ?? new DataSourcesConfigDto();
 
-        dataSources.EnableFailover = enableFailover;
-        dataSources.FailoverTimeoutSeconds = failoverTimeoutSeconds;
+            dataSources.EnableFailover = enableFailover;
+            dataSources.FailoverTimeoutSeconds = failoverTimeoutSeconds;
 
-        config.DataSources = dataSources;
-        await SaveConfigCoreAsync(config, ct);
-    }
+            config.DataSources = dataSources;
+        }, ct);
 
     /// <summary>
     /// Gets backfill provider configuration, creating defaults when missing.
@@ -261,19 +307,21 @@ public abstract class ConfigServiceBase
 
         ArgumentNullException.ThrowIfNull(options);
         ValidateProviderOptions(providerId, options);
-
-        var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
-        config.Backfill ??= new BackfillConfigDto();
-        config.Backfill.Providers ??= new BackfillProvidersConfigDto();
-
-        var previousOptions = GetProviderOptions(config.Backfill.Providers, NormalizeProviderId(providerId));
-        var previousJson = previousOptions != null
-            ? JsonSerializer.Serialize(previousOptions, SharedJsonOptions)
-            : null;
         var newJson = JsonSerializer.Serialize(options, SharedJsonOptions);
 
-        SetProviderOptions(config.Backfill.Providers, providerId, options);
-        await SaveConfigCoreAsync(config, ct);
+        var previousJson = await MutateConfigAsync(config =>
+        {
+            config.Backfill ??= new BackfillConfigDto();
+            config.Backfill.Providers ??= new BackfillProvidersConfigDto();
+
+            var previousOptions = GetProviderOptions(config.Backfill.Providers, NormalizeProviderId(providerId));
+            var previous = previousOptions != null
+                ? JsonSerializer.Serialize(previousOptions, SharedJsonOptions)
+                : null;
+
+            SetProviderOptions(config.Backfill.Providers, providerId, options);
+            return (true, previous);
+        }, ct);
 
         return (previousJson, newJson);
     }
@@ -292,19 +340,19 @@ public abstract class ConfigServiceBase
             throw new ArgumentException("Provider id is required", nameof(providerId));
         }
 
-        var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
-        config.Backfill ??= new BackfillConfigDto();
-        config.Backfill.Providers ??= new BackfillProvidersConfigDto();
+        return await MutateConfigAsync(config =>
+        {
+            config.Backfill ??= new BackfillConfigDto();
+            config.Backfill.Providers ??= new BackfillProvidersConfigDto();
 
-        var previousOptions = GetProviderOptions(config.Backfill.Providers, NormalizeProviderId(providerId));
-        var previousJson = previousOptions != null
-            ? JsonSerializer.Serialize(previousOptions, SharedJsonOptions)
-            : null;
+            var previousOptions = GetProviderOptions(config.Backfill.Providers, NormalizeProviderId(providerId));
+            var previousJson = previousOptions != null
+                ? JsonSerializer.Serialize(previousOptions, SharedJsonOptions)
+                : null;
 
-        SetProviderOptions(config.Backfill.Providers, providerId, defaultOptions);
-        await SaveConfigCoreAsync(config, ct);
-
-        return previousJson;
+            SetProviderOptions(config.Backfill.Providers, providerId, defaultOptions);
+            return (true, previousJson);
+        }, ct);
     }
 
     /// <summary>
@@ -319,39 +367,36 @@ public abstract class ConfigServiceBase
     /// <summary>
     /// Saves symbols to the configuration.
     /// </summary>
-    public async Task SaveSymbolsAsync(SymbolConfigDto[] symbols, CancellationToken ct = default)
-    {
-        var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
-        config.Symbols = symbols;
-        await SaveConfigCoreAsync(config, ct);
-    }
+    public Task SaveSymbolsAsync(SymbolConfigDto[] symbols, CancellationToken ct = default)
+        => MutateConfigAsync(config => config.Symbols = symbols, ct);
 
     /// <summary>
     /// Adds a symbol to the configuration.
     /// </summary>
-    public async Task AddSymbolAsync(SymbolConfigDto symbol, CancellationToken ct = default)
-    {
-        var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
-        var existing = config.Symbols?.ToList() ?? new List<SymbolConfigDto>();
-        if (existing.All(s => !string.Equals(s.Symbol, symbol.Symbol, StringComparison.OrdinalIgnoreCase)))
+    public Task AddSymbolAsync(SymbolConfigDto symbol, CancellationToken ct = default)
+        => MutateConfigAsync<object?>(config =>
         {
+            var existing = config.Symbols?.ToList() ?? new List<SymbolConfigDto>();
+            if (existing.Any(s => string.Equals(s.Symbol, symbol.Symbol, StringComparison.OrdinalIgnoreCase)))
+            {
+                return (false, null);
+            }
+
             existing.Add(symbol);
             config.Symbols = existing.ToArray();
-            await SaveConfigCoreAsync(config, ct);
-        }
-    }
+            return (true, null);
+        }, ct);
 
     /// <summary>
     /// Removes a symbol from the configuration.
     /// </summary>
-    public async Task RemoveSymbolAsync(string symbolName, CancellationToken ct = default)
-    {
-        var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
-        var existing = config.Symbols?.ToList() ?? new List<SymbolConfigDto>();
-        existing.RemoveAll(s => string.Equals(s.Symbol, symbolName, StringComparison.OrdinalIgnoreCase));
-        config.Symbols = existing.ToArray();
-        await SaveConfigCoreAsync(config, ct);
-    }
+    public Task RemoveSymbolAsync(string symbolName, CancellationToken ct = default)
+        => MutateConfigAsync(config =>
+        {
+            var existing = config.Symbols?.ToList() ?? new List<SymbolConfigDto>();
+            existing.RemoveAll(s => string.Equals(s.Symbol, symbolName, StringComparison.OrdinalIgnoreCase));
+            config.Symbols = existing.ToArray();
+        }, ct);
 
 
     protected internal static IEnumerable<(string ProviderId, BackfillProviderOptionsDto? Options)> EnumerateProviders(BackfillProvidersConfigDto providers)

@@ -21,7 +21,6 @@ namespace Meridian.Application.SecurityMaster;
 
 public sealed class NullSecurityMasterQueryService
     : ISecurityMasterQueryService,
-      Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,
       ISecurityMasterRuntimeStatus
 {
     private static readonly IReadOnlyList<SecuritySummaryDto> _emptySummaries =

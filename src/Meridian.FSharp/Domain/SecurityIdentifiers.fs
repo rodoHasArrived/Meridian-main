@@ -34,6 +34,8 @@ type IdentifierKind =
     | LoanX
     /// CUSIP-format loan identifier (CLIP) for syndicated loan facilities and tranches.
     | Clip
+    /// Listing identity: a ticker on a specific ISO 10383 market, written "TICKER:MIC" (e.g. "AAPL:XNAS").
+    | ListingId
 
 type Identifier = {
     Kind: IdentifierKind
@@ -89,6 +91,7 @@ module SecurityIdentifier =
         | IdentifierKind.Cik -> "Cik"
         | IdentifierKind.LoanX -> "LoanX"
         | IdentifierKind.Clip -> "Clip"
+        | IdentifierKind.ListingId -> "ListingId"
 
     let isActiveAt asOf identifier =
         identifier.ValidFrom <= asOf

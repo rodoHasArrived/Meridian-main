@@ -1,0 +1,25 @@
+{
+  "assetClass": "Cfd",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "leverage",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "underlyingAssetClass",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "underlyingDescription",
+          "type": "String",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

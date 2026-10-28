@@ -7,6 +7,13 @@ public interface ISecurityMasterCashFlowService
     Task<StructuredCashFlowProjectionDto?> GetProjectionAsync(Guid securityId, StructuredCashFlowScenario scenario, CancellationToken ct = default);
 
     /// <summary>
+    /// The projection as of <paramref name="asOf"/> rather than the wall clock: periods paying on or
+    /// after its UTC date are projected, and floating legs read the forward curve in force on that
+    /// date. <see cref="GetProjectionAsync"/> is this method at <see cref="DateTimeOffset.UtcNow"/>.
+    /// </summary>
+    Task<StructuredCashFlowProjectionDto?> GetProjectionAsOfAsync(Guid securityId, StructuredCashFlowScenario scenario, DateTimeOffset asOf, CancellationToken ct = default);
+
+    /// <summary>
     /// Converts the base-scenario projection for <paramref name="securityId"/> into balanced,
     /// ledger-ready coupon-accrual journal postings. Enforces the staleness gate — a projection
     /// whose source is <see cref="StructuredCashFlowStaleness.Stale"/> is blocked, never posted —

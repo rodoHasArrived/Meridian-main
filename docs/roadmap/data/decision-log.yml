@@ -139,6 +139,23 @@ decisions:
     summary: Repository owner rodoHasArrived explicitly satisfied both security/storage and reconciliation-lineage review lanes at 10:39 UTC in issue 2626 comment 5845555204, accepting completed owner self-review recorded in comment 5845544214 in place of independent non-author reviews for the PR 3000 provenance correction and issue 2626 gate. PR 3003 had merged as 6bd732dcbc83db70e97c18f7ecca0e0adce2a789 at 10:36 UTC. Independent non-author verdicts were not obtained; no detailed findings, inspected-artifact list, or specific reviewed SHA was supplied with the self-review attestation, and none is inferred. This case-specific exception supersedes only the pending review-gate disposition for W9-TRUTH-001, restoring accepted status, complete evidence posture, and green health; issue 2626 remains closed. The original acceptance, premature closure, reopened review gate, retained certification artifact and focused-test evidence remain historical evidence in docs/product/w9-operator-acceptance-2026-08-29.md, which links both owner comments. This does not change repository rules, branch protections, CI requirements, other review gates, or any other roadmap row. No row moves to done, no release is certified, and the P0 release-certification gate remains open.
     related_roadmap_items:
       - W9-TRUTH-001
+  - id: DEC-W9-ACCEPTANCE-006
+    title: Accept W9-GOV-008 and W9-INGEST-009
+    status: accepted
+    decided_on: 2026-10-18
+    owner_lane: Core Team
+    summary: "Repository owner rodoHasArrived instructed on 2026-10-18 in the PR 3190 working session - Accept W9-GOV-008, which also includes the tenancy cutover on a real installation. Accept W9-INGEST-009. Both rows move from in_progress to accepted with evidence_posture complete and docs/product/w9-operator-acceptance-2026-10-18.md linked as the acceptance evidence, which records the evidence per exit criterion and the reservations carried. The live-installation tenancy cutover for W9-GOV-008 is recorded on the operator's statement; no cutover log, installation identifier, or post-cutover readiness output was supplied or retained in the repository, and none is inferred. The W9-GOV-008 verification tooling (GET /api/ledger/audit-integrity and the Accounting Configuration audit-chain integrity panel) lands in PR 3190 together with this decision. The ledger-event chain's documented limits stand - a coherent rollback or coordinated rewrite of facts, hashes and head needs an external checkpoint to detect - and WPF parity for the integrity panel is not part of the acceptance. W9-INGEST-009 casework evidence remains shared-service and file-store evidence with a controlled population boundary, not a PostgreSQL or production-certification claim. W9-CORPACT-011 receives no decision here and remains ready_for_acceptance. No row moves to done, no release is certified, and the P0 release-certification gate remains open."
+    related_roadmap_items:
+      - W9-GOV-008
+      - W9-INGEST-009
+  - id: DEC-W9-ACCEPTANCE-007
+    title: Accept W9-CORPACT-011 with reservations
+    status: accepted
+    decided_on: 2026-10-19
+    owner_lane: Core Team
+    summary: "Repository owner rodoHasArrived instructed on 2026-10-19 in the PR 3190 working session to accept W9-CORPACT-011 with the reservations presented. This supersedes the DEC-W9-ACCEPTANCE-002 hold, whose condition is met - the approval and posting lane is reachable since commit 24967688 and exit criterion four is implemented and evidenced by the 2026-09-22 PostgreSQL round trip (CorporateActionAccountingPostgresRoundTripTests), which proves attach, ReadyForApproval, maker-checker refusal of self-approval, independent approval, durable posting and replay with exactly one balanced journal and the lot unchanged. The row moves from ready_for_acceptance to accepted with evidence_posture complete and docs/product/w9-operator-acceptance-2026-10-19.md linked as the acceptance evidence, which records the evidence per exit criterion. Reservations carried - unsupported and policy-dependent corporate-action branches stay deliberate blocked outcomes rather than coerced generic sale or exchange treatments; PostCorporateActionAccounting is granted to no built-in role, so posting requires assignment through a governed custom role profile; the evidence is the automated PostgreSQL round trip and golden-file coverage, not a live-installation run, and none is inferred. DEC-W9-ACCEPTANCE-001 and DEC-W9-ACCEPTANCE-002 remain the historical record. No row moves to done, no release is certified, and the P0 release-certification gate remains open."
+    related_roadmap_items:
+      - W9-CORPACT-011
   - id: DEC-CHARTER-DIRECTION-001
     title: Register the 2026-10 charter direction slate as planned W11 roadmap rows
     status: accepted
@@ -152,3 +169,11 @@ decisions:
       - W11-SHADOW-001
       - W11-PACK-001
       - W11-EXEC-001
+  - id: DEC-PRD000-SUPPORT-MATRIX-001
+    title: Ratify ADR-019/ADR-020 v1 local-workstation production envelope
+    status: accepted
+    decided_on: 2026-10-20
+    owner_lane: Runtime Host and Architecture
+    summary: "Core-team sign-off on the ADR-019 support matrix and typed deployment posture and the ADR-020 lifecycle control plane, authorized by the repository owner on 2026-10-20. This is the PRD-000 signed support matrix artifact; container, systemd, remote ProductionApi, multi-node topologies and every non-Windows host stay experimental and fail closed - the production posture guard now refuses them from the service collection with a diagnostic naming the platform-bound bindings, and the ADR-019 matrix reads Windows 11 (x64 and ARM64) so it matches the PRD-014 installer receipts. The PRD-000 completion-evidence amendment recorded in ADR-019 section 1 is ratified. The PRD-002 clause protecting non-Windows vault keys with a keyring or KMS is a scope-out under this matrix, not v1 work. The ~1 GB consumer Meridian-Setup.exe (both architectures plus PostgreSQL) is accepted for the v0.1.0-rc line. Release candidate v0.1.0-rc.1 was first decided for a9d470c3, the commit carrying the ten-workflow green push receipt recorded in docs/product/plans/next-work-determination-2026-10-20.md; on 2026-10-21 the repository owner moved the target to c51c5d8d, the merge commit of PR #3239 on main, so the candidate contains the controls this decision ratifies, and pushed the tag (the agent session's branch-scoped credential returned HTTP 403 for tag refs). The tag run is Desktop Installer Release run 39630903593; it failed closed on missing signing secrets, and c51c5d8d's own Meridian CI is red on verify-docs, so the corrected candidate is v0.1.0-rc.2 cut from a green main head once MDC_SIGNING_CERT_PFX_BASE64 / MDC_SIGNING_CERT_PASSWORD are provisioned; details in docs/engineering/production-certification-evidence-chain.md. No row moves to done and no release is certified by this decision."
+    related_roadmap_items:
+      - W7-LIVE-001

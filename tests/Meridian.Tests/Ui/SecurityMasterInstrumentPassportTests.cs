@@ -295,7 +295,7 @@ public sealed class SecurityMasterInstrumentPassportTests
     }
 
     [Fact]
-    public async Task GetInstrumentPassportAsync_AttachesClearwaterControlSectionsWhenServicesAreRegistered()
+    public async Task GetInstrumentPassportAsync_AttachesReferenceDataControlSectionsWhenServicesAreRegistered()
     {
         var securityId = Guid.Parse("D85825FA-C568-4F9A-A7B8-2D988D975B6D");
         var queryService = new StubSecurityMasterQueryService(securityId);
@@ -519,8 +519,7 @@ public sealed class SecurityMasterInstrumentPassportTests
             httpContextAccessor);
 
     private sealed class StubSecurityMasterQueryService(Guid securityId)
-        : ContractSecurityMasterQueryService,
-          Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+        : ContractSecurityMasterQueryService
     {
         private readonly DateTimeOffset _effectiveFrom = new(2026, 1, 2, 0, 0, 0, TimeSpan.Zero);
 

@@ -35,6 +35,18 @@ public sealed class ConfigStore
         CancellationToken ct)
         => _core.SaveAsync(cfg, ct);
 
+    /// <summary>Read-modify-write under the configuration lock; see the core store for the contract.</summary>
+    public System.Threading.Tasks.Task<T> UpdateAsync<T>(
+        Func<Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)> update,
+        CancellationToken ct = default)
+        => _core.UpdateAsync(update, ct);
+
+    /// <summary>Read-modify-write under the configuration lock; see the core store for the contract.</summary>
+    public System.Threading.Tasks.Task UpdateAsync(
+        Func<Meridian.Core.Config.AppConfig, Meridian.Core.Config.AppConfig> update,
+        CancellationToken ct = default)
+        => _core.UpdateAsync(update, ct);
+
     public Meridian.DataIntegration.Monitoring.ProviderMetricsStatus? TryLoadProviderMetrics()
         => _core.TryLoadProviderMetrics();
 

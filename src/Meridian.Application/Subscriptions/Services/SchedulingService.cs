@@ -260,55 +260,58 @@ public sealed class SchedulingService : IAsyncDisposable
 
         try
         {
-            var cfg = _configStore.Load();
-            var symbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
             var scheduleSymbolSet = new HashSet<string>(schedule.Symbols, StringComparer.OrdinalIgnoreCase);
 
-            if (schedule.Action == ScheduleAction.Enable)
+            affected = await _configStore.UpdateAsync(cfg =>
             {
-                // Enable: set SubscribeTrades and SubscribeDepth to true
-                for (var i = 0; i < symbols.Count; i++)
+                var symbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
+                var affected = 0;
+
+                if (schedule.Action == ScheduleAction.Enable)
                 {
-                    if (scheduleSymbolSet.Contains(symbols[i].Symbol))
+                    // Enable: set SubscribeTrades and SubscribeDepth to true
+                    for (var i = 0; i < symbols.Count; i++)
                     {
-                        symbols[i] = symbols[i] with
+                        if (scheduleSymbolSet.Contains(symbols[i].Symbol))
                         {
-                            SubscribeTrades = true,
-                            SubscribeDepth = true
-                        };
-                        affected++;
+                            symbols[i] = symbols[i] with
+                            {
+                                SubscribeTrades = true,
+                                SubscribeDepth = true
+                            };
+                            affected++;
+                        }
+                    }
+
+                    // Add missing symbols
+                    foreach (var symbolName in schedule.Symbols)
+                    {
+                        if (!symbols.Any(s => s.Symbol.Equals(symbolName, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            symbols.Add(new SymbolConfig(symbolName));
+                            affected++;
+                        }
+                    }
+                }
+                else // Disable
+                {
+                    // Disable: set SubscribeTrades and SubscribeDepth to false
+                    for (var i = 0; i < symbols.Count; i++)
+                    {
+                        if (scheduleSymbolSet.Contains(symbols[i].Symbol))
+                        {
+                            symbols[i] = symbols[i] with
+                            {
+                                SubscribeTrades = false,
+                                SubscribeDepth = false
+                            };
+                            affected++;
+                        }
                     }
                 }
 
-                // Add missing symbols
-                foreach (var symbolName in schedule.Symbols)
-                {
-                    if (!symbols.Any(s => s.Symbol.Equals(symbolName, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        symbols.Add(new SymbolConfig(symbolName));
-                        affected++;
-                    }
-                }
-            }
-            else // Disable
-            {
-                // Disable: set SubscribeTrades and SubscribeDepth to false
-                for (var i = 0; i < symbols.Count; i++)
-                {
-                    if (scheduleSymbolSet.Contains(symbols[i].Symbol))
-                    {
-                        symbols[i] = symbols[i] with
-                        {
-                            SubscribeTrades = false,
-                            SubscribeDepth = false
-                        };
-                        affected++;
-                    }
-                }
-            }
-
-            var next = cfg with { Symbols = symbols.ToArray() };
-            await _configStore.SaveAsync(next);
+                return (cfg with { Symbols = symbols.ToArray() }, affected);
+            }, ct);
 
             _log.Information(
                 "Executed schedule {ScheduleId}: {Action} {Count} symbols",

@@ -40,7 +40,7 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory for HTTP connections")]
-public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway, IExplicitOrderCancellationGateway, IBrokerageConnectionState, IBrokerageOrderRecoveryGateway
+public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway, IExplicitOrderCancellationGateway, IExplicitOrderModificationGateway, IBrokerageConnectionState, IBrokerageOrderRecoveryGateway, IBrokerageOrderAmendmentRecoveryGateway
 {
     /// <inheritdoc />
     public bool UsesFaceValuePercentageOfPar(OrderRequest request)
@@ -330,58 +330,18 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
     }
 
     /// <inheritdoc />
-    public async Task<ExecutionReport> ModifyOrderAsync(
-        string orderId, OrderModification modification, CancellationToken ct = default)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(orderId);
-        ArgumentNullException.ThrowIfNull(modification);
-        ObjectDisposedException.ThrowIf(_disposed, this);
-        EnsureConnected();
-
-        var payload = new AlpacaOrderModifyPayload
-        {
-            Qty = FormatDecimal(modification.NewQuantity),
-            LimitPrice = FormatDecimal(modification.NewLimitPrice),
-            StopPrice = FormatDecimal(modification.NewStopPrice),
-            Trail = FormatDecimal(modification.NewTrail),
-        };
-
-        using var client = CreateHttpClient();
-        var response = await client.PatchAsJsonAsync(
-            $"{BaseUrl}/v2/orders/{orderId}", payload, AlpacaBrokerageSerializerContext.Default.AlpacaOrderModifyPayload, ct)
-            .ConfigureAwait(false);
-
-        var order = response.IsSuccessStatusCode
-            ? await response.Content.ReadFromJsonAsync(
-                AlpacaBrokerageSerializerContext.Default.AlpacaOrderResponse, ct).ConfigureAwait(false)
-            : null;
-
-        var report = new ExecutionReport
-        {
-            OrderId = order?.Id ?? orderId,
-            ReportType = response.IsSuccessStatusCode ? ExecutionReportType.Modified : ExecutionReportType.Rejected,
-            Symbol = order?.Symbol ?? string.Empty,
-            Side = order?.Side == "sell" ? OrderSide.Sell : OrderSide.Buy,
-            OrderStatus = response.IsSuccessStatusCode ? MapAlpacaStatus(order?.Status) : OrderStatus.Rejected,
-            Timestamp = DateTimeOffset.UtcNow,
-        };
-        await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
-        return report;
-    }
-
-    /// <inheritdoc />
     public async IAsyncEnumerable<ExecutionReport> StreamExecutionReportsAsync(
         [EnumeratorCancellation] CancellationToken ct = default)
     {
         if (_tradeUpdates is not null)
         {
             await foreach (var report in _tradeUpdates.Reports.WithCancellation(ct).ConfigureAwait(false))
-                yield return report;
+                yield return await NormalizeReplacementReportAsync(report, ct).ConfigureAwait(false);
             yield break;
         }
         await foreach (var report in _reportChannel.Reader.ReadAllAsync(ct).ConfigureAwait(false))
         {
-            yield return report;
+            yield return await NormalizeReplacementReportAsync(report, ct).ConfigureAwait(false);
         }
     }
 
@@ -403,6 +363,15 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
             RequirePortfolioDecimal(account?.Cash, "account cash", completenessIssues);
             RequirePortfolioDecimal(account?.Equity, "account equity", completenessIssues);
             RequirePortfolioDecimal(account?.BuyingPower, "account buying power", completenessIssues);
+            RequireOptionalPortfolioDecimal(account?.Multiplier, "account multiplier", completenessIssues);
+            RequireOptionalPortfolioDecimal(account?.RegTBuyingPower, "account Reg T buying power", completenessIssues);
+            RequireOptionalPortfolioDecimal(account?.InitialMargin, "account initial margin", completenessIssues);
+            RequireOptionalPortfolioDecimal(account?.MaintenanceMargin, "account maintenance margin", completenessIssues);
+            RequireOptionalPortfolioDecimal(account?.LastMaintenanceMargin, "account last maintenance margin", completenessIssues);
+            RequireOptionalPortfolioDecimal(account?.SpecialMemorandumAccount, "account SMA", completenessIssues);
+            RequireOptionalPortfolioDecimal(account?.LongMarketValue, "account long market value", completenessIssues);
+            RequireOptionalPortfolioDecimal(account?.ShortMarketValue, "account short market value", completenessIssues);
+            RequireOptionalPortfolioDecimal(account?.NonMarginableBuyingPower, "account non-marginable buying power", completenessIssues);
             if (string.IsNullOrWhiteSpace(account?.Currency))
                 completenessIssues.Add("Account currency was not reported.");
             if (string.IsNullOrWhiteSpace(account?.Status))
@@ -466,6 +435,8 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 RequirePortfolioDecimal(position.AvgEntryPrice, "position entry price", completenessIssues);
                 RequirePortfolioDecimal(position.CurrentPrice, "position market price", completenessIssues);
                 RequirePortfolioDecimal(position.MarketValue, "position market value", completenessIssues);
+                RequireOptionalPortfolioDecimal(position.UnrealizedPl, "position unrealized P&L", completenessIssues);
+                RequireOptionalPortfolioDecimal(position.AccruedInterest, "position accrued interest", completenessIssues);
             }
         }
 
@@ -642,6 +613,13 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         if (untilExclusive.HasValue)
         {
             activities = EnforceHalfOpenActivityWindow(activities, since, untilExclusive.Value);
+        }
+
+        // Validate the provider strings before the typed snapshot can replace malformed
+        // monetary evidence with zero or null. Statement intake only sees the typed values.
+        foreach (var activity in activities)
+        {
+            ValidateStatementActivityAmounts(activity);
         }
 
         var fills = activities
@@ -828,6 +806,9 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                     OrderId = orderId,
                     GatewayOrderId = orderId,
                     ClientOrderId = order?.ClientOrderId,
+                    // After a restart the gateway no longer remembers its replacement attempts;
+                    // the broker's own link keeps a successor's fill bound to the original order.
+                    ReplacesOrderId = order?.Replaces,
                     Symbol = symbol,
                     Side = string.Equals(activity.Side ?? order?.Side, "sell", StringComparison.OrdinalIgnoreCase)
                         ? OrderSide.Sell
@@ -867,6 +848,11 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                     "Alpaca reconciliation returned an order without an id."),
                 GatewayOrderId = order.Id,
                 ClientOrderId = order.ClientOrderId,
+                ReplacesOrderId = order.Replaces,
+                CandidateGatewayOrderId = order.ReplacedBy,
+                HasOrderTerms = order.HasLimitPrice && order.HasStopPrice,
+                OrderLimitPrice = ParseNullableDecimal(order.LimitPrice),
+                OrderStopPrice = ParseNullableDecimal(order.StopPrice),
                 Symbol = order.Symbol ?? string.Empty,
                 Side = string.Equals(order.Side, "sell", StringComparison.OrdinalIgnoreCase)
                     ? OrderSide.Sell
@@ -1440,6 +1426,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         "new" => OrderStatus.Accepted,
         "accepted" => OrderStatus.Accepted,
         "pending_new" => OrderStatus.PendingNew,
+        "pending_replace" => OrderStatus.Accepted,
         "partially_filled" => OrderStatus.PartiallyFilled,
         "filled" => OrderStatus.Filled,
         "pending_cancel" => OrderStatus.PendingCancel,
@@ -1465,6 +1452,35 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
     private static decimal? ParseNullableDecimal(string? value) =>
         decimal.TryParse(value, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign,
             CultureInfo.InvariantCulture, out var result) ? result : null;
+
+    private static void ValidateStatementActivityAmounts(AlpacaAccountActivityResponse activity)
+    {
+        var code = activity.ActivityType?.Trim().ToUpperInvariant() ?? "UNKNOWN";
+        var (_, subtype) = MapActivityType(code, activity.Description);
+        var isFill = subtype == BrokerageActivitySubtype.TradeFill;
+        var requiresCash = subtype is BrokerageActivitySubtype.CashDeposit or BrokerageActivitySubtype.CashWithdrawal
+            or BrokerageActivitySubtype.Fee or BrokerageActivitySubtype.CryptoFee
+            or BrokerageActivitySubtype.PassThroughCharge or BrokerageActivitySubtype.PassThroughRebate
+            or BrokerageActivitySubtype.CreditInterest or BrokerageActivitySubtype.MarginInterest
+            or BrokerageActivitySubtype.BorrowFee or BrokerageActivitySubtype.BorrowRebate
+            or BrokerageActivitySubtype.CashDividend or BrokerageActivitySubtype.CapitalGainDistribution
+            or BrokerageActivitySubtype.ReturnOfCapital or BrokerageActivitySubtype.DividendWithholding
+            or BrokerageActivitySubtype.CashTransfer or BrokerageActivitySubtype.AcatsCash
+            or BrokerageActivitySubtype.CashJournal or BrokerageActivitySubtype.TaxWithholding;
+
+        Validate(activity.Qty, "qty", isFill);
+        Validate(activity.Price ?? activity.PerShareAmount, "price", isFill);
+        Validate(activity.NetAmount, "net_amount", requiresCash);
+        Validate(activity.Commission, "commission", required: false);
+        // Validate both supplied fields even when price takes precedence over per_share_amount.
+        Validate(activity.PerShareAmount, "per_share_amount", required: false);
+
+        static void Validate(string? value, string field, bool required)
+        {
+            if ((required || value is not null) && !ParseNullableDecimal(value).HasValue)
+                throw new InvalidDataException($"Alpaca statement activity has missing or malformed '{field}' evidence.");
+        }
+    }
 
     private static IReadOnlyList<string> BuildAccountRestrictions(AccountInfo account)
     {
@@ -1818,14 +1834,32 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
     {
         [JsonPropertyName("id")] public string? Id { get; set; }
         [JsonPropertyName("client_order_id")] public string? ClientOrderId { get; set; }
+        [JsonPropertyName("replaces")] public string? Replaces { get; set; }
+        [JsonPropertyName("replaced_by")] public string? ReplacedBy { get; set; }
         [JsonPropertyName("symbol")] public string? Symbol { get; set; }
         [JsonPropertyName("side")] public string? Side { get; set; }
         [JsonPropertyName("type")] public string? Type { get; set; }
         [JsonPropertyName("qty")] public string? Qty { get; set; }
         [JsonPropertyName("filled_qty")] public string? FilledQty { get; set; }
         [JsonPropertyName("filled_avg_price")] public string? FilledAvgPrice { get; set; }
-        [JsonPropertyName("limit_price")] public string? LimitPrice { get; set; }
-        [JsonPropertyName("stop_price")] public string? StopPrice { get; set; }
+        private string? _limitPrice;
+        private string? _stopPrice;
+        [JsonIgnore] public bool HasLimitPrice { get; private set; }
+        [JsonIgnore] public bool HasStopPrice { get; private set; }
+        [JsonPropertyName("limit_price")]
+        public string? LimitPrice
+        {
+            get => _limitPrice;
+            set { _limitPrice = value; HasLimitPrice = true; }
+        }
+        [JsonPropertyName("stop_price")]
+        public string? StopPrice
+        {
+            get => _stopPrice;
+            set { _stopPrice = value; HasStopPrice = true; }
+        }
+        [JsonPropertyName("trail_price")] public string? TrailPrice { get; set; }
+        [JsonPropertyName("trail_percent")] public string? TrailPercent { get; set; }
         [JsonPropertyName("status")] public string? Status { get; set; }
         [JsonPropertyName("created_at")] public DateTimeOffset? CreatedAt { get; set; }
         [JsonPropertyName("updated_at")] public DateTimeOffset? UpdatedAt { get; set; }

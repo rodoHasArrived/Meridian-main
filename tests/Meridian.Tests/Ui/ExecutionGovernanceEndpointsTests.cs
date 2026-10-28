@@ -572,6 +572,10 @@ public sealed class ExecutionGovernanceEndpointsTests
         });
         app.MapExecutionEndpoints(JsonOptions());
         await app.StartAsync();
+        if (app.Services.GetService<IOrderManager>() is IOrderManagementLifecycle lifecycle)
+        {
+            await lifecycle.StartAsync();
+        }
         return app;
     }
 

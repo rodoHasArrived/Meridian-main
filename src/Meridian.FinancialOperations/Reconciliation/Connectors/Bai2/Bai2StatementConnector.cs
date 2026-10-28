@@ -205,19 +205,32 @@ public sealed class Bai2StatementConnector : IStatementConnector
                             $"Currency {accountCurrency} has no defined ISO 4217 minor-unit scale for BAI2 integer amounts."));
                         return Task.FromResult(EmptyResult(issues));
                     }
+                    // A present but malformed closing balance is evidence of an invalid statement,
+                    // not an absent balance that may be skipped or replaced by closing-available.
+                    if (issues.Count > _limits.MaxDiagnostics)
+                    {
+                        issues.Add(_limits.TooManyDiagnostics());
+                        return Task.FromResult(EmptyResult(issues));
+                    }
+
+                    var balanceResult = ResolveClosingBalance(fields, out var balanceMinorUnits);
+                    if (balanceResult == Bai2BalanceResult.BadAmount)
+                    {
+                        issues.Add(StatementParseIssue.Error("BAI2_BAD_BALANCE_AMOUNT",
+                            "Closing balance requires an integer minor-unit amount within the supported range; the statement cannot be reconciled.", lineIndex));
+                        break;
+                    }
+                    if (balanceResult == Bai2BalanceResult.BadLayout)
+                    {
+                        issues.Add(StatementParseIssue.Error("BAI2_INVALID_BALANCE_FIELDS",
+                            "Account status fields or funds availability are malformed; closing balance evidence cannot be resolved.", lineIndex));
+                        break;
+                    }
+
                     if (account is { } identifiedAccount &&
-                        TryResolveClosingBalance(fields, out var balanceMinorUnits) &&
+                        balanceResult == Bai2BalanceResult.Ok &&
                         asOfDate is { } balanceDate)
                     {
-                        // Checked once per closing balance that can contribute a record or a diagnostic.
-                        // Bounding diagnostics here bounds all of them without depending on an enumeration
-                        // of the warning branches staying complete as branches are added.
-                        if (issues.Count > _limits.MaxDiagnostics)
-                        {
-                            issues.Add(_limits.TooManyDiagnostics());
-                            return Task.FromResult(EmptyResult(issues));
-                        }
-
                         // Charged on the append, against rows actually retained, and shared with the 16
                         // detail branch below because both append to this one list.
                         if (records.Count >= _limits.MaxRecords)
@@ -273,16 +286,25 @@ public sealed class Bai2StatementConnector : IStatementConnector
                         break;
                     }
 
-                    if (asOfDate is not { } transactionDate)
+                    var typeCode = FieldAt(fields, 1);
+                    if (!TryParseMinorUnits(FieldAt(fields, 2), out var amountMinorUnits) || amountMinorUnits < 0)
                     {
-                        issues.Add(StatementParseIssue.Warning("BAI2_NO_ASOF_DATE", "Transaction detail appeared before a group as-of date; skipped.", rowNumber + 1));
+                        issues.Add(StatementParseIssue.Error("BAI2_BAD_AMOUNT",
+                            "Transaction detail requires a non-negative integer minor-unit amount within the supported range; the statement cannot be reconciled.", lineIndex));
+                        break;
+                    }
+                    if (!TrySkipFundsType(fields, 3, out _))
+                    {
+                        // A comma embedded in an amount becomes an extra field. Validate the funds
+                        // boundary so such a split cannot quietly restate the transaction magnitude.
+                        issues.Add(StatementParseIssue.Error("BAI2_INVALID_FUNDS_TYPE",
+                            "Transaction detail funds availability is malformed; the statement cannot be reconciled.", lineIndex));
                         break;
                     }
 
-                    var typeCode = FieldAt(fields, 1);
-                    if (!TryParseMinorUnits(FieldAt(fields, 2), out var amountMinorUnits))
+                    if (asOfDate is not { } transactionDate)
                     {
-                        issues.Add(StatementParseIssue.Warning("BAI2_BAD_AMOUNT", "Transaction detail has no parseable amount; skipped.", rowNumber + 1));
+                        issues.Add(StatementParseIssue.Warning("BAI2_NO_ASOF_DATE", "Transaction detail appeared before a group as-of date; skipped.", rowNumber + 1));
                         break;
                     }
 
@@ -513,33 +535,84 @@ public sealed class Bai2StatementConnector : IStatementConnector
             fingerprint));
     }
 
-    private static bool TryResolveClosingBalance(string[] fields, out long minorUnits)
+    private enum Bai2BalanceResult
     {
-        // The account-identifier record carries repeating (status-code, amount, item-count, funds-type)
-        // groups whose funds-type can span a variable number of sub-fields. Rather than assume a fixed
-        // stride, scan for the closing-ledger status code and take the following field as the amount,
-        // falling back to closing-available.
-        if (TryResolveBalanceForStatus(fields, ClosingLedgerStatusCode, out minorUnits))
-        {
-            return true;
-        }
-
-        return TryResolveBalanceForStatus(fields, ClosingAvailableStatusCode, out minorUnits);
+        Missing,
+        Ok,
+        BadAmount,
+        BadLayout,
     }
 
-    private static bool TryResolveBalanceForStatus(string[] fields, string statusCode, out long minorUnits)
+    private static Bai2BalanceResult ResolveClosingBalance(string[] fields, out long minorUnits)
     {
-        for (var index = 3; index < fields.Length - 1; index++)
+        // Walk status/amount/item-count/funds-type tuples. Searching every field for 015/045
+        // mistakes an amount, count or availability value for a status code. Funds types S/V/D
+        // have variable-width payloads, so a fixed four-field stride is not sufficient either.
+        long? ledger = null;
+        long? available = null;
+        minorUnits = 0;
+        for (var index = 3; index < fields.Length;)
         {
-            if (string.Equals(fields[index].Trim(), statusCode, StringComparison.Ordinal)
-                && TryParseMinorUnits(fields[index + 1], out minorUnits))
+            var status = fields[index].Trim();
+            if (status.Length == 0 && fields.Skip(index).All(string.IsNullOrWhiteSpace))
             {
-                return true;
+                break;
+            }
+            if (status.Length != 3 || !int.TryParse(status, NumberStyles.None, CultureInfo.InvariantCulture, out _))
+            {
+                return Bai2BalanceResult.BadLayout;
+            }
+            if (status is ClosingLedgerStatusCode or ClosingAvailableStatusCode)
+            {
+                if (!TryParseMinorUnits(FieldAt(fields, index + 1), out var amount))
+                {
+                    return Bai2BalanceResult.BadAmount;
+                }
+                if (status == ClosingLedgerStatusCode)
+                {
+                    ledger ??= amount;
+                }
+                else
+                {
+                    available ??= amount;
+                }
+            }
+
+            if (!TrySkipFundsType(fields, index + 3, out index))
+            {
+                return Bai2BalanceResult.BadLayout;
             }
         }
 
-        minorUnits = 0;
-        return false;
+        var selected = ledger ?? available;
+        minorUnits = selected ?? 0;
+        return selected.HasValue ? Bai2BalanceResult.Ok : Bai2BalanceResult.Missing;
+    }
+
+    private static bool TrySkipFundsType(string[] fields, int fundsIndex, out int nextIndex)
+    {
+        nextIndex = fundsIndex + 1;
+        switch (FieldAt(fields, fundsIndex)?.Trim().ToUpperInvariant())
+        {
+            case null or "" or "0" or "1" or "2" or "Z":
+                return true;
+            case "S":
+                nextIndex += 3;
+                return nextIndex <= fields.Length;
+            case "V":
+                nextIndex += 2;
+                return nextIndex <= fields.Length;
+            case "D":
+                if (!int.TryParse(FieldAt(fields, nextIndex), NumberStyles.None, CultureInfo.InvariantCulture, out var count)
+                    || count < 0 || count > (fields.Length - nextIndex - 1) / 2)
+                {
+                    return false;
+                }
+                nextIndex += 1 + 2 * count;
+                return true;
+            default:
+                return false;
+        }
     }
 
     private static decimal SignByTypeCode(decimal amount, string? typeCode)

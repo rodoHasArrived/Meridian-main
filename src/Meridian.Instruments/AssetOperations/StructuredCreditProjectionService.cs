@@ -53,7 +53,16 @@ public sealed class StructuredCreditProjectionService
             row.FactorScheduleReference,
             row.MaturityDate,
             row.PrimaryIdentifierValue,
-            row.Version);
+            row.Version,
+            row.StructuredCreditKind,
+            row.Seniority,
+            row.AttachmentPoint,
+            row.DetachmentPoint,
+            row.WeightedAverageCoupon,
+            row.WeightedAverageMaturityMonths,
+            row.WeightedAverageLoanAgeMonths,
+            row.ReinvestmentPeriodEnd,
+            row.NonCallPeriodEnd);
 
     private static StructuredCreditFactorPointDto MapFactorPoint(StructuredCreditFactorScheduleRow row)
         => new(row.SecurityId, row.Ordinal, row.AsOfDate, row.Factor);

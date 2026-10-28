@@ -77,6 +77,37 @@ public sealed class OAuthRotationRecoveryTests : IDisposable
         handler.Calls.Should().Be(1);
     }
 
+    [Fact]
+    public async Task RotationAuditAppendFailure_IsAcknowledgedAsCommittedWithAuditDeferred()
+    {
+        // Only the audit append fails: the replacement token is durable in both vault generations, so the
+        // refresh succeeded and a retry would rotate a second time at the provider. The result says so.
+        var vault = new FileProviderCredentialStore(_root);
+        using var handler = new RotatingProvider();
+        using var client = new HttpClient(handler);
+        await using var service = new OAuthTokenRefreshService(_root, httpClient: client);
+        service.RegisterProvider(new OAuthProviderConfig("provider", "client", TokenEndpoint: "https://provider.example/token"));
+        await service.StoreTokenAsync("provider", Token("original"));
+        var auditPath = Path.Combine(_root, ".mdc", "provider-credentials.audit.jsonl");
+        File.Delete(auditPath);
+        Directory.CreateDirectory(auditPath);
+        var acknowledged = 0;
+        var failed = 0;
+        service.OnTokenRefreshed += (_, _) => acknowledged++;
+        service.OnRefreshFailed += (_, _) => failed++;
+
+        var result = await service.RefreshTokenAsync("provider");
+
+        result.Success.Should().BeTrue();
+        result.AuditDeferred.Should().BeTrue();
+        result.Token!.RefreshToken.Should().Be("replacement-refresh");
+        acknowledged.Should().Be(1);
+        failed.Should().Be(0);
+        handler.Calls.Should().Be(1);
+        (await vault.ReadOAuthTokensAsync())["provider"].RefreshToken.Should().Be("replacement-refresh");
+        File.Exists(Path.Combine(_root, ".mdc", "provider-credentials.audit.pending.jsonl")).Should().BeTrue("the audit record is owed, not lost");
+    }
+
     private static OAuthToken Token(string value) => new(value + "-access", "Bearer",
         DateTimeOffset.UtcNow.AddHours(1), value + "-refresh");
 
