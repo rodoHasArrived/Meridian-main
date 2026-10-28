@@ -11,6 +11,30 @@ last_reviewed: 2026-10-11
 
 # src/Meridian.Ui/dashboard
 
+## Portfolio Open positions controls
+
+Open positions supports case-insensitive symbol search, exact Side filtering from loaded rows,
+and shared-assessment Current/Review required filtering. Filters combine with AND. Symbol, Side,
+and Mark readiness headers sort stably; no sort retains source order. Financial strings and totals
+are not sorted or recomputed. Counts explicitly describe filtered versus loaded positions.
+
+The toolbar remains available for both no-data and no-matches states. Filtering never changes
+holding selection or row identity: a selected holding outside the results retains its evidence and
+shows Clear filters, which preserves sorting. Reset controls also removes sorting. The existing
+row cap and Show all control remain in place for large result sets.
+
+Controls round-trip through the optional `positionsTable` member of the existing v1
+`portfolio-workstation` view envelope. Search updates the URL after 250 ms with replacement;
+blur flushes it before Copy link/Save view. Discrete filters and sorts create history entries.
+Back/Forward or external navigation cancels pending writes and restores URL controls. Scope,
+other query parameters, hash, and existing same-screen envelope fields are preserved. Old or
+invalid controls default safely without rewriting the URL on load. Link-budget failures are
+explicit, and controls stay applied locally. No new selection persistence is introduced.
+
+Focused coverage: `portfolio-positions-table.test.ts`, `use-portfolio-positions-table.test.tsx`,
+`portfolio-screen.positions-table.test.tsx`, and existing Portfolio/a11y suites. Brokerage positions
+and Trading blotters retain their existing interaction models.
+
 ## Shared workstation header
 
 The browser shell combines `WorkspaceHeader` and its persistent operating scope in one compact

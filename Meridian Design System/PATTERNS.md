@@ -64,6 +64,22 @@ At desktop/laptop widths the outer shell allocates available height to the work 
 banners; at browser zoom controls wrap without hiding scope or warnings. Reuse existing semantic
 colors, typography, focus indicators and spacing tokens rather than introducing a new theme.
 
+### Loaded-position table controls
+
+Compose `PortfolioPositionsToolbar` immediately above the existing dense table. Keep symbol
+search, Side and Mark readiness labels visible; derive Side options from all loaded positions,
+not the filtered subset. AND-combine controls and label counts as “Showing X of Y loaded
+positions” rather than suggesting a server-wide total. Keep toolbar/reset available with zero
+matches, and distinguish that state from no source holdings.
+
+Sorting uses semantic header controls and `aria-sort`; only Symbol, Side and Mark readiness
+are enabled in this pilot. Preserve row IDs, source-order ties, original financial values and
+portfolio totals. Filtering a selected row out must not switch the evidence panel to another
+holding: disclose the hidden selection and offer Clear filters. Reset controls also clears sort.
+Use native labelled input/select controls, existing focus indicators, and wrapping toolbar groups
+at laptop widths/browser zoom. Search URL updates must not move focus or scroll the workbench.
+Copy link and Save view capture table controls through the existing view envelope.
+
 ### Selection inputs — which control?
 
 | Situation | Use |

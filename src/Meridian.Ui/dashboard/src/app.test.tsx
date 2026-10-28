@@ -310,6 +310,22 @@ describe("App", () => {
     });
   });
 
+  it("keeps Views open when a pending Portfolio search flushes on blur", async () => {
+    const user = userEvent.setup();
+    function PendingSearch() {
+      const navigate = useNavigate();
+      return <input aria-label="Pending table search" onBlur={() => navigate("/portfolio?view=table-search", { replace: true })} />;
+    }
+    renderWithRouter(<><App /><PendingSearch /></>, { initialEntries: ["/portfolio"] });
+    await user.click(screen.getByRole("textbox", { name: "Pending table search" }));
+    await user.type(screen.getByRole("textbox", { name: "Pending table search" }), "AA");
+    const views = screen.getByText("Views", { selector: "summary" });
+    await user.click(views);
+    await waitFor(() => expect(screen.getByRole("region", { name: "View controls" })).toBeVisible());
+    expect(views.closest("details")).toHaveAttribute("open");
+    expect(views).toHaveFocus();
+  });
+
   it("keeps the workstation closed while activation status is loading", () => {
     vi.mocked(apiGetJson).mockImplementation((path) => {
       if (path === WORKSTATION_API_ENDPOINTS.firstRunStatus) {

@@ -346,6 +346,7 @@ function AppShell({
   const [commandOpen, setCommandOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [scopePickerOpen, setScopePickerOpen] = useState(false);
+  const [layoutRestoreSequence, setLayoutRestoreSequence] = useState(0);
   const [routeAnnouncement, setRouteAnnouncement] = useState("");
   const [storedOperatingScope, setStoredOperatingScope] = useState(readStoredOperatingScope);
   const onboardingTour = useOnboardingTour();
@@ -494,6 +495,7 @@ function AppShell({
   // monitors is browser-permission-limited, so a restored pop-out may open where the
   // browser chooses and be dragged once — the arrangement otherwise restores whole.
   const handleRestoreLayout = (plan: LayoutRestorePlan) => {
+    setLayoutRestoreSequence((sequence) => sequence + 1);
     writeStoredDensity(plan.density);
     applyDensity(plan.density);
 
@@ -749,7 +751,7 @@ function AppShell({
             actions={(
               <>
                 <CopyLinkButton />
-                <WorkspaceViewsMenu routeKey={locationKey}>
+                <WorkspaceViewsMenu routeKey={`${shell.routeFocus.routeKey}:${layoutRestoreSequence}`}>
                   <LayoutSwitcher
                     route={`${pathname}${search}`}
                     operatingScope={operatingScopeInput}
