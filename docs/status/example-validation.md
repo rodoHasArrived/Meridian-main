@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 1176 |
-| Valid | 677 |
+| Total code blocks | 1177 |
+| Valid | 678 |
 | Invalid | 0 |
 | Skipped | 499 |
 
@@ -18,7 +18,7 @@
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 121 | 0 | 0 | 121 |
-| `bash` | 268 | 268 | 0 | 0 |
+| `bash` | 269 | 269 | 0 | 0 |
 | `cpp` | 1 | 0 | 0 | 1 |
 | `csharp` | 307 | 307 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
@@ -169,6 +169,7 @@ No invalid code examples found.
 | `docs/roadmap/README.md` | 1 |
 | `docs/roadmap/roadmap-item-template.md` | 1 |
 | `docs/roadmap/schema-versioning.md` | 1 |
+| `docs/screenshots/README.md` | 1 |
 | `docs/source/README.md` | 2 |
 | `docs/source/generated/adapter-readiness-matrix.md` | 1 |
 | `docs/source/source-documentation-standard.md` | 3 |
