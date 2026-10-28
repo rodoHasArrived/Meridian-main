@@ -15,6 +15,8 @@ from contextlib import ExitStack, redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
+import yaml
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PYTHON_ROOT = REPO_ROOT / "build/python"
@@ -392,9 +394,14 @@ class DoctorProfileTests(unittest.TestCase):
         self.assertEqual(run.call_args.kwargs["cwd"], self.root)
 
     def test_ci_browser_setup_uses_same_node_version_file_as_doctor(self) -> None:
-        workflow = (REPO_ROOT / ".github/workflows/meridian-ci.yml").read_text(encoding="utf-8")
-        self.assertIn("node-version-file: .nvmrc", workflow)
-        self.assertNotIn("node-version:", workflow)
+        workflow = yaml.safe_load((REPO_ROOT / ".github/workflows/meridian-ci.yml").read_text(encoding="utf-8"))
+        browser_node_steps = [
+            step for step in workflow["jobs"]["verify-browser"]["steps"]
+            if step.get("uses", "").startswith("actions/setup-node@")
+        ]
+        self.assertEqual(len(browser_node_steps), 1)
+        self.assertEqual(browser_node_steps[0]["with"]["node-version-file"], ".nvmrc")
+        self.assertNotIn("node-version", browser_node_steps[0]["with"])
         self.assertEqual((REPO_ROOT / ".nvmrc").read_text(encoding="utf-8").strip(), "24")
 
 

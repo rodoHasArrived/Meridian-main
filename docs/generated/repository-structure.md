@@ -886,10 +886,12 @@ Meridian-main
 │   │   ├── ai-navigation-refresh.yml
 │   │   ├── branch-cleanup.yml
 │   │   ├── ci-concurrency-benchmark.yml
+│   │   ├── ci-metrics.yml
 │   │   ├── ci.yml
 │   │   ├── codeql.yml
 │   │   ├── copilot-setup-steps.yml
 │   │   ├── demo-smoke.yml
+│   │   ├── dependency-locks.yml
 │   │   ├── desktop-evaluation-prerelease.yml
 │   │   ├── desktop-installer-packaging.yml
 │   │   ├── desktop-screenshot-capture.yml
@@ -1148,6 +1150,7 @@ Meridian-main
 │       │   ├── check-workflow-hygiene.py
 │       │   ├── ci-metrics.py
 │       │   ├── collect-actions.py
+│       │   ├── dependency-locks.py
 │       │   ├── dispatch-targeted-test.py
 │       │   ├── duplicate-helper-baseline.json
 │       │   ├── generate-release-evidence-manifest.py
@@ -1155,7 +1158,9 @@ Meridian-main
 │       │   ├── generated_repair.py
 │       │   ├── generated_repair_sandbox.py
 │       │   ├── inline-sha256-baseline.json
+│       │   ├── integration_evidence.py
 │       │   ├── maintenance_refresh.py
+│       │   ├── publish-certified-release.py
 │       │   ├── release-preflight.py
 │       │   ├── release-readiness.py
 │       │   ├── requirements.txt
@@ -1166,6 +1171,7 @@ Meridian-main
 │       │   ├── scan-commit-secrets.py
 │       │   ├── script-test-quarantine.json
 │       │   ├── summarize-ci-artifacts.py
+│       │   ├── summarize-repair-outcomes.py
 │       │   ├── test_evidence.py
 │       │   ├── validate-monitoring-deployment.py
 │       │   ├── validate-npm-audit.py
@@ -1234,6 +1240,7 @@ Meridian-main
 │       │   ├── render-source-docs.py
 │       │   ├── repair-links.py
 │       │   ├── requirements.txt
+│       │   ├── reviewed_doc_fingerprints.py
 │       │   ├── rules-engine.py
 │       │   ├── run-docs-automation.py
 │       │   ├── scan-source-todos.py
@@ -12413,6 +12420,7 @@ Meridian-main
 │   │   ├── test_consumer_certification_processes.py
 │   │   ├── test_consumer_predecessor.py
 │   │   ├── test_dashboard_package_lock.py
+│   │   ├── test_dependency_maintenance.py
 │   │   ├── test_desktop_build_receipt.py
 │   │   ├── test_desktop_msix_packaging.py
 │   │   ├── test_desktop_screen_blueprint_checklist.py
@@ -12431,13 +12439,16 @@ Meridian-main
 │   │   ├── test_generate_ui_api_routes_ts.py
 │   │   ├── test_generate_ui_route_wiring_report.py
 │   │   ├── test_generate_workspace_catalog_ts.py
+│   │   ├── test_generated_conflict_policy.py
 │   │   ├── test_generated_repair.py
+│   │   ├── test_generated_repair_outcomes.py
 │   │   ├── test_generated_repair_sandbox.py
 │   │   ├── test_git_hooks.py
 │   │   ├── test_golden_path_validation_workflow.py
 │   │   ├── test_ibapi_smoke_workflow.py
 │   │   ├── test_implementation_assurance_runner.py
 │   │   ├── test_implementation_assurance_scoring.py
+│   │   ├── test_integration_evidence.py
 │   │   ├── test_lane_manifest.py
 │   │   ├── test_live_execution_controls_route_consistency.py
 │   │   ├── test_maintenance_full_workflow.py
@@ -12452,9 +12463,11 @@ Meridian-main
 │   │   ├── test_production_certification_workflow.py
 │   │   ├── test_production_recovery.py
 │   │   ├── test_project_target_framework_alignment.py
+│   │   ├── test_publish_certified_release.py
 │   │   ├── test_python_package_conda_dependencies.py
 │   │   ├── test_recovery_evidence.py
 │   │   ├── test_refresh_screenshots_workflow.py
+│   │   ├── test_release_audit_evidence.py
 │   │   ├── test_release_evidence_manifest.py
 │   │   ├── test_release_evidence_workflows.py
 │   │   ├── test_release_promotion.py
@@ -12463,6 +12476,7 @@ Meridian-main
 │   │   ├── test_render_roadmap_diagrams.py
 │   │   ├── test_repair_generated.py
 │   │   ├── test_repair_links_anchors.py
+│   │   ├── test_repair_outcome_metrics.py
 │   │   ├── test_resolve_generated_merge_conflicts.py
 │   │   ├── test_roadmap_source_docs.py
 │   │   ├── test_roadmap_validator_compatibility.py
