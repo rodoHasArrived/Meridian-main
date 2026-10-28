@@ -1,0 +1,258 @@
+{
+  "budget": {
+    "excerptChars": 5990,
+    "maxChars": 24000,
+    "maxFiles": 12,
+    "selectedFiles": 3
+  },
+  "context": [
+    {
+      "excerpt": "## Useful Commands\n\n```bash\ndotnet restore Meridian.sln /p:EnableWindowsTargeting=true\ndotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true\ndotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true\ndotnet test tests/Meridian.FSharp.Tests -c Release /p:EnableWindowsTargeting=true\nnpm --prefix src/Meridian.Ui/dashboard run test\nnpm --prefix src/Meridian.Ui/dashboard run build\nbash scripts/ci.sh\npwsh ./scripts/dev/desktop-dev.ps1\npwsh ./scripts/dev/run-desktop.ps1 -Fixture\npwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1\ndotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080\ngh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter=\"FullyQualifiedName~<TestClassOrMethod>\"\npython3 build/scripts/ai-repo-updater.py known-errors\n```\n\nGNU Make targets are optional convenience wrappers. In Windows shells where `where.exe make` finds\nnothing, use the direct `dotnet`, `npm`, `pwsh`, and `python` commands above instead of `make ...`.\n\nPrefer the narrowest validation command that matches the touched files.\nFor completed PR-ready work, use `bash scripts/ci.sh`; GitHub Actions `Meridian CI / quality-gate`\nis the authoritative merge result. Local work may happen on `main` when the user explicitly requests\nit or the checkout is intentionally operating there, but PR-ready publishing should flow through a\n`codex/<short-task-name>` branch and PR targeting `main` unless GitHub repository rules explicitly\nallow the requested protected-branch flow.\nWhen local CPU, memory, disk, dependency restore, or MSBuild lock contention makes validation\nunreliable, push the branch and use the GitHub-hosted `Targeted Test` workflow as the remote proof\ntool before retrying broad local scripts. Select a whitelisted `mode`; for .NET slices, use\n`mode=dotnet-filtered` with a repo-relative test project under `tests/` plus `dotnet_filter`.\nAfter a timed-out generation, build, or test attempt, run\n`python build/python/cli/buildctl.py validation-status --summary`, then `dotnet build-server\nshutdown`; stop only abandoned repo-owned `dotnet`, `MSBuild`, `testhost`, `csc`, or\n`VBCSCompiler` PIDs whose command lines clearly point at this checkout before retrying local\nvalidation.\n\n---\n",
+      "lineEnd": 148,
+      "lineStart": 110,
+      "path": ".agents/skills/_shared/project-context.md",
+      "reason": "target file",
+      "sha256": "e573414b6bea3dfd7badac09f6f198d4e4e7889eb7a998aa01aacf48293b93c9",
+      "truncated": true
+    },
+    {
+      "excerpt": "## Useful Commands\n\n```bash\ndotnet restore Meridian.sln /p:EnableWindowsTargeting=true\ndotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true\ndotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true\ndotnet test tests/Meridian.FSharp.Tests -c Release /p:EnableWindowsTargeting=true\nnpm --prefix src/Meridian.Ui/dashboard run test\nnpm --prefix src/Meridian.Ui/dashboard run build\nbash scripts/ci.sh\npwsh ./scripts/dev/desktop-dev.ps1\npwsh ./scripts/dev/run-desktop.ps1 -Fixture\npwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1\ndotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080\ngh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter=\"FullyQualifiedName~<TestClassOrMethod>\"\npython3 build/scripts/ai-repo-updater.py known-errors\n```\n\nGNU Make targets are optional convenience wrappers. In Windows shells where `where.exe make` finds\nnothing, use the direct `dotnet`, `npm`, `pwsh`, and `python` commands above instead of `make ...`.\n\nPrefer the narrowest validation command that matches the touched files.\nFor completed PR-ready work, use `bash scripts/ci.sh`; GitHub Actions `Meridian CI / quality-gate`\nis the authoritative merge result. Local work may happen on `main` when the user explicitly requests\nit or the checkout is intentionally operating there, but PR-ready publishing should flow through a\n`codex/<short-task-name>` branch and PR targeting `main` unless GitHub repository rules explicitly\nallow the requested protected-branch flow.\nWhen local CPU, memory, disk, dependency restore, or MSBuild lock contention makes validation\nunreliable, push the branch and use the GitHub-hosted `Targeted Test` workflow as the remote proof\ntool before retrying broad local scripts. Select a whitelisted `mode`; for .NET slices, use\n`mode=dotnet-filtered` with a repo-relative test project under `tests/` plus `dotnet_filter`.\nAfter a timed-out generation, build, or test attempt, run\n`python build/python/cli/buildctl.py validation-status --summary`, then `dotnet build-server\nshutdown`; stop only abandoned repo-owned `dotnet`, `MSBuild`, `testhost`, `csc`, or\n`VBCSCompiler` PIDs whose command lines clearly point at this checkout before retrying local\nvalidation.\n\n---\n",
+      "lineEnd": 148,
+      "lineStart": 110,
+      "path": ".claude/skills/_shared/project-context.md",
+      "reason": "target file",
+      "sha256": "a5655d379c48de8c6919f3086cafbb7144f62bc4bacbac6624df772695613c92",
+      "truncated": true
+    },
+    {
+      "excerpt": "# Meridian \u2014 Shared Project Context\n\n> Codex copy. Use this file for Meridian-specific terminology, product direction, commands, and\n> architecture when a Codex skill needs repository grounding without repeating the same facts in\n> every `SKILL.md`.\n>\n> **Last verified:** 2026-09-28\n> **Primary grounding docs:** `README.md`, `docs/roadmap/data/*.yml`,\n> `docs/roadmap/generated/ROADMAP_SUMMARY.md`, `docs/product/meridian-design-document.md`,\n> `docs/architecture/meridian-development-intelligence-framework.md`\n>\n> The section between the `shared-context` markers is identical in all three copies:\n> `.claude/skills/_shared/project-context.md` (canonical, edit it first),\n> `.codex/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md`.\n> After editing the canonical section, run `python build/scripts/ai/generate-guidance.py --write`.\n> Check freshness with `python build/scripts/ai/generate-guidance.py --check`; the existing\n> `build/scripts/docs/check-ai-inventory.py` gate also detects drift. Host-specific guidance stays\n> outside the generated section and is preserved byte-for-byte.\n\n<!-- shared-context:begin \u2014 identical in .claude/, .codex/, and .agents/ copies; check-ai-inventory.py enforces it -->\n",
+      "lineEnd": 21,
+      "lineStart": 1,
+      "path": ".codex/skills/_shared/project-context.md",
+      "reason": "target file",
+      "sha256": "8f733a1f19d01c99a3b66976dd94ce67bddd17e2111abc36e17644a65277f990",
+      "truncated": true
+    }
+  ],
+  "instructions": [
+    ".codex/skills/_shared/project-context.md",
+    "AGENTS.md"
+  ],
+  "missingSources": [
+    "docs/ai/README.md",
+    "docs/ai/ai-known-errors.md",
+    "docs/ai/navigation/README.md",
+    "docs/operators/browser-workstation-installer.md",
+    "docs/reference/lifecycle-control-plane.md",
+    "docs/reference/verified-operation-outcomes.md",
+    "src/Meridian.Application/Composition",
+    "src/Meridian.Application/Pipeline",
+    "src/Meridian.Application/Pipeline/EventPipeline.cs",
+    "src/Meridian.Contracts",
+    "src/Meridian.Contracts/Lifecycle",
+    "src/Meridian.Contracts/Operations",
+    "src/Meridian.Core/Serialization",
+    "src/Meridian.Core/Serialization/MarketDataJsonContext.cs",
+    "src/Meridian.Launcher/LauncherCommandPolicy.cs",
+    "src/Meridian.Launcher/Program.cs",
+    "src/Meridian.Launcher/StartupOutcomeReceiptMonitor.cs",
+    "src/Meridian.LifecycleSupervisor/LifecycleStartupOutcome.cs",
+    "src/Meridian.LifecycleSupervisor/LifecycleSupervisorRuntime.cs",
+    "src/Meridian.LifecycleSupervisor/Program.cs",
+    "src/Meridian.Setup/InstallationTransaction.cs",
+    "src/Meridian.Setup/PayloadPackage.cs",
+    "src/Meridian.Setup/Program.cs",
+    "src/Meridian/Program.cs"
+  ],
+  "moduleOwners": [],
+  "objective": "Insert Pilot handoffs identify unresolved assumptions before another agent resumes work. immediately after ## Useful Commands with a blank line before and after, then synchronize the shared context to both host mirrors without changing other bytes.",
+  "omitted": [
+    {
+      "path": "src/Meridian.Application/Pipeline/EventPipeline.cs",
+      "reason": "source missing"
+    },
+    {
+      "path": "src/Meridian.Contracts",
+      "reason": "source missing"
+    },
+    {
+      "path": "src/Meridian.Contracts/Lifecycle",
+      "reason": "source missing"
+    },
+    {
+      "path": "src/Meridian.Contracts/Operations",
+      "reason": "source missing"
+    },
+    {
+      "path": "src/Meridian.Core/Serialization/MarketDataJsonContext.cs",
+      "reason": "source missing"
+    },
+    {
+      "path": "src/Meridian.Launcher/StartupOutcomeReceiptMonitor.cs",
+      "reason": "source missing"
+    },
+    {
+      "path": "src/Meridian.Setup/InstallationTransaction.cs",
+      "reason": "source missing"
+    },
+    {
+      "path": "src/Meridian.Setup/PayloadPackage.cs",
+      "reason": "source missing"
+    },
+    {
+      "path": "src/Meridian/Program.cs",
+      "reason": "source missing"
+    },
+    {
+      "path": "docs/operators/browser-workstation-installer.md",
+      "reason": "source missing"
+    },
+    {
+      "path": "docs/reference/lifecycle-control-plane.md",
+      "reason": "source missing"
+    },
+    {
+      "path": "docs/reference/verified-operation-outcomes.md",
+      "reason": "source missing"
+    },
+    {
+      "path": "docs/ai/README.md",
+      "reason": "source missing"
+    },
+    {
+      "path": "docs/ai/ai-known-errors.md",
+      "reason": "source missing"
+    },
+    {
+      "path": "docs/ai/navigation/README.md",
+      "reason": "source missing"
+    },
+    {
+      "path": "src/Meridian.Application/Composition",
+      "reason": "source missing"
+    },
+    {
+      "path": "src/Meridian.Application/Pipeline",
+      "reason": "source missing"
+    },
+    {
+      "path": "src/Meridian.Core/Serialization",
+      "reason": "source missing"
+    },
+    {
+      "path": "src/Meridian.Launcher/LauncherCommandPolicy.cs",
+      "reason": "source missing"
+    },
+    {
+      "path": "src/Meridian.Launcher/Program.cs",
+      "reason": "source missing"
+    },
+    {
+      "path": "src/Meridian.LifecycleSupervisor/LifecycleStartupOutcome.cs",
+      "reason": "source missing"
+    },
+    {
+      "path": "src/Meridian.LifecycleSupervisor/LifecycleSupervisorRuntime.cs",
+      "reason": "source missing"
+    },
+    {
+      "path": "src/Meridian.LifecycleSupervisor/Program.cs",
+      "reason": "source missing"
+    },
+    {
+      "path": "src/Meridian.Setup/Program.cs",
+      "reason": "source missing"
+    }
+  ],
+  "repository": {
+    "revision": null
+  },
+  "route": {
+    "escalated_from": null,
+    "escalation_reasons": [],
+    "max_context_tokens": 200000,
+    "mode": "Standard",
+    "model_class": "balanced",
+    "model_route_id": "implementation-balanced",
+    "promptRoute": {
+      "confidence": 0.0,
+      "escalation_triggers": [
+        "matched route confidence below confidenceThreshold",
+        "task expands beyond orientation"
+      ],
+      "fallback_applied": false,
+      "lane": "orient",
+      "matched_rule": null,
+      "mode": "Lightweight",
+      "model_route_id": "analysis-economy",
+      "rationale": "Default to orientation when the prompt does not strongly match a specialist lane.",
+      "required_telemetry": [
+        "route_id",
+        "handoff_path"
+      ],
+      "score": 0.0,
+      "skill": "meridian-repo-navigation",
+      "validation_floor": [
+        "python build/scripts/docs/check-ai-navigation-freshness.py --max-age-days 14"
+      ],
+      "validation_scripts": [
+        "prompt-route-linter"
+      ]
+    },
+    "route_id": "installed-runtime",
+    "route_title": "Consumer launcher, lifecycle supervisor, and installation",
+    "subsystem_id": "host-shell",
+    "subsystem_title": "Host and Composition",
+    "task_type": "implementation"
+  },
+  "schemaVersion": 1,
+  "scope": {
+    "affectedConsumers": [],
+    "targets": [
+      ".agents/skills/_shared/project-context.md",
+      ".claude/skills/_shared/project-context.md",
+      ".codex/skills/_shared/project-context.md"
+    ]
+  },
+  "sources": [
+    {
+      "path": ".agents/skills/_shared/project-context.md",
+      "sha256": "e573414b6bea3dfd7badac09f6f198d4e4e7889eb7a998aa01aacf48293b93c9"
+    },
+    {
+      "path": ".claude/skills/_shared/project-context.md",
+      "sha256": "a5655d379c48de8c6919f3086cafbb7144f62bc4bacbac6624df772695613c92"
+    },
+    {
+      "path": ".codex/skills/_shared/project-context.md",
+      "sha256": "8f733a1f19d01c99a3b66976dd94ce67bddd17e2111abc36e17644a65277f990"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "bc32d7027df6881147acf76f506a2ffc28fcd0dd977f392bd36399c6557e10ca"
+    },
+    {
+      "path": "docs/ai/codex/prompt-route-rules.json",
+      "sha256": "648175ddb43ac544fb8024cc5ef0cd0317d4540521300818bf3a6679058c240f"
+    },
+    {
+      "path": "docs/ai/generated/repo-navigation.json",
+      "sha256": "794aca9ffc84b097afc5d60ddba0af6646a8a06ccdec04564eafe983aefb3cef"
+    },
+    {
+      "path": "docs/ai/model-routing-policy.json",
+      "sha256": "3a71409b1c88d145b76ae937c6477b4ed04e75b3f43f62ff10fb203a7fdb8d0e"
+    },
+    {
+      "path": "docs/source/data/source-modules.yml",
+      "sha256": "40ee016b178cb707f1045f7d822d899b0e69203eecfb3da50037aa2bca6816e0"
+    }
+  ],
+  "validation": [
+    "python build/scripts/docs/check-ai-navigation-freshness.py --max-age-days 14"
+  ],
+  "warnings": [
+    "No matching source-module owner; inspect the nearest README for ownership and proof.",
+    "Excerpts are partial context. Read applicable instructions in full; packets never override them."
+  ]
+}

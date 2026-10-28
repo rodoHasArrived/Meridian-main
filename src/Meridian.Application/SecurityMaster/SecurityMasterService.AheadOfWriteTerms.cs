@@ -58,7 +58,7 @@ public sealed partial class SecurityMasterService
             return;
         }
 
-        throw new InvalidOperationException(
+        throw new SecurityMasterWriteRefusedException(
             $"Security '{projection.SecurityId:D}' is stamped {SecurityTermsEnvelope.AssetClassTermsVersionKey} " +
             $"{stamp}, which this node reads but does not write, and " +
             $"re-serializing it here would change '{changedPath}'. Apply the change from a node that writes that version, " +

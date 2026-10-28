@@ -25,9 +25,15 @@ internal sealed class OrderAmendmentBook(IReadOnlyDictionary<string, OrderState>
     internal PendingOrderAmendment? GetPending(string orderId) => _pending.GetValueOrDefault(orderId);
 
     internal PendingOrderAmendment Begin(
-        string orderId, OrderState original, OrderState proposed, string? brokerId, decimal? proposedTrail)
+        string orderId, OrderState original, OrderState proposed, string? brokerId, decimal? proposedTrail,
+        string? replacementClientOrderId = null, string[]? priorChainBrokerOrderIds = null)
     {
-        var pending = new PendingOrderAmendment(original, proposed, brokerId) { ProposedTrail = proposedTrail };
+        var pending = new PendingOrderAmendment(original, proposed, brokerId)
+        {
+            CandidateClientOrderId = string.IsNullOrWhiteSpace(replacementClientOrderId) ? null : replacementClientOrderId,
+            PriorChainBrokerOrderIds = priorChainBrokerOrderIds,
+            ProposedTrail = proposedTrail
+        };
         if (!_pending.TryAdd(orderId, pending))
             throw new InvalidOperationException("An earlier amendment requires broker reconciliation.");
         return pending;

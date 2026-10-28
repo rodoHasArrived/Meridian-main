@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-05
+**Reviewed:** 2026-10-28
 
 Run the browser workstation with one launcher on Windows, macOS, or Linux. It coordinates the
 seeded development host, backend source watching, Vite readiness, and owned-process cleanup.
@@ -10,15 +10,39 @@ Run the following commands from the repository root.
 
 ## Install and choose a mode
 
-Use Node.js 22.12 or newer and npm. Backend-connected mode also requires the .NET 10 SDK on
-`PATH`; fixture-only mode does not need .NET or a database. Windows uses the built-in Windows
+Use Python 3.11 or newer for the environment command, Node.js 24, and npm to match the
+devcontainer and browser CI. Backend-connected mode also requires the .NET SDK selected by
+[global.json](../../global.json) on `PATH`; fixture-only mode does not need .NET or a database.
+Windows uses the built-in Windows
 PowerShell to establish process ownership before starting a service.
 
 ```sh
-npm ci
-npm --prefix src/Meridian.Ui/dashboard ci
+python build/python/cli/buildctl.py environment --profile backend-connected --restore --json-output .ai/environment.json
 npm run dev
 ```
+
+For fixture-only work, restore the same two npm lockfiles without requiring .NET or a database:
+
+```sh
+python build/python/cli/buildctl.py environment --profile fixture-only --restore --json-output .ai/environment.json
+npm run dev:fixtures
+```
+
+Omit `--restore` for a read-only prerequisite and dependency-availability check. Restore uses
+`npm ci --include=optional` in both package roots and, for backend-connected mode, restores the
+host project. It stops on the first failed install. The report records tool versions, input
+hashes, and restore step timings; it never captures environment variables or raw package-manager
+output. A successful check establishes availability, not that an existing dependency tree matches
+the lockfile. Use `--restore` after dependency changes to establish a fresh install.
+
+The fingerprint combines dependency, launcher, and fixture input hashes with tool versions and
+platform information for comparing sessions.
+It does not claim bit-for-bit identical builds: `global.json` retains its SDK roll-forward policy
+and runtime versions are also reported individually. Restore does not seed, reset, or delete workspace
+data; the existing launcher owns seeding. Install toolchains separately when preflight reports
+them missing. Python script/CI dependencies are separate from browser runtime dependencies; install
+`build/scripts/ci/requirements.txt` into a virtual environment when running those checks. The
+devcontainer installs that pinned dependency set automatically.
 
 Open the URL printed after `[dev] Ready`, normally `http://127.0.0.1:5173/workstation/`.
 The launcher does not open a browser automatically.
@@ -38,6 +62,17 @@ development modes and suppresses .NET's separate browser refresh mechanism.
 The package-local `npm --prefix src/Meridian.Ui/dashboard run dev` remains a standalone Vite
 command with its legacy automatic fallback when no mode is configured. Use the root launcher
 commands above when you need an explicit fixture-only or backend-connected session.
+
+## Common setup failures
+
+| Symptom | Check and recovery |
+| --- | --- |
+| SDK not found or incompatible SDK | Run `dotnet --version` from the repository root and compare with `global.json`. Install a compatible .NET 10 SDK before using backend-connected mode, or use `npm run dev:fixtures` for browser-only work. |
+| Missing Vite or a platform-specific native package | Rerun `npm ci` and `npm --prefix src/Meridian.Ui/dashboard ci --include=optional` on the current OS. Keep both lockfiles; avoid sharing `node_modules` between Windows, WSL, and containers. |
+| Address already in use | Stop the owning session with Ctrl+C, or choose free `--port` and `--backend-port` values. The launcher deliberately refuses to reuse another server. |
+| Host fails before readiness | Inspect the labelled seed/backend output for restore, build, database, or authentication failures. Existing environment settings override the demo defaults; check the [environment reference](../reference/environment-variables.md) and [dev container database setup](../start/README.md#dev-container). |
+| Cold restore/build exceeds the deadline | Increase `--startup-timeout`, for example `npm run dev -- --startup-timeout 900000`, after checking the reported build errors. |
+| Backend file edits do not trigger a restart | Enable the polling watcher described below before launching on mounted filesystems or hosts with limited file watches. |
 
 ## Options and readiness
 

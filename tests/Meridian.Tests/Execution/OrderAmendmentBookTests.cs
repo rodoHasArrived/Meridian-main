@@ -7,6 +7,32 @@ namespace Meridian.Tests.Execution;
 
 public sealed class OrderAmendmentBookTests
 {
+    [Theory]
+    [InlineData("replacement-client", "replacement-client")]
+    [InlineData(" \t ", null)]
+    public void Begin_PreservesPreassignedRecoveryEvidenceBeforeAnyBrokerReport(
+        string replacementReference, string? expectedReference)
+    {
+        var original = State();
+        var proposed = original with { Quantity = 20m };
+        var book = new OrderAmendmentBook(Orders(original));
+        var pending = book.Begin(original.OrderId, original, proposed, "original-broker", 2m,
+            replacementReference, ["older-broker", "prior-broker"]);
+
+        Assert.Same(pending, book.GetPending(original.OrderId));
+        Assert.Equal(expectedReference, pending.CandidateClientOrderId);
+        Assert.Equal(new[] { "older-broker", "prior-broker" }, pending.PriorChainBrokerOrderIds);
+        Assert.Equal(2m, pending.ProposedTrail);
+
+        book.PrepareReport(original.OrderId, Report(ExecutionReportType.ModificationPending) with
+        { CandidateGatewayOrderId = "successor-broker" }, null);
+        var enriched = Assert.IsType<PendingOrderAmendment>(book.GetPending(original.OrderId));
+        Assert.Equal(expectedReference, enriched.CandidateClientOrderId);
+        Assert.Same(pending.PriorChainBrokerOrderIds, enriched.PriorChainBrokerOrderIds);
+        Assert.Same(original, enriched.Original);
+        Assert.Same(proposed, enriched.Proposed);
+    }
+
     [Fact]
     public void CandidateEnrichment_PreservesAttemptIdentityButRequiresTheCurrentEntryForRemoval()
     {
