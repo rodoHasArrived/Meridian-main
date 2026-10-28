@@ -3008,6 +3008,7 @@ Meridian-main
 │   │   ├── alpaca-paper-portfolio-sandbox.md
 │   │   ├── endpoint-fixture-isolation.md
 │   │   ├── README.md
+│   │   ├── reporting-followups-2026-10-28.md
 │   │   ├── w10-amount-provenance.md
 │   │   ├── w10-mark-seam-operator-acceptance.md
 │   │   ├── wave2-cockpit-reliability-evidence-runbook.md
@@ -4268,6 +4269,7 @@ Meridian-main
 │   │   │   └── ScheduledBackfillService.cs
 │   │   ├── SecurityMaster
 │   │   │   ├── CashFlow
+│   │   │   │   ├── ScheduleSpecFactory.cs
 │   │   │   │   ├── SecurityPrincipalBalance.cs
 │   │   │   │   ├── StructuredCashFlowLedgerBridge.cs
 │   │   │   │   └── StructuredCashFlowLedgerGate.cs
@@ -6267,6 +6269,7 @@ Meridian-main
 │   │   │   ├── FundAccountStatementValidation.cs
 │   │   │   ├── IFundAccountService.cs
 │   │   │   ├── InMemoryFundAccountService.cs
+│   │   │   ├── LegacyPlaidTransactionFeedBackfill.cs
 │   │   │   └── PostgresFundAccountService.cs
 │   │   ├── DesignModule.cs
 │   │   ├── Meridian.PortfolioRecords.csproj
@@ -10610,6 +10613,7 @@ Meridian-main
 │   │   │   ├── OperationsContinuityWorkflowServiceTests.PreparedStart.cs
 │   │   │   ├── ReconciliationGovernanceServiceTests.cs
 │   │   │   ├── ReconciliationRunServiceTests.cs
+│   │   │   ├── ScheduleSpecFactoryTests.cs
 │   │   │   ├── SecurityMasterCashFlowServiceTests.AsOf.cs
 │   │   │   ├── SecurityMasterCashFlowServiceTests.cs
 │   │   │   ├── SecurityMasterCashFlowServiceTests.ScheduleCharacterization.cs
