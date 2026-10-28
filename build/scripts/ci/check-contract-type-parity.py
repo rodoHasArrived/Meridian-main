@@ -41,6 +41,20 @@ COLLECTION_PREFIXES = (
     "List<",
 )
 
+_QUOTED_LITERAL = r'@"(?:""|[^"])*"|"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\''
+_CODE_TOKENS = re.compile(rf"{_QUOTED_LITERAL}|.", flags=re.DOTALL)
+
+
+def _strip_csharp_comments(source: str) -> str:
+    # Keep string/character literals intact: attribute arguments and defaults can contain
+    # URLs or comment markers. Comments themselves must not become part of a member's type.
+    return re.sub(
+        rf"{_QUOTED_LITERAL}|/\*.*?\*/|//[^\r\n]*",
+        lambda match: " " if match[0].startswith(("//", "/*")) else match[0],
+        source,
+        flags=re.DOTALL,
+    )
+
 
 def camel_case(name: str) -> str:
     """Match System.Text.Json's default camelCase policy for a PascalCase member."""
@@ -63,19 +77,18 @@ def split_top_level(text: str, separator: str = ",") -> list[str]:
     parts: list[str] = []
     depth = 0
     current: list[str] = []
-    in_string = False
-    for char in text:
-        if char == '"':
-            in_string = not in_string
-        if not in_string:
-            if char in "<([":
-                depth += 1
-            elif char in ">)]":
-                depth -= 1
-            elif char == separator and depth == 0:
-                parts.append("".join(current))
-                current = []
-                continue
+    for token in _CODE_TOKENS.finditer(text):
+        # A complete quoted literal is one token, so its brackets, escaped quotes,
+        # and separators cannot change the surrounding parameter/member structure.
+        char = token[0]
+        if char in "<([":
+            depth += 1
+        elif char in ">)]":
+            depth -= 1
+        elif char == separator and depth == 0:
+            parts.append("".join(current))
+            current = []
+            continue
         current.append(char)
     tail = "".join(current).strip()
     if tail:
@@ -85,43 +98,20 @@ def split_top_level(text: str, separator: str = ",") -> list[str]:
 
 def _balanced_slice(text: str, start: int, opener: str, closer: str) -> str | None:
     depth = 0
-    in_string = False
-    escaped = False
-    for index in range(start, len(text)):
-        char = text[index]
-        if in_string:
-            if escaped:
-                escaped = False
-            elif char == "\\":
-                escaped = True
-            elif char == '"':
-                in_string = False
-            continue
-        if char == '"':
-            in_string = True
-            continue
+    for token in _CODE_TOKENS.finditer(text, start):
+        char = token[0]
         if char == opener:
             depth += 1
         elif char == closer:
             depth -= 1
             if depth == 0:
-                return text[start + 1 : index]
+                return text[start + 1 : token.start()]
     return None
-
-
-def _strip_parameter_attributes(parameter: str) -> str:
-    """Remove only leading attribute sections, preserving brackets in array types."""
-    cleaned = parameter.lstrip()
-    while cleaned.startswith("["):
-        attribute = _balanced_slice(cleaned, 0, "[", "]")
-        if attribute is None:
-            break
-        cleaned = cleaned[len(attribute) + 2 :].lstrip()
-    return cleaned
 
 
 def parse_csharp_record(source: str, record_name: str) -> dict[str, dict] | None:
     """Return {member: {'type', 'nullable', 'collection'}} for a positional record."""
+    source = _strip_csharp_comments(source)
     match = re.search(rf"\brecord\s+{re.escape(record_name)}\s*\(", source)
     if match is None:
         return None
@@ -131,10 +121,17 @@ def parse_csharp_record(source: str, record_name: str) -> dict[str, dict] | None
 
     members: dict[str, dict] = {}
     for parameter in split_top_level(body):
-        cleaned = _strip_parameter_attributes(parameter).strip()
+        # Attributes precede the parameter type. Removing every bracketed segment also
+        # removes array suffixes (string[] becomes string), inventing contract drift.
+        cleaned = parameter.strip()
+        while cleaned.startswith("["):
+            attribute = _balanced_slice(cleaned, 0, "[", "]")
+            if attribute is None:
+                return None
+            cleaned = cleaned[len(attribute) + 2 :].lstrip()
         # Drop a default value; the name is the last identifier before it.
         cleaned = split_top_level(cleaned, "=")[0].strip() if "=" in cleaned else cleaned
-        tokens = cleaned.rsplit(" ", 1)
+        tokens = cleaned.rsplit(None, 1)
         if len(tokens) != 2:
             continue
         type_text, member = tokens[0].strip(), tokens[1].strip()
@@ -268,11 +265,11 @@ def main(argv: list[str] | None = None) -> int:
         found = compare(entry, csharp, typescript)
         exemption = exemptions.get(entry["typescript_interface"])
         if exemption is not None and exemption is entry:
-            divergence_details[entry["typescript_interface"]] = found
             # A recorded divergence that has since been repaired must be promoted, or the list
             # rots into a permanent allowance. It is allowed to shrink to empty.
             if found:
                 exempted.append(entry["typescript_interface"])
+                divergence_details[entry["typescript_interface"]] = found
             else:
                 resolved_exemptions.append(entry["typescript_interface"])
             continue
@@ -288,8 +285,8 @@ def main(argv: list[str] | None = None) -> int:
                     "checked": checked,
                     "known_divergences": len(exemptions),
                     "still_diverging": exempted,
-                    "resolved_divergences": resolved_exemptions,
                     "divergence_details": divergence_details,
+                    "resolved_divergences": resolved_exemptions,
                     "problems": problems,
                 },
                 indent=2,

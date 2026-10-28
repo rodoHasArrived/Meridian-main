@@ -374,3 +374,115 @@ class CsharpArrayParsingTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class CSharpArrayParsingTests(unittest.TestCase):
+    def test_comments_do_not_hide_or_change_collection_parameters(self) -> None:
+        members = MODULE.parse_csharp_record('''
+            public record Sample(
+                // A nullable collection, with documentation punctuation: [] ()
+                IReadOnlyList<string>? Values = null,
+                /* Another collection, with a default. */
+                [property: Example("https://example.test/*value*/")]
+                string[]? Tags = null);
+        ''', "Sample")
+
+        self.assertEqual({
+            "Values": {"type": "IReadOnlyList<string>?", "nullable": True, "collection": True},
+            "Tags": {"type": "string[]?", "nullable": True, "collection": True},
+        }, members)
+
+    def test_array_suffixes_and_nullability_survive_attribute_removal(self) -> None:
+        for attribute in (
+            "",
+            '[property: JsonPropertyName("values")] ',
+            '[property: Example(typeof(string[]))] [Optional] ',
+            '[Description("]")] ',
+            "[Example(']')] ",
+            '[Example(new[] { "]", "(", "," })] ',
+            r'[Description("escaped \"quote ],")] ',
+            '[Description(@"verbatim ""quote ],")] ',
+        ):
+            for type_text, nullable in (
+                ("string[]", False),
+                ("string[]?", True),
+                ("string?[]", False),
+                ("string?[]?", True),
+                ("string[][]", False),
+                ("string[]?[]?", True),
+            ):
+                with self.subTest(attribute=attribute, type_text=type_text):
+                    members = MODULE.parse_csharp_record(
+                        f"public record Sample({attribute}{type_text}\n Values = null);",
+                        "Sample",
+                    )
+                    self.assertEqual(
+                        {"Values": {"type": type_text, "nullable": nullable, "collection": True}},
+                        members,
+                    )
+
+
+class DocumentedMemberParsingTests(unittest.TestCase):
+    """A documented member must be compared, not skipped.
+
+    The parser split the interface body on ";" and dropped any chunk starting with a comment, so a
+    member carrying a JSDoc block was invisible to the gate — it passed silently rather than being
+    checked, which is the one failure mode a drift gate cannot afford.
+    """
+
+    def test_member_with_a_jsdoc_block_is_parsed(self):
+        source = """
+        export interface Sample {
+          plain: string;
+          /**
+           * Explains the member, across
+           * several lines.
+           */
+          documented?: string | null;
+        }
+        """
+
+        members = MODULE.parse_typescript_interface(source, "Sample")
+
+        self.assertIsNotNone(members)
+        self.assertIn("documented", members)
+        self.assertIn("plain", members)
+        self.assertTrue(members["documented"]["nullable"])
+
+    def test_member_documented_with_a_semicolon_in_its_jsdoc_is_parsed(self):
+        # A JSDoc block is prose and may contain a semicolon. Splitting members on ";" before
+        # stripping comments cut such a block in two, leaving fragments with no closing "*/" for
+        # the strip to match, so the member fell out of the comparison entirely -- the silent pass
+        # this gate was fixed to stop, reintroduced by punctuation.
+        source = """
+        export interface Sample {
+          plain: string;
+          /** First clause; second clause. */
+          documented: string;
+          /**
+           * Multi-line; with a semicolon in the prose.
+           */
+          alsoDocumented?: number | null;
+        }
+        """
+
+        members = MODULE.parse_typescript_interface(source, "Sample")
+
+        self.assertIsNotNone(members)
+        self.assertEqual({"plain", "documented", "alsoDocumented"}, set(members))
+        self.assertEqual("string", members["documented"]["type"])
+        self.assertTrue(members["alsoDocumented"]["nullable"])
+
+    def test_member_with_a_leading_line_comment_is_parsed(self):
+        source = """
+        export interface Sample {
+          // explains the member
+          documented: string;
+        }
+        """
+
+        members = MODULE.parse_typescript_interface(source, "Sample")
+
+        self.assertIsNotNone(members)
+        self.assertIn("documented", members)
+
