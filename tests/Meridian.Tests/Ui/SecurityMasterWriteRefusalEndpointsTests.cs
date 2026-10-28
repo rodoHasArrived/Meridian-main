@@ -35,9 +35,9 @@ namespace Meridian.Tests.Ui;
 /// as the Problem Details <c>detail</c>, behind the shared Problem Details writer and exception handler
 /// a deployed host registers. The real service decides what is a refusal: terms this node reads but does
 /// not write, a missing term, an F# domain validation error and a round-trip guard naming its repair.
-/// A stored row this node cannot decode (even one a write guard would also refuse), a stale version
-/// the F# validator rejects, a stream naming another security, a duplicate create, an unknown security
-/// and a deactivate keep their 500, with the reason kept out of
+/// A stored row this node cannot decode (even one a round-trip guard would also refuse; an unrecognized
+/// asset class is refused with 400 before the decode), a stale version the F# validator rejects, a
+/// stream naming another security, a duplicate create, an unknown security and a deactivate keep their 500, with the reason kept out of
 /// the body; each of those cases also pins, from the exception the shared handler logs, that the fault
 /// it means to reach is the one that answered.
 /// </summary>
@@ -54,7 +54,30 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
     private const string ConvertibleEquityTermsRoute = "convertible-equity-terms";
     private const string LegacyPreferredTermsRoute = "legacy-preferred-terms";
 
+    private const string InactiveSecurityReason = "[security_inactive] Inactive securities cannot be amended.";
+
     private static readonly JsonSerializerOptions WebJson = new(JsonSerializerDefaults.Web);
+
+    private static readonly JsonElement StoredPreferredEquity = JsonSerializer.SerializeToElement(new
+    {
+        schemaVersion = 1,
+        shareClass = "A",
+        classification = "Preferred",
+        preferredTerms = new
+        {
+            dividendRate = 5.75m,
+            dividendType = "Fixed",
+            redemptionPrice = 25.00m,
+            liquidationPreference = new { kind = "Pari" }
+        }
+    });
+
+    private static readonly JsonElement StoredCommonEquity = JsonSerializer.SerializeToElement(new
+    {
+        schemaVersion = 1,
+        shareClass = "A",
+        classification = "Common"
+    });
 
     // A Step-coupon bond carrying a floatingIndex the Step arm does not read: re-serializing it would
     // drop the index, so the round-trip guard refuses any write that does not repair it.
@@ -129,6 +152,46 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
             WebJson);
 
         await AssertRefusedAsync(response, "Missing required string 'quoteCurrency'.");
+        await harness.AssertNothingWrittenAsync();
+    }
+
+    [Fact]
+    public async Task Create_DeclaringANonFlatTermsFormat_Returns400WithWhatToSubmit()
+    {
+        var securityId = Guid.NewGuid();
+        using var harness = new CanonicalServiceHarness();
+        await using var app = await CreateAppAsync(Substitute.For<ISecurityMasterQueryService>(), harness.Service);
+
+        using var response = await app.GetTestClient().PostAsJsonAsync(
+            "/api/security-master",
+            CreateRequest(
+                securityId,
+                "FxSpot",
+                JsonSerializer.SerializeToElement(new { termsFormat = "economic", baseCurrency = "EUR", quoteCurrency = "USD" })),
+            WebJson);
+
+        await AssertRefusedAsync(
+            response,
+            "Terms for asset class 'FxSpot' declare termsFormat 'economic', which a write does not accept. " +
+            "Submit asset-specific terms: omit termsFormat, or set it to 'flat' or 'customProfile'.");
+        await harness.AssertNothingWrittenAsync();
+    }
+
+    [Fact]
+    public async Task Amend_OfAnInactiveSecurity_Returns400WithTheCodedReason()
+    {
+        // security_inactive describes the stored record, not the stream, so it is a refusal.
+        var securityId = Guid.NewGuid();
+        using var harness = new CanonicalServiceHarness();
+        harness.Seed(securityId, "FxSpot", FxSpotTerms("EUR", "USD"), SecurityStatusDto.Inactive);
+        await using var app = await CreateAppAsync(Substitute.For<ISecurityMasterQueryService>(), harness.Service);
+
+        using var response = await app.GetTestClient().PostAsJsonAsync(
+            "/api/security-master/amend",
+            AmendRequest(securityId, expectedVersion: 2, FxSpotTerms("EUR", "GBP")),
+            WebJson);
+
+        await AssertRefusedAsync(response, InactiveSecurityReason);
         await harness.AssertNothingWrittenAsync();
     }
 
@@ -258,9 +321,9 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
     [Fact]
     public async Task AmendWithoutAPatch_OfAStoredEventStampedAboveTheWriteVersionThisNodeCannotDecode_Returns500()
     {
-        // A patch-less amend of a row stamped above the write version would reach the ahead-of-write
-        // round-trip guard, which decodes the stored row itself. The amendment's own decode of the
-        // stored row runs before that guard, and it is the one that faults.
+        // A patch-less amend of a row stamped above the write version: the decode of the stored row
+        // faults before the ahead-of-write guard, which would decode the same row again. The guard
+        // ordering itself is pinned by the coupon-guard case below.
         var securityId = Guid.NewGuid();
         var stampedWithoutMaturity = JsonNode.Parse(AheadOfWriteFixtures.BondTerms(stamp: 2, withBlock: false).GetRawText())!.AsObject();
         stampedWithoutMaturity.Remove("maturity");
@@ -552,6 +615,85 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
     }
 
     [Theory]
+    [InlineData(PreferredEquityTermsRoute)]
+    [InlineData(LegacyPreferredTermsRoute)]
+    public async Task PreferredEquityTermsRoute_OfAnInactiveSecurity_Returns400ThroughTheService(string route)
+    {
+        // The route builds the patch from the stored row and amends through the shared seam, whose F#
+        // validator refuses the inactive record.
+        var securityId = Guid.NewGuid();
+        using var harness = new CanonicalServiceHarness();
+        harness.Seed(securityId, "Equity", StoredPreferredEquity, SecurityStatusDto.Inactive);
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService.GetPreferredEquityTermsAsync(securityId, Arg.Any<CancellationToken>()).Returns(PreferredTerms(securityId));
+        await using var app = await CreateAppAsync(queryService, harness.Service);
+
+        using var response = await app.GetTestClient().SendAsync(
+            JsonRequest(HttpMethod.Patch, PreferredRoutePath(route, securityId), PreferredRequest() with { ExpectedVersion = 2 }));
+
+        await AssertRefusedAsync(response, InactiveSecurityReason);
+        await harness.AssertNothingWrittenAsync();
+    }
+
+    [Theory]
+    [InlineData(PreferredEquityTermsRoute)]
+    [InlineData(LegacyPreferredTermsRoute)]
+    [InlineData(ConvertibleEquityTermsRoute)]
+    public async Task EquityTermsRoute_WhoseStoredRowLacksTheTerms_Returns500WithoutTheReason(string route)
+    {
+        // The read model says the terms exist; the stored row the patch is built from does not hold them.
+        // The patch builders read the stored row, so their failure is a fault, not a refusal.
+        var securityId = Guid.NewGuid();
+        using var harness = new CanonicalServiceHarness();
+        harness.Seed(securityId, "Equity", StoredCommonEquity);
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService.GetPreferredEquityTermsAsync(securityId, Arg.Any<CancellationToken>()).Returns(PreferredTerms(securityId));
+        queryService.GetConvertibleEquityTermsAsync(securityId, Arg.Any<CancellationToken>()).Returns(ConvertibleTerms(securityId));
+        var handlerLog = new RecordingLogger<MeridianApiExceptionHandler>();
+        await using var app = await CreateAppAsync(queryService, harness.Service, handlerLog);
+
+        using var response = await app.GetTestClient().SendAsync(route == ConvertibleEquityTermsRoute
+            ? JsonRequest(HttpMethod.Patch, $"/api/security-master/{securityId}/convertible-equity-terms", ConvertibleRequest() with { ExpectedVersion = 2 })
+            : JsonRequest(HttpMethod.Patch, PreferredRoutePath(route, securityId), PreferredRequest() with { ExpectedVersion = 2 }));
+
+        var terms = route == ConvertibleEquityTermsRoute ? "convertible-equity terms" : "preferred-equity terms";
+        var fault = await AssertServerFaultAsync(response, handlerLog, undisclosed: terms);
+        fault.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be($"Security '{securityId}' does not currently have {terms}.");
+        await harness.AssertNothingWrittenAsync();
+    }
+
+    [Fact]
+    public async Task AmendTermBlock_OfAStoredEquityEventWithoutItsRetainedTerms_Returns500WithoutTheReason()
+    {
+        // The block patch is built from the stored projection, which decodes; the amendment then rebuilds
+        // the record from its event, which cannot be replayed. A fault, as on /amend.
+        var securityId = Guid.NewGuid();
+        using var harness = new CanonicalServiceHarness();
+        harness.SeedEventStream(
+            securityId,
+            "Equity",
+            StoredPreferredEquity,
+            stored => stored with { LegacyAssetSpecificTerms = null });
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService.GetByIdAsync(securityId, Arg.Any<CancellationToken>()).Returns(PreferredEquityDetail(securityId));
+        var handlerLog = new RecordingLogger<MeridianApiExceptionHandler>();
+        await using var app = await CreateAppAsync(queryService, harness.Service, handlerLog);
+
+        using var response = await app.GetTestClient().SendAsync(JsonRequest(
+            HttpMethod.Put,
+            $"/api/security-master/{securityId}/terms/preferredTerms",
+            TermBlockRequest(expectedVersion: 2, JsonSerializer.SerializeToElement(new { dividendRate = 6.25m, dividendType = "Cumulative" }))));
+
+        var fault = await AssertServerFaultAsync(response, handlerLog, undisclosed: "retained legacy asset-specific terms");
+        fault.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be(
+                "Equity economic replay requires retained legacy asset-specific terms; " +
+                "the economic payload cannot reconstruct the complete classification and preferred/convertible terms.");
+        await harness.AssertNothingWrittenAsync();
+    }
+
+    [Theory]
     [InlineData(CreateRoute)]
     [InlineData(AmendRoute)]
     [InlineData(TermBlockRoute)]
@@ -694,6 +836,11 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
                 throw new ArgumentOutOfRangeException(nameof(route), route, null);
         }
     }
+
+    private static string PreferredRoutePath(string route, Guid securityId)
+        => route == LegacyPreferredTermsRoute
+            ? $"/api/security-master/equities/{securityId}/preferred-terms"
+            : $"/api/security-master/{securityId}/preferred-equity-terms";
 
     private static HttpRequestMessage JsonRequest<T>(HttpMethod method, string path, T body)
         => new(method, path) { Content = JsonContent.Create(body, options: WebJson) };
@@ -953,13 +1100,17 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
                 .Returns(new[] { envelope with { SecurityId = securityId } });
         }
 
-        /// <summary>Stores an active security at version 2 whose asset-specific terms are exactly <paramref name="terms"/>.</summary>
-        public SecurityProjectionRecord Seed(Guid securityId, string assetClass, JsonElement terms)
+        /// <summary>Stores a security at version 2, active unless <paramref name="status"/> says otherwise, whose asset-specific terms are exactly <paramref name="terms"/>.</summary>
+        public SecurityProjectionRecord Seed(
+            Guid securityId,
+            string assetClass,
+            JsonElement terms,
+            SecurityStatusDto status = SecurityStatusDto.Active)
         {
             var projection = new SecurityProjectionRecord(
                 securityId,
                 assetClass,
-                SecurityStatusDto.Active,
+                status,
                 $"Meridian {assetClass}",
                 "USD",
                 "Ticker",

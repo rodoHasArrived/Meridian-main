@@ -6700,7 +6700,9 @@ message assertions are unchanged. `SecurityMasterServiceSnapshotTests.Deactivate
 expects `SecurityMasterWriteRefusedException`, because deactivation shares the retyped bond coupon
 guard. `SecurityMasterWorkbenchCommandServiceTests.Publish_InFlightLegsRevisionPopulatingALegBlock_FailsInTheMergeAndStaysApproved`
 expects it as the failure the merge records at the amend seam, because the merge's amendment maps
-its request through the now-wrapped `ToAmendCommand`.
+its request through the now-wrapped `ToAmendCommand`. Three assertions on the preferred and
+convertible patch builders' stored-state faults now expect exactly `InvalidOperationException`, so
+wrapping a patch builder would fail them.
 
 **Behaviour changes.**
 
@@ -6708,17 +6710,26 @@ its request through the now-wrapped `ToAmendCommand`.
   instead of 500 with "An unexpected error occurred.". Routes, DTOs and `UiApiRoutes` are unchanged;
   create, amend, the preferred and convertible routes and the legacy alias now declare the 400 that
   the term-block route already declared.
-- **Refusals the stored record triggers answer 400 too** on these routes: an unrecognized stored
-  asset class, checked before the stored row is decoded because its repair is on a node that
-  supports the class, whose terms this node may not decode; and, for a row this node decodes, an
-  undeclared stored vocabulary value, coupon structure the codec does not read, a row stamped above
-  the write version that a patch-less amend would change, a CustomAsset without its envelope,
-  `security_inactive`, an identifier-set error the F# validator reports, a stored profile envelope
-  the class a patch-less amend resolves to cannot decode, and, on the term-block, preferred and
-  convertible routes and the legacy alias, stored terms the Write-mode mapping refuses, because
-  those routes build the patch from the stored row (on the term-block route a Bond stamped 2 gets
-  the write-version reason). 409 or 422 would also be defensible; 400 matches the term-block route.
-  Their messages echo stored values, to callers who already hold `ModifySecurityMaster`.
+- **Refusals the stored record triggers answer 400 too** on these routes, for a row this node
+  decodes: an undeclared stored vocabulary value, coupon structure the codec does not read, a row
+  stamped above the write version that a patch-less amend would change, a CustomAsset without its
+  envelope, `security_inactive`, an identifier-set error the F# validator reports, a stored profile
+  envelope the class a patch-less amend resolves to cannot decode, and, on the term-block, preferred
+  and convertible routes and the legacy alias, stored terms the Write-mode mapping refuses, because
+  those routes build the patch from the stored row. On the term-block route a Bond stamped 2 gets
+  the write-version reason, whose "submit the terms at version 1" means a full-document `/amend`,
+  since a block request carries no stamp. `/amend` also refuses an unrecognized stored asset class,
+  and checks it before the stored row is decoded, because its repair is on a node that supports the
+  class, whose terms this node may not decode. The other routes do not reach that check: the
+  preferred, convertible and legacy routes answer 404, because their read-model probe finds no
+  equity terms, and the term-block route answers its pre-check's 400 that the class declares no such
+  block. 409 or 422 would also be defensible; 400 matches the term-block route. Their messages echo
+  stored values, to callers who already hold `ModifySecurityMaster`.
+- **A write that declares a non-flat `termsFormat` gets a caller-facing reason.**
+  `EnsureWritableAsAssetSpecificTerms` now refuses it with what to submit (omit `termsFormat`, or set
+  it to `flat` or `customProfile`) instead of the read guard's instruction to route the payload
+  through a server-side conversion. The read guard keeps its wording. Every write path that maps
+  terms through the check, including import and the field-edit merge, reports the new reason.
 - **Refusals on these routes are no longer logged.** The shared exception handler logged each one at
   error level with the exception; the filter returns the 400 without logging, as the term-block
   route's pre-check refusals already did.

@@ -43,7 +43,8 @@ profile) and a per-asset-class `assetClassTermsVersion` taken from `SecurityAsse
 Each class writes its `TermsVersion` and reads through `ReadsTermsThrough`, which an expand step
 raises with `ReadableTermsVersion` (ADR-024, readable before writable). Terms stamped above the read
 ceiling fail loudly; terms stamped above the write version, or populating a term introduced above
-it, are read but refused on write (`EnsureWritableAsAssetSpecificTerms`, `TryGetWriteRefusal`), and
+it, are read but refused on write (`EnsureWritableAsAssetSpecificTerms`, `TryGetWriteRefusal`; a
+write that declares a non-flat `termsFormat` is refused with what to submit), and
 profile envelopes are checked by stamp only. Economic modules a flat conversion cannot
 express travel under the reserved `retainedEconomicTerms` key and fold back on the next economic
 rebuild. Reserved envelope keys are rejected as user-editable term fields.
