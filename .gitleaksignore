@@ -32,3 +32,7 @@ a9daba63f849af05f338b76c2d2b90f13ad6fb06:docs/testing/evidence/wal-checksum-2026
 a9daba63f849af05f338b76c2d2b90f13ad6fb06:docs/testing/evidence/wal-checksum-2026-10-07/receipts/schema-manifest-refresh.json:generic-api-key:179
 a9daba63f849af05f338b76c2d2b90f13ad6fb06:docs/testing/evidence/wal-checksum-2026-10-07/receipts/schema-manifest-refresh.json:generic-api-key:193
 a9daba63f849af05f338b76c2d2b90f13ad6fb06:docs/testing/evidence/wal-checksum-2026-10-07/receipts/schema-manifest-refresh.json:generic-api-key:203
+# Verified SHA-256 of src/Meridian.IbApi.SmokeStub/Meridian.IbApi.SmokeStub.csproj
+# in immutable pilot manifests. Only these original commit/path/rule/line findings.
+261f16c63fa986cc348cf3b5671b7eec56edd54a:docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/validation-planning/protocol.json:generic-api-key:83
+3c8a90bfec1632437b6f282bd9a579000df86944:docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/validation-planning/confirmation-protocol.json:generic-api-key:83
