@@ -96,6 +96,8 @@ passing the OMS instance as a general callback target.
 | `ExecutionReportHub`, `ExecutionFailureState` | Authoritative subscriber delivery and recovery, the best-effort observer channel, and the first terminal consumer failure shared with operation admission. The lifecycle coordinator controls registration closure and shutdown ordering. |
 | `OrderAuditMetadata`, `OrderExecutionAudit` | Audit metadata construction and lifecycle/unresolved-fill evidence from explicit snapshots. Command decisions and their audit timing stay with their callers. |
 
+`OrderExecutionAudit` sanitizes order IDs in diagnostic logs while retaining the original IDs in durable audit records.
+
 The shared broker-report gate still serializes live callbacks, explicit recovery, amendment
 resolution, and retention. Amendment preparation keeps original/proposed snapshot identity and
 broker outcome evidence distinct from the expected-entry comparison used for removal. Recovery
