@@ -24,7 +24,14 @@ public sealed partial class OrderManagementSystem
                 RoutedNotional = ResolveAmendedRoutedNotional(original, modification)
             };
             _brokerIdentities.TryGetActiveId(orderId, out var brokerId);
-            var pending = _amendmentBook.Begin(orderId, original, proposed, brokerId, modification.NewTrail);
+            // Persist the preassigned replacement reference and prior chain before dispatch,
+            // while the book retains snapshot reference identity across later candidate enrichment.
+            var pending = _amendmentBook.Begin(orderId, original, proposed, brokerId, modification.NewTrail,
+                modification.ReplacementClientOrderId,
+                GetBrokerOrderAliases(orderId)
+                    .Where(alias => !string.Equals(alias, brokerId, StringComparison.Ordinal)
+                        && !string.Equals(alias, orderId, StringComparison.Ordinal))
+                    .ToArray());
             var current = _orders[orderId];
             _orders[orderId] = ApplyAmendmentTerms(current, original);
             try

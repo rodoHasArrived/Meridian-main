@@ -53,6 +53,10 @@ public sealed partial class OrderManagementSystem
             return new OrderResult { Success = false, OrderId = orderId, OrderState = state, ErrorMessage = invalid };
         }
 
+        // Persisted with the pending amendment before dispatch; see BeginOrderAmendmentAsync.
+        if (_gateway is IPreassignedReplacementReferenceGateway && string.IsNullOrWhiteSpace(modification.ReplacementClientOrderId))
+            modification = modification with { ReplacementClientOrderId = Guid.NewGuid().ToString("N") };
+
         // A quantity increase or any supplied limit/stop price is a new risk decision. Notional
         // increases are not the only dangerous direction: lowering a sell limit or a buy stop can
         // move an accepted order straight through the market. Validation and the amended

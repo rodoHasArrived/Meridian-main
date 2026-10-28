@@ -188,7 +188,10 @@ refused during validation and preview even when they name the same account or in
 Case-equivalent account identifiers remain valid within a single containing statement.
 
 Statement preview, validation and commit require currency from the shared recognized-code catalog
-before retaining connector artifacts. Canonical CSV and bank connectors apply the same catalog;
+before retaining connector artifacts, including supplemental account, tax-lot, and borrow-position
+evidence. Activity events retained only as activity evidence, such as IB Flex commission details,
+need their own recognized currency; an event mirrored by a canonical row may rely on that row's
+proven currency. Canonical CSV and bank connectors apply the same catalog;
 BAI2 validates before converting minor units, including zero-decimal UYI and four-decimal CLF/UYW.
 Recognized units with no defined ISO minor-unit scale are refused for BAI2 integer amounts.
 Historical currencies remain available for statement evidence. Service-level diagnostics omit a
@@ -198,6 +201,10 @@ Alpaca trade fills may inherit explicit USD from the same account's verified por
 through both legacy fills and rich Trade/TradeFill activities. Explicit activity currencies remain
 authoritative. Missing or non-USD account evidence cannot supply a fill currency; cash, dividends,
 fees, corrections, and busts still require their own currency evidence before import retention.
+Legacy fills with a zero quantity or nonpositive price are refused, because an omitted JSON amount
+deserializes as zero. A portfolio snapshot counts as complete evidence only when it is explicitly
+marked complete and lists no completeness issues. In IB Flex, an explicitly blank amount that
+would otherwise default to zero (cash and activity net amounts) is refused as malformed.
 
 Statement runs pass the accounting scope retained on their import to the internal population
 provider, preserving the fund, ledger book, and exact period selected by governed intake during
@@ -323,7 +330,8 @@ validation omits source row numbers when a connector does not provide them, avoi
 locations based on the retained-record index.
 
 Bank statement currency is source evidence. BAI2 requires an explicit account or containing-group
-currency before converting minor units, and each group resets inherited currency. camt.053 uses
+currency recognized by `CurrencyCodeCatalog` before converting minor units, and each group resets
+inherited currency. camt.053 uses
 explicit amount currency or an explicit account currency when the attribute is absent; a blank
 amount attribute remains invalid. Neither parser supplies USD when all currency evidence is missing.
 IB Flex preserves absent account, activity, lot and borrow currency as unknown instead of
@@ -331,13 +339,22 @@ supplying USD; canonical activity rows without currency fail before artifact ret
 
 Canonical CSV connector validation rejects blank required amounts, ambiguous grouped decimals, malformed nonblank fees,
 and missing or invalid currency before rendering financial values. Statement import preview,
-validation, and commit all require explicit three-letter currency before retaining artifacts.
+validation, and commit all require explicit currency recognized by `CurrencyCodeCatalog` before
+retaining artifacts. Alphabetic but unknown codes such as `ZZZ` are refused, including before
+BAI2 minor-unit conversion and camt.053 amount admission.
 OFX statement currency fills only absent row currency; explicit blank or self-closing row tags
 remain invalid; mixed explicit and inherited currency rows map through the same canonical key.
 Alpaca legacy fills use the account currency verified against the snapshot identity. Position
 currency must be supplied by the gateway; missing or blank row currency cannot borrow the account
 currency. Missing account currency remains a refusal. Month-end upload regressions
 in `StatementImportServiceTests` exercise these rules through the actual retention boundary.
+
+Structured statement amounts fail closed before retention. camt.053 requires unsigned invariant
+magnitudes and derives the sign from the credit/debit indicator; BAI2 rejects malformed closing
+balances and detail amounts instead of importing a partial statement. OFX and IB Flex require
+invariant amounts regardless of mapping-profile culture and refuse malformed fees and rich Flex
+numeric evidence. Cash movements may omit inapplicable quantity and price. Alpaca intake rejects
+reported portfolio completeness failures instead of retaining zeroed malformed provider values.
 
 Physical bounded-context module project for reconciliation, accounting records, payment approvals,
 bank-transaction records, accounting-basis policy, ledger text-journal reporting, close workflows,

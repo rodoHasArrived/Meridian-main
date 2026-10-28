@@ -2101,6 +2101,16 @@ items:
         path: tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.FactorPaydown.cs
       - type: test
         path: tests/Meridian.Tests/Application/Composition/FactorPaydownLotInstructionCompositionTests.cs
+      - type: source
+        path: src/Meridian.Storage/Ledger/SuccessorAmortizationEvidence.cs
+      - type: source
+        path: src/Meridian.Storage/Ledger/Migrations/V_ledger_050__atomic_lot_capital_return.sql
+      - type: test
+        path: tests/Meridian.Tests/AssetOperations/OpenLotCapitalReturnTests.cs
+      - type: source
+        path: src/Meridian.Storage/Ledger/Migrations/V_ledger_053__atomic_lot_factor_paydown.sql
+      - type: test
+        path: tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.FactorPaydownPublication.cs
     last_reviewed: 2026-10-28
 
   - id: W10-DEBT-001

@@ -14,7 +14,10 @@ public sealed class OrderAmendmentBookTests
         var proposed = original with { Quantity = 20m };
         var orders = Orders(original);
         var book = new OrderAmendmentBook(orders);
-        var attempt = book.Begin(original.OrderId, original, proposed, "original-broker", null);
+        var attempt = book.Begin(original.OrderId, original, proposed, "original-broker", null,
+            candidateClientOrderId: "preassigned-reference", priorChainBrokerOrderIds: ["earlier-broker"]);
+        Assert.Equal("preassigned-reference", attempt.CandidateClientOrderId);
+        Assert.Equal(["earlier-broker"], Assert.IsType<string[]>(attempt.PriorChainBrokerOrderIds));
 
         var transition = book.PrepareReport(original.OrderId, Report(ExecutionReportType.ModificationPending) with
         {
@@ -31,6 +34,7 @@ public sealed class OrderAmendmentBookTests
         Assert.False(book.IsSameAttempt(original.OrderId, attempt with { Proposed = proposed with { } }));
         Assert.Equal("candidate-broker", enriched.CandidateBrokerOrderId);
         Assert.Equal("candidate-client", enriched.CandidateClientOrderId);
+        Assert.Equal(["earlier-broker"], Assert.IsType<string[]>(enriched.PriorChainBrokerOrderIds));
         Assert.Null(transition.UpdatedState);
         Assert.Null(transition.ResolvedAmendment);
         Assert.False(book.RemoveExpected(original.OrderId, attempt));
