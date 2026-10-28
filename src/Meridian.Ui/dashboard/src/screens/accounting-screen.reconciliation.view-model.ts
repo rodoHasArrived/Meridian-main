@@ -419,8 +419,8 @@ function resolveStatementRunSelection(
   sourceRows: readonly StatementRunSummaryWithMetadata[],
   selectedRunId: string | null
 ): string | null {
-  return selectedRunId && sourceRows.some((run) => run.runId === selectedRunId)
-    ? selectedRunId
+  return selectedRunId
+    ? sourceRows.some((run) => run.runId === selectedRunId) ? selectedRunId : null
     : sourceRows[0]?.runId ?? null;
 }
 
@@ -607,8 +607,8 @@ export function buildReconciliationBreakQueueState({
   action: ReconciliationBreakAction | null;
   actionError: string | ApiErrorDisplay | null;
 }): ReconciliationBreakQueueState {
-  const effectiveSelectedBreakId = selectedBreakId && breakQueue.some((item) => item.breakId === selectedBreakId)
-    ? selectedBreakId
+  const effectiveSelectedBreakId = selectedBreakId
+    ? breakQueue.some((item) => item.breakId === selectedBreakId) ? selectedBreakId : null
     : breakQueue[0]?.breakId ?? null;
   const rows = buildReconciliationBreakRows(breakQueue, action, effectiveSelectedBreakId);
   const selectedRow = rows.find((row) => row.breakId === effectiveSelectedBreakId) ?? null;

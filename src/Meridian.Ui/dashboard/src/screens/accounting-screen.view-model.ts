@@ -1,3 +1,4 @@
+import type { ReconciliationSelectionState } from "./reconciliation-view-state";
 import type { AssetAccountingWorkflowViewModel } from "./accounting-screen.asset-workflow";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
@@ -3870,15 +3871,28 @@ export function useAccountingReconciliationViewModel(
   workstream: AccountingWorkstream,
   services: AccountingReconciliationServices = defaultAccountingReconciliationServices,
   systemReconciliation: AccountingSystemReconciliationSummary | null = null,
-  operatorIdentity: string | null = null
+  operatorIdentity: string | null = null,
+  selectionState?: ReconciliationSelectionState
 ) {
-  const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
+  const [localSelectedRunId, setLocalSelectedRunId] = useState<string | null>(null);
+  const selectedRunId = selectionState ? selectionState.selectedRunId : localSelectedRunId;
+  const setSelectedRunId = selectionState?.selectRun ?? setLocalSelectedRunId;
+  const scopeKey = selectionState?.scopeKey ?? "";
+  const scopeRevisionRef = useRef({ key: scopeKey, revision: 0 });
+  if (scopeRevisionRef.current.key !== scopeKey) {
+    scopeRevisionRef.current = { key: scopeKey, revision: scopeRevisionRef.current.revision + 1 };
+  }
+  const scopeRevision = scopeRevisionRef.current.revision;
   const [breakQueue, setBreakQueue] = useState<ReconciliationBreakQueueItem[]>(data?.breakQueue ?? []);
   const [breakQueueLoading, setBreakQueueLoading] = useState(false);
+  const [breakQueueReadScope, setBreakQueueReadScope] = useState<number | null>(null);
+  const [statementRunsReadScope, setStatementRunsReadScope] = useState<number | null>(null);
   const [breakQueueError, setBreakQueueError] = useState<ApiErrorDisplay | null>(null);
   const [breakAction, setBreakAction] = useState<ReconciliationBreakAction | null>(null);
   const [breakActionError, setBreakActionError] = useState<ApiErrorDisplay | null>(null);
-  const [selectedBreakId, setSelectedBreakId] = useState<string | null>(null);
+  const [localSelectedBreakId, setLocalSelectedBreakId] = useState<string | null>(null);
+  const selectedBreakId = selectionState ? selectionState.selectedBreakId : localSelectedBreakId;
+  const setSelectedBreakId = selectionState?.selectBreak ?? setLocalSelectedBreakId;
   const [trialBalance, setTrialBalance] = useState<LedgerTrialBalanceLine[]>([]);
   const [selectedTrialBalanceRowId, setSelectedTrialBalanceRowId] = useState<string | null>(null);
   const [selectedAccountingBasis, setSelectedAccountingBasis] = useState<AccountingBasisKind>(DEFAULT_ACCOUNTING_BASIS);
@@ -3898,13 +3912,35 @@ export function useAccountingReconciliationViewModel(
   const calibrationRequestRevisionRef = useRef(0);
   const statementRunsRequestRevisionRef = useRef(0);
 
-  const reconciliationQueue = data?.reconciliationQueue ?? [];
+  const activeScopeRef = useRef(scopeRevision);
+  activeScopeRef.current = scopeRevision;
+  const actionContextRef = useRef({ scopeRevision, runId: selectedRunId, revision: 0 });
+  if (actionContextRef.current.scopeRevision !== scopeRevision || actionContextRef.current.runId !== selectedRunId) {
+    actionContextRef.current = { scopeRevision, runId: selectedRunId, revision: actionContextRef.current.revision + 1 };
+  }
+  const actionContextRevision = actionContextRef.current.revision;
+  useEffect(() => {
+    setBreakAction(null);
+    setBreakActionError(null);
+  }, [actionContextRevision]);
+  useEffect(() => {
+    setTransactionLabPreview(null);
+    setTransactionLabError(null);
+    setTransactionLabBusy(false);
+  }, [scopeRevision]);
+
+  const reconciliationQueue = useMemo(() => data?.reconciliationQueue ?? [], [data?.reconciliationQueue]);
   const selectedReconciliation = useMemo(
     () => resolveSelectedReconciliation(reconciliationQueue, selectedRunId),
     [reconciliationQueue, selectedRunId]
   );
 
+  const activeRunRef = useRef(selectedReconciliation?.runId);
+  activeRunRef.current = selectedReconciliation?.runId;
+
   useEffect(() => {
+    // URL selection is authoritative, including a retained record that is no longer available.
+    if (selectionState) return;
     const hasSelectedRun = selectedRunId
       ? reconciliationQueue.some((item) => item.runId === selectedRunId) || statementRuns.some((item) => item.runId === selectedRunId)
       : false;
@@ -3915,7 +3951,7 @@ export function useAccountingReconciliationViewModel(
 
     const nextRunId = statementRuns[0]?.runId ?? reconciliationQueue[0]?.runId ?? null;
     setSelectedRunId(nextRunId);
-  }, [reconciliationQueue, selectedRunId, statementRuns]);
+  }, [reconciliationQueue, selectedRunId, selectionState, setSelectedRunId, statementRuns]);
 
   useEffect(() => {
     const nextBreakQueue = data?.breakQueue ?? [];
@@ -3939,6 +3975,7 @@ export function useAccountingReconciliationViewModel(
       .then((rows) => {
         if (!cancelled) {
           setBreakQueue(rows);
+          setBreakQueueReadScope(scopeRevision);
         }
       })
       .catch((err) => {
@@ -3956,7 +3993,7 @@ export function useAccountingReconciliationViewModel(
     return () => {
       cancelled = true;
     };
-  }, [data?.breakQueue, services, workstream]);
+  }, [data?.breakQueue, scopeRevision, services, workstream]);
 
   const refreshCalibrationSummary = useCallback(() => {
     const revision = calibrationRequestRevisionRef.current + 1;
@@ -3992,7 +4029,7 @@ export function useAccountingReconciliationViewModel(
     return () => {
       calibrationRequestRevisionRef.current += 1;
     };
-  }, [refreshCalibrationSummary, workstream]);
+  }, [refreshCalibrationSummary, scopeRevision, workstream]);
 
   const refreshStatementRuns = useCallback(async () => {
     const revision = statementRunsRequestRevisionRef.current + 1;
@@ -4004,6 +4041,7 @@ export function useAccountingReconciliationViewModel(
       const runs = await services.getStatementRuns();
       if (statementRunsRequestRevisionRef.current === revision) {
         setStatementRuns(sortStatementRunsNewestFirst(runs));
+        setStatementRunsReadScope(scopeRevision);
       }
     } catch (err) {
       if (statementRunsRequestRevisionRef.current === revision) {
@@ -4014,7 +4052,7 @@ export function useAccountingReconciliationViewModel(
         setStatementRunsLoading(false);
       }
     }
-  }, [services]);
+  }, [scopeRevision, services]);
 
   useEffect(() => {
     if (workstream !== "reconciliation" && workstream !== "exceptions") {
@@ -4028,7 +4066,7 @@ export function useAccountingReconciliationViewModel(
     return () => {
       statementRunsRequestRevisionRef.current += 1;
     };
-  }, [refreshStatementRuns, workstream]);
+  }, [refreshStatementRuns, scopeRevision, workstream]);
 
   useEffect(() => {
     if (!selectedReconciliation || workstream !== "ledger") {
@@ -4071,7 +4109,18 @@ export function useAccountingReconciliationViewModel(
     setTransactionLabBusy(false);
   }, [selectedReconciliation?.runId]);
 
+  const canActOnCurrentQueue = useCallback((breakId: string) => !selectionState || (
+    breakQueueReadScope === scopeRevision && !breakQueueLoading && !breakQueueError
+    && breakQueue.some((item) => item.breakId === breakId && (!selectedRunId || item.runId === selectedRunId))
+  ), [breakQueue, breakQueueError, breakQueueLoading, breakQueueReadScope, scopeRevision, selectedRunId, selectionState]);
+
   const assignBreak = useCallback(async (breakId: string) => {
+    if (!canActOnCurrentQueue(breakId)) {
+      setBreakActionError({ summary: "Refresh the current reconciliation queue before taking an action.", details: [] });
+      return;
+    }
+    const requestScope = scopeRevision;
+    const requestActionContext = actionContextRevision;
     setBreakAction({ breakId, command: "assign" });
     setBreakActionError(null);
 
@@ -4081,19 +4130,26 @@ export function useAccountingReconciliationViewModel(
         ...(operatorIdentity ? { assignedTo: operatorIdentity, reviewedBy: operatorIdentity } : {})
       });
       const updated = requireSuccessfulReconciliationCasework(operation);
+      if (activeScopeRef.current !== requestScope || actionContextRef.current.revision !== requestActionContext) return;
       setBreakQueue((current) => replaceBreakQueueItem(current, updated));
     } catch (err) {
-      setBreakActionError(describeApiError(err, "Break assignment failed."));
+      if (activeScopeRef.current === requestScope && actionContextRef.current.revision === requestActionContext) setBreakActionError(describeApiError(err, "Break assignment failed."));
     } finally {
-      setBreakAction(null);
+      if (activeScopeRef.current === requestScope && actionContextRef.current.revision === requestActionContext) setBreakAction(null);
     }
-  }, [operatorIdentity, services]);
+  }, [actionContextRevision, canActOnCurrentQueue, operatorIdentity, scopeRevision, services]);
 
   const resolveBreak = useCallback(async (
     breakId: string,
     status: ResolveReconciliationBreakRequest["status"],
     operatorRationale: string | null | undefined
   ) => {
+    if (!canActOnCurrentQueue(breakId)) {
+      setBreakActionError({ summary: "Refresh the current reconciliation queue before taking an action.", details: [] });
+      return;
+    }
+    const requestScope = scopeRevision;
+    const requestActionContext = actionContextRevision;
     const trimmedRationale = (operatorRationale ?? "").trim();
     if (!trimmedRationale) {
       setBreakActionError({
@@ -4116,26 +4172,53 @@ export function useAccountingReconciliationViewModel(
         operatorRationale: trimmedRationale
       });
       const updated = requireSuccessfulReconciliationCasework(operation);
+      if (activeScopeRef.current !== requestScope || actionContextRef.current.revision !== requestActionContext) return;
       setBreakQueue((current) => replaceBreakQueueItem(current, updated));
       void recordActivationOutcome(ACTIVATION_OUTCOME_KEYS.validationResolved);
     } catch (err) {
-      setBreakActionError(describeApiError(err, "Break resolution failed."));
+      if (activeScopeRef.current === requestScope && actionContextRef.current.revision === requestActionContext) setBreakActionError(describeApiError(err, "Break resolution failed."));
     } finally {
-      setBreakAction(null);
+      if (activeScopeRef.current === requestScope && actionContextRef.current.revision === requestActionContext) setBreakAction(null);
     }
-  }, [operatorIdentity, services]);
+  }, [actionContextRevision, canActOnCurrentQueue, operatorIdentity, scopeRevision, services]);
 
-  const breakQueueState = useMemo(
-    () => buildReconciliationBreakQueueState({
-      breakQueue,
+  useEffect(() => {
+    if (!selectionState?.replaceSelection || workstream !== "reconciliation"
+      || breakQueueReadScope !== scopeRevision || statementRunsReadScope !== scopeRevision
+      || breakQueueLoading || statementRunsLoading || breakQueueError || statementRunsError) return;
+    const knownBreakRun = breakQueue.find((item) => reconciliationQueue.some((run) => run.runId === item.runId)
+      || statementRuns.some((run) => run.runId === item.runId))?.runId;
+    const runId = selectedRunId ?? knownBreakRun ?? statementRuns[0]?.runId ?? reconciliationQueue[0]?.runId ?? null;
+    const breakId = selectedBreakId ?? breakQueue.find((item) => !runId || item.runId === runId)?.breakId ?? null;
+    if (runId !== selectedRunId || breakId !== selectedBreakId) selectionState.replaceSelection(runId, breakId);
+  }, [breakQueue, breakQueueError, breakQueueLoading, breakQueueReadScope, reconciliationQueue, scopeRevision,
+    selectedBreakId, selectedRunId, selectionState, statementRuns, statementRunsError, statementRunsLoading,
+    statementRunsReadScope, workstream]);
+
+  const scopedBreakQueue = useMemo(
+    () => selectionState && breakQueueReadScope !== scopeRevision ? []
+      : selectionState && workstream === "reconciliation" && selectedRunId
+        ? breakQueue.filter((item) => item.runId === selectedRunId)
+        : breakQueue,
+    [breakQueue, breakQueueReadScope, scopeRevision, selectedRunId, selectionState, workstream]
+  );
+  const breakQueueState = useMemo(() => {
+    const state = buildReconciliationBreakQueueState({
+      breakQueue: scopedBreakQueue,
       selectedBreakId,
-      loading: breakQueueLoading,
+      loading: breakQueueLoading || Boolean(selectionState && breakQueueReadScope !== scopeRevision && !breakQueueError),
       loadError: breakQueueError,
       action: breakAction,
       actionError: breakActionError
-    }),
-    [breakAction, breakActionError, breakQueue, breakQueueError, breakQueueLoading, selectedBreakId]
-  );
+    });
+    if (!selectionState || (!breakQueueLoading && !breakQueueError)) return state;
+    const reason = "Refresh the current reconciliation queue before taking an action.";
+    return { ...state, rows: state.rows.map((row) => ({
+      ...row, canAssign: false, canResolve: false, canDismiss: false,
+      assignDisabledReason: reason, resolveDisabledReason: reason, dismissDisabledReason: reason
+    })) };
+  }, [breakAction, breakActionError, scopedBreakQueue, breakQueueError, breakQueueLoading,
+    breakQueueReadScope, scopeRevision, selectedBreakId, selectionState]);
   const trialBalanceView = useMemo(
     () => buildAccountingTrialBalanceViewState({
       runId: selectedReconciliation?.runId ?? null,
@@ -4292,22 +4375,30 @@ export function useAccountingReconciliationViewModel(
       return;
     }
 
+    const requestScope = scopeRevision;
+    const requestRunId = selectedReconciliation.runId;
     setTransactionLabBusy(true);
     setTransactionLabError(null);
 
     try {
       const preview = await services.previewTransactionLab(buildTransactionLabPreviewRequest(selectedReconciliation));
-      setTransactionLabPreview(preview);
+      if (activeScopeRef.current === requestScope && activeRunRef.current === requestRunId) setTransactionLabPreview(preview);
     } catch (err) {
+      if (activeScopeRef.current !== requestScope || activeRunRef.current !== requestRunId) return;
       setTransactionLabPreview(null);
       setTransactionLabError(describeApiError(err, "Transaction Lab preview failed."));
     } finally {
-      setTransactionLabBusy(false);
+      if (activeScopeRef.current === requestScope && activeRunRef.current === requestRunId) setTransactionLabBusy(false);
     }
-  }, [selectedReconciliation, services, transactionLabBusy]);
+  }, [scopeRevision, selectedReconciliation, services, transactionLabBusy]);
 
   return {
     reconciliationQueue,
+    selectionNotice: selectedBreakId && (!selectionState || breakQueueReadScope === scopeRevision) && !breakQueueLoading && !breakQueueError && !scopedBreakQueue.some((item) => item.breakId === selectedBreakId)
+      ? "The selected break is no longer available in this queue. Select another break to continue."
+      : selectedRunId && !statementRunsLoading && !statementRunsError && !reconciliationQueue.some((item) => item.runId === selectedRunId) && !statementRuns.some((item) => item.runId === selectedRunId)
+        ? "The selected run is no longer available. Select another run to continue."
+        : null,
     selectedRunId,
     selectedReconciliation,
     selectRun: setSelectedRunId,
@@ -4328,7 +4419,10 @@ export function useAccountingReconciliationViewModel(
     selectAccountingBasis,
     updateLedgerAccountFilter,
     breakAction,
-    selectBreak: setSelectedBreakId,
+    selectBreak: (breakId: string | null) => {
+      if (selectionState) selectionState.selectBreak(breakId, breakQueue.find((item) => item.breakId === breakId)?.runId);
+      else setSelectedBreakId(breakId);
+    },
     assignBreak,
     resolveBreak,
     calibrationSummary,

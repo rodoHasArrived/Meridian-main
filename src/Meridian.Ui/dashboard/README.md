@@ -1792,3 +1792,42 @@ The creation result retains template version and history
 and links back to the prepared close scope. Reloaded plans expose their retained preparation
 lineage and creation history through the shared plan configuration. Focused coverage lives in
 `accounting-screen.prepare-next-period.test.tsx` and `close-preparation.api.test.ts`.
+
+
+## Reconciliation queue and inspector
+
+`/accounting/reconciliation` leads with a reconciliation-run picker, statement-import evidence access, and a break queue beside the selected
+break inspector. Assignment, resolve and dismiss controls belong to the selected record, before
+its supporting facts. Existing service permission checks, operator identity, rationale validation,
+casework outcomes and financial calculations remain authoritative. Exceptions reuses the queue
+pattern without constraining its cross-run casework to one run.
+
+`accounting-screen.reconciliation-workbench.tsx` owns the work surface. Supporting account
+oversight, calibration/history, readiness, source comparison and run evidence remain available in
+labelled disclosures. Statement import IDs and strategy reconciliation run IDs remain distinct;
+the UI does not infer a mapping between them.
+
+`reconciliation-view-state.ts` stores `reconciliationRun`, `reconciliationBreak`,
+`reconciliationSearch`, `reconciliationStatus` and `reconciliationSort` in the URL, preserving
+shared operating scope, unrelated query parameters and the hash. Search replaces the current
+entry; discrete choices create history entries. Clear filters clears search/status while retaining
+sort. Queue scroll lives on the browser history entry and restores after asynchronous rows arrive.
+Screen-local controls retain keyboard focus instead of triggering shell navigation focus.
+
+Filtering preserves the selected inspector even when its row is outside the results. A missing
+explicit selection remains unavailable with a notice instead of silently selecting another record.
+Scope revisions invalidate old rows and pending results, including A–B–A navigation. Pending or
+failed queue reads disable actions; view state never stores financial authority or approvals.
+Urgency sorting uses the supplied SLA state and case priority, not displayed amounts or currency.
+
+At constrained browser widths, Inspect selected break and Back to break queue switch between
+surfaces. Enter/Space on a break row opens its inspector; Escape restores queue focus. Statement
+run activation retains its own detail target. Table overflow stays within the queue.
+
+The shared shell's `WorkspaceStatus` exposes affected areas in a compact disclosure and disables
+Retry while recovery is in progress. Scope announcements distinguish applied dimensions from
+those retained for other workflows. The seven root workspaces and WPF remain unchanged.
+
+Focused regression coverage includes `reconciliation-view-state.test.tsx`,
+`accounting-screen.reconciliation-continuity.test.ts`, `accounting-screen.reconciliation-workbench.test.tsx`,
+`app-shell.route-focus.test.ts`, and the existing Accounting, shell and accessibility suites.

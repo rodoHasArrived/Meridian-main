@@ -89,3 +89,38 @@ describe("portfolio table route focus", () => {
     expect(focusState("?view=first", pathname).routeKey).not.toBe(focusState("?view=second", pathname).routeKey);
   });
 });
+
+
+describe("reconciliation queue route focus", () => {
+  const paths = ["/accounting/reconciliation", "/accounting/exceptions", "/accounting/reconciliation/", "/ACCOUNTING/EXCEPTIONS/"];
+  const localQuery = "reconciliationRun=run-a&reconciliationBreak=break-a&reconciliationSearch=cash&reconciliationStatus=Open&reconciliationSort=oldest";
+
+  it.each(paths)("keeps row selection and local controls focused on %s", (pathname) => {
+    const initial = focusState("", pathname);
+    expect(focusState(`?${localQuery}`, pathname).routeKey).toBe(initial.routeKey);
+    for (const key of ["reconciliationRun", "reconciliationBreak", "reconciliationSearch", "reconciliationStatus", "reconciliationSort"]) {
+      expect(focusState(`?${key}=first`, pathname).routeKey).toBe(initial.routeKey);
+      expect(focusState(`?${key}=second`, pathname).routeKey).toBe(initial.routeKey);
+    }
+  });
+
+  it.each(paths)("preserves shared scope, unrelated parameters, and hash targets on %s", (pathname) => {
+    const scope = "fundAccountId=fund-a&runId=ledger-a&provider=source-a&from=2026-06-01&to=2026-06-30&asOf=2026-06-30&symbol=MSFT&view=review";
+    const initial = focusState(`?${scope}`, pathname, "#reconciliation-break-queue");
+    const selected = focusState(`?${scope}&${localQuery}`, pathname, "#reconciliation-break-queue");
+    expect(selected.routeKey).toBe(initial.routeKey);
+    expect(selected.routeKey).toBe(`${pathname}?${scope}#reconciliation-break-queue`);
+    expect(selected.targetElementId).toBe("reconciliation-break-queue");
+    expect(focusState(`?${scope}&${localQuery}`, pathname, "#other-evidence").routeKey).not.toBe(initial.routeKey);
+    for (const key of ["fundAccountId", "runId", "provider", "from", "to", "date", "asOf", "symbol", "view", "unrelated"]) {
+      const changed = new URLSearchParams(`${scope}&${localQuery}`);
+      changed.set(key, "changed");
+      expect(focusState(`?${changed}`, pathname, "#reconciliation-break-queue").routeKey).not.toBe(initial.routeKey);
+    }
+  });
+
+  it.each(["/accounting", "/accounting/ledger", "/accounting/reconciliation/match", "/reporting"])("does not suppress reconciliation query navigation on %s", (pathname) => {
+    expect(focusState("?reconciliationBreak=first", pathname).routeKey)
+      .not.toBe(focusState("?reconciliationBreak=second", pathname).routeKey);
+  });
+});

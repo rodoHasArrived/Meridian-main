@@ -11,6 +11,7 @@ export interface WorkspaceWorkbenchShellProps {
   contentLabel?: string;
   inspector?: ReactNode;
   inspectorLabel?: string;
+  inspectorRole?: "complementary" | "region";
   evidenceDrawer?: ReactNode;
   evidenceDrawerLabel?: string;
   className?: string;
@@ -26,6 +27,7 @@ export function WorkspaceWorkbenchShell({
   contentLabel,
   inspector,
   inspectorLabel = "Selected object inspector",
+  inspectorRole = "complementary",
   evidenceDrawer,
   evidenceDrawerLabel = "Evidence drawer",
   className,
@@ -76,6 +78,7 @@ export function WorkspaceWorkbenchShell({
         {inspector ? (
           <aside
             className="workspace-workbench-shell-inspector"
+            role={inspectorRole}
             aria-label={inspectorLabel}
             data-workbench-slot="inspector"
           >
