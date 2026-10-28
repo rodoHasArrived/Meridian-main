@@ -65,50 +65,51 @@ public sealed class SymbolManagementService
             );
         }
 
-        var cfg = _configStore.Load();
-        var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
-            .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
-
-        var added = new List<string>();
-        var skipped = new List<string>();
-        var updated = new List<string>();
-
-        foreach (var symbol in symbolList)
+        var (added, skipped, updated) = await _configStore.UpdateAsync(cfg =>
         {
-            if (!IsValidSymbol(symbol))
-            {
-                _log.Warning("Skipping invalid symbol format: {Symbol}", symbol);
-                skipped.Add(symbol);
-                continue;
-            }
+            var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
+                .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
 
-            if (existingSymbols.ContainsKey(symbol))
+            var added = new List<string>();
+            var skipped = new List<string>();
+            var updated = new List<string>();
+
+            foreach (var symbol in symbolList)
             {
-                if (options.UpdateExisting)
+                if (!IsValidSymbol(symbol))
                 {
-                    existingSymbols[symbol] = CreateSymbolConfig(symbol, options);
-                    updated.Add(symbol);
-                    _log.Information("Updated symbol configuration: {Symbol}", symbol);
+                    _log.Warning("Skipping invalid symbol format: {Symbol}", symbol);
+                    skipped.Add(symbol);
+                    continue;
+                }
+
+                if (existingSymbols.ContainsKey(symbol))
+                {
+                    if (options.UpdateExisting)
+                    {
+                        existingSymbols[symbol] = CreateSymbolConfig(symbol, options);
+                        updated.Add(symbol);
+                        _log.Information("Updated symbol configuration: {Symbol}", symbol);
+                    }
+                    else
+                    {
+                        skipped.Add(symbol);
+                        _log.Debug("Symbol already exists, skipping: {Symbol}", symbol);
+                    }
                 }
                 else
                 {
-                    skipped.Add(symbol);
-                    _log.Debug("Symbol already exists, skipping: {Symbol}", symbol);
+                    existingSymbols[symbol] = CreateSymbolConfig(symbol, options);
+                    added.Add(symbol);
+                    _log.Information("Added symbol: {Symbol}", symbol);
                 }
             }
-            else
-            {
-                existingSymbols[symbol] = CreateSymbolConfig(symbol, options);
-                added.Add(symbol);
-                _log.Information("Added symbol: {Symbol}", symbol);
-            }
-        }
 
-        if (added.Count > 0 || updated.Count > 0)
-        {
-            var next = cfg with { Symbols = existingSymbols.Values.ToArray() };
-            await _configStore.SaveAsync(next);
-        }
+            if (added.Count == 0 && updated.Count == 0)
+                return (cfg, (added, skipped, updated));
+
+            return (cfg with { Symbols = existingSymbols.Values.ToArray() }, (added, skipped, updated));
+        }, ct);
 
         var message = BuildResultMessage(added.Count, updated.Count, skipped.Count);
         return new SymbolOperationResult(
@@ -142,15 +143,20 @@ public sealed class SymbolManagementService
             );
         }
 
-        var cfg = _configStore.Load();
-        var existingSymbols = cfg.Symbols ?? Array.Empty<SymbolConfig>();
-        var removed = existingSymbols.Where(s => symbolsToRemove.Contains(s.Symbol)).Select(s => s.Symbol).ToList();
-        var remainingSymbols = existingSymbols.Where(s => !symbolsToRemove.Contains(s.Symbol)).ToArray();
+        var removed = await _configStore.UpdateAsync(cfg =>
+        {
+            var existingSymbols = cfg.Symbols ?? Array.Empty<SymbolConfig>();
+            var removed = existingSymbols.Where(s => symbolsToRemove.Contains(s.Symbol)).Select(s => s.Symbol).ToList();
+            var remainingSymbols = existingSymbols.Where(s => !symbolsToRemove.Contains(s.Symbol)).ToArray();
+
+            if (removed.Count == 0)
+                return (cfg, removed);
+
+            return (cfg with { Symbols = remainingSymbols }, removed);
+        }, ct);
 
         if (removed.Count > 0)
         {
-            var next = cfg with { Symbols = remainingSymbols };
-            await _configStore.SaveAsync(next);
             _log.Information("Removed {Count} symbols: {Symbols}", removed.Count, string.Join(", ", removed));
         }
 

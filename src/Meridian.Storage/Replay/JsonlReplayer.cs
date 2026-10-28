@@ -74,7 +74,8 @@ public sealed class JsonlReplayer
 
         IReadOnlyList<string> files = File.Exists(_path)
             ? [_path]
-            : Directory.EnumerateFiles(_path, "*.jsonl*", SearchOption.AllDirectories)
+            : Directory.EnumerateFiles(_path, "*", SearchOption.AllDirectories)
+                .Where(IsCanonicalArchivePath)
                 .OrderBy(static file => file, StringComparer.Ordinal)
                 .ToArray();
 
@@ -181,6 +182,14 @@ public sealed class JsonlReplayer
             }
         }
     }
+
+    private static bool IsCanonicalArchivePath(string path) =>
+        path.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase) ||
+        path.EndsWith(".jsonl.gz", StringComparison.OrdinalIgnoreCase) ||
+        path.EndsWith(".jsonl.gzip", StringComparison.OrdinalIgnoreCase) ||
+        path.EndsWith(".jsonl.zst", StringComparison.OrdinalIgnoreCase) ||
+        path.EndsWith(".jsonl.lz4", StringComparison.OrdinalIgnoreCase) ||
+        path.EndsWith(".jsonl.br", StringComparison.OrdinalIgnoreCase);
 
     private static async Task<(IReadOnlyList<ReplayRecord> Records, long NextOffset)> ReadSpoolPageAsync(
         string path, long offset, CancellationToken ct)

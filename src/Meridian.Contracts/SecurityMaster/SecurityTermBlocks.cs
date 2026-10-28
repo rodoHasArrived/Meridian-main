@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -35,6 +36,27 @@ public static class SecurityTermBlocks
             : [];
 
     /// <summary>
+    /// Whether <paramref name="blockKey"/> names a block <paramref name="assetClass"/> declares but this
+    /// node only reads (ADR-024, readable before writable), with the not-yet-writable reason a block
+    /// amendment of it is refused with.
+    /// </summary>
+    public static bool TryDescribeReadableOnlyBlock(string assetClass, string blockKey, [NotNullWhen(true)] out string? reason)
+    {
+        reason = null;
+        var key = blockKey.Trim();
+        if (SecurityAssetTermsSchema.Field(assetClass, key) is not { } declared
+            || !string.Equals(declared.Key, key, StringComparison.Ordinal)
+            || declared.Type is not (SecurityAssetTermFieldType.Object or SecurityAssetTermFieldType.Array)
+            || declared.SinceTermsVersion <= SecurityAssetClassCatalog.GetTermsVersion(assetClass))
+        {
+            return false;
+        }
+
+        reason = SecurityTermsEnvelope.DescribeNotYetWritable(assetClass, key, declared.SinceTermsVersion);
+        return true;
+    }
+
+    /// <summary>
     /// Returns the asset-specific terms with <paramref name="blockKey"/> replaced by
     /// <paramref name="block"/>. Every other term is carried unchanged. Throws
     /// <see cref="ArgumentException"/> when the class declares no such block or the JSON kind does not
@@ -48,8 +70,10 @@ public static class SecurityTermBlocks
         var blocks = For(assetClass);
         var field = blocks.FirstOrDefault(candidate => string.Equals(candidate.Key, blockKey.Trim(), StringComparison.Ordinal))
             ?? throw new ArgumentException(
-                $"Asset class '{assetClass}' declares no term block '{blockKey}'. Declared blocks: " +
-                (blocks.Count == 0 ? "none" : string.Join(", ", blocks.Select(static candidate => candidate.Key))) + ".",
+                TryDescribeReadableOnlyBlock(assetClass, blockKey, out var readableOnly)
+                    ? readableOnly
+                    : $"Asset class '{assetClass}' declares no term block '{blockKey}'. Declared blocks: " +
+                      (blocks.Count == 0 ? "none" : string.Join(", ", blocks.Select(static candidate => candidate.Key))) + ".",
                 nameof(blockKey));
 
         var expectedKind = field.Type == SecurityAssetTermFieldType.Array ? JsonValueKind.Array : JsonValueKind.Object;

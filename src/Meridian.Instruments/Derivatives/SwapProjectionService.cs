@@ -21,7 +21,7 @@ public sealed class SwapProjectionService : ISwapReferenceService
     public async Task<SwapReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)
     {
         var security = await _securityMasterStore.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
-        if (security is null || !string.Equals(security.AssetClass, "Swap", StringComparison.OrdinalIgnoreCase))
+        if (security is null || SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CashFlowBehavior != SecurityCashFlowBehavior.SwapLegs)
         {
             return null;
         }
@@ -61,7 +61,7 @@ public sealed class SwapProjectionService : ISwapReferenceService
         {
             var security = await _securityMasterStore.GetProjectionAsync(row.SecurityId, ct).ConfigureAwait(false);
             var terms = security is not null &&
-                string.Equals(security.AssetClass, "Swap", StringComparison.OrdinalIgnoreCase)
+                SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CashFlowBehavior == SecurityCashFlowBehavior.SwapLegs
                     ? security.AssetSpecificTerms
                     : default;
             results.Add(MapRow(row, terms));
@@ -111,10 +111,31 @@ public sealed class SwapProjectionService : ISwapReferenceService
                 fixedRate = fr.GetDecimal();
             }
 
-            result.Add(new SwapLegDto(legType, currency, index, fixedRate));
+            result.Add(new SwapLegDto(
+                legType,
+                currency,
+                index,
+                fixedRate,
+                ReadLegString(leg, "paymentFrequency", "frequency"),
+                ReadLegString(leg, "dayCountConvention", "dayCount", "dayCountBasis")));
         }
 
         return result;
+    }
+
+    // Same alias precedence as SecurityMasterMapping.ToSwapLeg and StructuredCashFlowTermsResolver
+    // (dayCountConvention before dayCount), so the DTO shows the text the economics are built from.
+    private static string? ReadLegString(JsonElement leg, params string[] keys)
+    {
+        foreach (var key in keys)
+        {
+            if (leg.TryGetProperty(key, out var value) && value.ValueKind == JsonValueKind.String)
+            {
+                return value.GetString();
+            }
+        }
+
+        return null;
     }
 }
 

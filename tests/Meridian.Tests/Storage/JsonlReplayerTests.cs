@@ -48,6 +48,34 @@ public sealed class JsonlReplayerTests : IDisposable
         result.Select(static evt => evt.Symbol).Should().Equal("AAPL", "MSFT");
     }
 
+    [Theory]
+    [InlineData("events.jsonl")]
+    [InlineData("events.JSONL")]
+    public async Task ReadEventsAsync_DirectoryIgnoresChecksumRecoveryLockAndStagingSidecars(string name)
+    {
+        var file = Path.Combine(_tempRoot, name);
+        var evt = BuildTrade("SPY", 1);
+        await File.WriteAllTextAsync(file, SerializeLine(evt));
+        foreach (var suffix in new[] { ".sha256", ".recovery", ".write-lock", ".tmp", ".gz.sha256", ".gz.tmp" })
+            await File.WriteAllTextAsync(file + suffix, "not a persisted market event");
+
+        var result = await ReadAllAsync(new JsonlReplayer(_tempRoot));
+
+        result.Should().ContainSingle().Which.Should().Be(evt);
+    }
+
+    [Fact]
+    public async Task ReadEventsAsync_ExplicitSidecarPathStillRejectsMalformedInput()
+    {
+        var file = Path.Combine(_tempRoot, "events.jsonl.sha256");
+        await File.WriteAllTextAsync(file, "not a persisted market event");
+
+        var act = async () => await ReadAllAsync(new JsonlReplayer(file));
+
+        await act.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*events.jsonl.sha256*line 1*");
+    }
+
     [Fact]
     public async Task ReadEventsAsync_WhenFilesInterleave_MergesByFullUtcTimestampThenFileAndLineOrder()
     {

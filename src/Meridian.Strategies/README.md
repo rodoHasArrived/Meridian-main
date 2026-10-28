@@ -53,6 +53,8 @@ policy outcome names and legacy cell kinds remain compatibility inputs.
 ## Important workflows
 
 Use this module for strategy run evidence, promotion lineage, and research-to-paper continuity.
+Live-engine shutdown calls `IOrderManagementLifecycle.StopAsync` while its fill subscriptions
+remain active, so admitted orders and accounting handoffs drain before strategy consumers stop.
 Live and paper metrics retain the worst currency decline and worst percentage decline independently;
 Calmar and promotion gates use the percentage maximum even when a later, larger currency loss has a
 smaller percentage impact. Backtest metrics use the same convention and include initial capital as

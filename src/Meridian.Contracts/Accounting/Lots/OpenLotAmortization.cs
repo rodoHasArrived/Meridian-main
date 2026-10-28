@@ -90,6 +90,10 @@ public static class OpenLotAmortization
         if (lot.Version <= 0 || lot.OpenQuantity <= 0 || acquisition.QuantityBasis != LotQuantityBasis.Face || terms is null
             || terms.BookedFactor != 1m || instruction.ExpectedBookPositionVersion <= 0)
             throw new ArgumentException("Amortization requires a versioned open face lot with unadjusted bullet principal and retained acquisition terms.");
+        // A paid-down lot is not amortized: its premium or discount is realized pro rata through
+        // factor paydowns and the remainder through the reduced basis at disposal.
+        if (lot.CurrentFactor is not null)
+            throw new ArgumentException("Amortization refuses a lot that holds a paydown factor; its premium or discount is realized through factor paydowns and disposal.");
         var retainedReversal = instruction.Reversal is not null;
         if (security.SecurityId != lot.SecurityId || security.Version <= 0
             || (security.Status != SecurityStatusDto.Active && !(retainedReversal && security.Status == SecurityStatusDto.Inactive))
@@ -205,8 +209,9 @@ public static class OpenLotAmortization
 
     private static void ValidateBulletReference(SecurityDetailDto detail)
     {
-        var assetClass = SecurityAssetClassCatalog.GetOrDefault(detail.AssetClass).AssetClass;
-        if (assetClass is not ("Bond" or "TreasuryBill" or "CommercialPaper"))
+        var descriptor = SecurityAssetClassCatalog.GetOrDefault(detail.AssetClass);
+        var assetClass = descriptor.AssetClass;
+        if (!descriptor.SupportsCanonicalBulletAmortization)
             throw new ArgumentException("Canonical amortization supports only Bond, TreasuryBill and CommercialPaper face lots.");
         if (detail.CommonTerms.ValueKind != JsonValueKind.Object || detail.AssetSpecificTerms.ValueKind != JsonValueKind.Object)
             throw new ArgumentException("Amortization requires complete object-shaped Security Master terms.");
@@ -217,7 +222,7 @@ public static class OpenLotAmortization
         if (FirstTerm(sources, ["currentFactor", "factor"]) is { } ownedFactor && ownedFactor.ValueKind != JsonValueKind.Null
             && OwnedDecimal(sources, ["currentFactor", "factor"]) is null)
             throw new ArgumentException("Amortization requires valid owned principal-factor authority; malformed factors cannot receive defaults.");
-        if (assetClass == "Bond")
+        if (SecurityAssetClassCatalog.GetOrDefault(assetClass).CarriesBondCouponStructure)
         {
             var couponType = OwnedString(sources, ["couponType", "couponKind"]);
             if (couponType is not ("Fixed" or "ZeroCoupon")
@@ -242,12 +247,37 @@ public static class OpenLotAmortization
                 && (schedule.ValueKind != JsonValueKind.Array || schedule.GetArrayLength() != 0))
                 throw new ArgumentException("Amortization cannot use nonempty or malformed principal, factor, coupon or leg schedules.");
         }
+        // Declared call and put schedules (readable from terms version 3, ADR-024) are optionality a
+        // bullet cannot honour; an empty list declares none, and a malformed one is not read as absent.
+        foreach (var name in new[] { "callSchedule", "putSchedule" })
+        {
+            if (AnyTerm(sources, name, static schedule => schedule.ValueKind != JsonValueKind.Null
+                    && (schedule.ValueKind != JsonValueKind.Array || schedule.GetArrayLength() != 0)))
+                throw new ArgumentException("Amortization does not support floating coupons, calls, puts or advance-refunding terms.");
+        }
+        // A declared scheduleConventions block (ADR-024; writable from the contract step) moves payment
+        // dates, stubs and the coupon unit, and the bullet coupon grid follows none of them. Unset
+        // spellings declare nothing.
+        if (AnyTerm(sources, "scheduleConventions", SecurityAssetTermsSchema.IsPopulatedTermValue))
+            throw new ArgumentException("Amortization does not support declared schedule conventions; the bullet coupon grid follows none of them.");
         foreach (var name in new[] { "floatingIndex", "floatingRateIndex", "referenceIndex", "callDate", "preRefundDate", "mandatoryPutDate" })
         {
             if (FirstTerm(sources, [name]) is { } value && value.ValueKind != JsonValueKind.Null
                 && !(value.ValueKind == JsonValueKind.String && string.IsNullOrWhiteSpace(value.GetString())))
                 throw new ArgumentException("Amortization does not support floating coupons, calls, puts or advance-refunding terms.");
         }
+    }
+
+    // Declared schedule terms are checked in every source the cash-flow resolver reads and under every
+    // casing: an unset spelling in one source never hides a populated one in another (ADR-024, ADR-025).
+    private static bool AnyTerm(IEnumerable<JsonElement> sources, string name, Func<JsonElement, bool> refuses)
+    {
+        foreach (var source in sources)
+            if (source.ValueKind == JsonValueKind.Object)
+                foreach (var property in source.EnumerateObject())
+                    if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase) && refuses(property.Value))
+                        return true;
+        return false;
     }
 
     private static JsonElement? FirstTerm(IEnumerable<JsonElement> sources, string[] aliases)

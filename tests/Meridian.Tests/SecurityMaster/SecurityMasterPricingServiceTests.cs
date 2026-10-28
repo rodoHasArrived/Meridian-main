@@ -8,7 +8,7 @@ using Xunit;
 
 // ISecurityMasterQueryService is declared in both Meridian.Application.SecurityMaster and
 // Meridian.Contracts.SecurityMaster; the pricing service binds to the Application one.
-using ISecurityMasterQueryService = Meridian.Application.SecurityMaster.ISecurityMasterQueryService;
+using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Tests.SecurityMaster;
 

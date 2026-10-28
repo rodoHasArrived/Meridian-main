@@ -93,6 +93,21 @@ describe("account cash continuity operator panel", () => {
     expect(screen.getByText(/by reviewer/)).toBeVisible();
   });
 
+  it("discards an unsaved assignment draft without retaining it", async () => {
+    render(<AccountCashCasesPanel scope={scope} context={context} />);
+    await selectCase();
+    const form = within(screen.getByRole("form", { name: "Assign cash case owner" }));
+    await userEvent.clear(form.getByLabelText("Case owner"));
+    await userEvent.type(form.getByLabelText("Case owner"), "analyst-b");
+    await userEvent.type(form.getByLabelText("Assignment rationale"), "Draft that should not be kept");
+    await userEvent.click(form.getByRole("button", { name: "Discard assignment" }));
+    expect(api.assignCashCase).not.toHaveBeenCalled();
+    const reset = within(screen.getByRole("form", { name: "Assign cash case owner" }));
+    expect(reset.getByLabelText("Case owner")).toHaveValue("analyst-a");
+    expect(reset.getByLabelText("Assignment rationale")).toHaveValue("");
+    expect(reset.queryByRole("button", { name: "Discard assignment" })).not.toBeInTheDocument();
+  });
+
   it("blocks a stale assignment until the operator refreshes retained case versions", async () => {
     api.assignCashCase.mockRejectedValueOnce(new ApiError({ path: "/cash-cases", status: 409, detail: "Version conflict" }));
     render(<AccountCashCasesPanel scope={scope} context={context} />);
@@ -104,6 +119,19 @@ describe("account cash continuity operator panel", () => {
     await userEvent.click(screen.getByRole("button", { name: "Refresh retained cases" }));
     await waitFor(() => expect(api.listCashCases).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(screen.getByRole("button", { name: "Retain owner assignment" })).toBeEnabled());
+  });
+
+  it("blocks capturing a comparison while an owner assignment draft is unsaved", async () => {
+    render(<AccountCashCasesPanel scope={scope} context={context} />);
+    await selectCase();
+    await userEvent.type(screen.getByLabelText("Assignment rationale"), "Pending owner note");
+    const preview = within(await importFile());
+    expect(preview.getByRole("button", { name: "Capture cash comparison" })).toBeDisabled();
+    expect(screen.getByText("Save or discard the owner assignment before selecting another case or capturing a comparison.")).toBeVisible();
+    await userEvent.click(screen.getByRole("button", { name: "Discard assignment" }));
+    await waitFor(() => expect(preview.getByRole("button", { name: "Capture cash comparison" })).toBeEnabled());
+    await userEvent.click(preview.getByRole("button", { name: "Capture cash comparison" }));
+    await waitFor(() => expect(api.runCashComparison).toHaveBeenCalledOnce());
   });
 
   it("reproduces an explicitly selected older run and exposes frozen rows, rule version and hashes", async () => {

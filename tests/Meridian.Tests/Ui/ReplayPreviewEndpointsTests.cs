@@ -50,11 +50,50 @@ public sealed class ReplayPreviewEndpointsTests : IDisposable
         body.RootElement.GetProperty("total").GetInt32().Should().Be(0);
     }
 
+    [Fact]
+    public async Task PreviewHost_StopCancelsAndDrainsItsRegisteredReaders()
+    {
+        await using var app = await CreateAppAsync();
+        var scans = app.Services.GetRequiredService<ReplayScanLifetime>();
+        var cancelled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseReader = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        scans.TryStart(async token =>
+        {
+            try
+            {
+                await Task.Delay(Timeout.InfiniteTimeSpan, token);
+            }
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
+            {
+                cancelled.TrySetResult();
+            }
+
+            await releaseReader.Task;
+        }).Should().BeTrue();
+
+        try
+        {
+            var shutdown = app.StopAsync();
+            await cancelled.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            shutdown.IsCompleted.Should().BeFalse("host shutdown must wait for reader cleanup");
+            scans.TryStart(_ => Task.CompletedTask).Should().BeFalse();
+
+            releaseReader.TrySetResult();
+            await shutdown.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        finally
+        {
+            releaseReader.TrySetResult();
+        }
+    }
+
     private async Task<WebApplication> CreateAppAsync()
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = "Testing" });
         builder.WebHost.UseTestServer();
         builder.Services.AddSingleton(new StorageOptions { RootPath = _root });
+        builder.Services.AddSingleton<ReplayScanLifetime>();
+        builder.Services.AddHostedService(sp => sp.GetRequiredService<ReplayScanLifetime>());
         var app = builder.Build();
         app.Use(async (context, next) =>
         {

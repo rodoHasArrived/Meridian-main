@@ -32,7 +32,8 @@ internal static class StatementRecordMapper
         IReadOnlyDictionary<string, string> activityCodeMap,
         int rowNumber,
         ICollection<StatementParseIssue> issues,
-        ISet<string> reportedUnknownActivityCodes)
+        ISet<string> reportedUnknownActivityCodes,
+        bool requireInvariantNumbers = false)
     {
         var account = GetValue(values, StatementCanonicalField.Account);
         if (string.IsNullOrWhiteSpace(account))
@@ -73,9 +74,16 @@ internal static class StatementRecordMapper
             return null;
         }
 
-        if (!TryParseOptionalDecimal(values, StatementCanonicalField.Quantity, profile, rowNumber, issues, out var quantity)
-            || !TryParseOptionalDecimal(values, StatementCanonicalField.Price, profile, rowNumber, issues, out var price)
-            || !TryParseOptionalDecimal(values, StatementCanonicalField.CashAmount, profile, rowNumber, issues, out var cashAmount))
+        // Structured bank/broker formats carry invariant amounts. Cash movements have no
+        // quantity or price, while trades and positions must not invent those values.
+        var requiresSecurityAmounts = requireInvariantNumbers && (kind == StatementRecordKind.Position
+            || string.Equals(canonicalActivity, "trade", StringComparison.OrdinalIgnoreCase));
+        if (!TryParseOptionalDecimal(values, StatementCanonicalField.Quantity, profile, rowNumber, issues,
+                out var quantity, requireInvariantNumbers, requiresSecurityAmounts)
+            || !TryParseOptionalDecimal(values, StatementCanonicalField.Price, profile, rowNumber, issues,
+                out var price, requireInvariantNumbers, requiresSecurityAmounts)
+            || !TryParseOptionalDecimal(values, StatementCanonicalField.CashAmount, profile, rowNumber, issues,
+                out var cashAmount, requireInvariantNumbers, requireInvariantNumbers))
         {
             return null;
         }
@@ -113,16 +121,17 @@ internal static class StatementRecordMapper
         var feesValue = GetValue(values, StatementCanonicalField.FeesCommission);
         if (!string.IsNullOrWhiteSpace(feesValue))
         {
-            if (StatementValueParser.TryParseDecimal(feesValue, profile, out var parsedFees))
+            if (StatementValueParser.TryParseDecimal(feesValue, profile, out var parsedFees, requireInvariantNumbers))
             {
                 fees = parsedFees;
             }
             else
             {
-                if (string.Equals(profile.ProfileId, StatementMappingProfileRegistry.CanonicalCsvV1ProfileId, StringComparison.OrdinalIgnoreCase))
+                if (requireInvariantNumbers
+                    || string.Equals(profile.ProfileId, StatementMappingProfileRegistry.CanonicalCsvV1ProfileId, StringComparison.OrdinalIgnoreCase))
                 {
                     issues.Add(StatementParseIssue.Error(
-                        "ROW_INVALID_FEES", "Canonical fees/commission requires an invariant decimal without grouping separators.",
+                        "ROW_INVALID_FEES", "Fees/commission requires an invariant decimal without grouping separators.",
                         rowNumber, "FeesCommission"));
                     return null;
                 }
@@ -180,16 +189,19 @@ internal static class StatementRecordMapper
         StatementMappingProfileDocument profile,
         int rowNumber,
         ICollection<StatementParseIssue> issues,
-        out decimal result)
+        out decimal result,
+        bool requireInvariantNumbers,
+        bool required)
     {
         result = 0m;
         var value = GetValue(values, field);
         if (string.IsNullOrWhiteSpace(value))
         {
-            if (string.Equals(profile.ProfileId, StatementMappingProfileRegistry.CanonicalCsvV1ProfileId, StringComparison.OrdinalIgnoreCase))
+            if (required || (requireInvariantNumbers && values.ContainsKey(field))
+                || string.Equals(profile.ProfileId, StatementMappingProfileRegistry.CanonicalCsvV1ProfileId, StringComparison.OrdinalIgnoreCase))
             {
                 issues.Add(StatementParseIssue.Error(
-                    "ROW_INVALID_NUMBER", $"Canonical rows require an explicit {field} value; a missing amount cannot become zero.",
+                    "ROW_INVALID_NUMBER", $"Row requires an explicit {field} value; a missing amount cannot become zero.",
                     rowNumber, field.ToString()));
                 return false;
             }
@@ -197,7 +209,7 @@ internal static class StatementRecordMapper
             return true;
         }
 
-        if (StatementValueParser.TryParseDecimal(value, profile, out result))
+        if (StatementValueParser.TryParseDecimal(value, profile, out result, requireInvariantNumbers))
         {
             return true;
         }

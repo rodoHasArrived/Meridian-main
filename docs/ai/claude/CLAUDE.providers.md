@@ -256,7 +256,7 @@ export MERIDIAN_SECURITY_MASTER_SCHEMA="security_master"
 | File | Purpose |
 |------|---------|
 | `Application/SecurityMaster/SecurityMasterService.cs` | Command service (create, amend, deactivate) |
-| `Application/SecurityMaster/ISecurityMasterQueryService.cs` | Query service (get, search, history) |
+| `Contracts/SecurityMaster/ISecurityMasterQueryService.cs` | Canonical query service contract (get, search, history) |
 | `Storage/SecurityMaster/ISecurityMasterEventStore.cs` | Event store (append, load) |
 | `Storage/SecurityMaster/PostgresSecurityMasterStore.cs` | PostgreSQL implementation |
 | `FSharp/Domain/SecurityMaster.fs` | Domain types and asset class definitions |

@@ -134,10 +134,20 @@ public static class SecurityAssetTermsFieldEditValidator
         var field = FindDeclaredField(assetClass, key);
         if (field is null)
         {
-            var declaredKeys = SecurityAssetTermsSchema.Fields(assetClass).Select(static f => f.Key);
+            var declaredKeys = SecurityAssetTermsSchema.WritableFields(assetClass).Select(static f => f.Key);
             error =
                 $"'{key}' is not a declared asset-specific term for asset class '{assetClass}'. " +
                 $"Declared term fields: {string.Join(", ", declaredKeys)}.";
+            return false;
+        }
+
+        // A term this node only reads (ADR-024, readable before writable) cannot be staged at all —
+        // not set, not cleared and not edited beneath — because the merge would map it in Write mode
+        // and refuse it after approval. The same holds for a readable-only field inside a declared
+        // array element or nested object (a swap leg's scheduleConventions), and for every member of
+        // a readable-only container (callSchedule, putSchedule).
+        if (TryRefuseReadableOnlyEdit(assetClass, field, nestedPath, newValue, out error))
+        {
             return false;
         }
 
@@ -214,6 +224,75 @@ public static class SecurityAssetTermsFieldEditValidator
 
         canonicalFieldPath = BuildCanonicalPath(field.Key, nestedPath);
         return true;
+    }
+
+    private static bool TryRefuseReadableOnlyEdit(
+        string assetClass,
+        SecurityAssetTermField field,
+        string nestedPath,
+        string? newValue,
+        out string? error)
+    {
+        error = null;
+        var writes = SecurityAssetClassCatalog.GetTermsVersion(assetClass);
+        if (field.SinceTermsVersion > writes)
+        {
+            error = SecurityTermsEnvelope.DescribeNotYetWritable(assetClass, field.Key, field.SinceTermsVersion);
+            return true;
+        }
+
+        if (field.Type is not (SecurityAssetTermFieldType.Object or SecurityAssetTermFieldType.Array))
+        {
+            return false;
+        }
+
+        // An edit beneath the container: its first non-index segment names the element field.
+        var segment = nestedPath
+            .Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .FirstOrDefault(static part => !part.All(char.IsAsciiDigit));
+        if (segment is not null
+            && SecurityAssetTermsSchema.ElementFields(assetClass, field.Key).FirstOrDefault(inner =>
+                    string.Equals(inner.Key, segment, StringComparison.OrdinalIgnoreCase)
+                    || inner.Aliases.Any(alias => string.Equals(alias, segment, StringComparison.OrdinalIgnoreCase)))
+                is { } innerField
+            && innerField.SinceTermsVersion > writes)
+        {
+            error = SecurityTermsEnvelope.DescribeNotYetWritable(assetClass, $"{field.Key}.{nestedPath}", innerField.SinceTermsVersion);
+            return true;
+        }
+
+        // A value for the whole container, or for one of its elements (legs.0), that populates a
+        // readable-only element field. An element value is checked as the only element of its array.
+        if (segment is null && !string.IsNullOrWhiteSpace(newValue))
+        {
+            JsonElement value;
+            try
+            {
+                using var document = JsonDocument.Parse(newValue);
+                value = document.RootElement.Clone();
+            }
+            catch (JsonException)
+            {
+                return false;
+            }
+
+            var indexDepth = nestedPath.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Length;
+            for (var depth = 0; depth < indexDepth; depth++)
+            {
+                value = JsonSerializer.SerializeToElement(new[] { value });
+            }
+
+            var container = JsonSerializer.SerializeToElement(new Dictionary<string, JsonElement> { [field.Key] = value });
+            var populated = SecurityAssetTermsSchema.PopulatedTermsAbove(assetClass, container, writes);
+            if (populated.Count > 0)
+            {
+                var path = indexDepth == 0 ? populated[0].Path : $"{field.Key}.{nestedPath}.{populated[0].Field.Key}";
+                error = SecurityTermsEnvelope.DescribeNotYetWritable(assetClass, path, populated[0].Field.SinceTermsVersion);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static bool ScheduleRowsSatisfyDomainInvariants(string fieldKey, string newValue, out string? error)

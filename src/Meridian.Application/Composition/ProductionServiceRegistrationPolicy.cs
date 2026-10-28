@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Meridian.Contracts.Operations;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -39,12 +40,16 @@ public static class ProductionServiceRegistrationPolicy
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        if (!IsProductionComposition(services))
+        if (IsProductionComposition(services))
         {
+            ThrowIfViolations(CollectStaticViolations(services), CollectPlatformViolation(services));
             return;
         }
 
-        ThrowIfViolations(CollectStaticViolations(services));
+        if (IsPlatformGatedLocalComposition(services))
+        {
+            ThrowIfViolations([], CollectPlatformViolation(services));
+        }
     }
 
     internal static string[] CollectStaticViolations(IServiceCollection services)
@@ -58,17 +63,187 @@ public static class ProductionServiceRegistrationPolicy
             .ToArray();
 
     internal static void ThrowIfViolations(IReadOnlyCollection<string> violations)
+        => ThrowIfViolations(violations, platformViolation: null);
+
+    /// <summary>
+    /// Refuses startup when either prohibited bindings or an unsupported host platform were found.
+    /// Both findings are reported in one exception, binding text first, so an operator reading the
+    /// refusal sees every reason the production graph was rejected rather than the first one only.
+    /// </summary>
+    internal static void ThrowIfViolations(IReadOnlyCollection<string> violations, string? platformViolation)
     {
-        if (violations.Count == 0)
+        if (violations.Count == 0 && platformViolation is null)
         {
             return;
         }
 
-        throw new StartupRefusedException(
+        if (violations.Count == 0)
+        {
+            throw new StartupRefusedException(platformViolation!);
+        }
+
+        var message =
             "Production startup policy rejected non-production DI registrations: " +
             $"{string.Join(", ", violations)}. Replace each binding with a production implementation, " +
-            "or scope the capability out of the supported envelope per ADR-019.");
+            "or scope the capability out of the supported envelope per ADR-019.";
+        throw new StartupRefusedException(platformViolation is null ? message : message + " " + platformViolation);
     }
+
+    // ── ADR-019 host platform fail-closed ───────────────────────────────────────────────────────
+    //
+    // The signed v1 production envelope is Windows 11 (.NET 10, installed via the desktop-installer
+    // lane). Linux container and systemd postures are experimental and must be rejected, not
+    // silently degraded, when a production posture selects them. The degradation this prevents is
+    // concrete: off Windows the provider credential vault cannot use DPAPI and falls back to a raw
+    // AES key stored beside the vault, and the lifecycle protected secret store is unsupported.
+    // The gate applies to production compositions and to the shipped topology itself: the packaged
+    // or customer local-workstation build that the lifecycle supervisor starts with
+    // MDC_PACKAGED_BUILD=true. An unflagged LocalWorkstation composition is development and is not
+    // gated, so work on Linux keeps composing. Architecture and Windows version are reported for the
+    // diagnostic but not refused: PRD-014 certifies both x64 and ARM64 installer receipts.
+
+    /// <summary>Production bindings that silently select a weaker implementation off Windows.</summary>
+    private static readonly string[] PlatformBoundProductionBindings =
+    [
+        "provider credential vault protection 'dpapi-current-user' -> 'local-aes-gcm' (FileProviderCredentialStore)",
+        "lifecycle protected secret store (LifecycleProtectedSecretStore.IsSupported)"
+    ];
+
+    internal readonly record struct HostPlatform(bool IsWindows, Architecture Architecture, string Description);
+
+    /// <summary>
+    /// The host platform the production policy evaluates: a <see cref="MeridianHostPlatformDeclaration"/>
+    /// when one was declared (tests), otherwise the running operating system.
+    /// </summary>
+    internal static HostPlatform ResolveHostPlatform(IServiceCollection services)
+    {
+        for (var i = services.Count - 1; i >= 0; i--)
+        {
+            if (!services[i].IsKeyedService &&
+                services[i].ImplementationInstance is MeridianHostPlatformDeclaration declaration)
+            {
+                return new HostPlatform(declaration.IsWindows, declaration.Architecture, declaration.Description);
+            }
+        }
+
+        return new HostPlatform(
+            OperatingSystem.IsWindows(),
+            RuntimeInformation.OSArchitecture,
+            RuntimeInformation.OSDescription);
+    }
+
+    /// <summary>
+    /// Whether a supported local-workstation composition is the packaged or customer build, which is
+    /// the shipped topology and therefore inside the ADR-019 platform gate. The same flags that
+    /// <see cref="EnsureIsolatedQuantLabIsAllowed"/> treats as customer distribution.
+    /// </summary>
+    internal static bool IsPlatformGatedLocalComposition(IServiceCollection services)
+        => IsSupportedLocalComposition(services) && ResolvePackagedBuildFlag(services) is not null;
+
+    private static (string Name, string Value)? ResolvePackagedBuildFlag(IServiceCollection services)
+    {
+        var configuration = CompositionConfiguration.Resolve(services);
+        foreach (var name in new[] { "MDC_PACKAGED_BUILD", "MERIDIAN_CUSTOMER_BUILD" })
+        {
+            var value = configuration[name];
+            if (IsTruthy(value))
+                return (name, value!);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// The ADR-019 platform refusal, or <c>null</c> when the host is inside the supported envelope.
+    /// Callers gate on <see cref="IsProductionComposition"/> or
+    /// <see cref="IsPlatformGatedLocalComposition"/> first; an unflagged local-workstation or
+    /// unspecified posture is never platform-gated so development on Linux keeps composing.
+    /// </summary>
+    internal static string? CollectPlatformViolation(IServiceCollection services)
+    {
+        var platform = ResolveHostPlatform(services);
+        if (platform.IsWindows)
+        {
+            return null;
+        }
+
+        return
+            $"Production startup policy rejected the host platform for posture '{DescribeGatedPosture(services)}': " +
+            $"detected {platform.Description} ({platform.Architecture}), but ADR-019 " +
+            "(docs/adr/019-production-support-matrix-and-deployment-posture.md, support matrix) restricts the v1 " +
+            "supported envelope to Windows 11; this guard refuses every non-Windows host for production postures and " +
+            "for packaged or customer local-workstation builds (architecture and Windows version are reported, not " +
+            "refused). Linux container and systemd postures are experimental and must fail closed rather than " +
+            "degrade. Platform-bound production bindings that would otherwise silently degrade: " +
+            $"{string.Join("; ", PlatformBoundProductionBindings)}. Run the supported local-workstation posture on " +
+            "Windows, or scope the host out of the supported envelope per ADR-019.";
+    }
+
+    private static string DescribeGatedPosture(IServiceCollection services)
+    {
+        var declared = ResolveDeclaredPosture(services);
+        if (declared == MeridianDeploymentPosture.LocalWorkstation || IsLocalWorkstationEnvironment(CompositionConfiguration.Resolve(services)))
+        {
+            if (!IsProductionComposition(services) && ResolvePackagedBuildFlag(services) is { } flag)
+                return $"{nameof(MeridianDeploymentPosture.LocalWorkstation)} (packaged build {flag.Name}={flag.Value})";
+        }
+
+        if (declared != MeridianDeploymentPosture.Unspecified)
+        {
+            return declared.ToString();
+        }
+
+        // Name the variable whose value actually selected production, using the same predicates and
+        // precedence as IsProductionEnvironment, so ASPNETCORE_ENVIRONMENT=Development beside
+        // MERIDIAN_API_DEPLOYMENT_MODE=ProductionApi is reported as the latter.
+        var selected = ResolveProductionEnvironmentSelector(CompositionConfiguration.Resolve(services));
+        return selected is null
+            ? $"{nameof(MeridianDeploymentPosture.ProductionApi)} (environment)"
+            : $"{nameof(MeridianDeploymentPosture.ProductionApi)} (environment {selected.Value.Name}={selected.Value.Value})";
+    }
+
+    /// <summary>
+    /// The environment variable and value that make <see cref="IsProductionEnvironment"/> true, or
+    /// <c>null</c> when none does. Mirrors that method's lookup order exactly.
+    /// </summary>
+    internal static (string Name, string Value)? ResolveProductionEnvironmentSelector(CompositionConfiguration configuration)
+    {
+        foreach (var name in EnvironmentNameVariables)
+        {
+            var value = configuration[name];
+            if (value is null)
+                continue;
+            // IsProductionEnvironment coalesces these four: the first non-null value decides, and a
+            // non-production value there still leaves the mode variables able to select production.
+            if (string.Equals(value, "Production", StringComparison.OrdinalIgnoreCase))
+                return (name, value);
+            break;
+        }
+
+        return ResolveModeSelector(configuration);
+    }
+
+    private static (string Name, string Value)? ResolveModeSelector(CompositionConfiguration configuration)
+    {
+        var mode = configuration["MERIDIAN_MODE"];
+        if (string.Equals(mode, "Production", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(mode, "Live", StringComparison.OrdinalIgnoreCase))
+            return ("MERIDIAN_MODE", mode!);
+
+        var apiDeploymentMode = configuration["MERIDIAN_API_DEPLOYMENT_MODE"];
+        if (string.Equals(apiDeploymentMode, nameof(MeridianDeploymentPosture.ProductionApi), StringComparison.OrdinalIgnoreCase))
+            return ("MERIDIAN_API_DEPLOYMENT_MODE", apiDeploymentMode!);
+
+        return null;
+    }
+
+    private static readonly string[] EnvironmentNameVariables =
+    [
+        "ASPNETCORE_ENVIRONMENT",
+        "DOTNET_ENVIRONMENT",
+        "MERIDIAN_ENVIRONMENT",
+        "MERIDIAN_DEPLOYMENT_ENVIRONMENT"
+    ];
 
     internal static Type? GetRegisteredImplementationType(ServiceDescriptor descriptor)
         => descriptor.IsKeyedService

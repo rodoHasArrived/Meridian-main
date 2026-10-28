@@ -15,7 +15,7 @@ namespace Meridian.QuantScript.Api;
 public sealed class QuantDataContext(
     JsonlMarketDataStore store,
     ILogger<QuantDataContext> logger,
-    Meridian.Application.SecurityMaster.ISecurityMasterQueryService? securityMasterQuery = null) : IQuantDataContext
+    Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService? securityMasterQuery = null) : IQuantDataContext
 {
     public async Task<PriceSeries> PricesAsync(
         string symbol, DateOnly from, DateOnly to, CancellationToken ct = default)

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.ReferenceData.CorporateActions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.SecurityMaster.CorporateActions;
 using Meridian.Contracts.SecurityMaster;
@@ -779,7 +780,7 @@ public sealed class CorporateActionOperationsServiceTests
             scope,
             CorporateActionCaseStates.AccountingReview,
             Version: 6,
-            CorporateActionOperationsService.ClearwaterMethodologyProfileId,
+            CorporateActionOperationsService.DefaultMethodologyProfileId,
             AssignedTo: "accountant-a",
             BlockedReason: null,
             CreatedBy: "operations-user",
@@ -1495,4 +1496,13 @@ public sealed class CorporateActionOperationsServiceTests
         ISecurityMasterStore SecurityMasterStore,
         ICorporateActionRestatementTrigger RestatementTrigger,
         ICorporateActionScopeFanOutGate ScopeFanOut);
+
+    [Fact]
+    public void DefaultMethodologyProfileId_IsThePersistedKeyOfTheRegisteredRuleProfile()
+    {
+        // The default is persisted on retained cases and must stay equal to the vendor profile's key
+        // without the domain referencing the vendor type.
+        CorporateActionOperationsService.DefaultMethodologyProfileId
+            .Should().Be(ClearwaterCorporateActionRuleProfileV1.ProfileKey);
+    }
 }
