@@ -19,6 +19,7 @@ async function fixture(t, { dependencies = true } = {}) {
   t.after(() => rm(repoRoot, { recursive: true, force: true }));
   const dashboard = path.join(repoRoot, "src/Meridian.Ui/dashboard");
   await mkdir(dashboard, { recursive: true });
+  await writeFile(path.join(dashboard, "package.json"), JSON.stringify({}));
   await writeFile(path.join(dashboard, "package-lock.json"), JSON.stringify({
     packages: { "node_modules/vite": { engines: { node: "^20.19.0 || >=22.12.0" } } },
   }));
@@ -48,6 +49,19 @@ test("Node compatibility follows the locked Vite engine boundaries", () => {
     assert.equal(supportsNode(version, range), false, version);
   }
   assert.throws(() => supportsNode("24.0.0", ">=22"), /Unsupported/);
+});
+
+test("doctor enforces the dashboard runtime floor in addition to the Vite engine", async (t) => {
+  const repoRoot = await fixture(t);
+  await writeFile(path.join(repoRoot, "src/Meridian.Ui/dashboard/package.json"),
+    JSON.stringify({ engines: { node: "^24.15.0" } }));
+  for (const [nodeVersion, ok] of [["24.14.0", false], ["24.15.0", true], ["24.19.0", true]]) {
+    const report = await diagnoseWeb(fixtureMode, { repoRoot, nodeVersion, checkPort: available });
+    assert.equal(report.ok, ok, nodeVersion);
+    const node = report.checks.find(({ id }) => id === "node");
+    assert.equal(node.status, ok ? "pass" : "fail", nodeVersion);
+    assert.match(node.detail, /24\.15\.0/);
+  }
 });
 
 test("fixture diagnosis never probes .NET or the backend port", async (t) => {
