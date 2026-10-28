@@ -225,18 +225,49 @@ public sealed class ReportLedgerAmountProvenanceTests
         packet.ProofChain!.Status.Should().Be(EvidenceStatusDto.Ready);
         packet.LedgerAmount.Evidence.Select(item => item.EvidenceId).Should().BeEquivalentTo(new[]
         {
-            "opening-source", "current-source",
+            $"opening-source@{fixture.OpeningSubject}", $"current-source@{fixture.CurrentSubject}",
             $"journal-line:{fixture.OpeningSubject}", $"journal-line:{fixture.CurrentSubject}"
         });
-        var opening = packet.LedgerAmount.Evidence.Single(item => item.EvidenceId == "opening-source");
+        var opening = packet.LedgerAmount.Evidence.Single(item => item.EvidenceId == $"opening-source@{fixture.OpeningSubject}");
         opening.SourceSubjectId.Should().Be(fixture.OpeningSubject);
         opening.SourceScope.Should().Be(fixture.Scope with { PeriodId = fixture.Opening.PeriodId });
-        var current = packet.LedgerAmount.Evidence.Single(item => item.EvidenceId == "current-source");
+        var current = packet.LedgerAmount.Evidence.Single(item => item.EvidenceId == $"current-source@{fixture.CurrentSubject}");
         current.SourceSubjectId.Should().Be(fixture.CurrentSubject);
         current.SourceScope.Should().Be(fixture.Scope);
         opening.Route.Should().Contain(Uri.EscapeDataString(amount.SubjectId!))
             .And.Contain($"periodId={fixture.Scope.PeriodId:D}");
         fixture.LiveJournals.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task SharedDocumentAcrossContributingLines_KeepsEveryVerifiedArtifactDistinct()
+    {
+        using var fixture = new Fixture();
+        await fixture.CaptureAsync("shared-source");
+
+        var amount = fixture.Service.List(Fixture.RunId, fixture.Access).Single(binding => binding.Label == "Cash");
+        var packet = await fixture.Service.GetPacketAsync(amount.SubjectId!, fixture.Scope, fixture.Access);
+
+        packet!.LedgerAmount!.Status.Should().Be(EvidenceStatusDto.Ready,
+            "one document supporting two postings is two verified artifacts, not an ambiguous identity");
+        packet.Warnings.Should().BeEmpty();
+        var sources = packet.LedgerAmount.Evidence.Where(item => item.Kind != "ledger-record").ToArray();
+        sources.Select(item => item.EvidenceId).Should().BeEquivalentTo(new[]
+        {
+            $"shared-source@{fixture.OpeningSubject}", $"shared-source@{fixture.CurrentSubject}"
+        });
+        sources.Select(item => item.SourceSubjectId).Should().BeEquivalentTo(new[] { fixture.OpeningSubject, fixture.CurrentSubject });
+        sources.Select(item => item.ContentHash).Should().OnlyHaveUniqueItems("each posting retains its own vault artifact");
+        foreach (var source in sources)
+        {
+            var node = packet.Nodes.Should().ContainSingle(candidate => candidate.EvidenceId == source.EvidenceId).Subject;
+            node.Subject.SubjectId.Should().Be(source.SourceSubjectId);
+            node.ArtifactRefs.Should().ContainSingle(artifact => artifact.ArtifactId == source.EvidenceId)
+                .Which.Hash.Should().Be(source.ContentHash);
+            packet.Edges.Should().ContainSingle(edge => edge.FromId == source.EvidenceId)
+                .Which.ToId.Should().Be($"journal-line:{source.SourceSubjectId}");
+        }
+        packet.LedgerAmount.Evidence.Select(item => item.EvidenceId).Should().OnlyHaveUniqueItems();
     }
 
     [Theory]
@@ -439,7 +470,7 @@ public sealed class ReportLedgerAmountProvenanceTests
         amounts.Should().OnlyContain(item => item.ProofAvailable == true);
         var packet = await allowed.GetTestClient().GetFromJsonAsync<EvidencePacketDto>(fixture.PacketRoute, Json);
         packet!.LedgerAmount!.Status.Should().Be(EvidenceStatusDto.Ready);
-        var openingRoute = packet.LedgerAmount.Evidence.Single(item => item.EvidenceId == "opening-source").Route!;
+        var openingRoute = packet.LedgerAmount.Evidence.Single(item => item.EvidenceId == $"opening-source@{fixture.OpeningSubject}").Route!;
         (await allowed.GetTestClient().GetAsync(openingRoute)).StatusCode.Should().Be(HttpStatusCode.OK);
 
         await using var denied = await fixture.CreateAppAsync(UserPermission.ViewLedgerReports);
@@ -468,7 +499,7 @@ public sealed class ReportLedgerAmountProvenanceTests
         await using var app = await fixture.CreateAppAsync(UserPermission.ViewReporting | UserPermission.ViewLedgerReports);
         var client = app.GetTestClient();
         var packet = await client.GetFromJsonAsync<EvidencePacketDto>(fixture.PacketRoute, Json);
-        var route = packet!.LedgerAmount!.Evidence.Single(item => item.EvidenceId == "opening-source").Route!;
+        var route = packet!.LedgerAmount!.Evidence.Single(item => item.EvidenceId == $"opening-source@{fixture.OpeningSubject}").Route!;
         // Changing the other contributor invalidates this formerly verified complete amount.
         await File.WriteAllTextAsync(fixture.CurrentSourcePath!, "changed after drawer opened");
 
@@ -553,9 +584,11 @@ public sealed class ReportLedgerAmountProvenanceTests
 
         public async Task CaptureAsync(string? condition = null)
         {
-            var opening = await RetainAsync(OpeningSubject, "opening-source", Scope with { PeriodId = _openingPeriodId });
+            // "shared-source" retains one document identity against both contributing lines.
+            var sharedSource = condition == "shared-source";
+            var opening = await RetainAsync(OpeningSubject, sharedSource ? "shared-source" : "opening-source", Scope with { PeriodId = _openingPeriodId });
             var sourceScope = condition == "foreign-source-scope" ? Scope with { FundProfileId = "fund-beta" } : Scope;
-            var current = await RetainAsync(CurrentSubject, "current-source", sourceScope);
+            var current = await RetainAsync(CurrentSubject, sharedSource ? "shared-source" : "current-source", sourceScope);
             if (condition == "changed-digest")
                 current = current with { ContentHash = new string('a', 64) };
             if (condition == "missing-vault")

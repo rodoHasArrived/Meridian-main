@@ -92,26 +92,35 @@ public sealed class ReportLedgerAmountProvenanceService(
                 warnings.AddRange(proof?.Warnings ?? []);
                 continue;
             }
+            // One retained document may support several contributing lines, and each line's
+            // intake is its own vault artifact with its own digest. Report-level identities are
+            // therefore qualified by the posting they verify, so the packet keeps every verified
+            // artifact rather than collapsing or rejecting a reused source identity.
+            var ledgerRecordId = $"journal-line:{postedSubject}";
+            string Qualify(string id) => id == ledgerRecordId ? id : $"{id}@{postedSubject}";
             foreach (var item in verified.Evidence)
             {
                 var retained = item with
                 {
+                    EvidenceId = Qualify(item.EvidenceId),
                     SourceScope = lineScope,
                     SourceSubjectId = postedSubject,
                     Route = RebindSourceRoute(item.Route, subjectId, scope, item.ContentHash)
                 };
-                if (!evidence.TryAdd(item.EvidenceId, retained))
+                if (!evidence.TryAdd(retained.EvidenceId, retained))
                     warnings.Add("Contributing lines retain ambiguous supporting-evidence identities. Generated amount proof is blocked.");
             }
             foreach (var node in proof!.Nodes)
-                nodes.TryAdd(node.EvidenceId, node with
+                nodes.TryAdd(Qualify(node.EvidenceId), node with
                 {
+                    EvidenceId = Qualify(node.EvidenceId),
                     ArtifactRefs = node.ArtifactRefs.Select(artifact => artifact with
                     {
+                        ArtifactId = Qualify(artifact.ArtifactId),
                         Route = RebindSourceRoute(artifact.Route, subjectId, scope, artifact.Hash)
                     }).ToArray()
                 });
-            edges.AddRange(proof.Edges);
+            edges.AddRange(proof.Edges.Select(edge => edge with { FromId = Qualify(edge.FromId), ToId = Qualify(edge.ToId) }));
         }
         if (amount.LedgerEntryIds.Count == 0)
             warnings.Add("The generated amount has no retained contributing ledger lines.");
