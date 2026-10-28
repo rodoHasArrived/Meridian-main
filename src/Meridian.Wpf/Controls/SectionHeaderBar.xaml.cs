@@ -6,6 +6,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Controls;
 
+/// <summary>
+/// Displays a section title and subtitle with optional badge, action, and trailing content.
+/// </summary>
 public partial class SectionHeaderBar : UserControl
 {
     public static readonly DependencyProperty TitleProperty =

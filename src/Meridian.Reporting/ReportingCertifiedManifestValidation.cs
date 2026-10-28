@@ -33,6 +33,9 @@ public static class ReportingCertifiedManifestValidation
             return;
         }
 
+        if (manifest.AuthoritativeSource is { } retainedSource)
+            ReportingRetainedLedgerPopulationValidation.Validate(retainedSource, manifest.CertifiedDatasetRows);
+
         if (manifest.OperationalScope is not { } scope
             || manifest.ImmutableAccessScope is not { } access
             || manifest.CertifiedSnapshot is not { } snapshot

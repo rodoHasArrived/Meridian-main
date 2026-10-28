@@ -4,6 +4,9 @@ using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.Workstation.Controls;
 
+/// <summary>
+/// Displays workflow routing rows in a workstation matrix.
+/// </summary>
 public partial class RoutingMatrixControl : UserControl
 {
     public static readonly DependencyProperty MatrixProperty =

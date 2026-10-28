@@ -52,6 +52,9 @@ public sealed record AccountingCertificationEvidenceSource(
     IReadOnlyList<AccountingDimensionalCertificationLaneKindDto> DimensionalLanes,
     IReadOnlyList<AccountingTenantAdminCertificationLaneKindDto> TenantAdministrationLanes);
 
+/// <summary>
+/// Resolves authoritative retained evidence for accounting production certification.
+/// </summary>
 public interface IAccountingProductionCertificationEvidenceAuthority
 {
     Task<IReadOnlyList<AccountingCertificationEvidenceSource>> ResolveAsync(

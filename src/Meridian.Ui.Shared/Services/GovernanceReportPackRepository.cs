@@ -8,6 +8,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Retains report-pack snapshots, artifacts, history, and evidence bundles.
+/// </summary>
 public interface IGovernanceReportPackRepository
 {
     Task<FundReportPackSnapshotDto> SaveAsync(
@@ -36,6 +39,9 @@ public sealed record GovernanceReportPackArtifactContent(
     string FileName,
     byte[] Content);
 
+/// <summary>
+/// Persists governance report-pack snapshots, artifacts, and evidence bundles to disk.
+/// </summary>
 public sealed class FileGovernanceReportPackRepository : IGovernanceReportPackRepository
 {
     private readonly string _rootDirectory;

@@ -6,6 +6,9 @@ using WpfNotificationService = Meridian.Wpf.Services.NotificationService;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Hosts storage analysis, tier statistics, and optimization review.
+/// </summary>
 public partial class StorageOptimizationPage : Page
 {
     private readonly StorageOptimizationViewModel _viewModel;

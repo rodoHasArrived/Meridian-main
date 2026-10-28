@@ -5,6 +5,7 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.DataIntegration.Credentials;
 
+/// <summary>Validates provider setup input and derives credential and routing configuration for a supported provider.</summary>
 public interface IProviderSetupHandler
 {
     ProviderSetupDescriptor Descriptor { get; }
@@ -52,12 +53,14 @@ public sealed record ProviderSetupExecutionResult(
     bool CredentialOnly,
     IReadOnlyList<string> Warnings);
 
+/// <summary>Lists provider setup handlers and resolves a handler by provider identifier or alias.</summary>
 public interface IProviderSetupRegistry
 {
     IReadOnlyList<IProviderSetupHandler> Handlers { get; }
     IProviderSetupHandler? Find(string providerIdOrAlias);
 }
 
+/// <summary>Resolves the first registered setup handler that supports a provider identifier or alias.</summary>
 public sealed class ProviderSetupRegistry : IProviderSetupRegistry
 {
     private readonly IReadOnlyList<IProviderSetupHandler> _handlers;
@@ -73,6 +76,7 @@ public sealed class ProviderSetupRegistry : IProviderSetupRegistry
         => _handlers.FirstOrDefault(handler => handler.CanHandle(providerIdOrAlias));
 }
 
+/// <summary>Builds provider setup descriptors, credential maps, and connection modes from catalog metadata.</summary>
 public abstract class ProviderSetupHandlerBase : IProviderSetupHandler
 {
     private readonly ProviderCredentialCatalogEntry _catalogEntry;
@@ -170,6 +174,7 @@ public abstract class ProviderSetupHandlerBase : IProviderSetupHandler
             .Replace(" ", string.Empty, StringComparison.Ordinal);
 }
 
+/// <summary>Maps Alpaca credentials and enables bindings only after verification, with warnings for live configuration.</summary>
 public sealed class AlpacaProviderSetupHandler : ProviderSetupHandlerBase
 {
     public AlpacaProviderSetupHandler()
@@ -202,6 +207,7 @@ public sealed class AlpacaProviderSetupHandler : ProviderSetupHandlerBase
     }
 }
 
+/// <summary>Describes Polygon setup with verification support and initially disabled read-only bindings.</summary>
 public sealed class PolygonProviderSetupHandler : ProviderSetupHandlerBase
 {
     public PolygonProviderSetupHandler()
@@ -210,6 +216,7 @@ public sealed class PolygonProviderSetupHandler : ProviderSetupHandlerBase
     }
 }
 
+/// <summary>Describes credential-only Plaid setup with verification support and read-only routing defaults.</summary>
 public sealed class PlaidProviderSetupHandler : ProviderSetupHandlerBase
 {
     public PlaidProviderSetupHandler()
@@ -218,6 +225,7 @@ public sealed class PlaidProviderSetupHandler : ProviderSetupHandlerBase
     }
 }
 
+/// <summary>Describes credential-only QuickBooks setup with verification support and read-only routing defaults.</summary>
 public sealed class QuickBooksProviderSetupHandler : ProviderSetupHandlerBase
 {
     public QuickBooksProviderSetupHandler()
@@ -226,6 +234,7 @@ public sealed class QuickBooksProviderSetupHandler : ProviderSetupHandlerBase
     }
 }
 
+/// <summary>Provides catalog-backed setup for data providers with read-only routing and immediate bindings.</summary>
 public sealed class GenericReadOnlyDataProviderSetupHandler : ProviderSetupHandlerBase
 {
     public GenericReadOnlyDataProviderSetupHandler(string providerId, DataSourceKind? dataSourceKind = null, IReadOnlyList<string>? aliases = null)
@@ -234,6 +243,7 @@ public sealed class GenericReadOnlyDataProviderSetupHandler : ProviderSetupHandl
     }
 }
 
+/// <summary>Describes credential-only external general-ledger setup with verification and initially disabled bindings.</summary>
 public sealed class ExternalGlProviderSetupHandler : ProviderSetupHandlerBase
 {
     public ExternalGlProviderSetupHandler(string providerId)
@@ -242,6 +252,7 @@ public sealed class ExternalGlProviderSetupHandler : ProviderSetupHandlerBase
     }
 }
 
+/// <summary>Creates the built-in provider setup handler registrations and supported aliases.</summary>
 public static class DefaultProviderSetupHandlers
 {
     public static IReadOnlyList<IProviderSetupHandler> Create()

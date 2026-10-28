@@ -10,7 +10,7 @@
 
 import { apiGetJson, apiPostJson, type ApiRequestOptions } from "@/lib/api";
 import {
-  BANKING_API_ENDPOINTS,
+  bankingPendingPaymentsEndpoint,
   bankingPaymentApproveEndpoint,
   bankingPaymentRejectEndpoint,
   bankingTransactionsEndpoint
@@ -22,8 +22,8 @@ import type {
   RejectPaymentRequest
 } from "@/types/banking-payments.types";
 
-export function getPendingPayments(options: ApiRequestOptions = {}): Promise<PendingPayment[]> {
-  return apiGetJson<PendingPayment[]>(BANKING_API_ENDPOINTS.pendingPayments, options);
+export function getPendingPayments(entityId: string, options: ApiRequestOptions = {}): Promise<PendingPayment[]> {
+  return apiGetJson<PendingPayment[]>(bankingPendingPaymentsEndpoint(entityId), options);
 }
 
 export function getBankTransactions(entityId?: string, options: ApiRequestOptions = {}): Promise<BankTransaction[]> {
@@ -32,16 +32,18 @@ export function getBankTransactions(entityId?: string, options: ApiRequestOption
 
 export function approvePendingPayment(
   pendingPaymentId: string,
+  entityId: string,
   request: ApprovePaymentRequest,
   options: ApiRequestOptions = {}
 ): Promise<PendingPayment> {
-  return apiPostJson<PendingPayment>(bankingPaymentApproveEndpoint(pendingPaymentId), request, options);
+  return apiPostJson<PendingPayment>(bankingPaymentApproveEndpoint(pendingPaymentId, entityId), request, options);
 }
 
 export function rejectPendingPayment(
   pendingPaymentId: string,
+  entityId: string,
   request: RejectPaymentRequest,
   options: ApiRequestOptions = {}
 ): Promise<PendingPayment> {
-  return apiPostJson<PendingPayment>(bankingPaymentRejectEndpoint(pendingPaymentId), request, options);
+  return apiPostJson<PendingPayment>(bankingPaymentRejectEndpoint(pendingPaymentId, entityId), request, options);
 }

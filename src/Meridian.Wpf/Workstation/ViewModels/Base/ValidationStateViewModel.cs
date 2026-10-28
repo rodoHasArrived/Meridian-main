@@ -1,5 +1,8 @@
 namespace Meridian.Wpf.Workstation.ViewModels.Base;
 
+/// <summary>
+/// Exposes observable validation success and an explanatory message.
+/// </summary>
 public sealed class ValidationStateViewModel : Meridian.Wpf.ViewModels.BindableBase
 {
     private bool _isValid = true;

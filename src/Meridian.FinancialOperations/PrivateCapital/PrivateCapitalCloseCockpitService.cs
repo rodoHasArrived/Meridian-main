@@ -7,6 +7,9 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.PrivateCapital;
 
+/// <summary>
+/// Assembles private-capital close readiness, approvals, and evidence for the close cockpit.
+/// </summary>
 public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCockpitService
 {
     private const decimal ShadowNavTieOutTolerance = 0.01m;

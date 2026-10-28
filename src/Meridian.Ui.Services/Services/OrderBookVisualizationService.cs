@@ -2,6 +2,9 @@ using System.Collections.Concurrent;
 
 namespace Meridian.Ui.Services;
 
+/// <summary>
+/// Provides cancellable subscription changes for the live order-book visualization.
+/// </summary>
 public interface IOrderBookLiveDataSubscriptionClient
 {
     Task SubscribeAsync(SubscribeRequest request, CancellationToken ct = default);

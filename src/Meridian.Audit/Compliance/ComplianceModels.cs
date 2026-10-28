@@ -110,6 +110,9 @@ public sealed record AccessReviewRecord(
     string Reason,
     string? FailureCode = null);
 
+/// <summary>
+/// Computes the SHA-256 digest binding an audit event to its content and predecessor hash.
+/// </summary>
 public static class AuditHash
 {
     public static string Compute(AuditEvent evt)

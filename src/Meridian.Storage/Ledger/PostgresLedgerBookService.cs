@@ -9,6 +9,9 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Storage.Ledger;
 
+/// <summary>
+/// Manages ledger books and accounting period transitions through the journal store.
+/// </summary>
 public sealed class PostgresLedgerBookService : ILedgerBookService
 {
     private const string OpenStatus = "Open";

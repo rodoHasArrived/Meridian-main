@@ -4,6 +4,9 @@ using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Shell.Root;
 
+/// <summary>
+/// Applies desktop launch actions and determines whether those actions require the shell.
+/// </summary>
 public sealed class DesktopLaunchRouter
 {
     internal DesktopLaunchRequest Parse(string[] args) => DesktopLaunchArguments.Parse(args);

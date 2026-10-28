@@ -3,6 +3,7 @@ using Meridian.FSharp.Ledger;
 
 namespace Meridian.Strategies.Services;
 
+/// <summary>Builds portfolio, ledger, cash, and statement checks from normalized reconciliation inputs.</summary>
 public sealed class ReconciliationProjectionService
 {
     public IReadOnlyList<PortfolioLedgerCheckDto> BuildChecks(ReconciliationNormalizedInputs inputs)

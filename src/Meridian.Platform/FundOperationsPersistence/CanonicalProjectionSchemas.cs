@@ -6,6 +6,7 @@ public sealed record DirectLendingProjectionSchema(Guid LoanId, string FacilityC
 public sealed record BankingProjectionSchema(Guid EntityId, Guid BankTransactionId, string TransactionType, decimal Amount, string Currency, DateOnly EffectiveDate);
 public sealed record MoneyMarketProjectionSchema(Guid SecurityId, string DisplayName, string Currency, string? FundFamily, bool IsSweepEligible, int? WeightedAverageMaturityDays);
 
+/// <summary>Supplies an empty discrepancy result for a domain without a configured reconciliation implementation.</summary>
 public sealed class NoOpDomainProjectionReconciliationJob(FundOperationsDomain domain) : IDomainProjectionReconciliationJob
 {
     public FundOperationsDomain Domain { get; } = domain;

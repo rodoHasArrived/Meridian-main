@@ -4,6 +4,9 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.Infrastructure.Etl;
 
+/// <summary>
+/// Discovers and stages local ETL input files and applies configured source post-processing.
+/// </summary>
 public sealed class LocalFileSourceReader : IEtlSourceReader
 {
     private readonly IEtlStagingStore _stagingStore;

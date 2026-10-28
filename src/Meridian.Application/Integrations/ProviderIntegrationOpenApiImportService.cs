@@ -7,6 +7,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
+/// <summary>
+/// Imports OpenAPI descriptions into provider integration setup manifests.
+/// </summary>
 public sealed class ProviderIntegrationOpenApiImportService
 {
     private static readonly ProviderCapabilityKindDto[] SupportedCapabilities =

@@ -5,6 +5,9 @@ using Meridian.Ui.Services;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Defines canonical-to-provider symbol mapping lookup, editing, testing, and CSV import and export.
+/// </summary>
 public interface ISymbolMappingClient
 {
     IReadOnlyList<MappingProviderInfo> Providers { get; }
@@ -26,6 +29,9 @@ public interface ISymbolMappingClient
     string ExportToCsv();
 }
 
+/// <summary>
+/// Adapts the symbol-mapping service for desktop editing, provider lookup, testing, and CSV exchange.
+/// </summary>
 public sealed class SymbolMappingServiceClient : ISymbolMappingClient
 {
     private readonly SymbolMappingService _service;
@@ -62,6 +68,9 @@ public sealed class SymbolMappingServiceClient : ISymbolMappingClient
     public string ExportToCsv() => _service.ExportToCsv();
 }
 
+/// <summary>
+/// Coordinates provider symbol mapping edits, tests, removals, and CSV exchange.
+/// </summary>
 public sealed class SymbolMappingViewModel : BindableBase
 {
     private readonly ISymbolMappingClient _mappingClient;

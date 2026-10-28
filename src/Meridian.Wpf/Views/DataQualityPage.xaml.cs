@@ -12,6 +12,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Hosts symbol-quality monitoring and issue drilldowns.
+/// </summary>
 public partial class DataQualityPage : Page
 {
     private readonly DataQualityViewModel _viewModel;

@@ -3,6 +3,9 @@ using System.Text;
 
 namespace Meridian.FinancialOperations.LedgerTextJournal;
 
+/// <summary>
+/// Renders a structured ledger text journal as the requested report.
+/// </summary>
 public static class LedgerTextReportRenderer
 {
     public static string Render(LedgerTextJournalDocument document, LedgerTextReportOptions options)

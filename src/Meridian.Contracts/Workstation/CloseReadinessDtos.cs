@@ -16,6 +16,9 @@ public sealed record CloseReadinessSubjectDto(
     string EvidenceVersion,
     IReadOnlyList<string> RecordIds);
 
+/// <summary>
+/// Resolves the subject information needed to evaluate readiness for a scoped accounting close.
+/// </summary>
 public interface ICloseReadinessSubjectSource
 {
     Task<CloseReadinessSubjectDto?> GetSubjectAsync(CloseReadinessScopeDto scope, CancellationToken ct = default);

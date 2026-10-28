@@ -20,6 +20,9 @@ public sealed record CanonicalReconciliationFeedRecord(
     string ExternalReference,
     DateTimeOffset CapturedAtUtc);
 
+/// <summary>
+/// Reads source feed data into canonical reconciliation records.
+/// </summary>
 public interface IReconciliationFeedAdapter
 {
     string SourceSystem { get; }

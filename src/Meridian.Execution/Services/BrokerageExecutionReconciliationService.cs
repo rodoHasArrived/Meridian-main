@@ -36,7 +36,19 @@ public sealed class BrokerageExecutionReconciliationService
         var recoveryGateway = gateway as IBrokerageOrderRecoveryGateway;
         if (recoveryGateway is null && gateway is not IBrokerageOrderAmendmentRecoveryGateway)
             return;
+        // The scope is bound once, but each lookup captures whichever session is current. Evidence
+        // read after the connection or its verified scope changed belongs to another session and
+        // must never reach the retained store under the bound scope. The session is captured before
+        // the binding and must be unchanged after it, or the captured generation could describe a
+        // login whose scope was never bound.
+        var connection = gateway as IBrokerageConnectionState;
+        var boundGeneration = connection?.ConnectionGeneration;
+        var boundScope = connection?.ScopeIdentity;
         orderManager.EnsureBrokerageRecoveryScope(gateway);
+        if (connection is not null && (connection.ConnectionGeneration != boundGeneration
+            || !string.Equals(connection.ScopeIdentity, boundScope, StringComparison.Ordinal)))
+            throw new InvalidOperationException(
+                "The brokerage connection or its verified scope changed while the recovery scope was bound; no lookup was made.");
         // Accepted or terminal acknowledgements can precede a late fill lost during an outage.
         // Re-query every retained order with possible remaining execution on explicit sync;
         // cancellation and expiry do not prove that no earlier execution arrived late.
@@ -55,9 +67,17 @@ public sealed class BrokerageExecutionReconciliationService
             var pendingAmendment = orderManager.GetPendingAmendmentForRecovery(order.OrderId);
             if (pendingAmendment is null && recoveryGateway is null)
                 continue;
-            var report = pendingAmendment is not null && gateway is IBrokerageOrderAmendmentRecoveryGateway amendmentRecovery
-                ? await amendmentRecovery.GetAmendmentForRecoveryAsync(order.OrderId, order, pendingAmendment, ct).ConfigureAwait(false)
-                : recoveryGateway is null ? null : await recoveryGateway.GetOrderForRecoveryAsync(order.OrderId, ct).ConfigureAwait(false);
+            // A gateway that matches by client reference takes the bound generation with the lookup,
+            // so a session change refuses the lookup before it installs anything; the check after
+            // the lookup remains for gateways that match by broker identity.
+            var report = connection is not null && gateway is IBrokerageRetainedOrderRecoveryGateway scopedRecovery
+                ? pendingAmendment is not null
+                    ? await scopedRecovery.GetAmendmentForRecoveryAsync(order.OrderId, order, pendingAmendment, boundGeneration!.Value, ct).ConfigureAwait(false)
+                    : await scopedRecovery.GetOrderForRecoveryAsync(order.OrderId, order, boundGeneration!.Value, ct).ConfigureAwait(false)
+                : pendingAmendment is not null && gateway is IBrokerageOrderAmendmentRecoveryGateway amendmentRecovery
+                    ? await amendmentRecovery.GetAmendmentForRecoveryAsync(order.OrderId, order, pendingAmendment, ct).ConfigureAwait(false)
+                    : recoveryGateway is null ? null
+                    : await recoveryGateway.GetOrderForRecoveryAsync(order.OrderId, ct).ConfigureAwait(false);
             if (report is null)
             {
                 // A terminal local order is absent from both open books, so a missing lookup
@@ -67,6 +87,11 @@ public sealed class BrokerageExecutionReconciliationService
                     throw new InvalidDataException("Broker could not verify a retained terminal order; late-fill recovery remains unresolved.");
                 continue;
             }
+
+            if (connection is not null && (connection.ConnectionGeneration != boundGeneration
+                || !string.Equals(connection.ScopeIdentity, boundScope, StringComparison.Ordinal)))
+                throw new InvalidOperationException(
+                    "The brokerage connection or its verified scope changed during order recovery; evidence from the new session was discarded.");
 
             // The report pump may have advanced the order while the broker query was in flight.
             // Compare against the current retained state before passing evidence to the OMS.

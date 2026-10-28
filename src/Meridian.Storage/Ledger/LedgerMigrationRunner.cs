@@ -2,6 +2,9 @@ using Meridian.Storage.Migrations;
 
 namespace Meridian.Storage.Ledger;
 
+/// <summary>
+/// Applies the PostgreSQL migrations used by the ledger journal store.
+/// </summary>
 public sealed class LedgerMigrationRunner
 {
     private readonly PostgresMigrationRunner _runner;

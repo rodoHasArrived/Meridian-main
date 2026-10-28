@@ -5,6 +5,9 @@ using Meridian.Ui.Shared.Contracts.Reconciliation;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Runs reconciliation through the Operations Continuity workflow and returns its transition result.
+/// </summary>
 public interface IOperationsContinuityReconciliationBridge
 {
     Task<OperationsTransitionResultDto> RunReconciliationAsync(
@@ -19,6 +22,9 @@ public interface IOperationsContinuityReconciliationBridge
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Connects reconciliation execution and retained break evidence to Operations Continuity transitions.
+/// </summary>
 public sealed class OperationsContinuityReconciliationBridge : IOperationsContinuityReconciliationBridge
 {
     private readonly IOperationsContinuityWorkflowService _workflowService;

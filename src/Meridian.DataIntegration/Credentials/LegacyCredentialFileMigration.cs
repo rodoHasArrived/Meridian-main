@@ -46,6 +46,39 @@ public static class LegacyCredentialFileMigration
         await AtomicFileWriter.SyncDirectoryAsync(directory, CancellationToken.None).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Restricts retained legacy credential and interrupted-migration snapshots without claiming
+    /// their unassigned contents. Permission failures propagate to the scoped startup boundary.
+    /// </summary>
+    public static void RestrictAccess(string sourcePath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath);
+        if (OperatingSystem.IsWindows())
+            return;
+        sourcePath = Path.GetFullPath(sourcePath);
+        foreach (var path in new[] { sourcePath, sourcePath + ".migrated" })
+        {
+            try
+            {
+                RestrictOwnerOnly(path, File.GetUnixFileMode, File.SetUnixFileMode);
+            }
+            catch (FileNotFoundException) { }
+            catch (DirectoryNotFoundException) { }
+        }
+    }
+
+    internal static void RestrictOwnerOnly(string path,
+        Func<string, UnixFileMode> readMode, Action<string, UnixFileMode> writeMode)
+    {
+        var exposed = readMode(path) & ~OwnerOnlyFileMode;
+        if (exposed == UnixFileMode.None)
+            return;
+        writeMode(path, OwnerOnlyFileMode);
+        if ((readMode(path) & ~OwnerOnlyFileMode) != UnixFileMode.None)
+            throw new UnauthorizedAccessException("Legacy credential permissions remain reachable beyond their owner.");
+        Log.Warning("Legacy credentials at {CredentialPath} were reachable beyond their owner ({ExposedMode}); tightened to owner-only. Treat the credentials as disclosed and rotate them.", path, exposed);
+    }
+
     private static async Task<FileStream> AcquireLockAsync(string path, CancellationToken ct)
     {
         var started = System.Diagnostics.Stopwatch.StartNew();

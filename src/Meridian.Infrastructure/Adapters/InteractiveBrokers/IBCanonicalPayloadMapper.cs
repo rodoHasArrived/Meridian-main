@@ -72,6 +72,12 @@ internal static class IBCanonicalPayloadMapper
     public static Meridian.Execution.Sdk.OrderSide ParseSide(string? action, IReadOnlyDictionary<string, string>? metadata = null)
         => TryMap(SideMap, action, "side", Meridian.Execution.Sdk.OrderSide.Buy, metadata);
 
+    internal static bool TryParseKnownSide(string? action, out ExecutionOrderSide side)
+        => TryGetKnown(SideMap, action, out side);
+
+    internal static bool TryParseKnownOrderType(string? orderType, out OrderType type)
+        => TryGetKnown(OrderTypeMap, orderType, out type);
+
     public static OrderType ParseOrderType(string? orderType, IReadOnlyDictionary<string, string>? metadata = null)
         => TryMap(OrderTypeMap, orderType, "order_type", OrderType.Market, metadata);
 

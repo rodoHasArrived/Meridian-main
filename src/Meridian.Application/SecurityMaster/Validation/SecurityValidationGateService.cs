@@ -3,6 +3,9 @@ using Meridian.Contracts.Services;
 
 namespace Meridian.Application.SecurityMaster.Validation;
 
+/// <summary>
+/// Evaluates symbol and security validation gates against Security Master evidence.
+/// </summary>
 public sealed class SecurityValidationGateService : ISecurityValidationGateService
 {
     private readonly ISecurityMasterQueryService _securityMaster;
@@ -185,6 +188,9 @@ public sealed class SecurityValidationGateService : ISecurityValidationGateServi
     }
 }
 
+/// <summary>
+/// Returns blocking gate results when Security Master validation is unavailable.
+/// </summary>
 public sealed class NullSecurityValidationGateService : ISecurityValidationGateService
 {
     public Task<SecurityValidationGateResultDto> ValidateSymbolAsync(

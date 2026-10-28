@@ -5,6 +5,9 @@ using Meridian.Storage.Ledger;
 
 namespace Meridian.Application.DirectLending;
 
+/// <summary>
+/// Projects daily loan accruals and their reversals into ledger journal writes.
+/// </summary>
 public sealed class AccrualLedgerService : IAccrualLedgerService
 {
     private readonly LoanAccountingProjector _projector;

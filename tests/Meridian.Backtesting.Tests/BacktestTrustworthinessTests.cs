@@ -1,6 +1,7 @@
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Backtesting.Engine;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
 using Meridian.Storage;
@@ -256,6 +257,30 @@ public sealed class BacktestTrustworthinessTests : IDisposable
     }
 
     [Fact]
+    public async Task SeparateSecurityContracts_ResolveUniverseAndTradingParametersAtReplayCutoff()
+    {
+        var from = new DateOnly(2024, 1, 2);
+        var to = new DateOnly(2024, 1, 3);
+        var cutoff = new DateTimeOffset(2024, 1, 3, 0, 0, 0, TimeSpan.Zero);
+        var securityId = Guid.NewGuid();
+        WriteBars("SPY", from, to, basePrice: 470m);
+        var identity = new DatedIdentityQuery(securityId, cutoff);
+        var trading = new RecordingTradingParametersQuery();
+        var catalog = new StorageCatalogService(_dataRoot, new StorageOptions());
+        var engine = new BacktestEngine(
+            NullLogger<BacktestEngine>.Instance, catalog, trading, securityIdentityQueryService: identity);
+        var request = new BacktestRequest(
+            From: from, To: to, Symbols: ["SPY"], DataRoot: _dataRoot, FailOnUnknownSymbols: true);
+
+        var result = await engine.RunAsync(request, new NoTradeStrategy());
+
+        identity.AsOfRequests.Should().Equal(new DateTimeOffset?[] { cutoff, cutoff },
+            "universe validation and tick-size identity lookup must both use the replay cutoff");
+        trading.Requests.Should().ContainSingle().Which.Should().Be((securityId, cutoff));
+        result.BiasDisclosure!.SymbolsMissingFromSecurityMaster.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task EmptyUniverse_ResultStillCarriesDisclosure()
     {
         var request = new BacktestRequest(
@@ -272,6 +297,38 @@ public sealed class BacktestTrustworthinessTests : IDisposable
     // ────────────────────────────────────────────────────────────────────────
     // Fixture helpers
     // ────────────────────────────────────────────────────────────────────────
+
+    private sealed class DatedIdentityQuery(Guid securityId, DateTimeOffset cutoff) : ISecurityIdentityQueryService
+    {
+        public List<DateTimeOffset?> AsOfRequests { get; } = [];
+
+        public Task<SecurityDetailDto?> GetByIdentifierAsync(
+            SecurityIdentifierKind identifierKind, string identifierValue, string? provider,
+            CancellationToken ct = default, DateTimeOffset? asOfUtc = null)
+        {
+            AsOfRequests.Add(asOfUtc);
+            SecurityDetailDto? detail = asOfUtc == cutoff
+                ? new SecurityDetailDto(
+                    securityId, "Equity", SecurityStatusDto.Active, identifierValue, "USD",
+                    JsonSerializer.SerializeToElement(new { }), JsonSerializer.SerializeToElement(new { }),
+                    [], [], 1L, cutoff.AddYears(-1), null)
+                : null;
+            return Task.FromResult(detail);
+        }
+    }
+
+    private sealed class RecordingTradingParametersQuery : ISecurityTradingParametersQueryService
+    {
+        public List<(Guid SecurityId, DateTimeOffset AsOf)> Requests { get; } = [];
+
+        public Task<TradingParametersDto?> GetTradingParametersAsync(
+            Guid securityId, DateTimeOffset asOf, CancellationToken ct = default)
+        {
+            Requests.Add((securityId, asOf));
+            return Task.FromResult<TradingParametersDto?>(new TradingParametersDto(
+                securityId, null, 0.05m, null, null, null, null, asOf));
+        }
+    }
 
     private void WriteBars(string symbol, DateOnly from, DateOnly to, decimal basePrice)
     {

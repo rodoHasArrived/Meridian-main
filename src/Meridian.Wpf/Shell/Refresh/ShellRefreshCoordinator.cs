@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 namespace Meridian.Wpf.Shell.Refresh;
 
+/// <summary>
+/// Coordinates asynchronous shell refresh requests and disposes refresh resources.
+/// </summary>
 public sealed class ShellRefreshCoordinator : IDisposable
 {
     private readonly object _gate = new();

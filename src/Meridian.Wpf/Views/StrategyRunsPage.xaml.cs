@@ -5,6 +5,9 @@ using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Provides the desktop page to review active and completed runs, then compare outcomes.
+/// </summary>
 public partial class StrategyRunsPage : Page
 {
     private readonly StrategyRunBrowserViewModel _viewModel;

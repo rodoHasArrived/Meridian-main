@@ -6,6 +6,9 @@ using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Provides the desktop page to review evidence packets, proof chains, lineage, and retained vault documents.
+/// </summary>
 public partial class EvidenceWorkbenchPage : Page
 {
     private readonly EvidenceWorkbenchViewModel _viewModel;

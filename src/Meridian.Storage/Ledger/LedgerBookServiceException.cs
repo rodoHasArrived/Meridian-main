@@ -1,5 +1,8 @@
 namespace Meridian.Storage.Ledger;
 
+/// <summary>
+/// Represents a failure in ledger book or accounting period operations.
+/// </summary>
 public class LedgerBookServiceException : Exception
 {
     public LedgerBookServiceException(string message)
@@ -13,6 +16,9 @@ public class LedgerBookServiceException : Exception
     }
 }
 
+/// <summary>
+/// Signals invalid input or accounting facts in a ledger book operation.
+/// </summary>
 public sealed class LedgerBookValidationException : LedgerBookServiceException
 {
     public LedgerBookValidationException(string message)
@@ -26,6 +32,9 @@ public sealed class LedgerBookValidationException : LedgerBookServiceException
     }
 }
 
+/// <summary>
+/// Signals that a requested ledger book or accounting period could not be found.
+/// </summary>
 public sealed class LedgerBookNotFoundException : LedgerBookServiceException
 {
     public LedgerBookNotFoundException(string message)
@@ -34,6 +43,9 @@ public sealed class LedgerBookNotFoundException : LedgerBookServiceException
     }
 }
 
+/// <summary>
+/// Signals an invalid transition between accounting period states.
+/// </summary>
 public sealed class LedgerPeriodTransitionException : LedgerBookServiceException
 {
     public LedgerPeriodTransitionException(string message)

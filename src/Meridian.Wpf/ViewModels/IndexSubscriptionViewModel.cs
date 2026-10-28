@@ -163,6 +163,9 @@ public sealed class IndexSubscriptionViewModel : BindableBase
     }
 }
 
+/// <summary>
+/// Presents a sector ETF's symbol, name, and holdings summary.
+/// </summary>
 public sealed class SectorETFItem
 {
     public string Symbol { get; set; } = string.Empty;

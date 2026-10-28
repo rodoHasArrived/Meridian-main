@@ -1,5 +1,8 @@
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Queries money market fund reference projections by security, fund family, and sweep eligibility.
+/// </summary>
 public interface IMoneyMarketFundReferenceProjectionStore
 {
     Task<MoneyMarketFundProjectionRow?> GetMoneyMarketFundAsync(Guid securityId, CancellationToken ct = default);

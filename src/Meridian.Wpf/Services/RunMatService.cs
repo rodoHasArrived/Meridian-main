@@ -19,6 +19,9 @@ public enum RunMatOutputKind : byte
 
 public sealed record RunMatOutputLine(DateTime TimestampUtc, RunMatOutputKind Kind, string Text);
 
+/// <summary>
+/// Identifies a saved RunMat script by name, path, and last modification time.
+/// </summary>
 public sealed class RunMatScriptDocument
 {
     public string Name { get; init; } = string.Empty;
@@ -26,6 +29,9 @@ public sealed class RunMatScriptDocument
     public DateTime LastWriteTimeUtc { get; init; }
 }
 
+/// <summary>
+/// Stores the RunMat executable, working directory, additional arguments, and last script path.
+/// </summary>
 public sealed class RunMatSettings
 {
     public string? ExecutablePath { get; set; }
@@ -34,6 +40,9 @@ public sealed class RunMatSettings
     public string AdditionalArguments { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Specifies script content and paths, process arguments, and persistence options for a RunMat execution.
+/// </summary>
 public sealed class RunMatExecutionRequest
 {
     public string ScriptName { get; init; } = "scratch.m";
@@ -45,6 +54,9 @@ public sealed class RunMatExecutionRequest
     public bool PersistScript { get; init; } = true;
 }
 
+/// <summary>
+/// Reports RunMat completion, cancellation, exit code, paths, duration, and captured output.
+/// </summary>
 public sealed class RunMatExecutionResult
 {
     public bool Success { get; init; }
@@ -67,6 +79,9 @@ public sealed class RunMatExecutionResult
     };
 }
 
+/// <summary>
+/// Reports RunMat installation discovery, resolved paths, and an operator-facing status message.
+/// </summary>
 public sealed class RunMatStatus
 {
     public bool IsInstalled { get; init; }

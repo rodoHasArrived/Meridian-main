@@ -37,6 +37,10 @@ public interface IAssetAccountingEventSpineService
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Assembles accounting-event lineage across source events, projections, candidates, approvals, and
+/// postings.
+/// </summary>
 public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpineService
 {
     private static readonly JsonSerializerOptions CanonicalJsonOptions = new(JsonSerializerDefaults.Web);

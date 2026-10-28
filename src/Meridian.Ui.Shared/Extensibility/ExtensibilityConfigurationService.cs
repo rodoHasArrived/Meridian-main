@@ -7,6 +7,9 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Extensibility;
 
+/// <summary>
+/// Loads and saves extension configuration snapshots.
+/// </summary>
 public interface IExtensibilityConfigurationStore
 {
     Task<IReadOnlyList<TenantTemplateConfigurationBundleDto>> ListTenantTemplatesAsync(string tenantId, CancellationToken ct = default);
@@ -20,6 +23,9 @@ public interface IExtensibilityConfigurationStore
     Task RecordActivationResultAsync(string tenantId, TenantTemplateActivationResultDto result, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Keeps extension configuration snapshots in process memory.
+/// </summary>
 public sealed class InMemoryExtensibilityConfigurationStore :
     IExtensibilityConfigurationStore,
     Meridian.Application.Composition.INonProductionOnlyService
@@ -127,6 +133,9 @@ public sealed class InMemoryExtensibilityConfigurationStore :
             : value.Trim();
 }
 
+/// <summary>
+/// Persists extension configuration snapshots in file-backed storage.
+/// </summary>
 public sealed class FileExtensibilityConfigurationStore : IExtensibilityConfigurationStore
 {
     private const int SnapshotVersion = 1;
@@ -327,6 +336,9 @@ internal sealed record ExtensibilityConfigurationSnapshot(
 [JsonSerializable(typeof(ExtensibilityConfigurationSnapshot))]
 internal sealed partial class ExtensibilityConfigurationJsonContext : JsonSerializerContext;
 
+/// <summary>
+/// Applies extension configuration changes against the available extension catalog.
+/// </summary>
 public sealed class ExtensibilityConfigurationService
 {
     private const string DefaultActivationReason = "Tenant template activation requested.";

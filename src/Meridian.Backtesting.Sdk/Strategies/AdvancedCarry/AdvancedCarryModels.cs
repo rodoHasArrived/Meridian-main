@@ -154,6 +154,9 @@ public sealed record AdvancedCarryInput(
     IReadOnlyList<AssetCorrelation>? Correlations = null,
     DateTimeOffset? AsOf = null);
 
+/// <summary>
+/// Adjusts an asset forecast using the current carry-strategy input before portfolio optimization.
+/// </summary>
 public interface ICarryForecastOverlay
 {
     CarryAssetSnapshot Apply(CarryAssetSnapshot asset, AdvancedCarryInput input);

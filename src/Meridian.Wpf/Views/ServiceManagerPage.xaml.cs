@@ -5,6 +5,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Hosts backend service status and lifecycle controls.
+/// </summary>
 public partial class ServiceManagerPage : Page
 {
     private readonly ServiceManagerViewModel _viewModel;

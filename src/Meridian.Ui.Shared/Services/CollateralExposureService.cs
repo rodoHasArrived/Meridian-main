@@ -58,6 +58,9 @@ public sealed record CollateralInputRow(
     decimal VariationMargin,
     string? ChunkId = null);
 
+/// <summary>
+/// Builds collateral exposure snapshots and evaluates counterparty thresholds using configured haircuts.
+/// </summary>
 public sealed class CollateralExposureService
 {
     private readonly ConcurrentDictionary<string, CounterpartyThresholdPolicy> _policies = new(StringComparer.OrdinalIgnoreCase);
@@ -287,6 +290,9 @@ public enum CollateralIngestOutcome
     ObservationExceedsWindow
 }
 
+/// <summary>
+/// Buffers bounded collateral input batches separately for each tenant and company scope.
+/// </summary>
 public sealed class CollateralIngestionBuffer
 {
     /// <summary>

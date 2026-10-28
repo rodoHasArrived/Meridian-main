@@ -6,6 +6,9 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.Application.DirectLending;
 
+/// <summary>
+/// Previews and imports servicer statement batches and applies selected rows to loan servicing.
+/// </summary>
 public sealed class DirectLendingServicerStatementService : IDirectLendingServicerStatementService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);

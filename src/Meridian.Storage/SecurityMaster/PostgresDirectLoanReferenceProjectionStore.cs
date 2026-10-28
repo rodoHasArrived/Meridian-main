@@ -3,6 +3,9 @@ using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Reads direct loan reference projections from PostgreSQL by security and borrower.
+/// </summary>
 public sealed class PostgresDirectLoanReferenceProjectionStore : IDirectLoanReferenceProjectionStore
 {
     internal const string AssetClass = "DirectLoan";

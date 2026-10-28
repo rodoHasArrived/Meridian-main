@@ -4,6 +4,9 @@ using Meridian.Infrastructure.Etl.Sftp;
 
 namespace Meridian.Infrastructure.Etl;
 
+/// <summary>
+/// Discovers and stages remote SFTP input files and applies configured source post-processing.
+/// </summary>
 public sealed class SftpFileSourceReader : IEtlSourceReader
 {
     private readonly IEtlStagingStore _stagingStore;

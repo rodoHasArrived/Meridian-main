@@ -6,6 +6,9 @@ using Microsoft.Extensions.Hosting;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Presents runtime and authentication readiness and coordinates startup login and continuation.
+/// </summary>
 public sealed class StartupWindowViewModel : BindableBase
 {
     private static readonly Brush InfoBrush = CreateBrush(0x2F, 0x6F, 0x8F);

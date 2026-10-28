@@ -1,5 +1,8 @@
 namespace Meridian.Contracts.SecurityMaster;
 
+/// <summary>
+/// Configures Security Master persistence, snapshots, and projection replay batches.
+/// </summary>
 public sealed class SecurityMasterOptions
 {
     public string ConnectionString { get; set; } = string.Empty;

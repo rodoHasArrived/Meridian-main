@@ -63,7 +63,33 @@ The package-local `npm --prefix src/Meridian.Ui/dashboard run dev` remains a sta
 command with its legacy automatic fallback when no mode is configured. Use the root launcher
 commands above when you need an explicit fixture-only or backend-connected session.
 
+For named API states, use the [shared browser scenario guide](../development/browser-scenarios.md).
+The accounting preview URL selector, Vitest helper, and Playwright capture consume the same typed
+scenario modules, including explicit empty, delayed, forbidden, and failed responses.
+
 ## Common setup failures
+
+Run a quick, read-only launcher diagnosis before starting services:
+
+```sh
+npm run dev:doctor
+npm run dev:fixtures -- --doctor
+node scripts/dev/web-dev.mjs --mode backend-connected --doctor --json
+```
+
+The doctor checks the running Node version against Vite's engine range in the dashboard lockfile,
+whether the installed Vite CLI can load on this OS via `--version` (including native dependencies),
+the SDK selected by `global.json` in backend-connected mode, and
+both loopback addresses for the selected mode's ports. Fixture-only diagnosis never probes .NET
+or the backend port. It reports all blockers with recovery commands and exits nonzero when any
+check fails. Command probes have ten-second deadlines; the Vite probe disables Node's compile
+cache to avoid writing cache files. `--json` returns the same results as structured data and requires `--doctor`.
+Use `--port` and `--backend-port` with the doctor to check an alternate configuration.
+
+The doctor does not install packages, seed data, write configuration, start development services,
+or stop existing listeners. Availability is a point-in-time check; a passing result does not prove
+dependency freshness, successful builds, backend readiness, or browser functionality. Use the
+`buildctl environment` command above for the broader environment report and explicit restore.
 
 | Symptom | Check and recovery |
 | --- | --- |
@@ -91,6 +117,8 @@ node scripts/dev/web-dev.mjs --help
 | `--backend-port` | `8080` | Seeded host loopback port; must differ from Vite in backend-connected mode. |
 | `--data-dir` | `artifacts/dev-web` | Retained demo parent directory, resolved relative to the repository root. |
 | `--startup-timeout` | `600000` | Milliseconds allowed for each build/seed or HTTP readiness stage, including a cold restore/build. |
+| `--doctor` | Off | Check selected-mode launcher prerequisites and exit without starting services. |
+| `--json` | Off | Emit structured diagnostic results; requires `--doctor`. |
 
 The launcher checks both IPv4 (`127.0.0.1`) and IPv6 (`::1`, when available) for occupied ports.
 It fails with the address and port instead of reusing a server, killing an existing listener, or
@@ -137,7 +165,7 @@ is retained after shutdown.
 Run launcher tests and focused development-mode tests from the repository root:
 
 ```sh
-node --test scripts/dev/web-dev.test.mjs
+node --test scripts/dev/web-dev.test.mjs scripts/dev/web-doctor.test.mjs
 npm --prefix src/Meridian.Ui/dashboard run test:vitest -- src/vite-config.test.ts src/lib/api.development-modes.test.ts
 ```
 

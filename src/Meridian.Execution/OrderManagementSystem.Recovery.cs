@@ -1,5 +1,6 @@
 using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Sdk;
+using static Meridian.Execution.OrderManagement.OrderAmendmentBook;
 
 namespace Meridian.Execution;
 
@@ -16,6 +17,8 @@ public sealed partial class OrderManagementSystem
         decimal? locallyAuthorizedModifiedQuantity = null,
         decimal? pendingExecutionLimit = null)
     {
+        ValidateBrokerAccountEvidence(current, report);
+        var brokerAccount = current.BrokerAccountId ?? report.BrokerAccountId;
         var authorizedQuantity = report.ReportType is ExecutionReportType.Modified
             && report.OrderStatus is not OrderStatus.Rejected
             && locallyAuthorizedModifiedQuantity is > 0m
@@ -26,11 +29,17 @@ public sealed partial class OrderManagementSystem
         // state unless authoritative cumulative execution advances; never reopen or resize.
         if (IsTerminal(current.Status))
         {
-            if (report.FilledQuantity <= current.FilledQuantity
-                || report.FillPrice is not > 0m
-                || !string.Equals(current.Symbol, report.Symbol, StringComparison.OrdinalIgnoreCase)
+            if (!string.Equals(current.Symbol, report.Symbol, StringComparison.OrdinalIgnoreCase)
                 || current.Side != report.Side)
                 return current;
+            if (report.FilledQuantity <= current.FilledQuantity || report.FillPrice is not > 0m)
+            {
+                // IB may report the actual account only after a status-only terminal fill.
+                // Validated identity evidence can enrich ownership without reopening the
+                // order, changing its economics/timestamp, or publishing another fill.
+                return current.BrokerAccountId == brokerAccount
+                    ? current : current with { BrokerAccountId = brokerAccount };
+            }
             var terminalQuantity = pendingExecutionLimit is > 0m
                 ? Math.Max(current.Quantity, Math.Min(pendingExecutionLimit.Value, report.FilledQuantity)) : current.Quantity;
             var filled = Math.Min(terminalQuantity, report.FilledQuantity);
@@ -40,6 +49,7 @@ public sealed partial class OrderManagementSystem
                 FilledQuantity = filled,
                 AverageFillPrice = ComputeAverageFillPrice(current, filled, report.FillPrice),
                 Status = filled >= terminalQuantity ? OrderStatus.Filled : current.Status,
+                BrokerAccountId = brokerAccount,
                 LastUpdatedAt = report.Timestamp
             };
         }
@@ -52,12 +62,20 @@ public sealed partial class OrderManagementSystem
         return current with
         {
             Status = report.OrderStatus,
+            BrokerAccountId = brokerAccount,
             Quantity = authorizedQuantity,
             FilledQuantity = Math.Min(authorizedQuantity, Math.Max(report.FilledQuantity, current.FilledQuantity)),
             AverageFillPrice = ComputeAverageFillPrice(current,
                 Math.Min(authorizedQuantity, Math.Max(report.FilledQuantity, current.FilledQuantity)), report.FillPrice),
             LastUpdatedAt = report.Timestamp
         };
+    }
+
+    private static void ValidateBrokerAccountEvidence(OrderState current, ExecutionReport report)
+    {
+        if (current.BrokerAccountId is { } retainedAccount && report.BrokerAccountId is { } reportedAccount
+            && !string.Equals(retainedAccount, reportedAccount, StringComparison.Ordinal))
+            throw new InvalidDataException("Broker order evidence names a different external account.");
     }
 
     private static decimal? ComputeAverageFillPrice(OrderState current, decimal filledQuantity, decimal? incrementPrice)
@@ -111,13 +129,7 @@ public sealed partial class OrderManagementSystem
         {
             var state = retained.State;
             _orders[state.OrderId] = state;
-            if (retained.PendingAmendment is { } pending)
-            {
-                _pendingModificationOrderIds[state.OrderId] = pending;
-                _restoredPendingAmendments[state.OrderId] = pending;
-            }
-            else if (retained.RequiresAmendmentRecovery)
-                _pendingModificationOrderIds[state.OrderId] = new PendingOrderAmendment(state, state, retained.BrokerOrderId);
+            _amendmentBook.Restore(retained);
             _brokerIdentities.Restore(retained);
             if (state.FundAccountId is { } accountId)
                 _orderFinancialAccountIds[state.OrderId] = accountId.ToString("D");
@@ -159,15 +171,20 @@ public sealed partial class OrderManagementSystem
         // Submit acknowledgments do not hold the shared report gate. Sample these owners at
         // the journal's lock boundary so a wait cannot overwrite a newer amendment or alias.
         var brokerIdentities = _brokerIdentities;
-        var pendingAmendments = _pendingModificationOrderIds;
+        var pendingAmendments = _amendmentBook;
         _recoveryJournal.CheckpointProcessed(state, report, observedRecoveryVersion, () =>
         {
-            var hasPendingAmendment = pendingAmendments.ContainsKey(orderId);
+            var hasPendingAmendment = pendingAmendments.Contains(orderId);
             brokerIdentities.TryGetActiveId(orderId, out var brokerOrderId);
             return new BrokerageOrderCheckpointEvidence(brokerOrderId, brokerIdentities.GetAliases(orderId),
-                hasPendingAmendment, pendingAmendments.GetValueOrDefault(orderId));
+                hasPendingAmendment, pendingAmendments.GetPending(orderId));
         });
     }
+
+    private bool RetainedForAnotherOrder(string? brokerOrderId, string orderId)
+        => brokerOrderId is { Length: > 0 }
+            && _brokerIdentities.TryResolveAlias(brokerOrderId, out var owner)
+            && !string.Equals(owner, orderId, StringComparison.Ordinal);
 
     /// <summary>Applies broker-proven recovery evidence through the ordinary idempotent fill path.</summary>
     public async Task ReconcileRecoveryOrderAsync(ExecutionReport report, CancellationToken ct = default)
@@ -178,8 +195,16 @@ public sealed partial class OrderManagementSystem
         try
         {
             var orderId = report.ClientOrderId ?? report.OrderId;
-            if (_inFlightDispatches.ContainsKey(orderId))
+            if (_orders.TryGetValue(orderId, out var retainedAccountState))
+                ValidateBrokerAccountEvidence(retainedAccountState, report);
+            if (_dispatchRegistry.Contains(orderId))
                 throw new InvalidOperationException("Order submission is still in progress; broker recovery must wait for its outcome.");
+            // Processing normalizes a report to the order its broker id is retained for. A later
+            // session can reuse a broker id still retained for another order, and the evidence
+            // validated here for this order would then be booked against that one.
+            if (RetainedForAnotherOrder(report.GatewayOrderId ?? report.OrderId, orderId)
+                || RetainedForAnotherOrder(report.ReplacesOrderId, orderId))
+                throw new InvalidDataException("Broker recovery evidence names a broker order id retained for another order.");
             if (report.ReportType is ExecutionReportType.ModificationPending)
             {
                 // A pending outcome can still book fills, so it must prove the same identity and
@@ -250,7 +275,7 @@ public sealed partial class OrderManagementSystem
                         confirmed = confirmed with { Status = report.OrderStatus };
                     _orders[orderId] = confirmed;
                     if (pending is not null)
-                        RecordAmendmentOutcome(pending, ReferenceEquals(selectedTerms, pending.Proposed));
+                        _amendmentBook.RecordOutcome(pending, ReferenceEquals(selectedTerms, pending.Proposed));
                 }
                 if (report.GatewayOrderId is { Length: > 0 } confirmedBrokerId)
                 {
@@ -258,7 +283,7 @@ public sealed partial class OrderManagementSystem
                 }
             }
             await ProcessGatewayReportCoreAsync(report, ct).ConfigureAwait(false);
-            if (canResolveAmendment && _pendingModificationOrderIds.TryRemove(orderId, out _))
+            if (canResolveAmendment && _amendmentBook.Remove(orderId))
                 RetainProcessedBrokerageOrder(orderId, report, recoveryVersion);
         }
         finally

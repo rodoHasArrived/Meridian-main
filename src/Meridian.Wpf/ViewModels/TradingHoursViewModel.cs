@@ -355,6 +355,9 @@ public sealed class TradingHoursViewModel : BindableBase
 
     // ── Nested display model ──────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// Presents a market holiday's date, name, trading state, reason, and next session.
+    /// </summary>
     public sealed class HolidayDisplayItem
     {
         public string DateText { get; set; } = string.Empty;

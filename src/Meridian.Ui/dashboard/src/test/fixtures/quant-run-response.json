@@ -1,0 +1,73 @@
+{
+  "success": true,
+  "elapsedMs": 12,
+  "compileTimeMs": 3,
+  "peakMemoryBytes": 4096,
+  "runtimeError": null,
+  "consoleOutput": "Loaded 3 bars for AAPL",
+  "compilationErrors": [],
+  "runtimeDiagnostics": [],
+  "metrics": [
+    {
+      "label": "return",
+      "value": "-0.1"
+    }
+  ],
+  "plots": [
+    {
+      "title": "AAPL Cumulative Return",
+      "type": "CumulativeReturn",
+      "series": [
+        {
+          "date": "2026-01-01",
+          "value": 0
+        },
+        {
+          "date": "2026-01-02",
+          "value": 0.2
+        },
+        {
+          "date": "2026-01-03",
+          "value": -0.1
+        }
+      ],
+      "multiSeries": null,
+      "candlestick": null,
+      "heatmapData": null,
+      "heatmapLabels": null
+    },
+    {
+      "title": "AAPL Drawdown",
+      "type": "Drawdown",
+      "series": [
+        {
+          "date": "2026-01-01",
+          "value": 0
+        },
+        {
+          "date": "2026-01-02",
+          "value": 0
+        },
+        {
+          "date": "2026-01-03",
+          "value": -0.25
+        }
+      ],
+      "multiSeries": null,
+      "candlestick": null,
+      "heatmapData": null,
+      "heatmapLabels": null
+    }
+  ],
+  "trades": [
+    {
+      "timestamp": "2026-01-03T14:30:00.0000000+00:00",
+      "symbol": "AAPL",
+      "side": "Sell",
+      "quantity": 2,
+      "price": 90,
+      "commission": 0.25
+    }
+  ],
+  "runtimeParameters": []
+}

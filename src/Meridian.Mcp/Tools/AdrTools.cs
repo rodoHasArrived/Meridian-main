@@ -1,5 +1,8 @@
 namespace Meridian.Mcp.Tools;
 
+/// <summary>
+/// Provides MCP tools to list, read, and inspect repository architecture decisions.
+/// </summary>
 [McpServerToolType]
 public sealed class AdrTools(RepoPathService repo)
 {

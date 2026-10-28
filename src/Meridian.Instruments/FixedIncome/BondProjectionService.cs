@@ -3,6 +3,9 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Instruments.FixedIncome;
 
+/// <summary>
+/// Reads bond reference projections and combines them with canonical Security Master data.
+/// </summary>
 public sealed class BondProjectionService
     : InstrumentProjectionServiceBase<BondProjectionRow, BondReferenceDto>, IBondReferenceService
 {
@@ -161,6 +164,9 @@ public sealed class BondProjectionService
     }
 }
 
+/// <summary>
+/// Returns absent or empty bond reference data when the reference service is unavailable.
+/// </summary>
 public sealed class NullBondReferenceService : IBondReferenceService
 {
     public Task<BondReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)

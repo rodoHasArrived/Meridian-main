@@ -1,3 +1,6 @@
+@import "tailwindcss";
+@config "../../tailwind.config.ts";
+
 /* Monospace resolves through the local Cascadia Mono @font-face below and the
    system `ui-monospace` stack — no external font fetch. A render-blocking
    external Google Fonts import for JetBrains Mono was removed: it failed under

@@ -578,7 +578,7 @@
       "Priority": "critical",
       "Owner Lane": "Accounting and Ledger",
       "Evidence Posture": "in_progress",
-      "Evidence": "src/Meridian.Contracts/Accounting/Lots/OpenLotSuccessors.cs; src/Meridian.Instruments/AssetOperations/CorporateActionAssetAccountingEventMapper.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CorporateAction.cs; src/Meridian.Storage/Ledger/CorporateActionSuccessorAncestry.cs; src/Meridian.Storage/Ledger/Migrations/V_ledger_042__atomic_lot_successors.sql; src/Meridian.Storage/Ledger/Migrations/V_ledger_043__amortization_reversal_basis_restoration.sql; src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs; tests/Meridian.Tests/AssetOperations/OpenLotSuccessorTests.cs; tests/Meridian.Tests/AssetOperations/OpenLotSpinOffTests.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.SpinOff.cs; tests/Meridian.Tests/AssetOperations/OpenLotSuccessorTests.CorporateActions.cs; tests/Meridian.Tests/AssetOperations/CanonicalLotCorporateActionServiceTests.cs; tests/Meridian.Tests/AssetOperations/AmortizationReversalPreviewTests.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.Amortization.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.SuccessorScope.cs; tests/Meridian.Tests/Storage/CorporateActionSuccessorAncestryTests.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.SuccessorAncestry.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.SuccessorGuards.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.SuccessorPublication.cs; tests/Meridian.Tests/Storage/AtomicTaxLotSuccessorMigrationTests.cs; tests/Meridian.Tests/Storage/CanonicalOpenLotConsumerTests.CorporateActions.cs; tests/Meridian.Tests/Ui/LedgerReportingAuthoritativeSourceTests.SuccessorReportPack.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.Successors.cs; tests/Meridian.Tests/Ui/LedgerReportingAuthoritativeSourceSuccessorTests.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.DiscreteLotRelief.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.CurrentBasis.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AverageCostRelief.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.AverageCost.cs; src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs; src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs; src/Meridian.Ledger/OpenLotReliefService.cs; tests/Meridian.Tests/Storage/OpenLotConvergenceTests.cs; tests/Meridian.Tests/Storage/OpenLotPostgresTests.cs; docs/engineering/blueprints/security-lot-convergence-blueprint.md; src/Meridian.Contracts/Accounting/Lots/OpenLotBackfillDtos.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs; src/Meridian.Storage/Ledger/CanonicalOpenLotDisposalGuard.cs; tests/Meridian.Tests/Storage/CanonicalOpenLotConsumerTests.cs; tests/Meridian.Tests/Ui/WorkstationEndpointsTests.OpenLotBackfill.cs; src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs; tests/Meridian.Tests/AssetOperations/AssetAcquisitionLotPostgresRoundTripTests.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.AcquisitionAdmission.cs; src/Meridian.Contracts/AssetOperations/AssetAcquisitionTermsCompletionDto.cs; src/Meridian.FinancialOperations/Ledger/SpineAcquisitionLotCompletion.cs; tests/Meridian.Tests/AssetOperations/AcquisitionTermsCompletionTests.cs; tests/Meridian.Tests/AssetOperations/AssetAcquisitionLotPostgresRoundTripTests.Completion.cs; src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs; src/Meridian.FinancialOperations/Ledger/CanonicalLotAmortizationService.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Amortization.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.Amortization.cs; tests/Meridian.Tests/AssetOperations/AmortizationLotInstructionContractTests.cs; src/Meridian.Contracts/Accounting/Lots/OpenLotAmortizationContinuation.cs; tests/Meridian.Tests/AssetOperations/OpenLotAmortizationContinuationTests.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.SuccessorAmortization.cs; src/Meridian.Contracts/Accounting/Lots/OpenLotCapitalReturn.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CapitalReturn.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.CapitalReturn.cs; tests/Meridian.Tests/Ledger/LedgerTaxLotExactBasisReliefTests.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.DirectWrites.cs; src/Meridian.Contracts/Accounting/Lots/OpenLotFactorPaydown.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.FactorPaydown.cs; src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs; tests/Meridian.Tests/AssetOperations/OpenLotFactorPaydownTests.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.FactorPaydown.cs; tests/Meridian.Tests/Application/Composition/FactorPaydownLotInstructionCompositionTests.cs",
+      "Evidence": "src/Meridian.Contracts/Accounting/Lots/OpenLotSuccessors.cs; src/Meridian.Instruments/AssetOperations/CorporateActionAssetAccountingEventMapper.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CorporateAction.cs; src/Meridian.Storage/Ledger/CorporateActionSuccessorAncestry.cs; src/Meridian.Storage/Ledger/Migrations/V_ledger_042__atomic_lot_successors.sql; src/Meridian.Storage/Ledger/Migrations/V_ledger_043__amortization_reversal_basis_restoration.sql; src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs; tests/Meridian.Tests/AssetOperations/OpenLotSuccessorTests.cs; tests/Meridian.Tests/AssetOperations/OpenLotSpinOffTests.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.SpinOff.cs; tests/Meridian.Tests/AssetOperations/OpenLotSuccessorTests.CorporateActions.cs; tests/Meridian.Tests/AssetOperations/CanonicalLotCorporateActionServiceTests.cs; tests/Meridian.Tests/AssetOperations/AmortizationReversalPreviewTests.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.Amortization.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.SuccessorScope.cs; tests/Meridian.Tests/Storage/CorporateActionSuccessorAncestryTests.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.SuccessorAncestry.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.SuccessorGuards.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.SuccessorPublication.cs; tests/Meridian.Tests/Storage/AtomicTaxLotSuccessorMigrationTests.cs; tests/Meridian.Tests/Storage/CanonicalOpenLotConsumerTests.CorporateActions.cs; tests/Meridian.Tests/Ui/LedgerReportingAuthoritativeSourceTests.SuccessorReportPack.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.Successors.cs; tests/Meridian.Tests/Ui/LedgerReportingAuthoritativeSourceSuccessorTests.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.DiscreteLotRelief.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.CurrentBasis.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AverageCostRelief.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.AverageCost.cs; src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs; src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs; src/Meridian.Ledger/OpenLotReliefService.cs; tests/Meridian.Tests/Storage/OpenLotConvergenceTests.cs; tests/Meridian.Tests/Storage/OpenLotPostgresTests.cs; docs/engineering/blueprints/security-lot-convergence-blueprint.md; src/Meridian.Contracts/Accounting/Lots/OpenLotBackfillDtos.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs; src/Meridian.Storage/Ledger/CanonicalOpenLotDisposalGuard.cs; tests/Meridian.Tests/Storage/CanonicalOpenLotConsumerTests.cs; tests/Meridian.Tests/Ui/WorkstationEndpointsTests.OpenLotBackfill.cs; src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs; tests/Meridian.Tests/AssetOperations/AssetAcquisitionLotPostgresRoundTripTests.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.AcquisitionAdmission.cs; src/Meridian.Contracts/AssetOperations/AssetAcquisitionTermsCompletionDto.cs; src/Meridian.FinancialOperations/Ledger/SpineAcquisitionLotCompletion.cs; tests/Meridian.Tests/AssetOperations/AcquisitionTermsCompletionTests.cs; tests/Meridian.Tests/AssetOperations/AssetAcquisitionLotPostgresRoundTripTests.Completion.cs; src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs; src/Meridian.FinancialOperations/Ledger/CanonicalLotAmortizationService.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Amortization.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.Amortization.cs; tests/Meridian.Tests/AssetOperations/AmortizationLotInstructionContractTests.cs; src/Meridian.Contracts/Accounting/Lots/OpenLotAmortizationContinuation.cs; tests/Meridian.Tests/AssetOperations/OpenLotAmortizationContinuationTests.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.SuccessorAmortization.cs; src/Meridian.Contracts/Accounting/Lots/OpenLotCapitalReturn.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CapitalReturn.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.CapitalReturn.cs; tests/Meridian.Tests/Ledger/LedgerTaxLotExactBasisReliefTests.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.DirectWrites.cs; src/Meridian.Contracts/Accounting/Lots/OpenLotFactorPaydown.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.FactorPaydown.cs; src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs; tests/Meridian.Tests/AssetOperations/OpenLotFactorPaydownTests.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.FactorPaydown.cs; tests/Meridian.Tests/Application/Composition/FactorPaydownLotInstructionCompositionTests.cs; src/Meridian.Storage/Ledger/SuccessorAmortizationEvidence.cs; src/Meridian.Storage/Ledger/Migrations/V_ledger_050__atomic_lot_capital_return.sql; tests/Meridian.Tests/AssetOperations/OpenLotCapitalReturnTests.cs; src/Meridian.Storage/Ledger/Migrations/V_ledger_053__atomic_lot_factor_paydown.sql; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.FactorPaydownPublication.cs",
       "Last Reviewed": "2026-10-28"
     },
     {
@@ -658,6 +658,71 @@
       "Evidence Posture": "planned_evidence",
       "Evidence": "docs/product/meridian-design-document.md",
       "Last Reviewed": "2026-10-16"
+    },
+    {
+      "ID": "W12-BOOK-001",
+      "Wave": "W12",
+      "Title": "Accounting book, basis, and FX control workbench",
+      "Workspaces": "Accounting; Settings",
+      "Status": "planned",
+      "Health": "green",
+      "Priority": "medium",
+      "Owner Lane": "Accounting and Ledger",
+      "Evidence Posture": "planned_evidence",
+      "Evidence": "docs/product/meridian-design-document.md",
+      "Last Reviewed": "2026-10-17"
+    },
+    {
+      "ID": "W12-CAPITAL-001",
+      "Wave": "W12",
+      "Title": "Governed investor capital and allocation lifecycle",
+      "Workspaces": "Accounting; Reporting",
+      "Status": "planned",
+      "Health": "green",
+      "Priority": "medium",
+      "Owner Lane": "Accounting and Ledger",
+      "Evidence Posture": "planned_evidence",
+      "Evidence": "docs/product/meridian-design-document.md",
+      "Last Reviewed": "2026-10-17"
+    },
+    {
+      "ID": "W12-CREDIT-001",
+      "Wave": "W12",
+      "Title": "DirectLoan operations and evidence reconciliation",
+      "Workspaces": "Portfolio; Accounting",
+      "Status": "planned",
+      "Health": "green",
+      "Priority": "medium",
+      "Owner Lane": "Accounting and Ledger",
+      "Evidence Posture": "planned_evidence",
+      "Evidence": "docs/product/meridian-design-document.md",
+      "Last Reviewed": "2026-10-17"
+    },
+    {
+      "ID": "W12-FINRPT-001",
+      "Wave": "W12",
+      "Title": "Ledger-backed financial statement control pack",
+      "Workspaces": "Reporting; Accounting",
+      "Status": "planned",
+      "Health": "green",
+      "Priority": "medium",
+      "Owner Lane": "Accounting and Ledger",
+      "Evidence Posture": "planned_evidence",
+      "Evidence": "docs/product/meridian-design-document.md",
+      "Last Reviewed": "2026-10-17"
+    },
+    {
+      "ID": "W12-YEND-001",
+      "Wave": "W12",
+      "Title": "Fiscal year-end close and opening-balance roll-forward",
+      "Workspaces": "Accounting; Reporting",
+      "Status": "planned",
+      "Health": "green",
+      "Priority": "medium",
+      "Owner Lane": "Accounting and Ledger",
+      "Evidence Posture": "planned_evidence",
+      "Evidence": "docs/product/meridian-design-document.md",
+      "Last Reviewed": "2026-10-17"
     }
   ]
 }

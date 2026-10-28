@@ -639,6 +639,7 @@ public readonly record struct ProviderDegradationScore(
     DateTimeOffset EvaluatedAt,
     DecisionResult<double> Decision);
 
+/// <summary>Defines stable reason codes used to explain provider degradation assessments.</summary>
 public static class ProviderReasonCodes
 {
     public const string LatencySpike = "LATENCY_SPIKE";

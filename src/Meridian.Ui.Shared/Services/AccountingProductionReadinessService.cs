@@ -7,6 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Assesses accounting production readiness from configuration, certification, and migration evidence.
+/// </summary>
 public sealed class AccountingProductionReadinessService
 {
     private const string DefaultFundProfileId = "default-fund";

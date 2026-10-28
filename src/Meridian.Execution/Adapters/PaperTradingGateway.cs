@@ -121,12 +121,25 @@ public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEv
         PaperTradingGatewayOptions? options = null,
         Interfaces.ILiveFeedAdapter? liveFeed = null,
         PaperTradingCostOptions? costOptions = null)
+        : this(logger, (ISecurityTradingParametersQueryService?)securityMaster, options, liveFeed, costOptions, securityMaster)
+    {
+    }
+
+    /// <summary>Composes the paper gateway through separate query contracts.</summary>
+    public PaperTradingGateway(
+        ILogger<PaperTradingGateway> logger,
+        ISecurityTradingParametersQueryService? securityMaster,
+        PaperTradingGatewayOptions? options = null,
+        Interfaces.ILiveFeedAdapter? liveFeed = null,
+        PaperTradingCostOptions? costOptions = null,
+        ISecurityIdentityQueryService? securityIdentity = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _tradingParameters = new PaperTradingGatewayTradingParameters(
             _logger,
             securityMaster,
-            LogLevel.Debug);
+            LogLevel.Debug,
+            securityIdentity);
         _scaffoldMarketFillPrice = PaperTradingGatewayScaffoldPricing.ResolveScaffoldMarketFillPrice(options);
         _allowScaffoldMarketFills = PaperTradingGatewayScaffoldPricing.ResolveAllowScaffoldMarketFills(options);
         _liveFeed = liveFeed;
@@ -211,7 +224,7 @@ public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEv
             return new OrderValidationResult(false, "Stop and stop-limit orders require a positive stop price.");
         }
 
-        // Best-effort lot-size validation using the Security Master (requires ISecurityMasterQueryService).
+        // Best-effort lot-size validation using the Security Master query contracts.
         var lotSizeError = await _tradingParameters.ValidateLotSizeAsync(request, ct).ConfigureAwait(false);
         if (lotSizeError is not null)
         {

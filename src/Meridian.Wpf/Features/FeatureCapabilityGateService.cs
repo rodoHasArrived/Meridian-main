@@ -4,6 +4,9 @@ using Microsoft.Extensions.Options;
 
 namespace Meridian.Wpf.Features;
 
+/// <summary>
+/// Resolves feature capability availability from monitored options and persisted overrides, and publishes changes.
+/// </summary>
 public sealed class FeatureCapabilityGateService : IFeatureCapabilityGate, IDisposable
 {
     private readonly IOptionsMonitor<FeatureCapabilityOptions> _options;

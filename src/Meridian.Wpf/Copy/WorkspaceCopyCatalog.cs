@@ -13,11 +13,17 @@ public sealed record WorkspaceDescriptorCopy(
 
 public sealed record WorkspaceCopyEntry(string Key, string Text);
 
+/// <summary>
+/// Centralizes desktop workspace titles, descriptions, scope labels, and compatibility aliases.
+/// </summary>
 public static class WorkspaceCopyCatalog
 {
     public const string StrategyShellTitle = Strategy.ShellTitle;
     public const string DataShellTitle = Data.ShellTitle;
 
+    /// <summary>
+    /// Provides titles, descriptions, and scope copy for the trading workspace.
+    /// </summary>
     public static class Trading
     {
         public const string WorkspaceId = WorkstationWorkspaceCatalog.TradingKey;
@@ -34,6 +40,9 @@ public static class WorkspaceCopyCatalog
         public const string PrimaryScopeLabel = "Desk";
     }
 
+    /// <summary>
+    /// Provides titles, descriptions, and scope copy for the portfolio workspace.
+    /// </summary>
     public static class Portfolio
     {
         public const string WorkspaceId = WorkstationWorkspaceCatalog.PortfolioKey;
@@ -49,6 +58,9 @@ public static class WorkspaceCopyCatalog
         public const string ShellSubtitle = "Account, aggregate, fund, lending, and import workflows for portfolio review.";
     }
 
+    /// <summary>
+    /// Provides titles, descriptions, and scope copy for the accounting workspace.
+    /// </summary>
     public static class Accounting
     {
         public const string WorkspaceId = WorkstationWorkspaceCatalog.AccountingKey;
@@ -65,6 +77,9 @@ public static class WorkspaceCopyCatalog
         public const string ShellSubtitleFund = "Review accounting, reconciliations, cash, financing, and approval gates without leaving the shell.";
     }
 
+    /// <summary>
+    /// Provides titles, descriptions, and scope copy for the reporting workspace.
+    /// </summary>
     public static class Reporting
     {
         public const string WorkspaceId = WorkstationWorkspaceCatalog.ReportingKey;
@@ -80,6 +95,9 @@ public static class WorkspaceCopyCatalog
         public const string ShellSubtitle = "Report packs, dashboards, and analysis export workflows.";
     }
 
+    /// <summary>
+    /// Provides titles, descriptions, and scope copy for the strategy workspace.
+    /// </summary>
     public static class Strategy
     {
         public const string WorkspaceId = WorkstationWorkspaceCatalog.StrategyKey;
@@ -96,6 +114,9 @@ public static class WorkspaceCopyCatalog
         public const string PrimaryScopeLabel = "Strategy";
     }
 
+    /// <summary>
+    /// Provides titles, descriptions, and scope copy for the data workspace.
+    /// </summary>
     public static class Data
     {
         public const string WorkspaceId = WorkstationWorkspaceCatalog.DataKey;
@@ -114,6 +135,9 @@ public static class WorkspaceCopyCatalog
         public const string DefaultScopeSummary = "Provider health, backfill priority, storage follow-up, and export delivery stay in one fixed shell.";
     }
 
+    /// <summary>
+    /// Provides titles, descriptions, and scope copy for the settings workspace.
+    /// </summary>
     public static class Settings
     {
         public const string WorkspaceId = WorkstationWorkspaceCatalog.SettingsKey;
@@ -129,6 +153,9 @@ public static class WorkspaceCopyCatalog
         public const string ShellSubtitle = "Workstation configuration, diagnostics, support, and operator setup.";
     }
 
+    /// <summary>
+    /// Preserves legacy research workspace copy by forwarding to the strategy workspace.
+    /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class Research
     {
@@ -139,6 +166,9 @@ public static class WorkspaceCopyCatalog
         public const string PrimaryScopeLabel = Strategy.PrimaryScopeLabel;
     }
 
+    /// <summary>
+    /// Preserves legacy data-operations workspace copy by forwarding to the data workspace.
+    /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class DataOperations
     {
@@ -151,6 +181,9 @@ public static class WorkspaceCopyCatalog
         public const string DefaultScopeSummary = Data.DefaultScopeSummary;
     }
 
+    /// <summary>
+    /// Preserves legacy governance workspace copy by forwarding to the accounting workspace.
+    /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class Governance
     {

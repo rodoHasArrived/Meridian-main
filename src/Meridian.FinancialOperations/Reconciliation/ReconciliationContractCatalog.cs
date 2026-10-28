@@ -5,6 +5,9 @@ public enum ReconciliationContractVersion : byte
     V1 = 1
 }
 
+/// <summary>
+/// Identifies supported reconciliation contracts and their compatible versions.
+/// </summary>
 public static class ReconciliationContractCatalog
 {
     public const string BreakWorkflowContract = "meridian.reconciliation.break-workflow";

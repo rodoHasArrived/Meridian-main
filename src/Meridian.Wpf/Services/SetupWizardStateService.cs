@@ -16,6 +16,9 @@ using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Defines setup configuration, provider presets, stored API keys, and backend startup and health operations.
+/// </summary>
 public interface ISetupWizardStateService
 {
     IReadOnlyList<string> ProviderOptions { get; }
@@ -63,6 +66,9 @@ public sealed record SetupWizardSaveResult(
     bool Success,
     string Message);
 
+/// <summary>
+/// Abstracts success, warning, information, and error notifications shown during setup.
+/// </summary>
 public interface ISetupWizardNotificationSink
 {
     void NotifySuccess(string title, string message);
@@ -74,16 +80,25 @@ public interface ISetupWizardNotificationSink
     Task NotifyErrorAsync(string title, string message);
 }
 
+/// <summary>
+/// Abstracts page-tag navigation for the setup wizard.
+/// </summary>
 public interface ISetupWizardNavigator
 {
     void NavigateTo(string pageTag);
 }
 
+/// <summary>
+/// Abstracts opening external links from the setup wizard.
+/// </summary>
 public interface ISetupWizardLinkLauncher
 {
     void Open(string url);
 }
 
+/// <summary>
+/// Coordinates setup presets, local configuration and API-key persistence, and backend startup and health checks.
+/// </summary>
 public sealed class SetupWizardStateService : ISetupWizardStateService
 {
     private static readonly string[] DefaultProviderOptions =
@@ -306,6 +321,9 @@ public sealed class SetupWizardStateService : ISetupWizardStateService
     }
 }
 
+/// <summary>
+/// Routes setup notifications to the desktop notification service.
+/// </summary>
 public sealed class SetupWizardNotificationSink : ISetupWizardNotificationSink
 {
     private readonly NotificationService _notificationService;
@@ -328,6 +346,9 @@ public sealed class SetupWizardNotificationSink : ISetupWizardNotificationSink
         => _notificationService.NotifyErrorAsync(title, message);
 }
 
+/// <summary>
+/// Routes setup-wizard navigation through the desktop navigation service.
+/// </summary>
 public sealed class SetupWizardNavigator : ISetupWizardNavigator
 {
     private readonly NavigationService _navigationService;
@@ -341,6 +362,9 @@ public sealed class SetupWizardNavigator : ISetupWizardNavigator
         => _navigationService.NavigateTo(pageTag);
 }
 
+/// <summary>
+/// Opens setup-wizard links through the operating system shell.
+/// </summary>
 public sealed class SetupWizardLinkLauncher : ISetupWizardLinkLauncher
 {
     private readonly ISetupWizardNotificationSink _notificationSink;

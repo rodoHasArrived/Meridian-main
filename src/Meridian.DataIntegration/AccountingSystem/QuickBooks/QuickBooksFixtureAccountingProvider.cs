@@ -3,6 +3,7 @@ using Meridian.ProviderSdk.AccountingSystem;
 
 namespace Meridian.DataIntegration.AccountingSystem.QuickBooks;
 
+/// <summary>Supplies deterministic QuickBooks-style accounting fixtures for import and export-validation workflows.</summary>
 public sealed class QuickBooksFixtureAccountingProvider : IAccountingSystemProvider
 {
     public const string Id = "quickbooks-fixture";

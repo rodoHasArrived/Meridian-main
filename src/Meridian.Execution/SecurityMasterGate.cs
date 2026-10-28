@@ -1,5 +1,4 @@
 using Meridian.Execution.Logging;
-using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Sdk;
 
@@ -13,6 +12,14 @@ public sealed class SecurityMasterGate : ISecurityMasterGate
 {
     private readonly ISecurityResolver _resolver;
     private readonly ILogger<SecurityMasterGate> _logger;
+
+    /// <summary>Retains the resolver constructor used by existing compiled consumers.</summary>
+#pragma warning disable CS0618
+    public SecurityMasterGate(Meridian.Application.SecurityMaster.ISecurityResolver resolver, ILogger<SecurityMasterGate> logger)
+        : this((ISecurityResolver)resolver, logger)
+    {
+    }
+#pragma warning restore CS0618
 
     public SecurityMasterGate(ISecurityResolver resolver, ILogger<SecurityMasterGate> logger)
     {

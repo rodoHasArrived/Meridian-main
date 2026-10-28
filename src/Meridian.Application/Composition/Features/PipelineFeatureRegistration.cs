@@ -66,7 +66,24 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
                 sp.GetService<Microsoft.Extensions.Logging.ILogger<CompositeDataQualityReadService>>()));
 
         // DataFreshnessSlaMonitor - monitors data freshness SLA compliance
-        services.AddSingleton<DataFreshnessSlaMonitor>();
+        services.AddSingleton<DataFreshnessSlaMonitor>(sp =>
+        {
+            var monitor = new DataFreshnessSlaMonitor(
+                sp.GetService<SlaConfig>(), sp.GetService<TimeProvider>());
+            // Configuration is not evidence of an active feed. In desktop mode the UI
+            // and collector have separate containers; only a monitor observing ingress
+            // or subscription attempts may publish into the process-wide SLA gauges.
+            var publishedScope = false;
+            monitor.OnSnapshot += snapshot =>
+            {
+                if (snapshot.TotalSymbols > 0 || publishedScope)
+                {
+                    publishedScope = true;
+                    PrometheusMetrics.UpdateSlaMetrics(snapshot);
+                }
+            };
+            return monitor;
+        });
 
         // JsonlStoragePolicy - controls file path generation
         services.AddSingleton<JsonlStoragePolicy>(sp =>
@@ -245,7 +262,8 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
             return new QualityMonitoringPublisher(
                 publisher,
                 sp.GetRequiredService<DataQualityMonitoringService>(),
-                sp.GetService<Microsoft.Extensions.Logging.ILogger<QualityMonitoringPublisher>>());
+                sp.GetService<Microsoft.Extensions.Logging.ILogger<QualityMonitoringPublisher>>(),
+                freshness: sp.GetRequiredService<DataFreshnessSlaMonitor>());
         });
 
         return services;

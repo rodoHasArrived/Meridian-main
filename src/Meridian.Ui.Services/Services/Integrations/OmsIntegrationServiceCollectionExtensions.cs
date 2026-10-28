@@ -4,6 +4,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Meridian.Ui.Services.Services.Integrations;
 
+/// <summary>
+/// Registers the shared OMS/EMS integration API handler with dependency injection.
+/// </summary>
 public static class OmsIntegrationServiceCollectionExtensions
 {
     public static IServiceCollection AddOmsIntegrationApiHandlers(this IServiceCollection services)

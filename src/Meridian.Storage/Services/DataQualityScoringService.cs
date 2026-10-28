@@ -490,6 +490,9 @@ public sealed record DataQualityScoringReport(
     IReadOnlyList<QualityAssessment> Assessments,
     QualityReportSummary Summary);
 
+/// <summary>
+/// Summarizes retained file quality scores by quality band, source, and symbol.
+/// </summary>
 public sealed class QualityReportSummary
 {
     public int TotalFiles { get; set; }

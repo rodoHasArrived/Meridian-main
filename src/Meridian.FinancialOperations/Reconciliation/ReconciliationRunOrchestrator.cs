@@ -2,6 +2,10 @@ using Meridian.Domain.Reconciliation;
 
 namespace Meridian.FinancialOperations.Reconciliation;
 
+/// <summary>
+/// Coordinates daily source capture, normalization, matching, and reconciliation evidence
+/// production.
+/// </summary>
 public sealed class ReconciliationRunOrchestrator(
     IReconciliationIngestionScheduler scheduler,
     IReadOnlyList<IReconciliationSourceAdapter> adapters,

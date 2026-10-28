@@ -51,6 +51,21 @@ public sealed class PostedLedgerAmountProvenanceService(
                 ["The retained journal identity is ambiguous. Amount proof is blocked."]);
 
         var record = matches[0];
+        return await GetRetainedPacketAsync(subjectId, scope, record, book.BaseCurrency, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Verifies source support for a journal captured inside an integrity-checked report snapshot.
+    /// The caller must authenticate the retained report and verify its population digest first;
+    /// this path deliberately never substitutes a journal from the current database.
+    /// </summary>
+    internal async Task<EvidencePacketDto?> GetRetainedPacketAsync(
+        string subjectId, LedgerAmountScopeDto scope, LedgerJournalEntryRecord record,
+        string baseCurrency, CancellationToken ct = default)
+    {
+        if (!IsComplete(scope) || !TryParseSubject(subjectId, out var journalId, out var entryId, out var debit)
+            || record.PeriodId != scope.PeriodId || record.Entry.JournalEntryId != journalId)
+            return null;
         var lines = record.Entry.Lines.Where(line => line.EntryId == entryId).ToArray();
         if (lines.Length != 1 || lines[0].JournalEntryId != journalId ||
             (debit ? lines[0].Debit : lines[0].Credit) <= 0m)
@@ -190,7 +205,7 @@ public sealed class PostedLedgerAmountProvenanceService(
             Review("No verified retained source evidence supports this amount. Review is required.");
 
         return Packet(canonicalId, scope, debit ? line.Debit : line.Credit,
-            line.Currency?.FunctionalCurrency ?? book.BaseCurrency, status, evidence, warnings.Distinct().ToArray());
+            line.Currency?.FunctionalCurrency ?? baseCurrency, status, evidence, warnings.Distinct().ToArray());
 
         void Review(string warning)
         {

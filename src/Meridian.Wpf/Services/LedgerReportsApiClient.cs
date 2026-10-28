@@ -48,6 +48,9 @@ public interface ILedgerReportsApiClient
         => Task.FromResult(ApiResponse<JsonDocument>.Fail("Retained manifest is unavailable in this session."));
 }
 
+/// <summary>
+/// Loads shared ledger books, periods, reports, journal entries, and amount-proof details for desktop accounting views.
+/// </summary>
 public sealed class LedgerReportsApiClient : ILedgerReportsApiClient
 {
     private readonly ApiClientService _apiClient;

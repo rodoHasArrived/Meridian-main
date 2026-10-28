@@ -4,6 +4,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Provides the desktop page to review lending positions and configure credit workflows.
+/// </summary>
 public partial class DirectLendingPage : Page
 {
     private readonly DirectLendingViewModel _viewModel;

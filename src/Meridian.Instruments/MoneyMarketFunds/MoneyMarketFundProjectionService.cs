@@ -3,6 +3,10 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Instruments.MoneyMarketFunds;
 
+/// <summary>
+/// Reads money-market fund reference projections and combines them with canonical Security Master
+/// data.
+/// </summary>
 public sealed class MoneyMarketFundProjectionService
     : InstrumentProjectionServiceBase<MoneyMarketFundProjectionRow, MoneyMarketFundReferenceDto>,
       IMoneyMarketFundReferenceService
@@ -44,6 +48,10 @@ public sealed class MoneyMarketFundProjectionService
             row.Version);
 }
 
+/// <summary>
+/// Returns absent or empty money-market fund reference data when the reference service is
+/// unavailable.
+/// </summary>
 public sealed class NullMoneyMarketFundReferenceService : IMoneyMarketFundReferenceService
 {
     public Task<MoneyMarketFundReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)

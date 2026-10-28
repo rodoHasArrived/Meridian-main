@@ -124,12 +124,22 @@ public sealed class PostgresFundAccountServiceTests
             "deactivate" => service.DeactivateAccountAsync(accountId, "ops", ct),
             "balance" => service.RecordBalanceSnapshotAsync(new(accountId, new(2026, 10, 7), "USD", 125m, "manual"), ct),
             "custodian" => service.IngestCustodianStatementAsync(new(Guid.NewGuid(), accountId, new(2026, 10, 7), "Custodian", "csv", null, [], "ops"), ct),
-            "bank" => service.IngestBankStatementAsync(new(Guid.NewGuid(), accountId, new(2026, 10, 7), "Bank", null, [], "ops"), ct),
+            "bank" => IngestOneBankLineAsync(service, accountId, ct),
             "reconcile" => service.ReconcileAccountAsync(new(accountId, new(2026, 10, 7), "ops"), ct),
             "sync" => service.RecordSyncHistoryAsync(new(accountId, "balances", AccountSyncStatusDto.Succeeded), ct),
             "margin" => service.RecordMarginSnapshotAsync(new(accountId, DateTimeOffset.UtcNow, "USD", MarginModelTypeDto.RegT), ct),
             _ => throw new ArgumentOutOfRangeException(nameof(operation))
         };
+
+    // A bank statement revision requires at least one line, so the mutation carries one valid line.
+    private static Task IngestOneBankLineAsync(PostgresFundAccountService service, Guid accountId, CancellationToken ct)
+    {
+        var batchId = Guid.NewGuid();
+        var date = new DateOnly(2026, 10, 7);
+        BankStatementLineDto line = new(Guid.NewGuid(), batchId, accountId, date, date, 10m, "USD", "CREDIT",
+            "Wire transfer", null, null);
+        return service.IngestBankStatementAsync(new(batchId, accountId, date, "Bank", null, [line], "ops"), ct);
+    }
 
     private static CreateAccountRequest MakeAccountRequest()
         => new(Guid.NewGuid(), AccountTypeDto.Custody, $"CUST-{Guid.NewGuid():N}", "Custody", "USD", DateTimeOffset.UtcNow, "ops");

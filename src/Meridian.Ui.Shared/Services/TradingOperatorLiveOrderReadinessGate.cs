@@ -7,6 +7,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Provides the current trading operator readiness assessment, optionally scoped to a fund account.
+/// </summary>
 public interface ITradingOperatorReadinessProvider
 {
     Task<TradingOperatorReadinessDto> GetAsync(Guid? fundAccountId = null, CancellationToken ct = default);

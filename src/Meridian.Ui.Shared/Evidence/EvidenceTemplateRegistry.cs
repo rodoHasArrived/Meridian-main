@@ -2,6 +2,9 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.Ui.Shared.Evidence;
 
+/// <summary>
+/// Provides built-in evidence requirements and templates for supported review workflows.
+/// </summary>
 public sealed class EvidenceTemplateRegistry
 {
     private static readonly EvidenceTemplateExportSettingsDto ManifestOnlyV1 = new(

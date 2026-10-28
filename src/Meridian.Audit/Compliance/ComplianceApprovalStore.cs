@@ -14,6 +14,9 @@ public interface IComplianceApprovalResolver
     ComplianceApprovalRequestRecord? Resolve(string approvalRequestId);
 }
 
+/// <summary>
+/// Creates authoritative compliance approval requests and records independent approval decisions.
+/// </summary>
 public interface IComplianceApprovalStore : IComplianceApprovalResolver
 {
     ComplianceApprovalRequestRecord CreateRequest(

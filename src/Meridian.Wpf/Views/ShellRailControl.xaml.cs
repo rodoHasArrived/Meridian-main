@@ -4,6 +4,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Hosts desktop workspace navigation and handles rail item activation.
+/// </summary>
 public partial class ShellRailControl : UserControl
 {
     public ShellRailControl()

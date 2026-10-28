@@ -3,6 +3,9 @@ using System.Text.Json.Serialization;
 namespace Meridian.Contracts.Export;
 
 
+/// <summary>
+/// Reports export progress, the active symbol, processed rows, and elapsed time.
+/// </summary>
 public sealed class ExportProgressEventArgs : EventArgs
 {
     public float Progress { get; set; }
@@ -13,6 +16,9 @@ public sealed class ExportProgressEventArgs : EventArgs
 
 
 
+/// <summary>
+/// Selects the market data, fields, aggregation, encoding, and destination for an analysis export.
+/// </summary>
 public sealed class AnalysisExportOptions
 {
     public List<string>? Symbols { get; set; }
@@ -31,6 +37,9 @@ public sealed class AnalysisExportOptions
     public string? Timezone { get; set; }
 }
 
+/// <summary>
+/// Selects the symbols, date range, chart inclusion, and format for a data quality report.
+/// </summary>
 public sealed class QualityReportOptions
 {
     public List<string>? Symbols { get; set; }
@@ -40,6 +49,9 @@ public sealed class QualityReportOptions
     public string Format { get; set; } = "CSV";
 }
 
+/// <summary>
+/// Selects order flow metrics, aggregation, date range, and output destination for export.
+/// </summary>
 public sealed class OrderFlowExportOptions
 {
     public List<string>? Symbols { get; set; }
@@ -51,6 +63,9 @@ public sealed class OrderFlowExportOptions
     public string? OutputPath { get; set; }
 }
 
+/// <summary>
+/// Selects symbols, dates, and event types for a data integrity export.
+/// </summary>
 public sealed class IntegrityExportOptions
 {
     public List<string>? Symbols { get; set; }
@@ -61,6 +76,9 @@ public sealed class IntegrityExportOptions
     public string? OutputPath { get; set; }
 }
 
+/// <summary>
+/// Configures the data, metadata, and quality report included in a named research package.
+/// </summary>
 public sealed class ResearchPackageOptions
 {
     public string Name { get; set; } = string.Empty;
@@ -75,6 +93,9 @@ public sealed class ResearchPackageOptions
     public string? OutputPath { get; set; }
 }
 
+/// <summary>
+/// Selects which market data categories a research package includes.
+/// </summary>
 public sealed class DataTypeInclusion
 {
     public bool Trades { get; set; } = true;
@@ -86,6 +107,9 @@ public sealed class DataTypeInclusion
 
 
 
+/// <summary>
+/// Reports analysis export success, created files, output volume, duration, and warnings.
+/// </summary>
 public sealed class AnalysisExportResult
 {
     public bool Success { get; set; }
@@ -99,6 +123,9 @@ public sealed class AnalysisExportResult
     public List<string> Warnings { get; set; } = new();
 }
 
+/// <summary>
+/// Reports available export formats or the failure encountered while discovering them.
+/// </summary>
 public sealed class ExportFormatsResult
 {
     public bool Success { get; set; }
@@ -106,6 +133,9 @@ public sealed class ExportFormatsResult
     public List<ExportFormatInfo> Formats { get; set; } = new();
 }
 
+/// <summary>
+/// Describes an export format's file extension, purpose, and compression support.
+/// </summary>
 public sealed class ExportFormatInfo
 {
     public string Name { get; set; } = string.Empty;
@@ -114,6 +144,9 @@ public sealed class ExportFormatInfo
     public bool SupportsCompression { get; set; }
 }
 
+/// <summary>
+/// Describes a selectable aggregation value and its display text.
+/// </summary>
 public sealed class AggregationOption
 {
     public string Value { get; set; } = string.Empty;
@@ -121,6 +154,9 @@ public sealed class AggregationOption
     public string Description { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Reports quality report creation status, output path, and summary metrics.
+/// </summary>
 public sealed class QualityReportResult
 {
     public bool Success { get; set; }
@@ -130,6 +166,9 @@ public sealed class QualityReportResult
     public QualityReportSummary? Summary { get; set; }
 }
 
+/// <summary>
+/// Summarizes symbol and day coverage, quality score, gaps, and anomalies for an exported report.
+/// </summary>
 public sealed class QualityReportSummary
 {
     public int TotalSymbols { get; set; }
@@ -139,6 +178,9 @@ public sealed class QualityReportSummary
     public int AnomaliesFound { get; set; }
 }
 
+/// <summary>
+/// Reports research package creation status, artifact paths, and package size.
+/// </summary>
 public sealed class ResearchPackageResult
 {
     public bool Success { get; set; }
@@ -149,6 +191,9 @@ public sealed class ResearchPackageResult
     public long SizeBytes { get; set; }
 }
 
+/// <summary>
+/// Groups reusable export format, aggregation, field, and metadata settings.
+/// </summary>
 public sealed class ExportTemplate
 {
     public string Name { get; set; } = string.Empty;
@@ -161,6 +206,9 @@ public sealed class ExportTemplate
 
 
 
+/// <summary>
+/// Carries the API response for an analysis export, including generated files and output statistics.
+/// </summary>
 public sealed class AnalysisExportResponse
 {
     public bool Success { get; set; }
@@ -235,17 +283,26 @@ public sealed record SpecializedExportApiResponse(
     QualityReportSummary? QualitySummary,
     DateTimeOffset Timestamp);
 
+/// <summary>
+/// Carries the export format choices returned by the API.
+/// </summary>
 public sealed class ExportFormatsResponse
 {
     public List<ExportFormatInfo>? Formats { get; set; }
 }
 
+/// <summary>
+/// Carries the generated quality report path and summary returned by the API.
+/// </summary>
 public sealed class QualityReportResponse
 {
     public string? ReportPath { get; set; }
     public QualityReportSummary? Summary { get; set; }
 }
 
+/// <summary>
+/// Carries research package and manifest paths with the generated package size.
+/// </summary>
 public sealed class ResearchPackageResponse
 {
     public string? PackagePath { get; set; }

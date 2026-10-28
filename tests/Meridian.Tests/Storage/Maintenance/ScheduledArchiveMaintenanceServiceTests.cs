@@ -14,7 +14,7 @@ namespace Meridian.Tests.Storage.Maintenance;
 /// deletion flags actually deleting files), and maintenance executions that vanish,
 /// hang, or crash the scheduler without recorded evidence.
 /// </summary>
-public sealed class ScheduledArchiveMaintenanceServiceTests : IDisposable
+public sealed partial class ScheduledArchiveMaintenanceServiceTests : IDisposable
 {
     private readonly string _tempRoot = Path.Combine(
         Path.GetTempPath(), "meridian-tests", $"archive-maintenance-{Guid.NewGuid():N}");
@@ -51,6 +51,73 @@ public sealed class ScheduledArchiveMaintenanceServiceTests : IDisposable
         {
             // Best-effort cleanup; leaked temp dirs are collected by the OS temp sweep.
         }
+    }
+
+    [Fact]
+    public async Task ExecuteMaintenanceAsync_RepairWithoutEnabledStrategy_ReportsBlockedWithoutCallingFileRepair()
+    {
+        var sut = CreateSut();
+
+        var execution = await sut.ExecuteMaintenanceAsync(MaintenanceTaskType.Repair,
+            new MaintenanceTaskOptions { TruncateCorrupted = false });
+
+        execution.Status.Should().Be(MaintenanceExecutionStatus.CompletedWithWarnings);
+        execution.Result!.Success.Should().BeFalse();
+        execution.Result.Summary.Should().Contain("no supported repair strategy");
+        _fileMaintenance.Verify(service => service.RepairAsync(It.IsAny<RepairOptions>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    public async Task ExecuteMaintenanceAsync_RepairWithUnresolvedFiles_CannotReportSuccessEvenWithoutErrors(int repaired)
+    {
+        _fileMaintenance.Setup(service => service.RepairAsync(It.IsAny<RepairOptions>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new RepairResult(2, repaired, [], false, null));
+        var sut = CreateSut();
+
+        var execution = await sut.ExecuteMaintenanceAsync(MaintenanceTaskType.Repair);
+
+        execution.Status.Should().Be(MaintenanceExecutionStatus.CompletedWithWarnings);
+        execution.Result!.Success.Should().BeFalse();
+        execution.Result.FilesFailed.Should().Be(2 - repaired);
+        execution.Result.IssuesResolved.Should().Be(repaired);
+        execution.Result.Summary.Should().Contain($"{2 - repaired} unresolved");
+        _fileMaintenance.Verify(service => service.RepairAsync(
+            It.Is<RepairOptions>(options => options.Strategy == RepairStrategy.TruncateCorrupted), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteMaintenanceAsync_RepairDryRun_ReportsPlanWithoutClaimingResolution()
+    {
+        _fileMaintenance.Setup(service => service.RepairAsync(It.IsAny<RepairOptions>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new RepairResult(2, 0, [], true, ["TruncateCorrupted: a.jsonl", "TruncateCorrupted: b.jsonl"]));
+        var sut = CreateSut();
+
+        var execution = await sut.ExecuteMaintenanceAsync(MaintenanceTaskType.Repair,
+            new MaintenanceTaskOptions { DryRun = true });
+
+        execution.Result!.Success.Should().BeTrue();
+        execution.Result.FilesFailed.Should().Be(0);
+        execution.Result.FilesSkipped.Should().Be(2);
+        execution.Result.IssuesResolved.Should().Be(0);
+        execution.Result.Summary.Should().Contain("dry run").And.Contain("no files changed");
+        execution.LogMessages.Should().Contain(message => message == "[DRY RUN] TruncateCorrupted: a.jsonl");
+    }
+
+    [Fact]
+    public async Task ExecuteMaintenanceAsync_RepairRetainsRecoveryPathsInExecutionHistory()
+    {
+        var backupPath = Path.Combine(_tempRoot, "recovery.bak");
+        _fileMaintenance.Setup(service => service.RepairAsync(It.IsAny<RepairOptions>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new RepairResult(1, 1, [], false, null) { RecoveryCopies = [backupPath] });
+        var sut = CreateSut();
+
+        var execution = await sut.ExecuteMaintenanceAsync(MaintenanceTaskType.Repair);
+
+        execution.Result!.Success.Should().BeTrue();
+        _scheduleManager.ExecutionHistory.GetExecution(execution.ExecutionId)!.LogMessages
+            .Should().Contain($"Recovery copy: {backupPath}");
     }
 
     [Fact]
@@ -616,6 +683,34 @@ public sealed class ScheduledArchiveMaintenanceServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task StartAsync_ScheduledRepairWithoutEnabledStrategy_IsNotRecordedAsACleanCompletion()
+    {
+        var schedule = await CreateScheduleAsync(MaintenanceTaskType.Repair,
+            s => s.Options = new MaintenanceTaskOptions { TruncateCorrupted = false });
+        var sut = CreateSut();
+        var completedTcs = new TaskCompletionSource<MaintenanceExecution>(TaskCreationOptions.RunContinuationsAsynchronously);
+        sut.ExecutionCompleted += (_, e) => completedTcs.TrySetResult(e);
+        sut.ExecutionFailed += (_, e) => completedTcs.TrySetResult(e);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        await sut.StartAsync(cts.Token);
+        var queued = await sut.TriggerScheduleAsync(schedule.ScheduleId, cts.Token);
+        var execution = await completedTcs.Task.WaitAsync(cts.Token);
+        await sut.StopAsync(cts.Token);
+
+        execution.ExecutionId.Should().Be(queued.ExecutionId);
+        execution.Status.Should().Be(MaintenanceExecutionStatus.CompletedWithWarnings,
+            "a blocked repair reports Success=false without issue counts and must not read as a clean completion");
+        execution.Result!.Success.Should().BeFalse();
+        execution.Result.Summary.Should().Contain("no supported repair strategy");
+        _scheduleManager.ExecutionHistory.GetExecution(execution.ExecutionId)!.Status
+            .Should().Be(MaintenanceExecutionStatus.CompletedWithWarnings);
+        _scheduleManager.GetSchedule(schedule.ScheduleId)!.LastExecutionStatus
+            .Should().Be(MaintenanceExecutionStatus.CompletedWithWarnings);
+        _fileMaintenance.Verify(service => service.RepairAsync(It.IsAny<RepairOptions>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task StartAsync_TriggeredSchedule_ExecutesAndUpdatesScheduleCounters()
     {
         _fileMaintenance
@@ -812,12 +907,13 @@ public sealed class ScheduledArchiveMaintenanceServiceTests : IDisposable
 
     private ScheduledArchiveMaintenanceService CreateSut(
         int? retentionDays = null,
-        ArchiveMaintenanceScheduleManager? manager = null)
+        ArchiveMaintenanceScheduleManager? manager = null,
+        IFileMaintenanceService? fileMaintenance = null)
     {
         var service = new ScheduledArchiveMaintenanceService(
             NullLogger<ScheduledArchiveMaintenanceService>.Instance,
             manager ?? _scheduleManager,
-            _fileMaintenance.Object,
+            fileMaintenance ?? _fileMaintenance.Object,
             _tierMigration.Object,
             new StorageOptions { RootPath = _storageRoot, RetentionDays = retentionDays });
         _services.Add(service);

@@ -2,6 +2,7 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.Reporting;
 
+/// <summary>Lists and resolves reporting starter kits for operator archetypes.</summary>
 public interface IReportingStarterKitCatalog
 {
     ReportingStarterKitDefinition Get(string kitId);
@@ -34,6 +35,7 @@ public sealed record ReportingStarterSeedScheduleDefinition(
     string? BrandingThemeId = null,
     int MaxRetries = 1);
 
+/// <summary>Provides built-in reporting starter kits with template selections and draft schedule defaults.</summary>
 public sealed class DefaultReportingStarterKitCatalog : IReportingStarterKitCatalog
 {
     private readonly IReadOnlyDictionary<string, ReportingStarterKitDefinition> kits;

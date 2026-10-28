@@ -3,6 +3,10 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Instruments.AssetOperations;
 
+/// <summary>
+/// Reads structured-credit reference projections and combines them with canonical Security Master
+/// data.
+/// </summary>
 public sealed class StructuredCreditProjectionService
     : InstrumentProjectionServiceBase<StructuredCreditProjectionRow, StructuredCreditReferenceDto>, IStructuredCreditReferenceService
 {
@@ -68,6 +72,10 @@ public sealed class StructuredCreditProjectionService
         => new(row.SecurityId, row.Ordinal, row.AsOfDate, row.Factor);
 }
 
+/// <summary>
+/// Returns absent or empty structured-credit reference data when the reference service is
+/// unavailable.
+/// </summary>
 public sealed class NullStructuredCreditReferenceService : IStructuredCreditReferenceService
 {
     public Task<StructuredCreditReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)

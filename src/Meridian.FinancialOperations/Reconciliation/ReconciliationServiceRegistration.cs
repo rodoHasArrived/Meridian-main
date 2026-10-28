@@ -15,6 +15,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.FinancialOperations.Reconciliation;
 
+/// <summary>
+/// Registers statement reconciliation services and their storage dependencies.
+/// </summary>
 public static class ReconciliationServiceRegistration
 {
     public static IServiceCollection AddStatementReconciliationServices(this IServiceCollection services)

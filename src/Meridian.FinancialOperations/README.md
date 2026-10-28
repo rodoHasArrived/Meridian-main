@@ -11,6 +11,10 @@ last_reviewed: 2026-10-14
 
 # src/Meridian.FinancialOperations
 
+All six shipped statement connectors capture executed mapping semantics at parse time. Display labels and review notes do not change that fingerprint; fields, activity mappings, culture, date formats and CSV options do. The retained import supplies comparison proof on replay. Legacy artifact upgrade verifies the original shape and adopts retained bytes without inventing mapping evidence.
+
+Configured reconciliation assignment ranks every available tolerated dimension by its own allowed variance: quantities, cash or market value, observed price, and settlement distance. Missing one-sided prices remain unavailable. Rule-list precedence and retained applied-rule evidence are unchanged.
+
 `AccountCashReconciliationService` adds a bounded two-source cash-balance continuity aggregate.
 Exact tenant/company/account/book, source identities and currency determine a stable case;
 amounts, row IDs and tolerance versions remain observation evidence. Corrected sources change
@@ -235,6 +239,15 @@ uses its selected profile at every boundary. Ambiguous many-to-one mappings and
 collisions are rejected. Meridian period-close journals and their reversals are
 excluded from provider-basis balances and gross export activity.
 
+Statement matching requires compatible transaction currencies even when a security or external ID
+is present, including every split leg. Explicit FX conversion normalizes amount and observed price
+before matching; missing rates retain source currencies. Configured rules use their complete existing
+quantity, amount, basis-point, settlement-window and price evaluators. Exact pairs precede exact splits;
+then declared rule order controls matching, with pairs before splits within each transaction rule.
+Matched groups retain the actual configured rule ID. Prices constrain matching when observed on
+both sides; quantity-only positions stay quantity-only, and net cash including fees is never
+invented as an execution price. Position prices may derive from observed market value and quantity.
+
 Statement matching retains exact tolerance rules/version and matcher revision with population
 availability. Missing/failed internal populations and empty statements cannot certify source clearing;
 a narrower source feed is a distinct comparison scope. This evidence is retained with the immutable
@@ -255,6 +268,11 @@ Governed disposal posting forwards the approved instruction's optional `Disposal
 atomic tax-lot command. Storage validates that price against supported cash journal proceeds and
 retains the allocation convention; aggregate-only instructions retain no quote and reporting derives
 their canonical price from the journal and retained wash-sale deferrals.
+Under resolved Asset Accounting Event Spine authority, the exact cash/carrying/optional realized
+result disposal shape retains an Investing category for actual proceeds before approval. Carrying
+relief must equal the spine's selected-lot basis assertions and cash must equal the retained event
+amount. Compound/custom journals and mismatched basis remain unclassified and fail closed when
+their opposing noncash legs reach reporting; an arbitrary `Dispose` label is not attribution.
 
 Factor-paydown candidates require lot quantity as of the event effective date, reconstructed by
 the journal store from retained mutation history. Missing or inconsistent historical quantity
@@ -317,7 +335,15 @@ the lots of record, refuses a lot not at the position's prior factor, re-runs th
 refuses any client shift of principal or basis between lots, supplies the instruction's components
 to the rule's `LotMutationComponent` formulas only under the `FactorPaydown` intent, binds the
 carrying credit to the lots' exact account and the cash/gain/loss lines to that account's scope,
-and retains the instruction as `LotFactorPaydown`. The spine service rereads every paid-down lot
+and retains the instruction as `LotFactorPaydown`.
+The governed candidate also retains its Investing cash-flow category against every immutable
+journal line ID before approval. Reports classify the actual principal received; premium/discount
+realization and relieved basis do not become separate cash movements. Reversal remaps this evidence.
+`AssetAccountingCandidateCanonicalizer` remaps validated line-bound cash-flow evidence when it
+assigns deterministic IDs to a new draft. Rebuilding the same disposal or factor-paydown request
+therefore preserves its approved attribution and exact atomic receipt; changed group/category,
+ordered economics, or scope remains a collision. Original drafts and retained journals stay immutable.
+The spine service rereads every paid-down lot
 and its carrying credit before drafting; posting dispatches a `FactorPaydown` batch to the atomic
 journal/lot store. A plain factor journal without the lot mutation is not posting authority.
 

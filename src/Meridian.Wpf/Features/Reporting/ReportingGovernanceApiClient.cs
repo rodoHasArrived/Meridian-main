@@ -87,6 +87,9 @@ public interface IReportingGovernanceApiClient
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Adapts reporting readiness, execution, validation, approval, release, and delivery APIs for desktop governance workflows.
+/// </summary>
 public sealed class ReportingGovernanceApiClient : IReportingGovernanceApiClient
 {
     private readonly ApiClientService _apiClient;

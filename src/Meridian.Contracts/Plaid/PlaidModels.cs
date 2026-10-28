@@ -279,6 +279,9 @@ public sealed record PlaidTransferResult(
     Guid? PendingPaymentId = null,
     DateTimeOffset? CreatedAt = null);
 
+/// <summary>
+/// Defines Plaid API operations for linking institutions, retrieving account data, and transfers.
+/// </summary>
 public interface IPlaidClient
 {
     Task<PlaidLinkTokenResponse> CreateLinkTokenAsync(
@@ -333,6 +336,9 @@ public interface IPlaidClient
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Retains Plaid items, accounts, sync cursors, status, and webhook processing state.
+/// </summary>
 public interface IPlaidConnectionRepository
 {
     Task<IReadOnlyList<PlaidItemDto>> ListItemsAsync(CancellationToken ct = default);
@@ -358,6 +364,9 @@ public interface IPlaidConnectionRepository
     Task RecordTransferAsync(PlaidTransferResult result, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Coordinates Plaid connection setup, account ingestion, synchronization, and webhook recording.
+/// </summary>
 public interface IPlaidIngestionService
 {
     Task<PlaidLinkTokenResponse> CreateLinkTokenAsync(PlaidLinkTokenRequest request, CancellationToken ct = default);
@@ -379,6 +388,9 @@ public interface IPlaidIngestionService
     Task<PlaidWebhookEventDto> RecordWebhookAsync(PlaidWebhookEventDto webhook, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Creates sandbox Plaid transfers from explicit transfer requests.
+/// </summary>
 public interface IPlaidTransferService
 {
     Task<PlaidTransferResult> CreateSandboxTransferAsync(PlaidTransferRequest request, CancellationToken ct = default);

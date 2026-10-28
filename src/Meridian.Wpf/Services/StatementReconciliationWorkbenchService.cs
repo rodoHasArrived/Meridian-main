@@ -4,11 +4,17 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Supplies the current statement-reconciliation workbench snapshot.
+/// </summary>
 public interface IStatementReconciliationWorkbenchService
 {
     Task<StatementReconciliationWorkbenchSnapshot> GetSnapshotAsync(CancellationToken ct = default);
 }
 
+/// <summary>
+/// Builds statement-reconciliation workbench state from shared reconciliation API responses.
+/// </summary>
 public sealed class StatementReconciliationWorkbenchService : IStatementReconciliationWorkbenchService
 {
     private readonly IWorkstationReconciliationApiClient _apiClient;
@@ -38,6 +44,9 @@ public sealed class StatementReconciliationWorkbenchService : IStatementReconcil
     }
 }
 
+/// <summary>
+/// Returns an empty statement-reconciliation snapshot when no workbench service is configured.
+/// </summary>
 public sealed class NullStatementReconciliationWorkbenchService : IStatementReconciliationWorkbenchService
 {
     public Task<StatementReconciliationWorkbenchSnapshot> GetSnapshotAsync(CancellationToken ct = default)

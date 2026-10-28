@@ -2,6 +2,7 @@ using Meridian.Contracts.Coordination;
 
 namespace Meridian.Platform.Coordination;
 
+/// <summary>Uses cluster leases to determine dispatcher leadership and scheduled-work ownership.</summary>
 public sealed class ScheduledWorkOwnershipService : IScheduledWorkOwnershipService
 {
     private const string DispatcherLeaderResourceId = "leader/backfill-dispatch";

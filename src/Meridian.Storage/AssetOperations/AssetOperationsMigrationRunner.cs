@@ -3,6 +3,9 @@ using Meridian.Storage.Migrations;
 
 namespace Meridian.Storage.AssetOperations;
 
+/// <summary>
+/// Applies and resets the PostgreSQL schema migrations owned by asset operations.
+/// </summary>
 public sealed class AssetOperationsMigrationRunner
 {
     private readonly PostgresMigrationRunner _runner;

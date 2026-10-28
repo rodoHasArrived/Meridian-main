@@ -5,6 +5,9 @@ using NpgsqlTypes;
 
 namespace Meridian.Storage.Reporting;
 
+/// <summary>
+/// Exposes a read-only probe of reporting storage liveness and schema readiness.
+/// </summary>
 public interface IReportingDeploymentProbe
 {
     ReportingDeploymentProbeResult Probe();

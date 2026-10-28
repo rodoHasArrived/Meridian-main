@@ -10,6 +10,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Coordinates symbol, frequency, timezone, and gap-strategy selection for alignment and export.
+/// </summary>
 public sealed class TimeSeriesAlignmentViewModel : BindableBase
 {
     private readonly Func<AlignmentOptions, CancellationToken, Task<AlignmentResult>> _alignDataAsync;

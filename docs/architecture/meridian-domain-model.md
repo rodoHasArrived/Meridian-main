@@ -2,7 +2,7 @@
 
 **Status:** active guidance  
 **Owner:** core-team  
-**Reviewed:** 2026-07-10
+**Reviewed:** 2026-10-28
 
 ## Purpose
 
@@ -16,11 +16,13 @@ period, evidence, approval, journal, report, and audit trail.
 
 | Concept | Definition | Primary relationships |
 | --- | --- | --- |
-| Organization | Customer or operating group whose entities, portfolios, accounts, books, users, and reports are governed together. | Owns entities, portfolios, accounts, books, operating policies, reports, and audit scope. |
+| Organization | Customer or operating group whose entities, portfolios, accounts, books, users, and reports are governed together. | Governs entities, portfolios, operating policies, reports, and audit scope; its entities own the financial accounts and accounting books. |
 | Entity | Legal, reporting, operating, or economic party whose activity needs controlled evidence and accounting treatment. | Belongs to an organization; can own accounts, portfolios, books, obligations, reports, and close periods. |
 | Portfolio | Investment sleeve, strategy container, treasury pool, or operating portfolio used to group holdings and activity. | Belongs to an organization or entity; holds positions; receives transactions and valuations. |
-| Account | Bank, custody, brokerage, operating, vendor, customer, or GL account where assets, cash, obligations, or activity live. | Links transactions, balances, reconciliations, ledger accounts, counterparties, and evidence. |
-| Book | Accounting or operational record set for an organization, entity, portfolio, account, or fund. | Contains periods, policies, journal entries, balances, close posture, and report outputs. |
+| Account | Financial container where assets, cash, obligations, or observed activity live, such as a bank, custody, brokerage, operating, vendor, or customer account. | Retains entity and tenant ownership; links transactions, positions, reconciliations, counterparties, and evidence. Its identity is distinct from a Ledger Account. |
+| Book | Entity-owned accounting record with an explicit basis, functional currency, calendar, and policy versions. | Contains accounting periods, ledger accounts, immutable journals, balances, close posture, and report outputs; portfolio and financial-account scopes link activity without replacing the owning entity. |
+| Accounting Period (Period) | Book-scoped accounting interval with governed review, close, lock, and reopen state. | Owns the period authority checked when journals are posted or corrected. |
+| Ledger Account | Accounting classification used for balanced debit and credit postings within a book. | Belongs to the book's chart of accounts and receives journal lines; a financial Account can map to several ledger accounts under declared accounting policy. |
 | Fund | Legal or reporting vehicle whose books, capital, positions, and reports must be controlled. | Specializes entity/portfolio/book behavior for fund administration, investor capital, and private-capital operations. |
 | Security | Canonical identity for a financial instrument or investable interest. | Security Master owns identity, identifiers, classification, and reference evidence; Instruments and Asset Operations add terms, roles, positions, and economic projections keyed by `SecurityId`. |
 | Instrument Role | Effective-dated relationship an instrument has to a governed scope, such as holder, issuer, lender, borrower, payer, or receiver. | Connects a Security to a book, entity, portfolio, account, or counterparty without changing Security Master ownership. |
@@ -33,7 +35,7 @@ period, evidence, approval, journal, report, and audit trail.
 | Projection Lineage | Read-only trace of the projection model, run, event, input evidence, and version used to derive economic state or amount. | Explains a posting candidate and downstream journal without becoming posting authority. |
 | Transaction | Business event that changes holdings, cash, obligations, ledger balances, or evidence state. | References scope, account or portfolio, source evidence, effective date, and processing status. |
 | Operational Event | End-to-end operating object such as a trade, cash movement, invoice, fee, subscription, redemption, transfer, corporate action, valuation, reconciliation, adjustment, approval, close task, or fund event. | Connects evidence, workflow, posting candidate, journal lifecycle, ledger impact, reporting, delivery, and audit history. |
-| Ledger | Double-entry accounting record for an organization, entity, portfolio, account, book, fund, or reporting scope. | Contains immutable journal entries and account balances. |
+| Ledger | Authoritative double-entry accounting record within an entity-owned accounting book. | Contains immutable journal entries and ledger-account balances; reporting across organization, portfolio, account, or fund scopes retains the contributing books and perimeter. |
 | Accounting Book Context | Authoritative ledger-book, period, basis, policy, currency, owner-scope, and dimension context resolved for a posting workflow. | Snapshotted in shared contracts for validation and evidence; client assertions must match server-owned book state. |
 | Accounting Rule Pack Reference | Typed reference to the existing promoted accounting policy rule pack and selected rule/version. | Explains candidate generation without defining another rules engine or source of accounting truth. |
 | Journal Entry | Authoritative balanced accounting aggregate after posting. | Owns child ledger entries and posts debits and credits to ledger accounts; requires source, effective date, posting date, approval state, evidence, and governed book context. |
@@ -47,6 +49,13 @@ period, evidence, approval, journal, report, and audit trail.
 ## Invariants
 
 - Accounting-impacting changes must preserve double-entry balance.
+- Financial Account, Book, Ledger Account, and Capital Account retain distinct identities and
+  purposes. A custody account is not a general-ledger classification; a capital-account subledger
+  reconciles to the ledger rather than replacing its journals.
+- An accounting Book has an explicit owning entity. Organization, portfolio, account, fund, and
+  consolidated views declare their scope and source books; a reporting aggregate does not become
+  a new posting book or supply cross-entity posting authority. See
+  [Account and Book Scopes](../domain/account-and-book-scopes.md).
 - Journal entries are immutable after posting; corrections occur through reversal and rebook.
 - `JournalEntry` is the accounting aggregate. `Transaction` remains the broader business-event term;
   the two names must not be treated as interchangeable.

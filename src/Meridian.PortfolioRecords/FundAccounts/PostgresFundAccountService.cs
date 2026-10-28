@@ -206,9 +206,11 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
             request.BankName,
             request.Lines.Count,
             DateTimeOffset.UtcNow,
-            request.LoadedBy);
+            request.LoadedBy,
+            request.StatementRevision,
+            request.IsTransactionFeed ? true : null);
 
-        await _store.InsertBankStatementBatchAsync(batch, request.Lines, ct).ConfigureAwait(false);
+        await _store.InsertBankStatementBatchAsync(batch, FundAccountStatementValidation.RetainAuthority(request), ct).ConfigureAwait(false);
         return batch;
     }
 
@@ -227,6 +229,7 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
     {
         ArgumentNullException.ThrowIfNull(request);
         ct.ThrowIfCancellationRequested();
+        var now = DateTimeOffset.UtcNow;
 
         await RequireAccountAsync(request.AccountId, ct).ConfigureAwait(false);
         var snapshots = await _store.GetBalanceHistoryAsync(request.AccountId, request.AsOfDate, request.AsOfDate, ct).ConfigureAwait(false)
@@ -235,14 +238,14 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
             ?? Array.Empty<CustodianPositionLineDto>();
         var custodianBatches = await _store.GetCustodianStatementBatchesAsync(request.AccountId, request.AsOfDate, ct).ConfigureAwait(false)
             ?? Array.Empty<CustodianStatementBatchDto>();
-        var bankLines = await _store.GetBankStatementLinesAsync(request.AccountId, request.AsOfDate, request.AsOfDate, ct).ConfigureAwait(false)
-            ?? Array.Empty<BankStatementLineDto>();
+        var bankLines = BankStatementClosingBalanceAuthority.ForStatementDate(
+            await _store.GetBankStatementLinesAsync(request.AccountId, null, null, ct).ConfigureAwait(false)
+                ?? Array.Empty<BankStatementLineDto>(), request.AsOfDate).ToArray();
 
         var snapshot = snapshots.OrderByDescending(s => s.RecordedAt).FirstOrDefault();
 
         var runId = Guid.NewGuid();
         var results = new List<AccountReconciliationResultDto>();
-        var now = DateTimeOffset.UtcNow;
 
         var cashCheck = AccountReconciliationChecks.BuildCashBalanceCheck(runId, snapshot, bankLines);
         if (cashCheck is not null)
@@ -271,6 +274,10 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         Guid accountId, CancellationToken ct = default)
         => _store.GetReconciliationRunsAsync(accountId, ct);
 
+    public Task<IReadOnlyList<AccountReconciliationResultDto>> GetReconciliationResultsForAccountsAsync(
+        IReadOnlyCollection<Guid> accountIds, bool openOnly = false, CancellationToken ct = default)
+        => _store.GetReconciliationResultsForAccountsAsync(accountIds, openOnly, ct);
+
     public Task<IReadOnlyList<AccountReconciliationResultDto>> GetReconciliationResultsAsync(
         Guid reconciliationRunId, CancellationToken ct = default)
         => _store.GetReconciliationResultsAsync(reconciliationRunId, ct);
@@ -279,12 +286,14 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         Guid accountId, CancellationToken ct = default)
     {
         var runs = await _store.GetReconciliationRunsAsync(accountId, ct).ConfigureAwait(false);
+        var accountResults = await _store.GetReconciliationResultsForAccountsAsync([accountId], openOnly: true, ct).ConfigureAwait(false);
+        var resultsByRun = accountResults.ToLookup(result => result.ReconciliationRunId);
         var breaks = new List<PositionReconciliationBreakDto>();
         foreach (var run in runs)
         {
-            var results = await _store.GetReconciliationResultsAsync(run.ReconciliationRunId, ct).ConfigureAwait(false);
+            var results = resultsByRun[run.ReconciliationRunId];
             breaks.AddRange(results
-                .Where(r => AccountReconciliationChecks.IsBreak(r)
+                .Where(r => r.IsOpenBreak
                     && (string.Equals(r.Category, "Position", StringComparison.OrdinalIgnoreCase)
                         || string.Equals(r.Category, "Positions", StringComparison.OrdinalIgnoreCase)))
                 .Select(r => new PositionReconciliationBreakDto(
@@ -305,12 +314,14 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
     {
         var account = await _store.GetAccountAsync(accountId, ct).ConfigureAwait(false);
         var runs = await _store.GetReconciliationRunsAsync(accountId, ct).ConfigureAwait(false);
+        var accountResults = await _store.GetReconciliationResultsForAccountsAsync([accountId], openOnly: true, ct).ConfigureAwait(false);
+        var resultsByRun = accountResults.ToLookup(result => result.ReconciliationRunId);
         var breaks = new List<CashReconciliationBreakDto>();
         foreach (var run in runs)
         {
-            var results = await _store.GetReconciliationResultsAsync(run.ReconciliationRunId, ct).ConfigureAwait(false);
+            var results = resultsByRun[run.ReconciliationRunId];
             breaks.AddRange(results
-                .Where(r => AccountReconciliationChecks.IsBreak(r) && string.Equals(r.Category, "Cash", StringComparison.OrdinalIgnoreCase))
+                .Where(r => r.IsOpenBreak && string.Equals(r.Category, "Cash", StringComparison.OrdinalIgnoreCase))
                 .Select(r => new CashReconciliationBreakDto(
                     r.ResultId,
                     accountId,
@@ -359,19 +370,8 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        // Resolve SyncHistoryId: re-use existing if same (accountId, capability, correlationId)
-        Guid syncHistoryId = Guid.NewGuid();
-        if (!string.IsNullOrWhiteSpace(correlationId))
-        {
-            var existing = await _store.GetSyncHistoryAsync(request.AccountId, capability, ct).ConfigureAwait(false);
-            var match = existing.FirstOrDefault(e =>
-                string.Equals(e.CorrelationId, correlationId, StringComparison.OrdinalIgnoreCase));
-            if (match is not null)
-                syncHistoryId = match.SyncHistoryId;
-        }
-
         var entry = new AccountSyncHistoryEntryDto(
-            syncHistoryId,
+            Guid.NewGuid(),
             request.AccountId,
             capability,
             request.Status,
@@ -390,8 +390,7 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
             Math.Max(0, request.SecurityMissingCount),
             warnings);
 
-        await _store.InsertSyncHistoryAsync(entry, ct).ConfigureAwait(false);
-        return entry;
+        return await _store.UpsertSyncHistoryAsync(entry, ct).ConfigureAwait(false);
     }
 
     public Task<IReadOnlyList<AccountSyncHistoryEntryDto>> GetSyncHistoryAsync(
@@ -417,15 +416,9 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
 
         var syncHistory = await _store.GetSyncHistoryAsync(accountId, null, ct).ConfigureAwait(false);
         var marginSnapshots = await _store.GetMarginSnapshotsAsync(accountId, ct).ConfigureAwait(false);
-        var reconciliationRuns = await _store.GetReconciliationRunsAsync(accountId, ct).ConfigureAwait(false);
-
-        // Aggregate open break count across all runs
-        int openBreakCount = 0;
-        foreach (var run in reconciliationRuns)
-        {
-            var runResults = await _store.GetReconciliationResultsAsync(run.ReconciliationRunId, ct).ConfigureAwait(false);
-            openBreakCount += runResults.Count(AccountReconciliationChecks.IsBreak);
-        }
+        var activeResults = await _store.GetReconciliationResultsForAccountsAsync([accountId], openOnly: true, ct)
+            .ConfigureAwait(false);
+        var openBreakCount = activeResults.Count;
 
         var now = DateTimeOffset.UtcNow;
         var latestSync = syncHistory.OrderByDescending(e => e.AttemptedAt).ThenByDescending(e => e.CompletedAt).FirstOrDefault();
@@ -577,15 +570,18 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
             : new AccountStructureQuery();
         var accounts = await _store.QueryAccountsAsync(query, ct).ConfigureAwait(false);
 
+        var activeResults = await _store.GetReconciliationResultsForAccountsAsync(
+            accounts.Select(account => account.AccountId).ToArray(), openOnly: true, ct).ConfigureAwait(false);
+        var resultsByRun = activeResults.ToLookup(result => result.ReconciliationRunId);
         var views = new List<AccountOpenBreakView>();
         foreach (var account in accounts)
         {
             var runs = await _store.GetReconciliationRunsAsync(account.AccountId, ct).ConfigureAwait(false);
             foreach (var run in runs)
             {
-                var results = await _store.GetReconciliationResultsAsync(run.ReconciliationRunId, ct).ConfigureAwait(false);
+                var results = resultsByRun[run.ReconciliationRunId];
                 views.AddRange(results
-                    .Where(static r => AccountReconciliationChecks.IsBreak(r))
+                    .Where(static r => r.IsOpenBreak)
                     .Select(r => new AccountOpenBreakView(
                         account.AccountId, r.ReconciliationRunId, r.ResultId,
                         r.CheckLabel, r.Category, r.Variance, r.Reason)));

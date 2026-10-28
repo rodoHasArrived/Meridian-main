@@ -86,46 +86,35 @@ public static class LedgerFinancialStatementBuilder
 
         foreach (var entry in PeriodEntries(ledger, periodStart, asOf))
         {
-            var cashDelta = entry.Lines
-                .Where(line => IsCashAccount(line.Account) && MatchesScope(line, financialAccountId, lineDimensions))
-                .Sum(static line => line.Debit - line.Credit);
-            if (cashDelta == 0m)
-                continue;
+            var counterpartLines = LedgerCashFlowAttribution.CashCounterparts(entry,
+                    line => MatchesScope(line, financialAccountId, lineDimensions))
+                .Where(static line => line.Amount != 0m);
 
-            var counterpartLines = entry.Lines
-                .Where(line => !IsCashAccount(line.Account) && MatchesScope(line, financialAccountId, lineDimensions))
-                .Select(line => (line.Account, Weight: line.Debit + line.Credit))
-                .Where(static line => line.Weight > 0m)
-                .ToArray();
-            var weightTotal = counterpartLines.Sum(static line => line.Weight);
-            if (weightTotal <= 0m)
-                continue;
-
-            var placed = 0m;
-            for (var index = 0; index < counterpartLines.Length; index++)
+            // Counterpart credits supply cash; counterpart debits consume it. Preserve each booked
+            // amount instead of allocating net cash by unsigned weights, which turns expenses into
+            // inflows when a contribution and its payment share a journal. Balanced scoped legs
+            // already reconcile exactly, without another currency-rounding allocation. An explicit
+            // producer-retained activity category instead classifies that group's actual net cash;
+            // realized gain/loss and carrying-basis relief are not additional cash movements.
+            foreach (var contribution in counterpartLines)
             {
-                var (account, weight) = counterpartLines[index];
-                var share = index == counterpartLines.Length - 1
-                    ? cashDelta - placed
-                    : LedgerCurrencyRounding.RoundCurrency(cashDelta * weight / weightTotal);
-                placed += share;
-
-                var category = CategorizeCashFlow(account.AccountType);
+                var amount = contribution.Amount;
+                var category = contribution.Category ?? CategorizeCashFlow(contribution.CounterpartyType);
                 switch (category)
                 {
                     case LedgerCashFlowCategory.Operating:
-                        operating += share;
+                        operating += amount;
                         break;
                     case LedgerCashFlowCategory.Investing:
-                        investing += share;
+                        investing += amount;
                         break;
                     default:
-                        financing += share;
+                        financing += amount;
                         break;
                 }
 
-                var key = (category, account.Name, account.AccountType);
-                lineTotals[key] = lineTotals.TryGetValue(key, out var existing) ? existing + share : share;
+                var key = (category, contribution.Description, contribution.CounterpartyType);
+                lineTotals[key] = lineTotals.TryGetValue(key, out var existing) ? existing + amount : amount;
             }
         }
 
@@ -506,8 +495,7 @@ public static class LedgerFinancialStatementBuilder
     }
 
     private static bool IsCashAccount(LedgerAccount account)
-        => account.AccountType == LedgerAccountType.Asset
-           && account.Name.StartsWith("Cash", StringComparison.OrdinalIgnoreCase);
+        => LedgerCashFlowAttribution.IsCashAccount(account);
 
     private static LedgerCashFlowCategory CategorizeCashFlow(LedgerAccountType counterpartyType)
         => counterpartyType switch

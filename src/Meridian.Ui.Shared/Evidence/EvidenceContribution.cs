@@ -13,6 +13,9 @@ public sealed record EvidenceContribution(
     IReadOnlyList<string> RequiredEvidenceIds,
     IReadOnlyList<string> Warnings);
 
+/// <summary>
+/// Contributes evidence nodes and relationships for supported workflow subjects.
+/// </summary>
 public interface IEvidenceContributor
 {
     string ContributorId { get; }

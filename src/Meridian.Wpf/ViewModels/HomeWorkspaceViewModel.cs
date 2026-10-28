@@ -14,6 +14,9 @@ using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Loads the desktop home overview, workspace navigation, and recent activity.
+/// </summary>
 public sealed class HomeWorkspaceViewModel : BindableBase
 {
     private readonly INavigationService _navigationService;

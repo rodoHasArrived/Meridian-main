@@ -7,6 +7,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Shell.ViewModels;
 
+/// <summary>
+/// Loads the operator inbox and projects its primary work item, lane groups, and review counts.
+/// </summary>
 public sealed class OperatorInboxViewModel : BindableBase
 {
     private OperatorInboxDto? _inbox;

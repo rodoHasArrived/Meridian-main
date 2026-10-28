@@ -193,6 +193,9 @@ public sealed record ExecutionReport
     public string? RejectReason { get; init; }
     /// <summary>Broker-assigned order ID (may differ from the client-provided <see cref="OrderId"/>).</summary>
     public string? GatewayOrderId { get; init; }
+    /// <summary>Broker-reported external account that owns the order, never caller routing metadata.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? BrokerAccountId { get; init; }
     /// <summary>The client-provided order ID from the original <see cref="OrderRequest"/>.</summary>
     public string? ClientOrderId { get; init; }
     /// <summary>Broker identity superseded by this replacement, when explicitly reported.</summary>
@@ -313,6 +316,10 @@ public sealed record OrderState
 
     /// <summary>Accounting scope the order was submitted under, when fund-scoped.</summary>
     public Guid? FundAccountId { get; init; }
+
+    /// <summary>External account retained from the broker acknowledgement for exact restart recovery.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? BrokerAccountId { get; init; }
 
     /// <summary>Strategy run that authorized this retained order, when supplied.</summary>
     public string? RunId { get; init; }

@@ -10,7 +10,7 @@ namespace Meridian.Ui.Shared.Services;
 
 public sealed partial class LedgerReportingAuthoritativeSource
 {
-    private async Task<ImmutableArray<IReadOnlyDictionary<string, string>>> RetainOpenLotSuccessorEvidenceAsync(
+    private static ImmutableArray<IReadOnlyDictionary<string, string>> RetainOpenLotSuccessorEvidence(
         ImmutableArray<IReadOnlyDictionary<string, string>> rows,
         IReadOnlyList<LedgerJournalEntryRecord> completeJournals,
         IReadOnlyList<LedgerJournalEntryRecord> selectedJournals,
@@ -19,7 +19,7 @@ public sealed partial class LedgerReportingAuthoritativeSource
         string tenantId,
         string companyId,
         string fundId,
-        CancellationToken cancellationToken)
+        IReadOnlyList<AtomicTaxLotJournalResult>? retainedSuccessorHistory)
     {
         var selectedIds = selectedJournals.Select(static journal => journal.Entry.JournalEntryId).ToHashSet();
         var journals = completeJournals.Where(journal => selectedIds.Contains(journal.Entry.JournalEntryId))
@@ -27,23 +27,18 @@ public sealed partial class LedgerReportingAuthoritativeSource
         var required = journals.Values.Where(static journal =>
                 journal.Entry.Metadata.Tags?.ContainsKey(CanonicalOpenLotSuccessorEvidence.InstructionFingerprintTag) == true)
             .Select(static journal => journal.Entry.JournalEntryId).ToHashSet();
-        if (_openLotSuccessorHistory is null)
+        // Successor batches come from the same atomic reporting snapshot as the journals; a source
+        // that cannot capture them together cannot certify retained corporate-action journals.
+        if (retainedSuccessorHistory is null)
         {
             if (required.Count != 0)
                 throw Unavailable("Canonical successor mutation history is required for retained corporate-action journals.");
             return rows;
         }
 
-        IReadOnlyList<AtomicTaxLotJournalResult> batches;
-        try
-        {
-            batches = await _openLotSuccessorHistory.GetOpenLotSuccessorHistoryAsync(
-                book.LedgerBookId, selectedIds.ToArray(), cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception exception) when (exception is NotSupportedException or ArgumentException or InvalidOperationException or JsonException or LedgerValidationException)
-        {
-            throw Unavailable($"Canonical successor mutation history is unavailable: {exception.Message}");
-        }
+        var batches = retainedSuccessorHistory
+            .Where(batch => selectedIds.Contains(batch.Journal.Entry.JournalEntryId))
+            .ToArray();
 
         var evidence = new Dictionary<Guid, (string Json, string Hash, string InstructionHash, OpenLotSuccessorInstructionDto Instruction)>();
         foreach (var batch in batches)
@@ -93,9 +88,9 @@ public sealed partial class LedgerReportingAuthoritativeSource
             return (IReadOnlyDictionary<string, string>)enriched;
         }).ToImmutableArray();
     }
-    private async Task<IReadOnlyList<CanonicalCorporateActionLotReport>> BuildCorporateActionLotReportsAsync(
+    private static IReadOnlyList<CanonicalCorporateActionLotReport> BuildCorporateActionLotReports(
         Guid ledgerBookId, IReadOnlyList<LedgerJournalEntryRecord> journals, string functionalCurrency,
-        LedgerLineDimensionSet selectedDimensions, CancellationToken cancellationToken)
+        LedgerLineDimensionSet selectedDimensions, IReadOnlyList<AtomicTaxLotJournalResult>? retainedSuccessorHistory)
     {
         var required = journals.Where(journal => journal.Entry.Metadata.Tags?.ContainsKey(OpenLotSuccessors.JournalFingerprintTag) == true
             && journal.Entry.Lines.Any(line => line.Dimensions is { } dimensions
@@ -103,7 +98,7 @@ public sealed partial class LedgerReportingAuthoritativeSource
             .ToDictionary(journal => journal.Entry.JournalEntryId);
         if (required.Count == 0)
             return [];
-        if (_openLotSuccessorHistory is null)
+        if (retainedSuccessorHistory is null)
             throw Unavailable("Canonical successor history is required for corporate-action report-pack evidence.");
         foreach (var journal in required.Values)
             if (journal.Entry.Lines.Any(line => line.Dimensions is not { } dimensions
@@ -111,9 +106,10 @@ public sealed partial class LedgerReportingAuthoritativeSource
                 throw Unavailable("A corporate-action journal crosses the selected report-pack dimensions.");
         try
         {
-            var batches = await _openLotSuccessorHistory.GetOpenLotSuccessorHistoryAsync(
-                ledgerBookId, required.Keys.ToArray(), cancellationToken).ConfigureAwait(false);
-            if (batches.Count != required.Count || batches.Select(batch => batch.Journal.Entry.JournalEntryId).Distinct().Count() != required.Count)
+            var batches = retainedSuccessorHistory
+                .Where(batch => required.ContainsKey(batch.Journal.Entry.JournalEntryId))
+                .ToArray();
+            if (batches.Length != required.Count || batches.Select(batch => batch.Journal.Entry.JournalEntryId).Distinct().Count() != required.Count)
                 throw new ArgumentException("Report-pack evidence requires one complete successor receipt per retained journal.");
             var reports = new List<CanonicalCorporateActionLotReport>();
             foreach (var batch in batches)

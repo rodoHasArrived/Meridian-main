@@ -86,6 +86,25 @@ public sealed class FamilyOfficeReadServiceTests
         Assert.Contains(overview.Readiness.Blockers, warning => warning.Contains("stale", StringComparison.OrdinalIgnoreCase));
         Assert.Contains(overview.Readiness.Blockers, warning => warning.Contains("ownership", StringComparison.OrdinalIgnoreCase));
         Assert.Contains(overview.Readiness.Blockers, warning => warning.Contains("unreconciled", StringComparison.OrdinalIgnoreCase));
+
+        var date = new DateOnly(2026, 5, 25);
+        var batch = Guid.NewGuid();
+        await fundAccounts.IngestBankStatementAsync(new(batch, accountId, date, "Bank", null,
+            [new(Guid.NewGuid(), batch, accountId, date, date, 249_000m, "USD", "credit", "closing", null, 249_000m)], "ops"));
+        var original = await fundAccounts.ReconcileAccountAsync(new(accountId, date, "ops"));
+        var broken = await service.GetOverviewAsync(CancellationToken.None);
+        Assert.Equal("OpenBreaks", Assert.Single(broken.Accounts).ReconciliationStatus);
+        Assert.Equal(1, broken.Readiness.OpenExceptionCount);
+
+        await fundAccounts.RecordBalanceSnapshotAsync(new(accountId, date, "USD", 249_000m, "custodian",
+            SecuritiesMarketValue: 750_000m, ExternalReference: "statement-corrected"));
+        await fundAccounts.ReconcileAccountAsync(new(accountId, date, "ops"));
+        var corrected = await service.GetOverviewAsync(CancellationToken.None);
+        Assert.Equal("Reconciled", Assert.Single(corrected.Accounts).ReconciliationStatus);
+        Assert.Equal(0, corrected.Readiness.OpenExceptionCount);
+        Assert.DoesNotContain(corrected.Readiness.Blockers, warning => warning.Contains("unreconciled", StringComparison.OrdinalIgnoreCase));
+        Assert.Equal(1, (await fundAccounts.GetReconciliationRunsAsync(accountId))
+            .Single(run => run.ReconciliationRunId == original.ReconciliationRunId).TotalBreaks);
     }
 
     [Fact]
