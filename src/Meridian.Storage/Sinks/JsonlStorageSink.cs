@@ -1085,9 +1085,12 @@ public sealed class JsonlStorageSink : IStorageSink
                     var idx = 0;
                     while (total > _maxBytes && idx < ordered.Count)
                     {
+                        // A file a writer holds stays, so only what was actually removed counts
+                        // toward the budget and the sweep moves on to newer candidates.
                         var target = ordered[idx++];
-                        total -= RetainedBytes(target);
-                        TryDelete(target);
+                        var bytes = RetainedBytes(target);
+                        if (TryDelete(target))
+                            total -= bytes;
                     }
                 }
             }
@@ -1114,8 +1117,9 @@ public sealed class JsonlStorageSink : IStorageSink
         // a late append replaces an archive, a sink extends a plain file. Deleting it then would drop
         // bytes whose append already reported success, so the WAL would commit events no longer on
         // disk. Hold the lock that writer takes, without creating one, and delete only a file that is
-        // still exactly as selected; anything else waits for a later sweep.
-        private void TryDelete(FileInfo file)
+        // still exactly as selected; anything else waits for a later sweep. Returns whether the file
+        // is gone.
+        private bool TryDelete(FileInfo file)
         {
             var selectedWriteUtc = file.LastWriteTimeUtc;
             var selectedLength = file.Length;
@@ -1126,14 +1130,17 @@ public sealed class JsonlStorageSink : IStorageSink
                     ? ArchiveAppendLock.TryAcquire(file.FullName, out lease, createIfMissing: false)
                     : JsonlWriterLock.TryAcquireExclusive(file.FullName, out lease, createIfMissing: false);
                 if (!free)
-                    return;
+                    return false;
                 file.Refresh();
-                if (!file.Exists || file.LastWriteTimeUtc != selectedWriteUtc || file.Length != selectedLength)
-                    return;
+                if (!file.Exists)
+                    return true;
+                if (file.LastWriteTimeUtc != selectedWriteUtc || file.Length != selectedLength)
+                    return false;
                 // Remove the sidecar first: an interruption then leaves a file without a
                 // checksum, never a stale checksum that a later recreated file would fail.
                 File.Delete(file.FullName + ".sha256");
                 file.Delete();
+                return true;
             }
             catch (Exception ex)
             {
@@ -1142,6 +1149,7 @@ public sealed class JsonlStorageSink : IStorageSink
                     "Failed to delete file during retention cleanup: {FilePath}, Size={FileSize} bytes",
                     file.FullName,
                     file.Exists ? file.Length : 0);
+                return false;
             }
             finally
             {

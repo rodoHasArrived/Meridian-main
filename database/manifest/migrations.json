@@ -1198,6 +1198,15 @@
       "sha256": "bc841f6038055ddf8b386fd2af9e2d0dcd578cb1b05a93a8e885a7b3e6a4ecfc"
     },
     {
+      "filename": "008_plaid_transaction_feed_backfill.sql",
+      "immutable": true,
+      "migration_set_id": "fund-accounts",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundAccounts/Migrations/008_plaid_transaction_feed_backfill.sql",
+      "schema": "fund_accounts",
+      "sha256": "9402ef3a1f29b4a8017186c63824b929498a798accab57884b66ed398c39b898"
+    },
+    {
       "filename": "001_banking.sql",
       "immutable": true,
       "migration_set_id": "banking",
@@ -1361,7 +1370,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "96b46f97f8a82c8d253a39ce8d7b386efa661af522de8454fa2dea666c457229",
+  "fingerprint": "772cefeca227095e45cefa665b1606fdc1660fec154c49a509aedc7d69d119a7",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1599,7 +1608,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 151,
+    "files": 152,
     "migration_sets": 10,
     "waivers": 25,
     "warnings": 0

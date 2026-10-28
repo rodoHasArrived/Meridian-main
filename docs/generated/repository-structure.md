@@ -6399,7 +6399,8 @@ Meridian-main
 │   │   │   │   ├── 004_legacy_import_receipts.sql
 │   │   │   │   ├── 005_reconciliation_resolution.sql
 │   │   │   │   ├── 006_sync_history_correlation.sql
-│   │   │   │   └── 007_bank_statement_authority.sql
+│   │   │   │   ├── 007_bank_statement_authority.sql
+│   │   │   │   └── 008_plaid_transaction_feed_backfill.sql
 │   │   │   ├── FundAccountMigrationRunner.cs
 │   │   │   ├── FundAccountStoreOptions.cs
 │   │   │   ├── IFundAccountStore.cs

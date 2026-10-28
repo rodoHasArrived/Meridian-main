@@ -218,6 +218,9 @@ public sealed partial class FileMaintenanceService
                    m => Day(m.Groups[1].Value, m.Groups[2].Value, m.Groups[3].Value)?.AddDays(1))
             ?? Last(relative, @"(?<!\d)(\d{4})(\d{2})(\d{2})(?!\d)",
                    m => Day(m.Groups[1].Value, m.Groups[2].Value, m.Groups[3].Value)?.AddDays(1))
+            // The canonical layout's yyyy/MM/dd directories are always a daily partition.
+            ?? Last(relative, @"(?<!\d)(\d{4})/(\d{2})/(\d{2})/",
+                   m => Day(m.Groups[1].Value, m.Groups[2].Value, m.Groups[3].Value)?.AddDays(1))
             ?? Last(relative, @"(?<!\d)(\d{4})-(\d{2})(?![-\d])",
                    m => Day(m.Groups[1].Value, m.Groups[2].Value, "01")?.AddMonths(1));
     }
