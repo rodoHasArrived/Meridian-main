@@ -91,6 +91,25 @@ public class SampleTests {
         self.assertIn(old, original)
         path.write_text(original.replace(old, new), encoding="utf-8")
 
+    def use_module_descriptor(self) -> str:
+        path = self.root / readiness.CATALOG_PATH
+        original = path.read_text(encoding="utf-8")
+        start = original.index('    new("sample"')
+        end = original.index("\n  ];", start)
+        constructor = original[start:end].strip()
+        constructor = constructor[:-1] + ", FactoryOwner: ProviderCapabilityFactoryOwner.Module)"
+        catalog = original[:start] + "    SampleProviderModule.Descriptor" + original[end:]
+        self.write(readiness.CATALOG_PATH, catalog.replace(
+            "object? Exclusions = null,", "object? FactoryOwner = null, object? Exclusions = null,"))
+        module_path = f"{readiness.ADAPTER_ROOT}/Sample/SampleProviderModule.cs"
+        self.write(module_path, f'''
+public sealed class SampleProviderModule : ConfigurableProviderModuleBase {{
+  // public static ProviderCapabilityDescriptor Descriptor {{ get; }} = new("decoy");
+  public static ProviderCapabilityDescriptor Descriptor {{ get; }} = {constructor};
+}}
+''')
+        return module_path
+
     def assert_rejected(self, fragment: str, data=None):
         errors = readiness.validate_registry(self.root, self.data if data is None else data)
         self.assertTrue(any(fragment in error for error in errors), errors)
@@ -104,6 +123,57 @@ public class SampleTests {
         self.assertEqual({"Core"}, exclusions)
         self.assertEqual("SampleClient", catalog["sample"]["symbol_search"])
         self.assertEqual([], readiness.validate_registry(self.root, self.data))
+
+    def test_module_owned_descriptor_uses_module_inventory_with_balanced_factories(self):
+        module_path = self.use_module_descriptor()
+        for constructor in ("new(", "new ProviderCapabilityDescriptor("):
+            with self.subTest(constructor=constructor):
+                if constructor != "new(":
+                    self.replace_source(module_path, 'new("sample"', 'new ProviderCapabilityDescriptor("sample"')
+                catalog, exclusions = readiness.read_catalog(self.root)
+                self.assertEqual({"Core"}, exclusions)
+                self.assertEqual("SampleClient", catalog["sample"]["streaming"])
+                self.assertEqual("SampleClient", catalog["sample"]["symbol_search"])
+                self.assertEqual([], readiness.validate_registry(self.root, self.data))
+
+    def test_module_descriptor_owner_must_be_present_and_unambiguous(self):
+        module_path = self.use_module_descriptor()
+        source = (self.root / module_path).read_text(encoding="utf-8")
+        self.write(module_path, source.replace("class SampleProviderModule", "class OtherProviderModule"))
+        self.assert_rejected("module descriptor owner SampleProviderModule must have exactly one class declaration; found 0")
+        self.write(module_path, source)
+        self.write(f"{readiness.ADAPTER_ROOT}/Core/DuplicateModule.cs", source)
+        self.assert_rejected("module descriptor owner SampleProviderModule must have exactly one class declaration; found 2")
+
+    def test_module_descriptor_member_must_be_present_and_unambiguous(self):
+        module_path = self.use_module_descriptor()
+        source = (self.root / module_path).read_text(encoding="utf-8")
+        self.write(module_path, source.replace("ProviderCapabilityDescriptor Descriptor", "ProviderCapabilityDescriptor Other"))
+        self.assert_rejected("module descriptor SampleProviderModule.Descriptor must have exactly one declaration; found 0")
+        self.write(module_path, source.replace(
+            "public sealed class SampleProviderModule : ConfigurableProviderModuleBase {",
+            "public sealed class SampleProviderModule : ConfigurableProviderModuleBase {\n"
+            'public static ProviderCapabilityDescriptor Descriptor { get; } = new("duplicate");'))
+        self.assert_rejected("module descriptor SampleProviderModule.Descriptor must have exactly one declaration; found 2")
+
+    def test_module_descriptor_rejects_unsupported_property_initializers_and_nonmodule_ownership(self):
+        module_path = self.use_module_descriptor()
+        source = (self.root / module_path).read_text(encoding="utf-8")
+        for old, new, expected in (
+            ("public static ProviderCapabilityDescriptor", "public ProviderCapabilityDescriptor", "unsupported module descriptor property"),
+            ("{ get; } = new", "{ get; set; } = new", "unsupported module descriptor initializer"),
+            ("{ get; } = new", "=> new", "unsupported module descriptor property"),
+            ("{ get; } = new", "{ get; } = Build", "unsupported module descriptor initializer"),
+            ("FactoryOwner: ProviderCapabilityFactoryOwner.Module", "FactoryOwner: ProviderCapabilityFactoryOwner.Descriptor", "must declare module factory ownership"),
+        ):
+            with self.subTest(replacement=new):
+                self.write(module_path, source.replace(old, new))
+                self.assert_rejected(expected)
+
+    def test_module_descriptor_type_drift_is_checked_against_source_and_registry(self):
+        module_path = self.use_module_descriptor()
+        self.replace_source(module_path, ", Search: typeof(SampleClient)", "")
+        self.assert_rejected("Sample.capabilities.symbol_search: expected False from source catalog")
 
     def test_unknown_provider_id_and_alias_are_rejected(self):
         self.data["adapters"][1]["provider_id"] = "old-sample"

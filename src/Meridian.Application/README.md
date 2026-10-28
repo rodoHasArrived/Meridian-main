@@ -827,10 +827,16 @@ Core workstation host. Do not introduce a second listener or independent monitor
   at the service boundary; projection never reads persistence or mutates command state.
   `FundStructureProjectionContractTests` exercises these views, effective windows, enrichment,
   and snapshot isolation across both implementations.
-  The PostgreSQL-backed service now supports the same shared
-  governance cash-flow projection path as the local JSON/in-memory service, using stored
-  structure rows plus fund-account snapshots, bank-statement rows, assignment metadata, and
-  optional Security Master economic rules for realized/projected cash-flow evidence.
+  `FundStructureCashFlowReadService` owns shared governance cash-flow orchestration, scope
+  resolution, ladders, variance, trend fallback, and optional Security Master projections.
+  Both persistence services pass captured structure, authorized accounts, shared metadata, and
+  an explicit as-of time; PostgreSQL no longer constructs an in-memory command service to read
+  cash flows. Its existing tenant/account visibility filter applies before account history is
+  read. Public contracts, currency handling, effective windows, and projection evidence remain
+  shared. The reader preserves complete statement revision/sequence authority, admits feed rows
+  by their own value date, refuses conflicting statement evidence, and retains unknown current
+  cash as unavailable rather than zero. `FundStructureCashFlowContractTests` covers both service implementations alongside
+  the existing cash-flow and schedule characterization tests.
   In-memory and PostgreSQL ownership-graph diagnostics share one iterative validator for
   self-links, dangling nodes, and exact cycle participants, avoiding recursion limits and
   implementation drift between persistence lanes.

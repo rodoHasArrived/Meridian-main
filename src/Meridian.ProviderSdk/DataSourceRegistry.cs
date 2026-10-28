@@ -451,7 +451,12 @@ public sealed class DataSourceRegistry
                     }
 
                     registrations.AddRange(contracts.Select(contract =>
-                        new ProviderModuleCapabilityRegistration(moduleId, contract, source.ImplementationType)));
+                        new ProviderModuleCapabilityRegistration(moduleId, contract, source.ImplementationType)
+                        {
+                            IsConfigured = module is IProviderModuleCapabilityAvailability availability
+                                ? provider => availability.IsCapabilityConfigured(contract, provider)
+                                : null
+                        }));
                 }
 
                 // Publish only after every capability registration is valid. An exception above or in
@@ -461,7 +466,10 @@ public sealed class DataSourceRegistry
                     services.Add(descriptor);
                 foreach (var registration in registrations)
                 {
-                    if (!_moduleCapabilityRegistrations.Contains(registration))
+                    if (!_moduleCapabilityRegistrations.Any(existing =>
+                            existing.ProviderId == registration.ProviderId
+                            && existing.Contract == registration.Contract
+                            && existing.ImplementationType == registration.ImplementationType))
                         _moduleCapabilityRegistrations.Add(registration);
                 }
             }
