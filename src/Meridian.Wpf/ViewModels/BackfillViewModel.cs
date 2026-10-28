@@ -190,34 +190,6 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
         private set => SetBackfillSectionProperty(WorkbenchSection.IsGapActionPanelVisible, visible => WorkbenchSection.IsGapActionPanelVisible = visible, value);
     }
 
-    private string _nasdaqKeyStatusText = "No API key stored";
-    public string NasdaqKeyStatusText
-    {
-        get => _nasdaqKeyStatusText;
-        private set => SetProperty(ref _nasdaqKeyStatusText, value);
-    }
-
-    private bool _isNasdaqKeyClearVisible;
-    public bool IsNasdaqKeyClearVisible
-    {
-        get => _isNasdaqKeyClearVisible;
-        private set => SetProperty(ref _isNasdaqKeyClearVisible, value);
-    }
-
-    private string _openFigiKeyStatusText = "No API key stored (optional)";
-    public string OpenFigiKeyStatusText
-    {
-        get => _openFigiKeyStatusText;
-        private set => SetProperty(ref _openFigiKeyStatusText, value);
-    }
-
-    private bool _isOpenFigiKeyClearVisible;
-    public bool IsOpenFigiKeyClearVisible
-    {
-        get => _isOpenFigiKeyClearVisible;
-        private set => SetProperty(ref _isOpenFigiKeyClearVisible, value);
-    }
-
     public Meridian.Contracts.Api.BackfillResultDto? LastApiStatus
     {
         get => StatusSection.LastApiStatus;
@@ -1457,38 +1429,8 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
     public (DateTime From, DateTime To, string SymbolsText) BuildLatestUpdatePreset(string? existingSymbolsText) =>
         (DateTime.Today.AddDays(-5), DateTime.Today, AppendSymbols(existingSymbolsText));
 
-    // ── API key management ──────────────────────────────────────────────────
-    public void SetNasdaqApiKey(string apiKey)
-    {
-        Environment.SetEnvironmentVariable("NASDAQDATALINK__APIKEY", apiKey, EnvironmentVariableTarget.User);
-        NasdaqKeyStatusText = "API key configured";
-        IsNasdaqKeyClearVisible = true;
-        _notificationService.ShowNotification("API Key Saved", "Nasdaq Data Link API key has been configured.", NotificationType.Success);
-    }
-
-    public void ClearNasdaqApiKey()
-    {
-        Environment.SetEnvironmentVariable("NASDAQDATALINK__APIKEY", null, EnvironmentVariableTarget.User);
-        NasdaqKeyStatusText = "No API key stored";
-        IsNasdaqKeyClearVisible = false;
-    }
-
-    public void SetOpenFigiApiKey(string apiKey)
-    {
-        Environment.SetEnvironmentVariable("OPENFIGI__APIKEY", apiKey, EnvironmentVariableTarget.User);
-        OpenFigiKeyStatusText = "API key configured (optional)";
-        IsOpenFigiKeyClearVisible = true;
-        _notificationService.ShowNotification("API Key Saved", "OpenFIGI API key has been configured.", NotificationType.Success);
-    }
-
-    public void ClearOpenFigiApiKey()
-    {
-        Environment.SetEnvironmentVariable("OPENFIGI__APIKEY", null, EnvironmentVariableTarget.User);
-        OpenFigiKeyStatusText = "No API key stored (optional)";
-        IsOpenFigiKeyClearVisible = false;
-    }
-
     // ── Navigation helper ───────────────────────────────────────────────────
+    public void NavigateToOwnedCredentials() => _navigationService.NavigateTo("CredentialManagement");
     public void NavigateToWizard() => _navigationService.NavigateTo("AnalysisExportWizard");
     public void NavigateToBrowser() => _navigationService.NavigateTo("DataBrowser");
 

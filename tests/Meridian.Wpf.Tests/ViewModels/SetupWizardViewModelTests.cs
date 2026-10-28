@@ -54,7 +54,7 @@ public sealed class SetupWizardViewModelTests
     }
 
     [Fact]
-    public async Task SaveAndContinueCommand_WhenBackendVerifies_SavesKeysAndNavigates()
+    public async Task SaveAndContinueCommand_WhenBackendVerifies_SavesConfigurationAndNavigates()
     {
         var state = new FakeSetupWizardStateService
         {
@@ -72,18 +72,28 @@ public sealed class SetupWizardViewModelTests
 
         viewModel.SelectedProvider = "Alpaca";
         viewModel.StorageLocation = "D:\\MeridianData";
-        viewModel.NasdaqApiKey = " nasdaq-key ";
-        viewModel.OpenFigiApiKey = "figi-key";
 
         await viewModel.SaveAndContinueCommand.ExecuteAsync(null);
 
         state.SavedProvider.Should().Be("Alpaca");
         state.SavedStorageLocation.Should().Be("D:\\MeridianData");
-        state.SavedNasdaqKey.Should().Be(" nasdaq-key ");
-        state.SavedOpenFigiKey.Should().Be("figi-key");
         navigator.LastPageTag.Should().Be("StrategyShell");
-        notification.SuccessMessages.Should().Contain(message => message.Contains("Setup complete"));
+        notification.SuccessMessages.Should().Contain(message => message.Contains("Provider credentials and activation remain in Settings"));
         viewModel.ValidationStatusText.Should().Be("Configuration saved and backend verified. Opening Strategy Workspace...");
+    }
+
+    [Fact]
+    public void ManageOwnedCredentialsCommand_OpensExplicitOwnershipEditorWithoutSavingOrStartingBackend()
+    {
+        var state = new FakeSetupWizardStateService();
+        var navigator = new FakeSetupWizardNavigator();
+        var viewModel = CreateViewModel(state, navigator: navigator);
+
+        viewModel.ManageOwnedCredentialsCommand.Execute(null);
+
+        navigator.LastPageTag.Should().Be("CredentialManagement");
+        state.SaveConfigurationCalls.Should().Be(0);
+        state.StartBackendCalls.Should().Be(0);
     }
 
     [Fact]
@@ -130,10 +140,6 @@ public sealed class SetupWizardViewModelTests
 
         public string? SavedStorageLocation { get; private set; }
 
-        public string? SavedNasdaqKey { get; private set; }
-
-        public string? SavedOpenFigiKey { get; private set; }
-
         public string? AppliedPresetId { get; private set; }
 
         public string? AppliedProvider { get; private set; }
@@ -163,9 +169,6 @@ public sealed class SetupWizardViewModelTests
                 "Synthetic",
                 "data",
                 "Loaded existing valid configuration."));
-
-        public SetupWizardApiKeyState LoadStoredApiKeys()
-            => new("nasdaq-key", "figi-key");
 
         public Task ApplyPresetAsync(SetupPreset preset, string provider, CancellationToken ct = default)
         {
@@ -201,11 +204,6 @@ public sealed class SetupWizardViewModelTests
             return Task.FromResult(SaveResult);
         }
 
-        public void SaveApiKeys(string nasdaqDataLinkApiKey, string openFigiApiKey)
-        {
-            SavedNasdaqKey = nasdaqDataLinkApiKey;
-            SavedOpenFigiKey = openFigiApiKey;
-        }
     }
 
     private sealed class FakeSetupWizardNotificationSink : ISetupWizardNotificationSink

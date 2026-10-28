@@ -1,0 +1,217 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-28T22:37:11Z",
+  "status": "blocked",
+  "currentMainSha": "a5b2589f0395d054bec0b59672a990419ef237ed",
+  "purpose": "Fresh signing-prerequisite observation before selecting a release candidate or creating a tag.",
+  "execution": {
+    "action": "rerun_failed_workflow_run_jobs",
+    "workflow": "Release Readiness",
+    "runId": 40294900031,
+    "runAttempt": 3,
+    "headSha": "65e65ed317d086ec68a39e7df6105ffd9d8e8aa3",
+    "conclusion": "failure",
+    "updatedAt": "2026-10-28T22:36:53Z",
+    "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/40294900031/attempts/3",
+    "freshMainDispatch": false
+  },
+  "sourceEquivalence": [
+    {
+      "path": "build/scripts/ci/check-release-signing.ps1",
+      "currentAndRunBlob": "55dbe2e5f887568b04e7e3b51a85762def3d1cbc"
+    },
+    {
+      "path": "src/Meridian.Wpf/Package.appxmanifest",
+      "currentAndRunBlob": "cc935195b0c11de4863061a9a079a369e452216d"
+    }
+  ],
+  "signing": {
+    "jobId": 123142986692,
+    "problem": "signing-secrets-unavailable",
+    "observedLogLines": [
+      "2026-10-28T22:36:24.6133432Z ##[error]Release signing prerequisite failed (signing-secrets-unavailable); inspect the protected desktop-release-signing environment."
+    ],
+    "environment": "desktop-release-signing",
+    "inputsAvailable": false,
+    "meaning": "The protected job received unavailable signing inputs at execution time. This is not an administrative inventory of environment secrets."
+  },
+  "summary": {
+    "jobId": 123143251865,
+    "observedLogLines": [
+      "2026-10-28T22:36:50.8514134Z SHA256 digest of downloaded artifact is 33a9d30024fae76d5f68635541b63209276de4bbeab3dd0b0e3fbb56ebbca9cc",
+      "2026-10-28T22:36:51.0053887Z Release readiness: blocked; full report: artifacts/release-readiness/report.json"
+    ]
+  },
+  "artifacts": [
+    {
+      "id": 12857257055,
+      "name": "release-readiness-40294900031-3",
+      "sizeInBytes": 1247,
+      "sha256": "sha256:ddcefff47429f3179f0b406c6623aa5befca95261cf0094ac7685cfe78478e9e",
+      "createdAt": "2026-10-28T22:36:51Z",
+      "expiresAt": "2027-01-26T22:35:53Z",
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/40294900031/artifacts/12857257055"
+    },
+    {
+      "id": 12856857528,
+      "name": "release-signing-readiness-40294900031-3",
+      "sizeInBytes": 375,
+      "sha256": "sha256:33a9d30024fae76d5f68635541b63209276de4bbeab3dd0b0e3fbb56ebbca9cc",
+      "createdAt": "2026-10-28T22:36:26Z",
+      "expiresAt": "2027-01-26T22:35:53Z",
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/40294900031/artifacts/12856857528"
+    }
+  ],
+  "archiveInspection": {
+    "localBytesVerified": false,
+    "limitation": "Connector retained archive in file service; download into workspace was denied by the configured proxy (HTTP 403). Digests are observed Actions artifact metadata/logs. Summary-job download verified the signing digest within GitHub Actions."
+  },
+  "currentMainWorkflowObservations": [
+    {
+      "id": 40780116496,
+      "name": "Documentation Automation",
+      "headSha": "a5b2589f0395d054bec0b59672a990419ef237ed",
+      "status": "completed",
+      "conclusion": "success",
+      "updatedAt": "2026-10-28T22:29:40Z",
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/40780116496"
+    },
+    {
+      "id": 40780116464,
+      "name": "CodeQL",
+      "headSha": "a5b2589f0395d054bec0b59672a990419ef237ed",
+      "status": "in_progress",
+      "conclusion": null,
+      "updatedAt": "2026-10-28T22:27:35Z",
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/40780116464"
+    },
+    {
+      "id": 40780116619,
+      "name": "Windows Desktop Build",
+      "headSha": "a5b2589f0395d054bec0b59672a990419ef237ed",
+      "status": "in_progress",
+      "conclusion": null,
+      "updatedAt": "2026-10-28T22:27:37Z",
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/40780116619"
+    },
+    {
+      "id": 40780116840,
+      "name": "Meridian CI",
+      "headSha": "a5b2589f0395d054bec0b59672a990419ef237ed",
+      "status": "in_progress",
+      "conclusion": null,
+      "updatedAt": "2026-10-28T22:27:42Z",
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/40780116840"
+    },
+    {
+      "id": 40780116643,
+      "name": "Production Certification",
+      "headSha": "a5b2589f0395d054bec0b59672a990419ef237ed",
+      "status": "in_progress",
+      "conclusion": null,
+      "updatedAt": "2026-10-28T22:27:35Z",
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/40780116643"
+    },
+    {
+      "id": 40780116709,
+      "name": "Generated Repair Publisher",
+      "headSha": "a5b2589f0395d054bec0b59672a990419ef237ed",
+      "status": "completed",
+      "conclusion": "success",
+      "updatedAt": "2026-10-28T22:28:23Z",
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/40780116709"
+    },
+    {
+      "id": 40780116519,
+      "name": "Roadmap Source Docs",
+      "headSha": "a5b2589f0395d054bec0b59672a990419ef237ed",
+      "status": "completed",
+      "conclusion": "success",
+      "updatedAt": "2026-10-28T22:28:43Z",
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/40780116519"
+    },
+    {
+      "id": 40780116446,
+      "name": "CI",
+      "headSha": "a5b2589f0395d054bec0b59672a990419ef237ed",
+      "status": "completed",
+      "conclusion": "success",
+      "updatedAt": "2026-10-28T22:28:26Z",
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/40780116446"
+    },
+    {
+      "id": 40780116580,
+      "name": "Golden Path Validation",
+      "headSha": "a5b2589f0395d054bec0b59672a990419ef237ed",
+      "status": "completed",
+      "conclusion": "success",
+      "updatedAt": "2026-10-28T22:33:28Z",
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/40780116580"
+    },
+    {
+      "id": 40780116467,
+      "name": "Pipeline Budget Benchmark",
+      "headSha": "a5b2589f0395d054bec0b59672a990419ef237ed",
+      "status": "completed",
+      "conclusion": "success",
+      "updatedAt": "2026-10-28T22:35:45Z",
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/40780116467"
+    }
+  ],
+  "currentMainWorkflowRefresh": {
+    "observedAt": "2026-10-28T22:43:06Z",
+    "headSha": "a5b2589f0395d054bec0b59672a990419ef237ed",
+    "summary": "Production Certification has completed successfully. Meridian CI, Windows Desktop Build and CodeQL remain in progress.",
+    "workflows": [
+      {
+        "id": 40780116464,
+        "name": "CodeQL",
+        "headSha": "a5b2589f0395d054bec0b59672a990419ef237ed",
+        "status": "in_progress",
+        "conclusion": null,
+        "updatedAt": "2026-10-28T22:27:35Z",
+        "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/40780116464"
+      },
+      {
+        "id": 40780116619,
+        "name": "Windows Desktop Build",
+        "headSha": "a5b2589f0395d054bec0b59672a990419ef237ed",
+        "status": "in_progress",
+        "conclusion": null,
+        "updatedAt": "2026-10-28T22:27:37Z",
+        "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/40780116619"
+      },
+      {
+        "id": 40780116643,
+        "name": "Production Certification",
+        "headSha": "a5b2589f0395d054bec0b59672a990419ef237ed",
+        "status": "completed",
+        "conclusion": "success",
+        "updatedAt": "2026-10-28T22:40:22Z",
+        "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/40780116643"
+      },
+      {
+        "id": 40780116840,
+        "name": "Meridian CI",
+        "headSha": "a5b2589f0395d054bec0b59672a990419ef237ed",
+        "status": "in_progress",
+        "conclusion": null,
+        "updatedAt": "2026-10-28T22:41:24Z",
+        "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/40780116840"
+      }
+    ]
+  },
+  "tagsObserved": [
+    "eval-v0.1.0-eval.1",
+    "v0.1.0-rc.1"
+  ],
+  "releaseCandidateSelected": false,
+  "tagCreated": false,
+  "secretChanged": false,
+  "governanceChanged": false,
+  "localValidation": {
+    "command": "python -m unittest discover -s tests/scripts -p 'test_release_readiness.py' -v",
+    "passed": 23,
+    "failed": 0
+  }
+}

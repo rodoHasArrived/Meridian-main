@@ -1,0 +1,3671 @@
+{
+  "sourceBaseline": "a5b2589f0395d054bec0b59672a990419ef237ed",
+  "scope": "local working tree; not hosted certification or operator acceptance",
+  "commandLog": "/tmp/meridian-next-work-tests.log",
+  "trxPath": ".ai/test-results/test-meridian-tests-20261028223901-9139b6076af4480ebe808eeb9653561f/next-work.trx",
+  "trxSha256": "2823fecb753f047e57cc150e8c5f8ae41a95486bc8d4636ba3fdc95d74097fd0",
+  "counters": {
+    "total": "906",
+    "executed": "906",
+    "passed": "906",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "results": [
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.SaveAsync_TwelveDataAliasStoresCredentialMetadata",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotAmortizationContinuationTests.UnprovedContinuationCannotAuthorizeAnAmortization(alteration: \"legacy-calculation\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_FrozenLegacyDisposalPreservesParcelAmountsEvenWhenCurrentAllocatorSucceeds",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotAmortizationContinuationTests.Exchange_LaterPartialReliefUsesTheRemainingOriginalSchedule",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.CredentialStatusTests.CredentialTestResult_TimeUntilExpiration_NullWhenNoExpiration",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.NYSECredentialAndRateLimitTests.GetAdjustedDailyBarsAsync_WhenRateLimited_ThrowsTypedExceptionAndExposesResetState",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.QuickBooks.QuickBooksOnlineProviderCredentialConnectionStoreTests.RecordConnectionAsync_WritesVerificationMetadataThroughProviderCredentialStore",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.NativeSplitThenPaydown_ReducesRetainedTotalWithoutRebuildingTheUnitQuote(shortPosition: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.PutProviderCredentials_BlankKnownCredentialField_RemovesExistingValue",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlLiveProviderTests.Cancellation_DoesNotRecordCredentialFailure(id: \"netsuite\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialAuditDurabilityTests.Replay_MalformedJournalLines_AreQuarantinedNotAppendedAndDoNotThrow",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedSuccessorOriginWithUnchangedEconomics(fault: \"missing\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Validate_RejectsSuccessorFactsOutsideTheApprovedProjection(changedFact: \"acquisition-basis\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.ProviderRouting.ProviderSetupOwnershipTests.ConfigureOwnedConnection_RequiresReadableOwnershipBeforeAnyVaultCall(body: \"null\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Composition.FredProviderModuleCompositionTests.Retained_empty_credentials_cannot_borrow_module_or_environment_keys(scoped: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Integration.EndpointTests.AuthEndpointTests.LoginForm_WithEmptyCredentials_RedirectsToLoginWithError",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Accounting.ValuationFreshnessAcceptanceTests.PreviewCountsPositionsAndAffectedValuations_WithoutCreatingApprovals",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.DefaultProviderSetupHandlers_IncludesSecondaryReadOnlyDataProviders(alias: \"open-figi\", expectedProviderId: \"openfigi\", expectedApiKeyEnvironment: \"OPENFIGI_API_KEY\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.NativeSplit_AfterPartialRelief_PreservesEveryRemainingLotBasis(method: Hifo, shortPosition: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.GetCommandCenterAsync_WhenBreakCaseIsUnassignedAndSlaBreached_ShouldRequireAssignmentAndEscalation",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.CredentialStatusTests.CredentialTestResult_IsSuccess_FalseForFailureStatuses(status: NotConfigured)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.CredentialStatusTests.CredentialStatusSummary_AllValid_FalseWhenAnyResultFails",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Validate_RejectsSuccessorFactsOutsideTheApprovedProjection(changedFact: \"security-identity\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedAcquisitionEvidenceWithUnchangedFacts(fault: \"missing\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedAccountingVerification_UsesProviderIdentityEquivalenceAndRetainsExactScope(providerId: \"netsuite\", retainedAccountId: \"ACCOUNT_SB1\", credentialAccountId: \"account-sb1\", expectedSuccess: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialAuditDurabilityTests.SaveAsync_AuditFailureAfterVaultCommit_SucceedsAndRetainsPendingAuditJournal",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.RetainedBasisOverload_PreservesLegacyAdjusterCompatibilityWithoutClaimingExactEvidence",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CloseReadinessSubjectSourceTests.RetainedMembership_BindsAccountAndEntityToBook(kind: Entity)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Composition.FredProviderModuleCompositionTests.Credentials_lost_between_gate_and_construction_leave_no_partial_factory(throwOnSecondRead: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialResolverTests.ResolveCredential_RealConfigValue_ReturnsTrimmedValue",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Providers.AlpacaCredentialAndReconnectTests.ProviderCapabilities_RateLimits_AreConfigured",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.DirectClose_RechecksRealSharedEvidenceAndPublishesOnlyAfterRepair(defect: \"report-authority\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderReadinessEndpointTests.GetProviderReadiness_ComposesCredentialAndPlaidEvidenceWithoutSecrets",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_IncompleteOrChangedSuccessorEvidence_FailsClosed(fault: \"partial\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.MissingScope_DoesNotReadOrInferAWorkflow",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.CreateSymbolSearchProviders_WithFredConfigKey_AddsFredSearchProvider",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ConfigStoreTests.TenantConnection_RetainsTheProvidersCanonicalCredentialEnvironment(requestedEnvironment: \"live\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.ProviderRouting.ProviderSetupOwnershipTests.ConfigureOwnedConnection_RechecksRemovalCommittedBeforeItAcquiresTheLease",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.AlpacaBrokerageGatewayTests.GetActivitySnapshotAsync_CredentialAccountMismatch_FailsBeforeActivityFetch",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Services.PreflightCheckerTests.ValidateProviderCredentials_Synthetic_PassesWithoutCredentials",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.CredentialMutationAudit_UsesAuthenticatedActorForSaveVerifyAndDelete",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Validate_RejectsScheduleDOnTheUnrefundedSuccessor",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Providers.AlpacaCredentialAndReconnectTests.Constructor_NullOptions_ThrowsArgumentNullException",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.CredentialValidatorTests.ValidateKeySecretPair_NullKey_ReturnsFalse",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Validate_RejectsSuccessorFactsOutsideTheApprovedProjection(changedFact: \"fx\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.UnitSuccessor_RoundedQuoteCannotHideChangedPriceOrMissingGovernedLineage(fault: \"origin\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.WorkstationEndpointsTests.MapWorkstationEndpoints_DataOperationsPayload_ReportsTheTenantsScopedCredentialReadiness",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlCredentialConcurrencyTests.ConcurrentReplacement_WinsOverTokenRotationAndVerification(id: \"xero\", verify: True, duringTokenExchange: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.MismatchedCockpit_IsExcludedAndBlocks(dimension: \"entity\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.CredentialValidatorTests.ValidateApiKey_NullApiKey_ReturnsFalse",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.ClosePlanEvidenceFailure_BlocksThenUnderlyingRepairRestoresReadiness(defect: \"posting\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.VerificationFailure_RedactsProviderDetailsRejectsMissingIdentityAndCanRetry(failureKind: \"missing-account\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotAmortizationContinuationTests.UnprovedContinuationCannotAuthorizeAnAmortization(alteration: \"before-exchange\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlLiveProviderTests.Import_UsesCredentialedTransport_RotatesTokenAndReturnsScopedBalancedEvidence(id: \"xero\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.LegacyScopedVaultAlias_CollisionRetainsTheNewestWholeRecordWithinItsOwner(aliasIsNewer: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.NativeSplit_AfterPartialRelief_PreservesEveryRemainingLotBasis(method: Hifo, shortPosition: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotAmortizationContinuationTests.UnprovedContinuationCannotAuthorizeAnAmortization(alteration: \"stale-predecessor\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedAcquisitionEvidenceWithUnchangedFacts(fault: \"subject-type\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Integration.EndpointTests.AuthEndpointTests.LoginJson_WithWrongCredentials_ReturnsUnauthorized",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_SuccessorBasisAndRefundedOnlyScheduleD_AreRetainedInCertifiedRows(advanceRefunding: True, functionalOnly: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.SaveAsync_NormalizesPlaidEnvironmentAndSetupRoute(environment: \"development\", expectedEnvironment: \"development\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Integration.EndpointTests.AuthEndpointTests.LoginJson_WithWrongCredentials_ReturnsJsonError",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Core.Config.CredentialPlaceholderDetectorTests.ContainsPlaceholderMarker_ReturnsFalseForMissingValues(value: \"\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_UnresolvedCanonicalHistoryBlocksAndRestoredEvidenceRecovers(fault: \"missing\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedSuccessorOriginWithUnchangedEconomics(fault: \"role\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_IncompleteOrChangedSuccessorEvidence_FailsClosed(fault: \"holding-period\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.NativeSplit_BelowQuantityPrecision_RefusesWithoutDiscardingBasis",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.NativeSplit_AfterPartialRelief_PreservesEveryRemainingLotBasis(method: Lifo, shortPosition: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.DirectClose_RechecksRealSharedEvidenceAndPublishesOnlyAfterRepair(defect: \"account\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.ProviderRouting.ProviderSetupOwnershipTests.ConfigureLegacy_RefusesOwnedOrAmbiguousFamilyBeforeAnyVaultCall(ownership: \"missing-tenant-and-account\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Composition.FredProviderModuleCompositionTests.Failed_Fred_credentials_do_not_fall_back_or_prevent_other_providers_from_starting(sidecarPresent: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.CredentialStoreExtensionsTests.IsProviderConfiguredAsync_UsesValidationResult",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedAcquisitionEvidenceWithUnchangedFacts(fault: \"reviewer\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ScopedCredentialRecoveryTests.ScopedVerification_WithoutTestedGenerationCannotVerifyOrInvalidateReplacement(generation: \"\", success: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.QuickBooks.QuickBooksOnlineProviderCredentialConnectionStoreTests.GetMetadataAsync_ProjectsCredentialStatusAndCompanyEvidence",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.AlpacaVerification_CredentialChangesRejectTheInFlightResultWithoutMutation(scoped: False, transition: \"recreated\", providerSucceeds: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Exchange_CarriesRemainingAcquisitionFactsAndCurrentBasisIndependently",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageSymbolSearchProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_MalformedSnapshotHistory_ReturnsSourceUnavailableAndCanRetryAfterRepair(fault: \"argument\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialIsolationTests.CorporateActionConstruction_DeletedRecordCannotResolveEnvironmentInsideAdapter(providerId: \"alphavantage\", variable: \"ALPHA_VANTAGE_API_KEY\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Composition.FredProviderModuleCompositionTests.Both_capabilities_retain_credential_precedence_on_the_wire(source: \"sidecar\", expectedKey: \"sidecar-key\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Composition.ProviderFeatureRegistrationTests.Register_IBBootstrapWithAlternativeCredentials_DoesNotResolveRuntimeSelector",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.AdvanceRefunding_PreservesFourDecimalAcquisitionAndCurrentBasesThroughProjection(transactionCurrency: \"UYW\", functionalCurrency: \"CLF\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.UnitSuccessor_RoundedQuotePreservesExactBasisOnProjectionAndRelief",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.ProviderRouting.ProviderSetupOwnershipTests.ConfigureLegacy_RefusesOwnedOrAmbiguousFamilyBeforeAnyVaultCall(ownership: \"owned\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ScopedRuntimeResolver_RotationAndDeletionCannotSelectAnotherOwnersCredentials(dimension: \"tenant\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Credentials.CredentialTestingServiceTests.TestAllCredentialsAsync_TestsConfiguredProviders",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.UnitSuccessor_RoundedQuoteCannotHideChangedPriceOrMissingGovernedLineage(fault: \"birth\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.RecordVerificationAsync_SuccessClearsVerificationRequiredMetadata",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Credentials.CredentialTestingServiceTests.GetLastSuccessfulAuth_ReturnsNullForUntestedProvider",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ConfigValidatorCliTests.Validate_WithAlpacaCredentialsFromEnvironment_ReturnsValid",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ProviderModuleCredentialSelectionTests.ProvenAbsentRecord_CanSelectTheEnvironmentMappedRecord",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.OAuthTokenTests.OAuthProviderConfig_StoresAllFields",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Services.ConfigurationServiceTests.ValidateConfig_AlpacaWithoutCredentials_ReturnsInvalid",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_PartialReliefUsesExactCurrentBasisRatherThanAcquisitionBasis",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CredentialCompatibilityEndpointsTests.LegacyCredentialPost_WithTradeDeskRolePermissions_ReturnsForbidden",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedAccountingVerification_UsesAndRotatesOnlyTheSelectedRetainedConnection(providerId: \"xero\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_MatchingQuoteCannotHideDifferentRetainedBasis",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ScopedCredentialRecoveryTests.ReadScopedOAuth_WriterLockHeldReadsOnlyOwnedPublishedGeneration(recoverBackup: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.AttributeCredentialResolverTests.ForType_UnknownName_ReturnsNull",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.Alpaca.AlpacaOptionsMarketDataClient))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.AdvanceRefunding_ReconcilesBothCurrenciesAndTagsOnlyTheRefundedSuccessor",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_CapitalAccountPrimaryDocument_ShouldBindPartnersCapitalToCompleteAsOfLedgerHistory(outputFormat: ClientPackage)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.PolygonHistoricalPaginationTests.UntrustedContinuation_FailsBeforeSendingCredentials(continuation: \"https://untrusted.example/page?cursor=second\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.GetCommandCenterAsync_WhenBlockedQueueRowIsOutsideDecisionDisplayLimit_ShouldBlockCloseSupport",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.AlpacaVerification_CredentialChangesRejectTheInFlightResultWithoutMutation(scoped: True, transition: \"deleted\", providerSucceeds: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.AttributeCredentialResolverTests.ForType_NullType_Throws",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Providers.AlpacaCredentialAndReconnectTests.Constructor_ValidCredentials_DoesNotThrow",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.OAuthTokenTests.OAuthToken_LifetimeRemainingPercent_100WhenNoIssuedAt",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_EqualTotalCannotHideInvalidComponentFacts(fault: \"different-source\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.OAuthTokenTests.OAuthToken_CanRefresh_TrueWhenRefreshTokenPresent",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.ReadForProviderAsync_ReadOnlyVaultDoesNotRequireWritableLock(recoverBackup: False, retainLock: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Validate_RejectsSuccessorFactsOutsideTheApprovedProjection(changedFact: \"lot-identity\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.CredentialValidatorTests.GetCredential_ParamValueProvided_ReturnsParamValue",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.AttributeCredentialResolverTests.ForType_ConfigLookupFallback_UsedWhenEnvVarAbsent",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotAmortizationContinuationTests.UnprovedContinuationCannotAuthorizeAnAmortization(alteration: \"changed-terms\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.LegacyScopedVaultAlias_MalformedOwnershipFailsClosedBeforeReadOrMutation(mismatch: \"account\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.CredentialValidatorTests.ValidateApiKey_EmptyApiKey_ReturnsFalse",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.GetCommandCenterAsync_WhenOperationalDashboardBlocked_ShouldSurfaceDashboardQueueAndDecisionRows",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.VerificationFailure_RedactsProviderDetailsRejectsMissingIdentityAndCanRetry(failureKind: \"transport\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.DefaultProviderSetupHandlers_IncludesSecondaryReadOnlyDataProviders(alias: \"stooq\", expectedProviderId: \"stooq\", expectedApiKeyEnvironment: null)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlCredentialRecoveryTests.Rotation_RetainsCompleteConnectionAndRecoveryGeneration_BeforeCancelledImport(id: \"xero\", environment: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ScopedRuntimeResolver_RotationAndDeletionCannotSelectAnotherOwnersCredentials(dimension: \"account\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.OrdinaryAcquisition_RoundedQuoteCannotReplaceExactAcquisitionEvidence",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ProviderCredentialStoreTests.SaveCredentials_MergesWithExisting",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotAmortizationContinuationTests.Exchange_ContinuesTheOriginalScheduleWithBothBasesAndAcquisitionFx(price: 120, method: ConstantYield)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.OAuthTokenTests.OAuthToken_TimeUntilExpiration_CalculatesCorrectly",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.FractionalClosingFills_ExhaustTheExactOpeningBasis(method: Hifo, shortPosition: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AdjustedCurrentBasisPreservesAcquisitionFacts(method: Lifo, fullyDisposed: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.DurableRelief_UsesCanonicalDecimalAcquisitionFxAndPolicy(method: Lifo, selectedDay: 2)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageCorporateActionProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.CredentialStatusTests.CredentialTestResult_IsSuccess_FalseForFailureStatuses(status: Expired)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.CloseManagementChangedWithoutWorkflowVersionChange_BlocksUntilConsistentRefresh",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.StoredProviderCredentialResolver_CreateContext_UsesEncryptedStoreBeforeConfigFallback",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.ProviderRouting.ProviderSetupOwnershipTests.ConfigureLegacy_RefusesOwnedOrAmbiguousFamilyBeforeAnyVaultCall(ownership: \"incomplete\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.OnboardingEndpointTests.NonInteractiveCredential_CannotPerformHumanDecisions(mutation: \"criteria\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.CreateSymbolSearchProviders_WithTwelveDataCredential_AddsTwelveDataSearchProvider",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.NYSECredentialAndRateLimitTests.EnsureAuthenticatedAsync_WhenOauthRateLimited_ThrowsTypedException",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.WorkstationEndpointsTests.CloseReadinessRoute_MissingScopeReturnsBlockingProjection",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_CanonicalDisposalEvidenceBlocksAndRestoringItProducesSignedLotEvidence(fault: \"basis\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Fingerprint_BindsSuccessorVersionAndSecurityEvidence",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.StoredResolver_PartialOrRemovedSecretNeverMixesAnotherAccountsFallback",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.Polygon.PolygonHistoricalDataProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.ClosePlanEvidenceFailure_BlocksThenUnderlyingRepairRestoresReadiness(defect: \"workflow\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.AlpacaBrokerageGatewayTests.ConnectAsync_ValidCredentials_SetsIsConnectedTrue",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ScopedCredentialRecoveryTests.ScopedVerification_RequiresTheExpectedOwnedGeneration(transition: \"replaced\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.DefaultProviderSetupHandlers_IncludesSecondaryReadOnlyDataProviders(alias: \"tiingo\", expectedProviderId: \"tiingo\", expectedApiKeyEnvironment: \"TIINGO_API_TOKEN\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ConfigStoreTests.TenantConnection_RetainsTheProvidersCanonicalCredentialEnvironment(requestedEnvironment: \"production\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.LegacyScopedVaultAlias_MalformedOwnershipFailsClosedBeforeReadOrMutation(mismatch: \"key\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Backtesting_ExplicitShortCannotBindCanonicalLong(composite: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ProviderCredentialStoreTests.ConcurrentVaultInstances_MergeFieldsWithoutLosingAnAcknowledgedSave",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Integration.EndpointTests.ProviderEndpointTests.ConfigureProvider_WithActorlessPermissions_RejectsCredentialsAndPreservesConfiguration(provider: \"yahoo\", apiKey: null, apiSecret: null)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.SaveAsync_PlaidItemAccessTokenField_IsProviderManagedAndStoredEncrypted",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotAmortizationContinuationTests.UnprovedContinuationCannotAuthorizeAnAmortization(alteration: \"changed-reference\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Core.Config.CredentialPlaceholderDetectorTests.ContainsPlaceholderMarker_ReturnsTrueForKnownPlaceholders(value: \"REPLACE_secret\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_SuccessorReportPackRetainsImmutableOriginAndSignsItsArtifact(advanceRefunding: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.OAuthTokenPersistencePermissionTests.ProviderCredentialMutationsAndOAuthMutationsPreserveEachOther",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ScopedCredentialRecoveryTests.ReadScopedOAuth_AbsentVaultDoesNotCreateStorage",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ScopedCredentialRecoveryTests.ScopedInitialization_RetriesOwnedReadWithoutTouchingUnassignedMigrationFiles",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.CredentialStatusTests.CredentialTestResult_IsSuccess_FalseForFailureStatuses(status: Invalid)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.OnboardingEndpointTests.NonInteractiveCredential_CannotPerformHumanDecisions(mutation: \"review\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedAccountingVerification_UsesProviderIdentityEquivalenceAndRetainsExactScope(providerId: \"quickbooks\", retainedAccountId: \"realm_a\", credentialAccountId: \"realm-a\", expectedSuccess: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ScopedProviderCredentialStoreTests.VerificationForAnotherAccount_LeavesOriginalRecordUnchanged",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.DailyValuationPositionServiceTests.ResolveConfiguredAsync_NewerPostCutoffSnapshot_DoesNotHideValidAsOfHistory",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.AlpacaBrokerageGatewayTests.GetPortfolioSnapshotAsync_CredentialAccountMismatch_FailsBeforePositionsFetch",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.AdvanceRefunding_PreservesFourDecimalAcquisitionAndCurrentBasesThroughProjection(transactionCurrency: \"CLF\", functionalCurrency: \"UYW\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.AdvanceRefunding_AssignsFinalCurrencyResidualsWithoutRecomputingAtSpotFx",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.AlpacaSymbolSearchProviderTests.Requests_IncludeBothAuthenticationHeaders_AfterCredentialInitialization(details: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Core.Config.CredentialPlaceholderDetectorTests.ContainsPlaceholderMarker_ReturnsFalseForMissingValues(value: null)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.Fred.FredSymbolSearchProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Validate_RejectsSuccessorFactsOutsideTheApprovedProjection(changedFact: \"source-evidence\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Providers.AlpacaCredentialAndReconnectTests.ConnectAsync_WithFakeCredentials_ThrowsOrCompletesGracefully",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.Finnhub.FinnhubCorporateActionProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Validate_RejectsSuccessorFactsOutsideTheApprovedProjection(changedFact: \"transaction-basis\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedAcquisitionEvidenceWithUnchangedFacts(fault: \"reviewed-at\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.PlaidWorkstationServiceTests.ExchangeEndpoint_ReplacesForgedActorInRetainedCredentialAudit",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ScopedCredentialRecoveryTests.LegacyImportAndOwnedRotation_KeepVerificationSeparateAndNeverRecoverRevokedSecret",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Services.ConfigurationServiceTests.ResolveAllCredentials_AlpacaEnvOverlay_UsesEnvironmentCredentials",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Credentials.CredentialTestingServiceWithMockedHttpTests.TestCredential_NetworkError_ReturnsTestFailed",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialAuditDurabilityTests.SaveAsync_VaultWriteFailure_RemovesTheJournaledIntent",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Reporting.ReportingSecureDistributionTests.HttpRelay_ClientTimeoutRetainsCredentialAndSchedulesStableReplay",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_NullComponentFailsClosedBeforeBasisAggregation",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.OnboardingEndpointTests.NonInteractiveCredential_CannotPerformHumanDecisions(mutation: \"assignment\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.DefaultProviderSetupHandlers_IncludesIbFlexCredentialHandler",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.CredentialStatusTests.CredentialTestResult_IsSuccess_TrueForExpiringSoonStatus",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotAmortizationContinuationTests.UnprovedContinuationCannotAuthorizeAnAmortization(alteration: \"unsupported-version\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.SaveAsync_NormalizesPlaidEnvironmentAndSetupRoute(environment: \"invalid\", expectedEnvironment: \"sandbox\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Composition.FredProviderModuleCompositionTests.Final_credential_resolver_is_evaluated_after_registration_without_building_a_second_container",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.MismatchedCockpit_IsExcludedAndBlocks(dimension: \"period\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlLiveProviderTests.CatalogAndSetup_ExposeCredentialOnlyReadOnlyAdapters(id: \"netsuite\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.StoredResolver_UnmanagedTypeRetainsItsExplicitLegacyResolver",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Accounting.ValuationFreshnessAcceptanceTests.MissingStaleFutureAndLowConfidenceMarks_BlockWholeBatch_RepairRestoresReadiness(dateOffset: 0, confidence: Low, reason: \"confidence\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedAccountingVerification_UsesProviderIdentityEquivalenceAndRetainsExactScope(providerId: \"netsuite\", retainedAccountId: \"123456_SB1\", credentialAccountId: \"123456_SB2\", expectedSuccess: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.BrokeragePortfolioSyncServiceTests.Scenario_BrokerageCredentialOutage_BrokerageSyncReportsFailedProjectionAndWarnings",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ScopedProviderCredentialStoreTests.ScopeIsolation_SurvivesConcurrentSaveRestartRotationVerificationAndDelete(dimension: \"environment\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderRoutingEndpointsTests.ConfigureProvider_UnreadableConfigurationCannotCommitCredentials(content: \"{\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.FractionalClosingFills_ExhaustTheExactOpeningBasis(method: Lifo, shortPosition: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Providers.AlpacaCredentialAndReconnectTests.Constructor_ValidCredentials_ClientIsEnabled",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Identity.LoginSessionServiceTests.HostConfiguration_DoesNotInheritProcessCredentialsModeOrSessionStore",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.CredentialValidatorTests.ThrowIfApiKeyMissing_NullApiKey_ThrowsInvalidOperationException",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ScopedCredentialRecoveryTests.ScopedAuditAppend_RecoversTailAndRetainsOwnership(providerCredentialWrite: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.LegacyScopedVaultAlias_MalformedOwnershipFailsClosedBeforeReadOrMutation(mismatch: \"missing-scope\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialAuditDurabilityTests.Replay_OAuthSaveIntent_IsProvenOnlyByTheReplacementTokenDigest",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedAcquisitionEvidenceWithUnchangedFacts(fault: \"subject-id\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.PostProviderVerify_UsesStoredAlpacaCredentialsAndRecordsAccount",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Services.ConfigurationServiceTests.CreateCredentialContext_UsesConfiguredValuesForAnnotatedProvider",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlConnectionLifecycleTests.Lifecycle_MalformedCredential_RecordsTheValidationFailureNotACredentialChange(id: \"netsuite\", field: \"SubsidiaryId\", malformed: \"not-numeric\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.NativeThreeForOneSplit_FinalCloseRelievesTheUnitQuoteRemainder(shortPosition: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.BrokerageConnectionEndpointsTests.DeleteAlpacaConnection_WhenUserLacksManageCredentials_ReturnsForbidden",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.GetCommandCenterAsync_WhenApprovalPending_ShouldBlockCompletion",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.BrokeragePortfolioSyncServiceTests.Scenario_BrokerageSyncCredentialFailure_RecordsStructuredFailureHistory",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.StoredProviderCredentialResolver_CreateContext_UsesNearestDeclaredIdentityForDerivedAlpacaStreams(providerType: typeof(Meridian.Infrastructure.Adapters.Alpaca.AlpacaNewsMarketDataClient))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedSuccessorOriginWithUnchangedEconomics(fault: \"source-action\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.StoredProviderCredentialResolver_CreateContext_UsesCanonicalDataSourceIdentityForTwelveData(providerType: typeof(Meridian.Infrastructure.Adapters.TwelveData.TwelveDataHistoricalDataProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderRoutingEndpointsTests.DataSourceMutation_WithSubmittedCredentials_RequiresManageCredentials",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_LargeExactBasisDoesNotRequireAllocationMultiplication",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Integration.EndpointTests.AdminEndpointPermissionTests.PostProviderCredentialsValidate_WithoutAuth_ReturnsUnauthorized",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.DirectClose_RechecksRealSharedEvidenceAndPublishesOnlyAfterRepair(defect: \"version\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Credentials.CredentialTestingServiceWithMockedHttpTests.TestCredential_Timeout_ReturnsTestFailed",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.AlpacaTradeUpdatesClientTests.FileCursorStore_PendingEnvelope_IsNormalizedBoundedAndContainsNoCredentials",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialResolverTests.ResolveCredential_PlaceholderConfigValue_ReturnsNull(configValue: \"CHANGE_ME\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.DeleteAsync_RemovesLocalCredentialAndKeepsAuditMetadata",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.AtomicTaxLotJournalStoreTests.SuccessorAmortization_ForgedReceiptAndStaleTargetRefuseWithoutWriting",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.OAuthTokenTests.OAuthRefreshResult_Failure_ContainsErrorMessage",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.OAuthTokenTests.OAuthToken_LifetimeRemainingPercent_ZeroWhenExpired",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedAcquisitionEvidenceWithUnchangedFacts(fault: \"retained-at\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedCredentialRoute_RejectsDuplicateRetainedIds(duplicateTenant: \"another-tenant\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.AttributeCredentialResolverTests.RequiresCredentialAttribute_SetsName",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedAccountingVerification_UsesProviderIdentityEquivalenceAndRetainsExactScope(providerId: \"xero\", retainedAccountId: \"aabbccdd111122223333444444444444\", credentialAccountId: \"AABBCCDD-1111-2222-3333-444444444444\", expectedSuccess: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ProviderCredentialStoreTests.Migration_AuditFailureThenRotationAndRetryPreservesAuthoritativeVault",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.OAuthTokenTests.OAuthToken_IsExpired_FalseWhenNotExpired",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.NativePaydown_ApportionsTheExactRemainingBasisAcrossLots(shortPosition: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.CreateBackfillProviders_UsesAlpacaApcaEnvironmentAliases",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Services.ConfigurationServiceTests.ResolveAllCredentials_PolygonEnvironmentCredential_OverridesConfiguredCredential",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.CreateBackfillProviders_WithConfiguredFreeProviderSet_IsDeterministicAndCapabilityAligned",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_CanonicalDisposalEvidenceBlocksAndRestoringItProducesSignedLotEvidence(fault: \"missing\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.ProviderRouting.ProviderSetupOwnershipTests.ConfigureLegacy_RefusesOwnedOrAmbiguousFamilyBeforeAnyVaultCall(ownership: \"case-variant\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialResolverTests.ResolveCredential_PlaceholderConfigValue_ReturnsNull(configValue: \"your-key-here\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.VerificationFailure_RedactsProviderDetailsRejectsMissingIdentityAndCanRetry(failureKind: \"http\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.ProviderRouting.ProviderSetupOwnershipTests.ConfigureOwnedConnection_RequiresReadableOwnershipBeforeAnyVaultCall(body: \"{\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.AlpacaVerification_CredentialChangesRejectTheInFlightResultWithoutMutation(scoped: True, transition: \"deleted\", providerSucceeds: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Credentials.CredentialTestingServiceTests.TestCredentialAsync_IncludesResponseTime",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.DirectClose_RechecksRealSharedEvidenceAndPublishesOnlyAfterRepair(defect: \"missing\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedCredentialRoute_VerifiesOnlyRetainedAccountAndDeletesOnlyItsRecord(accountMatches: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Services.PreflightCheckerTests.ValidateProviderCredentials_Polygon_PassesWhenSet",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlCredentialConcurrencyTests.ConcurrentReplacement_WinsOverTokenRotationAndVerification(id: \"xero\", verify: True, duringTokenExchange: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_HomogeneousPartitionsCertifyAggregateParityOnly",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.AtomicTaxLotJournalStoreTests.SuccessorAmortization_LateFailureRollsBackThenRetriesExactly",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedAcquisitionEvidenceWithUnchangedFacts(fault: \"extra\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialIsolationTests.ScopedConstruction_RotationAndDeletionNeverSelectAnotherOwnersCredentials(dimension: \"environment\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlConnectionLifecycleTests.Lifecycle_PersistsOneVerificationWithActor_AndCredentialReplacementClearsIt(id: \"netsuite\", success: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialAuditDurabilityTests.Replay_IntentWhoseVaultWriteNeverCommitted_IsDiscardedNotAppended",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.UnitSuccessor_RoundedQuoteCannotHideChangedPriceOrMissingGovernedLineage(fault: \"adjustment\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlCredentialRecoveryTests.Rotation_RetainsCompleteConnectionAndRecoveryGeneration_BeforeCancelledImport(id: \"netsuite\", environment: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Reporting.ReportingSecureDistributionAuthorizationTests.DirectGrant_IssuanceFailsBeforeCredentialExistsWhenReleasedBytesAreUnavailable(corruptBytes: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_SuccessorReportPackRetainsImmutableOriginAndSignsItsArtifact(advanceRefunding: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Providers.AlpacaCredentialAndReconnectTests.Constructor_EmptySecretKey_ThrowsArgumentException",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.AlpacaVerification_CredentialChangesRejectTheInFlightResultWithoutMutation(scoped: True, transition: \"replaced\", providerSucceeds: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.SaveAsync_NormalizesAlpacaTradingApiEndpointToEnvironment(endpoint: \"https://paper-api.alpaca.markets/v2\", expectedEnvironment: \"paper\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.RetainedPopulation_MissingAlteredOrForeignScope_CannotReplayCertifiedReport(fault: \"missing\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialIsolationTests.ScopedConstruction_RotationAndDeletionNeverSelectAnotherOwnersCredentials(dimension: \"tenant\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.AtomicTaxLotJournalStoreTests.SuccessorAmortization_PremiumExchangeContinuesBothBasesAndReplaysAfterPeriodLock",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotAmortizationContinuationTests.UnprovedContinuationCannotAuthorizeAnAmortization(alteration: \"changed-origin\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.TwelveData.TwelveDataCorporateActionProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ScopedCredentialRecoveryTests.ScopedVerification_WithoutTestedGenerationCannotVerifyOrInvalidateReplacement(generation: null, success: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Composition.FredProviderModuleCompositionTests.Both_capabilities_retain_credential_precedence_on_the_wire(source: \"stored-over-module-environment\", expectedKey: \"stored-key\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.DailyValuationPositionServiceTests.ResolveAdHocAsync_MissingHistoricalSecurityState_DoesNotFallBackToCurrentRecord",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_FailsClosedWhenStoreReturnsLineOutsideRequestedDimension",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AdjustedFaceBasisReportsCostPerDeclaredFaceQuantity",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.LegacyScopedVaultAlias_MalformedOwnershipFailsClosedBeforeReadOrMutation(mismatch: \"provider\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.NYSECredentialAndRateLimitTests.TestConnectivityAsync_WhenStatusEndpointIsRateLimited_ReturnsFalse",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialIsolationTests.StoredConstruction_PartialRecordAndDeletionCannotRefillFromEnvironmentConfigOrModule",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderRoutingEndpointsTests.ConfigureProvider_UnreadableConfigurationCannotCommitCredentials(content: null)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_EqualTotalCannotHideInvalidComponentFacts(fault: \"mixed-sources\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.StoredResolver_ProductionPolicyCannotBeBypassedThroughLegacyFallback(mode: \"packaged\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.CredentialStatusTests.CredentialTestResult_IsSuccess_FalseForFailureStatuses(status: TestFailed)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.ClosePlanEvidenceFailure_BlocksThenUnderlyingRepairRestoresReadiness(defect: \"period\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.SaveAsync_BlankKnownCredentialField_RemovesExistingValue",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Contracts.ProviderIntegrationContractsTests.ProviderConnection_DoesNotRequireCredentialSecretMaterial",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.DailyValuationPositionServiceTests.ResolveConfiguredAsync_ScheduleMissingSnapshotOwner_FailsClosedBeforeLookup",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.ReadForProviderAsync_ReadOnlyVaultDoesNotRequireWritableLock(recoverBackup: True, retainLock: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.CreateSymbolSearchProviders_WithTiingoConfigToken_AddsTiingoSearchProvider",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ProviderCredentialStoreTests.Migration_AuditFailureThenDeleteAndBackupRecoveryDoesNotResurrectSecret",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.ProviderRouting.ProviderSetupOwnershipTests.ConfigureLegacy_RefusesOwnedOrAmbiguousFamilyBeforeAnyVaultCall(ownership: \"alias\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Reporting.ReportingSecureDistributionTests.HttpRelay_AcceptedThenTimedOut_ReplaysOneProviderMessageAndUsableCredential",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialAuditDurabilityTests.ReplayHostedService_NeverRefusesStartup",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_IncompleteOrChangedSuccessorEvidence_FailsClosed(fault: \"journal\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Core.Config.CredentialPlaceholderDetectorTests.IsPlaceholderValue_TreatsMissingOrPlaceholderAsPlaceholder(value: \"   \")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Accounting.ValuationFreshnessAcceptanceTests.MissingStaleFutureAndLowConfidenceMarks_BlockWholeBatch_RepairRestoresReadiness(dateOffset: -4, confidence: High, reason: \"4 days old\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedSuccessorOriginWithUnchangedEconomics(fault: \"tags\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderRoutingEndpointsTests.ConfigureProvider_WithPlaidCredential_StoresCredentialOnlyWithoutMarketDataRoute",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CloseReadinessSubjectSourceTests.RetainedMembership_BindsAccountAndEntityToBook(kind: Vehicle)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.CredentialValidatorTests.GetCredentialMultiple_EmptyParamValue_ReturnsParamValue",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialIsolationTests.CorporateActionConstruction_DeletedRecordCannotResolveEnvironmentInsideAdapter(providerId: \"twelvedata\", variable: \"TWELVEDATA_API_KEY\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Core.Config.ConfigTemplateGeneratorTests.GenerateDocker_SwitchedToAlpaca_StillValidatesOnceCredentialsAreSupplied",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_EqualTotalCannotHideInvalidComponentFacts(fault: \"empty-fill\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.StaleCockpit_CannotBeMadeFreshByAReadyWorkflow",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.AdvanceRefunding_RejectsZeroRoundedOrResidualFunctionalBasisBeforeDrafting(firstAllocationPercent: 90)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ProviderCredentialStoreTests.SaveAndGet_RoundTripsCredentials",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.GetCommandCenterAsync_WhenAccountingRecordEvidenceIsIncomplete_ShouldSurfaceAuditEvidenceRows",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Mapper_RejectsExchangeWithoutCanonicalSuccessorInstruction",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.FractionalClosingFills_ExhaustTheExactOpeningBasis(method: Fifo, shortPosition: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.NasdaqDataLink.NasdaqDataLinkHistoricalDataProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.RobinhoodMarketDataClientTests.PollBatchAsync_WhenUnauthorized_ReportsRedactedCredentialFailure",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_CapitalAccountCsv_DoesNotBuildLedgerDocumentPresentation",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.UnregisteredContributor_BlocksEvenWhenWorkflowIsReady(missing: \"private-capital\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.Alpaca.AlpacaHistoricalDataProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.Alpaca.AlpacaOptionsChainProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_EqualTotalCannotHideInvalidComponentFacts(fault: \"mixed-open-times\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.StoredResolver_ProductionPolicyCannotBeBypassedThroughLegacyFallback(mode: \"customer\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.DailyValuationPositionServiceTests.ResolveConfiguredAsync_StaleOrFutureSnapshot_FailsClosed(offsetDays: 1, expectedBlocker: \"at or before\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Validate_RejectsPredecessorSnapshotOrVersionDifferentFromTheReviewedPlan",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Identity.LoginSessionServiceTests.CreateSession_WithInvalidCredentials_ReturnsNull",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_IncompleteOrChangedSuccessorEvidence_FailsClosed(fault: \"duplicate\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderRoutingEndpointsTests.ConfigureOwnedConnection_PreservesRoutingAndCannotChangeCredentialOwnership(owner: \"other-tenant\", requestedEnvironment: \"paper\", allowed: False, duplicate: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_FailsClosedWhenSelectedEntityIsOnlyEffectiveAfterAsOfCut",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.AttributeCredentialResolverTests.ForType_EnvVarTakesPrecedenceOverConfigLookup",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.CredentialStoreExtensionsTests.GetKeySecretPairAsync_ReadsStandardKeyNames",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.CredentialValidatorTests.ThrowIfApiKeyMissing_ValidApiKey_DoesNotThrow",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderRoutingEndpointsTests.ConfigureOwnedConnection_IncompleteCredentialsAreNotReportedAsConfigured(apiKey: \"partial-key\", apiSecret: null)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Integration.EndpointTests.ProviderEndpointTests.GetDataSources_RedactsProviderCredentials",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CredentialCompatibilityEndpointsTests.CompatibilityMutation_WithoutActorDoesNotWriteVault(route: \"/api/providers/polygon/test-connection\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialIsolationTests.ScopedConstruction_RotationAndDeletionNeverSelectAnotherOwnersCredentials(dimension: \"account\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.UnprovenSubject_DoesNotLoadOtherwiseReadyWorkflow",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Credentials.CredentialTestingServiceTests.TestCredentialAsync_MasksCredential",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotAmortizationContinuationTests.Exchange_ContinuesTheOriginalScheduleWithBothBasesAndAcquisitionFx(price: 110, method: StraightLine)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.ClosePlanEvidenceFailure_BlocksThenUnderlyingRepairRestoresReadiness(defect: \"book\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.AlpacaVerification_CredentialChangesRejectTheInFlightResultWithoutMutation(scoped: True, transition: \"replaced\", providerSucceeds: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlLiveProviderTests.Cancellation_DoesNotRecordCredentialFailure(id: \"xero\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.SaveAsync_UnknownCredentialFields_AreRejectedAndDoNotUpdateVaultOrAudit",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AdjustedCurrentBasisPreservesAcquisitionFacts(method: Lifo, fullyDisposed: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.CalendarFromAnotherWorkflowVersion_CannotClearTheClose",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CloseReadinessSubjectSourceTests.RetainedMembership_BindsAccountAndEntityToBook(kind: Account)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Backtesting_ExplicitShortCannotBindCanonicalLong(composite: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_EqualTotalCannotHideInvalidComponentFacts(fault: \"successor-as-source\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.GetCommandCenterAsync_WhenApprovalHistoryAndPeriodLockEvidenceMissing_ShouldPreserveEvidencePackageCapabilities",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.GetCommandCenterAsync_WhenCoreFlowGatesMissing_ShouldFallbackToWorkflowStates",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Services.ConfigurationServiceTests.ResolveAllCredentials_NoCredentialsConfigured_ReturnsOriginalConfig",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Core.Config.CredentialPlaceholderDetectorTests.ContainsPlaceholderMarker_ReturnsTrueForKnownPlaceholders(value: \"your-key-here\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_MalformedSnapshotHistory_ReturnsSourceUnavailableAndCanRetryAfterRepair(fault: \"invalid-operation\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.CredentialPresence_DoesNotCreateVerificationEvidence(providerId: \"tiingo\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.DirectClose_RechecksRealSharedEvidenceAndPublishesOnlyAfterRepair(defect: \"report-stale\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.StoredProviderCredentialResolver_CreateContext_UsesCanonicalDataSourceIdentityForTwelveData(providerType: typeof(Meridian.Infrastructure.Adapters.TwelveData.TwelveDataSymbolSearchProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialIsolationTests.PublicRegistration_SelectedSidecarRecordCannotFillMissingFieldsFromMappedEnvironment(emptyRecord: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Identity.UserProfileRegistryTests.Authenticate_WithCorrectCredentials_ReturnsProfile",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.SaveAsync_CreatesTheVaultKeyOwnerOnly",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.DailyValuationPositionServiceTests.ResolveConfiguredAsync_StaticOverrideHashMismatch_FailsClosed",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_ExactComponentsCannotAuthorizeInvalidCanonicalEvidence(fault: \"unsupported-action\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.CredentialValidatorTests.GetCredentialMultiple_ParamValueProvided_ReturnsParamValue",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotAmortizationContinuationTests.OrdinaryAcquisitionCannotAssertExchangeAuthority",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Composition.FredProviderModuleCompositionTests.Failed_Fred_credentials_do_not_fall_back_or_prevent_other_providers_from_starting(sidecarPresent: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_EqualTotalCannotHideInvalidComponentFacts(fault: \"negative-basis\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.CalendarReviewerCount_DoesNotReplaceRequiredTaskSignOffAuthority",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.AdjustmentAwaitingCompletion_DoesNotReplaceANewerLotBook(replacePosition: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.MismatchedCockpit_IsExcludedAndBlocks(dimension: \"book\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.MismatchedCockpit_IsExcludedAndBlocks(dimension: \"fund\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Etl.SftpCapabilityServiceTests.PublishAsync_ResolvesTheDestinationSecretThroughTheSharedCredentialModel",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialAuditDurabilityTests.Replay_IntentWithoutPublicationId_IsNeverTakenAsProof",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.AlpacaVerification_CredentialChangesRejectTheInFlightResultWithoutMutation(scoped: False, transition: \"replaced\", providerSucceeds: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotAmortizationContinuationTests.OptionalContinuationPreservesHistoricalJsonAndRetainsTheReviewedNewPayload",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.AttributeCredentialResolverTests.RequiresCredentialAttribute_NullOrEmptyName_Throws",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedAcquisitionEvidenceWithUnchangedFacts(fault: \"null\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Core.Config.CredentialPlaceholderDetectorTests.IsPlaceholderValue_TreatsMissingOrPlaceholderAsPlaceholder(value: null)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Services.PreflightCheckerTests.ValidateProviderCredentials_Alpaca_PassesWhenPrimaryCredentialsSet",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_NonCapitalClientPackage_RetainsHistoryWithoutBuildingCapitalPresentation",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Identity.LoginSessionServiceTests.AuthenticationMode_ProductionUnconfigured_RequiresCredentials",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ScopedRuntimeResolver_RotationAndDeletionCannotSelectAnotherOwnersCredentials(dimension: \"connection\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderTemplateFactoryCredentialTests.ToCatalogEntry_PreservesCredentialEnvironmentVariableAliases",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Core.Config.ConfigValidationPipelineTests.Validate_AlpacaWithoutCredentials_ReturnsErrors",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_PartialReliefPreservesSimulationDecimalResidual",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.DailyValuationPositionServiceTests.ResolveConfiguredAsync_SnapshotStoreReturnsDifferentOwner_FailsClosed",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedAcquisitionEvidenceWithUnchangedFacts(fault: \"uri\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.AttributeCredentialResolverTests.ForType_NoEnvVarSet_ReturnsNull",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.AttributeCredentialResolverTests.ForType_FallsBackToSecondEnvVar",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.AlpacaVerification_CredentialChangesRejectTheInFlightResultWithoutMutation(scoped: False, transition: \"deleted\", providerSucceeds: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ProviderCredentialStoreTests.SaveCredentials_NeverCreatesLegacyPlaintextSidecar",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.AdvanceRefunding_RejectsDuplicateLotLabelsBeforeMappingOrDrafting(surroundingWhitespace: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Integration.EndpointTests.AuthEndpointTests.LoginJson_WithValidCredentials_UsesSecureCookiesWhenLocalTransportIsUnproven",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.StoredResolver_MissingManagedRecordDoesNotBypassStoreThroughConfiguration",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.CredentialStatusTests.CredentialTestResult_TimeUntilExpiration_CalculatesCorrectly",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.AlpacaBrokerageConnectionServiceTests.ConnectAsync_WithPaperKeys_VerifiesAccountAndWritesEncryptedStoreCredentials",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_EqualTotalCannotHideInvalidComponentFacts(fault: \"empty-source\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.NasdaqDataLink.NasdaqDataLinkCorporateActionProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.GetCommandCenterAsync_WhenPrivateCapitalApprovalPending_ShouldBlockCompletion",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedSuccessorOriginWithUnchangedEconomics(fault: \"predecessor\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.AlpacaVerification_CredentialChangesRejectTheInFlightResultWithoutMutation(scoped: True, transition: \"recreated\", providerSucceeds: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Core.Config.CredentialPlaceholderDetectorTests.LooksLikeRealCredential_ReturnsTrueOnlyForNonPlaceholderValues",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CredentialCompatibilityEndpointsTests.LegacyCredentialDelete_RemovesLocalStoreButLeavesEnvironmentFallback",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.AttributeCredentialResolverTests.GetAttributes_ReturnsAllDeclaredAttributes",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderRoutingEndpointsTests.ConfigureOwnedConnection_PreservesRoutingAndCannotChangeCredentialOwnership(owner: \"tenant-test\", requestedEnvironment: \"paper\", allowed: True, duplicate: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderTemplateFactoryCredentialTests.ToCatalogEntry_DerivesCredentialFieldsFromRequiresCredentialAttributes",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.FailedContributor_RemainsVisibleAsIncompleteWithoutLeakingException",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedAccountingVerification_UsesProviderIdentityEquivalenceAndRetainsExactScope(providerId: \"quickbooks\", retainedAccountId: \"Realm-A\", credentialAccountId: \"realm-a\", expectedSuccess: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Accounting.ValuationFreshnessAcceptanceTests.RetainedEvidenceCannotSupportAnotherSubject(fund: \"fund-alpha\", account: \"other-account\", dateOffset: 0)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.StoredResolver_ProductionPolicyCannotBeBypassedThroughLegacyFallback(mode: \"production\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.StoredResolver_CorruptVaultDoesNotSilentlySwitchToAnotherCredentialSource",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.CredentialValidatorTests.ValidateKeySecretPair_BothNull_ReturnsFalse",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.Alpaca.AlpacaCryptoMarketDataClient))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.SaveAsync_DoesNotPersistPlaintextSecretsInVaultOrAudit",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedAccountingVerification_ConcurrentCredentialReplacementWinsOverTokenRotation(providerId: \"quickbooks\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ScopedRuntimeResolver_UnmanagedProviderCannotBypassOwnershipThroughFallback",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.PlaidWorkstationServiceTests.ExchangePublicToken_StoresAccessTokenOnlyInEncryptedCredentialStore",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.PartialCloseThenAdditionalFill_PreservesBasisInTheRemainingPosition(shortPosition: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CloseReadinessSubjectSourceTests.IncorrectOwnership_BlocksThenRetainedRepairRestoresSubject(defect: \"unknown-node\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_FractionalCentCurrentBasisReproducesExactJournal(fullyDisposed: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlLiveProviderTests.MissingCredentialsAndInvalidPeriods_FailBeforeNetwork(id: \"netsuite\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.DataSources.CredentialConfigTests.Validate_VaultSourceWithoutProvider_ShouldReturnError",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Accounting.ValuationFreshnessAcceptanceTests.ConsolidationPreservesTheStricterLegacyAgeAndConfidenceGates(dateOffset: 0, confidence: Medium)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ProviderCredentialStoreTests.ReadCredentialRecord_DistinguishesAbsentAndRetainedEmptyRecords",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.DurableRelief_UsesCanonicalDecimalAcquisitionFxAndPolicy(method: SpecificId, selectedDay: 2)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.NasdaqDataLinkCorporateActionProviderTests.FetchAsync_WithoutApiKey_UsesConfiguredDatasetWithoutCredential",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlLiveProviderTests.MissingCredentialsAndInvalidPeriods_FailBeforeNetwork(id: \"xero\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_CapitalAccountPrimaryDocument_ShouldBindPartnersCapitalToCompleteAsOfLedgerHistory(outputFormat: Pdf)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.DefaultProviderSetupHandlers_IncludesSecondaryReadOnlyDataProviders(alias: \"finnhub\", expectedProviderId: \"finnhub\", expectedApiKeyEnvironment: \"FINNHUB_API_KEY\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.Alpaca.AlpacaNewsMarketDataClient))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_MalformedSnapshotHistory_ReturnsSourceUnavailableAndCanRetryAfterRepair(fault: \"json\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.CreateSymbolSearchProviders_SkipsCredentialGatedProvidersWithoutLegacyMethods",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlConnectionLifecycleTests.Lifecycle_MalformedCredential_RecordsTheValidationFailureNotACredentialChange(id: \"xero\", field: \"TenantId\", malformed: \"not-a-tenant-guid\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ScopedCredentialRecoveryTests.ScopedVerification_WithoutTestedGenerationCannotVerifyOrInvalidateReplacement(generation: null, success: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_RetainsExactAccrualAccountCurrencyAndJournalEvidenceInCheckpoint",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_IncompleteOrChangedSuccessorEvidence_FailsClosed(fault: \"fx\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CredentialCompatibilityEndpointsTests.LegacyCredentialPost_SavesEncryptedStoreWithoutMutatingEnvironment",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.DirectClose_RechecksRealSharedEvidenceAndPublishesOnlyAfterRepair(defect: \"report-revision\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Credentials.CredentialTestingServiceTests.TestCredentialAsync_EmptyApiKey_ReturnsNotConfiguredStatus",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.AdvanceRefunding_RejectsZeroRoundedOrResidualFunctionalBasisBeforeDrafting(firstAllocationPercent: 50)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Exchange_RejectsRolesOutsideTheApprovedSuccessorWorkflow(role: Refunded)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.QuickBooks.QuickBooksOnlineProviderCredentialConnectionStoreTests.SaveRefreshTokenAsync_StoresTrimmedTokenThroughProviderCredentialStore",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.DirectClose_RechecksRealSharedEvidenceAndPublishesOnlyAfterRepair(defect: \"stale\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.AlpacaVerification_CredentialChangesRejectTheInFlightResultWithoutMutation(scoped: False, transition: \"recreated\", providerSucceeds: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.OnboardingEndpointTests.NonInteractiveCredential_CannotPerformHumanDecisions(mutation: \"create\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderRoutingEndpointsTests.ConfigureProvider_WithPolygonCredential_StoresCredentialAndRoutesReferenceData",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Integration.EndpointTests.ProviderEndpointTests.GetDataSources_AliasEndpoint_RedactsProviderCredentials",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.LegacyScopedVaultAlias_MalformedOwnershipFailsClosedBeforeReadOrMutation(mismatch: \"environment\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.CredentialValidatorTests.ValidateKeySecretPair_EmptySecret_ReturnsFalse",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Credentials.CredentialTestingServiceTests.TestCredentialAsync_SetsTestedAt",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LiveBrokeragePortfolioSyncServiceTests.DisconnectReconnectAndCredentialGeneration_RequireNewSynchronization",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.CredentialSave_WithoutAuthenticatedActorCannotUseRequestedByAsIdentity",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.WorkstationEndpointsTests.MapWorkstationEndpoints_DataOperationsPayload_WithoutManageCredentials_ShouldNotExposeConnectionSummary",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.NasdaqDataLinkHistoricalDataProviderTests.IsAvailableAsync_WithoutApiKey_UsesMetadataEndpointWithoutCredential",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.FractionalClosingFills_ExhaustTheExactOpeningBasis(method: Fifo, shortPosition: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_HistoricalAmountChange_ChangesCheckpointWithoutChangingPeriodRows",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ScopedProviderCredentialStoreTests.ScopeIsolation_SurvivesConcurrentSaveRestartRotationVerificationAndDelete(dimension: \"tenant\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedAccountingVerification_UsesProviderIdentityEquivalenceAndRetainsExactScope(providerId: \"xero\", retainedAccountId: \"{AABBCCDD-1111-2222-3333-444444444444}\", credentialAccountId: \"aabbccdd-1111-2222-3333-444444444444\", expectedSuccess: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ProviderModuleCredentialSelectionTests.SelectedPartialOrEmptyRecord_CannotBorrowMappedEnvironmentCredentials(empty: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.UnitSuccessor_RoundedQuoteCannotHideChangedPriceOrMissingGovernedLineage(fault: \"empty-birth\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotAmortizationContinuationTests.Exchange_ContinuesTheOriginalScheduleWithBothBasesAndAcquisitionFx(price: 90, method: StraightLine)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ScopedRuntimeResolver_PluginProviderOutsideTheCatalogCannotBypassOwnershipThroughFallback",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.LegacyScopedVaultAlias_RehashesEachOwnershipScopeWithoutWritingOnRead",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Backtesting_OrdinaryExactBasisWithoutComponentsStillBinds",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ProviderModuleSetupServiceTests.RemoveModule_RemovesFromConfigAndCredentials",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.AdjustmentAwaitingCompletion_DoesNotReplaceANewerLotBook(replacePosition: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.AttributeCredentialResolverTests.ForType_EnvVarSet_ReturnsValue",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ProviderReadiness_PicksTheBestOwnedConnectionAndProviderScopeReadsOnlyProviderWideRecords",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ConfigStoreTests.CaseVariantConnectionUpdate_KeepsTheRetainedCredentialScope",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AcquisitionPricedReliefAfterRedistributionIsRejectedEvenWhenJournalMatches",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialIsolationTests.CorporateActionConstruction_DeletedRecordCannotResolveEnvironmentInsideAdapter(providerId: \"tiingo\", variable: \"TIINGO_API_TOKEN\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_FinalReportRejectsSoftClosedPeriod",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Accounting.ValuationFreshnessAcceptanceTests.MissingStaleFutureAndLowConfidenceMarks_BlockWholeBatch_RepairRestoresReadiness(dateOffset: null, confidence: High, reason: \"observation date is required\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Integration.EndpointTests.ProviderEndpointTests.ConfigureProvider_WithActorlessPermissions_RejectsCredentialsAndPreservesConfiguration(provider: \"alpaca\", apiKey: \"test-key\", apiSecret: \"test-secret\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Core.Config.ConfigTemplateGeneratorTests.AlpacaCredentials_BareNamesWinOverMdcPrefixedOnes",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedCredentialRoute_VerifiesOnlyRetainedAccountAndDeletesOnlyItsRecord(accountMatches: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_FinalComponentPreservesExactDecimalResidual",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_IncompleteOrChangedSuccessorEvidence_FailsClosed(fault: \"missing\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.ProviderRouting.ProviderSetupOwnershipTests.ConfigureOwnedConnection_CancellationWhileWaitingNeverReachesTheVault",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CloseReadinessSubjectSourceTests.IncorrectOwnership_BlocksThenRetainedRepairRestoresSubject(defect: \"expired\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ProviderCredentialStoreTests.GetStoredKeyNames_ReturnsNonEmptyKeys",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.GetCommandCenterAsync_WhenReviewedAutomationRequiresHumanReview_ShouldSurfaceWorkflowControlRows",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AdjustedCurrentBasisPreservesAcquisitionFacts(method: AverageCost, fullyDisposed: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CloseReadinessSubjectSourceTests.RetainedMembership_BindsAccountAndEntityToBook(kind: Sleeve)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedSuccessorOriginWithUnchangedEconomics(fault: \"date\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedAcquisitionEvidenceWithUnchangedFacts(fault: \"review-status\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_AlteredImmutableSuccessorOriginBlocksCertifiedArtifact",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedAcquisitionEvidenceWithUnchangedFacts(fault: \"source-system\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Services.ConfigurationServiceTests.ResolveAllCredentials_AlpacaWithExistingCredentials_PreservesConfig",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ScopedProviderCredentialStoreTests.EnvironmentMismatch_RefusesBeforePersistence",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.FirstPublicationOutputs_RemainVisibleWithoutBecomingPrerequisites_AndPublishedEvidenceIsRequired",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ScopedCredentialRecoveryTests.ScopedVerification_RequiresTheExpectedOwnedGeneration(transition: \"other-scope\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.WorkstationEndpointsTests.CloseReadinessRoute_UnauthorizedCallerCannotReadCloseEvidence",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotAmortizationContinuationTests.UnprovedContinuationCannotAuthorizeAnAmortization(alteration: \"missing-continuation\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.AlpacaCorporateActionProviderTests.FetchAsync_WithoutCredentials_ReturnsEmptyWithoutCreatingClient",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CredentialCompatibilityEndpointsTests.CompatibilityMutation_RecordsAuthenticatedActor(route: \"/api/providers/polygon/test-connection\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.FractionalClosingFills_ExhaustTheExactOpeningBasis(method: Lifo, shortPosition: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.CredentialStatusTests.CredentialExpirationConfig_HasReasonableDefaults",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostCertifiesIndependentlyAllocatedSuccessorOrigin",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ProviderCredentialStoreTests.Migration_ConflictingProviderAliasesRetainSidecarWithoutPublishing",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ScopedCredentialRecoveryTests.ReadScopedProvider_WriterLockHeldReadsOnlyOwnedPublishedGeneration(recoverBackup: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedSuccessorOriginWithUnchangedEconomics(fault: \"allocation\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlConnectionLifecycleTests.Lifecycle_PersistsOneVerificationWithActor_AndCredentialReplacementClearsIt(id: \"xero\", success: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Providers.AlpacaCredentialAndReconnectTests.NullQuoteCollector_ThrowsArgumentNullException",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.ClosePlanEvidenceFailure_BlocksThenUnderlyingRepairRestoresReadiness(defect: \"stale\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialAuditDurabilityTests.ComputeTokenDigest_IsStableAndContainsNoTokenMaterial",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_IncompleteOrChangedSuccessorEvidence_FailsClosed(fault: \"predecessor-open\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedCredentialRoute_RejectsDuplicateRetainedIds(duplicateTenant: \"provider-tenant\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.AttributeCredentialResolverTests.RequiresCredentialAttribute_DefaultValues",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialAuditDurabilityTests.Replay_UnprovenIntent_GainsNothingFromALaterPublication",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Reporting.ReportingSecureDistributionAuthorizationTests.TransportCatalog_IsAuthenticatedCredentialFreeAndReportsFailClosedReadiness",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.SaveAsync_NormalizesPlaidEnvironmentAndSetupRoute(environment: \"production\", expectedEnvironment: \"production\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_SuccessorBasisAndRefundedOnlyScheduleD_AreRetainedInCertifiedRows(advanceRefunding: False, functionalOnly: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedAccountingVerification_ConcurrentCredentialReplacementWinsOverTokenRotation(providerId: \"xero\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.CredentialStatusTests.StoredCredentialStatus_TracksConsecutiveFailures",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_FlattenedAncestorCannotReplaceImmediateCanonicalPredecessor",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_ExactBasisBindsDespiteRoundedQuoteAndRoundTrip",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotAmortizationContinuationTests.UnprovedContinuationCannotAuthorizeAnAmortization(alteration: \"changed-fx\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.CompleteScopeAndFreshContributors_ProduceOneReadyDecision",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.GetCommandCenterAsync_WhenPeriodLockSupportMissing_ShouldBlockCompletion",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.UnitSuccessor_RoundedQuoteCannotHideChangedPriceOrMissingGovernedLineage(fault: \"quote\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.CreateBackfillProviders_UsesTopLevelAlpacaConfigWhenBackfillConfigIsEmpty",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.Tiingo.TiingoHistoricalDataProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedAcquisitionEvidenceWithUnchangedFacts(fault: \"version\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedStatusRead_ReturnsNotFoundForAnOwnedConnectionOutsideTheCredentialCatalog",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.NYSECredentialAndRateLimitTests.ValidateCredentialsAsync_WhenOauthFails_ReturnsFalse",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.AtomicTaxLotJournalStoreTests.SuccessorAmortization_ReversalRestoresBirthBasisAndRebookRetainsTheSchedule",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Core.Config.CredentialPlaceholderDetectorTests.ContainsPlaceholderMarker_ReturnsTrueForKnownPlaceholders(value: \"<API_KEY>\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotAmortizationContinuationTests.ChangedMaturityCannotReuseThePredecessorScheduleEvenWithMatchingReferenceHashes",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Services.ConfigurationServiceTests.ResolveAllCredentials_PolygonConfiguredCredential_UsesConfiguredWhenEnvironmentMissing",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.DefaultProviderSetupHandlers_IncludesSecondaryReadOnlyDataProviders(alias: \"alpha-vantage\", expectedProviderId: \"alphavantage\", expectedApiKeyEnvironment: \"ALPHA_VANTAGE_API_KEY\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.DurableRelief_FaceQuantityConservesFunctionalAndTransactionBasis",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedCredentialRoute_RefusesUnownedOrAmbiguousConnectionBeforeMutation(query: \"owned&connectionId=other\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlCredentialRecoveryTests.Rotation_RetainsCompleteConnectionAndRecoveryGeneration_BeforeCancelledImport(id: \"netsuite\", environment: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.WrongBookWorkflow_CannotReplaceTheDeclaredScope",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.ReadForProviderAsync_EnvironmentFallbackDoesNotRequireWritableVaultDirectory",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialAuditDurabilityTests.SaveRotated_BackupWriteFailureAfterPrimaryPublished_KeepsTheCommittedAuditOwed",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialIsolationTests.CorporateActionConstruction_DeletedRecordCannotResolveEnvironmentInsideAdapter(providerId: \"finnhub\", variable: \"FINNHUB_API_KEY\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_SingleComponentSuccessorBindsWithExactBasis",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedCredentialRoute_RefusesUnownedOrAmbiguousConnectionBeforeMutation(query: \"\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialAuditDurabilityTests.Restart_ReplayPendingAuditAsync_AppendsOrphanedRecordOnceAndRemovesJournal",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Accounting.ValuationFreshnessAcceptanceTests.PolicyTamperingCannotWidenRetainedMarkAcceptance",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.CreateBackfillProviders_UsesGenericCredentialContextWithoutLegacyMethods",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.AttributeCredentialResolverTests.IsConfigured_ReturnsTrue_WhenSet",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialAuditDurabilityTests.SaveOAuthTokenAsync_AuditFailure_ThrowsAuditDeferredExceptionThatIsAnIOException",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.RetainedPopulation_MissingAlteredOrForeignScope_CannotReplayCertifiedReport(fault: \"altered\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Reporting.ReportingSecureDistributionTests.HttpRelay_CallerCancellationIsDistinctAndRetainsStableReplayCredential",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.DirectClose_RechecksRealSharedEvidenceAndPublishesOnlyAfterRepair(defect: \"cockpit-stale\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Services.PreflightCheckerTests.ValidateProviderCredentials_Alpaca_FailsWhenCredentialsMissing",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Providers.AlpacaCredentialAndReconnectTests.BuildAuthenticationMessage_EscapesCredentialsWithoutReflectionSerialization",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.UnregisteredContributor_BlocksEvenWhenWorkflowIsReady(missing: \"calendar\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.AlpacaSymbolSearchProviderTests.Requests_IncludeBothAuthenticationHeaders_AfterCredentialInitialization(details: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Core.Config.CredentialPlaceholderDetectorTests.ContainsPlaceholderMarker_ReturnsTrueForKnownPlaceholders(value: \"__SET_ME__\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ProviderCredentialStoreTests.VaultLock_ContentionHonorsCancellationAndAllowsSubsequentSave",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CredentialCompatibilityEndpointsTests.CompatibilityMutation_RecordsAuthenticatedActor(route: \"/api/credentials/polygon\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_NonTaxableSpinOffRetainsParentChildrenAndSignedBasisEvidence",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Accounting.ValuationFreshnessAcceptanceTests.MissingStaleFutureAndLowConfidenceMarks_BlockWholeBatch_RepairRestoresReadiness(dateOffset: 1, confidence: High, reason: \"after valuation date\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.StooqHistoricalDataProviderTests.IsAvailableAsync_NoCredentialRequired_ReturnsTrueWithoutHttpCall",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.AdvanceRefunding_RejectsRefundedRoleMovedFromSuccessorToPredecessor",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.EnvironmentCredentialResolver_CreateContext_UsesConfiguredValuesAsFallback",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ProviderCredentialStoreTests.DeleteCredentials_RemovesModuleEntry",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.SaveAndRead_RoundTripsCredentialThroughEncryptedLocalStore",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Exchange_RejectsNoncanonicalNewLotLabelsBeforeDrafting(label: \" leading\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.ClosePlanEvidenceFailure_BlocksThenUnderlyingRepairRestoresReadiness(defect: \"version\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Integration.EndpointTests.RoleAuthorizationTests.LoginJson_WithLegacyAdminPasswordHashCredentials_ReturnsAdminRole",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.RetainedPopulation_MissingAlteredOrForeignScope_CannotReplayCertifiedReport(fault: \"rebound-amount\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CredentialCompatibilityEndpointsTests.CompatibilityMutation_RecordsAuthenticatedActor(route: \"/api/credentials/polygon/test\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderRoutingEndpointsTests.ConfigureOwnedConnection_IncompleteCredentialsAreNotReportedAsConfigured(apiKey: null, apiSecret: null)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Exchange_RejectsRolesOutsideTheApprovedSuccessorWorkflow(role: Escrow)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AdjustedCurrentBasisPreservesAcquisitionFacts(method: Hifo, fullyDisposed: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Reporting.ReportingSecureDistributionTests.HttpRelay_TransientResponseRetainsOneCredentialForStableReplay",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Integration.EndpointTests.AuthEndpointTests.Root_WhenNoCredentialsConfigured_ReturnsNotFound",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Identity.LoginSessionServiceTests.CreateSession_WithValidCredentials_IssuesValidatableToken",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_FractionalCentCurrentBasisReproducesExactJournal(fullyDisposed: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CloseReadinessSubjectSourceTests.IncorrectOwnership_BlocksThenRetainedRepairRestoresSubject(defect: \"account\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.SaveAsync_NormalizesPlaidEnvironmentAndSetupRoute(environment: \"\", expectedEnvironment: \"sandbox\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.ProviderIdentityTests.CredentialCatalog_UsesCanonicalIdsForEveryDeclaredAdapter",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedCredentialRoute_RefusesUnownedOrAmbiguousConnectionBeforeMutation(query: \"wrong-provider\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_UnresolvedCanonicalHistoryBlocksAndRestoredEvidenceRecovers(fault: \"basis\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.ReadForProviderAsync_DoesNotUseEnvironmentFallbackInProductionOrPackagedBuilds",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.ReadForProviderAsync_TightensAKeyLeftReadableByAnEarlierRelease",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Accounting.ValuationFreshnessAcceptanceTests.CompatibilityModesAndPartialCoverage_CannotBypassAdmission(handling: Allow)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.DailyValuationPositionServiceTests.ResolveConfiguredAsync_CompleteFlatSnapshot_IsReadyWithoutPositions",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlCredentialConcurrencyTests.ConcurrentReplacement_WinsOverTokenRotationAndVerification(id: \"netsuite\", verify: True, duringTokenExchange: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.OnboardingEndpointTests.NonInteractiveCredential_CannotPerformHumanDecisions(mutation: \"packet\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlConnectionLifecycleTests.Lifecycle_PersistsOneVerificationWithActor_AndCredentialReplacementClearsIt(id: \"xero\", success: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.ConcurrentReadsAndRotations_ReturnCompleteCredentialGenerations",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.Integrations.FileProviderIntegrationManifestStoreTests.SaveConnectionAsync_PersistsSafeCredentialReferenceOnly",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AdjustedCurrentBasisPreservesAcquisitionFacts(method: SpecificId, fullyDisposed: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.SaveAsync_KnownCredentialFields_AreCaseInsensitiveAndStoredCanonically",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.Cancellation_IsPropagated",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.AtomicTaxLotJournalStoreTests.SuccessorAmortization_DiscountExchangeContinuesBothBasesAndReplaysAfterPeriodLock",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.DataSources.CredentialConfigTests.ResolveSecretKey_VaultBridgeJsonPayload_ShouldReturnValue",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Accounting.ValuationFreshnessAcceptanceTests.ConsolidationPreservesTheStricterLegacyAgeAndConfidenceGates(dateOffset: -2, confidence: High)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.DailyValuationPositionServiceTests.ResolveAdHocAsync_PostCutoffSecurityAlias_CannotAuthorizeValuation",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.LegacyScopedVaultAlias_CollisionRetainsTheNewestWholeRecordWithinItsOwner(aliasIsNewer: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.DataSources.CredentialConfigTests.ResolveKeyId_VaultBridgeEnvVar_ShouldReturnValue",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Composition.FredProviderModuleCompositionTests.Both_capabilities_retain_credential_precedence_on_the_wire(source: \"config\", expectedKey: \"configured-key\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Exchange_RejectsRolesOutsideTheApprovedSuccessorWorkflow(role: Unrefunded)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Core.Config.CredentialPlaceholderDetectorTests.ContainsPlaceholderMarker_ReturnsFalseForMissingValues(value: \"   \")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_VersionedFaceDisposalConvertsRetainedPriceWithQuantity",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ScopedProviderCredentialStoreTests.ScopeIsolation_SurvivesConcurrentSaveRestartRotationVerificationAndDelete(dimension: \"account\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.ProviderRouting.ProviderSetupOwnershipTests.ConfigureOwnedConnection_HoldsOwnershipUntilTheScopedVaultOperationCompletes(phase: \"status\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Credentials.CredentialTestingServiceTests.TestCredentialAsync_AlpacaWithoutSecret_ReturnsNotConfigured",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.TwelveData.TwelveDataSymbolSearchProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ProviderCredentialStoreTests.Migration_InvalidLaterProviderDoesNotPartiallyImportAndRetainsSidecar",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.GetProviderConnections_WithoutManageCredentials_ReturnsForbidden",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.DurableRelief_UsesCanonicalDecimalAcquisitionFxAndPolicy(method: Hifo, selectedDay: 2)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.NativePaydown_ApportionsTheExactRemainingBasisAcrossLots(shortPosition: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.WorkflowReopenedDuringEvaluation_RequiresRefresh",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.MismatchedCockpit_IsExcludedAndBlocks(dimension: \"account\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Composition.ProviderCompositionTests.Options_credentials_are_resolved_from_the_final_host_resolver",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.AlpacaVerification_CredentialChangesRejectTheInFlightResultWithoutMutation(scoped: False, transition: \"replaced\", providerSucceeds: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Providers.AlpacaCredentialAndReconnectTests.ProviderMetadata_HasCorrectValues",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.PolygonHistoricalPaginationTests.UntrustedContinuation_FailsBeforeSendingCredentials(continuation: \"http://api.polygon.io/page?cursor=second\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.AlpacaVerification_CredentialChangesRejectTheInFlightResultWithoutMutation(scoped: True, transition: \"recreated\", providerSucceeds: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedSuccessorOriginWithUnchangedEconomics(fault: \"source-action-missing\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.CredentialPresence_DoesNotCreateVerificationEvidence(providerId: \"finnhub\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.LegacyVaultAlias_RemainsReadableAndSharesFutureSaveAndDeleteOperations",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Composition.FredProviderModuleCompositionTests.Credentials_lost_between_gate_and_construction_leave_no_partial_factory(throwOnSecondRead: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.GetCommandCenterAsync_WhenCloseChecklistHasBlockedTasks_ShouldSurfaceChecklistMetricAndDecisionRows",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.DurableRelief_RefusesUnselectedUnresolvedLotAndMixedPositionScope",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.CredentialValidatorTests.ThrowIfCredentialsMissing_MissingCredentials_ThrowsInvalidOperationException",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AdjustedCurrentBasisPreservesAcquisitionFacts(method: SpecificId, fullyDisposed: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialAuditDurabilityTests.NextMutation_ReplaysBacklogBeforeAppendingItsOwnRecord",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.AttributeCredentialResolverTests.ForType_NoCredentialProvider_AllGetCallsReturnNull",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialResolverTests.ResolveCredential_PlaceholderConfigValue_ReturnsNull(configValue: \"<API_KEY>\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ScopedCredentialRecoveryTests.ReadScopedProvider_WriterLockHeldReadsOnlyOwnedPublishedGeneration(recoverBackup: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedAcquisitionEvidenceWithUnchangedFacts(fault: \"id\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_SnapshotAuthorityRejection_PreservesOriginalException(fault: \"foreign-tenant\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Integration.EndpointTests.OperationalProblemDetailsEndpointTests.ApiKeyMiddleware_InvalidCredential_ReturnsUnauthorizedProblem",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.QuickBooks.QuickBooksOnlineProviderCredentialConnectionStoreTests.ReadAsync_ReturnsNormalizedConnectionFromCompleteProviderCredentials",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.GetProviderConnections_WithoutTenantScope_ReturnsForbidden",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.DirectClose_RechecksRealSharedEvidenceAndPublishesOnlyAfterRepair(defect: \"nav\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.AdvanceRefunding_RejectsZeroRoundedOrResidualFunctionalBasisBeforeDrafting(firstAllocationPercent: 10)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.ProviderRouting.ProviderSetupOwnershipTests.ConfigureLegacy_RequiresReadableOwnershipBeforeAnyVaultCall(body: \"{\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_EqualTotalCannotHideInvalidComponentFacts(fault: \"zero-quantity\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_IncompleteOrChangedSuccessorEvidence_FailsClosed(fault: \"schedule-d\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.PutProviderCredentials_UnknownCredentialFields_ReturnsBadRequestWithoutPersistingValues",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_OrdinaryLotCannotTrustUnexpectedComponents(matchingQuote: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_EqualTotalCannotHideInvalidComponentFacts(fault: \"different-date\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.CockpitForEarlierWorkflowRevision_CannotClearCurrentClose",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.CreateSymbolSearchProviders_WithAlphaVantageConfigKey_AddsAlphaVantageSearchProvider",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.CredentialValidatorTests.ValidateKeySecretPair_NullSecret_ReturnsFalse",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlCredentialRecoveryTests.Rotation_RetainsCompleteConnectionAndRecoveryGeneration_BeforeCancelledImport(id: \"xero\", environment: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Services.ConfigurationServiceTests.ResolveAllCredentials_BackfillProviderCredentialOverlays_UsesEnvironmentCredentials",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.PostProviderVerify_DelegatesQuickBooksOnlineAccountingVerifier",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Services.OperationalSchedulerTests.CanExecuteAsync_CredentialRefresh_ShouldAlwaysBeAllowed",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.StoredProviderCredentialResolver_CreateContext_UsesNearestDeclaredIdentityForDerivedAlpacaStreams(providerType: typeof(Meridian.Infrastructure.Adapters.Alpaca.AlpacaCryptoMarketDataClient))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.AlpacaVerification_CredentialChangesRejectTheInFlightResultWithoutMutation(scoped: False, transition: \"deleted\", providerSucceeds: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_SnapshotAuthorityRejection_PreservesOriginalException(fault: \"already-unavailable\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.SaveAsync_CreatesTheVaultDirectoryOwnerOnly",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.AttributeCredentialResolverTests.GetAttributes_NoAttributes_ReturnsEmpty",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.AttributeCredentialResolverTests.CredentialSchemaRegistry_DiscoverFromAssemblies_BuildsProviderIdConvenienceIndex",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.CredentialValidatorTests.ThrowIfCredentialsMissing_ValidCredentials_DoesNotThrow",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Integration.EndpointTests.AuthEndpointTests.LoginForm_WithCredentials_NoEnvVarsConfigured_RedirectsToLoginWithError",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Services.PreflightCheckerTests.ValidateProviderCredentials_CaseInsensitive_ReturnsResult",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_EqualTotalCannotHideInvalidComponentFacts(fault: \"negative-quantity\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.DailyValuationPositionServiceTests.ResolveAdHocAsync_DuplicateSecurityAccountScope_FailsClosed",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Providers.IBSimulationClientTests.ProviderCredentialFields_IsEmpty_ForSimulation",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.SaveAsync_QuickBooksStoresReadOnlyCompanyOAuthConfig",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedAcquisitionEvidenceWithUnchangedFacts(fault: \"effective-date\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.PutProviderCredentials_KnownCredentialFields_AreCaseInsensitive",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialIsolationTests.ModuleConstruction_PreservesExplicitOrLegacyTradingEnvironment(selectedEnvironment: null, expectedEnvironment: \"live\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.Tiingo.TiingoCorporateActionProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.CredentialValidatorTests.GetCredential_NullParamAndNoEnvVar_ReturnsNull",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CredentialCompatibilityEndpointsTests.ProviderCredentialTestConnection_WrapsSharedStoreVerification",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialAuditDurabilityTests.PendingAudit_AuditPathStillBlocked_BacklogAccumulatesAcrossMutations",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedAcquisitionEvidenceWithUnchangedFacts(fault: \"hash\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.NativeThreeForOneSplit_FinalCloseRelievesTheUnitQuoteRemainder(shortPosition: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Credentials.CredentialTestingServiceTests.TestCredentialAsync_NotConfigured_ReturnsNotConfiguredStatus",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderRoutingEndpointsTests.ConfigureProvider_UnreadableConfigurationCannotCommitCredentials(content: \"[]\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_IncompleteOrChangedSuccessorEvidence_FailsClosed(fault: \"missing-evidence\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.ProviderRouting.ProviderSetupOwnershipTests.ConfigureOwnedConnection_RefusesForeignTenantBeforeAnyVaultCall",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialAuditDurabilityTests.AuditJournal_IsRemovedAfterASuccessfulCommit",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedCredentialVerification_DoesNotInvokeProviderWideAccountingVerifier",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.ProviderRouting.ProviderSetupOwnershipTests.ConfigureLegacy_RefusesOwnedOrAmbiguousFamilyBeforeAnyVaultCall(ownership: \"empty-environment-without-tenant\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Etl.SftpCapabilityServiceTests.ResolveAsync_Destination_PreservesWhitespaceInALiteralCredential",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialIsolationTests.PublicRegistration_SelectedSidecarRecordCannotFillMissingFieldsFromMappedEnvironment(emptyRecord: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.CredentialValidatorTests.ValidateKeySecretPair_BothValid_ReturnsTrue",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.DefaultProviderSetupHandlers_IncludesTwelveDataReadOnlyCredentialHandler",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.StoredProviderCredentialResolver_CreateContext_UsesNearestDeclaredIdentityForDerivedAlpacaStreams(providerType: typeof(Meridian.Infrastructure.Adapters.Alpaca.AlpacaOptionsMarketDataClient))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Composition.FredProviderModuleCompositionTests.Both_capabilities_retain_credential_precedence_on_the_wire(source: \"module-environment\", expectedKey: \"mapped-key\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_SuccessorBasisAndRefundedOnlyScheduleD_AreRetainedInCertifiedRows(advanceRefunding: True, functionalOnly: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Validate_RejectsSuccessorFactsOutsideTheApprovedProjection(changedFact: \"holding-period\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CredentialCompatibilityEndpointsTests.CompatibilityMutation_WithoutActorDoesNotWriteVault(route: \"/api/credentials/polygon\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.AttributeCredentialResolverTests.IsConfigured_ReturnsFalse_WhenNotSet",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ProviderReadiness_CountsOnlyTheTenantsOwnScopedCredentials",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderRoutingEndpointsTests.ConfigureOwnedConnection_PreservesRoutingAndCannotChangeCredentialOwnership(owner: \"tenant-test\", requestedEnvironment: \"paper\", allowed: False, duplicate: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Pipeline.MarketDataClientFactoryTests.CreateStreamingClient_StringProviderId_UsesCustomCredentialResolver",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Accounting.ValuationFreshnessAcceptanceTests.DeclaredTwoBatchPopulation_IdentifiesEveryBlockedPosition_AndMarkRepairClearsBothBatches",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.DurableRelief_UsesCanonicalDecimalAcquisitionFxAndPolicy(method: Fifo, selectedDay: 1)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ScopedCredentialRecoveryTests.ScopedVerification_WithoutTestedGenerationCannotVerifyOrInvalidateReplacement(generation: \" \", success: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.OAuthTokenTests.OAuthToken_CanRefresh_FalseWhenNoRefreshToken",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedSuccessorOriginWithUnchangedEconomics(fault: \"type\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.OAuthTokenTests.OAuthToken_IsExpired_TrueWhenPastExpiration",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Composition.FredProviderModuleCompositionTests.Both_capabilities_retain_credential_precedence_on_the_wire(source: \"stored\", expectedKey: \"stored-key\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Composition.FredProviderModuleCompositionTests.Both_capabilities_retain_credential_precedence_on_the_wire(source: \"environment\", expectedKey: \"environment-key\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.GetCommandCenterAsync_WhenEvidencePackageMissing_ShouldBlockCompletion",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ProviderModuleCredentialSelectionTests.SelectedPartialOrEmptyRecord_CannotBorrowMappedEnvironmentCredentials(empty: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Credentials.CredentialTestingServiceTests.GetCachedStatus_ReturnsStatusAfterTest",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Integration.EndpointTests.AuthEndpointTests.LoginJson_WhenAuthModeRequiredAndCredentialsMissing_ReturnsServiceUnavailable",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.DirectClose_RechecksRealSharedEvidenceAndPublishesOnlyAfterRepair(defect: \"book\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_ExplicitSourceIdentityRequiresRetainedSuccessorOrigin(advanceRefunding: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_ExactComponentsCannotAuthorizeInvalidCanonicalEvidence(fault: \"unreviewed-evidence\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialAuditDurabilityTests.Replay_EarlierDeferredIntent_SurvivesALaterPublication_WhileTheAuditLogIsUnavailable",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Exchange_RejectsPredecessorLotLabelWithWhitespaceAlias",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.AttributeCredentialResolverTests.ForType_FirstEnvVarTakesPrecedenceOverSecond",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.GetCommandCenterAsync_WhenNavCloseSupportMissing_ShouldBlockCompletion",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ProviderCredentialStoreTests.GetCredentials_ReturnsEmpty_WhenNoFileExists",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.SubjectReassignedDuringEvaluation_BlocksEvenWhenAllContributorsAreReady",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.ReadForProviderAsync_ExplicitConfigurationIsAuthoritativeIncludingMissingValues",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.CredentialValidatorTests.ValidateApiKey_ValidApiKey_ReturnsTrue",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.GetCommandCenterAsync_WhenCloseReadinessHasWorkflowBlockers_ShouldSurfaceCoreFlowControlRows",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Core.Config.CredentialPlaceholderDetectorTests.ContainsPlaceholderMarker_ReturnsTrueForKnownPlaceholders(value: \"YOUR_API_KEY\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.FractionalClosingFills_ExhaustTheExactOpeningBasis(method: Hifo, shortPosition: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.StoredProviderCredentialResolver_CreateContext_UsesCanonicalDataSourceIdentityForTwelveData(providerType: typeof(Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests+CatalogIdentityCredentialProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Accounting.ValuationFreshnessAcceptanceTests.RetainedMarkTampering_BlocksApprovalAndPosting_OverrideTagsDoNotAuthorizeIt",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.TwelveData.TwelveDataHistoricalDataProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedAccountingVerification_UsesProviderIdentityEquivalenceAndRetainsExactScope(providerId: \"netsuite\", retainedAccountId: \"account-sb1\", credentialAccountId: \"ACCOUNT_SB1\", expectedSuccess: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Integration.EndpointTests.AuthEndpointTests.ProtectedEndpoint_WhenAuthModeRequiredAndCredentialsMissing_ReturnsServiceUnavailable",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.GetCommandCenterAsync_WhenNamedReconciliationLanesNeedReview_ShouldPreserveCapabilitySpecificImpact",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.ReadForProviderAsync_ReadOnlyVaultDoesNotRequireWritableLock(recoverBackup: True, retainLock: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlCredentialConcurrencyTests.ConcurrentReplacement_WinsOverTokenRotationAndVerification(id: \"netsuite\", verify: False, duringTokenExchange: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Core.Config.CredentialPlaceholderDetectorTests.ContainsPlaceholderMarker_ReturnsTrueForKnownPlaceholders(value: \"change-me\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlLiveProviderTests.Import_UsesCredentialedTransport_RotatesTokenAndReturnsScopedBalancedEvidence(id: \"netsuite\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_IncompleteOrChangedSuccessorEvidence_FailsClosed(fault: \"basis\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.OnboardingEndpointTests.NonInteractiveCredential_CannotPerformHumanDecisions(mutation: \"comparison\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.CredentialValidatorTests.GetCredential_NullParam_FallsBackToEnvVar",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.Polygon.PolygonOptionsChainProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.LegacyVaultAlias_DeletionMarkerPreventsCredentialResurrection",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_FinalReporting_ValidatesPeriodStateRetainedWithPopulation",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.ProviderRouting.ProviderSetupOwnershipTests.ConfigureLegacy_HoldsOwnershipLeaseThroughVaultSaveAndStatus(phase: \"status\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.RetainedConfigurationMutation_ChangesPlanToken_AndRequiresConsistentRefresh",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedAcquisitionEvidenceWithUnchangedFacts(fault: \"retained-by\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.ProviderRouting.ProviderSetupOwnershipTests.ConfigureLegacy_RefusesPublishingAReferenceWhenOwnershipArrivesAfterVaultPhase",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotAmortizationPrecisionTests.SeparatelyRoundedTargets_PreserveAcquisitionFxWithinOneStorageQuantum",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Integration.ProviderGoldenPathTransactionLedgerReconciliationTests.FixtureSecurity_ProviderGoldenPath_ContainsNoCredentialsOrLiveEndpoints(fixturePath: \"/workspace/Meridian-main/tests/Meridian.Tests/Infr\"\u00b7\u00b7\u00b7)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.ClosePlanEvidenceFailure_BlocksThenUnderlyingRepairRestoresReadiness(defect: \"account\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AdjustedCurrentBasisPreservesAcquisitionFacts(method: AverageCost, fullyDisposed: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Validate_RequiresTheSuccessorToInheritThePredecessorsPaydownFactorExactly",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.AdvanceRefunding_RejectsInflatedFaceEvenWhenTheAuthoritativeBasisPlanReconciles",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.ReadForProviderAsync_WriterLockHeldReadsThePublishedGeneration",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedAccountingVerification_ConcurrentCredentialReplacementWinsOverTokenRotation(providerId: \"netsuite\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_WithRealFundStructureService_RetainsAncestorHierarchyAndExcludesFutureOrganization",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Providers.AlpacaCredentialAndReconnectTests.DisposeAsync_WithoutConnect_DoesNotThrow",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.RetainedPopulation_MissingAlteredOrForeignScope_CannotReplayCertifiedReport(fault: \"foreign-scope\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedSuccessorOriginWithUnchangedEconomics(fault: \"action\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.NasdaqDataLinkHistoricalDataProviderTests.IsAvailableAsync_WithApiKey_UsesMetadataEndpointAndQueryCredential",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialAuditDurabilityTests.Replay_DeleteIntent_IsProvenOnlyByItsOwnPublication_NeverByPreexistingAbsence",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.GetCommandCenterAsync_WhenCoreFlowGateBlocked_ShouldSurfaceCoreFlowMetric",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialIsolationTests.CorporateActionConstruction_DeletedRecordCannotResolveEnvironmentInsideAdapter(providerId: \"nasdaq\", variable: \"NASDAQ_DATA_LINK_API_KEY\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.ReadForProviderAsync_UsesEnvironmentAsReadOnlyLegacyFallback",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.DurableRelief_MissingEvidenceBlocksUntilRetainedAcquisitionIsRestored",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AdjustedCurrentBasisPreservesAcquisitionFacts(method: Fifo, fullyDisposed: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Accounting.ValuationFreshnessAcceptanceTests.RetainedEvidenceCannotSupportAnotherSubject(fund: \"fund-alpha\", account: \"broker-1\", dateOffset: 1)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.ReadForProviderAsync_ReadOnlyVaultDoesNotRequireWritableLock(recoverBackup: False, retainLock: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Validate_RejectsSuccessorFactsOutsideTheApprovedProjection(changedFact: \"functional-basis\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotAmortizationPrecisionTests.FractionalPartialBasis_RefusesAJournalDeltaThatStorageWouldSilentlyRound",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Composition.FredProviderModuleCompositionTests.Both_capabilities_retain_credential_precedence_on_the_wire(source: \"stored-over-sidecar\", expectedKey: \"stored-key\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Exchange_RejectsNoncanonicalNewLotLabelsBeforeDrafting(label: \"trailing \")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlLiveProviderTests.CatalogAndSetup_ExposeCredentialOnlyReadOnlyAdapters(id: \"xero\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Reporting.ReportingSecureDistributionTests.HttpRelay_HeadersThenStalledBody_TimesOutAcrossReceiptReadWithoutRevokingReplayCredential",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Credentials.CredentialTestingServiceWithMockedHttpTests.TestAlpacaCredentials_ValidCredentials_ReturnsValid",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Core.Config.CredentialPlaceholderDetectorTests.IsPlaceholderValue_TreatsMissingOrPlaceholderAsPlaceholder(value: \"\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Credentials.CredentialTestingServiceTests.TestCredentialAsync_UnknownProvider_ReturnsUnknownStatus",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.AdvanceRefunding_RejectsDuplicateLotLabelsBeforeMappingOrDrafting(surroundingWhitespace: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Services.PreflightCheckerTests.ValidateProviderCredentials_IB_PassesWithoutCredentials",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.Fred.FredHistoricalDataProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ProviderModuleSetupServiceTests.UpsertModule_StoresCredentials",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialIsolationTests.ModuleConstruction_PreservesExplicitOrLegacyTradingEnvironment(selectedEnvironment: \"paper\", expectedEnvironment: \"paper\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialAuditDurabilityTests.Replay_IntentWhoseVaultWriteDidCommit_IsAppendedWithReplayMarker",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_RepeatingAverageCostSlicesPreserveExactBasisAndPooledResultSign(recognized: -1)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.DefaultProviderSetupHandlers_IncludesSecondaryReadOnlyDataProviders(alias: \"twelve-data\", expectedProviderId: \"twelvedata\", expectedApiKeyEnvironment: \"TWELVEDATA_API_KEY\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Mapper_RejectsLossOfHistoricalSuccessorAcquisitionEvidence",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedAccountingVerification_UsesAndRotatesOnlyTheSelectedRetainedConnection(providerId: \"netsuite\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.CredentialValidatorTests.ValidateApiKey_NullLogger_DoesNotThrow",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.NativeSplitThenPaydown_ReducesRetainedTotalWithoutRebuildingTheUnitQuote(shortPosition: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_EqualTotalCannotHideInvalidComponentFacts(fault: \"mixed-fills\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialAuditDurabilityTests.SaveAsync_JournalWriteFailure_DoesNotTouchVault",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Credentials.CredentialTestingServiceTests.GetAllCachedStatuses_ReturnsAllTestedProviders",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CredentialCompatibilityEndpointsTests.CompatibilityMutation_WithoutActorDoesNotWriteVault(route: \"/api/credentials/polygon/test\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.DailyValuationPositionServiceTests.ResolveConfiguredAsync_StaleOrFutureSnapshot_FailsClosed(offsetDays: -3, expectedBlocker: \"stale\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CloseReadinessSubjectSourceTests.MissingAccount_DoesNotAttestEchoedCallerScope",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Accounting.ValuationFreshnessAcceptanceTests.CompatibilityModesAndPartialCoverage_CannotBypassAdmission(handling: Flag)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ScopedCredentialRecoveryTests.ScopedVerification_RequiresTheExpectedOwnedGeneration(transition: \"current\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialIsolationTests.ScopedConstruction_RotationAndDeletionNeverSelectAnotherOwnersCredentials(dimension: \"connection\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderRoutingEndpointsTests.ConfigureProvider_WithSubmittedCredentials_RequiresManageCredentials",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotAmortizationContinuationTests.UnprovedContinuationCannotAuthorizeAnAmortization(alteration: \"nested-successor\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.DailyValuationPositionServiceTests.ResolveAdHocAsync_InactiveOrWrongCurrencySecurity_FailsClosed(isActive: True, securityCurrency: \"EUR\", expectedBlocker: \"not valuation base currency\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Providers.AlpacaCredentialAndReconnectTests.Constructor_EmptyKeyId_ThrowsArgumentException",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.GetCommandCenterAsync_WhenBreakCaseOpen_ShouldProjectDeterministicQueueMetadata",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.DailyValuationPositionServiceTests.ResolveConfiguredAsync_FreshOwnedSnapshot_ResolvesSecurityAndEvidence",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Core.Config.CredentialPlaceholderDetectorTests.IsPlaceholderValue_TreatsMissingOrPlaceholderAsPlaceholder(value: \"TODO\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.ProviderRouting.ProviderSetupOwnershipTests.ConfigureLegacy_RefusesOwnedOrAmbiguousFamilyBeforeAnyVaultCall(ownership: \"missing-tenant\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlConnectionLifecycleTests.Lifecycle_PersistsOneVerificationWithActor_AndCredentialReplacementClearsIt(id: \"netsuite\", success: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.SaveAsync_NormalizesAlpacaTradingApiEndpointToEnvironment(endpoint: \"https://api.alpaca.markets/v2\", expectedEnvironment: \"live\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_EqualTotalCannotHideInvalidComponentFacts(fault: \"total-quantity\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.WorkstationEndpointsTests.CloseReadinessRoute_UnregisteredAuthorityReturnsUnavailable",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.DeleteProviderCredentials_RemovesLocalStore",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Credentials.CredentialTestingServiceWithMockedHttpTests.TestAlpacaCredentials_InvalidCredentials_ReturnsInvalid",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.AtomicTaxLotJournalStoreTests.SuccessorAmortization_MissingPredecessorReceiptCannotPrepareContinuation",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CloseReadinessSubjectSourceTests.IncorrectOwnership_BlocksThenRetainedRepairRestoresSubject(defect: \"entity\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CredentialCompatibilityEndpointsTests.CredentialRoutes_RequireManageCredentials",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CloseReadinessSubjectSourceTests.IncorrectOwnership_BlocksThenRetainedRepairRestoresSubject(defect: \"fund\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.LegacyScopedVaultAlias_SaveVerifyAndDeleteAddressOnlyTheCanonicalOwnedRecord",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedCredentialRoute_AcceptsARetainedProviderAlias",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.CredentialValidatorTests.ValidateKeySecretPair_EmptyKey_ReturnsFalse",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_CapitalAccountPrimaryDocument_ShouldBindPartnersCapitalToCompleteAsOfLedgerHistory(outputFormat: Xlsx)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_SnapshotAuthorityRejection_PreservesOriginalException(fault: \"cancelled\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.ProviderRouting.ProviderSetupOwnershipTests.ConfigureLegacy_HoldsOwnershipLeaseThroughVaultSaveAndStatus(phase: \"save\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlCredentialConcurrencyTests.ConcurrentReplacement_WinsOverTokenRotationAndVerification(id: \"xero\", verify: False, duringTokenExchange: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotAmortizationContinuationTests.UnprovedContinuationCannotAuthorizeAnAmortization(alteration: \"missing-birth\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlCredentialConcurrencyTests.ConcurrentReplacement_WinsOverTokenRotationAndVerification(id: \"netsuite\", verify: False, duringTokenExchange: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Exchange_RejectsRolesOutsideTheApprovedSuccessorWorkflow(role: Child)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.NativeSplit_AfterPartialRelief_PreservesEveryRemainingLotBasis(method: Fifo, shortPosition: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_TaxHistoryChangedAfterSnapshot_UsesRetainedReliefAndBlocksNextCapture",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Credentials.CredentialTestingServiceTests.TestCredentialAsync_TracksCredentialSource",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.CredentialStoreExtensionsTests.RegisterApiKey_AddsStandardMetadata",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Providers.AlpacaCredentialAndReconnectTests.Constructor_WhitespaceCredentials_ThrowsArgumentException",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.ProviderRouting.ProviderSetupOwnershipTests.ConfigureOwnedConnection_HoldsOwnershipUntilTheScopedVaultOperationCompletes(phase: \"save\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Credentials.CredentialTestingServiceTests.TestCredentialAsync_InvokesOnCredentialTestedEvent",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_UnresolvedCanonicalHistoryBlocksAndRestoredEvidenceRecovers(fault: \"scope\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderRoutingEndpointsTests.TenantConnectionOwnership_ReloadsThroughSharedContractsAndSelectsOnlyItsCredentials",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedAccountingVerification_UsesProviderIdentityEquivalenceAndRetainsExactScope(providerId: \"xero\", retainedAccountId: \"aabbccdd-1111-2222-3333-444444444444\", credentialAccountId: \"aabbccdd-1111-2222-3333-444444444445\", expectedSuccess: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_IncompleteOrChangedSuccessorEvidence_FailsClosed(fault: \"scope\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.NativeSplit_AfterPartialRelief_PreservesEveryRemainingLotBasis(method: Fifo, shortPosition: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.AlpacaBrokerageGatewayTests.ConnectAsync_MissingCredentials_ThrowsInvalidOperationException",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedSuccessorOriginWithUnchangedEconomics(fault: \"version\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.DailyValuationPositionServiceTests.ResolveAdHocAsync_InactiveOrWrongCurrencySecurity_FailsClosed(isActive: False, securityCurrency: \"USD\", expectedBlocker: \"Inactive\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ScopedCredentialRecoveryTests.ScopedVerification_RequiresTheExpectedOwnedGeneration(transition: \"deleted\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ProviderCredentialStoreTests.SaveCredentials_IsolatesModules",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ScopedCredentialRecoveryTests.ScopedAuditAppend_RecoversTailAndRetainsOwnership(providerCredentialWrite: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialAuditDurabilityTests.Replay_CommittedEntryAlreadyInAuditLog_IsNotAppendedTwice",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Accounting.ValuationFreshnessAcceptanceTests.CompatibilityModesAndPartialCoverage_CannotBypassAdmission(handling: Block)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.AttributeCredentialResolverTests.CredentialSchemaRegistry_FromTypes_IndexesSchemasByProviderType",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Composition.ProviderFeatureRegistrationTests.Register_CreatesAlpacaStreamingClient_WhenCredentialsComeFromEnvironmentOnly",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_ExplicitSourceIdentityRequiresRetainedSuccessorOrigin(advanceRefunding: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Services.PreflightCheckerTests.ValidateProviderCredentials_Polygon_FailsWhenMissing",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.ProviderRouting.ProviderSetupOwnershipTests.ConfigureLegacy_RefusesOwnedOrAmbiguousFamilyBeforeAnyVaultCall(ownership: \"duplicate\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Integration.EndpointTests.AuthEndpointTests.ProtectedEndpoint_WhenNoCredentialsConfigured_PassesThrough",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialAuditDurabilityTests.DeleteAsync_AuditFailureAfterVaultCommit_SucceedsAndRetainsPendingAuditJournal",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.OAuthTokenTests.OAuthRefreshResult_Success_ContainsNewToken",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_RejectsFunctionalCurrencyThatDisagreesWithCertifiedBook",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.OAuthTokenTests.OAuthToken_CanRefresh_FalseWhenRefreshTokenExpired",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderRoutingEndpointsTests.ConfigureOwnedConnection_PreservesRoutingAndCannotChangeCredentialOwnership(owner: \"tenant-test\", requestedEnvironment: \"live\", allowed: False, duplicate: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.CredentialPresence_DoesNotCreateVerificationEvidence(providerId: \"polygon\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Providers.AlpacaCredentialAndReconnectTests.BuildSubscriptionMessage_OnlyIncludesQuotesWhenEnabled",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Integration.ProviderGoldenPathTransactionLedgerReconciliationTests.FixtureSecurity_ProviderGoldenPath_ContainsNoCredentialsOrLiveEndpoints(fixturePath: \"/workspace/Meridian-main/tests/Meridian.Tests/Infr\"\u00b7\u00b7\u00b7)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AdjustedCurrentBasisPreservesAcquisitionFacts(method: Fifo, fullyDisposed: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Credentials.CredentialTestingServiceTests.GetCachedStatus_ReturnsNullForUnknownProvider",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_RejectsHistoricalFunctionalCurrencyThatDisagreesWithCertifiedBook",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.CredentialValidatorTests.GetCredentialMultiple_FallsBackToSecondEnvVar",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.CredentialStatusTests.CredentialTestResult_IsSuccess_TrueForValidStatus",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedCredentialRoute_RefusesUnownedOrAmbiguousConnectionBeforeMutation(query: \"other\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.OAuthTokenTests.OAuthToken_LifetimeRemainingPercent_CalculatesCorrectly",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.SaveAsync_NormalizesPlaidEnvironmentAndSetupRoute(environment: null, expectedEnvironment: \"sandbox\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Reporting.ReportingSecureDistributionAuthorizationTests.DirectGrant_IssuanceFailsBeforeCredentialExistsWhenReleasedBytesAreUnavailable(corruptBytes: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Accounting.ValuationFreshnessAcceptanceTests.RetainedEvidenceCannotSupportAnotherSubject(fund: \"other-fund\", account: \"broker-1\", dateOffset: 0)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.OAuthTokenTests.OAuthToken_IsExpiringSoon_TrueWhenWithin5Minutes",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedAccountingVerification_UsesAndRotatesOnlyTheSelectedRetainedConnection(providerId: \"quickbooks\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Integration.EndpointTests.RoleAuthorizationTests.RolePermissions_TradeDesk_CanExecuteTradesButCannotManageCredentialsOrUsers",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.VerificationFailure_RedactsProviderDetailsRejectsMissingIdentityAndCanRetry(failureKind: \"json\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_CanonicalDisposalEvidenceBlocksAndRestoringItProducesSignedLotEvidence(fault: \"scope\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlCredentialConcurrencyTests.ConcurrentReplacement_WinsOverTokenRotationAndVerification(id: \"netsuite\", verify: True, duringTokenExchange: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.ProviderRouting.ProviderSetupOwnershipTests.ConfigureLegacy_RequiresReadableOwnershipBeforeAnyVaultCall(body: \"null\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ScopedProviderCredentialStoreTests.ScopeIsolation_SurvivesConcurrentSaveRestartRotationVerificationAndDelete(dimension: \"connection\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.Robinhood.RobinhoodHistoricalDataProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Platform.Runtime.StartupSummaryTests.PerformQuickCheck_AlpacaWithoutCredentialsReturnsBlockingIssue",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostCanonicalSnapshotMustMatchRetainedPool",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderRoutingEndpointsTests.ConfigureProvider_StoresAlpacaCredentialsInEncryptedStoreAndLeavesConfigSecretFree",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.AssetOperations.OpenLotSuccessorTests.Exchange_RejectsNoncanonicalNewLotLabelsBeforeDrafting(label: \"\\ttrimmed\\r\\n\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.NativeSplit_AfterPartialRelief_PreservesEveryRemainingLotBasis(method: Lifo, shortPosition: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.NasdaqDataLink.NasdaqDataLinkSymbolSearchProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.ReadForProviderAsync_AllowsExplicitEnvironmentFallbackOverrideForMigration",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_ConcurrentBackdatedPosting_AllCertifiedComponentsUseOnePopulation",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.PlaidWorkstationServiceTests.SearchInstitutions_UsesStoredPlaidCredentialsAndReturnsSupportedInstitutions",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ScopedRuntimeResolver_RotationAndDeletionCannotSelectAnotherOwnersCredentials(dimension: \"environment\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.CredentialValidatorTests.GetCredentialMultiple_NoParamNoEnvVars_ReturnsNull",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.BacktestingComposite_OrdinaryLotCannotTrustUnexpectedComponents(matchingQuote: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.OAuthTokenTests.OAuthToken_IsExpiringSoon_FalseWhenMoreThan5Minutes",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_AppliesExactAsOfAndDimensions_FiltersMixedLegs_ExcludesFutureJournal_AndIsStable",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.LedgerReportingAuthoritativeSourceTests.CaptureAsync_MalformedSnapshotHistory_ReturnsSourceUnavailableAndCanRetryAfterRepair(fault: \"ledger-validation\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Execution.PaperTradingPortfolioBasisParityTests.PartialCloseThenAdditionalFill_PreservesBasisInTheRemainingPosition(shortPosition: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.CreateSymbolSearchProviders_WithNasdaqConfigKey_AddsNasdaqDataLinkSearchProvider",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.CredentialStatusTests.CredentialStatusSummary_AllValid_TrueWhenAllResultsSuccess",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_RepeatingAverageCostSlicesPreserveExactBasisAndPooledResultSign(recognized: 1)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedAccountingVerification_UsesProviderIdentityEquivalenceAndRetainsExactScope(providerId: \"quickbooks\", retainedAccountId: \"realm-a\", credentialAccountId: \"realm-a\", expectedSuccess: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.PutProviderCredentials_SavesEncryptedCredentialAndReturnsMaskedStatus",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.DurableRelief_AverageCostCertifiesThePooledBasis",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.GetCommandCenterAsync_WhenPrivateCapitalAccountingGapsRemain_ShouldPreserveNamedFinopsCapabilities",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Composition.ProviderFeatureRegistrationTests.Register_PolygonStreamingRetainsConfiguredCredentialsAndFeed",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests.ClosePlanEvidenceFailure_BlocksThenUnderlyingRepairRestoresReadiness(defect: \"missing\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.Credentials.CredentialStatusTests.CredentialTestResult_IsSuccess_FalseForFailureStatuses(status: Unknown)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Services.PreflightCheckerTests.ValidateProviderCredentials_UnknownProvider_ReturnsPassed",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Services.PreflightCheckerTests.ValidateProviderCredentials_Alpaca_PassesWhenAlternativeCredentialSet",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ProviderModuleSetupServiceTests.UpsertModule_DoesNotStoreNullOrEmptyCredentialValues",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderRoutingEndpointsTests.ConfigureProvider_UnreadableConfigurationCannotCommitCredentials(content: \"null\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Credentials.CredentialTestingServiceWithMockedHttpTests.TestTiingoCredentials_ValidCredentials_ReturnsValid",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AdjustedCurrentBasisPreservesAcquisitionFacts(method: Hifo, fullyDisposed: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Credentials.CredentialTestingServiceTests.TestAllCredentialsAsync_SkipsUnconfiguredProviders",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Composition.FredProviderModuleCompositionTests.Retained_empty_credentials_cannot_borrow_module_or_environment_keys(scoped: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CloseReadinessSubjectSourceTests.IncorrectOwnership_BlocksThenRetainedRepairRestoresSubject(defect: \"inactive\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.ProviderSdk.CredentialValidatorTests.ThrowIfApiKeyMissing_EmptyApiKey_ThrowsInvalidOperationException",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Infrastructure.Providers.ProviderFactoryCredentialContextTests.ProviderCredentialCatalog_CredentialBearingImplementation_HasCanonicalIdentity(providerType: typeof(Meridian.Infrastructure.Adapters.Tiingo.TiingoSymbolSearchProvider))",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ScopedCredentialRecoveryTests.ReadScopedOAuth_WriterLockHeldReadsOnlyOwnedPublishedGeneration(recoverBackup: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialAuditDurabilityTests.PendingJournal_RecordsCommittedPhaseWhenAuditAppendFails",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.ProviderConnectionEndpointsTests.ScopedCredentialRoute_RefusesUnownedOrAmbiguousConnectionBeforeMutation(query: \"missing\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ProviderCredentialStoreTests.FirstRead_MigratesAndRemovesLegacyPlaintextSidecar",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Ui.CloseReadinessSubjectSourceTests.RetainedMembership_BindsAccountAndEntityToBook(kind: Fund)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Integration.EndpointTests.RoleAuthorizationTests.LoginJson_WithValidMultiUserCredentials_ReturnsRoleInResponse",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Storage.CanonicalOpenLotConsumerTests.Reporting_AverageCostRejectsChangedAcquisitionEvidenceWithUnchangedFacts(fault: \"source-reference\")",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Credentials.CredentialTestingServiceWithMockedHttpTests.TestPolygonCredentials_ValidCredentials_ReturnsValid",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.DataIntegration.AccountingSystem.ExternalGlCredentialConcurrencyTests.ConcurrentReplacement_WinsOverTokenRotationAndVerification(id: \"xero\", verify: False, duringTokenExchange: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.UI.ProviderCredentialStoreTests.Migration_CompatibleProviderAliasesCoalesceBeforePublication",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Reporting.ReportingSecureDistributionTests.HttpRelay_RestartAfterProviderAcceptanceReusesOneStableCredentialAndMessage",
+      "outcome": "Passed"
+    },
+    {
+      "test": "Meridian.Tests.Application.Config.ProviderCredentialStoreTests.DefaultProviderSetupHandlers_IncludesSecondaryReadOnlyDataProviders(alias: \"nasdaqdatalink\", expectedProviderId: \"nasdaq\", expectedApiKeyEnvironment: \"NASDAQ_DATA_LINK_API_KEY\")",
+      "outcome": "Passed"
+    }
+  ],
+  "changedSourceAndTestSha256": {
+    "src/Meridian.Application/ProviderRouting/ProviderSetupService.cs": "c5bca511446e7f4acb9b3e805eccfaf1a978b134fe5d9979867d08ad8398dc7d",
+    "src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs": "6a50030c08cc4c0f92c4b87bcd8d396141401ec6dbf5385f734cce6a24a35d36",
+    "src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs": "5627ef947e17ff81ca1b90cb43f5eeef1d02a520f9ce7421635fa3ca80d9cb6f",
+    "src/Meridian.Wpf/Services/SetupWizardStateService.cs": "4deea71a8b6fe53fd5492656cc083e4927ede13885c3d1418f99320e5ad45046",
+    "src/Meridian.Wpf/ViewModels/BackfillViewModel.cs": "695b1049936b1e85da97836046f557521c28eae18ae0a9030102344a23127905",
+    "src/Meridian.Wpf/ViewModels/CredentialManagementViewModel.cs": "3cb336b1caaf20c3bd009e3ee3749072cf53cc361b94477c6c6a93040b141e77",
+    "src/Meridian.Wpf/ViewModels/SetupWizardViewModel.cs": "29c5ea5fab024d3f4291641a631b3fa1c981666e10d15592e63f867d1fb30794",
+    "src/Meridian.Wpf/Views/BackfillPage.xaml": "7b152aa7d08874ac120c1fff3fcd530b877c52594f61a048333f305b3e0803f4",
+    "src/Meridian.Wpf/Views/BackfillPage.xaml.cs": "d8bfb7438d90cf96d2329d4550185c1a5a0be2d306e44b27063e3bd9ebe88d14",
+    "src/Meridian.Wpf/Views/SetupWizardPage.xaml": "efa854c740729c10dfc807b1419251e5d9433078722e422e2f6e5860a25400b3",
+    "tests/Meridian.Tests/Application/Accounting/ValuationFreshnessAcceptanceTests.cs": "136bb7446efd67f2093a5b2206622718e386b7b5c12b1382626d7b672c8b6a27",
+    "tests/Meridian.Tests/Application/Config/ScopedCredentialRecoveryTests.cs": "8449a00fff95de35cf02fe40ee20922a5da3709d5a0648398f47052814aed7f9",
+    "tests/Meridian.Tests/Application/ProviderRouting/ProviderSetupOwnershipTests.cs": "8ae954d5581e2ce86ad492b2d2989e315d62c4e63fbf6f8b0df1b9ddc3a0456f",
+    "tests/Meridian.Tests/Application/Ui/ProviderCredentialStoreTests.cs": "bfca04a7ab19ec1bc3b277b14daeabb8d65c2ae7a2b27363e2ec4b2e2b64b8dd",
+    "tests/Meridian.Tests/Ui/ProviderConnectionEndpointsTests.cs": "dc9f97e694b403ea8b4c750e35e4e6fcf17fd44cec05b277f1269b8f4091302c",
+    "tests/Meridian.Wpf.Tests/ViewModels/BackfillViewModelTests.cs": "118c9c60a18c28ea3a8d236832d82ec979221c42bab2bb9fd4a0f90475794f45",
+    "tests/Meridian.Wpf.Tests/ViewModels/CredentialManagementViewModelTests.cs": "2adcff72be9380b266993db77cc38388e4c784bb3b802b209fd847980a47a9e1",
+    "tests/Meridian.Wpf.Tests/ViewModels/SetupWizardViewModelTests.cs": "9f87f923fdd201c64a0037b06f0bbe4c8bb8d166f3cfdc5a71ea77bca3df4413"
+  }
+}

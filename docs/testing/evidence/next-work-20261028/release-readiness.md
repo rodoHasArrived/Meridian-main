@@ -6,8 +6,9 @@
 **Hosted conclusions refreshed:** 2026-10-28 08:54 UTC, same source baseline only
 **Source baseline:** `af7f0c6a91ea3c3bea25befbd8d1a98ac0fbe76f`
 
-This receipt records read-only GitHub API and source inspection during implementation of the
-next-work plan. No workflow was dispatched, tag created, secret inspected, or governance changed.
+The initial receipt records read-only GitHub API and source inspection during implementation of
+the next-work plan. The signing refresh below reruns the existing non-tag readiness workflow.
+No tag was created, secret value inspected, or governance changed.
 The canonical production gate remains `docs/product/implementation-todo-list.md`.
 
 ## Hosted observations
@@ -27,6 +28,48 @@ non-packaging prerequisite check in `desktop-release-signing`;
 `check-release-signing.ps1` verifies certificate private-key presence, validity dates and exact
 MSIX publisher identity. It uses ephemeral key storage and emits a non-secret receipt.
 Unavailable prerequisites must continue to fail closed.
+
+## Fresh signing prerequisite check — 2026-10-28 22:37 UTC
+
+The October 27 missing-signing result remains true for the protected job. Re-running the failed
+jobs of [Release Readiness 40294900031, attempt 3](https://github.com/rodoHasArrived/Meridian-main/actions/runs/40294900031/attempts/3)
+produced `signing-secrets-unavailable` at **22:36:24 UTC** in signing job `123142986692`.
+The job received empty signing inputs; this establishes their unavailability to that execution,
+not an administrative inventory of the protected environment. Summary job `123143251865`
+reported **Release readiness: blocked** at 22:36:51 UTC. The run completed with failure at
+22:36:53 UTC. No release candidate was selected and no tag was created.
+
+| Retained artifact (90 days) | ID | Observed ZIP SHA-256 |
+| --- | --- | --- |
+| [release-signing-readiness-40294900031-3](https://github.com/rodoHasArrived/Meridian-main/actions/runs/40294900031/artifacts/12856857528) | `12856857528` | `33a9d30024fae76d5f68635541b63209276de4bbeab3dd0b0e3fbb56ebbca9cc` |
+| [release-readiness-40294900031-3](https://github.com/rodoHasArrived/Meridian-main/actions/runs/40294900031/artifacts/12857257055) | `12857257055` | `ddcefff47429f3179f0b406c6623aa5befca95261cf0094ac7685cfe78478e9e` |
+
+The rerun remains bound to historical SHA `65e65ed317d086ec68a39e7df6105ffd9d8e8aa3`.
+At inspection, current main was `a5b2589f0395d054bec0b59672a990419ef237ed`.
+Both refs have identical signing-script blob `55dbe2e5f887568b04e7e3b51a85762def3d1cbc`
+and MSIX manifest blob `cc935195b0c11de4863061a9a079a369e452216d`, verified through
+the connected GitHub file API. Current main still uses the protected `desktop-release-signing`
+environment, the same two signing-secret names, ephemeral certificate inspection and 90-day
+non-secret retention. A fresh-main dispatch was unavailable in the connector; the inherited
+`gh` authentication also failed. The existing workflow rerun supplied fresh prerequisite proof.
+
+The summary job independently downloaded the signing artifact and reported the matching ZIP
+digest inside Actions. Workspace archive inspection was blocked by an HTTP 403 from the configured
+proxy; the table therefore records Actions metadata and logs, not a local byte verification.
+The [compact observation receipt](signing-readiness-40294900031-3.json) retains exact run, source,
+artifact and log identities without secret material.
+
+Current-main CI was also refreshed at 22:37:11 UTC. `Meridian CI` run `40780116840`,
+`Production Certification` run `40780116643`, `Windows Desktop Build` run `40780116619`
+and `CodeQL` run `40780116464` were still in progress. The other six returned push lanes had
+succeeded. The earlier green `3a624fc3` runs do not establish those pending outcomes.
+Only `eval-v0.1.0-eval.1` and `v0.1.0-rc.1` were returned by the live tag query.
+
+Local readiness-script verification passed all **23 tests** with
+`python -m unittest discover -s tests/scripts -p 'test_release_readiness.py' -v`.
+This validates the script contracts, not the signing environment or release acceptance.
+The protected-environment owner still needs to make both signing inputs available, obtain a
+passing readiness receipt, and then select a frozen candidate with its required hosted gates.
 
 ## Remaining release actions
 
@@ -517,3 +560,12 @@ its original deadline. Receipt: `/workspace/scratch/meridian-e2-abi-pg-proofs.lo
 same frozen Release outputs as the final 590-case packet, with database environment supplied only
 to the three service-backed tests. The disposable database and ephemeral environment files were
 removed after validation. This is automated proof, not installed Windows/live acceptance.
+
+## Current task continuation — 2026-10-28
+
+The later local task on baseline `a5b2589f` retains [credential implementation and P0 gaps](credential-ownership.md),
+[desktop credential cutover](credential-ui.md), [LOT consumer/acceptance evidence](lot-acceptance.md),
+[MARK/close support evidence](mark-close-acceptance.md), the [fresh PR queue and resolver result](pr-queue.md),
+and a [recommended Windows operator target](operator-target.md). The coordinator's
+[task receipt](task-receipt.md) records final local validation and remaining blockers. These
+continuations do not alter historical conclusions or establish release/operator acceptance.

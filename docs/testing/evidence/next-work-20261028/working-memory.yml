@@ -1,0 +1,43 @@
+task_id: next-work-20261028
+coordinator: root
+mode: Deep Review
+goal: Advance credential ownership and retain current release and operator-acceptance evidence.
+working_memory:
+  codebase_snapshot: codex/credential-ownership from a5b2589f0395d054bec0b59672a990419ef237ed
+  active_claims:
+    - lane_id: credential-vault
+      owner: root
+      files: [src/Meridian.DataIntegration/Credentials, tests/Meridian.Tests/Application/Config/ScopedCredentialRecoveryTests.cs]
+      status: ready-for-integration
+    - lane_id: credential-runtime
+      files: [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs, tests/Meridian.Tests/Application/ProviderRouting/ProviderSetupOwnershipTests.cs]
+      status: ready-for-integration
+    - lane_id: credential-ui
+      files: [src/Meridian.Wpf, tests/Meridian.Wpf.Tests]
+      status: ready-for-integration
+    - lane_id: lot
+      files: [docs/testing/evidence/next-work-20261028/lot-acceptance.md]
+      status: ready-for-integration
+    - lane_id: mark-close
+      files: [tests/Meridian.Tests/Application/Accounting/ValuationFreshnessAcceptanceTests.cs, docs/testing/evidence/next-work-20261028/mark-close-acceptance.md]
+      status: ready-for-integration
+    - lane_id: signing
+      status: ready-for-integration
+      files: [docs/testing/evidence/next-work-20261028/release-readiness.md, docs/testing/evidence/next-work-20261028/signing-readiness-40294900031-3.json]
+    - lane_id: pr-queue
+      status: ready-for-integration
+      files: [docs/testing/evidence/next-work-20261028/pr-queue.md, docs/testing/evidence/next-work-20261028/pr-queue-conflicts.json]
+  open_assumptions:
+    - Windows host and retained acceptance population are not provisioned; user requests target recommendation.
+    - Proposed ADR-023 host-only binding protocol remains unimplemented; scoped changes do not close PRD-002.
+  validation_owner: root
+  validation_snapshot:
+    - command: buildctl test --isolation-key next-work-20261028 (combined focused filter)
+      outcome: pass; 906 of 906, zero failures/skips
+      reuse_until: selected source or test inputs change
+integration_order: [credential-runtime, credential-vault, credential-ui, mark-close, lot, signing, pr-queue]
+merge_risks:
+  - Shared source-document hashes must be regenerated once by coordinator after all source edits.
+rollback_plan:
+  - Revert only this task's coherent local commit; never restore stale vault bytes or force-push shared history.
+publication: Local only; no tag or RC selected. Meridian skill requires explicit publication request.
