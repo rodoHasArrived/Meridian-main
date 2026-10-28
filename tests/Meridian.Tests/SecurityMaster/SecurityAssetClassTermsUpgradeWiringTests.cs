@@ -368,7 +368,7 @@ public sealed class SecurityAssetClassTermsUpgradeWiringTests
     [Theory]
     [InlineData("src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs")]
     [InlineData("src/Meridian.Application/SecurityMaster/SecurityEconomicDefinitionAdapter.cs")]
-    [InlineData("src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs")]
+    [InlineData("src/Meridian.Application/SecurityMaster/CashFlow/SecurityPrincipalBalance.cs")]
     [InlineData("src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs")]
     [InlineData("src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs")]
     [InlineData("src/Meridian.Instruments/AssetOperations/AssetObligationProjectionService.cs")]

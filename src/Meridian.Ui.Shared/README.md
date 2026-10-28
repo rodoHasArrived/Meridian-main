@@ -2789,6 +2789,28 @@ Security Master also serves `GET /api/security-master/{securityId}/income-cash-f
 400 for an undeclared block or JSON kind, and 400 with the not-yet-writable reason for a block the
 class only reads, such as `scheduleConventions`, `callSchedule` or `putSchedule`).
 
+A refused write on the direct create and term-amendment routes (`POST /api/security-master`,
+`POST /api/security-master/amend`, the term-block `PUT`, and the preferred- and convertible-equity
+term `PATCH` routes including the legacy `/equities/{securityId}/preferred-terms` alias) answers 400
+with the refusal reason as the Problem Details `detail`. Refusals include terms this node reads but does
+not write (ADR-024), a missing or malformed term, an undeclared vocabulary value, an F# domain
+validation error (`[code] message`), a profile failing catalog validation, and a round-trip guard
+naming the repair. A refusal the stored record triggers answers 400 too, such as a patch-less amend
+of a row stamped above the write version whose re-serialization would change it, or stored terms the
+Write-mode mapping refuses on the term-block, preferred and convertible routes, which build the
+patch from the stored row. Only `SecurityMasterWriteRefusedException` is translated, by a filter
+applied per route (`SecurityMasterEndpoints.WriteRefusals.cs`). Undecodable stored rows, unknown
+securities, stale versions the F# validator rejects, duplicate creates and store failures keep their
+responses; `/amend` compares the version only there, so a stale amend whose patch is refused earlier
+answers 400 with that refusal. A stored asset class that matches no catalog class name in any casing
+answers 400 on `/amend` even when this node cannot decode the row, because the change belongs on a node that
+supports the class; that holds for a security rebuilt from its events, while a projection-only one
+the rebuild cannot decode answers 500. The preferred, convertible and legacy routes answer a class
+the catalog does not resolve 404 at their read-model probe, and the term-block route answers it with
+its pre-check's 400. A write
+that declares a non-flat `termsFormat` is told what to submit. Deactivate refusals still answer 500;
+no read route changes.
+
 `POST /api/security-master/structured-credit-reclassification/report` (AdminMaintenance) builds the
 ADR-022 report of active securitised `Bond` and `CustomAsset` rows with their proposed
 `StructuredCredit` terms and blockers. It is mapped only when the Postgres-backed service is

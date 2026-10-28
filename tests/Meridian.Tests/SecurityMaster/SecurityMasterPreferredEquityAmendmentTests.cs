@@ -97,7 +97,7 @@ public sealed class SecurityMasterPreferredEquityAmendmentTests
         var act = () => service.AmendPreferredEquityTermsAsync(securityId, request);
 
         await act.Should()
-            .ThrowAsync<InvalidOperationException>()
+            .ThrowExactlyAsync<InvalidOperationException>()
             .WithMessage("*preferred-equity terms*");
 
         await eventStore.DidNotReceiveWithAnyArgs().AppendAsync(default, default, default!, default);

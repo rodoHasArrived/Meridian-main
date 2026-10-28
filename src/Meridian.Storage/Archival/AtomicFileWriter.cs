@@ -55,7 +55,7 @@ public static partial class AtomicFileWriter
             }
 
             ct.ThrowIfCancellationRequested();
-            File.Move(tempPath, destinationPath, overwrite: true);
+            MoveIntoPlace(tempPath, destinationPath);
             SyncDirectory(directory!);
 
             Log.Debug("Atomically wrote {Bytes} bytes", Encoding.UTF8.GetByteCount(content));
@@ -123,7 +123,7 @@ public static partial class AtomicFileWriter
             }
 
             // Atomic rename
-            File.Move(tempPath, destinationPath, overwrite: true);
+            await MoveIntoPlaceAsync(tempPath, destinationPath);
 
             // Sync the directory to ensure rename is persisted (post-commit: non-cancellable)
             await SyncCommittedDirectoryAsync(directory!);
@@ -196,7 +196,7 @@ public static partial class AtomicFileWriter
             }
 
             // Atomic rename
-            File.Move(tempPath, destinationPath, overwrite: true);
+            await MoveIntoPlaceAsync(tempPath, destinationPath);
 
             // Sync the directory (post-commit: non-cancellable)
             await SyncCommittedDirectoryAsync(directory!);
@@ -252,7 +252,7 @@ public static partial class AtomicFileWriter
             }
 
             // Atomic rename
-            File.Move(tempPath, destinationPath, overwrite: true);
+            await MoveIntoPlaceAsync(tempPath, destinationPath);
 
             // Sync directory (post-commit: non-cancellable)
             await SyncCommittedDirectoryAsync(directory!);
@@ -312,7 +312,7 @@ public static partial class AtomicFileWriter
             }
 
             // Atomic rename
-            File.Move(tempPath, destinationPath, overwrite: true);
+            await MoveIntoPlaceAsync(tempPath, destinationPath);
 
             // Sync the directory to ensure the rename is persisted (post-commit: non-cancellable).
             await SyncCommittedDirectoryAsync(directory!);
@@ -375,7 +375,7 @@ public static partial class AtomicFileWriter
             }
 
             await SyncFileAsync(tempPath, ct);
-            File.Move(tempPath, destinationPath, overwrite: true);
+            await MoveIntoPlaceAsync(tempPath, destinationPath);
             // post-commit: non-cancellable
             await SyncCommittedDirectoryAsync(directory!);
         }
@@ -454,7 +454,7 @@ public static partial class AtomicFileWriter
             await SyncFileAsync(tempPath, ct);
 
             // Atomic rename
-            File.Move(tempPath, destinationPath, overwrite: true);
+            await MoveIntoPlaceAsync(tempPath, destinationPath);
 
             // Write the checksum sidecar atomically (temp + fsync + rename). A bare
             // File.WriteAllTextAsync could leave a torn sidecar on a crash mid-write, which a later
@@ -541,7 +541,7 @@ public static partial class AtomicFileWriter
                 {
                     File.Delete(backupPath);
                 }
-                File.Move(destinationPath, backupPath);
+                await MoveWithRetryAsync(destinationPath, backupPath, overwrite: false);
 
                 // Make the backup rename durable before the destination is overwritten, so a
                 // crash mid-sequence can never leave both the original and its backup missing.
@@ -549,7 +549,7 @@ public static partial class AtomicFileWriter
             }
 
             // Move temp to destination
-            File.Move(tempPath, destinationPath);
+            await MoveWithRetryAsync(tempPath, destinationPath, overwrite: false);
 
             // Sync directory (post-commit: non-cancellable)
             await SyncCommittedDirectoryAsync(directory!);
@@ -569,7 +569,7 @@ public static partial class AtomicFileWriter
             {
                 try
                 {
-                    File.Move(backupPath, destinationPath);
+                    MoveWithRetry(backupPath, destinationPath, overwrite: false);
                 }
                 catch (Exception restoreException)
                 {
@@ -581,6 +581,60 @@ public static partial class AtomicFileWriter
 
             // Re-throw the original failure with its stack trace intact.
             ExceptionDispatchInfo.Throw(writeException);
+        }
+    }
+
+    // Windows refuses to replace a destination while another handle without delete sharing is open on
+    // it (antivirus and search indexers scan freshly written files; a reader opened without
+    // FileShare.Delete does the same), surfacing as ERROR_SHARING_VIOLATION, ERROR_LOCK_VIOLATION or
+    // ERROR_ACCESS_DENIED. Those handles close within milliseconds, so the rename is retried briefly
+    // before the failure is reported. POSIX rename never fails for open handles, and EACCES there is
+    // a real permission problem, so no retry applies off Windows.
+    private const int ReplaceAttempts = 10;
+    private static readonly TimeSpan ReplaceRetryDelay = TimeSpan.FromMilliseconds(20);
+
+    private static bool IsTransientReplaceFailure(Exception exception)
+        => OperatingSystem.IsWindows()
+            && (exception is UnauthorizedAccessException
+                || (exception is IOException io && (io.HResult & 0xffff) is 32 or 33));
+
+    private static void MoveIntoPlace(string tempPath, string destinationPath)
+        => MoveWithRetry(tempPath, destinationPath, overwrite: true);
+
+    private static Task MoveIntoPlaceAsync(string tempPath, string destinationPath)
+        => MoveWithRetryAsync(tempPath, destinationPath, overwrite: true);
+
+    private static void MoveWithRetry(string sourcePath, string destinationPath, bool overwrite)
+    {
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                File.Move(sourcePath, destinationPath, overwrite);
+                return;
+            }
+            catch (Exception exception) when (attempt < ReplaceAttempts && IsTransientReplaceFailure(exception))
+            {
+                Thread.Sleep(ReplaceRetryDelay * attempt);
+            }
+        }
+    }
+
+    // Post-commit-decision step: the temp file is complete and durable, so a caller cancellation is
+    // deliberately not observed here; the lock timeout and the bounded attempt count limit the wait.
+    private static async Task MoveWithRetryAsync(string sourcePath, string destinationPath, bool overwrite)
+    {
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                File.Move(sourcePath, destinationPath, overwrite);
+                return;
+            }
+            catch (Exception exception) when (attempt < ReplaceAttempts && IsTransientReplaceFailure(exception))
+            {
+                await Task.Delay(ReplaceRetryDelay * attempt);
+            }
         }
     }
 

@@ -531,7 +531,7 @@ internal static class SecurityMasterMapping
             // would otherwise persist silently as OtherSecurity — and because OtherSecurity is a
             // catalog class, every later amend passes the round-trip guard, so the
             // misclassification is permanent and never surfaces. Amend and deactivate are guarded
-            // in SecurityMasterService.EnsureAssetClassRoundTripsSafely before they reach here;
+            // in SecurityMasterService.EnsureAssetClassIsRecognizedHere before they reach here;
             // this arm is the one guard the create path has.
             _ when mode == SecurityKindMappingMode.Write =>
                 throw new InvalidOperationException(UnrecognizedAssetClassOnWrite(assetClass)),

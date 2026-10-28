@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-10-20T08:15:52Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-10-21T15:53:39Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -134,19 +134,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Application/README.md` | Host and Composition | `ebe59f45d` (2026-10-20T08:15:36Z) | 24 |
-| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | `19d59dd7b` (2026-10-20T08:15:36Z) | 12 |
-| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | `19d59dd7b` (2026-10-20T08:15:36Z) | 8 |
-| `src/Meridian.Execution/OrderManagementSystem.cs` | Execution, Risk, and Strategies | `19d59dd7b` (2026-10-20T08:15:36Z) | 4 |
-| `src/Meridian.Strategies/Live/LiveTradingEngine.cs` | Execution, Risk, and Strategies | `19d59dd7b` (2026-10-20T08:15:36Z) | 4 |
-| `src/Meridian.Execution/BrokerageServiceRegistration.cs` | Execution, Risk, and Strategies | `19d59dd7b` (2026-10-20T08:15:36Z) | 1 |
-| `src/Meridian.Execution/IOrderManagementLifecycle.cs` | Execution, Risk, and Strategies | `19d59dd7b` (2026-10-20T08:15:36Z) | 1 |
-| `src/Meridian.Execution/Meridian.Execution.csproj` | Execution, Risk, and Strategies | `19d59dd7b` (2026-10-20T08:15:36Z) | 1 |
-| `src/Meridian.Execution/OrderManagementSystem.Lifecycle.cs` | Execution, Risk, and Strategies | `19d59dd7b` (2026-10-20T08:15:36Z) | 1 |
-| `src/Meridian.Execution/Services/OrderManagementHostedService.cs` | Execution, Risk, and Strategies | `19d59dd7b` (2026-10-20T08:15:36Z) | 1 |
-| `src/Meridian.Application/FundStructure/FundStructureProjector.cs` | Host and Composition | `ebe59f45d` (2026-10-20T08:15:36Z) | 1 |
-| `src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs` | Host and Composition | `ebe59f45d` (2026-10-20T08:15:36Z) | 1 |
-| `src/Meridian.Application/FundStructure/PostgresFundStructureService.Tenancy.cs` | Host and Composition | `ebe59f45d` (2026-10-20T08:15:36Z) | 1 |
-| `src/Meridian.Application/FundStructure/PostgresFundStructureService.cs` | Host and Composition | `ebe59f45d` (2026-10-20T08:15:36Z) | 1 |
-| `src/Meridian.Contracts/README.md` | Host and Composition | `8c517f05a` (2026-10-20T08:15:24Z) | 48 |
+| `src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs` | Host and Composition | `468399d31` (2026-10-21T05:33:44Z) | 10 |
+| `src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs` | Unmapped | `468399d31` (2026-10-21T05:33:44Z) | 5 |
+| `src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs` | Host and Composition | `468399d31` (2026-10-21T05:33:44Z) | 2 |
+| `src/Meridian.Contracts/SecurityMaster/NotionalLot.cs` | Host and Composition | `468399d31` (2026-10-21T05:33:44Z) | 1 |
+| `src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs` | Host and Composition | `468399d31` (2026-10-21T05:33:44Z) | 1 |
+| `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs` | Host and Composition | `0bd7b0bc4` (2026-10-20T20:28:18Z) | 16 |
+| `src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs` | Host and Composition | `0bd7b0bc4` (2026-10-20T20:28:18Z) | 7 |
+| `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs` | Desktop and UI Workflows | `0bd7b0bc4` (2026-10-20T20:28:18Z) | 3 |
+| `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.CorporateActions.cs` | Desktop and UI Workflows | `7d276fc6d` (2026-10-20T20:14:06Z) | 5 |
+| `src/Meridian.Instruments/AssetOperations/AssetObligationProjectionService.cs` | Unmapped | `7d276fc6d` (2026-10-20T20:14:06Z) | 2 |
+| `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs` | Host and Composition | `7d276fc6d` (2026-10-20T20:14:06Z) | 1 |
+| `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.SecurityCoverage.cs` | Desktop and UI Workflows | `7d276fc6d` (2026-10-20T20:14:06Z) | 1 |
+| `src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs` | Host and Composition | `53223bf3b` (2026-10-20T19:34:19Z) | 2 |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | Desktop and UI Workflows | `0aa3eeb19` (2026-10-20T19:26:20Z) | 3 |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.operations-control.ts` | Desktop and UI Workflows | `0aa3eeb19` (2026-10-20T19:26:20Z) | 2 |
 
