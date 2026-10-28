@@ -96,6 +96,7 @@ public static class SecurityAssetClassCatalog
             LotUnit: SecurityLotUnitKind.FaceValue,
             CashFlowBehavior: SecurityCashFlowBehavior.ContractualSchedule,
             ProjectionKind: SecurityTermsProjectionKind.Declarative,
+            DefaultValuationModel: SecurityValuationModelKind.DiscountedCashFlow,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -112,7 +113,20 @@ public static class SecurityAssetClassCatalog
             // Legacy classification spellings that reach the accounting adapter as a sub-type or
             // type name rather than as the canonical asset class.
             Aliases: ["CorporateBond", "MunicipalBond"],
-            AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond),
+            AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond,
+            // Version 2 adds the optional scheduleConventions block and version 3 the optional
+            // callSchedule and putSchedule arrays. This node reads both and writes version 1 until the
+            // contract step raises TermsVersion (ADR-024, readable before writable).
+            TermsUpgrades:
+            [
+                SecurityAssetClassTermsUpgrade.Identity(
+                    fromVersion: 1,
+                    rationale: "Version 2 adds the optional scheduleConventions block and changes no version-1 term, so a version-1 payload reads it as unset (ADR-024, 2026-10-25)."),
+                SecurityAssetClassTermsUpgrade.Identity(
+                    fromVersion: 2,
+                    rationale: "Version 3 adds the optional callSchedule and putSchedule arrays and changes no version-2 term, so a version-2 payload reads them as unset (ADR-024, 2026-10-25).")
+            ],
+            ReadableTermsVersion: 3),
         new(
             AssetClass: "FxSpot",
             AssetPackIds: ["derivatives-fx"],
@@ -179,7 +193,19 @@ public static class SecurityAssetClassCatalog
             ],
             AmortizesTowardPar: true,
             RequiresMaturity: true,
-            AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond),
+            AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond,
+            // Version 2 adds the optional scheduleConventions block and version 3 the optional
+            // callSchedule and putSchedule arrays; both are read ahead of write (ADR-024).
+            TermsUpgrades:
+            [
+                SecurityAssetClassTermsUpgrade.Identity(
+                    fromVersion: 1,
+                    rationale: "Version 2 adds the optional scheduleConventions block and changes no version-1 term, so a version-1 payload reads it as unset (ADR-024, 2026-10-25)."),
+                SecurityAssetClassTermsUpgrade.Identity(
+                    fromVersion: 2,
+                    rationale: "Version 3 adds the optional callSchedule and putSchedule arrays and changes no version-2 term, so a version-2 payload reads them as unset (ADR-024, 2026-10-25).")
+            ],
+            ReadableTermsVersion: 3),
         new(
             AssetClass: "CommercialPaper",
             AssetPackIds: ["fixed-income"],
@@ -294,6 +320,7 @@ public static class SecurityAssetClassCatalog
             LotUnit: SecurityLotUnitKind.Notional,
             CashFlowBehavior: SecurityCashFlowBehavior.SwapLegs,
             ProjectionKind: SecurityTermsProjectionKind.Declarative,
+            DefaultValuationModel: SecurityValuationModelKind.DiscountedCashFlow,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -302,7 +329,16 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Lei,
                 SecurityIdentifierKind.ProviderSymbol
             ],
-            RequiresMaturity: true),
+            RequiresMaturity: true,
+            // Version 2 adds the optional scheduleConventions block to each leg; read ahead of write
+            // (ADR-024).
+            TermsUpgrades:
+            [
+                SecurityAssetClassTermsUpgrade.Identity(
+                    fromVersion: 1,
+                    rationale: "Version 2 adds the optional scheduleConventions block to each leg and changes no version-1 term, so a version-1 payload reads it as unset on every leg (ADR-024, 2026-10-25).")
+            ],
+            ReadableTermsVersion: 2),
         new(
             AssetClass: "DirectLoan",
             AssetPackIds: ["private-loan-credit", "mortgage-facility-intercompany"],
@@ -345,14 +381,23 @@ public static class SecurityAssetClassCatalog
             // detachment points, WAC/WAM/WALA, CLO period dates); every addition is optional, so a
             // version-1 payload reads unchanged and needs no field transformation (ADR-024). The
             // identity step below records it, and SecurityAssetClassTermsHistoryTests checks it
-            // against the committed manifests.
+            // against the committed manifests. Version 3 adds the optional scheduleConventions block and
+            // version 4 the optional callSchedule and putSchedule arrays, which this node reads and does
+            // not yet write (ADR-024, readable before writable).
             TermsVersion: 2,
             TermsUpgrades:
             [
                 SecurityAssetClassTermsUpgrade.Identity(
                     fromVersion: 1,
-                    rationale: "Version 2 added nine optional typed tranche terms and changed no version-1 term, so a version-1 payload reads them as unset (ADR-024, 2026-10-18).")
+                    rationale: "Version 2 added nine optional typed tranche terms and changed no version-1 term, so a version-1 payload reads them as unset (ADR-024, 2026-10-18)."),
+                SecurityAssetClassTermsUpgrade.Identity(
+                    fromVersion: 2,
+                    rationale: "Version 3 adds the optional scheduleConventions block and changes no version-2 term, so a version-2 payload reads it as unset (ADR-024, 2026-10-25)."),
+                SecurityAssetClassTermsUpgrade.Identity(
+                    fromVersion: 3,
+                    rationale: "Version 4 adds the optional callSchedule and putSchedule arrays and changes no version-3 term, so a version-3 payload reads them as unset (ADR-024, 2026-10-25).")
             ],
+            ReadableTermsVersion: 4,
             SupportsProfileBackedTerms: true,
             Aliases: ["MortgageBacked", "MortgageBackedSecurity", "MBS", "AssetBacked", "AssetBackedSecurity", "ABS"],
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.AssetBackedSecurity),
@@ -739,10 +784,20 @@ public static class SecurityAssetClassCatalog
     /// <see cref="SecurityAssetClassDescriptor.TermsVersion"/>, or 1 for an unknown or blank class.
     /// Hand-built envelope writers and <see cref="SecurityTermsEnvelope.StampFlat(string, string)"/>
     /// take the version here rather than off the descriptor, so the version a node writes has one
-    /// accessor. <see cref="SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms"/> also reads its
-    /// newest accepted version here until a separate readable-version accessor exists.
+    /// accessor. It is also the version the upgrader brings older payloads up to and the
+    /// terms-version-behind notice compares against. The newest version a node READS is
+    /// <see cref="GetReadsTermsThrough"/>.
     /// </summary>
     public static int GetTermsVersion(string? assetClass) => GetOrDefault(assetClass).TermsVersion;
+
+    /// <summary>
+    /// The newest asset-class terms version a node accepts on read for the class: the descriptor's
+    /// <see cref="SecurityAssetClassDescriptor.ReadsTermsThrough"/>, or 1 for an unknown or blank
+    /// class. <see cref="SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms"/> refuses a stamp
+    /// above it; a stamp above <see cref="GetTermsVersion"/> and at or below it is readable but not
+    /// writable (ADR-024, readable before writable).
+    /// </summary>
+    public static int GetReadsTermsThrough(string? assetClass) => GetOrDefault(assetClass).ReadsTermsThrough;
 
     /// <summary>
     /// The asset classes that declare an Asset Operations capability set of their own, rather than
@@ -893,20 +948,30 @@ public enum SecurityAssetClassLabelResolution
 /// would mint a governed record on a fabricated economic fact.
 /// </param>
 /// <param name="TermsVersion">
-/// The current version of this asset class's flat terms contract, stamped onto every flat payload
-/// as <see cref="SecurityTermsEnvelope.AssetClassTermsVersionKey"/>. Bump it when a term field is
-/// added, removed, renamed or retyped, declare the step in <paramref name="TermsUpgrades"/>, and
-/// commit the new manifest version (ADR-024 decision 3); readers refuse payloads stamped with a
-/// newer version than they know, rather than silently dropping the newer fields. Versions are
-/// per asset class, so evolving one class never reserves or collides with another's numbers.
+/// The version of this asset class's flat terms contract a node WRITES, stamped onto every flat
+/// payload as <see cref="SecurityTermsEnvelope.AssetClassTermsVersionKey"/>. A term change ships in
+/// two steps (ADR-024 decision 3). The expand step adds the term with <c>.Since(n)</c>, raises
+/// <paramref name="ReadableTermsVersion"/> to n, declares an identity step from n - 1 in
+/// <paramref name="TermsUpgrades"/> and commits manifest version n, so every node can read version n
+/// while writes stay at this version. The contract step, once every node runs the expand step,
+/// raises this version to n. Readers refuse payloads stamped above
+/// <see cref="ReadsTermsThrough"/>, rather than silently dropping the newer fields. Versions are per
+/// asset class, so evolving one class never reserves or collides with another's numbers.
 /// </param>
 /// <param name="TermsUpgrades">
 /// The steps from each terms version to the next, one per version from 1 to
-/// <paramref name="TermsVersion"/> - 1 in ascending <see cref="SecurityAssetClassTermsUpgrade.FromVersion"/>
-/// (null or empty only while <paramref name="TermsVersion"/> is 1). <see cref="SecurityAssetClassTermsUpgrader"/>
-/// runs them on read. An identity step is legal only when the committed manifests show the next
-/// version removes or retypes nothing, makes no optional term required and adds only optional
-/// terms (ADR-024 decision 3); anything else is a transform step with in and out fixtures.
+/// <see cref="ReadsTermsThrough"/> - 1 in ascending <see cref="SecurityAssetClassTermsUpgrade.FromVersion"/>
+/// (null or empty only while <see cref="ReadsTermsThrough"/> is 1). <see cref="SecurityAssetClassTermsUpgrader"/>
+/// runs them on read, up to <paramref name="TermsVersion"/>; every step from
+/// <paramref name="TermsVersion"/> upward must be an identity step. An identity step is legal only
+/// when the committed manifests show the next version removes or retypes nothing, makes no optional
+/// term required and adds only optional terms (ADR-024 decision 3); anything else is a transform
+/// step with in and out fixtures.
+/// </param>
+/// <param name="ReadableTermsVersion">
+/// The newest terms version a node reads when it is above <paramref name="TermsVersion"/>, or
+/// <see langword="null"/> when a node reads exactly what it writes. Committed readable versions are
+/// append-only: a later expand step takes the next version rather than extending this one.
 /// </param>
 /// <param name="LotMultiplierTermKey">
 /// The asset-specific term that carries the contract multiplier a lot's quantity is scaled by
@@ -950,6 +1015,11 @@ public enum SecurityAssetClassLabelResolution
 /// Whether positions are bilateral contracts against a counterparty under a master agreement, so the
 /// instrument carries <c>OtcContractDto</c> records rather than exchange-traded lots.
 /// </param>
+/// <param name="DefaultValuationModel">
+/// The valuation model <c>ISecurityValuationService</c> dispatches to when a request names none:
+/// the quoted golden-copy price by default, or discounted projected cash flows for the classes
+/// whose schedule the kernel projects and a stored discount curve can value (Bond, Swap).
+/// </param>
 public sealed record SecurityAssetClassDescriptor(
     string AssetClass,
     SecurityLotUnitKind LotUnit,
@@ -976,8 +1046,18 @@ public sealed record SecurityAssetClassDescriptor(
     bool UsesOccOptionSymbols = false,
     bool QuotesRatesAsFractions = false,
     bool TradesAsBilateralContract = false,
-    IReadOnlyList<SecurityAssetClassTermsUpgrade>? TermsUpgrades = null)
+    IReadOnlyList<SecurityAssetClassTermsUpgrade>? TermsUpgrades = null,
+    int? ReadableTermsVersion = null,
+    SecurityValuationModelKind DefaultValuationModel = SecurityValuationModelKind.QuotedPrice)
 {
+    /// <summary>
+    /// The newest asset-class terms version a node reads for this class: <see cref="ReadableTermsVersion"/>
+    /// when it is above <see cref="TermsVersion"/>, and <see cref="TermsVersion"/> otherwise. Payloads
+    /// stamped above it are refused on read; payloads stamped above <see cref="TermsVersion"/> and at
+    /// or below it are readable but not writable (ADR-024 decision 3).
+    /// </summary>
+    public int ReadsTermsThrough => Math.Max(TermsVersion, ReadableTermsVersion ?? TermsVersion);
+
     /// <summary>
     /// The catalog facts below replace per-site asset-class name checks. Each is a declared
     /// behaviour one or more classes opt into, so a consumer asks the descriptor instead of
@@ -987,12 +1067,15 @@ public sealed record SecurityAssetClassDescriptor(
     /// <see cref="CarriesBondCouponStructure"/> (terms carry the bond coupon structure and bullet
     /// amortization conventions), <see cref="UsesOccOptionSymbols"/> (OCC option symbols are a
     /// valid identifier) and <see cref="QuotesRatesAsFractions"/> (a rate at or below one is a
-    /// fraction, not a percent) and <see cref="TradesAsBilateralContract"/> (positions are
+    /// fraction, not a percent), <see cref="TradesAsBilateralContract"/> (positions are
     /// bilateral contracts against a counterparty under a master agreement, so the instrument
-    /// carries <c>OtcContractDto</c> records rather than exchange-traded lots).
+    /// carries <c>OtcContractDto</c> records rather than exchange-traded lots) and a
+    /// <see cref="DefaultValuationModel"/> other than the quoted price (the class is valued from its
+    /// projected cash flows and a stored discount curve unless a request names another model).
     /// </summary>
     public bool HasDeclaredBehaviorFacts
-        => RequiresProfileReference || SupportsEquityClassification || CarriesBondCouponStructure || UsesOccOptionSymbols || QuotesRatesAsFractions || TradesAsBilateralContract;
+        => RequiresProfileReference || SupportsEquityClassification || CarriesBondCouponStructure || UsesOccOptionSymbols || QuotesRatesAsFractions || TradesAsBilateralContract
+           || DefaultValuationModel != SecurityValuationModelKind.QuotedPrice;
 
     /// <summary>
     /// Whether positions are held as face-value lots (par-denominated quantity). Derived from

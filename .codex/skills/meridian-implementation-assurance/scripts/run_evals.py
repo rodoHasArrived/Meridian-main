@@ -35,8 +35,8 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import os
 import re
+import shlex
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -49,6 +49,7 @@ ARTIFACTS_DIR = EVALS_DIR / "artifacts"
 EVALS_JSON = EVALS_DIR / "evals.json"
 BASELINE_JSON = EVALS_DIR / "benchmark_baseline.json"
 PROMPTS_CSV = EVALS_DIR / "meridian-implementation-assurance.prompts.csv"
+TRACE_CHECK_VERSION = "1"
 
 
 # ---------------------------------------------------------------------------
@@ -73,6 +74,7 @@ class CaseResult:
     skipped: list[str] = field(default_factory=list)
     exit_code: int = 0
     token_usage: dict[str, int] = field(default_factory=dict)
+    assertions_require_review: list[str] = field(default_factory=list)
 
     @property
     def pass_rate(self) -> float:
@@ -81,7 +83,7 @@ class CaseResult:
 
     @property
     def outcome(self) -> str:
-        return "PASS" if not self.failed else "FAIL"
+        return "PASS" if not self.failed and self.exit_code == 0 else "FAIL"
 
 
 # ---------------------------------------------------------------------------
@@ -90,22 +92,49 @@ class CaseResult:
 
 def parse_jsonl(text: str) -> list[dict[str, Any]]:
     events = []
-    for line in text.splitlines():
+    for line_number, line in enumerate(text.splitlines(), 1):
         line = line.strip()
         if line:
             try:
-                events.append(json.loads(line))
-            except json.JSONDecodeError:
-                pass
+                event = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"Invalid JSONL event on line {line_number}: {exc.msg}") from exc
+            if not isinstance(event, dict):
+                raise ValueError(f"JSONL event on line {line_number} must be an object")
+            if not isinstance(event.get("type"), str):
+                raise ValueError(f"JSONL event on line {line_number} must have a string type")
+            if event["type"] in ("item.started", "item.completed"):
+                item = event.get("item")
+                if not isinstance(item, dict) or not isinstance(item.get("type"), str):
+                    raise ValueError(f"JSONL item on line {line_number} must be an object with a string type")
+                if "id" in item and not isinstance(item["id"], str):
+                    raise ValueError(f"JSONL item ID on line {line_number} must be a string")
+                if item["type"] == "command_execution" and not isinstance(item.get("command"), str):
+                    raise ValueError(f"JSONL command on line {line_number} must be a string")
+            if event["type"] == "turn.completed" and not isinstance(event.get("usage", {}), dict):
+                raise ValueError(f"JSONL usage on line {line_number} must be an object")
+            events.append(event)
     return events
 
 
 def get_command_events(events: list[dict]) -> list[dict]:
-    """Return all command_execution item events from a JSONL trace."""
+    """Return one terminal event per command, retaining unfinished commands for the budget."""
+    by_id: dict[str, dict] = {}
+    anonymous: list[dict] = []
+    for event in events:
+        if event.get("type") not in ("item.started", "item.completed"):
+            continue
+        item = event.get("item", {})
+        if not isinstance(item, dict) or item.get("type") != "command_execution":
+            continue
+        item_id = item.get("id")
+        if item_id:
+            if item_id not in by_id or event["type"] == "item.completed":
+                by_id[item_id] = event
+        elif event["type"] == "item.completed":
+            anonymous.append(event)
     return [
-        e for e in events
-        if e.get("type") in ("item.started", "item.completed")
-        and e.get("item", {}).get("type") == "command_execution"
+        *by_id.values(), *anonymous,
     ]
 
 
@@ -150,19 +179,72 @@ def get_file_writes(events: list[dict]) -> list[str]:
 # Deterministic checks
 # ---------------------------------------------------------------------------
 
+def command_invocations(command: str) -> list[list[str]]:
+    """Recognize common CLI/shell invocations, excluding quoted command mentions.
+
+    This is a trace heuristic, not a shell interpreter or a proof of behavior.
+    """
+    try:
+        lexer = shlex.shlex(command, posix=True, punctuation_chars=";&|")
+        lexer.whitespace_split = True
+        tokens = list(lexer)
+    except ValueError:
+        return []
+    segments: list[list[str]] = [[]]
+    for token in tokens:
+        if token in (";", "&&", "||", "|", "&"):
+            segments.append([])
+        else:
+            segments[-1].append(token)
+    invocations = []
+    for segment in segments:
+        if not segment:
+            continue
+        program = Path(segment[0]).name.casefold().removesuffix(".exe")
+        if program in ("bash", "sh", "zsh", "pwsh", "powershell"):
+            for index, token in enumerate(segment[1:], 1):
+                if token.casefold() in ("-c", "-lc", "-command") and index + 1 < len(segment):
+                    invocations.extend(command_invocations(segment[index + 1]))
+                    break
+            else:
+                invocations.append(segment)
+        else:
+            invocations.append(segment)
+    return invocations
+
+
 def check_ran_build_or_test(cmds: list[str]) -> bool:
-    """Did the run include a dotnet build, dotnet test, or python test/validation command?"""
-    patterns = [
-        r"\bdotnet\b.*(build|test)",
-        r"\bpython3?\b.*test",
-        r"\bpython3?\b.*validate",
-        r"\bmake\b.*(test|build|verify)",
-    ]
-    for cmd in cmds:
-        for pat in patterns:
-            if re.search(pat, cmd, re.IGNORECASE):
+    """Recognize validation invocations; callers must first filter successful events."""
+    for command in cmds:
+        for tokens in command_invocations(command):
+            program = Path(tokens[0]).name.casefold().removesuffix(".exe")
+            args = tokens[1:]
+            if program == "dotnet" and args and args[0] in ("build", "test"):
+                return True
+            if program in ("python", "python3", "py"):
+                if len(args) >= 2 and args[0] == "-m" and args[1] in ("unittest", "pytest", "compileall"):
+                    return True
+                if args and not args[0].startswith("-"):
+                    script = Path(args[0]).name.casefold()
+                    if re.search(r"^(check[-_]|validate[-_]|test[-_])|test.*\.py$", script):
+                        return True
+            if program == "make" and any(re.search(r"(?:^|[-_])(test|build|verify|check)(?:$|[-_])", arg) for arg in args):
+                return True
+            if program in ("npm", "npm.cmd") and any(arg in ("test", "build", "lint", "typecheck", "check") for arg in args):
+                return True
+            if program == "git" and args[:1] == ["diff"] and "--check" in args:
+                return True
+            if program in ("bash", "sh") and args and Path(args[0]).name == "ci.sh":
                 return True
     return False
+
+
+def successful_command_events(events: list[dict]) -> list[dict]:
+    return [event for event in get_command_events(events)
+            if event.get("type") == "item.completed"
+            and type(event["item"].get("exit_code")) is int
+            and event["item"]["exit_code"] == 0
+            and event["item"].get("status") not in ("failed", "in_progress")]
 
 
 def check_ran_doc_route(cmds: list[str]) -> bool:
@@ -172,7 +254,12 @@ def check_ran_doc_route(cmds: list[str]) -> bool:
 
 def check_ran_score_eval(cmds: list[str]) -> bool:
     """Did the run invoke score_eval.py?"""
-    return any("score_eval" in cmd for cmd in cmds)
+    return any(
+        len(tokens) >= 2
+        and Path(tokens[0]).name.casefold().removesuffix(".exe") in ("python", "python3", "py")
+        and Path(tokens[1]).name == "score_eval.py"
+        for cmd in cmds for tokens in command_invocations(cmd)
+    )
 
 
 def _contains_rubric_marker(obj: Any, marker: str) -> bool:
@@ -195,12 +282,23 @@ def _contains_rubric_marker(obj: Any, marker: str) -> bool:
 
 
 def check_produced_rubric_output(events: list[dict]) -> bool:
-    """Did the run produce a rubric score output (via score_eval.py or inline JSON)?"""
-    return any(
-        _contains_rubric_marker(e, "behavior_correctness")
-        or _contains_rubric_marker(e, "Behavior Correctness")
-        for e in events
-    )
+    """Look for all categories in completed agent output or successful scorer stdout.
+
+    This checks output presence only. Rubric accuracy and case assertions need review.
+    """
+    outputs = []
+    for event in events:
+        item = event.get("item", {})
+        if event.get("type") == "item.completed" and isinstance(item, dict) and item.get("type") == "agent_message":
+            outputs.append(item.get("text", ""))
+    for event in successful_command_events(events):
+        item = event["item"]
+        if check_ran_score_eval([item.get("command", "")]):
+            outputs.append(item.get("aggregated_output", ""))
+    categories = ("behavior_correctness", "validation_evidence", "performance_safety", "documentation_sync", "traceable_summary")
+    return any(all(_contains_rubric_marker(output, category)
+                   or _contains_rubric_marker(output, category.replace("_", " "))
+                   for category in categories) for output in outputs)
 
 
 def check_command_count(cmds: list[str], max_commands: int = 30) -> bool:
@@ -212,18 +310,8 @@ def check_command_count(cmds: list[str], max_commands: int = 30) -> bool:
 # Core runner
 # ---------------------------------------------------------------------------
 
-_DRY_RUN_STUB = (
-    '{"type":"turn.completed","usage":{"input_tokens":100,"output_tokens":200}}\n'
-)
-
-
-def run_codex(prompt: str, trace_path: Path, dry_run: bool = False) -> tuple[int, str]:
+def run_codex(prompt: str, trace_path: Path) -> tuple[int, str]:
     """Run codex exec and save JSONL trace. Returns (exit_code, stderr)."""
-    if dry_run:
-        trace_path.parent.mkdir(parents=True, exist_ok=True)
-        trace_path.write_text(_DRY_RUN_STUB, encoding="utf-8")
-        return 0, "[dry-run: codex exec skipped]"
-
     ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
     result = subprocess.run(
         ["codex", "exec", "--json", "--full-auto", prompt],
@@ -236,15 +324,22 @@ def run_codex(prompt: str, trace_path: Path, dry_run: bool = False) -> tuple[int
 
 
 def score_case(case: EvalCase, events: list[dict], cmds: list[str]) -> CaseResult:
-    """Apply deterministic checks against an eval case and return CaseResult."""
+    """Apply trace heuristics; prose assertions remain unevaluated."""
     result = CaseResult(eval_id=case.id, description=case.description)
     result.token_usage = get_token_usage(events)
+    result.assertions_require_review = list(case.assertions)
+    successful_cmds = [e["item"].get("command", "") for e in successful_command_events(events)]
+
+    if any(event.get("type") in ("turn.failed", "error") for event in events):
+        result.failed.append("Codex trace contains a failed turn or error")
+    if not any(event.get("type") == "turn.completed" for event in events):
+        result.failed.append("no completed turn in trace")
 
     # Deterministic checks that apply to every case
-    if check_ran_build_or_test(cmds):
-        result.passed.append("ran build/test command")
+    if check_ran_build_or_test(successful_cmds):
+        result.passed.append("successful completed validation command detected")
     else:
-        result.failed.append("no build/test command found in trace")
+        result.failed.append("no successful completed validation command found in trace")
 
     if check_produced_rubric_output(events):
         result.passed.append("produced rubric output")
@@ -256,24 +351,21 @@ def score_case(case: EvalCase, events: list[dict], cmds: list[str]) -> CaseResul
     else:
         result.failed.append(f"command thrashing detected ({len(cmds)} commands)")
 
-    # Scenario-specific checks
+    # Tool choice does not prove documentation placement or cross-link correctness.
     if case.scenario == "B":
-        if check_ran_doc_route(cmds):
-            result.passed.append("doc_route.py invoked for new doc placement")
-        else:
-            result.failed.append("doc_route.py not invoked (required for Scenario B — new doc needed)")
+        result.skipped.append("documentation placement and cross-links require assertion review; doc_route.py is advisory")
 
-    if check_ran_score_eval(cmds):
-        result.passed.append("score_eval.py invoked for rubric scoring")
-    else:
+    if not check_ran_score_eval(successful_cmds):
         result.skipped.append("score_eval.py not detected (recommended but not required)")
 
     return result
 
 
 def run_case(case: EvalCase, dry_run: bool = False) -> CaseResult:
+    if dry_run:
+        raise ValueError("Dry-run validates fixtures only; it must not score synthetic traces")
     trace_path = ARTIFACTS_DIR / f"eval-{case.id}.jsonl"
-    exit_code, stderr = run_codex(case.prompt, trace_path, dry_run=dry_run)
+    exit_code, stderr = run_codex(case.prompt, trace_path)
 
     if not dry_run and not trace_path.exists():
         r = CaseResult(eval_id=case.id, description=case.description, exit_code=exit_code)
@@ -281,11 +373,19 @@ def run_case(case: EvalCase, dry_run: bool = False) -> CaseResult:
         return r
 
     raw = trace_path.read_text(encoding="utf-8") if trace_path.exists() else ""
-    events = parse_jsonl(raw)
+    try:
+        events = parse_jsonl(raw)
+    except ValueError as exc:
+        result = CaseResult(eval_id=case.id, description=case.description, exit_code=exit_code,
+                            assertions_require_review=list(case.assertions))
+        result.failed.append(str(exc))
+        return result
     cmds = commands_run(events)
 
     result = score_case(case, events, cmds)
     result.exit_code = exit_code
+    if exit_code != 0:
+        result.failed.append(f"codex exec exited with status {exit_code}")
     return result
 
 
@@ -294,20 +394,33 @@ def run_case(case: EvalCase, dry_run: bool = False) -> CaseResult:
 # ---------------------------------------------------------------------------
 
 def validate_prompts_csv() -> tuple[int, int]:
-    """Parse the prompts CSV and return (should_trigger_count, should_not_trigger_count)."""
+    """Validate trigger fixture structure, without testing model trigger selection."""
     if not PROMPTS_CSV.exists():
-        print(f"  warning: prompts CSV not found at {PROMPTS_CSV}", file=sys.stderr)
-        return 0, 0
+        raise ValueError(f"Prompts CSV not found at {PROMPTS_CSV}")
 
     should_trigger = 0
     should_not = 0
     with PROMPTS_CSV.open(newline="", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            if row.get("should_trigger", "").strip().lower() == "true":
+        reader = csv.DictReader(f, strict=True)
+        if reader.fieldnames != ["id", "should_trigger", "prompt"]:
+            raise ValueError("Prompts CSV must have columns id,should_trigger,prompt")
+        seen = set()
+        for line, row in enumerate(reader, 2):
+            if None in row or any(not isinstance(row.get(key), str) or not row[key].strip()
+                                  for key in ("id", "should_trigger", "prompt")):
+                raise ValueError(f"Prompts CSV row {line} must contain a non-empty id, label, and prompt")
+            if row["id"] in seen:
+                raise ValueError(f"Duplicate prompt ID {row['id']!r} on row {line}")
+            seen.add(row["id"])
+            label = row["should_trigger"].strip().lower()
+            if label not in ("true", "false"):
+                raise ValueError(f"Prompts CSV row {line} should_trigger must be true or false")
+            if label == "true":
                 should_trigger += 1
             else:
                 should_not += 1
+    if not should_trigger or not should_not:
+        raise ValueError("Prompts CSV must include positive and negative trigger controls")
     return should_trigger, should_not
 
 
@@ -315,12 +428,25 @@ def validate_prompts_csv() -> tuple[int, int]:
 # Regression check
 # ---------------------------------------------------------------------------
 
-def regression_check(results: list[CaseResult]) -> list[str]:
-    """Compare pass rates against benchmark_baseline.json. Return warning messages."""
-    if not BASELINE_JSON.exists():
-        return []
+def baseline_comparison(baseline: dict, *, requested: bool) -> dict[str, Any]:
+    """Keep historical checksets separate from the current trace heuristics."""
+    baseline_version = baseline.get("trace_check_version")
+    comparable = baseline_version == TRACE_CHECK_VERSION
+    return {
+        "status": ("not_requested" if not requested else
+                   "compared" if comparable else "skipped_incompatible_version"),
+        "comparable": comparable,
+        "trace_check_version": TRACE_CHECK_VERSION,
+        "baseline_trace_check_version": baseline_version,
+    }
 
-    baseline = json.loads(BASELINE_JSON.read_text(encoding="utf-8"))
+
+def regression_check(results: list[CaseResult], baseline: dict | None = None) -> list[str]:
+    """Compare only baseline rates produced by the same trace checkset."""
+    if baseline is None:
+        baseline = load_baseline()
+    if not baseline_comparison(baseline, requested=True)["comparable"]:
+        return []
     threshold = baseline.get("regression_threshold_pp", 10) / 100.0
     warnings = []
 
@@ -338,27 +464,68 @@ def regression_check(results: list[CaseResult]) -> list[str]:
     return warnings
 
 
+def load_baseline(cases: list[EvalCase] | None = None) -> dict:
+    """Validate baseline structure without treating its accepted rates as new evidence."""
+    baseline = json.loads(BASELINE_JSON.read_text(encoding="utf-8"))
+    if not isinstance(baseline, dict) or baseline.get("skill_name") != "meridian-implementation-assurance":
+        raise ValueError("Baseline must identify meridian-implementation-assurance")
+    entries = baseline.get("baselines")
+    if not isinstance(entries, list) or not entries:
+        raise ValueError("Baseline must contain a non-empty baselines list")
+    threshold = baseline.get("regression_threshold_pp", 10)
+    if type(threshold) not in (int, float) or not 0 <= threshold <= 100:
+        raise ValueError("Baseline regression_threshold_pp must be a number from 0 to 100")
+    seen = set()
+    for entry in entries:
+        if not isinstance(entry, dict):
+            raise ValueError("Each baseline entry must be an object")
+        case_id = entry.get("eval_id")
+        if type(case_id) is not int or case_id <= 0 or case_id in seen:
+            raise ValueError("Baseline entries must have unique positive integer eval_id values")
+        seen.add(case_id)
+        rate = entry.get("accepted_pass_rate")
+        if type(rate) not in (int, float) or not 0 <= rate <= 1:
+            raise ValueError(f"Baseline {case_id} accepted_pass_rate must be a number from 0 to 1")
+    if cases is not None and seen != {case.id for case in cases}:
+        raise ValueError("Baseline eval IDs must match eval fixture IDs")
+    return baseline
+
+
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
 def load_evals() -> list[EvalCase]:
     data = json.loads(EVALS_JSON.read_text(encoding="utf-8"))
-    return [
-        EvalCase(
-            id=e["id"],
-            scenario=e["scenario"],
-            description=e["description"],
-            prompt=e["prompt"],
-            assertions=e["assertions"],
-        )
-        for e in data["evals"]
-    ]
+    if not isinstance(data, dict) or data.get("skill_name") != "meridian-implementation-assurance":
+        raise ValueError("Eval manifest must identify meridian-implementation-assurance")
+    if not isinstance(data.get("evals"), list) or not data["evals"]:
+        raise ValueError("Eval manifest must contain a non-empty evals list")
+    cases = []
+    seen = set()
+    for position, entry in enumerate(data["evals"], 1):
+        if not isinstance(entry, dict):
+            raise ValueError(f"Eval item {position} must be an object")
+        case_id = entry.get("id")
+        if type(case_id) is not int or case_id <= 0 or case_id in seen:
+            raise ValueError(f"Eval item {position} must have a unique positive integer id")
+        seen.add(case_id)
+        if entry.get("scenario") not in ("A", "B", "C"):
+            raise ValueError(f"Eval {case_id} scenario must be A, B, or C")
+        for key in ("description", "prompt"):
+            if not isinstance(entry.get(key), str) or not entry[key].strip():
+                raise ValueError(f"Eval {case_id} must have a non-empty {key}")
+        assertions = entry.get("assertions")
+        if not isinstance(assertions, list) or not assertions or any(not isinstance(item, str) or not item.strip() for item in assertions):
+            raise ValueError(f"Eval {case_id} assertions must be a non-empty list of non-empty strings")
+        cases.append(EvalCase(case_id, entry["scenario"], entry["description"], entry["prompt"], assertions))
+    return cases
 
 
 def print_result(r: CaseResult) -> None:
     print(f"\n--- Eval {r.eval_id}: {r.description} ---")
-    print(f"  Outcome : {r.outcome}  (pass_rate={r.pass_rate:.0%})")
+    print(f"  Trace checks: {r.outcome}  (heuristic pass rate={r.pass_rate:.0%})")
+    print(f"  Assertions: {len(r.assertions_require_review)} require semantic review; not evaluated")
     if r.token_usage:
         print(f"  Tokens  : in={r.token_usage.get('input_tokens', 0)} out={r.token_usage.get('output_tokens', 0)}")
     for msg in r.passed:
@@ -369,19 +536,25 @@ def print_result(r: CaseResult) -> None:
         print(f"  ~  {msg}")
 
 
-def print_summary(results: list[CaseResult], regressions: list[str]) -> None:
+def print_summary(results: list[CaseResult], regressions: list[str], comparison: dict) -> None:
     total = len(results)
     passing = sum(1 for r in results if r.outcome == "PASS")
     overall_rate = passing / total if total else 0.0
 
     print(f"\n{'='*60}")
-    print(f"SUMMARY: {passing}/{total} cases passed  ({overall_rate:.0%})")
-    if regressions:
+    print(f"TRACE CHECK SUMMARY: {passing}/{total} traces passed  ({overall_rate:.0%})")
+    print("  Prose assertions and trigger selection were not evaluated.")
+    if comparison["status"] == "skipped_incompatible_version":
+        print("  Baseline comparison skipped: historical trace checkset version "
+              f"{comparison['baseline_trace_check_version']!r} does not match {TRACE_CHECK_VERSION!r}.")
+    elif comparison["status"] == "not_requested":
+        print("  Baseline comparison not requested.")
+    elif regressions:
         print("\nREGRESSION WARNINGS:")
         for w in regressions:
             print(f"  {_console_marker('⚠', '!')}  {w}")
     else:
-        print("  No regressions vs baseline.")
+        print("  No trace-check regressions vs baseline; this is not behavior certification.")
     print("="*60)
 
 
@@ -395,7 +568,8 @@ def _console_marker(symbol: str, fallback: str) -> str:
 
 
 def print_dry_run_summary(cases: list[EvalCase], should_trigger: int, should_not: int) -> None:
-    print("\n--- Dry Run Setup Validation ---")
+    print("\n--- Dry Run Fixture Validation Only ---")
+    print("  No behavior, trigger selection, assertions, or baseline promotion evaluated.")
     print(f"  Eval cases: {len(cases)}")
     print(f"  Prompts CSV: {should_trigger} should-trigger, {should_not} should-not-trigger")
     for case in cases:
@@ -428,9 +602,15 @@ def main() -> int:
         print("error: --dry-run and --live-run are mutually exclusive", file=sys.stderr)
         return 2
 
-    cases = load_evals()
+    try:
+        cases = load_evals()
+        st, sn = validate_prompts_csv()
+        baseline = load_baseline(cases)
+    except (OSError, ValueError, csv.Error) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
 
-    if args.eval_id:
+    if args.eval_id is not None:
         cases = [c for c in cases if c.id == args.eval_id]
         if not cases:
             print(f"error: eval-id {args.eval_id} not found in {EVALS_JSON}", file=sys.stderr)
@@ -440,12 +620,18 @@ def main() -> int:
 
     if dry_run:
         print(f"[dry-run] Validating {len(cases)} eval case(s) without calling codex exec.", file=sys.stderr)
-        st, sn = validate_prompts_csv()
         print(f"[dry-run] Prompts CSV: {st} should-trigger, {sn} should-not-trigger", file=sys.stderr)
         if args.json:
             print(json.dumps(
                 {
                     "dry_run": True,
+                    "validation_scope": "fixture_structure_only",
+                    "behavior_evaluated": False,
+                    "trigger_selection_evaluated": False,
+                    "assertions_evaluated": 0,
+                    "baseline_promoted": False,
+                    "trace_check_version": TRACE_CHECK_VERSION,
+                    "baseline_comparison": baseline_comparison(baseline, requested=False),
                     "eval_count": len(cases),
                     "prompts_csv": {
                         "should_trigger": st,
@@ -474,24 +660,39 @@ def main() -> int:
     results = []
     for case in cases:
         print(f"Running eval {case.id}: {case.description} ...", file=sys.stderr)
-        r = run_case(case, dry_run=False)
+        try:
+            r = run_case(case, dry_run=False)
+        except OSError as exc:
+            r = CaseResult(eval_id=case.id, description=case.description, exit_code=1,
+                           assertions_require_review=list(case.assertions))
+            r.failed.append(f"codex exec could not run: {exc}")
         results.append(r)
         if not args.json:
             print_result(r)
 
-    regressions = regression_check(results) if args.summary else []
+    comparison = baseline_comparison(baseline, requested=args.summary)
+    regressions = regression_check(results, baseline) if args.summary else []
 
     if args.summary and not args.json:
-        print_summary(results, regressions)
+        print_summary(results, regressions, comparison)
 
     if args.json:
         output = {
+            "validation_scope": "trace_heuristics_only",
+            "behavior_evaluated": False,
+            "trigger_selection_evaluated": False,
+            "baseline_promoted": False,
+            "trace_check_version": TRACE_CHECK_VERSION,
+            "baseline_comparison": comparison,
             "results": [
                 {
                     "eval_id": r.eval_id,
                     "description": r.description,
-                    "outcome": r.outcome,
-                    "pass_rate": r.pass_rate,
+                    "trace_check_outcome": r.outcome,
+                    "trace_check_pass_rate": r.pass_rate,
+                    "process_exit_code": r.exit_code,
+                    "assertions_evaluated": 0,
+                    "assertions_require_review": r.assertions_require_review,
                     "passed": r.passed,
                     "failed": r.failed,
                     "skipped": r.skipped,

@@ -110,6 +110,75 @@ module SecurityMasterLegacyUpgrade =
         tranche.Split([| ' '; '-'; '_'; '/'; '.'; ','; ':'; '('; ')' |], StringSplitOptions.RemoveEmptyEntries)
         |> Array.exists (fun part -> String.Equals(part, token, StringComparison.OrdinalIgnoreCase))
 
+    /// The economic Accrual module a declared scheduleConventions block fills. These rules are frozen
+    /// with the block (ADR-024, 2026-10-25), so a node that reads the block and a node that writes it
+    /// produce the same economic terms: the module is filled only when the block names a business-day
+    /// convention or a payment calendar; the convention is kept verbatim (accrualAdjusted stays in the
+    /// flat block and never turns it into Unadjusted); the payment calendars become one joint calendar
+    /// id; and nothing falls back to the common terms' holiday calendar, which the economic record
+    /// already carries in its common terms.
+    let private accrualFromConventions (conventions: ScheduleConventions) : AccrualTerms option =
+        let calendar =
+            Meridian.Contracts.Calendars.BusinessDayCalendars.JointCalendarId(conventions.PaymentCalendars)
+            |> Option.ofObj
+        match conventions.BusinessDayConvention, calendar with
+        | None, None -> None
+        | convention, calendar ->
+            Some ({ AccrualMethod = None
+                    AccrualStartDate = None
+                    ExDividendDays = None
+                    BusinessDayConvention = convention
+                    HolidayCalendar = calendar
+                    DayCount = None } : AccrualTerms)
+
+    // The economic Call module from a class's scalar call terms and its declared call and put
+    // schedules. These rules are frozen with the schedules (ADR-025 Applications, increment 4b), so
+    // every node derives the same economic terms from the same row:
+    // - only the class's own scalars feed IsCallable and FirstCallDate, and CallPrice stays None,
+    //   because no flat class carries a scalar call price;
+    // - declared entries feed the lists, IsPuttable and MakeWholeSpreadBps, sorted stably by date;
+    // - the economic price is percent of par, so an entry's price is carried only for a Fixed price on
+    //   a PercentOfPar basis (an absent type or basis counts as each); IsParCall marks a carried price
+    //   of exactly 100;
+    // - CallType is "MakeWhole" for a make-whole entry, otherwise the exercise style verbatim.
+    let private carriesParPrice (priceType: string option) (priceBasis: string option) =
+        (priceType = None || priceType = Some "Fixed")
+        && (priceBasis = None || priceBasis = Some "PercentOfPar")
+
+    let private economicCalls (calls: CallScheduleTerm list) : CallScheduleEntry list =
+        calls
+        |> List.sortBy (fun call -> call.CallDate)
+        |> List.map (fun call ->
+            let price = if carriesParPrice call.PriceType call.PriceBasis then call.CallPrice else None
+            ({ CallDt = call.CallDate
+               CallPx = price
+               IsParCall = (price = Some 100m)
+               CallType = if call.PriceType = Some "MakeWhole" then Some "MakeWhole" else call.ExerciseStyle }
+             : CallScheduleEntry))
+
+    let private economicPuts (puts: PutScheduleTerm list) : PutScheduleEntry list =
+        puts
+        |> List.sortBy (fun put -> put.PutDate)
+        |> List.map (fun put ->
+            ({ PutDt = put.PutDate
+               PutPx = if carriesParPrice None put.PriceBasis then put.PutPrice else None }
+             : PutScheduleEntry))
+
+    let private makeWholeSpread (calls: CallScheduleTerm list) : decimal option =
+        calls
+        |> List.sortBy (fun call -> call.CallDate)
+        |> List.tryPick (fun call -> if call.PriceType = Some "MakeWhole" then call.MakeWholeSpreadBps else None)
+
+    let private callFromSchedules (isCallable: bool) (firstCallDate: DateOnly option) (schedules: CallPutSchedules) : EconomicCallTerms =
+        let puts = economicPuts schedules.Puts
+        { IsCallable = isCallable
+          FirstCallDate = firstCallDate
+          CallPrice = None
+          CallSchedule = economicCalls schedules.Calls
+          MakeWholeSpreadBps = makeWholeSpread schedules.Calls
+          IsPuttable = not puts.IsEmpty
+          PutSchedule = puts }
+
     let private termsFromKind (kind: SecurityKind) =
         match kind with
         | SecurityKind.Equity terms ->
@@ -220,18 +289,10 @@ module SecurityMasterLegacyUpgrade =
                             PaymentFrequency = terms.PaymentFrequency
                             DayCount = BondTerms.dayCount terms |> mapDayCount
                         }
+                    Accrual = accrualFromConventions terms.ScheduleConventions
                     // Call and issuer terms are carried like the other callable / issued classes
                     // (deposits, CDs), so the economic definition holds what the bond record holds.
-                    Call =
-                        Some {
-                            IsCallable = terms.IsCallable
-                            FirstCallDate = terms.CallDate
-                            CallPrice = None
-                            CallSchedule = []
-                            MakeWholeSpreadBps = None
-                            IsPuttable = false
-                            PutSchedule = []
-                        }
+                    Call = Some (callFromSchedules terms.IsCallable terms.CallDate terms.CallPutSchedules)
                     Issuer =
                         terms.IssuerName
                         |> Option.map (fun issuerName ->
@@ -312,16 +373,8 @@ module SecurityMasterLegacyUpgrade =
                             PaymentFrequency = None
                             DayCount = terms.DayCount |> mapDayCount
                         }
-                    Call =
-                        Some {
-                            IsCallable = terms.CallableDate.IsSome
-                            FirstCallDate = terms.CallableDate
-                            CallPrice = None
-                            CallSchedule = []
-                            MakeWholeSpreadBps = None
-                            IsPuttable = false
-                            PutSchedule = []
-                        }
+                    Accrual = accrualFromConventions terms.ScheduleConventions
+                    Call = Some (callFromSchedules terms.CallableDate.IsSome terms.CallableDate terms.CallPutSchedules)
                     Issuer =
                         Some {
                             IssuerName = Some terms.IssuerName
@@ -522,6 +575,12 @@ module SecurityMasterLegacyUpgrade =
                             PaymentFrequency = None
                             DayCount = None
                         }
+                    Accrual = accrualFromConventions terms.ScheduleConventions
+                    // Structured credit has no scalar call terms, so a declared schedule fills only the
+                    // lists: no first call date or price, and NonCallPeriodEnd never feeds the module.
+                    Call =
+                        if CallPutSchedules.isEmpty terms.CallPutSchedules then None
+                        else Some (callFromSchedules (not terms.CallPutSchedules.Calls.IsEmpty) None terms.CallPutSchedules)
                     FloatingRate =
                         Some {
                             ReferenceIndex = Some terms.CouponOrIndex
@@ -927,6 +986,8 @@ module SecurityMasterLegacyUpgrade =
                     WeightedAverageLoanAgeMonths = None
                     ReinvestmentPeriodEnd = None
                     NonCallPeriodEnd = None
+                    ScheduleConventions = ScheduleConventions.empty
+                    CallPutSchedules = CallPutSchedules.empty
                 } : StructuredCreditTerms)
             | _ -> None
         let sourceLabel =
@@ -943,6 +1004,27 @@ module SecurityMasterLegacyUpgrade =
     let private proposeFromBond securityId (terms: BondTerms) =
         let kind, kindBlockers = splitResult (kindFromBondSubclass terms.Subclass)
         let couponOrIndex, couponBlockers = splitResult (couponOrIndexFromBond terms.Coupon)
+        // Declared schedule conventions are a StructuredCredit terms version 3 term, which this node
+        // reads but does not write (ADR-024, readable before writable): carrying them would write a
+        // version this node cannot, and dropping them would lose declared terms.
+        let conventionBlockers =
+            if ScheduleConventions.isEmpty terms.ScheduleConventions then []
+            else
+                [ blocker
+                      "structured_credit_schedule_conventions_unwritable"
+                      "The bond declares scheduleConventions, a StructuredCredit terms version 3 term this node cannot write; reclassify from a node that writes StructuredCredit version 3." ]
+        // Declared call and put schedules are StructuredCredit terms of a later version still, for the
+        // same reason.
+        let callPutBlockers =
+            if CallPutSchedules.isEmpty terms.CallPutSchedules then []
+            else
+                let since =
+                    match Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema.Field("StructuredCredit", "callSchedule") with
+                    | null -> invalidOp "The term schema declares no StructuredCredit callSchedule; the reclassification and the schema have drifted."
+                    | field -> field.SinceTermsVersion
+                [ blocker
+                      "structured_credit_call_put_schedules_unwritable"
+                      (sprintf "The bond declares callSchedule or putSchedule, StructuredCredit terms version %d terms this node cannot write; reclassify from a node that writes StructuredCredit version %d." since since) ]
         let draft =
             { emptyDraft with
                 OriginalFace = terms.Par
@@ -950,7 +1032,7 @@ module SecurityMasterLegacyUpgrade =
                 Maturity = Some terms.Maturity
                 Kind = kind
                 Seniority = terms.Seniority }
-        finish securityId (StructuredCreditReclassificationSource.SecuritizedBondSubclass terms.Subclass) draft (kindBlockers @ couponBlockers)
+        finish securityId (StructuredCreditReclassificationSource.SecuritizedBondSubclass terms.Subclass) draft (kindBlockers @ couponBlockers @ conventionBlockers @ callPutBlockers)
 
     let private tryProperty (name: string) (element: JsonElement) =
         if element.ValueKind = JsonValueKind.Object then

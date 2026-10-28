@@ -2,9 +2,9 @@
 
 # `security_master` schema
 
-- Relations: 120
-- Functions/procedures: 7
-- Triggers: 15
+- Relations: 125
+- Functions/procedures: 9
+- Triggers: 20
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -850,6 +850,25 @@ erDiagram
         text updated_by
         timestamp_with_time_zone updated_at
     }
+    security_master_otc_collateral_balances {
+        uuid balance_id PK
+        uuid collateral_agreement_id FK
+        text direction
+        text kind
+        text eligible_collateral_description
+        uuid security_id FK
+        text currency
+        numeric_28_10_ quantity
+        numeric_28_10_ unit_value
+        numeric_28_10_ valued_amount
+        numeric_28_10_ haircut_percent
+        date valued_as_of
+        text reference
+        text notes
+        bigint version
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
     security_master_otc_contracts {
         uuid contract_id PK
         uuid security_id FK
@@ -863,6 +882,47 @@ erDiagram
         date termination_date
         text status
         text confirmation_reference
+        text notes
+        bigint version
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
+    security_master_otc_exposure_snapshots {
+        uuid snapshot_id PK
+        uuid netting_set_id FK
+        uuid collateral_agreement_id FK
+        date as_of_date
+        integer version
+        text rule_version
+        text currency
+        text netting_basis
+        text status
+        text provenance
+        numeric_28_10_ net_exposure
+        numeric_28_10_ gross_positive
+        numeric_28_10_ gross_negative
+        jsonb payload
+        integer payload_version
+        text payload_sha256
+        text computed_by
+        timestamp_with_time_zone computed_at
+    }
+    security_master_otc_margin_calls {
+        uuid call_id PK
+        uuid netting_set_id FK
+        uuid collateral_agreement_id FK
+        uuid snapshot_id FK
+        text movement_kind
+        text mover
+        text currency
+        numeric_28_10_ amount_called
+        numeric_28_10_ amount_agreed
+        text status
+        date issued_on
+        date due_on
+        text dispute_reason
+        date settled_on
+        numeric_28_10_ settled_amount
         text notes
         bigint version
         text updated_by
@@ -1156,6 +1216,34 @@ erDiagram
         text payload
         character_64_ payload_sha256
         timestamp_with_time_zone recorded_at
+    }
+    security_master_security_curve_versions {
+        uuid curve_version_id PK
+        uuid curve_id FK
+        bigint version
+        date as_of
+        timestamp_with_time_zone sourced_at
+        timestamp_with_time_zone recorded_at
+        text published_by
+        text source
+        jsonb points
+        integer point_count
+        character_64_ content_sha256
+        integer payload_version
+    }
+    security_master_security_curves {
+        uuid curve_id PK
+        text curve_key
+        text kind
+        text currency
+        text index_name
+        text tenor
+        text day_count
+        text interpolation
+        text source
+        text description
+        text created_by
+        timestamp_with_time_zone created_at
     }
     security_master_security_events {
         bigint global_sequence PK
@@ -1622,10 +1710,16 @@ erDiagram
     security_master_option_contract_projection ||--o{ security_master_option_alias_projection : "option_alias_projection_contract_symbol_fkey"
     security_master_option_contract_projection ||--o{ security_master_option_lifecycle_projection : "option_lifecycle_projection_contract_symbol_fkey"
     security_master_option_contract_projection ||--o{ security_master_option_series_projection : "option_series_projection_contract_symbol_fkey"
+    security_master_otc_collateral_agreements ||--o{ security_master_otc_collateral_balances : "otc_collateral_balances_collateral_agreement_id_fkey"
+    security_master_otc_collateral_agreements ||--o{ security_master_otc_exposure_snapshots : "otc_exposure_snapshots_collateral_agreement_id_fkey"
+    security_master_otc_collateral_agreements ||--o{ security_master_otc_margin_calls : "otc_margin_calls_collateral_agreement_id_fkey"
     security_master_otc_collateral_agreements ||--o{ security_master_otc_netting_sets : "otc_netting_sets_collateral_agreement_id_fkey"
+    security_master_otc_exposure_snapshots ||--o{ security_master_otc_margin_calls : "otc_margin_calls_snapshot_id_fkey"
     security_master_otc_master_agreements ||--o{ security_master_otc_collateral_agreements : "otc_collateral_agreements_master_agreement_id_fkey"
     security_master_otc_master_agreements ||--o{ security_master_otc_netting_sets : "otc_netting_sets_master_agreement_id_fkey"
     security_master_otc_netting_sets ||--o{ security_master_otc_contracts : "otc_contracts_netting_set_id_fkey"
+    security_master_otc_netting_sets ||--o{ security_master_otc_exposure_snapshots : "otc_exposure_snapshots_netting_set_id_fkey"
+    security_master_otc_netting_sets ||--o{ security_master_otc_margin_calls : "otc_margin_calls_netting_set_id_fkey"
     security_master_projected_cash_flow ||--o{ security_master_reconciliation_result : "reconciliation_result_projected_flow_id_fkey"
     security_master_projection_run ||--o{ security_master_projected_cash_flow : "projected_cash_flow_projection_run_id_fkey"
     security_master_projection_run ||--o{ security_master_projection_run : "projection_run_supersedes_projection_run_id_fkey"
@@ -1644,6 +1738,7 @@ erDiagram
     security_master_securities ||--o{ security_master_fxspot_projection : "fxspot_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_option_contract_projection : "option_contract_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_option_contract_projection : "option_contract_projection_underlying_security_id_fkey"
+    security_master_securities ||--o{ security_master_otc_collateral_balances : "otc_collateral_balances_security_id_fkey"
     security_master_securities ||--o{ security_master_otc_contracts : "otc_contracts_security_id_fkey"
     security_master_securities ||--o{ security_master_security_alias_revisions : "security_alias_revisions_security_id_fkey"
     security_master_securities ||--o{ security_master_security_aliases : "security_aliases_security_id_fkey"
@@ -1657,6 +1752,7 @@ erDiagram
     security_master_securities ||--o{ security_master_security_underlying_links : "security_underlying_links_security_id_fkey"
     security_master_security_close_price_snapshots ||--o{ security_master_security_close_price_approvals : "security_close_price_approvals_snapshot_id_fkey"
     security_master_security_close_price_snapshots ||--o{ security_master_security_close_price_snapshots : "security_close_price_snapshot_corrects_snapshot_id_account_fkey"
+    security_master_security_curves ||--o{ security_master_security_curve_versions : "security_curve_versions_curve_id_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_position_report_line : "servicer_position_report_line_servicer_report_batch_id_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_statement_import_batch : "servicer_statement_import_batch_servicer_report_batch_id_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_transaction_report_line : "servicer_transaction_report_line_servicer_report_batch_id_fkey"
@@ -1730,7 +1826,10 @@ erDiagram
 | `option_lifecycle_projection` | table | 6 | `contract_symbol` | 1 | 1 | - |
 | `option_series_projection` | table | 6 | `option_chain_id`, `contract_symbol` | 1 | 1 | - |
 | `otc_collateral_agreements` | table | 16 | `collateral_agreement_id` | 1 | 2 | Credit support annexes under a master agreement: thresholds, minimum transfer amount, independent amount, rounding, valuation cadence and eligible collateral with haircuts. |
+| `otc_collateral_balances` | table | 17 | `balance_id` | 2 | 2 | Collateral posted by the fund or received from the counterparty under a collateral agreement: eligible-collateral line, quantity, unit value, valued amount, the haircut copied from the agreement and the valuation date. A zero quantity is a fully returned line. |
 | `otc_contracts` | table | 16 | `contract_id` | 2 | 4 | Bilateral contracts: one trade against a counterparty on a Security Master instrument, in a netting set, with its notional, direction, dates and lifecycle status. Many contracts share one instrument. |
+| `otc_exposure_snapshots` | table | 18 | `snapshot_id` | 2 | 3 | Append-only exposure and credit support snapshots of one netting set on one date: valued contracts, netting basis, gross and net exposure, collateral held and the movement each side implies. Recomputing a date appends the next version. |
+| `otc_margin_calls` | table | 19 | `call_id` | 3 | 4 | Margin calls issued from an exposure snapshot: one movement (delivery or return, by the fund or the counterparty) with its called, agreed and settled amounts and its lifecycle status. At most one call per netting set, mover and movement kind is open at a time. |
 | `otc_master_agreements` | table | 12 | `agreement_id` | 0 | 2 | Master agreements (ISDA, GMRA, GMSLA) between a fund legal entity and a counterparty. Every bilateral contract hangs off one through its netting set. |
 | `otc_netting_sets` | table | 8 | `netting_set_id` | 2 | 2 | Sets of contracts under one master agreement whose exposures net on close-out, optionally margined under one collateral agreement. |
 | `other_security_projection` | table | 10 | `security_id` | 0 | 2 | Relational projection of OtherSecurity asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
@@ -1754,10 +1853,12 @@ erDiagram
 | `security_cashflow_source_assignments` | table | 6 | `security_id` | 1 | 2 | - |
 | `security_close_price_approvals` | table | 4 | `snapshot_id` | 1 | 1 | Immutable independent review receipt bound to the exact close price snapshot SHA-256. |
 | `security_close_price_snapshots` | table | 9 | `snapshot_id` | 1 | 4 | Immutable exact account/book/date price-set versions retaining selected receipts, quote units, overrides, source rows and blockers. |
+| `security_curve_versions` | table | 12 | `curve_version_id` | 1 | 5 | Append-only, immutable published versions of a stored curve: economic as-of, knowledge time, actor, dated points and a canonical content hash. |
+| `security_curves` | table | 12 | `curve_id` | 0 | 3 | Write-once identity of a stored market curve (discount, forward or inflation): key, kind, currency, index, tenor, day count, interpolation and source. |
 | `security_events` | table | 12 | `global_sequence` | 0 | 4 | - |
 | `security_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
 | `security_field_provenance` | table | 10 | `security_id`, `field_path`, `origin` | 0 | 2 | - |
-| `security_governance_events` | table | 8 | `global_sequence` | 0 | 3 | Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds, declared underlying-graph links), written in the same transaction as the state change. |
+| `security_governance_events` | table | 8 | `global_sequence` | 0 | 3 | Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds, declared underlying-graph links, stored curves, OTC exposure snapshots, collateral balances and margin calls), written in the same transaction as the state change. |
 | `security_governance_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
 | `security_identifiers` | table | 12 | `security_id`, `identifier_kind`, `identifier_value`, `valid_from` | 1 | 3 | - |
 | `security_master_conflicts` | table | 14 | `conflict_id` | 0 | 2 | - |

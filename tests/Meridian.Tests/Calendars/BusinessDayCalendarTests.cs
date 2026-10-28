@@ -6,7 +6,8 @@ namespace Meridian.Tests.Calendars;
 
 /// <summary>
 /// Pins the business-day calendar seam: the built-in weekends-only calendar, holiday rolls, the
-/// signed (from, to] business-day count, joint calendars, content hashing and the static source.
+/// signed (from, to] business-day count, joint calendars and the joint-calendar id rule, content
+/// hashing and the static source.
 /// </summary>
 public sealed class BusinessDayCalendarTests
 {
@@ -123,6 +124,36 @@ public sealed class BusinessDayCalendarTests
     [Fact]
     public void Joint_OfOneCalendar_IsThatCalendar()
         => BusinessDayCalendars.Joint([Weekends]).Should().BeSameAs(Weekends);
+
+    [Fact]
+    public void JointCalendarId_IsTheIdTheJointOfThoseCalendarsCarries()
+    {
+        var usny = new HolidayBusinessDayCalendar("USNY", 1, [D(2026, 7, 3)]);
+        var gblo = new HolidayBusinessDayCalendar("GBLO", 1, [D(2026, 8, 31)]);
+        var tkyo = new HolidayBusinessDayCalendar("TKYO", 1);
+
+        BusinessDayCalendars.JointCalendarId(["USNY", "GBLO"]).Should().Be(BusinessDayCalendars.Joint([usny, gblo]).CalendarId).And.Be("GBLO+USNY");
+        BusinessDayCalendars.JointCalendarId(["GBLO", "USNY"]).Should().Be("GBLO+USNY");
+        BusinessDayCalendars.JointCalendarId(["USNY", "TKYO", "GBLO"]).Should().Be(BusinessDayCalendars.Joint([tkyo, usny, gblo]).CalendarId);
+        BusinessDayCalendars.JointCalendarId(["USNY"]).Should().Be(BusinessDayCalendars.Joint([usny]).CalendarId);
+    }
+
+    [Fact]
+    public void JointCalendarId_TrimsDropsBlanksAndDeduplicatesIgnoringCase_KeepingTheFirstSpelling()
+    {
+        BusinessDayCalendars.JointCalendarId(["USNY", " gblo ", "usny", null, "", "  ", "GBLO"]).Should().Be("USNY+gblo");
+        BusinessDayCalendars.JointCalendarId([" USNY ", "usny", null]).Should().Be("USNY", "a single remaining id comes back as itself");
+    }
+
+    [Fact]
+    public void JointCalendarId_OfNoIdIsNull()
+    {
+        BusinessDayCalendars.JointCalendarId([]).Should().BeNull();
+        BusinessDayCalendars.JointCalendarId([null, "", "   "]).Should().BeNull();
+
+        var none = () => BusinessDayCalendars.JointCalendarId(null!);
+        none.Should().Throw<ArgumentNullException>();
+    }
 
     [Fact]
     public void JointCalendar_RefusesDuplicateIdsAndSingleMembers()

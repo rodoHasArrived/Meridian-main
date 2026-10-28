@@ -48,6 +48,14 @@ internal sealed class LedgerFeatureRegistration : IServiceFeatureRegistration
             sp.GetService<ILedgerJournalStore>(),
             sp.GetService<ISecurityMasterStore>(),
             sp.GetService<IInstrumentPositionProjectionStore>()));
+        // Factor-paydown preparation composes like the amortization preview: hosts without the
+        // lot, Security Master, position or projector authority still start, and preparation refuses
+        // the missing authority before reading anything. No operator route calls it yet.
+        services.TryAddSingleton(sp => new FactorPaydownLotInstructionService(
+            sp.GetService<ILedgerJournalStore>(),
+            sp.GetService<ISecurityMasterStore>(),
+            sp.GetService<IInstrumentPositionProjectionStore>(),
+            sp.GetService<IFactorPaydownProjectionService>()));
         services.TryAddSingleton<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>();
         services.TryAddSingleton<IAccountingPostingCandidateAuthorityBuilder>(sp =>
             sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>() as IAccountingPostingCandidateAuthorityBuilder
