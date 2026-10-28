@@ -34,6 +34,12 @@ stored family was not queryable, and nothing recorded the policy that lets the s
    terms the record holds (decision 3). The economic
    definition adapter stamps `termsFormat = "economic"`; the custom-asset profile document is the
    profile family and is emitted verbatim. No code path persists an untagged payload.
+   *Amended 2026-10-28 (stamp model S2, in effect from the contract step, increment 5b-2):* the
+   stamp describes the document. It is the highest `Since` among the versioned terms the record
+   holds, floored at the class's stamp floor (its write version before the contract step, raised by
+   any later transform step) rather than at the raised `TermsVersion`. Until a contract step raises
+   a write version the floor equals `TermsVersion`, so the rule above describes every write today;
+   see the increment 5a application below.
 2. **The stored family is a column.** Migration `042_security_master_terms_format_column.sql` adds
    `securities.terms_format`, backfilled non-destructively: a declared tag wins; an untagged row is
    classified by the same shape rule `ResolveFormat` applies (profile envelope → `customProfile`;
@@ -105,6 +111,7 @@ stored family was not queryable, and nothing recorded the policy that lets the s
 | Envelope | `src/Meridian.Contracts/SecurityMaster/SecurityTermsEnvelope.cs` | Keys, `StampFlat`, `ResolveFormat`, read guard, write guard (`TryGetWriteRefusal`) |
 | Catalog | `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs` | Per-class write version (`TermsVersion`) and readable version (`ReadableTermsVersion`, `ReadsTermsThrough`) |
 | Term schema | `src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs` | `.Since(n)` tags, `WritableFields`, `PopulatedTermsAbove`, `NormalizedTermsAbove` |
+| Versioned terms | `src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs` | Container keys, `IsVersionedContainer`, the one decode predicate (`Decoding`), the shared block reader and the declared reads |
 | Round-trip guard | `src/Meridian.Application/SecurityMaster/SecurityMasterService.AheadOfWriteTerms.cs` | Refuses to re-serialize an ahead-of-write row it cannot reproduce |
 | Versions | `src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs` | Codec versions and the reserved value |
 | Upcaster chain | `src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs` | Tag-first dispatch; shape rule for untagged payloads |
@@ -119,7 +126,8 @@ stored family was not queryable, and nothing recorded the policy that lets the s
 
 Items 1–4 are implemented; decision 3's upcaster is `SecurityAssetClassTermsUpgrader` (2026-10-23),
 and its expand step is implemented for the `scheduleConventions` block and the `callSchedule` and
-`putSchedule` arrays (2026-10-25).
+`putSchedule` arrays (2026-10-25), with one decode predicate for them (2026-10-28). Decision 1's
+S2 amendment takes effect with the contract step.
 Item 5 (retiring the shape rule and the reserved value) is proposed and waits on the backfill
 evidence described above.
 
@@ -190,6 +198,11 @@ SecurityTermsEnvelope.EnsureWritableAsAssetSpecificTerms(assetClass, payload);
 SecurityTermsEnvelope.TryGetWriteRefusal(assetClass, payload, out var reason);
 // Profile envelopes carry no versioned class terms; only their stamp is checked.
 SecurityTermsEnvelope.IsProfileGovernedPayload(assetClass, payload);
+// Which versioned containers a payload decodes: a read by its own stamp, a write by the write
+// version, a profile envelope none.
+SecurityVersionedTerms.Decoding(assetClass, payload, writeMode).Decodes(field);
+// The read guard's refusal, without throwing.
+SecurityTermsEnvelope.TryGetReadRefusal(assetClass, payload, out var readRefusal);
 // Read ceiling, and the fields an authoring surface may offer.
 SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass);
 SecurityAssetTermsSchema.WritableFields(assetClass);
@@ -249,6 +262,16 @@ SecurityAssetClassTermsUpgrader.UpgradeForRead(assetClass, payload);
 - `SecurityEconomicTermsClassAwareBridgeTests` and the F# `DomainTests` — the writer's effective
   version and frozen entry form, and exact economic `Call` goldens for declared schedules under the
   rule in [ADR-025](025-contractual-schedule-kernel.md#applications).
+- `SecurityVersionedTermsTests` (increment 5a) — the predicate against a verbatim copy of the decode
+  ceiling it replaced, for every class, versioned container, stamp, envelope shape and mode; Read
+  mode by the row's own stamp; the neutrality precondition (every versioned container above its
+  class's write version, retargeted by increment 5b-2); the shared reader against a verbatim copy
+  of the mapping's under the invariant and de-DE cultures; the declared reads; and
+  `TryGetReadRefusal`'s exact texts.
+- `ScheduleConventionsDecodeGoldenTests` (increment 5a) — 1,065 decode cases committed before the
+  predicate and the shared reader replaced the mapping's, unchanged after.
+- `VersionedContainerKeyLiteralRatchetTests` (increment 5a) — the quoted container keys appear in
+  C# under `src/` only in the schema and `SecurityVersionedTerms`; the set only shrinks.
 - Verify paths in the Implementation Links table from the repository root:
 
 ```bash
@@ -265,7 +288,7 @@ This command verifies referenced files and directories exist; it does not valida
 
 ---
 
-*Last Updated: 2026-10-27*
+*Last Updated: 2026-10-28*
 
 ## Applications
 
@@ -303,9 +326,10 @@ This command verifies referenced files and directories exist; it does not valida
     `TermsVersion`, tagging new fields `.Since(n)` and declaring the step; the guard then writes the
     new version for review.
   - **Backlog signal.** `SM_ASSET_CLASS_TERMS_VERSION_BEHIND` (Info) reports a flat row with an
-    integer `schemaVersion` stamped, or unstamped and so read as, below its class's terms version.
-    It never blocks. `SecurityValidationGateService` drops informational issues before a workflow
-    gate decides, snapshots or hands the report on, so validation snapshots omit them by design.
+    integer `schemaVersion` stamped, or unstamped and so read as, below its class's terms version
+    (redefined from the contract step by the increment 5a entry below). It never blocks.
+    `SecurityValidationGateService` drops informational issues before a workflow gate decides,
+    snapshots or hands the report on, so validation snapshots omit them by design.
     The Security Master workbench counts only non-informational issues in its trust posture, and the
     WPF Security Master screen counts the same way in its validation status and coverage summary.
     The notice appears in the validation report itself (`GET /api/security-master/{id}/validation`
@@ -350,7 +374,9 @@ This command verifies referenced files and directories exist; it does not valida
     [ADR-025](025-contractual-schedule-kernel.md#applications). A row whose block is empty re-emits at
     the write version on its next re-serialization (generalized by the increment 4b entry below: the
     highest version among the terms it still holds): the data is equal, and a contract node shows
-    only the informational BEHIND notice.
+    only the informational BEHIND notice (redefined by the increment 5a entry below: under stamp
+    model S2 that stamp is what a contract node writes for the terms the row holds, so it shows
+    none).
   - **Deploy.** Roll every node forward to this build (and to the next readable step's build) before
     any contract step raises a write version.
   - **Rollback floor.** Once a contract node has written a version-2 or version-3 stamp, no node may
@@ -405,7 +431,9 @@ This command verifies referenced files and directories exist; it does not valida
     versioned terms it still holds, or at the write version when it holds none. A Bond stamped 3
     that holds only conventions re-emits at 2, and one that holds nothing at 1; a StructuredCredit
     stamped 4 re-emits at 3 or 2 in the same way. The data is equal, and a contract node shows only
-    the informational BEHIND notice.
+    the informational BEHIND notice (redefined by the increment 5a entry below: under stamp model
+    S2 each of these stamps is what a contract node writes for the terms the row holds, so it shows
+    none).
   - **Economic terms.** Declared schedules fill the economic `call` module under one rule, frozen in
     [ADR-025](025-contractual-schedule-kernel.md#applications). Bond and CertificateOfDeposit keep
     `isCallable` and `firstCallDate` from their scalar call terms, and `callPrice` stays null, since
@@ -471,3 +499,86 @@ This command verifies referenced files and directories exist; it does not valida
     answers 500, with the reason only in the server log. An import reports the reason among that
     row's errors, and a workbench field edit is refused by the field-edit route (422) before
     anything is staged.
+- **Versioned containers decode by their own stamp (priority 5, increment 5a) (2026-10-28).**
+  Decision 3's rule that versioned class terms are flat-codec-only now has one implementation,
+  shared by every reader that decides what a row declares.
+  - **The predicate.** `SecurityVersionedTerms.IsVersionedContainer(field)` holds for an `Object`
+    or `Array` term introduced above version 1: the `scheduleConventions` block and the
+    `callSchedule` and `putSchedule` arrays of Bond, CertificateOfDeposit and StructuredCredit, and
+    the block on each Swap leg. Containers that predate per-class versioning (Swap `legs`, a bond's
+    `principalSchedule`, StructuredCredit's `factorScheduleEntries`) and later scalar terms are not
+    versioned containers. `SecurityVersionedTerms.Decoding(assetClass, payload, writeMode)` decides
+    which versioned containers a payload decodes (`SecurityVersionedTermDecoding.Decodes`): a read
+    decodes one at or below the row's own stamp, a write one at or below the class's write version,
+    and a profile envelope (`IsProfileGovernedPayload`) none in either mode, whatever the write
+    version. The mapping (the block, the call and put arrays, the leg blocks and the Write-mode
+    element-convention walk), the schema-terms validator (for versioned containers; later scalar
+    terms keep the stamp ceiling) and the Security Master cash-flow engine all decide through it.
+    The block is read through one shared reader, a verbatim port of the mapping's: exact-case keys,
+    current-culture dates, blank strings kept, and whitespace-only calendars dropped with the rest
+    untrimmed.
+  - **Neutral today, and why it lands before the raise.** The old Read-mode ceiling was the higher
+    of the write version and the stamp. It differs from the stamp alone only for a container whose
+    `Since` is above the stamp and at or below the write version, and none exists: every versioned
+    container is above its class's write version (Bond and CertificateOfDeposit 2 and 3 over write
+    1, StructuredCredit 3 and 4 over write 2, Swap legs 2 over write 1). Profile envelopes and
+    writes decoded only the write version's terms, which include none of them. A golden of 1,065
+    decode cases, committed before the change, is unchanged, and a test pins the fact that makes the
+    predicate neutral; increment 5b-2 retargets it. With the old ceiling, raising the write versions
+    would have made StructuredCredit profile envelopes decode their root block and arrays, against
+    this decision, and Read mode would have turned stray keys on rows stamped 1 or 2 into declared
+    terms. Write mode still decodes through the write version after the raise, so increment 5b-1
+    refuses an amend that would promote a stray container of the stored row.
+  - **Keys.** `SecurityVersionedTerms.ScheduleConventionsKey`, `CallScheduleKey` and
+    `PutScheduleKey`. `VersionedContainerKeyLiteralRatchetTests` allows the quoted keys in C# under
+    `src/` only in `SecurityAssetTermsSchema.cs` and `SecurityVersionedTerms.cs`, and the set may
+    only shrink; `OpenLotAmortization` and the mapping read the constants.
+  - **The stamp refusal, mirrored.** `SecurityTermsEnvelope.TryGetReadRefusal` returns the read
+    guard's two refusals without throwing, with the exact texts
+    `EnsureReadableAsAssetSpecificTerms` throws, and that method now throws its reason. The shared
+    declared reads apply it: a declared non-asset format declares nothing (economic terms are
+    projected through their own family), and a stamp outside 1 to `ReadsTermsThrough` is
+    unreadable. `ScheduleSpecFactory` therefore refuses a row of a class with a versioned schedule
+    container stamped above what the node reads, as every other read path does, instead of letting
+    the cash-flow engine project legacy output for it
+    ([ADR-025](025-contractual-schedule-kernel.md#applications), increment 5a entry).
+  - **Stack.** Increment 5a is built on 5a-0 (PR #3283), which makes `OpenLotAmortization` refuse
+    a populated or malformed `scheduleConventions` and read the call, put and conventions terms in
+    every source the cash-flow resolver reads and under every casing. Every build that contains 5a
+    therefore contains that refusal, and 5b-2's precondition that every node runs 5a covers it.
+    5a-0's deploy gate (AQ1 and AQ2, expect 0) is in the
+    [extensibility review](../architecture/security-master-extensibility-review.md).
+  - **Deploy and rollback floor.** 5a writes nothing differently, so it rolls forward and back
+    freely until increment 5b-2's first declaring write. From that write on, no node, desktops
+    included, may run below 5a: a 4b node would ignore the block in projections, let them post and
+    amortize a block-only declaring Bond on the bullet grid, and a 5a-0 node would refuse the
+    amortization but project and post the legacy dates. Each node's startup capability line shows
+    whether it runs 5a. The rollout and its inventory gate are in the
+    [terms contract rollout](../operators/security-master-terms-contract-rollout.md), and increment
+    5b-1's capability floor (decision 11 of the increment-5 plan) is to enforce the floor.
+  - **Decision 1 amended: the stamp describes the document (stamp model S2).** Decided by the owner
+    on 2026-10-28, before 5a merges, and implemented in increment 5b-2. From the raise on, a writer
+    stamps the highest `Since` among the versioned terms the record holds, floored at the class's
+    stamp floor: its write version before the contract step (1 for Bond and CertificateOfDeposit, 2
+    for StructuredCredit), raised to the target version of any transform step declared later. A
+    record that declares nothing keeps the stamp and the bytes it is written with today, and a
+    declaring record is stamped at the version its declared terms need. Under decision 1 as first
+    written (S1), every write after the raise would stamp at least the new write version and emit
+    the frozen unset forms. Every touched row's bytes would change, and with them up to 43 of the
+    164 write-golden entries: the 42 that name Bond, CertificateOfDeposit or StructuredCredit, and
+    `registry.dtos`; the other classes' entries would not move. Full-payload edits of every such
+    row would be refused on 5a nodes, and desktops cannot be routed; every legacy row would show the
+    BEHIND notice; and a Reg S/144A continuation whose successor differs from its predecessor only
+    by the stamp and unset containers would be refused unless the continuation comparison were
+    relaxed. S2 confines all of this to declaring rows, so 5a carries no continuation change and the
+    raw-payload comparison in `OpenLotAmortizationContinuation` stays as listed under the upgrade
+    hook above. 5b-2 changes the F# `effective` floor, `StampFlat`'s lower bound,
+    `WriteFlatEnvelope` and the notice. Before the raise the floor equals `TermsVersion`, so S1 and
+    S2 write the same bytes, and 4b and 5a nodes already write exactly the S2 bytes for records that
+    declare nothing.
+  - **BEHIND, redefined (with S2, in 5b-2).** `SM_ASSET_CLASS_TERMS_VERSION_BEHIND` (Info) is to
+    report a flat row whose stamp is below what the node would write for the terms the row holds:
+    the highest `Since` among the versioned terms it decodes, floored at the class's stamp floor. A
+    record that declares nothing and carries its class's floor stamp is not behind. Until 5b-2 the
+    notice keeps the definition under the upgrade hook above, which gives the same answer while the
+    floor equals `TermsVersion`.

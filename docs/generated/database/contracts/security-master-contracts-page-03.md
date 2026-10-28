@@ -2,11 +2,19 @@
 
 # `security-master-contracts` data objects - page 3 of 6
 
-Objects 161-240 of 443. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 456. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService["ISecurityMasterQueryService"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ISecurityMasterReportingQueryService["ISecurityMasterReportingQueryService"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ISecurityMasterRuntimeStatus["ISecurityMasterRuntimeStatus"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ISecurityMasterService["ISecurityMasterService"] {
+    }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterStructuredCreditReclassificationService["ISecurityMasterStructuredCreditReclassificationService"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityResolver["ISecurityResolver"] {
@@ -463,32 +471,27 @@ classDiagram
         +string IdentifierValue
         +string? Provider
     }
+    class Meridian_Contracts_SecurityMaster_ScheduleConventionTerms["ScheduleConventionTerms"] {
+        +bool? AccrualAdjusted
+        +string? BusinessDayConvention
+        +string? CouponCashBasis
+        +string? CouponRateUnit
+        +string? Direction
+        +ScheduleConventionTerms Empty
+        +bool? EndOfMonthRule
+        +DateOnly? FirstRegularDate
+        +DateOnly? LastRegularDate
+        +IReadOnlyList~string~ PaymentCalendars
+        +int? PaymentLagBusinessDays
+        +string? RollConvention
+    }
+    class Meridian_Contracts_SecurityMaster_ScheduleSpecFactory["ScheduleSpecFactory"] {
+    }
     class Meridian_Contracts_SecurityMaster_Schedules_ScheduleAnchorMode["ScheduleAnchorMode"] {
     }
     class Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarPurpose["ScheduleCalendarPurpose"] {
     }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarUsage["ScheduleCalendarUsage"] {
-        +string CalendarId
-        +string ContentHash
-        +ScheduleCalendarPurpose Purpose
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleDayCount["ScheduleDayCount"] {
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnostic["ScheduleDiagnostic"] {
-        +string CalendarId
-        +ScheduleDiagnosticCode Code
-        +DateOnly Date
-        +string Message
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnosticCode["ScheduleDiagnosticCode"] {
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleDirection["ScheduleDirection"] {
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailure["ScheduleFailure"] {
-        +ScheduleFailureCode Code
-        +DateOnly? Date
-        +string Message
-    }
+    Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService --> Meridian_Contracts_SecurityMaster_ISecurityTradingParametersQueryService
     Meridian_Contracts_SecurityMaster_IssueOtcMarginCallRequest --> Meridian_Contracts_SecurityMaster_OtcMovementKind
     Meridian_Contracts_SecurityMaster_IssueOtcMarginCallRequest --> Meridian_Contracts_SecurityMaster_OtcMovementParty
     Meridian_Contracts_SecurityMaster_NotionalLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
@@ -524,6 +527,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_OtcNettingSetViewDto --> Meridian_Contracts_SecurityMaster_OtcContractDto
     Meridian_Contracts_SecurityMaster_OtcNettingSetViewDto --> Meridian_Contracts_SecurityMaster_OtcMasterAgreementDto
     Meridian_Contracts_SecurityMaster_OtcNettingSetViewDto --> Meridian_Contracts_SecurityMaster_OtcNettingSetDto
-    Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarUsage --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarPurpose
-    Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnostic --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnosticCode
 ```

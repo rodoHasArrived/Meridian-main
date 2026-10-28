@@ -2,7 +2,7 @@
 
 **Status:** active guidance
 **Owner:** core-team
-**Reviewed:** 2026-10-24
+**Reviewed:** 2026-10-28
 
 ## Definition
 
@@ -80,13 +80,16 @@ with diagnostics and the calendars it used. The decision record is
   schedule (1,200 by default; the issue-anchored and compounded factories set no limit, as the
   generators they reproduce had none).
 - **Evidence.** Every result names the kernel version (`contractual-schedule-kernel-v1`) and each
-  calendar it used, with the calendar's content hash and purpose.
+  calendar it used, with the calendar's content hash and purpose. A Security Master projection
+  generated in declared mode carries that evidence with the declared-mapping version, the calendar
+  Business/252 counted on, and the dates each calendar was asked about outside its coverage, and a
+  discounted-cash-flow valuation of it names that evidence among its inputs.
 - **Day count refuses rather than degrades.** The period-context overload refuses Act/Act ICMA
-  without periods per year or without reference periods that cover the window, and Business/252
-  without a business-day predicate. Through a schedule, a window outside the period's accrual dates
-  is refused, and so is Act/Act ICMA on a schedule whose accrual dates were adjusted (ICMA is
-  defined on unadjusted coupon periods). The period-less `DayCountConventions` overloads keep their
-  existing behaviour.
+  without periods per year (a `Term` schedule has none) or without reference periods that cover the
+  window, and Business/252 without a business-day predicate. Through a schedule, a window outside
+  the period's accrual dates is refused, and so is Act/Act ICMA on a schedule whose accrual dates
+  were adjusted (ICMA is defined on unadjusted coupon periods). The period-less
+  `DayCountConventions` overloads keep their existing behaviour.
 - **Correction is opt-in.** Corrected conventions apply only to records that declare them. A record
   that declares nothing keeps the schedule its generator has always produced, and the known defects
   in that behaviour are pinned in the
@@ -97,6 +100,9 @@ with diagnostics and the calendars it used. The decision record is
 Each existing generator is reproduced by a named kernel mode, proven equal to a verbatim copy of the
 generator over an exhaustive grid before any call site moves. The legacy modes set no adjustments,
 so the accrual start equals the unadjusted start and the payment date equals the unadjusted end.
+The declared mode reproduces no generator: it is the corrected semantics a record opts into by
+declaring conventions, and its mapping is frozen as `security-master-declared-schedule-v1`
+([ADR-025](../adr/025-contractual-schedule-kernel.md#applications)).
 
 | Mode | Spec | Reproduces | Status |
 | --- | --- | --- | --- |
@@ -105,6 +111,7 @@ so the accrual start equals the unadjusted start and the payment date equals the
 | Compounded forward | `ScheduleSpec.CompoundedForward` | Both direct-lending projections | Parity proven; call sites unchanged |
 | Backward, end-of-month roll, short initial stub | `ScheduleSpec.BackwardFromTermination` with `ScheduleRoll.ForAnchor(maturity, true)` and a 1,200-period limit | `FaceValueLot` backward coupon dates, including the quasi-coupon date | Parity proven; call site unchanged |
 | Forward, regular periods only | Forward generation with `ScheduleStubPolicy.RequireRegular` | `FaceValueLot` regular coupon dates | Parity proven; call site unchanged |
+| Declared | `ScheduleSpecFactory.Resolve` over a declared `scheduleConventions` block: anchored on the record's `issueDate` and `maturity`, its `paymentFrequency` as the tenor (`AtMaturity` is one `Term` period), forward unless `Backward` is declared, the declared or resolved roll, short stubs unless declared, payment adjustment on the block's `paymentCalendars` (accrual adjustment there too only when `accrualAdjusted` is true), the declared payment lag, and a 1,200-period limit | No legacy generator; the corrected semantics for declaring records | Routed (increment 5a): the declared branch of the Security Master calculated projection (`SecurityMasterCashFlowService.DeclaredConventions.cs`). Dormant in production until a write path can store a block (increment 5b-2) |
 
 ## Examples
 
@@ -135,8 +142,12 @@ Planned in sequence, each behind its own proof:
   coupon cash basis) is readable at the next terms version of each class but not yet writable
   (increment 4a). Call and put schedules with notice periods, the `callSchedule` and `putSchedule`
   arrays, are readable at the version after that (increment 4b: version 3 of Bond and
-  CertificateOfDeposit, 4 of StructuredCredit) and are not yet writable either. A later contract
-  step makes the block and the arrays writable.
+  CertificateOfDeposit, 4 of StructuredCredit) and are not yet writable either. The contract step
+  makes them writable in two parts: increment 5b-1 adds the write rules, neutral until increment
+  5b-2 raises the write versions (Bond and CertificateOfDeposit to 3, StructuredCredit to 4).
+  CertificateOfDeposit and StructuredCredit cannot declare a block until a later expand and
+  contract adds their top-level `issueDate` and `paymentFrequency`, because the declared mode
+  anchors on them.
 - The block's spellings are frozen ([ADR-025](../adr/025-contractual-schedule-kernel.md#applications)):
   `businessDayConvention` is `Unadjusted`, `Following`, `ModifiedFollowing`, `Preceding` or
   `ModifiedPreceding` (with `None`, `F`, `MF`, `P` and `MP` accepted); `rollConvention` is
@@ -164,18 +175,22 @@ Planned in sequence, each behind its own proof:
   ([ADR-025](../adr/025-contractual-schedule-kernel.md#applications)). Until increment 8 drives
   redemption scenarios, the cash ladder's early call, the obligation timeline and the schedule book
   from the schedules, consumers keep reading the scalar call terms and `mandatoryPutDate`.
-- A file-backed calendar source and a declared mode in the Security Master cash-flow engine.
+- Declared conventions in asset operations and the cash ladder (increment 6), after the Security
+  Master engine's declared mode (increment 5a). Before declared projections may post: journal
+  identity keyed on `SchedulePeriodId` and a calendar evidence retention decision. Later, if wanted:
+  a per-leg declared mode for swaps and declared contractual principal schedules.
 - Stable asset-operations flow ids keyed by period, and a schedule book built from engine output in
   both the browser and WPF workstations.
 - Reset and fixing dates, and expected lifecycle events generated from the schedule.
 - Direct-lending projections and servicing accrual on the kernel, behind opt-in engine and formula
   versions, and `FaceValueLot`'s coupon-date generators last.
 
-Calendar data governance and the default flip for records that declare nothing are open
-decisions. So are the generation of call and put exercise and notice dates and the make-whole
-amount: ADR-025 records proposals for them that increment 8 adopts or amends. The coupon vocabulary
-for declared records is fixed by `couponRateUnit` and `couponCashBasis`; how the cash-flow engine
-applies them is decided with the contract step.
+The default flip for records that declare nothing is an open decision, and so is the named
+operations owner of calendar data, who must be recorded before real calendar files are installed.
+So are the generation of call and put exercise and notice dates and the make-whole amount: ADR-025
+records proposals for them that increment 8 adopts or amends, with their roll and calendar parts
+amended by increment 5a. How the Security Master engine applies `couponRateUnit` and
+`couponCashBasis` is frozen in ADR-025's increment 5a entry.
 
 ## Implementation and regression references
 
@@ -183,6 +198,8 @@ applies them is decided with the contract step.
 - [Schedule spec and legacy factories](../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs)
 - [Period identity](../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs)
 - [Day-count engine and period-context overload](../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs)
+- [Declared mapping](../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs) and the
+  [declared branch of the Security Master projection](../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.DeclaredConventions.cs)
 - Routed consumers: [Security Master cash-flow projection](../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs),
   [asset-operations bond projection](../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs),
   [obligation timeline](../../src/Meridian.Instruments/AssetOperations/AssetObligationProjectionService.cs) and
@@ -194,7 +211,9 @@ applies them is decided with the contract step.
   `ScheduleKernelLegacyParityTests`, `LegacyOracleFidelityTests`, `FaceValueLotGoldenTests`,
   `SchedulePeriodRollingRatchetTests`, `SecurityTermConventionTests`, the KnownDefect pins and the
   existing `SecurityMasterCashFlowServiceTests`, `AssetOperationsReadServiceTests`,
-  `AssetObligationProjectionServiceTests` and `Meridian.FundStructure.Tests` schedule pins.
+  `AssetObligationProjectionServiceTests` and `Meridian.FundStructure.Tests` schedule pins; for the
+  declared mode, `ScheduleSpecFactoryTests`, the declared-conventions partial of
+  `SecurityMasterCashFlowServiceTests` and `SecurityMasterCashFlowProjectionShapeTests`.
 
 These references identify the implementation and its regression scope. The pull request carries
 actual validation results.

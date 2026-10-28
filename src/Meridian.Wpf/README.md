@@ -218,6 +218,15 @@ exists to close had no final-graph guard at all. It is a no-op on an ordinary la
 takes neither the production nor the supported-local branch — so it costs nothing until a posture is
 actually declared.
 
+`App.ConfigureServices` also calls `AddSecurityMasterTermsCapability` (ADR-025) for the same reason.
+Server hosts get it from `StorageFeatureRegistration`, which this desktop never runs, yet
+`StrategyFeatureModule` composes an in-process Security Master writer whenever
+`MERIDIAN_SECURITY_MASTER_CONNECTION_STRING` is set. At host start the desktop logs one line per
+business-day calendar under `<dataRoot>/calendars` (the root `Meridian.Application.UI.ConfigStore`
+reports) and the Security Master terms capability line, as a server does. These go through `ILogger`
+to the generic host's default providers only (console, debug and EventSource; the Windows event log
+takes warnings and above), because the desktop host adds no file logging provider.
+
 **Refusals are decided before the shell exists, and only refusals.**
 `App.RunStartupRefusalPreflightAsync` runs every registered
 `Meridian.Application.Composition.IStartupRefusalGuard` in `OnStartup` *before* `MainWindow` is
