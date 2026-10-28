@@ -6623,6 +6623,183 @@ The one adversarial finding, that the entry readers parse dates with the node's 
 by both skeptics: the helper predates 4b, already reads 4a's dates, and no writer can store a
 non-ISO date.
 
+## Resolution pass — 2026-10-28 (priority 5, increment 5a-0: amortization refuses declared schedule conventions)
+
+Increment 5, the schedule-terms contract step, lands in four parts: 5a-0 (this change), 5a (the
+declared schedule engine, which follows the declared conventions before any node writes them), 5b-1
+(the write rules, neutral until the raise) and 5b-2 (the raise of the write versions). 5a-0 comes
+first because it is the one consumer that would mis-handle a declaring row: canonical amortization
+generates a bullet coupon grid that follows no business-day convention, calendar, payment lag, roll
+or stub rule.
+
+| Finding | What landed |
+| --- | --- |
+| Amortization would amortize a bond whose `scheduleConventions` block moves its payment dates as if the block were absent | `OpenLotAmortization` refuses a populated or malformed `scheduleConventions` ("Amortization does not support declared schedule conventions; the bullet coupon grid follows none of them."). Populated follows `SecurityAssetTermsSchema.IsPopulatedTermValue`, so null, `{}`, `[]` and an object or array with no populated member declare nothing, and a string, a number, a boolean or a populated array is not read as unset. |
+| The call and put refusal read only the first spelling it found | It took the first source and the first casing that named the term, so `callSchedule: []` in the asset-specific terms hid a populated `callSchedule` in the common terms, and an unset `callschedule` hid a populated `callSchedule` in the same object. A new `AnyTerm` check reads every source the cash-flow resolver reads (`profileFields`, the root terms, the common terms) and every casing, and refuses when any of them declares the term. The call and put predicate and message are unchanged. `FirstTerm` keeps its other callers. |
+
+**Not covered.** Terms held only inside `retainedEconomicTerms` are not read. A projection rebuilt
+from an economic-only event nests the economic document there: the `call` module's call and put
+lists, and the `accrual` module's business-day convention and calendar. A declared call reaches
+amortization only through the flat `isCallable` and `callDate` the flattening writes, so a call list
+with `isCallable` false and no first call date passes. The cash-flow resolver does not read these
+terms either, no in-repo economic-only event carries a declared schedule, and the gap predates this
+change for calls and puts. Increment 5b-1 is planned to make an economic-only replay refuse a
+retained document that shows a declared schedule.
+
+**Deploy gate (expect 0 in each environment; record the result in the change record).** After this
+change deploys, amortization of a Bond, TreasuryBill or CommercialPaper row that declares any of the
+three terms fails closed. A retained amortization instruction whose security snapshot declares one
+fails wherever it is validated again, and the asset-accounting spine validates the drafted lot
+mutation of every stored event it reads: reading the event, including a posted one, appending a
+later lifecycle stage, correcting it, and previewing a reversal of a continued amortization all
+fail. A reversal instruction's own snapshot is not checked, because the reversal returns before the
+bullet check, but the predecessor amortization a continuation retains is. No writer can store a
+populated block or array yet, so both checks should find nothing. A hit that would fail is
+remediated before the deploy, while the running build can still read and reverse it. 5b-2's
+precondition that every node runs 5a covers this change, because 5a is built on it.
+
+- **AQ1, stored securities.** Replace `<deployment_schema>` with the Security Master schema. The
+  class filter matches what `SecurityAssetClassCatalog.GetOrDefault` resolves to a bullet class:
+  the names in any casing, Bond's aliases `CorporateBond` and `MunicipalBond`, and the surrounding
+  whitespace .NET trims, Unicode spaces included. Names and keys are folded under the C collation,
+  as .NET's ordinal comparison folds them, so a database with a Turkish default collation still
+  matches `TREASURYBILL`. The Unicode escapes match code points only in a UTF8 database, which nothing
+  in Meridian enforces, so the block first refuses any other encoding. The `profileFields` source takes an object under any casing, so a row carrying two
+  spellings of it is over-counted rather than missed.
+
+  ```sql
+  do $encoding$
+  begin
+      if current_setting('server_encoding') <> 'UTF8' then
+          raise exception 'AQ1 trims Unicode spaces only in a UTF8 database; this one is %',
+              current_setting('server_encoding');
+      end if;
+  end
+  $encoding$;
+
+  select lower(regexp_replace(s.asset_class collate "C", '^[\s\u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]+|[\s\u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]+$', '', 'g'))
+         as asset_class, src.source, lower(kv.key collate "C") as term, count(distinct s.security_id)
+  from <deployment_schema>.securities s
+  cross join lateral (
+      select 'root', case when jsonb_typeof(s.asset_specific_terms) = 'object'
+                          then s.asset_specific_terms else '{}'::jsonb end
+      union all
+      select 'profileFields', pf.value
+      from jsonb_each(case when jsonb_typeof(s.asset_specific_terms) = 'object'
+                           then s.asset_specific_terms else '{}'::jsonb end) pf
+      where lower(pf.key collate "C") = 'profilefields' and jsonb_typeof(pf.value) = 'object'
+      union all
+      select 'commonTerms', case when jsonb_typeof(s.common_terms) = 'object'
+                                 then s.common_terms else '{}'::jsonb end
+  ) src(source, terms)
+  cross join lateral jsonb_each(src.terms) kv
+  where lower(regexp_replace(s.asset_class collate "C", '^[\s\u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]+|[\s\u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]+$', '', 'g'))
+          in ('bond', 'corporatebond', 'municipalbond', 'treasurybill', 'commercialpaper')
+    and ((lower(kv.key collate "C") = 'scheduleconventions'
+          and jsonb_path_exists(kv.value, '$.** ? (@.type() != "null" && @.type() != "array" && @.type() != "object")'))
+      or (lower(kv.key collate "C") in ('callschedule', 'putschedule')
+          and jsonb_typeof(kv.value) <> 'null'
+          and (jsonb_typeof(kv.value) <> 'array' or jsonb_array_length(kv.value) > 0)))
+  group by 1, 2, 3;
+  ```
+
+- **AQ2, retained instruction snapshots.** An amortization instruction carries the security
+  projection it was calculated from, and it is retained wherever the instruction is stored, such as
+  asset-accounting event payloads and the ledger's basis-adjustment and lot snapshots. Rather than
+  name each column, this block scans every `jsonb` column of the ledger and asset-operations
+  schemas for an object member, at any depth and under any casing, that declares one of the three
+  terms. It reports each column with hits and ends with a count of the columns scanned and the rows
+  matched, as warnings so that a session filtering notices still shows them. A schema name that does
+  not resolve, or that names a schema without its marker table (`tax_lot_mutations` in the ledger
+  schema, `asset_accounting_event_projections` in the asset-operations schema), raises an error
+  instead of passing silently.
+  The scan over-approximates (it also counts other classes and documents that are not
+  instructions), so each hit is inspected; a hit that is an amortization instruction's security
+  snapshot is remediated before the deploy. Replace the two schema names.
+
+  ```sql
+  do $gate$
+  declare
+      -- Name each schema as an identifier: quote one created with upper-case letters ('"AssetOps"').
+      ledger regnamespace := '<ledger_schema>'::regnamespace;
+      operations regnamespace := '<asset_operations_schema>'::regnamespace;
+      declared jsonpath := 'strict $.** ? (@.type() == "object").keyvalue() ? (
+          (@.key like_regex "^scheduleconventions$" flag "i"
+              && exists(@.value.** ? (@.type() != "null" && @.type() != "array" && @.type() != "object")))
+          || (@.key like_regex "^(callschedule|putschedule)$" flag "i"
+              && @.value.type() != "null"
+              && !(@.value.type() == "array" && @.value.size() == 0)))';
+      target record;
+      hits bigint;
+      scanned int := 0;
+      total bigint := 0;
+  begin
+      -- Each schema must hold the table that marks it, so an existing but wrong name fails too.
+      if to_regclass(format('%s.tax_lot_mutations', ledger)) is null then
+          raise exception 'AQ2: schema % holds no tax_lot_mutations table; check the ledger schema name', ledger;
+      end if;
+      if to_regclass(format('%s.asset_accounting_event_projections', operations)) is null then
+          raise exception 'AQ2: schema % holds no asset_accounting_event_projections table; check the asset-operations schema name',
+              operations;
+      end if;
+      for target in
+          select n.nspname, c.relname, a.attname
+          from pg_catalog.pg_attribute a
+          join pg_catalog.pg_class c on c.oid = a.attrelid
+          join pg_catalog.pg_namespace n on n.oid = c.relnamespace
+          where c.relnamespace in (ledger, operations)
+            and c.relkind in ('r', 'p') and not c.relispartition
+            and a.attnum > 0 and not a.attisdropped and a.atttypid = 'jsonb'::regtype
+          order by 1, 2, 3
+      loop
+          execute format('select count(*) from %I.%I where jsonb_path_exists(%I, $1)',
+                         target.nspname, target.relname, target.attname)
+              into hits using declared;
+          scanned := scanned + 1;
+          total := total + hits;
+          if hits > 0 then
+              raise warning '%.%.%: % rows', target.nspname, target.relname, target.attname, hits;
+          end if;
+      end loop;
+      raise warning 'AQ2: % jsonb columns scanned, % rows match', scanned, total;
+  end
+  $gate$;
+  ```
+
+Both checks were run, as written here, on PostgreSQL 16 against synthetic rows, in a UTF8 database
+with the C collation and in one whose default collation is ICU Turkish. AQ1 counted a declaring
+block in each source and casing (upper-case keys included), under `CorporateBond`, a padded
+`MunicipalBond`, an upper-case `TREASURYBILL` and class names padded with a no-break, em or
+ideographic space, a call entry `[{}]` and a put `{}`, and skipped unset spellings, `[]` and `[{}]`
+blocks and an Equity row; both databases gave the same counts, and a SQL_ASCII database was refused.
+AQ2 found snapshots nested in arrays and objects in a ledger table and in a partitioned
+asset-operations table (counted once), skipped unset spellings and a dropped column, and raised an
+error for a placeholder left in place, for the unquoted name of a schema created in mixed case, for
+an existing schema without its marker table, and for the ledger name given twice; its warnings
+survived `client_min_messages = warning`.
+
+**Validation.** `AmortizationLotInstructionContractTests` passes (92), including the new casing,
+cross-source, malformed and unset cases. The amortization, asset-operations, cash-flow, tax-lot and
+asset-accounting filter passed (1,191). The whole `Meridian.Tests` suite ran with 21,621 passed, 609
+skipped and 2 failed: the isolated QuantScript worker behind one strategy-design test, which has
+failed in every full run in this container since increment 3, and an allocation-budget test that
+measured allocations while other builds ran and passed alone (9 of 9). Two mutations each failed the
+tests written for them: reading call and put schedules through the first spelling found again failed
+the four cross-source and casing cases, and dropping the `scheduleConventions` check failed all nine
+of its cases. The format, file-size, inline SHA-256, duplicate-helper, test-skip,
+warning-suppression and endpoint-cancellation guards pass, `validate-doc-hashes` is clean and the
+`verify-docs` lane passes.
+
+The change went through two adversarial reviews, with two skeptics trying to refute each finding.
+They changed the deploy gate, not the code: the gate text now says what a hit breaks (a declaring
+retained snapshot makes its spine event unreadable and uncorrectable, so a hit is remediated first)
+and which retained instructions are not checked again (a reversal's own snapshot); AQ2 reports
+through warnings, resolves its schemas as identifiers and requires each schema's marker table, so a
+mistyped or wrong schema fails instead of passing silently; AQ1 matches Bond's catalog aliases,
+trims the Unicode spaces .NET trims and folds case under the C collation; and the README and the
+not-covered note say exactly what declares nothing and what the retained economic terms leave
+unread.
+
 ## Resolution pass — 2026-10-27 (priority 1, second increment: the current factor on the lot of record)
 
 | Finding | What landed |
