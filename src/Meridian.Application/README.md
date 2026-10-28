@@ -11,6 +11,9 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Application
 
+Freshness monitoring begins with live ingress or collector subscription attempts, not configured symbols in an idle workstation. An unused UI monitor does not publish empty snapshots over an active collector's process-wide metrics. Internal reconciliation retains observed `tradeFill.price` only for the single-currency share movement, never a commission leg or a price inferred from fee-inclusive net cash.
+
+
 `StoredProviderCredentialResolver` marks retained records as authoritative and carries their
 credential environment into provider construction. Missing scoped records retain the authorized
 scope's environment and cannot select global, module, configuration or environment credentials.

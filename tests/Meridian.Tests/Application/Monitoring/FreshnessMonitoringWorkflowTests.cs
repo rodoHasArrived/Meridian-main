@@ -20,6 +20,48 @@ namespace Meridian.Tests.Application.Monitoring;
 public sealed class FreshnessMonitoringWorkflowTests
 {
     [Fact]
+    public async Task ClosedSessions_DoNotAddAgeSamplesToTheMarketHoursHistogram()
+    {
+        await using var host = new TestHost(new DateTimeOffset(2026, 10, 16, 19, 59, 59, TimeSpan.Zero));
+        const string symbol = "HISTOGRAM-CLOSED-SESSION";
+        host.Publisher.TryPublish(Trade(symbol, host.Clock.GetUtcNow()));
+        var openSnapshot = host.Monitor.GetSnapshot();
+        Meridian.Application.Monitoring.PrometheusMetrics.UpdateSlaMetrics(openSnapshot);
+        var before = await ExportHistogramCountAsync(symbol);
+        host.Clock.Advance(TimeSpan.FromMinutes(1));
+        var closedSnapshot = host.Monitor.GetSnapshot();
+        closedSnapshot.IsMarketOpen.Should().BeFalse();
+        closedSnapshot.SymbolStatuses.Should().OnlyContain(status => status.State == SlaState.OutsideMarketHours);
+        (await ExportHistogramCountAsync(symbol)).Should().Be(before);
+    }
+
+    private static async Task<double> ExportHistogramCountAsync(string symbol)
+    {
+        var handlers = new StatusEndpointHandlers(
+            () => new MetricsSnapshot(), () => new PipelineStatistics(), () => Array.Empty<DepthIntegrityEvent>());
+        var output = await handlers.GetPrometheusMetricsAsync();
+        var prefix = $"mdc_sla_freshness_milliseconds_count{{symbol=\"{symbol}\"}} ";
+        var count = output.Split('\n').Single(line => line.StartsWith(prefix, StringComparison.Ordinal));
+        return double.Parse(count[prefix.Length..], System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    [Fact]
+    public async Task IdleWorkstation_DoesNotMonitorConfiguredSymbolsOrOverwriteActiveCollectorMetrics()
+    {
+        var now = new DateTimeOffset(2026, 10, 12, 14, 0, 0, TimeSpan.Zero);
+        await using var collector = new TestHost(now);
+        collector.Publisher.TryPublish(Trade("SPY", now));
+        collector.Clock.Advance(TimeSpan.FromSeconds(21));
+        await AssertExportAsync(1, 0, 1);
+
+        await using var workstation = new TestHost(now, [new SymbolConfig("IDLE")], synchronizeSubscriptions: false);
+        workstation.Clock.Advance(TimeSpan.FromMinutes(1));
+        workstation.Monitor.GetSymbolStatus("IDLE").Should().BeNull();
+        workstation.Monitor.GetSnapshot().TotalSymbols.Should().Be(0);
+        await AssertExportAsync(1, 0, 1);
+    }
+
+    [Fact]
     public async Task LiveIngress_PeriodicSnapshotsExportStallAndRecoveryWithoutMoreEvents()
     {
         await using var host = new TestHost(new DateTimeOffset(2026, 10, 12, 14, 0, 0, TimeSpan.Zero));
@@ -175,7 +217,7 @@ public sealed class FreshnessMonitoringWorkflowTests
         public DataFreshnessSlaMonitor Monitor { get; }
         public IMarketEventPublisher Publisher { get; }
 
-        public TestHost(DateTimeOffset now, SymbolConfig[]? symbols = null)
+        public TestHost(DateTimeOffset now, SymbolConfig[]? symbols = null, bool synchronizeSubscriptions = true)
         {
             Clock = new ManualClock(now);
             Directory.CreateDirectory(_root);
@@ -198,6 +240,9 @@ public sealed class FreshnessMonitoringWorkflowTests
             _provider = services.BuildServiceProvider();
             Publisher = _provider.GetRequiredService<IMarketEventPublisher>();
             Monitor = _provider.GetRequiredService<DataFreshnessSlaMonitor>();
+            if (synchronizeSubscriptions && symbols is not null)
+                Monitor.SynchronizeSymbols(symbols.Where(symbol => symbol.SubscribeTrades || symbol.SubscribeDepth)
+                    .Select(symbol => symbol.Symbol));
         }
 
         public async ValueTask DisposeAsync()

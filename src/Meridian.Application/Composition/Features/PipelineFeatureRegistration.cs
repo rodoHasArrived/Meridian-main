@@ -70,15 +70,18 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
         {
             var monitor = new DataFreshnessSlaMonitor(
                 sp.GetService<SlaConfig>(), sp.GetService<TimeProvider>());
-            var config = sp.GetRequiredService<ConfigStore>().Load();
-            if (config.Symbols is not null)
+            // Configuration is not evidence of an active feed. In desktop mode the UI
+            // and collector have separate containers; only a monitor observing ingress
+            // or subscription attempts may publish into the process-wide SLA gauges.
+            var publishedScope = false;
+            monitor.OnSnapshot += snapshot =>
             {
-                monitor.SynchronizeSymbols(config.Symbols
-                    .Where(symbol => symbol.SubscribeTrades || symbol.SubscribeDepth)
-                    .Select(symbol => symbol.Symbol));
-            }
-            monitor.OnSnapshot += PrometheusMetrics.UpdateSlaMetrics;
-            PrometheusMetrics.UpdateSlaMetrics(monitor.GetSnapshot());
+                if (snapshot.TotalSymbols > 0 || publishedScope)
+                {
+                    publishedScope = true;
+                    PrometheusMetrics.UpdateSlaMetrics(snapshot);
+                }
+            };
             return monitor;
         });
 

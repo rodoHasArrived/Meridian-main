@@ -148,8 +148,10 @@ public sealed class LedgerCashFlowAttributionEvidenceTests
         report.Should().Throw<LedgerValidationException>().WithMessage("*invalid cash-flow attribution*");
     }
 
-    [Fact]
-    public void RetainedMetadataAndReorderedLines_PreserveAttributionAndReversal()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RetainedMetadataAndReorderedLines_PreserveAttributionAndReversal(bool upperCaseKeys)
     {
         var source = new Meridian.Ledger.Ledger();
         var entry = LedgerCashFlowTestData.Post(source, Start.AddDays(1),
@@ -158,6 +160,11 @@ public sealed class LedgerCashFlowAttributionEvidenceTests
              (Expense, 25m, 0m, null), (Payable, 0m, 25m, null)],
             "receipt", "receipt", "payment", "payment", "accrual", "accrual");
         var metadata = JsonSerializer.Deserialize<JournalEntryMetadata>(JsonSerializer.Serialize(entry.Metadata))!;
+        metadata = metadata with
+        {
+            Tags = metadata.Tags!.ToDictionary(pair => upperCaseKeys ? pair.Key.ToUpperInvariant() : pair.Key,
+                pair => pair.Value, StringComparer.Ordinal)
+        };
         var reordered = new JournalEntry(entry.JournalEntryId, entry.Timestamp, entry.Description,
             entry.Lines.Reverse().ToArray(), metadata);
         var ledger = OpeningLedger();

@@ -10,6 +10,69 @@ namespace Meridian.Tests.Reconciliation;
 public sealed partial class StatementRunWorkflowServiceTests
 {
     [Theory]
+    [InlineData("price")]
+    [InlineData("settlement")]
+    [InlineData("both")]
+    public async Task CreateAsync_ConfiguredTransactionAssignmentPrefersClosestEconomicEvidence(string dimension)
+    {
+        var path = await WriteStatementAsync("rank-transactions.csv",
+            "EXT-1,SPY,10,10,100.5,trade,2026-05-28,2026-05-30,USD,,");
+        var near = PolicyTransaction("z-near", 10m, 100m) with
+        {
+            Price = 10.1m,
+            SettlementDate = new DateOnly(2026, 5, 31)
+        };
+        var far = PolicyTransaction("a-far", 10m, 100m) with
+        {
+            Price = dimension == "settlement" ? near.Price : 20m,
+            SettlementDate = dimension == "price" ? near.SettlementDate : new DateOnly(2026, 6, 2)
+        };
+        var profile = PolicyProfile(transactions: [new("rank-all-dimensions", 1m, TimeSpan.FromDays(4), 20m)]);
+        var artifacts = new InMemoryStatementRunMatchArtifactStore();
+        var workflow = CreatePolicyWorkflow(new([], [], [far, near]), profile, artifacts);
+
+        var result = await workflow.CreateAsync(Request(path, profile.ProfileId));
+        var group = (await artifacts.GetAsync(result.Import.ImportId))!.MatchGroups.Should().ContainSingle().Subject;
+        group.InternalEvidenceReferences.Should().Equal("internal:z-near");
+        group.MatchTier.Should().Be("Tolerance");
+        result.Breaks.Should().ContainSingle(item => item.SourceReference == "internal:a-far");
+    }
+
+    [Fact]
+    public async Task CreateAsync_ConfiguredPositionAssignmentRanksObservedPrices()
+    {
+        var path = await WriteStatementAsync("rank-positions.csv",
+            "EXT-1,SPY,10,10.1,0,position,2026-05-28,,USD,,");
+        var near = new InternalPortfolioPosition("z-near", "EXT-1", "SPY", new(2026, 5, 28),
+            10m, 100m, "internal:near")
+        { Price = 10m };
+        var far = near with { PositionId = "a-far", Price = 20m, EvidenceReference = "internal:far" };
+        var profile = PolicyProfile(positions: [new("rank-price", 0m, 200m, 20m)]);
+        var artifacts = new InMemoryStatementRunMatchArtifactStore();
+        var workflow = CreatePolicyWorkflow(new([far, near], [], []), profile, artifacts);
+
+        var result = await workflow.CreateAsync(Request(path, profile.ProfileId));
+        (await artifacts.GetAsync(result.Import.ImportId))!.MatchGroups.Should().ContainSingle().Which
+            .InternalEvidenceReferences.Should().Equal("internal:near");
+    }
+
+    [Fact]
+    public async Task CreateAsync_ConfiguredCashAssignmentRanksSettlementDistance()
+    {
+        var path = await WriteStatementAsync("rank-cash.csv",
+            "EXT-1,,0,0,1005,cash,2026-05-31,,USD,,");
+        var profile = PolicyProfile(cash: [new("rank-date", 10m, null, TimeSpan.FromDays(4))]);
+        var artifacts = new InMemoryStatementRunMatchArtifactStore();
+        var workflow = CreatePolicyWorkflow(new([], [
+            new("a-far", "EXT-1", "USD", 1000m, "internal:far", new DateOnly(2026, 5, 28)),
+            new("z-near", "EXT-1", "USD", 1000m, "internal:near", new DateOnly(2026, 5, 30))], []), profile, artifacts);
+
+        var result = await workflow.CreateAsync(Request(path, profile.ProfileId));
+        (await artifacts.GetAsync(result.Import.ImportId))!.MatchGroups.Should().ContainSingle().Which
+            .InternalEvidenceReferences.Should().Equal("internal:near");
+    }
+
+    [Theory]
     [InlineData("external-id", false)]
     [InlineData("identity", false)]
     [InlineData("tolerance", false)]

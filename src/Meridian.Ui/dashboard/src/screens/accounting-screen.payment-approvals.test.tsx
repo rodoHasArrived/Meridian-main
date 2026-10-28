@@ -39,6 +39,27 @@ function primeReads(payments: PendingPayment[] = [pending]) {
 }
 
 describe("BankingPaymentApprovalsPanel", () => {
+  it("lets the normal unscoped route select an entity before loading and reviewing payments", async () => {
+    primeReads();
+    const user = userEvent.setup();
+    render(<BankingPaymentApprovalsPanel />);
+    expect(api.getPendingPayments).not.toHaveBeenCalled();
+    await user.type(screen.getByLabelText("Payment entity ID"), "entity-1");
+    expect(api.getPendingPayments).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Use entity" }));
+    await screen.findByText("WIRE-8891");
+    expect(api.getPendingPayments).toHaveBeenLastCalledWith("entity-1", expect.any(Object));
+    await user.click(screen.getByRole("button", { name: "Approve" }));
+    await user.clear(screen.getByLabelText("Payment entity ID"));
+    expect(screen.getByRole("button", { name: "Confirm approve" })).toBeDisabled();
+    await user.type(screen.getByLabelText("Payment entity ID"), "entity-2");
+    expect(screen.getByText(/^Reviewing entity entity-1\./)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Use entity" }));
+    expect(screen.queryByRole("button", { name: "Confirm approve" })).not.toBeInTheDocument();
+    await waitFor(() => expect(api.getPendingPayments).toHaveBeenLastCalledWith("entity-2", expect.any(Object)));
+    expect(api.approvePendingPayment).not.toHaveBeenCalled();
+  });
+
   it("lists payment intents awaiting review", async () => {
     primeReads();
     render(<BankingPaymentApprovalsPanel entityId="entity-1" />);

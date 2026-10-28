@@ -17,7 +17,10 @@ public sealed partial class StatementMatchingEngine
                         ComparableValue(statement.MarketValue, position.MarketValue),
                         ComparableValue(PositionPrice(position), PositionPrice(statement)),
                         ComparableValue(PositionPrice(statement), PositionPrice(position))),
-                static (statement, position) => PositionVariance(statement, position).LargestAbsoluteAmount,
+                (statement, position) => NormalizedVariance(statement.Quantity, position.Quantity, rule.QuantityTolerance)
+                    + NormalizedVariance(ComparableValue(statement.MarketValue, position.MarketValue),
+                        ComparableValue(position.MarketValue, statement.MarketValue), rule.MarketValueTolerance)
+                    + NormalizedPriceVariance(PositionPrice(statement), PositionPrice(position), rule.PriceTolerance),
                 (statement, position) => CreatePositionResult(statement, position,
                     StatementMatchTier.Tolerance,
                     ConfidenceFromVariance(PositionVariance(statement, position).LargestAbsoluteAmount,
@@ -40,7 +43,14 @@ public sealed partial class StatementMatchingEngine
                     && SameText(statement.Account, cash.Account) && SameText(statement.Currency, cash.Currency)
                     && rule.Allows(cash.Balance, statement.EndingBalance,
                         DateDelta(statement.AsOfDate, cash.AsOfDate), out _),
-                static (statement, cash) => Abs(statement.EndingBalance - cash.Balance),
+                (statement, cash) =>
+                {
+                    rule.Allows(cash.Balance, statement.EndingBalance,
+                        DateDelta(statement.AsOfDate, cash.AsOfDate), out var allowed);
+                    return NormalizedVariance(statement.EndingBalance, cash.Balance, allowed)
+                        + NormalizedVariance(DateDelta(statement.AsOfDate, cash.AsOfDate).Ticks, 0m,
+                            rule.SettlementDateTolerance.Ticks);
+                },
                 (statement, cash) =>
                 {
                     rule.Allows(cash.Balance, statement.EndingBalance,
@@ -64,7 +74,10 @@ public sealed partial class StatementMatchingEngine
                 && AllowsTransaction(rule, transaction.NetAmount, statement.NetAmount,
                     DateDelta(statement.SettlementDate, transaction.SettlementDate),
                     TransactionPrice(transaction), TransactionPrice(statement)),
-            static (statement, transaction) => TransactionVariance(statement, transaction).LargestAbsoluteAmount,
+            (statement, transaction) => NormalizedVariance(statement.NetAmount, transaction.NetAmount, rule.AbsoluteCashTolerance)
+                + NormalizedPriceVariance(TransactionPrice(statement), TransactionPrice(transaction), rule.PriceTolerance)
+                + NormalizedVariance(DateDelta(statement.SettlementDate, transaction.SettlementDate).Ticks, 0m,
+                    rule.SettlementDateTolerance.Ticks),
             (statement, transaction) => CreateTransactionResult(statement, transaction,
                 StatementMatchTier.Tolerance,
                 ConfidenceFromVariance(Abs(statement.NetAmount - transaction.NetAmount), Math.Abs(rule.AbsoluteCashTolerance)),
@@ -85,6 +98,14 @@ public sealed partial class StatementMatchingEngine
                     <= rule.SettlementDateTolerance.Duration();
 
     private static TimeSpan DateDelta(DateOnly left, DateOnly right) => TimeSpan.FromDays(left.DayNumber - right.DayNumber);
+
+    // Each eligible dimension contributes a fraction of its own allowed tolerance, so
+    // dollar, quantity, price and date units cannot silently dominate one another.
+    private static decimal NormalizedVariance(decimal actual, decimal expected, decimal tolerance) =>
+        tolerance == 0m ? 0m : Math.Abs(actual - expected) / Math.Abs(tolerance);
+
+    private static decimal NormalizedPriceVariance(decimal? actual, decimal? expected, decimal tolerance) =>
+        actual is { } left && expected is { } right ? NormalizedVariance(left, right, tolerance) : 0m;
 
     private static decimal? PositionPrice(NormalizedStatementPosition position) =>
         position.Price ?? UnitPrice(position.MarketValue, position.Quantity);

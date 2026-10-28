@@ -11,6 +11,9 @@ last_reviewed: 2026-10-06
 
 # src/Meridian.Ui.Shared
 
+Provider module status and connection tests select one complete credential record, matching runtime ownership. A retained partial or empty record cannot borrow mapped environment fields; only proven absence allows the separate mapped record. The compatibility vault adapter exposes record presence without exposing additional secrets.
+
+
 Late-adjustment review requires the authenticated operator's built-in role or named role profile
 to match the review role retained on the adjustment's materiality policy, alongside ledger mutation
 permission and an independent requester/reviewer. Administrative mutation permission does not

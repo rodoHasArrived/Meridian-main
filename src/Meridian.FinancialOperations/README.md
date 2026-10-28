@@ -11,6 +11,9 @@ last_reviewed: 2026-10-14
 
 # src/Meridian.FinancialOperations
 
+Configured reconciliation assignment ranks every available tolerated dimension by its own allowed variance: quantities, cash or market value, observed price, and settlement distance. Missing one-sided prices remain unavailable. Rule-list precedence and retained applied-rule evidence are unchanged.
+
+
 `AccountCashReconciliationService` adds a bounded two-source cash-balance continuity aggregate.
 Exact tenant/company/account/book, source identities and currency determine a stable case;
 amounts, row IDs and tolerance versions remain observation evidence. Corrected sources change

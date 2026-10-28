@@ -372,8 +372,6 @@ class CsharpArrayParsingTests(unittest.TestCase):
         self.assertFalse(members["Title"]["collection"])
 
 
-if __name__ == "__main__":
-    unittest.main()
 
 
 class CSharpArrayParsingTests(unittest.TestCase):
@@ -486,3 +484,6 @@ class DocumentedMemberParsingTests(unittest.TestCase):
         self.assertIsNotNone(members)
         self.assertIn("documented", members)
 
+
+if __name__ == "__main__":
+    unittest.main()

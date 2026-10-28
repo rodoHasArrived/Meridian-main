@@ -11,6 +11,9 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Ledger
 
+Cash-flow reversal remaps accepted retained attribution tags case-insensitively, matching the attribution reader after serialization and line reordering. Unsupported or incomplete attribution still blocks reporting.
+
+
 `OpenLotReliefService` treats explicit long/short direction as part of the pool scope. It never
 nets the two directions, and it allocates positive quantity and both retained currency bases for
 a homogeneous pool. This calculation does not authorize short journals or infer short-sale tax

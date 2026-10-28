@@ -31,8 +31,34 @@ type DecisionKind = "approve" | "reject";
 
 export function BankingPaymentApprovalsPanel({ entityId }: { entityId?: string | null }) {
   const scope = entityId?.trim() || undefined;
+  return <PaymentEntityScope key={scope ?? "unselected"} initialEntityId={scope} />;
+}
+
+function PaymentEntityScope({ initialEntityId }: { initialEntityId?: string }) {
+  const [scope, setScope] = useState(initialEntityId);
+  const [draft, setDraft] = useState(initialEntityId ?? "");
+  const unapplied = (draft.trim() || undefined) !== scope;
   // A scope change starts a new review session, including pending decisions.
-  return <EntityPaymentApprovalsPanel key={scope ?? "unselected"} entityId={scope} />;
+  return <div className="space-y-3">
+    <form className="flex flex-wrap items-end gap-2" onSubmit={(event) => {
+      event.preventDefault();
+      setScope(draft.trim() || undefined);
+    }}>
+      <label className="text-sm font-medium">Payment entity ID
+        <Input className="mt-1" value={draft} onChange={(event) => setDraft(event.target.value)}
+          placeholder="Enter the entity to review" />
+      </label>
+      <Button type="submit" variant="outline" disabled={!unapplied}>Use entity</Button>
+      <span className="text-xs text-muted-foreground" role="status">
+        {scope ? `Reviewing entity ${scope}.` : "No entity selected."}
+        {unapplied ? " Apply the entity selection before reviewing payments." : ""}
+      </span>
+    </form>
+    <fieldset disabled={unapplied} className="min-w-0">
+      <legend className="sr-only">{scope ? `Payments for entity ${scope}` : "No payment entity selected"}</legend>
+      <EntityPaymentApprovalsPanel key={scope ?? "unselected"} entityId={scope} />
+    </fieldset>
+  </div>;
 }
 
 function EntityPaymentApprovalsPanel({ entityId }: { entityId?: string }) {

@@ -11,6 +11,9 @@ last_reviewed: 2026-10-11
 
 # src/Meridian.Ui/dashboard
 
+Accounting payment approvals provides an explicit entity-ID selection on the ordinary unscoped route. Unapplied scope edits disable decisions; applying a new entity clears the old review session. Cash Ladder retains the same-account scenario catalog through loading and errors while continuing to withhold stale balances and drill evidence.
+
+
 Payment approvals forward the selected entity on pending-payment, bank-evidence, approval, and
 rejection requests. Removing or changing entity scope clears the queue, decision notes and pending
 confirmation; aborted reads or decisions cannot restore the previous entity's state. No entity

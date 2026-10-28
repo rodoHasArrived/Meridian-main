@@ -39,6 +39,26 @@ function deferred<T>() {
 }
 
 describe("Cash Ladder request scope", () => {
+  it("retains scenario choices through a delayed and failed refresh without retaining balances", async () => {
+    const pending = deferred<PortfolioCashLadder>();
+    getLadder.mockResolvedValueOnce(ladder("A")).mockReturnValueOnce(pending.promise)
+      .mockResolvedValue(ladder("RECOVERED"));
+    const user = userEvent.setup();
+    render(view("account-a"));
+    await screen.findByText("engine-A");
+    await user.selectOptions(screen.getByLabelText("Stress scenario"), "early-call");
+    expect(screen.getByLabelText("Stress scenario")).toHaveValue("early-call");
+    expect(screen.getByRole("option", { name: "Early call" })).toBeInTheDocument();
+    expect(screen.queryByText("engine-A")).not.toBeInTheDocument();
+    await act(async () => pending.reject(new Error("Projection unavailable")));
+    expect(screen.getByLabelText("Stress scenario")).toHaveValue("early-call");
+    expect(screen.getByRole("option", { name: "Early call" })).toBeInTheDocument();
+    expect(screen.queryByText("engine-A")).not.toBeInTheDocument();
+    await user.selectOptions(screen.getByLabelText("Stress scenario"), "base");
+    await screen.findByText("engine-RECOVERED");
+    expect(getLadder).toHaveBeenLastCalledWith({ scenario: "base", minimumCash: undefined, fundAccountId: "account-a" }, expect.any(Object));
+  });
+
   it("clears balances, threshold edits and drill selection during a delayed account switch", async () => {
     getLadder.mockResolvedValueOnce(ladder("A"));
     const next = deferred<PortfolioCashLadder>();

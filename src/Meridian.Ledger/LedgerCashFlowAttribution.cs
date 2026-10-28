@@ -76,8 +76,10 @@ public static class LedgerCashFlowAttribution
         if (ReadGroups(original) is null)
             return reversal;
 
+        var tags = original.Metadata.Tags!.ToDictionary(pair => pair.Key, pair => pair.Value,
+            StringComparer.OrdinalIgnoreCase);
         return WithGroups(reversal, original.Lines
-            .Select(line => original.Metadata.Tags![TagPrefix + line.EntryId.ToString("D")]).ToArray());
+            .Select(line => tags[TagPrefix + line.EntryId.ToString("D")]).ToArray());
     }
 
     private static IReadOnlyList<IReadOnlyList<LedgerEntry>>? ReadGroups(JournalEntry entry)

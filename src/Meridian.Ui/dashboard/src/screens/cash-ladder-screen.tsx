@@ -139,6 +139,8 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
     ladder: PortfolioCashLadder | null;
     status: "ready" | "error";
   } | null>(null);
+  // Retain choices within this account while financial evidence remains request-bound.
+  const [scenarioOptions, setScenarioOptions] = useState(() => selectScenarioOptions(null));
   const [scenarioId, setScenarioId] = useState("base");
   const [minimumCashInput, setMinimumCashInput] = useState("");
   const [appliedMinimumCash, setAppliedMinimumCash] = useState<number | undefined>(undefined);
@@ -161,6 +163,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
       .then((response) => {
         if (!controller.signal.aborted) {
           setResult({ requestKey, ladder: response, status: "ready" });
+          setScenarioOptions(selectScenarioOptions(response));
           if (!minimumCashDirty.current) {
             setMinimumCashInput(String(response.minimumCashThreshold));
           }
@@ -175,7 +178,6 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
   }, [requestKey, scenarioId, appliedMinimumCash, fundAccountId]);
 
   const chart = buildCashLadderChart(ladder);
-  const scenarioOptions = selectScenarioOptions(ladder);
   const activeScenario = selectActiveScenario(ladder);
   const summaryCards = selectSummaryCards(ladder);
   const drillRows = selectBucketContributions(ladder, selectedBucket);
