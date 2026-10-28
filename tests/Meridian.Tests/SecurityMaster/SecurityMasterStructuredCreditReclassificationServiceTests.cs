@@ -101,8 +101,8 @@ public sealed class SecurityMasterStructuredCreditReclassificationServiceTests
         var terms = candidate.DerivedAssetSpecificTerms;
         terms.GetProperty(SecurityTermsEnvelope.FormatKey).GetString().Should().Be(SecurityTermsFormats.Flat);
         terms.GetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey).GetInt32().Should().Be(
-            SecurityAssetClassCatalog.GetOrDefault("StructuredCredit").TermsVersion,
-            "a ready proposal is the exact document a governed amendment would persist");
+            SecurityAssetClassCatalog.GetStampFloor("StructuredCredit"),
+            "an undeclared ready proposal keeps the S2 document floor a governed amendment would persist");
         terms.GetProperty("tranche").GetString().Should().Be("B");
         terms.GetProperty("poolId").GetString().Should().Be("CLO-2026-1");
         terms.GetProperty("collateralType").GetString().Should().Be("Leveraged loans");
@@ -157,8 +157,8 @@ public sealed class SecurityMasterStructuredCreditReclassificationServiceTests
     public async Task BuildReportAsync_BlocksABondDeclaringScheduleConventions_InsteadOfDroppingThem()
     {
         // A bond stamped 2 by a node that writes the block declares schedule conventions. For a
-        // StructuredCredit they are a terms version 3 term this node reads but cannot write, so the
-        // proposal is blocked rather than carried over without them (ADR-024).
+        // StructuredCredit lacks issueDate/paymentFrequency anchors, so carrying the block would
+        // create a declared contract its schedule factory cannot generate.
         var (sut, store) = BuildSut();
         var bond = MakeSecurity(Guid.NewGuid(), "Bond", new
         {
@@ -186,8 +186,8 @@ public sealed class SecurityMasterStructuredCreditReclassificationServiceTests
             "structured_credit_tranche_required",
             "structured_credit_collateral_type_required");
         candidate.Blockers[0].Message.Should().Be(
-            "The bond declares scheduleConventions, a StructuredCredit terms version 3 term this node cannot write; " +
-            "reclassify from a node that writes StructuredCredit version 3.");
+            "The bond declares scheduleConventions, but the StructuredCredit schema has no top-level issueDate or paymentFrequency; " +
+            "repair the declared schedule before reclassification.");
 
         var derived = candidate.DerivedAssetSpecificTerms;
         derived.TryGetProperty("scheduleConventions", out _).Should().BeFalse("a blocked draft never carries a term this node cannot write");
@@ -196,14 +196,10 @@ public sealed class SecurityMasterStructuredCreditReclassificationServiceTests
     }
 
     [Fact]
-    public async Task BuildReportAsync_BlocksABondDeclaringCallSchedules_InsteadOfDroppingThem()
+    public async Task BuildReportAsync_CarriesBondCallSchedulesIntoTheRepairDraft_WithoutAnUnwritableBlocker()
     {
-        // A bond stamped 3 by a node that writes the arrays declares a call schedule. For a
-        // StructuredCredit the schedules are a terms version 4 term this node reads but cannot write,
-        // so the proposal is blocked rather than carried over without them (ADR-024). The exact code
-        // list and message are what guard the blocker: a bond never supplies a tranche or collateral
-        // type, so its candidate is Blocked with or without it, and the draft checks at the end pin
-        // only, as 4a's test does, that a blocked draft never carries the arrays or a stamp.
+        // Call/put arrays are writable at StructuredCredit version 4. The tranche/collateral
+        // repair blockers remain, while the complete declared call window survives in the draft.
         var (sut, store) = BuildSut();
         var bond = MakeSecurity(Guid.NewGuid(), "Bond", new
         {
@@ -216,7 +212,7 @@ public sealed class SecurityMasterStructuredCreditReclassificationServiceTests
             isCallable = true,
             callDate = "2030-03-25",
             assetClassTermsVersion = 3,
-            callSchedule = new[] { new { callDate = "2030-03-25", exerciseStyle = "American", callPrice = 100 } }
+            callSchedule = new[] { new { callDate = "2030-03-25", callEndDate = "2031-03-25", exerciseStyle = "European", callPrice = 100, minimumNoticeDays = 5, maximumNoticeDays = 20, noticeDayType = "Calendar" } }
         });
         store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { bond });
 
@@ -229,25 +225,23 @@ public sealed class SecurityMasterStructuredCreditReclassificationServiceTests
         var candidate = report.Candidates.Single();
         candidate.Disposition.Should().Be(StructuredCreditReclassificationDisposition.Blocked);
         candidate.Blockers.Select(static blocker => blocker.Code).Should().Equal(
-            "structured_credit_call_put_schedules_unwritable",
             "structured_credit_tranche_required",
             "structured_credit_collateral_type_required");
-        candidate.Blockers[0].Message.Should().Be(
-            "The bond declares callSchedule or putSchedule, StructuredCredit terms version 4 terms this node cannot write; " +
-            "reclassify from a node that writes StructuredCredit version 4.");
-
         var derived = candidate.DerivedAssetSpecificTerms;
-        derived.TryGetProperty("callSchedule", out _).Should().BeFalse("a blocked draft never carries a term this node cannot write");
+        var call = derived.GetProperty(SecurityVersionedTerms.CallScheduleKey)[0];
+        call.GetProperty("callEndDate").GetString().Should().Be("2031-03-25");
+        call.GetProperty("minimumNoticeDays").GetInt32().Should().Be(5);
+        call.GetProperty("maximumNoticeDays").GetInt32().Should().Be(20);
+        call.GetProperty("noticeDayType").GetString().Should().Be("Calendar");
         derived.TryGetProperty("putSchedule", out _).Should().BeFalse();
         derived.TryGetProperty(SecurityTermsEnvelope.FormatKey, out _).Should().BeFalse("no proposed terms are stamped for a blocked candidate");
         derived.TryGetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey, out _).Should().BeFalse();
     }
 
     [Fact]
-    public async Task BuildReportAsync_ABondDeclaringConventionsAndPuts_ListsBothUnwritableBlockers_ConventionsFirst()
+    public async Task BuildReportAsync_ABondDeclaringConventionsAndPuts_KeepsTheAnchorBlockerAndCarriesPuts()
     {
-        // Each readable-only StructuredCredit term the bond declares gets its own blocker, the block's
-        // (version 3) before the schedules' (version 4), and 4a's text is unchanged.
+        // The unsupported-conventions blocker remains; writable put windows survive for repair.
         var (sut, store) = BuildSut();
         var bond = MakeSecurity(Guid.NewGuid(), "Bond", new
         {
@@ -259,7 +253,7 @@ public sealed class SecurityMasterStructuredCreditReclassificationServiceTests
             seniority = "Senior",
             assetClassTermsVersion = 3,
             scheduleConventions = new { businessDayConvention = "ModifiedFollowing", paymentCalendars = new[] { "USNY" } },
-            putSchedule = new[] { new { putDate = "2035-03-25", putPrice = 100 } }
+            putSchedule = new[] { new { putDate = "2035-03-25", exerciseStyle = "European", putPrice = 100 } }
         });
         store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { bond });
 
@@ -272,19 +266,15 @@ public sealed class SecurityMasterStructuredCreditReclassificationServiceTests
         candidate.Disposition.Should().Be(StructuredCreditReclassificationDisposition.Blocked);
         candidate.Blockers.Select(static blocker => blocker.Code).Should().Equal(
             "structured_credit_schedule_conventions_unwritable",
-            "structured_credit_call_put_schedules_unwritable",
             "structured_credit_tranche_required",
             "structured_credit_collateral_type_required");
         candidate.Blockers[0].Message.Should().Be(
-            "The bond declares scheduleConventions, a StructuredCredit terms version 3 term this node cannot write; " +
-            "reclassify from a node that writes StructuredCredit version 3.");
-        candidate.Blockers[1].Message.Should().Be(
-            "The bond declares callSchedule or putSchedule, StructuredCredit terms version 4 terms this node cannot write; " +
-            "reclassify from a node that writes StructuredCredit version 4.");
+            "The bond declares scheduleConventions, but the StructuredCredit schema has no top-level issueDate or paymentFrequency; " +
+            "repair the declared schedule before reclassification.");
 
         var derived = candidate.DerivedAssetSpecificTerms;
         derived.TryGetProperty("scheduleConventions", out _).Should().BeFalse();
-        derived.TryGetProperty("putSchedule", out _).Should().BeFalse();
+        derived.GetProperty(SecurityVersionedTerms.PutScheduleKey)[0].GetProperty("putDate").GetString().Should().Be("2035-03-25");
         derived.TryGetProperty(SecurityTermsEnvelope.FormatKey, out _).Should().BeFalse();
     }
 

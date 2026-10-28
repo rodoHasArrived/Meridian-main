@@ -2,11 +2,15 @@
 
 # `security-master-contracts` data objects - page 3 of 6
 
-Objects 161-240 of 460. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 474. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_ISecurityMasterCashFlowService["ISecurityMasterCashFlowService"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ISecurityMasterCorporateActionCommandService["ISecurityMasterCorporateActionCommandService"] {
+    }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterDataQualityService["ISecurityMasterDataQualityService"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterPricingService["ISecurityMasterPricingService"] {
@@ -126,6 +130,15 @@ classDiagram
         +IReadOnlyList~string~? RemoveKeys
         +IReadOnlyDictionary~string__string~? SetValues
     }
+    class Meridian_Contracts_SecurityMaster_OtcAuctionSettlementData["OtcAuctionSettlementData"] {
+        +DateOnly AuctionDate
+        +string AuctionReference
+        +Guid CreditEventId
+        +string Currency
+        +decimal FinalPricePercent
+        +decimal SettlementAmount
+        +int SettlementScale
+    }
     class Meridian_Contracts_SecurityMaster_OtcCollateralAgreementDto["OtcCollateralAgreementDto"] {
         +Guid CollateralAgreementId
         +string Currency
@@ -178,6 +191,10 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_OtcCollateralRules["OtcCollateralRules"] {
     }
+    class Meridian_Contracts_SecurityMaster_OtcCompressionData["OtcCompressionData"] {
+        +string CompressionReference
+        +decimal RemainingNotional
+    }
     class Meridian_Contracts_SecurityMaster_OtcContractDirection["OtcContractDirection"] {
     }
     class Meridian_Contracts_SecurityMaster_OtcContractDto["OtcContractDto"] {
@@ -193,6 +210,34 @@ classDiagram
         +Guid SecurityId
         +OtcContractStatus Status
         +DateOnly? TerminationDate
+    }
+    class Meridian_Contracts_SecurityMaster_OtcContractLifecycleData["OtcContractLifecycleData"] {
+    }
+    class Meridian_Contracts_SecurityMaster_OtcContractLifecycleEventDto["OtcContractLifecycleEventDto"] {
+        +string Actor
+        +OtcContractDto After
+        +OtcContractDto Before
+        +OtcContractLifecycleData Data
+        +DateOnly EffectiveDate
+        +Guid EventId
+        +OtcContractLifecycleKind Kind
+        +OtcContractDto? NovationSuccessor
+        +int PayloadVersion
+        +DateTimeOffset RecordedAt
+        +string SourceReference
+        +OtcContractLifecycleTarget? Target
+    }
+    class Meridian_Contracts_SecurityMaster_OtcContractLifecycleKind["OtcContractLifecycleKind"] {
+    }
+    class Meridian_Contracts_SecurityMaster_OtcContractLifecycleRules["OtcContractLifecycleRules"] {
+    }
+    class Meridian_Contracts_SecurityMaster_OtcContractLifecycleTarget["OtcContractLifecycleTarget"] {
+        +string AssetClass
+        +string? IndexName
+        +string? LegId
+        +string? ReferenceEntity
+        +Guid SecurityId
+        +long SecurityVersion
     }
     class Meridian_Contracts_SecurityMaster_OtcContractRules["OtcContractRules"] {
     }
@@ -217,6 +262,13 @@ classDiagram
         +DateTimeOffset? KnowledgeAsOf
     }
     class Meridian_Contracts_SecurityMaster_OtcContractsJsonContext["OtcContractsJsonContext"] {
+    }
+    class Meridian_Contracts_SecurityMaster_OtcCreditEventData["OtcCreditEventData"] {
+        +OtcCreditEventKind CreditEvent
+        +string DeterminationReference
+        +string ReferenceEntity
+    }
+    class Meridian_Contracts_SecurityMaster_OtcCreditEventKind["OtcCreditEventKind"] {
     }
     class Meridian_Contracts_SecurityMaster_OtcCreditSupportSideDto["OtcCreditSupportSideDto"] {
         +decimal CreditSupportAmount
@@ -329,6 +381,15 @@ classDiagram
         +OtcMasterAgreementDto MasterAgreement
         +OtcNettingSetDto NettingSet
     }
+    class Meridian_Contracts_SecurityMaster_OtcNovationData["OtcNovationData"] {
+        +Guid SuccessorContractId
+    }
+    class Meridian_Contracts_SecurityMaster_OtcRateResetData["OtcRateResetData"] {
+        +DateOnly FixingDate
+        +string IndexName
+        +decimal IndexRate
+        +string LegId
+    }
     class Meridian_Contracts_SecurityMaster_OtcValuationBlockerCodes["OtcValuationBlockerCodes"] {
     }
     class Meridian_Contracts_SecurityMaster_OtcValuationBlockerDto["OtcValuationBlockerDto"] {
@@ -385,126 +446,11 @@ classDiagram
         +decimal? RedemptionPrice
         +Guid SecurityId
     }
-    class Meridian_Contracts_SecurityMaster_PricingHierarchyEntryDto["PricingHierarchyEntryDto"] {
-        +int MaxDaysStale
-        +int Priority
-        +string SourceDisplayName
-        +string SourceId
-    }
-    class Meridian_Contracts_SecurityMaster_PrincipalPaydownCorporateActionTerms["PrincipalPaydownCorporateActionTerms"] {
-        +string EventType
-        +decimal? PaydownRatio
-        +decimal? PostPaydownFactor
-        +decimal? PrincipalAmount
-    }
-    class Meridian_Contracts_SecurityMaster_PublishSecurityCurveVersionRequest["PublishSecurityCurveVersionRequest"] {
-        +DateOnly AsOf
-        +Guid CurveId
-        +IReadOnlyList~SecurityCurvePointDto~ Points
-        +string? PublishedBy
-        +string Source
-        +DateTimeOffset? SourcedAt
-    }
-    class Meridian_Contracts_SecurityMaster_RecordCorporateActionConflictRequestDto["RecordCorporateActionConflictRequestDto"] {
-        +string Actor
-        +IReadOnlyList~CorporateActionConflictCandidateDto~ Candidates
-        +Guid CaseId
-        +string CompanyId
-        +Guid? ConflictId
-        +string? CorrelationId
-        +string Description
-        +long ExpectedVersion
-        +string Field
-        +string IdempotencyKey
-        +CorporateActionCaseScopeDto? ScopeAssertion
-        +string TenantId
-    }
-    class Meridian_Contracts_SecurityMaster_RecordCorporateActionSourceProposalRequestDto["RecordCorporateActionSourceProposalRequestDto"] {
-        +string Actor
-        +string? ClaimedEconomicFingerprint
-        +string? CorrelationId
-        +CorporateActionSourceDisplayMetadataDto? DisplayMetadata
-        +Guid? ProposalId
-        +CorporateActionDto ProposedAction
-        +CorporateActionProviderEventIdentityDto ProviderIdentity
-        +string? Reason
-        +Guid? SupersedesProposalId
-    }
-    class Meridian_Contracts_SecurityMaster_RecordRawPriceRequest["RecordRawPriceRequest"] {
-        +decimal Price
-        +DateTimeOffset PriceAsOf
-        +string RecordedBy
-        +Guid SecurityId
-        +string SourceId
-        +SecurityPriceUnit Unit
-    }
-    class Meridian_Contracts_SecurityMaster_RedemptionCorporateActionTerms["RedemptionCorporateActionTerms"] {
-        +decimal? CashPerUnit
-        +string EventType
-        +bool? IsMakeWhole
-        +bool? IsPartial
-        +decimal? PricePercentOfPar
-    }
-    class Meridian_Contracts_SecurityMaster_ReferenceChangeCorporateActionTerms["ReferenceChangeCorporateActionTerms"] {
-        +string EventType
-        +DateOnly? FinalTradingDate
-        +string? Reason
-        +Guid? SuccessorSecurityId
-    }
-    class Meridian_Contracts_SecurityMaster_RejectCorporateActionSourceProposalRequestDto["RejectCorporateActionSourceProposalRequestDto"] {
-        +string Actor
-        +string? CorrelationId
-        +long ExpectedVersion
-        +string IdempotencyKey
-        +Guid ProposalId
-        +string Reason
-    }
-    class Meridian_Contracts_SecurityMaster_ResolveConflictRequest["ResolveConflictRequest"] {
-        +string? ChosenWinnerSource
-        +Guid ConflictId
-        +string? Reason
-        +string Resolution
-        +string ResolvedBy
-    }
-    class Meridian_Contracts_SecurityMaster_ResolveCorporateActionConflictRequestDto["ResolveCorporateActionConflictRequestDto"] {
-        +string Actor
-        +Guid CaseId
-        +string CompanyId
-        +Guid ConflictId
-        +string? CorrelationId
-        +string Disposition
-        +string EvidenceHash
-        +string EvidenceReference
-        +long ExpectedVersion
-        +string IdempotencyKey
-        +string Resolution
-        +CorporateActionCaseScopeDto? ScopeAssertion
-    }
-    class Meridian_Contracts_SecurityMaster_ResolveSecurityRequest["ResolveSecurityRequest"] {
-        +bool ActiveOnly
-        +DateTimeOffset? AsOfUtc
-        +SecurityIdentifierKind IdentifierKind
-        +string IdentifierValue
-        +string? Provider
-    }
-    class Meridian_Contracts_SecurityMaster_ScheduleConventionTerms["ScheduleConventionTerms"] {
-        +bool? AccrualAdjusted
-        +string? BusinessDayConvention
-        +string? CouponCashBasis
-        +string? CouponRateUnit
-        +string? Direction
-        +ScheduleConventionTerms Empty
-        +bool? EndOfMonthRule
-        +DateOnly? FirstRegularDate
-        +DateOnly? LastRegularDate
-        +IReadOnlyList~string~ PaymentCalendars
-        +int? PaymentLagBusinessDays
-        +string? RollConvention
-    }
     Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService --> Meridian_Contracts_SecurityMaster_ISecurityTradingParametersQueryService
     Meridian_Contracts_SecurityMaster_IssueOtcMarginCallRequest --> Meridian_Contracts_SecurityMaster_OtcMovementKind
     Meridian_Contracts_SecurityMaster_IssueOtcMarginCallRequest --> Meridian_Contracts_SecurityMaster_OtcMovementParty
     Meridian_Contracts_SecurityMaster_NotionalLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
+    Meridian_Contracts_SecurityMaster_OtcAuctionSettlementData --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleData
     Meridian_Contracts_SecurityMaster_OtcCollateralAgreementDto --> Meridian_Contracts_SecurityMaster_OtcEligibleCollateralDto
     Meridian_Contracts_SecurityMaster_OtcCollateralBalanceDto --> Meridian_Contracts_SecurityMaster_OtcCollateralDirection
     Meridian_Contracts_SecurityMaster_OtcCollateralBalanceDto --> Meridian_Contracts_SecurityMaster_OtcCollateralKind
@@ -512,12 +458,19 @@ classDiagram
     Meridian_Contracts_SecurityMaster_OtcCollateralHeldLineDto --> Meridian_Contracts_SecurityMaster_OtcCollateralKind
     Meridian_Contracts_SecurityMaster_OtcCollateralMovementDto --> Meridian_Contracts_SecurityMaster_OtcMovementKind
     Meridian_Contracts_SecurityMaster_OtcCollateralMovementDto --> Meridian_Contracts_SecurityMaster_OtcMovementParty
+    Meridian_Contracts_SecurityMaster_OtcCompressionData --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleData
     Meridian_Contracts_SecurityMaster_OtcContractDto --> Meridian_Contracts_SecurityMaster_OtcContractDirection
     Meridian_Contracts_SecurityMaster_OtcContractDto --> Meridian_Contracts_SecurityMaster_OtcContractStatus
+    Meridian_Contracts_SecurityMaster_OtcContractLifecycleEventDto --> Meridian_Contracts_SecurityMaster_OtcContractDto
+    Meridian_Contracts_SecurityMaster_OtcContractLifecycleEventDto --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleData
+    Meridian_Contracts_SecurityMaster_OtcContractLifecycleEventDto --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleKind
+    Meridian_Contracts_SecurityMaster_OtcContractLifecycleEventDto --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleTarget
     Meridian_Contracts_SecurityMaster_OtcContractValuationDto --> Meridian_Contracts_SecurityMaster_OtcValuationBlockerDto
     Meridian_Contracts_SecurityMaster_OtcContractValuationDto --> Meridian_Contracts_SecurityMaster_OtcValuationInputDto
     Meridian_Contracts_SecurityMaster_OtcContractValuationDto --> Meridian_Contracts_SecurityMaster_OtcValuationStatus
     Meridian_Contracts_SecurityMaster_OtcContractValuationRequest --> Meridian_Contracts_SecurityMaster_OtcContractDto
+    Meridian_Contracts_SecurityMaster_OtcCreditEventData --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleData
+    Meridian_Contracts_SecurityMaster_OtcCreditEventData --> Meridian_Contracts_SecurityMaster_OtcCreditEventKind
     Meridian_Contracts_SecurityMaster_OtcCreditSupportSideDto --> Meridian_Contracts_SecurityMaster_OtcCollateralMovementDto
     Meridian_Contracts_SecurityMaster_OtcCreditSupportSideDto --> Meridian_Contracts_SecurityMaster_OtcMovementParty
     Meridian_Contracts_SecurityMaster_OtcExposureSnapshotDto --> Meridian_Contracts_SecurityMaster_OtcCollateralHeldLineDto
@@ -537,4 +490,6 @@ classDiagram
     Meridian_Contracts_SecurityMaster_OtcNettingSetViewDto --> Meridian_Contracts_SecurityMaster_OtcContractDto
     Meridian_Contracts_SecurityMaster_OtcNettingSetViewDto --> Meridian_Contracts_SecurityMaster_OtcMasterAgreementDto
     Meridian_Contracts_SecurityMaster_OtcNettingSetViewDto --> Meridian_Contracts_SecurityMaster_OtcNettingSetDto
+    Meridian_Contracts_SecurityMaster_OtcNovationData --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleData
+    Meridian_Contracts_SecurityMaster_OtcRateResetData --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleData
 ```

@@ -271,7 +271,7 @@ public sealed class SecurityMasterMappingInteropTests
             classification = "Commmon"
         })))
             .Should().Throw<InvalidOperationException>()
-            .WithMessage("*Unknown equity classification 'Commmon'*");
+            .WithMessage("*SM_TERM_VALUE_NOT_ALLOWED*assetSpecificTerms.classification*Commmon*");
     }
 
     [Fact]

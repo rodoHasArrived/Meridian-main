@@ -406,6 +406,41 @@ public sealed class ReportGenerationServiceTests
             "ledger-source-checkpoint-missing:named-only");
     }
 
+    [Fact]
+    public async Task GenerateAsync_CertifiedDigestUsesTypedEconomicsAndIgnoresLegacyPassthrough()
+    {
+        var securityId = Guid.NewGuid();
+        var asOf = new DateTimeOffset(2026, 4, 11, 0, 0, 0, TimeSpan.Zero);
+        var definition = BuildEconomicDefinition(securityId, "Bond", "FixedIncome", "CorporateBond",
+            "Corporate", "US", SecurityIdentifierKind.Cusip, "123456789");
+        async Task<ReportingSnapshotReceipt> Receipt(SecurityEconomicDefinitionRecord economic)
+        {
+            var reference = new SecurityMasterReportingReference(BuildDetail(securityId, "BOND", "Bond"),
+                economic, asOf, SecurityMasterReportingResolutionMode.HistoricalEvent, 41, 1, asOf.AddDays(-1));
+            var query = new StubSecurityMasterQueryService(new Dictionary<string, SecurityDetailDto>(),
+                new Dictionary<Guid, SecurityEconomicDefinitionRecord>(),
+                new Dictionary<string, SecurityMasterReportingReference> { ["BOND"] = reference });
+            var report = await new ReportGenerationService(query).GenerateAsync(new ReportRequest("fund-1", asOf,
+                BuildLedgerBookWithSymbols(["BOND"]),
+                SnapshotSource: new ReportingSnapshotSourceContext("durable-ledger", "global-sequence:41", true)));
+            return report.SnapshotReceipt!;
+        }
+
+        var original = await Receipt(definition);
+        var contradictoryCopy = await Receipt(definition with
+        {
+            LegacyAssetClass = "CashSweep",
+            LegacyAssetSpecificTerms = JsonSerializer.SerializeToElement(new { couponRate = 999m })
+        });
+        var changedEconomics = await Receipt(definition with
+        {
+            EconomicTerms = JsonSerializer.SerializeToElement(new { coupon = new { couponRate = 0.07m } })
+        });
+        original.SchemaVersion.Should().Be("meridian.reporting.snapshot.v2");
+        contradictoryCopy.ContentHash.Should().Be(original.ContentHash);
+        changedEconomics.ContentHash.Should().NotBe(original.ContentHash);
+    }
+
     private static FundLedgerBook BuildLedgerBookWithSymbols(IReadOnlyList<string> symbols)
     {
         var ledgerBook = new FundLedgerBook("fund-1");

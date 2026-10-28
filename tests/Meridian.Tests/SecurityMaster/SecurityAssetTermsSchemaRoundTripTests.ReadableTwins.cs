@@ -245,7 +245,7 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
         foreach (var assetClass in ReadableTwinBlocks.Keys)
         {
             data.Add(assetClass, null);
-            for (var version = 1; version <= SecurityAssetClassCatalog.GetTermsVersion(assetClass); version++)
+            for (var version = 1; version < BlockSince(assetClass); version++)
             {
                 data.Add(assetClass, version);
             }
@@ -257,10 +257,10 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
     // ── (a) Coverage ────────────────────────────────────────────────────────────────────────────
 
     [Fact]
-    public void ReadableTwins_CoverExactlyTheClassesThatReadAheadOfWhatTheyWrite()
+    public void ReadableTwins_CoverExactlyTheHistoricalVersionsAboveTheDocumentFloor()
     {
         var readAhead = SecurityAssetClassCatalog.AssetClasses
-            .Where(static assetClass => SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass) > SecurityAssetClassCatalog.GetTermsVersion(assetClass))
+            .Where(static assetClass => SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass) > SecurityAssetClassCatalog.GetStampFloor(assetClass))
             .ToArray();
 
         ReadableTwinBlocks.Keys.Should().BeEquivalentTo(
@@ -270,8 +270,8 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
 
         var readableVersions = readAhead.SelectMany(assetClass => Enumerable
             .Range(
-                SecurityAssetClassCatalog.GetTermsVersion(assetClass) + 1,
-                SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass) - SecurityAssetClassCatalog.GetTermsVersion(assetClass))
+                SecurityAssetClassCatalog.GetStampFloor(assetClass) + 1,
+                SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass) - SecurityAssetClassCatalog.GetStampFloor(assetClass))
             .Select(version => $"{assetClass} v{version}"));
         ReadableTwinBlocks.Keys
             .SelectMany(assetClass => ReadableTwinVersionsOf(assetClass).Select(version => $"{assetClass} v{version}"))
@@ -283,12 +283,12 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
 
     [Theory]
     [MemberData(nameof(ReadableTwinCases))]
-    public void ReadableTwin_PopulatesEveryTermAboveTheWriteVersion(string assetClass, int version)
+    public void ReadableTwin_PopulatesEveryTermAboveTheDocumentFloor(string assetClass, int version)
     {
         // A later expand step that adds another term to the class has to grow the twin with it. The
         // check is by path, so a swap twin must populate the block on every leg, not just one. A twin
         // populates exactly the terms above the write version up to its own version, and none above.
-        var writes = SecurityAssetClassCatalog.GetTermsVersion(assetClass);
+        var writes = SecurityAssetClassCatalog.GetStampFloor(assetClass);
         var twin = ReadableTwin(assetClass, version);
         var expected = new List<string>();
         foreach (var field in SecurityAssetTermsSchema.Fields(assetClass))
@@ -494,7 +494,7 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
     [MemberData(nameof(ReadableTwinCases))]
     public void ReadableTwin_WritesExactlyTheFieldsItsVersionDeclares_AndTheCanonicalBlock(string assetClass, int version)
     {
-        var writes = SecurityAssetClassCatalog.GetTermsVersion(assetClass);
+        var writes = SecurityAssetClassCatalog.GetStampFloor(assetClass);
         using var written = JsonDocument.Parse(ReadAndRewrite(assetClass, ReadableTwin(assetClass, version)));
 
         var writtenKeys = ElementKeys(written.RootElement);
@@ -598,7 +598,7 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
     [InlineData("StructuredCredit", 3, 2, 4)]
     [InlineData("StructuredCredit", 4, 2, 4)]
     [InlineData("Swap", 2, 1, 2)]
-    public void ReadableTwin_IsRefusedByCreateAndAmend_WithTheWriteVersionReason(string assetClass, int version, int writes, int reads)
+    public void HistoricalReadableTwin_WriteUsesCurrentAuthorityAndSemanticRules(string assetClass, int version, int writes, int reads)
     {
         var twin = ReadableTwin(assetClass, version);
         var expected =
@@ -606,10 +606,7 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
             $"it reads versions 1 through {reads} and writes version {writes}. " +
             $"Submit the terms at version {writes}, or apply the change from a node that writes version {version}.";
 
-        FluentActions.Invoking(() => SecurityMasterMapping.ToCreateCommand(CreateRequest(assetClass, twin)))
-            .Should().Throw<InvalidOperationException>().WithMessage(expected);
-        FluentActions.Invoking(() => SecurityMasterMapping.ToAmendCommand(AmendRequest(twin), CurrentProjection(assetClass)))
-            .Should().Throw<InvalidOperationException>().WithMessage(expected);
+        AssertCurrentWriteBoundary(assetClass, twin, expected);
     }
 
     [Theory]
@@ -623,7 +620,7 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
     [InlineData("StructuredCredit", 4, 2, 3, "scheduleConventions", true)]
     [InlineData("StructuredCredit", 4, 2, 4, "callSchedule", false)]
     [InlineData("Swap", 2, 1, 2, "legs[0].scheduleConventions", true)]
-    public void ReadableTwin_RestampedAtTheWriteVersion_IsRefusedByCreateAndAmend_WithTheNotYetWritableReason(
+    public void HistoricalReadableTwin_RestampedAtTheFloor_StillUsesCurrentWriteRules(
         string assetClass,
         int version,
         int writes,
@@ -647,10 +644,35 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
             $"assetClassTermsVersion {writes}, so a create, amend, import or field edit cannot set it yet. " +
             "Leave it absent, null or empty (ADR-024).";
 
-        FluentActions.Invoking(() => SecurityMasterMapping.ToCreateCommand(CreateRequest(assetClass, restamped)))
-            .Should().Throw<InvalidOperationException>().WithMessage(expected);
-        FluentActions.Invoking(() => SecurityMasterMapping.ToAmendCommand(AmendRequest(restamped), CurrentProjection(assetClass)))
-            .Should().Throw<InvalidOperationException>().WithMessage(expected);
+        AssertCurrentWriteBoundary(assetClass, restamped, expected);
+    }
+
+    private static void AssertCurrentWriteBoundary(string assetClass, JsonElement terms, string oldReadOnlyReason)
+    {
+        var create = () => SecurityMasterMapping.ToCreateCommand(CreateRequest(assetClass, terms));
+        var amend = () => SecurityMasterMapping.ToAmendCommand(AmendRequest(terms), CurrentProjection(assetClass));
+        if (SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion < SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass))
+        {
+            create.Should().Throw<InvalidOperationException>().WithMessage(oldReadOnlyReason);
+            amend.Should().Throw<InvalidOperationException>().WithMessage(oldReadOnlyReason);
+            return;
+        }
+        // The frozen twins prove historical read behavior, not that their old declared terms meet
+        // today's scheduling semantics. A newly writable payload must obey those exact pure rules.
+        InvalidOperationException? semantic = null;
+        try
+        { ScheduleTermsWriteRules.Validate(assetClass, terms); }
+        catch (InvalidOperationException exception) { semantic = exception; }
+        if (semantic is null)
+        {
+            create.Should().NotThrow();
+            amend.Should().NotThrow();
+        }
+        else
+        {
+            create.Should().Throw<InvalidOperationException>().WithMessage(semantic.Message);
+            amend.Should().Throw<InvalidOperationException>().WithMessage(semantic.Message);
+        }
     }
 
     // ── (e) Unpopulated spellings are accepted and write the golden bytes ───────────────────────
@@ -668,10 +690,8 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
         }
 
         var snapshot = CreateSnapshot(assetClass, JsonSerializer.SerializeToElement(payload));
-
-        snapshot.AssetSpecificTermsJson.Should().Be(
-            golden,
-            $"an unset '{key}' ({spelling}) means the term is unset, so the '{assetClass}' write is byte-identical to the one without it");
+        snapshot.AssetSpecificTermsJson.Should().Be(golden,
+            $"an unset '{key}' ({spelling}) preserves the '{assetClass}' document's floor bytes regardless of its writable ceiling");
     }
 
     // ── (f) A payload stamped at or below the write version never decodes the block ─────────────
@@ -887,14 +907,32 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
 
     [Theory]
     [MemberData(nameof(ForeignRowsAndPersistOperations))]
-    public async Task ForeignRow_IsPersistedByDeactivateAndPatchlessAmend_WithExactlyThePinnedBytes(string row, string operation)
+    public async Task ForeignRow_DeactivationPinsBytes_WhilePatchlessAmendmentRequiresValidDeclarations(string row, string operation)
     {
-        // The read path above is what a deactivation or a patch-less amend re-serializes, but the
-        // service persists it only when its ahead-of-write round-trip guard finds every versioned term
-        // intact: the partial block must compare equal to its twelve-member rewrite (eleven missing
-        // members against ten nulls and []), and a block-less row must downgrade cleanly.
+        // Deactivation preserves losslessly decodable historical terms. An amendment also checks
+        // the complete canonical payload against today's semantic rules before any write.
         var (assetClass, stored, persisted) = ForeignRows[row];
         var harness = new PersistPathHarness(assetClass, stored);
+
+        var amendmentRefusal = row switch
+        {
+            "partialBondBlock" or "bondBlockOnlyAtStampThree" => "*record carries no issueDate*",
+            "unsortedPutEntries" or "structuredCreditPutsOnly" => "*exerciseStyle must be explicitly stated*",
+            "partialCallEntry" or "datelessCallEntry" or "callAndPutWithoutBlock" or
+                "nullPutScheduleBesideCalls" or "unsortedCallEntries" or "lowercaseExerciseStyle"
+                => "*exercise window is inverted or extends beyond maturity*",
+            _ => null
+        };
+        if (operation == AmendWithoutTermsPatch && amendmentRefusal is not null)
+        {
+            await FluentActions.Invoking(() => harness.RunAsync(operation))
+                .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
+                .WithMessage(amendmentRefusal);
+            harness.Appended.Should().BeEmpty();
+            harness.Upserted.Should().BeEmpty();
+            harness.Saved.Should().BeEmpty();
+            return;
+        }
 
         await harness.RunAsync(operation);
 
@@ -1165,6 +1203,12 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
                 });
 
             var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+            snapshotStore.SaveAsync(Arg.Any<SecuritySnapshotRecord>(), Arg.Any<CancellationToken>())
+                .Returns(call =>
+                {
+                    Saved.Add(call.Arg<SecuritySnapshotRecord>());
+                    return Task.CompletedTask;
+                });
             _service = new SecurityMasterService(
                 eventStore,
                 snapshotStore,
@@ -1181,6 +1225,8 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
         public List<SecurityMasterEventEnvelope> Appended { get; } = [];
 
         public List<SecurityProjectionRecord> Upserted { get; } = [];
+
+        public List<SecuritySnapshotRecord> Saved { get; } = [];
 
         public Task RunAsync(string operation)
             => operation switch

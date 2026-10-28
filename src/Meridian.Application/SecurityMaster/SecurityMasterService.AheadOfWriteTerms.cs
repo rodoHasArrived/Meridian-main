@@ -6,15 +6,14 @@ using Meridian.FSharp.SecurityMasterInterop;
 namespace Meridian.Application.SecurityMaster;
 
 /// <summary>
-/// The round-trip guard for rows stamped above their class's write version (ADR-024, readable
-/// before writable): a deactivation or patch-less amend re-serializes such a row only when every
+/// The round-trip guard for rows stamped above their class's S2 document floor (ADR-024): a deactivation or patch-less amend re-serializes such a row only when every
 /// versioned term survives.
 /// </summary>
 public sealed partial class SecurityMasterService
 {
     /// <summary>
-    /// A row stamped above its class's write version (ADR-024, readable before writable) was written
-    /// by a node that writes the newer version. Deactivating it, or amending it without a terms patch,
+    /// A row stamped above its class's document floor holds versioned terms that must survive a
+    /// write, including after the class's write ceiling catches up. Deactivating it, or amending it without a terms patch,
     /// re-serializes the record this node read, and the tolerant readers type only what this node
     /// knows: an inner member it does not know, a mistyped value or a case-variant key would be
     /// dropped. Refuse the write unless re-serializing keeps every versioned term exactly. Only the
@@ -30,6 +29,7 @@ public sealed partial class SecurityMasterService
     {
         var terms = projection.AssetSpecificTerms;
         var writes = SecurityAssetClassCatalog.GetTermsVersion(projection.AssetClass);
+        var floor = SecurityAssetClassCatalog.GetStampFloor(projection.AssetClass);
         if (assetSpecificTermsPatch is not null
             || terms.ValueKind != JsonValueKind.Object
             || SecurityTermsEnvelope.IsProfileGovernedPayload(projection.AssetClass, terms))
@@ -38,16 +38,16 @@ public sealed partial class SecurityMasterService
         }
 
         var stamp = SecurityTermsEnvelope.ResolveAssetClassTermsVersion(terms);
-        if (stamp <= writes)
+        if (stamp <= floor)
         {
             return;
         }
 
-        var stored = SecurityAssetTermsSchema.NormalizedTermsAbove(projection.AssetClass, terms, writes, stamp, out var conflicts);
+        var stored = SecurityAssetTermsSchema.NormalizedTermsAbove(projection.AssetClass, terms, floor, stamp, out var conflicts);
         using var rewrittenTerms = JsonDocument.Parse(
             new SecurityMasterSnapshotWrapper(SecurityMasterMapping.ToRecord(projection)).AssetSpecificTermsJson);
         var rewritten = SecurityAssetTermsSchema.NormalizedTermsAbove(
-            projection.AssetClass, rewrittenTerms.RootElement, writes, stamp, out _);
+            projection.AssetClass, rewrittenTerms.RootElement, floor, stamp, out _);
         var changedPath = conflicts.FirstOrDefault()
             ?? stored.Select(static entry => entry.Key)
                 .Concat(rewritten.Select(static entry => entry.Key))
@@ -57,6 +57,11 @@ public sealed partial class SecurityMasterService
         {
             return;
         }
+
+        if (stamp <= writes)
+            throw new SecurityMasterWriteRefusedException(
+                $"Security '{projection.SecurityId:D}' is stamped {SecurityTermsEnvelope.AssetClassTermsVersionKey} {stamp}, " +
+                $"but re-serializing it here would change '{changedPath}'. Amend it with explicit complete terms that settle its versioned terms.");
 
         throw new SecurityMasterWriteRefusedException(
             $"Security '{projection.SecurityId:D}' is stamped {SecurityTermsEnvelope.AssetClassTermsVersionKey} " +

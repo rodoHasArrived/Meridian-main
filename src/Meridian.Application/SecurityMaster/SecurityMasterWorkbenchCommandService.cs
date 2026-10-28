@@ -514,10 +514,21 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         // Preflight the revision BEFORE mutating the approval gate: a stale/mistyped revision id must
         // not leave an orphaned submitted workflow that can never be published. The TransitionAsync
         // CAS below remains the authority against concurrent advancement.
-        await EnsureRevisionInStateAsync(
+        var revision = await EnsureRevisionInStateAsync(
             request.RevisionId, request.SecurityId, SecurityMasterRevisionStateDto.Draft, ct).ConfigureAwait(false);
 
         var currentVersion = await GetCurrentVersionAsync(request.SecurityId, ct).ConfigureAwait(false);
+        if (revision.FieldPath is { } path && SecurityAssetTermsFieldEditValidator.TargetsAssetSpecificTerms(path))
+        {
+            // Recheck at submission: another staged edit or a canonical refresh may have changed
+            // the anchors/scalars since the draft was created. A clear removes an overlay only.
+            var staged = revision.FieldValueRecorded ? null : await TryGetStagedOverrideValuesAsync(request.SecurityId, ct).ConfigureAwait(false);
+            var value = revision.FieldValueRecorded ? revision.FieldValue
+                : staged is not null && staged.TryGetValue(path, out var currentValue) ? currentValue : null;
+            await EnsureFieldEditIsSchemaValidAsync(new UpdateSecurityFieldRequest(request.SecurityId,
+                currentVersion, path, value, revision.FieldEffectiveFrom ?? revision.CreatedAt,
+                revision.Actor, revision.FieldJustification ?? "Revalidate staged asset terms before submission."), ct).ConfigureAwait(false);
+        }
         var rationale = string.IsNullOrWhiteSpace(request.Note)
             ? "Security Master revision submitted for approval."
             : request.Note!;
@@ -1083,6 +1094,17 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             throw new ArgumentException(writeRefusal, nameof(request));
         }
 
+        try
+        {
+            ScheduleTermsWriteRules.EnsureAmendmentDoesNotPromoteStrayContainers(projection.AssetClass,
+                projection.AssetSpecificTerms, effectiveTerms);
+            SecurityAssetPackAdmission.EnsureSubmittedFields(projection.AssetClass, effectiveTerms);
+        }
+        catch (InvalidOperationException exception)
+        {
+            throw new ArgumentException(exception.Message, nameof(request), exception);
+        }
+
         var invariantErrors = Meridian.FSharp.SecurityMasterInterop.SecurityMasterCommandFacade.ValidateKindInvariants(kind);
         if (invariantErrors.Length > 0)
         {
@@ -1125,7 +1147,19 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             or SecurityAssetTermFieldType.Date
             or SecurityAssetTermFieldType.Guid
             ? System.Text.Json.Nodes.JsonValue.Create(overrideValue)
-            : TryParseJsonNode(trimmed) ?? System.Text.Json.Nodes.JsonValue.Create(overrideValue);
+            : declaredType is SecurityAssetTermFieldType.Object or SecurityAssetTermFieldType.Array
+                ? System.Text.Json.Nodes.JsonNode.Parse(trimmed)
+                : TryParseJsonNode(trimmed) ?? System.Text.Json.Nodes.JsonValue.Create(overrideValue);
+        if (declaredType is SecurityAssetTermFieldType.Object or SecurityAssetTermFieldType.Array)
+        {
+            var replacement = JsonSerializer.SerializeToElement(new Dictionary<string, System.Text.Json.Nodes.JsonNode?> { [key] = envelope[key]?.DeepClone() });
+            var since = SecurityAssetTermsSchema.PopulatedTermsAbove(assetClass, replacement, 1)
+                .Where(term => term.Field.SinceTermsVersion <= SecurityAssetClassCatalog.GetTermsVersion(assetClass))
+                .Select(term => term.Field.SinceTermsVersion).DefaultIfEmpty(1).Max();
+            var stamp = envelope[SecurityTermsEnvelope.AssetClassTermsVersionKey]?.GetValue<int>() ?? 1;
+            if (since > stamp)
+                envelope[SecurityTermsEnvelope.AssetClassTermsVersionKey] = since;
+        }
     }
 
     private static void RemoveEnvelopeKeyVariants(System.Text.Json.Nodes.JsonObject envelope, string key)

@@ -1,6 +1,8 @@
 namespace Meridian.FSharp.Domain
 
 open System
+open Meridian.Contracts.SecurityMaster
+open Meridian.Contracts.SecurityMaster.Schedules
 
 [<RequireQualifiedAccess>]
 type DirectLendingDayCountBasis =
@@ -34,16 +36,35 @@ module DirectLending =
         | DirectLendingDayCountBasis.Act365F -> 365m
         | DirectLendingDayCountBasis.ActualActualISDA -> 365m // denominator per period; numerator is actual days
 
-    /// Returns the accrual fraction for a single day under each convention.
-    let accrualFractionForDay (basis: DirectLendingDayCountBasis) (date: DateOnly) =
+    /// Legacy formula-one fractions for the last representable date, whose successor cannot
+    /// form a half-open kernel period. No earlier accrual date uses this compatibility edge.
+    let private terminalDateFraction basis =
         match basis with
-        | DirectLendingDayCountBasis.Act360 -> 1m / 360m
-        | DirectLendingDayCountBasis.Act365F -> 1m / 365m
+        | DirectLendingDayCountBasis.Act360
         | DirectLendingDayCountBasis.Thirty360 -> 1m / 360m
-        | DirectLendingDayCountBasis.ActualActualISDA ->
-            let year = date.Year
-            let daysInYear = if DateTime.IsLeapYear year then 366m else 365m
-            1m / daysInYear
+        | DirectLendingDayCountBasis.Act365F
+        | DirectLendingDayCountBasis.ActualActualISDA -> 1m / 365m // 9999 is not a leap year.
+
+    /// The explicitly requested accrual day on the common schedule/day-count kernel. This does
+    /// not synthesize skipped dates or a reset cadence. Formula one deliberately keeps SCH-DEF-006:
+    /// its Thirty360 spelling still accrues one actual day over 360 until a versioned formula flip.
+    let accrualFractionForDay (basis: DirectLendingDayCountBasis) (date: DateOnly) =
+        if date = DateOnly.MaxValue then
+            terminalDateFraction basis
+        else
+            let tenor = ScheduleTenor.Days(1)
+            let schedule = ScheduleGenerator.Generate(ScheduleSpec(date, tenor.Advance(date, 1), tenor))
+            if not schedule.Succeeded then
+                invalidOp schedule.Failure.Message
+            let convention =
+                match basis with
+                | DirectLendingDayCountBasis.Act360
+                | DirectLendingDayCountBasis.Thirty360 -> DayCountConvention.Actual360
+                | DirectLendingDayCountBasis.Act365F -> DayCountConvention.Actual365
+                | DirectLendingDayCountBasis.ActualActualISDA -> DayCountConvention.ActualActualIsda
+            match ScheduleDayCount.TryPeriodFraction(convention, schedule.Periods.[0], schedule) with
+            | true, fraction, _ -> fraction
+            | false, _, refusal -> invalidOp refusal
 
     /// Net present value of collateral minus principal outstanding.
     let calculateCollateralCoverage (totalCollateralValue: decimal) (principalOutstanding: decimal) =

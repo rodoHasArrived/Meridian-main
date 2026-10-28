@@ -1,7 +1,8 @@
 namespace Meridian.Contracts.SecurityMaster;
 
 /// <summary>
-/// Registry metadata for introducing asset packs without changing core ledger contracts.
+/// Asset-pack membership and writable contract schemas used by canonical Security Master admission.
+/// Prose policy fields describe coverage; they are not executable accounting or evidence rules.
 /// </summary>
 public static partial class SecurityAssetPackRegistry
 {
@@ -329,6 +330,7 @@ public static partial class SecurityAssetPackRegistry
         RequireClaimedOrPlannedAssetClasses(pack, issues);
         RequireCatalogAssetClasses(pack, issues);
         RequireSchema(pack.ContractSchema, issues);
+        RequireAssetClassTermsSchemas(pack, issues);
         RequireSupportedValues(pack.LifecycleEvents, pack.SupportedLifecycleEvents, "LifecycleEvents", "asset-pack.unsupported-lifecycle-event", issues);
         RequireLifecycleCoverage(pack, issues);
         RequireSupportedValues(pack.ValuationMethods, pack.SupportedValuationMethods, "ValuationMethods", "asset-pack.unsupported-valuation-method", issues);
@@ -405,7 +407,7 @@ public static partial class SecurityAssetPackRegistry
             DisplayName: displayName,
             AssetClasses: assetClasses,
             PlannedAssetClasses: plannedAssetClasses ?? [],
-            ContractSchema: ContractSchema,
+            ContractSchema: ContractSchema with { AssetClassTerms = BuildAssetClassTermsSchemas(assetClasses) },
             LifecycleEvents: lifecycleEvents.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
             SupportedLifecycleEvents: StandardLifecycleEvents,
             LifecycleCoverage: BuildLifecycleCoverage(lifecycleEvents, journalTemplateEvents, automationDepth),
@@ -846,7 +848,12 @@ public sealed record AssetPackContractSchema(
     IReadOnlyList<string> Seniority,
     IReadOnlyList<string> Collateral,
     IReadOnlyList<string> Rates,
-    IReadOnlyList<string> OptionalAttributes);
+    IReadOnlyList<string> OptionalAttributes,
+    IReadOnlyList<AssetPackClassTermsSchema>? AssetClassTerms = null)
+{
+    /// <summary>The executable per-class writable schema; the preceding prose lists are descriptions only.</summary>
+    public IReadOnlyList<AssetPackClassTermsSchema> AssetClassTerms { get; init; } = AssetClassTerms ?? [];
+}
 
 public sealed record AssetPackAccountingRules(
     IReadOnlyList<string> JournalTemplateEvents,

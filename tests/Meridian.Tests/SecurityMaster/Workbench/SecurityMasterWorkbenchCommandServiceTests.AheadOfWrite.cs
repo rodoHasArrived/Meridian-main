@@ -53,25 +53,27 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task UpdateSecurityField_OnABondStampedAboveTheWriteVersion_IsRefusedAtSubmissionWithoutStaging(bool withBlock)
+    public async Task UpdateSecurityField_OnALegacyBond_StagesUnlessDeclaredConventionsContradict(bool withBlock)
     {
-        // A contract node wrote this row at version 2; this node reads it but cannot write it, so an
-        // edit of an unrelated version-1 term is refused by the stamp, with or without a block.
         var harness = new Harness(currentVersion: 3);
         harness.SetPassportAssetClass("Bond");
         harness.SetProjectionAssetTerms("Bond", AheadOfWriteFixtures.BondTerms(stamp: 2, withBlock));
-
-        var refused = await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(IssuerNameEdit()))
+        if (!withBlock)
+        {
+            var staged = await harness.Service.UpdateSecurityFieldAsync(IssuerNameEdit());
+            staged.State.Should().Be(SecurityMasterRevisionStateDto.Draft, "a readable old stamp without declared terms is writable after the raise");
+            return;
+        }
+        var refused = await harness.Service.Invoking(service => service.UpdateSecurityFieldAsync(IssuerNameEdit()))
             .Should().ThrowAsync<ArgumentException>();
-
-        refused.Which.Message.Should().Be($"{AheadOfWriteFixtures.BondWriteVersionReason} (Parameter 'request')");
+        refused.Which.Message.Should().Contain("Declared rollConvention 'EndOfMonth' conflicts with endOfMonthRule false");
         await AssertNothingStagedAsync(harness);
     }
 
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task UpdateSecurityField_OnABondStampedThreeDeclaringCallAndPutSchedules_IsRefusedAtSubmissionWithoutStaging(bool withBlock)
+    public async Task UpdateSecurityField_OnABondWithInvalidDeclaredSemantics_IsRefusedWithoutStaging(bool withBlock)
     {
         // A contract node wrote this row at version 3 with declared schedules. This node reads it
         // (increment 4b) but writes version 1, so an edit of an unrelated version-1 term is refused by
@@ -84,7 +86,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
         var refused = await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(IssuerNameEdit()))
             .Should().ThrowAsync<ArgumentException>();
 
-        refused.Which.Message.Should().Be($"{AheadOfWriteFixtures.BondStampThreeWriteVersionReason} (Parameter 'request')");
+        refused.Which.Message.Should().Contain(withBlock ? "conflicts with endOfMonthRule false" : "exerciseStyle must be explicitly stated");
         await AssertNothingStagedAsync(harness);
     }
 
@@ -93,7 +95,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
         AheadOfWriteFixtures.CertificateOfDepositStampThreeWriteVersionReason)]
     [InlineData("StructuredCredit", StructuredCreditStampedFour, "assetSpecificTerms.tranche", "C",
         AheadOfWriteFixtures.StructuredCreditStampFourWriteVersionReason)]
-    public async Task UpdateSecurityField_OnAFlatRowStampedAtItsNewReadableVersion_IsRefusedAtSubmissionWithoutStaging(
+    public async Task UpdateSecurityField_OnAFlatRowMissingExerciseStyle_IsRefusedWithoutStaging(
         string assetClass, string terms, string fieldPath, string newValue, string writeVersionReason)
     {
         // The other two classes whose readable version 4b raises, through the same first-class gate as
@@ -106,14 +108,14 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             .Invoking(s => s.UpdateSecurityFieldAsync(ProfileFieldEdit(fieldPath, newValue)))
             .Should().ThrowAsync<ArgumentException>();
 
-        refused.Which.Message.Should().Be($"{writeVersionReason} (Parameter 'request')");
+        refused.Which.Message.Should().Contain("exerciseStyle must be explicitly stated");
         await AssertNothingStagedAsync(harness);
     }
 
     [Theory]
     [InlineData(1)]
     [InlineData(null)]
-    public async Task UpdateSecurityField_OnABondCarryingAStrayCallScheduleBelowItsVersion_IsRefusedAsNotYetWritable(int? stamp)
+    public async Task UpdateSecurityField_OnABondCarryingAStrayCallScheduleBelowItsVersion_IsRefusedAsUnrelatedStrayActivation(int? stamp)
     {
         // A row stamped 1 (or unstamped) carrying a populated callSchedule, which no writer emits.
         // Before 4b the key was undeclared, so the edit staged and the merge dropped it; now it is a
@@ -128,14 +130,14 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             .Should().ThrowAsync<ArgumentException>();
 
         refused.Which.Message.Should().Be(
-            $"{AheadOfWriteFixtures.NotYetWritableReason("Bond", "callSchedule", sinceVersion: 3, writes: 1)} (Parameter 'request')");
+            $"{AheadOfWriteFixtures.StrayContainerReason("callSchedule", 3)} (Parameter 'request')");
         await AssertNothingStagedAsync(harness);
     }
 
     [Theory]
     [InlineData(1)]
     [InlineData(null)]
-    public async Task UpdateSecurityField_OnABondPopulatingABlockAboveItsStamp_IsRefusedAsNotYetWritable(int? stamp)
+    public async Task UpdateSecurityField_OnABondPopulatingABlockAboveItsStamp_IsRefusedAsUnrelatedStrayActivation(int? stamp)
     {
         // A row stamped 1 (or unstamped) that carries a populated block: the write version cannot
         // persist the block, so the edit names it instead of staging a revision the merge refuses.
@@ -147,7 +149,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             .Should().ThrowAsync<ArgumentException>();
 
         refused.Which.Message.Should().Be(
-            $"{AheadOfWriteFixtures.NotYetWritableReason("Bond", "scheduleConventions", sinceVersion: 2, writes: 1)} (Parameter 'request')");
+            $"{AheadOfWriteFixtures.StrayContainerReason("scheduleConventions", 2)} (Parameter 'request')");
         await AssertNothingStagedAsync(harness);
     }
 
@@ -392,63 +394,41 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
     [InlineData("assetSpecificTerms.profileFields.tranche", "A-2")]
     [InlineData("assetSpecificTerms.profileFields.scheduleConventions", EditedProfileConventions)]
     [InlineData("assetSpecificTerms.profileFields", ReplacedProfileFields)]
-    public async Task UpdateSecurityField_ProfileEnvelopeStampedAboveTheWriteVersion_IsRefusedWithTheWriteVersionReason(
+    public async Task UpdateSecurityField_ProfileEnvelopeAtVersionThree_IsWritableAfterTheRaise(
         string fieldPath, string newValue)
     {
-        // A profile envelope keeps its stamp check: stamped 3, it is readable here, but the
-        // Write-mode merge would refuse it, so the edit is refused at submission. The rows mirror the
-        // staging theory above, one per validation branch (a declared scalar, an undeclared key, the
-        // whole-object replacement), so each staging row is shown to run through the write gate.
         var harness = new Harness(currentVersion: 3);
         harness.SetPassportAssetClass("StructuredCredit");
         var stamped = JsonNode.Parse(ProfileBackedStructuredCreditEnvelope)!.AsObject();
         stamped[SecurityTermsEnvelope.AssetClassTermsVersionKey] = 3;
         harness.SetProjectionAssetTerms("StructuredCredit", AheadOfWriteFixtures.Parse(stamped.ToJsonString()));
-
-        var refused = await harness.Service
-            .Invoking(s => s.UpdateSecurityFieldAsync(ProfileFieldEdit(fieldPath, newValue)))
-            .Should().ThrowAsync<ArgumentException>();
-
-        refused.Which.Message.Should().Be(AheadOfWriteFixtures.StructuredCreditWriteVersionReason);
-        await AssertNothingStagedAsync(harness);
+        var staged = await harness.Service.UpdateSecurityFieldAsync(ProfileFieldEdit(fieldPath, newValue));
+        staged.State.Should().Be(SecurityMasterRevisionStateDto.Draft);
+        (await harness.Revisions.GetAsync(staged.RevisionId))!.FieldPath.Should().Be(fieldPath);
     }
 
     [Fact]
-    public async Task UpdateSecurityField_RootTermOfAProfileEnvelopeStampedAboveTheWriteVersion_IsRefusedAtSubmission()
+    public async Task UpdateSecurityField_RootTermOfAProfileEnvelopeAtVersionThree_StagesAfterTheRaise()
     {
-        // A declared term at the envelope root goes through the first-class gate, which has no kind to
-        // rebuild for a profile envelope, but the merge applies the term in Write mode all the same.
         var harness = new Harness(currentVersion: 3);
         harness.SetPassportAssetClass("StructuredCredit");
         var stamped = JsonNode.Parse(ProfileBackedStructuredCreditEnvelope)!.AsObject();
         stamped[SecurityTermsEnvelope.AssetClassTermsVersionKey] = 3;
         harness.SetProjectionAssetTerms("StructuredCredit", AheadOfWriteFixtures.Parse(stamped.ToJsonString()));
-
-        var refused = await harness.Service
-            .Invoking(s => s.UpdateSecurityFieldAsync(ProfileFieldEdit("assetSpecificTerms.tranche", "B")))
-            .Should().ThrowAsync<ArgumentException>();
-
-        refused.Which.Message.Should().Be(AheadOfWriteFixtures.StructuredCreditWriteVersionReason + " (Parameter 'request')");
-        await AssertNothingStagedAsync(harness);
+        var staged = await harness.Service.UpdateSecurityFieldAsync(ProfileFieldEdit("assetSpecificTerms.tranche", "B"));
+        staged.State.Should().Be(SecurityMasterRevisionStateDto.Draft);
     }
 
     [Fact]
-    public async Task UpdateSecurityField_ProfileEnvelopeStampedAtTheNewReadableVersion_IsRefusedWithTheWriteVersionReason()
+    public async Task UpdateSecurityField_ProfileEnvelopeAtVersionFour_StagesAfterTheRaise()
     {
-        // Stamped 4, the envelope became readable in 4b (it got the read refusal before), but it is
-        // still above the write version, so the edit is refused with the write-version reason.
         var harness = new Harness(currentVersion: 3);
         harness.SetPassportAssetClass("StructuredCredit");
         var stamped = JsonNode.Parse(ProfileBackedStructuredCreditEnvelope)!.AsObject();
         stamped[SecurityTermsEnvelope.AssetClassTermsVersionKey] = 4;
         harness.SetProjectionAssetTerms("StructuredCredit", AheadOfWriteFixtures.Parse(stamped.ToJsonString()));
-
-        var refused = await harness.Service
-            .Invoking(s => s.UpdateSecurityFieldAsync(ProfileFieldEdit("assetSpecificTerms.profileFields.tranche", "A-2")))
-            .Should().ThrowAsync<ArgumentException>();
-
-        refused.Which.Message.Should().Be(AheadOfWriteFixtures.StructuredCreditStampFourWriteVersionReason);
-        await AssertNothingStagedAsync(harness);
+        var staged = await harness.Service.UpdateSecurityFieldAsync(ProfileFieldEdit("assetSpecificTerms.profileFields.tranche", "A-2"));
+        staged.State.Should().Be(SecurityMasterRevisionStateDto.Draft);
     }
 
     [Fact]

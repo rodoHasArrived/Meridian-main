@@ -259,6 +259,8 @@ internal static class SecurityMasterMapping
     private static SecurityKind ToSecurityKind(string assetClass, JsonElement json, SecurityKindMappingMode mode = SecurityKindMappingMode.Read)
     {
         EnsureSupportedAssetSchemaVersion(assetClass, json, mode);
+        if (mode == SecurityKindMappingMode.Write)
+            SecurityAssetPackAdmission.EnsureSubmittedFields(assetClass, json);
         // Which versioned containers (the scheduleConventions block, the call and put schedules) this
         // payload decodes, through the one predicate the validator and the cash-flow engine share: a
         // read decodes those at or below the row's own stamp, a write those at or below the class's

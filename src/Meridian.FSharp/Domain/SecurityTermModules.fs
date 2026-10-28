@@ -334,6 +334,12 @@ type PrepaymentModel =
     /// Single Monthly Mortality — monthly equivalent of CPR.
     | Smm of monthlyRate: decimal
 
+/// One dated factor retained by the typed economic module, independent of the legacy flat payload.
+type EconomicFactorScheduleEntry = {
+    AsOfDate: DateOnly
+    Factor: decimal
+}
+
 /// Analytics and pool-level data for factorable structured-credit instruments
 /// (MBS, CMO, CLO, ABS, PO strips, IO strips, CMO residuals, etc.).
 type StructuredProductTerms = {
@@ -373,6 +379,8 @@ type StructuredProductTerms = {
     /// free-text <c>factorSchedule</c> term). Evidence lineage, not an economic input: no cash-flow,
     /// accrual or accounting math reads it.
     FactorScheduleReference: string option
+    /// Typed dated factor history; accounting never reads a second copy from legacy passthrough JSON.
+    FactorScheduleEntries: EconomicFactorScheduleEntry list
 }
 
 /// Calendar reference for instruments subject to multiple holiday calendars.

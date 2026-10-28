@@ -8,7 +8,7 @@ namespace Meridian.Reporting;
 
 internal static class CertifiedReportingSnapshotBuilder
 {
-    private const string SchemaVersion = "meridian.reporting.snapshot.v1";
+    private const string SchemaVersion = "meridian.reporting.snapshot.v2";
     private const string HashAlgorithm = "SHA-256";
     private const string LegacySourceKind = "legacy-in-memory-ledger";
 
@@ -342,11 +342,6 @@ internal static class CertifiedReportingSnapshotBuilder
         writer.WriteString("commonTerms", definition.CommonTerms.GetRawText());
         writer.WriteString("economicTerms", definition.EconomicTerms.GetRawText());
         writer.WriteString("provenance", definition.Provenance.GetRawText());
-        WriteNullableString(writer, "legacyAssetClass", definition.LegacyAssetClass);
-        WriteNullableString(
-            writer,
-            "legacyAssetSpecificTerms",
-            definition.LegacyAssetSpecificTerms?.GetRawText());
         WriteIdentifiers(writer, definition.Identifiers);
         writer.WriteEndObject();
     }

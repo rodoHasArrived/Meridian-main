@@ -7695,3 +7695,59 @@ or posts a cash-flow projection, that the cash-flow service is still registered 
 calendar source reaches its constructor on every host, and that `UiServer`'s log routing is
 unchanged. Its one finding, that this record still gave the counts from before that merge as the
 final ones, is fixed here.
+
+
+## Implementation continuation — 2026-10-28 source disposition
+
+This section describes the reviewable source in draft [#3319](https://github.com/rodoHasArrived/Meridian-main/pull/3319),
+following the authoritative increment-5a implementation merged in #3315. It updates the current
+boundaries below without changing the dated observations above. The pull request owns actual
+validation results. No fleet deployment, calendar installation or production capability-floor
+activation is established by this source disposition.
+
+- **Schedule engine and writes.** The declared Security Master projection now integrates dated
+  principal with retained face, including mid-period reconstruction, same-day interest before
+  reduction and exact principal cash dates. It retains the upstream Level/stub rules and calendar
+  evidence. Shared 5b write rules cover frozen conventions and call/put shapes, required exercise
+  style, coherent windows/prices and calendar-dependent notice/exercise declarations. Bond and CD
+  write through 3 and StructuredCredit through 4; S2 document floors 1/1/2 preserve undeclared
+  stamps and bytes. Populated CD/StructuredCredit conventions still refuse because their schemas
+  lack the frozen mapping's root anchors. Swap remains r2/w1. A retained stray container above its
+  own document stamp cannot activate through an unrelated amendment. Startup and each canonical
+  write freshly verify the persisted mapping/kernel capability floor. Migration 057 creates an
+  empty table; the [rollout runbook](../operators/security-master-terms-contract-rollout.md) retains
+  the explicit fleet, data, calendar and reviewed activation gates. Declared calculated flows
+  remain nonpostable, and call/put scenario and notice-date consumers remain increment-8 work.
+- **Direct lending.** Both projection loops use the shared compounded grid. Daily PIK, cash-interest
+  and commitment-fee accrual use one-day kernel periods with formula-version-one parity, including
+  retained Thirty360 behavior. Contract activation/amendment preserve collateral, discount/premium
+  and the PIK toggle. Manual reset dates remain explicit servicing inputs. Automatic capitalization
+  and reset scheduling still need persisted cadence, fixing, formula and residual policies; payment
+  frequency alone supplies none of them.
+- **OTC servicing.** Typed reset, compression, novation, credit-determination and auction-settlement
+  events retain actor/source evidence, instrument targets, exact predecessor/successor snapshots,
+  idempotency and strict replay. PostgreSQL updates the contract and appends history atomically;
+  append-only history and a deferred version guard also fence legacy CRUD amendments after history
+  starts. The [lifecycle contract](../domain/otc-contract-lifecycle.md) does not add derivatives,
+  create payments or authorize journal posting. Consumption of reset and credit evidence in later
+  financial outputs remains a separate gate.
+- **Typed authority and replay.** Accounting classification/factors and reporting digests use typed
+  economic authority; structured-product economics retain dated factor history. Full legacy mirrors
+  remain for compatibility and replay where the economic model cannot reproduce all flat terms.
+  Economic-only replay refuses declared schedule/call-put evidence it cannot reconstruct. Deleting
+  those mirrors now would discard retained strikes, legs or profile detail. The free-text
+  `factorSchedule` key remains an operational trustee-report evidence pointer, represented as
+  `FactorScheduleReference`; dated `factorScheduleEntries` supplies the numerical schedule. Retiring
+  that frozen key requires a new readable schema version and an explicit evidence-reference
+  migration, not deleting the pointer or treating it as a payment cadence.
+- **Admission and cleanup.** Asset-pack admission now checks per-class writable schema metadata on
+  canonical create/amend; prose pack policies remain descriptive. Recursive metadata validates
+  registered array/object shapes while shared convention rules retain cross-field checks.
+  Term-block, field-edit and governed submission/merge paths use the same schedule semantics and
+  effective-state checks. Broker option values resolve positive multipliers from the retained
+  Security Master identifier snapshot at the broker observation time, retaining identity/version
+  evidence and refusing missing or ambiguous identity instead of assuming 100.
+
+These changes narrow D1/D3/D4/D9/D10 and the schedule priorities to the consumer, replay and rollout
+boundaries stated here. They do not dispose of unrelated governed-write, classification-label,
+identifier, audit-history or custom-profile findings in the consolidated queue.

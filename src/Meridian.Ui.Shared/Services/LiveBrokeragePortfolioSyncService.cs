@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
@@ -22,6 +23,9 @@ public sealed record LiveBrokeragePortfolioStatus(
     BrokerageExecutionReconciliationReport? Reconciliation,
     IReadOnlyList<string> BlockingReasons)
 {
+    internal IReadOnlyDictionary<string, decimal> OptionContractMultipliers { get; init; }
+        = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+
     public bool IsReady => IsConnected && IsFresh && IsComplete && IsConsistent && IsReconciled
         && BlockingReasons.Count == 0;
 }
@@ -31,13 +35,14 @@ public sealed record LiveBrokeragePortfolioStatus(
 /// Restart, disconnect, stale evidence, and subsequent order/fill changes require a fresh sync.
 /// No cached snapshot is restored as trading authority after a restart.
 /// </summary>
-public sealed class LiveBrokeragePortfolioSyncService
+public sealed partial class LiveBrokeragePortfolioSyncService
 {
     private readonly Func<IBrokerageGateway?> _gatewayAccessor;
     private readonly Func<IOrderManager?> _orderManagerAccessor;
     private readonly BrokerageExecutionReconciliationService _reconciliation;
     private readonly TimeProvider _timeProvider;
     private readonly TimeSpan _maxAge;
+    private readonly ISecurityMasterQueryService? _securityMaster;
     private readonly ConcurrentDictionary<Guid, Entry> _entries = new();
     private readonly ConcurrentDictionary<Guid, AccountBinding> _bindings = new();
     private readonly SemaphoreSlim _syncGate = new(1, 1);
@@ -47,12 +52,14 @@ public sealed class LiveBrokeragePortfolioSyncService
         Func<IOrderManager?> orderManagerAccessor,
         BrokerageExecutionReconciliationService reconciliation,
         TimeProvider? timeProvider = null,
-        TimeSpan? maxAge = null)
+        TimeSpan? maxAge = null,
+        ISecurityMasterQueryService? securityMaster = null)
     {
         _gatewayAccessor = gatewayAccessor;
         _orderManagerAccessor = orderManagerAccessor;
         _reconciliation = reconciliation;
         _timeProvider = timeProvider ?? TimeProvider.System;
+        _securityMaster = securityMaster;
         _maxAge = maxAge ?? TimeSpan.FromSeconds(30);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(_maxAge, TimeSpan.Zero);
     }
@@ -238,11 +245,15 @@ public sealed class LiveBrokeragePortfolioSyncService
                 var report = await _reconciliation.ReconcileOpenOrdersAsync(gateway, oms, fundAccountId, ct).ConfigureAwait(false);
                 var brokerOrdersUnchanged = initialReport.BrokerOrderSnapshotFingerprint is { } initialBrokerOrders
                     && string.Equals(initialBrokerOrders, report.BrokerOrderSnapshotFingerprint, StringComparison.Ordinal);
+                var observedContracts = await ResolveContractMultipliersAsync(snapshot, ct).ConfigureAwait(false);
+                var initialContracts = await ResolveContractMultipliersAsync(before, ct).ConfigureAwait(false);
                 var capturedOrders = ReadOrders(oms).Where(o => o.FundAccountId == fundAccountId).ToArray();
                 var capturedExposure = oms.GetExposureReservingOrders().Where(o => o.FundAccountId == fundAccountId).ToArray();
                 var afterOrders = Fingerprint(oms, fundAccountId);
-                var issues = Validate(snapshot, externalAccountId);
-                var beforeIssues = Validate(before, externalAccountId);
+                var issues = Validate(snapshot, externalAccountId, observedContracts);
+                var beforeIssues = Validate(before, externalAccountId, initialContracts);
+                if (!ContractMultipliersMatch(initialContracts, observedContracts))
+                    issues.Add("Security Master option contracts changed during synchronization; reconcile again.");
                 if (beforeIssues.Count > 0)
                     issues.Add("The initial portfolio observation was incomplete or inconsistent.");
                 if (!string.Equals(EconomicFingerprint(before), EconomicFingerprint(snapshot), StringComparison.Ordinal))
@@ -267,11 +278,15 @@ public sealed class LiveBrokeragePortfolioSyncService
                     fundAccountId, gateway.GatewayId, externalAccountId, gateway.IsConnected,
                     IsFresh(snapshot), snapshot.IsComplete, consistent, initialReport.IsClean && report.IsClean && brokerOrdersUnchanged,
                     pending.LastAttemptAt, consistent ? _timeProvider.GetUtcNow() : previous.LastSuccessfulSyncAt,
-                    snapshot, report, issues.ToArray());
+                    snapshot, report, issues.ToArray())
+                {
+                    OptionContractMultipliers = observedContracts.ToDictionary(pair => pair.Key, pair => pair.Value.Multiplier,
+                        StringComparer.OrdinalIgnoreCase)
+                };
                 _entries[fundAccountId] = consistent
                     ? new(status, gateway, afterOrders, generation,
-                        capturedOrders, capturedExposure, snapshot, bindingGeneration)
-                    : pendingEntry with { Status = status };
+                        capturedOrders, capturedExposure, snapshot, bindingGeneration, observedContracts)
+                    : pendingEntry with { Status = status, ObservedContracts = observedContracts };
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -299,7 +314,8 @@ public sealed class LiveBrokeragePortfolioSyncService
         }
     }
 
-    private List<string> Validate(BrokeragePortfolioSnapshotDto snapshot, string externalAccountId)
+    private List<string> Validate(BrokeragePortfolioSnapshotDto snapshot, string externalAccountId,
+        IReadOnlyDictionary<string, ObservedOptionContract> contracts)
     {
         var issues = new List<string>();
         if (!snapshot.IsComplete)
@@ -326,10 +342,15 @@ public sealed class LiveBrokeragePortfolioSyncService
             issues.Add("Broker positions contain duplicate symbols.");
         foreach (var position in snapshot.Positions)
         {
-            var multiplier = position.AssetClass == "us_option" ? 100m : 1m;
+            var multiplier = position.AssetClass == "us_option"
+                ? string.IsNullOrWhiteSpace(position.Symbol) ? null : contracts.GetValueOrDefault(position.Symbol)?.Multiplier
+                : 1m;
+            if (position.AssetClass == "us_option" && multiplier is null)
+                issues.Add($"The Security Master contract multiplier is unresolved for broker option '{position.Symbol}'.");
             if (string.IsNullOrWhiteSpace(position.Symbol) || position.Quantity == 0m || position.MarketPrice <= 0m
                 || position.AssetClass is not ("us_equity" or "us_option")
-                || Math.Abs(position.MarketValue - position.Quantity * position.MarketPrice * multiplier) > 0.01m)
+                || multiplier is not { } knownMultiplier
+                || Math.Abs(position.MarketValue - position.Quantity * position.MarketPrice * knownMultiplier) > 0.01m)
                 issues.Add("A broker holding has unsupported or inconsistent quantity, valuation, or asset evidence.");
         }
         if (Math.Abs(snapshot.Balance.Cash + snapshot.Positions.Sum(p => p.MarketValue) - snapshot.Balance.Equity) > 0.01m)
@@ -374,7 +395,8 @@ public sealed class LiveBrokeragePortfolioSyncService
     private sealed record Entry(LiveBrokeragePortfolioStatus Status, IBrokerageGateway? Gateway, string OrderFingerprint,
         long ConnectionGeneration = 0L, IReadOnlyList<OrderState>? CapturedOrders = null,
         IReadOnlyList<OrderState>? CapturedExposureOrders = null, BrokeragePortfolioSnapshotDto? RiskSnapshot = null,
-        long BindingGeneration = 0L);
+        long BindingGeneration = 0L,
+        IReadOnlyDictionary<string, ObservedOptionContract>? ObservedContracts = null);
 
     private sealed record AccountBinding(string ProviderId, string ExternalAccountId, long Generation);
 }

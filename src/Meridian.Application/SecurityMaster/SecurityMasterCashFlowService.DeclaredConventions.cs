@@ -1,3 +1,4 @@
+using SecurityPrincipalBalance = Meridian.Application.SecurityMaster.CashFlow.SecurityPrincipalBalance;
 using Meridian.Contracts.Calendars;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.SecurityMaster.Schedules;
@@ -10,8 +11,8 @@ namespace Meridian.Application.SecurityMaster;
 /// periods <see cref="ScheduleGenerator"/> generates, accrues each through
 /// <see cref="ScheduleDayCount"/> with its period context, and carries
 /// <see cref="StructuredCashFlowScheduleEvidence"/>. Coupon, face, factor and day count still come
-/// from <see cref="StructuredCashFlowTermsResolver"/>, and principal follows the bullet, sinker and
-/// asserted-bullet rules of the legacy walk.
+/// from <see cref="StructuredCashFlowTermsResolver"/>. Explicit principal rows retain their cash
+/// dates; otherwise principal follows the bullet, sinker and asserted-bullet rules of the legacy walk.
 /// </summary>
 /// <remarks>
 /// Nothing here throws for a declared spec, and nothing re-evaluates the grid date that would close a
@@ -20,7 +21,7 @@ namespace Meridian.Application.SecurityMaster;
 public sealed partial class SecurityMasterCashFlowService
 {
     private const string DeclaredContractualPrincipalReason =
-        "Declared schedule conventions are not yet followed for a contractual principal schedule; the projection is blocked.";
+        "Declared contractual principal could not be projected: ";
 
     private const string DeclaredDayCountReason =
         "Declared schedule conventions need a recognized dayCount to compute interest";
@@ -60,15 +61,13 @@ public sealed partial class SecurityMasterCashFlowService
         StructuredCashFlowProjectionDto Empty(string? reason = null) => new(
             security.SecurityId, sourceKind, scenario, asOf, [], staleness, sourceLastUpdatedUtc, terms.FactorSchedule, terms, BlockedReason: reason);
 
-        // 1. Contractual principal instalments are not merged into a declared schedule yet. An asserted
-        // bullet (principalSchedule: []) and the calculated bullet and sinker walks are followed.
-        if (hasContractualPrincipal)
-        {
-            return Empty(DeclaredContractualPrincipalReason);
-        }
-
         var block = declared.Conventions;
         var spec = declared.Spec!;
+        if (terms.PrincipalFace is not > 0m && terms.PrincipalSchedule is { Count: > 0 } principalRows
+            && principalRows.Any(row => row.PaymentDate >= spec.EffectiveDate && row.PaymentDate <= spec.TerminationDate))
+        {
+            return Empty(DeclaredContractualPrincipalReason + "dated amounts require a retained principal basis; normalized 100 is not contractual face.");
+        }
 
         // 2. A declared coupon unit replaces the legacy heuristic that reads a coupon at or below 1 as a
         // fraction (SCH-DEF-003); without one the heuristic stays.
@@ -111,7 +110,7 @@ public sealed partial class SecurityMasterCashFlowService
         var periods = schedule.Periods
             .Where(period => period.PaymentDate >= asOfDate)
             .ToArray();
-        if (periods.Length == 0)
+        if (periods.Length == 0 && !hasContractualPrincipal)
         {
             return Empty();
         }
@@ -120,6 +119,27 @@ public sealed partial class SecurityMasterCashFlowService
         if (levelBasis && annualRate > 0m && spec.Tenor.Unit == ScheduleTenorUnit.Term)
         {
             return Empty(DeclaredLevelReason);
+        }
+
+        if (hasContractualPrincipal)
+        {
+            if (!TryBuildDeclaredPrincipalEntries(security, terms, schedule, periods, asOfDate,
+                principalBasis, openingOutstanding, annualRate, dayCount, levelBasis,
+                out var principalEntries, out var principalBusiness252Windows, out var principalRefusal))
+            {
+                return Empty(DeclaredContractualPrincipalReason + principalRefusal);
+            }
+            if (principalEntries.Count == 0)
+            {
+                return Empty();
+            }
+            var principalCalendar = spec.AccrualAdjustment?.Calendar ?? spec.PaymentAdjustment?.Calendar;
+            return new StructuredCashFlowProjectionDto(security.SecurityId, sourceKind, scenario, asOf,
+                principalEntries, staleness, sourceLastUpdatedUtc, terms.FactorSchedule, terms)
+            {
+                ScheduleEvidence = BuildScheduleEvidence(schedule,
+                    principalBusiness252Windows.Count > 0 ? principalCalendar : null, principalBusiness252Windows)
+            };
         }
 
         // 8. The walk: interest over each period's [AccrualStart, AccrualEnd) on the balance outstanding
@@ -187,6 +207,167 @@ public sealed partial class SecurityMasterCashFlowService
         {
             ScheduleEvidence = evidence
         };
+    }
+
+    private static bool TryBuildDeclaredPrincipalEntries(
+        SecurityDetailDto security, StructuredCashFlowTerms terms, ScheduleGenerationResult schedule,
+        IReadOnlyList<SchedulePeriod> periods, DateOnly asOf, decimal basis, decimal opening,
+        decimal annualRate, DayCountConvention dayCount, bool levelBasis,
+        out IReadOnlyList<StructuredCashFlowScheduleEntry> entries,
+        out IReadOnlyList<(DateOnly Start, DateOnly End)> business252Windows,
+        out string? refusal)
+    {
+        entries = [];
+        refusal = null;
+        var windows = new List<(DateOnly Start, DateOnly End)>();
+        business252Windows = windows;
+        var firstStart = periods.Count == 0 ? asOf : periods[0].AccrualStart;
+        var balanceStart = firstStart < asOf ? firstStart : asOf;
+        var principal = terms.PrincipalSchedule!
+            .Where(entry => entry.PaymentDate >= schedule.Spec.EffectiveDate
+                && entry.PaymentDate <= schedule.Spec.TerminationDate && entry.PaymentDate >= balanceStart)
+            .GroupBy(entry => entry.PaymentDate)
+            .Select(group => new StructuredPrincipalScheduleEntry(group.Key, RoundCash(group.Sum(entry => entry.Amount))))
+            .OrderBy(entry => entry.PaymentDate)
+            .ToArray();
+        var completed = principal.Where(entry => entry.PaymentDate < asOf).Sum(entry => entry.Amount);
+        var accrualOpening = Math.Min(Math.Max(basis, opening), opening + completed);
+        var applied = new List<StructuredPrincipalScheduleEntry>(principal.Length);
+        var balance = accrualOpening;
+        foreach (var payment in principal)
+        {
+            var amount = Math.Min(balance, payment.Amount);
+            applied.Add(new(payment.PaymentDate, amount));
+            balance = RoundCash(balance - amount);
+        }
+        if (RoundCash(accrualOpening - applied.Where(payment => payment.PaymentDate < asOf).Sum(payment => payment.Amount)) != opening)
+        {
+            refusal = "Current factor and completed principal payments do not establish a consistent accrual balance.";
+            return false;
+        }
+
+        // Match the shared opening-balance reader's asset-only scalar-date precedence. A retained
+        // factor is evidence of a balance, not an invented principal payment: every change within
+        // this cash contract's span must be explained by its dated principal amounts.
+        var factorDate = SecurityTermReader.ReadDate(
+            StructuredCashFlowTermsResolver.EnumerateTermSources(security).SkipLast(1).ToArray(), ["factorDate", "currentFactorDate"]);
+        var datedFactors = terms.FactorSchedule.Select(factor => (Date: factor.AsOfDate, factor.Factor)).ToList();
+        if (terms.CurrentFactor is >= 0m && factorDate is { } scalarDate
+            && !datedFactors.Any(factor => factor.Date <= scalarDate))
+        {
+            datedFactors.Add((scalarDate, terms.CurrentFactor.Value));
+        }
+        if (datedFactors.Any(factor => factor.Date <= balanceStart)
+            && SecurityPrincipalBalance.OpeningOutstanding(security, terms, balanceStart) != accrualOpening)
+        {
+            refusal = "Retained factor history contradicts the reconstructed opening accrual balance.";
+            return false;
+        }
+        foreach (var factor in datedFactors.Where(factor => factor.Date >= balanceStart && factor.Date <= schedule.Spec.TerminationDate))
+        {
+            var expected = RoundCash(accrualOpening - applied.Where(payment => payment.PaymentDate <= factor.Date).Sum(payment => payment.Amount));
+            if (expected != RoundCash(basis * factor.Factor))
+            {
+                refusal = "Retained factor changes require matching dated principal movements.";
+                return false;
+            }
+        }
+
+        var byDate = new SortedDictionary<DateOnly, (decimal Principal, decimal Interest)>();
+        foreach (var payment in applied.Where(payment => payment.PaymentDate >= asOf && payment.Amount > 0m))
+        {
+            Add(payment.PaymentDate, payment.Amount, 0m);
+        }
+        foreach (var period in periods)
+        {
+            var cursor = period.AccrualStart;
+            var accrualBalance = RoundCash(accrualOpening - applied.Where(payment => payment.PaymentDate <= cursor).Sum(payment => payment.Amount));
+            var interest = 0m;
+            foreach (var payment in applied.Where(payment => payment.PaymentDate > period.AccrualStart && payment.PaymentDate < period.AccrualEnd))
+            {
+                if (!Accrue(period, cursor, payment.PaymentDate, accrualBalance, out var part, out refusal))
+                {
+                    return false;
+                }
+                interest += part;
+                accrualBalance = RoundCash(accrualBalance - payment.Amount);
+                cursor = payment.PaymentDate;
+            }
+            if (!Accrue(period, cursor, period.AccrualEnd, accrualBalance, out var remainder, out refusal))
+            {
+                return false;
+            }
+            interest += remainder;
+            Add(period.PaymentDate, 0m, RoundCash(interest));
+        }
+
+        // Principal rows already declare actual cash dates; coupon adjustments never move them.
+        // The remaining unscheduled redemption alone takes the final coupon's payment date.
+        var finalPayment = schedule.Periods[^1].PaymentDate;
+        if (finalPayment >= asOf)
+        {
+            Add(finalPayment, RoundCash(opening - applied.Where(payment => payment.PaymentDate >= asOf).Sum(payment => payment.Amount)), 0m);
+        }
+        balance = opening;
+        var output = new List<StructuredCashFlowScheduleEntry>(byDate.Count);
+        foreach (var (date, cash) in byDate)
+        {
+            balance = RoundCash(balance - cash.Principal);
+            output.Add(new(ToUtcDateTimeOffset(date), cash.Principal, cash.Interest, RoundCash(balance / basis)));
+        }
+        entries = output;
+        return true;
+
+        bool Accrue(SchedulePeriod period, DateOnly start, DateOnly end, decimal outstanding,
+            out decimal interest, out string? reason)
+        {
+            interest = 0m;
+            reason = null;
+            if (annualRate <= 0m || outstanding <= 0m || end <= start)
+            {
+                return true;
+            }
+            if (levelBasis && period.Kind == SchedulePeriodKind.Regular
+                && start == period.AccrualStart && end == period.AccrualEnd
+                && schedule.Spec.Tenor.PeriodsPerYear is { } frequency)
+            {
+                interest = outstanding * annualRate / frequency;
+                return true;
+            }
+            if (!ScheduleDayCount.TryFraction(dayCount, period, schedule, start, end, out var fraction, out reason))
+            {
+                return false;
+            }
+            if (dayCount == DayCountConvention.Business252)
+            {
+                windows.Add((start, end));
+            }
+            if (levelBasis && period.Kind == SchedulePeriodKind.Regular)
+            {
+                if (!ScheduleDayCount.TryPeriodFraction(dayCount, period, schedule, out var fullFraction, out reason))
+                {
+                    return false;
+                }
+                if (dayCount == DayCountConvention.Business252)
+                {
+                    windows.Add((period.AccrualStart, period.AccrualEnd));
+                }
+                if (fullFraction <= 0m || schedule.Spec.Tenor.PeriodsPerYear is not { } periodsPerYear)
+                {
+                    reason = "Level coupon principal weighting needs a positive full-period day-count fraction and a periodic frequency.";
+                    return false;
+                }
+                fraction = fraction / fullFraction / periodsPerYear;
+            }
+            interest = outstanding * annualRate * fraction;
+            return true;
+        }
+
+        void Add(DateOnly date, decimal principalAmount, decimal interest)
+        {
+            byDate.TryGetValue(date, out var existing);
+            byDate[date] = (existing.Principal + principalAmount, existing.Interest + interest);
+        }
     }
 
     /// <summary>

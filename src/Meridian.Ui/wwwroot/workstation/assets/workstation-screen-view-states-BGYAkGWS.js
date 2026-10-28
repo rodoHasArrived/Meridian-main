@@ -1,1 +1,0 @@
-import"./index-DRr118Bn.js";var e={reportingOperationsRecord:`reporting-operations-record`,tradingBlotter:`trading-blotter`,portfolioWorkstation:`portfolio-workstation`,accountingReconciliation:`accounting-reconciliation`,dataWorkstation:`data-workstation`,settingsWorkstation:`settings-workstation`};function t(e,t){return{v:1,screen:e,state:{...t}}}export{t as n,e as t};

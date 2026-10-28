@@ -117,22 +117,22 @@ public sealed record OtcNettingSetDto(
 /// netting set, and where it is in its life. Many contracts can share one instrument.
 /// </summary>
 public sealed record OtcContractDto(
-    Guid ContractId,
-    Guid SecurityId,
-    Guid NettingSetId,
+    [property: JsonRequired] Guid ContractId,
+    [property: JsonRequired] Guid SecurityId,
+    [property: JsonRequired] Guid NettingSetId,
     string? ExternalTradeId,
-    OtcContractDirection Direction,
-    decimal Notional,
-    string NotionalCurrency,
-    DateOnly TradeDate,
-    DateOnly EffectiveDate,
+    [property: JsonRequired] OtcContractDirection Direction,
+    [property: JsonRequired] decimal Notional,
+    [property: JsonRequired] string NotionalCurrency,
+    [property: JsonRequired] DateOnly TradeDate,
+    [property: JsonRequired] DateOnly EffectiveDate,
     DateOnly? TerminationDate,
-    OtcContractStatus Status,
+    [property: JsonRequired] OtcContractStatus Status,
     string? ConfirmationReference,
     string? Notes,
-    long Version,
-    string UpdatedBy,
-    DateTimeOffset UpdatedAt);
+    [property: JsonRequired] long Version,
+    [property: JsonRequired] string UpdatedBy,
+    [property: JsonRequired] DateTimeOffset UpdatedAt);
 
 /// <summary>A netting set with the agreements it sits under and the contracts it holds.</summary>
 public sealed record OtcNettingSetViewDto(
@@ -213,6 +213,14 @@ public interface IOtcContractStore
     Task<OtcContractDto> UpsertContractAsync(UpsertOtcContractRequest request, CancellationToken ct = default);
     Task<OtcContractDto?> GetContractAsync(Guid contractId, CancellationToken ct = default);
     Task<IReadOnlyList<OtcContractDto>> ListContractsForSecurityAsync(Guid securityId, CancellationToken ct = default);
+
+    /// <summary>Atomically records a typed lifecycle event and its next contract version. Compatibility stores fail closed.</summary>
+    Task<OtcContractLifecycleEventDto> AppendLifecycleEventAsync(AppendOtcContractLifecycleRequest request, CancellationToken ct = default)
+        => throw new NotSupportedException("This OTC store does not support retained lifecycle events.");
+
+    /// <summary>Reads immutable lifecycle history in contract-version order; unsupported stores do not substitute an empty history.</summary>
+    Task<IReadOnlyList<OtcContractLifecycleEventDto>> GetLifecycleEventsAsync(Guid contractId, CancellationToken ct = default)
+        => throw new NotSupportedException("This OTC store does not support retained lifecycle events.");
 }
 
 /// <summary>

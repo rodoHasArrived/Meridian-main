@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.FSharp.Domain;
 
@@ -167,7 +168,8 @@ internal static class SecurityEconomicDefinitionAdapter
         });
 
     private static JsonElement BuildEconomicTermsJson(SecurityEconomicDefinition definition)
-        => JsonSerializer.SerializeToElement(new
+    {
+        var document = JsonSerializer.SerializeToElement(new
         {
             schemaVersion = SecurityMasterSchemaVersions.EconomicTerms,
             termsFormat = SecurityTermsFormats.Economic,
@@ -288,6 +290,21 @@ internal static class SecurityEconomicDefinitionAdapter
                 factorScheduleReference = definition.Terms.StructuredProduct.Value.FactorScheduleReference is null ? null : definition.Terms.StructuredProduct.Value.FactorScheduleReference.Value
             }
         });
+        // Keep byte-identical economics for records without a dated history. The additive field
+        // carries real typed observations; no accounting reader needs the retained flat copy.
+        if (definition.Terms.StructuredProduct is { } structured && !structured.Value.FactorScheduleEntries.IsEmpty)
+        {
+            var expanded = JsonNode.Parse(document.GetRawText())!;
+            expanded["structuredProduct"]!["factorScheduleEntries"] = JsonSerializer.SerializeToNode(
+                structured.Value.FactorScheduleEntries.Select(entry => new
+                {
+                    asOfDate = entry.AsOfDate,
+                    factor = entry.Factor
+                }));
+            return JsonSerializer.SerializeToElement(expanded);
+        }
+        return document;
+    }
 
     /// Maps a <see cref="VotingRightsCat"/> DU to a stable wire token.
     /// For <c>OtherVotingRights</c>, the payload string is used directly as the token.

@@ -348,7 +348,7 @@ public sealed partial class SecurityMasterCashFlowServiceTests
     // ── 10. Principal ───────────────────────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task DeclaredConventions_AContractualPrincipalSchedule_IsBlocked()
+    public async Task DeclaredConventions_AContractualPrincipalSchedule_FollowsItsOwnPayments()
     {
         var terms = WithMembers(
             DeclaredBondObject(MinimalBlock, D(2041, 1, 31), D(2042, 1, 31), "Quarterly", par: 1000m),
@@ -356,9 +356,12 @@ public sealed partial class SecurityMasterCashFlowServiceTests
 
         var projection = await ProjectDeclaredAsync(JsonSerializer.SerializeToElement(terms), WeekendsSource, StructuredCashFlowSourceKind.CalculatedSinker);
 
-        ShouldBeBlocked(
-            projection,
-            "Declared schedule conventions are not yet followed for a contractual principal schedule; the projection is blocked.");
+        projection.BlockedReason.Should().BeNull();
+        projection.ScheduleEvidence.Should().NotBeNull();
+        projection.Schedule.Select(row => row.PrincipalAmount).Should().Equal(0m, 400m, 0m, 600m);
+        projection.Schedule.Select(row => row.InterestAmount).Should().Equal(12.5m, 12.5m, 7.5m, 7.5m);
+        projection.Schedule.Sum(row => row.PrincipalAmount).Should().Be(1000m);
+        projection.Schedule.Last().Factor.Should().Be(0m);
     }
 
     [Fact]

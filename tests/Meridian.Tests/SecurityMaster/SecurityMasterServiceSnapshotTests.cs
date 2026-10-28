@@ -2332,7 +2332,10 @@ public sealed partial class SecurityMasterServiceSnapshotTests
                 null,
                 "create")))
             .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
-            .WithMessage("*'principalSchedule' must be a JSON array*");
+            .WithMessage("*SM_TERM_TYPE_INVALID*assetSpecificTerms.principalSchedule*");
+
+        await eventStore.DidNotReceive().AppendAsync(Arg.Any<Guid>(), Arg.Any<long>(), Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(), Arg.Any<CancellationToken>());
+        await store.DidNotReceive().UpsertProjectionAsync(Arg.Any<SecurityProjectionRecord>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

@@ -32,3 +32,6 @@ Start with:
 - [Credit Support](credit-support.md)
 
 When new code introduces a durable business concept, add or update the matching dictionary page before broad code generation.
+
+Security Master extensions: [OTC contract lifecycle](otc-contract-lifecycle.md) and
+[asset-pack admission](security-asset-pack-admission.md).
