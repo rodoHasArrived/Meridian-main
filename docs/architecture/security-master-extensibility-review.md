@@ -7437,3 +7437,37 @@ the date is not counted), and from a replay; a future date refused at computatio
 future-dated snapshot neither blocking the call from the latest real one nor callable; and balance
 and contract writes and an issue waiting for each other's locks) against a disposable PostgreSQL 16, with the existing OTC
 contract, behaviour-facts, ratchet, layer-boundary and workstation collateral suites.
+
+## Working continuation — 2026-10-28 (priority 5, declared-engine foundation)
+
+This continuation is **not completion of increment 5a or the overall priority list**. It adds a
+strict `ScheduleSpecFactory` and a declared path in `SecurityMasterCashFlowService`, while retaining
+the write versions and amortization refusals. Only rows stamped at or above the schema field's
+introduction version select this path; older rows' stray keys keep their legacy behavior.
+
+The preview path supports bullet/synthetic sinker fixed coupons and independently declared swap legs.
+Declared results carry a ledger-blocking reason until calendar and convention evidence is retained
+in projection contracts; calculated dates alone do not authorize posting.
+It separates adjusted accrual boundaries from payment dates, applies payment calendars and business-day
+lag, uses explicit Percent/Fraction coupon units, and routes DayCount cash through the kernel's
+period context. Level cash currently requires a regular fixed cadence with no stubs. Missing or
+unknown units, frequency, convention, calendars or required day-count context block the projection;
+calendar coverage diagnostics also block. There is no security-level calendar fallback. A known
+calendar id is required even for an unadjusted declaration when an id is supplied.
+
+`SecurityMaster:BusinessDayCalendarsFile` optionally names an immutable-on-load JSON array of
+calendar definitions. Each entry requires `calendarId`, positive `version`, `holidays`,
+`coverageFrom` and `coverageTo`; `weekendDays` is an optional array of day names. Unknown members,
+invalid coverage, holidays outside coverage and duplicate ids refuse host startup. Without a file,
+only the explicit `WEEKENDS` calendar resolves. Host-provided `IBusinessDayCalendarSource`
+registrations retain precedence. No real-market holiday data is invented or shipped.
+
+Still required before calling 5a complete: declared dated-principal schedule integration (currently
+blocked explicitly), agreed Level-cash stub proration, calendar evidence on projection DTOs, and
+review of the declared-path defaults against actual contracts. 5b-1/5b-2 write validation,
+flattenings, reclassification mappings and write-version rollout remain pending, including the
+existing all-nodes deployment precondition. Direct-lending kernel adoption, credit/swap lifecycle
+events, legacy passthrough retirement, asset-pack admission and the cleanup batch remain pending.
+
+Focused validation and publication results belong in the change record; this section does not
+claim that full CI, deployment or GitHub checks passed.

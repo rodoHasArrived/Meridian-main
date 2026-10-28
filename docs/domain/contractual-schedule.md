@@ -198,3 +198,9 @@ applies them is decided with the contract step.
 
 These references identify the implementation and its regression scope. The pull request carries
 actual validation results.
+
+The declared-engine foundation now routes schema-versioned blocks through a strict application
+factory for fixed bullet/synthetic sinker coupons and swap legs. It separates accrual and payment
+dates and refuses missing calendars, calendar coverage gaps and unsupported declared combinations.
+Dated principal schedules and Level-cash stubs still require integration before increment 5a is
+complete. Write versions remain unchanged; this does not enable new declarations on write.

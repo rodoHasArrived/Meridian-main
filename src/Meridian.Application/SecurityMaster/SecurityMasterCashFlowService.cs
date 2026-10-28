@@ -1,4 +1,5 @@
 using Meridian.Application.SecurityMaster.CashFlow;
+using Meridian.Contracts.Calendars;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.SecurityMaster.Schedules;
 using Meridian.Storage.SecurityMaster;
@@ -21,7 +22,7 @@ namespace Meridian.Application.SecurityMaster;
 /// base-scenario projection can be routed to the ledger through
 /// <see cref="IStructuredCashFlowLedgerBridge"/> instead of being display-only.
 /// </remarks>
-public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowService
+public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashFlowService
 {
     private readonly ISecurityMasterCashFlowStore _store;
     private readonly IReadOnlyList<IStructuredCashFlowProvider> _providers;
@@ -29,6 +30,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
     private readonly IStructuredCashFlowLedgerBridge _ledgerBridge;
     private readonly ILogger<SecurityMasterCashFlowService> _logger;
     private readonly ISecurityForwardCurveProvider? _forwardCurves;
+    private readonly IBusinessDayCalendarSource _calendars;
 
     private static readonly TimeSpan StalenessThreshold = TimeSpan.FromDays(7);
 
@@ -38,7 +40,8 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         ISecurityMasterQueryService queryService,
         ILogger<SecurityMasterCashFlowService> logger,
         IStructuredCashFlowLedgerBridge? ledgerBridge = null,
-        ISecurityForwardCurveProvider? forwardCurves = null)
+        ISecurityForwardCurveProvider? forwardCurves = null,
+        IBusinessDayCalendarSource? calendars = null)
     {
         _store = store;
         _providers = providers?.ToList() ?? [];
@@ -46,6 +49,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         _logger = logger;
         _ledgerBridge = ledgerBridge ?? new StructuredCashFlowLedgerBridge();
         _forwardCurves = forwardCurves;
+        _calendars = calendars ?? new StaticBusinessDayCalendarSource([BusinessDayCalendars.WeekendsOnly]);
     }
 
     public Task<SecurityCashFlowSourceDto?> GetCashFlowSourceAsync(Guid securityId, CancellationToken ct = default)
@@ -249,7 +253,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         return curves;
     }
 
-    private static StructuredCashFlowProjectionDto BuildCalculatedProjection(
+    private StructuredCashFlowProjectionDto BuildCalculatedProjection(
         SecurityDetailDto security,
         StructuredCashFlowSourceKind sourceKind,
         StructuredCashFlowScenario scenario,
@@ -277,6 +281,18 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         if (issueDate > maturity)
         {
             return Empty();
+        }
+
+        try
+        {
+            var declared = BuildDeclaredProjection(security, terms, sourceKind, scenario, staleness,
+                sourceLastUpdatedUtc, asOf, issueDate, maturity, forwardCurves);
+            if (declared is not null)
+                return declared;
+        }
+        catch (ScheduleSpecFactory.RefusalException exception)
+        {
+            return Empty(exception.Message);
         }
 
         // Leg-based structures (swaps, floating-rate notes) project per leg; the single-stream

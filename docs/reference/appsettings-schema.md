@@ -102,3 +102,27 @@ inventory of every host configuration value. Use the [operator preflight](../ope
 for runtime and persistence checks.
 
 See also: [Environment Variables](environment-variables.md), [Provider Credential Operations](../operators/provider-credentials.md).
+
+### Security Master business-day calendars
+
+`SecurityMaster:BusinessDayCalendarsFile` is an optional local JSON file path, loaded once by the
+configured PostgreSQL Security Master composition unless the host supplies its own
+`IBusinessDayCalendarSource`. The root is an array; an entry has this shape:
+
+```json
+{
+  "calendarId": "EXAMPLE",
+  "version": 1,
+  "holidays": ["2026-05-01"],
+  "coverageFrom": "2026-01-01",
+  "coverageTo": "2026-12-31",
+  "weekendDays": ["Saturday", "Sunday"]
+}
+```
+
+This is illustrative data, not a market holiday calendar. All members except `weekendDays` are
+required. Unknown members, missing files, invalid definitions and duplicate ids refuse startup.
+Omitting `weekendDays` means Saturday/Sunday. Without a file only the explicit `WEEKENDS` id
+resolves; unknown ids never fall back to it. Declared calculated projections block outside the
+loaded coverage. File changes require a host restart; calendar governance and deployment evidence
+remain operator responsibilities.

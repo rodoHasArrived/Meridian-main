@@ -1228,3 +1228,14 @@ Receipt replay returns its exact selected quote, comparisons, hierarchy and cuto
 the original security/account scope, without consulting live prices. Timestamp-only re-evaluation
 can legitimately change after an earlier-started transaction commits; timestamps are eligibility
 filters, while `SelectionReceiptId` is the durable replay identity.
+
+The calculated Security Master cash-flow service has a strict declared-convention path for
+schema-versioned coupon blocks and swap-leg blocks. It separates accrual and payment dates and
+refuses unresolved calendars and unsupported declared combinations instead of using legacy defaults.
+Declared projections remain preview-only and block ledger posting until their convention and calendar
+evidence is retained in projection contracts.
+`SecurityMaster:BusinessDayCalendarsFile` optionally supplies a JSON array with `calendarId`,
+`version`, `holidays`, `coverageFrom`, `coverageTo` and optional `weekendDays` per entry; the file is
+loaded once, and invalid definitions refuse startup. Without a file only `WEEKENDS` resolves.
+A host-supplied `IBusinessDayCalendarSource` takes precedence. Write versions remain unchanged.
+See the [continuation and remaining scope](../../docs/architecture/security-master-extensibility-review.md#working-continuation--2026-10-28-priority-5-declared-engine-foundation).

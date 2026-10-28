@@ -433,6 +433,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             // registers its own IOtcContractValuationSource first keeps it.
             services.TryAddSingleton<IOtcContractValuationSource, Meridian.Application.SecurityMaster.Otc.PricingStoreOtcContractValuationSource>();
             services.AddSingleton<IOtcExposureService, Meridian.Application.SecurityMaster.Otc.OtcExposureService>();
+            services.TryAddSingleton<Meridian.Contracts.Calendars.IBusinessDayCalendarSource>(
+                _ => FileBusinessDayCalendarSource.Load(configuration["SecurityMaster:BusinessDayCalendarsFile"]));
             services.AddSingleton<ISecurityMasterCashFlowService, SecurityMasterCashFlowService>();
             services.AddSingleton<ISecurityValuationModel, QuotedPriceValuationModel>();
             services.AddSingleton<ISecurityValuationModel, DiscountedCashFlowValuationModel>();
