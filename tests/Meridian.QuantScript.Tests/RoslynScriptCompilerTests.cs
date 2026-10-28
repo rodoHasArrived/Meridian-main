@@ -268,6 +268,85 @@ public sealed class RoslynScriptCompilerTests
         result[0].Description.Should().Be("Window length");
     }
 
+    [Theory]
+    [InlineData("var value = Param(\"lookback\", 20);")]
+    [InlineData("var value = Param(defaultValue: 20, name: \"lookback\");")]
+    [InlineData("const int window = 10; var value = Param<int>(\"look\" + \"back\", window * 2);")]
+    public void ExtractParameters_StaticInferredAndNamedCalls_ReturnCompleteDescriptors(string source)
+    {
+        var result = BuildCompiler().ExtractParameters(source);
+
+        result.Should().ContainSingle().Which.Should().Be(
+            new ParameterDescriptor("lookback", "int", "lookback", 20));
+    }
+
+    [Theory]
+    [InlineData("int", 0)]
+    [InlineData("long", 0L)]
+    [InlineData("float", 0f)]
+    [InlineData("double", 0d)]
+    [InlineData("bool", false)]
+    [InlineData("string", null)]
+    public void ExtractParameters_OmittedDefaults_MatchRuntimeDefaults(string typeName, object? expected)
+    {
+        var result = BuildCompiler().ExtractParameters($"var value = Param<{typeName}>(\"value\");");
+
+        result.Should().ContainSingle().Which.DefaultValue.Should().Be(expected);
+    }
+
+    [Fact]
+    public void ExtractParameters_NamedMetadata_UsesBoundArgumentOrder()
+    {
+        var result = BuildCompiler().ExtractParameters(
+            "var value = Param<int>(max: 100, name: \"lookback\", description: \" Window \", min: 5, defaultValue: 20);");
+
+        result.Should().ContainSingle().Which.Should().Be(
+            new ParameterDescriptor("lookback", "int", "lookback", 20, 5, 100, "Window"));
+    }
+
+    [Theory]
+    [InlineData("#load \"parameters.csx\"\nvar value = 20;")]
+    [InlineData("#r \"parameters.dll\"\nvar value = 20;")]
+    [InlineData("var name = \"lookback\"; var value = Param(name, 20);")]
+    [InlineData("var fallback = 20; var value = Param(\"lookback\", fallback);")]
+    [InlineData("var value = Param<int>(\"lookback\", 20, min: Math.Abs(-5));")]
+    [InlineData("var value = Param<int>(\"lookback\", 20, description: DateTime.Now.ToString());")]
+    [InlineData("var value = Param<DateTime>(\"lookback\", default);")]
+    [InlineData("var value = Param<int>(\"lookback\", 20, min: 30, max: 10);")]
+    [InlineData("var value = Param<double>(\"lookback\", double.NaN);")]
+    [InlineData("var value = Param<int>(\"lookback\", 20, max: double.PositiveInfinity);")]
+    [InlineData("var value = Param<int>(\" \", 20);")]
+    [InlineData("var value = Param<int>(\"lookback\", \"invalid\");")]
+    [InlineData("var value = Param<int>(defaultValue: 20);")]
+    [InlineData("var getter = Param<int>; var value = getter(\"lookback\", 20);")]
+    [InlineData("dynamic fallback = 20; var value = Param(\"lookback\", fallback);")]
+    public void ExtractParameters_UnsupportedCallInMixedSource_RejectsEntireExtraction(string unsupported)
+    {
+        var source = "var supported = Param<int>(\"supported\", 10);\n" + unsupported;
+
+        Action act = () => BuildCompiler().ExtractParameters(source);
+
+        act.Should().Throw<ParameterExtractionException>().WithMessage("*extraction is incomplete*");
+    }
+
+    [Fact]
+    public void ExtractParameters_ConflictingRepeatedNames_RejectsEntireExtraction()
+    {
+        const string source = "var first = Param(\"value\", 10); var second = Param(\"value\", 20);";
+
+        Action act = () => BuildCompiler().ExtractParameters(source);
+
+        act.Should().Throw<ParameterExtractionException>().WithMessage("*conflicting declarations*");
+    }
+
+    [Fact]
+    public void ExtractParameters_UnrelatedMethodNamedParam_IsNotAGlobalsParameter()
+    {
+        const string source = "class Other { public static int Param(string name, int value) => value; } var value = Other.Param(\"other\", 20);";
+
+        BuildCompiler().ExtractParameters(source).Should().BeEmpty();
+    }
+
     [Fact]
     public void ExtractParameters_ScriptParamDeclarations_AreDiscovered()
     {

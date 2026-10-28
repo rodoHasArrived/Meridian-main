@@ -1,8 +1,10 @@
 using System.Net.Http.Json;
+using System.Collections.Concurrent;
 using System.Text.Json.Serialization;
 using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
+using Meridian.DataIntegration.AccountingSystem;
 using Meridian.DataIntegration.Monitoring;
 using Meridian.Contracts.Configuration;
 using Meridian.ProviderSdk.AccountingSystem;
@@ -25,6 +27,7 @@ public sealed class ProviderConnectionLifecycleService
     private readonly IProviderSetupRegistry _setupRegistry;
     private readonly ILogger<ProviderConnectionLifecycleService> _logger;
     private readonly ProviderCredentialScope? _ownershipScope;
+    private readonly ConcurrentDictionary<(string ProviderId, ProviderCredentialScope Scope), IAccountingSystemConnectionVerifier> _boundAccountingVerifiers = new();
 
     public ProviderConnectionLifecycleService(
         IProviderCredentialStore credentialStore,
@@ -46,6 +49,15 @@ public sealed class ProviderConnectionLifecycleService
         _setupRegistry = setupRegistry ?? new ProviderSetupRegistry(DefaultProviderSetupHandlers.Create());
     }
 
+    private ProviderConnectionLifecycleService(ProviderConnectionLifecycleService owner, ProviderCredentialScope scope)
+        : this(owner._credentialStore, owner._configStore, owner._logger, owner._httpClientFactory,
+            owner._accountingSystemProviders, owner._setupRegistry, scope)
+    {
+        // ForConnection creates a lifecycle per request. Retain adapter instances across those
+        // requests so each connection's refresh-token gate continues to serialize exchanges.
+        _boundAccountingVerifiers = owner._boundAccountingVerifiers;
+    }
+
     /// <summary>Binds the lifecycle to retained connection ownership after the HTTP boundary resolves its tenant.</summary>
     public ProviderConnectionLifecycleService ForConnection(string connectionId, string tenantId, string providerId)
     {
@@ -60,8 +72,7 @@ public sealed class ProviderConnectionLifecycleService
     private ProviderConnectionLifecycleService BindConnection(ProviderConnectionConfig connection)
     {
         var scope = new ProviderCredentialScope(connection.TenantId!, connection.ConnectionId, connection.ExternalAccountId!, connection.CredentialEnvironment!);
-        return new ProviderConnectionLifecycleService(_credentialStore, _configStore, _logger, _httpClientFactory,
-            _accountingSystemProviders, _setupRegistry, scope);
+        return new ProviderConnectionLifecycleService(this, scope);
     }
 
     /// <summary>Reads one authorized connection without borrowing provider-wide health or credentials.</summary>
@@ -227,21 +238,41 @@ public sealed class ProviderConnectionLifecycleService
             return await VerifyAlpacaAsync(read, ct, actor).ConfigureAwait(false);
         }
 
+        var accountingProvider = _accountingSystemProviders
+            .FirstOrDefault(provider => string.Equals(provider.ProviderId, descriptor.ProviderId, StringComparison.OrdinalIgnoreCase));
+        IAccountingSystemConnectionVerifier? accountingVerification;
         if (_ownershipScope is not null)
         {
-            // A provider-wide verifier cannot prove which connection its credentials belong to.
-            return new ProviderCredentialVerificationResultDto(descriptor.ProviderId, false,
-                ProviderVerificationStateDto.NotVerified, ProviderContinuityHealthDto.Blocked, null,
-                "Connection-scoped live verification is not available for this provider.", null,
-                ["Use a verifier bound to this retained connection before relying on these credentials."]);
+            accountingVerification = accountingProvider is IConnectionBoundAccountingProvider boundProvider
+                ? _boundAccountingVerifiers.GetOrAdd((descriptor.ProviderId, _ownershipScope), _ => boundProvider.BindCredentials(_credentialStore))
+                : null;
+            if (accountingVerification is null)
+                return new ProviderCredentialVerificationResultDto(descriptor.ProviderId, false,
+                    ProviderVerificationStateDto.NotVerified, ProviderContinuityHealthDto.Blocked, null,
+                    "Connection-scoped live verification is not available for this provider.", null,
+                    ["Use a verifier bound to this retained connection before relying on these credentials."]);
         }
-
-        var accountingVerification = _accountingSystemProviders
-            .FirstOrDefault(provider => string.Equals(provider.ProviderId, descriptor.ProviderId, StringComparison.OrdinalIgnoreCase))
-            as IAccountingSystemConnectionVerifier;
+        else
+            accountingVerification = accountingProvider as IAccountingSystemConnectionVerifier;
         if (accountingVerification is not null)
         {
             var result = await accountingVerification.VerifyConnectionAsync(ct).ConfigureAwait(false);
+            // A verifier that rejects a malformed credential before reading its generation reports
+            // none. Record that failure against the credential already read here, so it is not
+            // mistaken for a concurrent replacement and reported as "credentials changed".
+            if (string.IsNullOrEmpty(result.ExpectedCredentialGeneration))
+                result = result with { ExpectedCredentialGeneration = read.CredentialGeneration };
+            if (result.Success && _ownershipScope is not null)
+                result = SameExternalAccount(descriptor.ProviderId, result.ExternalCompanyId, _ownershipScope.ExternalAccountId)
+                    // Preserve the retained identity and vault key after proving provider-specific
+                    // equivalence. The vault's exact ownership guard remains authoritative.
+                    ? result with { ExternalCompanyId = _ownershipScope.ExternalAccountId }
+                    : result with
+                    {
+                        Success = false,
+                        ExternalCompanyId = null,
+                        LastError = "The verified company does not match the selected retained connection."
+                    };
             try
             {
                 await _credentialStore.RecordVerificationAsync(new ProviderCredentialVerificationUpdate(
@@ -284,6 +315,19 @@ public sealed class ProviderConnectionLifecycleService
         await _credentialStore.DeleteAsync(descriptor.ProviderId, actor ?? "browser-workstation", ct).ConfigureAwait(false);
         var status = await _credentialStore.GetStatusAsync(descriptor.ProviderId, ct).ConfigureAwait(false);
         return BuildMutationResult(status, BuildDeleteWarnings(status));
+    }
+
+    private static bool SameExternalAccount(string providerId, string? verifiedAccountId, string retainedAccountId)
+    {
+        if (string.IsNullOrWhiteSpace(verifiedAccountId))
+            return false;
+        if (providerId.Equals("xero", StringComparison.OrdinalIgnoreCase))
+            return Guid.TryParse(verifiedAccountId, out var verifiedTenant) && verifiedTenant != Guid.Empty &&
+                   Guid.TryParse(retainedAccountId, out var retainedTenant) && verifiedTenant == retainedTenant;
+        if (providerId.Equals("netsuite", StringComparison.OrdinalIgnoreCase))
+            return string.Equals(verifiedAccountId.Trim().ToLowerInvariant().Replace('_', '-'),
+                retainedAccountId.Trim().ToLowerInvariant().Replace('_', '-'), StringComparison.Ordinal);
+        return string.Equals(verifiedAccountId, retainedAccountId, StringComparison.Ordinal);
     }
 
     private async Task<ProviderCredentialVerificationResultDto> VerifyAlpacaAsync(
@@ -593,6 +637,9 @@ public sealed class ProviderConnectionLifecycleService
             => store.ReadScopedAsync(providerId, scope, ct);
         public Task SaveAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default)
             => store.SaveScopedAsync(request, scope, ct);
+        public Task<string> SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request,
+            ProviderCredentialReadResult expectedConnection, CancellationToken ct = default)
+            => store.SaveScopedRotatedCredentialsAsync(request, scope, expectedConnection, ct);
         public Task DeleteAsync(string providerId, string? actor = null, CancellationToken ct = default)
             => store.DeleteScopedAsync(providerId, scope, actor, ct);
         public Task RecordVerificationAsync(ProviderCredentialVerificationUpdate update, CancellationToken ct = default)

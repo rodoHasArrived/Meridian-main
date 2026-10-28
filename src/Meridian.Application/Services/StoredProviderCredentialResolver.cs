@@ -74,7 +74,7 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
             foreach (var attribute in AttributeCredentialResolver.GetAttributes(providerType))
                 values[attribute.Name] = ResolveStoredValue(stored, descriptor, attribute.Name);
         }
-        return new ResolvedCredentialContext(values);
+        return new ResolvedCredentialContext(values, stored?.Environment ?? _scope?.Environment);
     }
 
     private static string? ResolveStoredValue(
@@ -112,11 +112,16 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
 
     private sealed class ResolvedCredentialContext : ICredentialContext
     {
+        public bool IsAuthoritative => true;
+
         private readonly IReadOnlyDictionary<string, string?> _values;
 
-        public ResolvedCredentialContext(IReadOnlyDictionary<string, string?> values)
+        public string? CredentialEnvironment { get; }
+
+        public ResolvedCredentialContext(IReadOnlyDictionary<string, string?> values, string? credentialEnvironment)
         {
             _values = values;
+            CredentialEnvironment = credentialEnvironment;
         }
 
         public string? Get(string name)

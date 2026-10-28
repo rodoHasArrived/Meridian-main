@@ -101,7 +101,9 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
         var breakQueueRead = await breakQueueTask.ConfigureAwait(false);
         var breakQueue = breakQueueRead.Value;
         var scopedBreakQueue = breakQueue
-            .Where(item => runIds.Contains(item.RunId))
+            .Where(item => string.IsNullOrWhiteSpace(item.FundProfileId)
+                ? runIds.Contains(item.RunId)
+                : string.Equals(item.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase))
             .ToArray();
         var breakQueueItems = scopedBreakQueue
             .Select(item => MapBreakQueueRow(item, runNames))
@@ -398,7 +400,8 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             CommentCount: item.CommentCount,
              EvidenceCount: item.EvidenceCount,
              LastActivityText: item.LastActivityAt.HasValue ? FormatTimestamp(item.LastActivityAt.Value) : FormatTimestamp(item.LastUpdatedAt),
-             SignOffChecklist: BuildSignOffChecklist(item));
+             SignOffChecklist: BuildSignOffChecklist(item))
+        { Lineage = item.Lineage };
     }
 
     private static string JoinOrDefault(IReadOnlyList<string>? values, string fallback)
@@ -630,8 +633,10 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
         string baseCurrency,
         string fallbackActorLabel)
     {
+        // Shared active-blocker contract: a result superseded or resolved by a later reconciliation
+        // is history, not an open exception, even though its own outcome stays "Break".
         var exceptionRows = results
-            .Where(result => !result.IsMatch)
+            .Where(result => !result.IsMatch && result.SupersededByResultId is null)
             .Select(result => MapAccountResult(result, baseCurrency))
             .ToArray();
         var allRows = results
@@ -684,8 +689,9 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             RowKey: result.ResultId.ToString("N"),
             CheckLabel: result.CheckLabel,
             CategoryLabel: result.Category,
-            StatusLabel: result.Status,
-            StatusIcon: result.IsMatch ? "\u2713" : "\u26A0",
+            StatusLabel: result.IsMatch || result.SupersededByResultId is null ? result.Status
+                : result.ResolvedAt is not null ? "Resolved" : "Superseded",
+            StatusIcon: result.IsMatch || result.SupersededByResultId is not null ? "\u2713" : "\u26A0",
             SourceLabel: result.Category,
             ExpectedAmountText: FormatCurrency(result.ExpectedAmount, baseCurrency),
             ActualAmountText: FormatCurrency(result.ActualAmount, baseCurrency),

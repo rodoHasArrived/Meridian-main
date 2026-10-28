@@ -122,6 +122,7 @@ export function LayoutSwitcher({
       })
     });
     if (!layout) {
+      toast.danger("Layout could not be saved.", "The current route is invalid or the layout exceeds the saved-view size limit. Shorten the view settings and try again.");
       return;
     }
     setUserLayouts(upsertUserLayout(layout, storage));

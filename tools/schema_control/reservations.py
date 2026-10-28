@@ -494,7 +494,7 @@ def scaffold_migration(
             )
         filename = rules.filename(ordinal, name)
         relative = _repository_path(
-            root, str(Path(migration_set.directory) / filename), "Scaffold migration"
+            root, (Path(migration_set.directory) / filename).as_posix(), "Scaffold migration"
         )
         path = root / relative
         planned = MigrationFile(

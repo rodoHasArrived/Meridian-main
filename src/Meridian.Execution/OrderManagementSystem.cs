@@ -1,7 +1,5 @@
 using System.Collections.Concurrent;
-using System.Runtime.ExceptionServices;
 using System.Threading.Channels;
-using Meridian.Application.Pipeline;
 using Meridian.Execution.Events;
 using Meridian.Execution.Logging;
 using Meridian.Execution.OrderManagement;
@@ -29,13 +27,16 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
     private readonly AccountingHandoffCoordinator _accountingHandoff;
     private readonly ExecutionReportHub _executionReportHub;
     private readonly ExecutionFailureState _executionFailureState;
+    private readonly OrderManagementLifecycleCoordinator _lifecycle;
     private readonly OrderAdmissionPolicy _admissionPolicy;
     private readonly BrokerageOrderRecoveryJournal _recoveryJournal;
     private readonly OrderBrokerIdentityIndex _brokerIdentities = new();
     private readonly IRiskValidator? _riskValidator;
     private readonly ExecutionOperatorControlService? _operatorControls;
     private readonly ExecutionAuditTrailService? _auditTrail;
-    private readonly RiskEscalationQueueService? _escalationQueue;
+    private readonly OrderApprovalReservations _approvalReservations;
+    private readonly OrderDispatchRegistry _dispatchRegistry;
+    private readonly BrokerOrderSweep _brokerOrderSweep;
     private readonly Meridian.Execution.Models.IPortfolioState? _portfolioState;
     private readonly PaperSessionPersistenceService? _sessionPersistence;
     private readonly BrokerageConfiguration? _brokerageConfiguration;
@@ -46,29 +47,12 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
     // exposure. Without it, concurrent submissions each evaluate against the same
     // pre-order book and can collectively breach a ceiling none of them breaches alone.
     private readonly SemaphoreSlim _preTradeReservationGate = new(1, 1);
-    // Submissions past the operator-control gate but not yet acknowledged by the gateway, keyed by
-    // order id. The kill-switch sweep waits for these before it snapshots the book: an order that
-    // passed the gate a moment before a breaker trip would otherwise reach the broker after the
-    // sweep had observed an empty book, and be reported as nothing rather than as working.
-    private readonly ConcurrentDictionary<string, TaskCompletionSource> _inFlightDispatches = new(StringComparer.Ordinal);
-    // Client order ids held by orders parked for governed approval, mapped to the
-    // escalation that owns them. The tracked state is terminal, so without this the id
-    // would be reclaimable while the approval is still live.
-    private readonly ConcurrentDictionary<string, string> _parkedOrderIds = new(StringComparer.OrdinalIgnoreCase);
-    private readonly CancellationTokenSource _reportPumpCts = new();
-    private Task _reportPumpTask = Task.CompletedTask;
-    private Task _handoffRecoveryTask = Task.CompletedTask;
     private readonly ConcurrentDictionary<string, string> _orderFinancialAccountIds = new(StringComparer.OrdinalIgnoreCase);
     // Contract multiplier per order id, for derivative fills.
     private readonly ConcurrentDictionary<string, decimal> _orderContractMultipliers = new(StringComparer.OrdinalIgnoreCase);
     // Order ids the active gateway routes as face value priced as a percentage of par, so the
     // fill booking path scales the clean price exactly as the pre-trade rails valued the order.
     private readonly ConcurrentDictionary<string, bool> _orderFaceValueSizing = new(StringComparer.OrdinalIgnoreCase);
-    private readonly object _disposeSync = new();
-    private Task? _disposeTask;
-    private TaskCompletionSource? _operationsDrained;
-    private int _activeOperations;
-    private int _disposeStarted;
 
     private static readonly TimeSpan InitialReportStreamRetryDelay = TimeSpan.FromSeconds(1);
     private static readonly TimeSpan MaxReportStreamRetryDelay = TimeSpan.FromSeconds(60);
@@ -96,7 +80,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         _operatorControls = operatorControls;
 
         _auditTrail = auditTrail;
-        _escalationQueue = escalationQueue;
+        _approvalReservations = new OrderApprovalReservations(escalationQueue, logger);
         _portfolioState = portfolioState;
         _sessionPersistence = sessionPersistence;
         _recoveryJournal = new BrokerageOrderRecoveryJournal(recoveryStore);
@@ -119,9 +103,15 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         _executionFailureState = new ExecutionFailureState(logger);
         _executionReportHub = new ExecutionReportHub(_options, () => gateway.GatewayId, auditTrail, logger, _executionFailureState);
         _executionAudit = new OrderExecutionAudit(auditTrail, () => gateway.GatewayId, logger);
+        _dispatchRegistry = new OrderDispatchRegistry(_options.ValidatedCancelAllInFlightSettleTimeout, logger);
+        _brokerOrderSweep = new BrokerOrderSweep(gateway, _brokerIdentities, _executionAudit, logger);
+        _amendmentBook = new OrderAmendmentBook(_orders);
         _fillProcessor = new OrderFillProcessor(
             new OrderFillContext(_orders, _orderFinancialAccountIds, _orderContractMultipliers, _orderFaceValueSizing),
             portfolioState, sessionPersistence, _accountingHandoff, _executionReportHub, _executionAudit, logger);
+        _lifecycle = new OrderManagementLifecycleCoordinator(
+            PumpGatewayExecutionReportsAsync, _accountingHandoff, _executionReportHub,
+            _executionFailureState, operatorControls, ResolveWorkingReductionQuantity);
 
         RestoreBrokerageOrders();
         RehydrateParkedOrderReservations();
@@ -176,7 +166,9 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 metadata: refusal.Metadata).ConfigureAwait(false);
         }
         var usesFaceValuePercentageOfPar = admission.UsesFaceValuePercentageOfPar;
-        var riskRequest = admission.RiskRequest;
+        var resolvedOrder = admission.ResolvedOrder
+            ?? throw new InvalidOperationException("Approved admission must carry a gateway-resolved order.");
+        safeRequest = resolvedOrder.Request;
         var liveOrderReadinessDecision = admission.LiveReadinessDecision;
         var operatorControlDecision = admission.OperatorControlDecision;
 
@@ -194,7 +186,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         // Held from the moment this order becomes visible in the tracked table until the
         // gateway has acknowledged (or refused) it, so a kill-switch sweep started in between
         // waits for the acknowledgement instead of racing it. Disposed on every exit path.
-        using var dispatchLease = new DispatchLease(this);
+        using var dispatchLease = _dispatchRegistry.CreateLease();
 
         // Pre-trade risk check. Validation and the registration that reserves this order's
         // exposure happen under one gate so a concurrent order cannot slip through against
@@ -202,7 +194,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         await _preTradeReservationGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var brokerageLimitRefusal = await EvaluateBrokerageAdmissionLimitsAsync(riskRequest, ct).ConfigureAwait(false);
+            var brokerageLimitRefusal = await EvaluateBrokerageAdmissionLimitsAsync(resolvedOrder, ct).ConfigureAwait(false);
             if (brokerageLimitRefusal is not null)
             {
                 return await RejectOrderAsync(
@@ -214,7 +206,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
 
             if (_riskValidator is not null)
             {
-                var riskResult = await _riskValidator.ValidateOrderAsync(riskRequest, ct).ConfigureAwait(false);
+                var riskResult = await _riskValidator.ValidateResolvedOrderAsync(resolvedOrder, ct).ConfigureAwait(false);
                 riskDecision = riskResult;
                 if (!riskResult.IsApproved)
                 {
@@ -298,7 +290,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 RunId = runId,
                 // Broker-native notional orders route dollars and discard quantity; the
                 // exposure reserve for this working order must value what actually routes.
-                RoutedNotional = BrokerNotionalMetadata.TryRead(safeRequest.Metadata, safeRequest.Quantity),
+                RoutedNotional = (resolvedOrder.Sizing as OrderSizing.BrokerNotional)?.Amount,
                 UsesFaceValuePercentageOfPar = usesFaceValuePercentageOfPar,
                 // A working option order reserves contract notional, not share notional:
                 // 100 contracts at a $5 limit hold back $50k, not $500. The derivative
@@ -455,6 +447,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
             dispatchAttempted = true;
             var report = await _gateway.SubmitOrderAsync(safeRequest with { ClientOrderId = orderId }, ct)
                 .ConfigureAwait(false);
+            if (_orders.TryGetValue(orderId, out var accountState))
+                ValidateBrokerAccountEvidence(accountState, report);
             RememberBrokerOrderId(orderId, report);
 
             // Merge against the latest tracked state: the async report pump may already
@@ -749,99 +743,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
     /// returning. Dependency injection can therefore dispose the accounting publisher and
     /// failure store only after no OMS task can use them.
     /// </summary>
-    public ValueTask DisposeAsync()
-    {
-        TaskCompletionSource? startGate = null;
-        Task disposeTask;
-        lock (_disposeSync)
-        {
-            Interlocked.Exchange(ref _disposeStarted, 1);
-            _executionReportHub.BeginClose();
-            if (_disposeTask is not null)
-                return new ValueTask(_disposeTask);
-
-            var operationsDrained = _activeOperations == 0
-                ? Task.CompletedTask
-                : (_operationsDrained ??= new TaskCompletionSource(
-                    TaskCreationOptions.RunContinuationsAsynchronously)).Task;
-            startGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            disposeTask = DisposeCoreAsync(startGate.Task, operationsDrained);
-            _disposeTask = disposeTask;
-        }
-
-        // Start the asynchronous shutdown only after releasing _disposeSync. This retains the
-        // no-context-capture guarantee without invoking cancellation callbacks under the lock.
-        startGate!.SetResult();
-        return new ValueTask(disposeTask);
-    }
-
-    private async Task DisposeCoreAsync(Task startGate, Task operationsDrained)
-    {
-        // Do not cancel report intake until every operation admitted before disposal has
-        // completed. In particular, a broker submit may return a fill whose accounting
-        // handoff still needs to reach the primary publisher or durable fallback.
-        await startGate.ConfigureAwait(false);
-        await operationsDrained.ConfigureAwait(false);
-
-        Exception? shutdownFailure = null;
-        try
-        {
-            await _reportPumpCts.CancelAsync().ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            shutdownFailure = ex;
-        }
-
-        try
-        {
-            await Task.WhenAll(_reportPumpTask, _handoffRecoveryTask).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException) when (_reportPumpCts.IsCancellationRequested)
-        {
-            // Expected when shutdown interrupts a gateway read or retained-handoff load.
-        }
-        catch (Exception ex)
-        {
-            shutdownFailure = shutdownFailure is null
-                ? ex
-                : new AggregateException(shutdownFailure, ex);
-        }
-
-        // Every public operation admitted before shutdown and every report already dequeued by
-        // the gateway pump has now completed its authoritative side effects. Only now complete
-        // subscriber writers so consumers can drain their accepted reports. An abandoned reader
-        // is finalized through its bounded recovery/failure handler rather than silently settled.
-        try
-        {
-            await _executionReportHub.CompleteSubscribersAsync().ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            shutdownFailure = shutdownFailure is null
-                ? ex
-                : new AggregateException(shutdownFailure, ex);
-        }
-        finally
-        {
-            _executionReportHub.CompleteObserver();
-            _reportPumpCts.Dispose();
-            if (_operatorControls?.WorkingReductionQuantityProbe == ResolveWorkingReductionQuantity)
-                _operatorControls.WorkingReductionQuantityProbe = null;
-        }
-
-        // A consumer can fail after it accepted a channel item, outside the OMS gateway-pump
-        // stack. Preserve that terminal failure for the lifecycle owner even if no later broker
-        // report arrived to make the internal pump observe it directly.
-        if (shutdownFailure is null
-            && _executionFailureState.Failure is { } terminalReportFailure)
-        {
-            shutdownFailure = terminalReportFailure;
-        }
-
-        if (shutdownFailure is not null)
-            ExceptionDispatchInfo.Capture(shutdownFailure).Throw();
-    }
+    public ValueTask DisposeAsync() => _lifecycle.DisposeAsync();
 
     /// <summary>
     /// Provides a read-only view of fill and partial-fill execution reports for consumption
@@ -880,41 +782,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         return await _accountingHandoff.GetPendingAsync(ct).ConfigureAwait(false);
     }
 
-    private OperationLease EnterOperation()
-    {
-        lock (_disposeSync)
-        {
-            if (_disposeStarted != 0)
-                throw new ObjectDisposedException(nameof(OrderManagementSystem));
-
-            if (!_started)
-                throw new InvalidOperationException("The OMS must be started before accepting operations. Call StartAsync first.");
-
-            if (_executionFailureState.Failure is { } reportPumpFailure)
-            {
-                throw new InvalidOperationException(
-                    "The authoritative broker-report pump failed and the OMS is closed to new operations.",
-                    reportPumpFailure);
-            }
-
-            checked
-            {
-                _activeOperations++;
-            }
-
-            return new OperationLease(this);
-        }
-    }
-
-    private void ExitOperation()
-    {
-        lock (_disposeSync)
-        {
-            _activeOperations--;
-            if (_activeOperations == 0)
-                _operationsDrained?.TrySetResult();
-        }
-    }
+    private OrderManagementLifecycleCoordinator.OperationLease EnterOperation() => _lifecycle.EnterOperation();
 
     private void MarkTerminalReportPumpFailure(Exception failure, string message)
         => _executionFailureState.Mark(failure, message);
@@ -1031,9 +899,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
     {
         report = NormalizeBrokerOrderIdentity(report);
         var orderId = report.ClientOrderId ?? report.OrderId;
+        if (_orders.TryGetValue(orderId, out var accountState))
+            ValidateBrokerAccountEvidence(accountState, report);
         if (IsCompactedBrokerageReport(report))
             return;
-        if (report.ReportType is ExecutionReportType.ModificationPending && !_pendingModificationOrderIds.ContainsKey(orderId))
+        if (report.ReportType is ExecutionReportType.ModificationPending && !_amendmentBook.Contains(orderId))
             return;
         var resolvedAmendment = PrepareAmendmentReport(orderId, ref report, authorizedQuantity);
         var recoveryVersion = string.IsNullOrWhiteSpace(orderId) ? 0L : _recoveryJournal.CaptureVersion(orderId);
@@ -1168,7 +1038,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
             if (updatedState is not null)
             {
                 if (resolvedAmendment is not null)
-                    _pendingModificationOrderIds.TryRemove(new KeyValuePair<string, PendingOrderAmendment>(orderId!, resolvedAmendment));
+                    _amendmentBook.RemoveExpected(orderId!, resolvedAmendment);
                 RetainProcessedBrokerageOrder(orderId!, report, recoveryVersion);
                 await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId!), updatedState, ct).ConfigureAwait(false);
             }
@@ -1294,15 +1164,4 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
             Scope: BuildOrderAuditScope(request, runId),
             Metadata: metadata), ct).ConfigureAwait(false);
     }
-
-    private sealed class OperationLease(OrderManagementSystem owner) : IDisposable
-    {
-        private OrderManagementSystem? _owner = owner;
-
-        public void Dispose()
-            => Interlocked.Exchange(ref _owner, null)?.ExitOperation();
-    }
-
-
-
 }

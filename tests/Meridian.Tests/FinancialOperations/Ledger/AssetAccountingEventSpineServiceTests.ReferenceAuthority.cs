@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
@@ -45,8 +46,16 @@ public sealed partial class AssetAccountingEventSpineServiceTests
         bool disposal, bool historicalReceipt, bool unsupportedReceiptRead)
         => AssertReferenceRetryAsync(disposal, historicalReceipt, unsupportedReceiptRead, changedPayload: true);
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task ReferenceAuthority_DisposalWithFreshAttributedDraftIdentitiesReplaysWithoutChangingTheReceipt(
+        bool historicalReceipt)
+        => AssertReferenceRetryAsync(disposal: true, historicalReceipt: historicalReceipt, regeneratedAttributedWrites: true);
+
     private static async Task AssertReferenceRetryAsync(
-        bool disposal, bool historicalReceipt, bool unsupportedReceiptRead = false, bool changedPayload = false)
+        bool disposal, bool historicalReceipt, bool unsupportedReceiptRead = false, bool changedPayload = false,
+        bool regeneratedAttributedWrites = false)
     {
         var fixture = BuildFixture(disposal ? AssetAccountingEventKindDto.Disposal : AssetAccountingEventKindDto.Acquisition);
         var effect = fixture.Request.ProjectedEffect;
@@ -95,12 +104,33 @@ public sealed partial class AssetAccountingEventSpineServiceTests
             AccountingPolicyId: fixture.Book.AccountingPolicyId, AccountingPolicyVersion: fixture.Book.AccountingPolicyVersion));
         var authorityBuilder = Substitute.For<IAccountingPostingCandidateAuthorityBuilder>();
         AccountingPostingCandidateWriteResult? stableWrite = null;
+        var originalDrafts = new List<(JournalEntry Entry, string Bytes)>();
         authorityBuilder.BuildAuthoritativeCandidateWriteAsync(Arg.Any<PostingRuleJournalCandidateRequestDto>(),
                 Arg.Any<AssetAccountingCandidateAuthorityContext>(), Arg.Any<CancellationToken>())
-            .Returns(call => stableWrite ??= BuildReferenceCandidateWrite(call.ArgAt<PostingRuleJournalCandidateRequestDto>(0), fixture));
+            .Returns(call =>
+            {
+                var candidateRequest = call.ArgAt<PostingRuleJournalCandidateRequestDto>(0);
+                if (!regeneratedAttributedWrites)
+                    return stableWrite ??= BuildReferenceCandidateWrite(candidateRequest, fixture);
+                var rebuilt = BuildReferenceCandidateWrite(candidateRequest, fixture);
+                stableWrite ??= rebuilt;
+                var write = rebuilt.Write!;
+                // The fixture also randomizes command identity. Keep that request identity stable
+                // while genuinely rebuilding every journal/line identity, as production drafts do.
+                var command = write.PostingCommand! with { CommandId = stableWrite.Write!.PostingCommand!.CommandId };
+                var entry = LedgerCashFlowAttribution.WithClassifiedActivity(write.Entry,
+                    LedgerCashFlowCategory.Investing, "Security disposal");
+                originalDrafts.Add((entry, JsonSerializer.Serialize(entry)));
+                return rebuilt with
+                {
+                    Candidate = rebuilt.Candidate with { PostingCommand = command },
+                    Write = write with { Entry = entry, PostingCommand = command, CommandId = command.CommandId }
+                };
+            });
         var atomic = Substitute.For<IAtomicTaxLotJournalStore>();
         var observed = new List<AtomicTaxLotJournalCommand>();
         AtomicTaxLotJournalResult? committed = null;
+        var committedCount = 0;
         atomic.AppendAssetPostingAsync(Arg.Any<AtomicTaxLotJournalCommand>(), Arg.Any<CancellationToken>()).Returns(call =>
         {
             var command = call.ArgAt<AtomicTaxLotJournalCommand>(0);
@@ -119,6 +149,7 @@ public sealed partial class AssetAccountingEventSpineServiceTests
             var fingerprint = historicalReceipt
                 ? (command with { ReferenceVersions = null }).WithComputedFingerprint().CanonicalFingerprint
                 : command.CanonicalFingerprint;
+            committedCount++;
             return committed = new(command.MutationBatchId, command.MutationKind, fingerprint, false,
                 journal, [], [], command.RetainedEvidence);
         });
@@ -169,6 +200,7 @@ public sealed partial class AssetAccountingEventSpineServiceTests
             postingLedger, atomic, eventStore, authorityBuilder);
         (await postService.PostCandidateAsync(request)).WasReplay.Should().BeFalse();
         var receiptBefore = committed;
+        var receiptBytesBefore = JsonSerializer.Serialize(committed);
         // Reconstruct the public service; replay authority comes from the retained spine and receipt.
         postService = new AccountingPostingCandidatePostService(Substitute.For<IAccountingPostingCandidateWriteBuilder>(),
             postingLedger, atomic, eventStore, authorityBuilder);
@@ -190,7 +222,27 @@ public sealed partial class AssetAccountingEventSpineServiceTests
         observed[1].ReferenceVersions.Should().Be(historicalReceipt && !unsupportedReceiptRead && !changedPayload
             ? null : observed[0].ReferenceVersions);
         committed.Should().BeSameAs(receiptBefore);
+        JsonSerializer.Serialize(committed).Should().Be(receiptBytesBefore);
+        committedCount.Should().Be(1, "an exact retry must return the original atomic receipt without committing another journal");
         retained.Should().HaveCount(5);
+        if (regeneratedAttributedWrites)
+        {
+            originalDrafts.Should().HaveCount(3, "draft, first post and retry each rebuild their own journal");
+            originalDrafts.Select(item => item.Entry.JournalEntryId).Distinct().Should().HaveCount(originalDrafts.Count);
+            var originalLineIds = originalDrafts.SelectMany(item => item.Entry.Lines.Select(line => line.EntryId)).ToArray();
+            originalLineIds.Distinct().Should().HaveCount(originalLineIds.Length);
+            foreach (var original in originalDrafts)
+                JsonSerializer.Serialize(original.Entry).Should().Be(original.Bytes, "canonicalization must not rewrite its source draft");
+            foreach (var command in observed)
+            {
+                var entry = command.Journal.Entry;
+                foreach (var line in entry.Lines)
+                {
+                    entry.Metadata.Tags!["cash-flow.group.v2." + line.EntryId.ToString("D")].Should().Be("Security disposal");
+                    entry.Metadata.Tags["cash-flow.category.v1." + line.EntryId.ToString("D")].Should().Be("Investing");
+                }
+            }
+        }
     }
 
     private sealed class JournalWithoutAtomicReceipts(ILedgerJournalStore inner) : ILedgerJournalStore

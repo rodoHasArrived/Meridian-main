@@ -1599,7 +1599,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
     private ReconciliationBreakQueueItem StampComputedFields(ReconciliationBreakQueueItem item, DateTimeOffset now)
     {
         var policy = _slaPolicyProvider?.ResolvePolicy(item) ?? ReconciliationSlaCalculator.DefaultPolicyFor(item);
-        var sla = ReconciliationSlaCalculator.Compute(item, policy, now);
+        var sla = ReconciliationSlaCalculator.Compute(item, policy, now, _slaCalendarResolver);
         return item with
         {
             Version = item.Version + 1,
@@ -1612,7 +1612,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
             AgeBand = sla.AgeBand,
             BusinessAgeHours = sla.BusinessAgeHours,
             LastActivityAt = now,
-            Score = ComputeScore(item, now)
+            Score = ComputeScore(item, sla)
         };
     }
 
@@ -1691,32 +1691,17 @@ public sealed partial class FileReconciliationBreakQueueRepository
         return HashPayload(payload)!;
     }
 
-    private static ReconciliationBreakScore ComputeScore(ReconciliationBreakQueueItem item, DateTimeOffset now)
+    private static ReconciliationBreakScore ComputeScore(ReconciliationBreakQueueItem item, ReconciliationSlaComputationResult sla)
     {
         var materiality = Math.Min(50m, Math.Abs(item.Variance));
-        var ageHours = Math.Max(0d, (now - item.DetectedAt).TotalHours);
+        var ageHours = sla.BusinessAgeHours;
         var ageComponent = Math.Min(25, (int)Math.Round(ageHours / 4d, MidpointRounding.AwayFromZero));
         var counterparty = string.IsNullOrWhiteSpace(item.Counterparty) ? 0 : 15;
         var recurring = item.StateTransitions?.Count(t => t.To == ReconciliationCaseLifecycleState.InReview) > 1 ? 10 : 0;
         var severityScore = (int)Math.Min(100, materiality + ageComponent + counterparty + recurring);
         var priorityScore = Math.Min(100, severityScore + (item.Severity == ReconciliationBreakSeverity.Critical ? 20 : item.Severity == ReconciliationBreakSeverity.High ? 10 : 0));
-        return new ReconciliationBreakScore(severityScore, priorityScore, materiality, ageHours, counterparty, recurring, priorityScore >= 70, ComputeSlaDueAt(item), now > ComputeSlaDueAt(item) ? now : null);
+        return new ReconciliationBreakScore(severityScore, priorityScore, materiality, ageHours, counterparty, recurring, priorityScore >= 70, sla.DueAt, sla.BreachedAt);
     }
-
-    private static DateTimeOffset ComputeSlaDueAt(ReconciliationBreakQueueItem item)
-    {
-        var hours = item.Severity switch
-        {
-            ReconciliationBreakSeverity.Critical => 4,
-            ReconciliationBreakSeverity.High => 8,
-            ReconciliationBreakSeverity.Medium => 24,
-            _ => 48
-        };
-        return item.DetectedAt.AddHours(hours);
-    }
-
-    private static bool IsSlaBreached(ReconciliationBreakQueueItem item)
-        => item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview && DateTimeOffset.UtcNow > ComputeSlaDueAt(item);
 
     private sealed record CaseworkCommandReceipt(
         string CommandId,

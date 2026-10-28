@@ -53,7 +53,7 @@ Snapshot date: 2026-10-28
 | W9-CORPACT-011 | Durable corporate action case processing and accounting projection | accepted | green | high | Accounting and Ledger |
 | W10-DEBT-001 | God-file burn-down against the file-size ratchet | planned | green | medium | Workstation Shell and UX |
 | W10-MARK-001 | Fail-closed stale-mark policy and mark-age surfacing | in_progress | green | high | Accounting and Ledger |
-| W10-RECON-001 | Durable break lineage identity and run-over-run break diff | planned | green | high | Accounting and Ledger |
+| W10-RECON-001 | Durable break lineage identity and run-over-run break diff | in_progress | yellow | high | Accounting and Ledger |
 | W10-PROV-001 | Ledger-amount evidence subject and shared proof drawer | in_progress | green | high | Workstation Shell and UX |
 | W10-RECON-002 | Break clustering and bulk-resolution activation | planned | green | high | Accounting and Ledger |
 | W10-JRNL-001 | Durable recurring journal schedules and draft runner | in_progress | green | high | Accounting and Ledger |
@@ -70,3 +70,8 @@ Snapshot date: 2026-10-28
 | W11-SHADOW-001 | Shadow-mode onboarding with opening-balance reconciliation | planned | green | medium | Data Confidence and Validation |
 | W11-PACK-001 | Governed contract-pack lifecycle on the Security Master asset-class registry | planned | green | medium | Accounting and Ledger |
 | W11-EXEC-001 | Trading and Execution bounded-context ownership | planned | green | low | Execution and Fund Accounts |
+| W12-BOOK-001 | Accounting book, basis, and FX control workbench | planned | green | medium | Accounting and Ledger |
+| W12-CAPITAL-001 | Governed investor capital and allocation lifecycle | planned | green | medium | Accounting and Ledger |
+| W12-CREDIT-001 | DirectLoan operations and evidence reconciliation | planned | green | medium | Accounting and Ledger |
+| W12-FINRPT-001 | Ledger-backed financial statement control pack | planned | green | medium | Accounting and Ledger |
+| W12-YEND-001 | Fiscal year-end close and opening-balance roll-forward | planned | green | medium | Accounting and Ledger |

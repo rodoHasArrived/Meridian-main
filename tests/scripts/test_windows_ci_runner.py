@@ -1,4 +1,6 @@
 import importlib.util
+from contextlib import redirect_stdout
+import io
 import json
 from pathlib import Path
 import re
@@ -14,6 +16,70 @@ spec.loader.exec_module(module)
 
 
 class WindowsCiRunnerTests(unittest.TestCase):
+    @staticmethod
+    def write_result_fixture(directory):
+        path = Path(directory) / "full_1.trx"
+        path.write_text('''<TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+          <TestDefinitions>
+            <UnitTest id="theory"><TestMethod className="Example.WriterTests" name="Theory" /></UnitTest>
+            <UnitTest id="fact"><TestMethod className="Example.OtherTests" name="Fact" /></UnitTest>
+          </TestDefinitions>
+          <Results>
+            <UnitTestResult testId="theory" testName="Theory(1)" outcome="Passed" />
+            <UnitTestResult testId="theory" testName="Theory(2)" outcome="Failed" />
+            <UnitTestResult testId="theory" testName="Theory(3)" outcome="NotExecuted" />
+            <UnitTestResult testId="fact" testName="Fact" outcome="Passed" />
+            <UnitTestResult testId="missing" testName="Unresolved" outcome="Timeout" />
+          </Results>
+        </TestRun>''', encoding="utf-8")
+        return path
+
+    def test_class_outcomes_count_actual_theory_rows_and_preserve_all_outcomes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self.write_result_fixture(tmp)
+            self.assertEqual(module.class_outcomes([str(path)]), {
+                "Example.WriterTests": dict(passed=1, failed=1, skipped=1, other=0),
+                "Example.OtherTests": dict(passed=1, failed=0, skipped=0, other=0),
+                "<unresolved class>": dict(passed=0, failed=0, skipped=0, other=1),
+            })
+
+    def test_console_report_uses_only_the_same_collected_trx_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.write_result_fixture(tmp)
+            evidence = module.runner.collect_trx(Path(tmp), "full")
+            # An unrelated file left after collection must not become invented execution proof.
+            (Path(tmp) / "full_stale.trx").write_text("not current evidence", encoding="utf-8")
+            result = module.runner.TestResult("full", "tests.csproj", 1, [], evidence=evidence)
+            output = io.StringIO()
+            with redirect_stdout(output):
+                module.print_class_outcomes([result])
+            rows = [json.loads(line.split(": ", 1)[1]) for line in output.getvalue().splitlines()]
+            writer = next(row for row in rows if row["class"] == "Example.WriterTests")
+            self.assertEqual(writer, {
+                "class": "Example.WriterTests", "passed": 1, "failed": 1, "skipped": 1, "other": 0, "total": 3
+            })
+            self.assertEqual(sum(row["total"] for row in rows), 5)
+            self.assertEqual(result.exit_code, 1)
+
+    def test_missing_invalid_or_changed_evidence_never_reports_class_success(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self.write_result_fixture(tmp)
+            evidence = module.runner.collect_trx(Path(tmp), "full")
+            result = module.runner.TestResult("full", "tests.csproj", 1, [], evidence=evidence)
+            original = path.read_text(encoding="utf-8")
+            for content in ("<invalid", "<TestRun />", original.replace("Example.WriterTests", "Forged.WriterTests")):
+                path.write_text(content, encoding="utf-8")
+                output = io.StringIO()
+                with redirect_stdout(output):
+                    module.print_class_outcomes([result])
+                self.assertIn("TRX class evidence unavailable [full]", output.getvalue())
+                self.assertNotIn("TRX class outcomes", output.getvalue())
+                self.assertEqual(result.exit_code, 1)
+            output = io.StringIO()
+            with redirect_stdout(output):
+                module.print_class_outcomes([module.runner.TestResult("build-only", "tests.csproj", 0, [])])
+            self.assertEqual(output.getvalue(), "")
+
     def test_every_existing_filter_and_windows_project_remains_selected(self):
         rows = {p.name: p for p in module.selected_projects([])}
         self.assertEqual(set(rows), {"full", "dev-loop", "position-blotter-route", "operator-inbox-route", "supervisor", "setup"})

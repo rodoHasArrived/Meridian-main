@@ -8,6 +8,18 @@ namespace Meridian.Tests.Application.UI;
 
 public sealed class ProviderCredentialStoreTests : IDisposable
 {
+    [Fact]
+    public async Task ReadCredentialRecord_DistinguishesAbsentAndRetainedEmptyRecords()
+    {
+        var store = new ProviderCredentialStore(_dataRoot);
+        (await store.ReadCredentialRecordAsync("alpaca")).Should().BeNull();
+        await store.SaveCredentialsAsync("alpaca", new Dictionary<string, string>());
+        var retained = await store.ReadCredentialRecordAsync("alpaca");
+        retained.Should().NotBeNull().And.BeEmpty();
+        await store.DeleteCredentialsAsync("alpaca");
+        (await store.ReadCredentialRecordAsync("alpaca")).Should().BeNull();
+    }
+
     private readonly string _dataRoot;
 
     public ProviderCredentialStoreTests()

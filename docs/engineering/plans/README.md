@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-09-28
+**Reviewed:** 2026-10-28
 
 Home for engineering working plans: burn-downs, parity plans, tooling backlogs, and phased
 implementation plans. Code-ready feature designs live in [`../blueprints/`](../blueprints/README.md)
@@ -13,6 +13,7 @@ state. Plans are working inputs, not status sources; live roadmap status stays i
 
 | Plan | Purpose |
 |---|---|
+| [Security Master Review Remediation](security-master-review-remediation-plan.md) | Draft slices consuming the consolidated October review; policy, unit and migration decisions remain explicit |
 | [WPF / Web-UI Alignment Plan](wpf-web-ui-alignment-plan.md) | Closes WPF parity gaps with the browser workstation (`W8-WPF-PARITY-001`) |
 | [Desktop Workstation Screen Checklist Reference](desktop-workstation-screen-blueprint.md) | Preserves the twenty screen scopes and heading contract used by desktop checklist/workflow validation |
 | [God-File Burn-Down Plan](god-file-burn-down-plan.md) | Burn-down targets for oversized source files |

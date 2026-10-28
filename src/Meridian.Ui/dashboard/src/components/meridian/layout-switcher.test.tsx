@@ -50,6 +50,19 @@ function openMenu() {
 describe("LayoutSwitcher", () => {
   afterEach(() => cleanup());
 
+  it("reports a layout that cannot fit the retained token without closing or claiming success", async () => {
+    const user = userEvent.setup();
+    const { storage } = renderSwitcher({ route: `/portfolio?view=${"a".repeat(2200)}` });
+    openMenu();
+    await user.click(screen.getByRole("menuitem", { name: /Save current layout/ }));
+    await user.type(screen.getByRole("textbox", { name: "Layout name" }), "Too large");
+    await user.click(screen.getByRole("button", { name: "Save layout" }));
+    expect(screen.getByRole("dialog", { name: "Save this layout" })).toBeInTheDocument();
+    expect(screen.getByText("Layout could not be saved.")).toBeInTheDocument();
+    expect(screen.queryByText("Saved layout Too large.")).not.toBeInTheDocument();
+    expect(storage.length).toBe(0);
+  });
+
   it("lists shared team presets and an empty state for user layouts", () => {
     renderSwitcher();
     const menu = openMenu();

@@ -22,6 +22,45 @@ public sealed class FundAccountEndpointAuthorizationTests
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     [Fact]
+    public async Task ReconciliationQueue_UsesActiveBreaksAcrossDatesAndDoesNotCountUnverifiedEvidence()
+    {
+        var accountId = Guid.NewGuid();
+        await using var app = await CreateAppAsync([BuildAccount(accountId, Guid.NewGuid(), "QUEUE-ACTIVE")],
+            [(AccessScopeKindDto.Account, accountId)]);
+        var accounts = app.Services.GetRequiredService<InMemoryFundAccountService>();
+        var client = app.GetTestClient();
+        var date = new DateOnly(2026, 10, 15);
+        await accounts.RecordBalanceSnapshotAsync(new(accountId, date, "USD", 100m, "internal"));
+        await accounts.ReconcileAccountAsync(new(accountId, date, "ops"));
+        var unverified = await client.GetFromJsonAsync<JsonElement>($"/api/fund-accounts/{accountId}/reconciliation-queue-status");
+        unverified.GetProperty("unresolvedBreakCount").GetInt32().Should().Be(0);
+        unverified.GetProperty("signOffReady").GetBoolean().Should().BeFalse();
+
+        // An older-date break remains visible even when the latest date is verified and matched.
+        var previous = date.AddDays(-1);
+        await accounts.RecordBalanceSnapshotAsync(new(accountId, previous, "USD", 100m, "internal"));
+        var olderStatement = BuildBankStatement(accountId, previous);
+        await accounts.IngestBankStatementAsync(olderStatement with
+        {
+            Lines = olderStatement.Lines.Select(line => line with { ClosingBalance = 90m }).ToArray()
+        });
+        var original = await accounts.ReconcileAccountAsync(new(accountId, previous, "ops"));
+        await accounts.IngestBankStatementAsync(BuildBankStatement(accountId, date));
+        await accounts.ReconcileAccountAsync(new(accountId, date, "ops"));
+        var blocked = await client.GetFromJsonAsync<JsonElement>($"/api/fund-accounts/{accountId}/reconciliation-queue-status");
+        blocked.GetProperty("unresolvedBreakCount").GetInt32().Should().Be(1);
+        blocked.GetProperty("signOffReady").GetBoolean().Should().BeFalse();
+
+        await accounts.RecordBalanceSnapshotAsync(new(accountId, previous, "USD", 90m, "internal"));
+        await accounts.ReconcileAccountAsync(new(accountId, previous, "ops"));
+        var corrected = await client.GetFromJsonAsync<JsonElement>($"/api/fund-accounts/{accountId}/reconciliation-queue-status");
+        corrected.GetProperty("unresolvedBreakCount").GetInt32().Should().Be(0);
+        corrected.GetProperty("signOffReady").GetBoolean().Should().BeTrue();
+        (await accounts.GetReconciliationRunsAsync(accountId)).Single(run => run.ReconciliationRunId == original.ReconciliationRunId)
+            .TotalBreaks.Should().Be(1);
+    }
+
+    [Fact]
     public async Task FundAccountFundRoute_ShouldRequireScopedFundAccess()
     {
         var allowedFundId = Guid.NewGuid();
@@ -413,7 +452,13 @@ public sealed class FundAccountEndpointAuthorizationTests
         bankResponse.StatusCode.Should().Be(HttpStatusCode.Created);
         var query = app.Services.GetRequiredService<IAccountQueryService>();
         (await query.GetCustodianPositionsAsync(accountId, asOfDate)).Should().Equal(custodianRequest.Lines);
-        (await query.GetBankStatementLinesAsync(accountId)).Should().Equal(bankRequest.Lines);
+        (await query.GetBankStatementLinesAsync(accountId)).Should().Equal(
+            bankRequest.Lines.Select((line, index) => line with
+            {
+                LineSequence = line.LineSequence ?? index + 1,
+                StatementRevision = bankRequest.StatementRevision,
+                StatementAsOfDate = bankRequest.StatementDate
+            }));
     }
 
     private static IngestCustodianStatementRequest BuildCustodianStatement(Guid accountId, DateOnly asOfDate)

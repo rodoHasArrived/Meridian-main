@@ -2,11 +2,37 @@
 
 # `security-master-contracts` data objects - page 4 of 6
 
-Objects 241-320 of 437. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 443. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailureCode["ScheduleFailureCode"] {
+    }
+    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult["ScheduleGenerationResult"] {
+        +IReadOnlyList~ScheduleCalendarUsage~ CalendarsUsed
+        +IReadOnlyList~ScheduleDiagnostic~ Diagnostics
+        +ScheduleFailure? Failure
+        +IReadOnlyList~SchedulePeriod~ Periods
+        +ScheduleSpec Spec
+    }
+    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerator["ScheduleGenerator"] {
+    }
+    class Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriod["SchedulePeriod"] {
+        +DateOnly AccrualEnd
+        +DateOnly AccrualStart
+        +bool IsFinal
+        +SchedulePeriodKind Kind
+        +DateOnly PaymentDate
+        +IReadOnlyList~DayCountReferencePeriod~ ReferencePeriods
+        +int Sequence
+        +DateOnly UnadjustedEnd
+        +DateOnly UnadjustedStart
+    }
+    class Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriodId["SchedulePeriodId"] {
+    }
+    class Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriodKind["SchedulePeriodKind"] {
+    }
     class Meridian_Contracts_SecurityMaster_Schedules_ScheduleRoll["ScheduleRoll"] {
         +ScheduleRoll AnchorDay
         +int DayOfMonth
@@ -458,47 +484,9 @@ classDiagram
         +string EventType
         +decimal? UnitsPerHeldUnit
     }
-    class Meridian_Contracts_SecurityMaster_SecurityEconomicDefinitionRecord["SecurityEconomicDefinitionRecord"] {
-        +string AssetClass
-        +string? AssetFamily
-        +JsonElement Classification
-        +JsonElement CommonTerms
-        +string Currency
-        +string DisplayName
-        +JsonElement EconomicTerms
-        +DateTimeOffset EffectiveFrom
-        +DateTimeOffset? EffectiveTo
-        +IReadOnlyList~SecurityIdentifierDto~ Identifiers
-        +string? IssuerType
-        +string? LegacyAssetClass
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster["SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster"] {
-        +IReadOnlyList~string~ BridgedModules
-        +IReadOnlyList~string~ DroppedModules
-        +IReadOnlyList~string~ EconomicTermsModules
-        +SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster Instance
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto["SecurityEvidenceLinkDto"] {
-        +string EvidenceId
-        +string EvidenceKind
-        +string? Route
-        +string? Summary
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityFactorHistoryConflict["SecurityFactorHistoryConflict"] {
-        +DateOnly AsOfDate
-        +IReadOnlyList~SecurityFactorHistoryPoint~ Points
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto["SecurityFactorHistoryDto"] {
-        +IReadOnlyList~SecurityFactorHistoryConflict~ Conflicts
-        +IReadOnlyList~SecurityFactorHistoryPoint~ Points
-        +Guid SecurityId
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint["SecurityFactorHistoryPoint"] {
-        +DateOnly AsOfDate
-        +Guid? CorpActId
-        +decimal Factor
-        +SecurityFactorSource Source
-    }
+    Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriod
+    Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec
+    Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriod --> Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriodKind
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleRoll --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleRollKind
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleRoll
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleStubPolicy
@@ -533,7 +521,6 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionCandidateDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalSeverityDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileApprovalMetadataDto
-    Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto --> Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsUpcasterPipeline --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsV0ToCurrentUpcaster --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
     Meridian_Contracts_SecurityMaster_SecurityAssetTermField --> Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldType
@@ -552,8 +539,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveKind
     Meridian_Contracts_SecurityMaster_SecurityCurveVersionDto --> Meridian_Contracts_SecurityMaster_SecurityCurvePointDto
     Meridian_Contracts_SecurityMaster_SecurityDetailDto --> Meridian_Contracts_SecurityMaster_SecurityAliasDto
-    Meridian_Contracts_SecurityMaster_SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
-    Meridian_Contracts_SecurityMaster_SecurityFactorHistoryConflict --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint
-    Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryConflict
-    Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint
 ```

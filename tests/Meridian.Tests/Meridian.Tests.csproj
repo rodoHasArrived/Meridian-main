@@ -76,6 +76,9 @@
 
   <ItemGroup>
     <Compile Include="..\Shared\CorporateActions\*.cs" Link="Shared\CorporateActions\%(Filename)%(Extension)" />
+    <!-- These desktop adapters are plain .NET projections; exercise their shared-state contract on every test host. -->
+    <Compile Include="..\..\src\Meridian.Wpf\Services\FundAccountReadService.cs" Link="Shared\Wpf\FundAccountReadService.cs" />
+    <Compile Include="..\..\src\Meridian.Wpf\Services\FundProfileKeyTranslator.cs" Link="Shared\Wpf\FundProfileKeyTranslator.cs" />
     <None Include="..\Meridian.ProcessTestHelper\Meridian.ProcessTestHelper.runtimeconfig.json" CopyToOutputDirectory="PreserveNewest" Link="Meridian.ProcessTestHelper.runtimeconfig.json" />
     <None Include="..\fixtures\corporate-actions\golden\**\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\corporate-actions\golden\%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="..\fixtures\fund-economics\golden\**\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\fund-economics\golden\%(RecursiveDir)%(Filename)%(Extension)" />

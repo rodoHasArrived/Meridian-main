@@ -16,8 +16,6 @@ internal sealed class OrderAdmissionPolicy
     private readonly IExecutionGateway _gateway;
     private readonly BrokerageConfiguration? _configuration;
     private readonly ExecutionMode _executionMode;
-    private readonly INotionalOrderSizingGateway? _notionalSizingGateway;
-    private readonly IFaceValueOrderSizingGateway? _faceValueOrderSizingGateway;
     private readonly ISecurityMasterGate? _securityMasterGate;
     private readonly ExecutionOperatorControlService? _operatorControls;
     private readonly ILiveOrderReadinessGate? _liveReadinessGate;
@@ -40,10 +38,6 @@ internal sealed class OrderAdmissionPolicy
         _executionMode = gateway is IExecutionGatewayModeProvider modeProvider
             ? modeProvider.ExecutionMode
             : BrokerageOrderPlacementGate.ResolveExecutionMode(configuration, gateway.GatewayId);
-        // A sizing capability is evaluated per request: an adapter can route native notional or
-        // face value for one asset class while routing ordinary unit quantities for another.
-        _notionalSizingGateway = gateway as INotionalOrderSizingGateway;
-        _faceValueOrderSizingGateway = gateway as IFaceValueOrderSizingGateway;
         _securityMasterGate = securityMasterGate;
         _operatorControls = operatorControls;
         _liveReadinessGate = liveReadinessGate;
@@ -85,19 +79,28 @@ internal sealed class OrderAdmissionPolicy
         PreparedOrderAdmission prepared,
         CancellationToken ct)
     {
-        var safeRequest = prepared.SafeRequest;
-        if (BrokerNotionalMetadata.TryRead(safeRequest.Metadata, safeRequest.Quantity) is not null
-            && _notionalSizingGateway?.RoutesNotionalMetadata(safeRequest) is not true)
+        if (!ValidatedOrder.TryCreate(prepared.SafeRequest, out var validated, out var errors))
         {
-            return new OrderAdmissionDecision(safeRequest, false, null, null,
+            return new OrderAdmissionDecision(prepared.SafeRequest, false, null, null,
                 new OrderAdmissionRefusal(
-                    $"Broker-native notional sizing metadata is not supported by {prepared.BrokerName}; this gateway "
-                    + "routes order quantity. Remove the notional metadata and size the order in quantity.",
-                    "notional metadata gate"));
+                    string.Join(" ", errors.Select(error => error.Message)),
+                    "order request validation", "ORDER_REQUEST_INVALID",
+                    new Dictionary<string, string>
+                    {
+                        ["validationErrors"] = System.Text.Json.JsonSerializer.Serialize(errors)
+                    }));
         }
 
-        var usesFaceValue = _faceValueOrderSizingGateway?.UsesFaceValuePercentageOfPar(safeRequest) is true;
-        var riskRequest = OrderRiskSizingPolicy.StampResolvedOrderSizing(safeRequest, usesFaceValue);
+        var safeRequest = validated.Request;
+        prepared = prepared with { SafeRequest = safeRequest };
+        if (!GatewayResolvedOrder.TryResolve(validated, _gateway, out var resolved, out var rejectionReason))
+        {
+            return new OrderAdmissionDecision(safeRequest, false, null, null,
+                new OrderAdmissionRefusal(rejectionReason, "notional metadata gate"));
+        }
+
+        var usesFaceValue = resolved.Sizing is OrderSizing.FaceValuePercentageOfPar;
+        var riskRequest = resolved.ToRiskRequest();
         var placementGate = BrokerageOrderPlacementGate.Evaluate(_configuration, _gateway.GatewayId, _executionMode);
         if (!placementGate.IsAllowed)
         {
@@ -137,7 +140,7 @@ internal sealed class OrderAdmissionPolicy
             }
         }
 
-        return new OrderAdmissionDecision(riskRequest, usesFaceValue, controlDecision, readiness, null);
+        return new OrderAdmissionDecision(riskRequest, usesFaceValue, controlDecision, readiness, null, resolved);
     }
 
     /// <summary>
@@ -151,8 +154,15 @@ internal sealed class OrderAdmissionPolicy
         new(decision.RejectReason, source, decision.RejectCode ?? "OPERATOR_CONTROL_REJECTED",
             OrderAuditMetadata.BuildOrderRejectedByControlAuditMetadata(decision));
 
+    /// <summary>New placements measure the sizing already resolved by the gateway.</summary>
+    internal string? EvaluateBrokerageNotionalLimit(GatewayResolvedOrder order) =>
+        EvaluateBrokerageNotionalLimit(() => OrderRiskSizingPolicy.ResolveBrokerageOrderNotional(order));
+
     /// <summary>Used under the caller's reservation gate for placements and amendments.</summary>
-    internal string? EvaluateBrokerageNotionalLimit(OrderRequest request)
+    internal string? EvaluateBrokerageNotionalLimit(OrderRequest request) =>
+        EvaluateBrokerageNotionalLimit(() => OrderRiskSizingPolicy.ResolveBrokerageOrderNotional(request));
+
+    private string? EvaluateBrokerageNotionalLimit(Func<decimal?> measure)
     {
         if (_configuration is not { MaxOrderNotional: > 0m } configuration)
             return null;
@@ -160,7 +170,7 @@ internal sealed class OrderAdmissionPolicy
         decimal? notional;
         try
         {
-            notional = OrderRiskSizingPolicy.ResolveBrokerageOrderNotional(request);
+            notional = measure();
         }
         catch (OverflowException)
         {
@@ -285,7 +295,8 @@ internal sealed record OrderAdmissionDecision(
     bool UsesFaceValuePercentageOfPar,
     ExecutionControlDecision? OperatorControlDecision,
     LiveOrderReadinessDecision? LiveReadinessDecision,
-    OrderAdmissionRefusal? Refusal)
+    OrderAdmissionRefusal? Refusal,
+    GatewayResolvedOrder? ResolvedOrder = null)
 {
     public bool IsApproved => Refusal is null;
 }

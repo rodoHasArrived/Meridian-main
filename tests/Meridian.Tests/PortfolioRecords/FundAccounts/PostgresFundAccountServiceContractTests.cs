@@ -99,6 +99,24 @@ public sealed class PostgresFundAccountServiceContractTests : FundAccountService
     public Task ReconcileAccountAsync_SnapshotAndPositions_ProducesMatchedRun() => ReconcileAccountAsync_SnapshotAndPositions_ProducesMatchedRun_Core();
 
     [FundAccountDatabaseFact]
+    public Task ReconcileAccountAsync_SameDayBalances_UsesSourceSequence() => ReconcileAccountAsync_SameDayBalances_UsesSourceSequence_Core();
+
+    [FundAccountDatabaseFact]
+    public Task ReconcileAccountAsync_CorrectedStatement_UsesRevisionRegardlessOfArrival() => ReconcileAccountAsync_CorrectedStatement_UsesRevisionRegardlessOfArrival_Core();
+
+    [FundAccountDatabaseFact]
+    public Task IngestBankStatementAsync_RetainedBatchCannotReplaceLineIdentity() => IngestBankStatementAsync_RetainedBatchCannotReplaceLineIdentity_Core();
+
+    [FundAccountDatabaseFact]
+    public Task IngestBankStatementAsync_TransactionFeedBatches_AreAdditiveAndSupersedeByLineIdentity() => IngestBankStatementAsync_TransactionFeedBatches_AreAdditiveAndSupersedeByLineIdentity_Core();
+
+    [FundAccountDatabaseFact]
+    public Task IngestBankStatementAsync_TransactionFeedRedelivery_MovesItsHeaderDate() => IngestBankStatementAsync_TransactionFeedRedelivery_MovesItsHeaderDate_Core();
+
+    [FundAccountDatabaseFact]
+    public Task IngestBankStatementAsync_TransactionFeedRedeliveryInAnotherOrder_ReassignsItsOrdinals() => IngestBankStatementAsync_TransactionFeedRedeliveryInAnotherOrder_ReassignsItsOrdinals_Core();
+
+    [FundAccountDatabaseFact]
     public Task ReconcileAccountAsync_CashDivergingFromBankClosingBalance_ProducesCashBreak() => ReconcileAccountAsync_CashDivergingFromBankClosingBalance_ProducesCashBreak_Core();
 
     [FundAccountDatabaseFact]
@@ -193,4 +211,14 @@ public sealed class PostgresFundAccountServiceContractTests : FundAccountService
 
     [FundAccountDatabaseFact]
     public Task RecordMarginSnapshotAsync_CorrectedEffectiveTimeAlreadyOccupied_RejectsWithoutReplacing() => RecordMarginSnapshotAsync_CorrectedEffectiveTimeAlreadyOccupied_RejectsWithoutReplacing_Core();
+    [FundAccountDatabaseFact]
+    public Task Reconciliation_CorrectedEvidenceClearsOnlyMatchingActiveScopeAndRetainsHistory()
+        => Reconciliation_CorrectedEvidenceClearsOnlyMatchingActiveScopeAndRetainsHistory_Core();
+
+    [FundAccountDatabaseFact]
+    public Task SyncHistory_SimultaneousCorrelatedRetriesRetainSuccessWithoutRegression()
+        => SyncHistory_SimultaneousCorrelatedRetriesRetainSuccessWithoutRegression_Core();
+    [FundAccountDatabaseFact]
+    public Task Reconciliation_BatchedReadsKeepExactAccountScopeAndRetainedHistory()
+        => Reconciliation_BatchedReadsKeepExactAccountScopeAndRetainedHistory_Core();
 }

@@ -2,7 +2,8 @@ import { useEffect, useId, useRef, type ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 
 /** A disclosure of existing view controls, not an ARIA menu of immediate commands.
- * Keep children mounted so their dialogs retain state and focus returns to their trigger.
+ * Keep children mounted within a route so dialogs restore focus to their trigger.
+ * Navigation disposes their overlay state before the closed disclosure can hide it.
  */
 export function WorkspaceViewsMenu({ children, routeKey }: { children: ReactNode; routeKey?: string }) {
   const detailsRef = useRef<HTMLDetailsElement>(null);
@@ -42,7 +43,7 @@ export function WorkspaceViewsMenu({ children, routeKey }: { children: ReactNode
       <summary aria-controls={contentId}>
         Views <ChevronDown aria-hidden="true" className="size-4" />
       </summary>
-      <div id={contentId} role="region" aria-label="View controls" className="workstation-views-panel">
+      <div key={routeKey} id={contentId} role="region" aria-label="View controls" className="workstation-views-panel">
         {children}
       </div>
     </details>

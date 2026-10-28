@@ -388,15 +388,40 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             request.BankName,
             request.Lines.Count,
             DateTimeOffset.UtcNow,
-            request.LoadedBy);
+            request.LoadedBy,
+            request.StatementRevision,
+            request.IsTransactionFeed ? true : null);
 
         (long Version, string Json)? snapshot = null;
         lock (_gate)
         {
             var stored = RequireAccountLocked(request.AccountId);
             EnsureAllowed(stored.Summary, "ingest-bank-statement", request.IsBackfill, allowSuspended: true);
-            stored.BankBatches.Add(batch);
-            UpsertBankStatementLines(stored.BankLines, request.Lines);
+            var retained = stored.BankBatches.FirstOrDefault(existing => existing.BatchId == batch.BatchId);
+            // A feed batch's membership can shrink when a later delivery supersedes one of its transactions,
+            // and its header date is delivery metadata that moves when a redelivery re-dates a transaction.
+            if (retained is not null && (!request.IsTransactionFeed && retained.StatementDate != batch.StatementDate
+                || (retained.StatementRevision ?? 1) != batch.StatementRevision || retained.BankName != batch.BankName
+                || (retained.IsTransactionFeed ?? false) != request.IsTransactionFeed
+                || !request.IsTransactionFeed && (retained.LineCount != batch.LineCount
+                    || !stored.BankLines.Where(line => line.BatchId == batch.BatchId).Select(line => line.LineId).ToHashSet()
+                        .SetEquals(request.Lines.Select(line => line.LineId)))))
+            {
+                throw new InvalidOperationException("A retained bank statement's authority cannot change; use a new batch and revision.");
+            }
+            UpsertBankStatementLines(stored.BankLines, FundAccountStatementValidation.RetainAuthority(request));
+            if (retained is null)
+            {
+                stored.BankBatches.Add(batch);
+            }
+            else if (request.IsTransactionFeed && retained.StatementDate != batch.StatementDate)
+            {
+                stored.BankBatches[stored.BankBatches.IndexOf(retained)] = retained with
+                {
+                    StatementDate = batch.StatementDate,
+                    LineCount = batch.LineCount
+                };
+            }
             snapshot = CaptureSnapshotLocked();
         }
 
@@ -456,7 +481,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
                 return Task.FromResult<IReadOnlyList<BankStatementLineDto>>([]);
             }
 
-            var results = stored.BankLines
+            var results = BankLinesWithAuthority(stored)
                 .Where(l => (fromDate == null || l.TransactionDate >= fromDate)
                          && (toDate == null || l.TransactionDate <= toDate))
                 .OrderByDescending(l => l.TransactionDate)
@@ -471,6 +496,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
     {
         ArgumentNullException.ThrowIfNull(request);
         ct.ThrowIfCancellationRequested();
+        var now = DateTimeOffset.UtcNow;
 
         AccountBalanceSnapshotDto? snapshot;
         List<AccountBalanceSnapshotDto> snapshots;
@@ -497,14 +523,12 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
                 .Where(b => b.AsOfDate == request.AsOfDate)
                 .ToList();
 
-            bankLines = stored.BankLines
-                .Where(l => l.TransactionDate == request.AsOfDate)
+            bankLines = BankStatementClosingBalanceAuthority.ForStatementDate(BankLinesWithAuthority(stored), request.AsOfDate)
                 .ToList();
         }
 
         var runId = Guid.NewGuid();
         var results = new List<AccountReconciliationResultDto>();
-        var now = DateTimeOffset.UtcNow;
 
         var cashCheck = AccountReconciliationChecks.BuildCashBalanceCheck(runId, snapshot, bankLines);
         if (cashCheck is not null)
@@ -532,6 +556,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         {
             var stored = RequireAccountLocked(request.AccountId);
             stored.ReconciliationRuns.Add(run);
+            AccountReconciliationResolution.Supersede(stored.ReconciliationRuns, stored.ReconciliationResults, run, results);
             stored.ReconciliationResults.AddRange(results);
             snapshotToPersist = CaptureSnapshotLocked();
         }
@@ -562,25 +587,53 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         List<BankStatementLineDto> existing,
         IReadOnlyList<BankStatementLineDto> incoming)
     {
-        var index = existing.ToDictionary(
-            static line => BuildBankDedupKey(line),
-            static line => line,
-            StringComparer.OrdinalIgnoreCase);
+        var index = existing.ToDictionary(static line => line.LineId);
 
         foreach (var line in incoming)
         {
-            index[BuildBankDedupKey(line)] = line;
+            // A transaction feed may re-deliver a transaction with corrected terms; the latest delivery wins.
+            if (line.IsTransactionFeed == true && index.TryGetValue(line.LineId, out var superseded)
+                && superseded.IsTransactionFeed == true && superseded.AccountId == line.AccountId)
+            {
+                index[line.LineId] = line;
+                continue;
+            }
+            if (index.TryGetValue(line.LineId, out var retained) && (retained with
+            {
+                LineSequence = retained.LineSequence ?? line.LineSequence,
+                StatementRevision = retained.StatementRevision ?? line.StatementRevision,
+                StatementAsOfDate = retained.StatementAsOfDate ?? line.StatementAsOfDate
+            }) != line)
+            {
+                throw new InvalidOperationException("A retained bank statement line cannot change; use a new statement revision.");
+            }
+            // A legacy line retained before source order was recorded adopts the reimport's
+            // sequence, so authority selection stops falling back to value dates.
+            index[line.LineId] = retained is null
+                ? line
+                : retained with { LineSequence = retained.LineSequence ?? line.LineSequence };
         }
 
         existing.Clear();
         existing.AddRange(index.Values.OrderBy(static line => line.TransactionDate).ThenBy(static line => line.Reference, StringComparer.OrdinalIgnoreCase));
     }
 
+    private static IEnumerable<BankStatementLineDto> BankLinesWithAuthority(StoredAccount stored)
+    {
+        var batches = stored.BankBatches.GroupBy(static batch => batch.BatchId)
+            .ToDictionary(static group => group.Key, static group => group.First());
+        return stored.BankLines.Select(line => batches.TryGetValue(line.BatchId, out var batch)
+            ? line with
+            {
+                StatementRevision = line.StatementRevision ?? batch.StatementRevision ?? 1,
+                StatementAsOfDate = line.StatementAsOfDate ?? batch.StatementDate,
+                IsTransactionFeed = line.IsTransactionFeed ?? batch.IsTransactionFeed
+            }
+            : line);
+    }
+
     private static string BuildCustodianDedupKey(CustodianPositionLineDto line)
         => $"{line.AccountId:N}|{line.AsOfDate:yyyyMMdd}|{line.IdentifierType}|{line.Identifier}".ToUpperInvariant();
-
-    private static string BuildBankDedupKey(BankStatementLineDto line)
-        => $"{line.AccountId:N}|{line.TransactionDate:yyyyMMdd}|{line.ValueDate:yyyyMMdd}|{line.Currency}|{line.Amount.ToString("G29", CultureInfo.InvariantCulture)}|{line.TransactionType}|{line.Reference ?? line.Description}".ToUpperInvariant();
 
     public Task<IReadOnlyList<AccountReconciliationRunDto>> GetReconciliationRunsAsync(
         Guid accountId, CancellationToken ct = default)
@@ -593,6 +646,23 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             }
 
             return Task.FromResult<IReadOnlyList<AccountReconciliationRunDto>>(stored.ReconciliationRuns.ToArray());
+        }
+    }
+
+    public Task<IReadOnlyList<AccountReconciliationResultDto>> GetReconciliationResultsForAccountsAsync(
+        IReadOnlyCollection<Guid> accountIds, bool openOnly = false, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(accountIds);
+        ct.ThrowIfCancellationRequested();
+        var requested = accountIds.ToHashSet();
+        lock (_gate)
+        {
+            IReadOnlyList<AccountReconciliationResultDto> results = _accounts.Values
+                .Where(account => requested.Contains(account.Summary.AccountId))
+                .SelectMany(account => account.ReconciliationResults)
+                .Where(result => !openOnly || result.IsOpenBreak)
+                .ToArray();
+            return Task.FromResult(results);
         }
     }
 
@@ -621,7 +691,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             }
 
             var breaks = stored.ReconciliationResults
-                .Where(r => AccountReconciliationChecks.IsBreak(r)
+                .Where(r => r.IsOpenBreak
                     && (string.Equals(r.Category, "Position", StringComparison.OrdinalIgnoreCase)
                         || string.Equals(r.Category, "Positions", StringComparison.OrdinalIgnoreCase)))
                 .Select(r => new PositionReconciliationBreakDto(
@@ -651,7 +721,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             }
 
             var breaks = stored.ReconciliationResults
-                .Where(r => AccountReconciliationChecks.IsBreak(r) && string.Equals(r.Category, "Cash", StringComparison.OrdinalIgnoreCase))
+                .Where(r => r.IsOpenBreak && string.Equals(r.Category, "Cash", StringComparison.OrdinalIgnoreCase))
                 .Select(r => new CashReconciliationBreakDto(
                     r.ResultId,
                     accountId,
@@ -738,7 +808,13 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
 
             if (existingIndex >= 0)
             {
-                stored.SyncHistory[existingIndex] = entry;
+                var retained = stored.SyncHistory[existingIndex];
+                if (SyncStatusRank(entry.Status) < SyncStatusRank(retained.Status)
+                    || (SyncStatusRank(entry.Status) == SyncStatusRank(retained.Status) && retained.CompletedAt.HasValue
+                        && (!entry.CompletedAt.HasValue || entry.CompletedAt < retained.CompletedAt)))
+                    entry = retained;
+                else
+                    stored.SyncHistory[existingIndex] = entry = entry with { RequestedBy = retained.RequestedBy };
             }
             else
             {
@@ -751,6 +827,14 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
         return entry;
     }
+
+    private static int SyncStatusRank(AccountSyncStatusDto status) => status switch
+    {
+        AccountSyncStatusDto.Succeeded => 3,
+        AccountSyncStatusDto.Degraded => 2,
+        AccountSyncStatusDto.Failed or AccountSyncStatusDto.Cancelled => 1,
+        _ => 0
+    };
 
     public Task<IReadOnlyList<AccountSyncHistoryEntryDto>> GetSyncHistoryAsync(
         Guid accountId,
@@ -1071,7 +1155,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
                 "Map the account to a ledger reference before posting account activity."));
         }
 
-        var openBreakCount = stored.ReconciliationResults.Count(AccountReconciliationChecks.IsBreak);
+        var openBreakCount = stored.ReconciliationResults.Count(static r => r.IsOpenBreak);
         if (openBreakCount > 0)
         {
             issues.Add(new AccountReadinessIssueDto(
@@ -1379,7 +1463,8 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
     }
 
     private static StoredAccount NormalizeStoredAccount(StoredAccount account)
-        => account with
+    {
+        var normalized = account with
         {
             Snapshots = account.Snapshots ?? [],
             CustodianBatches = account.CustodianBatches ?? [],
@@ -1391,6 +1476,17 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             SyncHistory = account.SyncHistory ?? [],
             MarginSnapshots = account.MarginSnapshots ?? []
         };
+        var history = new List<AccountReconciliationResultDto>();
+        foreach (var run in normalized.ReconciliationRuns.OrderBy(run => run.RequestedAt))
+        {
+            var results = normalized.ReconciliationResults.Where(result => result.ReconciliationRunId == run.ReconciliationRunId).ToList();
+            AccountReconciliationResolution.Supersede(normalized.ReconciliationRuns, history, run, results);
+            history.AddRange(results);
+        }
+        var retainedIds = history.Select(result => result.ResultId).ToHashSet();
+        history.AddRange(normalized.ReconciliationResults.Where(result => !retainedIds.Contains(result.ResultId)));
+        return normalized with { ReconciliationResults = history };
+    }
 
     public Task<IReadOnlyList<AccountSummaryDto>> ListAccountsAsync(AccountTypeDto? accountType, bool? isActive, string? currency, CancellationToken ct = default)
     {
@@ -1435,7 +1531,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             var results = _accounts.Values
                 .Where(a => accountId is null || a.Summary.AccountId == accountId)
                 .SelectMany(a => a.ReconciliationResults
-                    .Where(static r => AccountReconciliationChecks.IsBreak(r))
+                    .Where(static r => r.IsOpenBreak)
                     .Select(r => new AccountOpenBreakView(a.Summary.AccountId, r.ReconciliationRunId, r.ResultId, r.CheckLabel, r.Category, r.Variance, r.Reason)))
                 .OrderByDescending(static r => r.Variance ?? 0m)
                 .ThenBy(static r => r.CheckLabel, StringComparer.OrdinalIgnoreCase)

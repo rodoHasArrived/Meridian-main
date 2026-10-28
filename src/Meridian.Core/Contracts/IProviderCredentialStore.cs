@@ -12,6 +12,14 @@ public interface IProviderCredentialStore
     /// <summary>Returns all credential key/value pairs stored for a provider module.</summary>
     Task<IReadOnlyDictionary<string, string>> GetCredentialsAsync(string moduleId, CancellationToken ct = default);
 
+    /// <summary>
+    /// Reads one selected record, preserving an empty retained record; null proves absence.
+    /// Compatibility stores that cannot prove absence conservatively select their returned
+    /// record, so missing fields cannot borrow ambient credentials.
+    /// </summary>
+    async Task<IReadOnlyDictionary<string, string>?> ReadCredentialRecordAsync(string moduleId, CancellationToken ct = default) =>
+        await GetCredentialsAsync(moduleId, ct).ConfigureAwait(false);
+
     /// <summary>Returns the set of credential key names that have stored (non-empty) values.</summary>
     Task<IReadOnlySet<string>> GetStoredKeyNamesAsync(string moduleId, CancellationToken ct = default);
 

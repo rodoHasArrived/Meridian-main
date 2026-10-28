@@ -168,7 +168,7 @@ def check_every_alert_has_a_firing_test(findings: list[str]) -> None:
 
     # Alerts intentionally kept silent until their writer lands. Each is guarded in the rule
     # file so it cannot fire, so a firing test would be impossible to write honestly.
-    disabled = {"MeridianDataFreshnessViolation"}
+    disabled: set[str] = set()
 
     test_text = RULES_TEST_FILE.read_text(encoding="utf-8")
     # A positive case is an `alertname:` whose `exp_alerts:` is not the empty list.

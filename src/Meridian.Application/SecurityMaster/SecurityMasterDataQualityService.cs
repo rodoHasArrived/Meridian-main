@@ -20,7 +20,7 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
     private readonly ISecurityMasterQualityReportStore _reportStore;
     private readonly ILogger<SecurityMasterDataQualityService> _logger;
     private readonly IReadOnlyList<ISecurityCoverageSymbolSource> _coverageSources;
-    private readonly ISecurityResolver? _securityResolver;
+    private readonly Meridian.Contracts.SecurityMaster.ISecurityResolver? _securityResolver;
 
     private static readonly int MaxTermsAgeDays = 180;
 
@@ -48,7 +48,7 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
         ISecurityMasterQualityReportStore reportStore,
         ILogger<SecurityMasterDataQualityService> logger,
         IEnumerable<ISecurityCoverageSymbolSource>? coverageSources = null,
-        ISecurityResolver? securityResolver = null)
+        Meridian.Contracts.SecurityMaster.ISecurityResolver? securityResolver = null)
     {
         _securityStore = securityStore;
         _reportStore = reportStore;

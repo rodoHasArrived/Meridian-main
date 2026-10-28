@@ -6,7 +6,7 @@ module_id: SRC-EXECUTION
 path: src/Meridian.Execution
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-10-21
+last_reviewed: 2026-10-28
 ---
 
 # src/Meridian.Execution
@@ -40,7 +40,13 @@ Open-order limits recognize a working order's prior broker IDs in stale snapshot
 members reported as open still consume separate slots.
 
 Broker-dispatched client IDs, run/account ownership and processed fill watermarks are retained by
-`FileBrokerageOrderRecoveryStore` before dispatch. An ambiguous acknowledgement keeps exposure
+`FileBrokerageOrderRecoveryStore` before dispatch. Broker acknowledgement accounts are retained as
+`OrderState.BrokerAccountId`; later reports
+cannot replace an established external account. Matching late acknowledgement evidence can fill
+an unknown account after an order becomes terminal while preserving its lifecycle, economics and
+timestamp; account enrichment books no additional fill. IB recovery requires that exact account, or an
+explicit trusted-host pin for legacy rows whose broker account was never retained. Unknown legacy
+ownership stays unresolved. An ambiguous acknowledgement keeps exposure
 reserved and requires authoritative lookup; the ID cannot be reused after restart or a terminal
 outcome. `BrokerageExecutionReconciliationService.RecoverOrdersAsync` applies working and uncertain
 order snapshots through the serialized OMS fill path, including cumulative partial-fill pricing.
@@ -68,32 +74,49 @@ Execution owns order routing, execution services, allocation, margin, derivative
 
 This layer implements execution behavior and broker-facing runtime services while preserving paper-first and evidence-backed gating rules.
 
+Security Master dependencies come from `Meridian.Contracts.SecurityMaster`, with no Application
+project reference. The gate needs only `ISecurityResolver`; paper gateways accept separate identity
+and trading-parameter query services; paper portfolios consume the canonical live-position adjuster.
+Existing aggregate query callers continue to supply both query capabilities through the optional
+identity fallback. Host registrations can provide each narrow service independently.
+
 ## Key folders and files
 
 - `Interfaces/` - order gateway and execution abstractions.
-- `OrderManagement/` - internal OMS policies and owners of recovery, fill progress, accounting handoff, report delivery, and audit evidence.
+- `OrderManagement/` - internal OMS policies and owners of lifecycle, amendments, dispatch tracking, broker sweeps, approval reservations, recovery, fill progress, accounting handoff, report delivery, and audit evidence.
 - `Services/` - execution services and orchestration.
 - `Models/`, `Events/`, and `Serialization/` - execution payloads and event contracts.
 - `Allocation/`, `Margin/`, `Derivatives/`, and `TaxLotAccounting/` - execution support domains.
 
 ## OMS ownership
 
-`OrderManagementSystem` remains the public facade and lifecycle owner. Its internal collaborators
-own specific policies and state; they do not receive the OMS instance as a general callback target.
+`OrderManagementSystem` remains the public command and lifecycle facade. Its internal collaborators
+own specific policies and state; named callbacks and live read-only views connect the owners without
+passing the OMS instance as a general callback target.
 
 | Owner | Responsibility |
 | --- | --- |
-| `OrderManagementSystem` and its partials | Public commands, live order state and sidecars, startup/shutdown, broker-report and pre-trade admission gates, risk reservation settlement, amendment/recovery orchestration, cancellation, and kill-switch coordination. |
+| `OrderManagementSystem` and its partials | Public commands and lifecycle delegation, live order state and sidecars, broker-report and pre-trade reservation gates, risk reservation settlement, amendment/recovery orchestration, tracked cancellation, sweep concurrency, and final kill-switch outcomes. |
+| `OrderManagementLifecycleCoordinator` | Startup and terminal shutdown, operation leases and admission, subscription admission, report/replay worker lifetime, working-reduction probe attachment, and ordered drain of operations, workers, and subscribers. The facade supplies report-pump and live-reduction callbacks. |
 | `OrderAdmissionPolicy`, `OrderRiskSizingPolicy` | Prepare request snapshots and evaluate routing gates; calculate order/amendment sizing from explicit evidence. The facade still registers orders, takes and settles risk reservations, audits decisions, and dispatches. |
+| `OrderAmendmentBook` | Pending attempts, restored-attempt provenance, broker outcome evidence, report preparation, and conservative exposure projections over a live read-only order view. The facade applies transitions, persists evidence, and removes resolved attempts after fill processing succeeds. |
+| `OrderDispatchRegistry` | In-flight submission leases and bounded waits over the dispatches present when a sweep starts. Each lease settles only its own attempt after the facade publishes the gateway outcome. |
+| `BrokerOrderSweep` | Broker open-order snapshots, matching tracked client and broker IDs, residual cancellation, and cancellation audit evidence. The facade retains tracked-order updates, sweep concurrency, and final reconciliation of outcomes. |
+| `OrderApprovalReservations` | Client IDs reserved by governed approvals, restart rehydration, approval-token checks, rearming, and queue withdrawal before releasing a live reservation. Order state, session effects, audits, and pre-trade risk-capacity settlement remain with the facade. |
 | `OrderBrokerIdentityIndex` | Active broker routing identities and permanent replacement aliases, with the existing ordinal comparison and report-normalization rules. |
 | `BrokerageOrderRecoveryJournal` | Recovery-store access, dispatched identities, recovery requirements and versions, processed-order checkpoints, tombstones, and the recovery-state lock. |
 | `OrderFillProcessor`, `OrderFillContext` | Per-report progress, fill exposure awaiting portfolio application, and ordered portfolio/accounting/session/report effects. The context reads current order ownership and sizing; the facade retains mutations. |
-| `AccountingHandoffCoordinator` | Publisher scope checks, durable accounting acceptance, independent fallback retention, and retained-handoff replay. The facade starts and drains replay. |
-| `ExecutionReportHub`, `ExecutionFailureState` | Authoritative subscriber delivery and recovery, the best-effort observer channel, and the first terminal consumer failure shared with operation admission. The facade controls registration closure and shutdown ordering. |
+| `AccountingHandoffCoordinator` | Publisher scope checks, durable accounting acceptance, independent fallback retention, and retained-handoff replay. The lifecycle coordinator starts and drains replay. |
+| `ExecutionReportHub`, `ExecutionFailureState` | Authoritative subscriber delivery and recovery, the best-effort observer channel, and the first terminal consumer failure shared with operation admission. The lifecycle coordinator controls registration closure and shutdown ordering. |
 | `OrderAuditMetadata`, `OrderExecutionAudit` | Audit metadata construction and lifecycle/unresolved-fill evidence from explicit snapshots. Command decisions and their audit timing stay with their callers. |
 
+`OrderExecutionAudit` sanitizes order IDs in diagnostic logs while retaining the original IDs in durable audit records.
+
 The shared broker-report gate still serializes live callbacks, explicit recovery, amendment
-resolution, and retention. The journal holds its recovery-state lock through durable compaction
+resolution, and retention. Amendment preparation keeps original/proposed snapshot identity and
+broker outcome evidence distinct from the expected-entry comparison used for removal. Recovery
+checkpoints read the pending flag, broker identity/aliases, and pending snapshot inside the
+journal's recovery-state lock. The journal holds that lock through durable compaction
 and the facade's synchronous expected-state removal; sidecar cleanup follows only a successful
 removal. Recovery versions prevent a completed older report from clearing newer uncertainty.
 Fill progress keeps its own gate and resumes only unfinished effects, in the existing order:
@@ -107,9 +130,24 @@ service.
 
 ## Important workflows
 
+All new OMS orders undergo structural validation after the duplicate-client-ID guard and before
+gateway sizing or governance preflight. Invalid requests are rejected through the existing audit
+path with `ORDER_REQUEST_INVALID` and structured `validationErrors` metadata, including when no
+risk validator is configured. This deliberately rejects malformed requests earlier than broker
+validation. Validated snapshots freeze caller metadata and legs through sizing, risk, and dispatch.
+
+`OrderAdmissionPolicy` resolves sizing once through `GatewayResolvedOrder`. Brokerage admission
+limits and retained exposure use that result. The OMS invokes
+`IRiskValidator.ValidateResolvedOrderAsync` under the existing reservation gate; its default
+implementation adapts to `ValidateOrderAsync`, preserving existing custom validators and risk
+rules. Typed validators may implement the new method directly. Reservation settlement, governed
+approval, and ambiguous dispatch behavior remain unchanged. Amendments and recovery continue to
+use their existing request/state contracts.
+
 Use this module for paper session execution, broker gateway behavior, order lifecycle, and execution evidence.
 
-`OrderManagementSystem` implements `IOrderManagementLifecycle`: construction restores retained
+`OrderManagementSystem` implements `IOrderManagementLifecycle` through
+`OrderManagementLifecycleCoordinator`: construction restores retained
 order identities but leaves report intake and accounting-handoff replay inactive. Call `StartAsync`
 before submitting, amending, cancelling, or reconciling orders; concurrent starts launch one pair
 of pumps. `AddBrokerageExecution` registers a hosted lifecycle owner for the resolved `IOrderManager`,
@@ -236,7 +274,18 @@ produces an audited rejection instead of a broker submit.
 Broker-backed readiness also includes open-order reconciliation: `BrokerageExecutionReconciliationService`
 compares broker-reported open orders with the OMS open-order ledger, treats missing client order IDs
 as untraceable breaks, and reports OMS/broker divergence before live operators rely on the gateway.
-Ledger posting from trade-fill events is explicit and Security Master gated. `AddBrokerageExecution`
+Ledger posting from trade-fill events is explicit and Security Master gated. `LedgerPostingConsumer`
+retains the trade journal's Investing cash category against its immutable line IDs. Sales report
+actual cash proceeds; realized gains/losses remain noncash adjustments, and commission journals
+remain separate Operating payments. Reversal preserves the retained category.
+For a crash retry whose deterministic journal was already retained before attribution existed,
+the governed target first requires exactly one authoritative identity collision with no
+`cash-flow.*` evidence. Only the new canonical trade group/category tags can be omitted from the
+expected retry; all money, lines, scope, command fingerprints and other metadata still undergo
+ordinary exact comparison. Partial, unknown or older cash-flow evidence is never stripped.
+The consumer independently checks the normalized posting candidate and projects the actual
+retained record, preserving historical bytes rather than inventing retrospective attribution.
+`AddBrokerageExecution`
 injects an `ITradeEventPublisher` into the OMS only when one has been composed; the execution host
 does not infer an accounting book or period. A book-owning composition root can call
 `AddTradeFillLedgerPosting` with a ledger factory, exact posting scope, and caller-owned
@@ -388,6 +437,7 @@ See `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.
 ## Validation
 
 ```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~PaperTradingGatewayTests|FullyQualifiedName~PaperTradingPortfolioBasisParityTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 ```
 
@@ -399,3 +449,6 @@ Keep live actions explicitly gated and paper-first unless roadmap acceptance evi
 
 - `docs/plans/paper-trading-cockpit-reliability-sprint.md`
 - `docs/source/generated/source-roadmap-traceability.md`
+
+Both paper gateway implementations retain their aggregate-query constructor signatures and optional
+arguments alongside the separate identity/trading-query overloads for compiled-client compatibility.

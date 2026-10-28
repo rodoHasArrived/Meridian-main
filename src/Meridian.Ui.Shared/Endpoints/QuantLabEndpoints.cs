@@ -106,7 +106,17 @@ public static class QuantLabEndpoints
                 return QuantLabUnavailable(jsonOptions);
             }
 
-            var parameters = compiler.ExtractParameters(request.Source);
+            IReadOnlyList<ParameterDescriptor> parameters;
+            try
+            {
+                parameters = compiler.ExtractParameters(request.Source);
+            }
+            catch (ParameterExtractionException ex)
+            {
+                return Results.Json(new { error = ex.Message }, jsonOptions,
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
             var dtos = parameters
                 .Select(p => new QuantParameterDto(
                     Name: p.Name,
@@ -123,6 +133,7 @@ public static class QuantLabEndpoints
         .WithName("ExtractQuantParameters")
         .RequirePermission(UserPermission.ManageStrategies)
         .Produces(200)
+        .Produces(400)
         .Produces(503);
 
         // GET /api/quant/templates — starter scripts so a new user has something to run.

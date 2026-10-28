@@ -1,5 +1,6 @@
 using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Storage;
 using Meridian.Storage.Services;
@@ -42,9 +43,12 @@ public static class BacktestingServiceCollectionExtensions
                 return new BacktestEngine(
                     sp.GetRequiredService<ILogger<BacktestEngine>>(),
                     catalogService,
-                    sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                    sp.GetService<ISecurityTradingParametersQueryService>()
+                        ?? sp.GetService<ISecurityMasterQueryService>(),
                     sp.GetService<ICorporateActionAdjustmentService>(),
-                    sp.GetService<IBacktestPreflightService>());
+                    sp.GetService<IBacktestPreflightService>(),
+                    sp.GetService<ISecurityIdentityQueryService>()
+                        ?? sp.GetService<ISecurityMasterQueryService>());
             }
 
             return CreateEngine;

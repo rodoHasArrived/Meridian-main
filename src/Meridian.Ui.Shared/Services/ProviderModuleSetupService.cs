@@ -42,11 +42,14 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
         {
             var module = CreateModuleById(moduleId);
 
-            var storedKeys = await _credentialStore.GetStoredKeyNamesAsync(moduleId, ct).ConfigureAwait(false);
+            var storedRecord = await _credentialStore.ReadCredentialRecordAsync(moduleId, ct).ConfigureAwait(false);
+            var storedKeys = (storedRecord ?? new Dictionary<string, string>())
+                .Where(pair => !string.IsNullOrWhiteSpace(pair.Value))
+                .Select(pair => pair.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
             // Also treat env-var-mapped credentials as present when the env var is set
             IReadOnlySet<string> resolvedKeys = storedKeys;
-            if (settings.Credentials is { } envMap)
+            if (storedRecord is null && settings.Credentials is { } envMap)
             {
                 var augmented = new HashSet<string>(storedKeys, StringComparer.OrdinalIgnoreCase);
                 foreach (var (key, envVarName) in envMap)
@@ -255,15 +258,17 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
         if (module is null)
             return new ProviderModuleTestResult(false, false, false, $"Module '{moduleId}' not found");
 
-        var storedCreds = await _credentialStore.GetCredentialsAsync(moduleId, ct).ConfigureAwait(false);
+        var storedCreds = await _credentialStore.ReadCredentialRecordAsync(moduleId, ct).ConfigureAwait(false);
 
-        // Merge env-var-mapped credentials and saved settings from config,
-        // matching the same resolution as BuildModuleContexts at startup.
+        // Select a whole retained record or an environment-mapped record, matching
+        // BuildModuleContexts. A partial or empty selected record remains authoritative.
         var cfgForModule = _configStore.Load();
         ProviderModuleSettings? moduleCfg = null;
         cfgForModule.ProviderModules?.Modules?.TryGetValue(moduleId, out moduleCfg);
-        var merged = new Dictionary<string, string?>(storedCreds, StringComparer.OrdinalIgnoreCase);
-        if (moduleCfg?.Credentials is { } envMap)
+        var merged = storedCreds is null
+            ? new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
+            : new Dictionary<string, string?>(storedCreds, StringComparer.OrdinalIgnoreCase);
+        if (storedCreds is null && moduleCfg?.Credentials is { } envMap)
         {
             foreach (var (key, envVarName) in envMap)
             {
@@ -279,6 +284,7 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
         var context = new ProviderModuleContext
         {
             Credentials = merged,
+            CredentialsAreAuthoritative = storedCreds is not null || moduleCfg?.Credentials?.Count > 0,
             Settings = moduleCfg?.Settings
                 ?? new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
         };
