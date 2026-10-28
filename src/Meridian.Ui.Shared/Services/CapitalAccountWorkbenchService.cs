@@ -4,6 +4,9 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Builds capital-account workbench projections from subledgers, allocation rules, and statement lineage.
+/// </summary>
 public sealed class CapitalAccountWorkbenchService : ICapitalAccountWorkbenchService
 {
     private static readonly IReadOnlyList<string> LiveCapabilities =

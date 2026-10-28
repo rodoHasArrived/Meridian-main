@@ -74,6 +74,26 @@ class ReviewedHashMergeTests(unittest.TestCase):
         head["contract"], incoming["contract"] = "left", "right"
         self.assertIn("$manifest", hashes.merge_manifests(base, head, incoming, base)[1]["review_required"])
 
+    def test_v2_independent_module_reviews_merge(self):
+        def reviewed(*entries):
+            return {**hashes.load_validator().metadata("2.0.0"), "modules": list(entries)}
+        base = reviewed(entry("A"), entry("B"))
+        head = reviewed(entry("A", "b"), entry("B"))
+        incoming = reviewed(entry("A"), entry("B", "c"))
+        actual = reviewed(entry("A", "b"), entry("B", "c"))
+        self.assertEqual(hashes.parse_manifest(json.dumps(actual).encode(), "v2"), actual)
+        merged, report = hashes.merge_manifests(base, head, incoming, actual)
+        self.assertTrue(report["successful"])
+        self.assertEqual(merged, actual)
+
+    def test_mixed_fingerprint_schemas_require_explicit_migration(self):
+        legacy = manifest(entry("A"))
+        reviewed = {**hashes.load_validator().metadata("2.0.0"), "modules": [entry("A")]}
+        merged, report = hashes.merge_manifests(legacy, legacy, reviewed, reviewed)
+        self.assertIsNone(merged)
+        self.assertFalse(report["successful"])
+        self.assertIn("not reinterpreted", report["review_required"]["$manifest"])
+
     def test_malformed_unknown_schema_duplicate_ids_and_keys_fail_closed(self):
         bad = [b"not json", b'{"modules":[],"modules":[]}']
         duplicate = manifest(entry("A"), entry("A"))
@@ -136,6 +156,20 @@ class ReviewedHashCheckoutTests(unittest.TestCase):
         self.git("switch", "feature")
         subprocess.run(["git", "merge", "--no-commit", "--no-ff", "main"], cwd=self.repo, capture_output=True)
 
+    def enable_review_fingerprints(self):
+        for identity in ("A", "B"):
+            path = self.repo / f"src/{identity}/README.md"
+            path.write_text(path.read_text() + (
+                f"\n<!-- source-roadmap-traceability:begin module={identity} -->\n"
+                "Generated trace\n<!-- source-roadmap-traceability:end -->\n"
+                f"\n<!-- source-todos:begin module={identity} -->\n"
+                "Generated TODOs\n<!-- source-todos:end -->\n"
+            ))
+        self.refresh()
+        hashes.load_validator().migrate_reviewed_readmes(self.repo)
+        self.commit("explicit reviewed README migration")
+        self.base = self.git("rev-parse", "HEAD").decode().strip()
+
     def test_checkout_combines_independent_modules_and_stages_valid_manifest(self):
         self.branches()
         report = hashes.merge_checkout(self.repo, self.base, self.head, self.incoming, apply=True)
@@ -149,6 +183,35 @@ class ReviewedHashCheckoutTests(unittest.TestCase):
         report = hashes.merge_checkout(self.repo, self.base, self.head, self.incoming, apply=True)
         self.assertFalse(report["successful"])
         self.assertIn("A", report["review_required"])
+        self.assertEqual(before, (self.repo / hashes.MANIFEST).read_bytes())
+
+    def test_v2_checkout_generated_block_changes_do_not_invent_reviews(self):
+        self.enable_review_fingerprints()
+        self.branches()
+        readme = self.repo / "src/A/README.md"
+        readme.write_text(readme.read_text().replace("Generated trace", "Regenerated merged trace"))
+        report = hashes.merge_checkout(self.repo, self.base, self.head, self.incoming, apply=True)
+        self.assertTrue(report["successful"])
+        merged = json.loads((self.repo / hashes.MANIFEST).read_bytes())
+        self.assertEqual(merged, hashes.actual_manifest(self.repo))
+        self.assertEqual(merged["schema"]["version"], "2.0.0")
+
+    def test_v2_checkout_combined_source_changes_still_require_review(self):
+        self.enable_review_fingerprints()
+        self.branches(same_module=True)
+        before = (self.repo / hashes.MANIFEST).read_bytes()
+        report = hashes.merge_checkout(self.repo, self.base, self.head, self.incoming, apply=True)
+        self.assertFalse(report["successful"])
+        self.assertIn("A", report["review_required"])
+        self.assertEqual(before, (self.repo / hashes.MANIFEST).read_bytes())
+
+    def test_checkout_schema_transition_cannot_silently_reinterpret_parent(self):
+        legacy_base = self.base
+        self.enable_review_fingerprints()
+        before = (self.repo / hashes.MANIFEST).read_bytes()
+        report = hashes.merge_checkout(self.repo, legacy_base, self.base, legacy_base, apply=True)
+        self.assertFalse(report["successful"])
+        self.assertIn("$manifest", report["review_required"])
         self.assertEqual(before, (self.repo / hashes.MANIFEST).read_bytes())
 
     def test_removed_manifest_and_empty_registry_are_not_recreated(self):

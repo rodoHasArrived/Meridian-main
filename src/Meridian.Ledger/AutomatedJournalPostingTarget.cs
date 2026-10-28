@@ -90,6 +90,9 @@ public sealed record AutomatedJournalPostingContext
     }
 }
 
+/// <summary>
+/// Posts approved automated journals into the supplied in-memory ledger after validating posting context.
+/// </summary>
 public sealed class InMemoryAutomatedJournalPostingTarget : IAutomatedJournalPostingTarget
 {
     public InMemoryAutomatedJournalPostingTarget(Ledger ledger)

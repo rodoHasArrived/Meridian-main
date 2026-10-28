@@ -397,6 +397,9 @@ public static class SecurityCurveRules
         => NormalizeOptional(value) ?? throw new ArgumentException("A curve write must name the actor.");
 }
 
+/// <summary>
+/// Provides source-generated JSON metadata for security curve definitions, versions, and points.
+/// </summary>
 [JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Metadata)]
 [JsonSerializable(typeof(SecurityCurvePointDto[]))]
 public sealed partial class SecurityCurvesJsonContext : JsonSerializerContext;

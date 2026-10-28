@@ -78,6 +78,9 @@ public sealed class BrokerageConfiguration
     public int MaxOpenOrders { get; set; }
 }
 
+/// <summary>
+/// Controls whether read-only data, paper orders, and production order routing are enabled for a broker.
+/// </summary>
 public sealed class BrokerFlowFlags
 {
     public bool ReadOnlyDataEnabled { get; set; } = true;
@@ -87,6 +90,9 @@ public sealed class BrokerFlowFlags
     public bool ProductionOrderRoutingEnabled { get; set; }
 }
 
+/// <summary>
+/// Configures the validation and operator signoff artifacts required before broker order placement.
+/// </summary>
 public sealed class BrokerValidationGateOptions
 {
     public bool RequireValidationArtifactsForOrderPlacement { get; set; } = true;

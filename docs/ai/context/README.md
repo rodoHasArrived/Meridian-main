@@ -14,3 +14,12 @@ This directory contains compact Meridian Development Intelligence Framework cont
 | [Operational Evidence Context](operational-evidence-context.md) | Source evidence, reconciliation, exception casework, close readiness, report provenance, delivery records, audit support, and proof-layer workflows. |
 
 Keep packs short and rule-oriented. Do not duplicate full architecture or product documents here; link to the canonical source when a task needs deeper context.
+
+## Execution boundary context
+
+For order-entry and pre-trade risk changes, read the
+[execution workflow contract](../../../src/Meridian.Execution/README.md#important-workflows) and
+[SDK typed-order contract](../../../src/Meridian.Execution.Sdk/README.md#important-workflows).
+New submissions require structural validation and gateway-resolved sizing before risk; the
+legacy risk-request adapter does not replace gateway authority. Amendments and recovery retain
+separate contracts and reservation semantics.

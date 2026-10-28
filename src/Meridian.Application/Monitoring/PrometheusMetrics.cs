@@ -230,6 +230,10 @@ public static class PrometheusMetrics
         "mdc_sla_current_violations",
         "Current number of active SLA violations");
 
+    private static readonly Gauge SlaMonitoredSymbols = Prometheus.Metrics.CreateGauge(
+        "mdc_sla_monitored_symbols",
+        "Number of symbols registered for data freshness monitoring");
+
     private static readonly Gauge SlaFreshnessScore = Prometheus.Metrics.CreateGauge(
         "mdc_sla_freshness_score",
         "Overall data freshness score (0-100)");
@@ -678,6 +682,7 @@ public static class PrometheusMetrics
     {
         SlaViolationsTotal.IncTo(snapshot.TotalViolations);
         SlaCurrentViolations.Set(snapshot.ViolationSymbols);
+        SlaMonitoredSymbols.Set(snapshot.TotalSymbols);
         SlaFreshnessScore.Set(snapshot.OverallFreshnessScore);
         SlaHealthySymbols.Set(snapshot.HealthySymbols);
         SlaViolationSymbols.Set(snapshot.ViolationSymbols);
@@ -685,7 +690,7 @@ public static class PrometheusMetrics
         // Record per-symbol freshness (with cardinality guard)
         foreach (var status in snapshot.SymbolStatuses)
         {
-            if (status.FreshnessMs < double.MaxValue)
+            if (status.IsWithinMarketHours && status.State != SlaState.NoData && status.FreshnessMs < double.MaxValue)
             {
                 var safeSymbol = GetSymbolLabel(status.Symbol);
                 SlaFreshnessMs.WithLabels(safeSymbol).Observe(status.FreshnessMs);

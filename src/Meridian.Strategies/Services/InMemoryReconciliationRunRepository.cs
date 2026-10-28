@@ -2,6 +2,7 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.Strategies.Services;
 
+/// <summary>Retains reconciliation results in memory and serializes mutations and observation-continuity updates.</summary>
 public sealed class InMemoryReconciliationRunRepository : IReconciliationRunRepository
 {
     private readonly List<ReconciliationRunDetail> _runs = [];

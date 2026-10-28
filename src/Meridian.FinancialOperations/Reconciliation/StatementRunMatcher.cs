@@ -252,7 +252,10 @@ internal static class StatementRunMatcher
             row.TradeDate,
             row.Quantity,
             marketValue,
-            evidence);
+            evidence)
+        {
+            Price = marketValue is null ? null : NormalizePrice(row.Price, row.Currency, baseCurrency, row.TradeDate, fxRateProvider)
+        };
     }
 
     private static NormalizedStatementCashBalance MapCash(
@@ -299,7 +302,10 @@ internal static class StatementRunMatcher
             row.ActivityType,
             row.Quantity,
             amount,
-            evidence);
+            evidence)
+        {
+            Price = NormalizePrice(row.Price, row.Currency, baseCurrency, row.TradeDate, fxRateProvider)
+        };
     }
 
     private static InternalCashBalance NormalizeInternalCash(
@@ -319,7 +325,14 @@ internal static class StatementRunMatcher
         string baseCurrency)
     {
         var (currency, amount) = ToBaseCurrency(transaction.NetAmount, transaction.Currency, baseCurrency, transaction.TradeDate, fxRateProvider);
-        return transaction with { Currency = currency, NetAmount = amount };
+        return transaction with
+        {
+            Currency = currency,
+            NetAmount = amount,
+            Price = transaction.Price is { } price
+                ? NormalizePrice(price, transaction.Currency, baseCurrency, transaction.TradeDate, fxRateProvider)
+                : null
+        };
     }
 
     /// <summary>
@@ -341,21 +354,15 @@ internal static class StatementRunMatcher
             : (from, amount);
     }
 
+    private static decimal? NormalizePrice(decimal price, string? currency, string baseCurrency,
+        DateOnly asOf, IReconciliationFxRateProvider fxRateProvider)
+        => price == 0m ? null : ToBaseCurrency(price, currency, baseCurrency, asOf, fxRateProvider).Amount;
+
     private static string NormalizeCurrency(string? currency, string baseCurrency) =>
         string.IsNullOrWhiteSpace(currency) ? baseCurrency : currency.Trim().ToUpperInvariant();
 
     private static StatementMatchingToleranceProfile ToEngineTolerance(StatementToleranceProfile profile)
-    {
-        var position = profile.PositionRules.Count > 0 ? profile.PositionRules[0] : null;
-        var cash = profile.CashRules.Count > 0 ? profile.CashRules[0] : null;
-        var transaction = profile.TransactionRules.Count > 0 ? profile.TransactionRules[0] : null;
-        return new StatementMatchingToleranceProfile(
-            PositionQuantity: position?.QuantityTolerance ?? 0m,
-            PositionMarketValue: position?.MarketValueTolerance ?? 0m,
-            CashBalance: cash?.AbsoluteCashTolerance ?? 0m,
-            TransactionQuantity: 0m,
-            TransactionNetAmount: transaction?.AbsoluteCashTolerance ?? 0m);
-    }
+        => StatementMatchingToleranceProfile.FromProfile(profile);
 
     private static decimal ResolveToleranceAmount(StatementMatchTolerance tolerance) =>
         Math.Max(tolerance.Quantity ?? 0m, tolerance.Amount ?? 0m);

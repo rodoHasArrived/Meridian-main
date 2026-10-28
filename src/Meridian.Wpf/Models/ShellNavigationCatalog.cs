@@ -4,6 +4,9 @@ using Meridian.Wpf.Shell.Services;
 
 namespace Meridian.Wpf.Models;
 
+/// <summary>
+/// Defines desktop pages, workspace shells, aliases, and layout metadata used to resolve navigation.
+/// </summary>
 public static partial class ShellNavigationCatalog
 {
     private static IReadOnlyList<string> LegacyStrategyShellAliases =>

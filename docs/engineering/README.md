@@ -19,7 +19,7 @@ It replaces hand-built planning and historical engineering prose with active ope
 - **Writing or moving docs:** [Documentation Contribution Guide](../development/documentation-contribution-guide.md)
 - **Dead-code cleanup inventory:** [Dead-Code Inventory](dead-code-inventory.md)
 - **Production readiness and test debt:** [Production Readiness Audit 2026-07-27](production-readiness-audit-2026-07-27.md)
-- **Security Master architecture audit:** [Security Master Architecture Audit 2026-08-13](security-master-architecture-audit-2026-08-13.md) *(dated source-evidence review; verify findings against current source)*
+- **Security Master architecture review:** [Rolling review and October dispositions](../architecture/security-master-extensibility-review.md#consolidated-october-review-and-dispositions--2026-10-28), with the [remediation working plan](plans/security-master-review-remediation-plan.md). The [2026-08-13 audit](security-master-architecture-audit-2026-08-13.md) remains historical evidence.
 - **WPF performance and UI/UX audit:** [WPF Performance & UI/UX Refinement Audit 2026-06-14](wpf-perf-uiux-audit-2026-06-14.md) *(dated; its changes were not compiled or run when written)*
 - **Release-evidence working ledger:** [Production-Certification Evidence Chain](production-certification-evidence-chain.md)
 - **CI/CD ownership and rollout:** [CI/CD validation ownership](ci-cd-optimization.md)
@@ -62,6 +62,27 @@ cross-blueprint contracts that stop two independently written designs from colli
 ## Build/Test/Run
 
 Prefer the narrowest proof lane for the files you change.
+
+For a short edit/test loop, use the read-only recommendations and launcher diagnostics:
+
+```powershell
+python build/python/cli/buildctl.py recommend-validation
+npm run dev:doctor
+# Fixture mode checks only Node/Vite prerequisites and the browser port:
+npm run dev:fixtures -- --doctor
+```
+
+Recommendations explain the selected checks and any uncertain coverage; they do not run tests.
+Use `recommend-validation --base origin/main` to include committed branch changes as well as
+working-tree changes, or repeat `--changed-file <path>` to preview an explicit scope. The npm
+shortcut is `npm run checks:recommend -- --base origin/main`. See the
+[focused validation guide](../ai/tooling/throughput-pilot.md#recommend-focused-validation) and
+[browser diagnostics](web-development.md) for details. The required full gate below still applies.
+
+Shared assistant context already has a canonical generator. Edit the marked section in
+`.claude/skills/_shared/project-context.md`, run `npm run guidance:sync`, then
+`npm run guidance:check`. Only the marked sections in the Codex and Agents mirrors are updated;
+host-specific instructions remain separate. See [shared guidance generation](../ai/tooling/throughput-pilot.md#generate-shared-guidance).
 
 Enable the [staged-source Git hook](../development/git-hooks.md) with
 `./scripts/dev/install-git-hooks.sh` or `make install-hooks`, including in linked worktrees.
@@ -150,6 +171,40 @@ The project roster, catch-all shard, filters, and failure aggregation remain the
 Golden Path runs browser, WPF, and pilot harness validation concurrently, then requires
 all three successes in the stable `Pilot Acceptance Evidence` gate. See the
 [workflow guide](../../.github/workflows/README.md) for the execution and evidence details.
+
+### Prerequisite Checks
+
+Run `python build/python/cli/buildctl.py doctor --profile <profile>` before restoring or building.
+The explicit profiles are read-only, including when `--quick` is omitted. Add `--json` for structured
+results. Missing or unsupported prerequisites fail even with `--no-fail-on-warn`.
+
+| Profile | Required prerequisites |
+| --- | --- |
+| `unit-test` | Python 3.11+, the SDK selected by `global.json`, Git, and .NET repository inputs. No provider credentials, runtime configuration, Docker, PostgreSQL, Node, or Python extras. |
+| `browser` | Python 3.11+, Node 24 from `.nvmrc`, npm, Git, and dashboard package manifests/lockfile. Run `npm --prefix src/Meridian.Ui/dashboard ci --include=optional` to install dashboard packages afterward. |
+| `desktop` | Python 3.11+, the selected .NET SDK, Git, PowerShell 7+, Windows, and WPF project inputs. |
+| `full-quality-gate` | The .NET and browser toolchains, Bash, PowerShell 7+, actionlint 1.7.12, and the pinned Python packages in `build/scripts/ci/requirements.txt`, including its docs requirements. |
+
+`build/python/prerequisites.py` owns these definitions. Both doctor implementations, `scripts/ci.sh`,
+and the AI setup scripts consume them. `make setup-dev` and `make verify-setup` use the unit-test
+prerequisites before restoring or building. CI checks the complete selected lane before its first restore,
+build, or npm install, so missing packages are reported together with the install command for the
+running interpreter. The full gate requires PyYAML and Pillow at their requirements-file versions.
+Every canonical CI lane checks Bash, including on Windows where Git Bash or WSL supplies it.
+The Linux x64 `build/scripts/install/install.sh --agent-tools` bootstrap reads Node's supported
+major from `.nvmrc`, installs the CI Python requirements and checksum-verified actionlint release,
+then checks the full prerequisite profile before warming restore or reporting setup complete.
+Monitoring tools remain advisory for local CI and required under `GITHUB_ACTIONS`; these checks do
+not require a Docker daemon. Doctor treats warnings as a nonzero result by default; use
+`--no-fail-on-warn` to permit those optional local monitoring warnings. Passing prerequisites
+establishes tool readiness; run the actual tests
+and gate to verify the change.
+
+Make also exposes `doctor-unit-test`, `doctor-browser`, `doctor-desktop`, and
+`doctor-full-quality-gate`, or `make doctor PROFILE=browser`. The unprofiled doctor retains runtime
+health diagnostics; a requested restore blocked by prerequisite failures remains a failure even
+with `--no-fail-on-warn`. Setup installs a missing .NET SDK before checking its compatibility, honors
+`--skip-node` and `--skip-restore`, and stops on prerequisite failures even without `--strict`.
 
 For local .NET tests, prefer the contention-aware runner over raw `dotnet test`:
 
@@ -335,6 +390,11 @@ dotnet build Meridian.WebWorkstation.slnf -c Debug --no-restore -p:EnableWindows
 ```
 
 ### Desktop slices
+
+The Windows CI runner prints per-class passed, failed, skipped, and other outcome counts from
+the same retained TRX records used by its existing gate. Every theory result row counts separately;
+build success or discovered methods do not count as execution. Full records remain in the Windows
+validation artifact when detailed transport is available.
 
 ```powershell
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -Restore

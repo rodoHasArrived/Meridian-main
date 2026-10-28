@@ -2,6 +2,9 @@ using System.Windows.Controls;
 
 namespace Meridian.Wpf.Workstation.Tables;
 
+/// <summary>
+/// Displays read-only rows with explicit columns and row and column virtualization.
+/// </summary>
 public sealed class DenseDataGridControl : DataGrid
 {
     public DenseDataGridControl()
@@ -21,10 +24,16 @@ public sealed class DenseDataGridControl : DataGrid
     }
 }
 
+/// <summary>
+/// Provides a content surface for table search and filter controls.
+/// </summary>
 public sealed class SearchFilterBarControl : ContentControl
 {
 }
 
+/// <summary>
+/// Displays read-only key-value facts using virtualized rows and columns.
+/// </summary>
 public sealed class KeyValueFactGridControl : DataGrid
 {
     public KeyValueFactGridControl()
@@ -34,6 +43,9 @@ public sealed class KeyValueFactGridControl : DataGrid
     }
 }
 
+/// <summary>
+/// Displays read-only activity-log rows using row and column virtualization.
+/// </summary>
 public sealed class ActivityLogGridControl : DataGrid
 {
     public ActivityLogGridControl()

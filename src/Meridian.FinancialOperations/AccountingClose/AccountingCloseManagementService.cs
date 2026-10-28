@@ -11,6 +11,9 @@ using Meridian.Storage.Ledger;
 
 namespace Meridian.FinancialOperations.AccountingClose;
 
+/// <summary>
+/// Defines close-period plan inspection, late adjustments, and close-management operations.
+/// </summary>
 public interface IAccountingCloseManagementService
 {
     Task<ClosePeriodPlanDto?> GetPeriodPlanAsync(Guid workflowId, CancellationToken ct = default);
@@ -120,6 +123,9 @@ public interface IAccountingCloseManagementService
                 "This accounting close service does not implement tenant- and company-scoped reopen."));
 }
 
+/// <summary>
+/// Coordinates close-period plans, late adjustments, and close controls over operations workflows.
+/// </summary>
 public sealed partial class AccountingCloseManagementService : IAccountingCloseManagementService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)

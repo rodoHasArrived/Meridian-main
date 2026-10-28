@@ -9,9 +9,13 @@ using static Meridian.DataIntegration.AccountingSystem.AccountingProviderJson;
 
 namespace Meridian.DataIntegration.AccountingSystem;
 
+/// <summary>Imports read-only Xero accounting evidence and validates controlled exports using stored provider credentials.</summary>
 public sealed class XeroAccountingProvider(IProviderCredentialStore store, HttpClient client)
-    : CredentialedAccountingProvider(store, client)
+    : CredentialedAccountingProvider(store, client), IConnectionBoundAccountingProvider
 {
+    public IAccountingSystemConnectionVerifier BindCredentials(IProviderCredentialStore credentialStore)
+        => new XeroAccountingProvider(credentialStore, Client);
+
     public const string Id = "xero";
     public override string ProviderId => Id;
     public override string DisplayName => "Xero";

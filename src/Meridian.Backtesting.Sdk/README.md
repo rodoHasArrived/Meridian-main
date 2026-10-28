@@ -52,11 +52,14 @@ Use this module when a backtesting contract must be shared across runtime and st
   engines. Native results are marked with full canonical coverage, while QuantConnect Lean imports
   normalize into the same `BacktestResult` storage model with `SummaryOnly` coverage metadata and
   compatibility warnings for missing fill, cash-flow, attribution, and ledger artifacts.
-- `BacktestMetrics.Xirr` retains `double.NaN` when IRR is unavailable. SDK JSON emits the named
-  string `"NaN"`, with named floating-point handling scoped to this property. Durable strategy-run
-  snapshots override that representation with JSON `null` and accept the exact legacy `"NaN"`
-  sentinel on read, preserving unavailable IRR without substituting a measured zero return.
-  Other metrics retain their existing numeric serialization rules.
+- `BacktestMetrics.Xirr` retains `double.NaN` when IRR is unavailable. SDK and HTTP JSON emit
+  the named string `"NaN"`; durable strategy-run snapshots write JSON `null` and accept legacy
+  `"NaN"` on read, preserving unavailable IRR without substituting a measured zero return.
+  `ProfitFactor` preserves positive infinity for gains with no losses, and `SortinoRatio` preserves
+  positive infinity when the native return series has no downside. These valid outcomes round-trip
+  as `"Infinity"` through SDK JSON, durable history and HTTP projections. Named floating-point
+  handling is scoped to these three properties; Sharpe, Calmar and win rate retain strict numeric
+  serialization. Native formulas do not define infinite values for those other metrics.
 - `OpenLot.IsShort` is an optional init-only direction flag that preserves the existing positional
   constructor and deconstruction shapes. Lot quantities stay positive; directed short lots calculate unrealized P&L as
   `(entryPrice - currentPrice) * quantity` and retain that direction when exposed through position
@@ -71,6 +74,12 @@ Use this module when a backtesting contract must be shared across runtime and st
   deconstruction shape.
 - `AssetEventCashFlow.FractionalUnits`, `BasisDisposed`, and `RealizedPnl` retain cash-in-lieu
   disposal evidence even when an all-fraction transformation leaves no successor position.
+- `ClosedLot.CostBasis` retains exact booked relief separately from the rounded entry quote;
+  legacy records without it retain the entry-quote calculation. `EntryCommission` and
+  `ExitCommission` retain disposal fees separately from gross realized P&L. `OpenLot` and its
+  basis components carry unrelieved `EntryCommission`, while
+  `AssetEventCashFlow.EntryCommissionDisposed` retains fees relieved by fractional disposals.
+  These init-only additions preserve constructor and deconstruction compatibility.
 
 ## Unitized lots
 

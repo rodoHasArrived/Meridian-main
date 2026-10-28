@@ -2,6 +2,9 @@ using Meridian.Contracts.Extensibility;
 
 namespace Meridian.Ui.Shared.Extensibility;
 
+/// <summary>
+/// Exposes operational configuration options as extension catalog registrations.
+/// </summary>
 public sealed class OperationalConfigurationExtensibilityCatalogProvider : IExtensibilityCatalogProvider
 {
     private static readonly ExtensibilityScopeDto GlobalScope = new(

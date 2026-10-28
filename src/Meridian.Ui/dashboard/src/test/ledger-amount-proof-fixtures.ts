@@ -33,3 +33,17 @@ export function createLedgerAmountProofPacket(selection = ledgerAmountSelection)
     }
   };
 }
+
+/** Report guard plus true original retained posting identity, including an earlier source period. */
+export function createReportAmountProofPacket(selection: LedgerAmountSelection): EvidencePacket {
+  const packet = createLedgerAmountProofPacket(selection);
+  const proof = packet.ledgerAmount!;
+  const sourceSubjectId = `${selection.journalEntryIds![0]}:${selection.ledgerEntryIds![0]}:debit`;
+  const sourceScope = { ...proof.scope, periodId: "11111111-1111-1111-1111-111111111111" };
+  proof.evidence[0]!.sourceSubjectId = sourceSubjectId;
+  proof.evidence[0]!.sourceScope = sourceScope;
+  packet.nodes[0]!.subject = { ...packet.nodes[0]!.subject, subjectId: sourceSubjectId };
+  const fund = encodeURIComponent(sourceScope.fundProfileId).replace(/[!'()*]/g, (value) => `%${value.charCodeAt(0).toString(16).toUpperCase()}`);
+  packet.nodes[0]!.artifactRefs[0]!.canonicalSubjectId = `${fund}:${sourceScope.ledgerBookId}:${sourceScope.periodId}:${sourceSubjectId}`;
+  return packet;
+}

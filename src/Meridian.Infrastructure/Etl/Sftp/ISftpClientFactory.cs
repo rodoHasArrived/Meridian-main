@@ -40,6 +40,9 @@ public interface ISftpClientFactory
 }
 
 #if SFTP
+/// <summary>
+/// Creates SSH.NET-backed SFTP clients from configured connection options.
+/// </summary>
 public sealed class SftpClientFactory : ISftpClientFactory
 {
     public ISftpClient Create(SftpConnectionOptions options)

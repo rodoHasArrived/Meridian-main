@@ -117,33 +117,51 @@ public sealed record OmsKeyRotationRequest(string KeyId, string RequestedBy, str
 
 public sealed record OmsKeyRotationResult(string KeyId, string Status, DateTimeOffset EffectiveAtUtc, string CorrelationId);
 
+/// <summary>
+/// Accepts inbound OMS messages and exposes the retained ingestion snapshot.
+/// </summary>
 public interface IOmsInboundIngestionPipeline
 {
     OmsIngestionResult Ingest(OmsInboundMessage message, OmsRequestSignatureInput? signature = null);
     IReadOnlyCollection<OmsInboundMessage> Snapshot();
 }
 
+/// <summary>
+/// Provides diagnostic observations for configured OMS adapters.
+/// </summary>
 public interface IOmsAdapterDiagnosticsProvider
 {
     IReadOnlyCollection<OmsAdapterDiagnostics> AdapterDiagnostics();
 }
 
+/// <summary>
+/// Resolves synchronization conflicts submitted by the Excel bridge.
+/// </summary>
 public interface IExcelBridgeSyncService
 {
     OmsSyncConflictResult ResolveSyncConflict(OmsSyncRequest request, OmsRequestSignatureInput? signature = null);
 }
 
+/// <summary>
+/// Reads recent OMS integration audit entries.
+/// </summary>
 public interface IOmsIntegrationAuditReader
 {
     IReadOnlyCollection<OmsIntegrationAuditEntry> AuditTrail(int take = 200);
 }
 
+/// <summary>
+/// Verifies signed OMS requests and rotates integration signing keys.
+/// </summary>
 public interface IOmsRequestSigningService
 {
     OmsRequestSignatureResult VerifyRequestSignature(OmsRequestSignatureInput signature);
     OmsKeyRotationResult RotateSigningKey(OmsKeyRotationRequest request);
 }
 
+/// <summary>
+/// Combines OMS ingestion, diagnostics, synchronization, auditing, and signing operations for API handlers.
+/// </summary>
 public interface IOmsIntegrationApiHandler :
     IOmsInboundIngestionPipeline,
     IOmsAdapterDiagnosticsProvider,

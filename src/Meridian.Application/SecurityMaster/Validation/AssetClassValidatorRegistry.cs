@@ -9,12 +9,18 @@ public sealed record SecurityValidationContext(
     SecurityProjectionRecord Record,
     DateTimeOffset EvaluatedAtUtc);
 
+/// <summary>
+/// Defines validation rules for one supported Security Master asset class.
+/// </summary>
 public interface ISecurityAssetClassValidator
 {
     string AssetClass { get; }
     IReadOnlyList<SecurityValidationIssueDto> Validate(SecurityValidationContext context);
 }
 
+/// <summary>
+/// Indexes asset-class validators and resolves the validator for a requested asset class.
+/// </summary>
 public sealed class AssetClassValidatorRegistry
 {
     private readonly IReadOnlyDictionary<string, ISecurityAssetClassValidator> _validators;

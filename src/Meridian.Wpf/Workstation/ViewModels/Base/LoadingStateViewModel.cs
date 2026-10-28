@@ -1,5 +1,8 @@
 namespace Meridian.Wpf.Workstation.ViewModels.Base;
 
+/// <summary>
+/// Exposes observable loading activity and its explanatory message.
+/// </summary>
 public sealed class LoadingStateViewModel : Meridian.Wpf.ViewModels.BindableBase
 {
     private bool _isLoading;

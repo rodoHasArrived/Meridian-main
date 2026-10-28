@@ -5,6 +5,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Hosts the desktop workspace overview and recent activity.
+/// </summary>
 public partial class HomeWorkspacePage : Page
 {
     private readonly HomeWorkspaceViewModel _viewModel;

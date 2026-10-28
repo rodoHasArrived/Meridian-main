@@ -20,6 +20,9 @@ public sealed record ReportPackValidationContext(
     IReadOnlyList<SecurityValidationGateResultDto>? SecurityValidationResults = null,
     string? DataProvenanceToken = null);
 
+/// <summary>
+/// Validates report-pack generation context and builds generation lifecycle evidence.
+/// </summary>
 public sealed class ReportPackValidationService
 {
     public IReadOnlyList<FundReportPackValidationIssueDto> Validate(ReportPackValidationContext context)

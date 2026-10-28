@@ -57,6 +57,9 @@ public sealed record BrokerCustodianFeedBatch(
     BrokerCustodianFeedDescriptor Descriptor,
     IReadOnlyList<CanonicalReconciliationRecord> Records);
 
+/// <summary>
+/// Reads broker or custodian source data into canonical reconciliation feed batches.
+/// </summary>
 public interface IBrokerCustodianReconciliationFeedAdapter
 {
     string AdapterId { get; }
@@ -109,6 +112,9 @@ public sealed record ReconciliationResolutionHistoryEntry(
     DateTimeOffset OccurredAtUtc,
     IReadOnlyList<string> EvidenceReferences);
 
+/// <summary>
+/// Appends reconciliation decisions and resolution history and reads their retained evidence.
+/// </summary>
 public interface IReconciliationDecisionJournal
 {
     Task AppendDecisionAsync(BrokerCustodianMatchDecision decision, CancellationToken ct = default);
@@ -117,6 +123,9 @@ public interface IReconciliationDecisionJournal
     Task<IReadOnlyList<ReconciliationResolutionHistoryEntry>> ListHistoryAsync(string decisionId, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Matches broker and custodian records using ordered reconciliation rules.
+/// </summary>
 public sealed class BrokerCustodianMatchingPipeline
 {
     public static readonly IReadOnlyList<BrokerCustodianMatchRule> DefaultRules =

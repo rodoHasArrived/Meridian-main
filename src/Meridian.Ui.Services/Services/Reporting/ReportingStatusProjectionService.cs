@@ -29,12 +29,18 @@ public sealed record ReportingStatusProjection(
     IReadOnlyList<ReportingRunAuditEntry> AuditTrail,
     string? FailureReason);
 
+/// <summary>
+/// Projects reporting manifests, audit entries, and templates into workstation read models.
+/// </summary>
 public interface IReportingStatusProjectionService
 {
     ReportingStatusProjection Project(ReportingOutputManifest manifest, IReadOnlyList<ReportingRunAuditEntry> audit);
     IReadOnlyList<ReportingTemplateProjection> ProjectTemplates(IReportingTemplateCatalog catalog);
 }
 
+/// <summary>
+/// Builds reporting status and template read models with artifact, audit, and section-lineage details.
+/// </summary>
 public sealed class ReportingStatusProjectionService : IReportingStatusProjectionService
 {
     public ReportingStatusProjection Project(ReportingOutputManifest manifest, IReadOnlyList<ReportingRunAuditEntry> audit)

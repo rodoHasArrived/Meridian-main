@@ -14,6 +14,7 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.Wpf.ViewModels.Accounting;
 
+/// <summary>Exposes bindable state and commands to review books, chart, rules, manual journals, GL evidence, validation, audit readiness.</summary>
 public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.BindableBase
 {
     private const string DefaultActor = "desktop-user";

@@ -3,6 +3,10 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Instruments.CertificatesOfDeposit;
 
+/// <summary>
+/// Reads certificate-of-deposit reference projections and combines them with canonical Security
+/// Master data.
+/// </summary>
 public sealed class CertificateOfDepositProjectionService
     : InstrumentProjectionServiceBase<CertificateOfDepositProjectionRow, CertificateOfDepositReferenceDto>,
       ICertificateOfDepositReferenceService
@@ -45,6 +49,10 @@ public sealed class CertificateOfDepositProjectionService
             row.Version);
 }
 
+/// <summary>
+/// Returns absent or empty certificate-of-deposit reference data when the reference service is
+/// unavailable.
+/// </summary>
 public sealed class NullCertificateOfDepositReferenceService : ICertificateOfDepositReferenceService
 {
     public Task<CertificateOfDepositReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)

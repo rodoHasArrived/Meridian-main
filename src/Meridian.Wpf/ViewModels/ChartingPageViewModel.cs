@@ -19,6 +19,9 @@ using Palette = Meridian.Ui.Services.Services.ColorPalette;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Loads selected-symbol candlesticks and exposes chart series, timeframes, volume profiles, and indicator toggles.
+/// </summary>
 public sealed class ChartingPageViewModel : BindableBase
 {
     private readonly IChartingDataClient _chartingClient;
@@ -662,11 +665,17 @@ public sealed class ChartingPageViewModel : BindableBase
     }
 }
 
+/// <summary>
+/// Supplies the available symbol list for desktop chart selection.
+/// </summary>
 public interface IChartingSymbolSource
 {
     Task<SymbolListResult> GetAllSymbolsAsync(CancellationToken ct = default);
 }
 
+/// <summary>
+/// Defines candlestick loading and volume-profile and technical-indicator calculations for desktop charts.
+/// </summary>
 public interface IChartingDataClient
 {
     Task<CandlestickData> GetCandlestickDataAsync(
@@ -751,6 +760,9 @@ public sealed class SymbolItem
     public override string ToString() => Symbol;
 }
 
+/// <summary>
+/// Pairs a chart timeframe value with its selector label.
+/// </summary>
 public sealed class ChartTimeframeOption
 {
     public ChartTimeframeOption(string label, ChartTimeframe timeframe)
@@ -766,6 +778,9 @@ public sealed class ChartTimeframeOption
     public override string ToString() => Label;
 }
 
+/// <summary>
+/// Exposes the identity, label, and observable enabled state of a chart indicator.
+/// </summary>
 public sealed class ChartIndicatorToggle : BindableBase
 {
     private readonly Action<string, bool> _toggleChanged;
@@ -793,6 +808,9 @@ public sealed class ChartIndicatorToggle : BindableBase
     }
 }
 
+/// <summary>
+/// Carries a volume bar's rendered height, brush, and tooltip.
+/// </summary>
 public sealed class WpfVolumeBarVm
 {
     public double Height { get; set; }
@@ -800,6 +818,9 @@ public sealed class WpfVolumeBarVm
     public string Tooltip { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Carries a price-volume bucket's price label, rendered width, and brush.
+/// </summary>
 public sealed class WpfVolumeProfileBarVm
 {
     public string PriceLabel { get; set; } = string.Empty;
@@ -807,6 +828,9 @@ public sealed class WpfVolumeProfileBarVm
     public Brush BarBrush { get; set; } = Brushes.Blue;
 }
 
+/// <summary>
+/// Carries an indicator's display name, formatted value, and value brush.
+/// </summary>
 public sealed class WpfIndicatorValueVm
 {
     public string Name { get; set; } = string.Empty;

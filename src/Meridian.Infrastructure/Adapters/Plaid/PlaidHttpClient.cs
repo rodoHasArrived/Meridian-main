@@ -7,6 +7,9 @@ using Meridian.Infrastructure.Utilities;
 
 namespace Meridian.Infrastructure.Adapters.Plaid;
 
+/// <summary>
+/// Implements Plaid API calls over HTTP using explicit client credentials and access tokens.
+/// </summary>
 public sealed class PlaidHttpClient : IPlaidClient
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)

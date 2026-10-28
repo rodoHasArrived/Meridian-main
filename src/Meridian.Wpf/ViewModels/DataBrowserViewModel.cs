@@ -13,6 +13,9 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Coordinates paged market-record browsing with type, venue, time, sort, and selection filters.
+/// </summary>
 public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
 {
     private readonly List<DataBrowserRecord> _allRecords;
@@ -605,6 +608,9 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
     }
 }
 
+/// <summary>
+/// Presents a selectable market record with timestamp, symbol, type, venue, price, and size.
+/// </summary>
 public sealed class DataBrowserRecord
 {
     private static readonly SolidColorBrush TradeBrush = new(Color.FromRgb(0x4E, 0xC9, 0xB0)); // teal

@@ -1151,6 +1151,9 @@ public sealed class AdminMaintenanceViewModel : BindableBase
 
 // ---- Display item types ----
 
+/// <summary>
+/// Presents a maintenance quick-check name, detail, and visual status.
+/// </summary>
 public sealed class QuickCheckDisplayItem
 {
     public string Name { get; set; } = string.Empty;
@@ -1159,6 +1162,9 @@ public sealed class QuickCheckDisplayItem
     public SolidColorBrush? StatusColor { get; set; }
 }
 
+/// <summary>
+/// Presents a storage tier's path, size, file count, and retention policy.
+/// </summary>
 public sealed class TierDisplayItem
 {
     public string Name { get; set; } = string.Empty;
@@ -1168,6 +1174,9 @@ public sealed class TierDisplayItem
     public string RetentionText { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Presents a retention policy's identity, description, duration, and enabled state.
+/// </summary>
 public sealed class RetentionPolicyDisplayItem
 {
     public string Id { get; set; } = string.Empty;
@@ -1177,6 +1186,9 @@ public sealed class RetentionPolicyDisplayItem
     public bool Enabled { get; set; }
 }
 
+/// <summary>
+/// Presents a cleanup candidate's path, size, and reason for selection.
+/// </summary>
 public sealed class CleanupFileDisplayItem
 {
     public string Path { get; set; } = string.Empty;
@@ -1184,6 +1196,9 @@ public sealed class CleanupFileDisplayItem
     public string Reason { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Presents a retained maintenance run's timestamp, operations, duration, and visual status.
+/// </summary>
 public sealed class MaintenanceHistoryItem
 {
     public string RunId { get; set; } = string.Empty;

@@ -12,6 +12,9 @@ public sealed record ReportAccessQueryContext(
     string? TenantId = null,
     bool RequireBoundScope = false);
 
+/// <summary>
+/// Normalizes, validates, and evaluates reporting access policies against caller scope.
+/// </summary>
 public static class ReportAccessPolicyEvaluator
 {
     private static readonly ReportAccessPolicyDto CompanyWidePolicy = new(ReportAccessModeDto.CompanyWide);

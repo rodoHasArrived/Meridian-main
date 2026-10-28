@@ -44,6 +44,9 @@ public sealed record SecurityMasterCorporateActionRestatementDto(
     IReadOnlyList<RestatementCandidateDto> Candidates,
     string EvaluationStatus = CorporateActionRestatementEvaluationStates.Evaluated);
 
+/// <summary>
+/// Defines the evaluation outcomes used when assessing corporate action restatements.
+/// </summary>
 public static class CorporateActionRestatementEvaluationStates
 {
     public const string Evaluated = "Evaluated";

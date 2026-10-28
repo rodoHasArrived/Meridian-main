@@ -77,20 +77,28 @@ No LOT, MARK, SEAM or release acceptance status changes follow from this inspect
 Accounting/Ledger and Storage review, live shadow operations and live Windows operator evidence
 remain separate gates.
 
-## Amount-provenance prerequisite
+## Amount-provenance reconciliation
 
-The separate provenance lane inspected `W10-PROV-001` without changing code or running tests.
-`FundOperationsWorkspaceReadService.GenerateReportPackAsync` builds a consolidated
-`FundLedgerBook` and label/account-plus-symbol pointers; these do not safely supply the exact
-authenticated tenant, company, book and period identity required by `RetainedLedgerAmountDto`.
-The governed `ReportingOperationalScope` and `ReportingAuthoritativeSourceCheckpoint` retain
-scope, but rendered amounts still need an immutable mapping to their contributing journal lines.
+The earlier read-only provenance inspection at `af7f0c6a91` found that the compatibility
+`FundOperationsWorkspaceReadService.GenerateReportPackAsync` retained consolidated labels without
+an authoritative per-amount journal mapping. That finding describes the historical baseline;
+it is not the state of the governed reporting path after integration of incoming main `a6ad3fe157`.
 
-The safe implementation prerequisite is to retain a content-hashed contribution mapping per
-amount during governed source capture, verify its exact journal/entry/side subjects through the
-existing subject-addressed evidence service, then activate report surfaces. Keep legacy typed
-pointers review-required. Do not infer proof from labels or assign a consolidated amount an
-invented single-book scope.
+The incoming `LedgerReportingAuthoritativeSource` now retains trial-balance amount bindings with
+exact contributing journal/line identities in its content-hashed `ReportingLedgerPopulationSnapshot`.
+`ReportAmountBindingBuilder` reproduces those bindings from Ledger's retained financial report pack;
+`ReportLedgerAmountProvenanceService` resolves `report:{runId}:{amountId}` through the existing
+subject-addressed ledger-amount evidence surface. Historical contributors keep their original
+posting-period scope. A missing, altered, foreign or unverified contributor blocks the complete
+amount and removes its inspectable source routes. The browser reporting detail uses the shared
+proof drawer; it does not reconstruct evidence from live balances.
+
+`docs/testing/w10-amount-provenance.md` and `ReportLedgerAmountProvenanceTests` record this bounded
+slice and its historical validation. Those results were not rerun by this inspection and do not
+certify the integrated candidate. `W10-PROV-001` remains in progress: generated-report WPF
+activation, other report families, NAV and portfolio amount surfaces, current-candidate validation
+and live operator acceptance remain open. Compatibility typed pointers remain review-required;
+labels and an invented single-book scope cannot establish proof.
 
 ## MARK and SEAM acceptance matrix
 
@@ -196,8 +204,12 @@ preserve unrelated unsaved recovery and reject late or foreign responses.
 The broad clean local .NET run before this correction passed 24,173 tests with five registered
 skips and failed four unrelated MCP cleanup tests because the container's PID 1 did not reap
 orphan processes. All seven MCP runner tests then passed unchanged under `docker-init -s`.
-Final full-gate results for the corrected source belong to the PR checks and validation report;
-these earlier runs are not a complete gate pass or production certification. Andrew Rowden was
+The complete local quality gate on `5aa74aaab0` then passed: 24,178 .NET tests with zero
+failures and five registered skips, the complete browser lane, and 1,958 repository script tests
+with zero failures and 16 registered skips. The command cleared the three demo environment
+flags and ran `bash scripts/ci.sh` under `docker-init -s`; no test or timeout was changed.
+This result predates integration of `a6ad3fe157` and does not certify that combined tree.
+Hosted checks and live acceptance remain separate. Andrew Rowden was
 identified by the user as signing owner; an accessible Windows live-acceptance target remains
 unspecified.
 

@@ -8,6 +8,9 @@ using Serilog;
 
 namespace Meridian.Storage.Etl;
 
+/// <summary>
+/// Stages ETL source streams as files and records their checksums and metadata.
+/// </summary>
 public sealed class EtlStagingStore : IEtlStagingStore
 {
     private readonly ILogger _log = LoggingSetup.ForContext<EtlStagingStore>();
@@ -71,6 +74,9 @@ public sealed class EtlStagingStore : IEtlStagingStore
     }
 }
 
+/// <summary>
+/// Retains ETL audit events and resumable job checkpoints under the configured data root.
+/// </summary>
 public sealed class EtlAuditStore
 {
     private readonly string _auditRoot;
@@ -109,6 +115,9 @@ public sealed class EtlAuditStore
         => Path.Combine(_auditRoot, jobId, fileName);
 }
 
+/// <summary>
+/// Appends rejected ETL records to the job's retained rejection output.
+/// </summary>
 public sealed class EtlRejectSink
 {
     private readonly string _rejectRoot;

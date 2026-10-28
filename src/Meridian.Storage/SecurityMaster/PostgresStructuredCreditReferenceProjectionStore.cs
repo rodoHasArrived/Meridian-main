@@ -3,6 +3,9 @@ using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Reads structured credit reference projections from PostgreSQL, including pool and tranche information.
+/// </summary>
 public sealed class PostgresStructuredCreditReferenceProjectionStore : IStructuredCreditReferenceProjectionStore
 {
     internal const string AssetClass = "StructuredCredit";

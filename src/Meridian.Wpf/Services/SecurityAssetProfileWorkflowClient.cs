@@ -4,6 +4,9 @@ using Meridian.Ui.Services;
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Defines asset-profile discovery, lineage, draft, approval, rollback, and security-creation operations.
+/// </summary>
 public interface ISecurityAssetProfileWorkflowClient
 {
     Task<IReadOnlyList<SecurityAssetProfileDefinitionDto>> GetProfilesAsync(CancellationToken ct = default);
@@ -25,6 +28,9 @@ public interface ISecurityAssetProfileWorkflowClient
     Task<ApiResponse<SecurityDetailDto>> CreateSecurityAsync(CreateSecurityRequest request, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Adapts the shared security API for governed asset-profile changes and security creation.
+/// </summary>
 public sealed class SecurityAssetProfileWorkflowClient : ISecurityAssetProfileWorkflowClient
 {
     private readonly ApiClientService _apiClient;

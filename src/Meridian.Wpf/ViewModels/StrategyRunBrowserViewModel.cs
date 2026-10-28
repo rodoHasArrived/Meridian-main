@@ -11,6 +11,9 @@ namespace Meridian.Wpf.ViewModels;
 /// <summary>A single row in the comparison diff table.</summary>
 public sealed record ComparisonRow(string Label, string ValueA, string ValueB);
 
+/// <summary>
+/// Loads strategy runs, filters by mode, and coordinates selection and run comparison.
+/// </summary>
 public sealed class StrategyRunBrowserViewModel : BindableBase
 {
     private readonly StrategyRunWorkspaceService _runService;

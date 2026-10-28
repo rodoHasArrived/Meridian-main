@@ -4,11 +4,17 @@ using Meridian.Ui.Services.Services;
 
 namespace Meridian.Wpf.Features.Settings.Shell;
 
+/// <summary>
+/// Loads provider, credential, and desktop-preference state for the settings workspace.
+/// </summary>
 public interface ISettingsWorkspaceShellSnapshotService
 {
     Task<SettingsWorkspaceShellSnapshot> LoadAsync(CancellationToken cancellationToken = default);
 }
 
+/// <summary>
+/// Collects provider, credential, and desktop-preference state for the settings workspace.
+/// </summary>
 public sealed class SettingsWorkspaceShellSnapshotService : ISettingsWorkspaceShellSnapshotService, IWorkspaceScopedService
 {
     private readonly SettingsConfigurationService _settingsConfigurationService;

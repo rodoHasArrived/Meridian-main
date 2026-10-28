@@ -6,6 +6,10 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.FinancialOperations.OperationsContinuity;
 
+/// <summary>
+/// Assembles financial operations workflow, close-input, and output-evidence views for the command
+/// center.
+/// </summary>
 public sealed partial class FinancialOperationsCommandCenterReadService : IFinancialOperationsCommandCenterReadService
 {
     private static readonly IReadOnlyList<OperationsGateKeyDto> CoreFlowGateOrder =

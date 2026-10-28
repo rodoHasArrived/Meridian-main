@@ -3,6 +3,10 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Application.SecurityMaster;
 
+/// <summary>
+/// Reads current and historical security details from Security Master projections and retained
+/// records.
+/// </summary>
 public sealed class SecurityMasterQueryService :
     ISecurityMasterQueryService,
     ISecurityMasterReportingQueryService

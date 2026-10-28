@@ -24,6 +24,9 @@ public sealed record ExportPreflightContext(
     public bool WarnCsvComplexTypes => Request.ValidationRules?.WarnCsvComplexTypes ?? true;
 }
 
+/// <summary>
+/// Defines export preflight checks for disk capacity, destination permissions, data, and format compatibility.
+/// </summary>
 public static class ExportPreflightRules
 {
     public static readonly IPreflightRule<ExportPreflightContext> DiskSpace =

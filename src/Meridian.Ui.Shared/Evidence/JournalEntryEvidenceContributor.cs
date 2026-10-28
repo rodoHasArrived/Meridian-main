@@ -17,6 +17,9 @@ using static Meridian.Ui.Shared.Evidence.EvidenceContributionHelpers;
 
 namespace Meridian.Ui.Shared.Evidence;
 
+/// <summary>
+/// Adds journal-entry lifecycle and source evidence to an evidence graph.
+/// </summary>
 public sealed class JournalEntryEvidenceContributor : IEvidenceContributor
 {
     private readonly IServiceProvider _services;

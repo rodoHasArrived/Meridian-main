@@ -6,6 +6,9 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Coordinates symbol selection, sampling presets, sample generation, and recent-sample presentation.
+/// </summary>
 public sealed class DataSamplingViewModel : BindableBase, IDataErrorInfo
 {
     private string _sampleName = string.Empty;
@@ -392,6 +395,9 @@ public sealed class DataSamplingViewModel : BindableBase, IDataErrorInfo
     private static string NormalizeSymbol(string value) => value.Trim().ToUpperInvariant();
 }
 
+/// <summary>
+/// Summarizes a generated sample's name, symbol count, date range, and creation time.
+/// </summary>
 public sealed class SampleSummary
 {
     public string Name { get; init; } = string.Empty;

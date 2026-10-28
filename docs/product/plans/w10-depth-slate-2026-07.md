@@ -180,6 +180,14 @@ Baseline constraints at registration, retained as the rationale for this behavio
 
 ### `W10-RECON-001` — break identity
 
+Implementation update (2026-09-26, PR #3004): stable business identity is separated from comparison
+policy. Executed mapping evidence, exact completed recovery checkpoints, legacy replay safeguards,
+occurrence-based named-calendar SLA calculation, and browser/WPF source-observation queue views
+are implemented with source and regression paths linked from the registry. Verification and operator
+acceptance remain in progress; issue #2636 remains open. Source clearing does not resolve casework.
+The constraints below preserve the original planning baseline and explain these requirements;
+they are not a claim that all listed implementation gaps remain absent from source.
+
 - Two incompatible identifiers exist. The statement matcher mints a random per-run identifier; the
   queue projection derives one from a fingerprint that hashes the variance amount, the tolerance, the
   as-of date, and the accounting period — so a one-cent move produces a different break.

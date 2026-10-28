@@ -197,9 +197,10 @@ public sealed partial class ProviderFactory
         var credentials = CreateCredentialContext<AlpacaHistoricalDataProvider>(
             ("ALPACA_KEY_ID", configuredOptions.KeyId),
             ("ALPACA_SECRET_KEY", configuredOptions.SecretKey));
-        var aliasAwareCredentials = AlpacaCredentialEnvironment.Resolve(configuredOptions);
-        var keyId = FirstNonBlank(credentials.Get("ALPACA_KEY_ID"), aliasAwareCredentials.KeyId);
-        var secretKey = FirstNonBlank(credentials.Get("ALPACA_SECRET_KEY"), aliasAwareCredentials.SecretKey);
+        // Resolution owns the complete record. A missing field must stay missing, including
+        // after a vault deletion; resolving environment/config here would mix account owners.
+        var keyId = credentials.Get("ALPACA_KEY_ID");
+        var secretKey = credentials.Get("ALPACA_SECRET_KEY");
         if (string.IsNullOrWhiteSpace(keyId) || string.IsNullOrWhiteSpace(secretKey))
             return null;
 

@@ -12,11 +12,17 @@ using StatusProviderInfoModel = Meridian.Ui.Services.Services.StatusProviderInfo
 
 namespace Meridian.Wpf.Features.Data.Shell;
 
+/// <summary>
+/// Loads the data needed to populate the desktop data workspace.
+/// </summary>
 public interface IDataWorkspaceShellSnapshotService
 {
     Task<DataWorkspaceData> LoadAsync(CancellationToken cancellationToken = default);
 }
 
+/// <summary>
+/// Collects provider, storage, quality, and workflow state for the desktop data workspace.
+/// </summary>
 public sealed class DataWorkspaceShellSnapshotService : IDataWorkspaceShellSnapshotService, IWorkspaceScopedService
 {
     private readonly WorkspaceShellContextService _shellContextService;

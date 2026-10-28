@@ -106,6 +106,9 @@ public sealed record EvidenceWorkbenchPacketPresentationModel(
     public bool HasProofChainLayers => ProofChainLayers.Count > 0;
 }
 
+/// <summary>
+/// Projects evidence subjects, packets, and request lists into desktop rows and readiness presentation.
+/// </summary>
 public static class EvidenceWorkbenchPresentationMapper
 {
     public static IReadOnlyList<EvidenceWorkbenchSubjectRowModel> BuildSubjectRows(

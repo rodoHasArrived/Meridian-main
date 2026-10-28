@@ -8,6 +8,9 @@ using System.Text.Json.Serialization;
 
 namespace Meridian.FinancialOperations.OperationsContinuity;
 
+/// <summary>
+/// Reads and updates approval rules for operations workflow actions.
+/// </summary>
 public interface IOperationsApprovalPolicyMatrixService
 {
     OperationsApprovalPolicyMatrixDto GetMatrix();
@@ -18,6 +21,9 @@ public interface IOperationsApprovalPolicyMatrixService
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Maintains the approval-policy matrix used to govern operations workflow actions.
+/// </summary>
 public sealed class OperationsApprovalPolicyMatrixService : IOperationsApprovalPolicyMatrixService
 {
     private const string PolicyId = "operations-continuity-approval-policy";

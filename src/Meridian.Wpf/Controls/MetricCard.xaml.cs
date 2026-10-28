@@ -5,6 +5,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Controls;
 
+/// <summary>
+/// Displays a labeled metric value with supporting text, an icon, and a status tone.
+/// </summary>
 public partial class MetricCard : UserControl
 {
     public static readonly DependencyProperty TitleProperty =

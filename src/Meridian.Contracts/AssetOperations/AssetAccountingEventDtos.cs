@@ -23,6 +23,9 @@ public enum AssetAccountingEventKindDto
     Disposal = 7
 }
 
+/// <summary>
+/// Formats and parses the canonical event type names used by the asset accounting event spine.
+/// </summary>
 public static class AssetAccountingEventTypeNames
 {
     public const string Prefix = "AssetAccounting.";
@@ -382,6 +385,9 @@ public sealed record AssetAccountingPostingCandidateDto(
     AssetAccountingEventSpineDto Spine,
     PostingRuleJournalCandidateResultDto Candidate);
 
+/// <summary>
+/// Checks the required identities, amounts, and accounting context of a posted journal impact.
+/// </summary>
 public static class PostedJournalImpactValidator
 {
     public static IReadOnlyList<string> Validate(PostedJournalImpactDto? impact)
@@ -430,6 +436,9 @@ public static class PostedJournalImpactValidator
     public static bool IsValid(PostedJournalImpactDto? impact) => Validate(impact).Count == 0;
 }
 
+/// <summary>
+/// Validates asset accounting event identity, lifecycle ordering, evidence, and posting consistency.
+/// </summary>
 public static class AssetAccountingEventSpineValidator
 {
     private static readonly AssetAccountingLifecycleStageDto[] LifecycleOrder =
@@ -943,6 +952,9 @@ public static class AssetAccountingEventSpineValidator
     }
 }
 
+/// <summary>
+/// Checks lot mutation instructions against the event amount, effective date, direction, and retained evidence.
+/// </summary>
 public static class AssetLotMutationInstructionValidator
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);

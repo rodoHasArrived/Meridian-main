@@ -59,8 +59,7 @@ def parse_manifest(content: bytes | None, label: str) -> dict | None:
         manifest = json.loads(content, object_pairs_hook=unique_object)
         if not isinstance(manifest, dict) or set(manifest) != {"schema", "generator", "contract", "modules"}:
             raise ValueError("Expected schema, generator, contract and modules only")
-        if manifest["schema"] != SCHEMA or manifest["generator"] != GENERATOR:
-            raise ValueError("Unsupported schema or hash generator version")
+        load_validator().manifest_version(manifest)
         if not isinstance(manifest["contract"], str) or not manifest["contract"]:
             raise ValueError("Missing hash contract")
         module_map(manifest)
@@ -103,7 +102,7 @@ def contained_path(root: Path, relative: str) -> Path:
     return path
 
 
-def actual_manifest(root: Path) -> dict:
+def actual_manifest(root: Path, schema_version: str | None = None) -> dict:
     validator = load_validator()
     registry_path = contained_path(root, REGISTRY)
     registry = validator.load_data(registry_path)
@@ -125,13 +124,18 @@ def actual_manifest(root: Path) -> dict:
             directories[:] = [name for name in directories if name not in validator.SOURCE_EXCLUDES]
             if any((Path(current) / name).is_symlink() for name in directories + files):
                 raise ValueError(f"Module contains symlinks: {module['id']}")
-    actual = validator.build_manifest(root)
+    actual = validator.build_manifest(root, schema_version)
     module_map(actual)
     return actual
 
 
 def merge_manifests(base: dict | None, ours: dict | None, theirs: dict | None, actual: dict) -> tuple[dict | None, dict]:
     """Three-way keyed merge, verified against the final module registry/content."""
+    versions = {load_validator().manifest_version(value) for value in (base, ours, theirs, actual) if value is not None}
+    if len(versions) != 1:
+        return None, {"successful": False, "decisions": {}, "review_required": {
+            "$manifest": "Fingerprint schema transition requires explicit reviewed README migration; parent evidence is not reinterpreted"
+        }}
     maps = [module_map(value) for value in (base, ours, theirs)]
     final = module_map(actual)
     decisions, errors, merged = {}, {}, []
@@ -188,7 +192,12 @@ def merge_checkout(root: Path, ancestor: str, head: str, base: str, *, apply: bo
     values = [manifest_at(root, revision) for revision in (ancestor, head, base)]
     if all(value is None for value in values) and not (root / REGISTRY).exists():
         return {"successful": True, "decisions": {}, "review_required": {}, "not_applicable": True}
-    actual = actual_manifest(root)
+    versions = {load_validator().manifest_version(value) for value in values if value is not None}
+    if len(versions) > 1:
+        return {"successful": False, "decisions": {}, "review_required": {
+            "$manifest": "Fingerprint schema transition requires explicit reviewed README migration; parent evidence is not reinterpreted"
+        }}
+    actual = actual_manifest(root, next(iter(versions), "1.0.0"))
     merged, report = merge_manifests(*values, actual)
     if report["successful"] and apply:
         path = contained_path(root, MANIFEST)

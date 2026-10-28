@@ -1,5 +1,8 @@
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Queries swap reference projections by security, swap type, and maturity.
+/// </summary>
 public interface ISwapReferenceProjectionStore
 {
     Task<SwapProjectionRow?> GetSwapAsync(Guid securityId, CancellationToken ct = default);

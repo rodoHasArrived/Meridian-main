@@ -384,11 +384,17 @@ public sealed class ProviderHealthService : IDisposable
 }
 
 
+/// <summary>
+/// Supplies updated provider-health snapshots to health-change subscribers.
+/// </summary>
 public sealed class HealthUpdateEventArgs : EventArgs
 {
     public List<ProviderHealthData> Providers { get; set; } = new();
 }
 
+/// <summary>
+/// Describes a provider-health threshold breach with its current value and alert message.
+/// </summary>
 public sealed class HealthAlertEventArgs : EventArgs
 {
     public string ProviderId { get; set; } = string.Empty;
@@ -410,6 +416,9 @@ public enum HealthAlertType : byte
 
 
 
+/// <summary>
+/// Combines provider lifecycle telemetry, health metrics, and the weighted health-score breakdown.
+/// </summary>
 public sealed class ProviderHealthData
 {
     public string ProviderId { get; set; } = string.Empty;
@@ -429,6 +438,9 @@ public sealed class ProviderHealthData
     public HealthScoreBreakdown Breakdown { get; set; } = new();
 }
 
+/// <summary>
+/// Collects provider stability, latency, completeness, uptime, throughput, and recent-error measurements.
+/// </summary>
 public sealed class HealthMetrics
 {
     public double ConnectionStabilityScore { get; set; }
@@ -443,6 +455,9 @@ public sealed class HealthMetrics
     public int ErrorsLastHour { get; set; }
 }
 
+/// <summary>
+/// Groups the stability, latency, completeness, and reconnection components of a health score.
+/// </summary>
 public sealed class HealthScoreBreakdown
 {
     public ScoreComponent ConnectionStability { get; set; } = new();
@@ -451,6 +466,9 @@ public sealed class HealthScoreBreakdown
     public ScoreComponent ReconnectionFrequency { get; set; } = new();
 }
 
+/// <summary>
+/// Describes a health-score component's weight, raw score, and weighted contribution.
+/// </summary>
 public sealed class ScoreComponent
 {
     public int Weight { get; set; }
@@ -458,6 +476,9 @@ public sealed class ScoreComponent
     public double WeightedScore { get; set; }
 }
 
+/// <summary>
+/// Records a timestamped provider health score, latency, and completeness percentage.
+/// </summary>
 public sealed class HealthHistoryPoint
 {
     public DateTime Timestamp { get; set; }
@@ -466,6 +487,9 @@ public sealed class HealthHistoryPoint
     public double CompletenessPercent { get; set; }
 }
 
+/// <summary>
+/// Configures health, latency, reconnection, and completeness limits used for automatic failover.
+/// </summary>
 public sealed class FailoverThresholds
 {
     public double MinHealthScore { get; set; } = 70;
@@ -478,6 +502,9 @@ public sealed class FailoverThresholds
 // NOTE: ProviderComparison is defined in AdvancedAnalyticsModels.cs for cross-provider comparison
 // ProviderHealthComparison below is for overall provider ranking
 
+/// <summary>
+/// Groups provider health snapshots and identifies leaders by overall score and individual dimensions.
+/// </summary>
 public sealed class ProviderHealthComparison
 {
     public List<ProviderHealthData> Providers { get; set; } = new();
@@ -489,11 +516,17 @@ public sealed class ProviderHealthComparison
 
 
 
+/// <summary>
+/// Carries API provider lifecycle telemetry and health measurements.
+/// </summary>
 public sealed class ProviderHealthResponse
 {
     public List<ProviderHealthInfo>? Providers { get; set; }
 }
 
+/// <summary>
+/// Describes API provider connection telemetry, stability, latency, completeness, and recent errors.
+/// </summary>
 public sealed class ProviderHealthInfo
 {
     public string ProviderId { get; set; } = string.Empty;
@@ -518,6 +551,9 @@ public sealed class ProviderHealthInfo
     public int ErrorsLastHour { get; set; }
 }
 
+/// <summary>
+/// Carries API health thresholds and the automatic-failover enabled state.
+/// </summary>
 public sealed class FailoverThresholdsResponse
 {
     public double MinHealthScore { get; set; }

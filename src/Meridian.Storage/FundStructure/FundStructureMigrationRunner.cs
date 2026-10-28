@@ -2,6 +2,9 @@ using Meridian.Storage.Migrations;
 
 namespace Meridian.Storage.FundStructure;
 
+/// <summary>
+/// Applies the PostgreSQL migrations used by fund structure persistence.
+/// </summary>
 public sealed class FundStructureMigrationRunner
 {
     private readonly PostgresMigrationRunner _runner;

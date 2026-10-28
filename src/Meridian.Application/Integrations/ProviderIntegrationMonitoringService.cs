@@ -4,6 +4,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
+/// <summary>
+/// Builds connection monitoring views and sync-run history from retained integration state.
+/// </summary>
 public sealed class ProviderIntegrationMonitoringService
 {
     private const int DefaultRecentRunLimit = 10;

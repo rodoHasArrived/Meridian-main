@@ -5,6 +5,9 @@ using System.Windows.Input;
 
 namespace Meridian.Wpf.Controls;
 
+/// <summary>
+/// Combines an icon and text with command binding and a bubbling click event.
+/// </summary>
 public partial class IconTextButton : UserControl
 {
     public static readonly RoutedEvent ClickEvent = EventManager.RegisterRoutedEvent(

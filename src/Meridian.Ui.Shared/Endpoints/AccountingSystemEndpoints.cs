@@ -12,6 +12,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps accounting-provider discovery, configuration, and integration operations to the shared HTTP API.
+/// </summary>
 public static class AccountingSystemEndpoints
 {
     public static void MapAccountingSystemEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)

@@ -4,6 +4,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Provides the desktop page to export analysis packages for downstream review.
+/// </summary>
 public partial class AnalysisExportPage : Page
 {
     private readonly AnalysisExportViewModel _viewModel = new();

@@ -805,6 +805,9 @@ public sealed record ProviderIntegrationActivationResultDto(
     public ProviderIntegrationManifestReferenceDto? ManifestReference { get; init; }
 }
 
+/// <summary>
+/// Retains versioned integration manifests, current references, connections, and ingestion evidence.
+/// </summary>
 public interface IProviderIntegrationManifestStore
 {
     /// <summary>Creates an initial current manifest, or accepts an identical current manifest.</summary>
@@ -860,6 +863,9 @@ public interface IProviderIntegrationManifestStore
     Task<IReadOnlyList<ProviderIntegrationSyncRunDto>> ListSyncRunsAsync(string connectionId, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Resolves an integration manifest store for an explicit tenant boundary.
+/// </summary>
 public interface IProviderIntegrationTenantManifestStoreFactory
 {
     IProviderIntegrationManifestStore ForTenant(string tenantId);

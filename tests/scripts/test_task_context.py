@@ -188,6 +188,36 @@ Unrelated shared guidance update.
         self.assertEqual(packet["scope"]["targets"], ["src/Meridian.Contracts/README.md"])
         self.assertIn("src/Meridian.Contracts/Future.cs", packet["scope"]["ownedPaths"])
 
+    def test_owned_directory_includes_its_own_readme_and_instructions(self):
+        self.write("docs/README.md", "# Unrelated context anchor\n")
+        self.write("src/NewModule/README.md", "# Module ownership and validation\n")
+        for filename in ("AGENTS.md", "AGENTS.override.md"):
+            self.write(f"src/NewModule/{filename}", "Module-specific instructions.\n")
+        packet = build_packet(self.root, targets=["docs/README.md"],
+                              brief=self.brief(ownedPaths=["src/NewModule"]))
+        selected = [item["path"] for item in packet["context"]]
+        self.assertIn("src/NewModule/README.md", selected)
+        self.assertIn("src/NewModule/AGENTS.md", packet["instructions"])
+        self.assertIn("src/NewModule/AGENTS.override.md", packet["instructions"])
+        check_packet(self.root, packet)
+        for filename in ("README.md", "AGENTS.md", "AGENTS.override.md"):
+            with self.subTest(filename=filename):
+                path = self.root / "src/NewModule" / filename
+                original = path.read_text(encoding="utf-8")
+                path.write_text(original + "Changed module authority.\n", encoding="utf-8")
+                with self.assertRaisesRegex(ValueError, "stale"):
+                    check_packet(self.root, packet)
+                path.write_text(original, encoding="utf-8")
+
+    def test_new_instruction_in_owned_directory_invalidates_packet(self):
+        self.write("docs/README.md", "# Unrelated context anchor\n")
+        (self.root / "src/NewModule").mkdir()
+        packet = build_packet(self.root, targets=["docs/README.md"],
+                              brief=self.brief(ownedPaths=["src/NewModule"]))
+        self.write("src/NewModule/AGENTS.md", "New module-specific instructions.\n")
+        with self.assertRaisesRegex(ValueError, "stale"):
+            check_packet(self.root, packet)
+
     def test_planner_sources_and_buildctl_changes_invalidate(self):
         for name in ("build/python/cli/validation_plan.py", "build/python/cli/buildctl.py",
                      "docs/ai/codex/quickstart.md"):

@@ -10,6 +10,10 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.OperationsContinuity;
 
+/// <summary>
+/// Persists operations workflows and audit evidence in PostgreSQL with transactional commit
+/// support.
+/// </summary>
 public sealed class PostgresOperationsContinuityStore :
     IOperationsContinuityRepository,
     IOperationsWorkflowAuditStore,

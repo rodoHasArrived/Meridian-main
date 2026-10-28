@@ -60,22 +60,7 @@ public sealed partial class OrderManagementSystem
         int capacity,
         string? subscriberName,
         UndeliverableExecutionReportHandler? undeliverableHandler)
-    {
-        if (capacity <= 0)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(capacity),
-                capacity,
-                "Execution-report subscription capacity must be positive.");
-        }
-
-        lock (_disposeSync)
-        {
-            ObjectDisposedException.ThrowIf(_disposeStarted != 0, this);
-            return new ExecutionReportSubscription(
-                _executionReportHub.Subscribe(capacity, subscriberName, undeliverableHandler));
-        }
-    }
+        => new(_lifecycle.SubscribeExecutionReports(capacity, subscriberName, undeliverableHandler));
 
     /// <summary>Consumer-owned handle for one independent accounted execution-report stream.</summary>
     public sealed class ExecutionReportSubscription : IAsyncDisposable

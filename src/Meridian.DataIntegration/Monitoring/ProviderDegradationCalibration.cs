@@ -127,6 +127,7 @@ public sealed record ProviderDegradationKernelProfile(
             });
 }
 
+/// <summary>Compares baseline and candidate degradation kernels against labeled provider incidents.</summary>
 public sealed class ProviderDegradationCalibrationRunner
 {
     public ProviderKernelCalibrationSnapshot Run(
@@ -269,6 +270,7 @@ public sealed class ProviderDegradationCalibrationRunner
     }
 }
 
+/// <summary>Persists and retrieves provider kernel calibration snapshots beneath a guarded root directory.</summary>
 public sealed class ProviderKernelCalibrationSnapshotStore
 {
     private const string CalibrationDirectoryName = "calibration";
@@ -419,6 +421,7 @@ public sealed record CalibrationGateDecision(
     bool FreshnessPassed,
     IReadOnlyList<string> BlockingReasons);
 
+/// <summary>Evaluates calibration policy requirements for provider kernel promotion decisions.</summary>
 public sealed class KernelWeightGovernanceWorkflowService
 {
     private readonly ProviderKernelCalibrationPolicy _policy;
@@ -455,6 +458,7 @@ public sealed record KernelPromotionDecision(
     bool Approved,
     IReadOnlyList<string> BlockingReasons);
 
+/// <summary>Formats provider degradation calibration snapshots as Markdown reports.</summary>
 public static class ProviderCalibrationReportWriter
 {
     public static string BuildMarkdown(ProviderKernelCalibrationSnapshot snapshot)

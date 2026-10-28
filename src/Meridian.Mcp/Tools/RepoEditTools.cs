@@ -3,6 +3,9 @@ using System.Text.Json;
 
 namespace Meridian.Mcp.Tools;
 
+/// <summary>
+/// Exposes scoped repository edit previews and applies saved plans through the deterministic edit tool.
+/// </summary>
 [McpServerToolType]
 public sealed class RepoEditTools(RepoPathService repo, ILogger<RepoEditTools> logger)
 {

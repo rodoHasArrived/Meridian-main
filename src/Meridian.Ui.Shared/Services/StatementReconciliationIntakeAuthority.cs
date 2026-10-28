@@ -35,6 +35,9 @@ public sealed record StatementReconciliationIntakeReceipt(
     int PublishedCaseCount,
     IReadOnlyList<string> EvidenceReferences);
 
+/// <summary>
+/// Resolves accounting scope and publishes retained statement intake to governed reconciliation workflows.
+/// </summary>
 public interface IStatementReconciliationIntakeAuthority
 {
     Task<StatementAccountingScope> ResolveAccountingScopeAsync(
@@ -53,6 +56,9 @@ public interface IStatementReconciliationIntakeAuthority
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Carries a coded failure from statement reconciliation intake authorization or publication.
+/// </summary>
 public sealed class StatementReconciliationIntakeAuthorityException(
     string code,
     string message,
@@ -68,6 +74,7 @@ public sealed class StatementReconciliationIntakeAuthorityException(
 /// </summary>
 public sealed partial class StatementReconciliationIntakeAuthority : IStatementReconciliationIntakeAuthority
 {
+    private readonly IStatementRunRecoveryRepository? _runRecovery;
     private readonly IAccountQueryService? _accounts;
     private readonly IFundProfileTenancyRegistry? _tenancy;
     private readonly ILedgerBookService? _ledgerBooks;
@@ -87,8 +94,10 @@ public sealed partial class StatementReconciliationIntakeAuthority : IStatementR
         IReconciliationApiService? reconciliation,
         IReconciliationBreakQueueRepository? breakQueue,
         Meridian.Infrastructure.Reconciliation.ICanonicalStatementStore? canonicalStatements = null,
-        Meridian.Infrastructure.Reconciliation.IStatementRunMatchArtifactStore? matchArtifacts = null)
+        Meridian.Infrastructure.Reconciliation.IStatementRunMatchArtifactStore? matchArtifacts = null,
+        IStatementRunRecoveryRepository? runRecovery = null)
     {
+        _runRecovery = runRecovery;
         _accounts = accounts;
         _tenancy = tenancy;
         _ledgerBooks = ledgerBooks;

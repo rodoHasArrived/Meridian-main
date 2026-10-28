@@ -9,6 +9,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Evidence;
 
+/// <summary>
+/// Discovers and resolves supported workflow subjects through their owning services.
+/// </summary>
 public sealed class EvidenceSubjectResolver
 {
     public const string StrategyRunKind = "strategy-run";

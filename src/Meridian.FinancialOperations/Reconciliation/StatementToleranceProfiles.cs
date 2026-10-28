@@ -60,11 +60,17 @@ public sealed record TransactionToleranceRule(
         && Math.Abs(actualPrice - expectedPrice) <= Math.Abs(PriceTolerance);
 }
 
+/// <summary>
+/// Resolves the tolerance profile used by statement matching.
+/// </summary>
 public interface IStatementToleranceProfileProvider
 {
     ValueTask<StatementToleranceProfile> GetProfileAsync(string profileId, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Resolves configured statement tolerance profiles from an in-process catalog.
+/// </summary>
 public sealed class InMemoryStatementToleranceProfileProvider : IStatementToleranceProfileProvider
 {
     private readonly IReadOnlyDictionary<string, StatementToleranceProfile> _profiles;

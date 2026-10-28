@@ -8,6 +8,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Reads and updates accounting production certification profiles.
+/// </summary>
 public interface IAccountingProductionCertificationProfileStore
 {
     Task<AccountingProductionCertificationProfileDto?> GetAsync(
@@ -22,6 +25,9 @@ public interface IAccountingProductionCertificationProfileStore
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Stores accounting production certification profiles in process memory.
+/// </summary>
 public sealed class InMemoryAccountingProductionCertificationProfileStore : IAccountingProductionCertificationProfileStore
 {
     private readonly Dictionary<string, AccountingProductionCertificationProfileDto> _profiles = new(StringComparer.OrdinalIgnoreCase);
@@ -52,6 +58,9 @@ public sealed class InMemoryAccountingProductionCertificationProfileStore : IAcc
         => FileAccountingProductionCertificationProfileStore.BuildKey(tenantId, companyId, fundProfileId, ledgerBookId);
 }
 
+/// <summary>
+/// Persists accounting production certification profiles with scoped retained-evidence validation.
+/// </summary>
 public sealed class FileAccountingProductionCertificationProfileStore :
     JsonFileSnapshotStore<FileAccountingProductionCertificationProfileStore.AccountingProductionCertificationProfileSnapshot>,
     IAccountingProductionCertificationProfileStore

@@ -11,6 +11,9 @@ using WpfNavigationService = Meridian.Wpf.Services.NavigationService;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Hosts the desktop navigation frame, workspace chrome, and command-palette overlay.
+/// </summary>
 public partial class MainPage : Page
 {
     private readonly WpfNavigationService _navigationService;

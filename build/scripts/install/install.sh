@@ -85,17 +85,23 @@ install_dotnet_sdk_10() {
     success "  .NET SDK $(dotnet --version) ready"
 }
 
-install_nodejs_20() {
-    if command -v node >/dev/null 2>&1 && [ "$(node -v | sed 's/^v//' | cut -d. -f1)" -ge 20 ]; then
+install_supported_nodejs() {
+    local node_major
+    node_major="$(tr -d '[:space:]' < .nvmrc)"
+    [[ "$node_major" =~ ^[1-9][0-9]*$ ]] || error "Expected a supported Node major in .nvmrc"
+    if command -v node >/dev/null 2>&1 && [ "$(node -v | sed 's/^v//' | cut -d. -f1)" = "$node_major" ]; then
         info "  Node.js $(node -v) already available"
         return
     fi
 
-    info "  Installing Node.js 20 LTS..."
+    info "  Installing Node.js ${node_major} from .nvmrc..."
     run_as_root apt-get update
     run_as_root apt-get install -y ca-certificates curl gnupg
-    curl -fsSL https://deb.nodesource.com/setup_20.x | run_as_root bash -
-    run_as_root apt-get install -y nodejs
+    curl -fsSL "https://deb.nodesource.com/setup_${node_major}.x" | run_as_root bash -
+    local node_package_version
+    node_package_version="$(apt-cache madison nodejs | awk -v major="$node_major" '$3 ~ "^" major "\\." && !found { print $3; found=1 }')"
+    [ -n "$node_package_version" ] || error "No Node.js ${node_major} package is available from the configured repository"
+    run_as_root apt-get install -y --allow-downgrades "nodejs=${node_package_version}"
     success "  Node.js $(node -v) ready"
 }
 
@@ -117,9 +123,8 @@ install_python_312() {
         success "  Python $(python3 --version 2>&1) ready"
     fi
 
-    # There is no requirements.txt at the repository root, so this used to report "skipping"
-    # on every run and silently install nothing. The real file is the docs-automation one.
-    local python_requirements="build/scripts/docs/requirements.txt"
+    # CI requirements include docs packages and the ordinary script lane's Pillow pin.
+    local python_requirements="build/scripts/ci/requirements.txt"
     if [ -f "$python_requirements" ]; then
         info "  Installing Python dependencies from $python_requirements..."
         python3 -m pip install --upgrade pip
@@ -129,6 +134,25 @@ install_python_312() {
         error "  Expected $python_requirements is missing; run this from the repository root."
     fi
 }
+
+install_actionlint() (
+    local actionlint_version
+    actionlint_version="$(python3 build/python/prerequisites.py --actionlint-version)"
+    if command -v actionlint >/dev/null 2>&1 && [ "$(actionlint -version | head -n 1)" = "$actionlint_version" ]; then
+        info "  actionlint ${actionlint_version} already available"
+        return
+    fi
+
+    # This bootstrap is for Ubuntu/Linux x64 agents, matching the hosted workflow.
+    [ "$(uname -s)" = "Linux" ] && [ "$(uname -m)" = "x86_64" ] || error "Agent actionlint installation supports Linux x64; install the CI-pinned release manually on other platforms."
+    local actionlint_temp
+    actionlint_temp="$(mktemp -d)"
+    trap 'rm -rf "$actionlint_temp"' EXIT
+    curl -fsSL "https://github.com/rhysd/actionlint/releases/download/v${actionlint_version}/actionlint_${actionlint_version}_linux_amd64.tar.gz" -o "$actionlint_temp/actionlint.tar.gz"
+    printf '%s  %s\n' '8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8' "$actionlint_temp/actionlint.tar.gz" | sha256sum --check
+    tar -xzf "$actionlint_temp/actionlint.tar.gz" -C "$actionlint_temp" actionlint
+    run_as_root install -m 755 "$actionlint_temp/actionlint" /usr/local/bin/actionlint
+)
 
 install_powershell_7() {
     if command -v pwsh >/dev/null 2>&1; then
@@ -293,9 +317,11 @@ install_agent_toolchain() {
     info ""
 
     install_dotnet_sdk_10
-    install_nodejs_20
+    install_supported_nodejs
     install_python_312
     install_powershell_7
+    install_actionlint
+    python3 build/python/prerequisites.py --profile full-quality-gate
     warm_meridian_restore
 
     info ""

@@ -10,6 +10,9 @@ using Meridian.Storage.Archival;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors;
 
+/// <summary>
+/// Defines the maximum accepted statement source file size.
+/// </summary>
 public static class StatementConnectorLimits
 {
     /// <summary>
@@ -51,6 +54,9 @@ public sealed record StatementImportValidationResult(
     int RecordCount,
     IReadOnlyList<string> Errors);
 
+/// <summary>
+/// Validates statement source requests and commits accepted imports with retained evidence.
+/// </summary>
 public interface IStatementImportCommitService
 {
     Task<StatementImportCommitResultDto> CommitAsync(
@@ -309,6 +315,7 @@ public sealed class StatementImportService(
         {
             CanonicalSourcePath = canonicalPath,
             CanonicalArtifactHash = canonicalHash,
+            ExecutedMappingFingerprint = parse.ExecutedMappingFingerprint,
             AccountingScope = request.AccountingScope
         };
 

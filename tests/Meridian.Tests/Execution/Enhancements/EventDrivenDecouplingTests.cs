@@ -26,7 +26,7 @@ namespace Meridian.Tests.Execution.Enhancements;
 /// Validates <see cref="TradeExecutedEvent"/> and <see cref="LedgerPostingConsumer"/>, including
 /// the WAL crash-recovery failure mode for accepted market fills during bounded shutdown.
 /// </summary>
-public sealed class EventDrivenDecouplingTests
+public sealed partial class EventDrivenDecouplingTests
 {
     private const string TestPostingScope = "test-ledger/open-period";
     private static readonly TradeFillLedgerPostingContext TestPostingContext = new(

@@ -50,6 +50,9 @@ public sealed record StatementMappingProfile(
     }
 }
 
+/// <summary>
+/// Resolves supported statement mapping profiles and supplies the built-in profile registry.
+/// </summary>
 public sealed class StatementMappingProfileRegistry
 {
     public const string CanonicalCsvV1ProfileId = "canonical-csv-v1";

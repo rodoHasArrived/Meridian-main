@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps provider connection discovery, credential changes, and verification operations.
+/// </summary>
 public static class ProviderConnectionEndpoints
 {
     public static void MapProviderConnectionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)

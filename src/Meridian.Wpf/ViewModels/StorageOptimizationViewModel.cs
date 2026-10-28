@@ -11,6 +11,9 @@ using UiStorageOptimizationAdvisorService = Meridian.Ui.Services.StorageOptimiza
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Coordinates storage analytics, optimization analysis, and tier and symbol breakdown presentation.
+/// </summary>
 public sealed class StorageOptimizationViewModel : BindableBase
 {
     private const string ToneNeutral = "Neutral";

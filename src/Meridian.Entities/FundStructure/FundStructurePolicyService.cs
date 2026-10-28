@@ -2,6 +2,9 @@ using Meridian.Contracts.FundStructure;
 
 namespace Meridian.Entities.FundStructure;
 
+/// <summary>
+/// Validates operating parents, effective ownership relationships, and governance cash-flow query limits.
+/// </summary>
 public sealed class FundStructurePolicyService : IFundStructurePolicyService
 {
     public const int MaxCashFlowWindowDays = 3650;

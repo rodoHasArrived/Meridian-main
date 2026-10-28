@@ -14,6 +14,9 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.Ledger;
 
+/// <summary>
+/// Defines posting of reviewed accounting candidates through the governed ledger boundary.
+/// </summary>
 public interface IAccountingPostingCandidatePostService
 {
     Task<PostedPostingRuleJournalCandidateResultDto> PostCandidateAsync(
@@ -21,6 +24,9 @@ public interface IAccountingPostingCandidatePostService
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Posts reviewed accounting candidates while checking approval, reference, and ledger authority.
+/// </summary>
 public sealed partial class AccountingPostingCandidatePostService : IAccountingPostingCandidatePostService
 {
     private static readonly JsonSerializerOptions CanonicalJsonOptions = new(JsonSerializerDefaults.Web);

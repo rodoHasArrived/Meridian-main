@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps deposit reference queries with Security Master permission checks.
+/// </summary>
 public static class DepositReferenceEndpoints
 {
     public static void MapDepositReferenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)

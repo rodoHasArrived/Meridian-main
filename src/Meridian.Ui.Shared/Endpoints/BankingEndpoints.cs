@@ -8,6 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps banking payment initiation, approval, and status operations to the shared HTTP API.
+/// </summary>
 public static class BankingEndpoints
 {
     public static void MapBankingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)

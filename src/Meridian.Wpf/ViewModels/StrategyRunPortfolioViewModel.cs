@@ -7,6 +7,9 @@ using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Presents a strategy run's positions and selected-position inspection and related security navigation.
+/// </summary>
 public sealed class StrategyRunPortfolioViewModel : BindableBase
 {
     private readonly StrategyRunWorkspaceService _runService;

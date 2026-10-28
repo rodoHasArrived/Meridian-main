@@ -4,6 +4,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
+/// <summary>
+/// Builds review views over retained staged provider integration data.
+/// </summary>
 public sealed class ProviderIntegrationStagingReviewService
 {
     private const int DefaultRecentRunLimit = 10;

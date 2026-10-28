@@ -7,6 +7,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Hosts navigation frames in the selected pane layout and tracks the active pane.
+/// </summary>
 public partial class SplitPaneHostControl : UserControl
 {
     private readonly List<Frame> _paneFrames = new();

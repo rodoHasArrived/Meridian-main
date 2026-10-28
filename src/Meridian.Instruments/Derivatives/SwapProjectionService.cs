@@ -5,6 +5,9 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Instruments.Derivatives;
 
+/// <summary>
+/// Reads swap reference projections and combines them with canonical Security Master data.
+/// </summary>
 public sealed class SwapProjectionService : ISwapReferenceService
 {
     private readonly ISecurityMasterStore _securityMasterStore;
@@ -139,6 +142,9 @@ public sealed class SwapProjectionService : ISwapReferenceService
     }
 }
 
+/// <summary>
+/// Returns absent or empty swap reference data when the reference service is unavailable.
+/// </summary>
 public sealed class NullSwapReferenceService : ISwapReferenceService
 {
     public Task<SwapReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)

@@ -6,6 +6,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Controls;
 
+/// <summary>
+/// Displays confidence and freshness from a data-confidence model, with an optional explanation command.
+/// </summary>
 public partial class DataConfidenceIndicator : UserControl
 {
     // A binding can push null during async loading or a data-context transition; coerce it

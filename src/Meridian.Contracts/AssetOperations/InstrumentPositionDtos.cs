@@ -3,6 +3,9 @@ using Meridian.Contracts.Ledger;
 
 namespace Meridian.Contracts.AssetOperations;
 
+/// <summary>
+/// Defines canonical participant roles used to describe an instrument position.
+/// </summary>
 public static class InstrumentRoleKinds
 {
     public const string Holder = "Holder";
@@ -13,12 +16,18 @@ public static class InstrumentRoleKinds
     public const string Receiver = "Receiver";
 }
 
+/// <summary>
+/// Defines the debit and credit classifications carried by instrument roles.
+/// </summary>
 public static class InstrumentAccountingSides
 {
     public const string Debit = "Debit";
     public const string Credit = "Credit";
 }
 
+/// <summary>
+/// Defines asset, liability, inflow, and outflow classifications for instrument roles.
+/// </summary>
 public static class InstrumentEconomicSides
 {
     public const string Asset = "Asset";
@@ -27,6 +36,9 @@ public static class InstrumentEconomicSides
     public const string Outflow = "Outflow";
 }
 
+/// <summary>
+/// Defines the position side labels accepted by book position contracts.
+/// </summary>
 public static class BookPositionSides
 {
     public const string Long = "Long";

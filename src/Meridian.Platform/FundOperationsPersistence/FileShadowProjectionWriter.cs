@@ -2,6 +2,7 @@ using System.Text.Json;
 
 namespace Meridian.Platform.FundOperationsPersistence;
 
+/// <summary>Writes domain shadow projections as JSON using sanitized paths and atomic file replacement.</summary>
 public sealed class FileShadowProjectionWriter : IShadowProjectionWriter
 {
     private static readonly JsonSerializerOptions JsonOptions = new()

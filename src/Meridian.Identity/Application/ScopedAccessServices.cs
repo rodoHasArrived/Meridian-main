@@ -4,6 +4,7 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.Identity;
 
+/// <summary>Queries and mutates user access assignments for specific operational scopes.</summary>
 public interface IScopedAccessAssignmentService
 {
     Task<IReadOnlyList<UserAccessAssignmentDto>> QueryAsync(
@@ -21,6 +22,7 @@ public interface IScopedAccessAssignmentService
         CancellationToken ct = default);
 }
 
+/// <summary>Evaluates actor permissions for a requested scope using global and scoped access information.</summary>
 public interface IScopedAuthorizationService
 {
     Task<ScopedAuthorizationDecisionDto> AuthorizeAsync(
@@ -58,6 +60,7 @@ public interface IScopedAuthorizationService
     }
 }
 
+/// <summary>Resolves the ancestor scopes used to evaluate inherited access assignments.</summary>
 public interface IAccessScopeLineageProvider
 {
     Task<IReadOnlyList<AccessScopeRef>> ResolveLineageAsync(
@@ -84,6 +87,7 @@ public interface IAccessScopeLineageProvider
 
 public sealed record AccessScopeRef(AccessScopeKindDto ScopeKind, Guid? ScopeId);
 
+/// <summary>Manages scoped access assignments and evaluates permissions using retained assignments and scope ancestry.</summary>
 public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScopedAuthorizationService
 {
     private readonly IScopedAccessAssignmentStore _store;

@@ -5,6 +5,9 @@ using Meridian.Storage.Reporting;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Runs reporting requests after readiness checks and retains their output and audit evidence.
+/// </summary>
 public sealed class ReportingRunCommandService
 {
     private readonly IReportingOrchestrationService _orchestrationService;
@@ -581,6 +584,9 @@ public sealed class ReportingRunCommandService
     }
 }
 
+/// <summary>
+/// Carries the readiness assessment that blocked a reporting run.
+/// </summary>
 public sealed class ReportingRunReadinessBlockedException : InvalidOperationException
 {
     public ReportingRunReadinessBlockedException(ReportingRunReadinessDto readiness)
@@ -592,6 +598,9 @@ public sealed class ReportingRunReadinessBlockedException : InvalidOperationExce
     public ReportingRunReadinessDto Readiness { get; }
 }
 
+/// <summary>
+/// Indicates that reporting deployment capability is unavailable for the requested run.
+/// </summary>
 public sealed class ReportingRunDeploymentNotReadyException : InvalidOperationException
 {
     public ReportingRunDeploymentNotReadyException(

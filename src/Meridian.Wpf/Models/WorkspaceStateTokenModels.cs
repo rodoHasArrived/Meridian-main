@@ -2,6 +2,9 @@ using Meridian.Ui.Services;
 
 namespace Meridian.Wpf.Models;
 
+/// <summary>
+/// Defines a versioned snapshot of workspace navigation, operating scope, selection, layout, and custom state.
+/// </summary>
 public interface IWorkspaceStateToken
 {
     int Version { get; }
@@ -35,6 +38,9 @@ public interface IWorkspaceStateToken
     IReadOnlyDictionary<string, string> StateValues { get; }
 }
 
+/// <summary>
+/// Stores a versioned workspace snapshot for restoring navigation, scope, selections, and pane layout.
+/// </summary>
 public sealed class WorkspaceStateToken : IWorkspaceStateToken
 {
     public int Version { get; set; } = WorkspaceStateTokenVersions.Current;
@@ -70,11 +76,17 @@ public sealed class WorkspaceStateToken : IWorkspaceStateToken
     IReadOnlyDictionary<string, string> IWorkspaceStateToken.StateValues => StateValues;
 }
 
+/// <summary>
+/// Defines the supported version of persisted workspace state tokens.
+/// </summary>
 public static class WorkspaceStateTokenVersions
 {
     public const int Current = 1;
 }
 
+/// <summary>
+/// Carries validation errors and warnings that determine whether a workspace snapshot can be restored.
+/// </summary>
 public sealed class WorkspaceStateRestoreValidation
 {
     public IReadOnlySet<string> ExistingSessionIds { get; init; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -98,6 +110,9 @@ public sealed class WorkspaceStateRestoreValidation
     public static WorkspaceStateRestoreValidation AllowAll { get; } = new();
 }
 
+/// <summary>
+/// Returns the restored workspace token together with its validation outcome.
+/// </summary>
 public sealed class WorkspaceStateRestoreResult
 {
     public WorkspaceStateRestoreResult(WorkspaceStateToken token, bool isRecoveryState, string? recoveryReason)

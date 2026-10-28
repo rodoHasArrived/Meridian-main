@@ -2,6 +2,9 @@ using System.Diagnostics;
 
 namespace Meridian.Mcp.Tools;
 
+/// <summary>
+/// Runs bounded repository code, provider, and test-coverage audits through MCP tools.
+/// </summary>
 [McpServerToolType]
 public sealed class AuditTools(RepoPathService repo, ILogger<AuditTools> logger)
 {

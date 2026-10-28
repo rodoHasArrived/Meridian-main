@@ -1,3 +1,4 @@
+import { sourceObservationLabel, sourceObservationAge } from "./reconciliation-source-observation";
 import { getRunReviewPacketPath } from "@/lib/api";
 import type { ApiErrorDisplay } from "@/lib/api-errors";
 import {
@@ -850,7 +851,10 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
       { label: "Urgency", value: buildReconciliationExceptionUrgency(row) },
       { label: "SLA tone", value: formatReconciliationMetadata(row.slaBadgeTone, "info") },
       { label: "Age band", value: formatReconciliationMetadata(row.ageBand, "0-4h") },
-      { label: "Source observation", value: row.lineage?.observationState ?? "Identity not established" },
+      { label: "Source observation", value: sourceObservationLabel(row.lineage) },
+      { label: "Observed occurrence age", value: sourceObservationAge(row.lineage) },
+      { label: "Business identity scope", value: row.lineage?.identityScopeId ?? "Legacy identity scope" },
+      { label: "Comparison scope", value: row.lineage?.comparisonScopeId ?? "Not tracked" },
       { label: "Source lineage", value: row.lineage?.lineageId ?? "No stable source identity retained" },
       { label: "Occurrence", value: row.lineage ? `${row.lineage.occurrenceNumber} · ${row.lineage.occurrenceId}` : "Not tracked" },
       { label: "First observed", value: row.lineage?.firstObservedAt ?? "Not tracked" },

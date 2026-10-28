@@ -1,17 +1,29 @@
 namespace IBApi;
 
+/// <summary>
+/// Provides the IB callback marker used by the smoke-test socket stub.
+/// </summary>
 public interface EWrapper { }
 
+/// <summary>
+/// Defines the reader signal contract required by IB integration smoke tests.
+/// </summary>
 public interface EReaderSignal
 {
     void waitForSignal();
 }
 
+/// <summary>
+/// Supplies a non-blocking, no-op reader signal for IB integration smoke tests.
+/// </summary>
 public sealed class EReaderMonitorSignal : EReaderSignal
 {
     public void waitForSignal() { }
 }
 
+/// <summary>
+/// Simulates IB socket connection state and accepts API requests without contacting a broker.
+/// </summary>
 public sealed class EClientSocket
 {
     private bool _connected;
@@ -122,6 +134,9 @@ public sealed class EClientSocket
     public void reqOpenOrders() { }
 }
 
+/// <summary>
+/// Supplies no-op reader startup and message processing for IB integration smoke tests.
+/// </summary>
 public sealed class EReader
 {
     public EReader(EClientSocket socket, EReaderSignal signal) { }
@@ -131,6 +146,9 @@ public sealed class EReader
     public void processMsgs() { }
 }
 
+/// <summary>
+/// Carries IB instrument identifiers and derivative terms for smoke-test requests.
+/// </summary>
 public sealed class Contract
 {
     public int ConId { get; set; }
@@ -149,6 +167,9 @@ public sealed class Contract
     public string? Multiplier { get; set; }
 }
 
+/// <summary>
+/// Carries IB scanner criteria and row limits for smoke-test requests.
+/// </summary>
 public sealed class ScannerSubscription
 {
     public string? Instrument { get; set; }
@@ -159,6 +180,9 @@ public sealed class ScannerSubscription
     public string? AboveVolume { get; set; }
 }
 
+/// <summary>
+/// Carries IB order instructions for smoke-test requests without submitting them to a broker.
+/// </summary>
 public sealed class Order
 {
     public int OrderId { get; set; }
@@ -174,6 +198,9 @@ public sealed class Order
     public string Account { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Carries order status, fees, and rejection information in the IB smoke-test API.
+/// </summary>
 public sealed class OrderState
 {
     public string Status { get; set; } = string.Empty;
@@ -181,6 +208,9 @@ public sealed class OrderState
     public string RejectReason { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Carries IB fill identifiers, quantities, prices, and account details for smoke tests.
+/// </summary>
 public sealed class Execution
 {
     public int OrderId { get; set; }
@@ -198,10 +228,16 @@ public sealed class Execution
     public string OrderRef { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Provides the IB cancellation request placeholder required by smoke-test API signatures.
+/// </summary>
 public sealed class OrderCancel
 {
 }
 
+/// <summary>
+/// Carries timestamped OHLC prices, volume, trade count, and weighted average price for IB smoke tests.
+/// </summary>
 public sealed class Bar
 {
     public string Time { get; set; } = string.Empty;
@@ -215,14 +251,23 @@ public sealed class Bar
     public decimal Wap { get => WAP; set => WAP = value; }
 }
 
+/// <summary>
+/// Carries automatic-execution and price-limit flags for IB smoke-test ticks.
+/// </summary>
 public sealed class TickAttrib
 {
     public bool CanAutoExecute { get; set; }
     public bool PastLimit { get; set; }
 }
 
+/// <summary>
+/// Provides the last-trade attribute placeholder required by IB smoke-test callbacks.
+/// </summary>
 public sealed class TickAttribLast { }
 
+/// <summary>
+/// Carries bid and ask price-bound flags for IB smoke-test callbacks.
+/// </summary>
 public sealed class TickAttribBidAsk
 {
     public TickAttribBidAsk()
@@ -239,6 +284,9 @@ public sealed class TickAttribBidAsk
     public bool AskPastHigh { get; set; }
 }
 
+/// <summary>
+/// Carries a price-band lower bound and tick increment for IB smoke-test market rules.
+/// </summary>
 public sealed class PriceIncrement
 {
     public PriceIncrement()
@@ -255,6 +303,9 @@ public sealed class PriceIncrement
     public double Increment { get; set; }
 }
 
+/// <summary>
+/// Carries instrument metadata, trading hours, and market-rule identifiers for IB smoke tests.
+/// </summary>
 public sealed class ContractDetails
 {
     public Contract Contract { get; set; } = new();
@@ -269,8 +320,14 @@ public sealed class ContractDetails
     public string? LiquidHours { get; set; }
 }
 
+/// <summary>
+/// Provides the contract-description placeholder required by IB smoke-test callbacks.
+/// </summary>
 public sealed class ContractDescription { }
 
+/// <summary>
+/// Carries exchange and service metadata for IB smoke-test market-depth descriptions.
+/// </summary>
 public sealed class DepthMktDataDescription
 {
     public string? Exchange { get; set; }
@@ -280,8 +337,14 @@ public sealed class DepthMktDataDescription
     public int AggGroup { get; set; }
 }
 
+/// <summary>
+/// Provides the news-provider placeholder required by IB smoke-test callbacks.
+/// </summary>
 public sealed class NewsProvider { }
 
+/// <summary>
+/// Carries a named string option for IB smoke-test API requests.
+/// </summary>
 public sealed class TagValue
 {
     public string? Tag { get; set; }

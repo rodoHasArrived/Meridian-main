@@ -1,5 +1,8 @@
 namespace Meridian.Contracts.Workstation;
 
+/// <summary>
+/// Validates the canonical identity fields required on a strategy run summary.
+/// </summary>
 public static class StrategyRunContractCompatibility
 {
     public static void EnsureCanonicalIdentity(StrategyRunSummary summary)

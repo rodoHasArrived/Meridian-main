@@ -14,6 +14,9 @@ using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.Workstation.Controls;
 
+/// <summary>
+/// Displays workstation table rows with selection, empty-state content, and keyboard command support.
+/// </summary>
 public partial class DenseDataGridControl : UserControl
 {
     public static readonly DependencyProperty TableProperty =

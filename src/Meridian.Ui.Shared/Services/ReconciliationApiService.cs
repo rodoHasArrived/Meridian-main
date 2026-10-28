@@ -9,6 +9,9 @@ using WorkstationStatementMatchTier = Meridian.Contracts.Workstation.StatementMa
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Serves authorized statement import, reconciliation-run, break, and casework operations.
+/// </summary>
 public class ReconciliationApiService : IReconciliationApiService
 {
     private readonly IStatementRunWorkflowService _statementRunWorkflowService;

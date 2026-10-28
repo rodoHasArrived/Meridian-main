@@ -106,18 +106,21 @@ result into a full pass.
 
 ### Current Roadmap Inventory
 
-The registry contains **48 rows** as of this review: **17 `done`, 7 `in_progress`, 9 `accepted`,
-and 15 `planned`**, with no row at `ready_for_acceptance`. The reconciliation and verification
+The registry contains **53 rows** after the incoming-main reconciliation: **17 `done`, 8 `in_progress`, 9 `accepted`,
+and 19 `planned`**, with no row at `ready_for_acceptance`. The reconciliation and verification
 sections below enumerate those postures. `W9-SAFETY-007` is accepted under `DEC-W9-ACCEPTANCE-004`,
 with its OCO and deferred risk-journal/read-surface/WPF-parity reservations retained.
 `W9-CORPACT-011` was accepted on 2026-10-19 under `DEC-W9-ACCEPTANCE-007`; the in-progress
 `W10-MARK-001` and `W10-SEAM-001` retain live operator acceptance gates. `W9-DEMO-002` reached `done` separately under
 `DEC-W9-DONE-001`. `W10-JRNL-001` is in progress under the 2026-10-01 evidence carried by
 merged PR #3040; its operator acceptance and production certification remain open.
-`W10-PROV-001` is also in progress under its 2026-10-02 registry review: the posted-ledger
-amount proof slice is implemented, while typed report bindings and other amount surfaces remain open. The
-user-requested work queue completes LOT, then MARK, then SEAM before opening `W10-RECON-001`
-in that queue only. Roadmap ranking remains MARK 1, RECON 2, SEAM 7, and LOT 12. The
+`W10-PROV-001` remains in progress: posted-ledger and governed generated trial-balance
+amount bindings use the shared evidence surface; generated-report WPF activation, other amount
+families and live acceptance remain open. `W10-RECON-001` is now in progress under the incoming
+registry: stable lineage, distinct recurrence, executed mapping proof and SLA-calendar support
+are implemented; focused hosted, Windows and rendered operator verification remain required.
+The user-requested queue retains LOT, then MARK, then SEAM before advancing RECON in this queue;
+the incoming implementation does not close those preceding acceptance gates. Roadmap ranking remains MARK 1, RECON 2, SEAM 7, and LOT 12. The
 [recorded operator-session plan](plans/next-work-determination-2026-09-27.md#tier-5--w10-two-rows-await-an-operator-session-one-has-an-undefined-criterion)
 continues to schedule SEAM before MARK, with LOT as a separate continuation. The queue adds
 no prerequisite to the recorded roadmap dependencies. These are existing registry states,
@@ -188,7 +191,7 @@ actually missing so the band has a plan rather than a label.
 
 | Row | Change |
 | --- | --- |
-| `PRD-109` | **Closed.** Its own remainder was "representative C#/TypeScript serialization parity beyond one fixture". `build/scripts/ci/check-contract-type-parity.py` now compares an enumerated registry on member sets, nullability and collection shape, wired into the docs lane. Of 136 name-matched record/interface pairs, 98 agree and are enforced; 38 already diverge and are recorded as a ratchet that fails once a listed pair is repaired but not promoted. |
+| `PRD-109` | **Historical closure claim; scope clarified 2026-10-15.** `build/scripts/ci/check-contract-type-parity.py` compares an enumerated registry on member sets, nullability and collection shape, wired into the docs lane. The array-parser repair and [exemption reassessment](../engineering/contract-type-parity.md) leave 103 enforced pairs and 37 review candidates. Findings include parser limitations and optional/default semantics, so the exemptions are not 37 proven contract defects, and structural checks alone do not establish serialization parity. |
 | `PRD-113` | **Advanced.** The overdue KV-2026-001 DotNetZip acceptance is retired with evidence (the package is absent from the tracked build, and the certification NuGet scan, which ignores suppressions, reports nothing), and the CC8 control source no longer cites a deleted workflow. Remaining: the SOC 2 readiness assessment itself, control owners, and the evidence calendar. |
 | `PRD-103` | **Confirmed closed.** Re-read against source; the tracker's evidence text is accurate. |
 
@@ -418,9 +421,9 @@ The word intended here is **deprecated**. Repeated filenames or concepts are not
 | Roadmap posture | Rows | Production interpretation |
 | --- | --- | --- |
 | Bounded capability evidence complete (17) | `W1-DATA-001`, `W2-TRD-001`, `W2-PROMO-001`, `W3-CONT-001`, `W4-RECON-001`, `W4-RPT-001`, `W5-ACCT-001`, `W5-MASSET-001`, `W5X-FREX-001`, `W5X-FINOPS-001`, `W5X-CONNECT-001`, `W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001`, `W6-BTSTUDIO-001`, `W7-LIVE-001`, `W9-DEMO-002`, `W9-ASSET-010` | Preserve the bounded evidence and each row's scope. W5X Evidence/Statement are browser claims; W6 covers the Covered Call evidence and governed Paper-promotion loop; W7 closes live-readiness governance; W9-ASSET closes the asset-accounting spine. W9-DEMO reached done under `DEC-W9-DONE-001` with its [closure record](w9-demo-002-closure-2026-09-16.md). None certifies a release. |
-| Active productization (7) | `W8-WPF-PARITY-001`, `W8-UX-CONSOL-001`, `W10-MARK-001`, `W10-SEAM-001`, `W10-LOT-002`, `W10-JRNL-001`, `W10-PROV-001` | Finish registered exit criteria within the supported release envelope. Apply the registry ranking and recorded operator-session plan; the user's separate queue above adds no roadmap prerequisite. Source implementation alone does not close live acceptance gates. |
+| Active productization (8) | `W8-WPF-PARITY-001`, `W8-UX-CONSOL-001`, `W10-MARK-001`, `W10-SEAM-001`, `W10-LOT-002`, `W10-JRNL-001`, `W10-PROV-001`, `W10-RECON-001` | Finish registered exit criteria within the supported release envelope. Apply the registry ranking and recorded operator-session plan; the user's separate queue above adds no roadmap prerequisite. Source implementation alone does not close live acceptance gates. |
 | Accepted bounded capabilities (9) | `W9-TRUTH-001`, `W9-PAPER-003`, `W9-ALPACA-004`, `W9-REPORT-005`, `W9-NAV-006`, `W9-SAFETY-007`, `W9-GOV-008`, `W9-INGEST-009`, `W9-CORPACT-011` | Preserve the decisions and reservations in the registry. CORPACT was accepted on 2026-10-19 under `DEC-W9-ACCEPTANCE-007` on the automated PostgreSQL round trip, with unsupported branches blocked and posting permission assigned only through governed custom roles. GOV and INGEST were accepted on 2026-10-18 under `DEC-W9-ACCEPTANCE-006`; the GOV live-installation cutover is recorded on the operator's statement, and INGEST casework evidence remains shared-service/file-store evidence, not a PostgreSQL or production-certification claim. Safety was accepted on 2026-09-11 under `DEC-W9-ACCEPTANCE-004`, restored on 2026-09-23, with OCO and deferred risk-journal/read-surface/WPF-parity work retained. TRUTH is accepted under the 2026-09-26 owner exception `DEC-W9-ACCEPTANCE-005`; independent non-author verdicts were not obtained. Acceptance alone is neither done nor release certification. |
-| Planned (15) | `W5X-OEG-001`, `W10-RECON-001`, `W10-RECON-002`, `W10-TAX-001`, `W10-RECON-003`, `W10-RECON-004`, `W10-PERF-001`, `W10-CONSOL-001`, `W10-DEBT-001`, `W11-PASSPORT-001`, `W11-COVER-001`, `W11-STAKE-001`, `W11-SHADOW-001`, `W11-PACK-001`, `W11-EXEC-001` | All retain `planned_evidence` posture. The W11 rows were registered under `DEC-CHARTER-DIRECTION-001`. The shared orchestration/durability defects in `PRD-007` and `PRD-106` still apply to broader or alternate backtest entrypoints despite the bounded W6 Covered Call evidence-loop closure. |
+| Planned (19) | `W5X-OEG-001`, `W10-RECON-002`, `W10-TAX-001`, `W10-RECON-003`, `W10-RECON-004`, `W10-PERF-001`, `W10-CONSOL-001`, `W10-DEBT-001`, `W11-PASSPORT-001`, `W11-COVER-001`, `W11-STAKE-001`, `W11-SHADOW-001`, `W11-PACK-001`, `W11-EXEC-001`, `W12-BOOK-001`, `W12-CAPITAL-001`, `W12-YEND-001`, `W12-FINRPT-001`, `W12-CREDIT-001` | All retain `planned_evidence` posture. The W11 rows were registered under `DEC-CHARTER-DIRECTION-001`. The shared orchestration/durability defects in `PRD-007` and `PRD-106` still apply to broader or alternate backtest entrypoints despite the bounded W6 Covered Call evidence-loop closure. |
 
 The following remain deferred and are not production blockers unless the signed support envelope reopens them: broad live execution and live portfolio operations beyond bounded W7 governance, treasury payment execution, broad alternative-asset expansion beyond current evidence, forecasting/scenario engines, enterprise risk platform, capital-structure modeling, client portal, no-code workflow designer, broad collaboration productization, and all native mobile lanes.
 
@@ -452,11 +455,12 @@ Reviewed on 2026-10-14 against the registry inventory, recorded decisions and ho
 - `docs/roadmap/generated/roadmap-register.md`
 - the current same-commit hosted certification and CI runs linked above
 
-The 48 registry rows reconcile to the four disjoint postures enumerated above: 17 `done`,
-7 `in_progress`, 9 `accepted`, and 15 `planned`. The done and accepted rows retain
+The 53 registry rows reconcile to the four disjoint postures enumerated above: 17 `done`,
+8 `in_progress`, 9 `accepted`, and 19 `planned`. The done and accepted rows retain
 `evidence_posture: complete`; active rows retain `in_progress`; planned rows retain
-`planned_evidence`. This refresh records the `W9-CORPACT-011` acceptance (`DEC-W9-ACCEPTANCE-007`)
-and changes no other row status, sequence, dependency or acceptance criterion. The tracker
+`planned_evidence`. The earlier refresh recorded `W9-CORPACT-011` acceptance (`DEC-W9-ACCEPTANCE-007`); this
+reconciliation reflects incoming RECON implementation and five planned W12 rows without
+changing any registry status, sequence, dependency or acceptance criterion. The tracker
 records the merged evidence above; all roadmap row review dates are retained. Historical implementation
 surveys and release evidence elsewhere in this tracker retain their original dates and limits.
 Broader design-document foundations remain separate from bounded completion claims.

@@ -3,6 +3,9 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Instruments.Equity;
 
+/// <summary>
+/// Reads equity reference projections and combines them with canonical Security Master data.
+/// </summary>
 public sealed class EquityProjectionService
     : InstrumentProjectionServiceBase<EquityProjectionRow, EquityReferenceDto>, IEquityReferenceService
 {
@@ -42,6 +45,9 @@ public sealed class EquityProjectionService
             row.Version);
 }
 
+/// <summary>
+/// Returns absent or empty equity reference data when the reference service is unavailable.
+/// </summary>
 public sealed class NullEquityReferenceService : IEquityReferenceService
 {
     public Task<EquityReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)

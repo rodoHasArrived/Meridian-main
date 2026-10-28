@@ -3,6 +3,10 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Instruments.FxSpot;
 
+/// <summary>
+/// Reads spot foreign-exchange reference projections and combines them with canonical Security
+/// Master data.
+/// </summary>
 public sealed class FxSpotProjectionService
     : InstrumentProjectionServiceBase<FxSpotProjectionRow, FxSpotReferenceDto>, IFxSpotReferenceService
 {
@@ -46,6 +50,10 @@ public sealed class FxSpotProjectionService
             row.Version);
 }
 
+/// <summary>
+/// Returns absent or empty spot foreign-exchange reference data when the reference service is
+/// unavailable.
+/// </summary>
 public sealed class NullFxSpotReferenceService : IFxSpotReferenceService
 {
     public Task<FxSpotReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)

@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.DataIntegration.Etl;
 
+/// <summary>Persists ETL job definitions and delegates run execution to the ETL orchestrator.</summary>
 public sealed class EtlJobService : IEtlJobService
 {
     private readonly IEtlIngestionJobCoordinator _ingestionJobService;
@@ -76,6 +77,7 @@ public sealed class EtlJobService : IEtlJobService
         => _orchestrator.RunAsync(jobId, ct);
 }
 
+/// <summary>Coordinates owned ETL execution, parsing, normalization, pipeline publication, export, and verification receipts.</summary>
 public sealed partial class EtlJobOrchestrator
 {
     private readonly ILogger<EtlJobOrchestrator> _logger;

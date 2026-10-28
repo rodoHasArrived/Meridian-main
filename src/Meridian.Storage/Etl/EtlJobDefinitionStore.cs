@@ -4,6 +4,9 @@ using Meridian.Storage.Archival;
 
 namespace Meridian.Storage.Etl;
 
+/// <summary>
+/// Stores ETL job definitions as JSON files under the configured data root.
+/// </summary>
 public sealed class EtlJobDefinitionStore : IEtlJobDefinitionStore
 {
     private readonly string _rootPath;

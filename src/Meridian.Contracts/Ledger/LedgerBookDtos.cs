@@ -497,6 +497,9 @@ public sealed record LedgerPeriodReopenResultDto(
     string ApprovalReference,
     IReadOnlyList<string> EvidenceLinks);
 
+/// <summary>
+/// Creates and queries ledger books and manages their accounting periods and rollout assessments.
+/// </summary>
 public interface ILedgerBookService
 {
     Task<LedgerBookDto> CreateBookAsync(CreateLedgerBookRequest request, CancellationToken ct = default);

@@ -2,6 +2,9 @@ using Meridian.Contracts.DirectLending;
 
 namespace Meridian.Application.DirectLending;
 
+/// <summary>
+/// Defines servicer statement preview, import, batch inspection, and application operations.
+/// </summary>
 public interface IDirectLendingServicerStatementService
 {
     Task<ServicerStatementPreviewDto> PreviewAsync(ServicerStatementImportRequestDto request, CancellationToken ct = default);

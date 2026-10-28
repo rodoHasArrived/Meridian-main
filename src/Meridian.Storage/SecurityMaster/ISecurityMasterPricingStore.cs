@@ -3,6 +3,9 @@ using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Persists pricing hierarchies, observations, selections, and retained close price evidence.
+/// </summary>
 public interface ISecurityMasterPricingStore
 {
     Task<SecurityPricingHierarchyDto?> GetHierarchyAsync(Guid securityId, string? accountId, CancellationToken ct = default);

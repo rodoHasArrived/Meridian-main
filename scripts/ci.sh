@@ -51,15 +51,22 @@ done
 
 python_cmd=""
 for candidate in python3 python; do
-  if command -v "$candidate" >/dev/null 2>&1 &&
-    "$candidate" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)' >/dev/null 2>&1; then
-    python_cmd="$candidate"
-    break
+  if command -v "$candidate" >/dev/null 2>&1; then
+    # Preserve an available interpreter for an actionable report when neither
+    # candidate meets the shared minimum, while preferring one that can run CI.
+    if [[ -z "$python_cmd" ]]; then
+      python_cmd="$candidate"
+    fi
+    if "$candidate" build/python/prerequisites.py --python-version-ok >/dev/null 2>&1; then
+      python_cmd="$candidate"
+      break
+    fi
   fi
 done
 
 if [[ -z "$python_cmd" ]]; then
-  echo "Python 3.11 or newer is required to run Meridian CI." >&2
+  echo "Python is required to check Meridian CI prerequisites." >&2
+  echo "Install Python from https://www.python.org/downloads/ and add python3 or python to PATH." >&2
   exit 127
 fi
 
@@ -264,9 +271,8 @@ verify_docs() {
   run_step "Check docs automation dependencies" \
     bash -c '"$0" -c "import yaml" 2>/dev/null || { echo "PyYAML is required by build/scripts/docs/validate-agent-definitions.py." >&2; echo "  $0 -m pip install --requirement build/scripts/docs/requirements.txt" >&2; exit 1; }' "$python_cmd"
 
-  # Runs here rather than only in the docs-automation profile: the Documentation
-  # Automation workflow is path-filtered, so a change touching only .claude/agents/**
-  # would otherwise land without any hosted check resolving its tool declarations.
+  # Keep the early validator and its regression fixtures for actionable feedback;
+  # the shared generation profile also validates definitions before producing docs.
   run_step "Validate Claude agent definitions" \
     bash -c '"$0" build/scripts/docs/validate-agent-definitions.py && "$0" -m unittest tests/scripts/test_validate_agent_definitions.py' "$python_cmd"
 
@@ -299,25 +305,19 @@ verify_docs() {
       --json-output "$handoff_summary_json" \
       --summary-output "$handoff_summary_md"
 
-  # Mirrors the quality-gate step of the same name: regenerate the whole-repo documentation
-  # artifacts and reject drift, so adding a file outside docs/** cannot silently red the weekly
-  # Production Certification documentation job.
-  run_step "Reject whole-repo generated documentation drift" \
-    "$python_cmd" build/scripts/docs/run-docs-automation.py \
-      --scripts generate-structure-docs,generate-health-dashboard,generate-workflow-manifest
+  # Documentation Automation and isolated repair consume the same explicit
+  # catalog. Required diagrams need the root npm toolchain as well as Python.
+  run_step "Verify documentation Node.js" node --version
+  run_step "Verify documentation npm" npm --version
+  run_step "Install documentation diagram dependencies from lockfile" \
+    bash -c 'set -euo pipefail; npm ci --no-fund --no-audit 2>&1 | tee artifacts/build-logs/docs-install.log'
 
-  # The automation profile runs generate-structure-docs in structure mode only, so the workflows
-  # overview it also owns needs its own invocation.
-  run_step "Regenerate the workflows overview" \
-    "$python_cmd" build/scripts/docs/generate-structure-docs.py --workflows-only
+  run_step "Reject whole-repo generated documentation drift" \
+    "$python_cmd" build/scripts/run-maintained-generation.py \
+      --docs-only --report artifacts/docs/generation.json
 
   run_step "Verify whole-repo generated documentation is committed" \
-    git diff --exit-code -- \
-      docs/generated/repository-structure.md \
-      docs/generated/workflows-overview.md \
-      docs/status/doc-health-dashboard.json \
-      docs/status/doc-health-dashboard.md \
-      docs/status/workflow-drift-report.md
+    "$python_cmd" build/scripts/ci/check-generated-output.py
 
   run_step "Enforce mode escalation policy" \
     "$python_cmd" build/scripts/docs/check-mode-escalation.py \
@@ -331,24 +331,8 @@ verify_docs() {
       --route-json docs/status/prompt-route-lint-report.json \
       --summary
 
-  run_step "Validate roadmap registry" \
-    "$python_cmd" build/scripts/docs/validate-roadmap-registry.py --summary
-
-  run_step "Validate source READMEs" \
-    "$python_cmd" build/scripts/docs/validate-source-readmes.py --summary
-
-  run_step "Validate adapter readiness and generated matrix" \
-    "$python_cmd" build/scripts/docs/run-docs-automation.py \
-      --scripts validate-adapter-readiness,check-adapter-readiness-matrix
-
   run_step "Validate adapter readiness automation tests" \
     bash -c '"$0" -m unittest tests/scripts/test_adapter_readiness.py tests/scripts/test_render_adapter_readiness.py' "$python_cmd"
-
-  run_step "Scan source TODOs" \
-    "$python_cmd" build/scripts/docs/scan-source-todos.py --summary
-
-  run_step "Render roadmap/source docs and check drift" \
-    bash -c 'set -euo pipefail; { "$0" build/scripts/docs/render-roadmap-docs.py --summary && "$0" build/scripts/docs/render-source-docs.py --summary && [ -z "$(git status --porcelain -- docs/roadmap/generated docs/source/generated docs/status/ROADMAP_SUMMARY.md src)" ]; } 2>&1 | tee artifacts/build-logs/docs-render-drift.log' "$python_cmd"
 }
 
 verify_workflows() {
@@ -389,6 +373,11 @@ quality_gate() {
   verify_docs
   verify_workflows
 }
+
+# Check the whole selected lane before its first restore, build, or dependency install.
+# Doctor and setup use this same definition, including supported versions and package fixes.
+run_step "Check shared prerequisites" \
+  "$python_cmd" build/python/prerequisites.py --lane "$selected_lane"
 
 case "$selected_lane" in
   quality-gate)

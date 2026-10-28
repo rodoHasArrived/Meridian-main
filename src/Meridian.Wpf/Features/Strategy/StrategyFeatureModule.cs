@@ -33,6 +33,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Meridian.Wpf.Features.Strategy;
 
+/// <summary>
+/// Registers strategy desktop services and contributes the feature's navigation pages and workspace metadata.
+/// </summary>
 public sealed class StrategyFeatureModule : IDesktopFeatureModule
 {
     private static readonly WorkspaceCapabilityDescriptor Capability = ShellNavigationCatalog.BuildStrategyCapability();
@@ -147,11 +150,11 @@ public sealed class StrategyFeatureModule : IDesktopFeatureModule
                 availabilityDescription: "Security Master runtime is configured for workstation workflows."));
             services.AddSingleton<SecurityMasterCsvParser>();
             services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
-            services.AddSingleton<ISecurityResolver, SecurityResolver>();
+            services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityResolver, SecurityResolver>();
             services.AddSingleton<Meridian.Backtesting.CorporateActionAdjustmentService>();
             services.AddSingleton<Meridian.Backtesting.ICorporateActionAdjustmentService>(
                 sp => sp.GetRequiredService<Meridian.Backtesting.CorporateActionAdjustmentService>());
-            services.AddSingleton<Meridian.Application.SecurityMaster.CorporateActions.ILivePositionCorporateActionAdjuster>(
+            services.AddSingleton<Meridian.Contracts.SecurityMaster.ILivePositionCorporateActionAdjuster>(
                 sp => sp.GetRequiredService<Meridian.Backtesting.CorporateActionAdjustmentService>());
             services.AddSingleton<ITradingParametersBackfillService, TradingParametersBackfillService>();
         }
@@ -169,6 +172,7 @@ public sealed class StrategyFeatureModule : IDesktopFeatureModule
             services.AddSingleton<ITradingParametersBackfillService, NullTradingParametersBackfillService>();
         }
 
+        services.AddSecurityMasterContractAdapters();
         services.AddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
         services.AddSingleton<IBacktestPreflightService, BacktestPreflightService>();
         services.AddSingleton(sp =>
