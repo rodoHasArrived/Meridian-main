@@ -151,7 +151,11 @@ public sealed class StrategyFeatureModule : IDesktopFeatureModule
             services.AddSingleton<SecurityMasterCsvParser>();
             services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
             services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityResolver, SecurityResolver>();
-            services.AddSingleton<Meridian.Backtesting.CorporateActionAdjustmentService>();
+            services.AddSingleton(sp => new Meridian.Backtesting.CorporateActionAdjustmentService(
+                sp.GetRequiredService<ISecurityCorporateActionsQueryService>(),
+                sp.GetRequiredService<Meridian.Contracts.SecurityMaster.ISecurityResolver>(),
+                sp.GetRequiredService<ILogger<Meridian.Backtesting.CorporateActionAdjustmentService>>(),
+                sp.GetRequiredService<IFactorPaydownProjectionService>()));
             services.AddSingleton<Meridian.Backtesting.ICorporateActionAdjustmentService>(
                 sp => sp.GetRequiredService<Meridian.Backtesting.CorporateActionAdjustmentService>());
             services.AddSingleton<Meridian.Contracts.SecurityMaster.ILivePositionCorporateActionAdjuster>(
