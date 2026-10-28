@@ -19,6 +19,12 @@ lookup, retained evidence, draft dimensions, intake, and lifecycle validation.
 Previously retained entity-scoped valuation drafts without entity-bound mark evidence require a
 fresh valuation assessment before approval or posting.
 
+`LedgerEndpoints.FactorPaydown` prepares exact-decimal previews from authoritative open lots and
+book/period ownership. Creating a draft requires the reviewed preview fingerprint, rechecks source
+and lot versions, then uses the existing Asset Accounting Event Spine projection and candidate
+builder. Interrupted projection-to-draft handoffs resume from the retained lineage; exact draft
+retries return the retained candidate. These routes never approve or post journal/lot changes.
+
 `LedgerEndpoints.AccountOversight` provides shared account-owned ledger-book routes for durable
 cash cases, retained replay/assignment, independently approved close-price sets and cash forecasts.
 Authenticated tenant/company and retained book ownership establish exact scope; client actor and

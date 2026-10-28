@@ -285,6 +285,12 @@ event payloads keep their shape. Aggregate-only instructions do not claim an ori
 
 `OpenLotBackfillDtos` adds retained acquisition-source packets, independent review, a durable exception queue, and versioned application receipts. Apply accepts a retained source identity rather than replacement acquisition facts. `MarkFreshnessDtos` carries one server decision per position, including observation date, age, policy version, and blocking reason; absent assessments remain review required. Close plan transports retain workflow, account, and evidence-version stamps for declared-scope validation.
 
+`PrepareFactorPaydownRequestDto` carries operator factor/source assertions without caller-owned
+actor or tenant fields. `FactorPaydownPreparationDto` binds the exact lot/account preview to a
+fingerprint; `CreateFactorPaydownDraftRequestDto` requires that fingerprint before server-side
+repreparation and governed candidate creation. Component and nested decimal response values are
+exact strings on these HTTP routes, and factor input fields accept decimal strings.
+
 ## Purpose
 
 `TenantScopeEnforcementOptions.ConfigurationKey` names the supported `TenantScopeEnforcement`

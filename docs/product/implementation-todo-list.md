@@ -146,6 +146,26 @@ The next bounded implementation steps above preserve the existing LOT → MARK �
 and recorded roadmap dependencies. Continue the P0 release-evidence work in parallel; no completed
 read-side increment authorizes a write-version promotion or a production-readiness claim.
 
+### Next-work implementation — 2026-10-28
+
+The current implementation adds governed factor-paydown preparation and draft routes, consumed by
+browser Ledger Explorer and WPF Accounting Configuration. The server resolves ownership and
+period authority, derives exact amounts from retained lots, and binds draft creation to the
+reviewed preparation fingerprint. Existing spine/candidate controls retain the draft; submission,
+approval and posting remain in the governed journal workflow. This is a bounded LOT activation
+increment, not LOT closure, live shadow-operation acceptance or release certification.
+
+Legacy provider setup now refuses provider-wide credential operations for retained owned or
+ambiguous connections, holding the configuration lease through its ownership read and vault
+operations and rechecking ownership before configuration publication. This closes a bounded
+fallback path; browser/WPF wizard migration, the default runtime resolver and the remaining
+`PRD-002` evidence requirements stay open.
+
+The [next-work evidence receipt](../testing/evidence/next-work-20261028/release-readiness.md)
+records external release blockers, MARK/SEAM operator scenarios, report-amount contribution-map
+prerequisites and the compatibility backtesting factor-authority limit. These findings preserve
+the LOT → MARK → SEAM queue and do not advance RECON ahead of those acceptance gates.
+
 ### Historical Implementation and Release Evidence
 
 The following counts and runs describe earlier closure candidates. They remain an audit trail,

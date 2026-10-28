@@ -43,6 +43,7 @@ public partial class AccountingConfigurePage : Page
     {
         // Leaving the page abandons a running verification so the server releases the chain locks.
         _viewModel.AuditChainIntegrity.Cancel();
+        _viewModel.FactorPaydown.Cancel();
         _loadCts?.Cancel();
         _loadCts?.Dispose();
         _loadCts = null;

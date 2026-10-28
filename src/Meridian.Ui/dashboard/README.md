@@ -11,6 +11,16 @@ last_reviewed: 2026-10-11
 
 # src/Meridian.Ui/dashboard
 
+Accounting Ledger Explorer includes a governed factor-paydown workbench. Exact factor text and
+existing retained evidence identities go to the shared preparation endpoint; the server supplies
+principal, basis relief, realized results and per-lot allocation as exact decimal strings. Creating
+a review draft requires an explicit description and confirmation of the preview. The shared draft
+adapter rechecks its fingerprint and retains the existing accounting-event candidate; the browser
+never posts, approves, calculates financial amounts or roundtrips numeric lot instructions. Book,
+period and tab changes discard preparation, stale responses are ignored, and uncertain writes keep
+the same reviewed request for retry. Focused tests are in
+`accounting-screen.factor-paydown-panel.test.tsx` and `factor-paydown.api.test.ts`.
+
 Historical price charts require a complete successful historical query before showing prices
 or indicators. Failed and partial queries show an explicit incomplete state with failed source
 paths and Retry; incomplete comparison series are withheld and named in an alert. The shared

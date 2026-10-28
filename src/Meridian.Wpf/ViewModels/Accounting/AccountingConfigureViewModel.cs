@@ -14,7 +14,7 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.Wpf.ViewModels.Accounting;
 
-public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.BindableBase
+public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.BindableBase
 {
     private const string DefaultActor = "desktop-user";
     private const string DefaultLifecycleActor = "desktop-controller";
@@ -322,12 +322,14 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         IAccountingMigrationRunWorkerPlanStore? migrationRunWorkerPlanStore = null,
         DesktopAuthenticationSession? authenticationSession = null,
         IRecurringJournalQueueSource? recurringJournalQueueSource = null,
-        IAccountingAuditIntegrityApiClient? auditIntegrityClient = null)
+        IAccountingAuditIntegrityApiClient? auditIntegrityClient = null,
+        IFactorPaydownApiClient? factorPaydownClient = null)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _authenticationSession = authenticationSession;
         RecurringJournalQueue = new RecurringJournalQueueViewModel(recurringJournalQueueSource);
         AuditChainIntegrity = new AuditChainIntegrityViewModel(auditIntegrityClient);
+        FactorPaydown = new FactorPaydownViewModel(factorPaydownClient);
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         _manualJournalEntryWorkbenchService = manualJournalEntryWorkbenchService ?? throw new ArgumentNullException(nameof(manualJournalEntryWorkbenchService));
         _capitalAccountWorkbenchService = capitalAccountWorkbenchService;
@@ -438,7 +440,6 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public RecurringJournalQueueViewModel RecurringJournalQueue { get; }
 
     /// <summary>On-demand audit-chain verification, matching the browser Configuration panel.</summary>
-    public AuditChainIntegrityViewModel AuditChainIntegrity { get; }
 
     public ObservableCollection<string> RecurringJournalEntityOptions { get; } = [];
 
@@ -1513,7 +1514,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         IsLoading = true;
         _recurringJournalFundProfileId = null;
         _recurringJournalLedgerBookId = null;
-        await RecurringJournalQueue.LoadAsync(null, null, null, ct).ConfigureAwait(false);
+        await ResetGovernedQueuesAsync(ct).ConfigureAwait(false);
         try
         {
             _activeFundProfile = _fundContextService.CurrentFundProfile;
@@ -4240,7 +4241,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         var entityId = entityOptions.Contains(SelectedRecurringJournalEntityId, StringComparer.Ordinal)
             ? SelectedRecurringJournalEntityId : entityOptions.Length == 1 ? entityOptions[0] : null;
         SetProperty(ref _selectedRecurringJournalEntityId, entityId, nameof(SelectedRecurringJournalEntityId));
-        await RecurringJournalQueue.LoadAsync(_activeFundProfile.FundProfileId, _configuration?.LedgerBookId, entityId, ct).ConfigureAwait(false);
+        await LoadGovernedQueuesAsync(entityId, ct).ConfigureAwait(false);
         ApplyManualJournalLifecycleRows(_selectedDraft);
         ManualJournalStatusText = BuildManualJournalStatusText(workbench);
         RaisePropertyChanged(nameof(CanSubmitManualJournal));
@@ -4966,7 +4967,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ExternalGlEvidencePackageRows.Clear();
         ExternalGlRows.Clear();
         ManualJournalDraftRows.Clear();
-        _ = RecurringJournalQueue.LoadAsync(null, null, null);
+        _ = ResetGovernedQueuesAsync();
         _recurringJournalFundProfileId = null;
         _recurringJournalLedgerBookId = null;
         RecurringJournalEntityOptions.Clear();

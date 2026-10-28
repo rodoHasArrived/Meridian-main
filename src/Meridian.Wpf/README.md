@@ -983,6 +983,17 @@ Use `Controls/EmptyStatePanel` for reusable missing-data states; it supports tit
 - `docs/operators/governed-reporting-operations.md`
 - `docs/source/generated/source-module-index.md`
 
+### Factor paydown review (W10-LOT-002)
+
+Accounting Configure includes a modular factor-paydown review over the governed HTTP preparation
+and draft-intake routes. Operators supply the factor observation, exact retained evidence identities
+and chart paths; the server derives lots, principal, basis relief and realized amounts. Any input,
+book/fund refresh or navigation invalidates the preview and explicit confirmation. Draft intake binds
+the reviewed preparation fingerprint and preserves the existing candidate, approval and posting gates;
+the desktop never posts from this review panel. Refusals remain visible and uncertain draft requests
+instruct the operator to inspect retained history before retrying. Windows runtime proof is required
+before claiming live desktop acceptance.
+
 ### Posted amount proof (W10-PROV-001)
 
 The Posted Ledger page reads the selected period's posted journal lines alongside its trial balance.

@@ -883,6 +883,8 @@ public static class UiApiRoutes
     public const string LedgerAccountingConfigurationPostingRuleDryRun = "/api/ledger/accounting-configuration/posting-rules/dry-run";
     public const string LedgerAccountingConfigurationPostingRuleCandidates = "/api/ledger/accounting-configuration/posting-rules/candidates";
     public const string LedgerAccountingConfigurationAssetAccountingCandidates = "/api/ledger/accounting-configuration/posting-rules/candidates/asset-accounting";
+    public const string LedgerFactorPaydownPreparation = "/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/prepare";
+    public const string LedgerFactorPaydownDrafts = "/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/draft";
     public const string LedgerAssetAccountingEventProjections = "/api/ledger/accounting-configuration/asset-accounting/events/project";
     public const string LedgerAssetAccountingEventLifecycle = "/api/ledger/accounting-configuration/asset-accounting/events/lifecycle";
     public const string LedgerAccountingConfigurationPostingRuleCandidatePosts = "/api/ledger/accounting-configuration/posting-rules/candidates/post";

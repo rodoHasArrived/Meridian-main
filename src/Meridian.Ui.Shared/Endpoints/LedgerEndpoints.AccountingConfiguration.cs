@@ -681,6 +681,7 @@ public static partial class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
 
+        MapFactorPaydownEndpoints(app, jsonOptions);
         MapAuditIntegrityEndpoint(app, jsonOptions);
     }
 

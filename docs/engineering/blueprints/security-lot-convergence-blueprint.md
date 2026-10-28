@@ -886,7 +886,12 @@ as the mutation's `cost_basis`, and dates the factor in `HistoricalTaxLotQuantit
 snapshot. Financial Operations: `FactorPaydownLotInstructionService` prepares the spine request from
 the lots of record. It is composed in `LedgerFeatureRegistration` next to
 `CanonicalLotAmortizationService` (nullable authorities; preparation refuses a missing one before
-reading anything), but no operator route calls it yet. The candidate service accepts a
+reading anything). The operator preparation and draft routes resolve authenticated book ownership
+and the current open period before preparation. Browser Ledger Explorer and WPF Accounting
+Configuration review exact amounts and a fingerprint bound to the retained lots, factors, source
+evidence and proposed accounts. Draft creation re-prepares and checks that fingerprint, then uses
+the existing spine projection and candidate lifecycle; it cannot approve or post. A matching
+retained draft can be returned on retry. The candidate service accepts a
 factor-paydown candidate only under spine authority and only with the governed lot instruction,
 recomputing held face, principal and the allocation from the lots, and feeds the instruction's
 components to the rule only under the `FactorPaydown` intent; the spine service rereads every lot

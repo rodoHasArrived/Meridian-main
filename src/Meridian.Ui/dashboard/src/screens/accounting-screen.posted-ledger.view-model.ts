@@ -262,6 +262,7 @@ export interface AccountingPostedLedgerViewModel {
   journalLoading: boolean;
   journalErrorText: string | null;
   selectedPeriodId: string | null;
+  selectedPeriodVersion: number | null;
   selectedPeriodLabel: string | null;
   /** True once the selected book's period request has come back successfully. */
   periodsSettled: boolean;
@@ -1188,6 +1189,7 @@ export function useAccountingPostedLedgerViewModel(
     journalErrorText,
     selectedPeriodId,
     selectedPeriodLabel,
+    selectedPeriodVersion: periodsSettled ? periods.find((period) => period.periodId === selectedPeriodId)?.version ?? null : null,
     selectedBook,
     /**
      * True once the selected book's period request has come back successfully. A deep link cannot
