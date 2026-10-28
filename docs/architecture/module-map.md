@@ -87,7 +87,8 @@ flowchart LR
 
 ## OMS Runtime Ownership and Lifecycle
 
-`OrderManagementSystem` implements `IOrderManagementLifecycle`. Construction restores retained
+`OrderManagementSystem` implements `IOrderManagementLifecycle` through its internal
+`OrderManagementLifecycleCoordinator`. Construction restores retained
 identity evidence without starting background work. `StartAsync` starts gateway-report intake and
 retained accounting-handoff replay once; order operations require startup. `StopAsync` closes
 admission and shares the existing asynchronous disposal drain, including admitted operations and
@@ -100,12 +101,17 @@ or accounting dependencies.
 
 Internal collaborators under `Meridian.Execution/OrderManagement` now own bounded parts of the
 runtime. The facade retains public commands, live order state and sidecars, the shared broker-report
-and pre-trade admission gates, and command/risk-reservation/amendment/cancellation/kill-switch
-coordination.
+and pre-trade reservation gates, and command/risk-reservation/amendment/cancellation/kill-switch
+coordination. The lifecycle coordinator owns operation and subscription admission, worker lifetime,
+and the shared shutdown drain.
 
 ```mermaid
 flowchart LR
-  OMS["OMS facade and lifecycle"] --> Policy["OrderAdmissionPolicy / OrderRiskSizingPolicy"]
+  OMS["OMS command and lifecycle facade"] --> Lifecycle["OrderManagementLifecycleCoordinator"]
+  OMS --> Policy["OrderAdmissionPolicy / OrderRiskSizingPolicy"]
+  OMS --> Amendments["OrderAmendmentBook"]
+  OMS --> Dispatch["OrderDispatchRegistry / BrokerOrderSweep"]
+  OMS --> Approvals["OrderApprovalReservations"]
   OMS --> Recovery["OrderBrokerIdentityIndex / BrokerageOrderRecoveryJournal"]
   OMS --> Fills["OrderFillProcessor"]
   Fills --> Context["OrderFillContext: read-only state access"]
@@ -113,9 +119,19 @@ flowchart LR
   Fills --> Reports["ExecutionReportHub"]
   Fills --> Audit["OrderExecutionAudit / OrderAuditMetadata"]
   Reports --> Failure["ExecutionFailureState"]
+  Lifecycle --> Failure
   OMS --> Failure
   OMS --> Audit
 ```
+
+The amendment book owns pending attempts, restored provenance, broker outcome evidence, and
+exposure projections over the live order view. The facade applies its prepared transitions and
+removes resolved attempts after fill processing succeeds. The dispatch registry owns in-flight
+submission leases and bounded waits for a sweep's initial dispatch snapshot. The broker sweep
+owns broker-book snapshots, cancellation-ID matching, residual cancellations, and their audit
+evidence; tracked cancellations, concurrency, and final sweep outcomes stay with the facade.
+Approval reservations own parked client identities and their escalation checks, rearming, and
+withdrawal; the facade retains order/session effects and risk-capacity settlement.
 
 The recovery journal owns durable checkpoints, permanent dispatched identities, tombstones, and
 the recovery-version lock; the identity index owns active broker IDs and replacement aliases.
@@ -125,12 +141,14 @@ subscriber delivery and observer publication belong to the report hub. Admission
 share the first terminal consumer failure. Audit helpers consume explicit snapshots.
 
 The facade's shared report gate still protects live reports, recovery, amendment resolution, and
-retention. The journal's guarded compaction persists the tombstone and performs expected-state
-removal under one recovery lock; the facade then removes sidecars. Existing APIs, persistence
-formats, alias and fill identity rules, effect ordering, and shutdown drain semantics are
-preserved. These are scoped ownership boundaries, with command coordination still in the facade;
-see the [execution module README](../../src/Meridian.Execution/README.md#oms-ownership) for the
-detailed ownership map.
+retention. Recovery checkpoint evidence still reads the pending flag and snapshot separately
+inside the journal lock. The journal's guarded compaction persists the tombstone and performs
+expected-state removal under one recovery lock; the facade then removes sidecars. Existing APIs,
+persistence formats, alias and fill identity rules, and shutdown drain semantics are preserved.
+Fill effects retain their order: portfolio application, accounting acceptance, session persistence,
+authoritative delivery, then observer publication. These scoped ownership boundaries retain command
+coordination in the facade. See the
+[execution module README](../../src/Meridian.Execution/README.md#oms-ownership) for the detailed map.
 
 ## Operational Record Boundaries
 

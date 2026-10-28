@@ -1,5 +1,6 @@
 using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Sdk;
+using static Meridian.Execution.OrderManagement.OrderAmendmentBook;
 
 namespace Meridian.Execution;
 
@@ -111,13 +112,7 @@ public sealed partial class OrderManagementSystem
         {
             var state = retained.State;
             _orders[state.OrderId] = state;
-            if (retained.PendingAmendment is { } pending)
-            {
-                _pendingModificationOrderIds[state.OrderId] = pending;
-                _restoredPendingAmendments[state.OrderId] = pending;
-            }
-            else if (retained.RequiresAmendmentRecovery)
-                _pendingModificationOrderIds[state.OrderId] = new PendingOrderAmendment(state, state, retained.BrokerOrderId);
+            _amendmentBook.Restore(retained);
             _brokerIdentities.Restore(retained);
             if (state.FundAccountId is { } accountId)
                 _orderFinancialAccountIds[state.OrderId] = accountId.ToString("D");
@@ -159,13 +154,13 @@ public sealed partial class OrderManagementSystem
         // Submit acknowledgments do not hold the shared report gate. Sample these owners at
         // the journal's lock boundary so a wait cannot overwrite a newer amendment or alias.
         var brokerIdentities = _brokerIdentities;
-        var pendingAmendments = _pendingModificationOrderIds;
+        var pendingAmendments = _amendmentBook;
         _recoveryJournal.CheckpointProcessed(state, report, observedRecoveryVersion, () =>
         {
-            var hasPendingAmendment = pendingAmendments.ContainsKey(orderId);
+            var hasPendingAmendment = pendingAmendments.Contains(orderId);
             brokerIdentities.TryGetActiveId(orderId, out var brokerOrderId);
             return new BrokerageOrderCheckpointEvidence(brokerOrderId, brokerIdentities.GetAliases(orderId),
-                hasPendingAmendment, pendingAmendments.GetValueOrDefault(orderId));
+                hasPendingAmendment, pendingAmendments.GetPending(orderId));
         });
     }
 
@@ -178,7 +173,7 @@ public sealed partial class OrderManagementSystem
         try
         {
             var orderId = report.ClientOrderId ?? report.OrderId;
-            if (_inFlightDispatches.ContainsKey(orderId))
+            if (_dispatchRegistry.Contains(orderId))
                 throw new InvalidOperationException("Order submission is still in progress; broker recovery must wait for its outcome.");
             if (report.ReportType is ExecutionReportType.ModificationPending)
             {
@@ -250,7 +245,7 @@ public sealed partial class OrderManagementSystem
                         confirmed = confirmed with { Status = report.OrderStatus };
                     _orders[orderId] = confirmed;
                     if (pending is not null)
-                        RecordAmendmentOutcome(pending, ReferenceEquals(selectedTerms, pending.Proposed));
+                        _amendmentBook.RecordOutcome(pending, ReferenceEquals(selectedTerms, pending.Proposed));
                 }
                 if (report.GatewayOrderId is { Length: > 0 } confirmedBrokerId)
                 {
@@ -258,7 +253,7 @@ public sealed partial class OrderManagementSystem
                 }
             }
             await ProcessGatewayReportCoreAsync(report, ct).ConfigureAwait(false);
-            if (canResolveAmendment && _pendingModificationOrderIds.TryRemove(orderId, out _))
+            if (canResolveAmendment && _amendmentBook.Remove(orderId))
                 RetainProcessedBrokerageOrder(orderId, report, recoveryVersion);
         }
         finally
