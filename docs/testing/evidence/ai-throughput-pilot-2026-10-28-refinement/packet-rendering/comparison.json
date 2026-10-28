@@ -1,0 +1,21 @@
+{
+  "kind": "same-input-rendering-comparison",
+  "task": "Update shared guidance under ## Useful Commands",
+  "targets": [
+    ".claude/skills/_shared/project-context.md",
+    ".codex/skills/_shared/project-context.md",
+    ".agents/skills/_shared/project-context.md"
+  ],
+  "baselineRevision": "3ce44397107075bc7759517a694d614a62841e3c",
+  "baselineRendererSha256": "ab687bbe789034f8065b128af01a7f9bdf005758da92013327794fd383672483",
+  "refinedRendererSha256": "b0be25755d2e9f3c845dc91dd86dfbd7395f637630cfe1c9e680bb740bda8fed",
+  "inputPacketSha256": "66ff0fa857138458637ad2a170cbb03ab4865d880e44bef68562442e7297c246",
+  "jsonPreserved": true,
+  "freshnessCheck": "pass",
+  "baselineMarkdownChars": 24143,
+  "refinedMarkdownChars": 5659,
+  "markdownReductionPercent": 76.56,
+  "contextEntriesPreserved": 10,
+  "exactExcerptGroups": 8,
+  "limitation": "Rendering size only; does not establish agent task-time speedup. Optional excerpt bodies remain in JSON; all warnings, instructions and source references remain available."
+}

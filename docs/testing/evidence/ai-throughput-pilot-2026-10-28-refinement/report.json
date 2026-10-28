@@ -1,0 +1,505 @@
+{
+  "schemaVersion": 1,
+  "rawLogs": [
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/events/r2-pair-1-baseline.jsonl",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/events/r2-pair-1-treatment.jsonl",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/events/r2-pair-2-baseline.jsonl",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/events/r2-pair-2-treatment.jsonl",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/events/r2-pair-3-baseline.jsonl",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/events/r2-pair-3-treatment.jsonl",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/events/r2-pair-4-baseline.jsonl",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/events/r2-pair-4-treatment.jsonl",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/events/r2-pair-5-baseline.jsonl",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/events/r2-pair-5-treatment.jsonl",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/events/r2-pair-6-baseline.jsonl",
+    "docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/events/r2-pair-6-treatment.jsonl"
+  ],
+  "trials": [
+    {
+      "trial": "r2-pair-1-baseline",
+      "pair": "r2-pair-1",
+      "cohort": "baseline",
+      "instrumentationComplete": true,
+      "eventCount": 8,
+      "firstUsefulEditSeconds": 47.852177,
+      "observedFirstUsefulEditSeconds": 47.852177,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 0,
+      "observedCorrectionCycles": 0,
+      "validationWaitSeconds": 4.336941,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 0
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "final",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:23:02.790951+00:00",
+          "finishedAt": "2026-10-28T07:23:07.127892+00:00",
+          "seconds": 4.336941
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 52.298009,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "passing PR required-check evidence"
+      ]
+    },
+    {
+      "trial": "r2-pair-1-treatment",
+      "pair": "r2-pair-1",
+      "cohort": "treatment",
+      "instrumentationComplete": true,
+      "eventCount": 8,
+      "firstUsefulEditSeconds": 40.530701,
+      "observedFirstUsefulEditSeconds": 40.530701,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 0,
+      "observedCorrectionCycles": 0,
+      "validationWaitSeconds": 4.446914,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 0
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "final",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:23:25.124078+00:00",
+          "finishedAt": "2026-10-28T07:23:29.570992+00:00",
+          "seconds": 4.446914
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 49.276956,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "passing PR required-check evidence"
+      ]
+    },
+    {
+      "trial": "r2-pair-2-baseline",
+      "pair": "r2-pair-2",
+      "cohort": "baseline",
+      "instrumentationComplete": true,
+      "eventCount": 10,
+      "firstUsefulEditSeconds": 38.938898,
+      "observedFirstUsefulEditSeconds": 38.938898,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 0,
+      "observedCorrectionCycles": 0,
+      "validationWaitSeconds": 24.732699,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 0
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "final",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:23:49.485242+00:00",
+          "finishedAt": "2026-10-28T07:24:14.217941+00:00",
+          "seconds": 24.732699
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 63.76754,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "passing PR required-check evidence"
+      ]
+    },
+    {
+      "trial": "r2-pair-2-treatment",
+      "pair": "r2-pair-2",
+      "cohort": "treatment",
+      "instrumentationComplete": true,
+      "eventCount": 8,
+      "firstUsefulEditSeconds": 36.471296,
+      "observedFirstUsefulEditSeconds": 36.471296,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 0,
+      "observedCorrectionCycles": 0,
+      "validationWaitSeconds": 5.167457,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 0
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "final",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:23:30.873321+00:00",
+          "finishedAt": "2026-10-28T07:23:36.040778+00:00",
+          "seconds": 5.167457
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 41.754217,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "passing PR required-check evidence"
+      ]
+    },
+    {
+      "trial": "r2-pair-3-baseline",
+      "pair": "r2-pair-3",
+      "cohort": "baseline",
+      "instrumentationComplete": true,
+      "eventCount": 10,
+      "firstUsefulEditSeconds": 68.623982,
+      "observedFirstUsefulEditSeconds": 68.623982,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 0,
+      "observedCorrectionCycles": 0,
+      "validationWaitSeconds": 4.908306,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 0
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "final",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:24:35.872144+00:00",
+          "finishedAt": "2026-10-28T07:24:40.780450+00:00",
+          "seconds": 4.908306
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 73.646996,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "passing PR required-check evidence"
+      ]
+    },
+    {
+      "trial": "r2-pair-3-treatment",
+      "pair": "r2-pair-3",
+      "cohort": "treatment",
+      "instrumentationComplete": true,
+      "eventCount": 8,
+      "firstUsefulEditSeconds": 38.534111,
+      "observedFirstUsefulEditSeconds": 38.534111,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 0,
+      "observedCorrectionCycles": 0,
+      "validationWaitSeconds": 0.065403,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 0
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "final",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:24:24.798673+00:00",
+          "finishedAt": "2026-10-28T07:24:24.864076+00:00",
+          "seconds": 0.065403
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 45.073646,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "passing PR required-check evidence"
+      ]
+    },
+    {
+      "trial": "r2-pair-4-baseline",
+      "pair": "r2-pair-4",
+      "cohort": "baseline",
+      "instrumentationComplete": true,
+      "eventCount": 10,
+      "firstUsefulEditSeconds": 44.04271,
+      "observedFirstUsefulEditSeconds": 44.04271,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 0,
+      "observedCorrectionCycles": 0,
+      "validationWaitSeconds": 6.284158,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 0
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "final",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:26:06.353224+00:00",
+          "finishedAt": "2026-10-28T07:26:12.637382+00:00",
+          "seconds": 6.284158
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 50.44179,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "passing PR required-check evidence"
+      ]
+    },
+    {
+      "trial": "r2-pair-4-treatment",
+      "pair": "r2-pair-4",
+      "cohort": "treatment",
+      "instrumentationComplete": true,
+      "eventCount": 8,
+      "firstUsefulEditSeconds": 49.912468,
+      "observedFirstUsefulEditSeconds": 49.912468,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 0,
+      "observedCorrectionCycles": 0,
+      "validationWaitSeconds": 5.950851,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 0
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "final",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:26:02.446773+00:00",
+          "finishedAt": "2026-10-28T07:26:08.397624+00:00",
+          "seconds": 5.950851
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 60.890948,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "passing PR required-check evidence"
+      ]
+    },
+    {
+      "trial": "r2-pair-5-baseline",
+      "pair": "r2-pair-5",
+      "cohort": "baseline",
+      "instrumentationComplete": true,
+      "eventCount": 10,
+      "firstUsefulEditSeconds": 34.028442,
+      "observedFirstUsefulEditSeconds": 34.028442,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 0,
+      "observedCorrectionCycles": 0,
+      "validationWaitSeconds": 5.089859,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 0
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "final",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:26:13.372679+00:00",
+          "finishedAt": "2026-10-28T07:26:18.462538+00:00",
+          "seconds": 5.089859
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 39.219224,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "passing PR required-check evidence"
+      ]
+    },
+    {
+      "trial": "r2-pair-5-treatment",
+      "pair": "r2-pair-5",
+      "cohort": "treatment",
+      "instrumentationComplete": true,
+      "eventCount": 8,
+      "firstUsefulEditSeconds": 30.797468,
+      "observedFirstUsefulEditSeconds": 30.797468,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 0,
+      "observedCorrectionCycles": 0,
+      "validationWaitSeconds": 4.264137,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 0
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "final",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:26:26.980472+00:00",
+          "finishedAt": "2026-10-28T07:26:31.244609+00:00",
+          "seconds": 4.264137
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 39.581978,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "passing PR required-check evidence"
+      ]
+    },
+    {
+      "trial": "r2-pair-6-baseline",
+      "pair": "r2-pair-6",
+      "cohort": "baseline",
+      "instrumentationComplete": false,
+      "eventCount": 7,
+      "firstUsefulEditSeconds": null,
+      "observedFirstUsefulEditSeconds": null,
+      "repeatedFileReads": null,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": null,
+      "observedCorrectionCycles": 0,
+      "validationWaitSeconds": null,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 0,
+        "fail": 1
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "final",
+          "result": "fail",
+          "startedAt": "2026-10-28T07:27:01.226392+00:00",
+          "finishedAt": "2026-10-28T07:30:18.531749+00:00",
+          "seconds": 197.305357
+        }
+      ],
+      "successfulValidation": false,
+      "comparisonEligible": false,
+      "validatedCompletionSeconds": null,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "complete instrumentation",
+        "first useful edit",
+        "final successful validation",
+        "passing PR required-check evidence"
+      ]
+    },
+    {
+      "trial": "r2-pair-6-treatment",
+      "pair": "r2-pair-6",
+      "cohort": "treatment",
+      "instrumentationComplete": true,
+      "eventCount": 8,
+      "firstUsefulEditSeconds": 30.351635,
+      "observedFirstUsefulEditSeconds": 30.351635,
+      "repeatedFileReads": 0,
+      "observedRepeatedFileReads": 0,
+      "correctionCycles": 0,
+      "observedCorrectionCycles": 0,
+      "validationWaitSeconds": 4.400383,
+      "unmatchedValidations": [],
+      "validationCounts": {
+        "pass": 1,
+        "fail": 0
+      },
+      "validationOutcomes": [
+        {
+          "validationId": "final",
+          "result": "pass",
+          "startedAt": "2026-10-28T07:26:35.005090+00:00",
+          "finishedAt": "2026-10-28T07:26:39.405473+00:00",
+          "seconds": 4.400383
+        }
+      ],
+      "successfulValidation": true,
+      "comparisonEligible": true,
+      "validatedCompletionSeconds": 34.875217,
+      "deliveryCommitSha": null,
+      "passingPrSeconds": null,
+      "passingPrEvidence": null,
+      "missingEvidence": [
+        "passing PR required-check evidence"
+      ]
+    }
+  ],
+  "comparisons": {
+    "firstUsefulEditSeconds": {
+      "matchedPairs": 5,
+      "baselineMedian": 44.04271,
+      "treatmentMedian": 38.534111,
+      "medianPairedDifference": -3.230974
+    },
+    "repeatedFileReads": {
+      "matchedPairs": 5,
+      "baselineMedian": 0,
+      "treatmentMedian": 0,
+      "medianPairedDifference": 0
+    },
+    "correctionCycles": {
+      "matchedPairs": 5,
+      "baselineMedian": 0,
+      "treatmentMedian": 0,
+      "medianPairedDifference": 0
+    },
+    "validationWaitSeconds": {
+      "matchedPairs": 5,
+      "baselineMedian": 5.089859,
+      "treatmentMedian": 4.446914,
+      "medianPairedDifference": -0.8257219999999998
+    },
+    "passingPrSeconds": {
+      "matchedPairs": 0,
+      "baselineMedian": null,
+      "treatmentMedian": null,
+      "medianPairedDifference": null
+    },
+    "validatedCompletionSeconds": {
+      "matchedPairs": 5,
+      "baselineMedian": 52.298009,
+      "treatmentMedian": 45.073646,
+      "medianPairedDifference": -3.021053000000002
+    }
+  },
+  "interpretation": "Observed small maintenance trials only; no causal or general delivery-speed claim. Missing evidence is null, not zero. Comparisons require complete instrumentation and a final successful recorded validation; failed attempt wait is retained. Passing PR evidence is supplied by the recorder; this offline reporter does not verify GitHub policy or check authenticity."
+}
