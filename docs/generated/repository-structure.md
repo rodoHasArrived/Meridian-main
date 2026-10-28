@@ -2012,6 +2012,7 @@ Meridian-main
 │   │   │   ├── next-work-determination-2026-10-24.md
 │   │   │   ├── next-work-determination-2026-10-25.md
 │   │   │   ├── next-work-determination-2026-10-27.md
+│   │   │   ├── next-work-determination-2026-10-28.md
 │   │   │   ├── product-roadmap-priorities-2026-07.md
 │   │   │   ├── production-readiness-backlog-2026-08.md
 │   │   │   ├── README.md
