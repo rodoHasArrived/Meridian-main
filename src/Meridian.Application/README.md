@@ -33,6 +33,8 @@ AtMaturity, and resolves only the declaring block's calendars. The prototype is 
 fallback; both factories retain their separate refusal and calendar tests. See the
 [contractual schedule rollout](../../docs/domain/contractual-schedule.md#future-expansion-notes)
 for the declared engine and remaining 5b work.
+Cash-flow service composition retains its exact six-argument and calendar-aware seven-argument
+CLR constructors alongside the extended policy and calculation-receipt composition paths.
 
 Freshness monitoring begins with live ingress or collector subscription attempts, not configured symbols in an idle workstation. An unused UI monitor does not publish empty snapshots over an active collector's process-wide metrics. Internal reconciliation retains observed `tradeFill.price` only for the single-currency share movement, never a commission leg or a price inferred from fee-inclusive net cash.
 

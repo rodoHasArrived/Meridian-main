@@ -39,6 +39,31 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
 
     private static readonly TimeSpan StalenessThreshold = TimeSpan.FromDays(7);
 
+    /// <summary>Preserves the original compiled host-composition constructor.</summary>
+    public SecurityMasterCashFlowService(
+        ISecurityMasterCashFlowStore store,
+        IEnumerable<IStructuredCashFlowProvider> providers,
+        ISecurityMasterQueryService queryService,
+        ILogger<SecurityMasterCashFlowService> logger,
+        IStructuredCashFlowLedgerBridge? ledgerBridge,
+        ISecurityForwardCurveProvider? forwardCurves)
+        : this(null, store, providers, queryService, logger, ledgerBridge, forwardCurves, null, null)
+    {
+    }
+
+    /// <summary>Preserves the compiled calendar-aware host-composition constructor.</summary>
+    public SecurityMasterCashFlowService(
+        IBusinessDayCalendarSource? calendars,
+        ISecurityMasterCashFlowStore store,
+        IEnumerable<IStructuredCashFlowProvider> providers,
+        ISecurityMasterQueryService queryService,
+        ILogger<SecurityMasterCashFlowService> logger,
+        IStructuredCashFlowLedgerBridge? ledgerBridge,
+        ISecurityForwardCurveProvider? forwardCurves)
+        : this(calendars, store, providers, queryService, logger, ledgerBridge, forwardCurves, null, null)
+    {
+    }
+
     public SecurityMasterCashFlowService(
         ISecurityMasterCashFlowStore store,
         IEnumerable<IStructuredCashFlowProvider> providers,
