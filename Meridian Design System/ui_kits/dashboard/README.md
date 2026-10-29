@@ -66,3 +66,23 @@ results, sync-run summaries, staging review, identity resolution, promotion read
 handoff history, and quarantine replay. Approval controls should post retained handoff evidence and
 surface duplicate/not-ready issues; canonical Portfolio, Security Master, Ledger, and Accounting
 promotion remains outside the local preview component.
+
+
+## Production task workbenches
+
+The production React workstation extends this pattern through `WorkspaceWorkbenchShell` and
+`WorkspaceTaskWorkbench` under `src/Meridian.Ui/dashboard/src/components/meridian`.
+Use one task toolbar, a dense primary list, a selected-item inspector, and supporting disclosures.
+Task directories expose direct destination links as well as inspectable context; financial work
+uses authoritative domain-specific actions. Context labels must never imply financial readiness.
+
+The opt-in inspector switch provides explicit list/detail navigation below 1280 CSS pixels, with
+Enter/Space activation, Escape return, and selected-row focus restoration. Nested inspectors use
+labelled regions. Search preserves the selected record even when it is outside the results;
+missing explicit IDs remain unavailable. Keep source, operating scope, valuation basis, freshness,
+and blockers visible or directly inspectable. Never hide live-trading blockers, provenance warnings,
+or approval controls in a generic detail drawer.
+
+Use the current production warm-neutral theme tokens, restrained borders, tabular numeric values,
+and operator-selected density. The standalone JSX kit above is an illustrative asset, not a reason
+to replace production primitives or restore its older card palette.

@@ -1,3 +1,4 @@
+import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React from "react";
 import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
@@ -594,6 +595,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
       <OperationalTrustSummary
         label="Trading data confidence"
+        disclosure
         source={{
           value: hasRecoveryProjection ? reconciliation?.brokerDisplayName ?? scopedRecovery?.providerId ?? "Broker unavailable" : `${data.brokerage.provider} · ${data.brokerage.environment}`,
           detail: hasRecoveryProjection
@@ -765,7 +767,12 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
       {showPositions ? (
       <section id="trading-actions" className="workspace-section-band" aria-label="Position book and selected detail">
-      <section className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <WorkspaceWorkbenchShell label="Trading positions workbench" switchInspector inspectorRole="region" inspector={(
+<div className="min-w-0">
+          <TradingBlotterDetailPanel id={blotterVm.positionDetailId} detail={blotterVm.selectedPosition} emptyText={blotterVm.positionEmptyText} selectedSourceLabel="Selected from live positions" />
+        </div>
+      )}>
+
         <Card className="panel-surface">
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -799,16 +806,19 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           </CardContent>
         </Card>
 
-        <div className="min-w-0 xl:sticky xl:top-4">
-          <TradingBlotterDetailPanel id={blotterVm.positionDetailId} detail={blotterVm.selectedPosition} emptyText={blotterVm.positionEmptyText} selectedSourceLabel="Selected from live positions" />
-        </div>
-      </section>
+        </WorkspaceWorkbenchShell>
       </section>
       ) : null}
 
       {showOrders ? (
       <section id="trading-actions" className="workspace-section-band" aria-label="Order blotter and selected detail">
-      <section className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <WorkspaceWorkbenchShell label="Trading orders workbench" switchInspector inspectorRole="region" inspector={(
+<div className="min-w-0 space-y-4">
+          <TradingBlotterDetailPanel id={blotterVm.orderDetailId} detail={blotterVm.selectedOrder} emptyText={blotterVm.orderEmptyText} selectedSourceLabel="Selected from open orders" />
+          <TradingBlotterDetailPanel id={blotterVm.fillDetailId} detail={blotterVm.selectedFill} emptyText={blotterVm.fillEmptyText} selectedSourceLabel="Selected from recent fills" />
+        </div>
+      )}>
+
         <div className="min-w-0 space-y-4">
         <Card className="panel-surface">
           <CardHeader>
@@ -1061,11 +1071,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         </Card>
         </div>
 
-        <div className="min-w-0 space-y-4 xl:sticky xl:top-4">
-          <TradingBlotterDetailPanel id={blotterVm.orderDetailId} detail={blotterVm.selectedOrder} emptyText={blotterVm.orderEmptyText} selectedSourceLabel="Selected from open orders" />
-          <TradingBlotterDetailPanel id={blotterVm.fillDetailId} detail={blotterVm.selectedFill} emptyText={blotterVm.fillEmptyText} selectedSourceLabel="Selected from recent fills" />
-        </div>
-      </section>
+        </WorkspaceWorkbenchShell>
       </section>
       ) : null}
 

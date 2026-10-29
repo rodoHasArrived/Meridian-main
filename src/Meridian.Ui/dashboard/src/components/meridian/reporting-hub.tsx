@@ -1,3 +1,4 @@
+import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import { AlertTriangle, ArrowUpRight, FileText, PanelRight, TableProperties } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useInRouterContext, useLocation, useNavigate } from "react-router-dom";
@@ -149,7 +150,69 @@ function ReportingHubContent({
         </div>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <WorkspaceWorkbenchShell label="Reporting review workbench" switchInspector inspectorRole="region" inspectorLabel="Reporting inspection" inspector={(
+        <DenseRowDetailPanel id={REPORTING_WORK_DETAIL_ID} className="rounded-md border border-border/70 bg-background/75 p-3" ariaLabel="Selected reporting work detail" selectedSourceLabel={selectedWork?.title ?? "No reporting work selected"}>
+          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <PanelRight className="h-4 w-4 text-primary" aria-hidden="true" />
+            Selected work
+          </div>
+          {selectedWork ? (
+            <div className="mt-3 space-y-3">
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <SeverityBadge status={badgeVariantToSeverityStatus(selectedWork.badgeVariant)} label={selectedWork.statusLabel} />
+                  <Badge variant="outline">{selectedWork.kindLabel}</Badge>
+                </div>
+                <h3 className="mt-3 text-base font-semibold leading-snug text-foreground">{selectedWork.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{selectedWork.detail}</p>
+              </div>
+              <div className="flex flex-wrap gap-2 pt-1">
+                {selectedWork.primaryActionHref ? (
+                  <Button asChild size="sm">
+                    <a href={selectedWork.primaryActionHref} aria-label={`${selectedWork.primaryActionLabel}: ${selectedWork.title}`}>
+                      <FileText className="h-4 w-4" aria-hidden="true" />
+                      {selectedWork.primaryActionLabel}
+                    </a>
+                  </Button>
+                ) : null}
+                {selectedWork.secondaryActionHref && selectedWork.secondaryActionLabel ? (
+                  <Button asChild variant="outline" size="sm">
+                    <a href={selectedWork.secondaryActionHref} aria-label={`${selectedWork.secondaryActionLabel}: ${selectedWork.title}`}>
+                      {selectedWork.secondaryActionLabel}
+                      <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+                    </a>
+                  </Button>
+                ) : null}
+              </div>
+              <dl className="grid gap-2 text-xs" aria-label={`${selectedWork.title} decision facts`}>
+                <ReportingHubFact label="Blocked" value={selectedWork.blockedLabel} tone={selectedWork.tone} />
+                <ReportingHubFact label="Owner" value={selectedWork.owner} />
+                <ReportingHubFact label="Affected output" value={selectedWork.affectedOutputLabel} />
+                <ReportingHubFact label="Next action" value={selectedWork.nextActionLabel} />
+                <ReportingHubFact label="Proof posture" value={selectedWork.proofLabel} tone={selectedWork.evidenceGaps.length > 0 ? "warning" : "success"} />
+              </dl>
+              <div className="flex flex-wrap gap-1.5">
+                {selectedWork.context.map((context) => (
+                  <Badge key={context} variant="outline">{context}</Badge>
+                ))}
+              </div>
+              {selectedWork.evidenceGaps.length > 0 ? (
+                <ul className="grid gap-1 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs leading-5 text-warning" aria-label={`${selectedWork.title} evidence gaps`}>
+                  {selectedWork.evidenceGaps.map((gap) => (
+                    <li key={gap}>{gap}</li>
+                  ))}
+                </ul>
+              ) : null}
+
+            </div>
+          ) : (
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              {unavailableSelection ?? "No urgent reporting work is queued. Use the report family organizer to run, review, or set up the next output."}
+            </p>
+          )}
+        </DenseRowDetailPanel>
+      )}>
+
         <div className="space-y-4">
           <section className="rounded-md border border-border/70 bg-background/75" aria-label="Daily reporting triage queue">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/70 px-3 py-2">
@@ -240,67 +303,7 @@ function ReportingHubContent({
           ) : null}
         </div>
 
-        <DenseRowDetailPanel id={REPORTING_WORK_DETAIL_ID} className="rounded-md border border-border/70 bg-background/75 p-3" ariaLabel="Selected reporting work detail" selectedSourceLabel={selectedWork?.title ?? "No reporting work selected"}>
-          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <PanelRight className="h-4 w-4 text-primary" aria-hidden="true" />
-            Selected work
-          </div>
-          {selectedWork ? (
-            <div className="mt-3 space-y-3">
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <SeverityBadge status={badgeVariantToSeverityStatus(selectedWork.badgeVariant)} label={selectedWork.statusLabel} />
-                  <Badge variant="outline">{selectedWork.kindLabel}</Badge>
-                </div>
-                <h3 className="mt-3 text-base font-semibold leading-snug text-foreground">{selectedWork.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{selectedWork.detail}</p>
-              </div>
-              <div className="flex flex-wrap gap-2 pt-1">
-                {selectedWork.primaryActionHref ? (
-                  <Button asChild size="sm">
-                    <a href={selectedWork.primaryActionHref} aria-label={`${selectedWork.primaryActionLabel}: ${selectedWork.title}`}>
-                      <FileText className="h-4 w-4" aria-hidden="true" />
-                      {selectedWork.primaryActionLabel}
-                    </a>
-                  </Button>
-                ) : null}
-                {selectedWork.secondaryActionHref && selectedWork.secondaryActionLabel ? (
-                  <Button asChild variant="outline" size="sm">
-                    <a href={selectedWork.secondaryActionHref} aria-label={`${selectedWork.secondaryActionLabel}: ${selectedWork.title}`}>
-                      {selectedWork.secondaryActionLabel}
-                      <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-                    </a>
-                  </Button>
-                ) : null}
-              </div>
-              <dl className="grid gap-2 text-xs" aria-label={`${selectedWork.title} decision facts`}>
-                <ReportingHubFact label="Blocked" value={selectedWork.blockedLabel} tone={selectedWork.tone} />
-                <ReportingHubFact label="Owner" value={selectedWork.owner} />
-                <ReportingHubFact label="Affected output" value={selectedWork.affectedOutputLabel} />
-                <ReportingHubFact label="Next action" value={selectedWork.nextActionLabel} />
-                <ReportingHubFact label="Proof posture" value={selectedWork.proofLabel} tone={selectedWork.evidenceGaps.length > 0 ? "warning" : "success"} />
-              </dl>
-              <div className="flex flex-wrap gap-1.5">
-                {selectedWork.context.map((context) => (
-                  <Badge key={context} variant="outline">{context}</Badge>
-                ))}
-              </div>
-              {selectedWork.evidenceGaps.length > 0 ? (
-                <ul className="grid gap-1 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs leading-5 text-warning" aria-label={`${selectedWork.title} evidence gaps`}>
-                  {selectedWork.evidenceGaps.map((gap) => (
-                    <li key={gap}>{gap}</li>
-                  ))}
-                </ul>
-              ) : null}
-
-            </div>
-          ) : (
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              {unavailableSelection ?? "No urgent reporting work is queued. Use the report family organizer to run, review, or set up the next output."}
-            </p>
-          )}
-        </DenseRowDetailPanel>
-      </div>
+      </WorkspaceWorkbenchShell>
     </section>
   );
 }

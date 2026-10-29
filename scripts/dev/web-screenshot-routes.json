@@ -866,8 +866,8 @@
         "/api/workstation/strategy"
       ],
       "waitForTexts": [
-        "Choose the next strategy task",
-        "Latest retained run",
+        "Retained strategy runs",
+        "Index Momentum",
         "Mean Reversion FX",
         "Promotions"
       ]
@@ -980,9 +980,9 @@
         "/api/security-master/quality-report/latest"
       ],
       "waitForTexts": [
-        "Choose the next Data task",
-        "Provider connections",
-        "Import retained files"
+        "Historical repair jobs",
+        "BF-1042",
+        "Data tools and connections"
       ]
     },
     {
@@ -1159,7 +1159,7 @@
       "name": "web-settings-workspace",
       "path": "/settings",
       "docLabel": "Settings",
-      "waitForText": "What do you need to do?",
+      "waitForText": "Settings tasks",
       "requiredApiRoutes": [
         "/api/workstation/session",
         "/api/status",
