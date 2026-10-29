@@ -59,10 +59,10 @@ public sealed partial class SecurityMasterCashFlowServiceTests
         projection.BlockedReason.Should().BeNull();
         projection.Schedule.Should().Equal(Row(t0.AddMonths(36), principal: 1000m, interest: 150.0000m, factor: 0m) with
         {
-            UnadjustedStart = t0,
-            UnadjustedEnd = t0.AddMonths(36),
             AccrualStart = t0,
-            AccrualEnd = t0.AddMonths(36)
+            AccrualEnd = t0.AddMonths(36),
+            UnadjustedStart = t0,
+            UnadjustedEnd = t0.AddMonths(36)
         });
         projection.ScheduleEvidence.Should().NotBeNull();
         projection.ScheduleEvidence!.KernelVersion.Should().Be("contractual-schedule-kernel-v1");

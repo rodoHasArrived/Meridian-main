@@ -39,18 +39,19 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
 
     private static readonly TimeSpan StalenessThreshold = TimeSpan.FromDays(7);
 
+    /// <summary>Preserves the original compiled host-composition constructor.</summary>
     public SecurityMasterCashFlowService(
         ISecurityMasterCashFlowStore store,
         IEnumerable<IStructuredCashFlowProvider> providers,
         ISecurityMasterQueryService queryService,
         ILogger<SecurityMasterCashFlowService> logger,
-        IStructuredCashFlowLedgerBridge? ledgerBridge = null,
-        ISecurityForwardCurveProvider? forwardCurves = null)
+        IStructuredCashFlowLedgerBridge? ledgerBridge,
+        ISecurityForwardCurveProvider? forwardCurves)
         : this(null, store, providers, queryService, logger, ledgerBridge, forwardCurves, null, null)
     {
     }
 
-    /// <summary>Preserves the seven-argument CLR signature shipped with declared calendars.</summary>
+    /// <summary>Preserves the compiled calendar-aware host-composition constructor.</summary>
     public SecurityMasterCashFlowService(
         IBusinessDayCalendarSource? calendars,
         ISecurityMasterCashFlowStore store,
@@ -63,7 +64,20 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
     {
     }
 
-    /// <summary>Composes declared calendars and optional cutover and receipt ports for the host.</summary>
+    public SecurityMasterCashFlowService(
+        ISecurityMasterCashFlowStore store,
+        IEnumerable<IStructuredCashFlowProvider> providers,
+        ISecurityMasterQueryService queryService,
+        ILogger<SecurityMasterCashFlowService> logger,
+        IStructuredCashFlowLedgerBridge? ledgerBridge = null,
+        ISecurityForwardCurveProvider? forwardCurves = null,
+        IBondCalculationPolicy? bondPolicy = null,
+        ISecurityCashFlowReceiptStore? receiptStore = null)
+        : this(null, store, providers, queryService, logger, ledgerBridge, forwardCurves, bondPolicy, receiptStore)
+    {
+    }
+
+    /// <summary>Composes declared schedules with the host's explicit calendar source.</summary>
     public SecurityMasterCashFlowService(
         IBusinessDayCalendarSource? calendars,
         ISecurityMasterCashFlowStore store,
