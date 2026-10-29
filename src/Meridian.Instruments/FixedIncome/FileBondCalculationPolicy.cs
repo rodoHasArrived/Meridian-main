@@ -25,7 +25,7 @@ public sealed class FileBondCalculationPolicy : IBondCalculationPolicy
 
     public async Task<string?> GetBlockerAsync(SecurityDetailDto security, CancellationToken ct = default)
     {
-        if (!string.Equals(security.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase))
+        if (!SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CarriesBondCouponStructure)
             return null;
         BondMigrationCutoverReceiptDto? receipt;
         try
