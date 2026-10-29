@@ -20,7 +20,11 @@ public sealed record BondAnalyticsRequest(
     BondCalculationContext Context,
     decimal? CleanPrice = null,
     decimal? Yield = null,
-    BondYieldConvention? YieldConvention = null);
+    BondYieldConvention? YieldConvention = null)
+{
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? CalculationVersion { get; init; }
+}
 
 public sealed record BondAnalyticsBlocker(string Code, string Reason);
 

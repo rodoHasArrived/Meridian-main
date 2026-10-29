@@ -343,7 +343,7 @@ public sealed partial class SecurityMasterCashFlowServiceTests
     [Fact]
     public async Task DeclaredConventions_ABondStampedAboveWhatThisNodeReads_FailsClosedWithTheReadGuardReason()
     {
-        var terms = DeclaredBond(MinimalBlock, D(2041, 1, 31), D(2043, 1, 31), "SemiAnnual", stamp: 4);
+        var terms = DeclaredBond(MinimalBlock, D(2041, 1, 31), D(2043, 1, 31), "SemiAnnual", stamp: SecurityAssetClassCatalog.GetOrDefault("Bond").ReadsTermsThrough + 1);
         SecurityTermsEnvelope.TryGetReadRefusal("Bond", terms, out var guardReason).Should().BeTrue();
 
         var projection = await ProjectDeclaredAsync(terms, WeekendsSource);

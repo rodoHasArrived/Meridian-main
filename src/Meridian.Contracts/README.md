@@ -11,6 +11,8 @@ last_reviewed: 2026-10-21
 
 # src/Meridian.Contracts
 
+`BondContractualEconomics` owns declared per-100 coupon cash, reference-period stub fractions, accrued interest and discounting time. `BondExerciseEconomics` shares fixed-price whole-redemption dates and cash across analytics and cash forecasts. `BondFloatingRateEvidence` freezes each observed or forecast reset with explicit units, source, spread, cap/floor, principal and accrual fraction. New declared lot previews use `canonical-lot-amortization-v5`; v1–v4 retain their original arithmetic and dispatch.
+
 `CashFlows/` owns the versioned calculation-only cash-flow contracts, exercise/notice resolution, standard make-whole formulas, structured coupon/principal walks, deterministic CPR/SMM/PSA prepayments, and replay verification. The `cashFlowContract` companion reads ahead of existing write ceilings; undeclared terms and existing call/put element shapes remain unchanged. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
 
 Canonical amortization v3 is an explicit opt-in for remaining-face treatment and automatic

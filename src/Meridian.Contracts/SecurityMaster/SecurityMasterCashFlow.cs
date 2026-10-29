@@ -101,6 +101,8 @@ public sealed record StructuredCashFlowScheduleEntry(
     public DateOnly? AccrualStart { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public DateOnly? AccrualEnd { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.FixedIncome.BondFloatingRateEvidence? RateEvidence { get; init; }
 }
 
 /// <summary>How a cash-flow leg's rate is determined.</summary>
@@ -156,6 +158,12 @@ public sealed record StructuredCashFlowLeg(
 
     [JsonIgnore]
     public SecurityCouponRateUnit RateUnit { get; init; }
+    [JsonIgnore]
+    public bool HasDeclaredResetSchedule { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public DateOnly? CurrentIndexResetDate { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? CurrentIndexRateSource { get; init; }
 
     /// <summary>
     /// The notional in effect on <paramref name="date"/>: the latest schedule step on or before

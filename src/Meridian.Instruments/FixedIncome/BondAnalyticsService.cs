@@ -12,7 +12,7 @@ namespace Meridian.Instruments.FixedIncome;
 /// </summary>
 public sealed class BondAnalyticsService : IBondAnalyticsService
 {
-    public const string ModelVersion = "bond-analytics-v1";
+    public const string ModelVersion = "bond-analytics-v2";
     private readonly ISecurityMasterQueryService _query;
     private readonly IBusinessDayCalendarSource? _calendars;
     private readonly IBondCalculationPolicy? _policy;
@@ -29,6 +29,10 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Context);
+        if (request.CalculationVersion == LegacyBondAnalyticsService.ModelVersion)
+            return await new LegacyBondAnalyticsService(_query, _calendars, _policy).CalculateAsync(request, ct).ConfigureAwait(false);
+        if (request.CalculationVersion is not null && request.CalculationVersion != ModelVersion)
+            return Blocked(request, request.Context, string.Empty, "UnsupportedCalculationVersion", "The requested analytics version is unsupported.");
         try
         { return await CalculateCoreAsync(request, ct).ConfigureAwait(false); }
         catch (ArithmeticException)
@@ -61,7 +65,7 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
         {
             new("SecurityTerms", security.SecurityId.ToString("D"), security.Version,
                 Sha256Digest.ComputeUtf8(security.CommonTerms.GetRawText() + "\n" + security.AssetSpecificTerms.GetRawText())),
-            new("CalculationModel", ModelVersion), new("PricingModel", BondPricingMath.ModelVersion)
+            new("CalculationModel", ModelVersion), new("PricingModel", BondPricingMath.ModelVersion), new("ContractualEconomics", BondContractualEconomics.ModelVersion)
         };
         BondAnalyticsResult Refuse(string code, string reason)
             => Blocked(request, context, security.Currency, code, reason, inputs);
@@ -87,7 +91,7 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
             return Refuse("UnsupportedCurveInput", "Yield-based analytics does not consume curves; use curve valuation for pinned market inputs.");
 
         var terms = StructuredCashFlowTermsResolver.Resolve(security);
-        var couponKind = BondAnalyticsSchedule.Text(security.AssetSpecificTerms, "couponType");
+        var couponKind = BondContractualEconomics.Text(security.AssetSpecificTerms, "couponType");
         var zeroCoupon = couponKind == "ZeroCoupon";
         if (couponKind is not ("Fixed" or "ZeroCoupon"))
             return Refuse("UnsupportedCouponStructure", "Yield analytics supports explicitly typed Fixed and ZeroCoupon bonds; floating, step and indexed economics require another model.");
@@ -129,7 +133,7 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
         foreach (var calendarId in declared.Conventions.PaymentCalendars)
             if (_calendars is not null && _calendars.TryGet(calendarId, out var calendar))
                 inputs.Add(new("DeclaredCalendar", calendarId, ContentSha256: calendar.ContentHash));
-        if (!BondAnalyticsSchedule.TryBuild(security.SecurityId, terms, declared, schedule, settlement,
+        if (!BondContractualEconomics.TryBuild(security.SecurityId, terms, declared, schedule, settlement,
                 annualRate.Value, zeroCoupon, convention.Value, out var flows, out var accrued, out var refusal))
             return Refuse("CashFlowRefused", refusal!);
         var priceFlows = flows.Select(static flow => new BondPricingCashFlow(flow.Interest + flow.Principal, flow.TimeInYears)).ToArray();
@@ -140,7 +144,7 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
             return Refuse("YieldNotConverged", refusal!);
         if (!BondPricingMath.TryPrice(priceFlows, yield, convention.Value, paymentsPerYear, out var measures, out refusal))
             return Refuse("PricingRefused", refusal!);
-        if (!BondExerciseAnalytics.TryCalculate(security, terms, declared, schedule, settlement,
+        if (!BondExerciseEconomics.TryCalculate(security, terms, declared, schedule, settlement,
                 annualRate.Value, convention.Value, paymentsPerYear, measures!.DirtyPrice,
                 flows, _calendars, out var exerciseYields, out refusal))
             return Refuse("ExerciseScheduleRefused", refusal!);
