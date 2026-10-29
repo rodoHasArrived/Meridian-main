@@ -43,9 +43,11 @@ public static class DirectLendingEndpoints
 
         group.MapPost("/{loanId:guid}/projections/preview", async (Guid loanId, ContractualCashFlowRequest? request, HttpContext context) =>
         {
-            if (request is null) return Results.BadRequest("A projection request is required.");
+            if (request is null)
+                return Results.BadRequest("A projection request is required.");
             var preview = context.RequestServices.GetService<IContractualCashFlowPreviewService>();
-            if (preview is null) return ServiceUnavailable();
+            if (preview is null)
+                return ServiceUnavailable();
             try
             {
                 var result = await preview.PreviewLoanAsync(loanId, request, context.RequestAborted).ConfigureAwait(false);

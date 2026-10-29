@@ -260,6 +260,15 @@ public sealed class ContractualCashFlowEngineTests
         replayed.Events.Should().Equal(result.Events);
         replayed.Evidence.InputHash.Should().Be(result.Evidence.InputHash);
         replayed.Evidence.OutputHash.Should().Be(result.Evidence.OutputHash);
+        ContractualCashFlowEngine.Verify(run).Should().BeTrue();
+        ContractualCashFlowEngine.Verify(run with
+        {
+            Result = result with { Evidence = result.Evidence with { EngineVersion = "unrecognized-engine" } }
+        }).Should().BeFalse();
+        ContractualCashFlowEngine.Verify(run with
+        {
+            Result = result with { Evidence = result.Evidence with { Warnings = ["unverified-warning"] } }
+        }).Should().BeFalse();
     }
 
     [Theory]
