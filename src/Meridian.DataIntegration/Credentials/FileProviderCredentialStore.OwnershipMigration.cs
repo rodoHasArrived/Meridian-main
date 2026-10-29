@@ -68,6 +68,7 @@ public sealed partial class FileProviderCredentialStore
                 ? receipt! with { RolledBack = true, RolledBackBy = actor, RolledBackAt = DateTimeOffset.UtcNow }
                 : new ProviderCredentialMigrationReceipt(migrationId, descriptor.ProviderId, scope, generation, actor, DateTimeOffset.UtcNow);
             record.Scope = rollback ? null : scope;
+            record.Environment = scope.Environment;
             // A transferred secret is unverified under its new ownership. Never carry a previous
             // account verification into the newly selected connection or its rollback.
             record.ExternalAccountId = rollback ? null : scope.ExternalAccountId;

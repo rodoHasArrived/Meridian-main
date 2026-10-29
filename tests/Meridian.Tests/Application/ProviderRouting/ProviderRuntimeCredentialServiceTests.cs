@@ -1,5 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.ProviderRouting;
+using Meridian.Application.Composition;
+using Meridian.Application.Composition.Features;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
 using Meridian.Contracts.Api;
@@ -7,6 +9,7 @@ using Meridian.Core.Config;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Core;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Tests.Application.ProviderRouting;
 
@@ -115,6 +118,34 @@ public sealed class ProviderRuntimeCredentialServiceTests : IDisposable
             .CreateContext(typeof(AlpacaHistoricalDataProvider));
         resolve.Should().Throw<InvalidOperationException>();
         (await store.ReadForProviderAsync("alpaca"))!.Get("KeyId").Should().Be("legacy");
+    }
+
+    [Theory]
+    [InlineData("owner")]
+    [InlineData("binding")]
+    [InlineData("marker")]
+    [InlineData("legacy")]
+    public async Task HostComposition_MissingVaultCannotRestoreFallbackForRetainedOwnership(string state)
+    {
+        Directory.CreateDirectory(_root);
+        var section = state switch
+        {
+            "owner" => new ProviderConnectionsConfig(Connections: [new("owned", "alpaca", "Owned", TenantId: "tenant-a")]),
+            "binding" => new ProviderConnectionsConfig { RuntimeCredentials = [new("alpaca", "tenant-a", "owned")] },
+            "marker" => new ProviderConnectionsConfig { OwnershipRequiredProviders = ["alpaca"] },
+            _ => null
+        };
+        await Config.SaveAsync(new AppConfig(DataRoot: _root, ProviderConnections: section));
+        var services = new ServiceCollection();
+        services.AddSingleton(Config);
+        services.AddSingleton(new ConfigurationService());
+        new ProviderFeatureRegistration().Register(services, new CompositionOptions { ConfigPath = Config.ConfigPath });
+        using var provider = services.BuildServiceProvider();
+        Action resolve = () => provider.GetRequiredService<IProviderCredentialResolver>();
+        if (state == "legacy")
+            provider.GetRequiredService<IProviderCredentialResolver>().Should().BeOfType<ConfigurationServiceCredentialAdapter>();
+        else
+            resolve.Should().Throw<InvalidOperationException>().WithMessage("*require a credential vault*");
     }
 
     public void Dispose()

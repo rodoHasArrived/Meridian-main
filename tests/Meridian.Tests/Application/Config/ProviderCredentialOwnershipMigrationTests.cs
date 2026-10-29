@@ -133,6 +133,36 @@ public sealed class ProviderCredentialOwnershipMigrationTests : IDisposable
         (await store.ReadForProviderAsync("alpaca")).Should().BeNull();
     }
 
+    [Fact]
+    public async Task LegacyEnvironmentAlias_TransfersToCanonicalScopeAndRemainsReadableAfterRollback()
+    {
+        var store = new FileProviderCredentialStore(_root);
+        await ProviderCredentialStoreTests.WriteEncryptedFixtureAsync(store, new Dictionary<string, object>
+        {
+            ["quickbooks"] = new
+            {
+                providerId = "quickbooks",
+                environment = "live",
+                fields = new Dictionary<string, string>
+                {
+                    ["ClientId"] = "legacy-client", ["ClientSecret"] = "legacy-secret",
+                    ["RefreshToken"] = "legacy-refresh", ["RealmId"] = "account-a"
+                },
+                metadata = new Dictionary<string, string> { ["credentialGeneration"] = "legacy-generation" }
+            }
+        }, scoped: false);
+        var scope = new ProviderCredentialScope("tenant-a", "connection-a", "account-a", "production");
+        (await store.ReadForProviderAsync("quickbooks"))!.Environment.Should().Be("live");
+
+        await store.MigrateToScopeAsync("quickbooks", scope, "legacy-alias", "legacy-generation", "operator");
+
+        var migrated = (await new FileProviderCredentialStore(_root).ReadScopedAsync("quickbooks", scope))!;
+        migrated.Environment.Should().Be("production");
+        migrated.Get("RefreshToken").Should().Be("legacy-refresh");
+        await store.RollbackMigrationAsync("quickbooks", scope, "legacy-alias", "operator");
+        (await new FileProviderCredentialStore(_root).ReadForProviderAsync("quickbooks"))!.Environment.Should().Be("production");
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_root))
