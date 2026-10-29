@@ -112,8 +112,15 @@ public static class BondExerciseEconomics
                             return false;
                         // An elapsed notice deadline does not prove a call was not already announced.
                         // Keep the contractual scenario and expose its deadline for evidence review.
+                        if (flows.Any(flow => flow.Interest > 0m && flow.AccrualEnd <= exercise
+                                && exercise < flow.PaymentDate))
+                        {
+                            refusal = "Exercise crosses an earned but unpaid coupon; delayed-payment entitlement requires supported retained cash evidence.";
+                            return false;
+                        }
                         var couponAccrued = 0m;
-                        if (!flows.Any(flow => flow.PaymentDate == exercise))
+                        var matchingPayments = flows.Where(flow => flow.PaymentDate == exercise).ToArray();
+                        if (matchingPayments.Length == 0)
                         {
                             var period = schedule.Periods.FirstOrDefault(period =>
                                 period.AccrualStart < exercise && exercise < period.AccrualEnd);
@@ -125,9 +132,21 @@ public static class BondExerciseEconomics
                                     return false;
                             }
                         }
-                        if (!BondContractualEconomics.TryTime(schedule, settlement, exercise,
-                                DayCountConventions.Parse(terms.DayCountConvention), terms.CouponKind == SecurityCouponKind.ZeroCoupon,
-                                convention, out var time, out refusal))
+                        decimal time;
+                        if (matchingPayments.Length > 0)
+                        {
+                            // Redemption and the coupon paid on the same date must use the same
+                            // retained discount time, including the actual/365 payment lag.
+                            time = matchingPayments[0].TimeInYears;
+                            if (matchingPayments.Any(flow => flow.TimeInYears != time))
+                            {
+                                refusal = "Payments on the exercise date carry inconsistent retained discount times.";
+                                return false;
+                            }
+                        }
+                        else if (!BondContractualEconomics.TryTime(schedule, settlement, exercise,
+                                     DayCountConventions.Parse(terms.DayCountConvention), terms.CouponKind == SecurityCouponKind.ZeroCoupon,
+                                     convention, out time, out refusal))
                             return false;
                         result.Add(new(kind, exercise, price.Value, couponAccrued, latestNotice, earliestNotice, time));
                         if (result.Count > 1200)
