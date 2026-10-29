@@ -7349,6 +7349,8 @@ Meridian-main
 │   │   │   │   │   │   ├── workspace-primitives.tsx
 │   │   │   │   │   │   ├── workspace-status.test.tsx
 │   │   │   │   │   │   ├── workspace-status.tsx
+│   │   │   │   │   │   ├── workspace-task-workbench.test.tsx
+│   │   │   │   │   │   ├── workspace-task-workbench.tsx
 │   │   │   │   │   │   ├── workspace-views-menu.test.tsx
 │   │   │   │   │   │   ├── workspace-views-menu.tsx
 │   │   │   │   │   │   ├── workspace-workbench-shell.test.tsx
@@ -8136,7 +8138,9 @@ Meridian-main
 │   │   │   │   │   ├── workspace-nav.css
 │   │   │   │   │   ├── workspace-primitives.css
 │   │   │   │   │   ├── workspace-surface.css
-│   │   │   │   │   └── workspace-workbench-shell.css
+│   │   │   │   │   ├── workspace-task-workbench.css
+│   │   │   │   │   ├── workspace-workbench-shell.css
+│   │   │   │   │   └── workstation-refinements.css
 │   │   │   │   ├── test
 │   │   │   │   │   ├── fixtures
 │   │   │   │   │   │   ├── loan-portfolio.host.json

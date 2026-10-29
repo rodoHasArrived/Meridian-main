@@ -124,3 +124,21 @@ describe("reconciliation queue route focus", () => {
       .not.toBe(focusState("?reconciliationBreak=second", pathname).routeKey);
   });
 });
+
+
+describe("task workbench route focus", () => {
+  it.each([
+    ["/strategy", "strategyRun"], ["/strategy", "strategyTask"],
+    ["/data", "dataJob"], ["/data", "dataTask"], ["/settings", "settingsTask"]
+  ])("keeps %s selection/search local while preserving scope navigation", (path, key) => {
+    const initial = focusState("?companyId=a&asOf=2026-10-29&filter=all", path, "#evidence");
+    const selected = focusState(`?companyId=a&asOf=2026-10-29&filter=all&${key}=two&${key}Search=retained`, path, "#evidence");
+    expect(selected.routeKey).toBe(initial.routeKey);
+    expect(selected.targetElementId).toBe("evidence");
+    expect(focusState(`?companyId=b&asOf=2026-10-29&filter=all&${key}=two`, path, "#evidence").routeKey).not.toBe(initial.routeKey);
+    expect(focusState(`?companyId=a&asOf=2026-10-30&filter=all&${key}=two`, path, "#evidence").routeKey).not.toBe(initial.routeKey);
+  });
+  it("does not suppress drill-through navigation on dedicated routes", () => {
+    expect(focusState("?runId=one", "/strategy/promotions").routeKey).not.toBe(focusState("?runId=two", "/strategy/promotions").routeKey);
+  });
+});

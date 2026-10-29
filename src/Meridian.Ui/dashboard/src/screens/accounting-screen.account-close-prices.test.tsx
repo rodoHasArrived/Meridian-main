@@ -327,7 +327,8 @@ describe("AccountClosePricesPanel", () => {
     expect(screen.queryByText("Write outcome needs verification")).not.toBeInTheDocument();
     expect(screen.getByText("This version already has an immutable approval.")).toBeInTheDocument();
     expect(screen.getByLabelText("Independent review rationale")).toHaveValue("");
-    expect(dirty).toHaveBeenLastCalledWith(false);
+    // The parent dirty-state notification is delivered by a passive effect.
+    await waitFor(() => expect(dirty).toHaveBeenLastCalledWith(false));
     await act(async () => { pending.resolve(approved); });
     expect(api.approve).toHaveBeenCalledOnce();
   });

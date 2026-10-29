@@ -1,3 +1,5 @@
+import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
+import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import type { KeyboardEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BriefcaseBusiness, FileCheck2, LineChart, Network, Settings, ShieldCheck, Wallet } from "lucide-react";
@@ -1194,7 +1196,74 @@ export function PortfolioScreen({
       ) : null}
 
         {showOverview ? (
-        <section className="grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)]">
+        <WorkspaceWorkbenchShell label="Portfolio holdings workbench" switchInspector inspectorRole="region" inspectorLabel="Holding inspection" inspector={(
+          <DenseRowDetailPanel
+            id={vm.positionDetailId}
+            role="region"
+            ariaLabel={vm.selectedPosition?.ariaLabel ?? "Portfolio holding detail"}
+            className={cn(
+              "panel-surface h-fit min-w-0 overflow-hidden p-4",
+              vm.selectedPosition
+                ? cashFlowBorderClass[vm.selectedPosition.statusTone]
+                : "border-border/70"
+            )}
+          >
+            {selectedPositionOutsideResults ? (
+              <div className="mb-3 space-y-2 border-b border-border pb-3">
+                <p role="status" className="text-sm text-muted-foreground">Selected holding is outside the current results.</p>
+                <Button type="button" size="sm" variant="outline" onClick={positionsTable.clearFilters}>Clear filters</Button>
+              </div>
+            ) : null}
+            {vm.selectedPosition ? (
+              <>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="eyebrow-label">{vm.selectedPosition.statusTitle}</div>
+                    <h3 className="mt-2 text-base font-semibold text-foreground">{vm.selectedPosition.title}</h3>
+                    <p className="mt-1 font-mono text-xs text-muted-foreground">{vm.selectedPosition.subtitle}</p>
+                  </div>
+                  <Badge variant={vm.selectedPosition.statusTone === "default" ? "outline" : vm.selectedPosition.statusTone}>
+                    Detail
+                  </Badge>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Button asChild size="sm" variant="outline">
+                    <Link
+                      to={workstationRouteWithQuery("portfolioAssetDetail", {
+                        symbol: vm.selectedPosition.title,
+                        source: "portfolio"
+                      })}
+                      aria-label={`Open asset detail for ${vm.selectedPosition.title}`}
+                    >
+                      Open asset detail
+                    </Link>
+                  </Button>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">{vm.selectedPosition.statusDetail}</p>
+                <dl className="mt-4 grid gap-2">
+                  {vm.selectedPosition.fields.map((field) => (
+                    <div
+                      key={field.label}
+                      className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
+                    >
+                      <dt className="text-xs text-muted-foreground">{field.label}</dt>
+                      <dd className={cn("text-right font-mono text-xs", detailFieldToneClass[field.tone])}>
+                        {field.value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+
+              </>
+            ) : (
+              <div role="status" className="text-sm leading-6 text-muted-foreground">
+                <div className="eyebrow-label">{vm.positionDetailEmptyTitle}</div>
+                <p className="mt-2">{vm.positionEmptyText}</p>
+              </div>
+            )}
+          </DenseRowDetailPanel>
+        )}>
+
           <Card className="panel-surface min-w-0">
             <CardHeader className="px-3 py-2">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -1265,72 +1334,7 @@ export function PortfolioScreen({
             </CardContent>
           </Card>
 
-          <aside
-            id={vm.positionDetailId}
-            role="region"
-            aria-live="polite"
-            aria-label={vm.selectedPosition?.ariaLabel ?? "Portfolio holding detail"}
-            className={cn(
-              "panel-surface h-fit min-w-0 overflow-hidden p-4",
-              vm.selectedPosition
-                ? cashFlowBorderClass[vm.selectedPosition.statusTone]
-                : "border-border/70"
-            )}
-          >
-            {selectedPositionOutsideResults ? (
-              <div className="mb-3 space-y-2 border-b border-border pb-3">
-                <p role="status" className="text-sm text-muted-foreground">Selected holding is outside the current results.</p>
-                <Button type="button" size="sm" variant="outline" onClick={positionsTable.clearFilters}>Clear filters</Button>
-              </div>
-            ) : null}
-            {vm.selectedPosition ? (
-              <>
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="eyebrow-label">{vm.selectedPosition.statusTitle}</div>
-                    <h3 className="mt-2 text-base font-semibold text-foreground">{vm.selectedPosition.title}</h3>
-                    <p className="mt-1 font-mono text-xs text-muted-foreground">{vm.selectedPosition.subtitle}</p>
-                  </div>
-                  <Badge variant={vm.selectedPosition.statusTone === "default" ? "outline" : vm.selectedPosition.statusTone}>
-                    Detail
-                  </Badge>
-                </div>
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">{vm.selectedPosition.statusDetail}</p>
-                <dl className="mt-4 grid gap-2">
-                  {vm.selectedPosition.fields.map((field) => (
-                    <div
-                      key={field.label}
-                      className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
-                    >
-                      <dt className="text-xs text-muted-foreground">{field.label}</dt>
-                      <dd className={cn("text-right font-mono text-xs", detailFieldToneClass[field.tone])}>
-                        {field.value}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <Button asChild size="sm" variant="outline">
-                    <Link
-                      to={workstationRouteWithQuery("portfolioAssetDetail", {
-                        symbol: vm.selectedPosition.title,
-                        source: "portfolio"
-                      })}
-                      aria-label={`Open asset detail for ${vm.selectedPosition.title}`}
-                    >
-                      Open asset detail
-                    </Link>
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <div role="status" className="text-sm leading-6 text-muted-foreground">
-                <div className="eyebrow-label">{vm.positionDetailEmptyTitle}</div>
-                <p className="mt-2">{vm.positionEmptyText}</p>
-              </div>
-            )}
-          </aside>
-        </section>
+        </WorkspaceWorkbenchShell>
         ) : null}
 
       {showOverview ? readinessHandoff : null}

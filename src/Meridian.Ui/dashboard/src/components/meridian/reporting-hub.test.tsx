@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { MemoryRouter, Router, useLocation, useNavigate } from "react-router-dom";
@@ -212,6 +212,7 @@ describe("ReportingHub", () => {
     await user.keyboard("{Enter}");
     await waitFor(() => expect(panel).toHaveFocus());
     await user.keyboard("{Escape}");
+    await act(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
     expect(second).toHaveFocus();
     await user.keyboard("{Home}");
     expect(first).toHaveFocus();
@@ -221,6 +222,7 @@ describe("ReportingHub", () => {
     await user.keyboard(" ");
     await waitFor(() => expect(panel).toHaveFocus());
     await user.keyboard("{Escape}");
+    await act(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
     expect(second).toHaveFocus();
   });
 
@@ -246,6 +248,7 @@ describe("ReportingHub", () => {
     expect(navigationDriver.replace).toHaveBeenCalled();
     expect(new URLSearchParams(navigationDriver.replace.mock.calls[0][0].search).get("reportingWork")).toBe("evidence-gap:capital");
     await user.keyboard("{Escape}");
+    await act(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
     expect(second).toHaveFocus();
 
     rerender(controlledHub("/reporting?companyId=company-a&reportingWork=unknown"));
