@@ -31,11 +31,7 @@
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
       "readme_hash": "3e0b38f53046251a607990afeb5714a29779811d8fd8e8bb058780d2b334dd10",
-<<<<<<< HEAD
-      "source_hash": "e990dbe93ae9bc1d1a242a5c2a8596a70218f450be330684c548d541cd88ddca"
-=======
-      "source_hash": "d833a35ff6979cea4aa9def8cb5ddd55756b04369e7ea30c3336558b8b8cbf4a"
->>>>>>> origin/codex/credential-runtime-migration
+      "source_hash": "f8148e3eccd0fcf51d9dfc46c86b03e37cf2963d6786a2e7534194b6fad5b22c"
     },
     {
       "id": "SRC-CORE",
