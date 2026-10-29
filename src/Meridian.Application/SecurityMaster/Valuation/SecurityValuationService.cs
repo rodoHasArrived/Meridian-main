@@ -43,9 +43,16 @@ public sealed class SecurityValuationService : ISecurityValuationService
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var security = await _queryService.GetByIdAsync(request.SecurityId, ct).ConfigureAwait(false);
+        var security = request.KnownAt is { } cutoff
+            ? await _queryService.GetRecordedByIdAsOfAsync(request.SecurityId, cutoff, ct).ConfigureAwait(false)
+            : await _queryService.GetByIdAsync(request.SecurityId, ct).ConfigureAwait(false);
         if (security is null)
         {
+            if (request.KnownAt is not null && await _queryService.GetByIdAsync(request.SecurityId, ct).ConfigureAwait(false) is { } currentIdentity)
+                return SecurityValuationResult.Blocked(request, currentIdentity,
+                    request.Model ?? SecurityAssetClassCatalog.GetOrDefault(currentIdentity.AssetClass).DefaultValuationModel,
+                    "unavailable-history", "v1", request.KnownAt.Value,
+                    [new SecurityValuationBlockerDto("HistoricalTermsUnavailable", "No retained Security Master terms are eligible at the knowledge cutoff; current terms were not valued.")]);
             _logger.LogDebug("Security {SecurityId} not found when valuing.", request.SecurityId);
             return null;
         }

@@ -54,3 +54,7 @@ The [signing recheck](release-readiness.json) records Release Readiness run `402
 the recorded signing owner. No release tag was created; the historical workflow SHA does not
 certify this application candidate. Browser workbench PR #3326 merged separately into `main`
 at `e6d6d75655`; this branch must integrate and validate against that delivered work.
+The continuation also integrates PR #3327 at `1e3f93251f`. Schema Control's reviewed refresh
+adds the six expected public contract objects without changing the physical schema, migration
+inventory or policy findings; its disposable snapshot and verification both pass and remove
+their owned containers. Final candidate checks still govern acceptance.

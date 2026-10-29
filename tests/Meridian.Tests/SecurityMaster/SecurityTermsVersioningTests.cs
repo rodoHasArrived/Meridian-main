@@ -193,10 +193,10 @@ public sealed class SecurityTermsVersioningTests
     }
 
     [Theory]
-    [InlineData("Bond", 3, 3)]
-    [InlineData("CertificateOfDeposit", 3, 3)]
-    [InlineData("Swap", 1, 2)]
-    [InlineData("StructuredCredit", 4, 4)]
+    [InlineData("Bond", 3, 4)]
+    [InlineData("CertificateOfDeposit", 3, 4)]
+    [InlineData("Swap", 1, 3)]
+    [InlineData("StructuredCredit", 4, 5)]
     [InlineData("Equity", 1, 1)]
     [InlineData("Option", 1, 1)]
     public void EnsureReadable_AcceptsEveryStampThroughWhatTheClassReads_AndRefusesTheNext(string assetClass, int writes, int reads)
@@ -244,9 +244,9 @@ public sealed class SecurityTermsVersioningTests
     }
 
     [Theory]
-    [InlineData("Bond", 4, 3, 3)]
-    [InlineData("StructuredCredit", 1, 4, 4)]
-    [InlineData("StructuredCredit", 5, 4, 4)]
+    [InlineData("Bond", 5, 3, 4)]
+    [InlineData("StructuredCredit", 1, 4, 5)]
+    [InlineData("StructuredCredit", 6, 4, 5)]
     [InlineData("Equity", 2, 1, 1)]
     public void StampFlat_OutsideTheStampFloorToReadRange_IsRefused(string assetClass, int version, int writes, int reads)
     {
@@ -288,7 +288,7 @@ public sealed class SecurityTermsVersioningTests
             // Stamped above the write version: refused whatever the payload carries.
             { "Bond", Terms(2, Maturity).GetRawText(), ReadableButNotWritable("Bond", 2, 3, 1) },
             { "CertificateOfDeposit", Terms(2, Maturity).GetRawText(), ReadableButNotWritable("CertificateOfDeposit", 2, 3, 1) },
-            { "Swap", Terms(2, SwapDates).GetRawText(), ReadableButNotWritable("Swap", 2, 2, 1) },
+            { "Swap", Terms(2, SwapDates).GetRawText(), ReadableButNotWritable("Swap", 2, 3, 1) },
             { "StructuredCredit", Terms(3, Maturity).GetRawText(), ReadableButNotWritable("StructuredCredit", 3, 4, 2) },
             {
                 "Bond",
@@ -487,7 +487,10 @@ public sealed class SecurityTermsVersioningTests
     {
         var payload = Json(payloadText);
 
-        var stillReadOnly = SecurityAssetClassCatalog.GetTermsVersion(assetClass) < SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass);
+        // These historical fixtures cover conventions/call/put containers: the contract step
+        // enabled them for Bond/CD/StructuredCredit, while Swap conventions remain read-only.
+        // A later companion read ceiling must not change their existing write authority.
+        var stillReadOnly = assetClass == "Swap";
         SecurityTermsEnvelope.TryGetWriteRefusal(assetClass, payload, out var reason).Should().Be(stillReadOnly);
         var read = () => SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms(assetClass, payload);
         read.Should().NotThrow();
@@ -569,20 +572,20 @@ public sealed class SecurityTermsVersioningTests
     public void EnsureWritable_RunsTheReadGuardFirst()
     {
         // A stamp above what the node reads gets the read refusal, not the write reason.
-        var write = () => SecurityTermsEnvelope.EnsureWritableAsAssetSpecificTerms("Bond", Terms(4, Maturity));
+        var write = () => SecurityTermsEnvelope.EnsureWritableAsAssetSpecificTerms("Bond", Terms(5, Maturity));
 
         write.Should().Throw<InvalidOperationException>().Which.Message
-            .Should().Be("Unsupported assetClassTermsVersion '4' for asset class 'Bond'; this node reads versions 1 through 3.");
+            .Should().Be("Unsupported assetClassTermsVersion '5' for asset class 'Bond'; this node reads versions 1 through 4.");
     }
 
     public static TheoryData<string, string> StampsAboveWhatThisNodeReads() => new()
     {
-        { "Bond", Terms(4, Maturity).GetRawText() },
-        { "Bond", Terms(4, Maturity + """ ,"scheduleConventions":{"stubPolicy":"Long"} """).GetRawText() },
-        { "Bond", Terms(4, Maturity + """ ,"callSchedule":[{"callDate":"2030-06-15"}] """).GetRawText() },
-        { "Swap", Terms(3, SwapDates + """ ,"legs":[{"legType":"Fixed","scheduleConventions":{"stubPolicy":"Long"}}] """).GetRawText() },
-        { "StructuredCredit", Terms(5, """ "customProfileId":"structured-credit-profile","profileFields":{"tranche":"A-1"} """).GetRawText() },
-        { "StructuredCredit", Terms(5, ProfileCallAndPutSchedules).GetRawText() },
+        { "Bond", Terms(5, Maturity).GetRawText() },
+        { "Bond", Terms(5, Maturity + """ ,"scheduleConventions":{"stubPolicy":"Long"} """).GetRawText() },
+        { "Bond", Terms(5, Maturity + """ ,"callSchedule":[{"callDate":"2030-06-15"}] """).GetRawText() },
+        { "Swap", Terms(4, SwapDates + """ ,"legs":[{"legType":"Fixed","scheduleConventions":{"stubPolicy":"Long"}}] """).GetRawText() },
+        { "StructuredCredit", Terms(6, """ "customProfileId":"structured-credit-profile","profileFields":{"tranche":"A-1"} """).GetRawText() },
+        { "StructuredCredit", Terms(6, ProfileCallAndPutSchedules).GetRawText() },
     };
 
     [Theory]

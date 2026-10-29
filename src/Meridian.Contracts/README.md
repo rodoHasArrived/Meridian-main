@@ -367,6 +367,8 @@ protocols remain read-only. Pending post commands must be retried unchanged, inc
 original optimistic version. Approval/posting require the same independent certified operator;
 financial edits and generic corrections remain unavailable for asset-linked drafts.
 
+`FixedIncome` contains explicit calculation contexts, typed analytics and settlement results, bounded reference pages and hash-bound migration commands. Prices and accrued interest are per 100 face; yields are annual fractions. Shared bond pricing math supplements historical lot calculations without changing their retained model versions. Missing economics returns blockers instead of inferred financial defaults.
+
 ## Purpose
 
 `TenantScopeEnforcementOptions.ConfigurationKey` names the supported `TenantScopeEnforcement`

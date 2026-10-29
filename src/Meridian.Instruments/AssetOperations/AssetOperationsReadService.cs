@@ -20,26 +20,63 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
     private readonly IBondReferenceService? _bondReferenceService;
     private readonly AssetObligationProjectionService _obligationProjectionService;
     private readonly IInstrumentPositionProjectionStore? _positionProjectionStore;
+    private readonly ISecurityMasterCashFlowService? _cashFlows;
+    private readonly TimeProvider _clock;
+    private readonly IBondCalculationPolicy? _bondPolicy;
 
     public AssetOperationsReadService(
         IAssetOperationsProjectionStore? projectionStore = null,
         ISecurityMasterQueryService? securityMasterQueryService = null,
         IBondReferenceService? bondReferenceService = null,
         AssetObligationProjectionService? obligationProjectionService = null,
-        IInstrumentPositionProjectionStore? positionProjectionStore = null)
+        IInstrumentPositionProjectionStore? positionProjectionStore = null,
+        ISecurityMasterCashFlowService? cashFlows = null,
+        TimeProvider? clock = null,
+        IBondCalculationPolicy? bondPolicy = null)
     {
         _projectionStore = projectionStore;
         _securityMasterQueryService = securityMasterQueryService;
         _bondReferenceService = bondReferenceService;
-        _obligationProjectionService = obligationProjectionService ?? new AssetObligationProjectionService();
+        _obligationProjectionService = obligationProjectionService ?? new AssetObligationProjectionService(bondPolicy);
         _positionProjectionStore = positionProjectionStore;
+        _cashFlows = cashFlows;
+        _clock = clock ?? TimeProvider.System;
+        _bondPolicy = bondPolicy;
     }
 
-    public async Task<AssetOperationsDetailDto?> GetOperationsAsync(Guid securityId, CancellationToken ct = default)
+    public Task<AssetOperationsDetailDto?> GetOperationsAsync(Guid securityId, CancellationToken ct = default)
+        => GetOperationsAsOfAsync(securityId, new BondCalculationContext(_clock.GetUtcNow()), ct);
+
+    /// <summary>Projects the same retained economic inputs at an explicit cutoff, without clock-dependent flow identity.</summary>
+    public async Task<AssetOperationsDetailDto?> GetOperationsAsOfAsync(
+        Guid securityId, BondCalculationContext context, CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(context);
         ct.ThrowIfCancellationRequested();
 
-        var published = _projectionStore is null
+        SecurityDetailDto? selectedSecurity = null;
+        if (_bondPolicy is not null)
+        {
+            selectedSecurity = await SelectSecurityAsync(securityId, context, ct).ConfigureAwait(false);
+            if (selectedSecurity is null)
+            {
+                return null;
+            }
+            var blocker = await _bondPolicy.GetBlockerAsync(selectedSecurity, ct).ConfigureAwait(false);
+            if (blocker is not null)
+            {
+                var blocked = new StructuredCashFlowProjectionDto(securityId,
+                    StructuredCashFlowSourceKind.CalculatedBullet, StructuredCashFlowScenario.Base,
+                    context.AsOf, [], BlockedReason: blocker);
+                var blockedDetail = await _obligationProjectionService.ProjectFromSecurityMasterAsync(
+                    selectedSecurity, context, blocked, ct).ConfigureAwait(false);
+                return AssetOperationsProjectionBuilder.WithFailClosedEvidenceReadiness(blockedDetail);
+            }
+        }
+
+        // A present-day publication cannot stand in for a requested historical calculation.
+        var published = _projectionStore is null || context.KnownAt.HasValue || context.SecurityVersion.HasValue
+            || context.AsOf.UtcDateTime.Date != _clock.GetUtcNow().UtcDateTime.Date
             ? null
             : await _projectionStore.GetAsync(securityId, ct).ConfigureAwait(false);
         AssetOperationsDetailDto detail;
@@ -49,17 +86,15 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
         }
         else
         {
-            var security = _securityMasterQueryService is null
-                ? null
-                : await _securityMasterQueryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+            var security = selectedSecurity ?? await SelectSecurityAsync(securityId, context, ct).ConfigureAwait(false);
             if (security is null)
             {
                 return null;
             }
 
             detail = SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CarriesBondCouponStructure
-                ? await BuildBondOperationsAsync(security, ct).ConfigureAwait(false)
-                : _obligationProjectionService.ProjectFromSecurityMaster(security);
+                ? await BuildBondOperationsAsync(security, context, ct).ConfigureAwait(false)
+                : await _obligationProjectionService.ProjectFromSecurityMasterAsync(security, context, ct: ct).ConfigureAwait(false);
         }
 
         if (_positionProjectionStore is null)
@@ -94,18 +129,37 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
         return detail?.Readiness;
     }
 
-    private async Task<AssetOperationsDetailDto> BuildBondOperationsAsync(SecurityDetailDto security, CancellationToken ct)
+    private async Task<AssetOperationsDetailDto> BuildBondOperationsAsync(
+        SecurityDetailDto security, BondCalculationContext context, CancellationToken ct)
     {
+        var declared = SecurityVersionedTerms.ReadDeclaredScheduleConventions(security.AssetClass, security.AssetSpecificTerms);
+        if (declared.Status != SecurityDeclaredConventionsStatus.None || context.KnownAt.HasValue || context.SecurityVersion.HasValue)
+        {
+            var projection = _cashFlows is null ? null : await _cashFlows.GetProjectionAsync(
+                security, StructuredCashFlowScenario.Base, context, ct).ConfigureAwait(false);
+            projection ??= new StructuredCashFlowProjectionDto(
+                security.SecurityId, StructuredCashFlowSourceKind.CalculatedBullet, StructuredCashFlowScenario.Base,
+                context.AsOf, [], BlockedReason: "Declared bond economics require a retained cash-flow source and the shared cash-flow service.");
+            return await _obligationProjectionService.ProjectFromSecurityMasterAsync(security, context, projection, ct).ConfigureAwait(false);
+        }
+
         var bond = _bondReferenceService is null
             ? null
             : await _bondReferenceService.GetReferenceAsync(security.SecurityId, ct).ConfigureAwait(false);
         if (bond is null)
         {
-            return _obligationProjectionService.ProjectFromSecurityMaster(security);
+            return await _obligationProjectionService.ProjectFromSecurityMasterAsync(security, context, ct: ct).ConfigureAwait(false);
         }
 
-        return AssetOperationsProjectionBuilder.FromBondReference(bond, BuildSubject(security));
+        return AssetOperationsProjectionBuilder.FromBondReference(bond, BuildSubject(security), context);
     }
+
+    private Task<SecurityDetailDto?> SelectSecurityAsync(Guid securityId, BondCalculationContext context, CancellationToken ct)
+        => _securityMasterQueryService is null
+            ? Task.FromResult<SecurityDetailDto?>(null)
+            : context.KnownAt is { } knownAt
+                ? _securityMasterQueryService.GetRecordedByIdAsOfAsync(securityId, knownAt, ct)
+                : _securityMasterQueryService.GetByIdAsync(securityId, ct);
 
     private static AssetOperationsDetailDto BuildIdentityOnlyOperations(SecurityDetailDto security)
     {
@@ -178,7 +232,7 @@ public sealed class AssetOperationsProjectionCommandService : IAssetOperationsCo
 /// <summary>
 /// Builds asset operations projection records from instrument and lifecycle inputs.
 /// </summary>
-public static class AssetOperationsProjectionBuilder
+public static partial class AssetOperationsProjectionBuilder
 {
     private const string TimelineEngineVersion = "asset-terms-obligations-timeline-v1";
     private const string FixedIncomeCashFlowEngineVersion = "fixed-income-cash-flow-projection-v1";
@@ -334,283 +388,6 @@ public static class AssetOperationsProjectionBuilder
         => new(Sha256Digest.ComputeBytesUtf8(
             FormattableString.Invariant($"meridian/direct-lending/assets/{loanId:N}/{securityId:N}/{FormattableString.Invariant(item)}")).AsSpan(0, 16));
 
-    public static AssetOperationsDetailDto FromBondReference(BondReferenceDto bond, AssetOperationSubjectDto subject)
-    {
-        var terms = new[]
-        {
-            new AssetTermsVersionDto(
-                Guid.NewGuid(),
-                subject.SecurityId,
-                checked((int)Math.Min(bond.Version, int.MaxValue)),
-                $"bond-reference:{bond.Version}",
-                bond.Lifecycle?.IssueDate ?? DateOnly.FromDateTime(DateTime.UtcNow.Date),
-                DateTimeOffset.UtcNow,
-            "SecurityMaster",
-            subject.SecurityId.ToString("D"),
-            $"{bond.DisplayName} maturity/coupon reference terms",
-            BuildBondTermsPayload(bond))
-        };
-        IReadOnlyList<AssetLifecycleEventDto> lifecycle = bond.Lifecycle is null
-            ? []
-            :
-            [
-                new AssetLifecycleEventDto(
-                    Guid.NewGuid(),
-                    subject.SecurityId,
-                    "BondLifecycle",
-                    bond.Lifecycle.LifecycleStat.ToString(),
-                    bond.Lifecycle.IssueDate ?? DateOnly.FromDateTime(DateTime.UtcNow.Date),
-                    DateTimeOffset.UtcNow,
-                    "SecurityMaster",
-                    subject.SecurityId.ToString("D"),
-                    $"Bond lifecycle is {bond.Lifecycle.LifecycleStat}.")
-            ];
-        var projectionRunId = Guid.NewGuid();
-        var run = new AssetCashFlowProjectionRunDto(
-            projectionRunId,
-            subject.SecurityId,
-            DateOnly.FromDateTime(DateTime.UtcNow.Date),
-            FixedIncomeCashFlowEngineVersion,
-            "Completed",
-            DateTimeOffset.UtcNow,
-            "SecurityMaster",
-            subject.SecurityId.ToString("D"));
-        var flows = ProjectFixedIncomeCashFlows(bond, projectionRunId).ToArray();
-        var ledger = new[]
-        {
-            new AssetLedgerProjectionDto(
-                Guid.NewGuid(),
-                subject.SecurityId,
-                "FixedIncomeLedgerProjection",
-                flows.FirstOrDefault()?.DueDate ?? bond.Lifecycle?.MaturityDate ?? DateOnly.FromDateTime(DateTime.UtcNow.Date),
-                "Primary",
-                "Ready",
-                null,
-                null,
-                bond.Currency,
-                "SecurityMasterAccountingEventService",
-                subject.SecurityId.ToString("D"),
-                $"security-master:{subject.SecurityId:D}")
-        };
-        var readyCapabilities = ReadyCapabilities(subject.OperationalProfile, terms, lifecycle, flows, [], [], [], ledger);
-        var readiness = BuildReadiness(
-            subject,
-            readyCapabilities,
-            "SecurityMaster",
-            subject.SecurityId.ToString("D"),
-            additionalWarnings:
-            [
-                "Bond terms, cash flows, and ledger support are Expected/Projected until reviewed retained evidence is attached and an Asset Operations projection is published."
-            ],
-            allowReady: false);
-
-        var detail = new AssetOperationsDetailDto(
-            subject,
-            terms,
-            lifecycle,
-            [run],
-            flows,
-            [],
-            [],
-            [],
-            ledger,
-            readiness,
-            lifecycle);
-        return WithTermsObligationsTimeline(detail);
-    }
-
-    internal static IReadOnlyList<AssetProjectedCashFlowDto> ProjectFixedIncomeCashFlows(
-        BondReferenceDto bond,
-        Guid projectionRunId)
-        => BuildBondProjectedCashFlows(bond, projectionRunId).ToArray();
-
-    private static IEnumerable<AssetProjectedCashFlowDto> BuildBondProjectedCashFlows(BondReferenceDto bond, Guid projectionRunId)
-    {
-        var maturity = bond.Lifecycle?.MaturityDate;
-        if (maturity is null)
-        {
-            yield break;
-        }
-
-        var issueDate = bond.Lifecycle?.IssueDate ?? DateOnly.FromDateTime(DateTime.UtcNow.Date);
-        var paymentFrequency = SecurityTermConventions.LegacyCouponPaymentsPerYear(bond.Lifecycle?.PaymentFrequency);
-        var periodMonths = Math.Max(1, 12 / paymentFrequency);
-        var principalBasis = ResolveBondPrincipalBasis(bond);
-        var outstandingPrincipal = principalBasis;
-        var dayCountConvention = bond.AccrualConvention?.DayCountConvention;
-        var sinkingFundEntries = bond.SinkingFund?.Schedule
-            .Where(static entry => entry.Amount > 0m)
-            .OrderBy(static entry => entry.SinkDate)
-            .ToArray() ?? [];
-        var sinkingFundIndex = 0;
-        var sequenceNumber = 1;
-        var tenor = ScheduleTenor.Months(periodMonths);
-        var schedule = ScheduleGenerator.Generate(ScheduleSpec.CompoundedForward(issueDate, maturity.Value, tenor));
-        if (!schedule.Succeeded)
-        {
-            throw new InvalidOperationException(schedule.Failure.Message);
-        }
-
-        foreach (var period in schedule.Periods)
-        {
-            if (period.IsFinal)
-            {
-                // Each legacy period stepped its start by one tenor before capping the result at
-                // maturity, so a maturity whose closing compounded grid date lies past 9999-12-31 (a
-                // far-dated or perpetual sentinel off the grid) threw ArgumentOutOfRangeException as the
-                // closing period began. The kernel treats that date as an overshoot and closes at
-                // maturity; evaluating it here, after the earlier periods' arithmetic, keeps the failure
-                // and its order (SCH-DEF-010). Advance throws the same exception type.
-                _ = tenor.Advance(period.UnadjustedStart, 1);
-            }
-
-            var accrualStart = period.AccrualStart;
-            var accrualEnd = period.AccrualEnd;
-
-            if (bond.AccrualConvention?.FixedCouponRate is decimal coupon && coupon > 0m && outstandingPrincipal > 0m)
-            {
-                var couponAmount = 0m;
-                var segmentStart = accrualStart;
-                var segmentOutstanding = outstandingPrincipal;
-                var segmentSinkIndex = sinkingFundIndex;
-                while (segmentSinkIndex < sinkingFundEntries.Length &&
-                       sinkingFundEntries[segmentSinkIndex].SinkDate < accrualEnd &&
-                       segmentOutstanding > 0m)
-                {
-                    var sink = sinkingFundEntries[segmentSinkIndex++];
-                    var sinkAmount = RoundCash(sink.Amount);
-                    if (sink.SinkDate <= segmentStart)
-                    {
-                        segmentOutstanding = RoundCash(
-                            decimal.Max(0m, segmentOutstanding - sinkAmount));
-                        continue;
-                    }
-
-                    couponAmount += CalculateBondCouponSegmentAmount(
-                        segmentOutstanding,
-                        coupon,
-                        dayCountConvention,
-                        segmentStart,
-                        sink.SinkDate,
-                        paymentFrequency,
-                        accrualStart,
-                        accrualEnd);
-                    segmentOutstanding = RoundCash(
-                        decimal.Max(0m, segmentOutstanding - sinkAmount));
-                    segmentStart = sink.SinkDate;
-                }
-
-                couponAmount = RoundCash(couponAmount + CalculateBondCouponSegmentAmount(
-                    segmentOutstanding,
-                    coupon,
-                    dayCountConvention,
-                    segmentStart,
-                    accrualEnd,
-                    paymentFrequency,
-                    accrualStart,
-                    accrualEnd));
-
-                if (couponAmount > 0m)
-                {
-                    yield return new AssetProjectedCashFlowDto(
-                        Guid.NewGuid(),
-                        projectionRunId,
-                        bond.SecurityId,
-                        sequenceNumber++,
-                        "Coupon",
-                        accrualEnd,
-                        couponAmount,
-                        bond.Currency,
-                        "Projected",
-                        accrualStart,
-                        accrualEnd,
-                        outstandingPrincipal,
-                        decimal.Round(coupon / 100m, 8, MidpointRounding.AwayFromZero),
-                        "SecurityMaster",
-                        bond.SecurityId.ToString("D"),
-                        BuildBondFlowPayload(
-                            "fixed-coupon",
-                            bond,
-                            paymentFrequency,
-                            principalBasis,
-                            outstandingPrincipal,
-                            coupon,
-                            accrualStart,
-                            accrualEnd));
-                }
-            }
-
-            while (sinkingFundIndex < sinkingFundEntries.Length &&
-                   sinkingFundEntries[sinkingFundIndex].SinkDate <= accrualEnd &&
-                   sinkingFundEntries[sinkingFundIndex].SinkDate < maturity.Value &&
-                   outstandingPrincipal > 0m)
-            {
-                var entry = sinkingFundEntries[sinkingFundIndex++];
-                var principalRepayment = decimal.Min(outstandingPrincipal, RoundCash(entry.Amount));
-                if (principalRepayment <= 0m)
-                {
-                    continue;
-                }
-
-                outstandingPrincipal = RoundCash(outstandingPrincipal - principalRepayment);
-                yield return new AssetProjectedCashFlowDto(
-                    Guid.NewGuid(),
-                    projectionRunId,
-                    bond.SecurityId,
-                    sequenceNumber++,
-                    "PrincipalRepayment",
-                    entry.SinkDate,
-                    principalRepayment,
-                    bond.Currency,
-                    "Projected",
-                    null,
-                    entry.SinkDate,
-                    RoundCash(outstandingPrincipal + principalRepayment),
-                    null,
-                    "SecurityMaster",
-                    bond.SecurityId.ToString("D"),
-                    BuildBondFlowPayload(
-                        "sinking-fund-principal",
-                        bond,
-                        paymentFrequency,
-                        principalBasis,
-                        RoundCash(outstandingPrincipal + principalRepayment),
-                        null,
-                        null,
-                        entry.SinkDate));
-            }
-        }
-
-        if (outstandingPrincipal > 0m)
-        {
-            yield return new AssetProjectedCashFlowDto(
-                Guid.NewGuid(),
-                projectionRunId,
-                bond.SecurityId,
-                sequenceNumber,
-                "Maturity",
-                maturity.Value,
-                RoundCash(outstandingPrincipal),
-                bond.Currency,
-                "Projected",
-                null,
-                maturity,
-                RoundCash(outstandingPrincipal),
-                null,
-                "SecurityMaster",
-                bond.SecurityId.ToString("D"),
-                BuildBondFlowPayload(
-                    "maturity-principal",
-                    bond,
-                    paymentFrequency,
-                    principalBasis,
-                    outstandingPrincipal,
-                    null,
-                    null,
-                    maturity.Value));
-        }
-    }
-
     public static AssetOperationsDetailDto WithTermsObligationsTimeline(AssetOperationsDetailDto detail)
     {
         ArgumentNullException.ThrowIfNull(detail);
@@ -752,7 +529,7 @@ public static class AssetOperationsProjectionBuilder
                 ?? (actualAmount.HasValue ? actualAmount.Value - flow.Amount : null);
 
             events.Add(new AssetTermsObligationTimelineEventDto(
-                Guid.NewGuid(),
+                BondIdentity(subject.SecurityId, $"timeline-flow:{flow.ProjectedCashFlowId:N}"),
                 subject.SecurityId,
                 NormalizeTimelineEventKind(flow.FlowType),
                 ResolveTimelineLane(flow.FlowType),
@@ -793,7 +570,7 @@ public static class AssetOperationsProjectionBuilder
         foreach (var lifecycle in lifecycleEvents.OrderBy(static row => row.EffectiveDate))
         {
             events.Add(new AssetTermsObligationTimelineEventDto(
-                Guid.NewGuid(),
+                BondIdentity(subject.SecurityId, $"timeline-lifecycle:{lifecycle.LifecycleEventId:N}"),
                 subject.SecurityId,
                 lifecycle.EventType,
                 "Lifecycle",
@@ -872,68 +649,8 @@ public static class AssetOperationsProjectionBuilder
         };
     }
 
-    private static decimal ResolveBondPrincipalBasis(BondReferenceDto bond)
-    {
-        var par = bond.Lifecycle?.Par is decimal parValue && parValue > 0m
-            ? parValue
-            : DefaultPrincipalBasis;
-        // Zero is a REAL factor — a fully amortized pool — and must not be conflated with a
-        // missing one: substituting 1 would project full-face principal (and draftable ledger
-        // support) for a security with nothing outstanding. Only an absent or negative factor
-        // falls back to 1.
-        var factor = bond.InflationLinked?.CurrentFactor is decimal currentFactor && currentFactor >= 0m
-            ? currentFactor
-            : 1m;
-        return RoundCash(par * factor);
-    }
-
-    private static decimal CalculateBondCouponSegmentAmount(
-        decimal principalBasis,
-        decimal couponRatePercent,
-        string? dayCountConvention,
-        DateOnly segmentStart,
-        DateOnly segmentEnd,
-        int paymentFrequency,
-        DateOnly couponPeriodStart,
-        DateOnly couponPeriodEnd)
-    {
-        var convention = DayCountConventions.Parse(dayCountConvention);
-        // Preserve the historical one-period fallback for an absent convention, while apportioning that
-        // period across principal events so multiple segments cannot each receive a full coupon.
-        var couponPeriodDays = Math.Max(1, couponPeriodEnd.DayNumber - couponPeriodStart.DayNumber);
-        var yearFraction = convention == DayCountConvention.Unknown
-            ? (decimal)(segmentEnd.DayNumber - segmentStart.DayNumber) /
-              couponPeriodDays /
-              Math.Max(1, paymentFrequency)
-            : DayCountConventions.Fraction(convention, segmentStart, segmentEnd);
-        return principalBasis * (couponRatePercent / 100m) * yearFraction;
-    }
-
     private static decimal RoundCash(decimal amount)
         => decimal.Round(amount, 4, MidpointRounding.AwayFromZero);
-
-    private static JsonElement BuildBondFlowPayload(
-        string formula,
-        BondReferenceDto bond,
-        int paymentFrequency,
-        decimal principalBasis,
-        decimal outstandingPrincipal,
-        decimal? couponRatePercent,
-        DateOnly? accrualStart,
-        DateOnly accrualEnd)
-        => JsonSerializer.SerializeToElement(new
-        {
-            formula,
-            engineVersion = FixedIncomeCashFlowEngineVersion,
-            dayCountConvention = bond.AccrualConvention?.DayCountConvention,
-            paymentFrequencyPerYear = paymentFrequency,
-            principalBasis,
-            outstandingPrincipal,
-            couponRatePercent,
-            accrualStart,
-            accrualEnd,
-            inflationFactor = bond.InflationLinked?.CurrentFactor
-        });
 
     private static AssetReconciliationResultDto? FindReconciliation(
         AssetProjectedCashFlowDto flow,
@@ -1158,35 +875,6 @@ public static class AssetOperationsProjectionBuilder
             securityMasterReference = terms.SecurityMasterReference
         });
 
-    private static JsonElement BuildBondTermsPayload(BondReferenceDto bond)
-        => JsonSerializer.SerializeToElement(new
-        {
-            engineVersion = AssetObligationProjectionService.EngineVersion,
-            assetClass = "Bond",
-            currency = bond.Currency,
-            bond.DisplayName,
-            bond.IssuerName,
-            bond.PrimaryIdentifier,
-            issueDate = bond.Lifecycle?.IssueDate,
-            callDate = bond.Lifecycle?.CallDate,
-            maturityDate = bond.Lifecycle?.MaturityDate,
-            legalFinalMaturity = bond.Lifecycle?.LegalFinalMaturity,
-            preRefundDate = bond.Lifecycle?.PreRefundDate,
-            mandatoryPutDate = bond.Lifecycle?.MandatoryPutDate,
-            par = bond.Lifecycle?.Par,
-            paymentFrequency = bond.Lifecycle?.PaymentFrequency,
-            dayCountConvention = bond.AccrualConvention?.DayCountConvention,
-            couponKind = bond.AccrualConvention?.CouponKind,
-            fixedCouponRate = bond.AccrualConvention?.FixedCouponRate,
-            floatingRateIndex = bond.AccrualConvention?.FloatingRateIndex,
-            floatingSpreadBps = bond.AccrualConvention?.FloatingSpreadBps,
-            sinkingFundSchedule = bond.SinkingFund?.Schedule,
-            factorSchedule = bond.SinkingFund is null ? null : "sinking-fund",
-            inflationIndex = bond.InflationLinked?.InflationIndex,
-            currentFactor = bond.InflationLinked?.CurrentFactor,
-            factorDate = bond.InflationLinked?.FactorDate
-        });
-
     internal static IReadOnlyList<string> ReadyCapabilities(
         IReadOnlyList<string> capabilities,
         IReadOnlyList<AssetTermsVersionDto> terms,
@@ -1244,7 +932,8 @@ public static class AssetOperationsProjectionBuilder
         string? sourceEntityId,
         IReadOnlyList<RetainedEvidenceIdentityDto>? retainedEvidence = null,
         IReadOnlyList<string>? additionalWarnings = null,
-        bool allowReady = true)
+        bool allowReady = true,
+        DateTimeOffset? evaluatedAt = null)
     {
         var ready = readyCapabilities
             .Where(capability =>
@@ -1279,7 +968,7 @@ public static class AssetOperationsProjectionBuilder
             ready,
             missing,
             warnings,
-            DateTimeOffset.UtcNow,
+            evaluatedAt ?? DateTimeOffset.UtcNow,
             sourceDomain,
             sourceEntityId)
         {

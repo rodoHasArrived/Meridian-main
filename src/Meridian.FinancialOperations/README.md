@@ -378,6 +378,8 @@ current authority and appends a predecessor-bound preparation revision for the s
 it retains every prior snapshot. The existing store version check makes stale candidate creation
 and recovery compete for one next version. Once Drafted authority exists, this recovery is refused.
 
+Bond settlement preparation separates clean acquisition basis, purchased accrued-interest receivable and separately expensed fees. New settlement-bearing acquisition instructions are revalidated at admission and posting against source evidence and balanced journal components. Live amortization observes the shared bond-cutover policy; retained reversals and idempotent posting replay preserve their original economics.
+
 ## Purpose
 
 OFX duplicate account or currency tags cannot overwrite conflicting evidence. A row account may

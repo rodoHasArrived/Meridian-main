@@ -17,6 +17,7 @@ state. Plans are working inputs, not status sources; live roadmap status stays i
 | [WPF / Web-UI Alignment Plan](wpf-web-ui-alignment-plan.md) | Closes WPF parity gaps with the browser workstation (`W8-WPF-PARITY-001`) |
 | [Desktop Workstation Screen Checklist Reference](desktop-workstation-screen-blueprint.md) | Preserves the twenty screen scopes and heading contract used by desktop checklist/workflow validation |
 | [God-File Burn-Down Plan](god-file-burn-down-plan.md) | Burn-down targets for oversized source files |
+| [Bond Capability Expansion](bond-capability-expansion.md) | Shared bond economics, analytics, retained input replay, browser integration and reviewed full cutover |
 | [Web-UI Improvements Implementation Plan (2026-07)](web-ui-improvements-implementation-plan-2026-07.md) | Phased plan for the nine browser-workstation brainstorm ideas |
 
 When a plan is finished or superseded, move it to

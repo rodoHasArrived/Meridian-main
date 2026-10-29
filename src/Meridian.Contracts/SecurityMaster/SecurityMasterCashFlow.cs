@@ -91,7 +91,17 @@ public sealed record StructuredCashFlowScheduleEntry(
     DateTimeOffset PeriodDate,
     decimal PrincipalAmount,
     decimal InterestAmount,
-    decimal Factor);
+    decimal Factor)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public DateOnly? UnadjustedStart { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public DateOnly? UnadjustedEnd { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public DateOnly? AccrualStart { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public DateOnly? AccrualEnd { get; init; }
+}
 
 /// <summary>How a cash-flow leg's rate is determined.</summary>
 public enum CashFlowLegRateKind
@@ -136,6 +146,17 @@ public sealed record StructuredCashFlowLeg(
     IReadOnlyList<StructuredCashFlowNotionalStep>? NotionalSchedule = null,
     IReadOnlyList<StructuredCashFlowResetFixing>? ResetSchedule = null)
 {
+    /// <summary>The contractual cap in <see cref="RateUnit"/>; retained separately from forecasts.</summary>
+    [JsonIgnore]
+    public decimal? CapRate { get; init; }
+
+    /// <summary>The contractual floor in <see cref="RateUnit"/>.</summary>
+    [JsonIgnore]
+    public decimal? FloorRate { get; init; }
+
+    [JsonIgnore]
+    public SecurityCouponRateUnit RateUnit { get; init; }
+
     /// <summary>
     /// The notional in effect on <paramref name="date"/>: the latest schedule step on or before
     /// it, otherwise <paramref name="baseNotional"/>.
@@ -253,6 +274,10 @@ public sealed record StructuredCashFlowProjectionDto(
     /// <summary>Calendar and kernel evidence for a declared projection; absent on legacy projections.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public StructuredCashFlowScheduleEvidence? ScheduleEvidence { get; init; }
+
+    /// <summary>Exact dependencies selected by the context-aware calculation path.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<Meridian.Contracts.FixedIncome.BondCalculationInput>? InputManifest { get; init; }
 }
 
 /// <summary>

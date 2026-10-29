@@ -360,6 +360,15 @@ public sealed class ContractualCashFlowEngineTests
     }
 
     [Fact]
+    public void Observed_valuation_day_fixing_is_preserved_without_a_forecast_or_scenario_shock()
+    {
+        var stream = Stream with { PaymentMonths = 0, FixedRate = null, IndexName = "SOFR", Resets = [new(Issue, .02m)] };
+        var result = ContractualCashFlowEngine.Calculate(Contract(stream), Request with { RateScenario = StructuredCashFlowScenario.Up100 });
+        result.Blockers.Should().BeEmpty();
+        result.Events.Sum(e => e.CashInterest).Should().Be(20);
+    }
+
+    [Fact]
     public void Benchmark_role_uses_pinned_identity_without_rewriting_stored_curve_metadata()
     {
         var curve = Curve(SecurityCurveKind.Forward, .04m);

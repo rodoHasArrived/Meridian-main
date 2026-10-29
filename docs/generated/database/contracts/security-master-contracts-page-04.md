@@ -2,11 +2,25 @@
 
 # `security-master-contracts` data objects - page 4 of 6
 
-Objects 241-320 of 474. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 478. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_PreferredEquityTermsDto["PreferredEquityTermsDto"] {
+        +decimal? AdditionalDividendThreshold
+        +DateOnly? CallableDate
+        +string? Classification
+        +decimal? DividendRate
+        +string? DividendType
+        +bool? IsCumulative
+        +string? LiquidationPreferenceKind
+        +decimal? LiquidationPreferenceMultiple
+        +bool? ParticipatesInCommonDividends
+        +DateOnly? RedemptionDate
+        +decimal? RedemptionPrice
+        +Guid SecurityId
+    }
     class Meridian_Contracts_SecurityMaster_PricingHierarchyEntryDto["PricingHierarchyEntryDto"] {
         +int MaxDaysStale
         +int Priority
@@ -494,11 +508,6 @@ classDiagram
         +bool Required
         +bool ScalarEditable
     }
-    class Meridian_Contracts_SecurityMaster_SecurityAssetTermVocabularyEscape["SecurityAssetTermVocabularyEscape"] {
-        +IReadOnlyList~string~ DependentKeys
-        +string LabelKey
-        +string Value
-    }
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarUsage --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarPurpose
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnostic --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnosticCode
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailure --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailureCode
@@ -546,7 +555,6 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsV0ToCurrentUpcaster --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
     Meridian_Contracts_SecurityMaster_SecurityAssetTermField --> Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldType
     Meridian_Contracts_SecurityMaster_SecurityAssetTermField --> Meridian_Contracts_SecurityMaster_SecurityAssetTermRole
-    Meridian_Contracts_SecurityMaster_SecurityAssetTermField --> Meridian_Contracts_SecurityMaster_SecurityAssetTermVocabularyEscape
     Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetTermEditorKind
     Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetTermRole
     Meridian_Contracts_SecurityMaster_SecurityAssetTermUiHint --> Meridian_Contracts_SecurityMaster_SecurityAssetTermEditorKind

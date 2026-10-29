@@ -17,6 +17,9 @@ Each stream declares principal, cadence, day count, fixed/stepped or floating ra
 principal exchanges, and optional explicit coupon periods/amounts, principal or notional schedules,
 caps/floors, cash/PIK split, amortization and prepayment permission/penalty.
 
+A contract projects one currency. Retained cross-currency swap legs require separate currency-specific
+inputs and are blocked rather than being relabeled or implicitly converted.
+
 The optional `cashFlowContract` companion is readable at Bond/CD terms version 4,
 StructuredCredit 5, Swap 3 and DirectLoan 2. Existing write ceilings and document stamp floors
 are unchanged. The companion is decoded only at its introduction stamp and outside profile

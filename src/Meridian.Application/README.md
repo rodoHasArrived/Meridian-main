@@ -286,11 +286,12 @@ stored under its case-sensitive scope key stay reachable. New connections retain
 credential environment (for example QuickBooks `live` is kept as `production`). Existing environments
 remain exact ownership identities: an update that would change a retained alias is refused until an
 explicit configuration-and-vault migration can preserve any OAuth tokens stored under that scope. Shared
-configuration and API DTOs preserve the fields on reload. Default runtime ownership propagation and
-remaining whole-configuration snapshot callers still require integration; external editors do not honor the sidecar transaction.
+configuration and API DTOs preserve the fields on reload. Explicit host defaults now propagate
+ownership through the ConfigStore-bound resolver. Remaining whole-configuration snapshot callers
+still require integration; external editors do not honor the sidecar transaction.
 
 `StoredProviderCredentialResolver` uses the credential store as the complete authority for catalog-managed
-providers, including the store's permitted environment fallback. Missing records remain unconfigured;
+providers; only entirely legacy provider families retain the store's permitted environment fallback. Missing records remain unconfigured;
 partial or deliberately removed fields cannot be filled from legacy configuration or another credential
 source. Unmanaged provider types retain their legacy resolver. Storage failures propagate to callers.
 
@@ -298,9 +299,10 @@ The scope-bound `StoredProviderCredentialResolver` constructor accepts an `IScop
 and trusted `ProviderCredentialScope`. It resolves only that tenant, connection, external account and
 environment, rejects unmanaged and non-catalog provider types, and never falls back to provider-wide
 records or config.
-The scoped store registration aliases the existing vault instance. Default host construction and the
-legacy setup route still use provider-wide resolution until authorized scope is propagated by callers;
-this constructor alone does not establish end-to-end tenant isolation.
+The scoped store registration aliases the existing vault instance. Default host construction uses
+the ConfigStore-bound resolver to propagate the explicitly selected retained scope. The legacy setup
+mutation route is restricted to unowned provider families. An owned family without a valid host
+binding blocks; supplying the scoped constructor alone does not create ownership or authorize a caller.
 
 `OAuthTokenRefreshService` also accepts trusted `ownershipScope`. Scoped instances load and persist
 only that owner's OAuth tokens, including refresh responses and cache recovery after audit failure,
@@ -397,6 +399,8 @@ DI-resolved posture permits unattributed process work. Strict hosts log that the
 withheld, including when a host supplies a later instance/factory override. Strict operation still
 requires per-loan tenant authority before those workers can be enabled.
 
+Bond cash-flow context overloads resolve retained terms once, honor forward-curve recorded cutoffs, and retain content-addressed calculation receipts under `bonds/calculations`. Replay reloads immutable inputs and checks calendar hashes rather than substituting current terms. Storage composition shares the durable bond-cutover policy with calculation and accounting orchestration; the ledger composition preserves independent approval and replay. See [bond expansion](../../docs/engineering/plans/bond-capability-expansion.md).
+
 ## Purpose
 
 Provider-integration REST composition uses `ProviderIntegrationHttpClientTransport.CreateHttpClient`
@@ -474,8 +478,9 @@ Core workstation host. Do not introduce a second listener or independent monitor
   owed audit record is journaled in the vault's `provider-credentials.audit.pending.jsonl` for replay by
   `ProviderCredentialAuditReplayHostedService` at startup or by the next vault mutation. Disposal never
   rewrites a cached token snapshot. Production postures fail closed off Windows (ADR-019 platform guard),
-  so the non-Windows local key file is a scope-out rather than an open PRD-002 clause; browser, WPF,
-  setup and default-runtime credential ownership remain open PRD-002 requirements.
+  so the non-Windows local key file is a scope-out rather than an open PRD-002 clause. Owned setup
+  and runtime-binding API paths are implemented; browser/WPF ownership-management flows and installed
+  end-to-end acceptance remain open PRD-002 requirements.
   Provider plugin assembly loading and `DataSourceRegistry` discovery now live in
   ProviderSdk; Application and WPF consume the loader instead of keeping reflection-based provider
   discovery in Application services. Default provider setup handlers are registered through one
@@ -1024,6 +1029,31 @@ Core workstation host. Do not introduce a second listener or independent monitor
 Use this module when changing command behavior, workflow orchestration, feature registration, or
 application service contracts consumed by host and UI surfaces.
 
+Quick setup and quickstart publish configuration through the synchronous `AtomicFileWriter`,
+preserving their existing paths, JSON format, and backup behavior. Readers holding an open
+snapshot continue to see the previous complete file during replacement.
+
+Portfolio imports parse Alpaca's decimal strings using invariant culture and explicit sign/decimal
+styles, and dispose HTTP responses on success and failure. Missing quantities still default to
+zero, malformed quantities fail the import, and missing or malformed optional amounts remain null.
+Caller cancellation propagates through imports, symbol discovery and webhook delivery rather than
+being reported as a provider failure. Provider timeouts without caller cancellation retain their
+ordinary failure/fallback behavior. A summary with no enabled webhooks reports failure and does
+not raise the success event.
+
+Symbol search and detail caches each retain at most 1,024 entries. They prune expired entries on
+reads and writes, evict the oldest write at capacity, and measure absolute expiry with a monotonic
+clock. A read does not extend the existing five-minute search or thirty-minute detail lifetime.
+
+Subscription schedule mutations serialize candidate snapshots and publish them in memory only
+after atomic persistence succeeds. Failed or cancelled saves propagate to callers and preserve
+the prior published state. Execution admission is per schedule: overlapping timer/manual requests
+share the running execution, while different schedules can run independently. Cancelling a joined
+manual caller cancels its wait; the original request and service lifetime own the execution token.
+Shutdown prevents further admission, cancels and joins all admitted executions, and waits for
+an already-admitted persistence operation. These controls are local to one service instance;
+they do not add cross-process execution leases or persist execution history across restarts.
+
 `ApplicationLifecycleCoordinator` routes POSIX SIGTERM through the same cooperative stop-work,
 drain, and flush lifecycle as external cancellation. This lets `dotnet watch` restart the host
 without leaving its listener behind. The signal registration is disposed with the coordinator;
@@ -1277,6 +1307,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 ## Validation
 
 ```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PortfolioImportReliabilityTests|FullyQualifiedName~QuickSetupAtomicSaveTests|FullyQualifiedName~SymbolSearchCancellationTests|FullyQualifiedName~BoundedSearchCacheTests|FullyQualifiedName~DailySummaryWebhookDeliveryTests|FullyQualifiedName~SchedulingServiceReliabilityTests"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~SecurityMasterContractAdapterTests|FullyQualifiedName~StorageFeatureRegistrationTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~TracingIntegrationTests|FullyQualifiedName~EventPipelineTracePropagationTests" /p:EnableWindowsTargeting=true

@@ -82,6 +82,71 @@ public sealed class ContractualCashFlowPreviewTests
     }
 
     [Fact]
+    public async Task Foreign_currency_swap_leg_is_not_silently_reported_in_the_security_currency()
+    {
+        var id = Guid.NewGuid();
+        var security = Security(id) with
+        {
+            AssetClass = "Swap",
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+            {
+                effectiveDate = "2026-01-01",
+                maturityDate = "2027-01-01",
+                legs = new[] { new { legId = "foreign", currency = "EUR", direction = "Pay", fixedRate = .03m,
+                notional = 1000m, paymentFrequency = "Quarterly", dayCount = "ACT/365" } }
+            })
+        };
+        var query = Substitute.For<ISecurityMasterQueryService>();
+        query.GetRecordedByIdAsOfAsync(id, Cutoff, Arg.Any<CancellationToken>()).Returns(security);
+        var result = await new ContractualCashFlowPreviewService(query, Substitute.For<ISecurityMasterCashFlowService>()).PreviewSecurityAsync(id, Request);
+        result!.Blockers.Should().ContainSingle().Which.Message.Should().Contain("Cross-currency");
+        result.Events.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Canonical_floating_bond_retains_declared_calendar_cap_and_exercise_stream_with_original_curve_metadata()
+    {
+        var id = Guid.NewGuid();
+        var security = Security(id) with
+        {
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+            {
+                assetClassTermsVersion = 3,
+                issueDate = "2026-01-01",
+                maturity = "2027-01-01",
+                par = 1000,
+                couponType = "Floating",
+                floatingIndex = "SOFR",
+                paymentFrequency = "Quarterly",
+                dayCount = "ACT/365",
+                resetSchedule = new[] { new { resetDate = "2026-01-01", fixingRate = 1m } },
+                capRate = 4m,
+                floorRate = 1m,
+                scheduleConventions = new { couponRateUnit = "Percent", paymentCalendars = new[] { "WEEKENDS" } },
+                callSchedule = new[] { new { callDate = "2026-04-01", exerciseStyle = "European", callPrice = 100m } }
+            })
+        };
+        var query = Substitute.For<ISecurityMasterQueryService>();
+        query.GetRecordedByIdAsOfAsync(id, Cutoff, Arg.Any<CancellationToken>()).Returns(security);
+        var curves = Substitute.For<ISecurityCurveStore>();
+        var curveId = Guid.NewGuid();
+        var curveVersionId = Guid.NewGuid();
+        var definition = new SecurityCurveDefinitionDto(curveId, "USD-SOFR", SecurityCurveKind.Forward, "USD", "SOFR", null, "Actual365",
+            SecurityCurveInterpolation.Linear, "test", null, "test", Cutoff);
+        curves.GetDefinitionAsync(curveId, Arg.Any<CancellationToken>()).Returns(definition);
+        curves.GetVersionByIdAsync(curveId, curveVersionId, Arg.Any<CancellationToken>()).Returns(new SecurityCurveVersionDto(curveVersionId, curveId,
+            "USD-SOFR", 1, Issue, Cutoff, null, "test", "test", [new(Issue, .08m), new(Issue.AddYears(1), .08m)], "fixture"));
+        var calendars = new Meridian.Contracts.Calendars.StaticBusinessDayCalendarSource([Meridian.Contracts.Calendars.BusinessDayCalendars.WeekendsOnly]);
+        var result = await new ContractualCashFlowPreviewService(query, Substitute.For<ISecurityMasterCashFlowService>(), curves, calendars)
+            .PreviewSecurityAsync(id, Request with { CurvePins = [new("SOFR", curveId, curveVersionId)] });
+        result!.Blockers.Should().BeEmpty();
+        result.Events.Sum(e => e.CashInterest).Should().BeApproximately(1000m * .01m * 90 / 365 + 1000m * .04m * 275 / 365, .00000002m);
+        result.Evidence.Curves.Single().Definition.Should().Be(definition);
+        result.ResolvedContract!.Streams.Single().Conventions!.PaymentCalendars.Should().Equal("WEEKENDS");
+        result.ExerciseEligibility.Single().StreamId.Should().Be(result.ResolvedContract.Streams.Single().StreamId);
+    }
+
+    [Fact]
     public async Task Replay_packet_survives_restart_refuses_changed_identity_and_detects_tampering()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-cashflow-test-" + Guid.NewGuid().ToString("N"));

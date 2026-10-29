@@ -11,6 +11,19 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.Ui/dashboard
 
+Bond records in Security Master expose calculated analytics and a convention-migration preview
+under the existing Evidence detail tab. Operators supply dates and a clean price or annual yield;
+the browser displays server-calculated per-100 values, annual-fraction yields, projected payments,
+input hashes, operation support, and blockers separately from imported Pricing & Risk fields.
+Authoritative reads prohibit development fallback. Changing inputs or security selection clears
+prior results and aborts pending requests. Migration preview requires the loaded terms version and
+an explicitly selected coupon unit; it compares prior and candidate payments without publishing
+terms or changing journals. Staging requires an explicit review justification and submits the
+request and opaque fingerprints; displayed financial projections are never round-tripped into a
+command. The server recomputes the preview before creating a governed draft. Stale or uncertain
+outcomes require inspection and refresh; approval and publishing remain in the existing workflow.
+Focused coverage: `bond-analytics.api.test.ts` and `bond-analytics-panel.test.tsx`.
+
 Provider credential editors require explicit selection of an existing owned connection. Status,
 save, verification and deletion use the same retained connection; account and environment come
 from authenticated ownership. Missing or changed ownership blocks changes without provider-wide

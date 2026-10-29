@@ -1,4 +1,6 @@
+using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
+using NpgsqlTypes;
 using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
@@ -33,21 +35,23 @@ public sealed class PostgresBondReferenceProjectionStore : IBondReferenceProject
     public Task<BondLifecycleProjectionRow?> GetLifecycleAsync(Guid securityId, CancellationToken ct = default)
         => _reader.QuerySingleAsync(
             $"""
-            select security_id,
+            select blp.security_id,
                    lifecycle_stat,
                    issue_date,
                    call_date,
                    maturity_date,
                    is_callable,
-                   version,
+                   blp.version,
                    subclass,
                    par,
                    payment_frequency,
                    legal_final_maturity,
                    pre_refund_date,
-                   mandatory_put_date
-            from {_reader.Qualified("bond_lifecycle_projection")}
-            where security_id = @security_id;
+                   mandatory_put_date,
+                   (s.effective_to at time zone 'UTC')::date as effective_to_date
+            from {_reader.Qualified("bond_lifecycle_projection")} blp
+            join {_reader.Qualified("securities")} s on s.security_id = blp.security_id
+            where blp.security_id = @security_id;
             """,
             [new NpgsqlParameter("security_id", securityId)],
             MapLifecycleRow,
@@ -77,7 +81,7 @@ public sealed class PostgresBondReferenceProjectionStore : IBondReferenceProject
             BondSelectSql(
                 """
                 where bip.issuer_name = @issuer_name
-                order by bip.maturity_date nulls last, s.display_name
+                order by bip.maturity_date nulls last, s.display_name, bp.security_id
                 """),
             [new NpgsqlParameter("issuer_name", issuerName.Trim())],
             MapBondRow,
@@ -88,11 +92,63 @@ public sealed class PostgresBondReferenceProjectionStore : IBondReferenceProject
             BondSelectSql(
                 """
                 where bp.maturity_date between @from_date and @to_date
-                order by bp.maturity_date, s.display_name
+                order by bp.maturity_date, s.display_name, bp.security_id
                 """),
             [new NpgsqlParameter("from_date", from.ToDateTime(TimeOnly.MinValue)), new NpgsqlParameter("to_date", to.ToDateTime(TimeOnly.MinValue))],
             MapBondRow,
             ct);
+
+    public Task<IReadOnlyList<BondProjectionRow>> GetIssuerLadderPageAsync(string issuerName, int pageSize,
+        DateOnly? afterMaturity, Guid? afterSecurityId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(issuerName);
+        var parameters = PageParameters(pageSize, afterMaturity, afterSecurityId);
+        parameters.Add(new NpgsqlParameter("issuer_name", issuerName.Trim()));
+        return _reader.QueryAsync(BondSelectSql(
+            """
+            where bp.issuer_name = @issuer_name
+              and (@has_cursor = false or
+                   (coalesce(bp.maturity_date, 'infinity'::date), bp.security_id) >
+                   (coalesce(@after_maturity, 'infinity'::date), @after_security_id))
+            order by bp.maturity_date nulls last, bp.security_id
+            limit @page_limit
+            """), parameters, MapBondRow, ct);
+    }
+
+    public Task<IReadOnlyList<BondProjectionRow>> GetMaturityLadderPageAsync(DateOnly from, DateOnly to, int pageSize,
+        DateOnly? afterMaturity, Guid? afterSecurityId, CancellationToken ct = default)
+    {
+        if (to < from)
+            throw new ArgumentException("Maturity range must be ordered.", nameof(to));
+        if (afterSecurityId is not null && afterMaturity is null)
+            throw new ArgumentException("Maturity paging requires a dated cursor.", nameof(afterMaturity));
+        var parameters = PageParameters(pageSize, afterMaturity, afterSecurityId);
+        parameters.Add(new NpgsqlParameter("from_date", NpgsqlDbType.Date) { Value = from });
+        parameters.Add(new NpgsqlParameter("to_date", NpgsqlDbType.Date) { Value = to });
+        return _reader.QueryAsync(BondSelectSql(
+            """
+            where bp.maturity_date between @from_date and @to_date
+              and (@has_cursor = false or
+                   (bp.maturity_date, bp.security_id) > (@after_maturity, @after_security_id))
+            order by bp.maturity_date, bp.security_id
+            limit @page_limit
+            """), parameters, MapBondRow, ct);
+    }
+
+    private static List<NpgsqlParameter> PageParameters(int pageSize, DateOnly? afterMaturity, Guid? afterSecurityId)
+    {
+        if (pageSize is < 1 or > 500)
+            throw new ArgumentOutOfRangeException(nameof(pageSize));
+        if (afterMaturity is not null && afterSecurityId is null)
+            throw new ArgumentException("A cursor maturity requires a security id.", nameof(afterSecurityId));
+        return
+        [
+            new("page_limit", pageSize + 1),
+            new("has_cursor", afterSecurityId.HasValue),
+            new("after_maturity", NpgsqlDbType.Date) { Value = afterMaturity is { } date ? date : DBNull.Value },
+            new("after_security_id", NpgsqlDbType.Uuid) { Value = afterSecurityId is { } id ? id : DBNull.Value }
+        ];
+    }
 
     private string BondSelectSql(string predicateSql)
         => $"""
@@ -120,7 +176,9 @@ public sealed class PostgresBondReferenceProjectionStore : IBondReferenceProject
                    blp.payment_frequency,
                    blp.legal_final_maturity,
                    blp.pre_refund_date,
-                   blp.mandatory_put_date
+                   blp.mandatory_put_date,
+                   s.asset_specific_terms::text as asset_specific_terms,
+                   (s.effective_to at time zone 'UTC')::date as effective_to_date
             from {_reader.Qualified("bond_projection")} bp
             join {_reader.Qualified("securities")} s on s.security_id = bp.security_id
             left join {_reader.Qualified("bond_issuer_projection")} bip on bip.security_id = bp.security_id
@@ -155,7 +213,17 @@ public sealed class PostgresBondReferenceProjectionStore : IBondReferenceProject
             row.NullableString("payment_frequency"),
             row.NullableDate("legal_final_maturity"),
             row.NullableDate("pre_refund_date"),
-            row.NullableDate("mandatory_put_date"));
+            row.NullableDate("mandatory_put_date"),
+            ParseCanonicalTerms(row.NullableString("asset_specific_terms")),
+            row.NullableDate("effective_to_date"));
+
+    private static JsonElement? ParseCanonicalTerms(string? json)
+    {
+        if (json is null)
+            return null;
+        using var document = JsonDocument.Parse(json);
+        return document.RootElement.Clone();
+    }
 
     internal static BondLifecycleProjectionRow MapLifecycleRow(ProjectionRow row)
         => new(
@@ -171,7 +239,8 @@ public sealed class PostgresBondReferenceProjectionStore : IBondReferenceProject
             row.NullableString("payment_frequency"),
             row.NullableDate("legal_final_maturity"),
             row.NullableDate("pre_refund_date"),
-            row.NullableDate("mandatory_put_date"));
+            row.NullableDate("mandatory_put_date"),
+            row.NullableDate("effective_to_date"));
 
     internal static BondAccrualConventionProjectionRow MapAccrualConventionRow(ProjectionRow row)
         => new(

@@ -197,9 +197,12 @@ public static partial class ContractualCashFlowEngine
         decimal rate;
         if (stream.IndexName is { } index)
         {
-            var reset = (stream.Resets ?? []).Where(r => r.ResetDate <= date).OrderBy(r => r.ResetDate).LastOrDefault();
+            var reset = (stream.Resets ?? []).Where(r => r.ResetDate >= period.AccrualStart && r.ResetDate <= date)
+                .OrderBy(r => r.ResetDate).LastOrDefault();
             var resetDate = reset?.ResetDate ?? period.AccrualStart;
-            if (resetDate < request.ValuationDate)
+            if (resetDate <= request.ValuationDate && reset?.FixingRate is { } observed)
+                rate = observed;
+            else if (resetDate < request.ValuationDate)
                 rate = reset?.FixingRate ?? throw Refuse("HistoricalFixingMissing", "Historical reset requires its observed fixing.");
             else
             {

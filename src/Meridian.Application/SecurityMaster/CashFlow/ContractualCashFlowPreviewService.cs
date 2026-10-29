@@ -129,14 +129,22 @@ public sealed class ContractualCashFlowPreviewService(
             for (var i = 0; i < legs.Count; i++)
             {
                 var leg = legs[i];
+                if (i < rawLegs.Length && SecurityTermReader.ReadString([rawLegs[i]], "currency") is { } legCurrency
+                    && !string.Equals(legCurrency, security.Currency, StringComparison.OrdinalIgnoreCase))
+                    throw new ContractInputUnavailable("Cross-currency legs require separate currency-specific projection inputs; no FX conversion is inferred.");
                 if (legs.Count > 1 && leg.Direction is null)
                     throw new ContractInputUnavailable("Every leg needs a retained pay/receive direction.");
-                var block = i < rawLegs.Length ? SecurityVersionedTerms.ReadScheduleConventions(rawLegs[i], "scheduleConventions") : ScheduleConventionTerms.Empty;
+                var bondCoupon = descriptor.CarriesBondCouponStructure && rawLegs.Length == 0;
+                var block = bondCoupon ? conventions : i < rawLegs.Length
+                    ? SecurityVersionedTerms.ReadScheduleConventions(rawLegs[i], "scheduleConventions") : ScheduleConventionTerms.Empty;
                 streams.Add(new(leg.LegId, leg.Notional ?? principal ?? throw new ContractInputUnavailable("Every leg needs a retained notional."), Months(leg.PaymentFrequency ?? terms.PaymentFrequency),
                     DayCount(leg.DayCountConvention ?? terms.DayCountConvention), Rate(leg.FixedRate, block), leg.Direction ?? CashFlowLegDirection.Receive,
-                    leg.ExchangesPrincipal, block, NotionalSchedule: leg.NotionalSchedule,
+                    leg.ExchangesPrincipal, block, PrincipalSchedule: bondCoupon ? terms.PrincipalSchedule : null,
+                    NotionalSchedule: leg.NotionalSchedule,
                     IndexName: leg.RateKind == CashFlowLegRateKind.Floating ? leg.IndexName : null,
-                    SpreadBps: leg.SpreadBps ?? 0, Resets: leg.ResetSchedule?.Select(r => r with { FixingRate = Rate(r.FixingRate, ScheduleConventionTerms.Empty) }).ToArray()));
+                    SpreadBps: leg.SpreadBps ?? 0, Resets: leg.ResetSchedule?.Select(r => r with { FixingRate = Rate(r.FixingRate, block) }).ToArray(),
+                    Floor: bondCoupon ? Rate(terms.FloorRate, conventions) : null,
+                    Cap: bondCoupon ? Rate(terms.CapRate, conventions) : null));
             }
         }
         else
@@ -149,9 +157,11 @@ public sealed class ContractualCashFlowPreviewService(
             streams.Add(new("main", principal ?? throw new ContractInputUnavailable("Retained principal is required; analytical per-100 amounts are not substituted."), Months(terms.PaymentFrequency), DayCount(terms.DayCountConvention), rate,
                 Conventions: conventions, PrincipalSchedule: terms.PrincipalSchedule,
                 RateSteps: terms.StepCouponSchedule?.Select(r => r with { Rate = Rate(r.Rate, conventions)!.Value }).ToArray(),
+                Floor: Rate(terms.FloorRate, conventions), Cap: Rate(terms.CapRate, conventions),
                 Amortization: terms.HasPrincipalSchedule ? CashFlowAmortization.ExplicitPrincipal : CashFlowAmortization.Bullet));
         }
         var exercises = new List<ContractualExerciseEntry>();
+        var exerciseStreamId = streams.Count == 1 ? streams[0].StreamId : "main";
         ReadExercises("callSchedule", CashFlowExerciseSide.Call);
         ReadExercises("putSchedule", CashFlowExerciseSide.Put);
         return new(issue, maturity, security.Currency, streams, exercises);
@@ -179,7 +189,7 @@ public sealed class ContractualCashFlowPreviewService(
                     throw new ContractInputUnavailable("Make-whole entry requires a versioned companion benchmark/formula contract.");
                 if (Text(row, "priceType") is { } priceType && priceType != "Fixed")
                     throw new ContractInputUnavailable("Unrecognized exercise price type.");
-                exercises.Add(new(side, start.Value, Date(row, prefix + "EndDate"), style, Number(row, prefix + "Price"), "main",
+                exercises.Add(new(side, start.Value, Date(row, prefix + "EndDate"), style, Number(row, prefix + "Price"), exerciseStreamId,
                     Text(row, "exerciseFrequency") is { } cadence ? Months(cadence) : null, Text(row, "partialRedemption"),
                     Int(row, "minimumNoticeDays"), Int(row, "maximumNoticeDays"), Text(row, "noticeDayType"), Text(row, "priceBasis") ?? "PercentOfPar"));
             }
