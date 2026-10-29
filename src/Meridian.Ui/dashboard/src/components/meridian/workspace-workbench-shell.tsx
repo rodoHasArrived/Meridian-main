@@ -1,4 +1,4 @@
-import { useId, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import "@/styles/workspace-workbench-shell.css";
@@ -59,6 +59,42 @@ export function WorkspaceWorkbenchShell({
   };
   const hasContext = Boolean(contextRail);
   const hasInspector = Boolean(inspector);
+
+  useEffect(() => {
+    if (!switchInspector || !hasInspector) return;
+    let focusFrame: number | undefined;
+    const revealHashTarget = (hash: string) => {
+      let id: string;
+      try { id = decodeURIComponent(hash.replace(/^#/, "")); } catch { return; }
+      const target = id ? document.getElementById(id) : null;
+      if (!target || !inspectorRef.current?.contains(target)) return;
+      returnFocus.current = mainRef.current?.querySelector<HTMLElement>('tr[aria-selected="true"]') ?? null;
+      setDetailOpen(true);
+      if (focusFrame !== undefined) cancelAnimationFrame(focusFrame);
+      focusFrame = requestAnimationFrame(() => target.focus());
+    };
+    const revealCurrentHash = () => revealHashTarget(window.location.hash);
+    const handleProofLink = (event: MouseEvent) => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const anchor = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>("a[href]") : null;
+      if (!anchor || anchor.hasAttribute("download") || (anchor.target && anchor.target !== "_self")) return;
+      const destination = new URL(anchor.href, window.location.href);
+      if (destination.origin === window.location.origin && destination.pathname === window.location.pathname && destination.search === window.location.search) {
+        // A repeated activation of the current hash does not emit hashchange.
+        revealHashTarget(destination.hash);
+      }
+    };
+    revealCurrentHash();
+    window.addEventListener("hashchange", revealCurrentHash);
+    window.addEventListener("popstate", revealCurrentHash);
+    document.addEventListener("click", handleProofLink, true);
+    return () => {
+      window.removeEventListener("hashchange", revealCurrentHash);
+      window.removeEventListener("popstate", revealCurrentHash);
+      document.removeEventListener("click", handleProofLink, true);
+      if (focusFrame !== undefined) cancelAnimationFrame(focusFrame);
+    };
+  }, [switchInspector, hasInspector]);
 
   return (
     <section className={cn("workspace-workbench-shell", switchInspector && "workspace-workbench-shell--switchable", detailOpen && "workspace-workbench-shell--detail-open", className)} role="region" aria-label={label}>

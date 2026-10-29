@@ -99,3 +99,36 @@ describe("workbench inspection recovery", () => {
     expect(screen.getByText("Back to work list").closest("button")).toHaveAttribute("aria-expanded", "true");
   });
 });
+
+
+describe("workbench proof links", () => {
+  it("reveals an initial deep link and reopens the inspector when the same proof hash is activated again", async () => {
+    const originalUrl = window.location.href;
+    window.history.replaceState(null, "", "#retained-holding");
+    try {
+      const user = userEvent.setup();
+      render(<><a href="#retained-holding">Holding proof</a><WorkspaceWorkbenchShell label="Holdings" switchInspector inspectorRole="region" inspector={<section id="retained-holding" tabIndex={-1} aria-label="Holding proof detail">Retained evidence</section>}><p>Holdings list</p></WorkspaceWorkbenchShell></>);
+      const proof = screen.getByLabelText("Holding proof detail");
+      await waitFor(() => expect(proof).toHaveFocus());
+      expect(screen.getByRole("region", { name: "Holdings" })).toHaveClass("workspace-workbench-shell--detail-open");
+      await user.click(screen.getByText("Back to work list"));
+      await waitFor(() => expect(screen.getByRole("region", { name: "Holdings work surface" })).toHaveFocus());
+      expect(window.location.hash).toBe("#retained-holding");
+      await user.click(screen.getByRole("link", { name: "Holding proof" }));
+      await waitFor(() => expect(proof).toHaveFocus());
+      expect(screen.getByRole("region", { name: "Holdings" })).toHaveClass("workspace-workbench-shell--detail-open");
+    } finally {
+      window.history.replaceState(null, "", originalUrl);
+    }
+  });
+  it("does not reveal an inspector for an unrelated hash target", () => {
+    const originalUrl = window.location.href;
+    window.history.replaceState(null, "", "#other-work");
+    try {
+      render(<WorkspaceWorkbenchShell label="Holdings" switchInspector inspector={<p id="retained-holding">Evidence</p>}><p id="other-work">Work list</p></WorkspaceWorkbenchShell>);
+      expect(screen.getByRole("region", { name: "Holdings" })).not.toHaveClass("workspace-workbench-shell--detail-open");
+    } finally {
+      window.history.replaceState(null, "", originalUrl);
+    }
+  });
+});

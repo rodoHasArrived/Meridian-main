@@ -309,7 +309,9 @@ parameters taking precedence. Existing Portfolio and Reporting selection formats
 The shell's additive `switchInspector` option switches between list and inspector below 1280 CSS
 pixels. Inspect selection opens the current inspector; Back to work list returns focus to the
 selected row, falling back to the work surface when the row is absent. Enter/Space on a row reveals
-its detail target, and Escape restores the list. Wider screens retain adjacent, independently
+its detail target, and Escape restores the list. Existing proof hash links reveal and focus their
+inspector target on initial load, history navigation, and repeated activation of the same hash.
+Wider screens retain adjacent, independently
 scrollable inspection. Use `inspectorRole="region"` inside existing landmarks. Accounting
 reconciliation retains its specialized queue/history/scroll and recovery behavior.
 
