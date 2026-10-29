@@ -36,3 +36,10 @@ a9daba63f849af05f338b76c2d2b90f13ad6fb06:docs/testing/evidence/wal-checksum-2026
 # in immutable pilot manifests. Only these original commit/path/rule/line findings.
 261f16c63fa986cc348cf3b5671b7eec56edd54a:docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/validation-planning/protocol.json:generic-api-key:83
 3c8a90bfec1632437b6f282bd9a579000df86944:docs/testing/evidence/ai-throughput-pilot-2026-10-28-refinement/validation-planning/confirmation-protocol.json:generic-api-key:83
+# Verified SHA-256 file digests in next-work credential/LOT evidence receipts.
+# Source bytes were independently recomputed; only these historical findings.
+a6943fa561bad4a36bdb4ad73fc75594d7de8979:docs/testing/evidence/next-work-20261028/lot-browser-regression.json:generic-api-key:7
+a6943fa561bad4a36bdb4ad73fc75594d7de8979:docs/testing/evidence/next-work-20261028/selected-dotnet-tests.json:generic-api-key:3653
+a6943fa561bad4a36bdb4ad73fc75594d7de8979:docs/testing/evidence/next-work-20261028/selected-dotnet-tests.json:generic-api-key:3654
+a6943fa561bad4a36bdb4ad73fc75594d7de8979:docs/testing/evidence/next-work-20261028/selected-dotnet-tests.json:generic-api-key:3663
+a6943fa561bad4a36bdb4ad73fc75594d7de8979:docs/testing/evidence/next-work-20261028/selected-dotnet-tests.json:generic-api-key:3665
