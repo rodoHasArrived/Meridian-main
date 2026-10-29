@@ -124,6 +124,29 @@ public sealed class BondAnalyticsServiceTests
         second.Inputs.Should().Equal(first.Inputs);
     }
 
+    [Theory]
+    [InlineData(3, false)]
+    [InlineData(4, true)]
+    public async Task ContractCompanion_OnlyDeclaringVersionBlocksVanillaAnalytics(int termsVersion, bool declared)
+    {
+        var bond = Bond();
+        var payload = JsonSerializer.Deserialize<Dictionary<string, object?>>(bond.AssetSpecificTerms.GetRawText())!;
+        payload["assetClassTermsVersion"] = termsVersion;
+        payload[Meridian.Contracts.CashFlows.SecurityContractualCashFlowTerms.Key] = new { version = 1 };
+        bond = bond with { AssetSpecificTerms = JsonSerializer.SerializeToElement(payload) };
+
+        var result = (await Service(bond).CalculateAsync(Request(yield: 0.05m)))!;
+
+        if (declared)
+        {
+            result.Blockers.Should().ContainSingle().Which.Code.Should().Be("UnsupportedCashFlowContract");
+            result.CleanPrice.Should().BeNull();
+            result.CashFlows.Should().BeEmpty();
+        }
+        else
+            result.Blockers.Should().BeEmpty("residue before the field's declaring version does not change economics");
+    }
+
     [Fact]
     public async Task HistoricalRequest_UsesRecordedTermsAndBlocksMissingEvidence()
     {
