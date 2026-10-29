@@ -41,7 +41,8 @@ public sealed class StoredSecurityForwardCurveProvider : ISecurityForwardCurvePr
         }
 
         var pins = context.Curves?.Where(pin => string.Equals(pin.Role, "Forward:" + indexName.Trim(), StringComparison.OrdinalIgnoreCase)).ToArray() ?? [];
-        if (pins.Length > 1) return null;
+        if (pins.Length > 1)
+            return null;
         if (definitions.Count > 1 && pins.Length == 0)
         {
             _logger.LogWarning(
@@ -55,11 +56,13 @@ public sealed class StoredSecurityForwardCurveProvider : ISecurityForwardCurvePr
         var definition = pins.Length == 1
             ? definitions.SingleOrDefault(candidate => candidate.CurveId == pins[0].CurveId)
             : definitions[0];
-        if (definition is null) return null;
+        if (definition is null)
+            return null;
         var version = pins.Length == 1
             ? await _store.GetVersionByIdAsync(definition.CurveId, pins[0].CurveVersionId, ct).ConfigureAwait(false)
             : await _store.GetLatestVersionAsOfAsync(definition.CurveId, asOf, context.KnownAt, ct).ConfigureAwait(false);
-        if (version is null || version.AsOf > asOf || (context.KnownAt is { } cutoff && version.RecordedAt > cutoff)) return null;
+        if (version is null || version.AsOf > asOf || (context.KnownAt is { } cutoff && version.RecordedAt > cutoff))
+            return null;
         return SecurityCurveRules.ToForwardCurve(version, definition) with
         {
             RetainedInput = new BondCalculationInput("ForwardCurveVersion", version.CurveKey, version.Version,

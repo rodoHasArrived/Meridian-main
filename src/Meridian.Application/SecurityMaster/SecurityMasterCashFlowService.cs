@@ -701,8 +701,10 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
             : leg.RateUnit == SecurityCouponRateUnit.Percent ? index / 100m
             : leg.RateUnit == SecurityCouponRateUnit.Fraction ? index : NormalizeAnnualRate(index);
         var rate = indexFraction + ((leg.SpreadBps ?? 0m) / 10_000m) + ScenarioRateShift(scenario);
-        if (leg.CapRate is { } cap) rate = Math.Min(rate, leg.RateUnit == SecurityCouponRateUnit.Percent ? cap / 100m : cap);
-        if (leg.FloorRate is { } floor) rate = Math.Max(rate, leg.RateUnit == SecurityCouponRateUnit.Percent ? floor / 100m : floor);
+        if (leg.CapRate is { } cap)
+            rate = Math.Min(rate, leg.RateUnit == SecurityCouponRateUnit.Percent ? cap / 100m : cap);
+        if (leg.FloorRate is { } floor)
+            rate = Math.Max(rate, leg.RateUnit == SecurityCouponRateUnit.Percent ? floor / 100m : floor);
         return rate < 0m ? 0m : rate;
     }
 

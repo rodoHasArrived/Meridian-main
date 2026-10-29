@@ -84,7 +84,8 @@ public static class BondMigrationEndpoints
 
     private static async Task<IResult> ExecuteAsync(Func<Task<IResult>> action)
     {
-        try { return await action().ConfigureAwait(false); }
+        try
+        { return await action().ConfigureAwait(false); }
         catch (ArgumentException exception)
         {
             return Results.BadRequest(new { error = exception.Message });

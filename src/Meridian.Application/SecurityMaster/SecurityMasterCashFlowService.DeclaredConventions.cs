@@ -194,8 +194,10 @@ public sealed partial class SecurityMasterCashFlowService
                 interest,
                 principalBasis == 0m ? 0m : RoundCash(outstanding / principalBasis))
             {
-                UnadjustedStart = period.UnadjustedStart, UnadjustedEnd = period.UnadjustedEnd,
-                AccrualStart = period.AccrualStart, AccrualEnd = period.AccrualEnd
+                UnadjustedStart = period.UnadjustedStart,
+                UnadjustedEnd = period.UnadjustedEnd,
+                AccrualStart = period.AccrualStart,
+                AccrualEnd = period.AccrualEnd
             });
         }
 

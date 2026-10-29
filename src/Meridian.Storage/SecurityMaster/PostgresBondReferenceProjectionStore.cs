@@ -118,7 +118,8 @@ public sealed class PostgresBondReferenceProjectionStore : IBondReferenceProject
     public Task<IReadOnlyList<BondProjectionRow>> GetMaturityLadderPageAsync(DateOnly from, DateOnly to, int pageSize,
         DateOnly? afterMaturity, Guid? afterSecurityId, CancellationToken ct = default)
     {
-        if (to < from) throw new ArgumentException("Maturity range must be ordered.", nameof(to));
+        if (to < from)
+            throw new ArgumentException("Maturity range must be ordered.", nameof(to));
         if (afterSecurityId is not null && afterMaturity is null)
             throw new ArgumentException("Maturity paging requires a dated cursor.", nameof(afterMaturity));
         var parameters = PageParameters(pageSize, afterMaturity, afterSecurityId);
@@ -136,7 +137,8 @@ public sealed class PostgresBondReferenceProjectionStore : IBondReferenceProject
 
     private static List<NpgsqlParameter> PageParameters(int pageSize, DateOnly? afterMaturity, Guid? afterSecurityId)
     {
-        if (pageSize is < 1 or > 500) throw new ArgumentOutOfRangeException(nameof(pageSize));
+        if (pageSize is < 1 or > 500)
+            throw new ArgumentOutOfRangeException(nameof(pageSize));
         if (afterMaturity is not null && afterSecurityId is null)
             throw new ArgumentException("A cursor maturity requires a security id.", nameof(afterSecurityId));
         return
@@ -217,7 +219,8 @@ public sealed class PostgresBondReferenceProjectionStore : IBondReferenceProject
 
     private static JsonElement? ParseCanonicalTerms(string? json)
     {
-        if (json is null) return null;
+        if (json is null)
+            return null;
         using var document = JsonDocument.Parse(json);
         return document.RootElement.Clone();
     }

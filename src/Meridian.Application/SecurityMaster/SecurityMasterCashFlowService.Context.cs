@@ -25,7 +25,8 @@ public sealed partial class SecurityMasterCashFlowService
         ArgumentNullException.ThrowIfNull(security);
         ArgumentNullException.ThrowIfNull(context);
         var source = await _store.GetSourceAsync(security.SecurityId, ct).ConfigureAwait(false);
-        if (source is null) return null;
+        if (source is null)
+            return null;
         return ExportProjection(await CaptureResolvedProjectionAsync(security, source, scenario, context, ct).ConfigureAwait(false), _receiptStore is not null);
     }
 
@@ -34,13 +35,15 @@ public sealed partial class SecurityMasterCashFlowService
     {
         ArgumentNullException.ThrowIfNull(context);
         var source = await _store.GetSourceAsync(securityId, ct).ConfigureAwait(false);
-        if (source is null) return null;
+        if (source is null)
+            return null;
         // A recorded cutoff is deliberately strict: projection-only fallback would silently use
         // current terms. This is timestamp eligibility, not a historical transaction snapshot.
         var security = context.KnownAt is { } cutoff
             ? await _queryService.GetRecordedByIdAsOfAsync(securityId, cutoff, ct).ConfigureAwait(false)
             : await _queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
-        if (security is null) return null;
+        if (security is null)
+            return null;
         return await CaptureResolvedProjectionAsync(security, source, scenario, context, ct).ConfigureAwait(false);
     }
 
@@ -73,7 +76,8 @@ public sealed partial class SecurityMasterCashFlowService
             {
                 ct.ThrowIfCancellationRequested();
                 var curve = _forwardCurves is null ? null : await _forwardCurves.GetForwardCurveAsync(index, context, ct).ConfigureAwait(false);
-                if (curve is { Points.Count: > 0 }) curves.Add(index, curve);
+                if (curve is { Points.Count: > 0 })
+                    curves.Add(index, curve);
                 else if (context.KnownAt is not null || context.Curves?.Any(pin => string.Equals(pin.Role, "Forward:" + index, StringComparison.OrdinalIgnoreCase)) == true)
                     refused = Blocked($"No retained forward-curve input for '{index}' is eligible at the requested cutoffs.");
             }
@@ -87,13 +91,15 @@ public sealed partial class SecurityMasterCashFlowService
         // Freeze caller-owned lists and JSON documents before exposing a replay receipt.
         receipt = JsonSerializer.Deserialize(JsonSerializer.Serialize(receipt, SecurityCashFlowReceiptJsonContext.Default.SecurityCashFlowCalculationReceipt), SecurityCashFlowReceiptJsonContext.Default.SecurityCashFlowCalculationReceipt)!;
         receipt = receipt with { ContentSha256 = ReceiptHash(receipt) };
-        if (_receiptStore is not null) await _receiptStore.RetainAsync(receipt, ct).ConfigureAwait(false);
+        if (_receiptStore is not null)
+            await _receiptStore.RetainAsync(receipt, ct).ConfigureAwait(false);
         return receipt;
     }
 
     public async Task<StructuredCashFlowProjectionDto?> ReplayProjectionAsync(string contentSha256, CancellationToken ct = default)
     {
-        if (_receiptStore is null) return null;
+        if (_receiptStore is null)
+            return null;
         var receipt = await _receiptStore.GetAsync(contentSha256, ct).ConfigureAwait(false);
         return receipt is null ? null : ReplayCapturedProjection(receipt, ct);
     }
@@ -113,7 +119,8 @@ public sealed partial class SecurityMasterCashFlowService
         StructuredCashFlowProjectionDto Refused(string reason) => receipt.Projection with { Schedule = [], LegSchedules = null, BlockedReason = reason };
         if (receipt.ModelVersion != ContextCalculationVersion || !string.Equals(receipt.ContentSha256, ReceiptHash(receipt), StringComparison.Ordinal))
             return Refused("The retained calculation receipt has an unsupported model or its content digest does not match.");
-        if (receipt.Projection.BlockedReason is not null) return receipt.Projection;
+        if (receipt.Projection.BlockedReason is not null)
+            return receipt.Projection;
         foreach (var calendar in receipt.Projection.ScheduleEvidence?.Calendars ?? [])
         {
             if (_calendars is null || !(_calendars.TryGet(calendar.CalendarId, out var retained)
@@ -124,7 +131,8 @@ public sealed partial class SecurityMasterCashFlowService
         var curves = receipt.ForwardCurves.ToDictionary(curve => curve.IndexName, StringComparer.OrdinalIgnoreCase);
         var terms = StructuredCashFlowTermsResolver.Resolve(receipt.Security);
         var replay = CalculateCaptured(receipt.Security, receipt.Source, receipt.Scenario, receipt.Context, terms, curves, receipt.Projection.Staleness)
-            with { InputManifest = receipt.Projection.InputManifest };
+            with
+        { InputManifest = receipt.Projection.InputManifest };
         if (JsonSerializer.Serialize(replay, SecurityCashFlowReceiptJsonContext.Default.StructuredCashFlowProjectionDto) != JsonSerializer.Serialize(receipt.Projection, SecurityCashFlowReceiptJsonContext.Default.StructuredCashFlowProjectionDto))
             return Refused("The captured inputs no longer reproduce the retained calculation output.");
         return replay;
@@ -140,8 +148,11 @@ public sealed partial class SecurityMasterCashFlowService
         var projection = BuildCalculatedProjection(security, source.SourceKind, scenario, freshness,
             source.LastUpdatedUtc, context.AsOf, _calendars, curves, terms);
         var normalized = terms.PrincipalFace is not > 0m && (!terms.HasLegs || terms.Legs!.Any(leg => leg.Notional is not > 0m));
-        return normalized ? projection with { IsNormalizedPer100 = true,
-            BlockedReason = projection.BlockedReason ?? "Schedule is normalized per 100 units; retained principal or leg notional is required before ledger posting." } : projection;
+        return normalized ? projection with
+        {
+            IsNormalizedPer100 = true,
+            BlockedReason = projection.BlockedReason ?? "Schedule is normalized per 100 units; retained principal or leg notional is required before ledger posting."
+        } : projection;
     }
 
     private static IReadOnlyList<BondCalculationInput> BuildInputManifest(SecurityDetailDto security,
@@ -172,6 +183,9 @@ public sealed partial class SecurityMasterCashFlowService
     private static string Hash(byte[] content) => Convert.ToHexStringLower(SHA256.HashData(content));
 
     private static StructuredCashFlowProjectionDto ExportProjection(SecurityCashFlowCalculationReceipt receipt, bool retained)
-        => retained ? receipt.Projection with { InputManifest = [.. receipt.Projection.InputManifest ?? [],
-            new BondCalculationInput("CalculationReceipt", receipt.ContentSha256)] } : receipt.Projection;
+        => retained ? receipt.Projection with
+        {
+            InputManifest = [.. receipt.Projection.InputManifest ?? [],
+            new BondCalculationInput("CalculationReceipt", receipt.ContentSha256)]
+        } : receipt.Projection;
 }

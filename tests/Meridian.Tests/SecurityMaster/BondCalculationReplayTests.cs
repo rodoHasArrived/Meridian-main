@@ -166,7 +166,8 @@ public sealed class BondCalculationReplayTests
     {
         var definition = ValuationTestSecurities.ForwardDefinition();
         var version = ValuationTestSecurities.Version(definition, DateOnly.FromDateTime(AsOf.UtcDateTime),
-            (new DateOnly(2026, 1, 1), 0.03m), (new DateOnly(2028, 1, 1), 0.04m)) with { RecordedAt = AsOf };
+            (new DateOnly(2026, 1, 1), 0.03m), (new DateOnly(2028, 1, 1), 0.04m)) with
+        { RecordedAt = AsOf };
         var store = Substitute.For<ISecurityCurveStore>();
         store.ListDefinitionsAsync(SecurityCurveKind.Forward, indexName: "SOFR", ct: Arg.Any<CancellationToken>()).Returns([definition]);
         store.GetLatestVersionAsOfAsync(definition.CurveId, new DateOnly(2026, 1, 1), AsOf, Arg.Any<CancellationToken>()).Returns(version);
@@ -195,8 +196,14 @@ public sealed class BondCalculationReplayTests
         JsonSerializer.SerializeToElement(new { }),
         JsonSerializer.SerializeToElement(new
         {
-            assetClassTermsVersion = 2, issueDate = "2026-01-01", maturity = "2028-01-01", par = 100m,
-            couponType = "Fixed", couponRate = coupon, paymentFrequency = "Annual", dayCount = "30/360",
+            assetClassTermsVersion = 2,
+            issueDate = "2026-01-01",
+            maturity = "2028-01-01",
+            par = 100m,
+            couponType = "Fixed",
+            couponRate = coupon,
+            paymentFrequency = "Annual",
+            dayCount = "30/360",
             scheduleConventions = new { accrualAdjusted = false, couponRateUnit = "Percent" }
         }), [], [], 1, AsOf, null);
 }

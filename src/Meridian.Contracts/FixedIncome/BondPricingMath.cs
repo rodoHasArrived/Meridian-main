@@ -30,7 +30,8 @@ public static class BondPricingMath
         out string? refusal)
     {
         measures = null;
-        if (!Validate(flows, convention, paymentsPerYear, out refusal)) return false;
+        if (!Validate(flows, convention, paymentsPerYear, out refusal))
+            return false;
         var y = (double)annualYield;
         var m = (double)paymentsPerYear;
         var pv = 0d;
@@ -86,7 +87,8 @@ public static class BondPricingMath
         out string? refusal)
     {
         annualYield = 0m;
-        if (!Validate(flows, convention, paymentsPerYear, out refusal)) return false;
+        if (!Validate(flows, convention, paymentsPerYear, out refusal))
+            return false;
         if (dirtyPrice <= 0m)
         {
             refusal = "Dirty price must be positive.";
@@ -118,8 +120,12 @@ public static class BondPricingMath
         {
             mid = (low + high) / 2d;
             var price = Price(flows, mid, convention, paymentsPerYear);
-            if (Math.Abs(price - target) <= Math.Max(1e-10d, target * 1e-12d)) break;
-            if (price > target) low = mid; else high = mid;
+            if (Math.Abs(price - target) <= Math.Max(1e-10d, target * 1e-12d))
+                break;
+            if (price > target)
+                low = mid;
+            else
+                high = mid;
         }
         annualYield = Round(mid);
         if (!TryPrice(flows, annualYield, convention, paymentsPerYear, out var solved, out refusal)
@@ -151,7 +157,8 @@ public static class BondPricingMath
         foreach (var flow in flows)
         {
             if (!Discount(yield, (double)flow.TimeInYears, convention, frequency,
-                    out var discount, out _, out _)) return double.PositiveInfinity;
+                    out var discount, out _, out _))
+                return double.PositiveInfinity;
             sum += (double)flow.Amount * discount;
         }
         return sum;
@@ -163,7 +170,8 @@ public static class BondPricingMath
         var divisor = convention == BondYieldConvention.NominalPeriodic ? frequency : 1d;
         var basis = convention == BondYieldConvention.Simple ? 1d + y * time : 1d + y / divisor;
         discount = modified = convexity = 0d;
-        if (basis <= 0d) return false;
+        if (basis <= 0d)
+            return false;
         if (convention == BondYieldConvention.Simple)
         {
             discount = 1d / basis;

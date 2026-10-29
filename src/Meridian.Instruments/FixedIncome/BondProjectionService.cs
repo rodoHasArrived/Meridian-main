@@ -35,7 +35,8 @@ public sealed partial class BondProjectionService
     public async Task<BondReferenceDto?> GetReferenceAsOfAsync(Guid securityId, DateOnly asOf, CancellationToken ct = default)
     {
         var security = await GetVerifiedSecurityAsync(securityId, ct).ConfigureAwait(false);
-        if (security is null) return null;
+        if (security is null)
+            return null;
         var row = await FetchRowAsync(securityId, ct).ConfigureAwait(false);
         return row is null ? null : MapReference(row with { CanonicalTerms = row.CanonicalTerms ?? security.AssetSpecificTerms }, asOf);
     }

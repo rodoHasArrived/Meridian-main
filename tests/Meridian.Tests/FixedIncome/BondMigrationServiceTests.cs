@@ -174,18 +174,27 @@ public sealed class BondMigrationServiceTests : IDisposable
 
     private static BondMigrationPreviewRequest Request(SecurityProjectionRecord bond)
         => new(bond.SecurityId, bond.Version, new(AsOf), JsonSerializer.SerializeToElement(new
-        { accrualAdjusted = false, couponRateUnit = "Percent", couponCashBasis = "DayCount", endOfMonthRule = true }));
+        { accrualAdjusted = false, couponRateUnit = "Percent", couponCashBasis = "DayCount" }));
 
     private static SecurityProjectionRecord Bond(bool declared)
     {
         var fields = new Dictionary<string, object?>
         {
-            ["schemaVersion"] = 1, ["termsFormat"] = "flat", ["assetClassTermsVersion"] = declared ? 2 : 1,
-            ["issueDate"] = "2026-01-01", ["maturity"] = "2028-01-01", ["couponType"] = "Fixed",
-            ["couponRate"] = 0.5m, ["paymentFrequency"] = "Quarterly", ["par"] = 100m,
-            ["dayCount"] = "30/360", ["isCallable"] = false, ["subclass"] = "Corporate"
+            ["schemaVersion"] = 1,
+            ["termsFormat"] = "flat",
+            ["assetClassTermsVersion"] = declared ? 2 : 1,
+            ["issueDate"] = "2026-01-01",
+            ["maturity"] = "2028-01-01",
+            ["couponType"] = "Fixed",
+            ["couponRate"] = 0.5m,
+            ["paymentFrequency"] = "Quarterly",
+            ["par"] = 100m,
+            ["dayCount"] = "30/360",
+            ["isCallable"] = false,
+            ["subclass"] = "Corporate"
         };
-        if (declared) fields["scheduleConventions"] = new { accrualAdjusted = false, couponRateUnit = "Percent", couponCashBasis = "DayCount" };
+        if (declared)
+            fields["scheduleConventions"] = new { accrualAdjusted = false, couponRateUnit = "Percent", couponCashBasis = "DayCount" };
         return new(Guid.NewGuid(), "Bond", SecurityStatusDto.Active, "Bond", "USD", "Isin", "US0000000001",
             JsonSerializer.SerializeToElement(new { }), JsonSerializer.SerializeToElement(fields),
             JsonSerializer.SerializeToElement(new { }), 1, AsOf, null, [], []);
@@ -202,6 +211,7 @@ public sealed class BondMigrationServiceTests : IDisposable
 
     public void Dispose()
     {
-        if (Directory.Exists(_directory)) Directory.Delete(_directory, recursive: true);
+        if (Directory.Exists(_directory))
+            Directory.Delete(_directory, recursive: true);
     }
 }

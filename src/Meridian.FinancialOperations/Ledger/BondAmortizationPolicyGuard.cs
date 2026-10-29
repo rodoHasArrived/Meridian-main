@@ -8,7 +8,8 @@ internal static class BondAmortizationPolicyGuard
 {
     public static async Task RequireAsync(IBondCalculationPolicy? policy, SecurityProjectionRecord security, CancellationToken ct)
     {
-        if (policy is null) return;
+        if (policy is null)
+            return;
         var detail = new SecurityDetailDto(security.SecurityId, security.AssetClass, security.Status,
             security.DisplayName, security.Currency, security.CommonTerms, security.AssetSpecificTerms,
             security.Identifiers, security.Aliases, security.Version, security.EffectiveFrom, security.EffectiveTo);

@@ -64,13 +64,16 @@ internal static class BondExerciseAnalytics
                         return false;
                     }
                     if (!TryExerciseDates(row, start.Value, end.Value, style, terms.PaymentFrequency,
-                            out var dates, out refusal)) return false;
+                            out var dates, out refusal))
+                        return false;
                     foreach (var unadjusted in dates)
                     {
                         var exercise = schedule.Spec.PaymentAdjustment is { Calendar: { } calendar } adjustment
                             ? calendar.Adjust(unadjusted, adjustment.Convention) : unadjusted;
-                        if (exercise <= settlement || exercise > schedule.Periods[^1].PaymentDate) continue;
-                        if (!TryNotice(row, exercise, declared, calendars, out var latestNotice, out var earliestNotice, out refusal)) return false;
+                        if (exercise <= settlement || exercise > schedule.Periods[^1].PaymentDate)
+                            continue;
+                        if (!TryNotice(row, exercise, declared, calendars, out var latestNotice, out var earliestNotice, out refusal))
+                            return false;
                         // An elapsed notice deadline does not prove a call was not already announced.
                         // Keep the contractual scenario and expose its deadline for evidence review.
                         var scenario = flows.Where(flow => flow.PaymentDate <= exercise && flow.Interest > 0m)
@@ -89,18 +92,22 @@ internal static class BondExerciseAnalytics
                                         exercise, out var partial, out refusal)
                                     || !ScheduleDayCount.TryPeriodFraction(dayCount, period, schedule, out var full, out refusal))
                                     return false;
-                                if (full <= 0m) { refusal = "Exercise accrual period has no positive fraction."; return false; }
+                                if (full <= 0m)
+                                { refusal = "Exercise accrual period has no positive fraction."; return false; }
                                 couponAccrued = wholeCoupon * partial / full;
                             }
                         }
                         if (!BondAnalyticsSchedule.TryTime(schedule, settlement, exercise,
                                 DayCountConventions.Parse(terms.DayCountConvention), annualRate == 0m,
-                                convention, out var time, out refusal)) return false;
+                                convention, out var time, out refusal))
+                            return false;
                         scenario.Add(new(price.Value + couponAccrued, time));
                         if (!BondPricingMath.TrySolveYield(scenario, dirtyPrice, convention, frequency,
-                                out var yield, out refusal)) return false;
+                                out var yield, out refusal))
+                            return false;
                         result.Add(new(kind, exercise, price.Value, yield, latestNotice, earliestNotice));
-                        if (result.Count > 1200) { refusal = "Exercise scenario count exceeds 1200."; return false; }
+                        if (result.Count > 1200)
+                        { refusal = "Exercise scenario count exceeds 1200."; return false; }
                     }
                 }
             }
@@ -119,7 +126,8 @@ internal static class BondExerciseAnalytics
     {
         dates = [start];
         refusal = null;
-        if (style == "European") return true;
+        if (style == "European")
+            return true;
         var frequency = BondAnalyticsSchedule.Text(row, "exerciseFrequency") ?? couponFrequency;
         if (!SecurityTermConventions.TryParsePaymentFrequency(frequency, out var cadence)
             || cadence.PeriodsPerYear() is not { } periods)
@@ -127,9 +135,11 @@ internal static class BondExerciseAnalytics
             refusal = "Bermudan exercise requires a supported regular frequency.";
             return false;
         }
-        if (start == end) return true;
+        if (start == end)
+            return true;
         var grid = ScheduleGenerator.Generate(new ScheduleSpec(start, end, ScheduleTenor.Months(12 / periods)));
-        if (!grid.Succeeded) { refusal = grid.Failure.Message; return false; }
+        if (!grid.Succeeded)
+        { refusal = grid.Failure.Message; return false; }
         dates = grid.Periods.Where(static period => !period.IsStub).Select(static period => period.UnadjustedEnd).Prepend(start).ToArray();
         return true;
     }
@@ -142,7 +152,8 @@ internal static class BondExerciseAnalytics
         refusal = null;
         var minimum = Integer(row, "minimumNoticeDays");
         var maximum = Integer(row, "maximumNoticeDays");
-        if (minimum is null && maximum is null) return true;
+        if (minimum is null && maximum is null)
+            return true;
         if (minimum is < 0 || maximum is < 0 || minimum > maximum)
         {
             refusal = "Exercise notice bounds are invalid.";
@@ -164,7 +175,8 @@ internal static class BondExerciseAnalytics
             latest = exercise.AddDays(-(minimum ?? 0));
             earliest = maximum is { } maximumCalendar ? exercise.AddDays(-maximumCalendar) : null;
         }
-        else { refusal = "Exercise notice requires an explicit Business or Calendar day type."; return false; }
+        else
+        { refusal = "Exercise notice requires an explicit Business or Calendar day type."; return false; }
         return true;
     }
 
@@ -172,7 +184,8 @@ internal static class BondExerciseAnalytics
     {
         rows = [];
         if (payload.ValueKind != JsonValueKind.Object || !payload.TryGetProperty(name, out var array)
-            || array.ValueKind != JsonValueKind.Array) return false;
+            || array.ValueKind != JsonValueKind.Array)
+            return false;
         rows = array.EnumerateArray().ToArray();
         return rows.Length > 0;
     }

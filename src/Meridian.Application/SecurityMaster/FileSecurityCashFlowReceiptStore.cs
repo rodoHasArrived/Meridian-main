@@ -40,7 +40,8 @@ public sealed class FileSecurityCashFlowReceiptStore : ISecurityCashFlowReceiptS
     public async Task<SecurityCashFlowCalculationReceipt?> GetAsync(string contentSha256, CancellationToken ct = default)
     {
         var path = ReceiptPath(contentSha256);
-        if (!File.Exists(path)) return null;
+        if (!File.Exists(path))
+            return null;
         var receipt = JsonSerializer.Deserialize(await File.ReadAllTextAsync(path, ct).ConfigureAwait(false), SecurityCashFlowReceiptJsonContext.Default.SecurityCashFlowCalculationReceipt);
         if (receipt is null || receipt.ContentSha256 != contentSha256 || SecurityMasterCashFlowService.ReceiptHash(receipt) != contentSha256)
             throw new InvalidDataException("Retained calculation evidence has an invalid content digest.");

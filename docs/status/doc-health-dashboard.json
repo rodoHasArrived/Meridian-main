@@ -1,11 +1,11 @@
 {
-  "total_files": 780,
-  "total_lines": 179060,
+  "total_files": 782,
+  "total_lines": 179264,
   "orphaned_count": 260,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 315,
-  "average_lines": 229.6,
+  "average_lines": 229.2,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2368,7 +2368,7 @@
     },
     {
       "path": "docs/engineering/blueprints/README.md",
-      "line_count": 240,
+      "line_count": 241,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2495,6 +2495,14 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/plans/bond-capability-expansion.md",
+      "line_count": 71,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/plans/desktop-workstation-screen-blueprint.md",
       "line_count": 132,
       "has_heading": true,
@@ -2512,7 +2520,7 @@
     },
     {
       "path": "docs/engineering/plans/README.md",
-      "line_count": 23,
+      "line_count": 24,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2984,7 +2992,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12972,
+      "line_count": 13026,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4361,6 +4369,14 @@
     {
       "path": "docs/testing/evidence/ai-throughput-pilot-2026-10-28/report.md",
       "line_count": 14,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/bond-capabilities-20261029/README.md",
+      "line_count": 44,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6112,7 +6128,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 1326,
+      "line_count": 1328,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6144,7 +6160,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 2103,
+      "line_count": 2105,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6208,7 +6224,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 1180,
+      "line_count": 1182,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6272,7 +6288,7 @@
     },
     {
       "path": "src/Meridian.Instruments/README.md",
-      "line_count": 234,
+      "line_count": 236,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6400,7 +6416,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2982,
+      "line_count": 2984,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6408,7 +6424,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1883,
+      "line_count": 1896,
       "has_heading": true,
       "todo_count": 5,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6496,7 +6512,7 @@
     },
     {
       "path": "tests/fixtures/schedules/KNOWN-DEFECTS.md",
-      "line_count": 49,
+      "line_count": 59,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

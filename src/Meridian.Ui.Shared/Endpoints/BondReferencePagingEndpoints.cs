@@ -34,7 +34,8 @@ public static class BondReferencePagingEndpoints
 
     private static async Task<IResult> PageAsync(Func<Task<BondReferencePageDto>> query, JsonSerializerOptions options)
     {
-        try { return Results.Json(await query().ConfigureAwait(false), options); }
+        try
+        { return Results.Json(await query().ConfigureAwait(false), options); }
         catch (ArgumentException exception) { return Results.BadRequest(new { error = exception.Message }); }
     }
 }

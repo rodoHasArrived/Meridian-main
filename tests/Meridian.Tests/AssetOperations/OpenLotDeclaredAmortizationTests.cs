@@ -102,10 +102,19 @@ public sealed class OpenLotDeclaredAmortizationTests
             CommonTerms = JsonSerializer.SerializeToElement(new { }),
             AssetSpecificTerms = JsonSerializer.SerializeToElement(new
             {
-                schemaVersion = 1, termsFormat = "flat", assetClassTermsVersion = 2,
-                issueDate = issue.ToString("yyyy-MM-dd"), maturity = maturity.ToString("yyyy-MM-dd"),
-                couponType = "Fixed", couponRate = 4m, dayCount = "30/360", par = 100m,
-                paymentFrequency = "Quarterly", isCallable = false, subclass = "Corporate", scheduleConventions = conventions
+                schemaVersion = 1,
+                termsFormat = "flat",
+                assetClassTermsVersion = 2,
+                issueDate = issue.ToString("yyyy-MM-dd"),
+                maturity = maturity.ToString("yyyy-MM-dd"),
+                couponType = "Fixed",
+                couponRate = 4m,
+                dayCount = "30/360",
+                par = 100m,
+                paymentFrequency = "Quarterly",
+                isCallable = false,
+                subclass = "Corporate",
+                scheduleConventions = conventions
             })
         };
         var acquisition = instruction.ExpectedLot.Acquisition with

@@ -85,7 +85,8 @@ public static class BondSettlementConsideration
             || receipt.Inputs.Count(input => input.Kind == "SecurityTerms") != 1 || !receipt.Inputs.Any(input => input.Kind == "SecurityTerms"
                 && input.Key == receipt.SecurityId.ToString("D") && input.Version is > 0 && IsSha256(input.ContentSha256)))
             issues.Add("Bond settlement requires hash-bound versioned Security Master calculation inputs.");
-        if (issues.Count > 0) return issues;
+        if (issues.Count > 0)
+            return issues;
         try
         {
             var scaledFace = receipt.OriginalFace * receipt.BookedFactor / 100m;
@@ -107,7 +108,8 @@ public static class BondSettlementConsideration
     public static IReadOnlyList<string> ValidateAcquisition(AssetAcquisitionLotDto acquisition,
         IReadOnlyList<RetainedEvidenceIdentityDto>? evidence = null)
     {
-        if (acquisition.SettlementConsideration is not { } receipt) return [];
+        if (acquisition.SettlementConsideration is not { } receipt)
+            return [];
         var issues = Validate(receipt).ToList();
         if (!acquisition.HasFaceValueTerms || acquisition.OriginalFace != receipt.OriginalFace
             || acquisition.BookedFactor != receipt.BookedFactor || acquisition.ParBasis != 100m

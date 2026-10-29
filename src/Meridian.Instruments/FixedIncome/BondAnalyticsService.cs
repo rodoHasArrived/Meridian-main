@@ -29,7 +29,8 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Context);
-        try { return await CalculateCoreAsync(request, ct).ConfigureAwait(false); }
+        try
+        { return await CalculateCoreAsync(request, ct).ConfigureAwait(false); }
         catch (ArithmeticException)
         {
             return Blocked(request, request.Context, string.Empty, "CalculationBoundsExceeded",
@@ -49,7 +50,8 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
             : await _query.GetByIdAsync(request.SecurityId, ct).ConfigureAwait(false);
         if (security is null)
         {
-            if (context.KnownAt is null) return null;
+            if (context.KnownAt is null)
+                return null;
             var current = await _query.GetByIdAsync(request.SecurityId, ct).ConfigureAwait(false);
             return current is null ? null : Blocked(request, context, current.Currency,
                 "HistoricalTermsUnavailable", "No retained security terms are eligible at the requested knowledge cutoff.");
@@ -141,7 +143,8 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
                 flows, _calendars, out var exerciseYields, out refusal))
             return Refuse("ExerciseScheduleRefused", refusal!);
         var clean = measures!.DirtyPrice - accrued;
-        if (clean <= 0m) return Refuse("InvalidCleanPrice", "Calculated clean price is not positive.");
+        if (clean <= 0m)
+            return Refuse("InvalidCleanPrice", "Calculated clean price is not positive.");
         // A holder put is an upside election, not an issuer-controlled worst case. YTW compares
         // maturity with eligible issuer calls; put yields stay separate for operator review.
         var worst = exerciseYields.Where(static item => item.Kind == "Call").Select(static item => item.Yield)

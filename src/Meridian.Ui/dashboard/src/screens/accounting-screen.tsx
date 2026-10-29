@@ -3323,21 +3323,25 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                 </TabPanel>
                 <TabPanel>
                   <div className="flex flex-col gap-4">
-                  <SecurityDetailsPanel
-                    entry={selectedSecurityEntry}
-                    identity={securityMaster.identity}
-                    tradingParameters={securityMaster.tradingParameters}
-                  />
-                  {selectedSecurityEntry && ["bond", "fixedincome"].includes(selectedSecurityEntry.classification.assetClass.toLowerCase().replace(/[\s_-]/g, "")) ? (
-                    <>
-                    <BondAnalyticsPanel key={securityMaster.selectedSecurityId} securityId={securityMaster.selectedSecurityId} />
-                    <BondMigrationPreviewPanel
-                      key={`migration-${securityMaster.selectedSecurityId}`}
-                      securityId={securityMaster.selectedSecurityId}
-                      expectedVersion={securityMaster.identity?.securityId === securityMaster.selectedSecurityId ? securityMaster.identity.version : null}
+                    <SecurityDetailsPanel
+                      entry={selectedSecurityEntry}
+                      identity={securityMaster.identity}
+                      tradingParameters={securityMaster.tradingParameters}
                     />
-                    </>
-                  ) : null}
+                    {selectedSecurityEntry && ["bond", "fixedincome"].includes(
+                      selectedSecurityEntry.classification.assetClass.toLowerCase().replace(/[\s_-]/g, "")
+                    ) ? (
+                      <>
+                        <BondAnalyticsPanel key={securityMaster.selectedSecurityId} securityId={securityMaster.selectedSecurityId} />
+                        <BondMigrationPreviewPanel
+                          key={`migration-${securityMaster.selectedSecurityId}`}
+                          securityId={securityMaster.selectedSecurityId}
+                          expectedVersion={securityMaster.identity?.securityId === securityMaster.selectedSecurityId
+                            ? securityMaster.identity.version
+                            : null}
+                        />
+                      </>
+                    ) : null}
                   </div>
                 </TabPanel>
               </Tabs>

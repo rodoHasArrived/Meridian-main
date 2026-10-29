@@ -26,6 +26,9 @@ OAS, convertibles and structured-credit accounting are outside this increment.
 | Cutover | Full active inventory is hash-bound; every bond declares supported conventions or a version-bound reviewed block | Inventory/cutover persistence and live-policy tests |
 | Browser | Imported values and calculated results remain distinct; input dates, units, provenance and blockers are inspectable | API/component tests and desktop Chromium QA |
 
+Declared amortization uses model v4. The existing PR #3328 default v2 and remaining-face /
+yield-to-worst v3 models retain their schemas, admission and replay arithmetic.
+
 ## Public seams
 
 - `BondCalculationContext` names economic date, settlement date, recorded cutoff and pinned inputs.

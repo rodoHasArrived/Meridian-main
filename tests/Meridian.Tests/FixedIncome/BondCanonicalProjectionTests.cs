@@ -22,8 +22,13 @@ public sealed class BondCanonicalProjectionTests
     {
         var security = Canonical(new
         {
-            issueDate = "2026-01-15", maturity = "2027-01-15", couponType = "ZeroCoupon",
-            par = 100m, paymentFrequency = "Annual", isCallable = false, subclass = "Corporate"
+            issueDate = "2026-01-15",
+            maturity = "2027-01-15",
+            couponType = "ZeroCoupon",
+            par = 100m,
+            paymentFrequency = "Annual",
+            isCallable = false,
+            subclass = "Corporate"
         });
         security.AssetSpecificTerms.GetProperty("couponRate").ValueKind.Should().Be(JsonValueKind.Null);
         var resolved = StructuredCashFlowTermsResolver.Resolve(security);
@@ -41,7 +46,10 @@ public sealed class BondCanonicalProjectionTests
     {
         var security = Detail(JsonSerializer.SerializeToElement(new
         {
-            issueDate = "2026-01-15", maturity = "2027-01-15", couponType = "Fixed", par = 100m
+            issueDate = "2026-01-15",
+            maturity = "2027-01-15",
+            couponType = "Fixed",
+            par = 100m
         }));
         StructuredCashFlowTermsResolver.Resolve(security).CouponRate.Should().BeNull();
     }
@@ -62,10 +70,18 @@ public sealed class BondCanonicalProjectionTests
     {
         var security = Canonical(new
         {
-            issueDate = "2026-01-15", maturity = "2027-01-15", couponType = "Floating",
-            floatingIndex = "SOFR", spreadBps = 100m, capRate = 8m, floorRate = 0m,
-            dayCount = "30/360", par = 100m, paymentFrequency = "SemiAnnual",
-            isCallable = false, subclass = "FloatingRate"
+            issueDate = "2026-01-15",
+            maturity = "2027-01-15",
+            couponType = "Floating",
+            floatingIndex = "SOFR",
+            spreadBps = 100m,
+            capRate = 8m,
+            floorRate = 0m,
+            dayCount = "30/360",
+            par = 100m,
+            paymentFrequency = "SemiAnnual",
+            isCallable = false,
+            subclass = "FloatingRate"
         });
         var curve = new InMemorySecurityForwardCurveProvider();
         curve.Publish(new SecurityForwardCurve("SOFR", new DateOnly(2026, 1, 15),
@@ -93,9 +109,15 @@ public sealed class BondCanonicalProjectionTests
     {
         var security = Canonical(new
         {
-            issueDate = issue, maturity, couponType = "Fixed", couponRate = coupon,
-            dayCount = "30/360", par = 100m, paymentFrequency = frequency,
-            isCallable = false, subclass = "Corporate",
+            issueDate = issue,
+            maturity,
+            couponType = "Fixed",
+            couponRate = coupon,
+            dayCount = "30/360",
+            par = 100m,
+            paymentFrequency = frequency,
+            isCallable = false,
+            subclass = "Corporate",
             scheduleConventions = new { accrualAdjusted = false, endOfMonthRule = true, couponRateUnit = "Percent" }
         });
         var query = Substitute.For<ISecurityMasterQueryService>();
@@ -122,8 +144,13 @@ public sealed class BondCanonicalProjectionTests
     {
         var security = Detail(JsonSerializer.SerializeToElement(new
         {
-            assetClassTermsVersion = 2, issueDate = "2026-01-15", maturity = "2027-01-15",
-            couponType = "Fixed", couponRate = 0.5m, par = 100m, paymentFrequency = "Quarterly",
+            assetClassTermsVersion = 2,
+            issueDate = "2026-01-15",
+            maturity = "2027-01-15",
+            couponType = "Fixed",
+            couponRate = 0.5m,
+            par = 100m,
+            paymentFrequency = "Quarterly",
             scheduleConventions = new { couponRateUnit = "Percent" }
         }));
         var detail = new AssetObligationProjectionService().ProjectFromSecurityMaster(security, new(AsOf));
@@ -137,8 +164,15 @@ public sealed class BondCanonicalProjectionTests
     {
         var security = Canonical(new
         {
-            issueDate = "2026-01-15", maturity = "2027-01-15", couponType = "Fixed", couponRate = 5m,
-            par = 100m, dayCount = "30/360", paymentFrequency = "Annual", isCallable = false, subclass = "Corporate"
+            issueDate = "2026-01-15",
+            maturity = "2027-01-15",
+            couponType = "Fixed",
+            couponRate = 5m,
+            par = 100m,
+            dayCount = "30/360",
+            paymentFrequency = "Annual",
+            isCallable = false,
+            subclass = "Corporate"
         });
         var query = Substitute.For<ISecurityMasterQueryService>();
         query.GetByIdAsync(security.SecurityId, Arg.Any<CancellationToken>()).Returns(security);

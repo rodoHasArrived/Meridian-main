@@ -26,14 +26,16 @@ internal static class BondAnalyticsSchedule
         }
         foreach (var period in schedule.Periods)
         {
-            if (period.PaymentDate <= settlement) continue;
+            if (period.PaymentDate <= settlement)
+                continue;
             if (period.AccrualEnd <= settlement && !zero)
             {
                 refusal = "Settlement within a delayed-payment coupon window needs separate entitlement rules.";
                 return false;
             }
             if (!TryCoupon(period, schedule, dayCount, annualRate, declared.Conventions.CouponCashBasis,
-                    out var interest, out refusal)) return false;
+                    out var interest, out refusal))
+                return false;
             if (period.AccrualStart <= settlement && settlement < period.AccrualEnd && !zero)
             {
                 if (!ScheduleDayCount.TryFraction(dayCount, period, schedule, period.AccrualStart,
@@ -48,7 +50,8 @@ internal static class BondAnalyticsSchedule
                 accrued = interest * partial / full;
             }
             if (!TryTime(schedule, settlement, period.PaymentDate, dayCount, zero,
-                    yieldConvention, out var time, out refusal)) return false;
+                    yieldConvention, out var time, out refusal))
+                return false;
             if (interest > 0m || period.IsFinal)
                 result.Add(new(SchedulePeriodId.Derive(securityId, "bond-analytics", period), period.PaymentDate,
                     period.AccrualStart, period.AccrualEnd, interest, period.IsFinal ? 100m : 0m, time));
@@ -69,8 +72,10 @@ internal static class BondAnalyticsSchedule
     {
         coupon = 0m;
         refusal = null;
-        if (annualRate == 0m) return true;
-        if (!ScheduleDayCount.TryPeriodFraction(convention, period, schedule, out var fraction, out refusal)) return false;
+        if (annualRate == 0m)
+            return true;
+        if (!ScheduleDayCount.TryPeriodFraction(convention, period, schedule, out var fraction, out refusal))
+            return false;
         if (cashBasis == "Level")
         {
             if (schedule.Spec.Tenor.PeriodsPerYear is not { } frequency)
@@ -79,10 +84,12 @@ internal static class BondAnalyticsSchedule
                 return false;
             }
             if (!TryReferenceUnits(period, schedule, convention, period.AccrualStart, period.AccrualEnd,
-                    out var units, out refusal)) return false;
+                    out var units, out refusal))
+                return false;
             coupon = 100m * annualRate / frequency * units;
         }
-        else coupon = 100m * annualRate * fraction;
+        else
+            coupon = 100m * annualRate * fraction;
         return true;
     }
 
@@ -116,8 +123,10 @@ internal static class BondAnalyticsSchedule
         {
             var start = settlement > period.AccrualStart ? settlement : period.AccrualStart;
             var end = payment < period.AccrualEnd ? payment : period.AccrualEnd;
-            if (end <= start) continue;
-            if (!TryReferenceUnits(period, schedule, dayCount, start, end, out var units, out refusal)) return false;
+            if (end <= start)
+                continue;
+            if (!TryReferenceUnits(period, schedule, dayCount, start, end, out var units, out refusal))
+                return false;
             time += units / frequency;
         }
         var lastAccrual = schedule.Periods[^1].AccrualEnd;
@@ -139,7 +148,8 @@ internal static class BondAnalyticsSchedule
         if (!period.IsStub)
         {
             if (!ScheduleDayCount.TryFraction(convention, period, schedule, start, end, out var part, out refusal)
-                || !ScheduleDayCount.TryPeriodFraction(convention, period, schedule, out var full, out refusal)) return false;
+                || !ScheduleDayCount.TryPeriodFraction(convention, period, schedule, out var full, out refusal))
+                return false;
             if (full <= 0m)
             {
                 refusal = "Coupon period has no positive day-count fraction.";
@@ -159,7 +169,8 @@ internal static class BondAnalyticsSchedule
         {
             var segmentStart = start > reference.Start ? start : reference.Start;
             var segmentEnd = end < reference.End ? end : reference.End;
-            if (segmentEnd <= segmentStart) continue;
+            if (segmentEnd <= segmentStart)
+                continue;
             if (!DayCountConventions.TryFraction(convention, segmentStart, segmentEnd, context, out var part, out refusal)
                 || !DayCountConventions.TryFraction(convention, reference.Start, reference.End, context, out var full, out refusal))
                 return false;

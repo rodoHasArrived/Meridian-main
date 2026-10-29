@@ -13,7 +13,8 @@ public sealed partial class BondProjectionService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(issuerName);
         issuerName = issuerName.Trim();
-        if (issuerName.Length > 200) throw new ArgumentException("Issuer name exceeds 200 characters.", nameof(issuerName));
+        if (issuerName.Length > 200)
+            throw new ArgumentException("Issuer name exceeds 200 characters.", nameof(issuerName));
         var date = asOf ?? Today;
         var queryKey = FormattableString.Invariant($"issuer:{issuerName}:{date:yyyy-MM-dd}");
         var after = ReadCursor(cursor, queryKey, pageSize);
@@ -45,9 +46,12 @@ public sealed partial class BondProjectionService
 
     private static (DateOnly? Maturity, Guid? SecurityId) ReadCursor(string? cursor, string queryKey, int pageSize)
     {
-        if (pageSize is < 1 or > 500) throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size must be between 1 and 500.");
-        if (cursor is null) return (null, null);
-        if (cursor.Length is 0 or > 256) throw new ArgumentException("Invalid bond ladder cursor.", nameof(cursor));
+        if (pageSize is < 1 or > 500)
+            throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size must be between 1 and 500.");
+        if (cursor is null)
+            return (null, null);
+        if (cursor.Length is 0 or > 256)
+            throw new ArgumentException("Invalid bond ladder cursor.", nameof(cursor));
         try
         {
             var base64 = cursor.Replace('-', '+').Replace('_', '/');

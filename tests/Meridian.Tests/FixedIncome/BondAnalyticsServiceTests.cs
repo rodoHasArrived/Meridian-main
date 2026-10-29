@@ -189,9 +189,14 @@ public sealed class BondAnalyticsServiceTests
         var payload = new Dictionary<string, object?>
         {
             ["assetClassTermsVersion"] = exercises ? 3 : 2,
-            ["issueDate"] = "2026-01-15", ["maturity"] = "2028-01-15", ["couponType"] = kind,
-            ["couponRate"] = coupon, ["dayCount"] = "30/360", ["par"] = 100m,
-            ["paymentFrequency"] = frequency, ["isCallable"] = exercises,
+            ["issueDate"] = "2026-01-15",
+            ["maturity"] = "2028-01-15",
+            ["couponType"] = kind,
+            ["couponRate"] = coupon,
+            ["dayCount"] = "30/360",
+            ["par"] = 100m,
+            ["paymentFrequency"] = frequency,
+            ["isCallable"] = exercises,
             ["scheduleConventions"] = new { accrualAdjusted = false, couponRateUnit = "Percent", couponCashBasis = "Level" }
         };
         if (exercises)

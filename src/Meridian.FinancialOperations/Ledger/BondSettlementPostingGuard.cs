@@ -11,7 +11,8 @@ internal static class BondSettlementPostingGuard
     internal static async Task RequireVerifiedAsync(AssetAcquisitionLotDto acquisition,
         IBondSettlementConsiderationService? service, CancellationToken ct)
     {
-        if (acquisition.SettlementConsideration is not { } receipt) return;
+        if (acquisition.SettlementConsideration is not { } receipt)
+            return;
         if (service is null)
             throw new InvalidOperationException("Bond settlement verification is not configured; a caller-authored analytics snapshot cannot authorize acquisition.");
         var blockers = await service.VerifyAsync(receipt, ct).ConfigureAwait(false);
@@ -21,7 +22,8 @@ internal static class BondSettlementPostingGuard
 
     internal static void RequireScope(AssetAcquisitionLotDto acquisition, Guid securityId, long securityVersion, string currency)
     {
-        if (acquisition.SettlementConsideration is not { } receipt) return;
+        if (acquisition.SettlementConsideration is not { } receipt)
+            return;
         if (receipt.SecurityId != securityId || receipt.Currency != currency
             || !receipt.Inputs.Any(input => input.Kind == "SecurityTerms" && input.Version == securityVersion
                 && input.Key == securityId.ToString("D")))
@@ -31,7 +33,8 @@ internal static class BondSettlementPostingGuard
     internal static void RequireJournal(AssetAcquisitionLotDto acquisition,
         PostingRuleJournalCandidateResultDto retainedCandidate, JournalEntry entry)
     {
-        if (acquisition.SettlementConsideration is not { } receipt) return;
+        if (acquisition.SettlementConsideration is not { } receipt)
+            return;
         if (BondSettlementConsideration.ValidateAcquisition(acquisition).Count > 0)
             throw new InvalidOperationException("Bond settlement receipt no longer matches the retained acquisition.");
         if (new[] { receipt.CashAccountId, receipt.AccruedInterestAccountId, receipt.FeesAccountId }
@@ -46,7 +49,8 @@ internal static class BondSettlementPostingGuard
         {
             var matches = retainedCandidate.GeneratedPostingLines.Select((line, index) => (line, index))
                 .Where(item => item.line.AccountPath == accountId).ToArray();
-            if (amount == 0m && matches.Length == 0) return;
+            if (amount == 0m && matches.Length == 0)
+                return;
             if (matches.Length != 1 || matches[0].index >= entry.Lines.Count)
                 throw new InvalidOperationException($"Bond settlement account '{accountId}' must identify exactly one retained journal line.");
             var expected = matches[0];
