@@ -49,6 +49,57 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
+def available_memory() -> int | None:
+    """Available physical memory, including reclaimable inactive file cache."""
+    memory = None
+    if sys.platform == "win32":
+        import ctypes
+
+        class MemoryStatus(ctypes.Structure):
+            _fields_ = [("length", ctypes.c_uint32), ("load", ctypes.c_uint32),
+                        *((name, ctypes.c_uint64) for name in
+                          ("totalPhysical", "availablePhysical", "totalPageFile", "availablePageFile",
+                           "totalVirtual", "availableVirtual", "availableExtendedVirtual"))]
+
+        try:
+            query = ctypes.WinDLL("kernel32", use_last_error=True).GlobalMemoryStatusEx
+            query.argtypes = [ctypes.POINTER(MemoryStatus)]
+            query.restype = ctypes.c_int
+            status = MemoryStatus(length=ctypes.sizeof(MemoryStatus))
+            return int(status.availablePhysical) if query(ctypes.byref(status)) else None
+        except (AttributeError, OSError):
+            return None
+    if sys.platform.startswith("linux"):
+        try:
+            for line in Path("/proc/meminfo").read_text().splitlines():
+                if line.startswith("MemAvailable:"):
+                    memory = max(0, int(line.split()[1])) * 1024
+                    break
+        except (OSError, ValueError, IndexError):
+            pass
+    try:
+        if memory is None:
+            memory = os.sysconf("SC_AVPHYS_PAGES") * os.sysconf("SC_PAGE_SIZE")
+    except (AttributeError, OSError, ValueError):
+        pass
+    try:
+        limit = Path("/sys/fs/cgroup/memory.max").read_text().strip()
+        if limit != "max":
+            limit_bytes = int(limit)
+            used = int(Path("/sys/fs/cgroup/memory.current").read_text().strip())
+            reclaimable = 0
+            try:
+                stats = dict(line.split() for line in Path("/sys/fs/cgroup/memory.stat").read_text().splitlines())
+                reclaimable = min(max(0, int(stats.get("inactive_file", "0"))), max(0, used))
+            except (OSError, ValueError):
+                pass
+            available = max(0, min(limit_bytes, limit_bytes - used + reclaimable))
+            memory = min(memory, available) if memory is not None else available
+    except (OSError, ValueError):
+        pass
+    return memory
+
+
 def automatic_jobs() -> int:
     """Conservative local budget, including Linux container CPU/memory limits."""
     cpus = os.cpu_count() or 1
@@ -58,19 +109,7 @@ def automatic_jobs() -> int:
             cpus = min(cpus, max(1, int(quota) // int(period)))
     except (OSError, ValueError, ZeroDivisionError):
         pass
-    memory = None
-    try:
-        memory = os.sysconf("SC_AVPHYS_PAGES") * os.sysconf("SC_PAGE_SIZE")
-    except (AttributeError, OSError, ValueError):
-        pass
-    try:
-        limit = Path("/sys/fs/cgroup/memory.max").read_text().strip()
-        used = int(Path("/sys/fs/cgroup/memory.current").read_text().strip())
-        if limit != "max":
-            available = max(0, int(limit) - used)
-            memory = min(memory, available) if memory is not None else available
-    except (OSError, ValueError):
-        pass
+    memory = available_memory()
     # Unknown memory capacity chooses sequential execution; --jobs 2 is explicit.
     return 2 if cpus >= 4 and memory is not None and memory >= 8 * 1024**3 else 1
 
