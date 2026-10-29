@@ -83,7 +83,6 @@ public sealed class SecretInputControlTests
     [InlineData(@"src\Meridian.Wpf\Views\CredentialManagementPage.xaml")]
     [InlineData(@"src\Meridian.Wpf\Views\DataExportPage.xaml")]
     [InlineData(@"src\Meridian.Wpf\Views\DataSourcesPage.xaml")]
-    [InlineData(@"src\Meridian.Wpf\Views\SetupWizardPage.xaml")]
     [InlineData(@"src\Meridian.Wpf\Views\StartupWindow.xaml")]
     public void CredentialEntrySources_ShouldUseSharedSecretInputControl(string relativePath)
     {
@@ -91,6 +90,19 @@ public sealed class SecretInputControlTests
 
         xaml.Should().Contain("SecretInputControl");
         xaml.Should().NotContain("<PasswordBox");
+    }
+
+    [Fact]
+    public void SetupWizard_ShouldDelegateToOwnedCredentialManagementWithoutSecretEditors()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\SetupWizardPage.xaml"));
+
+        xaml.Should().Contain("SetupWizardManageOwnedCredentials");
+        xaml.Should().Contain("{Binding ManageOwnedCredentialsCommand}");
+        xaml.Should().NotContain("SecretInputControl");
+        xaml.Should().NotContain("<PasswordBox");
+        xaml.Should().NotContain("{Binding NasdaqApiKey");
+        xaml.Should().NotContain("{Binding OpenFigiApiKey");
     }
 
     private static SecretInputControl CreateControl()
