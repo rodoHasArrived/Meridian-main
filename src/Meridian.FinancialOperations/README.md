@@ -11,6 +11,14 @@ last_reviewed: 2026-10-14
 
 # src/Meridian.FinancialOperations
 
+`CanonicalLotAmortizationService.PreviewExtendedAsync` explicitly selects v3 remaining-face
+amortization and/or automatic yield-to-worst. It retains the complete comparison for independent
+review; posting recomputes it from the locked lot and Security Master evidence. This service
+cannot approve or post. Reversal preparation preserves the original calculation version/policy.
+The existing event spine now carries direction through short opening/cover candidates, matching
+liability credits/debits to positive retained quantities. The atomic store certifies complete
+cash/liability/result economics; approvals, period control and exact replay remain shared.
+
 All six shipped statement connectors capture executed mapping semantics at parse time. Display labels and review notes do not change that fingerprint; fields, activity mappings, culture, date formats and CSV options do. The retained import supplies comparison proof on replay. Legacy artifact upgrade verifies the original shape and adopts retained bytes without inventing mapping evidence.
 
 Configured reconciliation assignment ranks every available tolerated dimension by its own allowed variance: quantities, cash or market value, observed price, and settlement distance. Missing one-sided prices remain unavailable. Rule-list precedence and retained applied-rule evidence are unchanged.

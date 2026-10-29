@@ -722,6 +722,21 @@ public sealed record FaceValueLot : IUnitizedLot
     /// the acquisition price, by bisection — the pricing function is strictly decreasing in yield,
     /// so the bracket converges unconditionally. Precision is far below a cent on realistic faces.
     /// </summary>
+    /// <summary>Prices the same regular coupon grid used by canonical amortization. Refuses an unbracketed yield.</summary>
+    public decimal RegularScheduleAnnualYield(DateOnly redemptionDate, decimal annualCouponRatePercent, int paymentsPerYear)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(annualCouponRatePercent);
+        if (CostBasis <= 0m)
+            throw new ArgumentException("Yield requires a positive retained acquisition price.");
+        var periods = RegularCouponDates(redemptionDate, paymentsPerYear, throwWhenIrregular: true)!.Length - 1;
+        var coupon = annualCouponRatePercent / 100m / paymentsPerYear;
+        var price = PricePercentOfPar / ParBasis;
+        var yield = SolveYieldPerPeriod(price, coupon, periods);
+        if (Math.Abs(PricePerUnitAtYield(coupon, periods, yield) - price) > 0.0000000001m)
+            throw new ArgumentException("Redemption yield cannot be certified within the supported solver bracket.");
+        return yield * paymentsPerYear;
+    }
+
     private static decimal SolveYieldPerPeriod(decimal pricePerUnit, decimal couponPerPeriod, int totalPeriods)
     {
         var low = -0.5m;

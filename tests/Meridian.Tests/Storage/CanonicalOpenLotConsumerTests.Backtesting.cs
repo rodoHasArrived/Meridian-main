@@ -300,7 +300,18 @@ public sealed partial class CanonicalOpenLotConsumerTests
 
         var bind = () => simulated.BindCanonical(retained);
 
-        bind.Should().Throw<InvalidOperationException>().WithMessage("*Short-lot*direction-aware posting*certified consumer parity*");
+        bind.Should().Throw<InvalidOperationException>().WithMessage("*directions differ*");
+    }
+
+    [Fact]
+    public void Backtesting_ExplicitShortBindsOnlyMatchingRetainedDirectionAndBasis()
+    {
+        var retained = BacktestingRetainedLot(3m, 900m);
+        retained = retained with { Acquisition = retained.Acquisition with { Direction = OpenLotDirection.Short } };
+        var simulated = BacktestingLot(retained) with { IsShort = true };
+        simulated.BindCanonical(retained).Should().BeSameAs(retained);
+        var changed = () => (simulated with { IsShort = false }).BindCanonical(retained);
+        changed.Should().Throw<InvalidOperationException>().WithMessage("*directions differ*");
     }
 
     [Fact]

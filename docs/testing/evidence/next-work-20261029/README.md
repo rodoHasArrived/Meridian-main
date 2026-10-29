@@ -9,12 +9,17 @@ candidate's local gate receipts and required hosted checks, rather than the hist
 | --- | --- | --- |
 | Credential ownership/runtime | Authenticated owned-connection creation, explicit host binding, scope fencing at vault operations and provider construction; retained ownership marker survives deletion. | Current full local/hosted gates, Windows protected-vault/runtime operation and PRD-002 release evidence. Existing instances need deliberate provider reconstruction/restart. |
 | Migration/rollback | Generation-bound move of a retained provider-credential record, immutable retry receipt, both recovery generations, deferred-audit replay and unrotated rollback. | Installed Windows exercise. Separate legacy OAuth-token records deliberately block this bounded transfer and require provider-specific treatment; environment-only credentials are not silently imported. |
-| LOT | Security Master snapshot economics retain exact fractional position quantity and legacy short direction. Delivered factor-paydown posting and canonical adapters are preserved. | Broader canonical consumer cutover, successor/amortization cases, compatibility retirement, independent review and live shadow acceptance remain open. Unsupported accounting branches remain blocked. |
+| LOT | Exact snapshot quantity/short economics; governed short opening/cover and matching Execution/Backtesting direction; opt-in v3 remaining-face amortization and automatic yield-to-worst. | Final automated proof, broader consumer cutover, unsupported exercise/valuation and short-tax cases, compatibility retirement, independent review and live shadow acceptance remain open. |
 | MARK | Existing policy/preview/operator paths are retained; the Windows packet uses the maintained eight-position population specification. | Provisioned retained IDs, population-wide preview, affected-position drilldown, repair/override proof and attributed live verdicts. |
 | SEAM | Existing shared scope/readiness contract is retained. | Same host/client candidate and complete declared scope, missing/stale/mismatched contributor refusal, repair recovery and live verdicts in both clients. |
 | RECON | Existing durable lineage, run comparison and SLA-calendar paths are retained. | Current automated lineage proofs plus a retained run sequence demonstrating recurrence, valid clearing and business-calendar escalation; no operator verdict is supplied here. |
 
 ## Automated proof selection
+
+The owner expanded LOT to include short opening/cover, remaining-face amortization and automatic
+yield-to-worst. See [the accounting boundary and golden cases](accounting-expansion.md). The
+implementation is subject to final candidate tests and hosted checks; this does not close LOT or
+declare live acceptance. Earlier unsupported-branch statements describe the pre-expansion scope.
 
 The focused credential packet includes `ProviderCredentialOwnershipMigrationTests`,
 `ProviderRuntimeCredentialServiceTests`, `ProviderCredentialOwnershipEndpointsTests`,
@@ -47,4 +52,5 @@ SEAM before MARK.
 The [signing recheck](release-readiness.json) records Release Readiness run `40294900031`, attempt
 4, with a fresh signing-job failure on 2026-10-29: `signing-secrets-unavailable`. Andrew Rowden is
 the recorded signing owner. No release tag was created; the historical workflow SHA does not
-certify this application candidate. Browser workbench PR #3326 remains a separate workstream.
+certify this application candidate. Browser workbench PR #3326 merged separately into `main`
+at `e6d6d75655`; this branch must integrate and validate against that delivered work.

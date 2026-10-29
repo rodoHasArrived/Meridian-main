@@ -97,18 +97,20 @@ public sealed partial class PostgresLedgerJournalStore
 
         // Historical receipts may predate canonical acquisition facts. Exact replay above must
         // retain that shape, but a new lot cannot create another legacy-backfill exception.
-        if (command.Direction != OpenLotDirection.Long)
-            throw new LedgerValidationException("New short-lot postings require direction-aware opening, cover and reporting authority; short posting is not enabled.");
+        if (command.Direction == OpenLotDirection.Short
+            && command.MutationKind is not (AtomicTaxLotMutationKind.Acquisition or AtomicTaxLotMutationKind.Disposal))
+            throw new LedgerValidationException("Short lots currently support governed opening and cover only.");
         if (command.MutationKind == AtomicTaxLotMutationKind.Acquisition && command.AcquisitionLot!.Acquisition is null)
             throw new LedgerValidationException("New atomic acquisitions require complete canonical acquisition facts.");
         if (command.MutationKind == AtomicTaxLotMutationKind.Acquisition
-            && command.AcquisitionLot!.Account.AccountType != LedgerAccountType.Asset)
-            throw new LedgerValidationException("New long-lot acquisitions require an asset carrying account.");
+            && command.AcquisitionLot!.Account.AccountType != (command.Direction == OpenLotDirection.Short
+                ? LedgerAccountType.Liability : LedgerAccountType.Asset))
+            throw new LedgerValidationException("New long-lot acquisitions require an asset carrying account; short opening requires a liability carrying account.");
 
         // Unversioned instructions preserve historical receipt fingerprints and calculations,
         // but only an existing exact receipt may use them. New writes require a fresh preview.
         if (command.MutationKind == AtomicTaxLotMutationKind.Amortization
-            && command.Amortization!.CalculationVersion != OpenLotAmortization.ModelVersion)
+            && !OpenLotAmortization.IsCurrentVersion(command.Amortization!.CalculationVersion))
             throw new LedgerValidationException("New amortization postings require a fresh preview using the current calculation version.");
 
         // Tenant-scoped writes already hold the book. Keep compatibility writes in the same
@@ -1373,6 +1375,9 @@ public sealed partial class PostgresLedgerJournalStore
             lot.BookPositionId != assetScope.BookPositionId ||
             !string.Equals(lot.Currency, functionalCurrency, StringComparison.OrdinalIgnoreCase) ||
             lot.UnitCost != selection.ExpectedUnitCost ||
+            lot.Acquisition?.Direction != command.Direction ||
+            lot.Account.AccountType != (command.Direction == OpenLotDirection.Short
+                ? LedgerAccountType.Liability : LedgerAccountType.Asset) ||
             lot.Version != selection.ExpectedVersion ||
             lot.OpenQuantity != selection.ExpectedOpenQuantity ||
             lot.OpenQuantity < selection.Quantity)
@@ -1441,6 +1446,11 @@ public sealed partial class PostgresLedgerJournalStore
         }
 
         var expectedCostBasis = mutations.Sum(static mutation => mutation.CostBasis);
+        if (command.Direction == OpenLotDirection.Short)
+        {
+            ValidateShortLotJournal(command, assetAccounts[0], expectedCostBasis);
+            return;
+        }
         var assetLines = command.Journal.Entry.Lines
             .Where(line => line.Account == assetAccounts[0])
             .ToArray();

@@ -982,8 +982,11 @@ public static class AssetLotMutationInstructionValidator
         var issues = new List<string>();
         if (instruction is not null && !Enum.IsDefined(instruction.Direction))
             issues.Add("Lot direction must be Long or Short; quantity cannot establish direction implicitly.");
-        else if (instruction?.Direction == OpenLotDirection.Short)
-            issues.Add("Short-lot posting requires direction-aware opening, cover and reporting authority; the current accounting path supports Long lots only.");
+        else if (instruction?.Direction == OpenLotDirection.Short
+            && eventKind is not (AssetAccountingEventKindDto.Acquisition or AssetAccountingEventKindDto.Disposal))
+            issues.Add("Short-lot posting supports governed opening and cover only.");
+        if (instruction is { Direction: OpenLotDirection.Short, Intent: AssetLotMutationIntentDto.Dispose, DisposalSalePrice: null })
+            issues.Add("Short covers require an explicit functional-currency execution price.");
         if (eventKind == AssetAccountingEventKindDto.Acquisition)
         {
             if (instruction is not { Intent: AssetLotMutationIntentDto.Acquire, Acquisition: { } acquisition } ||

@@ -11,6 +11,16 @@ last_reviewed: 2026-10-21
 
 # src/Meridian.Contracts
 
+Canonical amortization v3 is an explicit opt-in for remaining-face treatment and automatic
+yield-to-worst comparison. Durable quantities retain booked face: v3 applies current/booked factor
+exactly once in addition to partial-disposal quantity scaling. Original acquisition FX remains
+fixed. `OpenLotYieldToWorst` prices maturity and complete fixed-price European whole call/put
+entries on the regular coupon grid. The minimum maturity/issuer-call yield owns the schedule;
+holder put yields remain separately visible alternatives. Selection, all alternatives and the
+calculation version are retained and recomputed before posting. Make-whole, exercise windows,
+notice/cadence rules, irregular coupon dates and structured cash-flow schedules still refuse.
+Historical v1/v2 payloads omit these new fields and retain their original arithmetic and gates.
+
 Provider ownership command DTOs carry a connection request/environment, explicit host provider
 selection, or a migration identity/expected generation. Tenant and actor are absent by design and
 come from authenticated server context. Credential migration receipts live with the vault contract;
@@ -158,7 +168,7 @@ currency, observation/attempt/success timestamps, completeness and blocking reas
 account-scoped strategy runs. Existing execution-reconciliation DTOs remain the discrepancy source.
 Recovery requests carry only the local account ID; provider and external identity are server-resolved.
 
-Canonical amortization adds an optional `Amortization` input to lot instructions and basis adjustments, omitted when absent to preserve retained fingerprints. `OpenLotAmortization` binds reviewed canonical lot and versioned Security Master evidence, delegates shared straight-line/constant-yield kernels, and retains annual decimal yield and acquisition FX. Unsupported structures and missing terms fail closed, including any populated or malformed `callSchedule` or `putSchedule` (an empty list declares none) and any populated `scheduleConventions` value, a malformed string, number, boolean or populated array included (null, `{}`, `[]` and an object or array with no populated member declare nothing). These declared schedule terms are checked in every source the cash-flow resolver reads and under every casing, so an unset spelling in one source never hides a declared one in another. Optional reversal inputs retain the original batch, journal and pre-posting lot snapshot; absent reversal fields preserve earlier wire fingerprints. Contract validation binds complete approved correction lineage and rejects disposal prices before drafting.
+Canonical amortization adds an optional `Amortization` input to lot instructions and basis adjustments, omitted when absent to preserve retained fingerprints. `OpenLotAmortization` binds reviewed canonical lot and versioned Security Master evidence, delegates shared straight-line/constant-yield kernels, and retains annual decimal yield and acquisition FX. V1/v2 unsupported structures and missing terms fail closed, including any populated or malformed `callSchedule` or `putSchedule` (an empty list declares none) and any populated `scheduleConventions` value, a malformed string, number, boolean or populated array included (null, `{}`, `[]` and an object or array with no populated member declare nothing). These declared schedule terms are checked in every source the cash-flow resolver reads and under every casing, so an unset spelling in one source never hides a declared one in another. Optional reversal inputs retain the original batch, journal and pre-posting lot snapshot; absent reversal fields preserve earlier wire fingerprints. Contract validation binds complete approved correction lineage and rejects disposal prices before drafting.
 
 For a retained amortization reversal, current hash-bound reference evidence proves identity and
 currency while the original before/after snapshots determine the inverse. A known Inactive status
@@ -313,8 +323,8 @@ given order), so every lot's principal is non-negative, at most its raw share ro
 lots sum to the position exactly, and relieves each lot's basis pro rata (`basis x new / prior`,
 rounded once in the lot's currency), so across several lots the currency rounding is part of the
 realized result. `Project` re-runs that allocation, requires equality and returns each lot at the
-new factor with its version advanced, closed when the new factor is zero. `OpenLotAmortization`
-refuses a lot that holds a `CurrentFactor`. `RealizedResult` is principal less functional basis relieved;
+new factor with its version advanced, closed when the new factor is zero. V1/v2 `OpenLotAmortization`
+refuses a lot that holds a `CurrentFactor`; explicit v3 remaining-face policy supports it. `RealizedResult` is principal less functional basis relieved;
 `Components` exposes principal, basis relieved and realized gain/loss to Rules Studio's
 `LotMutationComponent` formulas. Same-currency Long face lots only. `OpenLotDto.CurrentFactor`
 (omitted when null) and `FaceValueLot` now admit a factor of zero for a fully repaid pool; a

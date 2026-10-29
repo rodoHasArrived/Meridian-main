@@ -58,15 +58,29 @@ public sealed class CanonicalLotAmortizationService(
             Security = security,
             SecurityEvidence = securityEvidence ?? inputs.SecurityEvidence,
             ExpectedBookPositionVersion = position.Version,
-            CalculationVersion = OpenLotAmortization.ModelVersion,
+            CalculationVersion = inputs.CalculationVersion ?? OpenLotAmortization.ModelVersion,
             Reversal = new(mutationBatchId, original.Journal.Entry.JournalEntryId, mutation.LotBefore!.ToOpenLot())
         };
         return new(instruction, OpenLotAmortization.Project(instruction));
     }
 
-    public async Task<CanonicalLotAmortizationPreview> PreviewAsync(
+    public Task<CanonicalLotAmortizationPreview> PreviewAsync(
         Guid ledgerBookId, Guid taxLotRecordId, DateOnly asOfDate,
         RetainedEvidenceIdentityDto securityEvidence, CancellationToken ct = default)
+        => PreviewCoreAsync(ledgerBookId, taxLotRecordId, asOfDate, securityEvidence, false, false, ct);
+
+    /// <summary>Opt-in v3 preparation; the complete automatic selection remains subject to independent posting approval.</summary>
+    public Task<CanonicalLotAmortizationPreview> PreviewExtendedAsync(
+        Guid ledgerBookId, Guid taxLotRecordId, DateOnly asOfDate,
+        RetainedEvidenceIdentityDto securityEvidence, bool amortizeRemainingFace, bool automaticYieldToWorst,
+        CancellationToken ct = default)
+        => PreviewCoreAsync(ledgerBookId, taxLotRecordId, asOfDate, securityEvidence,
+            amortizeRemainingFace, automaticYieldToWorst, ct);
+
+    private async Task<CanonicalLotAmortizationPreview> PreviewCoreAsync(
+        Guid ledgerBookId, Guid taxLotRecordId, DateOnly asOfDate,
+        RetainedEvidenceIdentityDto securityEvidence, bool amortizeRemainingFace, bool automaticYieldToWorst,
+        CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         var lotStore = lots ?? throw new InvalidOperationException(
@@ -86,6 +100,13 @@ public sealed class CanonicalLotAmortizationService(
         if (position.SecurityId != retained.SecurityId || position.BookContext.LedgerBookId != ledgerBookId)
             throw new InvalidOperationException("Canonical lot and book-position accounting scope differ.");
         var instruction = new OpenLotAmortizationInstructionDto(retained.ToOpenLot(), security, securityEvidence, position.Version, asOfDate);
+        if (amortizeRemainingFace || automaticYieldToWorst)
+            instruction = instruction with
+            {
+                CalculationVersion = OpenLotAmortization.ExtendedModelVersion,
+                AmortizeRemainingFace = amortizeRemainingFace,
+                YieldToWorst = automaticYieldToWorst ? OpenLotYieldToWorst.Select(retained.ToOpenLot(), security) : null
+            };
         if (retained.Acquisition?.CorporateActionLineage is not null)
             instruction = instruction with
             {

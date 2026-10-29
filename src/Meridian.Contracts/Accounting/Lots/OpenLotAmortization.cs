@@ -24,6 +24,14 @@ public sealed record OpenLotAmortizationInstructionDto(
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public OpenLotAmortizationContinuationDto? Continuation { get; init; }
 
+    /// <summary>Explicit v3 policy: continue the acquisition schedule on the retained remaining face.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool AmortizeRemainingFace { get; init; }
+
+    /// <summary>Deterministic comparison retained for independent review and recomputed at posting.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public OpenLotYieldToWorstDto? YieldToWorst { get; init; }
+
     // Historical JSON has no version and retains the exact v1 calculation and fingerprint.
     // New callers using the original constructor shape always select the current model.
     public OpenLotAmortizationInstructionDto(OpenLotDto ExpectedLot, SecurityProjectionRecord Security,
@@ -47,6 +55,9 @@ public sealed record OpenLotAmortizationProjectionDto(
 public static class OpenLotAmortization
 {
     public const string ModelVersion = "canonical-lot-amortization-v2";
+    public const string ExtendedModelVersion = "canonical-lot-amortization-v3";
+
+    public static bool IsCurrentVersion(string? version) => version is ModelVersion or ExtendedModelVersion;
 
     public static string SecurityHash(SecurityProjectionRecord security)
     {
@@ -74,8 +85,12 @@ public static class OpenLotAmortization
     private static OpenLotAmortizationProjectionDto ProjectCore(OpenLotAmortizationInstructionDto instruction)
     {
         ArgumentNullException.ThrowIfNull(instruction);
-        if (instruction.CalculationVersion is not null && instruction.CalculationVersion != ModelVersion)
+        if (instruction.CalculationVersion is not null && !IsCurrentVersion(instruction.CalculationVersion))
             throw new ArgumentException("Amortization calculation version is unsupported.");
+        var extended = instruction.CalculationVersion == ExtendedModelVersion;
+        if ((!extended && (instruction.AmortizeRemainingFace || instruction.YieldToWorst is not null))
+            || (extended && !instruction.AmortizeRemainingFace && instruction.YieldToWorst is null))
+            throw new ArgumentException("Extended amortization policy requires an explicit v3 reviewed instruction.");
         var lot = instruction.ExpectedLot;
         OpenLotValidation.Validate(lot);
         if (lot.Acquisition.Direction != OpenLotDirection.Long)
@@ -88,11 +103,11 @@ public static class OpenLotAmortization
         var scheduleLot = OpenLotAmortizationContinuation.Validate(instruction);
         var terms = acquisition.FaceValueTerms;
         if (lot.Version <= 0 || lot.OpenQuantity <= 0 || acquisition.QuantityBasis != LotQuantityBasis.Face || terms is null
-            || terms.BookedFactor != 1m || instruction.ExpectedBookPositionVersion <= 0)
+            || (!instruction.AmortizeRemainingFace && terms.BookedFactor != 1m) || instruction.ExpectedBookPositionVersion <= 0)
             throw new ArgumentException("Amortization requires a versioned open face lot with unadjusted bullet principal and retained acquisition terms.");
         // A paid-down lot is not amortized: its premium or discount is realized pro rata through
         // factor paydowns and the remainder through the reduced basis at disposal.
-        if (lot.CurrentFactor is not null)
+        if (lot.CurrentFactor is not null && !instruction.AmortizeRemainingFace)
             throw new ArgumentException("Amortization refuses a lot that holds a paydown factor; its premium or discount is realized through factor paydowns and disposal.");
         var retainedReversal = instruction.Reversal is not null;
         if (security.SecurityId != lot.SecurityId || security.Version <= 0
@@ -128,28 +143,44 @@ public static class OpenLotAmortization
         var detail = new SecurityDetailDto(security.SecurityId, security.AssetClass, security.Status, security.DisplayName,
             security.Currency, security.CommonTerms, security.AssetSpecificTerms, security.Identifiers, security.Aliases,
             security.Version, security.EffectiveFrom, security.EffectiveTo);
-        ValidateBulletReference(detail);
+        ValidateBulletReference(detail, instruction.YieldToWorst is not null, instruction.AmortizeRemainingFace);
         var reference = StructuredCashFlowTermsResolver.Resolve(detail);
+        OpenLotRedemptionYieldDto? redemption = null;
+        if (instruction.YieldToWorst is { } reviewed)
+        {
+            var calculated = OpenLotYieldToWorst.Select(scheduleLot, security);
+            if (reviewed.Selected != calculated.Selected || reviewed.Alternatives is null
+                || !reviewed.Alternatives.SequenceEqual(calculated.Alternatives))
+                throw new ArgumentException("Yield-to-worst selection differs from the complete retained contractual alternatives.");
+            redemption = calculated.Selected;
+        }
         var convention = DayCountConventions.Parse(reference.DayCountConvention);
-        if (reference.MaturityDate is not { } maturity || maturity <= lot.AcquiredDate
+        var redemptionDate = redemption?.Date ?? reference.MaturityDate;
+        if (redemptionDate is not { } maturity || maturity <= lot.AcquiredDate
             || instruction.AsOfDate <= lot.AcquiredDate || instruction.AsOfDate > maturity
             || convention is DayCountConvention.Unknown or DayCountConvention.Business252 or DayCountConvention.ActualActualIcma
                 or DayCountConvention.ThirtyE360Isda
             || reference.HasFactorSchedule || reference.HasLegs || reference.HasPrincipalSchedule || reference.HasStepCouponSchedule
             || reference.InflationIndex is not null || reference.InflationIndexRatio is not null
-            || reference.InflationBaseIndexValue is not null || (reference.CurrentFactor is { } factor && factor != 1m))
+            || reference.InflationBaseIndexValue is not null
+            || (reference.CurrentFactor is { } factor && factor != (instruction.AmortizeRemainingFace
+                ? lot.CurrentFactor ?? terms.BookedFactor : 1m)))
             throw new ArgumentException("Amortization requires complete supported day-count and fixed-rate bullet terms; structured successors require a separate workflow.");
-        var faceLot = new FaceValueLot(lot.LotId, lot.SecurityId, scheduleLot.AcquiredDate, scheduleLot.OriginalQuantity,
-            scheduleLot.Acquisition.TransactionCostBasis * terms.ParBasis / scheduleLot.OriginalQuantity, terms.BookedFactor, terms.ParBasis);
+        var redemptionRatio = (redemption?.PricePercentOfPar ?? 100m) / 100m;
+        var faceLot = new FaceValueLot(lot.LotId, lot.SecurityId, scheduleLot.AcquiredDate, scheduleLot.OriginalQuantity * redemptionRatio,
+            scheduleLot.Acquisition.TransactionCostBasis * terms.ParBasis / scheduleLot.OriginalQuantity / redemptionRatio,
+            terms.BookedFactor, terms.ParBasis);
         decimal fullBasis;
         if (terms.AmortizationMethod == BondAmortizationMethod.StraightLine)
         {
             fullBasis = faceLot.AmortizedBasisAsOf(convention, maturity, instruction.AsOfDate);
         }
-        else if (terms.AmortizationMethod == BondAmortizationMethod.ConstantYield && terms.EffectiveYield is { } annualYield
+        else if (terms.AmortizationMethod == BondAmortizationMethod.ConstantYield
+                 && (redemption?.AnnualYield ?? terms.EffectiveYield) is { } annualYield
                  && annualYield > -1m && reference.CouponRate is { } coupon && coupon >= 0m)
         {
             var frequency = Frequency(reference.PaymentFrequency);
+            coupon /= redemptionRatio;
             if (instruction.CalculationVersion is null)
             {
                 // Preserve the admission rule and arithmetic of retained v1 instructions.
@@ -176,7 +207,10 @@ public static class OpenLotAmortization
         }
         // PostgreSQL journal and lot amounts share a 12-place decimal boundary. Round cumulative
         // targets once, then subtract retained basis: repeated periods do not accumulate rounded deltas.
-        var transaction = decimal.Round(fullBasis * lot.OpenQuantity / scheduleLot.OriginalQuantity, 12, MidpointRounding.ToEven);
+        // Durable quantity retains booked face after a paydown. Apply the held-factor ratio once;
+        // a partial disposal scales booked quantity independently of that principal decline.
+        var remainingFactor = instruction.AmortizeRemainingFace ? (lot.CurrentFactor ?? terms.BookedFactor) / terms.BookedFactor : 1m;
+        var transaction = decimal.Round(fullBasis * lot.OpenQuantity / scheduleLot.OriginalQuantity * remainingFactor, 12, MidpointRounding.ToEven);
         var functional = decimal.Round(transaction * acquisition.AcquisitionFxRateToFunctional, 12, MidpointRounding.ToEven);
         if (transaction < 0m || functional < 0m)
             throw new ArgumentException("Amortized carrying basis cannot be negative.");
@@ -207,11 +241,13 @@ public static class OpenLotAmortization
         _ => throw new ArgumentException("Constant-yield amortization requires an explicit supported coupon frequency.")
     };
 
-    private static void ValidateBulletReference(SecurityDetailDto detail)
+    internal static void ValidateBulletReference(SecurityDetailDto detail, bool automaticRedemption, bool remainingFace)
     {
         var descriptor = SecurityAssetClassCatalog.GetOrDefault(detail.AssetClass);
         var assetClass = descriptor.AssetClass;
-        if (!descriptor.SupportsCanonicalBulletAmortization)
+        var factorBacked = remainingFace && descriptor.LotUnit == SecurityLotUnitKind.FaceValue
+            && descriptor.CashFlowBehavior == SecurityCashFlowBehavior.FactorAmortizing;
+        if (!descriptor.SupportsCanonicalBulletAmortization && !factorBacked)
             throw new ArgumentException("Canonical amortization supports only Bond, TreasuryBill and CommercialPaper face lots.");
         if (detail.CommonTerms.ValueKind != JsonValueKind.Object || detail.AssetSpecificTerms.ValueKind != JsonValueKind.Object)
             throw new ArgumentException("Amortization requires complete object-shaped Security Master terms.");
@@ -222,7 +258,7 @@ public static class OpenLotAmortization
         if (FirstTerm(sources, ["currentFactor", "factor"]) is { } ownedFactor && ownedFactor.ValueKind != JsonValueKind.Null
             && OwnedDecimal(sources, ["currentFactor", "factor"]) is null)
             throw new ArgumentException("Amortization requires valid owned principal-factor authority; malformed factors cannot receive defaults.");
-        if (SecurityAssetClassCatalog.GetOrDefault(assetClass).CarriesBondCouponStructure)
+        if (SecurityAssetClassCatalog.GetOrDefault(assetClass).CarriesBondCouponStructure || factorBacked)
         {
             var couponType = OwnedString(sources, ["couponType", "couponKind"]);
             if (couponType is not ("Fixed" or "ZeroCoupon")
@@ -230,8 +266,15 @@ public static class OpenLotAmortization
                 || coupon < 0m || (couponType == "ZeroCoupon" && coupon != 0m))
                 throw new ArgumentException("Bond amortization requires explicit supported Fixed or ZeroCoupon structure and a complete coupon rate.");
             var callable = OwnedString(sources, ["isCallable"]);
-            if (!bool.TryParse(callable, out var isCallable) || isCallable)
+            if (!bool.TryParse(callable, out var isCallable) || (isCallable && !automaticRedemption))
                 throw new ArgumentException("Bond amortization requires explicit non-callable bullet terms.");
+            if (isCallable && automaticRedemption
+                && !AnyTerm(sources, SecurityVersionedTerms.CallScheduleKey,
+                    static value => value.ValueKind == JsonValueKind.Array && value.GetArrayLength() > 0))
+                throw new ArgumentException("Callable amortization requires the complete explicit call schedule for automatic comparison.");
+            if (!isCallable && automaticRedemption && AnyTerm(sources, SecurityVersionedTerms.CallScheduleKey,
+                    static value => value.ValueKind == JsonValueKind.Array && value.GetArrayLength() > 0))
+                throw new ArgumentException("Call schedule and callable flag disagree; repair the authoritative terms before automatic comparison.");
         }
         // The cash-flow resolver is deliberately read-tolerant and skips malformed schedule rows.
         // This posting slice must refuse their ownership claims before that tolerance erases them.
@@ -251,7 +294,7 @@ public static class OpenLotAmortization
         // bullet cannot honour; an empty list declares none, and a malformed one is not read as absent.
         foreach (var name in new[] { SecurityVersionedTerms.CallScheduleKey, SecurityVersionedTerms.PutScheduleKey })
         {
-            if (AnyTerm(sources, name, static schedule => schedule.ValueKind != JsonValueKind.Null
+            if (!automaticRedemption && AnyTerm(sources, name, static schedule => schedule.ValueKind != JsonValueKind.Null
                     && (schedule.ValueKind != JsonValueKind.Array || schedule.GetArrayLength() != 0)))
                 throw new ArgumentException("Amortization does not support floating coupons, calls, puts or advance-refunding terms.");
         }

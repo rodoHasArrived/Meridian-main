@@ -149,7 +149,7 @@ public sealed partial class PostgresLedgerJournalStore
         if (instruction.Reversal is null)
             await ValidateAmortizationBasisHistoryAsync(before, instruction.AsOfDate,
                 async batchId => await LoadAtomicTaxLotResultAsync(connection, transaction, batchId, false, ct).ConfigureAwait(false),
-                ct, instruction.Continuation).ConfigureAwait(false);
+                ct, instruction.Continuation, instruction.AmortizeRemainingFace).ConfigureAwait(false);
         var history = await ReadDatedLotQuantitiesAsync(connection, transaction, command.LedgerBookId,
             [before.TaxLotRecordId], ct).ConfigureAwait(false);
         if (history.Any(mutation => mutation.EffectiveDate > instruction.AsOfDate)
@@ -160,12 +160,14 @@ public sealed partial class PostgresLedgerJournalStore
 
     internal static async Task ValidateAmortizationBasisHistoryAsync(LedgerTaxLotRecord current, DateOnly asOfDate,
         Func<Guid, Task<AtomicTaxLotJournalResult?>> loadReceipt, CancellationToken ct = default,
-        OpenLotAmortizationContinuationDto? continuation = null)
+        OpenLotAmortizationContinuationDto? continuation = null, bool remainingFace = false)
     {
         var cursor = current;
         var visited = new HashSet<Guid>();
         LedgerValidationException Unproved() => new("Amortization requires complete retained partial-disposal basis evidence.");
-        while (cursor.BasisAdjustment is { Reason: OpenLotBasisAdjustmentReasons.DisposalRelief } relief)
+        while (cursor.BasisAdjustment is { } relief
+            && (relief.Reason == OpenLotBasisAdjustmentReasons.DisposalRelief
+                || (remainingFace && relief.Reason == OpenLotBasisAdjustmentReasons.FactorPaydown)))
         {
             ct.ThrowIfCancellationRequested();
             if (relief.MutationBatchId == Guid.Empty || !visited.Add(relief.MutationBatchId))
@@ -174,6 +176,11 @@ public sealed partial class PostgresLedgerJournalStore
             try
             { receipt = await loadReceipt(relief.MutationBatchId).ConfigureAwait(false); }
             catch (InvalidOperationException) { throw Unproved(); }
+            if (relief.Reason == OpenLotBasisAdjustmentReasons.FactorPaydown)
+            {
+                cursor = ValidateAmortizationPaydownReceipt(cursor, asOfDate, receipt);
+                continue;
+            }
             if (receipt is null || receipt.MutationBatchId != relief.MutationBatchId
                 || receipt.MutationKind != AtomicTaxLotMutationKind.Disposal
                 || receipt.ReliefMethod is not ("Fifo" or "Lifo" or "Hifo" or "SpecificId"))

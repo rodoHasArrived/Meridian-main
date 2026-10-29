@@ -160,8 +160,12 @@ migration and require provider-specific treatment. Source changes and automated 
 `PRD-002` release evidence, Windows protection/operation acceptance or wider provider activation.
 
 The bounded LOT continuation corrects Security Master snapshot economics to use exact fractional
-position quantity and short direction. It does not complete Security Master lot-of-record cutover,
-broader consumer parity, successor/amortization treatment, compatibility retirement or live acceptance.
+position quantity and short direction. The owner expanded the implementation to governed short
+opening/cover, v3 remaining-face amortization and automatic yield-to-worst comparison. The
+[accounting boundary](../testing/evidence/next-work-20261029/accounting-expansion.md) records
+the supported fixed-price European treatment and remaining valuation/tax cases. Final gates and
+independent review remain required; this does not complete Security Master lot-of-record cutover,
+broader consumer parity, compatibility retirement or live acceptance.
 LOT → MARK → SEAM → RECON remains the implementation queue; live SEAM precedes MARK in the joint session.
 `scripts/dev/prepare-next-work-acceptance.ps1` prepares an isolated pending packet, not financial
 records or operator acceptance. Use a dedicated Windows test user or VM because WPF retains per-user state.

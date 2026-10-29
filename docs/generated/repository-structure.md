@@ -2583,6 +2583,7 @@ Meridian-main
 │   │   │   ├── next-work-20261028
 │   │   │   │   └── release-readiness.md
 │   │   │   ├── next-work-20261029
+│   │   │   │   ├── accounting-expansion.md
 │   │   │   │   ├── README.md
 │   │   │   │   └── release-readiness.json
 │   │   │   ├── program-state-20261014
@@ -4570,7 +4571,8 @@ Meridian-main
 │   │   │       ├── OpenLotDto.cs
 │   │   │       ├── OpenLotFactorPaydown.cs
 │   │   │       ├── OpenLotSuccessors.cs
-│   │   │       └── OpenLotValidation.cs
+│   │   │       ├── OpenLotValidation.cs
+│   │   │       └── OpenLotYieldToWorst.cs
 │   │   ├── AccountingSystem
 │   │   │   └── AccountingSystemDtos.cs
 │   │   ├── Api
@@ -6195,6 +6197,7 @@ Meridian-main
 │   │   ├── ShadowNavValidator.cs
 │   │   ├── ShareClass.cs
 │   │   ├── ShareClassUnitRegisterProjector.cs
+│   │   ├── ShortLotJournalProjector.cs
 │   │   ├── StalePricePolicy.cs
 │   │   ├── TaxCharacter.cs
 │   │   ├── ValuationFreshnessPolicy.cs
@@ -6708,6 +6711,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerBookService.cs
 │   │   │   ├── PostgresLedgerCurrencyBackfill.cs
 │   │   │   ├── PostgresLedgerJournalStore.Amortization.cs
+│   │   │   ├── PostgresLedgerJournalStore.AmortizationFactorHistory.cs
 │   │   │   ├── PostgresLedgerJournalStore.AtomicTaxLots.cs
 │   │   │   ├── PostgresLedgerJournalStore.Audit.cs
 │   │   │   ├── PostgresLedgerJournalStore.AverageCostRelief.cs
@@ -6724,6 +6728,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.ProceedsAllocation.cs
 │   │   │   ├── PostgresLedgerJournalStore.ReportingSnapshot.cs
 │   │   │   ├── PostgresLedgerJournalStore.Serialization.cs
+│   │   │   ├── PostgresLedgerJournalStore.ShortLots.cs
 │   │   │   ├── PostgresLedgerJournalStore.SuccessorHoldingPeriod.cs
 │   │   │   ├── PostgresLedgerJournalStore.TaxLotDisposalHistory.cs
 │   │   │   ├── PostgresLedgerJournalStore.TaxLotHoldingPeriodEvidence.cs
@@ -10818,6 +10823,7 @@ Meridian-main
 │   │   │   ├── OpenLotAmortizationContinuationTests.cs
 │   │   │   ├── OpenLotAmortizationPrecisionTests.cs
 │   │   │   ├── OpenLotCapitalReturnTests.cs
+│   │   │   ├── OpenLotExtendedAmortizationTests.cs
 │   │   │   ├── OpenLotFactorPaydownTests.cs
 │   │   │   ├── OpenLotSpinOffTests.cs
 │   │   │   ├── OpenLotSuccessorTests.CorporateActions.cs
@@ -11819,6 +11825,7 @@ Meridian-main
 │   │   │   ├── AtomicTaxLotJournalStoreTests.DeferralRecipients.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.Direction.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.DirectWrites.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.ExtendedAmortization.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.FactorPaydown.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.FactorPaydownPublication.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.HistoricalQuantity.cs
@@ -11830,6 +11837,7 @@ Meridian-main
 │   │   │   ├── AtomicTaxLotJournalStoreTests.ReliefPrecision.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.ReplacementClaims.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.ReportingSnapshot.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.ShortPosting.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.SpinOff.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.SuccessorAmortization.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.SuccessorAncestry.cs

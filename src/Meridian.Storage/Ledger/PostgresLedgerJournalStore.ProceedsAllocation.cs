@@ -29,6 +29,11 @@ public sealed partial class PostgresLedgerJournalStore
         AtomicTaxLotJournalCommand command, IReadOnlyList<LedgerTaxLotMutationRecord> mutations)
     {
         var account = mutations[0].LotAfter.Account;
+        if (command.Direction == Meridian.Contracts.Accounting.Lots.OpenLotDirection.Short)
+        {
+            ValidateShortLotJournal(command, account, mutations.Sum(mutation => mutation.CostBasis));
+            return;
+        }
         var recognizedResult = DisposalRecognizedGainOrLoss(command.Journal.Entry, account);
         var basis = mutations.Sum(static mutation => mutation.CostBasis);
         var proceeds = command.DisposalSalePrice is { } salePrice
