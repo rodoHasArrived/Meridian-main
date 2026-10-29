@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -15,6 +16,7 @@ namespace Meridian.Application.Subscriptions.Services;
 /// </summary>
 public sealed class PortfolioImportService
 {
+    private const NumberStyles ProviderDecimalStyles = NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint;
     private readonly ConfigStore _configStore;
     private readonly WatchlistService _watchlistService;
     private readonly HttpClient _httpClient;
@@ -37,6 +39,7 @@ public sealed class PortfolioImportService
         PortfolioImportRequest request,
         CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         return request.Broker.ToLowerInvariant() switch
         {
             "alpaca" => await ImportFromAlpacaAsync(request.Options, ct),
@@ -55,6 +58,7 @@ public sealed class PortfolioImportService
         PortfolioImportOptions options,
         CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var config = _configStore.Load();
         var alpacaConfig = config.Alpaca;
 
@@ -69,7 +73,7 @@ public sealed class PortfolioImportService
             var portfolio = await FetchAlpacaPortfolioAsync(alpacaConfig, ct);
             return await ProcessPortfolioAsync(portfolio, options, ct);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             return new PortfolioImportResult(false, "alpaca", 0, 0, 0, Array.Empty<string>(),
                 new[] { $"Failed to fetch Alpaca portfolio: {ex.Message}" });
@@ -83,6 +87,7 @@ public sealed class PortfolioImportService
         PortfolioImportOptions options,
         CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var config = _configStore.Load();
         var ibConfig = config.IB;
         var clientPortalConfig = config.IBClientPortal;
@@ -104,7 +109,7 @@ public sealed class PortfolioImportService
             var portfolio = await FetchInteractiveBrokersPortfolioAsync(clientPortalConfig, ct);
             return await ProcessPortfolioAsync(portfolio, options, ct);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             return new PortfolioImportResult(false, "ib", 0, 0, 0, Array.Empty<string>(),
                 new[] { $"Failed to fetch IB portfolio: {ex.Message}" });
@@ -187,7 +192,7 @@ public sealed class PortfolioImportService
         request.Headers.Add("APCA-API-KEY-ID", alpacaConfig.KeyId);
         request.Headers.Add("APCA-API-SECRET-KEY", alpacaConfig.SecretKey);
 
-        var response = await _httpClient.SendAsync(request, ct);
+        using var response = await _httpClient.SendAsync(request, ct);
         response.EnsureSuccessStatusCode();
 
         var positionsJson = await response.Content.ReadFromJsonAsync<AlpacaPosition[]>(
@@ -198,7 +203,7 @@ public sealed class PortfolioImportService
         accountRequest.Headers.Add("APCA-API-KEY-ID", alpacaConfig.KeyId);
         accountRequest.Headers.Add("APCA-API-SECRET-KEY", alpacaConfig.SecretKey);
 
-        var accountResponse = await _httpClient.SendAsync(accountRequest, ct);
+        using var accountResponse = await _httpClient.SendAsync(accountRequest, ct);
         accountResponse.EnsureSuccessStatusCode();
 
         var account = await accountResponse.Content.ReadFromJsonAsync<AlpacaAccount>(
@@ -207,10 +212,10 @@ public sealed class PortfolioImportService
         var positions = (positionsJson ?? Array.Empty<AlpacaPosition>())
             .Select(p => new PortfolioPosition(
                 Symbol: p.Symbol,
-                Quantity: decimal.Parse(p.Qty ?? "0"),
-                MarketValue: decimal.TryParse(p.MarketValue, out var mv) ? mv : null,
-                AverageCost: decimal.TryParse(p.AvgEntryPrice, out var ac) ? ac : null,
-                UnrealizedPnL: decimal.TryParse(p.UnrealizedPl, out var pnl) ? pnl : null,
+                Quantity: decimal.Parse(p.Qty ?? "0", ProviderDecimalStyles, CultureInfo.InvariantCulture),
+                MarketValue: ParseProviderDecimal(p.MarketValue),
+                AverageCost: ParseProviderDecimal(p.AvgEntryPrice),
+                UnrealizedPnL: ParseProviderDecimal(p.UnrealizedPl),
                 AssetClass: p.AssetClass ?? "us_equity",
                 Exchange: p.Exchange,
                 Currency: "USD",
@@ -221,9 +226,9 @@ public sealed class PortfolioImportService
         return new PortfolioSummary(
             Broker: "alpaca",
             AccountId: account?.AccountNumber ?? "unknown",
-            TotalValue: decimal.TryParse(account?.PortfolioValue, out var tv) ? tv : null,
-            CashBalance: decimal.TryParse(account?.Cash, out var cash) ? cash : null,
-            BuyingPower: decimal.TryParse(account?.BuyingPower, out var bp) ? bp : null,
+            TotalValue: ParseProviderDecimal(account?.PortfolioValue),
+            CashBalance: ParseProviderDecimal(account?.Cash),
+            BuyingPower: ParseProviderDecimal(account?.BuyingPower),
             Positions: positions,
             RetrievedAt: DateTimeOffset.UtcNow,
             Currency: "USD"
@@ -254,7 +259,8 @@ public sealed class PortfolioImportService
             var ibClient = clientPortalConfig.AllowSelfSignedCertificates
                 ? HttpClientFactoryProvider.CreateClient(HttpClientNames.IBClientPortal)
                 : _httpClient;
-            var response = await ibClient.SendAsync(request, ct);
+            using var ownedClient = clientPortalConfig.AllowSelfSignedCertificates ? ibClient : null;
+            using var response = await ibClient.SendAsync(request, ct);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -276,7 +282,7 @@ public sealed class PortfolioImportService
             using var posRequest = new HttpRequestMessage(HttpMethod.Get,
                 new Uri(baseUri, $"/v1/api/portfolio/{accountId}/positions/0"));
 
-            var posResponse = await ibClient.SendAsync(posRequest, ct);
+            using var posResponse = await ibClient.SendAsync(posRequest, ct);
             posResponse.EnsureSuccessStatusCode();
             var ibPositions = await posResponse.Content.ReadFromJsonAsync<IbPosition[]>(
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true }, ct);
@@ -429,6 +435,9 @@ public sealed class PortfolioImportService
             Portfolio: portfolio
         );
     }
+
+    private static decimal? ParseProviderDecimal(string? value)
+        => decimal.TryParse(value, ProviderDecimalStyles, CultureInfo.InvariantCulture, out var parsed) ? parsed : null;
 
     private static string MapAssetClass(string? assetClass)
     {

@@ -1017,6 +1017,31 @@ Core workstation host. Do not introduce a second listener or independent monitor
 Use this module when changing command behavior, workflow orchestration, feature registration, or
 application service contracts consumed by host and UI surfaces.
 
+Quick setup and quickstart publish configuration through the synchronous `AtomicFileWriter`,
+preserving their existing paths, JSON format, and backup behavior. Readers holding an open
+snapshot continue to see the previous complete file during replacement.
+
+Portfolio imports parse Alpaca's decimal strings using invariant culture and explicit sign/decimal
+styles, and dispose HTTP responses on success and failure. Missing quantities still default to
+zero, malformed quantities fail the import, and missing or malformed optional amounts remain null.
+Caller cancellation propagates through imports, symbol discovery and webhook delivery rather than
+being reported as a provider failure. Provider timeouts without caller cancellation retain their
+ordinary failure/fallback behavior. A summary with no enabled webhooks reports failure and does
+not raise the success event.
+
+Symbol search and detail caches each retain at most 1,024 entries. They prune expired entries on
+reads and writes, evict the oldest write at capacity, and measure absolute expiry with a monotonic
+clock. A read does not extend the existing five-minute search or thirty-minute detail lifetime.
+
+Subscription schedule mutations serialize candidate snapshots and publish them in memory only
+after atomic persistence succeeds. Failed or cancelled saves propagate to callers and preserve
+the prior published state. Execution admission is per schedule: overlapping timer/manual requests
+share the running execution, while different schedules can run independently. Cancelling a joined
+manual caller cancels its wait; the original request and service lifetime own the execution token.
+Shutdown prevents further admission, cancels and joins all admitted executions, and waits for
+an already-admitted persistence operation. These controls are local to one service instance;
+they do not add cross-process execution leases or persist execution history across restarts.
+
 `ApplicationLifecycleCoordinator` routes POSIX SIGTERM through the same cooperative stop-work,
 drain, and flush lifecycle as external cancellation. This lets `dotnet watch` restart the host
 without leaving its listener behind. The signal registration is disposed with the coordinator;
@@ -1270,6 +1295,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 ## Validation
 
 ```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PortfolioImportReliabilityTests|FullyQualifiedName~QuickSetupAtomicSaveTests|FullyQualifiedName~SymbolSearchCancellationTests|FullyQualifiedName~BoundedSearchCacheTests|FullyQualifiedName~DailySummaryWebhookDeliveryTests|FullyQualifiedName~SchedulingServiceReliabilityTests"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~SecurityMasterContractAdapterTests|FullyQualifiedName~StorageFeatureRegistrationTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~TracingIntegrationTests|FullyQualifiedName~EventPipelineTracePropagationTests" /p:EnableWindowsTargeting=true

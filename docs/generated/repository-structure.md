@@ -4432,6 +4432,7 @@ Meridian-main
 │   │   │   ├── Services
 │   │   │   │   ├── AutoResubscribePolicy.cs
 │   │   │   │   ├── BatchOperationsService.cs
+│   │   │   │   ├── BoundedSearchCache.cs
 │   │   │   │   ├── CorruptStoreQuarantine.cs
 │   │   │   │   ├── IndexSubscriptionService.cs
 │   │   │   │   ├── MetadataEnrichmentService.cs
@@ -10745,6 +10746,7 @@ Meridian-main
 │   │   │   │   ├── ConfigurationPresetsTests.cs
 │   │   │   │   ├── ConfigurationServiceTests.cs
 │   │   │   │   ├── CronExpressionParserTests.cs
+│   │   │   │   ├── DailySummaryWebhookDeliveryTests.cs
 │   │   │   │   ├── DailySummaryWebhookSchedulingTests.cs
 │   │   │   │   ├── ErrorCodeMappingTests.cs
 │   │   │   │   ├── ExecutionSimulationOrchestratorTests.cs
@@ -10754,8 +10756,11 @@ Meridian-main
 │   │   │   │   ├── OperationalSchedulerTests.cs
 │   │   │   │   ├── PreflightCheckerTests.cs
 │   │   │   │   ├── ProviderTradingCalendarContractsTests.cs
+│   │   │   │   ├── QuickSetupAtomicSaveTests.cs
 │   │   │   │   └── RuntimeDiagnosticRedactorTests.cs
 │   │   │   ├── Subscriptions
+│   │   │   │   ├── PortfolioImportReliabilityTests.cs
+│   │   │   │   ├── SchedulingServiceReliabilityTests.cs
 │   │   │   │   └── SubscriptionStoreQuarantineTests.cs
 │   │   │   ├── Ui
 │   │   │   │   ├── ConfigStoreTests.cs
@@ -12006,9 +12011,11 @@ Meridian-main
 │   │   │   ├── StrategySessionControlOrderingTests.cs
 │   │   │   └── StrategySessionShutdownTests.cs
 │   │   ├── SymbolSearch
+│   │   │   ├── BoundedSearchCacheTests.cs
 │   │   │   ├── OpenFigiClientAmbiguityTests.cs
 │   │   │   ├── OpenFigiClientTests.cs
 │   │   │   ├── OpenFigiSymbolResolverTests.cs
+│   │   │   ├── SymbolSearchCancellationTests.cs
 │   │   │   └── SymbolSearchServiceTests.cs
 │   │   ├── Tenancy
 │   │   │   ├── AuthoritativeScopeFanOutServiceTests.cs

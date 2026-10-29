@@ -55,13 +55,22 @@ public sealed class DailySummaryWebhook : IMonitoringWebhookSink, IAsyncDisposab
         DailySummaryWebhookConfig config,
         TradingCalendar? tradingCalendar = null,
         TimeProvider? timeProvider = null)
+        : this(config, tradingCalendar, timeProvider, null)
+    {
+    }
+
+    internal DailySummaryWebhook(
+        DailySummaryWebhookConfig config,
+        TradingCalendar? tradingCalendar,
+        TimeProvider? timeProvider,
+        HttpClient? httpClient)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _tradingCalendar = tradingCalendar ?? new TradingCalendar();
         _timeProvider = timeProvider ?? TimeProvider.System;
 
         // TD-10: Use HttpClientFactory instead of creating new HttpClient instances
-        _httpClient = HttpClientFactoryProvider.CreateClient(HttpClientNames.DailySummaryWebhook);
+        _httpClient = httpClient ?? HttpClientFactoryProvider.CreateClient(HttpClientNames.DailySummaryWebhook);
         _httpClient.Timeout = TimeSpan.FromSeconds(config.TimeoutSeconds);
 
         if (config.EnableScheduledSummary && !string.IsNullOrEmpty(config.ScheduledTime))
@@ -91,6 +100,7 @@ public sealed class DailySummaryWebhook : IMonitoringWebhookSink, IAsyncDisposab
     /// </summary>
     public async Task<DailySummaryResult> SendSummaryAsync(CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var summary = BuildSummary();
         var results = new List<WebhookDeliveryResult>();
         var startTime = DateTimeOffset.UtcNow;
@@ -119,13 +129,13 @@ public sealed class DailySummaryWebhook : IMonitoringWebhookSink, IAsyncDisposab
             results.Add(result);
         }
 
-        var allSuccess = results.All(r => r.Success);
+        var allSuccess = results.Count > 0 && results.All(r => r.Success);
         var summaryResult = new DailySummaryResult(
             Success: allSuccess,
             Summary: summary,
             DeliveryResults: results.ToArray(),
             SentAt: startTime,
-            ErrorMessage: allSuccess ? null : "One or more webhooks failed"
+            ErrorMessage: allSuccess ? null : results.Count == 0 ? "No enabled webhooks configured" : "One or more webhooks failed"
         );
 
         if (allSuccess)
@@ -148,6 +158,7 @@ public sealed class DailySummaryWebhook : IMonitoringWebhookSink, IAsyncDisposab
     /// </summary>
     public async Task<IReadOnlyList<WebhookDeliveryResult>> SendMessageAsync(string message, string? title = null, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var results = new List<WebhookDeliveryResult>();
 
         if (_config.Webhooks is null || _config.Webhooks.Length == 0)
@@ -218,7 +229,7 @@ public sealed class DailySummaryWebhook : IMonitoringWebhookSink, IAsyncDisposab
             var payload = FormatPayload(webhook.Type, summary);
             return await DeliverPayloadAsync(webhook, payload, ct);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             _log.Error(ex, "Failed to send summary to webhook {WebhookName}", webhook.Name);
             return new WebhookDeliveryResult(
@@ -278,7 +289,7 @@ public sealed class DailySummaryWebhook : IMonitoringWebhookSink, IAsyncDisposab
                     await Task.Delay(RetryDelay(attempt), ct);
                 }
             }
-            catch (TaskCanceledException) when (ct.IsCancellationRequested)
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
                 throw;
             }
