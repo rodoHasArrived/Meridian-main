@@ -120,17 +120,17 @@ public static class BondExerciseEconomics
                         }
                         var couponAccrued = 0m;
                         var matchingPayments = flows.Where(flow => flow.PaymentDate == exercise).ToArray();
-                        if (matchingPayments.Length == 0)
+                        // A payment-lag coupon can be paid after the next period has begun. Its
+                        // separately paid full coupon does not discharge that new period's accrual.
+                        // Strict boundaries keep ordinary, unlagged coupon-date accrual at zero.
+                        var period = schedule.Periods.FirstOrDefault(period =>
+                            period.AccrualStart < exercise && exercise < period.AccrualEnd);
+                        if (period is not null && annualRate != 0m)
                         {
-                            var period = schedule.Periods.FirstOrDefault(period =>
-                                period.AccrualStart < exercise && exercise < period.AccrualEnd);
-                            if (period is not null && annualRate != 0m)
-                            {
-                                var dayCount = DayCountConventions.Parse(terms.DayCountConvention);
-                                if (!BondContractualEconomics.TryAccruedCoupon(period, schedule, dayCount, annualRate,
-                                        declared.Conventions.CouponCashBasis, exercise, out couponAccrued, out refusal))
-                                    return false;
-                            }
+                            var dayCount = DayCountConventions.Parse(terms.DayCountConvention);
+                            if (!BondContractualEconomics.TryAccruedCoupon(period, schedule, dayCount, annualRate,
+                                    declared.Conventions.CouponCashBasis, exercise, out couponAccrued, out refusal))
+                                return false;
                         }
                         decimal time;
                         if (matchingPayments.Length > 0)
