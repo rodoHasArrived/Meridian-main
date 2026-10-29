@@ -11,6 +11,8 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.Ui.Shared
 
+Portfolio cash-ladder composition supplies the configured business-day calendars to the shared Instruments scenario engine. Declared issuer-call and holder-put scenarios use retained projection terms and calendar hashes; floating shocks consume retained per-reset inputs. Scenario blockers remain visible through the existing decision-readiness response; no new approval or payment authority is introduced.
+
 Provider ownership endpoints derive tenant and actor from authenticated context and require credential,
 provider and configuration administration. Creation, migration preview, transfer/rollback and host
 binding use shared Application services. Lifecycle vault operations revalidate ownership under short

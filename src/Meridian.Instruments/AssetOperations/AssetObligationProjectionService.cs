@@ -105,11 +105,18 @@ public sealed partial class AssetObligationProjectionService
             projectionRunId,
             security.SecurityId,
             projectionAsOf,
-            calculatedProjection?.ScheduleEvidence is null ? EngineVersion : "asset-obligation-declared-v2",
+            calculatedProjection?.ScheduleEvidence is null ? EngineVersion : "asset-obligation-declared-v3",
             blockedReason is null ? "Completed" : "Blocked",
             generatedAt,
             SecurityMasterSourceDomain,
-            security.SecurityId.ToString("D"));
+            security.SecurityId.ToString("D"),
+            JsonSerializer.SerializeToElement(new
+            {
+                termsVersionId = terms[0].TermsVersionId,
+                termsHash = terms[0].TermsHash,
+                termsContentSha256 = Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(terms[0].ExtensionPayload)),
+                inputManifest = calculatedProjection?.InputManifest
+            }));
         IReadOnlyList<AssetProjectedCashFlowDto> flows = blockedReason is not null ? []
             : calculatedProjection is not null
                 ? AssetOperationsProjectionBuilder.MapCanonicalBondCashFlows(security, calculatedProjection, projectionRunId)

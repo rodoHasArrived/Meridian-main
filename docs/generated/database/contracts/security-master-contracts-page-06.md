@@ -261,16 +261,16 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg["StructuredCashFlowLeg"] {
         +decimal? CapRate
         +decimal? CurrentIndexRate
+        +string? CurrentIndexRateSource
+        +DateOnly? CurrentIndexResetDate
         +string? DayCountConvention
         +CashFlowLegDirection? Direction
         +bool ExchangesPrincipal
         +decimal? FixedRate
         +decimal? FloorRate
+        +bool HasDeclaredResetSchedule
         +string? IndexName
         +string LegId
-        +decimal? Notional
-        +IReadOnlyList~StructuredCashFlowNotionalStep~? NotionalSchedule
-        +string? PaymentFrequency
     }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule["StructuredCashFlowLegSchedule"] {
         +CashFlowLegDirection? Direction
@@ -310,6 +310,7 @@ classDiagram
         +decimal InterestAmount
         +DateTimeOffset PeriodDate
         +decimal PrincipalAmount
+        +Meridian_Contracts_FixedIncome_BondFloatingRateEvidence? RateEvidence
         +DateOnly? UnadjustedEnd
         +DateOnly? UnadjustedStart
     }

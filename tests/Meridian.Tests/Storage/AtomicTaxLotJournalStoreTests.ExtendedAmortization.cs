@@ -10,6 +10,26 @@ public sealed partial class AtomicTaxLotJournalStoreTests
 {
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]
+    public async Task DeclaredV5_AtomicPartialLotAmortization_PostsReplaysAndRollsBackRejectedCash()
+    {
+        await using var fixture = await AmortFixture.CreateAsync(true, declaredEconomics: true);
+        var invalid = fixture.Command(amountOffset: 1m, calculationVersion: OpenLotAmortization.UnifiedDeclaredModelVersion);
+        var reject = () => fixture.Store.AppendAssetPostingAsync(invalid);
+        await reject.Should().ThrowAsync<LedgerValidationException>();
+        (await fixture.Store.GetTaxLotsByIdsAsync(fixture.BookId, [fixture.Lot.TaxLotRecordId])).Single()
+            .ToOpenLot().OpenFunctionalCostBasis.Should().Be(7260m);
+        var command = fixture.Command(calculationVersion: OpenLotAmortization.UnifiedDeclaredModelVersion);
+        var posted = await fixture.Store.AppendAssetPostingAsync(command);
+        // Half of the 1,000 original premium survives on 60% of the original face: 6,300 EUR.
+        posted.MutatedLots.Single().ToOpenLot().OpenTransactionCostBasis.Should().Be(6300m);
+        posted.MutatedLots.Single().ToOpenLot().OpenFunctionalCostBasis.Should().Be(6930m);
+        posted.Journal.Entry.Lines.Single(line => line.Account == AmortAccount).Credit.Should().Be(330m);
+        await fixture.LockPeriodAsync();
+        (await fixture.Restart().AppendAssetPostingAsync(command)).IsExactReplay.Should().BeTrue();
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task RemainingFaceAmortization_AfterAtomicPaydown_PostsOnlySurvivingPremiumAndReplays()
     {
         await using var fixture = await AmortFixture.CreateAsync(true, factorPool: true,

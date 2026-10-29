@@ -80,7 +80,7 @@ public sealed class BondCalculationReplayTests
 
             var path = Path.Combine(directory, receipt.ContentSha256 + ".json");
             var json = await File.ReadAllTextAsync(path);
-            await File.WriteAllTextAsync(path, json.Replace("\"ModelVersion\":\"bond-cash-flow-context-v1\"", "\"ModelVersion\":\"tampered\"", StringComparison.Ordinal));
+            await File.WriteAllTextAsync(path, json.Replace($"\"ModelVersion\":\"{SecurityMasterCashFlowService.ContextCalculationVersion}\"", "\"ModelVersion\":\"tampered\"", StringComparison.Ordinal));
             var act = () => restarted.ReplayProjectionAsync(receipt.ContentSha256);
             await act.Should().ThrowAsync<InvalidDataException>();
         }
@@ -137,6 +137,7 @@ public sealed class BondCalculationReplayTests
         payload["floatingIndex"] = "SOFR";
         payload["spreadBps"] = 100;
         payload["currentIndexRate"] = 0.03m;
+        payload["resetSchedule"] = JsonNode.Parse("""[{"resetDate":"2026-01-01","fixingRate":0.03}]""");
         payload["capRate"] = 0.035m;
         payload["floorRate"] = 0.025m;
         payload["paymentFrequency"] = "Quarterly";

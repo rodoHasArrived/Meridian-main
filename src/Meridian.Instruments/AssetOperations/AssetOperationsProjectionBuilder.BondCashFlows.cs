@@ -38,7 +38,7 @@ public static partial class AssetOperationsProjectionBuilder
         {
             var date = DateOnly.FromDateTime(entry.PeriodDate.UtcDateTime.Date);
             ordinal++;
-            if (entry.InterestAmount != 0m)
+            if (entry.InterestAmount != 0m || entry.RateEvidence is not null)
             {
                 Add("Coupon", entry.InterestAmount);
             }
@@ -54,15 +54,18 @@ public static partial class AssetOperationsProjectionBuilder
                         entry.UnadjustedStart ?? date, entry.UnadjustedEnd ?? date),
                     runId, security.SecurityId, result.Count + 1, kind, date, amount, security.Currency,
                     "Projected", entry.AccrualStart, entry.AccrualEnd,
+                    PrincipalBasis: entry.RateEvidence?.Principal,
                     SourceDomain: "SecurityMaster", SourceEntityId: security.SecurityId.ToString("D"),
                     ExtensionPayload: JsonSerializer.SerializeToElement(new
                     {
-                        engineVersion = "asset-obligation-declared-v2",
+                        engineVersion = entry.RateEvidence is null ? "asset-obligation-declared-v2" : "asset-obligation-declared-v3",
                         termsVersion = security.Version,
                         projection.SourceKind,
                         projection.Staleness,
                         projection.ScheduleEvidence,
-                        entry.Factor
+                        entry.Factor,
+                        rateEvidence = entry.RateEvidence,
+                        inputManifest = projection.InputManifest
                     })));
         }
         return result;

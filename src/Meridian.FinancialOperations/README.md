@@ -11,6 +11,8 @@ last_reviewed: 2026-10-14
 
 # src/Meridian.FinancialOperations
 
+New declared-bond amortization previews select `canonical-lot-amortization-v5`, using the same coupon, stub, accrual and discount-time calculator as analytics. Existing v4 instructions remain replayable with their original calculations. Settlement verification requests the retained analytics model version. Existing review, period controls, balanced posting and immutable lot/journal boundaries remain authoritative.
+
 `CanonicalLotAmortizationService.PreviewExtendedAsync` explicitly selects v3 remaining-face
 amortization and/or automatic yield-to-worst. It retains the complete comparison for independent
 review; posting recomputes it from the locked lot and Security Master evidence. This service

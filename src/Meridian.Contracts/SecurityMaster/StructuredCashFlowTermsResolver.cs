@@ -132,12 +132,14 @@ public static class StructuredCashFlowTermsResolver
         // An explicitly empty governed fixing schedule asserts no observations. Do not resurrect
         // lower-priority pass-through fixings, which would turn forecasts into observed rates.
         IReadOnlyList<JsonElement> resets = [];
+        var hasDeclaredResets = false;
         foreach (var source in sources)
         {
             if (LegResetScheduleAliases.Any(alias => SecurityTermReader.TryGetProperty(source, alias, out var value)
                 && value.ValueKind == JsonValueKind.Array))
             {
                 resets = ReadScheduleItems(source, LegResetScheduleAliases);
+                hasDeclaredResets = true;
                 break;
             }
         }
@@ -161,7 +163,10 @@ public static class StructuredCashFlowTermsResolver
             {
                 CapRate = SecurityTermReader.ReadDecimal(sources, "capRate"),
                 FloorRate = SecurityTermReader.ReadDecimal(sources, "floorRate"),
-                RateUnit = unit
+                RateUnit = unit,
+                HasDeclaredResetSchedule = hasDeclaredResets,
+                CurrentIndexResetDate = SecurityTermReader.ReadDate(sources, "currentIndexResetDate", "currentIndexRateDate"),
+                CurrentIndexRateSource = SecurityTermReader.ReadString(sources, "currentIndexRateSource")
             }
         ];
     }

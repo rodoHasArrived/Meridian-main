@@ -26,6 +26,8 @@ public sealed record PortfolioCashLadderInputs(
     /// was wired). Surfaced in the ladder's warnings so overstated liquidity is
     /// visible rather than silent.
     /// </summary>
+    public Meridian.Contracts.Calendars.IBusinessDayCalendarSource? Calendars { get; init; }
+
     public IReadOnlyList<string> PositionSourceNotices { get; init; } = [];
 
     /// <summary>
@@ -43,9 +45,9 @@ public sealed record PortfolioCashLadderInputs(
 /// Security Master terms version that produced it, and every scenario states
 /// what it models versus what it assumes.
 /// </summary>
-public static class PortfolioCashLadderEngine
+public static partial class PortfolioCashLadderEngine
 {
-    public const string EngineVersion = "portfolio-cash-ladder-v1";
+    public const string EngineVersion = "portfolio-cash-ladder-v2";
 
     public const string BaseScenarioId = "base";
     public const string RatesUpScenarioId = "rates-up-100bp";
@@ -53,6 +55,8 @@ public static class PortfolioCashLadderEngine
     public const string EarlyCallScenarioId = "early-call";
     public const string RedemptionWaveScenarioId = "redemption-wave-20";
     public const string FxAdverseScenarioId = "fx-adverse-10";
+
+    public const string HolderPutScenarioId = "holder-put";
 
     private const decimal RateShiftPerHundredBps = 0.01m;
     private const decimal RedemptionWaveFraction = 0.20m;
@@ -79,7 +83,7 @@ public static class PortfolioCashLadderEngine
             RatesUpScenarioId,
             "Rates +100bp",
             "Parallel 100bp upward shift applied to retained floating-rate flows only.",
-            ["Floating-rate coupon and interest flows reprice by scaling to the shifted rate."],
+            ["Declared floating coupons reprice future forecast resets using contractual spread, caps and floors; observed resets stay fixed. Legacy undeclared flows retain proportional scaling."],
             [
                 "Fixed-coupon flows are contractual and remain unchanged.",
                 "Flows are treated as floating only when the retained terms or flow payload identify a floating rate.",
@@ -89,7 +93,7 @@ public static class PortfolioCashLadderEngine
             RatesDownScenarioId,
             "Rates -100bp",
             "Parallel 100bp downward shift applied to retained floating-rate flows only.",
-            ["Floating-rate coupon and interest flows reprice by scaling to the shifted rate (floored at 0%)."],
+            ["Declared floating coupons reprice future forecast resets using contractual spread, caps and floors; observed resets stay fixed. Legacy undeclared flows retain proportional scaling and their historical zero floor."],
             [
                 "Fixed-coupon flows are contractual and remain unchanged.",
                 "Flows are treated as floating only when the retained terms or flow payload identify a floating rate.",
@@ -104,9 +108,12 @@ public static class PortfolioCashLadderEngine
                 "Principal otherwise returned after the call date is pulled forward to the call date."
             ],
             [
-                "100% exercise at the first retained call date, at par, with no call premium.",
+                "Declared bonds use supported retained issuer-call schedules and contractual redemption prices. Undeclared bonds retain the legacy scalar-date, par assumption.",
                 "Securities without a retained call date are unchanged."
             ]),
+        new(HolderPutScenarioId, "Holder put", "Assume exercise at the first supported declared holder-put date.",
+            ["Use retained whole-redemption price and coupon entitlement."],
+            ["Analytical election only; no exercise or payment authority."]),
         new(
             RedemptionWaveScenarioId,
             "Redemption wave 20%",
@@ -138,6 +145,20 @@ public static class PortfolioCashLadderEngine
         var callDates = string.Equals(scenarioId, EarlyCallScenarioId, StringComparison.OrdinalIgnoreCase)
             ? SelectEarlyCallDates(inputs.Positions, inputs.AsOfDate, windowEnd)
             : new Dictionary<Guid, DateOnly>();
+        if (scenarioId is EarlyCallScenarioId or HolderPutScenarioId)
+        {
+            foreach (var position in inputs.Positions.Where(position => HasDeclaredTerms(position.Operations) && position.Quantity != 0m))
+            {
+                // Amount-path validation returns the actionable blocker; currency inspection is read-only.
+                try
+                {
+                    var redemption = ResolveDeclaredRedemption(position, inputs, scenarioId, inputs.AsOfDate, windowEnd);
+                    if (redemption is not null)
+                        callDates[position.Operations.Subject.SecurityId] = redemption.ExerciseDate;
+                }
+                catch (Exception error) when (error is InvalidOperationException or ArgumentException or ArithmeticException) { }
+            }
+        }
         foreach (var position in inputs.Positions)
         {
             var hasCallDate = callDates.TryGetValue(position.Operations.Subject.SecurityId, out var callDate);
@@ -179,6 +200,13 @@ public static class PortfolioCashLadderEngine
 
         var scenario = ResolveScenario(scenarioId, warnings);
         warnings.AddRange(inputs.PositionSourceNotices);
+        if (inputs.DecisionBlockers.Count == 0)
+        {
+            try
+            { ValidateDeclaredScenario(inputs, scenario.ScenarioId, windowStart, windowEnd); }
+            catch (Exception error) when (error is InvalidOperationException or ArgumentException or ArithmeticException)
+            { inputs = inputs with { DecisionBlockers = [error.Message] }; }
+        }
         if (inputs.DecisionBlockers.Count > 0)
         {
             return new PortfolioCashLadderDto(
@@ -480,7 +508,8 @@ public static class PortfolioCashLadderEngine
         {
             RatesUpScenarioId => ApplyRateShift(contributions, inputs, RateShiftPerHundredBps),
             RatesDownScenarioId => ApplyRateShift(contributions, inputs, -RateShiftPerHundredBps),
-            EarlyCallScenarioId => ApplyEarlyCall(contributions, inputs, windowStart, windowEnd),
+            EarlyCallScenarioId => ApplyDeclaredRedemptions(ApplyEarlyCall(contributions, inputs, windowStart, windowEnd), inputs, scenarioId, windowStart, windowEnd),
+            HolderPutScenarioId => ApplyDeclaredRedemptions(contributions, inputs, scenarioId, windowStart, windowEnd),
             RedemptionWaveScenarioId => ApplyRedemptionWave(contributions, inputs, openingCash, windowStart, windowEnd, warnings),
             FxAdverseScenarioId => ApplyFxAdverse(contributions, inputs),
             _ => contributions
@@ -491,7 +520,9 @@ public static class PortfolioCashLadderEngine
         PortfolioCashLadderInputs inputs,
         decimal rateShift)
     {
+        contributions = ApplyDeclaredRateShift(contributions, inputs, rateShift);
         var floatingSecurityIds = inputs.Positions
+            .Where(position => !HasDeclaredTerms(position.Operations))
             .Where(static position => TermsIndicateFloatingRate(position.Operations, SelectProjectionRun(position.Operations)))
             .Select(static position => position.Operations.Subject.SecurityId)
             .ToHashSet();
@@ -595,6 +626,8 @@ public static class PortfolioCashLadderEngine
         var callDates = new Dictionary<Guid, DateOnly>();
         foreach (var position in positions)
         {
+            if (HasDeclaredTerms(position.Operations))
+                continue;
             var callDate = ReadTermsDateForRun(
                 position.Operations,
                 SelectProjectionRun(position.Operations),
@@ -966,6 +999,8 @@ public static class PortfolioCashLadderEngine
         AssetCashFlowProjectionRunDto? run)
     {
         var terms = operations.TermsHistory;
+        if (run?.ExtensionPayload is { } retained && retained.TryGetProperty("termsVersionId", out var pin))
+            return pin.TryGetGuid(out var pinnedId) ? terms.FirstOrDefault(row => row.TermsVersionId == pinnedId) : null;
         if (run is null)
         {
             return terms

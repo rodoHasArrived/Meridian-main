@@ -57,3 +57,11 @@ dates), stored as invariant decimal strings and compared by `FaceValueLotGoldenT
 equality. It is not a defect pin: it freezes governed calculation output before increment 12
 moves `FaceValueLot`'s coupon-date generators onto the kernel. A missing or mismatched fixture
 writes `face-value-lot-constant-yield.received.json` to the test output and fails; it never skips.
+
+## Declared cash-ladder scenarios
+
+Cash-ladder v2 resolves declared issuer-call and holder-put schedules separately, uses contractual
+fixed redemption prices and retains coupon entitlement. `BondConsistencyTests` covers these paths,
+including off-coupon accrued cash, partial principal repayment and unsupported exercise refusal.
+SCH-DEF-009 remains pinned for undeclared records and explicit historical ladder v1 replay; the
+legacy scalar mandatory-put/pre-refund probe is not used for declared bond scenarios.

@@ -22,19 +22,22 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
     private readonly IPortfolioHoldingsSource? _holdingsSource;
     private readonly IPortfolioCashBalanceProvider? _cashBalanceProvider;
     private readonly IPortfolioCapitalScheduleProvider? _capitalScheduleProvider;
+    private readonly Meridian.Contracts.Calendars.IBusinessDayCalendarSource? _calendars;
 
     public PortfolioCashLadderReadService(
         ISecurityMasterQueryService? securityMasterQueryService = null,
         IAssetOperationsQueryService? assetOperationsQueryService = null,
         IPortfolioHoldingsSource? holdingsSource = null,
         IPortfolioCashBalanceProvider? cashBalanceProvider = null,
-        IPortfolioCapitalScheduleProvider? capitalScheduleProvider = null)
+        IPortfolioCapitalScheduleProvider? capitalScheduleProvider = null,
+        Meridian.Contracts.Calendars.IBusinessDayCalendarSource? calendars = null)
     {
         _securityMasterQueryService = securityMasterQueryService;
         _assetOperationsQueryService = assetOperationsQueryService;
         _holdingsSource = holdingsSource;
         _cashBalanceProvider = cashBalanceProvider;
         _capitalScheduleProvider = capitalScheduleProvider;
+        _calendars = calendars;
     }
 
     public async Task<PortfolioCashLadderDto> GetCashLadderAsync(
@@ -114,6 +117,7 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
             query.MinimumCashThreshold ?? 0m,
             Math.Max(1, query.BucketDays))
         {
+            Calendars = _calendars,
             PositionSourceNotices = positionNotices
         };
 
