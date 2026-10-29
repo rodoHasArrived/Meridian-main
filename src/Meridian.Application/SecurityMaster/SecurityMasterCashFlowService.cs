@@ -45,14 +45,25 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         ISecurityMasterQueryService queryService,
         ILogger<SecurityMasterCashFlowService> logger,
         IStructuredCashFlowLedgerBridge? ledgerBridge = null,
-        ISecurityForwardCurveProvider? forwardCurves = null,
-        IBondCalculationPolicy? bondPolicy = null,
-        ISecurityCashFlowReceiptStore? receiptStore = null)
-        : this(null, store, providers, queryService, logger, ledgerBridge, forwardCurves, bondPolicy, receiptStore)
+        ISecurityForwardCurveProvider? forwardCurves = null)
+        : this(null, store, providers, queryService, logger, ledgerBridge, forwardCurves, null, null)
     {
     }
 
-    /// <summary>Composes declared schedules with the host's explicit calendar source.</summary>
+    /// <summary>Preserves the seven-argument CLR signature shipped with declared calendars.</summary>
+    public SecurityMasterCashFlowService(
+        IBusinessDayCalendarSource? calendars,
+        ISecurityMasterCashFlowStore store,
+        IEnumerable<IStructuredCashFlowProvider> providers,
+        ISecurityMasterQueryService queryService,
+        ILogger<SecurityMasterCashFlowService> logger,
+        IStructuredCashFlowLedgerBridge? ledgerBridge,
+        ISecurityForwardCurveProvider? forwardCurves)
+        : this(calendars, store, providers, queryService, logger, ledgerBridge, forwardCurves, null, null)
+    {
+    }
+
+    /// <summary>Composes declared calendars and optional cutover and receipt ports for the host.</summary>
     public SecurityMasterCashFlowService(
         IBusinessDayCalendarSource? calendars,
         ISecurityMasterCashFlowStore store,
