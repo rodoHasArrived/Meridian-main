@@ -123,7 +123,7 @@ export function WorkspaceWorkbenchShell({
             tabIndex={-1}
             onKeyDownCapture={(event) => {
               const target = event.target;
-              if (!switchInspector || event.key !== "Escape" || !(target instanceof HTMLElement)) return;
+              if (!switchInspector || !detailOpen || event.key !== "Escape" || !(target instanceof HTMLElement)) return;
               // Portalled dialogs and nested popup controls own their Escape key.
               if (!event.currentTarget.contains(target) || target.closest('[role="dialog"], [role="menu"], [role="listbox"], select')) return;
               // Restore focus after the queue is visible; the dense panel may also
