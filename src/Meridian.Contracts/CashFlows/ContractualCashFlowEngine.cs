@@ -101,7 +101,7 @@ public static partial class ContractualCashFlowEngine
         });
         var replay = Replay(run);
         return actualOutput == run.Result.Evidence.OutputHash && replay.Evidence.OutputHash == actualOutput
-            && replay.Evidence.InputHash == run.Result.Evidence.InputHash
+            && Hash(replay.Evidence) == Hash(run.Result.Evidence)
             && (run.Result.ResolvedContract is null || Hash(run.Result.ResolvedContract) == Hash(run.Contract));
     }
 
