@@ -36,9 +36,10 @@ export function DataProvenanceBanner({
   return (
     <section
       aria-label="Data provenance"
-      className="border-b border-border bg-surface px-4 py-2"
+      className="workstation-provenance border-b border-border bg-surface px-4 py-2"
     >
       <StatusBanner
+        className="workstation-provenance-banner"
         tone={badge.provenance === "unknown" ? "warning" : "danger"}
         role={badge.role}
         aria-live={badge.ariaLive}

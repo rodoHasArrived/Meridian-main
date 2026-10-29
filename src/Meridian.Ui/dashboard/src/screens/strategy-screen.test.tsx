@@ -942,20 +942,20 @@ describe("StrategyScreen", () => {
 });
 
 describe("StrategyScreen route views", () => {
-  it("renders the overview route as a concise task hub", () => {
+  it("leads the overview with retained runs and retains focused task routes", async () => {
     renderWithRouter(<StrategyScreen data={twoRuns} />, { initialEntries: ["/strategy"] });
 
     const tablist = screen.getByRole("tablist", { name: "Strategy routes" });
     expect(tablist).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Overview", selected: true })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Strategy overview" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Choose the next strategy task" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Open Designer" })).toHaveAttribute("href", "/strategy/designer");
-    expect(screen.getByRole("link", { name: "Open Strategy Lab" })).toHaveAttribute("href", "/strategy/lab");
-    expect(screen.getByRole("link", { name: "Open Promotions" })).toHaveAttribute("href", "/strategy/promotions");
+    expect(screen.getByRole("treegrid", { name: "Retained strategy runs" })).toBeInTheDocument();
+    await userEvent.setup().click(screen.getByText("Strategy authoring and analysis tools"));
+    expect(screen.getAllByRole("link", { name: /^Open Designer:/ })[0]).toHaveAttribute("href", "/strategy/designer");
+    expect(screen.getByRole("link", { name: /^Open Strategy Lab:/ })).toHaveAttribute("href", "/strategy/lab");
+    expect(screen.getByRole("link", { name: /^Open Promotions:/ })).toHaveAttribute("href", "/strategy/promotions");
     expect(screen.getByText("PlotTool analytics")).toBeInTheDocument();
-    expect(screen.getByText("Run history remains available, but PlotTool analytics needs a governed provider connection."))
-      .toBeInTheDocument();
+
     expect(screen.getByRole("link", { name: "Review provider connections for PlotTool analytics" }))
       .toHaveAttribute("href", "/settings/providers");
     expect(screen.queryByText("PlotTool workstation")).not.toBeInTheDocument();
