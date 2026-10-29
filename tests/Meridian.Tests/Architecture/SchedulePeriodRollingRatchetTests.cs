@@ -43,10 +43,6 @@ public sealed class SchedulePeriodRollingRatchetTests
     {
         // RegularCouponDates and BackwardCouponDates (constant-yield amortization).
         ["src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs"] = 2,
-        // The projection roll in BuildProjectedFlows.
-        ["src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs"] = 1,
-        // The monthly projection roll in BuildFlows.
-        ["src/Meridian.Application/DirectLending/InMemoryDirectLendingService.Workflows.cs"] = 1,
     };
 
     // Repository-relative path → single date offsets that are not period rolls and stay by design.

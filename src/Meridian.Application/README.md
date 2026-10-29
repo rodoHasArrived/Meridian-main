@@ -1305,3 +1305,17 @@ Receipt replay returns its exact selected quote, comparisons, hierarchy and cuto
 the original security/account scope, without consulting live prices. Timestamp-only re-evaluation
 can legitimately change after an earlier-started transaction commits; timestamps are eligibility
 filters, while `SelectionReceiptId` is the durable replay identity.
+
+
+Canonical Security Master create/amend validates supplied field shapes before decoding and the
+canonical resultant record before persistence through the asset-pack admission gate. Array items
+are checked recursively against registered schemas, while retained reads preserve versioned-container
+and profile authority. The canonical gate also checks schedule semantics on patch-less amendments;
+retained declarations must satisfy the current write rules before an amendment re-emits them.
+Caller-correctable admission failures retain the typed HTTP refusal contract. See
+[asset-pack admission](../../docs/domain/security-asset-pack-admission.md).
+Direct-lending projections use the shared kernel for legacy date stepping, and daily PIK, cash-interest
+and commitment-fee accrual use one-day kernel periods. Formula-version-one amounts and projection stamps
+remain unchanged. Automatic capitalization/reset policy and formula-version rollout remain separate
+work because payment cadence does not establish capitalization or reset dates; manual resets retain
+the requested effective date.

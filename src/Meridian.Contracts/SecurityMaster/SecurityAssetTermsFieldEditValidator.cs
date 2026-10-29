@@ -151,6 +151,13 @@ public static class SecurityAssetTermsFieldEditValidator
             return false;
         }
 
+        if (nestedPath.Length > 0 && !string.IsNullOrWhiteSpace(newValue)
+            && TargetsVersionedContainer(assetClass, field, nestedPath))
+        {
+            error = "Declared schedule containers carry window, convention and scalar consistency rules; replace the whole container instead of editing a member.";
+            return false;
+        }
+
         if (nestedPath.Length > 0
             && field.Type is not (SecurityAssetTermFieldType.Object or SecurityAssetTermFieldType.Array))
         {
@@ -182,6 +189,29 @@ public static class SecurityAssetTermsFieldEditValidator
 
             canonicalFieldPath = BuildCanonicalPath(field.Key, nestedPath);
             return true;
+        }
+
+        if (SecurityVersionedTerms.IsVersionedContainer(field))
+        {
+            try
+            {
+                using var unset = JsonDocument.Parse(newValue);
+                if (!SecurityAssetTermsSchema.IsPopulatedTermValue(unset.RootElement))
+                {
+                    canonicalFieldPath = BuildCanonicalPath(field.Key, nestedPath);
+                    return true;
+                }
+                if (field.Key == SecurityVersionedTerms.ScheduleConventionsKey
+                    && (SecurityAssetTermsSchema.Field(assetClass, "issueDate") is null || SecurityAssetTermsSchema.Field(assetClass, "paymentFrequency") is null))
+                {
+                    error = "Declared schedule conventions require schema-declared issueDate and paymentFrequency anchors.";
+                    return false;
+                }
+            }
+            catch (JsonException)
+            {
+                // The ordinary declared-type diagnostic below owns malformed JSON.
+            }
         }
 
         if (!ValueCoercesToType(field.Type, newValue))
@@ -222,7 +252,90 @@ public static class SecurityAssetTermsFieldEditValidator
             return false;
         }
 
+        if (field.Type is SecurityAssetTermFieldType.Object or SecurityAssetTermFieldType.Array)
+        {
+            using var replacement = JsonDocument.Parse(newValue);
+            if (!ContainerMembersMatchSchema(assetClass, field.Key, field, replacement.RootElement,
+                    SecurityVersionedTerms.IsVersionedContainer(field), out error))
+                return false;
+        }
+
         canonicalFieldPath = BuildCanonicalPath(field.Key, nestedPath);
+        return true;
+    }
+
+    private static bool TargetsVersionedContainer(string assetClass, SecurityAssetTermField field, string nestedPath)
+    {
+        if (SecurityVersionedTerms.IsVersionedContainer(field))
+            return true;
+        var firstMember = nestedPath.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .FirstOrDefault(static part => !part.All(char.IsAsciiDigit));
+        return firstMember is not null && SecurityAssetTermsSchema.ElementFields(assetClass, field.Key)
+            .Any(member => SecurityVersionedTerms.IsVersionedContainer(member)
+                && member.Key.Equals(firstMember, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool ContainerMembersMatchSchema(string assetClass, string schemaPath, SecurityAssetTermField container,
+        JsonElement value, bool exactKeys, out string? error)
+    {
+        error = null;
+        if (value.ValueKind == JsonValueKind.Null)
+            return true;
+        var fields = SecurityAssetTermsSchema.ElementFields(assetClass, schemaPath);
+        if (fields.Count == 0)
+            return true;
+        JsonElement[] rows = container.Type == SecurityAssetTermFieldType.Array ? value.EnumerateArray().ToArray() : [value];
+        foreach (var row in rows)
+        {
+            if (SecurityVersionedTerms.IsVersionedContainer(container)
+                && (container.Key is SecurityVersionedTerms.CallScheduleKey or SecurityVersionedTerms.PutScheduleKey)
+                && (row.ValueKind == JsonValueKind.Null
+                    || (row.ValueKind == JsonValueKind.Object && !SecurityAssetTermsSchema.IsPopulatedTermValue(row))))
+                continue;
+            if (row.ValueKind != JsonValueKind.Object)
+            {
+                error = $"Every item of '{schemaPath}' must be a JSON object.";
+                return false;
+            }
+            foreach (var property in row.EnumerateObject())
+            {
+                var member = fields.FirstOrDefault(candidate => exactKeys
+                    ? candidate.Key.Equals(property.Name, StringComparison.Ordinal)
+                    : candidate.Key.Equals(property.Name, StringComparison.OrdinalIgnoreCase)
+                      || candidate.Aliases.Any(alias => alias.Equals(property.Name, StringComparison.OrdinalIgnoreCase)));
+                if (member is null)
+                {
+                    if (!exactKeys)
+                        continue;
+                    error = $"Unknown or case-variant member '{property.Name}' in '{schemaPath}'.";
+                    return false;
+                }
+                if (member.SinceTermsVersion > SecurityAssetClassCatalog.GetTermsVersion(assetClass))
+                    continue;
+                if (property.Value.ValueKind == JsonValueKind.Null)
+                    continue;
+                var correctKind = member.Type switch
+                {
+                    SecurityAssetTermFieldType.String or SecurityAssetTermFieldType.Date or SecurityAssetTermFieldType.Guid => property.Value.ValueKind == JsonValueKind.String,
+                    SecurityAssetTermFieldType.Decimal or SecurityAssetTermFieldType.Integer => property.Value.ValueKind == JsonValueKind.Number,
+                    SecurityAssetTermFieldType.Boolean => property.Value.ValueKind is JsonValueKind.True or JsonValueKind.False,
+                    SecurityAssetTermFieldType.Object => property.Value.ValueKind == JsonValueKind.Object,
+                    SecurityAssetTermFieldType.Array => property.Value.ValueKind == JsonValueKind.Array,
+                    _ => false
+                };
+                var text = property.Value.ValueKind == JsonValueKind.String ? property.Value.GetString()! : property.Value.GetRawText();
+                if (!correctKind || !ValueCoercesToType(member.Type, text)
+                    || (member.Type == SecurityAssetTermFieldType.String && (!member.Allows(text) || !member.SatisfiesConvention(text))))
+                {
+                    error = $"Member '{schemaPath}.{member.Key}' does not match its declared type or vocabulary.";
+                    return false;
+                }
+                if (member.Type is SecurityAssetTermFieldType.Object or SecurityAssetTermFieldType.Array
+                    && !ContainerMembersMatchSchema(assetClass, $"{schemaPath}.{member.Key}", member, property.Value,
+                        exactKeys || SecurityVersionedTerms.IsVersionedContainer(member), out error))
+                    return false;
+            }
+        }
         return true;
     }
 

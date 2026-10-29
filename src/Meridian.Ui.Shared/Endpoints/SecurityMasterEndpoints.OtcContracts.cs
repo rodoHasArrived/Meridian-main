@@ -62,6 +62,47 @@ public static partial class SecurityMasterEndpoints
         .Produces<OtcContractDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
+        group.MapGet(UiApiRoutes.SecurityMasterOtcContractLifecycle, async (
+            Guid contractId, [FromServices] IOtcContractStore store, CancellationToken ct) =>
+        {
+            if (await store.GetContractAsync(contractId, ct).ConfigureAwait(false) is null)
+                return Results.NotFound();
+            return Results.Json(await store.GetLifecycleEventsAsync(contractId, ct).ConfigureAwait(false), jsonOptions);
+        })
+        .WithName("GetSecurityMasterOtcContractLifecycle").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
+        .Produces<IReadOnlyList<OtcContractLifecycleEventDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        group.MapPost(UiApiRoutes.SecurityMasterOtcContractLifecycle, async (
+            Guid contractId, AppendOtcContractLifecycleRequest request, HttpContext context,
+            [FromServices] IOtcContractStore store, CancellationToken ct) =>
+        {
+            if (contractId != request.ContractId)
+                return Results.BadRequest(new { error = "Route and lifecycle contract ids must match." });
+            try
+            {
+                return await MutateAsync(context, () => store.AppendLifecycleEventAsync(
+                    OtcContractLifecycleRules.Normalize(request with { Actor = ResolveActor(context) }), ct), jsonOptions).ConfigureAwait(false);
+            }
+            catch (InvalidOperationException exception)
+            {
+                return Results.Conflict(new { error = exception.Message });
+            }
+            catch (NotSupportedException)
+            {
+                return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+            }
+        })
+        .WithName("AppendSecurityMasterOtcContractLifecycle").RequirePermission(UserPermission.ModifySecurityMaster)
+        .Produces<OtcContractLifecycleEventDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status503ServiceUnavailable)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
         /// <summary>Lists master agreements, optionally for one counterparty.</summary>
         group.MapGet(UiApiRoutes.SecurityMasterOtcMasterAgreements, async (
             string? counterparty,

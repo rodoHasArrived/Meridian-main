@@ -9,12 +9,15 @@ using Microsoft.Extensions.Logging;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Calendars;
 using Meridian.Contracts.Catalog;
+using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.SecurityMaster.Schedules;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Identity;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Storage.Calendars;
+using Meridian.Storage.SecurityMaster;
 using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Contracts;
@@ -352,9 +355,19 @@ public sealed class AppServiceRegistrationTests
                     "the desktop composes its own graph and must still log its terms build").Subject;
 
                 var logs = new CapturingLoggerProvider();
+                var capabilityStore = new RecordingTermsCapabilityStore();
+                var capabilityStoreResolutions = 0;
                 services.Replace(ServiceDescriptor.Singleton(configStore));
+                services.Replace(ServiceDescriptor.Singleton<ISecurityMasterTermsCapabilityStore>(_ =>
+                {
+                    capabilityStoreResolutions++;
+                    return capabilityStore;
+                }));
                 services.AddLogging(builder => builder.SetMinimumLevel(LogLevel.Information).AddProvider(logs));
                 await using var serviceProvider = services.BuildServiceProvider();
+
+                serviceProvider.GetRequiredService<ISecurityMasterTermsCapabilityVerifier>()
+                    .Should().BeOfType<SecurityMasterTermsCapabilityVerifier>();
 
                 serviceProvider.GetRequiredService<IBusinessDayCalendarSource>()
                     .Should().BeOfType<FileBusinessDayCalendarSource>()
@@ -363,6 +376,11 @@ public sealed class AppServiceRegistrationTests
                 // Started on its own, as host start does, without starting the desktop's other workers.
                 var hosted = (IHostedService)ActivatorUtilities.CreateInstance(serviceProvider, capability.ImplementationType!);
                 await hosted.StartAsync(CancellationToken.None);
+
+                capabilityStoreResolutions.Should().Be(securityMasterConfigured ? 1 : 0,
+                    "only a configured desktop writer resolves capability-floor persistence");
+                capabilityStore.ReadCount.Should().Be(securityMasterConfigured ? 1 : 0,
+                    "the real verifier reads the configured writer's floor at startup");
 
                 logs.Messages.Should().ContainSingle(
                         static message => message.StartsWith("Security Master terms capability: ", StringComparison.Ordinal))
@@ -436,6 +454,24 @@ public sealed class AppServiceRegistrationTests
 
     private static T ResolveRequired<T>(IServiceProvider serviceProvider) where T : notnull
         => serviceProvider.GetRequiredService<T>();
+
+    private sealed class RecordingTermsCapabilityStore : ISecurityMasterTermsCapabilityStore
+    {
+        public int ReadCount { get; private set; }
+
+        public Task<SecurityMasterTermsCapabilityState> ReadAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            ReadCount++;
+            return Task.FromResult(new SecurityMasterTermsCapabilityState(true,
+                new SecurityMasterTermsCapabilityFloor(
+                    SecurityVersionedTerms.DeclaredScheduleMappingVersion,
+                    ScheduleGenerator.KernelVersion,
+                    "desktop-capability-unit-fixture",
+                    "AppServiceRegistrationTests",
+                    new DateTimeOffset(2026, 10, 28, 0, 0, 0, TimeSpan.Zero))));
+        }
+    }
 
     private sealed class CapturingLoggerProvider : ILoggerProvider
     {

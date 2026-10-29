@@ -924,12 +924,13 @@ describe("DataScreen", () => {
     expect(screen.queryByRole("region", { name: "Backfill route focus" })).not.toBeInTheDocument();
   });
 
-  it("keeps the old static Security Master workbench out of the Data route", () => {
+  it("leads Data with repair work and keeps focused tools available", async () => {
     renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data"] });
 
-    expect(screen.getByRole("heading", { name: "Choose the next Data task" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Open Import retained files" })).toHaveAttribute("href", "/data/import");
-    expect(screen.getByRole("link", { name: "Open Provider connections" })).toHaveAttribute("href", "/data/providers");
+    expect(screen.getByRole("treegrid", { name: "Historical repair jobs" })).toBeInTheDocument();
+    await userEvent.setup().click(screen.getByText("Data tools and connections"));
+    expect(screen.getByRole("link", { name: "Open Import retained files: Import retained files" })).toHaveAttribute("href", "/data/import");
+    expect(screen.getAllByRole("link", { name: "Open Provider connections: Provider connections" })[0]).toHaveAttribute("href", "/data/providers");
     expect(screen.queryByRole("treegrid", { name: "Provider health" })).not.toBeInTheDocument();
     expect(screen.queryByRole("textbox", { name: /search securities/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("tab", { name: /show overview/i })).not.toBeInTheDocument();

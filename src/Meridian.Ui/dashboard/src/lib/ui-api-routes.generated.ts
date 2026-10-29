@@ -324,6 +324,7 @@ export const UI_API_ROUTES = {
   SecurityMasterOtcNettingSet: "/api/security-master/otc/netting-sets/{nettingSetId:guid}",
   SecurityMasterOtcContracts: "/api/security-master/otc/contracts",
   SecurityMasterOtcContract: "/api/security-master/otc/contracts/{contractId:guid}",
+  SecurityMasterOtcContractLifecycle: "/api/security-master/otc/contracts/{contractId:guid}/lifecycle",
   SecurityMasterOtcNettingSetExposureSnapshots: "/api/security-master/otc/netting-sets/{nettingSetId:guid}/exposure-snapshots",
   SecurityMasterOtcExposureSnapshot: "/api/security-master/otc/exposure-snapshots/{snapshotId:guid}",
   SecurityMasterOtcCollateralBalances: "/api/security-master/otc/collateral-balances",

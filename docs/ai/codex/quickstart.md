@@ -145,6 +145,13 @@ for handoff by omitting the profile on `test` or explicitly using `--fresh`. Bui
 take the validation lock, including when `test --allow-concurrent` skips external-process detection.
 See [persistent build profiles](../../development/build-observability.md#persistent-build-profiles)
 for profile lifetime and reset instructions.
+`recommend-validation` selects a stable session profile per test project; pass `--fresh` for
+independent-output recommendations. Pure contract/core tests are owned by
+`Meridian.Contracts.UnitTests` and `Meridian.Core.UnitTests`, both in the complete CI roster.
+The complete local gate overlaps only the .NET/browser pair when resources permit, then runs
+docs/workflows serially. Use `bash scripts/ci.sh --jobs 1` for serial execution or `--cold`
+for fresh-build full-gate timing. Warm edit-to-result tracking takes an explicit edit-start
+timestamp; see [measurement definitions](../../development/build-observability.md#local-feedback-latency-and-observed-retries).
 For post-timeout cleanup, inspect `validation-status`, run `dotnet build-server shutdown`, and stop
 only repo-owned abandoned build/test/compiler PIDs before retrying or dispatching hosted proof.
 

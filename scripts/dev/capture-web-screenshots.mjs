@@ -5,6 +5,7 @@ import { createRequire } from "node:module";
 import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
+import { pathToFileURL } from "node:url";
 import {
   createScreenshotApiResolver,
   loadScreenshotScenarioModule,
@@ -155,10 +156,11 @@ function appendLog(logs, prefix, chunk) {
   logs.push(...text.split(/\r?\n/).filter(Boolean).map((line) => `${prefix}${line}`));
 }
 
-async function waitForServer(url, timeoutMs, child, logs) {
+export async function waitForServer(url, timeoutMs, child, logs) {
   const started = Date.now();
   let lastError = "";
   let serverExit = null;
+  let serverError = null;
 
   // Fail fast if the dev server process dies before it ever answers (port
   // conflict, Vite config error, OOM) instead of polling for the full timeout
@@ -166,12 +168,14 @@ async function waitForServer(url, timeoutMs, child, logs) {
   const noteExit = (code, signal) => {
     serverExit = `exit code ${code ?? "null"}${signal ? `, signal ${signal}` : ""}`;
   };
+  const noteError = (error) => { serverError = error; };
   if (child) {
     if (child.exitCode !== null || child.signalCode !== null) {
       noteExit(child.exitCode, child.signalCode);
     } else {
       child.once("exit", noteExit);
     }
+    child.once("error", noteError);
   }
 
   const describeServerExit = () => {
@@ -180,29 +184,47 @@ async function waitForServer(url, timeoutMs, child, logs) {
     return `Dev server exited before becoming ready (${serverExit}).${detail}`;
   };
 
-  while (Date.now() - started < timeoutMs) {
+  try {
+    while (Date.now() - started < timeoutMs) {
+      if (serverError) {
+        throw new Error(`Dev server could not start: ${serverError.message}`, { cause: serverError });
+      }
+      if (serverExit) {
+        throw new Error(describeServerExit());
+      }
+
+      try {
+        const remainingMs = Math.max(1, timeoutMs - (Date.now() - started));
+        const response = await fetch(url, {
+          redirect: "manual",
+          signal: AbortSignal.timeout(Math.min(5000, remainingMs))
+        });
+        // Release the response stream even when it is an HTTP failure. Otherwise
+        // repeated startup probes can retain connections until the overall timeout.
+        await response.body?.cancel();
+        if (response.status >= 200 && response.status < 400) {
+          return;
+        }
+
+        lastError = `HTTP ${response.status}`;
+      } catch (error) {
+        lastError = error instanceof Error ? error.message : String(error);
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, Math.max(0, Math.min(500, timeoutMs - (Date.now() - started)))));
+    }
+
+    if (serverError) {
+      throw new Error(`Dev server could not start: ${serverError.message}`, { cause: serverError });
+    }
     if (serverExit) {
       throw new Error(describeServerExit());
     }
-
-    try {
-      const response = await fetch(url, { redirect: "manual" });
-      if (response.status >= 200 && response.status < 500) {
-        return;
-      }
-
-      lastError = `HTTP ${response.status}`;
-    } catch (error) {
-      lastError = error instanceof Error ? error.message : String(error);
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    throw new Error(`Timed out waiting for ${url}: ${lastError}`);
+  } finally {
+    child?.off("exit", noteExit);
+    child?.off("error", noteError);
   }
-
-  if (serverExit) {
-    throw new Error(describeServerExit());
-  }
-  throw new Error(`Timed out waiting for ${url}: ${lastError}`);
 }
 
 function startViteServer(dashboardDir, host, port, logs) {
@@ -687,7 +709,7 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
   };
 }
 
-async function captureRouteWithRetries(
+export async function captureRouteWithRetries(
   browser,
   capture,
   createApiResolver,
@@ -709,6 +731,7 @@ async function captureRouteWithRetries(
     // page from the attempt that just failed.
     let context = null;
     let tracker = null;
+    let attemptError = null;
     try {
       context = await browser.newContext();
       const page = await context.newPage();
@@ -733,6 +756,10 @@ async function captureRouteWithRetries(
       return result;
     } catch (error) {
       lastError = error;
+      attemptError = error;
+      // A screenshot can have been written before image-size or strict API
+      // assertions fail. Never leave that rejected frame in the passed catalog.
+      await fs.rm(path.join(outputDir, `${capture.name}.png`), { force: true });
       if (attempt < maxAttempts) {
         const message = error instanceof Error ? error.message : String(error);
         console.warn(
@@ -743,11 +770,62 @@ async function captureRouteWithRetries(
     } finally {
       tracker?.dispose();
       onTrackerChange(null);
-      if (context) await context.close();
+      try {
+        if (context) await context.close();
+      } catch (error) {
+        if (attemptError) {
+          // Closing a crashed page must not replace the render failure that
+          // explains why this attempt was rejected.
+          console.warn(`::warning::Could not close capture context: ${error instanceof Error ? error.message : String(error)}`);
+        } else {
+          await fs.rm(path.join(outputDir, `${capture.name}.png`), { force: true });
+          throw error;
+        }
+      }
     }
   }
 
   throw lastError ?? new Error(`Capture ${capture.name} failed after ${maxAttempts} attempt(s).`);
+}
+
+export async function writeCaptureManifest(manifest, manifestPath, logs) {
+  manifest.capturedCount = manifest.captures.filter((capture) => capture.status === "passed").length;
+  manifest.failedCaptureCount = manifest.captures.filter((capture) => capture.status === "failed").length;
+  manifest.unattemptedCaptureCount = Math.max(0, manifest.selectedCaptureCount - manifest.captures.length);
+  manifest.logs = logs.slice(-200);
+  await fs.mkdir(path.dirname(manifestPath), { recursive: true });
+  const temporaryPath = `${manifestPath}.tmp`;
+  await fs.writeFile(temporaryPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+  await fs.rename(temporaryPath, manifestPath);
+}
+
+export async function finalizeCaptureRun(manifest, manifestPath, startedUtc, logs, cleanupTasks) {
+  const hadPrimaryError = manifest.status === "failed";
+  const cleanupErrors = [];
+  for (const task of cleanupTasks) {
+    try {
+      await task.run();
+    } catch (error) {
+      cleanupErrors.push(`${task.name}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  if (cleanupErrors.length > 0) {
+    manifest.cleanupErrors = cleanupErrors;
+    manifest.status = "failed";
+    manifest.error ??= `Capture cleanup failed: ${cleanupErrors.join(" | ")}`;
+  }
+  manifest.finishedAtUtc = new Date().toISOString();
+  manifest.durationSeconds = Number(((Date.now() - startedUtc.getTime()) / 1000).toFixed(2));
+  try {
+    await writeCaptureManifest(manifest, manifestPath, logs);
+  } catch (error) {
+    if (!hadPrimaryError) throw error;
+    // Preserve the original capture error if diagnostics cannot be persisted.
+    console.error(`Could not write capture manifest: ${error instanceof Error ? error.message : String(error)}`);
+  }
+  if (!hadPrimaryError && cleanupErrors.length > 0) {
+    throw new Error(manifest.error);
+  }
 }
 
 async function main() {
@@ -855,6 +933,7 @@ async function main() {
   };
 
   try {
+    await writeCaptureManifest(manifest, manifestPath, logs);
     // Coverage gaps (a live app route with no capture entry) are reported at the
     // end as a run failure rather than aborting before any screenshot is taken,
     // so the catalog stays self-adjusting: every configured screen is still
@@ -907,6 +986,7 @@ async function main() {
       // route's default first-load state. The app shell persists
       // workflow-continuity, activity, and focus state across navigations,
       // so a shared context makes capture results depend on visit order.
+      let fatalError = null;
       try {
         const result = await captureRouteWithRetries(
           browser,
@@ -959,13 +1039,17 @@ async function main() {
           && results.every((result) => result.status === "failed"
             && /App shell failed to mount/.test(String(result.error)))
         ) {
-          throw new Error(
+          fatalError = new Error(
             `Aborting capture run: the app shell failed to mount on the first ${results.length} route(s). `
             + "This is a shell-level failure (activation gate, missing shell fixtures, or a dev server "
             + "compile error), so every remaining route would fail the same way. See the manifest logs."
           );
         }
       }
+      // Persist every completed route so a cancelled job still has a useful
+      // partial manifest, including counts when the shell circuit breaker trips.
+      await writeCaptureManifest(manifest, manifestPath, logs);
+      if (fatalError) throw fatalError;
     }
 
     const proxyErrors = logs.filter((line) => /http proxy error:\s*\/api\//i.test(line));
@@ -1017,24 +1101,18 @@ async function main() {
     manifest.error = error instanceof Error ? error.message : String(error);
     throw error;
   } finally {
-    if (pageErrors) {
-      pageErrors.dispose();
-    }
-    if (browser) {
-      await browser.close();
-    }
-    await stopProcess(server);
-    await scenarioSource.close();
-
-    manifest.finishedAtUtc = new Date().toISOString();
-    manifest.durationSeconds = Number(((Date.now() - startedUtc.getTime()) / 1000).toFixed(2));
-    manifest.logs = logs.slice(-200);
-    await fs.mkdir(path.dirname(manifestPath), { recursive: true });
-    await fs.writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+    await finalizeCaptureRun(manifest, manifestPath, startedUtc, logs, [
+      { name: "page error tracker", run: () => pageErrors?.dispose() },
+      { name: "browser", run: () => browser?.close() },
+      { name: "dev server", run: () => stopProcess(server) },
+      { name: "scenario module", run: () => scenarioSource.close() }
+    ]);
   }
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.stack ?? error.message : error);
-  process.exitCode = 1;
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.stack ?? error.message : error);
+    process.exitCode = 1;
+  });
+}

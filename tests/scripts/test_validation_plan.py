@@ -53,9 +53,68 @@ class ValidationPlanTests(unittest.TestCase):
         self.write("src/Core/Thing.cs", "// source")
         data = self.recommend("src/Core/Thing.cs")
         check = next(c for c in data["checks"] if c["id"] == "dotnet-Core.Tests")
-        self.assertEqual(check["argv"], ["python", "build/python/cli/buildctl.py", "test", "--project", tests, "--queue"])
+        self.assertEqual(check["argv"], ["python", "build/python/cli/buildctl.py", "test", "--project", tests, "--queue",
+                                         "--profile", plan.iteration_profile(tests, plan.profile_build_definitions(self.root))])
         direct = self.recommend("tests/Core.Tests/ThingTests.cs")
         self.assertEqual(len([c for c in direct["checks"] if c["id"].startswith("dotnet-")]), 1)
+
+    def test_warm_recommendations_are_stable_and_separate_same_named_projects(self):
+        projects = [self.project("tests/First/Example.Tests"), self.project("tests/Second/Example.Tests")]
+        commands = [check["argv"] for check in self.recommend(*projects)["checks"] if check["id"].startswith("dotnet-")]
+        profiles = [command[command.index("--profile") + 1] for command in commands]
+        self.assertEqual(len(set(profiles)), 2)
+        for project in projects:
+            profile = plan.iteration_profile(project, {})
+            self.assertEqual(profile, plan.iteration_profile(project, {}))
+            self.assertLessEqual(len(profile.removeprefix("session:")), 64)
+        self.assertTrue(all("--no-build" not in command for command in commands))
+
+    def test_source_edits_reuse_profile_and_build_metadata_edits_rotate_it(self):
+        project = self.project("tests/Example.Tests")
+        source = "tests/Example.Tests/ThingTests.cs"
+        self.write(source, "// before")
+
+        def session():
+            data = self.recommend(source)
+            command = next(check["argv"] for check in data["checks"] if check["id"].startswith("dotnet-"))
+            return command[command.index("--profile") + 1], data
+
+        before, _ = session()
+        self.write(source, "// after")
+        self.assertEqual(session()[0], before)
+        for path, contents in ((project, "<Project><PropertyGroup><IsTestProject>true</IsTestProject></PropertyGroup></Project>"),
+                               ("Directory.Build.props", "<Project><!-- changed --></Project>"),
+                               ("Meridian.sln", "new solution metadata"),
+                               ("global.json", '{"sdk":{"version":"10.0.100"}}')):
+            with self.subTest(path=path):
+                self.write(path, contents)
+                current, data = session()
+                self.assertNotEqual(current, before)
+                self.assertIn(path, [item["path"] for item in data["sources"]])
+                before = current
+
+    def test_profile_definition_scan_is_lazy_once_and_prunes_ignored_trees(self):
+        projects = [self.project("tests/First.Tests"), self.project("tests/Second.Tests")]
+        self.write("artifacts/ignored.csproj", "not XML")
+        self.write("node_modules/ignored.props", "not XML")
+        self.write("tests/First.Tests/obj/ignored.targets", "not XML")
+        with patch.object(plan, "profile_build_definitions", wraps=plan.profile_build_definitions) as scan:
+            data = self.recommend(*projects)
+        self.assertEqual(scan.call_count, 1)
+        self.assertFalse(any("ignored" in item["path"] for item in data["sources"]))
+        with patch.object(plan, "profile_build_definitions", side_effect=AssertionError("unneeded definition scan")):
+            self.recommend("docs/example.md")
+            plan.recommend_validation(self.root, projects, fresh=True)
+
+    def test_fresh_recommendations_retain_final_gate_and_require_builds(self):
+        project = self.project("tests/Example.Tests")
+        data = plan.recommend_validation(self.root, [project], fresh=True)
+        command = next(check["argv"] for check in data["checks"] if check["id"].startswith("dotnet-"))
+        self.assertEqual(data["iterationMode"], "fresh")
+        self.assertIn("--fresh", command)
+        self.assertNotIn("--profile", command)
+        self.assertNotIn("--no-build", command)
+        self.assertEqual(data["requiredFinalChecks"][0]["argv"], ["bash", "scripts/ci.sh"])
 
     def test_shared_contracts_force_both_consumers_without_refs(self):
         self.project("src/Meridian.Contracts")

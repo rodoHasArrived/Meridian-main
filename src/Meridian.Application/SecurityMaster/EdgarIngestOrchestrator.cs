@@ -411,7 +411,7 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
                 {
                     ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
                     [SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.Flat,
-                    [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetTermsVersion(assetClass),
+                    [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetStampFloor(assetClass),
                     ["category"] = "MutualFund",
                     ["subType"] = association.SecurityType,
                     ["issuerName"] = association.Name ?? filer?.Name
@@ -422,7 +422,7 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
                 {
                     ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
                     [SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.Flat,
-                    [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetTermsVersion(assetClass),
+                    [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetStampFloor(assetClass),
                     ["classification"] = "Common",
                     ["shareClass"] = snapshot?.Security12bTitle?.RawValue
                 },

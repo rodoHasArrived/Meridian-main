@@ -54,6 +54,10 @@ public sealed class PostgresTestServer : IAsyncDisposable
         return schema;
     }
 
+    /// <summary>Whether this test-server instance allocated and owns the given schema.</summary>
+    public bool OwnsSchema(string schema)
+        => !string.IsNullOrWhiteSpace(schema) && _ownedSchemas.ContainsKey(schema);
+
     /// <summary>
     /// Creates a server from the connection string in
     /// <paramref name="connectionStringEnvironmentVariable"/> when that variable is set;

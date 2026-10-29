@@ -7,9 +7,11 @@ MSBuild is not evaluated: dynamic references produce explicit coverage warnings.
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path, PurePosixPath
+import re
 import shlex
 import subprocess
 import xml.etree.ElementTree as ET
@@ -89,7 +91,26 @@ def needs_project_graph(root: Path, paths: list[str]) -> bool:
     return False
 
 
-def recommend_validation(root: Path, paths: list[str]) -> dict:
+def profile_build_definitions(root: Path) -> dict[str, str]:
+    """Use exactly the build-profile compatibility inputs without requiring .NET."""
+    path = Path(__file__).with_name("build_profiles.py")
+    spec = importlib.util.spec_from_file_location("meridian_recommendation_build_profiles", path)
+    if spec is None or spec.loader is None:
+        raise ValueError(f"Cannot load build-profile definition reader: {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module._build_definitions(root)
+
+
+def iteration_profile(project: str, definitions: dict[str, str]) -> str:
+    """Keep source edits warm and rotate sessions when build compatibility changes."""
+    label = re.sub(r"[^A-Za-z0-9._-]", "-", Path(project).stem)[:40]
+    identity = json.dumps([project, definitions], sort_keys=True, separators=(",", ":"))
+    digest = hashlib.sha256(identity.encode("utf-8")).hexdigest()[:12]
+    return f"session:checks-{label}-{digest}"
+
+
+def recommend_validation(root: Path, paths: list[str], *, fresh: bool = False) -> dict:
     root = root.resolve()
     if not root.is_dir():
         raise ValueError("repository root must be an existing directory")
@@ -98,6 +119,7 @@ def recommend_validation(root: Path, paths: list[str]) -> dict:
     warnings: set[str] = set()
     consumers: set[str] = set()
     sources: dict[str, str] = {}
+    profile_definitions: dict[str, str] | None = None
 
     def track(path: str) -> bool:
         safe = normalize_path(root, path)
@@ -189,10 +211,19 @@ def recommend_validation(root: Path, paths: list[str]) -> dict:
                     warnings.add(f"Missing referenced project {target} from {relative}; dependency coverage is incomplete.")
 
     def add_dotnet(project: str, affected: list[str], reason: str) -> None:
+        nonlocal profile_definitions
         if not track(project):
             warnings.add(f"Expected test project is unavailable: {project}; select proof manually.")
             return
         argv = ["python", "build/python/cli/buildctl.py", "test", "--project", project, "--queue"]
+        if fresh:
+            argv.append("--fresh")
+        else:
+            if profile_definitions is None:
+                profile_definitions = profile_build_definitions(root)
+                sources.update(profile_definitions)
+                track("build/python/cli/build_profiles.py")
+            argv += ["--profile", iteration_profile(project, profile_definitions)]
         if "Wpf" in project:
             argv.append("--full-wpf-build")
         add("dotnet-" + Path(project).stem, argv, reason, affected)
@@ -324,7 +355,7 @@ def recommend_validation(root: Path, paths: list[str]) -> dict:
         python_check("build/scripts/docs/check-codex-memory.py", paths, "Codex memory routing changed")
     if not paths:
         warnings.add("No changed paths supplied or discovered; no focused checks selected.")
-    return {"schemaVersion": 1, "changedPaths": paths, "checks": sorted(checks.values(), key=lambda c: (c["id"], c["argv"])),
+    return {"schemaVersion": 1, "iterationMode": "fresh" if fresh else "warm-profile", "changedPaths": paths, "checks": sorted(checks.values(), key=lambda c: (c["id"], c["argv"])),
             "affectedConsumers": sorted(consumers), "coverageWarnings": sorted(warnings),
             "sources": [{"path": path, "sha256": sha} for path, sha in sorted(sources.items())],
             "requiredFinalChecks": [
@@ -341,7 +372,7 @@ def run_cli(args) -> int:
         base = getattr(args, "base", None)
         if args.from_git or base is not None or not paths:
             paths.extend(collect_changed_paths(root, base))
-        data = recommend_validation(root, paths)
+        data = recommend_validation(root, paths, fresh=getattr(args, "fresh", False))
         if args.json:
             content = json.dumps(data, indent=2) + "\n"
         else:

@@ -581,8 +581,8 @@ describe("SettingsScreen", () => {
       "Settings"
     );
     expect(screen.queryByRole("tablist", { name: "Settings routes" })).not.toBeInTheDocument();
-    expect(screen.getByRole("list", { name: "Settings tasks" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Open Preferences:/ })).toHaveAttribute("href", "/settings/preferences");
+    expect(screen.getByRole("treegrid", { name: "Settings tasks" })).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: /Open Preferences:/ })[0]).toHaveAttribute("href", "/settings/preferences");
     expect(screen.queryByRole("region", { name: "Profile and authentication posture" })).not.toBeInTheDocument();
   });
 

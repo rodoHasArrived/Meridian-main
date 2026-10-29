@@ -496,6 +496,24 @@
       "sha256": "d048f44b2107e03d26dd2873738226faf1733d87d728d7cff1e407ee6a9de9f0"
     },
     {
+      "filename": "056_otc_contract_lifecycle_events.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 56,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/056_otc_contract_lifecycle_events.sql",
+      "schema": "security_master",
+      "sha256": "954dea0d817f6a8ffabe97b5d65091fe8ff483aa4de1fa1731d2a750eccc69dd"
+    },
+    {
+      "filename": "057_terms_capability_floor.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 57,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/057_terms_capability_floor.sql",
+      "schema": "security_master",
+      "sha256": "0bef8d17b01c2bf8c7db06559af9db546217bb1359c720dfa6423d431149b40d"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -1370,7 +1388,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "d53a65a23d74bd19361826a632d968ac88bd69efe6d7cada388566b6b18ccb94",
+  "fingerprint": "ca3b4dfe92f42d1afa5224c309ef35f2b3e07accfc147e4280790c1619b9970b",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1608,9 +1626,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 152,
+    "files": 154,
     "migration_sets": 10,
-    "waivers": 25,
+    "waivers": 26,
     "warnings": 0
   },
   "waivers": [
@@ -1781,6 +1799,13 @@
       "reason": "Requires human schema/storage review. Replaces only security_governance_events_stream_check with a wider check that keeps every existing stream ('OperatorOverrides', 'Aliases', 'ProjectionRebuild', 'UnderlyingGraph', 'Curves') and admits 'OtcCollateral', so OTC exposure snapshots, collateral balances and margin calls can be recorded in the append-only governance log. No row, column or trigger is removed, and the drop and re-add run in the migration runner's single transaction, so a failure leaves the original constraint in place. A reverse migration must not narrow the check while 'OtcCollateral' rows exist.",
       "review_after": "2027-04-25",
       "rule_id": "migration-drop-table-member"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/056_otc_contract_lifecycle_events.sql",
+      "reason": "Scoped lexical false positive submitted for schema/storage review: BEFORE TRUNCATE declares a rejection trigger protecting append-only OTC lifecycle history. This migration executes no TRUNCATE or data removal. PostgreSQL regression coverage attempts UPDATE, DELETE and TRUNCATE and verifies retained replay. Preserve the trigger.",
+      "review_after": "2027-04-28",
+      "rule_id": "migration-truncate"
     },
     {
       "category": "removed_migrations",

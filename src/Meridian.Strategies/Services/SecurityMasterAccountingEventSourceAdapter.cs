@@ -335,14 +335,16 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                 // instead of silently skipping the amortizing security.
                 RequiresFactorSchedule: currentFactor is < 1m
                     || ReadBool(redemption, "isAmortizing") == true
-                    || HasTypedFactorSchedule(definition)),
+                    || HasTypedFactorSchedule(definition)
+                    // A securitized instrument without typed history must surface missing
+                    // coverage, including older economic records with no history module.
+                    || ResolveAccountingAssetClass(definition) == SecurityAccountingInstrumentClasses.AssetBackedSecurity),
             ToAccountingRule(definition));
     }
 
     private static SecurityAccountingRule? ToAccountingRule(SecurityEconomicDefinitionRecord definition)
     {
         var classification = ReadString(definition.CommonTerms, "accountingClassification") ??
-            ReadString(definition.LegacyAssetSpecificTerms, "accountingClassification") ??
             ReadString(definition.Classification, "accountingClassification");
         if (string.IsNullOrWhiteSpace(classification))
         {
@@ -431,18 +433,10 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             // predecessor falls outside the period still pairs correctly. The first observation
             // pairs against the original-face baseline of 1.0. Dates already asserted by an
             // explicit legacy row are skipped — the explicit prior is authoritative.
-            // The typed rows carry no per-row evidence link; the canonical StructuredCredit record
-            // retains its trustee-report pointer as the free-text factorSchedule field, which is
-            // the retained evidence the paydown projector requires. Rows with no resolvable
-            // evidence still surface — the projector fails them closed with its evidence-required
-            // issue rather than this adapter fabricating a link. The GOVERNED nested pointer wins
-            // over an outer pass-through copy, matching the nested-first precedence of the typed
-            // schedule itself and the shared term-source walk — an ungoverned outer value must not
-            // supply the trustee-report lineage the expected event records.
-            var typedRowEvidence = definition.LegacyAssetSpecificTerms is JsonElement legacyTermsForEvidence
-                ? ReadString(GetObject(legacyTermsForEvidence, "profileFields"), "factorSchedule")
-                    ?? ReadString(legacyTermsForEvidence, "factorSchedule")
-                : null;
+            // Typed rows carry no per-row evidence link. Their trustee-report reference is
+            // retained on the same typed structured-product module. Missing evidence remains
+            // missing and the paydown projector fails closed; the legacy copy cannot supply it.
+            var typedRowEvidence = ReadString(GetObject(definition.EconomicTerms, "structuredProduct"), "factorScheduleReference");
             foreach (var schedule in EnumerateTypedFactorScheduleArrays(definition))
             {
                 var typedRows = new List<(DateOnly AsOfDate, decimal Factor, JsonElement Item)>();
@@ -540,8 +534,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
     }
 
     /// <summary>
-    /// True when the record retains a nonempty typed factor schedule (governed profileFields or
-    /// envelope root) — the presence signal that makes the security factor-driven for coverage
+    /// True when the record retains a nonempty typed factor schedule in its economic module — the presence signal that makes the security factor-driven for coverage
     /// gating regardless of scalar terms.
     /// </summary>
     private static bool HasTypedFactorSchedule(SecurityEconomicDefinitionRecord definition)
@@ -595,31 +588,15 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
 
     /// <summary>
     /// The typed {asOfDate, factor} arrays the canonical F# StructuredCredit serializer persists:
-    /// at the asset-specific-terms root for first-class records, and beneath the profile envelope's
-    /// profileFields for profile-backed ones. Unlike the legacy arrays above, their rows carry no
+    /// in the typed structured-product economic module. Unlike the explicit-prior arrays above, their rows carry no
     /// per-row prior factor.
     /// </summary>
     private static IEnumerable<JsonElement> EnumerateTypedFactorScheduleArrays(SecurityEconomicDefinitionRecord definition)
     {
-        // Governed profileFields rows OWN the typed schedule when they exist, mirroring the term
-        // resolver's precedence: profileFields values are schema- and profile-validated on write,
-        // while an extra outer array on an envelope is ungoverned pass-through. The outer array is
-        // not merely deprioritized but EXCLUDED — each enumerated array derives its own priors
-        // (first observation against the 1.0 baseline), so an outer row on a date the governed
-        // schedule does not cover would synthesize a paydown from a prior the governed history
-        // contradicts, and coveredDates only suppresses exact date matches.
-        var profileFields = definition.LegacyAssetSpecificTerms is JsonElement legacyTerms
-            ? GetObject(legacyTerms, "profileFields")
-            : null;
-        if (TryGetArray(profileFields, "factorScheduleEntries", out var nestedEntries))
+        var structuredProduct = GetObject(definition.EconomicTerms, "structuredProduct");
+        if (TryGetArray(structuredProduct, "factorScheduleEntries", out var entries))
         {
-            yield return nestedEntries;
-            yield break;
-        }
-
-        if (TryGetArray(definition.LegacyAssetSpecificTerms, "factorScheduleEntries", out var rootEntries))
-        {
-            yield return rootEntries;
+            yield return entries;
         }
     }
 
@@ -644,8 +621,8 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
     /// <summary>
     /// Resolves the accounting-slice instrument class from the classification the record DECLARES,
     /// via <see cref="SecurityAssetClassCatalog.ResolveAccountingInstrumentClass"/>. The declared
-    /// names are offered most-specific first — the legacy (canonical) asset class, then the type
-    /// name, then the sub-type — with the coarse taxonomy asset class last.
+    /// names are offered most-specific first — the type name, then the sub-type — with the coarse taxonomy asset class last.
+    /// The legacy passthrough is not an independent source of classification authority.
     /// <para>
     /// <see cref="SecurityEconomicDefinitionRecord.AssetFamily"/> is deliberately NOT consulted. It
     /// is a reporting rollup label, not an instrument identity: <c>CashSweep</c> and
@@ -663,7 +640,6 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
     /// </summary>
     private static string ResolveAccountingAssetClass(SecurityEconomicDefinitionRecord definition)
         => SecurityAssetClassCatalog.ResolveAccountingInstrumentClass(
-               definition.LegacyAssetClass,
                definition.TypeName,
                definition.SubType,
                definition.AssetClass)

@@ -184,6 +184,9 @@ internal static class AheadOfWriteFixtures
         return legs.ToJsonString();
     }
 
+    public static string StrayContainerReason(string key, int since)
+        => $"Invalid declared schedule terms: Retained undeclared '{key}' cannot be promoted by an unrelated amendment; explicitly clear it or submit a fully validated replacement stamped at version {since} or later.";
+
     public static JsonElement Parse(string json)
     {
         using var document = JsonDocument.Parse(json);

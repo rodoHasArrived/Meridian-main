@@ -130,6 +130,14 @@ GNU Make targets are optional convenience wrappers. In Windows shells where `whe
 nothing, use the direct `dotnet`, `npm`, `pwsh`, and `python` commands above instead of `make ...`.
 
 Prefer the narrowest validation command that matches the touched files.
+
+For incremental .NET iteration, `buildctl.py recommend-validation` selects a stable session profile
+per test project; add `--fresh` for independent-output recommendations. The local full gate overlaps
+the .NET/browser pair within a bounded resource budget and runs docs/workflows afterward; `--jobs 1`
+selects serial execution. `bash scripts/ci.sh --cold` measures fresh build outputs with dependency
+caches retained. Warm edit-to-result timing requires an explicit edit-start timestamp. See
+`docs/development/build-observability.md` for measurement definitions and retained evidence.
+
 For completed PR-ready work, use `bash scripts/ci.sh`; GitHub Actions `Meridian CI / quality-gate`
 is the authoritative merge result. Local work may happen on `main` when the user explicitly requests
 it or the checkout is intentionally operating there, but PR-ready publishing should flow through a

@@ -786,3 +786,24 @@ This command verifies referenced files and directories exist; it does not valida
     `paymentCalendars`, with no fallback to `commonTerms.holidayCalendarId` or `WEEKENDS`, and
     increment 5b-1 requires block calendars on every American entry and on `Business` notice. The
     rest of the proposal stands for increment 8 to adopt or amend.
+
+- **Declared contractual principal integration (2026-10-28).** A nonempty in-term
+  `principalSchedule` with retained face now joins the declared coupon grid. Each principal row
+  already states a cash date: it stays on that date, without a coupon business-day adjustment or
+  lag. Rows sharing a date aggregate, interest accrues before a same-day principal reduction, and
+  the residual redemption follows the final coupon payment date. A payment within the coupon's
+  lag reduces later accrual; it does not extend the preceding coupon's accrual window. A mid-period
+  as-of excludes completed principal cash while reconstructing its contribution to the full
+  still-payable coupon. Dated factors must agree with those retained cash movements; unexplained
+  factor changes are refused. Real dated amounts without retained face are refused rather than
+  capped to the normalized 100-unit analytical basis.
+
+  Existing coupon defaults remain: DayCount uses the declared day-count fraction; a Level stub
+  also uses that fraction. Only a regular Level coupon containing an interior principal reduction
+  needs an additional allocation rule: each segment's declared day-count fraction divided by the
+  full adjusted period's fraction, then divided by periods per year. This preserves the fixed
+  regular coupon for constant balance while weighting the outstanding balances consistently with
+  the declared day count. An unavailable or nonpositive full-period fraction refuses allocation.
+  Zero-rate coupons bypass day-count computation as before. Business/252 records every segment and
+  full-period window it queries in existing calendar/coverage evidence, and the declared ledger
+  gate remains in force.
