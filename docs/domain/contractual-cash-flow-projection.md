@@ -42,7 +42,8 @@ that does not amend terms or replace an assigned provider/client schedule.
 - Accrual splits at interior rate/reset, principal/notional and exercise dates. PIK capitalizes
   at accrual end. On a cash date, coupon/capitalization and scheduled principal precede redemption;
   forecast prepayment follows on the surviving balance. Full payoff ends future accrual. Unpaid
-  lagged coupon cash survives its accrual-end principal reduction.
+  earned coupons retain their declared payment dates after principal reduction or redemption;
+  only the open period's accrued interest settles with redemption.
 - Formula amortization supports equal principal and level payments. A recast recalculates remaining
   formula installments; preserved payments shorten the term. Arbitrary schedules cannot recast.
   Absolute notional resets cannot also carry elective balance reductions.

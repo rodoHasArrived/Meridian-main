@@ -31,7 +31,7 @@
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
       "readme_hash": "3e0b38f53046251a607990afeb5714a29779811d8fd8e8bb058780d2b334dd10",
-      "source_hash": "484ed8642d5783bd3451d9091ab2bb5646543f2b2dcfd5ac9efacbb15104cf85"
+      "source_hash": "90050876ed7ab9bbeade8a202c00e3b00d9a7ee7c92372893022a710866b71e5"
     },
     {
       "id": "SRC-CORE",
@@ -87,7 +87,7 @@
       "path": "src/Meridian.Instruments",
       "readme": "src/Meridian.Instruments/README.md",
       "readme_hash": "a641fab17270e407e0001339e38f74b784e33db2ba50a5ad98ba8beb6fced873",
-      "source_hash": "51d9b171871cc5513c12880e5d0b29eca6c66f6c8315fb0f9ee5d838bc83619e"
+      "source_hash": "0ecac69b31678401806232a9ab49b45c0b70210dd7d06277844e83b67b80ec44"
     },
     {
       "id": "SRC-DESIGN-PLATFORM",

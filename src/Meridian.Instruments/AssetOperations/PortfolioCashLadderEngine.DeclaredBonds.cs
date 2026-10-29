@@ -12,13 +12,13 @@ public static partial class PortfolioCashLadderEngine
 
     private static bool HasDeclaredTerms(AssetOperationsDetailDto operations)
     {
-        if (!operations.Subject.AssetClass.Equals("Bond", StringComparison.OrdinalIgnoreCase))
+        if (!SecurityAssetClassCatalog.GetOrDefault(operations.Subject.AssetClass).CarriesBondCouponStructure)
             return false;
         var terms = SelectTermsForRun(operations, SelectProjectionRun(operations));
         return (terms is not null ? new[] { terms } : operations.TermsHistory)
             .Any(row => row.ExtensionPayload is { } payload && EnumerateTermSources(payload)
                 .Any(source => source.EnumerateObject().Any(member =>
-                    member.Name.Equals("scheduleConventions", StringComparison.OrdinalIgnoreCase)
+                    member.Name.Equals(SecurityVersionedTerms.ScheduleConventionsKey, StringComparison.OrdinalIgnoreCase)
                     && member.Value.ValueKind == JsonValueKind.Object && member.Value.EnumerateObject().Any())));
     }
 

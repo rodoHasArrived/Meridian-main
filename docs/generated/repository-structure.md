@@ -11211,6 +11211,7 @@ Meridian-main
 │   │   │   ├── BondAnalyticsServiceTests.cs
 │   │   │   ├── BondCanonicalProjectionTests.cs
 │   │   │   ├── BondConsistencyTests.cs
+│   │   │   ├── BondExerciseDelayedCouponTests.cs
 │   │   │   ├── BondMigrationServiceTests.cs
 │   │   │   ├── BondProjectionServiceTests.cs
 │   │   │   └── BondReferenceExpansionTests.cs
