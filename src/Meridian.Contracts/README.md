@@ -11,6 +11,11 @@ last_reviewed: 2026-10-21
 
 # src/Meridian.Contracts
 
+Provider ownership command DTOs carry a connection request/environment, explicit host provider
+selection, or a migration identity/expected generation. Tenant and actor are absent by design and
+come from authenticated server context. Credential migration receipts live with the vault contract;
+none of these commands expose secret values.
+
 `SecurityAssetPackRegistry` owns operational readiness specifications, depth targets, registered
 profile-to-class mappings and profile classification keywords. Every catalog class receives a
 readiness row; classes without a specialized profile carry a persistent operational-profile review

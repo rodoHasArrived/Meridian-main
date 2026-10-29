@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Protected signing prerequisite recheck; not release or application certification",
+  "repository": "rodoHasArrived/Meridian-main",
+  "workflow": "Release Readiness",
+  "runId": 40294900031,
+  "runAttempt": 4,
+  "runUrl": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/40294900031/attempts/4",
+  "workflowCommit": "65e65ed317d086ec68a39e7df6105ffd9d8e8aa3",
+  "action": "Reran failed jobs of the existing readiness run without creating a release tag",
+  "signingJob": {
+    "id": 123675182705,
+    "startedAtUtc": "2026-10-29T19:15:44Z",
+    "completedAtUtc": "2026-10-29T19:16:11Z",
+    "conclusion": "failure",
+    "observedErrorAtUtc": "2026-10-29T19:16:06.9117067Z",
+    "problem": "signing-secrets-unavailable"
+  },
+  "runCompletedAtUtc": "2026-10-29T19:16:38Z",
+  "signingOwner": "Andrew Rowden",
+  "tagCreated": false,
+  "limitations": [
+    "Observed workflow conclusion and signing-job error; artifact archive was not independently inspected",
+    "The rerun uses a historical workflow commit and does not certify the implementation branch",
+    "The successful runner-observation job was inherited from an earlier attempt, not remeasured here"
+  ]
+}

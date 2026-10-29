@@ -29,7 +29,7 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
             var credentialStore = sp.GetService<IProviderCredentialStore>();
             return credentialStore is null
                 ? fallback
-                : new StoredProviderCredentialResolver(credentialStore, fallback);
+                : new StoredProviderCredentialResolver(credentialStore, fallback, sp.GetRequiredService<ConfigStore>());
         });
 
         var registrationConfig = new ConfigStore(options.ConfigPath).Load();

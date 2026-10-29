@@ -11,6 +11,13 @@ last_reviewed: 2026-10-21
 
 # src/Meridian.Application
 
+`ProviderRuntimeCredentialService` owns explicit host defaults and ownership-checked migration
+commands. Host composition supplies the current `ConfigStore` to `StoredProviderCredentialResolver`;
+it revalidates one retained tenant/connection/account/environment under the configuration lease before
+reading the scoped vault. Owned, ambiguous or dangling selections never fall back. Entirely legacy
+families retain their prior policy. Host selection requires provider reconstruction; credential editing
+does not hot-activate a running collector. See [credential operations](../../docs/operators/provider-credentials.md#explicit-connection-ownership-and-host-selection).
+
 `SecurityMasterOperationalReadinessService` consumes the asset-pack registry for all class-specific
 readiness metadata. It publishes every catalog class and keeps catalog-derived fallback profiles
 under review even when retained evidence is ready. Requests and scoped evidence share canonical

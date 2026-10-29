@@ -2582,6 +2582,8 @@ Meridian-main
 │   │   │   │   └── verify-trial.py
 │   │   │   ├── next-work-20261028
 │   │   │   │   └── release-readiness.md
+│   │   │   ├── next-work-20261029
+│   │   │   │   └── release-readiness.json
 │   │   │   ├── program-state-20261014
 │   │   │   │   └── main-validation.json
 │   │   │   ├── w10-615abde9
@@ -3967,6 +3969,7 @@ Meridian-main
 │   │   ├── owned-process.mjs
 │   │   ├── preflight_runner.py
 │   │   ├── prepare-dk1-operator-signoff.ps1
+│   │   ├── prepare-next-work-acceptance.ps1
 │   │   ├── robinhood-options-smoke.ps1
 │   │   ├── run-desktop-workflow.ps1
 │   │   ├── run-desktop.ps1
@@ -4269,6 +4272,7 @@ Meridian-main
 │   │   │   ├── ProviderOperationsSupportServices.cs
 │   │   │   ├── ProviderRoutingEngine.cs
 │   │   │   ├── ProviderRoutingMapper.cs
+│   │   │   ├── ProviderRuntimeCredentialService.cs
 │   │   │   └── ProviderSetupService.cs
 │   │   ├── Reconciliation
 │   │   │   ├── LedgerJournalInternalTransactionSource.cs
@@ -4583,6 +4587,7 @@ Meridian-main
 │   │   │   ├── OptionsModels.cs
 │   │   │   ├── PositionLotModels.cs
 │   │   │   ├── ProviderCatalog.cs
+│   │   │   ├── ProviderCredentialOwnershipApiModels.cs
 │   │   │   ├── ProviderInstrumentCapabilityMatrix.cs
 │   │   │   ├── ProviderRateLimits.cs
 │   │   │   ├── ProviderReadinessModels.cs
@@ -5140,7 +5145,9 @@ Meridian-main
 │   │   ├── Credentials
 │   │   │   ├── CredentialStatus.cs
 │   │   │   ├── FileProviderCredentialStore.cs
+│   │   │   ├── FileProviderCredentialStore.OwnershipMigration.cs
 │   │   │   ├── ICredentialStore.cs
+│   │   │   ├── IProviderCredentialOwnershipMigration.cs
 │   │   │   ├── IProviderCredentialStore.cs
 │   │   │   ├── LegacyCredentialFileMigration.cs
 │   │   │   ├── OAuthToken.cs
@@ -8478,6 +8485,7 @@ Meridian-main
 │   │   │   ├── ProviderConnectionDiagnosticsProjection.cs
 │   │   │   ├── ProviderConnectionEndpoints.cs
 │   │   │   ├── ProviderCredentialEndpoints.cs
+│   │   │   ├── ProviderCredentialOwnershipEndpoints.cs
 │   │   │   ├── ProviderDataProjectionEndpoints.cs
 │   │   │   ├── ProviderEndpoints.cs
 │   │   │   ├── ProviderExtendedEndpoints.cs
@@ -8728,6 +8736,7 @@ Meridian-main
 │   │   │   ├── PrivateCapitalFundEventCommandCenterService.cs
 │   │   │   ├── PromotionTrustEvidenceServiceCollectionExtensions.cs
 │   │   │   ├── ProviderConnectionLifecycleService.cs
+│   │   │   ├── ProviderConnectionLifecycleService.Ownership.cs
 │   │   │   ├── ProviderCredentialStore.cs
 │   │   │   ├── ProviderDataReadModelService.cs
 │   │   │   ├── ProviderLedgerReconciliationService.CorporateActions.cs
@@ -8804,6 +8813,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterExceptionCaseworkService.cs
 │   │   │   ├── SecurityMasterReconciliationSlaPolicyProvider.cs
 │   │   │   ├── SecurityMasterSecurityReferenceLookup.cs
+│   │   │   ├── SecurityMasterSnapshotLotEconomics.cs
 │   │   │   ├── SecurityMasterWorkbenchQueryService.cs
 │   │   │   ├── SensitiveActionGovernance.cs
 │   │   │   ├── SpreadsheetFormulaGuard.cs
@@ -10605,6 +10615,7 @@ Meridian-main
 │   │   │   │   ├── OAuthTokenRefreshFailureTests.cs
 │   │   │   │   ├── OAuthVaultRecoveryTests.cs
 │   │   │   │   ├── ProviderCredentialAuditDurabilityTests.cs
+│   │   │   │   ├── ProviderCredentialOwnershipMigrationTests.cs
 │   │   │   │   ├── ProviderCredentialResolverTests.cs
 │   │   │   │   ├── ProviderCredentialStoreTests.cs
 │   │   │   │   ├── ScopedCredentialRecoveryTests.cs
@@ -10690,6 +10701,7 @@ Meridian-main
 │   │   │   │   ├── BestOfBreedProviderSelectorTests.cs
 │   │   │   │   ├── KernelObservabilityServiceTests.cs
 │   │   │   │   ├── ProviderRoutingServiceTests.cs
+│   │   │   │   ├── ProviderRuntimeCredentialServiceTests.cs
 │   │   │   │   ├── ProviderSetupOwnershipTests.cs
 │   │   │   │   └── ProviderTrustScoringServiceTests.cs
 │   │   │   ├── Reconciliation
@@ -12162,6 +12174,7 @@ Meridian-main
 │   │   │   ├── PromotionDecisionChainScenarioTests.cs
 │   │   │   ├── ProviderConnectionDiagnosticsProjectionTests.cs
 │   │   │   ├── ProviderConnectionEndpointsTests.cs
+│   │   │   ├── ProviderCredentialOwnershipEndpointsTests.cs
 │   │   │   ├── ProviderDataProjectionEndpointsTests.cs
 │   │   │   ├── ProviderEndpointProjectionTests.cs
 │   │   │   ├── ProviderLedgerReconciliationServiceTests.cs
@@ -12219,6 +12232,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterOtcContractEndpointsTests.Lifecycle.cs
 │   │   │   ├── SecurityMasterPreferredEquityEndpointsTests.cs
 │   │   │   ├── SecurityMasterReconciliationSlaPolicyProviderTests.cs
+│   │   │   ├── SecurityMasterSnapshotLotEconomicsTests.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassificationEndpointsTests.cs
 │   │   │   ├── SecurityMasterTermBlockEndpointsTests.cs
 │   │   │   ├── SecurityMasterUnderlyingEndpointsTests.cs

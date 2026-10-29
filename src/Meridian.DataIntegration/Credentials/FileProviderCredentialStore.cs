@@ -13,7 +13,7 @@ using static Meridian.Contracts.Text.TextPrimitives;
 namespace Meridian.DataIntegration.Credentials;
 
 /// <summary>Persists protected provider credentials and scoped OAuth tokens in the local credential vault.</summary>
-public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore, ILegacyProviderCredentialImporter, IScopedOAuthTokenVault
+public sealed partial class FileProviderCredentialStore : IScopedProviderCredentialStore, ILegacyProviderCredentialImporter, IScopedOAuthTokenVault, IProviderCredentialOwnershipMigration
 {
     private static readonly ILogger Log = LoggingSetup.ForContext<FileProviderCredentialStore>();
 
@@ -123,6 +123,9 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
                     ValidateRecordScope(localRecord, scope);
                     return ToReadResult(descriptor, localRecord, ProviderCredentialSourceDto.LocalEncryptedStore);
                 }
+                if (scope is null && vault.OwnershipMigrations.Values.Any(migration =>
+                    migration.ProviderId == descriptor.ProviderId && !migration.RolledBack))
+                    return null;
             }
         }
         finally
@@ -177,6 +180,9 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
             using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
             var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
             vault.Providers.TryGetValue(storageKey, out var existing);
+            if (scope is null && vault.OwnershipMigrations.Values.Any(migration =>
+                migration.ProviderId == descriptor.ProviderId && !migration.RolledBack))
+                throw new ProviderCredentialConflictException();
             if (existing is not null)
                 ValidateRecordScope(existing, scope);
 
@@ -1651,7 +1657,7 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
     }
 
     private static bool ContainsScopedState(ProviderCredentialVault vault)
-        => vault.ScopedOAuthTokens.Count > 0 || vault.Providers.Values.Any(static record => record.Scope is not null);
+        => vault.OwnershipMigrations.Count > 0 || vault.ScopedOAuthTokens.Count > 0 || vault.Providers.Values.Any(static record => record.Scope is not null);
 
     private async Task<string> SerializeEnvelopeAsync(ProviderCredentialVault vault, bool scopedFormat, CancellationToken ct)
     {
@@ -1928,6 +1934,7 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
         /// </summary>
         public HashSet<string> PublicationReceipts { get; set; } = new(StringComparer.Ordinal);
         public Dictionary<string, ProviderCredentialVaultRecord> Providers { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, ProviderCredentialMigrationReceipt> OwnershipMigrations { get; set; } = new(StringComparer.Ordinal);
 
         public bool HoldsPublication(string publicationId)
             => string.Equals(LastPublicationId, publicationId, StringComparison.Ordinal)

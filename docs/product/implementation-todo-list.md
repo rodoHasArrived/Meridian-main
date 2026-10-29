@@ -149,6 +149,23 @@ The next bounded implementation steps above preserve the existing LOT → MARK �
 and recorded roadmap dependencies. Continue the P0 release-evidence work in parallel; no completed
 read-side increment authorizes a write-version promotion or a production-readiness claim.
 
+### Next-work continuation — 2026-10-29
+
+The credential continuation adds explicit owned-connection creation, host default selection,
+generation-bound retained-vault migration and unrotated rollback. Host composition uses the selected
+scope; lifecycle vault operations revalidate current ownership under short configuration leases,
+without holding the lease across provider network calls. Transfer receipts, recovery generations
+and deferred-audit replay remain vault-owned. Separate legacy OAuth tokens block the bounded
+migration and require provider-specific treatment. Source changes and automated tests do not close
+`PRD-002` release evidence, Windows protection/operation acceptance or wider provider activation.
+
+The bounded LOT continuation corrects Security Master snapshot economics to use exact fractional
+position quantity and short direction. It does not complete Security Master lot-of-record cutover,
+broader consumer parity, successor/amortization treatment, compatibility retirement or live acceptance.
+LOT → MARK → SEAM → RECON remains the implementation queue; live SEAM precedes MARK in the joint session.
+`scripts/dev/prepare-next-work-acceptance.ps1` prepares an isolated pending packet, not financial
+records or operator acceptance. Use a dedicated Windows test user or VM because WPF retains per-user state.
+
 ### Next-work implementation — 2026-10-28
 
 The factor-paydown workflow prepares exact amounts from retained lots and creates an immutable
