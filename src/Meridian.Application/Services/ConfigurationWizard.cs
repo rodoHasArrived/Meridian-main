@@ -8,6 +8,7 @@ using Meridian.Application.Wizard.Core;
 using Meridian.Application.Wizard.Metadata;
 using Meridian.Application.Wizard.Steps;
 using Meridian.Storage;
+using Meridian.Storage.Archival;
 using Serilog;
 
 namespace Meridian.Application.Services;
@@ -270,12 +271,17 @@ public sealed class ConfigurationWizard
 
     private void SaveConfiguration(AppConfig config, string path)
     {
+        WriteConfiguration(config, path);
+        _log.Information("Configuration saved to {Path}", path);
+    }
+
+    internal static void WriteConfiguration(AppConfig config, string path, CancellationToken ct = default)
+    {
         var json = JsonSerializer.Serialize(config, JsonOptions);
         var dir = Path.GetDirectoryName(path);
         if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
             Directory.CreateDirectory(dir);
-        File.WriteAllText(path, json);
-        _log.Information("Configuration saved to {Path}", path);
+        AtomicFileWriter.Write(path, json, ct);
     }
 
     private void PrintLine(string text = "") => _output.WriteLine(text);
