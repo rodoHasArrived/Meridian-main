@@ -53,8 +53,30 @@ public sealed class BondExerciseDelayedCouponTests
         coupon.TimeInYears.Should().Be(0.5m + 2m / 365m);
         var exercise = scenarios.Should().ContainSingle().Subject;
         exercise.TimeInYears.Should().Be(coupon.TimeInYears);
-        exercise.AccruedPer100.Should().Be(0m, "the full coupon is separately paid on the exercise date");
+        exercise.AccruedPer100.Should().BeApproximately(2.5m * 2m / 180m, 0.000000000001m,
+            "the separately paid July coupon does not discharge the next period's July 15 through 17 accrual");
         exercise.RedemptionPrice.Should().Be(101m);
+        (coupon.Interest + BondExerciseEconomics.RedemptionCash(100m, exercise.RedemptionPrice, exercise.AccruedPer100))
+            .Should().BeApproximately(103.5m + 2.5m * 2m / 180m, 0.000000000001m);
+    }
+
+    [Theory]
+    [InlineData("Call")]
+    [InlineData("Put")]
+    public void ExerciseOnUnlaggedCouponDate_DoesNotAccrueTheSameCouponTwice(string kind)
+    {
+        var security = Bond(kind, "2026-07-15", paymentLag: 0);
+        var (terms, declared, schedule, flows) = ContractualInputs(security);
+
+        BondExerciseEconomics.TryResolveScenarios(security, terms, declared, schedule,
+            DateOnly.FromDateTime(AsOf.UtcDateTime), 0.05m, BondYieldConvention.NominalPeriodic,
+            2, flows, Calendars, out var scenarios, out var reason).Should().BeTrue(reason);
+
+        var coupon = flows.Single(flow => flow.PaymentDate == new DateOnly(2026, 7, 15));
+        coupon.Interest.Should().Be(2.5m);
+        var exercise = scenarios.Should().ContainSingle().Subject;
+        exercise.TimeInYears.Should().Be(coupon.TimeInYears);
+        exercise.AccruedPer100.Should().Be(0m);
     }
 
     [Theory]
@@ -90,7 +112,7 @@ public sealed class BondExerciseDelayedCouponTests
         return (terms, declared, schedule, flows);
     }
 
-    private static SecurityDetailDto Bond(string kind, string exerciseDate)
+    private static SecurityDetailDto Bond(string kind, string exerciseDate, int paymentLag = 2)
     {
         var payload = new Dictionary<string, object?>
         {
@@ -108,7 +130,7 @@ public sealed class BondExerciseDelayedCouponTests
                 accrualAdjusted = false,
                 couponRateUnit = "Percent",
                 couponCashBasis = "Level",
-                paymentLagBusinessDays = 2,
+                paymentLagBusinessDays = paymentLag,
                 paymentCalendars = new[] { "WEEKENDS" }
             }
         };
