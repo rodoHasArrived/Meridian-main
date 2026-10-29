@@ -152,6 +152,11 @@ remain in place so every process continues to acquire the same lock identity.
 account and environment identities. Scoped operations use independent encrypted records, validate
 persisted scope, and never fall back to provider-wide or process-environment credentials. Rotation,
 verification and deletion operate on one scope; audit entries retain the corresponding scope.
+Scoped verification requires the nonblank generation of the credential actually tested. Missing
+or stale generations refuse without changing vault bytes or audit history, so a delayed success
+or failure cannot verify or invalidate a replacement credential. Scoped rotation retains its
+replacement in recovery storage and requires fresh verification; legacy provider verification
+does not create or verify an owned record.
 The provider-only API remains a legacy compatibility surface. Runtime consumer and OAuth routing
 must be migrated to trusted scoped context before PRD-002 can claim end-to-end isolation.
 

@@ -1,12 +1,12 @@
 {
-  "total_files": 782,
-  "total_lines": 179326,
+  "total_files": 789,
+  "total_lines": 179915,
   "orphaned_count": 260,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 315,
-  "average_lines": 229.3,
-  "health_score": 82,
+  "average_lines": 228.0,
+  "health_score": 83,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -2992,7 +2992,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 13033,
+      "line_count": 13054,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3224,7 +3224,7 @@
     },
     {
       "path": "docs/operators/provider-credentials.md",
-      "line_count": 206,
+      "line_count": 214,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3448,7 +3448,7 @@
     },
     {
       "path": "docs/product/implementation-todo-list.md",
-      "line_count": 807,
+      "line_count": 813,
       "has_heading": true,
       "todo_count": 5,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4216,7 +4216,7 @@
     },
     {
       "path": "docs/source/generated/stale-docs.md",
-      "line_count": 14,
+      "line_count": 18,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4383,10 +4383,66 @@
       "stale": false
     },
     {
+      "path": "docs/testing/evidence/next-work-20261028/credential-ownership.md",
+      "line_count": 52,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/next-work-20261028/credential-ui.md",
+      "line_count": 49,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/next-work-20261028/lot-acceptance.md",
+      "line_count": 130,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/next-work-20261028/mark-close-acceptance.md",
+      "line_count": 119,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/next-work-20261028/operator-target.md",
+      "line_count": 37,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/next-work-20261028/pr-queue.md",
+      "line_count": 55,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/testing/evidence/next-work-20261028/release-readiness.md",
-      "line_count": 519,
+      "line_count": 571,
       "has_heading": true,
       "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/next-work-20261028/task-receipt.md",
+      "line_count": 46,
+      "has_heading": true,
+      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -6128,7 +6184,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 1359,
+      "line_count": 1361,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6176,7 +6232,7 @@
     },
     {
       "path": "src/Meridian.DataIntegration/README.md",
-      "line_count": 455,
+      "line_count": 460,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6472,7 +6528,7 @@
     },
     {
       "path": "src/Meridian.Wpf/README.md",
-      "line_count": 1042,
+      "line_count": 1045,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

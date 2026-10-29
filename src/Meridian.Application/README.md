@@ -255,6 +255,8 @@ refuses a provider family with retained tenant ownership, incomplete explicit ow
 connection identity before saving or reading vault state. The ownership check and both vault operations
 hold the same configuration lease as connection writers. Callers must select an authorized retained
 connection for scoped setup; this guard does not migrate legacy credentials or the default resolver.
+Retained credential-environment metadata also blocks legacy setup when its tenant was lost or removed;
+partial ownership cannot reactivate provider-wide credential writes or status reads.
 Its later source/connection/binding
 update rechecks ownership under the shared transaction and refuses a provider-wide reference if an
 owner arrived after the vault phase. It preserves concurrent changes and assigns source IDs from

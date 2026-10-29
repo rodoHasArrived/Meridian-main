@@ -321,7 +321,10 @@ public sealed class ProviderSetupService
         return connections.Where(connection => string.Equals(
                 ProviderCredentialCatalog.NormalizeProviderId(connection.ProviderFamilyId), family,
                 StringComparison.OrdinalIgnoreCase))
-            .Any(connection => connection.TenantId is not null || string.IsNullOrWhiteSpace(connection.ConnectionId) ||
+            // CredentialEnvironment is retained only by the owned-connection workflow. Losing
+            // the tenant part of that ownership must not reactivate the legacy provider-wide path.
+            .Any(connection => connection.TenantId is not null || connection.CredentialEnvironment is not null ||
+                string.IsNullOrWhiteSpace(connection.ConnectionId) ||
                 connections.Count(candidate => string.Equals(candidate.ConnectionId, connection.ConnectionId,
                     StringComparison.OrdinalIgnoreCase)) != 1);
     }
