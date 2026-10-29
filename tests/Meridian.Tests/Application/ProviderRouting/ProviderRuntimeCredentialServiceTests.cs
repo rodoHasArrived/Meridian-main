@@ -124,6 +124,7 @@ public sealed class ProviderRuntimeCredentialServiceTests : IDisposable
     [InlineData("owner")]
     [InlineData("binding")]
     [InlineData("marker")]
+    [InlineData("ambiguous")]
     [InlineData("legacy")]
     public async Task HostComposition_MissingVaultCannotRestoreFallbackForRetainedOwnership(string state)
     {
@@ -133,6 +134,7 @@ public sealed class ProviderRuntimeCredentialServiceTests : IDisposable
             "owner" => new ProviderConnectionsConfig(Connections: [new("owned", "alpaca", "Owned", TenantId: "tenant-a")]),
             "binding" => new ProviderConnectionsConfig { RuntimeCredentials = [new("alpaca", "tenant-a", "owned")] },
             "marker" => new ProviderConnectionsConfig { OwnershipRequiredProviders = ["alpaca"] },
+            "ambiguous" => new ProviderConnectionsConfig(Connections: [new("owned", "alpaca", "One"), new("OWNED", "alpaca", "Two")]),
             _ => null
         };
         await Config.SaveAsync(new AppConfig(DataRoot: _root, ProviderConnections: section));
