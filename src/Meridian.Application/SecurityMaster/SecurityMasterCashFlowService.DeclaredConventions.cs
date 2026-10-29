@@ -1,5 +1,6 @@
 using SecurityPrincipalBalance = Meridian.Application.SecurityMaster.CashFlow.SecurityPrincipalBalance;
 using Meridian.Contracts.Calendars;
+using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.SecurityMaster.Schedules;
 
@@ -56,7 +57,7 @@ public sealed partial class SecurityMasterCashFlowService
         decimal principalBasis,
         decimal openingOutstanding,
         bool hasContractualPrincipal,
-        bool assertedBulletSchedule)
+        bool assertedBulletSchedule, bool unifiedEconomics = false)
     {
         StructuredCashFlowProjectionDto Empty(string? reason = null) => new(
             security.SecurityId, sourceKind, scenario, asOf, [], staleness, sourceLastUpdatedUtc, terms.FactorSchedule, terms, BlockedReason: reason);
@@ -125,7 +126,7 @@ public sealed partial class SecurityMasterCashFlowService
         {
             if (!TryBuildDeclaredPrincipalEntries(security, terms, schedule, periods, asOfDate,
                 principalBasis, openingOutstanding, annualRate, dayCount, levelBasis,
-                out var principalEntries, out var principalBusiness252Windows, out var principalRefusal))
+                out var principalEntries, out var principalBusiness252Windows, out var principalRefusal, unifiedEconomics))
             {
                 return Empty(DeclaredContractualPrincipalReason + principalRefusal);
             }
@@ -158,7 +159,16 @@ public sealed partial class SecurityMasterCashFlowService
             var interest = 0m;
             if (annualRate > 0m && outstanding > 0m)
             {
-                if (levelBasis && period.Kind == SchedulePeriodKind.Regular && periodsPerYear is { } perYear)
+                if (unifiedEconomics && SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CarriesBondCouponStructure)
+                {
+                    if (!BondContractualEconomics.TryCoupon(period, schedule, dayCount, annualRate,
+                            block.CouponCashBasis, out var per100, out var reason))
+                        return Empty(DeclaredInterestReason + reason);
+                    interest = RoundCash(outstanding * per100 / 100m);
+                    if (dayCount == DayCountConvention.Business252)
+                        business252Windows.Add((period.AccrualStart, period.AccrualEnd));
+                }
+                else if (levelBasis && period.Kind == SchedulePeriodKind.Regular && periodsPerYear is { } perYear)
                 {
                     interest = RoundCash(outstanding * annualRate / perYear);
                 }
@@ -221,7 +231,7 @@ public sealed partial class SecurityMasterCashFlowService
         decimal annualRate, DayCountConvention dayCount, bool levelBasis,
         out IReadOnlyList<StructuredCashFlowScheduleEntry> entries,
         out IReadOnlyList<(DateOnly Start, DateOnly End)> business252Windows,
-        out string? refusal)
+        out string? refusal, bool unifiedEconomics = false)
     {
         entries = [];
         refusal = null;
@@ -331,6 +341,18 @@ public sealed partial class SecurityMasterCashFlowService
             reason = null;
             if (annualRate <= 0m || outstanding <= 0m || end <= start)
             {
+                return true;
+            }
+            if (unifiedEconomics && SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CarriesBondCouponStructure)
+            {
+                if (!BondContractualEconomics.TryAccruedCoupon(period, schedule, dayCount, annualRate,
+                        levelBasis ? "Level" : "DayCount", start, out var before, out reason)
+                    || !BondContractualEconomics.TryAccruedCoupon(period, schedule, dayCount, annualRate,
+                        levelBasis ? "Level" : "DayCount", end, out var after, out reason))
+                    return false;
+                interest = outstanding * (after - before) / 100m;
+                if (dayCount == DayCountConvention.Business252)
+                    windows.Add((start, end));
                 return true;
             }
             if (levelBasis && period.Kind == SchedulePeriodKind.Regular

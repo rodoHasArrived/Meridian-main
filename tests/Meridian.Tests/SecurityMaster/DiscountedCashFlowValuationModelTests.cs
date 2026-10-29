@@ -86,6 +86,7 @@ public sealed class DiscountedCashFlowValuationModelTests
             .Select(input => input.Kind == "SecurityTerms" ? input with { ContentSha256 = null } : input).Should().Equal(
             new SecurityValuationInputDto("DiscountCurveVersion", "USD-DISCOUNT-TEST", version.CurveVersionId, 1, version.ContentSha256, AsOf, version.RecordedAt),
             new SecurityValuationInputDto("SecurityTerms", "1", bond.SecurityId, 1),
+            new SecurityValuationInputDto("ContractualEconomics", "bond-contractual-economics-v1"),
             new SecurityValuationInputDto("ScheduleKernel", "contractual-schedule-kernel-v1"),
             new SecurityValuationInputDto("DeclaredScheduleMapping", "security-master-declared-schedule-v1"),
             new SecurityValuationInputDto("BusinessDayCalendar", "ZZTEST:Payment", ContentSha256: calendar.ContentHash));

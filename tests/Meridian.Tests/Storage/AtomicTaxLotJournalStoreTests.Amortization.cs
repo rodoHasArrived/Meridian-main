@@ -955,7 +955,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
 
         public static async Task<AmortFixture> CreateAsync(bool premium,
             AccountingBasisKindDto accountingBasis = AccountingBasisKindDto.Primary, Guid? organizationId = null,
-            bool factorPool = false, BondAmortizationMethod factorAmortization = BondAmortizationMethod.NoAmortization)
+            bool factorPool = false, BondAmortizationMethod factorAmortization = BondAmortizationMethod.NoAmortization,
+            bool declaredEconomics = false)
         {
             var server = await PostgresTestServer.CreateAsync("MERIDIAN_LEDGER_CONNECTION_STRING");
             var options = new LedgerJournalStoreOptions
@@ -979,13 +980,13 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 await new AssetOperationsMigrationRunner(assetOptions).EnsureMigratedAsync();
                 var fixture = new AmortFixture(server, options, new(securityOptions), new(assetOptions), accountingBasis, organizationId, factorPool)
                 { SecuritySchema = securityOptions.Schema };
-                await fixture.SeedAsync(premium, factorAmortization);
+                await fixture.SeedAsync(premium, factorAmortization, declaredEconomics);
                 return fixture;
             }
             catch { await server.DisposeAsync(); throw; }
         }
 
-        private async Task SeedAsync(bool premium, BondAmortizationMethod factorAmortization)
+        private async Task SeedAsync(bool premium, BondAmortizationMethod factorAmortization, bool declaredEconomics)
         {
             var ownerId = Guid.NewGuid();
             var at = new DateTimeOffset(2025, 1, 1, 12, 0, 0, TimeSpan.Zero);
@@ -1000,6 +1001,24 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             Security = FactorPool
                 ? AmortSecurity(Guid.NewGuid()) with { Currency = "USD", DisplayName = "Worked factor pool" }
                 : AmortSecurity(Guid.NewGuid());
+            if (declaredEconomics)
+                Security = Security with
+                {
+                    CommonTerms = JsonSerializer.SerializeToElement(new { }),
+                    AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+                    {
+                        assetClassTermsVersion = 3,
+                        issueDate = "2025-01-01",
+                        maturity = "2027-01-01",
+                        couponType = "Fixed",
+                        couponRate = 10m,
+                        dayCount = "30/360",
+                        par = 100m,
+                        paymentFrequency = "Annual",
+                        isCallable = false,
+                        scheduleConventions = new { accrualAdjusted = false, couponRateUnit = "Percent", couponCashBasis = "Level" }
+                    })
+                };
             await Securities.UpsertProjectionAsync(Security);
             Security = (await Securities.GetProjectionAsync(Security.SecurityId))!;
             var evidence = BuildEvidence("amort-owned-source", 'a') with { EffectiveDate = AmortAcquired };
@@ -1084,11 +1103,12 @@ public sealed partial class AtomicTaxLotJournalStoreTests
 
         public AtomicTaxLotJournalCommand Command(decimal amountOffset = 0m, OpenLotDto? expectedLot = null,
             DateOnly? asOf = null, OpenLotAmortizationReversalDto? reversal = null,
-            AtomicTaxLotJournalResult? corrects = null, bool remainingFace = false, bool automaticYieldToWorst = false)
+            AtomicTaxLotJournalResult? corrects = null, bool remainingFace = false, bool automaticYieldToWorst = false,
+            string calculationVersion = OpenLotAmortization.ModelVersion)
         {
             var instruction = new OpenLotAmortizationInstructionDto(expectedLot ?? Lot.ToOpenLot(), Security,
                 AmortSecurityEvidence(Security), 1, asOf ?? AmortAsOf,
-                CalculationVersion: OpenLotAmortization.ModelVersion, Reversal: reversal);
+                CalculationVersion: calculationVersion, Reversal: reversal);
             if (remainingFace || automaticYieldToWorst)
                 instruction = instruction with
                 {

@@ -107,7 +107,7 @@ public sealed class CanonicalLotAmortizationService(
             && Meridian.Contracts.SecurityMaster.SecurityVersionedTerms.ReadDeclaredScheduleConventions(
                 security.AssetClass, security.AssetSpecificTerms).Status
                 == Meridian.Contracts.SecurityMaster.SecurityDeclaredConventionsStatus.Declared)
-            instruction = instruction with { CalculationVersion = OpenLotAmortization.DeclaredModelVersion };
+            instruction = instruction with { CalculationVersion = OpenLotAmortization.UnifiedDeclaredModelVersion };
         if (amortizeRemainingFace || automaticYieldToWorst)
             instruction = instruction with
             {

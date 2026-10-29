@@ -11,6 +11,8 @@ last_reviewed: 2026-10-21
 
 # src/Meridian.Application
 
+Bond cash-flow context receipts now use `bond-cash-flow-context-v2`, sharing declared fixed-coupon economics and retaining floating reset evidence. Replay dispatches v1 through its original arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
+
 `ContractualCashFlowPreviewService` resolves retained Security Master/direct-lending facts and pinned curves for the shared calculation engine. `FileContractualCashFlowRunStore` publishes write-once, verifiable replay packets under the data root. Missing historical balance/notice evidence and assigned provider schedules block rather than falling back. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
 
 `ProviderRuntimeCredentialService` owns explicit host defaults and ownership-checked migration

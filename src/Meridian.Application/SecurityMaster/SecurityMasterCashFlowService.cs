@@ -184,7 +184,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
             // Curves are read as of the projection date, not the wall clock, so a valuation as of
             // another date projects floating legs from the curve in force on that date.
             var forwardCurves = await LoadForwardCurvesAsync(security, DateOnly.FromDateTime(asOf.UtcDateTime.Date), ct).ConfigureAwait(false);
-            var projection = BuildCalculatedProjection(
+            var projection = BuildCalculatedProjectionCore(
                 security, assignment.SourceKind, scenario, staleness, assignment.LastUpdatedUtc, asOf, _calendars, forwardCurves);
             if (projection.ScheduleEvidence is { CoverageGaps.Count: > 0 } evidence)
             {
@@ -332,8 +332,27 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         IBusinessDayCalendarSource? calendars,
         IReadOnlyDictionary<string, SecurityForwardCurve>? forwardCurves = null,
         StructuredCashFlowTerms? resolvedTerms = null)
+        => BuildCalculatedProjectionCore(security, sourceKind, scenario, staleness, sourceLastUpdatedUtc,
+            asOf, calendars, forwardCurves, resolvedTerms, unifiedEconomics: false);
+
+    private static StructuredCashFlowProjectionDto BuildCalculatedProjectionCore(
+        SecurityDetailDto security,
+        StructuredCashFlowSourceKind sourceKind,
+        StructuredCashFlowScenario scenario,
+        StructuredCashFlowStaleness staleness,
+        DateTimeOffset? sourceLastUpdatedUtc,
+        DateTimeOffset asOf,
+        IBusinessDayCalendarSource? calendars,
+        IReadOnlyDictionary<string, SecurityForwardCurve>? forwardCurves = null,
+        StructuredCashFlowTerms? resolvedTerms = null, bool unifiedEconomics = true)
     {
         var terms = resolvedTerms ?? StructuredCashFlowTermsResolver.Resolve(security);
+        if (!unifiedEconomics && terms.Legs is not null)
+            terms = terms with
+            {
+                Legs = terms.Legs.Select(leg => leg with
+                { CurrentIndexResetDate = null, CurrentIndexRateSource = null }).ToArray()
+            };
         var factorSchedule = terms.FactorSchedule;
 
         StructuredCashFlowProjectionDto Empty(string? reason = null) => new(
@@ -372,7 +391,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         {
             if (declared.IsDeclared)
                 return BuildDeclaredBondLegProjection(security, sourceKind, scenario, staleness, sourceLastUpdatedUtc,
-                    terms, declared, asOf, asOfDate, forwardCurves);
+                    terms, declared, asOf, asOfDate, forwardCurves, unifiedEconomics);
             return BuildLegBasedProjection(
                 security, sourceKind, scenario, staleness, sourceLastUpdatedUtc,
                 terms, factorSchedule, issueDate, maturity, asOf, asOfDate, forwardCurves);
@@ -414,7 +433,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
             return BuildDeclaredProjection(
                 security, sourceKind, scenario, staleness, sourceLastUpdatedUtc, asOf, asOfDate, terms,
                 declared, principalBasis, outstanding, contractualPrincipal.Length > 0,
-                hasAssertedPrincipalSchedule && inWindowContractual.Length == 0);
+                hasAssertedPrincipalSchedule && inWindowContractual.Length == 0, unifiedEconomics);
         }
 
         var annualRate = NormalizeAnnualRate(terms.CouponRate.Value) + ScenarioRateShift(scenario);

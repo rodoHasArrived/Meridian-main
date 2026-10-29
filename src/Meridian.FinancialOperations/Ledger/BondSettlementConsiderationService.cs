@@ -20,7 +20,8 @@ public sealed class BondSettlementConsiderationService(IBondAnalyticsService ana
             return [new("SettlementInputsUnavailable", "Exactly one retained Security Master input is required.")];
         var request = new BondAnalyticsRequest(settlement.SecurityId,
             settlement.Context with { SecurityVersion = securityInput.Version }, settlement.CleanPricePer100,
-            YieldConvention: settlement.YieldConvention);
+            YieldConvention: settlement.YieldConvention)
+        { CalculationVersion = settlement.ModelVersion };
         var result = await analytics.CalculateAsync(request, ct).ConfigureAwait(false);
         if (result is null || result.IsBlocked)
             return result?.Blockers ?? [new("SettlementInputsUnavailable", "Retained analytics inputs cannot be resolved.")];

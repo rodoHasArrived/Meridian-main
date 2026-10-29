@@ -5542,13 +5542,31 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondContractualEconomics"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FixedIncome.BondCouponStructureDto"
     },
     {
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondExerciseEconomics"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FixedIncome.BondExerciseYield"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondFloatingRateEvidence"
     },
     {
       "kind": "contract-set-member",
@@ -5663,6 +5681,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FixedIncome.BondPrincipalFactorDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondRedemptionScenario"
     },
     {
       "kind": "contract-set-member",
@@ -31575,6 +31599,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.FixedIncome.BondFloatingRateEvidence",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCouponRateUnit"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.FixedIncome.BondLifecycleDto",
       "target": "contract:Meridian.Contracts.FixedIncome.BondLifecycleStat"
     },
@@ -39209,6 +39239,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowProjectionDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredFactorScheduleEntry"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEntry",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondFloatingRateEvidence"
     },
     {
       "kind": "contract-reference",
@@ -55552,7 +55588,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "f360099e618b4cf2b1560c2836df7dade58addad8ac14113ba8a6fdafbd92257",
+  "fingerprint": "ae3cb9ba4e3fd2f97e14dade6308a570ebf8898f7290904ec950109bffb2ad23",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -61144,16 +61180,34 @@
       "label": "Meridian.Contracts.FixedIncome.BondCalculationInput"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.FixedIncome.BondContractualEconomics",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FixedIncome.BondContractualEconomics"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.FixedIncome.BondCouponStructureDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.FixedIncome.BondCouponStructureDto"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.FixedIncome.BondExerciseEconomics",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FixedIncome.BondExerciseEconomics"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.FixedIncome.BondExerciseYield",
       "kind": "contract-type",
       "label": "Meridian.Contracts.FixedIncome.BondExerciseYield"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.FixedIncome.BondFloatingRateEvidence",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FixedIncome.BondFloatingRateEvidence"
     },
     {
       "classification": "dto",
@@ -61268,6 +61322,12 @@
       "id": "contract:Meridian.Contracts.FixedIncome.BondPrincipalFactorDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.FixedIncome.BondPrincipalFactorDto"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.FixedIncome.BondRedemptionScenario",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FixedIncome.BondRedemptionScenario"
     },
     {
       "classification": "dto",
@@ -81285,11 +81345,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3564,
-    "contract_set_memberships": 4399,
-    "edges": 9230,
+    "contract_references": 3566,
+    "contract_set_memberships": 4403,
+    "edges": 9236,
     "foreign_keys": 155,
     "logical_references": 6,
-    "nodes": 4464
+    "nodes": 4468
   }
 }

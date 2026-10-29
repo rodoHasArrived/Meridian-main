@@ -69,3 +69,33 @@ After an installation's reviewed cutover, monitor calculation blockers, stale/mi
 cash-reconciliation differences and posting refusals. A missing or unreadable previously enabled
 cutover receipt must fail closed. A deployment rollback must preserve retained receipts and journals;
 never restore legacy live calculations by deleting cutover evidence.
+
+## Bond consistency increment
+
+Declared analytics v2, context cash-flow receipts v2 and amortization v5 share the Contracts
+`BondContractualEconomics` calculator. Level-coupon stubs use contractual reference-period units;
+DayCount coupons use contextual day-count fractions. Settlement and exercise accrue through the
+same calculator. Consumers retain their existing cash-rounding boundaries. Historical analytics v1,
+context receipts v1 and lot amortization v1–v4 keep their original dispatch and arithmetic.
+Calendar-adjusted amortization still requires retained calendar inputs and remains refused when those
+inputs cannot be supplied to the governed instruction.
+
+Cash-ladder v2 separates declared issuer calls from the `holder-put` analytical scenario. Whole
+fixed-price redemption uses outstanding principal, non-par redemption price, and supported coupon
+entitlement. A scalar mandatory-put/pre-refund date does not establish a supported mandatory
+redemption contract. Unsupported exercise types, elapsed notice deadlines without retained notice
+proof, missing projection-bound terms and changed calendars block the affected scenario. Undeclared
+records retain their legacy compatibility behavior; explicit historical v1 dispatch remains available.
+
+Declared floating coupons retain reset date, observed/forecast status, original rate units, source,
+index fraction, spread, contractual cap/floor, principal and accrual fraction. Observations must match
+the supported accrual-start reset exactly. A scalar current index requires the same reset date and
+source and cannot override an explicitly declared missing fixing schedule. Future resets require
+retained forward inputs. Ladder shocks reuse these inputs, preserve observed coupons, and shift
+future index rates before applying spread and cap/floor. Zero-rate forecasts can reprice; absent
+contractual floors never imply a zero floor. Unsupported negative cash blocks the scenario.
+
+Independent fixtures in `tests/fixtures/fixed-income/bond-consistency.json` state hand-verifiable
+formulas and expected cash amounts. `BondConsistencyTests` compares analytics, cash-flow projection,
+Asset Operations, settlement and amortization v5 and checks redemption and floating-scenario guards.
+This increment performs no customer-data migration, live cutover, exercise, or journal posting.
