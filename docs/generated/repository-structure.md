@@ -4606,6 +4606,7 @@ Meridian-main
 │   │   │       ├── OpenLotDto.cs
 │   │   │       ├── OpenLotFactorPaydown.cs
 │   │   │       ├── OpenLotSuccessors.cs
+│   │   │       ├── OpenLotUnifiedAmortization.cs
 │   │   │       ├── OpenLotValidation.cs
 │   │   │       └── OpenLotYieldToWorst.cs
 │   │   ├── AccountingSystem
@@ -4800,6 +4801,9 @@ Meridian-main
 │   │   ├── FixedIncome
 │   │   │   ├── BondAnalyticsDtos.cs
 │   │   │   ├── BondCalculationContext.cs
+│   │   │   ├── BondContractualEconomics.cs
+│   │   │   ├── BondExerciseEconomics.cs
+│   │   │   ├── BondFloatingRateEvidence.cs
 │   │   │   ├── BondMigrationApiRequests.cs
 │   │   │   ├── BondMigrationDtos.cs
 │   │   │   ├── BondPricingMath.cs
@@ -6047,7 +6051,9 @@ Meridian-main
 │   │   │   ├── FactorPaydownProjectionService.cs
 │   │   │   ├── IDirectLoanReferenceService.cs
 │   │   │   ├── IStructuredCreditReferenceService.cs
+│   │   │   ├── LegacyPortfolioCashLadderEngine.cs
 │   │   │   ├── PortfolioCashLadderEngine.cs
+│   │   │   ├── PortfolioCashLadderEngine.DeclaredBonds.cs
 │   │   │   └── StructuredCreditProjectionService.cs
 │   │   ├── CertificatesOfDeposit
 │   │   │   ├── CertificateOfDepositProjectionService.cs
@@ -6077,6 +6083,7 @@ Meridian-main
 │   │   │   ├── BondReferenceTermMapper.cs
 │   │   │   ├── FileBondCalculationPolicy.cs
 │   │   │   ├── IBondReferenceService.cs
+│   │   │   ├── LegacyBondAnalyticsService.cs
 │   │   │   └── UnavailableBondMigrationService.cs
 │   │   ├── Futures
 │   │   │   ├── FutureProjectionService.cs
@@ -9801,6 +9808,8 @@ Meridian-main
 │   │   │       ├── mbs-factor-paydown.json
 │   │   │       ├── special-dividend-25pct-synthetic.json
 │   │   │       └── t-wbd-spinoff-2022.json
+│   │   ├── fixed-income
+│   │   │   └── bond-consistency.json
 │   │   ├── fund-economics
 │   │   │   └── golden
 │   │   │       └── fund-economics-worked-examples.json
@@ -11201,6 +11210,8 @@ Meridian-main
 │   │   │   ├── BondAnalyticsMathTests.cs
 │   │   │   ├── BondAnalyticsServiceTests.cs
 │   │   │   ├── BondCanonicalProjectionTests.cs
+│   │   │   ├── BondConsistencyTests.cs
+│   │   │   ├── BondExerciseDelayedCouponTests.cs
 │   │   │   ├── BondMigrationServiceTests.cs
 │   │   │   ├── BondProjectionServiceTests.cs
 │   │   │   └── BondReferenceExpansionTests.cs
