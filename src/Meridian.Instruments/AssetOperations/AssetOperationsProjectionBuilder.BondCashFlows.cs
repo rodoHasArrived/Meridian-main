@@ -8,6 +8,40 @@ namespace Meridian.Instruments.AssetOperations;
 
 public static partial class AssetOperationsProjectionBuilder
 {
+    /// <summary>Stable across JSONB property ordering and decimal formatting on durable reload.</summary>
+    internal static string BondTermsContentHash(JsonElement payload)
+    {
+        using var content = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(content))
+            Write(payload, writer);
+        return Sha256Digest.Compute(content.ToArray());
+
+        static void Write(JsonElement value, Utf8JsonWriter writer)
+        {
+            if (value.ValueKind == JsonValueKind.Object)
+            {
+                writer.WriteStartObject();
+                foreach (var property in value.EnumerateObject().OrderBy(property => property.Name, StringComparer.Ordinal))
+                {
+                    writer.WritePropertyName(property.Name);
+                    Write(property.Value, writer);
+                }
+                writer.WriteEndObject();
+            }
+            else if (value.ValueKind == JsonValueKind.Array)
+            {
+                writer.WriteStartArray();
+                foreach (var item in value.EnumerateArray())
+                    Write(item, writer);
+                writer.WriteEndArray();
+            }
+            else if (value.ValueKind == JsonValueKind.Number && value.TryGetDecimal(out var number))
+                writer.WriteRawValue(number.ToString("G29", System.Globalization.CultureInfo.InvariantCulture));
+            else
+                value.WriteTo(writer);
+        }
+    }
+
     internal static Guid BondIdentity(Guid securityId, string key)
         => new(Sha256Digest.ComputeBytesUtf8($"meridian/bond-assets/v2/{securityId:N}/{key}").AsSpan(0, 16));
 

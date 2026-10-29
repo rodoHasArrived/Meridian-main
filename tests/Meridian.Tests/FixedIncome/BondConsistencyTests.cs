@@ -386,6 +386,45 @@ public sealed class BondConsistencyTests
         result.Blockers.Should().ContainSingle().Which.Code.Should().Be("UnsupportedCashFlowContract");
     }
 
+    [Fact]
+    public async Task RetainedTermsHash_AllowsJsonbReorderingButRefusesChangedEconomics()
+    {
+        var security = Bond(new()
+        {
+            ["isCallable"] = true,
+            ["callSchedule"] = new[] { new { callDate = "2026-07-01", exerciseStyle = "European", callPrice = 101m } }
+        });
+        var projection = (await CashFlows(security).GetProjectionAsync(security.SecurityId, StructuredCashFlowScenario.Base, new BondCalculationContext(AsOf)))!;
+        var inputs = Inputs(security, projection);
+        var position = inputs.Positions[0];
+        var term = position.Operations.TermsHistory[0];
+        var values = term.ExtensionPayload!.Value.EnumerateObject().Reverse()
+            .ToDictionary(property => property.Name, property => property.Value);
+        var reordered = position with
+        {
+            Operations = position.Operations with
+            {
+                TermsHistory = [term with
+            { ExtensionPayload = JsonSerializer.SerializeToElement(values) }]
+            }
+        };
+        var valid = PortfolioCashLadderEngine.Build(inputs with { Positions = [reordered] }, PortfolioCashLadderEngine.EarlyCallScenarioId);
+        valid.BlockingReasons.Should().BeEmpty();
+        var changed = System.Text.Json.Nodes.JsonNode.Parse(term.ExtensionPayload.Value.GetRawText())!;
+        changed["AssetSpecificTerms"]!["couponRate"] = 9m;
+        var tampered = position with
+        {
+            Operations = position.Operations with
+            {
+                TermsHistory = [term with
+            { ExtensionPayload = JsonSerializer.SerializeToElement(changed) }]
+            }
+        };
+        var invalid = PortfolioCashLadderEngine.Build(inputs with { Positions = [tampered] }, PortfolioCashLadderEngine.EarlyCallScenarioId);
+        invalid.IsDecisionReady.Should().BeFalse();
+        invalid.BlockingReasons.Should().Contain(reason => reason.Contains("exact retained terms"));
+    }
+
     internal static PortfolioCashLadderInputs Inputs(SecurityDetailDto security, StructuredCashFlowProjectionDto projection)
     {
         var detail = new AssetObligationProjectionService().ProjectFromSecurityMaster(security, new(AsOf), projection);

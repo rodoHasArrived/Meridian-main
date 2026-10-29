@@ -114,7 +114,7 @@ public sealed partial class AssetObligationProjectionService
             {
                 termsVersionId = terms[0].TermsVersionId,
                 termsHash = terms[0].TermsHash,
-                termsContentSha256 = Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(terms[0].ExtensionPayload)),
+                termsContentSha256 = AssetOperationsProjectionBuilder.BondTermsContentHash(terms[0].ExtensionPayload!.Value),
                 inputManifest = calculatedProjection?.InputManifest
             }));
         IReadOnlyList<AssetProjectedCashFlowDto> flows = blockedReason is not null ? []

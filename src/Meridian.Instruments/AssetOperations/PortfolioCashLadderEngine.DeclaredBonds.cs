@@ -33,7 +33,7 @@ public static partial class PortfolioCashLadderEngine
             || id != terms.TermsVersionId || !retained.TryGetProperty("termsHash", out var hash)
             || hash.GetString() != terms.TermsHash || terms.SecurityId != operations.Subject.SecurityId
             || !retained.TryGetProperty("termsContentSha256", out var content)
-            || content.GetString() != Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(payload)))
+            || content.GetString() != AssetOperationsProjectionBuilder.BondTermsContentHash(payload))
             throw new InvalidOperationException("Declared bond scenario requires the exact retained terms bound to the selected projection run.");
         var common = payload.TryGetProperty("CommonTerms", out var commonTerms) ? commonTerms : JsonSerializer.SerializeToElement(new { });
         var asset = payload.TryGetProperty("AssetSpecificTerms", out var assetTerms) ? assetTerms : payload;

@@ -141,6 +141,7 @@ public static partial class PortfolioCashLadderEngine
     public static IEnumerable<string> GetContributionCurrencies(PortfolioCashLadderInputs inputs, string? scenarioId = null)
     {
         ArgumentNullException.ThrowIfNull(inputs);
+        scenarioId = ResolveScenario(scenarioId, []).ScenarioId;
         var windowEnd = inputs.AsOfDate.AddDays(Math.Max(1, inputs.HorizonDays));
         var callDates = string.Equals(scenarioId, EarlyCallScenarioId, StringComparison.OrdinalIgnoreCase)
             ? SelectEarlyCallDates(inputs.Positions, inputs.AsOfDate, windowEnd)
