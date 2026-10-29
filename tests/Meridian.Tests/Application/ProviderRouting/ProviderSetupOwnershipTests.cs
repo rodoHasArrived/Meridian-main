@@ -129,6 +129,9 @@ public sealed class ProviderSetupOwnershipTests : IDisposable
     [InlineData("duplicate")]
     [InlineData("case-variant")]
     [InlineData("alias")]
+    [InlineData("missing-tenant")]
+    [InlineData("missing-tenant-and-account")]
+    [InlineData("empty-environment-without-tenant")]
     public async Task ConfigureLegacy_RefusesOwnedOrAmbiguousFamilyBeforeAnyVaultCall(string ownership)
     {
         await CreateOwnedConnectionAsync();
@@ -140,6 +143,9 @@ public sealed class ProviderSetupOwnershipTests : IDisposable
             "duplicate" => connection with { TenantId = null, CredentialEnvironment = null },
             "case-variant" => connection with { ProviderFamilyId = "ALPACA" },
             "alias" => connection with { ProviderFamilyId = "alpaca-api" },
+            "missing-tenant" => connection with { TenantId = null },
+            "missing-tenant-and-account" => connection with { TenantId = null, ExternalAccountId = null },
+            "empty-environment-without-tenant" => connection with { TenantId = null, CredentialEnvironment = "" },
             _ => connection
         };
         var retained = config with

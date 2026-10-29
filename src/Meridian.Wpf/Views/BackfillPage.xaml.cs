@@ -397,35 +397,8 @@ public partial class BackfillPage : Page
         _viewModel.NavigateToBrowser();
     }
 
-    // ── API key management ───────────────────────────────────────────────────
-
-    private void SetNasdaqApiKey_Click(object sender, RoutedEventArgs e)
-    {
-        var dialog = new ApiKeyDialog("Nasdaq Data Link", "NASDAQDATALINK__APIKEY");
-        if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.ApiKey))
-        {
-            _viewModel.SetNasdaqApiKey(dialog.ApiKey);
-        }
-    }
-
-    private void ClearNasdaqApiKey_Click(object sender, RoutedEventArgs e)
-    {
-        _viewModel.ClearNasdaqApiKey();
-    }
-
-    private void SetOpenFigiApiKey_Click(object sender, RoutedEventArgs e)
-    {
-        var dialog = new ApiKeyDialog("OpenFIGI", "OPENFIGI__APIKEY", isOptional: true);
-        if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.ApiKey))
-        {
-            _viewModel.SetOpenFigiApiKey(dialog.ApiKey);
-        }
-    }
-
-    private void ClearOpenFigiApiKey_Click(object sender, RoutedEventArgs e)
-    {
-        _viewModel.ClearOpenFigiApiKey();
-    }
+    private void ManageOwnedCredentials_Click(object sender, RoutedEventArgs e)
+        => _viewModel.NavigateToOwnedCredentials();
 
     // ── Gap analysis ─────────────────────────────────────────────────────────
 

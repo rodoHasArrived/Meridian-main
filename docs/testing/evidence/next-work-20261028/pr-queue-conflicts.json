@@ -1,0 +1,112 @@
+{
+  "base_sha": "a5b2589f0395d054bec0b59672a990419ef237ed",
+  "pr": 3319,
+  "head_sha": "fb3de843e460260130fb3dfae7780d5000323822",
+  "conflict_messages": 22,
+  "conflicted_files": 22,
+  "paths": [
+    {
+      "path": "database/manifest/contracts.json",
+      "strategy": "manual"
+    },
+    {
+      "path": "database/manifest/dependencies.json",
+      "strategy": "manual"
+    },
+    {
+      "path": "docs/generated/database/contracts/security-master-contracts-page-01.md",
+      "strategy": "manual"
+    },
+    {
+      "path": "docs/generated/database/contracts/security-master-contracts-page-02.md",
+      "strategy": "manual"
+    },
+    {
+      "path": "docs/generated/database/contracts/security-master-contracts-page-03.md",
+      "strategy": "manual"
+    },
+    {
+      "path": "docs/generated/database/contracts/security-master-contracts-page-04.md",
+      "strategy": "manual"
+    },
+    {
+      "path": "docs/generated/database/contracts/security-master-contracts-page-05.md",
+      "strategy": "manual"
+    },
+    {
+      "path": "docs/generated/database/contracts/security-master-contracts-page-06.md",
+      "strategy": "manual"
+    },
+    {
+      "path": "docs/generated/database/contracts/security-master-contracts.md",
+      "strategy": "manual"
+    },
+    {
+      "path": "docs/generated/database/data-object-catalog.md",
+      "strategy": "manual"
+    },
+    {
+      "path": "docs/generated/database/diagrams/contracts-security-master-contracts-page-03.mmd",
+      "strategy": "manual"
+    },
+    {
+      "path": "docs/generated/database/diagrams/contracts-security-master-contracts-page-04.mmd",
+      "strategy": "manual"
+    },
+    {
+      "path": "docs/generated/database/diagrams/contracts-security-master-contracts-page-05.mmd",
+      "strategy": "manual"
+    },
+    {
+      "path": "docs/generated/database/diagrams/contracts-security-master-contracts-page-06.mmd",
+      "strategy": "manual"
+    },
+    {
+      "path": "docs/generated/repository-structure.md",
+      "strategy": "regenerate"
+    },
+    {
+      "path": "docs/source/generated/source-hash-manifest.json",
+      "strategy": "reviewed-hashes"
+    },
+    {
+      "path": "docs/status/coverage-report.md",
+      "strategy": "protected-suffix"
+    },
+    {
+      "path": "docs/status/doc-health-dashboard.json",
+      "strategy": "regenerate"
+    },
+    {
+      "path": "docs/status/doc-health-dashboard.md",
+      "strategy": "regenerate"
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterService.cs",
+      "strategy": "manual"
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs",
+      "strategy": "manual"
+    },
+    {
+      "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs",
+      "strategy": "manual"
+    }
+  ],
+  "observed_at_utc": "2026-10-28T22:36:15Z",
+  "open_pr_count": 1,
+  "sources": [
+    "GitHub connector search_prs(repository_full_name=rodoHasArrived/Meridian-main,state=open,query=\"\",topn=100)",
+    "git ls-remote origin refs/heads/main refs/pull/3319/head",
+    "git merge-tree --write-tree --name-only a5b2589f0395d054bec0b59672a990419ef237ed refs/remotes/pr/3319"
+  ],
+  "tooling_revision": "3a624fc3b3b56181af2601cd82224287300b238c",
+  "classification_policy_sha256": "43b765d93d5e670361a1aad394e3659083f22eead53b2069a73d1238d56331dd",
+  "strategy_counts": {
+    "manual": 17,
+    "protected-suffix": 1,
+    "regenerate": 3,
+    "reviewed-hashes": 1
+  }
+}

@@ -2586,7 +2586,28 @@ Meridian-main
 │   │   │   │   ├── migration-draft-1366.png
 │   │   │   │   └── README.md
 │   │   │   ├── next-work-20261028
-│   │   │   │   └── release-readiness.md
+│   │   │   │   ├── mark-close-browser
+│   │   │   │   │   ├── capture-mark-and-close.mjs
+│   │   │   │   │   ├── close.json
+│   │   │   │   │   ├── M4-missing-date.png
+│   │   │   │   │   ├── mark-and-close.json
+│   │   │   │   │   └── S4-accounting-details.png
+│   │   │   │   ├── credential-ownership.md
+│   │   │   │   ├── credential-ui.md
+│   │   │   │   ├── local-validation.json
+│   │   │   │   ├── lot-acceptance.md
+│   │   │   │   ├── lot-browser-regression.json
+│   │   │   │   ├── mark-close-acceptance.md
+│   │   │   │   ├── operator-target.md
+│   │   │   │   ├── pr-3319-generated-repair-report.json
+│   │   │   │   ├── pr-3319-generated-repair.txt
+│   │   │   │   ├── pr-queue-conflicts.json
+│   │   │   │   ├── pr-queue.md
+│   │   │   │   ├── release-readiness.md
+│   │   │   │   ├── selected-dotnet-tests.json
+│   │   │   │   ├── signing-readiness-40294900031-3.json
+│   │   │   │   ├── task-receipt.md
+│   │   │   │   └── working-memory.yml
 │   │   │   ├── next-work-20261029
 │   │   │   │   ├── accounting-expansion.md
 │   │   │   │   ├── README.md

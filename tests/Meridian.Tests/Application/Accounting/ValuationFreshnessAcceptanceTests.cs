@@ -64,6 +64,69 @@ public sealed class ValuationFreshnessAcceptanceTests
         (await service.PrepareAsync(request)).Approvals.Should().BeEmpty();
     }
 
+    [Fact]
+    public async Task DeclaredTwoBatchPopulation_IdentifiesEveryBlockedPosition_AndMarkRepairClearsBothBatches()
+    {
+        // Two account-specific batches share one security. Enumerate the entire declared
+        // population so neither a single-batch preview nor symbol-only deduplication can
+        // hide a blocked position in the second account.
+        var quotes = new Dictionary<string, MarkPriceQuote?>
+        {
+            ["SHARED"] = Quote(Date),
+            ["BOUNDARY"] = Quote(Date.AddDays(-3), DailyPortfolioPriceConfidence.Medium),
+            ["STALE"] = Quote(Date.AddDays(-4)),
+            ["UNDATED"] = Quote(null),
+            ["FUTURE"] = Quote(Date.AddDays(1)),
+            ["LOW"] = Quote(Date, DailyPortfolioPriceConfidence.Low),
+            ["MISSING"] = null
+        };
+        var securities = quotes.Keys.Select((symbol, index) => (symbol, id: Guid.Parse($"aaaaaaaa-0000-0000-0000-{index + 1:000000000000}")))
+            .ToDictionary(item => item.symbol, item => item.id);
+        MarkToMarketPosition Position(string symbol, string account) => new(symbol, 10m, 150m, account, SecurityId: securities[symbol]);
+        var batches = new[]
+        {
+            Request() with { Positions = [Position("SHARED", "account-a"), Position("BOUNDARY", "account-a"),
+                Position("STALE", "account-a"), Position("UNDATED", "account-a")] },
+            Request() with { Positions = [Position("FUTURE", "account-b"), Position("LOW", "account-b"),
+                Position("MISSING", "account-b"), Position("SHARED", "account-b")] }
+        };
+        var service = new DailyMarkToMarketService(new PopulationSource(quotes));
+
+        var blocked = await Task.WhenAll(batches.Select(batch => service.PreviewAsync(batch)));
+        blocked.Sum(preview => preview.AssessedPositionCount).Should().Be(8);
+        blocked.Sum(preview => preview.BlockedPositionCount).Should().Be(5);
+        blocked.Sum(preview => preview.AffectedValuationCount).Should().Be(2);
+        var positions = blocked.SelectMany(preview => preview.Positions).ToArray();
+        positions.Select(position => (position.FinancialAccountId, position.SecurityId)).Distinct().Should().HaveCount(8);
+        positions.Select(position => position.SecurityId).Distinct().Should().HaveCount(7);
+        positions.Where(position => position.Status == "ReviewRequired").Select(position => (position.FinancialAccountId, position.Symbol))
+            .Should().BeEquivalentTo(new[] { ("account-a", "STALE"), ("account-a", "UNDATED"),
+                ("account-b", "FUTURE"), ("account-b", "LOW"), ("account-b", "MISSING") });
+        positions.Single(position => position.Symbol == "BOUNDARY").Status.Should().Be("Current");
+        positions.Single(position => position.Symbol == "UNDATED").AgeDays.Should().BeNull();
+        positions.Single(position => position.Symbol == "MISSING").AgeDays.Should().BeNull();
+        foreach (var batch in batches)
+        {
+            var refusal = await service.PrepareAsync(batch);
+            refusal.IsBlocked.Should().BeTrue();
+            refusal.Approvals.Should().BeEmpty();
+            refusal.Projection.Should().BeNull();
+        }
+
+        foreach (var symbol in quotes.Keys.ToArray())
+            quotes[symbol] = Quote(Date);
+        var repaired = await Task.WhenAll(batches.Select(batch => service.PreviewAsync(batch)));
+        repaired.Sum(preview => preview.AssessedPositionCount).Should().Be(8);
+        repaired.Sum(preview => preview.BlockedPositionCount).Should().Be(0);
+        repaired.Sum(preview => preview.AffectedValuationCount).Should().Be(0);
+        repaired.SelectMany(preview => preview.Positions).Should().OnlyContain(position => position.Status == "Current" && position.AgeDays == 0);
+        repaired.SelectMany(preview => preview.Positions).Select(position => (position.FinancialAccountId, position.SecurityId))
+            .Should().BeEquivalentTo(positions.Select(position => (position.FinancialAccountId, position.SecurityId)));
+
+        static MarkPriceQuote Quote(DateOnly? observed, DailyPortfolioPriceConfidence confidence = DailyPortfolioPriceConfidence.High)
+            => new(160m, "official-close", "evidence:population", PriceAsOf: observed, Confidence: confidence);
+    }
+
     [Theory]
     [InlineData(StalePriceHandling.Allow)]
     [InlineData(StalePriceHandling.Flag)]
@@ -169,5 +232,11 @@ public sealed class ValuationFreshnessAcceptanceTests
         public MarkPriceQuote? Quote { get; set; } = quote;
         public Task<MarkPriceQuote?> GetMarkPriceAsync(string symbol, DateOnly asOf, CancellationToken ct = default)
             => Task.FromResult(Quote);
+    }
+
+    private sealed class PopulationSource(IReadOnlyDictionary<string, MarkPriceQuote?> quotes) : IMarkPriceSource
+    {
+        public Task<MarkPriceQuote?> GetMarkPriceAsync(string symbol, DateOnly asOf, CancellationToken ct = default)
+            => Task.FromResult(quotes.GetValueOrDefault(symbol));
     }
 }

@@ -17,7 +17,7 @@ using WpfServices = Meridian.Wpf.Services;
 namespace Meridian.Wpf.Services;
 
 /// <summary>
-/// Defines setup configuration, provider presets, stored API keys, and backend startup and health operations.
+/// Defines setup configuration, provider presets, and backend startup and health operations.
 /// </summary>
 public interface ISetupWizardStateService
 {
@@ -29,8 +29,6 @@ public interface ISetupWizardStateService
 
     Task<SetupWizardConfigurationState> LoadConfigurationAsync(CancellationToken ct = default);
 
-    SetupWizardApiKeyState LoadStoredApiKeys();
-
     Task ApplyPresetAsync(SetupPreset preset, string provider, CancellationToken ct = default);
 
     Task<BackendServiceOperationResult> StartBackendAsync(CancellationToken ct = default);
@@ -41,8 +39,6 @@ public interface ISetupWizardStateService
         string provider,
         string storageLocation,
         CancellationToken ct = default);
-
-    void SaveApiKeys(string nasdaqDataLinkApiKey, string openFigiApiKey);
 }
 
 public sealed record SetupWizardConfigurationState(
@@ -50,10 +46,6 @@ public sealed record SetupWizardConfigurationState(
     string SelectedProvider,
     string StorageLocation,
     string StatusText);
-
-public sealed record SetupWizardApiKeyState(
-    string NasdaqDataLinkApiKey,
-    string OpenFigiApiKey);
 
 public sealed record SetupWizardBackendCheckResult(
     bool IsHealthy,
@@ -97,7 +89,7 @@ public interface ISetupWizardLinkLauncher
 }
 
 /// <summary>
-/// Coordinates setup presets, local configuration and API-key persistence, and backend startup and health checks.
+/// Coordinates setup presets, local configuration, and backend startup and health checks.
 /// </summary>
 public sealed class SetupWizardStateService : ISetupWizardStateService
 {
@@ -187,11 +179,6 @@ public sealed class SetupWizardStateService : ISetupWizardStateService
                 $"Unable to read configuration. {ex.Message}");
         }
     }
-
-    public SetupWizardApiKeyState LoadStoredApiKeys()
-        => new(
-            Environment.GetEnvironmentVariable("NASDAQDATALINK__APIKEY", EnvironmentVariableTarget.User) ?? string.Empty,
-            Environment.GetEnvironmentVariable("OPENFIGI__APIKEY", EnvironmentVariableTarget.User) ?? string.Empty);
 
     public Task ApplyPresetAsync(SetupPreset preset, string provider, CancellationToken ct = default)
         => _setupWizardService.ApplyPresetAsync(preset, provider, ct);
@@ -301,23 +288,6 @@ public sealed class SetupWizardStateService : ISetupWizardStateService
 
         var output = rootNode.ToJsonString(AppConfigJsonOptions.Write);
         await Meridian.Storage.Archival.AtomicFileWriter.WriteAsync(configFilePath, output, ct).ConfigureAwait(false);
-    }
-
-    public void SaveApiKeys(string nasdaqDataLinkApiKey, string openFigiApiKey)
-    {
-        SaveApiKey("NASDAQDATALINK__APIKEY", nasdaqDataLinkApiKey);
-        SaveApiKey("OPENFIGI__APIKEY", openFigiApiKey);
-    }
-
-    private static void SaveApiKey(string variableName, string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            Environment.SetEnvironmentVariable(variableName, null, EnvironmentVariableTarget.User);
-            return;
-        }
-
-        Environment.SetEnvironmentVariable(variableName, value.Trim(), EnvironmentVariableTarget.User);
     }
 }
 

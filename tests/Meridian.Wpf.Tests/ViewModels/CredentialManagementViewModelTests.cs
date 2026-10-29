@@ -21,6 +21,71 @@ public sealed class CredentialManagementViewModelTests
         """;
 
     [Theory]
+    [InlineData("save", "tenant-a", "tenant-other")]
+    [InlineData("remove", "account-a", "account-other")]
+    [InlineData("verify", "paper\"", "production\"")]
+    [InlineData("save", "paper-a", "PAPER-A")]
+    [InlineData("remove", "alpaca", "polygon")]
+    [InlineData("verify", "paper-a", "removed")]
+    public void ChangedOwnership_RefusesBeforeCredentialMutationAndClearsSecrets(string action, string oldValue, string newValue)
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var inventory = Connections;
+            var writes = new List<HttpMethod>();
+            using var handler = new Handler(request =>
+            {
+                if (request.Method != HttpMethod.Get) writes.Add(request.Method);
+                return Task.FromResult(Json(request.RequestUri!.AbsolutePath == "/api/provider-routing/connections"
+                    ? inventory : "[{\"providerId\":\"alpaca\",\"credentialState\":3,\"credentialFields\":[{\"name\":\"SecretKey\",\"label\":\"Secret key\",\"required\":true,\"inputKind\":1}]}]"));
+            });
+            using var api = new ApiClientService(new Factory(handler));
+            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), new TestNotificationService());
+            await viewModel.LoadCredentialsAsync();
+            viewModel.SelectedCredential = viewModel.Credentials.Single(row => row.ConnectionId == "paper-a");
+            await viewModel.SelectionStatusLoad;
+            viewModel.EditCredentialCommand.Execute(null);
+            viewModel.EditFields.Single().Value = "must-never-leave-the-old-owner";
+            inventory = inventory.Replace(oldValue, newValue, StringComparison.Ordinal);
+
+            await ((IAsyncRelayCommand)(action switch
+            {
+                "save" => viewModel.SaveCredentialCommand,
+                "remove" => viewModel.RemoveCredentialCommand,
+                _ => viewModel.TestCredentialCommand
+            })).ExecuteAsync(null);
+
+            writes.Should().BeEmpty();
+            viewModel.SelectedCredential.Should().BeNull();
+            viewModel.EditFields.Should().BeEmpty();
+            viewModel.IsEditPanelVisible.Should().BeFalse();
+            viewModel.StatusMessage.Should().Contain("ownership changed or was removed");
+        });
+    }
+
+    [Fact]
+    public void ForeignProviderStatus_CannotSupplyTheSelectedConnectionEditorSchema()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            using var handler = new Handler(request => Task.FromResult(Json(
+                request.RequestUri!.AbsolutePath == "/api/provider-routing/connections" ? Connections
+                    : "[{\"providerId\":\"polygon\",\"credentialState\":3,\"credentialFields\":[{\"name\":\"ApiKey\",\"label\":\"Foreign key\",\"required\":true,\"inputKind\":1}]}]")));
+            using var api = new ApiClientService(new Factory(handler));
+            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), new TestNotificationService());
+            await viewModel.LoadCredentialsAsync();
+            viewModel.SelectedCredential = viewModel.Credentials.First();
+            await viewModel.SelectionStatusLoad;
+
+            viewModel.EditCredentialCommand.Execute(null);
+
+            viewModel.SelectedCredential.HasCredentials.Should().BeFalse();
+            viewModel.SelectedCredential.ServiceFields.Should().BeNull();
+            viewModel.EditFields.Should().OnlyContain(field => field.FieldName == string.Empty);
+        });
+    }
+
+    [Theory]
     [InlineData(false, false)]
     [InlineData(false, true)]
     [InlineData(true, false)]
