@@ -289,3 +289,9 @@ Preserve the module boundary declared in `docs/source/data/source-modules.yml` a
 - `docs/reference/accounting-report-packs.md`
 - `docs/operators/governed-reporting-operations.md`
 - `docs/operators/statement-reconciliation-report-operations.md`
+
+New certified source receipts use `meridian.reporting.snapshot.v2`. Their economic-definition digest
+covers the classification, common terms, economic modules and provenance, and excludes the redundant
+`LegacyAssetClass` and `LegacyAssetSpecificTerms` copies. Changing a legacy mirror alone cannot
+change a new receipt; changing authoritative economics still changes its hash. Retained v1 receipts
+remain immutable historical evidence and are not rewritten.

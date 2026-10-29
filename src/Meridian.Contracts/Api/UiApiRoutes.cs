@@ -389,6 +389,7 @@ public static class UiApiRoutes
     public const string SecurityMasterOtcNettingSet = "/api/security-master/otc/netting-sets/{nettingSetId:guid}";
     public const string SecurityMasterOtcContracts = "/api/security-master/otc/contracts";
     public const string SecurityMasterOtcContract = "/api/security-master/otc/contracts/{contractId:guid}";
+    public const string SecurityMasterOtcContractLifecycle = "/api/security-master/otc/contracts/{contractId:guid}/lifecycle";
     public const string SecurityMasterOtcNettingSetExposureSnapshots = "/api/security-master/otc/netting-sets/{nettingSetId:guid}/exposure-snapshots";
     public const string SecurityMasterOtcExposureSnapshot = "/api/security-master/otc/exposure-snapshots/{snapshotId:guid}";
     public const string SecurityMasterOtcCollateralBalances = "/api/security-master/otc/collateral-balances";

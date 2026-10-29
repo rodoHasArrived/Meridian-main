@@ -13,7 +13,7 @@ namespace Meridian.Storage.SecurityMaster;
 /// contracts lock of each netting set it touches (<see cref="OtcAdvisoryLocks"/>), so it cannot
 /// change a netting set while a margin call is being issued on it.
 /// </summary>
-public sealed class PostgresOtcContractStore : IOtcContractStore
+public sealed partial class PostgresOtcContractStore : IOtcContractStore
 {
     private readonly SecurityMasterOptions _options;
 
@@ -296,6 +296,8 @@ public sealed class PostgresOtcContractStore : IOtcContractStore
                 throw new ArgumentException($"Contract {id:D} is {existing.Status} and can no longer be amended.", nameof(request));
             if (existing.SecurityId != normalized.SecurityId)
                 throw new ArgumentException("A contract cannot be moved to another instrument; book a new contract.", nameof(request));
+            if ((await ReadLifecycleEventsAsync(connection, transaction, id, ct).ConfigureAwait(false)).Count > 0)
+                throw new ArgumentException("A lifecycle-managed contract cannot be amended through a snapshot upsert; use an explicit retained lifecycle workflow.", nameof(request));
             version = existing.Version + 1;
         }
         else

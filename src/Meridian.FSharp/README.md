@@ -52,11 +52,13 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   first call date, and issuer name in its maturity, coupon, call, and issuer modules, so a replay
   from economic terms alone keeps a callable bond callable.
 - `assetSpecificTermsJson` stamps flat terms with the shared terms-format envelope for every kind
-  except `CustomAsset`, whose profile owns its own document shape. The stamp is the effective write
-  version: the class's write version, raised to the highest version among the versioned terms the
-  record holds, a declared `scheduleConventions` block or any declared call or put entry (ADR-024,
-  readable before writable). Bond, CertificateOfDeposit and StructuredCredit therefore write in three
-  tiers: with nothing declared, at the write version with none of the readable-only keys
+  except `CustomAsset`, whose profile owns its own document shape. Under stamp model S2, its stamp
+  starts at `SecurityAssetClassCatalog.GetStampFloor` and rises to the highest introduction version
+  among populated versioned terms the record holds (ADR-024, readable before writable). This floor
+  includes required transform targets and is independent of the writable ceiling. Bond and
+  CertificateOfDeposit can write through 3 and StructuredCredit through 4, while their undeclared
+  documents retain floors 1, 1 and 2. They therefore serialize in three tiers: with nothing declared,
+  at the floor with none of the versioned keys
   (`scheduleConventions`, `callSchedule`, `putSchedule`); with conventions only, at the block's
   version with the `scheduleConventions` key; with any call or put entry, at the schedules' version
   (3 on Bond and CertificateOfDeposit, 4 on StructuredCredit) with the block key and both
@@ -81,8 +83,10 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   ADR-025. Both lists are decoded only from rows stamped at or above the schedules' version, and
   serialized only from that version upward: `[]` when none is declared, otherwise one object per
   entry in stored order carrying every member in alphabetical order, with `null` for an unset one.
-  The C# write-mode mapping never decodes them and refuses populated ones in a flat payload, so only
-  the read-mode mapping of a flat row stamped at or above the schedules' version fills them.
+  Read-mode mapping decodes them only when the row's own stamp reaches their introduction version.
+  Write-mode mapping now accepts these lists on Bond, CertificateOfDeposit and StructuredCredit,
+  subject to the shared schedule write rules; the readable-ahead guard still applies to any class
+  whose writable ceiling has not reached a term's introduction version.
 - The economic `Call` module of a bond, CertificateOfDeposit or StructuredCredit is filled under one
   rule, frozen with the schedules (ADR-025). On a bond and a CertificateOfDeposit only the class's
   scalar call terms feed `IsCallable` and `FirstCallDate` (bond `IsCallable` and `CallDate`,
@@ -115,10 +119,11 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   custom row read back as OtherSecurity. It carries over par, coupon or index, maturity, seniority
   and the family the label implies; every required term the source lacks and every ambiguous label
   (`MortgageBacked`, `MBS`) is a blocker, so `ProposedTerms` exists only when nothing blocks. A bond
-  that declares schedule conventions is blocked with `structured_credit_schedule_conventions_unwritable`,
-  because they are a StructuredCredit terms version 3 term this node reads but cannot write, and one
-  that declares a call or put entry is blocked with `structured_credit_call_put_schedules_unwritable`,
-  because the schedules are StructuredCredit terms version 4 terms.
+  that declares schedule conventions remains blocked with
+  `structured_credit_schedule_conventions_unwritable`: StructuredCredit lacks the root anchors the
+  frozen declared mapping requires, even though version 3 is writable. Complete call/put schedules
+  carry into the proposed version-4 terms when the target writer supports them, subject to full
+  schedule validation. A blocked report retains their raw arrays for review.
 - `IdentifierKind` includes `LoanX` and `Clip` for syndicated-loan identifiers; interop maps
   them to the matching C# `SecurityIdentifierKind` values.
 - `SecurityTermModules` no longer carries `AccountingElections` or `Pci`. Amortization method,
@@ -174,3 +179,15 @@ Keep F# interop contracts explicit and covered by tests before changing C# consu
 
 - `docs/ai/claude/CLAUDE.fsharp.md`
 - `docs/source/generated/source-module-index.md`
+
+`StructuredProductTerms.FactorScheduleEntries` retains dated factors in the typed economic model.
+The StructuredCredit upgrade carries its canonical factor history into that module; the application
+adapter emits nonempty history alongside the retained `FactorScheduleReference`. Empty histories
+leave existing economic JSON bytes unchanged, while economic-only replay retains additive history
+that a flat projection cannot express. Legacy passthrough remains a compatibility/replay concern,
+not an accounting or reporting authority.
+
+Daily direct-lending PIK, cash-interest and commitment-fee accrual use one-day shared schedule
+periods and period-aware day count. Formula version one retains its existing amounts, including
+Thirty360's Actual360 denominator and the terminal-date edge. Manual rate resets retain their
+explicit request date; automatic reset and capitalization cadence require separate persisted policy.

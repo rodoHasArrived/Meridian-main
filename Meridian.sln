@@ -121,6 +121,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meridian.Setup", "src\Merid
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meridian.Setup.Tests", "tests\Meridian.Setup.Tests\Meridian.Setup.Tests.csproj", "{038E4E5E-BD80-4ADA-AB9C-1E5A3E9E13CA}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meridian.Contracts.UnitTests", "tests\Meridian.Contracts.UnitTests\Meridian.Contracts.UnitTests.csproj", "{81B73264-1008-5DED-906B-391A90275640}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meridian.Core.UnitTests", "tests\Meridian.Core.UnitTests\Meridian.Core.UnitTests.csproj", "{8D46974B-B02A-5D13-A9F5-948BEEA23A73}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -131,6 +135,30 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8D46974B-B02A-5D13-A9F5-948BEEA23A73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D46974B-B02A-5D13-A9F5-948BEEA23A73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D46974B-B02A-5D13-A9F5-948BEEA23A73}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8D46974B-B02A-5D13-A9F5-948BEEA23A73}.Debug|x64.Build.0 = Debug|Any CPU
+		{8D46974B-B02A-5D13-A9F5-948BEEA23A73}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8D46974B-B02A-5D13-A9F5-948BEEA23A73}.Debug|x86.Build.0 = Debug|Any CPU
+		{8D46974B-B02A-5D13-A9F5-948BEEA23A73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D46974B-B02A-5D13-A9F5-948BEEA23A73}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D46974B-B02A-5D13-A9F5-948BEEA23A73}.Release|x64.ActiveCfg = Release|Any CPU
+		{8D46974B-B02A-5D13-A9F5-948BEEA23A73}.Release|x64.Build.0 = Release|Any CPU
+		{8D46974B-B02A-5D13-A9F5-948BEEA23A73}.Release|x86.ActiveCfg = Release|Any CPU
+		{8D46974B-B02A-5D13-A9F5-948BEEA23A73}.Release|x86.Build.0 = Release|Any CPU
+		{81B73264-1008-5DED-906B-391A90275640}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81B73264-1008-5DED-906B-391A90275640}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81B73264-1008-5DED-906B-391A90275640}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{81B73264-1008-5DED-906B-391A90275640}.Debug|x64.Build.0 = Debug|Any CPU
+		{81B73264-1008-5DED-906B-391A90275640}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{81B73264-1008-5DED-906B-391A90275640}.Debug|x86.Build.0 = Debug|Any CPU
+		{81B73264-1008-5DED-906B-391A90275640}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81B73264-1008-5DED-906B-391A90275640}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81B73264-1008-5DED-906B-391A90275640}.Release|x64.ActiveCfg = Release|Any CPU
+		{81B73264-1008-5DED-906B-391A90275640}.Release|x64.Build.0 = Release|Any CPU
+		{81B73264-1008-5DED-906B-391A90275640}.Release|x86.ActiveCfg = Release|Any CPU
+		{81B73264-1008-5DED-906B-391A90275640}.Release|x86.Build.0 = Release|Any CPU
 		{C1FEC0DE-2026-0717-A019-000000000023}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C1FEC0DE-2026-0717-A019-000000000023}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C1FEC0DE-2026-0717-A019-000000000023}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -796,6 +824,8 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{8D46974B-B02A-5D13-A9F5-948BEEA23A73} = {E2222222-F333-0444-1555-266666666666}
+		{81B73264-1008-5DED-906B-391A90275640} = {E2222222-F333-0444-1555-266666666666}
 		{C1FEC0DE-2026-0717-A019-000000000023} = {E1111111-F222-0333-1444-255555555555}
 		{A1111111-B222-C333-D444-E55555555555} = {E1111111-F222-0333-1444-255555555555}
 		{BA000001-BB11-BC22-BD33-BE4444444444} = {E1111111-F222-0333-1444-255555555555}

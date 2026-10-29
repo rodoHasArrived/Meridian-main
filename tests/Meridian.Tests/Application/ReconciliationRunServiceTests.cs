@@ -1016,12 +1016,11 @@ public sealed class ReconciliationRunServiceTests
     }
 
     [Fact]
-    public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldPreferGovernedEvidencePointerForTypedRows()
+    public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldUseEconomicEvidencePointerForTypedRows()
     {
-        // The governed profileFields.factorSchedule trustee-report pointer must supply the typed
-        // rows' retained evidence, not the outer pass-through copy: the paydown projector treats
-        // any nonblank link as sufficient evidence, so an outer-first read would stamp the wrong
-        // lineage on the expected event and its posting candidate.
+        // The economic module retains the accepted governed trustee-report pointer. The adapter
+        // consumes that evidence together with its typed history; an old passthrough pointer
+        // cannot replace the accepted lineage on an expected event or posting candidate.
         var store = new StrategyRunStore();
         await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-real-sm-governed-evidence"));
 
@@ -1434,13 +1433,11 @@ public sealed class ReconciliationRunServiceTests
     }
 
     [Fact]
-    public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldPreferGovernedProfileFieldsFactorEntries()
+    public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldUseEconomicHistoryWhenLegacyFactorEntriesContradictIt()
     {
-        // A profile-backed record persists its governed typed schedule beneath
-        // profileFields; an extra outer factorScheduleEntries array on the same envelope is
-        // ungoverned pass-through. The governed rows must claim the paydown dates first — here
-        // the profileFields 1.00→0.97 pair produces the 0.30 paydown, and the contradictory
-        // outer 0.50 row for the same date is suppressed rather than tripling the paydown.
+        // The upstream accepted history has been retained in the typed economic module. A
+        // contradictory legacy outer copy must not replace its 1.00→0.97 pair or triple the
+        // resulting 0.30 principal paydown.
         var store = new StrategyRunStore();
         await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-real-sm-governed-factor-entries"));
 
@@ -1497,13 +1494,11 @@ public sealed class ReconciliationRunServiceTests
     }
 
     [Fact]
-    public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldIgnoreOuterFactorRowsWhenGovernedRowsExist()
+    public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldIgnoreAdditionalLegacyFactorRowsWhenEconomicHistoryExists()
     {
-        // Once the governed profileFields schedule exists, the ungoverned OUTER array is excluded
-        // entirely — not merely deduplicated by date. Each enumerated array derives its own priors
-        // (first observation against the 1.0 baseline), so an outer 0.50 row on a date the
-        // governed schedule does not cover would otherwise synthesize a 5.00 paydown the governed
-        // 0.97 history contradicts, and that false amount could become a posting candidate.
+        // Only the typed economic history supplies observations. The old mirror contains an
+        // extra row on a different date; merging that row would manufacture another paydown
+        // against a conflicting prior, so it must not become a posting candidate.
         var store = new StrategyRunStore();
         await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-real-sm-outer-rows-ignored"));
 
@@ -2314,6 +2309,41 @@ public sealed class ReconciliationRunServiceTests
             => ValidateSymbolAsync(symbol ?? securityId.ToString(), workflow, workflowReference, actor, persistSnapshot, ct);
     }
 
+    [Fact]
+    public async Task RunAsync_AccountingUsesTypedFactorHistoryAndIgnoresContradictoryLegacyCopy()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-typed-factor-authority"));
+        var securityId = Guid.NewGuid();
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(securityId, "Typed factor security",
+            "StructuredCredit", "USD", SecurityStatusDto.Active, "AAPL", SubType: "StructuredCredit"));
+        var query = new StubSecurityMasterQueryService();
+        query.Register(CreateEconomicDefinition(securityId, "AAPL", "AvailableForSale", currentFactor: 0.97m,
+            assetClass: "Securitized", subType: "MortgageBackedSecurity", typeName: "MortgageBackedSecurity",
+            typedFactorEntries: [(new DateOnly(2026, 2, 21), 1.00m), (new DateOnly(2026, 3, 21), 0.97m)]) with
+        {
+            LegacyAssetClass = "CashSweep",
+            LegacyAssetSpecificTerms = JsonSerializer.SerializeToElement(new
+            {
+                accountingClassification = "UnsupportedLegacyRule",
+                factorSchedule = "forged-legacy-evidence",
+                factorScheduleEntries = new[] { new { asOfDate = "2026-03-21", factor = 0.1m } }
+            })
+        });
+        var service = CreateService(store, new InMemoryReconciliationRunRepository(), lookup,
+            bankTransactionSource: null, securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(query,
+                CreateAssetOperationsQueryService(securityId, Guid.NewGuid())));
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-typed-factor-authority"));
+        detail!.ExpectedAccountingEvents.Should().Contain(item => item.SecurityId == securityId
+            && item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown
+            && item.Provenance.Contains("factor-evidence:trustee-report-2026-03", StringComparison.Ordinal));
+        detail.ExpectedAccountingEvents.Should().NotContain(item => item.SecurityId == securityId
+            && item.Provenance.Contains("forged-legacy-evidence", StringComparison.Ordinal));
+    }
+
     private static SecurityEconomicDefinitionRecord CreateEconomicDefinition(
         Guid securityId,
         string symbol,
@@ -2359,13 +2389,19 @@ public sealed class ReconciliationRunServiceTests
                 accrualStartDate = "2026-03-01",
                 dayCount = "ACT/365"
             },
-            structuredProduct = currentFactor is null
+            structuredProduct = currentFactor is null && typedFactorEntries is null && profileFieldsFactorEntries is null
                 ? null
                 : new
                 {
                     factor = currentFactor,
                     factorDate = "2026-03-21",
                     notionalBalance = 100_000m,
+                    factorScheduleReference = nestedFactorScheduleEvidence ?? "trustee-report-2026-03",
+                    factorScheduleEntries = (profileFieldsFactorEntries ?? typedFactorEntries)?.Select(static entry => new
+                    {
+                        asOfDate = entry.AsOfDate.ToString("yyyy-MM-dd"),
+                        factor = entry.Factor
+                    }).ToArray(),
                     factorSchedule = factorSchedule?.Select(static entry => new
                     {
                         asOfDate = entry.AsOfDate.ToString("yyyy-MM-dd"),

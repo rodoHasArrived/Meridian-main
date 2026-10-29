@@ -2,12 +2,130 @@
 
 # `security-master-contracts` data objects - page 4 of 6
 
-Objects 241-320 of 460. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 474. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_PricingHierarchyEntryDto["PricingHierarchyEntryDto"] {
+        +int MaxDaysStale
+        +int Priority
+        +string SourceDisplayName
+        +string SourceId
+    }
+    class Meridian_Contracts_SecurityMaster_PrincipalPaydownCorporateActionTerms["PrincipalPaydownCorporateActionTerms"] {
+        +string EventType
+        +decimal? PaydownRatio
+        +decimal? PostPaydownFactor
+        +decimal? PrincipalAmount
+    }
+    class Meridian_Contracts_SecurityMaster_PublishSecurityCurveVersionRequest["PublishSecurityCurveVersionRequest"] {
+        +DateOnly AsOf
+        +Guid CurveId
+        +IReadOnlyList~SecurityCurvePointDto~ Points
+        +string? PublishedBy
+        +string Source
+        +DateTimeOffset? SourcedAt
+    }
+    class Meridian_Contracts_SecurityMaster_RecordCorporateActionConflictRequestDto["RecordCorporateActionConflictRequestDto"] {
+        +string Actor
+        +IReadOnlyList~CorporateActionConflictCandidateDto~ Candidates
+        +Guid CaseId
+        +string CompanyId
+        +Guid? ConflictId
+        +string? CorrelationId
+        +string Description
+        +long ExpectedVersion
+        +string Field
+        +string IdempotencyKey
+        +CorporateActionCaseScopeDto? ScopeAssertion
+        +string TenantId
+    }
+    class Meridian_Contracts_SecurityMaster_RecordCorporateActionSourceProposalRequestDto["RecordCorporateActionSourceProposalRequestDto"] {
+        +string Actor
+        +string? ClaimedEconomicFingerprint
+        +string? CorrelationId
+        +CorporateActionSourceDisplayMetadataDto? DisplayMetadata
+        +Guid? ProposalId
+        +CorporateActionDto ProposedAction
+        +CorporateActionProviderEventIdentityDto ProviderIdentity
+        +string? Reason
+        +Guid? SupersedesProposalId
+    }
+    class Meridian_Contracts_SecurityMaster_RecordRawPriceRequest["RecordRawPriceRequest"] {
+        +decimal Price
+        +DateTimeOffset PriceAsOf
+        +string RecordedBy
+        +Guid SecurityId
+        +string SourceId
+        +SecurityPriceUnit Unit
+    }
+    class Meridian_Contracts_SecurityMaster_RedemptionCorporateActionTerms["RedemptionCorporateActionTerms"] {
+        +decimal? CashPerUnit
+        +string EventType
+        +bool? IsMakeWhole
+        +bool? IsPartial
+        +decimal? PricePercentOfPar
+    }
+    class Meridian_Contracts_SecurityMaster_ReferenceChangeCorporateActionTerms["ReferenceChangeCorporateActionTerms"] {
+        +string EventType
+        +DateOnly? FinalTradingDate
+        +string? Reason
+        +Guid? SuccessorSecurityId
+    }
+    class Meridian_Contracts_SecurityMaster_RejectCorporateActionSourceProposalRequestDto["RejectCorporateActionSourceProposalRequestDto"] {
+        +string Actor
+        +string? CorrelationId
+        +long ExpectedVersion
+        +string IdempotencyKey
+        +Guid ProposalId
+        +string Reason
+    }
+    class Meridian_Contracts_SecurityMaster_ResolveConflictRequest["ResolveConflictRequest"] {
+        +string? ChosenWinnerSource
+        +Guid ConflictId
+        +string? Reason
+        +string Resolution
+        +string ResolvedBy
+    }
+    class Meridian_Contracts_SecurityMaster_ResolveCorporateActionConflictRequestDto["ResolveCorporateActionConflictRequestDto"] {
+        +string Actor
+        +Guid CaseId
+        +string CompanyId
+        +Guid ConflictId
+        +string? CorrelationId
+        +string Disposition
+        +string EvidenceHash
+        +string EvidenceReference
+        +long ExpectedVersion
+        +string IdempotencyKey
+        +string Resolution
+        +CorporateActionCaseScopeDto? ScopeAssertion
+    }
+    class Meridian_Contracts_SecurityMaster_ResolveSecurityRequest["ResolveSecurityRequest"] {
+        +bool ActiveOnly
+        +DateTimeOffset? AsOfUtc
+        +SecurityIdentifierKind IdentifierKind
+        +string IdentifierValue
+        +string? Provider
+    }
+    class Meridian_Contracts_SecurityMaster_ScheduleConventionTerms["ScheduleConventionTerms"] {
+        +bool? AccrualAdjusted
+        +string? BusinessDayConvention
+        +string? CouponCashBasis
+        +string? CouponRateUnit
+        +string? Direction
+        +ScheduleConventionTerms Empty
+        +bool? EndOfMonthRule
+        +DateOnly? FirstRegularDate
+        +DateOnly? LastRegularDate
+        +IReadOnlyList~string~ PaymentCalendars
+        +int? PaymentLagBusinessDays
+        +string? RollConvention
+    }
     class Meridian_Contracts_SecurityMaster_ScheduleSpecFactory["ScheduleSpecFactory"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ScheduleTermsWriteRules["ScheduleTermsWriteRules"] {
     }
     class Meridian_Contracts_SecurityMaster_Schedules_ScheduleAnchorMode["ScheduleAnchorMode"] {
     }
@@ -381,76 +499,6 @@ classDiagram
         +string LabelKey
         +string Value
     }
-    class Meridian_Contracts_SecurityMaster_SecurityAssetTermsFieldEditValidator["SecurityAssetTermsFieldEditValidator"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityAssetTermsSchema["SecurityAssetTermsSchema"] {
-        +IReadOnlyCollection~string~ AssetClasses
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityCanonicalAssetHomes["SecurityCanonicalAssetHomes"] {
-        +IReadOnlyList~string~ SecuritizedLabels
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityCashFlowBehavior["SecurityCashFlowBehavior"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityCashFlowBehaviorExtensions["SecurityCashFlowBehaviorExtensions"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityCashFlowSourceDto["SecurityCashFlowSourceDto"] {
-        +DateTimeOffset? ClientConfirmedAt
-        +string? ClientConfirmedBy
-        +bool IsClientOverride
-        +DateTimeOffset? LastUpdatedUtc
-        +Guid SecurityId
-        +StructuredCashFlowSourceKind SourceKind
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityClosePriceApprovalDto["SecurityClosePriceApprovalDto"] {
-        +DateTimeOffset ApprovedAt
-        +string Rationale
-        +string Reviewer
-        +Guid SnapshotId
-        +string SnapshotSha256
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityClosePriceBlockerDto["SecurityClosePriceBlockerDto"] {
-        +string Code
-        +string Reason
-        +Guid SecurityId
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityClosePriceEvidence["SecurityClosePriceEvidence"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityClosePriceInputDto["SecurityClosePriceInputDto"] {
-        +SecurityClosePriceOverrideDto? Override
-        +Guid SecurityId
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityClosePriceLineDto["SecurityClosePriceLineDto"] {
-        +decimal? ClosePrice
-        +IReadOnlyList~SecurityRawPriceDto~ Observations
-        +SecurityClosePriceOverrideDto? Override
-        +Guid SecurityId
-        +SecurityPriceGoldenCopyDto? Selection
-        +SecurityPriceUnit Unit
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityClosePriceOverrideDto["SecurityClosePriceOverrideDto"] {
-        +string EvidenceReference
-        +decimal Price
-        +string Rationale
-        +SecurityPriceUnit Unit
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityClosePriceSetDto["SecurityClosePriceSetDto"] {
-        +SecurityClosePriceApprovalDto? Approval
-        +SecurityClosePriceSnapshotDto Snapshot
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto["SecurityClosePriceSnapshotDto"] {
-        +string AccountId
-        +IReadOnlyList~SecurityClosePriceBlockerDto~ Blockers
-        +string BookId
-        +string? CorrectionRationale
-        +Guid? CorrectsSnapshotId
-        +DateTimeOffset CreatedAt
-        +string CreatedBy
-        +string? CreationCommandDigest
-        +DateTimeOffset EvaluatedAsOf
-        +DateTimeOffset KnowledgeAsOf
-        +IReadOnlyList~SecurityClosePriceLineDto~ Lines
-        +decimal MaxSourceDispersionPercent
-    }
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarUsage --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarPurpose
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnostic --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnosticCode
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailure --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailureCode
@@ -472,9 +520,7 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetTermField
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetTermUiHint
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldDefinitionDto
-    Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCashFlowBehavior
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor --> Meridian_Contracts_SecurityMaster_SecurityAssetClassTermsUpgrade
-    Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor --> Meridian_Contracts_SecurityMaster_SecurityCashFlowBehavior
     Meridian_Contracts_SecurityMaster_SecurityAssetClassRegistry --> Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileAccountingImpactHintDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileDateOrderRuleDto
@@ -504,10 +550,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetTermEditorKind
     Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetTermRole
     Meridian_Contracts_SecurityMaster_SecurityAssetTermUiHint --> Meridian_Contracts_SecurityMaster_SecurityAssetTermEditorKind
-    Meridian_Contracts_SecurityMaster_SecurityClosePriceInputDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceOverrideDto
-    Meridian_Contracts_SecurityMaster_SecurityClosePriceLineDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceOverrideDto
-    Meridian_Contracts_SecurityMaster_SecurityClosePriceSetDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceApprovalDto
-    Meridian_Contracts_SecurityMaster_SecurityClosePriceSetDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto
-    Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceBlockerDto
-    Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceLineDto
 ```

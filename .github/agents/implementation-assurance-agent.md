@@ -68,6 +68,14 @@ Use this lane whenever the task creates or updates an agent or skill package.
 
 ## Quality Gates
 
+`buildctl.py recommend-validation` uses stable project-specific session profiles for incremental
+.NET checks; add `--fresh` for independent-output recommendations. The complete local gate supports
+bounded .NET/browser overlap (`--jobs 1` selects serial execution), followed by docs/workflows.
+`bash scripts/ci.sh --cold` measures fresh-build full-gate latency with dependency caches retained.
+See [measurement definitions](../../docs/development/build-observability.md#local-feedback-latency-and-observed-retries)
+for explicit edit-start timing and retained receipts.
+
+
 ```bash
 # Canonical PR gate
 bash scripts/ci.sh

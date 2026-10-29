@@ -9214,6 +9214,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.AppendOtcContractLifecycleRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ApproveCorporateActionCaseAccountingRequestDto"
     },
     {
@@ -9257,6 +9263,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.AssetPackAutomationDepth"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.AssetPackClassTermsSchema"
     },
     {
       "kind": "contract-set-member",
@@ -10288,6 +10300,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcAuctionSettlementData"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcCollateralAgreementDto"
     },
     {
@@ -10336,6 +10354,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcCompressionData"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractDirection"
     },
     {
@@ -10343,6 +10367,36 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleData"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleEventDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleRules"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleTarget"
     },
     {
       "kind": "contract-set-member",
@@ -10373,6 +10427,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractsJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcCreditEventData"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcCreditEventKind"
     },
     {
       "kind": "contract-set-member",
@@ -10487,6 +10553,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcNettingSetViewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcNovationData"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcRateResetData"
     },
     {
       "kind": "contract-set-member",
@@ -10619,6 +10697,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ScheduleSpecFactory"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ScheduleTermsWriteRules"
     },
     {
       "kind": "contract-set-member",
@@ -23032,6 +23116,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.AppendOtcContractLifecycleRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ApproveCorporateActionCaseAccountingRequestDto"
     },
     {
@@ -23075,6 +23165,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.AssetPackAutomationDepth"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.AssetPackClassTermsSchema"
     },
     {
       "kind": "contract-set-member",
@@ -24106,6 +24202,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcAuctionSettlementData"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcCollateralAgreementDto"
     },
     {
@@ -24154,6 +24256,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcCompressionData"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractDirection"
     },
     {
@@ -24161,6 +24269,36 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleData"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleEventDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleRules"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleTarget"
     },
     {
       "kind": "contract-set-member",
@@ -24191,6 +24329,18 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractsJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcCreditEventData"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcCreditEventKind"
     },
     {
       "kind": "contract-set-member",
@@ -24305,6 +24455,18 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcNettingSetViewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcNovationData"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcRateResetData"
     },
     {
       "kind": "contract-set-member",
@@ -24437,6 +24599,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ScheduleSpecFactory"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ScheduleTermsWriteRules"
     },
     {
       "kind": "contract-set-member",
@@ -35955,6 +36123,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.AppendOtcContractLifecycleRequest",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleData"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.ApproveCorporateActionCaseAccountingRequestDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingDecisionAuthorityDto"
     },
@@ -35975,6 +36149,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.AssetPackAccountingRules",
       "target": "contract:Meridian.Contracts.SecurityMaster.AssetPackJournalTemplateRule"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.AssetPackClassTermsSchema",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermField"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.AssetPackContractSchema",
+      "target": "contract:Meridian.Contracts.SecurityMaster.AssetPackClassTermsSchema"
     },
     {
       "kind": "contract-reference",
@@ -36633,6 +36819,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.OtcAuctionSettlementData",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleData"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.OtcCollateralAgreementDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcEligibleCollateralDto"
     },
@@ -36675,6 +36867,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.OtcCompressionData",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleData"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.OtcContractDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractDirection"
     },
@@ -36683,6 +36881,30 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.OtcContractDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractStatus"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleEventDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleEventDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleData"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleEventDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleEventDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleTarget"
     },
     {
       "kind": "contract-reference",
@@ -36713,6 +36935,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.OtcContractValuationRequest",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.OtcCreditEventData",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleData"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.OtcCreditEventData",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcCreditEventKind"
     },
     {
       "kind": "contract-reference",
@@ -36833,6 +37067,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.OtcNettingSetViewDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.OtcNettingSetDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.OtcNovationData",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleData"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.OtcRateResetData",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleData"
     },
     {
       "kind": "contract-reference",
@@ -51446,6 +51692,55 @@
       "target": "database:security_master.securities_pkey"
     },
     {
+      "constraint": "otc_contract_lifecycle_events_contract_id_fkey",
+      "kind": "foreign-key",
+      "label": "contract_id",
+      "source": "database:security_master.otc_contract_lifecycle_events",
+      "target": "database:security_master.otc_contracts"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_contract_lifecycle_events_actor_check on security_master.otc_contract_lifecycle_events",
+      "target": "database:security_master.otc_contract_lifecycle_events.actor"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_contract_lifecycle_events_contract_id_fkey on security_master.otc_contract_lifecycle_events",
+      "target": "database:security_master.otc_contracts.contract_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_contract_lifecycle_events_contract_id_fkey on security_master.otc_contract_lifecycle_events",
+      "target": "database:security_master.otc_contracts_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_contract_lifecycle_events_contract_version_check on security_master.otc_contract_lifecycle_events",
+      "target": "database:security_master.otc_contract_lifecycle_events.contract_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_contract_lifecycle_events_event_type_check on security_master.otc_contract_lifecycle_events",
+      "target": "database:security_master.otc_contract_lifecycle_events.event_type"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_contract_lifecycle_events_payload_check on security_master.otc_contract_lifecycle_events",
+      "target": "database:security_master.otc_contract_lifecycle_events.payload"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_contract_lifecycle_events_payload_version_check on security_master.otc_contract_lifecycle_events",
+      "target": "database:security_master.otc_contract_lifecycle_events.payload_version"
+    },
+    {
       "constraint": "otc_contracts_netting_set_id_fkey",
       "kind": "foreign-key",
       "label": "netting_set_id",
@@ -52311,6 +52606,36 @@
       "label": "",
       "source": "database:security_master.security_identifiers_security_id_fkey on security_master.security_identifiers",
       "target": "database:security_master.securities_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_master_terms_capabi_minimum_declared_mapping_ver_check on security_master.security_master_terms_capability_floor",
+      "target": "database:security_master.security_master_terms_capability_floor.minimum_declared_mapping_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_master_terms_capability_f_minimum_kernel_version_check on security_master.security_master_terms_capability_floor",
+      "target": "database:security_master.security_master_terms_capability_floor.minimum_kernel_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_master_terms_capability_floor_change_record_check on security_master.security_master_terms_capability_floor",
+      "target": "database:security_master.security_master_terms_capability_floor.change_record"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_master_terms_capability_floor_singleton_check on security_master.security_master_terms_capability_floor",
+      "target": "database:security_master.security_master_terms_capability_floor.singleton"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_master_terms_capability_floor_updated_by_check on security_master.security_master_terms_capability_floor",
+      "target": "database:security_master.security_master_terms_capability_floor.updated_by"
     },
     {
       "constraint": "security_operator_overrides_security_id_fkey",
@@ -53807,6 +54132,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.otc_contract_lifecycle_events"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.otc_contracts"
     },
     {
@@ -54035,6 +54366,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.security_master_terms_capability_floor"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.security_operator_overrides"
     },
     {
@@ -54201,7 +54538,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "0a125ac4e24102282d2e109a7cd931b99d945234a1915187ad834b7325094a25",
+  "fingerprint": "fb36fe92484b614451794de0dc4b9906c18c3d0ecfaeb6cf7c2db7e09cb3f6f3",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -63465,6 +63802,12 @@
       "label": "Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest"
     },
     {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.SecurityMaster.AppendOtcContractLifecycleRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.AppendOtcContractLifecycleRequest"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.SecurityMaster.ApproveCorporateActionCaseAccountingRequestDto",
       "kind": "contract-type",
@@ -63511,6 +63854,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.AssetPackAutomationDepth",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.AssetPackAutomationDepth"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.AssetPackClassTermsSchema",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.AssetPackClassTermsSchema"
     },
     {
       "classification": "record",
@@ -64539,6 +64888,12 @@
       "label": "Meridian.Contracts.SecurityMaster.OperatorOverridesPatchRequest"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcAuctionSettlementData",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcAuctionSettlementData"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.SecurityMaster.OtcCollateralAgreementDto",
       "kind": "contract-type",
@@ -64587,6 +64942,12 @@
       "label": "Meridian.Contracts.SecurityMaster.OtcCollateralRules"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcCompressionData",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcCompressionData"
+    },
+    {
       "classification": "enum",
       "id": "contract:Meridian.Contracts.SecurityMaster.OtcContractDirection",
       "kind": "contract-type",
@@ -64597,6 +64958,36 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.OtcContractDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.OtcContractDto"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleData",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcContractLifecycleData"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleEventDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcContractLifecycleEventDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleKind",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcContractLifecycleKind"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleRules",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcContractLifecycleRules"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcContractLifecycleTarget",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcContractLifecycleTarget"
     },
     {
       "classification": "class",
@@ -64627,6 +65018,18 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.OtcContractsJsonContext",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.OtcContractsJsonContext"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcCreditEventData",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcCreditEventData"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcCreditEventKind",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcCreditEventKind"
     },
     {
       "classification": "dto",
@@ -64741,6 +65144,18 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.OtcNettingSetViewDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.OtcNettingSetViewDto"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcNovationData",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcNovationData"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcRateResetData",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcRateResetData"
     },
     {
       "classification": "class",
@@ -64873,6 +65288,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.ScheduleSpecFactory",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.ScheduleSpecFactory"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ScheduleTermsWriteRules",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ScheduleTermsWriteRules"
     },
     {
       "classification": "enum",
@@ -78034,10 +78455,76 @@
       "label": "security_master.otc_collateral_balances_security_id_fkey on security_master.otc_collateral_balances"
     },
     {
+      "id": "database:security_master.otc_contract_lifecycle_events",
+      "kind": "database-table",
+      "label": "security_master.otc_contract_lifecycle_events",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.otc_contract_lifecycle_events.actor",
+      "kind": "database-object",
+      "label": "security_master.otc_contract_lifecycle_events.actor"
+    },
+    {
+      "id": "database:security_master.otc_contract_lifecycle_events.contract_version",
+      "kind": "database-object",
+      "label": "security_master.otc_contract_lifecycle_events.contract_version"
+    },
+    {
+      "id": "database:security_master.otc_contract_lifecycle_events.event_type",
+      "kind": "database-object",
+      "label": "security_master.otc_contract_lifecycle_events.event_type"
+    },
+    {
+      "id": "database:security_master.otc_contract_lifecycle_events.payload",
+      "kind": "database-object",
+      "label": "security_master.otc_contract_lifecycle_events.payload"
+    },
+    {
+      "id": "database:security_master.otc_contract_lifecycle_events.payload_version",
+      "kind": "database-object",
+      "label": "security_master.otc_contract_lifecycle_events.payload_version"
+    },
+    {
+      "id": "database:security_master.otc_contract_lifecycle_events_actor_check on security_master.otc_contract_lifecycle_events",
+      "kind": "database-object",
+      "label": "security_master.otc_contract_lifecycle_events_actor_check on security_master.otc_contract_lifecycle_events"
+    },
+    {
+      "id": "database:security_master.otc_contract_lifecycle_events_contract_id_fkey on security_master.otc_contract_lifecycle_events",
+      "kind": "database-object",
+      "label": "security_master.otc_contract_lifecycle_events_contract_id_fkey on security_master.otc_contract_lifecycle_events"
+    },
+    {
+      "id": "database:security_master.otc_contract_lifecycle_events_contract_version_check on security_master.otc_contract_lifecycle_events",
+      "kind": "database-object",
+      "label": "security_master.otc_contract_lifecycle_events_contract_version_check on security_master.otc_contract_lifecycle_events"
+    },
+    {
+      "id": "database:security_master.otc_contract_lifecycle_events_event_type_check on security_master.otc_contract_lifecycle_events",
+      "kind": "database-object",
+      "label": "security_master.otc_contract_lifecycle_events_event_type_check on security_master.otc_contract_lifecycle_events"
+    },
+    {
+      "id": "database:security_master.otc_contract_lifecycle_events_payload_check on security_master.otc_contract_lifecycle_events",
+      "kind": "database-object",
+      "label": "security_master.otc_contract_lifecycle_events_payload_check on security_master.otc_contract_lifecycle_events"
+    },
+    {
+      "id": "database:security_master.otc_contract_lifecycle_events_payload_version_check on security_master.otc_contract_lifecycle_events",
+      "kind": "database-object",
+      "label": "security_master.otc_contract_lifecycle_events_payload_version_check on security_master.otc_contract_lifecycle_events"
+    },
+    {
       "id": "database:security_master.otc_contracts",
       "kind": "database-table",
       "label": "security_master.otc_contracts",
       "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.otc_contracts.contract_id",
+      "kind": "database-object",
+      "label": "security_master.otc_contracts.contract_id"
     },
     {
       "id": "database:security_master.otc_contracts.direction",
@@ -78088,6 +78575,11 @@
       "id": "database:security_master.otc_contracts_notional_check on security_master.otc_contracts",
       "kind": "database-object",
       "label": "security_master.otc_contracts_notional_check on security_master.otc_contracts"
+    },
+    {
+      "id": "database:security_master.otc_contracts_pkey",
+      "kind": "database-object",
+      "label": "security_master.otc_contracts_pkey"
     },
     {
       "id": "database:security_master.otc_contracts_security_id_fkey on security_master.otc_contracts",
@@ -78852,6 +79344,62 @@
       "schema": "security_master"
     },
     {
+      "id": "database:security_master.security_master_terms_capabi_minimum_declared_mapping_ver_check on security_master.security_master_terms_capability_floor",
+      "kind": "database-object",
+      "label": "security_master.security_master_terms_capabi_minimum_declared_mapping_ver_check on security_master.security_master_terms_capability_floor"
+    },
+    {
+      "id": "database:security_master.security_master_terms_capability_f_minimum_kernel_version_check on security_master.security_master_terms_capability_floor",
+      "kind": "database-object",
+      "label": "security_master.security_master_terms_capability_f_minimum_kernel_version_check on security_master.security_master_terms_capability_floor"
+    },
+    {
+      "id": "database:security_master.security_master_terms_capability_floor",
+      "kind": "database-table",
+      "label": "security_master.security_master_terms_capability_floor",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_master_terms_capability_floor.change_record",
+      "kind": "database-object",
+      "label": "security_master.security_master_terms_capability_floor.change_record"
+    },
+    {
+      "id": "database:security_master.security_master_terms_capability_floor.minimum_declared_mapping_version",
+      "kind": "database-object",
+      "label": "security_master.security_master_terms_capability_floor.minimum_declared_mapping_version"
+    },
+    {
+      "id": "database:security_master.security_master_terms_capability_floor.minimum_kernel_version",
+      "kind": "database-object",
+      "label": "security_master.security_master_terms_capability_floor.minimum_kernel_version"
+    },
+    {
+      "id": "database:security_master.security_master_terms_capability_floor.singleton",
+      "kind": "database-object",
+      "label": "security_master.security_master_terms_capability_floor.singleton"
+    },
+    {
+      "id": "database:security_master.security_master_terms_capability_floor.updated_by",
+      "kind": "database-object",
+      "label": "security_master.security_master_terms_capability_floor.updated_by"
+    },
+    {
+      "id": "database:security_master.security_master_terms_capability_floor_change_record_check on security_master.security_master_terms_capability_floor",
+      "kind": "database-object",
+      "label": "security_master.security_master_terms_capability_floor_change_record_check on security_master.security_master_terms_capability_floor"
+    },
+    {
+      "id": "database:security_master.security_master_terms_capability_floor_singleton_check on security_master.security_master_terms_capability_floor",
+      "kind": "database-object",
+      "label": "security_master.security_master_terms_capability_floor_singleton_check on security_master.security_master_terms_capability_floor"
+    },
+    {
+      "id": "database:security_master.security_master_terms_capability_floor_updated_by_check on security_master.security_master_terms_capability_floor",
+      "kind": "database-object",
+      "label": "security_master.security_master_terms_capability_floor_updated_by_check on security_master.security_master_terms_capability_floor"
+    },
+    {
       "id": "database:security_master.security_operator_overrides",
       "kind": "database-table",
       "label": "security_master.security_operator_overrides",
@@ -79273,11 +79821,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3461,
-    "contract_set_memberships": 4292,
-    "edges": 9005,
-    "foreign_keys": 154,
+    "contract_references": 3474,
+    "contract_set_memberships": 4320,
+    "edges": 9061,
+    "foreign_keys": 155,
     "logical_references": 6,
-    "nodes": 4350
+    "nodes": 4389
   }
 }

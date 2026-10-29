@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.SecurityMaster;
 
@@ -295,16 +296,18 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     [InlineData("StructuredCredit", 3, 2, null)]
     [InlineData("StructuredCredit", 3, 2, "{}")]
     [InlineData("StructuredCredit", 3, 2, """{"rollConvention":"15","endOfMonthRule":true}""")]
-    public void ReadableOnlyScheduleConventions_IsRefused_ForASetAndForAClear(
+    public void WritableScheduleConventions_RequireSupportedAnchors_ForPopulatedValues(
         string assetClass, int since, int writes, string? value)
     {
-        // The merge maps an approved edit in Write mode, which refuses the block, so staging even a
-        // clear would put a draft and a provenance row behind an edit that can never publish.
-        SecurityAssetTermsFieldEditValidator.TryValidate(
-                assetClass, "assetSpecificTerms.scheduleConventions", value, out var canonicalPath, out var error)
-            .Should().BeFalse();
-        error.Should().Be(NotYetWritable(assetClass, "scheduleConventions", since, writes));
-        canonicalPath.Should().Be("assetSpecificTerms.scheduleConventions", "a refused edit passes its path through unchanged");
+        var accepted = SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, "assetSpecificTerms.scheduleConventions", value, out var canonicalPath, out var error);
+        var populated = value is not null && SecurityAssetTermsSchema.IsPopulatedTermValue(JsonSerializer.Deserialize<JsonElement>(value));
+        var anchorsDeclared = SecurityAssetTermsSchema.Field(assetClass, "issueDate") is not null
+            && SecurityAssetTermsSchema.Field(assetClass, "paymentFrequency") is not null;
+        accepted.Should().Be(!populated || anchorsDeclared);
+        if (!accepted)
+            error.Should().Be("Declared schedule conventions require schema-declared issueDate and paymentFrequency anchors.");
+        canonicalPath.Should().Be("assetSpecificTerms.scheduleConventions");
+        SecurityAssetClassCatalog.GetTermsVersion(assetClass).Should().Be(assetClass == "StructuredCredit" ? 4 : 3);
     }
 
     [Theory]
@@ -314,13 +317,13 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     [InlineData("CertificateOfDeposit", 2, 1, "assetSpecificTerms.scheduleConventions.businessDayConvention", "Following")]
     [InlineData("StructuredCredit", 3, 2, "assetSpecificTerms.scheduleConventions.stubPolicy", "Long")]
     [InlineData("StructuredCredit", 3, 2, "assetSpecificTerms.scheduleConventions.paymentLagBusinessDays", null)]
-    public void NestedMemberOfReadableOnlyScheduleConventions_IsRefused(
+    public void WritableConventionMemberValues_RequireWholeReplacement_WhileClearsRemainOverlayRemoval(
         string assetClass, int since, int writes, string fieldPath, string? value)
     {
-        // The refusal names the declared block, whatever member or key casing the edit addressed.
-        SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, fieldPath, value, out _, out var error)
-            .Should().BeFalse();
-        error.Should().Be(NotYetWritable(assetClass, "scheduleConventions", since, writes));
+        var accepted = SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, fieldPath, value, out _, out var error);
+        accepted.Should().Be(string.IsNullOrWhiteSpace(value));
+        if (!accepted)
+            error.Should().Contain("replace the whole container");
     }
 
     [Theory]
@@ -425,17 +428,13 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     [InlineData("StructuredCredit", "putSchedule", 4, 2, """[{"putDate":"2029-06-15"}]""")]
     [InlineData("StructuredCredit", "putSchedule", 4, 2, "[]")]
     [InlineData("StructuredCredit", "putSchedule", 4, 2, null)]
-    public void ReadableOnlyCallAndPutSchedules_AreRefused_ForASetAnEmptyArrayAndAClear(
+    public void WritableCallAndPutSchedules_AcceptWholeValuesEmptyArraysAndClears(
         string assetClass, string key, int since, int writes, string? value)
     {
-        // The arrays are terms of the version above the block's (3, or 4 for StructuredCredit). An
-        // empty array and a clear mean unset, but the merge would still map the edit in Write mode, so
-        // they are refused like an entry array.
-        SecurityAssetTermsFieldEditValidator.TryValidate(
-                assetClass, $"assetSpecificTerms.{key}", value, out var canonicalPath, out var error)
-            .Should().BeFalse();
-        error.Should().Be(NotYetWritable(assetClass, key, since, writes));
-        canonicalPath.Should().Be($"assetSpecificTerms.{key}", "a refused edit passes its path through unchanged");
+        SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, $"assetSpecificTerms.{key}", value, out var canonicalPath, out var error)
+            .Should().BeTrue(error);
+        canonicalPath.Should().Be($"assetSpecificTerms.{key}");
+        SecurityAssetClassCatalog.GetTermsVersion(assetClass).Should().Be(assetClass == "StructuredCredit" ? 4 : 3);
     }
 
     [Theory]
@@ -449,15 +448,16 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     [InlineData("StructuredCredit", "assetSpecificTerms.callSchedule.0.callDate", "2030-06-15", "callSchedule", 4, 2)]
     [InlineData("StructuredCredit", "assetSpecificTerms.putSchedule.0", """{"putDate":"2029-06-15"}""", "putSchedule", 4, 2)]
     [InlineData("StructuredCredit", "assetSpecificTerms.CallSchedule", null, "callSchedule", 4, 2)]
-    public void NestedOrCaseVariantEditOfAReadableOnlySchedule_IsRefused_NamingTheDeclaredArray(
+    public void WritableSchedule_NestedValuesRequireReplacement_WhileRootAliasesAndClearsCanonicalize(
         string assetClass, string fieldPath, string? value, string key, int since, int writes)
     {
-        // Every member of a readable-only container is refused: an element, a member of an element
-        // and a case variant of the key all name the declared array in the reason.
-        SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, fieldPath, value, out var canonicalPath, out var error)
-            .Should().BeFalse();
-        error.Should().Be(NotYetWritable(assetClass, key, since, writes));
-        canonicalPath.Should().Be(fieldPath, "a refused edit passes its path through unchanged");
+        var nested = fieldPath[SecurityAssetTermsFieldEditValidator.AssetSpecificTermsPrefix.Length..].Contains('.');
+        var accepted = SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, fieldPath, value, out var canonicalPath, out var error);
+        accepted.Should().Be(!nested || string.IsNullOrWhiteSpace(value));
+        if (!accepted)
+            error.Should().Contain("replace the whole container");
+        else
+            canonicalPath.Should().StartWith($"assetSpecificTerms.{key}");
     }
 
     [Theory]
@@ -499,8 +499,8 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
         error.Should().Be(
             $"'notATerm' is not a declared asset-specific term for asset class '{assetClass}'. " +
             $"Declared term fields: {string.Join(", ", SecurityAssetTermsSchema.WritableFields(assetClass).Select(static field => field.Key))}.");
-        error.Should().NotContain("scheduleConventions")
-            .And.NotContain("callSchedule")
-            .And.NotContain("putSchedule");
+        error.Should().Contain("scheduleConventions");
+        error.Should().Contain("callSchedule");
+        error.Should().Contain("putSchedule");
     }
 }

@@ -300,3 +300,11 @@ Preserve evidence lineage and avoid breaking promotion compatibility across brow
 
 - [`archive/docs/plans/waves-2-4-operator-readiness-addendum.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/waves-2-4-operator-readiness-addendum.md)
 - `docs/source/generated/source-roadmap-traceability.md`
+
+The Security Master accounting-event adapter reads classification and factor history from the
+economic definition. Dated observations live under `structuredProduct.factorScheduleEntries` and
+retain their trustee-report lineage in `structuredProduct.factorScheduleReference`; a contradictory
+legacy passthrough cannot supply classification, factors, or missing evidence. Securitized records
+without usable typed history remain subject to factor-coverage gates. Historical profile documents
+that never produced a structural economic module require governed recovery before factor-dependent
+accounting can proceed.

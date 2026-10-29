@@ -96,7 +96,11 @@ module internal ContractAggregate =
                 servicing.LastPaymentDate,
                 servicing.ServicingRevision,
                 servicing.RevisionHistory,
-                servicing.AccrualEntries)
+                servicing.AccrualEntries,
+                Collateral = servicing.Collateral,
+                UnamortizedDiscount = servicing.UnamortizedDiscount,
+                UnamortizedPremium = servicing.UnamortizedPremium,
+                IsPikToggled = servicing.IsPikToggled)
 
         { Contract = updatedContract
           Servicing = updatedServicing
@@ -130,7 +134,11 @@ module internal ContractAggregate =
                 servicing.LastPaymentDate,
                 servicing.ServicingRevision,
                 servicing.RevisionHistory,
-                servicing.AccrualEntries)
+                servicing.AccrualEntries,
+                Collateral = servicing.Collateral,
+                UnamortizedDiscount = servicing.UnamortizedDiscount,
+                UnamortizedPremium = servicing.UnamortizedPremium,
+                IsPikToggled = servicing.IsPikToggled)
 
         { Contract = updatedContract
           Servicing = updatedServicing }

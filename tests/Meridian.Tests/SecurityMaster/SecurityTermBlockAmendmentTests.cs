@@ -133,20 +133,11 @@ public sealed class SecurityTermBlockAmendmentTests
     [Fact]
     public void For_OffersOnlyTheBlocksTheNodeWrites()
     {
-        // scheduleConventions, callSchedule and putSchedule are declared (the node reads them) but are
-        // above each class's write version, so none is a block a term-block amendment can replace.
-        SecurityTermBlocks.For("Bond").Select(static field => field.Key).Should().Equal("stepSchedule", "principalSchedule");
-        SecurityTermBlocks.For("CertificateOfDeposit").Should().BeEmpty();
-        SecurityTermBlocks.For("StructuredCredit").Select(static field => field.Key).Should().Equal("factorScheduleEntries");
+        SecurityTermBlocks.For("Bond").Select(static field => field.Key).Should().Equal("stepSchedule", "principalSchedule", "scheduleConventions", "callSchedule", "putSchedule");
+        SecurityTermBlocks.For("CertificateOfDeposit").Select(static field => field.Key).Should().Equal("scheduleConventions", "callSchedule", "putSchedule");
+        SecurityTermBlocks.For("StructuredCredit").Select(static field => field.Key).Should().Equal("factorScheduleEntries", "scheduleConventions", "callSchedule", "putSchedule");
         SecurityTermBlocks.For("Swap").Select(static field => field.Key).Should().Equal("legs");
-        foreach (var assetClass in new[] { "Bond", "CertificateOfDeposit", "StructuredCredit" })
-        {
-            foreach (var key in new[] { "scheduleConventions", "callSchedule", "putSchedule" })
-            {
-                SecurityAssetTermsSchema.Field(assetClass, key).Should().NotBeNull($"{assetClass}.{key}");
-                SecurityTermBlocks.For(assetClass).Should().NotContain(field => field.Key == key, $"{assetClass}.{key}");
-            }
-        }
+        SecurityTermBlocks.TryDescribeReadableOnlyBlock("Swap", "scheduleConventions", out _).Should().BeFalse("the swap block belongs to a leg, not the root");
     }
 
     [Theory]
@@ -159,26 +150,25 @@ public sealed class SecurityTermBlockAmendmentTests
     [InlineData("CertificateOfDeposit", "putSchedule", 3, 1, """[{"putDate":"2026-09-30"}]""", "[]")]
     [InlineData("StructuredCredit", "callSchedule", 4, 2, """[{"callDate":"2030-06-15","callPrice":101}]""", "[]")]
     [InlineData("StructuredCredit", "putSchedule", 4, 2, """[{"putDate":"2029-06-15"}]""", "[]")]
-    public void BuildPatch_ReadableOnlyBlock_ThrowsTheNotYetWritableReason(
+    public void BuildPatch_NewlyWritableBlock_AcceptsUnset_ButRefusesIncompleteSemanticDeclarations(
         string assetClass, string blockKey, int since, int writes, string populatedBlock, string emptyBlock)
     {
-        var reason =
-            $"'{blockKey}' is an asset-class terms version {since} term of '{assetClass}'. This node reads it but writes " +
-            $"assetClassTermsVersion {writes}, so a create, amend, import or field edit cannot set it yet. " +
-            "Leave it absent, null or empty (ADR-024).";
         var current = JsonSerializer.SerializeToElement(new { maturity = "2031-06-15" });
-
-        SecurityTermBlocks.TryDescribeReadableOnlyBlock(assetClass, blockKey, out var described).Should().BeTrue();
-        described.Should().Be(reason);
-
-        // A populated block, an empty one and a clear are all refused: the block is not writable at all.
-        foreach (var block in new[] { populatedBlock, emptyBlock, "null" })
+        SecurityTermBlocks.TryDescribeReadableOnlyBlock(assetClass, blockKey, out var described).Should().BeFalse();
+        described.Should().BeNull();
+        SecurityTermBlocks.For(assetClass).Should().Contain(field => field.Key == blockKey);
+        foreach (var block in new[] { emptyBlock, "null" })
         {
-            var act = () => SecurityTermBlocks.BuildPatch(assetClass, current, blockKey, JsonDocument.Parse(block).RootElement.Clone());
-
-            act.Should().Throw<ArgumentException>().WithMessage($"{reason} (Parameter 'blockKey')")
-                .Which.ParamName.Should().Be("blockKey");
+            Action clear = () => SecurityTermBlocks.BuildPatch(assetClass, current, blockKey, JsonSerializer.Deserialize<JsonElement>(block));
+            clear.Should().NotThrow("writable optional containers accept unset replacements");
         }
+        Action populated = () => SecurityTermBlocks.BuildPatch(assetClass, current, blockKey, JsonSerializer.Deserialize<JsonElement>(populatedBlock));
+        var refusal = populated.Should().Throw<ArgumentException>().Which;
+        refusal.ParamName.Should().Be("block");
+        if (blockKey == "scheduleConventions")
+            refusal.Message.Should().Contain("issueDate");
+        else
+            refusal.Message.Should().Contain("exerciseStyle");
     }
 
     [Theory]
@@ -216,12 +206,13 @@ public sealed class SecurityTermBlockAmendmentTests
 
         var act = () => SecurityTermBlocks.BuildPatch(assetClass, current, blockKey, JsonSerializer.SerializeToElement(new { }));
 
+        var offered = string.Join(", ", SecurityTermBlocks.For(assetClass).Select(field => field.Key));
         act.Should().Throw<ArgumentException>().WithMessage(
-            $"Asset class '{assetClass}' declares no term block '{blockKey}'. Declared blocks: {declaredBlocks}. (Parameter 'blockKey')");
+            $"Asset class '{assetClass}' declares no term block '{blockKey}'. Declared blocks: {(offered.Length == 0 ? "none" : offered)}. (Parameter 'blockKey')");
     }
 
     [Fact]
-    public async Task AmendTermBlockAsync_ReadableOnlyBlock_IsRefusedBeforeAnythingIsAppended()
+    public async Task AmendTermBlockAsync_DeclaredBlockWithoutIssueAnchor_IsRefusedBeforeAnythingIsAppended()
     {
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
@@ -249,11 +240,12 @@ public sealed class SecurityTermBlockAmendmentTests
             SourceRecordId: null,
             Reason: "set conventions ahead of the write version"));
 
-        await act.Should().ThrowAsync<ArgumentException>().WithMessage(
-            "'scheduleConventions' is an asset-class terms version 2 term of 'Bond'. This node reads it but writes " +
-            "assetClassTermsVersion 1, so a create, amend, import or field edit cannot set it yet. " +
-            "Leave it absent, null or empty (ADR-024). (Parameter 'blockKey')");
+        await act.Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>().WithMessage(
+            "Invalid declared schedule terms: Declared schedule conventions need the contractual issue date; the record carries no issueDate, " +
+            "and its effective-from date is not used as a schedule anchor. (Parameter 'block')");
         await eventStore.DidNotReceiveWithAnyArgs().AppendAsync(default, default, default!, default);
+        await store.DidNotReceiveWithAnyArgs().UpsertProjectionAsync(default!, default);
+        await snapshotStore.DidNotReceiveWithAnyArgs().SaveAsync(default!, default);
     }
 
     private static SecurityMasterService CreateService(

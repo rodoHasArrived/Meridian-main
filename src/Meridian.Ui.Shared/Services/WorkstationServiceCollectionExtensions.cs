@@ -377,7 +377,8 @@ public static class WorkstationServiceCollectionExtensions
             () => sp.GetService<Meridian.Execution.Sdk.IExecutionGateway>() as Meridian.Execution.Sdk.IBrokerageGateway,
             sp.GetService<Meridian.Execution.Sdk.IOrderManager>,
             sp.GetRequiredService<BrokerageExecutionReconciliationService>(),
-            sp.GetService<TimeProvider>()));
+            sp.GetService<TimeProvider>(),
+            securityMaster: sp.GetService<ContractSecurityMasterQueryService>()));
         services.TryAddSingleton(sp =>
         {
             var gatewayId = sp.GetService<Meridian.Execution.Sdk.IExecutionGateway>()?.GatewayId ?? "paper";

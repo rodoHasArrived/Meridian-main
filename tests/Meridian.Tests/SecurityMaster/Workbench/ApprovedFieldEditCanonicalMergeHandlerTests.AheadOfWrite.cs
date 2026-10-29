@@ -74,7 +74,7 @@ public sealed partial class ApprovedFieldEditCanonicalMergeHandlerTests
     }
 
     [Fact]
-    public async Task ApprovedEditOnABondStampedAboveTheWriteVersion_FailsAtMergeWithTheWriteVersionReason()
+    public async Task ApprovedEditOnABondWithContradictoryRoll_FailsAtMerge()
     {
         // A row a newer node wrote at version 2: merging an edit re-submits its stamp, which this
         // node reads but does not write.
@@ -86,14 +86,14 @@ public sealed partial class ApprovedFieldEditCanonicalMergeHandlerTests
         var refused = await CreateCanonicalMergeHandler(canonical.Service)
             .Invoking(h => h.HandleAsync(Event(revisionId, "assetSpecificTerms.issuerName") with { EffectiveFrom = DateTimeOffset.UtcNow }))
             .Should().ThrowAsync<InvalidOperationException>();
-        refused.Which.Message.Should().Be(AheadOfWriteFixtures.BondWriteVersionReason);
+        refused.Which.Message.Should().Be("Invalid declared schedule terms: Declared rollConvention 'EndOfMonth' conflicts with endOfMonthRule false.");
 
         canonical.Appended.Should().BeEmpty();
         canonical.Upserted.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task ApprovedEditOnABondStampedThreeDeclaringCallAndPutSchedules_FailsAtMergeWithTheWriteVersionReason()
+    public async Task ApprovedEditOnABondWithMissingExerciseStyle_FailsAtMerge()
     {
         // A row a newer node wrote at version 3 with declared schedules (stamped by hand here: no node
         // writes version 3 yet). This node reads it since 4b but writes version 1, so merging an edit
@@ -109,7 +109,7 @@ public sealed partial class ApprovedFieldEditCanonicalMergeHandlerTests
         var refused = await CreateCanonicalMergeHandler(canonical.Service)
             .Invoking(h => h.HandleAsync(Event(revisionId, "assetSpecificTerms.issuerName") with { EffectiveFrom = DateTimeOffset.UtcNow }))
             .Should().ThrowAsync<InvalidOperationException>("a failed merge fails the publish fan-out");
-        refused.Which.Message.Should().Be(AheadOfWriteFixtures.BondStampThreeWriteVersionReason);
+        refused.Which.Message.Should().Contain("exerciseStyle must be explicitly stated");
 
         canonical.Appended.Should().BeEmpty("the refused amendment appends no economic event");
         canonical.Upserted.Should().BeEmpty("the refused amendment leaves the canonical projection untouched");
@@ -118,7 +118,7 @@ public sealed partial class ApprovedFieldEditCanonicalMergeHandlerTests
     [Theory]
     [InlineData(1)]
     [InlineData(null)]
-    public async Task ApprovedEditOnABondCarryingAStrayCallSchedule_FailsAtMergeWithTheNotYetWritableReason(int? stamp)
+    public async Task ApprovedEditOnABondCarryingAStrayCallSchedule_FailsAtMergeWithoutImplicitActivation(int? stamp)
     {
         // Approved before submission refused the row (a 4a node staged it, since the key was
         // undeclared there): the merged document still carries the populated callSchedule, a version-3
@@ -134,7 +134,7 @@ public sealed partial class ApprovedFieldEditCanonicalMergeHandlerTests
             .Invoking(h => h.HandleAsync(Event(revisionId, "assetSpecificTerms.issuerName") with { EffectiveFrom = DateTimeOffset.UtcNow }))
             .Should().ThrowAsync<InvalidOperationException>("a failed merge fails the publish fan-out");
         refused.Which.Message.Should().Be(
-            AheadOfWriteFixtures.NotYetWritableReason("Bond", "callSchedule", sinceVersion: 3, writes: 1));
+            AheadOfWriteFixtures.StrayContainerReason("callSchedule", 3));
 
         canonical.Appended.Should().BeEmpty("the refused amendment appends no economic event");
         canonical.Upserted.Should().BeEmpty("the refused amendment leaves the canonical projection untouched");

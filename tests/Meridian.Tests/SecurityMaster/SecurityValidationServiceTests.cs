@@ -1,6 +1,7 @@
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
+using Meridian.Application.SecurityMaster.Validation;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.ReferenceData.SecurityMaster;
 using Meridian.Storage;
@@ -162,10 +163,10 @@ public sealed class SecurityValidationServiceTests
         report.ErrorIssueCount.Should().BeGreaterThanOrEqualTo(5);
 
         report.Issues.Select(static issue => issue.Code).Should().Contain(
-            "SM_OPTION_UNDERLYING_REQUIRED",
+            SchemaTermsAssetClassValidator.RequiredCode,
             "SM_OPTION_PUT_CALL_INVALID",
             "SM_OPTION_STRIKE_INVALID",
-            "SM_OPTION_EXPIRY_REQUIRED",
+            SchemaTermsAssetClassValidator.TypeCode,
             "SM_OPTION_MULTIPLIER_INVALID",
             "__VACUITY_PROBE__");
 
@@ -206,10 +207,10 @@ public sealed class SecurityValidationServiceTests
 
         report.HasBlockingIssues.Should().BeTrue();
         report.Issues.Select(static issue => issue.Code).Should().Contain(
-            "SM_OPTION_UNDERLYING_REQUIRED",
+            SchemaTermsAssetClassValidator.RequiredCode,
             "SM_OPTION_PUT_CALL_INVALID",
             "SM_OPTION_STRIKE_INVALID",
-            "SM_OPTION_EXPIRY_REQUIRED",
+            SchemaTermsAssetClassValidator.TypeCode,
             "SM_OPTION_MULTIPLIER_INVALID");
     }
 
@@ -892,7 +893,7 @@ public sealed class SecurityValidationServiceTests
 
         report.HasBlockingIssues.Should().BeTrue();
         report.Issues.Should().Contain(issue =>
-            issue.Code == "SM_STRUCTURED_CREDIT_COLLATERAL_REQUIRED"
+            issue.Code == SchemaTermsAssetClassValidator.RequiredCode
             && issue.AffectedFields.Contains("assetSpecificTerms.collateralType"));
     }
 
@@ -987,8 +988,10 @@ public sealed class SecurityValidationServiceTests
         var report = service.ValidateRecord(malformed, [malformed], Now);
 
         report.HasBlockingIssues.Should().BeTrue();
-        report.Issues.Should().ContainSingle(static item => item.Code == "SM_STRUCTURED_CREDIT_REINVESTMENT_END_NOT_A_DATE");
-        report.Issues.Should().ContainSingle(static item => item.Code == "SM_STRUCTURED_CREDIT_SENIORITY_INVALID");
+        report.Issues.Should().ContainSingle(static item => item.Code == SchemaTermsAssetClassValidator.TypeCode
+            && item.AffectedFields.Contains("assetSpecificTerms.reinvestmentPeriodEnd"));
+        report.Issues.Should().ContainSingle(static item => item.Code == SchemaTermsAssetClassValidator.TypeCode
+            && item.AffectedFields.Contains("assetSpecificTerms.seniority"));
         report.Issues.Should().NotContain(static item =>
             item.Code == "SM_STRUCTURED_CREDIT_NON_CALL_END_NOT_A_DATE" || item.Code == "SM_STRUCTURED_CREDIT_REINVESTMENT_END_INVALID");
     }
@@ -1055,7 +1058,7 @@ public sealed class SecurityValidationServiceTests
 
         var report = service.ValidateRecord(swaption, [swaption], Now);
 
-        report.Issues.Any(static item => item.Code == "SM_SWAPTION_STRIKE_REQUIRED").Should().Be(expectIssue);
+        report.Issues.Any(static item => item.Code == SchemaTermsAssetClassValidator.RequiredCode && item.AffectedFields.Contains("assetSpecificTerms.strikeRate")).Should().Be(expectIssue);
     }
 
     [Theory]
@@ -1196,7 +1199,7 @@ public sealed class SecurityValidationServiceTests
 
         var report = service.ValidateRecord(cds, [cds], Now);
 
-        var couponIssues = report.Issues.Where(static item => item.Code == "SM_CDS_FIXED_COUPON_INVALID").ToArray();
+        var couponIssues = report.Issues.Where(static item => item.AffectedFields.Contains("assetSpecificTerms.fixedCouponBps")).ToArray();
         couponIssues.Any().Should().Be(expectIssue);
         couponIssues.Should().OnlyContain(static item => item.Severity == SecurityValidationSeverityDto.Error);
     }

@@ -2,12 +2,14 @@ import importlib.util
 import io
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
 import tempfile
 import threading
 import unittest
+import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
@@ -69,6 +71,8 @@ class RunDotnetCiTestsTests(unittest.TestCase):
                 "core-market-instruments",
                 "core-platform-domain-root",
                 "core-reporting",
+                "contracts-unit",
+                "core-unit",
                 "fsharp",
                 "ui",
                 "backtesting",
@@ -199,7 +203,7 @@ class RunDotnetCiTestsTests(unittest.TestCase):
             self.assertEqual(solution["projects"], [
                 project.path.replace("/", "\\") for project in MODULE.get_unique_build_projects(projects)
             ])
-            self.assertEqual(len(solution["projects"]), 9)
+            self.assertEqual(len(solution["projects"]), 11)
             self.assertTrue(all((resolved_solution.parent / path.replace("\\", "/")).is_file()
                                 for path in solution["projects"]))
 
@@ -798,6 +802,222 @@ print(json.dumps({'temporary': temporary}), flush=True)
             self.assertIn("tests/Meridian.Tests/Meridian.Tests.csproj", summary)
             self.assertIn("tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj", summary)
             self.assertIn("❌ failed", summary)
+
+
+class ExtractedUnitProjectTests(unittest.TestCase):
+    """The first extracted suites stay independently buildable and in the full gate."""
+
+    REPO = Path(__file__).resolve().parents[2]
+    MIGRATED_FILES = {
+        "Meridian.Contracts.UnitTests": (
+            "Api/UiApiClientTests.cs DataProvenanceTests.cs "
+            "FundStructureContractsJsonContextTests.cs InstrumentJournalContractCompatibilityTests.cs "
+            "Integrity/Sha256DigestTests.cs Ledger/LedgerDimensionTagsTests.cs "
+            "LedgerReconciliationContractCompatibilityTests.cs OperationalFinanceContractTests.cs "
+            "Operations/OperationsOriginGuardTests.cs ProviderIntegrationContractsTests.cs "
+            "ProviderIntegrationManifestIdentityTests.cs Text/TextPrimitivesTests.cs VerifiedOperationOutcomeTests.cs"
+        ).split(),
+        "Meridian.Core.UnitTests": (
+            "BackoffTests.cs CircuitBreakerTests.cs Config/AppConfigJsonOptionsTests.cs "
+            "Config/ConfigEnvironmentOverrideTests.cs Config/ConfigJsonSchemaGeneratorTests.cs "
+            "Config/ConfigTemplateGeneratorTests.cs Config/ConfigValidationPipelineTests.cs "
+            "Config/ConfigValidatorTests.cs Config/ConfigWatcherTests.cs Config/CredentialPlaceholderDetectorTests.cs "
+            "Config/DataSourceKindConverterTests.cs Config/DefaultConfigPathResolverTests.cs "
+            "Contracts/AppConfigDtoRoundTripTests.cs"
+        ).split(),
+    }
+
+    def test_migrated_sources_have_exactly_one_compile_owner(self):
+        for project_name, files in self.MIGRATED_FILES.items():
+            subsystem = project_name.split(".")[1]
+            directory = self.REPO / "tests" / project_name
+            for relative in files:
+                with self.subTest(project=project_name, source=relative):
+                    relative_path = relative if relative.startswith("Contracts/") else subsystem + "/" + relative
+                    source = directory / relative_path
+                    self.assertTrue(source.is_file(), "migrated test must remain in the focused project")
+                    self.assertFalse((self.REPO / "tests/Meridian.Tests" / relative_path).exists())
+                    # SDK default Compile items own the source once; no link brings it back
+                    # into the old assembly or another focused assembly.
+                    for project in (self.REPO / "tests").glob("*/*.csproj"):
+                        xml = ET.parse(project).getroot()
+                        for compile_item in xml.iter("Compile"):
+                            include = compile_item.get("Include", "").replace("\\", "/")
+                            if include and "$(" not in include:
+                                self.assertNotIn(source.resolve(), {
+                                    item.resolve() for item in project.parent.glob(include)
+                                }, f"{project} links an already owned migrated source")
+                    self.assertRegex(source.read_text(encoding="utf-8-sig"),
+                                     r"namespace Meridian\.Tests\." + relative_path.split("/")[0] + r"(?:[.;])")
+
+    def test_unit_projects_keep_narrow_dependencies_and_default_compile_items(self):
+        roster = {project.path: project for project in MODULE.parse_project_entries([])}
+        for name in self.MIGRATED_FILES:
+            with self.subTest(project=name):
+                project_path = f"tests/{name}/{name}.csproj"
+                self.assertIn(project_path, roster)
+                self.assertIsNone(roster[project_path].filter_expression,
+                                  "every test in a focused assembly must run")
+                xml = ET.parse(self.REPO / project_path).getroot()
+                references = [item.get("Include", "").replace("\\", "/") for item in xml.iter("ProjectReference")]
+                source_name = name.removesuffix(".UnitTests")
+                self.assertEqual(references, [f"../../src/{source_name}/{source_name}.csproj"])
+                self.assertFalse(list(xml.iter("EnableDefaultCompileItems")))
+                self.assertFalse(any(item.get("Remove") for item in xml.iter("Compile")))
+                self.assertTrue(any(item.text == "true" for item in xml.iter("IsTestProject")))
+
+    def test_core_environment_collections_keep_serial_execution(self):
+        xml = ET.parse(self.REPO / "tests/Meridian.Core.UnitTests/Meridian.Core.UnitTests.csproj").getroot()
+        self.assertIn("../Meridian.Tests/TestCollections.cs", [
+            item.get("Include", "").replace("\\", "/") for item in xml.iter("Compile")])
+        definition = (self.REPO / "tests/Meridian.Tests/TestCollections.cs").read_text()
+        self.assertIn('[CollectionDefinition("Sequential", DisableParallelization = true)]', definition)
+
+    def test_isolation_key_reaches_all_runner_commands(self):
+        with tempfile.TemporaryDirectory(prefix="meridian isolated ") as temporary:
+            root = Path(temporary)
+            isolation_key = "local-cold-run-1"
+            projects = [MODULE.TestProject("unit", "tests/unit.csproj")]
+            expected = f"/p:MeridianBuildIsolationKey={isolation_key}"
+            with patch.object(MODULE.subprocess, "run", side_effect=lambda command, **kwargs: (
+                RunDotnetCiTestsTests.write_trx(command), subprocess.CompletedProcess(command, 0))[1]) as run:
+                MODULE.run_builds(projects, configuration="Release", dry_run=False, isolation_key=isolation_key)
+                MODULE.run_tests(projects, configuration="Release", test_filter="", results_dir=root / "results",
+                                 dry_run=False, isolation_key=isolation_key)
+            for invocation in run.call_args_list:
+                self.assertIn(expected, invocation.args[0])
+                self.assertFalse(any("ArtifactsPath=" in arg for arg in invocation.args[0]))
+            with patch.object(MODULE, "write_build_solution_filter"), \
+                    patch.object(MODULE.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)) as run:
+                MODULE.run_default_build(projects, repo_root=self.REPO, configuration="Release",
+                                         results_dir=root / "grouped", dry_run=False, isolation_key=isolation_key)
+                self.assertIn(expected, run.call_args.args[0])
+                self.assertFalse(any("ArtifactsPath=" in arg for arg in run.call_args.args[0]))
+
+    def test_isolation_key_rejects_path_escapes_and_reserved_names(self):
+        for value in ("../outside", "/tmp/output", "a/b", "a\\b", "a b", "..", "con", "LPT1", "x" * 81):
+            with self.subTest(key=value), self.assertRaises(MODULE.argparse.ArgumentTypeError):
+                MODULE.build_isolation_properties(value)
+        self.assertEqual(MODULE.build_isolation_properties(None), [])
+        self.assertEqual(MODULE.build_isolation_properties("cold-run_1"),
+                         ["/p:MeridianBuildIsolationKey=cold-run_1"])
+
+
+class UnitAggregateCommandTests(unittest.TestCase):
+    REPO = Path(__file__).resolve().parents[2]
+    DEFAULTS = [
+        "tests/Meridian.Tests/Meridian.Tests.csproj",
+        "tests/Meridian.Contracts.UnitTests/Meridian.Contracts.UnitTests.csproj",
+        "tests/Meridian.Core.UnitTests/Meridian.Core.UnitTests.csproj",
+    ]
+
+    def run_make(self, target, *, project=None, fail_project=None):
+        make = shutil.which("make")
+        if make is None:
+            self.skipTest("GNU Make is an optional wrapper and is not installed")
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            stub = directory / "buildctl_stub.py"
+            log = directory / "commands.jsonl"
+            stub.write_text(
+                "import json, os, sys\n"
+                "from pathlib import Path\n"
+                "with Path(os.environ['MERIDIAN_AGGREGATE_TEST_LOG']).open('a') as stream:\n"
+                "    stream.write(json.dumps(sys.argv[1:]) + '\\n')\n"
+                "project = sys.argv[sys.argv.index('--project') + 1]\n"
+                "sys.exit(7 if project == os.environ.get('MERIDIAN_AGGREGATE_FAIL_PROJECT') else 0)\n",
+                encoding="utf-8",
+            )
+            command = [make, "--no-print-directory", target,
+                       f"BUILDCTL={shlex.quote(sys.executable)} {shlex.quote(str(stub))}"]
+            if project is not None:
+                command.append(f"TEST_PROJECT={project}")
+            environment = os.environ | {"MERIDIAN_AGGREGATE_TEST_LOG": str(log)}
+            if fail_project is not None:
+                environment["MERIDIAN_AGGREGATE_FAIL_PROJECT"] = fail_project
+            completed = subprocess.run(command, cwd=self.REPO, env=environment, capture_output=True, text=True)
+            records = [json.loads(line) for line in log.read_text().splitlines()] if log.exists() else []
+        return completed, records
+
+    @staticmethod
+    def projects(records):
+        return [record[record.index("--project") + 1] for record in records]
+
+    def test_make_unit_default_keeps_migrated_suites(self):
+        completed, records = self.run_make("test-unit")
+        self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+        self.assertEqual(self.projects(records), self.DEFAULTS)
+        self.assertTrue(all("Category!=Integration" in record for record in records))
+
+    def test_make_test_keeps_csharp_and_fsharp_coverage(self):
+        completed, records = self.run_make("test")
+        self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+        self.assertEqual(self.projects(records), self.DEFAULTS + [
+            "tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj"])
+
+    def test_make_custom_project_remains_focused(self):
+        override = "tests/Meridian.Contracts.UnitTests/Meridian.Contracts.UnitTests.csproj"
+        completed, records = self.run_make("test-unit", project=override)
+        self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+        self.assertEqual(self.projects(records), [override])
+
+    def test_make_aggregate_reports_failure_before_running_later_suites(self):
+        completed, records = self.run_make("test", fail_project=self.DEFAULTS[1])
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertEqual(self.projects(records), self.DEFAULTS[:2])
+
+    def run_local_quality(self, *, project=None, fail_project=None):
+        powershell = shutil.which("pwsh")
+        if powershell is None:
+            self.skipTest("PowerShell is not installed")
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            harness = directory / "local-quality-harness.ps1"
+            log = directory / "commands.jsonl"
+            harness.write_text('''$ErrorActionPreference = "Stop"
+function global:dotnet {
+    $record = @($args)
+    Add-Content -LiteralPath $env:MERIDIAN_AGGREGATE_TEST_LOG -Value (ConvertTo-Json -Compress -InputObject $record)
+    $global:LASTEXITCODE = if ($record[1] -eq $env:MERIDIAN_AGGREGATE_FAIL_PROJECT) { 7 } else { 0 }
+}
+$parameters = @{
+    DotnetTestFilter = "FullyQualifiedName~Meridian.Tests.Contracts"
+    SkipDotnetFormat = $true
+    SkipWarningSuppressionCheck = $true
+    SkipDashboardTests = $true
+    SkipDashboardBuild = $true
+    SkipSecretScan = $true
+}
+if ($env:MERIDIAN_AGGREGATE_PROJECT) { $parameters.DotnetTestProject = $env:MERIDIAN_AGGREGATE_PROJECT }
+& $env:MERIDIAN_LOCAL_QUALITY_SCRIPT @parameters
+''', encoding="utf-8")
+            environment = os.environ | {
+                "MERIDIAN_AGGREGATE_TEST_LOG": str(log),
+                "MERIDIAN_AGGREGATE_PROJECT": project or "",
+                "MERIDIAN_AGGREGATE_FAIL_PROJECT": fail_project or "",
+                "MERIDIAN_LOCAL_QUALITY_SCRIPT": str(self.REPO / "scripts/dev/run-local-quality.ps1"),
+            }
+            completed = subprocess.run([powershell, "-NoLogo", "-NoProfile", "-NonInteractive", "-File", str(harness)],
+                                       cwd=self.REPO, env=environment, capture_output=True, text=True)
+            records = [json.loads(line) for line in log.read_text().splitlines()] if log.exists() else []
+        return completed, records
+
+    def test_local_quality_default_filter_reaches_migrated_suites(self):
+        completed, records = self.run_local_quality()
+        self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+        self.assertEqual([record[1] for record in records], self.DEFAULTS)
+        self.assertTrue(all("FullyQualifiedName~Meridian.Tests.Contracts" in record for record in records))
+
+    def test_local_quality_explicit_project_remains_focused(self):
+        override = "tests/Meridian.Core.UnitTests/Meridian.Core.UnitTests.csproj"
+        completed, records = self.run_local_quality(project=override)
+        self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+        self.assertEqual([record[1] for record in records], [override])
+
+    def test_local_quality_aggregate_propagates_failure(self):
+        completed, records = self.run_local_quality(fail_project=self.DEFAULTS[1])
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertEqual([record[1] for record in records], self.DEFAULTS[:2])
 
 
 if __name__ == "__main__":

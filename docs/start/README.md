@@ -313,6 +313,12 @@ Once the branch is pushed, use the validated dispatcher for a focused hosted run
 python build/scripts/ci/dispatch-targeted-test.py --ref <branch> --mode dotnet-filtered --dotnet-project tests/Meridian.Tests/Meridian.Tests.csproj --dotnet-filter "FullyQualifiedName~<TestClassOrMethod>" --wait
 ```
 
+Use `python build/python/cli/buildctl.py recommend-validation --base origin/main` for
+project-specific incremental commands, or add `--fresh` for handoff recommendations. The complete
+local gate supports bounded .NET/browser overlap and `--jobs 1` for serial execution;
+`bash scripts/ci.sh --cold` records a fresh-build full-gate measurement with dependency caches
+retained. See [measurement details](../development/build-observability.md#local-feedback-latency-and-observed-retries).
+
 The full [engineering validation guide](../engineering/README.md#buildtestrun) also covers persistent
 build profiles and per-surface lanes for WPF, schema control, integration, and performance checks.
 

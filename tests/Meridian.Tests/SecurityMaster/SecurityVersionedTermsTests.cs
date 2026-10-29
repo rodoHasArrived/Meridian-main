@@ -39,7 +39,7 @@ public sealed class SecurityVersionedTermsTests
     // ── (a) Oracle parity ───────────────────────────────────────────────────────────────────────
 
     [Fact]
-    public void Decodes_MatchesTheDecodeCeilingItReplaces_ForEveryVersionedContainer()
+    public void Decodes_PreservesHistoricalReads_WhileWriteAuthorityFollowsTheCurrentCeiling()
     {
         var mismatches = new List<string>();
         foreach (var (assetClass, path, field) in VersionedContainers())
@@ -50,7 +50,10 @@ public sealed class SecurityVersionedTermsTests
                 {
                     foreach (var write in new[] { false, true })
                     {
-                        var expected = field.SinceTermsVersion <= OldDecodeThrough(assetClass, payload, write);
+                        var expected = write
+                            ? !SecurityTermsEnvelope.IsProfileGovernedPayload(assetClass, payload)
+                              && field.SinceTermsVersion <= SecurityAssetClassCatalog.GetTermsVersion(assetClass)
+                            : field.SinceTermsVersion <= OldDecodeThrough(assetClass, payload, write: false);
                         var actual = SecurityVersionedTerms.Decoding(assetClass, payload, write).Decodes(field);
                         if (actual != expected)
                         {
@@ -61,7 +64,7 @@ public sealed class SecurityVersionedTermsTests
             }
         }
 
-        mismatches.Should().BeEmpty("increment 5a moves the mapping and the validator onto the predicate with no behaviour change");
+        mismatches.Should().BeEmpty("S2 preserves historical own-stamp reads and raises only explicit write authority");
     }
 
     [Fact]
@@ -93,8 +96,8 @@ public sealed class SecurityVersionedTermsTests
             .Should().Be(new SecurityVersionedTermDecoding(ProfileGoverned: false, Through: 1));
         SecurityVersionedTerms.Decoding("Bond", Json("{" + BondBody + "}"), writeMode: false).Through.Should().Be(1);
         SecurityVersionedTerms.Decoding("Bond", Terms(3, BondBody), writeMode: false).Through.Should().Be(3);
-        SecurityVersionedTerms.Decoding("Bond", Terms(3, BondBody), writeMode: true).Through.Should().Be(1);
-        SecurityVersionedTerms.Decoding("StructuredCredit", Terms(1, "\"tranche\":\"A-1\""), writeMode: true).Through.Should().Be(2);
+        SecurityVersionedTerms.Decoding("Bond", Terms(3, BondBody), writeMode: true).Through.Should().Be(3);
+        SecurityVersionedTerms.Decoding("StructuredCredit", Terms(1, "\"tranche\":\"A-1\""), writeMode: true).Through.Should().Be(4);
 
         SecurityVersionedTerms.Decoding("StructuredCredit", Json("""{"customProfileId":"structured-credit-v1","profileFields":{}}"""), writeMode: false)
             .ProfileGoverned.Should().BeTrue();
@@ -170,7 +173,7 @@ public sealed class SecurityVersionedTermsTests
     // ── (e) Neutrality precondition ─────────────────────────────────────────────────────────────
 
     [Fact]
-    public void EveryVersionedContainer_IsAboveItsClassesWriteVersion()
+    public void EveryVersionedContainer_IsAboveItsClassesPreservedDocumentFloor()
     {
         // Why increment 5a is neutral: the replaced Read ceiling max(write, stamp) and the predicate's
         // stamp differ only for a container at or below the write version, and none is. The raise in
@@ -178,7 +181,7 @@ public sealed class SecurityVersionedTermsTests
         foreach (var (assetClass, path, field) in VersionedContainers())
         {
             field.SinceTermsVersion.Should().BeGreaterThan(
-                SecurityAssetClassCatalog.GetTermsVersion(assetClass), $"{assetClass}.{path} is read ahead of write");
+                SecurityAssetClassCatalog.GetStampFloor(assetClass), $"{assetClass}.{path} remains above its document floor");
         }
     }
 
@@ -352,8 +355,8 @@ public sealed class SecurityVersionedTermsTests
     // repeated for reads: a term was decoded when its Since was at or below it.
     private static int OldDecodeThrough(string assetClass, JsonElement json, bool write)
         => write || SecurityTermsEnvelope.IsProfileGovernedPayload(assetClass, json)
-            ? SecurityAssetClassCatalog.GetTermsVersion(assetClass)
-            : Math.Max(SecurityAssetClassCatalog.GetTermsVersion(assetClass), SecurityTermsEnvelope.ResolveAssetClassTermsVersion(json));
+            ? SecurityAssetClassCatalog.GetStampFloor(assetClass)
+            : Math.Max(SecurityAssetClassCatalog.GetStampFloor(assetClass), SecurityTermsEnvelope.ResolveAssetClassTermsVersion(json));
 
     // SecurityMasterMapping.ReadScheduleConventions (less its version gate, which is the caller's).
     private static FSharpDomain.ScheduleConventions OracleMapping(JsonElement container, string key)

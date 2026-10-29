@@ -171,8 +171,8 @@ public sealed class SecurityAssetClassRegistryCoverageTests
             SecurityTermBlocks.For(definition.AssetClass).Should().OnlyContain(field => field.SinceTermsVersion <= writes);
         }
 
-        SecurityAssetClassRegistry.Get("Bond").Fields.Should().NotContain(static field => field.Key == "scheduleConventions");
-        SecurityAssetClassRegistry.Get("StructuredCredit").Fields.Should().NotContain(static field => field.Key == "scheduleConventions");
+        SecurityAssetClassRegistry.Get("Bond").Fields.Should().Contain(static field => field.Key == "scheduleConventions");
+        SecurityAssetClassRegistry.Get("StructuredCredit").Fields.Should().Contain(static field => field.Key == "scheduleConventions");
         SecurityAssetClassRegistry.Get("StructuredCredit").Fields.Should().Contain(static field => field.Key == "structuredCreditKind",
             "version-2 terms are written by a node at version 2");
     }
@@ -212,10 +212,11 @@ public sealed class SecurityAssetClassRegistryCoverageTests
             .Where(field => field.SinceTermsVersion > writes)
             .Select(static field => (field.Key, field.SinceTermsVersion))
             .ToArray();
-        readOnly.Should().Equal(
-            ("scheduleConventions", blockSince),
-            ("callSchedule", scheduleSince),
-            ("putSchedule", scheduleSince));
+        SecurityAssetTermsSchema.Fields(assetClass)
+            .Where(field => field.SinceTermsVersion > SecurityAssetClassCatalog.GetStampFloor(assetClass))
+            .Select(static field => (field.Key, field.SinceTermsVersion))
+            .Should().Equal(("scheduleConventions", blockSince), ("callSchedule", scheduleSince), ("putSchedule", scheduleSince));
+        readOnly.Should().BeEmpty("all historical declared root schedule terms are now within the writer ceiling");
         readOnly.Should().OnlyContain(term => term.SinceTermsVersion > writes && term.SinceTermsVersion <= reads, assetClass);
 
         // ... and they are exactly the declared terms no write surface offers.

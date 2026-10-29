@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
@@ -68,8 +69,23 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     }
     """);
 
+    // Positive fallback coverage uses the same ordinary module values without claiming that
+    // incomplete economic schedule modules can reconstruct a contractual schedule. The historical
+    // full document above remains unchanged and is guarded by explicit refusal tests below.
+    private static readonly JsonElement OrdinaryEconomicTerms = WithoutDeclaredSchedules();
+
+    private static JsonElement WithoutDeclaredSchedules()
+    {
+        var terms = JsonNode.Parse(FullEconomicTerms.GetRawText())!.AsObject();
+        terms["accrual"]!["businessDayConvention"] = null;
+        terms["accrual"]!["holidayCalendar"] = null;
+        terms["call"]!["callSchedule"] = new JsonArray();
+        terms["call"]!["putSchedule"] = new JsonArray();
+        return Json(terms.ToJsonString());
+    }
+
     /// <summary>
-    /// The complete flat key set <c>Convert</c> writes for <see cref="FullEconomicTerms"/>. Anything
+    /// The complete flat key set <c>Convert</c> writes for <see cref="OrdinaryEconomicTerms"/>. Anything
     /// the bridge learns to carry must be added here; anything it stops carrying fails here.
     /// </summary>
     private static readonly string[] ExpectedFlatKeys =
@@ -135,7 +151,7 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     [Fact]
     public void Convert_WritesExactlyTheEnumeratedFlatKeys()
     {
-        var flattened = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(FullEconomicTerms).Payload;
+        var flattened = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(OrdinaryEconomicTerms).Payload;
 
         PropertyNames(flattened).Should().BeEquivalentTo(
             ExpectedFlatKeys,
@@ -156,9 +172,9 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     public void Convert_BridgedField_SurvivesAtItsFlatKey(string module, string sourceField, string flatKey, string expectedRawValue)
     {
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.BridgedModules.Should().Contain(module);
-        FullEconomicTerms.GetProperty(module).TryGetProperty(sourceField, out _).Should().BeTrue("the fixture must carry the source field");
+        OrdinaryEconomicTerms.GetProperty(module).TryGetProperty(sourceField, out _).Should().BeTrue("the fixture must carry the source field");
 
-        var flattened = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(FullEconomicTerms).Payload;
+        var flattened = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(OrdinaryEconomicTerms).Payload;
 
         flattened.TryGetProperty(flatKey, out var value).Should().BeTrue($"{module}.{sourceField} is a bridged field");
         value.GetRawText().Should().Be(expectedRawValue);
@@ -169,7 +185,7 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     {
         // The fixture deliberately carries a different frequency and day count on the payment and
         // accrual blocks so the precedence is observable.
-        var flattened = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(FullEconomicTerms).Payload;
+        var flattened = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(OrdinaryEconomicTerms).Payload;
 
         flattened.GetProperty("paymentFrequency").GetString().Should().Be("SemiAnnual");
         flattened.GetProperty("dayCount").GetString().Should().Be("Thirty360");
@@ -189,15 +205,17 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     [InlineData("structuredProduct")]
     public void Convert_DroppedModule_LeavesNoTraceInTheFlatPayload(string module)
     {
-        // This asserts the DOCUMENTED loss. If the bridge learns to carry one of these modules —
+        // This asserts the documented flat-key loss for an ordinary document. Declared schedule
+        // modules are tested separately as refusals, never silently dropped. If the bridge learns
+        // to carry one of these ordinary modules —
         // which needs an asset-class-aware flattening, since the flat spelling of a call date or a
         // pool factor differs per class — move the module to BridgedModules, add its flat keys to
         // ExpectedFlatKeys, and give it a row in Convert_BridgedField_SurvivesAtItsFlatKey.
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.DroppedModules.Should().Contain(module);
-        var source = FullEconomicTerms.GetProperty(module);
+        var source = OrdinaryEconomicTerms.GetProperty(module);
         source.EnumerateObject().Should().NotBeEmpty("the fixture must populate the module so its loss is observable");
 
-        var flattened = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(FullEconomicTerms).Payload;
+        var flattened = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(OrdinaryEconomicTerms).Payload;
 
         flattened.TryGetProperty(module, out _).Should().BeFalse("the module object itself is not carried");
         foreach (var field in source.EnumerateObject())
@@ -219,21 +237,21 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     [InlineData("structuredProduct")]
     public void Convert_DroppedModule_IsRetainedVerbatimBesideTheFlatKeys(string module)
     {
-        // The flat family cannot place the module, but the bridge keeps the whole source document,
-        // so nothing the economic payload carried is lost.
-        var flattened = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(FullEconomicTerms).Payload;
+        // An ordinary document keeps its source module beside the lossy flat keys. Populated
+        // contractual schedules take the separate refusal path below instead of hiding here.
+        var flattened = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(OrdinaryEconomicTerms).Payload;
 
         SecurityTermsEnvelope.TryGetRetainedEconomicTerms(flattened, out var retained).Should().BeTrue();
         System.Text.Json.Nodes.JsonNode.DeepEquals(
                 System.Text.Json.Nodes.JsonNode.Parse(retained.GetProperty(module).GetRawText()),
-                System.Text.Json.Nodes.JsonNode.Parse(FullEconomicTerms.GetProperty(module).GetRawText()))
+                System.Text.Json.Nodes.JsonNode.Parse(OrdinaryEconomicTerms.GetProperty(module).GetRawText()))
             .Should().BeTrue($"the {module} module must be retained verbatim");
     }
 
     [Fact]
     public void Convert_DeclaresTheFlatFormat_SoTheOutputNeverReadsAsEconomic()
     {
-        var flattened = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(FullEconomicTerms).Payload;
+        var flattened = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(OrdinaryEconomicTerms).Payload;
 
         flattened.GetProperty(SecurityTermsEnvelope.FormatKey).GetString().Should().Be(SecurityTermsFormats.Flat);
         SecurityTermsEnvelope.ResolveFormat(flattened).Should().Be(SecurityTermsFormats.Flat);
@@ -243,16 +261,14 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     [Theory]
     [InlineData("accrual", "accrualMethod")]
     [InlineData("accrual", "exDividendDays")]
-    [InlineData("accrual", "businessDayConvention")]
-    [InlineData("accrual", "holidayCalendar")]
     [InlineData("payment", "paymentLagDays")]
     [InlineData("payment", "paymentCurrency")]
     public void Convert_DroppedFieldInsideABridgedModule_IsNotCarried(string module, string field)
     {
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.BridgedModules.Should().Contain(module);
-        FullEconomicTerms.GetProperty(module).TryGetProperty(field, out _).Should().BeTrue("the fixture must carry the field");
+        OrdinaryEconomicTerms.GetProperty(module).TryGetProperty(field, out _).Should().BeTrue("the fixture must carry the field");
 
-        var flattened = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(FullEconomicTerms).Payload;
+        var flattened = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(OrdinaryEconomicTerms).Payload;
 
         flattened.TryGetProperty(field, out _).Should().BeFalse($"{module}.{field} has no flat v1 counterpart");
     }
@@ -262,7 +278,7 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     [Fact]
     public void Convert_MarksTheOutputAsFlattenedFromEconomicTerms()
     {
-        var flattened = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(FullEconomicTerms).Payload;
+        var flattened = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(OrdinaryEconomicTerms).Payload;
 
         flattened.GetProperty(SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlattenedFromMarkerProperty)
             .GetInt32().Should().Be(EconomicTermsSchema.Current);
@@ -278,7 +294,10 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     {
         // The rebuild path: an event stored without legacyAssetSpecificTerms folds into an economic
         // record whose LegacyAssetSpecificTerms is null, and ToProjection takes the lossy route.
-        var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(EconomicRecord(legacyAssetSpecificTerms: null));
+        var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(EconomicRecord(legacyAssetSpecificTerms: null) with
+        {
+            EconomicTerms = OrdinaryEconomicTerms
+        });
 
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.WasFlattenedFromEconomicTerms(rebuilt.AssetSpecificTerms)
             .Should().BeTrue("a projection reconstructed by the lossy route must be distinguishable from one that always carried flat terms");
@@ -296,6 +315,37 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
 
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.WasFlattenedFromEconomicTerms(retained.AssetSpecificTerms).Should().BeFalse();
         retained.AssetSpecificTerms.GetRawText().Should().Be(retainedTerms.GetRawText());
+    }
+
+    [Fact]
+    public void FullHistoricalScheduleFixture_RefusesEconomicOnlyConversionAndReplay()
+    {
+        FullEconomicTerms.GetProperty("accrual").GetProperty("businessDayConvention").GetString().Should().Be("ModifiedFollowing");
+        FullEconomicTerms.GetProperty("call").GetProperty("callSchedule").GetArrayLength().Should().Be(1);
+        FullEconomicTerms.GetProperty("call").GetProperty("putSchedule").GetArrayLength().Should().Be(1);
+        Action convert = () => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(FullEconomicTerms);
+        Action replay = () => SecurityEconomicDefinitionAdapter.ToProjection(EconomicRecord(legacyAssetSpecificTerms: null));
+
+        convert.Should().Throw<InvalidOperationException>().WithMessage("*Declared schedule economic replay requires retained legacy*");
+        replay.Should().Throw<InvalidOperationException>().WithMessage("*Declared schedule economic replay requires retained legacy*");
+    }
+
+    [Theory]
+    [InlineData("accrual", "businessDayConvention")]
+    [InlineData("accrual", "holidayCalendar")]
+    [InlineData("call", "callSchedule")]
+    [InlineData("call", "putSchedule")]
+    public void DeclaredScheduleField_RefusesInsteadOfBeingDroppedOrHiddenInRetainedTerms(string module, string field)
+    {
+        var declaration = JsonNode.Parse(OrdinaryEconomicTerms.GetRawText())!.AsObject();
+        var originalValue = FullEconomicTerms.GetProperty(module).GetProperty(field);
+        originalValue.ValueKind.Should().NotBe(JsonValueKind.Null);
+        declaration[module]![field] = JsonNode.Parse(originalValue.GetRawText());
+        var terms = Json(declaration.ToJsonString());
+
+        Action convert = () => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(terms);
+
+        convert.Should().Throw<InvalidOperationException>().WithMessage("*Declared schedule economic replay requires retained legacy*");
     }
 
     private static SecurityEconomicDefinitionRecord EconomicRecord(JsonElement? legacyAssetSpecificTerms)

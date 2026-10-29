@@ -2853,7 +2853,9 @@ Security Master also serves `GET /api/security-master/{securityId}/income-cash-f
 `GET /api/security-master/{securityId}/factor-history`, and
 `PUT /api/security-master/{securityId}/terms/{blockKey}` (governed like the generic amend route;
 400 for an undeclared block or JSON kind, and 400 with the not-yet-writable reason for a block the
-class only reads, such as `scheduleConventions`, `callSchedule` or `putSchedule`).
+class only reads, such as swap-leg `scheduleConventions` while Swap writes version 1). Bond/CD
+call and put schedules and Bond conventions are writable subject to the shared rules; CD and
+StructuredCredit conventions still lack the required root anchors.
 
 A refused write on the direct create and term-amendment routes (`POST /api/security-master`,
 `POST /api/security-master/amend`, the term-block `PUT`, and the preferred- and convertible-equity
@@ -2964,3 +2966,10 @@ subject, so unrelated report, strategy, or reconciliation evidence cannot enter 
 
 The legacy report amount service accepts only explicit retained amount IDs and fully scoped pointers;
 label-only manifests fail closed. See [validation and slice boundaries](../../docs/testing/w10-amount-provenance.md).
+
+Broker synchronization resolves option multipliers from the Security Master OCC identity retained
+as of each broker observation. Missing/ambiguous identities or missing/nonpositive multipliers block
+readiness; mini and adjusted options retain their contractual multiplier. Each captured status owns
+its multiplier map so concurrent synchronization cannot mix observations. Raw snapshots and cash
+remain readable when a legacy position cannot safely be valued. Current implementation performs
+individual retained-history lookups; large-portfolio batching remains a performance follow-up.

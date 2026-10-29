@@ -49,6 +49,16 @@ class CiWorkflowContractTests(unittest.TestCase):
         self.assertEqual(checkout.get("with", {}).get("persist-credentials"), "false")
         self.assertEqual(checkout.get("with", {}).get("fetch-depth"), "0")
 
+    def test_local_orchestrator_isolates_outputs_and_preserves_hosted_leaf_defaults(self) -> None:
+        script = (REPO_ROOT / "scripts/ci.sh").read_text(encoding="utf-8")
+        self.assertIn('MERIDIAN_CI_ARTIFACT_ROOT="${MERIDIAN_CI_ARTIFACT_ROOT:-artifacts}"', script)
+        self.assertIn('exec "$python_cmd" build/scripts/ci/local_gate.py', script)
+        self.assertIn('--isolation-key "$MERIDIAN_CI_ISOLATION_KEY"', script)
+        self.assertIn('--wait-for-dotnet "$MERIDIAN_CI_BROWSER_BUILD_BARRIER"', script)
+        browser = script.split("verify_browser() {", 1)[1].split("verify_docs() {", 1)[0]
+        self.assertLess(browser.index("Run dashboard tests"), browser.index("Wait for .NET browser-asset reads"))
+        self.assertLess(browser.index("Wait for .NET browser-asset reads"), browser.index("Build dashboard bundle"))
+
 
 if __name__ == "__main__":
     unittest.main()
