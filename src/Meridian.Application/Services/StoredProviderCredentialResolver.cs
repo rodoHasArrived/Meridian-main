@@ -15,6 +15,7 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
     private readonly IProviderCredentialStore _credentialStore;
     private readonly IProviderCredentialResolver _fallback;
     private readonly ProviderCredentialScope? _scope;
+    private readonly UI.ConfigStore? _configStore;
 
     public StoredProviderCredentialResolver(
         IProviderCredentialStore credentialStore,
@@ -22,6 +23,13 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
     {
         _credentialStore = credentialStore ?? throw new ArgumentNullException(nameof(credentialStore));
         _fallback = fallback ?? throw new ArgumentNullException(nameof(fallback));
+    }
+
+    /// <summary>Resolves host defaults from the current retained configuration at provider construction.</summary>
+    public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore,
+        IProviderCredentialResolver fallback, UI.ConfigStore configStore) : this(credentialStore, fallback)
+    {
+        _configStore = configStore ?? throw new ArgumentNullException(nameof(configStore));
     }
 
     /// <summary>
@@ -65,16 +73,23 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
         // The store owns the complete record, including its environment-fallback policy.
         // Missing/removed fields must never be supplied from another account's config or environment.
         // Storage failures propagate instead of silently switching credential ownership.
-        var stored = _scope is null
+        // Hold ownership stable while opening the selected vault record. A configuration writer
+        // cannot reassign/remove the connection between authorization and secret resolution.
+        using var ownershipLease = _configStore?.AcquireWriteLeaseAsync().GetAwaiter().GetResult();
+        var scope = _scope ?? (_configStore is null ? null : ProviderRouting.ProviderRuntimeCredentialService.ResolveScope(
+            _configStore.LoadRequired(), providerId));
+        var stored = scope is null
             ? _credentialStore.ReadForProviderAsync(providerId).GetAwaiter().GetResult()
-            : ((IScopedProviderCredentialStore)_credentialStore).ReadScopedAsync(providerId, _scope).GetAwaiter().GetResult();
+            : (_credentialStore as IScopedProviderCredentialStore
+                ?? throw new InvalidOperationException("Credential vault does not support scoped ownership."))
+                .ReadScopedAsync(providerId, scope).GetAwaiter().GetResult();
         var values = new Dictionary<string, string?>(StringComparer.Ordinal);
         if (stored is not null)
         {
             foreach (var attribute in AttributeCredentialResolver.GetAttributes(providerType))
                 values[attribute.Name] = ResolveStoredValue(stored, descriptor, attribute.Name);
         }
-        return new ResolvedCredentialContext(values, stored?.Environment ?? _scope?.Environment);
+        return new ResolvedCredentialContext(values, stored?.Environment ?? scope?.Environment);
     }
 
     private static string? ResolveStoredValue(

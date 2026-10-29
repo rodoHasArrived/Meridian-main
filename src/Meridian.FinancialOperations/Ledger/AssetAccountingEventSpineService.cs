@@ -193,7 +193,8 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
             PostedJournalImpact: null,
             TaxLotMutationBatchId: null,
             Correction: request.Correction,
-            CorporateAction: request.CorporateAction, CapitalReturn: request.CapitalReturn, FactorPaydown: request.FactorPaydown);
+            CorporateAction: request.CorporateAction, CapitalReturn: request.CapitalReturn, FactorPaydown: request.FactorPaydown)
+        { Direction = request.Direction };
         var projectedSpine = expectedSpine with
         {
             SpineVersion = 2,
@@ -431,7 +432,7 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
             .ConfigureAwait(false)
             ?? throw new InvalidOperationException(
                 $"Authoritative book position '{source.Scope.BookPositionId:D}' was not found.");
-        ValidatePosition(source, position);
+        ValidatePosition(source, position, request.LotMutation?.Direction ?? OpenLotDirection.Long);
 
         var book = await _ledgerBookService
             .GetBookAsync(source.Scope.LedgerBookId, ct)
@@ -843,6 +844,8 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
     {
         RequireAssertion(request.ExpectedSpineVersion == source.SpineVersion, "Expected spine version does not match the retained Projected snapshot.");
         RequireAssertion(request.EventKind == source.EventKind, "Asset accounting event kind does not match the retained Projected snapshot.");
+        RequireAssertion((request.LotMutation?.Direction ?? OpenLotDirection.Long) == source.Direction,
+            "Lot direction must match the immutable Projected accounting event direction.");
         RequireAssertion(request.EventAmount == source.EventAmount, "Asset accounting event amount does not match the retained Projected snapshot.");
         RequireAssertion(string.Equals(request.Currency, source.Currency, StringComparison.Ordinal), "Asset accounting event currency does not match the retained Projected snapshot.");
         RequireAssertion(PayloadEquals(request.Scope, source.Scope), "Asset accounting event scope does not match the retained Projected snapshot.");
@@ -1023,9 +1026,9 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
                 .Where(line => string.Equals(line.AccountId, acquisition.AccountId, StringComparison.Ordinal))
                 .ToArray();
             RequireAssertion(acquisitionAssetLines.Length == 1 &&
-                             acquisitionAssetLines[0].Debit == source.EventAmount &&
-                             acquisitionAssetLines[0].Credit == 0m,
-                "Acquisition projected accounting must contain exactly one authorized asset-account debit for the lot cost.");
+                             acquisitionAssetLines[0].Debit == (requested!.Direction == OpenLotDirection.Short ? 0m : source.EventAmount) &&
+                             acquisitionAssetLines[0].Credit == (requested.Direction == OpenLotDirection.Short ? source.EventAmount : 0m),
+                "Acquisition projected accounting must contain exactly one authorized carrying movement for the lot cost and direction.");
             return requested;
         }
 
@@ -1255,6 +1258,8 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
                              string.Equals(lot.Currency, source.Currency, StringComparison.Ordinal) &&
                              lot.UnitCost == selection.ExpectedUnitCost,
                 $"Disposal lot '{selection.TaxLotRecordId:D}' does not match authoritative book, security, position, account, version, open quantity, currency, or acquisition unit cost.");
+            RequireAssertion(lot.Acquisition?.Direction == instruction.Direction,
+                "Disposal direction must match every retained selected lot.");
             canonicalSelections.Add(selection with
             {
                 LotId = lot.LotId,
@@ -1304,8 +1309,8 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
             .Where(line => string.Equals(line.AccountId, instruction.AssetAccountId, StringComparison.Ordinal))
             .ToArray();
         RequireAssertion(disposalAssetLines.Length == 1 &&
-                         disposalAssetLines[0].Credit == aggregateCostBasis &&
-                         disposalAssetLines[0].Debit == 0m,
+                         disposalAssetLines[0].Credit == (instruction.Direction == OpenLotDirection.Short ? 0m : aggregateCostBasis) &&
+                         disposalAssetLines[0].Debit == (instruction.Direction == OpenLotDirection.Short ? aggregateCostBasis : 0m),
             "Disposal projected accounting must contain exactly one authoritative asset-relief credit for selected-lot cost basis.");
         RequireAssertion(position.SecurityId == source.Scope.SecurityId &&
                          position.PositionId == source.Scope.BookPositionId,
@@ -1376,10 +1381,12 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
         }
     }
 
-    private static void ValidatePosition(AssetAccountingEventSpineDto source, BookPositionDto position)
+    private static void ValidatePosition(AssetAccountingEventSpineDto source, BookPositionDto position, OpenLotDirection? direction = null)
     {
         if (source.EventKind is AssetAccountingEventKindDto.Acquisition or AssetAccountingEventKindDto.Disposal)
-            RequireAssertion(position.PositionSide is BookPositionSides.Long or BookPositionSides.Asset,
+            RequireAssertion((direction ?? source.Direction) == OpenLotDirection.Short
+                ? position.PositionSide is BookPositionSides.Short or BookPositionSides.Liability
+                : position.PositionSide is BookPositionSides.Long or BookPositionSides.Asset,
                 "The current lot acquisition/disposal path requires a Long or Asset position; short and liability positions require separate posting authority.");
         RequireAssertion(position.PositionId == source.Scope.BookPositionId, "Resolved book-position identity does not match the Projected snapshot.");
         RequireAssertion(position.SecurityId == source.Scope.SecurityId, "Resolved book-position security does not match the Projected snapshot.");

@@ -11,6 +11,13 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.Ui.Shared
 
+Provider ownership endpoints derive tenant and actor from authenticated context and require credential,
+provider and configuration administration. Creation, migration preview, transfer/rollback and host
+binding use shared Application services. Lifecycle vault operations revalidate ownership under short
+configuration leases; network verification stays outside so rotation can proceed, and returning
+results still require the current generation. Security Master snapshot-lot economics use
+`Position.ExactQuantity`, including legacy fractional short direction, rather than rounded positions.
+
 Source comparison requires a completed recovery checkpoint with matching run/import IDs, artifact hashes and counts, plus executed mapping proof shared by the import and match artifact. Failed or running recovery cannot clear observations. Named SLA calendars load once per host from DataRoot/reconciliation/sla-calendars.json; see the reconciliation operating procedure.
 An unfinished recovery refuses publication so the report workflow can retry after completion.
 Transaction lineage uses the retained external transaction identity; changed break classifications,

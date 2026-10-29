@@ -97,7 +97,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
 
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]
-    public async Task UnsupportedShortAcquisition_LeavesNoWritesAndDoesNotReserveTheLongRetry()
+    public async Task ShortAcquisitionWithLongAssetDebit_LeavesNoWritesAndDoesNotReserveTheLongRetry()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
         var seed = await PrepareFactFreeAcquisitionAsync(database, face: false);
@@ -114,7 +114,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
 
         var post = () => database.JournalStore.AppendAssetPostingAsync(shortCommand);
 
-        await post.Should().ThrowAsync<LedgerValidationException>().WithMessage("*short posting is not enabled*");
+        await post.Should().ThrowAsync<LedgerValidationException>().WithMessage("*short opening requires a liability*");
         (await database.JournalStore.GetAtomicTaxLotPostingAsync(command.MutationBatchId)).Should().BeNull();
         (await database.JournalStore.GetByPeriodAsync(command.Journal.PeriodId)).Should().BeEmpty();
         (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(before);

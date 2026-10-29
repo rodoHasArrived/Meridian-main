@@ -15,12 +15,13 @@ namespace Meridian.Ui.Shared.Services;
 /// <summary>
 /// Manages tenant-visible provider connections, credential mutations, and live verification requests.
 /// </summary>
-public sealed class ProviderConnectionLifecycleService
+public sealed partial class ProviderConnectionLifecycleService
 {
     private const string AlpacaPaperTradingApiEndpoint = "https://paper-api.alpaca.markets/v2";
     private const string AlpacaLiveTradingApiEndpoint = "https://api.alpaca.markets/v2";
 
     private readonly IProviderCredentialStore _credentialStore;
+    private readonly IProviderCredentialStore _rootCredentialStore;
     private readonly ConfigStore _configStore;
     private readonly IHttpClientFactory? _httpClientFactory;
     private readonly IReadOnlyList<IAccountingSystemProvider> _accountingSystemProviders;
@@ -40,9 +41,11 @@ public sealed class ProviderConnectionLifecycleService
     {
         ArgumentNullException.ThrowIfNull(credentialStore);
         _ownershipScope = ownershipScope;
-        _credentialStore = ownershipScope is null ? credentialStore : new ScopedCredentialStore(
+        _rootCredentialStore = credentialStore;
+        var selectedStore = ownershipScope is null ? credentialStore : new ScopedCredentialStore(
             credentialStore as IScopedProviderCredentialStore ?? throw new InvalidOperationException("Credential vault does not support scoped ownership."), ownershipScope);
         _configStore = configStore ?? throw new ArgumentNullException(nameof(configStore));
+        _credentialStore = new OwnershipGuardedCredentialStore(selectedStore, AcquireOwnershipLeaseAsync);
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _httpClientFactory = httpClientFactory;
         _accountingSystemProviders = accountingSystemProviders?.ToArray() ?? [];
@@ -50,7 +53,7 @@ public sealed class ProviderConnectionLifecycleService
     }
 
     private ProviderConnectionLifecycleService(ProviderConnectionLifecycleService owner, ProviderCredentialScope scope)
-        : this(owner._credentialStore, owner._configStore, owner._logger, owner._httpClientFactory,
+        : this(owner._rootCredentialStore, owner._configStore, owner._logger, owner._httpClientFactory,
             owner._accountingSystemProviders, owner._setupRegistry, scope)
     {
         // ForConnection creates a lifecycle per request. Retain adapter instances across those

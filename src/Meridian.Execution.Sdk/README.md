@@ -11,9 +11,11 @@ last_reviewed: 2026-07-05
 
 # src/Meridian.Execution.Sdk
 
-`CanonicalTaxLotAdapter` admits only long execution and canonical lots. Positive quantity alone
-cannot make an explicitly short canonical acquisition compatible with the long consumer. Short
-production cutover still requires governed posting and consumer parity evidence.
+`CanonicalTaxLotAdapter` now compares explicit retained direction with the execution lot's sign,
+then compares absolute quantity, original date, identity and exact basis. Matching short lots may
+bind; opposite directions cannot net. Symbols remain display evidence and binding grants no
+posting authority or tax character.
+
 
 `BrokeragePortfolioSnapshotDto.IsComplete` defaults to false until a provider establishes complete
 account and holding evidence. `IBrokerageConnectionState` supplies a credential-free connection
@@ -23,7 +25,7 @@ submitting or treating a missing broker response as permission to retry.
 
 ## Shared close and lot convergence
 
-`CanonicalTaxLotAdapter` validates legacy execution lot identity, quantity, acquisition date, and basis against a supplied retained canonical lot. Symbols remain display evidence. The adapter refuses shorts pending an explicit direction-model cutover and does not synthesize identity or FX facts.
+`CanonicalTaxLotAdapter` validates legacy execution lot identity, quantity, acquisition date, and basis against a supplied retained canonical lot. Symbols remain display evidence. The adapter requires matching explicit direction and does not synthesize identity or FX facts.
 
 ## Purpose
 

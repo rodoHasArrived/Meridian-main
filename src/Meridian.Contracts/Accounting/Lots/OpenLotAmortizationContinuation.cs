@@ -28,7 +28,7 @@ public static class OpenLotAmortizationContinuation
         Require(continuation is not null,
             "Corporate-action successors require a separately reviewed amortization/yield continuation; inherited acquisition facts do not authorize a new schedule.");
         Require(continuation!.ModelVersion == ModelVersion && continuation.SuccessorMutationBatchId != Guid.Empty
-            && instruction.CalculationVersion is OpenLotAmortization.ModelVersion or OpenLotAmortization.CalendarModelVersion,
+            && OpenLotAmortization.IsCurrentVersion(instruction.CalculationVersion),
             "Successor amortization requires a supported version and an immutable exchange receipt.");
         ArgumentNullException.ThrowIfNull(continuation.Exchange);
         ArgumentNullException.ThrowIfNull(continuation.PredecessorAmortization);

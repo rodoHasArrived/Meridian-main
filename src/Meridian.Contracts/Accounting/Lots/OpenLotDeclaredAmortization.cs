@@ -5,8 +5,8 @@ using Meridian.Contracts.SecurityMaster.Schedules;
 namespace Meridian.Contracts.Accounting.Lots;
 
 /// <summary>
-/// V3 fixed-rate bullet amortization on explicitly declared contractual periods. Supports odd first
-/// and final periods without changing any v1/v2 replay. Unretained business-day calendars are refused.
+/// V4 fixed-rate bullet amortization on explicitly declared contractual periods. Supports odd first
+/// and final periods without changing any v1/v2/v3 replay. Unretained business-day calendars are refused.
 /// </summary>
 internal static class OpenLotDeclaredAmortization
 {

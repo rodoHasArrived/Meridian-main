@@ -7,7 +7,11 @@ export interface BondCalculationContext {
   settlementDate?: string | null;
   knownAt?: string | null;
   securityVersion?: number | null;
-  curves?: Array<{ role: string; curveId: string; curveVersionId: string }> | null;
+  curves?: Array<{
+    role: string;
+    curveId: string;
+    curveVersionId: string;
+  }> | null;
 }
 
 export interface BondCalculationInput {
@@ -36,11 +40,29 @@ export interface BondAnalyticsResult {
   convexity: BondDecimal | null;
   dv01: BondDecimal | null;
   yieldToWorst: BondDecimal | null;
-  cashFlows: Array<{ flowId: string; paymentDate: string; accrualStart: string; accrualEnd: string; interest: BondDecimal; principal: BondDecimal; timeInYears: BondDecimal }>;
-  exerciseYields: Array<{ kind: string; exerciseDate: string; redemptionPrice: BondDecimal; yield: BondDecimal; latestNoticeDate?: string | null }>;
+  cashFlows: Array<{
+    flowId: string;
+    paymentDate: string;
+    accrualStart: string;
+    accrualEnd: string;
+    interest: BondDecimal;
+    principal: BondDecimal;
+    timeInYears: BondDecimal;
+  }>;
+  exerciseYields: Array<{
+    kind: string;
+    exerciseDate: string;
+    redemptionPrice: BondDecimal;
+    yield: BondDecimal;
+    latestNoticeDate?: string | null;
+  }>;
   inputs: BondCalculationInput[];
   blockers: Array<{ code: string; reason: string }>;
-  capabilities: Array<{ operation: string; supported: boolean; reason?: string | null }>;
+  capabilities: Array<{
+    operation: string;
+    supported: boolean;
+    reason?: string | null;
+  }>;
   diagnostics: string[];
   isBlocked: boolean;
 }

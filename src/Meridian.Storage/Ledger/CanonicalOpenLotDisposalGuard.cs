@@ -17,8 +17,11 @@ public static class CanonicalOpenLotDisposalGuard
             var canonical = openLots.Select(static lot => lot.ToOpenLot()).ToArray();
             if (canonical.Length == 0 || selections.Count == 0)
                 throw new LedgerValidationException("Canonical disposal requires open lots and retained selections.");
-            if (canonical.Any(lot => lot.Acquisition.Direction != OpenLotDirection.Long))
-                throw new LedgerValidationException("Short covers require direction-aware posting and reporting; the current disposal path supports Long lots only.");
+            if (canonical.Any(lot => lot.Acquisition.Direction != canonical[0].Acquisition.Direction))
+                throw new LedgerValidationException("Canonical relief cannot pool long and short directions.");
+            if (openLots.Any(lot => lot.Account.AccountType != (lot.Acquisition!.Direction == OpenLotDirection.Short
+                    ? LedgerAccountType.Liability : LedgerAccountType.Asset)))
+                throw new LedgerValidationException("Canonical long relief requires an asset carrying account; short cover requires a liability carrying account.");
             if (canonical.Any(lot => lot.Acquisition.FunctionalCurrency != functionalCurrency))
                 throw new LedgerValidationException("Canonical acquisition functional currency differs from the disposal journal.");
 

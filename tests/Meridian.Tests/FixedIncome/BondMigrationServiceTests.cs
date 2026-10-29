@@ -153,6 +153,18 @@ public sealed class BondMigrationServiceTests : IDisposable
         (await File.ReadAllTextAsync(Path.Combine(path + ".history", current.CurrentReceiptSha256 + ".json"))).Should().Be(firstBytes);
         await service.Invoking(value => value.CutoverAsync(amendment with { Reviewer = "stale-controller" }))
             .Should().ThrowAsync<InvalidOperationException>().WithMessage("*current receipt hash*");
+        var allowedBytes = await File.ReadAllTextAsync(path);
+        var released = await service.GetInventoryAsync();
+        var repairedRow = released.Bonds.Single();
+        await service.CutoverAsync(new(released.InventorySha256, "controller-new-hold",
+            [new(repairedRow.SecurityId, repairedRow.Version, repairedRow.SecurityContentSha256, "New independently reviewed hold")],
+            released.CurrentReceiptSha256));
+        (await policy.GetBlockerAsync(Detail(repaired))).Should().Contain("explicitly blocked");
+        var blockedBytes = await File.ReadAllTextAsync(path);
+        await File.WriteAllTextAsync(path, allowedBytes);
+        var rolledBackRestart = new FileBondCalculationPolicy(path);
+        (await rolledBackRestart.GetBlockerAsync(Detail(repaired))).Should().Contain("state is unavailable");
+        await File.WriteAllTextAsync(path, blockedBytes);
         await File.WriteAllTextAsync(Path.Combine(path + ".history", current.CurrentReceiptSha256 + ".json"), "{}");
         (await policy.GetBlockerAsync(Detail(repaired))).Should().Contain("state is unavailable");
     }

@@ -315,6 +315,9 @@ public sealed class ProviderSetupService
     {
         var connections = config.ProviderConnections?.Connections ?? [];
         var family = ProviderCredentialCatalog.NormalizeProviderId(providerId);
+        if ((config.ProviderConnections?.OwnershipRequiredProviders ?? []).Any(candidate =>
+            string.Equals(ProviderCredentialCatalog.NormalizeProviderId(candidate), family, StringComparison.OrdinalIgnoreCase)))
+            return true;
         return connections.Where(connection => string.Equals(
                 ProviderCredentialCatalog.NormalizeProviderId(connection.ProviderFamilyId), family,
                 StringComparison.OrdinalIgnoreCase))

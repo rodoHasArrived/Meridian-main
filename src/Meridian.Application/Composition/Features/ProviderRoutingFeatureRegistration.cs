@@ -18,6 +18,7 @@ internal sealed class ProviderRoutingFeatureRegistration : IServiceFeatureRegist
         services.TryAddSingleton<IProviderFamilyCatalogService, ProviderFamilyCatalogService>();
 
         services.TryAddSingleton<ProviderConnectionService>();
+        services.TryAddSingleton<ProviderRuntimeCredentialService>();
         services.TryAddSingleton<ProviderBindingService>();
         services.AddDefaultProviderSetupHandlers();
         services.TryAddSingleton<IProviderSetupRegistry, ProviderSetupRegistry>();

@@ -15,7 +15,6 @@ public sealed class FileBondCalculationPolicy : IBondCalculationPolicy
     private readonly IBusinessDayCalendarSource? _calendars;
     private string EnabledMarkerPath => _path + ".enabled";
     private string HistoryPath => _path + ".history";
-    private const string EnabledMarker = "bond-cutover-enabled-v1";
 
     public FileBondCalculationPolicy(string path, IBusinessDayCalendarSource? calendars = null)
     {
@@ -66,10 +65,10 @@ public sealed class FileBondCalculationPolicy : IBondCalculationPolicy
             return null;
         }
         var json = await File.ReadAllTextAsync(_path, ct).ConfigureAwait(false);
-        if (!File.Exists(EnabledMarkerPath)
-            || (await File.ReadAllTextAsync(EnabledMarkerPath, ct).ConfigureAwait(false)).Trim() != EnabledMarker)
-            throw new InvalidDataException("Bond cutover enabled marker is missing or invalid.");
         var hash = Sha256Digest.Compute(System.Text.Encoding.UTF8.GetBytes(json));
+        if (!File.Exists(EnabledMarkerPath)
+            || !Sha256Digest.FixedEquals((await File.ReadAllTextAsync(EnabledMarkerPath, ct).ConfigureAwait(false)).Trim(), hash))
+            throw new InvalidDataException("Bond cutover receipt does not match the retained head digest.");
         var archive = Path.Combine(HistoryPath, hash + ".json");
         if (!File.Exists(archive) || await File.ReadAllTextAsync(archive, ct).ConfigureAwait(false) != json)
             throw new InvalidDataException("Bond cutover receipt does not match its immutable retained history.");
@@ -112,11 +111,10 @@ public sealed class FileBondCalculationPolicy : IBondCalculationPolicy
         if (previous is null ? expectedPreviousHash is not null
             : expectedPreviousHash is null || !Sha256Digest.FixedEquals(expectedPreviousHash, ReceiptHash(previous)))
             throw new InvalidOperationException("Bond cutover receipt changed; review an amendment against its current receipt hash.");
-        // The enable marker is permanent. Each receipt's exact bytes are retained by hash before the
-        // atomic current-receipt replacement, so amendments preserve history and readers see one version.
-        // A crash before the initial current receipt exists fails closed across process restarts.
-        if (!File.Exists(EnabledMarkerPath))
-            await AtomicFileWriter.WriteAsync(EnabledMarkerPath, EnabledMarker, ct).ConfigureAwait(false);
+        // Each receipt's exact bytes are retained before advancing the head. The head digest advances
+        // first, then the current receipt is atomically replaced. An interruption between them blocks
+        // live calculations across restarts until the reviewed receipt is restored from its archive.
+        // Keeping this independent head also detects rollback to an older, otherwise valid receipt.
         Directory.CreateDirectory(HistoryPath);
         var archive = Path.Combine(HistoryPath, ReceiptHash(receipt) + ".json");
         if (File.Exists(archive))
@@ -126,6 +124,7 @@ public sealed class FileBondCalculationPolicy : IBondCalculationPolicy
         }
         else
             await AtomicFileWriter.WriteAsync(archive, json, ct).ConfigureAwait(false);
+        await AtomicFileWriter.WriteAsync(EnabledMarkerPath, ReceiptHash(receipt), ct).ConfigureAwait(false);
         await AtomicFileWriter.WriteAsync(_path, json, ct).ConfigureAwait(false);
     }
 }

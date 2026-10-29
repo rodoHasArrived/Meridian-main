@@ -66,6 +66,59 @@ See concrete variable names and binding keys in [Environment Variables](../refer
 
 ## Canonical credential mutation routes
 
+### Explicit connection ownership and host selection
+
+Ownership administration requires `ManageCredentials`, `ManageProviders`, and `ModifyConfig`, an
+authenticated operator, and a server-resolved tenant. Requests cannot supply their tenant or actor.
+These shared commands are available to either workstation; Settings credential editing still selects
+an already-owned connection.
+
+1. `POST /api/provider-routing/connections` with `{ "connection": { "connectionId": "paper-a",
+   "providerFamilyId": "alpaca", "displayName": "Paper account A", "externalAccountId": "reviewed-account-id" },
+   "environment": "paper" }`. Use the provider's actual account identity. This creates configuration,
+   not a verified connection; it never claims a pre-existing unassigned connection automatically.
+2. Enter secrets through the existing selected-connection credential route, or explicitly migrate a
+   retained provider-wide vault record below. No secret belongs in ownership requests.
+3. `PUT /api/provider-routing/connections/paper-a/runtime-credentials` with `{ "providerId": "alpaca" }`
+   selects that owned connection for host provider construction. Restart through the lifecycle
+   supervisor, then verify. Editing credentials does not hot-activate an already running collector.
+
+The host revalidates the selected tenant, connection, provider, enabled state, account and environment
+before reading secrets. Owned providers without an explicit selection block construction; missing
+selected credentials never fall back to another connection, provider-wide record, config or environment.
+Duplicate IDs, partial ownership, disabled connections and dangling defaults block. Removing a
+connection leaves its host default dangling so removal cannot silently select legacy credentials.
+Entirely legacy families retain their existing fallback policy.
+The retained `ownershipRequiredProviders` marker survives connection deletion, including deletion
+before a host default was selected. Removing ownership cannot implicitly re-enable legacy credentials.
+
+### Reviewed migration and rollback
+
+Stop affected provider activity before changing ownership. Obtain a non-secret preview with
+`GET /api/provider-routing/connections/paper-a/credentials/migration-preview?providerId=alpaca`.
+Review provider, account and environment, and retain `auditMetadata.credentialGeneration`.
+Environment-only fallback is not a retained vault generation and cannot be migrated by this command.
+
+Submit `POST /api/provider-routing/connections/paper-a/credentials/migrate` with
+`{ "providerId": "alpaca", "migrationId": "your-unique-operation-id", "expectedGeneration": "reviewed-generation" }`.
+The command moves the complete retained record, resets verification, and records the authenticated
+actor. The destination must be empty; environment/account must match retained evidence. Separate
+legacy OAuth tokens require a provider-specific transfer and block this operation; they are never
+copied or silently left active. No upstream token exchange occurs here.
+
+Transfer and retry receipt publish in one encrypted vault generation. Both recovery generations
+contain the transfer; corruption recovery cannot revive the unassigned copy. The audit journal
+retains deferred appends for replay, with `auditPending` status. Retry the same command and operation
+identity after a lost response; do not create a new identity to bypass a conflict.
+
+To undo an unrotated transfer, submit the same provider and migration identity to
+`POST /api/provider-routing/connections/paper-a/credentials/rollback`. Rollback moves the retained
+secret to unassigned ownership and resets verification. It does not remove the host binding or enable
+runtime fallback: the selected scoped record remains unavailable. Changed/rotated/deleted scoped
+generations, occupied legacy destinations, foreign owners and mismatched operations refuse rollback.
+Never restore a pre-rotation vault backup: the provider may have invalidated that token. Repeated
+migration or rollback commands return the retained receipt without repeating a later operation.
+
 Use canonical provider-scoped routes for new tooling and operator automation:
 
 | Route | Method | Purpose |

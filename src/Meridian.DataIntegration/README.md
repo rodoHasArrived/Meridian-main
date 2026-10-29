@@ -11,6 +11,13 @@ last_reviewed: 2026-09-28
 
 # src/Meridian.DataIntegration
 
+`IProviderCredentialOwnershipMigration` moves a reviewed retained provider-wide record into an empty
+owned scope within the encrypted vault publication boundary. Non-secret receipts support restart
+retry and unrotated rollback; rotated generations refuse rollback. Transfers reset verification,
+disable legacy fallback and update both recovery generations. Deferred audit appends use the existing
+publication-proof journal. Separate legacy OAuth tokens block this bounded migration. See
+[migration and rollback](../../docs/operators/provider-credentials.md#reviewed-migration-and-rollback).
+
 Normalized ETL extracts apply `FromDateUtc` and `ToDateUtc` as inclusive UTC calendar
 dates to each stored event, including mixed-date and undated-file layouts. Gzip inputs
 remain gzip outputs. A bounded extract rejects records without a valid timestamp rather

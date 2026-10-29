@@ -250,7 +250,7 @@ public sealed class OpenLotAmortizationCalendarTests
     [Theory]
     [InlineData("")]
     [InlineData("canonical-lot-amortization-v1")]
-    [InlineData("canonical-lot-amortization-v4")]
+    [InlineData("canonical-lot-amortization-v5")]
     public void UnsupportedCalculationVersion_IsRefused(string version)
     {
         var instruction = Instruction(new DateOnly(2025, 1, 1), new DateOnly(2026, 1, 1), new DateOnly(2025, 7, 1),

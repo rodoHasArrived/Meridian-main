@@ -18,7 +18,13 @@ export interface BondMigrationPreview {
   request: BondMigrationPreviewRequest;
   securityContentSha256: string;
   previewSha256: string;
-  cashDifferences: Array<{ paymentDate: string; previousPrincipal: BondDecimal; candidatePrincipal: BondDecimal; previousInterest: BondDecimal; candidateInterest: BondDecimal }>;
+  cashDifferences: Array<{
+    paymentDate: string;
+    previousPrincipal: BondDecimal;
+    candidatePrincipal: BondDecimal;
+    previousInterest: BondDecimal;
+    candidateInterest: BondDecimal;
+  }>;
   gaps: string[];
   canStage: boolean;
 }

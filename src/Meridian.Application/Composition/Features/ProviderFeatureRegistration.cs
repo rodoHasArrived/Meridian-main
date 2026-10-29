@@ -27,9 +27,17 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
             var configService = sp.GetRequiredService<ConfigurationService>();
             var fallback = new ConfigurationServiceCredentialAdapter(configService);
             var credentialStore = sp.GetService<IProviderCredentialStore>();
-            return credentialStore is null
-                ? fallback
-                : new StoredProviderCredentialResolver(credentialStore, fallback);
+            var configStore = sp.GetRequiredService<ConfigStore>();
+            if (credentialStore is not null)
+                return new StoredProviderCredentialResolver(credentialStore, fallback, configStore);
+            var config = File.Exists(configStore.ConfigPath) ? configStore.LoadRequired() : configStore.Load();
+            var section = config.ProviderConnections;
+            if (section?.RuntimeCredentials is { Length: > 0 } || section?.OwnershipRequiredProviders is { Length: > 0 } ||
+                (section?.Connections ?? []).Any(connection => connection.TenantId is not null || connection.CredentialEnvironment is not null ||
+                    string.IsNullOrWhiteSpace(connection.ConnectionId) || (section?.Connections ?? []).Count(other =>
+                        string.Equals(other.ConnectionId, connection.ConnectionId, StringComparison.OrdinalIgnoreCase)) != 1))
+                throw new InvalidOperationException("Owned provider runtime credentials require a credential vault.");
+            return fallback;
         });
 
         var registrationConfig = new ConfigStore(options.ConfigPath).Load();

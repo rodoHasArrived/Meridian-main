@@ -1,4 +1,5 @@
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Meridian.Storage.AssetOperations;
@@ -40,7 +41,9 @@ public sealed partial class PostgresLedgerJournalStore
             throw new LedgerValidationException("Acquisition/disposal Security Master reference authority is missing, inactive or stale; rebuild and review the draft.");
         if (position is null || book is null || position.PositionId != scope.BookPositionId
             || position.SecurityId != scope.SecurityId || position.Version != versions.BookPositionVersion
-            || position.PositionSide is not (BookPositionSides.Long or BookPositionSides.Asset)
+            || (command.Direction == OpenLotDirection.Short
+                ? position.PositionSide is not (BookPositionSides.Short or BookPositionSides.Liability)
+                : position.PositionSide is not (BookPositionSides.Long or BookPositionSides.Asset))
             || !string.Equals(position.Status, "Active", StringComparison.OrdinalIgnoreCase)
             || position.EffectiveFrom > date || (position.EffectiveTo is { } positionEnd && positionEnd < date))
             throw new LedgerValidationException("Acquisition/disposal book-position reference authority is missing, inactive or stale; rebuild and review the draft.");

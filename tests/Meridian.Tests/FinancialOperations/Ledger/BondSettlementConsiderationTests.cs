@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.Ledger;
@@ -103,6 +104,18 @@ public sealed class BondSettlementConsiderationTests
         var (candidate, journal) = Journal();
         var act = () => BondSettlementPostingGuard.RequireJournal(legacy, candidate, journal);
         act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void HeldSettlementReceipt_CannotBeReusedForShortOpening()
+    {
+        var instruction = new AssetLotMutationInstructionDto(AssetLotMutationIntentDto.Acquire, Acquisition())
+        {
+            Direction = OpenLotDirection.Short
+        };
+        var issues = AssetLotMutationInstructionValidator.Validate(AssetAccountingEventKindDto.Acquisition,
+            instruction, 81_000m, Context.SettlementDate!.Value, []);
+        issues.Should().Contain(issue => issue.Contains("held Long acquisitions only"));
     }
 
     private static BondSettlementConsiderationDto Receipt() => new(SecurityId, "USD", "bond-analytics-v1", Context,
