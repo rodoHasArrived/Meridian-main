@@ -66,6 +66,10 @@ internal sealed class SecurityMasterTermsCapabilityHostedService : IHostedServic
             calendars is null
                 ? "not listed by " + source.GetType().Name
                 : calendars.Length == 0 ? "none" : string.Join(", ", calendars));
+        _logger.LogInformation("Contractual cash-flow calculation capability: engine {Engine}, mapping {Mapping}, prepayment {Prepayment}; calculation-only, companion read-before-write",
+            Meridian.Contracts.CashFlows.ContractualCashFlowVersions.Engine,
+            Meridian.Contracts.CashFlows.ContractualCashFlowVersions.Mapping,
+            Meridian.Contracts.CashFlows.ContractualCashFlowVersions.Prepayment);
     }
 
     internal static bool WritesDeclaredTerms()

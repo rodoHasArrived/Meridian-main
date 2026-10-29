@@ -11,6 +11,8 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.Ui.Shared
 
+Shared cash-flow preview endpoints expose calculation-only exercise and prepayment scenarios with view permission. Separate retention endpoints require modification permission, bind retries to immutable run IDs, and retrieve the complete replay evidence. Loan retention preserves the existing tenant write gate. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
+
 Provider ownership endpoints derive tenant and actor from authenticated context and require credential,
 provider and configuration administration. Creation, migration preview, transfer/rollback and host
 binding use shared Application services. Lifecycle vault operations revalidate ownership under short

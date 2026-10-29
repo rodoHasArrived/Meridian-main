@@ -27,6 +27,7 @@ Start with:
 - [Recurring Journal](recurring-journal.md)
 - [Security](security.md)
 - [Contractual Schedule](contractual-schedule.md)
+- [Contractual Cash-Flow Projection](contractual-cash-flow-projection.md)
 - [Business-Day Calendar](business-day-calendar.md)
 - [Market Curve](market-curve.md)
 - [Credit Support](credit-support.md)

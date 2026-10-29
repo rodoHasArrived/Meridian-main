@@ -11,6 +11,8 @@ last_reviewed: 2026-10-21
 
 # src/Meridian.Contracts
 
+`CashFlows/` owns the versioned calculation-only cash-flow contracts, exercise/notice resolution, standard make-whole formulas, structured coupon/principal walks, deterministic CPR/SMM/PSA prepayments, and replay verification. The `cashFlowContract` companion reads ahead of existing write ceilings; undeclared terms and existing call/put element shapes remain unchanged. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
+
 Canonical amortization v3 is an explicit opt-in for remaining-face treatment and automatic
 yield-to-worst comparison. Durable quantities retain booked face: v3 applies current/booked factor
 exactly once in addition to partial-disposal quantity scaling. Original acquisition FX remains

@@ -11,6 +11,8 @@ last_reviewed: 2026-10-21
 
 # src/Meridian.Application
 
+`ContractualCashFlowPreviewService` resolves retained Security Master/direct-lending facts and pinned curves for the shared calculation engine. `FileContractualCashFlowRunStore` publishes write-once, verifiable replay packets under the data root. Missing historical balance/notice evidence and assigned provider schedules block rather than falling back. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
+
 `ProviderRuntimeCredentialService` owns explicit host defaults and ownership-checked migration
 commands. Host composition supplies the current `ConfigStore` to `StoredProviderCredentialResolver`;
 it revalidates one retained tenant/connection/account/environment under the configuration lease before

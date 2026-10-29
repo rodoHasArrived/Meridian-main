@@ -301,6 +301,9 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         StructuredCashFlowProjectionDto Empty(string? reason = null) => new(
             security.SecurityId, sourceKind, scenario, asOf, [], staleness, sourceLastUpdatedUtc, factorSchedule, terms, BlockedReason: reason);
 
+        if (Meridian.Contracts.CashFlows.SecurityContractualCashFlowTerms.IsDeclared(security.AssetClass, security.AssetSpecificTerms))
+            return Empty("This record declares a versioned cashFlowContract; use the contractual cash-flow preview. The legacy projection cannot represent these economics.");
+
         if (!SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).SupportsCashflowScheduleByDefault)
             return Empty($"Calculated cash flows are unsupported for {security.AssetClass}; provide an authoritative schedule.");
 

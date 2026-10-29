@@ -355,6 +355,121 @@
           "required": false
         }
       ]
+    },
+    {
+      "termsVersion": 5,
+      "fields": [
+        {
+          "key": "attachmentPoint",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "callSchedule",
+          "type": "Array",
+          "required": false
+        },
+        {
+          "key": "cashFlowContract",
+          "type": "Object",
+          "required": false
+        },
+        {
+          "key": "collateralType",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "couponOrIndex",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "currentFactor",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "detachmentPoint",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "factorSchedule",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "factorScheduleEntries",
+          "type": "Array",
+          "required": false
+        },
+        {
+          "key": "maturity",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "nonCallPeriodEnd",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "originalFace",
+          "type": "Decimal",
+          "required": true
+        },
+        {
+          "key": "poolId",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "putSchedule",
+          "type": "Array",
+          "required": false
+        },
+        {
+          "key": "reinvestmentPeriodEnd",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "scheduleConventions",
+          "type": "Object",
+          "required": false
+        },
+        {
+          "key": "seniority",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "structuredCreditKind",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "tranche",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "weightedAverageCoupon",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "weightedAverageLoanAgeMonths",
+          "type": "Integer",
+          "required": false
+        },
+        {
+          "key": "weightedAverageMaturityMonths",
+          "type": "Integer",
+          "required": false
+        }
+      ]
     }
   ]
 }

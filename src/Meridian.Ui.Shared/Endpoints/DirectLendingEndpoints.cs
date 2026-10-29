@@ -3,6 +3,7 @@ using Meridian.Application.DirectLending;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.DirectLending;
+using Meridian.Contracts.CashFlows;
 using Meridian.Ui.Shared.Serialization;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -37,6 +38,28 @@ public static class DirectLendingEndpoints
         // same gates explicitly.
         group.RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending);
         mutationGroup.RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending);
+        group.MapContractualCashFlowRuns("/{subjectId:guid}/projections/contractual-runs", "Loan",
+            UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, jsonOptions);
+
+        group.MapPost("/{loanId:guid}/projections/preview", async (Guid loanId, ContractualCashFlowRequest? request, HttpContext context) =>
+        {
+            if (request is null) return Results.BadRequest("A projection request is required.");
+            var preview = context.RequestServices.GetService<IContractualCashFlowPreviewService>();
+            if (preview is null) return ServiceUnavailable();
+            try
+            {
+                var result = await preview.PreviewLoanAsync(loanId, request, context.RequestAborted).ConfigureAwait(false);
+                return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]> { ["projection"] = [ex.Message] });
+            }
+        })
+        .WithName("PreviewContractualLoanCashFlows")
+        .RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending)
+        .RequireRateLimiting(UiEndpoints.DirectLendingMutationRateLimitPolicy)
+        .Produces<ContractualCashFlowResult>().Produces(StatusCodes.Status400BadRequest).Produces(StatusCodes.Status404NotFound);
 
         mutationGroup.MapPost("/", async (JsonElement body, HttpContext context) =>
         {
