@@ -643,7 +643,7 @@ describe("TradingScreen", () => {
     expect(screen.getByText("Overall: Blocked")).toBeInTheDocument();
     rerender(<TestMemoryRouter initialEntries={["/trading"]}><TradingScreen data={{ ...data, readiness }} fundAccountId="22222222-2222-2222-2222-222222222222" /></TestMemoryRouter>);
     expect(within(confidence).queryByText("Connected · healthy")).not.toBeInTheDocument();
-    expect(within(confidence).getByText("Broker unavailable")).toBeInTheDocument();
+    expect(within(confidence).getAllByText("Broker unavailable")[0]).toBeInTheDocument();
   });
 
   it("refreshes shared readiness and surfaces account brokerage posture", async () => {

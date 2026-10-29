@@ -1,3 +1,4 @@
+import { WorkspaceTaskWorkbench } from "@/components/meridian/workspace-task-workbench";
 import { useEffect, useMemo, useRef } from "react";
 import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -1859,96 +1860,43 @@ const strategyHubRoutes = [
 ] as const;
 
 function StrategyOverviewHub({ vm }: { vm: StrategyRunLibraryState }) {
-  const latestRun = vm.runs[0] ?? null;
   const plotToolConnected = vm.plotTool.workspace.statusBadgeLabel !== "NOT CONNECTED";
-
+  const runs = vm.runs.map((run) => ({
+    id: run.id,
+    title: run.strategyName,
+    description: `${run.engine} · ${run.mode} · ${run.dataset}`,
+    status: run.status,
+    href: `/strategy/promotions?runId=${encodeURIComponent(run.id)}`,
+    actionLabel: "Review run",
+    facts: [
+      { label: "Run", value: run.id },
+      { label: "Engine", value: run.engine },
+      { label: "Mode", value: run.mode },
+      { label: "Dataset", value: run.dataset },
+      { label: "Window", value: run.window },
+      { label: "P&L", value: run.pnl },
+      { label: "Sharpe", value: run.sharpe },
+      { label: "Updated", value: run.lastUpdated },
+      { label: "Notes", value: run.notes }
+    ]
+  }));
   return (
-    <section aria-labelledby="strategy-overview-hub-title" className="space-y-4">
-      <Card className="border-border/80 bg-secondary/15">
-        <CardHeader>
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <div className="eyebrow-label">Strategy command center</div>
-              <CardTitle id="strategy-overview-hub-title" className="mt-2">Choose the next strategy task</CardTitle>
-              <CardDescription className="mt-2 max-w-3xl">
-                The overview summarizes run and analytics posture. Detailed authoring, analysis, comparison, and promotion evidence stay in focused workspaces.
-              </CardDescription>
-            </div>
-            <div className="rounded-md border border-border/70 bg-background/45 px-3 py-3 text-sm lg:max-w-sm">
-              <div className="flex items-center justify-between gap-3">
-                <span className="font-semibold text-foreground">PlotTool analytics</span>
-                <Badge variant={vm.plotTool.workspace.statusBadgeVariant}>{vm.plotTool.workspace.statusBadgeLabel}</Badge>
-              </div>
-              {plotToolConnected ? (
-                <p className="mt-2 text-xs leading-5 text-muted-foreground">Retained PlotTool studies are available in Strategy Lab.</p>
-              ) : (
-                <div className="mt-2 space-y-2">
-                  <p className="text-xs leading-5 text-muted-foreground">
-                    Run history remains available, but PlotTool analytics needs a governed provider connection.
-                  </p>
-                  <Link
-                    to="/settings/providers"
-                    className="inline-flex text-xs font-semibold text-primary underline-offset-4 hover:underline"
-                    aria-label="Review provider connections for PlotTool analytics"
-                  >
-                    Review provider connections
-                  </Link>
-                </div>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <section aria-label={vm.runHistorySummary.ariaLabel} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {vm.runHistorySummary.cards.map((card) => (
-              <div key={card.id} className="rounded-md border border-border/70 bg-background/45 px-3 py-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="eyebrow-label">{card.label}</div>
-                    <div className="mt-2 font-mono text-lg font-semibold text-foreground">{card.value}</div>
-                  </div>
-                  <Badge variant={card.badgeVariant}>{card.badgeLabel}</Badge>
-                </div>
-                <p className="mt-2 text-xs leading-5 text-muted-foreground">{card.detail}</p>
-              </div>
-            ))}
-          </section>
-          <div className="rounded-md border border-border/70 bg-background/35 px-3 py-3 text-sm">
-            <div className="eyebrow-label">Latest retained run</div>
-            {latestRun ? (
-              <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <div className="font-semibold text-foreground">{latestRun.strategyName}</div>
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    {latestRun.mode} · {latestRun.status} · updated {latestRun.lastUpdated}
-                  </div>
-                </div>
-                <Button asChild variant="outline" size="sm">
-                  <Link to="/strategy/promotions">Review run library</Link>
-                </Button>
-              </div>
-            ) : (
-              <p className="mt-2 text-muted-foreground">No retained runs are available yet. Open a focused lab to create or inspect strategy evidence.</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" aria-label="Strategy task routes">
-        {strategyHubRoutes.map((route) => (
-          <Card key={route.id} className="h-full border-border/70">
-            <CardHeader>
-              <CardTitle className="text-base">{route.title}</CardTitle>
-              <CardDescription>{route.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button asChild variant="outline" size="sm">
-                <Link to={route.href}>{route.action}</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+    <section className="space-y-3" aria-label="Strategy run workbench">
+      <WorkspaceTaskWorkbench title="Retained strategy runs" description="Select a run to inspect its source, results, and next review action. Comparison and promotion controls remain in the run library." items={runs} stateKey="strategyRun" emptyText="No retained runs are available yet. Open a focused lab to create or inspect strategy evidence." />
+      <div className="workspace-task-health" role="status">
+        <strong>PlotTool analytics</strong>
+        <Badge variant={vm.plotTool.workspace.statusBadgeVariant}>{vm.plotTool.workspace.statusBadgeLabel}</Badge>
+        {!plotToolConnected ? <Link to="/settings/providers" className="text-xs font-semibold text-primary underline" aria-label="Review provider connections for PlotTool analytics">Review provider connections</Link> : null}
       </div>
+      <TechnicalDetails label="Run coverage and analytics posture">
+        <section aria-label={vm.runHistorySummary.ariaLabel} className="workspace-task-facts">
+          {vm.runHistorySummary.cards.map((card) => <div key={card.id}><strong>{card.label}: {card.value}</strong><p>{card.detail}</p></div>)}
+        </section>
+      </TechnicalDetails>
+      <details className="workspace-task-disclosure">
+        <summary>Strategy authoring and analysis tools</summary>
+        <WorkspaceTaskWorkbench title="Strategy tasks" description="Open the focused authoring, analytics, or promotion workflow." items={strategyHubRoutes.map((route) => ({ ...route, actionLabel: route.action }))} stateKey="strategyTask" />
+      </details>
     </section>
   );
 }

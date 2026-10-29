@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 
@@ -75,5 +76,26 @@ describe("WorkspaceWorkbenchShell", () => {
     expect(container.querySelector('[data-workbench-slot="context"]')).toBeNull();
     expect(container.querySelector('[data-workbench-slot="inspector"]')).toBeNull();
     expect(container.querySelector(".card .card")).toBeNull();
+  });
+});
+
+
+describe("workbench inspection recovery", () => {
+  it("returns to the work surface when no selected row is mounted", async () => {
+    const user = userEvent.setup();
+    render(<WorkspaceWorkbenchShell label="Filtered queue" switchInspector inspectorRole="region" inspector={<p>Retained selection</p>}><p>No matching rows</p></WorkspaceWorkbenchShell>);
+    await user.click(screen.getByText("Inspect selection"));
+    expect(screen.getByText("Back to work list").closest("button")).toHaveAttribute("aria-expanded", "true");
+    await user.click(screen.getByText("Back to work list"));
+    await waitFor(() => expect(screen.getByRole("region", { name: "Filtered queue work surface" })).toHaveFocus());
+  });
+  it("leaves Escape handling to a nested dialog", async () => {
+    const user = userEvent.setup();
+    render(<WorkspaceWorkbenchShell label="Governed queue" switchInspector inspectorRole="region" inspector={<div role="dialog" aria-label="Review decision"><input aria-label="Rationale" /></div>}><p>Work list</p></WorkspaceWorkbenchShell>);
+    await user.click(screen.getByText("Inspect selection"));
+    await waitFor(() => expect(screen.getByRole("region", { name: "Selected object inspector" })).toHaveFocus());
+    screen.getByRole("textbox", { name: "Rationale" }).focus();
+    await user.keyboard("{Escape}");
+    expect(screen.getByText("Back to work list").closest("button")).toHaveAttribute("aria-expanded", "true");
   });
 });

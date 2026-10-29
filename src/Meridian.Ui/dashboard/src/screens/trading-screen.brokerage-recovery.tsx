@@ -1,3 +1,4 @@
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -71,6 +72,8 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, busy, error, 
             : !fundAccountId ? "Select a fund account to load its brokerage recovery evidence."
               : !recovery ? "Current account recovery evidence is unavailable. Synchronize and reconcile before trading."
                 : recovery.detail} />
+        {reasons.length > 0 ? <ul aria-label="Recovery blockers" className="list-disc space-y-1 pl-5 text-xs text-danger">{reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul> : null}
+        <TechnicalDetails label="Brokerage recovery evidence">
         <dl className="grid gap-x-5 gap-y-3 text-xs sm:grid-cols-2 xl:grid-cols-4">
           <RecoveryFact label="Fund account" value={fundAccountId ?? "Not selected"} />
           <RecoveryFact label="Broker account" value={recovery ? `${recovery.providerId ?? "Unknown provider"} · ${recovery.externalAccountId ?? "Unlinked"}` : "Unavailable"} />
@@ -85,7 +88,7 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, busy, error, 
           <RecoveryFact label="Portfolio value" value={money(portfolio?.portfolioValue)} />
           <RecoveryFact label="Holdings / matched open orders" value={`${portfolio?.positionCount ?? "Unknown"} / ${reconciliation?.matchedOpenOrderCount ?? "Unknown"}`} />
         </dl>
-        {reasons.length > 0 ? <ul aria-label="Recovery blockers" className="list-disc space-y-1 pl-5 text-xs text-danger">{reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul> : null}
+
         <div>
           <h4 className="mb-2 text-xs font-semibold">Local orders versus broker state</h4>
           <DenseDataTable columns={discrepancyColumns} rows={discrepancies} getRowId={(row) => row.rowId}
@@ -98,6 +101,7 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, busy, error, 
             ariaLabel="Affected strategy runs" emptyText={recovery ? "No retained strategy runs reported for this account." : "Affected runs unavailable until account evidence is loaded."} />
         </div>
         <p className="text-xs text-muted-foreground">Synchronization checks broker truth and retained orders. It does not resubmit orders or resume strategy runs. Live operation also requires all trading readiness gates.</p>
+        </TechnicalDetails>
       </CardContent>
     </Card>
   );

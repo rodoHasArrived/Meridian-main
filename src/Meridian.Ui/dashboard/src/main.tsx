@@ -6,6 +6,7 @@ import { applyAppearance, readStoredAppearance } from "@/lib/theme";
 import "@/styles/index.css";
 import "@/styles/workspace-surface.css";
 import "@/styles/command-palette.css";
+import "@/styles/workstation-refinements.css";
 
 applyAppearance(readStoredAppearance());
 

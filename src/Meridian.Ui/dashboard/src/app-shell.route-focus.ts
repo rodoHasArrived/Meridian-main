@@ -38,12 +38,23 @@ function routeFocusSearch(pathname: string, search: string): string {
   const isPortfolio = normalizedPath === WORKSTATION_ROUTE_CATALOG.portfolio;
   const isReconciliation = normalizedPath === WORKSTATION_ROUTE_CATALOG.accountingReconciliation
     || normalizedPath === WORKSTATION_ROUTE_CATALOG.accountingExceptions;
-  if (!isReporting && !isPortfolio && !isReconciliation) return search;
+  const taskKeys = normalizedPath === WORKSTATION_ROUTE_CATALOG.strategy
+    ? ["strategyRun", "strategyTask"]
+    : normalizedPath === WORKSTATION_ROUTE_CATALOG.data
+      ? ["dataJob", "dataTask"]
+      : normalizedPath === WORKSTATION_ROUTE_CATALOG.settings
+        ? ["settingsTask"] : [];
+  if (!isReporting && !isPortfolio && !isReconciliation && taskKeys.length === 0) return search;
 
   // Queue selection, search, and table controls stay in their current workbench.
   // Treating screen-local URL state as navigation would steal the control/row focus.
   const params = new URLSearchParams(search);
-  if (isReconciliation) {
+  if (taskKeys.length > 0) {
+    for (const key of taskKeys) {
+      params.delete(key);
+      params.delete(`${key}Search`);
+    }
+  } else if (isReconciliation) {
     for (const key of ["reconciliationRun", "reconciliationBreak", "reconciliationSearch", "reconciliationStatus", "reconciliationSort"]) {
       params.delete(key);
     }

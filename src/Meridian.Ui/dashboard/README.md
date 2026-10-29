@@ -284,6 +284,46 @@ Focused proof: `operations-continuity-screen.test.tsx` and `operations-continuit
 Operations Continuity submits checklist controls from the shared workflow's explicit acknowledgment actor and time, including the first submission before any close package exists. Missing controls block submission. Rejected or reopened workflows can submit a newly reviewed cycle without reusing old package approvals. Approval decisions carry retained submission evidence; an assigned reviewer is not counted as having approved until the server records the actual decision. Close publication uses the current submission and decision history together with current prerequisite acknowledgments.
 Focused proof: `operations-continuity-screen.view-model.test.ts` and `operations-continuity-screen.test.tsx`.
 
+## Task-centered workbenches
+
+The browser workspaces retain the seven root destinations and existing route ownership. Strategy
+now leads with retained runs; Data leads with loaded historical repair jobs; Settings leads with a
+searchable task directory. Authoring, intake, connections, exports, and analytics tools remain in
+labelled disclosures and their existing dedicated routes. These lists are presentation-only; they
+do not calculate financial readiness or grant authority.
+
+`WorkspaceTaskWorkbench` composes the existing `WorkspaceWorkbenchShell`, `DenseDataTable`, and
+`DenseRowDetailPanel`. Its item contract carries an ID, title, description, destination, action
+label, optional context text, and optional supplied facts. Context text is not a readiness claim.
+The row action provides direct navigation; the inspector keeps the same action next to its facts.
+Use domain-specific workbenches for mutations, approvals, or workflows with specialized selection
+semantics. Do not turn this directory into an aggregated financial queue.
+
+Selection and search are URL-backed (`strategyRun`, `dataJob`, `settingsTask`, and the corresponding
+`Search` suffix; tool directories use `strategyTask` and `dataTask`). Search replaces history;
+selection creates an entry. Filtering preserves the selected inspector. An explicit unavailable
+ID stays unavailable instead of selecting another record. Clearing search retains selection.
+Destination links preserve query scope, unrelated parameters, and the hash, with explicit target
+parameters taking precedence. Existing Portfolio and Reporting selection formats remain unchanged.
+
+The shell's additive `switchInspector` option switches between list and inspector below 1280 CSS
+pixels. Inspect selection opens the current inspector; Back to work list returns focus to the
+selected row, falling back to the work surface when the row is absent. Enter/Space on a row reveals
+its detail target, and Escape restores the list. Wider screens retain adjacent, independently
+scrollable inspection. Use `inspectorRole="region"` inside existing landmarks. Accounting
+reconciliation retains its specialized queue/history/scroll and recovery behavior.
+
+Portfolio, Trading positions/orders, and Reporting daily review reuse the shell. Portfolio's asset
+action precedes supporting facts. Trading keeps recovery commands, live blockers, and failure
+reasons outside the Brokerage recovery evidence disclosure. The shell provenance notice remains
+persistent and explicit, using less vertical space by placing its explanation alongside its title
+when space allows. Theme and density preferences remain authoritative.
+
+Focused coverage: `workspace-task-workbench.test.tsx`, existing shell/Reporting tests, Portfolio
+positions controls, and Strategy/Data/Settings/Trading screen tests. Browser acceptance includes
+all seven workspaces at 1920×1080, 1440×900, and 1366×768, plus queue/inspector switching at
+1100 CSS pixels. Validate production-connected permissions and writes separately from fixture QA.
+
 ## Work-first Portfolio and Reporting
 
 Portfolio opens on selectable holdings before the supporting retained-record explorer and

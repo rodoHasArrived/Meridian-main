@@ -1,3 +1,4 @@
+import { WorkspaceTaskWorkbench } from "@/components/meridian/workspace-task-workbench";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -57,43 +58,33 @@ export function DataOverviewHub({
     }
   ];
 
+  const jobs = vm.backfillSection.rows.map((row) => ({
+    id: row.jobId,
+    title: row.jobId,
+    description: `${row.provider} · ${row.scope}`,
+    status: row.status,
+    href: WORKSTATION_ROUTE_CATALOG.dataBackfills,
+    actionLabel: "Open Backfill queue",
+    facts: [
+      { label: "Provider", value: row.provider },
+      { label: "Scope", value: row.scope },
+      { label: "Progress", value: row.progress },
+      { label: "Updated", value: row.updatedAt }
+    ]
+  }));
   return (
-    <section aria-labelledby="data-overview-hub-title" className="space-y-4">
-      <Card className="border-border/80 bg-secondary/15">
-        <CardHeader>
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <div className="eyebrow-label">Data command center</div>
-              <CardTitle id="data-overview-hub-title" className="mt-2">Choose the next Data task</CardTitle>
-              <CardDescription className="mt-2 max-w-3xl">
-                Provider management, file intake, historical repair, exports, and querying stay in focused workspaces. Detailed diagnostics remain available below.
-              </CardDescription>
-            </div>
-            <Badge variant={degradedPanelCount > 0 ? "warning" : "success"}>
-              {degradedPanelCount > 0 ? `${degradedPanelCount} diagnostics unavailable` : "Diagnostics ready"}
-            </Badge>
-          </div>
-        </CardHeader>
-      </Card>
-
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" aria-label="Data task routes">
-        {routes.map((route) => (
-          <Card key={route.id} className="h-full border-border/70">
-            <CardHeader>
-              <div className="flex items-start justify-between gap-3">
-                <CardTitle className="text-base">{route.title}</CardTitle>
-                <Badge variant="outline">{route.status}</Badge>
-              </div>
-              <CardDescription>{route.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button asChild variant="outline" size="sm">
-                <Link to={route.href}>Open {route.title}</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+    <section className="space-y-3" aria-label="Data operations workbench">
+      <div role="status" className="workspace-task-health">
+        <strong>Data operations</strong>
+        <Badge variant={degradedPanelCount > 0 ? "warning" : "success"}>
+          {degradedPanelCount > 0 ? `${degradedPanelCount} diagnostics unavailable` : "Diagnostics ready"}
+        </Badge>
       </div>
+      <WorkspaceTaskWorkbench title="Historical repair jobs" description="Inspect loaded backfill work and its scope before opening the recovery workstream." items={jobs} stateKey="dataJob" emptyText="No historical repair jobs are loaded. Import data or open Backfill queue to review available work." />
+      <details className="workspace-task-disclosure">
+        <summary>Data tools and connections</summary>
+        <WorkspaceTaskWorkbench title="Data tasks" description="File intake, providers, exports, and read-only discovery." items={routes.map((route) => ({ ...route, actionLabel: `Open ${route.title}` }))} stateKey="dataTask" />
+      </details>
     </section>
   );
 }
