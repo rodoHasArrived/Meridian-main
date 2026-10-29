@@ -120,13 +120,16 @@ public static partial class ContractualCashFlowEngine
             {
                 if (terminated || balance <= 0)
                     throw new ArgumentException("Selected exercise follows full payoff.");
-                var accrued = cashAccrued.Values.Sum() + pikAccrued.Values.Sum();
+                // Earned coupons awaiting a lagged payment remain payable on that date.
+                // Only the open accrual period participates in redemption accrued interest.
+                var openPeriods = periods.Where(p => p.AccrualEnd > date).Select(p => p.Sequence).ToArray();
+                var accrued = openPeriods.Sum(key => cashAccrued[key] + pikAccrued[key]);
                 var price = PriceExercise(contract, stream, request, election, resolved[date], schedule, calendar, curves, balance, accrued);
                 calculations.Add(price);
                 var proportion = election.Amount / balance;
-                foreach (var key in cashAccrued.Keys.ToArray())
+                foreach (var key in openPeriods)
                     cashAccrued[key] *= 1m - proportion;
-                foreach (var key in pikAccrued.Keys.ToArray())
+                foreach (var key in openPeriods)
                     pikAccrued[key] *= 1m - proportion;
                 cashInterest += price.AccruedInterest;
                 premium = price.Premium;

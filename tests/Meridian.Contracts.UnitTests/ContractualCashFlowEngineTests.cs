@@ -411,6 +411,27 @@ public sealed class ContractualCashFlowEngineTests
     }
 
     [Fact]
+    public void Exercise_preserves_earned_lagged_coupon_and_settles_only_open_period_accrual()
+    {
+        var date = Issue.AddMonths(3).AddDays(1);
+        var stream = Stream with
+        {
+            Conventions = ScheduleConventionTerms.Empty with { PaymentCalendars = ["WEEKENDS"], PaymentLagBusinessDays = 2 }
+        };
+        var contract = Contract(stream) with
+        {
+            Exercises = [new(CashFlowExerciseSide.Call, date, null, CashFlowExerciseStyle.European, 100, "main")]
+        };
+        var request = Request with { Exercises = [new(CashFlowExerciseSide.Call, date, "main", date, date, 1000)] };
+        var result = ContractualCashFlowEngine.Calculate(contract, request, new StaticBusinessDayCalendarSource([BusinessDayCalendars.WeekendsOnly]));
+        result.Blockers.Should().BeEmpty();
+        result.Events.Single(e => e.Date == date).CashInterest.Should().BeApproximately(1000m * .1m / 365, .00000001m);
+        result.Events.Single(e => e.Date == new DateOnly(2026, 4, 3)).CashInterest.Should().BeApproximately(1000m * .1m * 90 / 365, .00000001m);
+        result.Events.Sum(e => e.CashInterest).Should().BeApproximately(1000m * .1m * 91 / 365, .00000002m);
+        result.Events.Sum(e => e.RedeemedPrincipal + e.ScheduledPrincipal).Should().Be(1000);
+    }
+
+    [Fact]
     public void Joint_calendar_replay_preserves_all_stream_calendar_queries()
     {
         var a = new HolidayBusinessDayCalendar("A", 1);
