@@ -1,5 +1,5 @@
 using System.Globalization;
-using System.Security.Cryptography;
+using Meridian.Contracts.Integrity;
 using System.Text.Json;
 using Meridian.Contracts.Calendars;
 using Meridian.Contracts.SecurityMaster;
@@ -11,7 +11,7 @@ namespace Meridian.Contracts.CashFlows;
 public static partial class ContractualCashFlowEngine
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
-    public static string Hash<T>(T value) => Convert.ToHexStringLower(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(value, Json)));
+    public static string Hash<T>(T value) => Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(value, Json));
 
     public static ContractualCashFlowResult Calculate(
         ContractualCashFlowContract contract, ContractualCashFlowRequest request,
