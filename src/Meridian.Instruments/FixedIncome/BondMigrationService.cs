@@ -42,19 +42,19 @@ public sealed class BondMigrationService : IBondMigrationService
             || request.Context.AsOf == default || request.ScheduleConventions.ValueKind != JsonValueKind.Object)
             throw new ArgumentException("Migration preview requires identity, retained version, an explicit calculation date and a conventions object.");
         var conventions = SecurityVersionedTerms.ReadScheduleConventions(
-            JsonSerializer.SerializeToElement(new { scheduleConventions = request.ScheduleConventions }), "scheduleConventions");
+            JsonSerializer.SerializeToElement(new { scheduleConventions = request.ScheduleConventions }), SecurityVersionedTerms.ScheduleConventionsKey);
         if (conventions.CouponRateUnit is not ("Percent" or "Fraction") || conventions.CouponCashBasis is not ("Level" or "DayCount"))
             throw new ArgumentException("Migration requires explicitly reviewed Percent or Fraction couponRateUnit and Level or DayCount couponCashBasis.");
         var retained = await _store.GetProjectionAsync(request.SecurityId, ct).ConfigureAwait(false)
             ?? throw new ArgumentException("The bond has no retained Security Master projection.");
-        if (!string.Equals(retained.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase) || retained.Status != SecurityStatusDto.Active)
+        if (!SecurityAssetClassCatalog.GetOrDefault(retained.AssetClass).CarriesBondCouponStructure || retained.Status != SecurityStatusDto.Active)
             throw new ArgumentException("Migration preview requires an active Bond.");
         if (retained.Version != request.ExpectedVersion)
             throw new InvalidOperationException("The bond changed since the requested version; rebuild the migration preview.");
         var original = ToDetail(retained);
         var fields = JsonNode.Parse(retained.AssetSpecificTerms.GetRawText()) as JsonObject
             ?? throw new ArgumentException("Bond terms must be an object.");
-        fields["scheduleConventions"] = JsonNode.Parse(request.ScheduleConventions.GetRawText());
+        fields[SecurityVersionedTerms.ScheduleConventionsKey] = JsonNode.Parse(request.ScheduleConventions.GetRawText());
         var storedVersion = retained.AssetSpecificTerms.TryGetProperty("assetClassTermsVersion", out var value)
             && value.TryGetInt32(out var version) ? version : 1;
         fields["assetClassTermsVersion"] = Math.Max(2, storedVersion);
@@ -102,7 +102,7 @@ public sealed class BondMigrationService : IBondMigrationService
         // inventory; the live policy refuses any later undeclared bond instead of reviving legacy math.
         var retained = await _store.LoadActiveAsync(ct).ConfigureAwait(false);
         var rows = new List<BondMigrationInventoryRowDto>();
-        foreach (var bond in retained.Where(row => string.Equals(row.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase))
+        foreach (var bond in retained.Where(row => SecurityAssetClassCatalog.GetOrDefault(row.AssetClass).CarriesBondCouponStructure)
                      .OrderBy(row => row.SecurityId))
         {
             ct.ThrowIfCancellationRequested();

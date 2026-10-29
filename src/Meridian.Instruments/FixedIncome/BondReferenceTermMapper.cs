@@ -50,10 +50,10 @@ internal static class BondReferenceTermMapper
         var declared = SecurityVersionedTerms.ReadDeclaredScheduleConventions("Bond", terms);
         var conventions = declared.Status == SecurityDeclaredConventionsStatus.Declared ? declared.Block : null;
         var decoding = SecurityVersionedTerms.Decoding("Bond", terms, writeMode: false);
-        var calls = decoding.Decodes(SecurityAssetTermsSchema.Field("Bond", "callSchedule")!)
-            ? Element([terms], "callSchedule", JsonValueKind.Array) : null;
-        var puts = decoding.Decodes(SecurityAssetTermsSchema.Field("Bond", "putSchedule")!)
-            ? Element([terms], "putSchedule", JsonValueKind.Array) : null;
+        var calls = decoding.Decodes(SecurityAssetTermsSchema.Field("Bond", SecurityVersionedTerms.CallScheduleKey)!)
+            ? Element([terms], SecurityVersionedTerms.CallScheduleKey, JsonValueKind.Array) : null;
+        var puts = decoding.Decodes(SecurityAssetTermsSchema.Field("Bond", SecurityVersionedTerms.PutScheduleKey)!)
+            ? Element([terms], SecurityVersionedTerms.PutScheduleKey, JsonValueKind.Array) : null;
         var couponKind = SecurityTermReader.ReadString(sources, "couponType") ?? reference.AccrualConvention?.CouponKind;
         var cap = SecurityTermReader.ReadDecimal(sources, "capRate");
         var floor = SecurityTermReader.ReadDecimal(sources, "floorRate");
