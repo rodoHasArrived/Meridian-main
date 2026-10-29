@@ -1,0 +1,272 @@
+{
+  "observedAt": "2026-10-28T23:48:14.259180+00:00",
+  "codeCandidate": "a6943fa561bad4a36bdb4ad73fc75594d7de8979",
+  "sourceBaseline": "a5b2589f0395d054bec0b59672a990419ef237ed",
+  "scope": "local validation; no hosted certification or operator acceptance",
+  "command": "DOTNET_ROOT=/workspace/.dotnet PATH=/tmp/meridian-pwsh:/tmp/meridian-tools:/workspace/.dotnet:$PATH /usr/local/bin/docker-init -s -- bash scripts/ci.sh",
+  "conclusion": "passed",
+  "exitCode": 0,
+  "dotnet": {
+    "suites": 19,
+    "counts": {
+      "passed": 25615,
+      "failed": 0,
+      "skipped": 5,
+      "other": 0
+    },
+    "summarySha256": "72e1e18b6592a22f2226d20a2772d00c90956cfadee26a7449f997b12522d6d0",
+    "results": [
+      {
+        "name": "core-application",
+        "status": "passed",
+        "counts": {
+          "passed": 2498,
+          "failed": 0,
+          "skipped": 0,
+          "other": 0
+        },
+        "testIdentityDigest": "da0ad246050748015c62e8826e5a4ffae9005195d1d5978afe994790469ea5b4"
+      },
+      {
+        "name": "core-ui-workstation-endpoints",
+        "status": "passed",
+        "counts": {
+          "passed": 590,
+          "failed": 0,
+          "skipped": 0,
+          "other": 0
+        },
+        "testIdentityDigest": "1c51054327fff8d591b9e8f69a3fbe5026daab6c62a1059acdcb715cc2d8bbc0"
+      },
+      {
+        "name": "core-ui-other",
+        "status": "passed",
+        "counts": {
+          "passed": 3018,
+          "failed": 0,
+          "skipped": 5,
+          "other": 0
+        },
+        "testIdentityDigest": "ac1b8903ce4e79f84cde9ea4480b268ebb89d67c5d76ae7f7378fb4fe181e1ef"
+      },
+      {
+        "name": "core-infrastructure",
+        "status": "passed",
+        "counts": {
+          "passed": 1655,
+          "failed": 0,
+          "skipped": 0,
+          "other": 0
+        },
+        "testIdentityDigest": "c8b0ff2380bb1c745b42f6ae8ebfddba18cc62c7bb81dd3a33c8c815687902a1"
+      },
+      {
+        "name": "core-storage",
+        "status": "passed",
+        "counts": {
+          "passed": 1997,
+          "failed": 0,
+          "skipped": 0,
+          "other": 0
+        },
+        "testIdentityDigest": "2c2d78a12c27c8943de09674e25de5851ee57a1b651a1758d2a53d96da54fb39"
+      },
+      {
+        "name": "core-data",
+        "status": "passed",
+        "counts": {
+          "passed": 588,
+          "failed": 0,
+          "skipped": 0,
+          "other": 0
+        },
+        "testIdentityDigest": "7128d333ddb88262f93be05e193cb2226ecfc635f37284a9c74d057963a8f7ba"
+      },
+      {
+        "name": "core-execution-strategy",
+        "status": "passed",
+        "counts": {
+          "passed": 6006,
+          "failed": 0,
+          "skipped": 0,
+          "other": 0
+        },
+        "testIdentityDigest": "4fed9deed358196ba448def25693e4123ab30c0bc41439c24bd88068edb2d4eb"
+      },
+      {
+        "name": "core-market-instruments",
+        "status": "passed",
+        "counts": {
+          "passed": 316,
+          "failed": 0,
+          "skipped": 0,
+          "other": 0
+        },
+        "testIdentityDigest": "a22f406bbab2a271349e3843bc1987c04c82d971575f7a6645556063a913ca46"
+      },
+      {
+        "name": "core-platform-domain-root",
+        "status": "passed",
+        "counts": {
+          "passed": 5700,
+          "failed": 0,
+          "skipped": 0,
+          "other": 0
+        },
+        "testIdentityDigest": "5c98821d6ea66a4355e59cfc699ef4fa6b60737da5e41dc8bc397bcf44786442"
+      },
+      {
+        "name": "core-reporting",
+        "status": "passed",
+        "counts": {
+          "passed": 179,
+          "failed": 0,
+          "skipped": 0,
+          "other": 0
+        },
+        "testIdentityDigest": "dffe84e13d4270885b5015d07c1541eac83e2e0bb0cecc5fe75acfb145dd9e20"
+      },
+      {
+        "name": "fsharp",
+        "status": "passed",
+        "counts": {
+          "passed": 542,
+          "failed": 0,
+          "skipped": 0,
+          "other": 0
+        },
+        "testIdentityDigest": "aa35af3ea5e92cd12599f0e3678bf469db097e8efe81115a36ed45f0f7aa9ef8"
+      },
+      {
+        "name": "ui",
+        "status": "passed",
+        "counts": {
+          "passed": 1479,
+          "failed": 0,
+          "skipped": 0,
+          "other": 0
+        },
+        "testIdentityDigest": "049faba567dbedbdb89c56a594680f0232fd9ecda7ddd7490e21ac5a2ceefbff"
+      },
+      {
+        "name": "backtesting",
+        "status": "passed",
+        "counts": {
+          "passed": 443,
+          "failed": 0,
+          "skipped": 0,
+          "other": 0
+        },
+        "testIdentityDigest": "06220180acb4daf0862722629305166c900f5383e467465240035d5370c4a2b4"
+      },
+      {
+        "name": "directlending",
+        "status": "passed",
+        "counts": {
+          "passed": 15,
+          "failed": 0,
+          "skipped": 0,
+          "other": 0
+        },
+        "testIdentityDigest": "203fec08bc41c71aa0158addd6246165d7860795323e1540981cc9ff8f2631d9"
+      },
+      {
+        "name": "fundstructure",
+        "status": "passed",
+        "counts": {
+          "passed": 180,
+          "failed": 0,
+          "skipped": 0,
+          "other": 0
+        },
+        "testIdentityDigest": "800a26a997249658c497a92603fcf101d888f48f5a51a0bde30d2ef1aa9b9489"
+      },
+      {
+        "name": "quantscript",
+        "status": "passed",
+        "counts": {
+          "passed": 194,
+          "failed": 0,
+          "skipped": 0,
+          "other": 0
+        },
+        "testIdentityDigest": "7bc3bc2a533f8dc1c108d33748a4b04b85000b6b6c7d62223086e90b78f6fd97"
+      },
+      {
+        "name": "designmodules",
+        "status": "passed",
+        "counts": {
+          "passed": 3,
+          "failed": 0,
+          "skipped": 0,
+          "other": 0
+        },
+        "testIdentityDigest": "11e698960ccdfc4f21fe42bb873dd2338915c440b07542e9635fb7adda6e1a1b"
+      },
+      {
+        "name": "lifecycle",
+        "status": "passed",
+        "counts": {
+          "passed": 18,
+          "failed": 0,
+          "skipped": 0,
+          "other": 0
+        },
+        "testIdentityDigest": "10a484bab7d1cf124351d12bdfd2e5708f5ccef0f7f7be1c5cde8dd1ff69dbc0"
+      },
+      {
+        "name": "core-remainder",
+        "status": "passed",
+        "counts": {
+          "passed": 194,
+          "failed": 0,
+          "skipped": 0,
+          "other": 0
+        },
+        "testIdentityDigest": "dd7c0fd2dc172528abff6248f151fb394cd10cc05855234cd6d45af44e642bbf"
+      }
+    ]
+  },
+  "browser": {
+    "conclusion": "passed",
+    "vitestBatches": 47,
+    "vitestPassed": 4244,
+    "testFilesPassed": 371,
+    "lintStrictNullChecksBuildAndBundleFreshness": "passed"
+  },
+  "scriptTests": {
+    "tests": 2191,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 16,
+    "quarantinedModules": 0
+  },
+  "wpf": {
+    "scope": "full application/XAML/test-source cross-compilation on Linux",
+    "errors": 0,
+    "warnings": 275,
+    "windowsRuntimeTests": 0,
+    "logSha256": "02fd0d9ce0074c312e79f8135deb9caac6b319f7a4a644006e686cabea438e01"
+  },
+  "logs": {
+    "successfulGateSha256": "12f82e67e1b34335123996f2360f8a057c0c6137407b36ae525fef6ee6047623",
+    "selectedDotnetSha256": "0df58cdb057a02cfec76e34fdca07c89e33327a99e5ba364bfb98473c0d966d0"
+  },
+  "initialGateAttempt": {
+    "conclusion": "failed",
+    "counts": {
+      "passed": 25581,
+      "failed": 34,
+      "skipped": 5,
+      "other": 0
+    },
+    "cause": "DOTNET_ROOT was unset for native isolated QuantScript worker app hosts. Direct invocation reported .NET location not found.",
+    "correction": "Set DOTNET_ROOT to the existing SDK root. The failing strategy scenario passed unchanged, then the entire gate passed unchanged.",
+    "workerRecheck": {
+      "passed": 1,
+      "failed": 0,
+      "trxSha256": "a40c174aa46af243d7563c01626748476f4f7879ab5a34e3d89bf792a11eb0fc"
+    },
+    "logSha256": "4293d24c0282532df7dbcee1c40cac839e4a3df0e2bed2b7c3d4cc4b21a61987"
+  }
+}

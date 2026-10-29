@@ -1,7 +1,7 @@
 # Bond Capability Expansion
 
-**Owner:** Instruments / Accounting and Ledger  
-**Reviewed:** 2026-10-29  
+**Owner:** Instruments / Accounting and Ledger
+**Reviewed:** 2026-10-29
 **Direction:** user-approved staged expansion, including a reviewed full active-bond cutover
 
 ## Outcome and boundaries

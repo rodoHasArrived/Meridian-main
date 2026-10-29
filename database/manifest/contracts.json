@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "50209df73351acd8218471c1080f710e4cdb60834c1e9fae9a38a9e8bfcc6774",
+      "fingerprint": "999581f43f75c8a3277347545ddfac947daa387b5ff973a4d0323c378d927696",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -498,6 +498,37 @@
         "Meridian.Contracts.Calendars.IBusinessDayCalendarSource",
         "Meridian.Contracts.Calendars.JointBusinessDayCalendar",
         "Meridian.Contracts.Calendars.StaticBusinessDayCalendarSource",
+        "Meridian.Contracts.CashFlows.CashFlowAmortization",
+        "Meridian.Contracts.CashFlows.CashFlowCalculationBlocker",
+        "Meridian.Contracts.CashFlows.CashFlowCalendarSnapshot",
+        "Meridian.Contracts.CashFlows.CashFlowCurvePin",
+        "Meridian.Contracts.CashFlows.CashFlowCurveSnapshot",
+        "Meridian.Contracts.CashFlows.CashFlowExerciseCalculation",
+        "Meridian.Contracts.CashFlows.CashFlowExerciseEligibility",
+        "Meridian.Contracts.CashFlows.CashFlowExerciseSide",
+        "Meridian.Contracts.CashFlows.CashFlowExerciseStyle",
+        "Meridian.Contracts.CashFlows.CashFlowNoticeWindow",
+        "Meridian.Contracts.CashFlows.CashFlowPrepaymentAssumption",
+        "Meridian.Contracts.CashFlows.CashFlowPrepaymentMethod",
+        "Meridian.Contracts.CashFlows.CashFlowRecastPolicy",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowContract",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowEngine",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowEvent",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowEvidence",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowRequest",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowResult",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowRun",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowStream",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowVersions",
+        "Meridian.Contracts.CashFlows.ContractualCouponAmount",
+        "Meridian.Contracts.CashFlows.ContractualExerciseEntry",
+        "Meridian.Contracts.CashFlows.ContractualMakeWholeTerms",
+        "Meridian.Contracts.CashFlows.CreateContractualCashFlowRunRequest",
+        "Meridian.Contracts.CashFlows.IContractualCashFlowPreviewService",
+        "Meridian.Contracts.CashFlows.IContractualCashFlowRunStore",
+        "Meridian.Contracts.CashFlows.MakeWholeFormula",
+        "Meridian.Contracts.CashFlows.SecurityContractualCashFlowTerms",
+        "Meridian.Contracts.CashFlows.SelectedCashFlowExercise",
         "Meridian.Contracts.Catalog.CanonicalSymbolAliasDefinition",
         "Meridian.Contracts.Catalog.CanonicalSymbolDefinition",
         "Meridian.Contracts.Catalog.CatalogConfiguration",
@@ -4534,7 +4565,7 @@
       ]
     }
   ],
-  "fingerprint": "d99afb199fa9e69ca012cb83c902afd954706c75fdbab04299518440979da60b",
+  "fingerprint": "3c523e8fc7b5fce931fd842dda35555a6e8b0be0ad114fce9bbd901135ceb7c6",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5135,6 +5166,47 @@
         "Meridian.Contracts.Calendars.IBusinessDayCalendarSource",
         "Meridian.Contracts.Calendars.JointBusinessDayCalendar",
         "Meridian.Contracts.Calendars.StaticBusinessDayCalendarSource"
+      ]
+    },
+    {
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "fingerprint": "bf839f11b6c6f30668c168cd64e0cf82d8bde0905005d70c8ae289601e7605d8",
+      "mapped_schemas": [],
+      "namespace": "Meridian.Contracts.CashFlows",
+      "object_ids": [
+        "Meridian.Contracts.CashFlows.CashFlowAmortization",
+        "Meridian.Contracts.CashFlows.CashFlowCalculationBlocker",
+        "Meridian.Contracts.CashFlows.CashFlowCalendarSnapshot",
+        "Meridian.Contracts.CashFlows.CashFlowCurvePin",
+        "Meridian.Contracts.CashFlows.CashFlowCurveSnapshot",
+        "Meridian.Contracts.CashFlows.CashFlowExerciseCalculation",
+        "Meridian.Contracts.CashFlows.CashFlowExerciseEligibility",
+        "Meridian.Contracts.CashFlows.CashFlowExerciseSide",
+        "Meridian.Contracts.CashFlows.CashFlowExerciseStyle",
+        "Meridian.Contracts.CashFlows.CashFlowNoticeWindow",
+        "Meridian.Contracts.CashFlows.CashFlowPrepaymentAssumption",
+        "Meridian.Contracts.CashFlows.CashFlowPrepaymentMethod",
+        "Meridian.Contracts.CashFlows.CashFlowRecastPolicy",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowContract",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowEngine",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowEvent",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowEvidence",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowRequest",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowResult",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowRun",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowStream",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowVersions",
+        "Meridian.Contracts.CashFlows.ContractualCouponAmount",
+        "Meridian.Contracts.CashFlows.ContractualExerciseEntry",
+        "Meridian.Contracts.CashFlows.ContractualMakeWholeTerms",
+        "Meridian.Contracts.CashFlows.CreateContractualCashFlowRunRequest",
+        "Meridian.Contracts.CashFlows.IContractualCashFlowPreviewService",
+        "Meridian.Contracts.CashFlows.IContractualCashFlowRunStore",
+        "Meridian.Contracts.CashFlows.MakeWholeFormula",
+        "Meridian.Contracts.CashFlows.SecurityContractualCashFlowTerms",
+        "Meridian.Contracts.CashFlows.SelectedCashFlowExercise"
       ]
     },
     {
@@ -6614,7 +6686,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "2782f08aba2c5ac29992a3391ddf26e5984478c395e127e2b9149af386a56e56",
+      "fingerprint": "53249647c6aabe9a754fdaa1980c8eff1bcb0e114c6493f68ff7b1f698452fad",
       "mapped_schemas": [
         "security_master"
       ],
@@ -74424,6 +74496,3417 @@
         {
           "line": 27,
           "path": "src/Meridian.Contracts/Calendars/IBusinessDayCalendarSource.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "Bullet",
+          "source_line": 16,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "EqualPrincipal",
+          "source_line": 16,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "ExplicitPrincipal",
+          "source_line": 16,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "LevelPayment",
+          "source_line": 16,
+          "value": null
+        }
+      ],
+      "fingerprint": "b360620953f52d839a9a57bc743a345c462e7a8ad62a9fc2ff2a187c05695897",
+      "full_name": "Meridian.Contracts.CashFlows.CashFlowAmortization",
+      "id": "Meridian.Contracts.CashFlows.CashFlowAmortization",
+      "kind": "enum",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "CashFlowAmortization",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.CashFlowAmortization",
+      "references": [],
+      "source": {
+        "line": 16,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 16,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "0df1d2cea6bd9df9e5baf83132b4c0ae2d6548725c75d223bfc649f01758f6e0",
+      "full_name": "Meridian.Contracts.CashFlows.CashFlowCalculationBlocker",
+      "id": "Meridian.Contracts.CashFlows.CashFlowCalculationBlocker",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Code",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 126,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Message",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 126,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "StreamId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 126,
+          "type": "string?"
+        }
+      ],
+      "name": "CashFlowCalculationBlocker",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.CashFlowCalculationBlocker",
+      "references": [],
+      "source": {
+        "line": 126,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 126,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "eaaafcec7bfe7a365b84a500a7fb41f186b4fc3b6201128bc10918719f4a743b",
+      "full_name": "Meridian.Contracts.CashFlows.CashFlowCalendarSnapshot",
+      "id": "Meridian.Contracts.CashFlows.CashFlowCalendarSnapshot",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CalendarId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 149,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ContentHash",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 149,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CoverageEnd",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 149,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CoverageStart",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 149,
+          "type": "DateOnly"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "DateOnly",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "NonBusinessDays",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<DateOnly>",
+          "source_line": 150,
+          "type": "IReadOnlyList<DateOnly>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceCoverageEnd",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 151,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceCoverageStart",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 151,
+          "type": "DateOnly?"
+        }
+      ],
+      "name": "CashFlowCalendarSnapshot",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.CashFlowCalendarSnapshot",
+      "references": [],
+      "source": {
+        "line": 148,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 148,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "c93fd887ab16a4f3b6d677a4805291ca00f139aa798e645ce4aed8db0e92a0bf",
+      "full_name": "Meridian.Contracts.CashFlows.CashFlowCurvePin",
+      "id": "Meridian.Contracts.CashFlows.CashFlowCurvePin",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BenchmarkKey",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 105,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CurveId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 105,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CurveVersionId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 105,
+          "type": "Guid"
+        }
+      ],
+      "name": "CashFlowCurvePin",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.CashFlowCurvePin",
+      "references": [],
+      "source": {
+        "line": 105,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 105,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "df9b2797def7fe8a2f1d8815d144d61a40b754a20c4a58bb877e1a2e0214185c",
+      "full_name": "Meridian.Contracts.CashFlows.CashFlowCurveSnapshot",
+      "id": "Meridian.Contracts.CashFlows.CashFlowCurveSnapshot",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Definition",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "SecurityCurveDefinitionDto",
+          "source_line": 152,
+          "type": "SecurityCurveDefinitionDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Version",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "SecurityCurveVersionDto",
+          "source_line": 152,
+          "type": "SecurityCurveVersionDto"
+        }
+      ],
+      "name": "CashFlowCurveSnapshot",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.CashFlowCurveSnapshot",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.SecurityCurveDefinitionDto",
+        "Meridian.Contracts.SecurityMaster.SecurityCurveVersionDto"
+      ],
+      "source": {
+        "line": 152,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 152,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "a32cfa25864a6c0f8335f8f5d1265e21b4f19da390bbb709684c78e3a8f409a6",
+      "full_name": "Meridian.Contracts.CashFlows.CashFlowExerciseCalculation",
+      "id": "Meridian.Contracts.CashFlows.CashFlowExerciseCalculation",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccruedInterest",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 135,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CleanFloor",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 135,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DirtyConsideration",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 136,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DirtyPresentValue",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 135,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "NoticeWindow",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "CashFlowNoticeWindow",
+          "source_line": 134,
+          "type": "CashFlowNoticeWindow"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Premium",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 136,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Selection",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "SelectedCashFlowExercise",
+          "source_line": 134,
+          "type": "SelectedCashFlowExercise"
+        }
+      ],
+      "name": "CashFlowExerciseCalculation",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.CashFlowExerciseCalculation",
+      "references": [
+        "Meridian.Contracts.CashFlows.CashFlowNoticeWindow",
+        "Meridian.Contracts.CashFlows.SelectedCashFlowExercise"
+      ],
+      "source": {
+        "line": 133,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 133,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "a556332cd1b35ace9f512a5679febcc88cc6a8a174311fea709877661a335fbe",
+      "full_name": "Meridian.Contracts.CashFlows.CashFlowExerciseEligibility",
+      "id": "Meridian.Contracts.CashFlows.CashFlowExerciseEligibility",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BusinessDayCalendarId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 132,
+          "type": "string?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "DateOnly",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Dates",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<DateOnly>",
+          "source_line": 131,
+          "type": "IReadOnlyList<DateOnly>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EntryStartDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 130,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Side",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "CashFlowExerciseSide",
+          "source_line": 130,
+          "type": "CashFlowExerciseSide"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "StreamId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 130,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Style",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "CashFlowExerciseStyle",
+          "source_line": 131,
+          "type": "CashFlowExerciseStyle"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "WindowEnd",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 131,
+          "type": "DateOnly"
+        }
+      ],
+      "name": "CashFlowExerciseEligibility",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.CashFlowExerciseEligibility",
+      "references": [
+        "Meridian.Contracts.CashFlows.CashFlowExerciseSide",
+        "Meridian.Contracts.CashFlows.CashFlowExerciseStyle"
+      ],
+      "source": {
+        "line": 129,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 129,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "Call",
+          "source_line": 10,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Put",
+          "source_line": 10,
+          "value": null
+        }
+      ],
+      "fingerprint": "a44d11749e0ce0ca91a4aee39c223a2d6665ce440edc1d2ae99bdb803da080f1",
+      "full_name": "Meridian.Contracts.CashFlows.CashFlowExerciseSide",
+      "id": "Meridian.Contracts.CashFlows.CashFlowExerciseSide",
+      "kind": "enum",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "CashFlowExerciseSide",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.CashFlowExerciseSide",
+      "references": [],
+      "source": {
+        "line": 10,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 10,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "American",
+          "source_line": 8,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Bermudan",
+          "source_line": 8,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "European",
+          "source_line": 8,
+          "value": null
+        }
+      ],
+      "fingerprint": "4e47e3d381498c60bc7d5a78f7785e23da4004cc444b28c1f0fff73e3be7e614",
+      "full_name": "Meridian.Contracts.CashFlows.CashFlowExerciseStyle",
+      "id": "Meridian.Contracts.CashFlows.CashFlowExerciseStyle",
+      "kind": "enum",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "CashFlowExerciseStyle",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.CashFlowExerciseStyle",
+      "references": [],
+      "source": {
+        "line": 8,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 8,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "2bebd006e0b2cd2b9b166234c155b24e5aa83eeffabc9a9b03d643581a5d34a8",
+      "full_name": "Meridian.Contracts.CashFlows.CashFlowNoticeWindow",
+      "id": "Meridian.Contracts.CashFlows.CashFlowNoticeWindow",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Earliest",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 127,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Latest",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 127,
+          "type": "DateOnly?"
+        }
+      ],
+      "name": "CashFlowNoticeWindow",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.CashFlowNoticeWindow",
+      "references": [],
+      "source": {
+        "line": 127,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 127,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "0f6f0c4fd4b9862166e4aaae7386374a8aedc04be79d245440e53aa6c99a9ebb",
+      "full_name": "Meridian.Contracts.CashFlows.CashFlowPrepaymentAssumption",
+      "id": "Meridian.Contracts.CashFlows.CashFlowPrepaymentAssumption",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EndDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 99,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Method",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "CashFlowPrepaymentMethod",
+          "source_line": 100,
+          "type": "CashFlowPrepaymentMethod"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "CashFlowRecastPolicy.PreservePayments",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Policy",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "CashFlowRecastPolicy",
+          "source_line": 103,
+          "type": "CashFlowRecastPolicy"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SeasoningOrigin",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 102,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "StartDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 98,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "StreamId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 97,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Value",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 101,
+          "type": "decimal"
+        }
+      ],
+      "name": "CashFlowPrepaymentAssumption",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.CashFlowPrepaymentAssumption",
+      "references": [
+        "Meridian.Contracts.CashFlows.CashFlowPrepaymentMethod",
+        "Meridian.Contracts.CashFlows.CashFlowRecastPolicy"
+      ],
+      "source": {
+        "line": 96,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 96,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "Amount",
+          "source_line": 12,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Cpr",
+          "source_line": 12,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Psa",
+          "source_line": 12,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Smm",
+          "source_line": 12,
+          "value": null
+        }
+      ],
+      "fingerprint": "c595e3f87d420186dce09b3c228f47b22326d924a3b1471346f0a335e1683fca",
+      "full_name": "Meridian.Contracts.CashFlows.CashFlowPrepaymentMethod",
+      "id": "Meridian.Contracts.CashFlows.CashFlowPrepaymentMethod",
+      "kind": "enum",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "CashFlowPrepaymentMethod",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.CashFlowPrepaymentMethod",
+      "references": [],
+      "source": {
+        "line": 12,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 12,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "PreservePayments",
+          "source_line": 14,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Recast",
+          "source_line": 14,
+          "value": null
+        }
+      ],
+      "fingerprint": "2cd83556017adfb8e282afe3f370c5d4670ee0a038e732c5927f0cfc062c25e8",
+      "full_name": "Meridian.Contracts.CashFlows.CashFlowRecastPolicy",
+      "id": "Meridian.Contracts.CashFlows.CashFlowRecastPolicy",
+      "kind": "enum",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "CashFlowRecastPolicy",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.CashFlowRecastPolicy",
+      "references": [],
+      "source": {
+        "line": 14,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 14,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "4511a09a9f90f9aff118675705cdb2bab5a0cbdb356bcdcd0b1d61f35f76a98f",
+      "full_name": "Meridian.Contracts.CashFlows.ContractualCashFlowContract",
+      "id": "Meridian.Contracts.CashFlows.ContractualCashFlowContract",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Currency",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 24,
+          "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "null",
+          "element_type": "ContractualExerciseEntry",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Exercises",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<ContractualExerciseEntry>?",
+          "source_line": 26,
+          "type": "IReadOnlyList<ContractualExerciseEntry>?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IssueDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 22,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MaturityDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 23,
+          "type": "DateOnly"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "ContractualCashFlowStream",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Streams",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<ContractualCashFlowStream>",
+          "source_line": 25,
+          "type": "IReadOnlyList<ContractualCashFlowStream>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "1",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Version",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 27,
+          "type": "int"
+        }
+      ],
+      "name": "ContractualCashFlowContract",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.ContractualCashFlowContract",
+      "references": [
+        "Meridian.Contracts.CashFlows.ContractualCashFlowStream",
+        "Meridian.Contracts.CashFlows.ContractualExerciseEntry"
+      ],
+      "source": {
+        "line": 21,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 21,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "64198df059657e6be9ef5439df4d04a112d6c52c68b10b447b99662de575c3bf",
+      "full_name": "Meridian.Contracts.CashFlows.ContractualCashFlowEngine",
+      "id": "Meridian.Contracts.CashFlows.ContractualCashFlowEngine",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "ContractualCashFlowEngine",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": true,
+      "qualified_name": "Meridian.Contracts.CashFlows.ContractualCashFlowEngine",
+      "references": [],
+      "source": {
+        "line": 11,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs"
+      },
+      "sources": [
+        {
+          "line": 11,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs"
+        },
+        {
+          "line": 7,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.Exercise.cs"
+        },
+        {
+          "line": 3,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.Prepayment.cs"
+        },
+        {
+          "line": 7,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.Walk.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "event",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "5d26627fea87464bc93da7dc4f45f20ac4ccaa60c0eb3186b36a62b683535ae7",
+      "full_name": "Meridian.Contracts.CashFlows.ContractualCashFlowEvent",
+      "id": "Meridian.Contracts.CashFlows.ContractualCashFlowEvent",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccrualEnd",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 139,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccrualStart",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 139,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CapitalizedInterest",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 140,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CashInterest",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 140,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ClosingBalance",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 142,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Date",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 138,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Direction",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "CashFlowLegDirection",
+          "source_line": 143,
+          "type": "CashFlowLegDirection"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EventId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 138,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ForecastPrepayment",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 141,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OpeningBalance",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 140,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PeriodId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 138,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PrepaymentPenalty",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 142,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RedeemedPrincipal",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 141,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RedemptionPremium",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 142,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ScheduledPrincipal",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 141,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "StreamId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 138,
+          "type": "string"
+        }
+      ],
+      "name": "ContractualCashFlowEvent",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.ContractualCashFlowEvent",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.CashFlowLegDirection"
+      ],
+      "source": {
+        "line": 137,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 137,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "bf7c190646d0598f1a96058f3f354918c7ceeb2e96e362ad20e788dbaf2068ea",
+      "full_name": "Meridian.Contracts.CashFlows.ContractualCashFlowEvidence",
+      "id": "Meridian.Contracts.CashFlows.ContractualCashFlowEvidence",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "CashFlowCalendarSnapshot",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Calendars",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<CashFlowCalendarSnapshot>",
+          "source_line": 156,
+          "type": "IReadOnlyList<CashFlowCalendarSnapshot>"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "CashFlowCurveSnapshot",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Curves",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<CashFlowCurveSnapshot>",
+          "source_line": 157,
+          "type": "IReadOnlyList<CashFlowCurveSnapshot>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EngineVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 154,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "HasContractOverride",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 156,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "InputHash",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 155,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "KernelVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 154,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MappingVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 154,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OutputHash",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 155,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PrepaymentVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 154,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceTermsHash",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 155,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 155,
+          "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Warnings",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 157,
+          "type": "IReadOnlyList<string>"
+        }
+      ],
+      "name": "ContractualCashFlowEvidence",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.ContractualCashFlowEvidence",
+      "references": [
+        "Meridian.Contracts.CashFlows.CashFlowCalendarSnapshot",
+        "Meridian.Contracts.CashFlows.CashFlowCurveSnapshot"
+      ],
+      "source": {
+        "line": 153,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 153,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "request",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "be33a94d23ff8b28ec15f353a7c436274a7f7a89d6ecb4e0f8d11ea6df47de9d",
+      "full_name": "Meridian.Contracts.CashFlows.ContractualCashFlowRequest",
+      "id": "Meridian.Contracts.CashFlows.ContractualCashFlowRequest",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ContractOverride",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "ContractualCashFlowContract?",
+          "source_line": 116,
+          "type": "ContractualCashFlowContract?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "null",
+          "element_type": "CashFlowCurvePin",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CurvePins",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<CashFlowCurvePin>?",
+          "source_line": 115,
+          "type": "IReadOnlyList<CashFlowCurvePin>?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "ContractualCashFlowVersions.Engine",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EngineVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 117,
+          "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "null",
+          "element_type": "SelectedCashFlowExercise",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Exercises",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<SelectedCashFlowExercise>?",
+          "source_line": 113,
+          "type": "IReadOnlyList<SelectedCashFlowExercise>?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Horizon",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 111,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "KnowledgeCutoff",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 110,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "null",
+          "element_type": "CashFlowPrepaymentAssumption",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Prepayments",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<CashFlowPrepaymentAssumption>?",
+          "source_line": 114,
+          "type": "IReadOnlyList<CashFlowPrepaymentAssumption>?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "StructuredCashFlowScenario.Base",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RateScenario",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "StructuredCashFlowScenario",
+          "source_line": 112,
+          "type": "StructuredCashFlowScenario"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ValuationDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 109,
+          "type": "DateOnly"
+        }
+      ],
+      "name": "ContractualCashFlowRequest",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.ContractualCashFlowRequest",
+      "references": [
+        "Meridian.Contracts.CashFlows.CashFlowCurvePin",
+        "Meridian.Contracts.CashFlows.CashFlowPrepaymentAssumption",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowContract",
+        "Meridian.Contracts.CashFlows.SelectedCashFlowExercise",
+        "Meridian.Contracts.SecurityMaster.StructuredCashFlowScenario"
+      ],
+      "source": {
+        "line": 108,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 108,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "result",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "de95e7c48234ef468c17ad238538c4d1f63db7b02db6cb98abae47cecc3c2535",
+      "full_name": "Meridian.Contracts.CashFlows.ContractualCashFlowResult",
+      "id": "Meridian.Contracts.CashFlows.ContractualCashFlowResult",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "CashFlowCalculationBlocker",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Blockers",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<CashFlowCalculationBlocker>",
+          "source_line": 162,
+          "type": "IReadOnlyList<CashFlowCalculationBlocker>"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "ContractualCashFlowEvent",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Events",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<ContractualCashFlowEvent>",
+          "source_line": 159,
+          "type": "IReadOnlyList<ContractualCashFlowEvent>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Evidence",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ContractualCashFlowEvidence",
+          "source_line": 163,
+          "type": "ContractualCashFlowEvidence"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "CashFlowExerciseCalculation",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExerciseCalculations",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<CashFlowExerciseCalculation>",
+          "source_line": 161,
+          "type": "IReadOnlyList<CashFlowExerciseCalculation>"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "CashFlowExerciseEligibility",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExerciseEligibility",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<CashFlowExerciseEligibility>",
+          "source_line": 160,
+          "type": "IReadOnlyList<CashFlowExerciseEligibility>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ResolvedContract",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "ContractualCashFlowContract?",
+          "source_line": 165,
+          "type": "ContractualCashFlowContract?"
+        }
+      ],
+      "name": "ContractualCashFlowResult",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.ContractualCashFlowResult",
+      "references": [
+        "Meridian.Contracts.CashFlows.CashFlowCalculationBlocker",
+        "Meridian.Contracts.CashFlows.CashFlowExerciseCalculation",
+        "Meridian.Contracts.CashFlows.CashFlowExerciseEligibility",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowContract",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowEvent",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowEvidence"
+      ],
+      "source": {
+        "line": 158,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 158,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "b18dd6965564ef233ea1918154202f6a078a82fdfbeb313fe0d61b097dfb4d78",
+      "full_name": "Meridian.Contracts.CashFlows.ContractualCashFlowRun",
+      "id": "Meridian.Contracts.CashFlows.ContractualCashFlowRun",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "\"\"",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Actor",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 175,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Contract",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ContractualCashFlowContract",
+          "source_line": 173,
+          "type": "ContractualCashFlowContract"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RecordedAt",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 172,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Request",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ContractualCashFlowRequest",
+          "source_line": 173,
+          "type": "ContractualCashFlowRequest"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Result",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ContractualCashFlowResult",
+          "source_line": 174,
+          "type": "ContractualCashFlowResult"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RunId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 172,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SubjectId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 172,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SubjectKind",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 172,
+          "type": "string"
+        }
+      ],
+      "name": "ContractualCashFlowRun",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.ContractualCashFlowRun",
+      "references": [
+        "Meridian.Contracts.CashFlows.ContractualCashFlowContract",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowRequest",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowResult"
+      ],
+      "source": {
+        "line": 171,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 171,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "29f57b53ecc02146db8a729f5c52fef5e2c47e1e9534b10ed84e8b2aa2453051",
+      "full_name": "Meridian.Contracts.CashFlows.ContractualCashFlowStream",
+      "id": "Meridian.Contracts.CashFlows.ContractualCashFlowStream",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "CashFlowAmortization.Bullet",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Amortization",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "CashFlowAmortization",
+          "source_line": 50,
+          "type": "CashFlowAmortization"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Cap",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 48,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Conventions",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "ScheduleConventionTerms?",
+          "source_line": 38,
+          "type": "ScheduleConventionTerms?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "null",
+          "element_type": "ContractualCouponAmount",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CouponAmounts",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<ContractualCouponAmount>?",
+          "source_line": 43,
+          "type": "IReadOnlyList<ContractualCouponAmount>?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "null",
+          "element_type": "SchedulePeriod",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CouponPeriods",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<SchedulePeriod>?",
+          "source_line": 39,
+          "type": "IReadOnlyList<SchedulePeriod>?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DayCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DayCountConvention",
+          "source_line": 34,
+          "type": "DayCountConvention"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "CashFlowLegDirection.Receive",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Direction",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "CashFlowLegDirection",
+          "source_line": 36,
+          "type": "CashFlowLegDirection"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "true",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExchangesPrincipal",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 37,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FixedRate",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 35,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Floor",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 47,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IndexName",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 44,
+          "type": "string?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "null",
+          "element_type": "StructuredCashFlowNotionalStep",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "NotionalSchedule",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<StructuredCashFlowNotionalStep>?",
+          "source_line": 41,
+          "type": "IReadOnlyList<StructuredCashFlowNotionalStep>?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OpeningBalance",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 53,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OpeningBalanceDate",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 54,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PaymentMonths",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 33,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "0m",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PikFraction",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 49,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "false",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PrepaymentAllowed",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 51,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "0m",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PrepaymentPenaltyRate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 52,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Principal",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 32,
+          "type": "decimal"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "null",
+          "element_type": "StructuredPrincipalScheduleEntry",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PrincipalSchedule",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<StructuredPrincipalScheduleEntry>?",
+          "source_line": 40,
+          "type": "IReadOnlyList<StructuredPrincipalScheduleEntry>?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "null",
+          "element_type": "StructuredStepCouponEntry",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RateSteps",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<StructuredStepCouponEntry>?",
+          "source_line": 42,
+          "type": "IReadOnlyList<StructuredStepCouponEntry>?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "null",
+          "element_type": "StructuredCashFlowResetFixing",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Resets",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<StructuredCashFlowResetFixing>?",
+          "source_line": 46,
+          "type": "IReadOnlyList<StructuredCashFlowResetFixing>?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "0m",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SpreadBps",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 45,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "StreamId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 31,
+          "type": "string"
+        }
+      ],
+      "name": "ContractualCashFlowStream",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.ContractualCashFlowStream",
+      "references": [
+        "Meridian.Contracts.CashFlows.CashFlowAmortization",
+        "Meridian.Contracts.CashFlows.ContractualCouponAmount",
+        "Meridian.Contracts.SecurityMaster.CashFlowLegDirection",
+        "Meridian.Contracts.SecurityMaster.DayCountConvention",
+        "Meridian.Contracts.SecurityMaster.ScheduleConventionTerms",
+        "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriod",
+        "Meridian.Contracts.SecurityMaster.StructuredCashFlowNotionalStep",
+        "Meridian.Contracts.SecurityMaster.StructuredCashFlowResetFixing",
+        "Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry",
+        "Meridian.Contracts.SecurityMaster.StructuredStepCouponEntry"
+      ],
+      "source": {
+        "line": 30,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 30,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "d4592cfc4b37173c52dada7e913294f4af77e1ffa2cf62043af0890d895d5627",
+      "full_name": "Meridian.Contracts.CashFlows.ContractualCashFlowVersions",
+      "id": "Meridian.Contracts.CashFlows.ContractualCashFlowVersions",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "ContractualCashFlowVersions",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.ContractualCashFlowVersions",
+      "references": [],
+      "source": {
+        "line": 119,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 119,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "8fcaa216a8625bdd02415c63d0bd5cb705a8275f62e02d62d940e098415e6986",
+      "full_name": "Meridian.Contracts.CashFlows.ContractualCouponAmount",
+      "id": "Meridian.Contracts.CashFlows.ContractualCouponAmount",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Amount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 56,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PaymentDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 56,
+          "type": "DateOnly"
+        }
+      ],
+      "name": "ContractualCouponAmount",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.ContractualCouponAmount",
+      "references": [],
+      "source": {
+        "line": 56,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 56,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "4971b725fe913874f708d95f8f7261b93ede11c4a9ff8c81b602f6de287e62fb",
+      "full_name": "Meridian.Contracts.CashFlows.ContractualExerciseEntry",
+      "id": "Meridian.Contracts.CashFlows.ContractualExerciseEntry",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccretedValue",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 72,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CleanPrice",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 64,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EndDate",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 62,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExerciseMonths",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "int?",
+          "source_line": 66,
+          "type": "int?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MakeWhole",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "ContractualMakeWholeTerms?",
+          "source_line": 73,
+          "type": "ContractualMakeWholeTerms?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MaximumNoticeDays",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "int?",
+          "source_line": 69,
+          "type": "int?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MinimumNoticeDays",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "int?",
+          "source_line": 68,
+          "type": "int?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "NoticeDayType",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 70,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PartialRedemption",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 67,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "\"PercentOfPar\"",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PriceBasis",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 71,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Side",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "CashFlowExerciseSide",
+          "source_line": 60,
+          "type": "CashFlowExerciseSide"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "StartDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 61,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "StreamId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 65,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Style",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "CashFlowExerciseStyle",
+          "source_line": 63,
+          "type": "CashFlowExerciseStyle"
+        }
+      ],
+      "name": "ContractualExerciseEntry",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.ContractualExerciseEntry",
+      "references": [
+        "Meridian.Contracts.CashFlows.CashFlowExerciseSide",
+        "Meridian.Contracts.CashFlows.CashFlowExerciseStyle",
+        "Meridian.Contracts.CashFlows.ContractualMakeWholeTerms"
+      ],
+      "source": {
+        "line": 59,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 59,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "ca881662f202a067a4119e3588495050244ca607e0a91a44b747d0711ea0f8ee",
+      "full_name": "Meridian.Contracts.CashFlows.ContractualMakeWholeTerms",
+      "id": "Meridian.Contracts.CashFlows.ContractualMakeWholeTerms",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "\"CleanFloorAddAccrued\"",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccruedInterestTreatment",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 82,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BenchmarkKey",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 77,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CompoundsPerYear",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 79,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DayCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DayCountConvention",
+          "source_line": 80,
+          "type": "DayCountConvention"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Formula",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "MakeWholeFormula",
+          "source_line": 76,
+          "type": "MakeWholeFormula"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ParCallDate",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 81,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SpreadBps",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 78,
+          "type": "decimal"
+        }
+      ],
+      "name": "ContractualMakeWholeTerms",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.ContractualMakeWholeTerms",
+      "references": [
+        "Meridian.Contracts.CashFlows.MakeWholeFormula",
+        "Meridian.Contracts.SecurityMaster.DayCountConvention"
+      ],
+      "source": {
+        "line": 75,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 75,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "request",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "6d16d336281158c5a87dcab9b571ea53bef5e3609e744aa0b0e12ea75e5174f6",
+      "full_name": "Meridian.Contracts.CashFlows.CreateContractualCashFlowRunRequest",
+      "id": "Meridian.Contracts.CashFlows.CreateContractualCashFlowRunRequest",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Projection",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ContractualCashFlowRequest",
+          "source_line": 177,
+          "type": "ContractualCashFlowRequest"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RunId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 177,
+          "type": "Guid"
+        }
+      ],
+      "name": "CreateContractualCashFlowRunRequest",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.CreateContractualCashFlowRunRequest",
+      "references": [
+        "Meridian.Contracts.CashFlows.ContractualCashFlowRequest"
+      ],
+      "source": {
+        "line": 177,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 177,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "6f6517a9b57a520c8b95583e86dc6ab232b9e3c3e542b31089747f37c14ab1be",
+      "full_name": "Meridian.Contracts.CashFlows.IContractualCashFlowPreviewService",
+      "id": "Meridian.Contracts.CashFlows.IContractualCashFlowPreviewService",
+      "kind": "interface",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "IContractualCashFlowPreviewService",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.IContractualCashFlowPreviewService",
+      "references": [],
+      "source": {
+        "line": 185,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 185,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "238216d76b5e44adeb74cdb2a3610f5c79b128108725e95a0a04a7ff9d0da9f4",
+      "full_name": "Meridian.Contracts.CashFlows.IContractualCashFlowRunStore",
+      "id": "Meridian.Contracts.CashFlows.IContractualCashFlowRunStore",
+      "kind": "interface",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "IContractualCashFlowRunStore",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.IContractualCashFlowRunStore",
+      "references": [],
+      "source": {
+        "line": 179,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 179,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "BenchmarkCurvePvV1",
+          "source_line": 18,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "BenchmarkYieldPvV1",
+          "source_line": 18,
+          "value": null
+        }
+      ],
+      "fingerprint": "9364fc4badb1cd4a7bfb7b665e2ffc7ff401ae697333e943db7d8150dd38b5fc",
+      "full_name": "Meridian.Contracts.CashFlows.MakeWholeFormula",
+      "id": "Meridian.Contracts.CashFlows.MakeWholeFormula",
+      "kind": "enum",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "MakeWholeFormula",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.MakeWholeFormula",
+      "references": [],
+      "source": {
+        "line": 18,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 18,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "dd551aa60ddc0147ccb8720e7ce35ab525118abd52da4f384aa01a046ef1d00e",
+      "full_name": "Meridian.Contracts.CashFlows.SecurityContractualCashFlowTerms",
+      "id": "Meridian.Contracts.CashFlows.SecurityContractualCashFlowTerms",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "SecurityContractualCashFlowTerms",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.SecurityContractualCashFlowTerms",
+      "references": [],
+      "source": {
+        "line": 8,
+        "path": "src/Meridian.Contracts/CashFlows/SecurityContractualCashFlowTerms.cs"
+      },
+      "sources": [
+        {
+          "line": 8,
+          "path": "src/Meridian.Contracts/CashFlows/SecurityContractualCashFlowTerms.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "9f02b387389df1f0e3e8293db6ea4f7bc56098a657f3010237b9f9308ace022d",
+      "full_name": "Meridian.Contracts.CashFlows.SelectedCashFlowExercise",
+      "id": "Meridian.Contracts.CashFlows.SelectedCashFlowExercise",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Amount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 90,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EntryStartDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 86,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExerciseDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 88,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "true",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "HypotheticalNotice",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 91,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "NoticeDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 89,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "NoticeEvidenceId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 92,
+          "type": "string?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "null",
+          "element_type": "decimal",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SelectedLotAmounts",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<decimal>?",
+          "source_line": 93,
+          "type": "IReadOnlyList<decimal>?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Side",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "CashFlowExerciseSide",
+          "source_line": 85,
+          "type": "CashFlowExerciseSide"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "StreamId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 87,
+          "type": "string"
+        }
+      ],
+      "name": "SelectedCashFlowExercise",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.SelectedCashFlowExercise",
+      "references": [
+        "Meridian.Contracts.CashFlows.CashFlowExerciseSide"
+      ],
+      "source": {
+        "line": 84,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+      },
+      "sources": [
+        {
+          "line": 84,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
         }
       ],
       "type_parameters": []
@@ -224807,7 +228290,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "1cce6bc6c43a865763b9ef2c41d90f2b25cffdfbcaaccbee9cc03a143283d8a6",
+      "fingerprint": "20da83d2e2bcc6f299e0a7a596dd3d06ee626c778d1a5db1ff89da3f12740970",
       "full_name": "Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet",
       "id": "Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet",
       "kind": "class",
@@ -224821,12 +228304,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet",
       "references": [],
       "source": {
-        "line": 1131,
+        "line": 1137,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs"
       },
       "sources": [
         {
-          "line": 1131,
+          "line": 1137,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs"
         }
       ],
@@ -252682,7 +256165,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "31f54c4aab8ef8c31754fe6e6b129dc7b0f1edb6294cb5743ca4c332cc886d5b",
+      "fingerprint": "65612950efa10384eba49d55d8e9fb3ca4970fe435b5918821daa01faeb49729",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses",
       "kind": "class",
@@ -252696,12 +256179,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses",
       "references": [],
       "source": {
-        "line": 1119,
+        "line": 1125,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs"
       },
       "sources": [
         {
-          "line": 1119,
+          "line": 1125,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs"
         }
       ],
@@ -253053,7 +256536,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "eeee11acade86d406daf281e5b91626be2d2a52e26e7deadf31d00d4cf6ade0e",
+      "fingerprint": "a0ad58e3c6fddaf9210d610f142adb66e4a950c7770a4b0c16c147173496eba6",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetClassCatalog",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetClassCatalog",
       "kind": "class",
@@ -253072,7 +256555,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 679,
+          "source_line": 685,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -253086,7 +256569,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 823,
+          "source_line": 829,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -253100,7 +256583,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 887,
+          "source_line": 893,
           "type": "IReadOnlyList<string>"
         }
       ],
@@ -253445,7 +256928,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "af7c76700f0189bda955b1284ec0c8e09cb4d8b3d3df243428696e9a9f19ca38",
+      "fingerprint": "b17d82f6f1c9c69ba6b0e0d18890f32c9ecb85d33cb76fb31010422980f63f94",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
       "kind": "record",
@@ -253465,7 +256948,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 1045,
+          "source_line": 1051,
           "type": "string?"
         },
         {
@@ -253480,7 +256963,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 1044,
+          "source_line": 1050,
           "type": "IReadOnlyList<string>?"
         },
         {
@@ -253495,7 +256978,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 1041,
+          "source_line": 1047,
           "type": "bool"
         },
         {
@@ -253509,7 +256992,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1034,
+          "source_line": 1040,
           "type": "string"
         },
         {
@@ -253524,7 +257007,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 1040,
+          "source_line": 1046,
           "type": "IReadOnlyList<string>?"
         },
         {
@@ -253539,7 +257022,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 1050,
+          "source_line": 1056,
           "type": "IReadOnlyList<string>?"
         },
         {
@@ -253554,7 +257037,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 1055,
+          "source_line": 1061,
           "type": "bool"
         },
         {
@@ -253568,7 +257051,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "SecurityCashFlowBehavior",
-          "source_line": 1036,
+          "source_line": 1042,
           "type": "SecurityCashFlowBehavior"
         },
         {
@@ -253583,7 +257066,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "SecurityValuationModelKind",
-          "source_line": 1061,
+          "source_line": 1067,
           "type": "SecurityValuationModelKind"
         },
         {
@@ -253598,7 +257081,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<InstrumentType>?",
-          "source_line": 1049,
+          "source_line": 1055,
           "type": "IReadOnlyList<InstrumentType>?"
         },
         {
@@ -253613,7 +257096,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 1048,
+          "source_line": 1054,
           "type": "string?"
         },
         {
@@ -253627,7 +257110,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "SecurityLotUnitKind",
-          "source_line": 1035,
+          "source_line": 1041,
           "type": "SecurityLotUnitKind"
         },
         {
@@ -253641,7 +257124,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<SecurityIdentifierKind>",
-          "source_line": 1039,
+          "source_line": 1045,
           "type": "IReadOnlyList<SecurityIdentifierKind>"
         },
         {
@@ -253655,7 +257138,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "SecurityTermsProjectionKind",
-          "source_line": 1037,
+          "source_line": 1043,
           "type": "SecurityTermsProjectionKind"
         },
         {
@@ -253670,7 +257153,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 1057,
+          "source_line": 1063,
           "type": "bool"
         },
         {
@@ -253685,7 +257168,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "int?",
-          "source_line": 1060,
+          "source_line": 1066,
           "type": "int?"
         },
         {
@@ -253700,7 +257183,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 1052,
+          "source_line": 1058,
           "type": "bool"
         },
         {
@@ -253715,7 +257198,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 1042,
+          "source_line": 1048,
           "type": "bool"
         },
         {
@@ -253730,7 +257213,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 1053,
+          "source_line": 1059,
           "type": "bool"
         },
         {
@@ -253744,7 +257227,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "int",
-          "source_line": 1075,
+          "source_line": 1081,
           "type": "int"
         },
         {
@@ -253758,7 +257241,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 1038,
+          "source_line": 1044,
           "type": "bool"
         },
         {
@@ -253773,7 +257256,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 1051,
+          "source_line": 1057,
           "type": "bool"
         },
         {
@@ -253787,7 +257270,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "bool",
-          "source_line": 1078,
+          "source_line": 1084,
           "type": "bool"
         },
         {
@@ -253802,7 +257285,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 1054,
+          "source_line": 1060,
           "type": "bool"
         },
         {
@@ -253817,7 +257300,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 1046,
+          "source_line": 1052,
           "type": "bool"
         },
         {
@@ -253832,7 +257315,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 1043,
+          "source_line": 1049,
           "type": "bool"
         },
         {
@@ -253847,7 +257330,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<SecurityAssetClassTermsUpgrade>?",
-          "source_line": 1059,
+          "source_line": 1065,
           "type": "IReadOnlyList<SecurityAssetClassTermsUpgrade>?"
         },
         {
@@ -253862,7 +257345,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 1047,
+          "source_line": 1053,
           "type": "int"
         },
         {
@@ -253877,7 +257360,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 1058,
+          "source_line": 1064,
           "type": "bool"
         },
         {
@@ -253892,7 +257375,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 1056,
+          "source_line": 1062,
           "type": "bool"
         }
       ],
@@ -253910,12 +257393,12 @@
         "Meridian.Contracts.SecurityMaster.SecurityValuationModelKind"
       ],
       "source": {
-        "line": 1033,
+        "line": 1039,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs"
       },
       "sources": [
         {
-          "line": 1033,
+          "line": 1039,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs"
         }
       ],
@@ -253937,23 +257420,23 @@
         {
           "explicit_value": false,
           "name": "Unresolved",
-          "source_line": 911,
+          "source_line": 917,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "Resolved",
-          "source_line": 912,
+          "source_line": 918,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "Ambiguous",
-          "source_line": 913,
+          "source_line": 919,
           "value": null
         }
       ],
-      "fingerprint": "e7c871b46b7cee349f2821f4c45dd5d8cd5d2101a29bb727d8fbf49f0b25c1bf",
+      "fingerprint": "365f9720cb3e91da0cb8205f4a796abe000cdffcba7e1998258d83b36cb95b36",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetClassLabelResolution",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetClassLabelResolution",
       "kind": "enum",
@@ -253967,12 +257450,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityAssetClassLabelResolution",
       "references": [],
       "source": {
-        "line": 909,
+        "line": 915,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs"
       },
       "sources": [
         {
-          "line": 909,
+          "line": 915,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs"
         }
       ],
@@ -257826,7 +261309,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "4efca54f0ffd64980038da72792f8103746bc012843a72f73b50dc4a9df994ac",
+      "fingerprint": "527b246a86ef807bf378c5cd45980da24da492556b1fec2557a5121faaaabc49",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema",
       "kind": "class",
@@ -257845,7 +261328,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyCollection<string>",
-          "source_line": 840,
+          "source_line": 845,
           "type": "IReadOnlyCollection<string>"
         }
       ],

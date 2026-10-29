@@ -1,0 +1,3480 @@
+{
+  "tier": "Rendered response simulation; no retained host, real authorization, WPF, or operator verdict",
+  "provenance": {
+    "sourceHead": "a5b2589f0395d054bec0b59672a990419ef237ed",
+    "sourceHashes": [
+      {
+        "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.ts",
+        "sha256": "d1fd58bce3198d51a61809a9f6f03acadd7b6d48c9bd1c74ecf086b21cc92794"
+      },
+      {
+        "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.workflow-selection.ts",
+        "sha256": "3d33a2b284d9320a2addfd54efd2a5ff9ecdf73575de7f484cdbb318b4196a5f"
+      },
+      {
+        "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.tsx",
+        "sha256": "dac4da23c129c2f147434ad6979da5212362e90b060a1fb515b11d4f7a3daf35"
+      },
+      {
+        "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.close-test-fixtures.ts",
+        "sha256": "2f0211b58ec7e472abc2c1b3acfdc32889a84357ec23ad9c44f1d697c5a6f376"
+      },
+      {
+        "file": "src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts",
+        "sha256": "0951cf75699f64b618870e7e2d1506661f3469a1f5be76c20d6494f9bd85a25e"
+      },
+      {
+        "file": "src/Meridian.Ui/dashboard/src/lib/workstation-endpoints.ts",
+        "sha256": "a70e8f584c42dbdd6bb88c810ab286615cfb340f7d70b508a691a7f7cb4f1d2b"
+      },
+      {
+        "file": "scripts/dev/web-screenshot-fixtures.json",
+        "sha256": "e27a730d7a94c00b17fee5d6e008edac3b6f844fa9b5ec1f46c63022edc8fc33"
+      },
+      {
+        "file": "scripts/dev/web-screenshot-routes.json",
+        "sha256": "e299dda6ff088d6380951cd6d2ac0caa80edeeb8a12dde27e40a0d4808c01c51"
+      }
+    ],
+    "workingTree": true,
+    "sessionStartUtc": "2026-10-28T22:37:26.772Z",
+    "sessionEndUtc": "2026-10-28T22:37:51.558Z",
+    "browserVersion": "151.0.7922.173",
+    "playwrightVersion": "1.64.1",
+    "url": "http://127.0.0.1:4173/workstation",
+    "browserPlugin": "not available; installed Playwright fallback",
+    "tier": "Rendered response simulation; all governed API scenarios intercepted by Playwright",
+    "client": "browser",
+    "actualAccountingPopulation": "not provisioned",
+    "operatorIdentity": null,
+    "operatorDecision": "pending",
+    "implementationOrder": "LOT \u2192 MARK \u2192 SEAM",
+    "exerciseOrder": "SEAM only; MARK not exercised and live acceptance ordering remains SEAM \u2192 MARK",
+    "consoleMessages": [
+      {
+        "phase": "rendered-response-simulation",
+        "type": "http-error",
+        "status": 409,
+        "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/close"
+      },
+      {
+        "phase": "rendered-response-simulation",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+      },
+      {
+        "phase": "rendered-response-simulation",
+        "type": "http-error",
+        "status": 503,
+        "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6"
+      },
+      {
+        "phase": "rendered-response-simulation",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      },
+      {
+        "phase": "rendered-response-simulation",
+        "type": "http-error",
+        "status": 409,
+        "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/close"
+      },
+      {
+        "phase": "rendered-response-simulation",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+      }
+    ],
+    "relevantConsole": [
+      {
+        "phase": "rendered-response-simulation",
+        "type": "http-error",
+        "status": 409,
+        "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/close"
+      },
+      {
+        "phase": "rendered-response-simulation",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+      },
+      {
+        "phase": "rendered-response-simulation",
+        "type": "http-error",
+        "status": 503,
+        "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6"
+      },
+      {
+        "phase": "rendered-response-simulation",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      },
+      {
+        "phase": "rendered-response-simulation",
+        "type": "http-error",
+        "status": 409,
+        "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/close"
+      },
+      {
+        "phase": "rendered-response-simulation",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+      }
+    ],
+    "limitations": [
+      "No backend persistence, real authorization, PostgreSQL or installed WPF is exercised",
+      "No human operator verdict is fabricated",
+      "Plan/evidence revisions are simulated contributor record identities; no separate version fields exist on this projection DTO"
+    ]
+  },
+  "cases": [
+    {
+      "id": "S0-first-viewport",
+      "expected": "Page identity, meaningful app content and first viewport without framework overlay",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:31.359Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "workflowVersion": 8,
+      "projectionWorkflowVersion": 8,
+      "selectedReportPackId": "response-simulation-report-pack-v8",
+      "projectionReportPackId": "response-simulation-report-pack-v8",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v8",
+          "label": "Simulated report manifest v8",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v8",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:08:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v8",
+          "label": "Simulated report manifest v8",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v8",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:08:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v8"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v8"
+          ]
+        }
+      ],
+      "closeButtonCount": 1,
+      "closeButtonDisabled": false,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S0-first-viewport.png"
+    },
+    {
+      "id": "S1-initial-v8",
+      "expected": "Matching workflow v8 + plan-v8 + evidence-v8 allow command",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:31.496Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "workflowVersion": 8,
+      "projectionWorkflowVersion": 8,
+      "selectedReportPackId": "response-simulation-report-pack-v8",
+      "projectionReportPackId": "response-simulation-report-pack-v8",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v8",
+          "label": "Simulated report manifest v8",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v8",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:08:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v8",
+          "label": "Simulated report manifest v8",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v8",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:08:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v8"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v8"
+          ]
+        }
+      ],
+      "closeButtonCount": 1,
+      "closeButtonDisabled": false,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S1-initial-v8.png"
+    },
+    {
+      "id": "S2-refusal-v8",
+      "expected": "409 refusal remains visible without a package",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:31.989Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "workflowVersion": 8,
+      "projectionWorkflowVersion": 8,
+      "selectedReportPackId": "response-simulation-report-pack-v8",
+      "projectionReportPackId": "response-simulation-report-pack-v8",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v8",
+          "label": "Simulated report manifest v8",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v8",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:08:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v8",
+          "label": "Simulated report manifest v8",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v8",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:08:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v8"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v8"
+          ]
+        }
+      ],
+      "closeButtonCount": 1,
+      "closeButtonDisabled": false,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S2-refusal-v8.png"
+    },
+    {
+      "id": "S3-refresh-pending",
+      "expected": "Old v8 detail cannot supply enabled publication while v9 detail loads",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:32.434Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "workflowVersion": 9,
+      "projectionWorkflowVersion": 9,
+      "selectedReportPackId": "response-simulation-report-pack-v9",
+      "projectionReportPackId": "response-simulation-report-pack-v9",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v9",
+          "label": "Simulated report manifest v9",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v9",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:09:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v9",
+          "label": "Simulated report manifest v9",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v9",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:09:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v9"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v9"
+          ]
+        }
+      ],
+      "closeButtonCount": 0,
+      "closeButtonDisabled": null,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S3-refresh-pending.png"
+    },
+    {
+      "id": "S4-repaired-v9",
+      "expected": "Selected detail/report pack v9 matches current shared workflow and contributor records",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:33.512Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "workflowVersion": 9,
+      "projectionWorkflowVersion": 9,
+      "selectedReportPackId": "response-simulation-report-pack-v9",
+      "projectionReportPackId": "response-simulation-report-pack-v9",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v9",
+          "label": "Simulated report manifest v9",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v9",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:09:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v9",
+          "label": "Simulated report manifest v9",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v9",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:09:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v9"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v9"
+          ]
+        }
+      ],
+      "closeButtonCount": 1,
+      "closeButtonDisabled": false,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S4-repaired-v9.png"
+    },
+    {
+      "id": "S5-published-v10",
+      "expected": "Enter submits repaired v9 command and refreshed selected detail retains simulated package v10",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:35.207Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "workflowVersion": 10,
+      "projectionWorkflowVersion": 10,
+      "selectedReportPackId": "response-simulation-report-pack-v9",
+      "projectionReportPackId": "response-simulation-report-pack-v9",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v9",
+          "label": "Simulated report manifest v9",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v9",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:09:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v9",
+          "label": "Simulated report manifest v9",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v9",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:09:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v9"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v9"
+          ]
+        }
+      ],
+      "closeButtonCount": 1,
+      "closeButtonDisabled": true,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S5-published-v10.png"
+    },
+    {
+      "id": "S6-version-mismatch",
+      "expected": "Older returned selected detail cannot enable command for newer summary/projection",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:36.524Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "workflowVersion": 12,
+      "projectionWorkflowVersion": 12,
+      "selectedReportPackId": "response-simulation-report-pack-v11",
+      "projectionReportPackId": "response-simulation-report-pack-v12",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v11",
+          "label": "Simulated report manifest v11",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v11",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:11:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v12",
+          "label": "Simulated report manifest v12",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v12",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:12:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v12"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v12"
+          ]
+        }
+      ],
+      "closeButtonCount": 0,
+      "closeButtonDisabled": null,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S6-version-mismatch.png"
+    },
+    {
+      "id": "S7-version-match-recovered",
+      "expected": "Matching current v12 details restore publication",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:37.225Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "workflowVersion": 12,
+      "projectionWorkflowVersion": 12,
+      "selectedReportPackId": "response-simulation-report-pack-v12",
+      "projectionReportPackId": "response-simulation-report-pack-v12",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v12",
+          "label": "Simulated report manifest v12",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v12",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:12:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v12",
+          "label": "Simulated report manifest v12",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v12",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:12:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v12"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v12"
+          ]
+        }
+      ],
+      "closeButtonCount": 1,
+      "closeButtonDisabled": false,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S7-version-match-recovered.png"
+    },
+    {
+      "id": "S8-late-detail-wrong-scope",
+      "expected": "Delayed old-scope detail stays unavailable after entity changes",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:39.445Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=response-simulation-foreign-entity&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "workflowVersion": 13,
+      "projectionWorkflowVersion": 13,
+      "selectedReportPackId": "response-simulation-report-pack-v13",
+      "projectionReportPackId": "response-simulation-report-pack-v13",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v13",
+          "label": "Simulated report manifest v13",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v13",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:13:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v13",
+          "label": "Simulated report manifest v13",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v13",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:13:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v13"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v13"
+          ]
+        }
+      ],
+      "closeButtonCount": 1,
+      "closeButtonDisabled": true,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S8-late-detail-wrong-scope.png"
+    },
+    {
+      "id": "S9-scope-repaired",
+      "expected": "Original complete scope recovers with current v14 detail",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:41.486Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "workflowVersion": 14,
+      "projectionWorkflowVersion": 14,
+      "selectedReportPackId": "response-simulation-report-pack-v14",
+      "projectionReportPackId": "response-simulation-report-pack-v14",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v14",
+          "label": "Simulated report manifest v14",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v14",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:14:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v14",
+          "label": "Simulated report manifest v14",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v14",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:14:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v14"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v14"
+          ]
+        }
+      ],
+      "closeButtonCount": 1,
+      "closeButtonDisabled": false,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S9-scope-repaired.png"
+    },
+    {
+      "id": "S10-detail-failure",
+      "expected": "Selected detail failure blocks publication",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:42.498Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "workflowVersion": 14,
+      "projectionWorkflowVersion": 14,
+      "selectedReportPackId": "response-simulation-report-pack-v14",
+      "projectionReportPackId": "response-simulation-report-pack-v14",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v14",
+          "label": "Simulated report manifest v14",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v14",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:14:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v14",
+          "label": "Simulated report manifest v14",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v14",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:14:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v14"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v14"
+          ]
+        }
+      ],
+      "closeButtonCount": 0,
+      "closeButtonDisabled": null,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S10-detail-failure.png"
+    },
+    {
+      "id": "S11-1366x768-current",
+      "expected": "Controls/details remain usable at second desktop size",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:43.061Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "workflowVersion": 14,
+      "projectionWorkflowVersion": 14,
+      "selectedReportPackId": "response-simulation-report-pack-v14",
+      "projectionReportPackId": "response-simulation-report-pack-v14",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v14",
+          "label": "Simulated report manifest v14",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v14",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:14:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v14",
+          "label": "Simulated report manifest v14",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v14",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:14:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v14"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v14"
+          ]
+        }
+      ],
+      "closeButtonCount": 1,
+      "closeButtonDisabled": false,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S11-1366x768-current.png"
+    },
+    {
+      "id": "S12-keyboard-basics",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "observed": {
+        "refreshActivatedByEnter": true,
+        "publishActivatedByEnter": true,
+        "focusAfterTab": {
+          "tag": "TR",
+          "label": "Open 2026-05 operations continuity workflow, Ready For Close, 5 of 5 gates passed"
+        }
+      }
+    },
+    {
+      "id": "S13-same-workflow-version-repaired",
+      "expected": "Unchanged workflow version 14 refresh replaces plan/report/evidence records with v15",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:43.993Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "workflowVersion": 14,
+      "projectionWorkflowVersion": 14,
+      "selectedReportPackId": "response-simulation-report-pack-v15",
+      "projectionReportPackId": "response-simulation-report-pack-v15",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v15",
+          "label": "Simulated report manifest v15",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v15",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:15:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v15",
+          "label": "Simulated report manifest v15",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v15",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:15:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v15"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v15"
+          ]
+        }
+      ],
+      "closeButtonCount": 1,
+      "closeButtonDisabled": false,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S13-same-workflow-version-repaired.png"
+    },
+    {
+      "id": "S14-same-version-current-command",
+      "expected": "Second simulated publication submits workflow v14 with refreshed report/evidence v15",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:44.773Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "workflowVersion": 15,
+      "projectionWorkflowVersion": 15,
+      "selectedReportPackId": "response-simulation-report-pack-v15",
+      "projectionReportPackId": "response-simulation-report-pack-v15",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v15",
+          "label": "Simulated report manifest v15",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v15",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:15:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v15",
+          "label": "Simulated report manifest v15",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v15",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:15:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v15"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v15"
+          ]
+        }
+      ],
+      "closeButtonCount": 1,
+      "closeButtonDisabled": true,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S14-same-version-current-command.png"
+    },
+    {
+      "id": "S15-late-detail-after-newer-refresh",
+      "expected": "Late v16 detail cannot overwrite completed v17 refresh for same workflow/scope",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:47.547Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "workflowVersion": 17,
+      "projectionWorkflowVersion": 17,
+      "selectedReportPackId": "response-simulation-report-pack-v17",
+      "projectionReportPackId": "response-simulation-report-pack-v17",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v17",
+          "label": "Simulated report manifest v17",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v17",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:17:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v17",
+          "label": "Simulated report manifest v17",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v17",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:17:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v17"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v17"
+          ]
+        }
+      ],
+      "closeButtonCount": 1,
+      "closeButtonDisabled": false,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S15-late-detail-after-newer-refresh.png"
+    },
+    {
+      "id": "S16-same-version-detail-old-projection-new",
+      "expected": "Workflow v18 in both responses; older selected report/evidence v18 cannot publish against projection report/evidence v19",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:48.176Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "workflowVersion": 18,
+      "projectionWorkflowVersion": 18,
+      "selectedReportPackId": "response-simulation-report-pack-v18",
+      "projectionReportPackId": "response-simulation-report-pack-v19",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v18",
+          "label": "Simulated report manifest v18",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v18",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:18:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v19",
+          "label": "Simulated report manifest v19",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v19",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:19:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v19"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v19"
+          ]
+        }
+      ],
+      "closeButtonCount": 1,
+      "closeButtonDisabled": true,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S16-same-version-detail-old-projection-new.png"
+    },
+    {
+      "id": "S17-same-version-detail-new-projection-old",
+      "expected": "Workflow v18 in both responses; newer selected report/evidence v19 cannot publish against projection report/evidence v18; neither mismatch sends a command",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:48.524Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "workflowVersion": 18,
+      "projectionWorkflowVersion": 18,
+      "selectedReportPackId": "response-simulation-report-pack-v19",
+      "projectionReportPackId": "response-simulation-report-pack-v18",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v19",
+          "label": "Simulated report manifest v19",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v19",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:19:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v18",
+          "label": "Simulated report manifest v18",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v18",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:18:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v18"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v18"
+          ]
+        }
+      ],
+      "closeButtonCount": 1,
+      "closeButtonDisabled": true,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S17-same-version-detail-new-projection-old.png"
+    },
+    {
+      "id": "S18-same-version-refusal",
+      "expected": "Matching workflow v18/report v19 permits an attempted command; simulated server refusal remains visible",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:49.181Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "workflowVersion": 18,
+      "projectionWorkflowVersion": 18,
+      "selectedReportPackId": "response-simulation-report-pack-v19",
+      "projectionReportPackId": "response-simulation-report-pack-v19",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v19",
+          "label": "Simulated report manifest v19",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v19",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:19:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v19",
+          "label": "Simulated report manifest v19",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v19",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:19:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v19"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v19"
+          ]
+        }
+      ],
+      "closeButtonCount": 1,
+      "closeButtonDisabled": false,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S18-same-version-refusal.png"
+    },
+    {
+      "id": "S19-same-version-matching-repair",
+      "expected": "Workflow version remains18; selected/projection report, evidence and contributor record identities all refresh to v20",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:49.607Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "workflowVersion": 18,
+      "projectionWorkflowVersion": 18,
+      "selectedReportPackId": "response-simulation-report-pack-v20",
+      "projectionReportPackId": "response-simulation-report-pack-v20",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v20",
+          "label": "Simulated report manifest v20",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v20",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:20:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v20",
+          "label": "Simulated report manifest v20",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v20",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:20:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v20"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v20"
+          ]
+        }
+      ],
+      "closeButtonCount": 1,
+      "closeButtonDisabled": false,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S19-same-version-matching-repair.png"
+    },
+    {
+      "id": "S20-same-version-repaired-publication",
+      "expected": "Simulated publication submits repaired report/evidence v20 with expected workflow version18 and retains closed workflow19",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:50.172Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "workflowVersion": 19,
+      "projectionWorkflowVersion": 19,
+      "selectedReportPackId": "response-simulation-report-pack-v20",
+      "projectionReportPackId": "response-simulation-report-pack-v20",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v20",
+          "label": "Simulated report manifest v20",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v20",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:20:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v20",
+          "label": "Simulated report manifest v20",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v20",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:20:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v20"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v20"
+          ]
+        }
+      ],
+      "closeButtonCount": 1,
+      "closeButtonDisabled": true,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S20-same-version-repaired-publication.png"
+    },
+    {
+      "id": "S21-same-id-retained-location-mismatch",
+      "expected": "Identical workflow/report/evidence ID cannot hide a changed retained route in the shared projection",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:50.524Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "workflowVersion": 21,
+      "projectionWorkflowVersion": 21,
+      "selectedReportPackId": "response-simulation-report-pack-v21",
+      "projectionReportPackId": "response-simulation-report-pack-v21",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v21",
+          "label": "Simulated report manifest v21",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v21",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:21:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v21",
+          "label": "Simulated report manifest v21",
+          "route": "/workstation/reporting/evidence/response-simulation-replaced-location",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:21:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v21"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v21"
+          ]
+        }
+      ],
+      "closeButtonCount": 1,
+      "closeButtonDisabled": true,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S21-same-id-retained-location-mismatch.png"
+    },
+    {
+      "id": "S22-publication-evidence-union-mismatch",
+      "expected": "Matching report-pack evidence cannot bypass a mismatch in the other evidence the command would publish",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:50.950Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "workflowVersion": 22,
+      "projectionWorkflowVersion": 22,
+      "selectedReportPackId": "response-simulation-report-pack-v22",
+      "projectionReportPackId": "response-simulation-report-pack-v22",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v22",
+          "label": "Simulated report manifest v22",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v22",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:22:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v22",
+          "label": "Simulated report manifest v22",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v22",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:22:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v22"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v22"
+          ]
+        }
+      ],
+      "closeButtonCount": 1,
+      "closeButtonDisabled": true,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S22-publication-evidence-union-mismatch.png"
+    },
+    {
+      "id": "S23-all-publication-evidence-repaired",
+      "expected": "Matching all retained publication evidence restores availability",
+      "automationDecision": "pass",
+      "operatorDecision": "pending",
+      "operatorIdentity": null,
+      "atUtc": "2026-10-28T22:37:51.427Z",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+      "title": "Accounting Workstation - Meridian",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "workflowVersion": 22,
+      "projectionWorkflowVersion": 22,
+      "selectedReportPackId": "response-simulation-report-pack-v22",
+      "projectionReportPackId": "response-simulation-report-pack-v22",
+      "selectedReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v22",
+          "label": "Simulated report manifest v22",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v22",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:22:00Z"
+        }
+      ],
+      "projectionReportEvidence": [
+        {
+          "evidenceId": "response-simulation-report-evidence-v22",
+          "label": "Simulated report manifest v22",
+          "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v22",
+          "source": "response-simulation",
+          "capturedAtUtc": "2026-10-06T12:22:00Z"
+        }
+      ],
+      "projectionContributorRecords": [
+        {
+          "contributorId": "close-plan",
+          "recordIds": [
+            "response-simulation-close-plan-v22"
+          ]
+        },
+        {
+          "contributorId": "report-pack",
+          "recordIds": [
+            "response-simulation-report-evidence-v22"
+          ]
+        }
+      ],
+      "closeButtonCount": 1,
+      "closeButtonDisabled": false,
+      "frameworkOverlay": 0,
+      "screenshot": "/workspace/scratch/mark-close-20261028/rendered/screenshots/S23-all-publication-evidence-repaired.png"
+    }
+  ],
+  "selectedResponses": [
+    {
+      "atUtc": "2026-10-28T22:37:30.908Z",
+      "scenario": "initial-v8",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-workflow-detail",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "version": 8,
+        "closeReadiness": {
+          "isReadyToClose": true,
+          "severity": "Info",
+          "score": 100,
+          "components": [],
+          "blockers": [],
+          "nextActions": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:30.911Z",
+      "scenario": "initial-v8",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=entity-alpha",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-shared-projection",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "ledgerBookId": "book-alpha",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "activeWorkflow": {
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "status": "ReadyForClose",
+          "version": 8,
+          "reportPackReadiness": {
+            "isReady": true,
+            "reportPackId": "response-simulation-report-pack-v8",
+            "blockingReason": null,
+            "evidenceLinks": [
+              {
+                "evidenceId": "response-simulation-report-evidence-v8",
+                "label": "Simulated report manifest v8",
+                "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v8",
+                "source": "response-simulation",
+                "capturedAtUtc": "2026-10-06T12:08:00Z"
+              }
+            ]
+          }
+        },
+        "closeReadiness": {
+          "scope": {
+            "fundProfileId": "fund-alpha",
+            "ledgerBookId": "book-alpha",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "entityId": "entity-alpha",
+            "periodId": "2026-05"
+          },
+          "evaluatedAtUtc": "2026-09-04T12:00:00Z",
+          "status": "Ready",
+          "isComplete": true,
+          "isReadyToClose": true,
+          "contributors": [
+            {
+              "contributorId": "close-plan",
+              "owner": "Controller",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:08:00Z",
+              "recordIds": [
+                "response-simulation-close-plan-v8"
+              ]
+            },
+            {
+              "contributorId": "report-pack",
+              "owner": "Reporting",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:08:00Z",
+              "recordIds": [
+                "response-simulation-report-evidence-v8"
+              ]
+            }
+          ],
+          "blockers": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:32.285Z",
+      "scenario": "repair-v9",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=entity-alpha",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-shared-projection",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "ledgerBookId": "book-alpha",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "activeWorkflow": {
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "status": "ReadyForClose",
+          "version": 9,
+          "reportPackReadiness": {
+            "isReady": true,
+            "reportPackId": "response-simulation-report-pack-v9",
+            "blockingReason": null,
+            "evidenceLinks": [
+              {
+                "evidenceId": "response-simulation-report-evidence-v9",
+                "label": "Simulated report manifest v9",
+                "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v9",
+                "source": "response-simulation",
+                "capturedAtUtc": "2026-10-06T12:09:00Z"
+              }
+            ]
+          }
+        },
+        "closeReadiness": {
+          "scope": {
+            "fundProfileId": "fund-alpha",
+            "ledgerBookId": "book-alpha",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "entityId": "entity-alpha",
+            "periodId": "2026-05"
+          },
+          "evaluatedAtUtc": "2026-09-04T12:00:00Z",
+          "status": "Ready",
+          "isComplete": true,
+          "isReadyToClose": true,
+          "contributors": [
+            {
+              "contributorId": "close-plan",
+              "owner": "Controller",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:09:00Z",
+              "recordIds": [
+                "response-simulation-close-plan-v9"
+              ]
+            },
+            {
+              "contributorId": "report-pack",
+              "owner": "Reporting",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:09:00Z",
+              "recordIds": [
+                "response-simulation-report-evidence-v9"
+              ]
+            }
+          ],
+          "blockers": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:33.280Z",
+      "scenario": "repair-v9",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-workflow-detail",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "version": 9,
+        "closeReadiness": {
+          "isReadyToClose": true,
+          "severity": "Info",
+          "score": 100,
+          "components": [],
+          "blockers": [],
+          "nextActions": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:33.928Z",
+      "scenario": "repair-v9",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=entity-alpha",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-shared-projection",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "ledgerBookId": "book-alpha",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "activeWorkflow": {
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "status": "Closed",
+          "version": 10,
+          "reportPackReadiness": {
+            "isReady": true,
+            "reportPackId": "response-simulation-report-pack-v9",
+            "blockingReason": null,
+            "evidenceLinks": [
+              {
+                "evidenceId": "response-simulation-report-evidence-v9",
+                "label": "Simulated report manifest v9",
+                "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v9",
+                "source": "response-simulation",
+                "capturedAtUtc": "2026-10-06T12:09:00Z"
+              }
+            ]
+          }
+        },
+        "closeReadiness": {
+          "scope": {
+            "fundProfileId": "fund-alpha",
+            "ledgerBookId": "book-alpha",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "entityId": "entity-alpha",
+            "periodId": "2026-05"
+          },
+          "evaluatedAtUtc": "2026-09-04T12:00:00Z",
+          "status": "Ready",
+          "isComplete": true,
+          "isReadyToClose": true,
+          "contributors": [
+            {
+              "contributorId": "close-plan",
+              "owner": "Controller",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:09:00Z",
+              "recordIds": [
+                "response-simulation-close-plan-v9"
+              ]
+            },
+            {
+              "contributorId": "report-pack",
+              "owner": "Reporting",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:09:00Z",
+              "recordIds": [
+                "response-simulation-report-evidence-v9"
+              ]
+            }
+          ],
+          "blockers": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:34.924Z",
+      "scenario": "repair-v9",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-workflow-detail",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "version": 10,
+        "closeReadiness": {
+          "isReadyToClose": true,
+          "severity": "Info",
+          "score": 100,
+          "components": [],
+          "blockers": [],
+          "nextActions": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:35.599Z",
+      "scenario": "ready-v11",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-workflow-detail",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "version": 11,
+        "closeReadiness": {
+          "isReadyToClose": true,
+          "severity": "Info",
+          "score": 100,
+          "components": [],
+          "blockers": [],
+          "nextActions": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:35.604Z",
+      "scenario": "ready-v11",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=entity-alpha",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-shared-projection",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "ledgerBookId": "book-alpha",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "activeWorkflow": {
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "status": "ReadyForClose",
+          "version": 11,
+          "reportPackReadiness": {
+            "isReady": true,
+            "reportPackId": "response-simulation-report-pack-v11",
+            "blockingReason": null,
+            "evidenceLinks": [
+              {
+                "evidenceId": "response-simulation-report-evidence-v11",
+                "label": "Simulated report manifest v11",
+                "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v11",
+                "source": "response-simulation",
+                "capturedAtUtc": "2026-10-06T12:11:00Z"
+              }
+            ]
+          }
+        },
+        "closeReadiness": {
+          "scope": {
+            "fundProfileId": "fund-alpha",
+            "ledgerBookId": "book-alpha",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "entityId": "entity-alpha",
+            "periodId": "2026-05"
+          },
+          "evaluatedAtUtc": "2026-09-04T12:00:00Z",
+          "status": "Ready",
+          "isComplete": true,
+          "isReadyToClose": true,
+          "contributors": [
+            {
+              "contributorId": "close-plan",
+              "owner": "Controller",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:11:00Z",
+              "recordIds": [
+                "response-simulation-close-plan-v11"
+              ]
+            },
+            {
+              "contributorId": "report-pack",
+              "owner": "Reporting",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:11:00Z",
+              "recordIds": [
+                "response-simulation-report-evidence-v11"
+              ]
+            }
+          ],
+          "blockers": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:35.805Z",
+      "scenario": "mismatched-detail-v11",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-workflow-detail",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "version": 11,
+        "closeReadiness": {
+          "isReadyToClose": true,
+          "severity": "Info",
+          "score": 100,
+          "components": [],
+          "blockers": [],
+          "nextActions": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:35.811Z",
+      "scenario": "mismatched-detail-v11",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=entity-alpha",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-shared-projection",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "ledgerBookId": "book-alpha",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "activeWorkflow": {
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "status": "ReadyForClose",
+          "version": 12,
+          "reportPackReadiness": {
+            "isReady": true,
+            "reportPackId": "response-simulation-report-pack-v12",
+            "blockingReason": null,
+            "evidenceLinks": [
+              {
+                "evidenceId": "response-simulation-report-evidence-v12",
+                "label": "Simulated report manifest v12",
+                "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v12",
+                "source": "response-simulation",
+                "capturedAtUtc": "2026-10-06T12:12:00Z"
+              }
+            ]
+          }
+        },
+        "closeReadiness": {
+          "scope": {
+            "fundProfileId": "fund-alpha",
+            "ledgerBookId": "book-alpha",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "entityId": "entity-alpha",
+            "periodId": "2026-05"
+          },
+          "evaluatedAtUtc": "2026-09-04T12:00:00Z",
+          "status": "Ready",
+          "isComplete": true,
+          "isReadyToClose": true,
+          "contributors": [
+            {
+              "contributorId": "close-plan",
+              "owner": "Controller",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:12:00Z",
+              "recordIds": [
+                "response-simulation-close-plan-v12"
+              ]
+            },
+            {
+              "contributorId": "report-pack",
+              "owner": "Reporting",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:12:00Z",
+              "recordIds": [
+                "response-simulation-report-evidence-v12"
+              ]
+            }
+          ],
+          "blockers": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:36.975Z",
+      "scenario": "repair-mismatch-v12",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-workflow-detail",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "version": 12,
+        "closeReadiness": {
+          "isReadyToClose": true,
+          "severity": "Info",
+          "score": 100,
+          "components": [],
+          "blockers": [],
+          "nextActions": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:36.985Z",
+      "scenario": "repair-mismatch-v12",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=entity-alpha",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-shared-projection",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "ledgerBookId": "book-alpha",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "activeWorkflow": {
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "status": "ReadyForClose",
+          "version": 12,
+          "reportPackReadiness": {
+            "isReady": true,
+            "reportPackId": "response-simulation-report-pack-v12",
+            "blockingReason": null,
+            "evidenceLinks": [
+              {
+                "evidenceId": "response-simulation-report-evidence-v12",
+                "label": "Simulated report manifest v12",
+                "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v12",
+                "source": "response-simulation",
+                "capturedAtUtc": "2026-10-06T12:12:00Z"
+              }
+            ]
+          }
+        },
+        "closeReadiness": {
+          "scope": {
+            "fundProfileId": "fund-alpha",
+            "ledgerBookId": "book-alpha",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "entityId": "entity-alpha",
+            "periodId": "2026-05"
+          },
+          "evaluatedAtUtc": "2026-09-04T12:00:00Z",
+          "status": "Ready",
+          "isComplete": true,
+          "isReadyToClose": true,
+          "contributors": [
+            {
+              "contributorId": "close-plan",
+              "owner": "Controller",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:12:00Z",
+              "recordIds": [
+                "response-simulation-close-plan-v12"
+              ]
+            },
+            {
+              "contributorId": "report-pack",
+              "owner": "Reporting",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:12:00Z",
+              "recordIds": [
+                "response-simulation-report-evidence-v12"
+              ]
+            }
+          ],
+          "blockers": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:37.478Z",
+      "scenario": "late-detail-v13",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=entity-alpha",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-shared-projection",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "ledgerBookId": "book-alpha",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "activeWorkflow": {
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "status": "ReadyForClose",
+          "version": 13,
+          "reportPackReadiness": {
+            "isReady": true,
+            "reportPackId": "response-simulation-report-pack-v13",
+            "blockingReason": null,
+            "evidenceLinks": [
+              {
+                "evidenceId": "response-simulation-report-evidence-v13",
+                "label": "Simulated report manifest v13",
+                "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v13",
+                "source": "response-simulation",
+                "capturedAtUtc": "2026-10-06T12:13:00Z"
+              }
+            ]
+          }
+        },
+        "closeReadiness": {
+          "scope": {
+            "fundProfileId": "fund-alpha",
+            "ledgerBookId": "book-alpha",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "entityId": "entity-alpha",
+            "periodId": "2026-05"
+          },
+          "evaluatedAtUtc": "2026-09-04T12:00:00Z",
+          "status": "Ready",
+          "isComplete": true,
+          "isReadyToClose": true,
+          "contributors": [
+            {
+              "contributorId": "close-plan",
+              "owner": "Controller",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:13:00Z",
+              "recordIds": [
+                "response-simulation-close-plan-v13"
+              ]
+            },
+            {
+              "contributorId": "report-pack",
+              "owner": "Reporting",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:13:00Z",
+              "recordIds": [
+                "response-simulation-report-evidence-v13"
+              ]
+            }
+          ],
+          "blockers": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:37.646Z",
+      "scenario": "foreign-scope-after-late-detail",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-workflow-detail",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "version": 13,
+        "closeReadiness": {
+          "isReadyToClose": true,
+          "severity": "Info",
+          "score": 100,
+          "components": [],
+          "blockers": [],
+          "nextActions": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:37.650Z",
+      "scenario": "foreign-scope-after-late-detail",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=response-simulation-foreign-entity",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-shared-projection",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "ledgerBookId": "book-alpha",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "activeWorkflow": {
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "status": "ReadyForClose",
+          "version": 13,
+          "reportPackReadiness": {
+            "isReady": true,
+            "reportPackId": "response-simulation-report-pack-v13",
+            "blockingReason": null,
+            "evidenceLinks": [
+              {
+                "evidenceId": "response-simulation-report-evidence-v13",
+                "label": "Simulated report manifest v13",
+                "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v13",
+                "source": "response-simulation",
+                "capturedAtUtc": "2026-10-06T12:13:00Z"
+              }
+            ]
+          }
+        },
+        "closeReadiness": {
+          "scope": {
+            "fundProfileId": "fund-alpha",
+            "ledgerBookId": "book-alpha",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "entityId": "entity-alpha",
+            "periodId": "2026-05"
+          },
+          "evaluatedAtUtc": "2026-09-04T12:00:00Z",
+          "status": "Ready",
+          "isComplete": true,
+          "isReadyToClose": true,
+          "contributors": [
+            {
+              "contributorId": "close-plan",
+              "owner": "Controller",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:13:00Z",
+              "recordIds": [
+                "response-simulation-close-plan-v13"
+              ]
+            },
+            {
+              "contributorId": "report-pack",
+              "owner": "Reporting",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:13:00Z",
+              "recordIds": [
+                "response-simulation-report-evidence-v13"
+              ]
+            }
+          ],
+          "blockers": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:38.975Z",
+      "scenario": "late-detail-v13",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-workflow-detail",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "version": 13,
+        "closeReadiness": {
+          "isReadyToClose": true,
+          "severity": "Info",
+          "score": 100,
+          "components": [],
+          "blockers": [],
+          "nextActions": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:41.136Z",
+      "scenario": "scope-repair-v14",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-workflow-detail",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "version": 14,
+        "closeReadiness": {
+          "isReadyToClose": true,
+          "severity": "Info",
+          "score": 100,
+          "components": [],
+          "blockers": [],
+          "nextActions": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:41.145Z",
+      "scenario": "scope-repair-v14",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=entity-alpha",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-shared-projection",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "ledgerBookId": "book-alpha",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "activeWorkflow": {
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "status": "ReadyForClose",
+          "version": 14,
+          "reportPackReadiness": {
+            "isReady": true,
+            "reportPackId": "response-simulation-report-pack-v14",
+            "blockingReason": null,
+            "evidenceLinks": [
+              {
+                "evidenceId": "response-simulation-report-evidence-v14",
+                "label": "Simulated report manifest v14",
+                "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v14",
+                "source": "response-simulation",
+                "capturedAtUtc": "2026-10-06T12:14:00Z"
+              }
+            ]
+          }
+        },
+        "closeReadiness": {
+          "scope": {
+            "fundProfileId": "fund-alpha",
+            "ledgerBookId": "book-alpha",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "entityId": "entity-alpha",
+            "periodId": "2026-05"
+          },
+          "evaluatedAtUtc": "2026-09-04T12:00:00Z",
+          "status": "Ready",
+          "isComplete": true,
+          "isReadyToClose": true,
+          "contributors": [
+            {
+              "contributorId": "close-plan",
+              "owner": "Controller",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:14:00Z",
+              "recordIds": [
+                "response-simulation-close-plan-v14"
+              ]
+            },
+            {
+              "contributorId": "report-pack",
+              "owner": "Reporting",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:14:00Z",
+              "recordIds": [
+                "response-simulation-report-evidence-v14"
+              ]
+            }
+          ],
+          "blockers": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:41.801Z",
+      "scenario": "detail-unavailable",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=entity-alpha",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-shared-projection",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "ledgerBookId": "book-alpha",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "activeWorkflow": {
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "status": "ReadyForClose",
+          "version": 14,
+          "reportPackReadiness": {
+            "isReady": true,
+            "reportPackId": "response-simulation-report-pack-v14",
+            "blockingReason": null,
+            "evidenceLinks": [
+              {
+                "evidenceId": "response-simulation-report-evidence-v14",
+                "label": "Simulated report manifest v14",
+                "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v14",
+                "source": "response-simulation",
+                "capturedAtUtc": "2026-10-06T12:14:00Z"
+              }
+            ]
+          }
+        },
+        "closeReadiness": {
+          "scope": {
+            "fundProfileId": "fund-alpha",
+            "ledgerBookId": "book-alpha",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "entityId": "entity-alpha",
+            "periodId": "2026-05"
+          },
+          "evaluatedAtUtc": "2026-09-04T12:00:00Z",
+          "status": "Ready",
+          "isComplete": true,
+          "isReadyToClose": true,
+          "contributors": [
+            {
+              "contributorId": "close-plan",
+              "owner": "Controller",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:14:00Z",
+              "recordIds": [
+                "response-simulation-close-plan-v14"
+              ]
+            },
+            {
+              "contributorId": "report-pack",
+              "owner": "Reporting",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:14:00Z",
+              "recordIds": [
+                "response-simulation-report-evidence-v14"
+              ]
+            }
+          ],
+          "blockers": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:42.718Z",
+      "scenario": "detail-failure-repaired",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-workflow-detail",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "version": 14,
+        "closeReadiness": {
+          "isReadyToClose": true,
+          "severity": "Info",
+          "score": 100,
+          "components": [],
+          "blockers": [],
+          "nextActions": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:42.722Z",
+      "scenario": "detail-failure-repaired",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=entity-alpha",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-shared-projection",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "ledgerBookId": "book-alpha",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "activeWorkflow": {
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "status": "ReadyForClose",
+          "version": 14,
+          "reportPackReadiness": {
+            "isReady": true,
+            "reportPackId": "response-simulation-report-pack-v14",
+            "blockingReason": null,
+            "evidenceLinks": [
+              {
+                "evidenceId": "response-simulation-report-evidence-v14",
+                "label": "Simulated report manifest v14",
+                "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v14",
+                "source": "response-simulation",
+                "capturedAtUtc": "2026-10-06T12:14:00Z"
+              }
+            ]
+          }
+        },
+        "closeReadiness": {
+          "scope": {
+            "fundProfileId": "fund-alpha",
+            "ledgerBookId": "book-alpha",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "entityId": "entity-alpha",
+            "periodId": "2026-05"
+          },
+          "evaluatedAtUtc": "2026-09-04T12:00:00Z",
+          "status": "Ready",
+          "isComplete": true,
+          "isReadyToClose": true,
+          "contributors": [
+            {
+              "contributorId": "close-plan",
+              "owner": "Controller",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:14:00Z",
+              "recordIds": [
+                "response-simulation-close-plan-v14"
+              ]
+            },
+            {
+              "contributorId": "report-pack",
+              "owner": "Reporting",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:14:00Z",
+              "recordIds": [
+                "response-simulation-report-evidence-v14"
+              ]
+            }
+          ],
+          "blockers": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:43.666Z",
+      "scenario": "same-workflow-version-new-plan-and-evidence",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-workflow-detail",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "version": 14,
+        "closeReadiness": {
+          "isReadyToClose": true,
+          "severity": "Info",
+          "score": 100,
+          "components": [],
+          "blockers": [],
+          "nextActions": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:43.671Z",
+      "scenario": "same-workflow-version-new-plan-and-evidence",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=entity-alpha",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-shared-projection",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "ledgerBookId": "book-alpha",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "activeWorkflow": {
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "status": "ReadyForClose",
+          "version": 14,
+          "reportPackReadiness": {
+            "isReady": true,
+            "reportPackId": "response-simulation-report-pack-v15",
+            "blockingReason": null,
+            "evidenceLinks": [
+              {
+                "evidenceId": "response-simulation-report-evidence-v15",
+                "label": "Simulated report manifest v15",
+                "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v15",
+                "source": "response-simulation",
+                "capturedAtUtc": "2026-10-06T12:15:00Z"
+              }
+            ]
+          }
+        },
+        "closeReadiness": {
+          "scope": {
+            "fundProfileId": "fund-alpha",
+            "ledgerBookId": "book-alpha",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "entityId": "entity-alpha",
+            "periodId": "2026-05"
+          },
+          "evaluatedAtUtc": "2026-09-04T12:00:00Z",
+          "status": "Ready",
+          "isComplete": true,
+          "isReadyToClose": true,
+          "contributors": [
+            {
+              "contributorId": "close-plan",
+              "owner": "Controller",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:15:00Z",
+              "recordIds": [
+                "response-simulation-close-plan-v15"
+              ]
+            },
+            {
+              "contributorId": "report-pack",
+              "owner": "Reporting",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:15:00Z",
+              "recordIds": [
+                "response-simulation-report-evidence-v15"
+              ]
+            }
+          ],
+          "blockers": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:44.660Z",
+      "scenario": "same-workflow-version-new-plan-and-evidence",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-workflow-detail",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "version": 15,
+        "closeReadiness": {
+          "isReadyToClose": true,
+          "severity": "Info",
+          "score": 100,
+          "components": [],
+          "blockers": [],
+          "nextActions": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:44.673Z",
+      "scenario": "same-workflow-version-new-plan-and-evidence",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=entity-alpha",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-shared-projection",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "ledgerBookId": "book-alpha",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "activeWorkflow": {
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "status": "Closed",
+          "version": 15,
+          "reportPackReadiness": {
+            "isReady": true,
+            "reportPackId": "response-simulation-report-pack-v15",
+            "blockingReason": null,
+            "evidenceLinks": [
+              {
+                "evidenceId": "response-simulation-report-evidence-v15",
+                "label": "Simulated report manifest v15",
+                "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v15",
+                "source": "response-simulation",
+                "capturedAtUtc": "2026-10-06T12:15:00Z"
+              }
+            ]
+          }
+        },
+        "closeReadiness": {
+          "scope": {
+            "fundProfileId": "fund-alpha",
+            "ledgerBookId": "book-alpha",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "entityId": "entity-alpha",
+            "periodId": "2026-05"
+          },
+          "evaluatedAtUtc": "2026-09-04T12:00:00Z",
+          "status": "Ready",
+          "isComplete": true,
+          "isReadyToClose": true,
+          "contributors": [
+            {
+              "contributorId": "close-plan",
+              "owner": "Controller",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:15:00Z",
+              "recordIds": [
+                "response-simulation-close-plan-v15"
+              ]
+            },
+            {
+              "contributorId": "report-pack",
+              "owner": "Reporting",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:15:00Z",
+              "recordIds": [
+                "response-simulation-report-evidence-v15"
+              ]
+            }
+          ],
+          "blockers": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:45.339Z",
+      "scenario": "newer-refresh-v17",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-workflow-detail",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "version": 17,
+        "closeReadiness": {
+          "isReadyToClose": true,
+          "severity": "Info",
+          "score": 100,
+          "components": [],
+          "blockers": [],
+          "nextActions": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:45.348Z",
+      "scenario": "newer-refresh-v17",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=entity-alpha",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-shared-projection",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "ledgerBookId": "book-alpha",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "activeWorkflow": {
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "status": "ReadyForClose",
+          "version": 17,
+          "reportPackReadiness": {
+            "isReady": true,
+            "reportPackId": "response-simulation-report-pack-v17",
+            "blockingReason": null,
+            "evidenceLinks": [
+              {
+                "evidenceId": "response-simulation-report-evidence-v17",
+                "label": "Simulated report manifest v17",
+                "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v17",
+                "source": "response-simulation",
+                "capturedAtUtc": "2026-10-06T12:17:00Z"
+              }
+            ]
+          }
+        },
+        "closeReadiness": {
+          "scope": {
+            "fundProfileId": "fund-alpha",
+            "ledgerBookId": "book-alpha",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "entityId": "entity-alpha",
+            "periodId": "2026-05"
+          },
+          "evaluatedAtUtc": "2026-09-04T12:00:00Z",
+          "status": "Ready",
+          "isComplete": true,
+          "isReadyToClose": true,
+          "contributors": [
+            {
+              "contributorId": "close-plan",
+              "owner": "Controller",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:17:00Z",
+              "recordIds": [
+                "response-simulation-close-plan-v17"
+              ]
+            },
+            {
+              "contributorId": "report-pack",
+              "owner": "Reporting",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:17:00Z",
+              "recordIds": [
+                "response-simulation-report-evidence-v17"
+              ]
+            }
+          ],
+          "blockers": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:47.954Z",
+      "scenario": "same-version-detail-old-projection-new",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-workflow-detail",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "version": 18,
+        "closeReadiness": {
+          "isReadyToClose": true,
+          "severity": "Info",
+          "score": 100,
+          "components": [],
+          "blockers": [],
+          "nextActions": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:47.956Z",
+      "scenario": "same-version-detail-old-projection-new",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=entity-alpha",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-shared-projection",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "ledgerBookId": "book-alpha",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "activeWorkflow": {
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "status": "ReadyForClose",
+          "version": 18,
+          "reportPackReadiness": {
+            "isReady": true,
+            "reportPackId": "response-simulation-report-pack-v19",
+            "blockingReason": null,
+            "evidenceLinks": [
+              {
+                "evidenceId": "response-simulation-report-evidence-v19",
+                "label": "Simulated report manifest v19",
+                "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v19",
+                "source": "response-simulation",
+                "capturedAtUtc": "2026-10-06T12:19:00Z"
+              }
+            ]
+          }
+        },
+        "closeReadiness": {
+          "scope": {
+            "fundProfileId": "fund-alpha",
+            "ledgerBookId": "book-alpha",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "entityId": "entity-alpha",
+            "periodId": "2026-05"
+          },
+          "evaluatedAtUtc": "2026-09-04T12:00:00Z",
+          "status": "Ready",
+          "isComplete": true,
+          "isReadyToClose": true,
+          "contributors": [
+            {
+              "contributorId": "close-plan",
+              "owner": "Controller",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:19:00Z",
+              "recordIds": [
+                "response-simulation-close-plan-v19"
+              ]
+            },
+            {
+              "contributorId": "report-pack",
+              "owner": "Reporting",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:19:00Z",
+              "recordIds": [
+                "response-simulation-report-evidence-v19"
+              ]
+            }
+          ],
+          "blockers": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:48.397Z",
+      "scenario": "same-version-detail-new-projection-old",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-workflow-detail",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "version": 18,
+        "closeReadiness": {
+          "isReadyToClose": true,
+          "severity": "Info",
+          "score": 100,
+          "components": [],
+          "blockers": [],
+          "nextActions": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:48.400Z",
+      "scenario": "same-version-detail-new-projection-old",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=entity-alpha",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-shared-projection",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "ledgerBookId": "book-alpha",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "activeWorkflow": {
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "status": "ReadyForClose",
+          "version": 18,
+          "reportPackReadiness": {
+            "isReady": true,
+            "reportPackId": "response-simulation-report-pack-v18",
+            "blockingReason": null,
+            "evidenceLinks": [
+              {
+                "evidenceId": "response-simulation-report-evidence-v18",
+                "label": "Simulated report manifest v18",
+                "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v18",
+                "source": "response-simulation",
+                "capturedAtUtc": "2026-10-06T12:18:00Z"
+              }
+            ]
+          }
+        },
+        "closeReadiness": {
+          "scope": {
+            "fundProfileId": "fund-alpha",
+            "ledgerBookId": "book-alpha",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "entityId": "entity-alpha",
+            "periodId": "2026-05"
+          },
+          "evaluatedAtUtc": "2026-09-04T12:00:00Z",
+          "status": "Ready",
+          "isComplete": true,
+          "isReadyToClose": true,
+          "contributors": [
+            {
+              "contributorId": "close-plan",
+              "owner": "Controller",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:18:00Z",
+              "recordIds": [
+                "response-simulation-close-plan-v18"
+              ]
+            },
+            {
+              "contributorId": "report-pack",
+              "owner": "Reporting",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:18:00Z",
+              "recordIds": [
+                "response-simulation-report-evidence-v18"
+              ]
+            }
+          ],
+          "blockers": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:48.762Z",
+      "scenario": "same-version-matched-command-refusal",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-workflow-detail",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "version": 18,
+        "closeReadiness": {
+          "isReadyToClose": true,
+          "severity": "Info",
+          "score": 100,
+          "components": [],
+          "blockers": [],
+          "nextActions": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:48.764Z",
+      "scenario": "same-version-matched-command-refusal",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=entity-alpha",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-shared-projection",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "ledgerBookId": "book-alpha",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "activeWorkflow": {
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "status": "ReadyForClose",
+          "version": 18,
+          "reportPackReadiness": {
+            "isReady": true,
+            "reportPackId": "response-simulation-report-pack-v19",
+            "blockingReason": null,
+            "evidenceLinks": [
+              {
+                "evidenceId": "response-simulation-report-evidence-v19",
+                "label": "Simulated report manifest v19",
+                "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v19",
+                "source": "response-simulation",
+                "capturedAtUtc": "2026-10-06T12:19:00Z"
+              }
+            ]
+          }
+        },
+        "closeReadiness": {
+          "scope": {
+            "fundProfileId": "fund-alpha",
+            "ledgerBookId": "book-alpha",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "entityId": "entity-alpha",
+            "periodId": "2026-05"
+          },
+          "evaluatedAtUtc": "2026-09-04T12:00:00Z",
+          "status": "Ready",
+          "isComplete": true,
+          "isReadyToClose": true,
+          "contributors": [
+            {
+              "contributorId": "close-plan",
+              "owner": "Controller",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:19:00Z",
+              "recordIds": [
+                "response-simulation-close-plan-v19"
+              ]
+            },
+            {
+              "contributorId": "report-pack",
+              "owner": "Reporting",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:19:00Z",
+              "recordIds": [
+                "response-simulation-report-evidence-v19"
+              ]
+            }
+          ],
+          "blockers": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:49.446Z",
+      "scenario": "same-version-matched-repair-current-evidence",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-workflow-detail",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "version": 18,
+        "closeReadiness": {
+          "isReadyToClose": true,
+          "severity": "Info",
+          "score": 100,
+          "components": [],
+          "blockers": [],
+          "nextActions": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:49.450Z",
+      "scenario": "same-version-matched-repair-current-evidence",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=entity-alpha",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-shared-projection",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "ledgerBookId": "book-alpha",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "activeWorkflow": {
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "status": "ReadyForClose",
+          "version": 18,
+          "reportPackReadiness": {
+            "isReady": true,
+            "reportPackId": "response-simulation-report-pack-v20",
+            "blockingReason": null,
+            "evidenceLinks": [
+              {
+                "evidenceId": "response-simulation-report-evidence-v20",
+                "label": "Simulated report manifest v20",
+                "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v20",
+                "source": "response-simulation",
+                "capturedAtUtc": "2026-10-06T12:20:00Z"
+              }
+            ]
+          }
+        },
+        "closeReadiness": {
+          "scope": {
+            "fundProfileId": "fund-alpha",
+            "ledgerBookId": "book-alpha",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "entityId": "entity-alpha",
+            "periodId": "2026-05"
+          },
+          "evaluatedAtUtc": "2026-09-04T12:00:00Z",
+          "status": "Ready",
+          "isComplete": true,
+          "isReadyToClose": true,
+          "contributors": [
+            {
+              "contributorId": "close-plan",
+              "owner": "Controller",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:20:00Z",
+              "recordIds": [
+                "response-simulation-close-plan-v20"
+              ]
+            },
+            {
+              "contributorId": "report-pack",
+              "owner": "Reporting",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:20:00Z",
+              "recordIds": [
+                "response-simulation-report-evidence-v20"
+              ]
+            }
+          ],
+          "blockers": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:49.991Z",
+      "scenario": "same-version-matched-repair-current-evidence",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-workflow-detail",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "version": 19,
+        "closeReadiness": {
+          "isReadyToClose": true,
+          "severity": "Info",
+          "score": 100,
+          "components": [],
+          "blockers": [],
+          "nextActions": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:49.994Z",
+      "scenario": "same-version-matched-repair-current-evidence",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=entity-alpha",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-shared-projection",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "ledgerBookId": "book-alpha",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "activeWorkflow": {
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "status": "Closed",
+          "version": 19,
+          "reportPackReadiness": {
+            "isReady": true,
+            "reportPackId": "response-simulation-report-pack-v20",
+            "blockingReason": null,
+            "evidenceLinks": [
+              {
+                "evidenceId": "response-simulation-report-evidence-v20",
+                "label": "Simulated report manifest v20",
+                "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v20",
+                "source": "response-simulation",
+                "capturedAtUtc": "2026-10-06T12:20:00Z"
+              }
+            ]
+          }
+        },
+        "closeReadiness": {
+          "scope": {
+            "fundProfileId": "fund-alpha",
+            "ledgerBookId": "book-alpha",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "entityId": "entity-alpha",
+            "periodId": "2026-05"
+          },
+          "evaluatedAtUtc": "2026-09-04T12:00:00Z",
+          "status": "Ready",
+          "isComplete": true,
+          "isReadyToClose": true,
+          "contributors": [
+            {
+              "contributorId": "close-plan",
+              "owner": "Controller",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:20:00Z",
+              "recordIds": [
+                "response-simulation-close-plan-v20"
+              ]
+            },
+            {
+              "contributorId": "report-pack",
+              "owner": "Reporting",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:20:00Z",
+              "recordIds": [
+                "response-simulation-report-evidence-v20"
+              ]
+            }
+          ],
+          "blockers": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:50.415Z",
+      "scenario": "same-evidence-id-different-retained-route",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-workflow-detail",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "version": 21,
+        "closeReadiness": {
+          "isReadyToClose": true,
+          "severity": "Info",
+          "score": 100,
+          "components": [],
+          "blockers": [],
+          "nextActions": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:50.419Z",
+      "scenario": "same-evidence-id-different-retained-route",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=entity-alpha",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-shared-projection",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "ledgerBookId": "book-alpha",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "activeWorkflow": {
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "status": "ReadyForClose",
+          "version": 21,
+          "reportPackReadiness": {
+            "isReady": true,
+            "reportPackId": "response-simulation-report-pack-v21",
+            "blockingReason": null,
+            "evidenceLinks": [
+              {
+                "evidenceId": "response-simulation-report-evidence-v21",
+                "label": "Simulated report manifest v21",
+                "route": "/workstation/reporting/evidence/response-simulation-replaced-location",
+                "source": "response-simulation",
+                "capturedAtUtc": "2026-10-06T12:21:00Z"
+              }
+            ]
+          }
+        },
+        "closeReadiness": {
+          "scope": {
+            "fundProfileId": "fund-alpha",
+            "ledgerBookId": "book-alpha",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "entityId": "entity-alpha",
+            "periodId": "2026-05"
+          },
+          "evaluatedAtUtc": "2026-09-04T12:00:00Z",
+          "status": "Ready",
+          "isComplete": true,
+          "isReadyToClose": true,
+          "contributors": [
+            {
+              "contributorId": "close-plan",
+              "owner": "Controller",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:21:00Z",
+              "recordIds": [
+                "response-simulation-close-plan-v21"
+              ]
+            },
+            {
+              "contributorId": "report-pack",
+              "owner": "Reporting",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:21:00Z",
+              "recordIds": [
+                "response-simulation-report-evidence-v21"
+              ]
+            }
+          ],
+          "blockers": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:50.763Z",
+      "scenario": "same-report-different-publication-evidence-union",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-workflow-detail",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "version": 22,
+        "closeReadiness": {
+          "isReadyToClose": true,
+          "severity": "Info",
+          "score": 100,
+          "components": [],
+          "blockers": [],
+          "nextActions": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:50.766Z",
+      "scenario": "same-report-different-publication-evidence-union",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=entity-alpha",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-shared-projection",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "ledgerBookId": "book-alpha",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "activeWorkflow": {
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "status": "ReadyForClose",
+          "version": 22,
+          "reportPackReadiness": {
+            "isReady": true,
+            "reportPackId": "response-simulation-report-pack-v22",
+            "blockingReason": null,
+            "evidenceLinks": [
+              {
+                "evidenceId": "response-simulation-report-evidence-v22",
+                "label": "Simulated report manifest v22",
+                "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v22",
+                "source": "response-simulation",
+                "capturedAtUtc": "2026-10-06T12:22:00Z"
+              }
+            ]
+          }
+        },
+        "closeReadiness": {
+          "scope": {
+            "fundProfileId": "fund-alpha",
+            "ledgerBookId": "book-alpha",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "entityId": "entity-alpha",
+            "periodId": "2026-05"
+          },
+          "evaluatedAtUtc": "2026-09-04T12:00:00Z",
+          "status": "Ready",
+          "isComplete": true,
+          "isReadyToClose": true,
+          "contributors": [
+            {
+              "contributorId": "close-plan",
+              "owner": "Controller",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:22:00Z",
+              "recordIds": [
+                "response-simulation-close-plan-v22"
+              ]
+            },
+            {
+              "contributorId": "report-pack",
+              "owner": "Reporting",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:22:00Z",
+              "recordIds": [
+                "response-simulation-report-evidence-v22"
+              ]
+            }
+          ],
+          "blockers": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:51.303Z",
+      "scenario": "all-publication-evidence-matched",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-workflow-detail",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "version": 22,
+        "closeReadiness": {
+          "isReadyToClose": true,
+          "severity": "Info",
+          "score": 100,
+          "components": [],
+          "blockers": [],
+          "nextActions": []
+        }
+      }
+    },
+    {
+      "atUtc": "2026-10-28T22:37:51.307Z",
+      "scenario": "all-publication-evidence-matched",
+      "method": "GET",
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=entity-alpha",
+      "requestBody": null,
+      "status": 200,
+      "source": "simulated-shared-projection",
+      "responseOrigin": "Playwright route.fulfill; no service persistence",
+      "operatorDecision": "pending",
+      "responseBody": {
+        "ledgerBookId": "book-alpha",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "activeWorkflow": {
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "status": "ReadyForClose",
+          "version": 22,
+          "reportPackReadiness": {
+            "isReady": true,
+            "reportPackId": "response-simulation-report-pack-v22",
+            "blockingReason": null,
+            "evidenceLinks": [
+              {
+                "evidenceId": "response-simulation-report-evidence-v22",
+                "label": "Simulated report manifest v22",
+                "route": "/workstation/reporting/evidence/response-simulation-report-evidence-v22",
+                "source": "response-simulation",
+                "capturedAtUtc": "2026-10-06T12:22:00Z"
+              }
+            ]
+          }
+        },
+        "closeReadiness": {
+          "scope": {
+            "fundProfileId": "fund-alpha",
+            "ledgerBookId": "book-alpha",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "entityId": "entity-alpha",
+            "periodId": "2026-05"
+          },
+          "evaluatedAtUtc": "2026-09-04T12:00:00Z",
+          "status": "Ready",
+          "isComplete": true,
+          "isReadyToClose": true,
+          "contributors": [
+            {
+              "contributorId": "close-plan",
+              "owner": "Controller",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:22:00Z",
+              "recordIds": [
+                "response-simulation-close-plan-v22"
+              ]
+            },
+            {
+              "contributorId": "report-pack",
+              "owner": "Reporting",
+              "status": "Current",
+              "evaluatedAtUtc": "2026-10-06T12:22:00Z",
+              "recordIds": [
+                "response-simulation-report-evidence-v22"
+              ]
+            }
+          ],
+          "blockers": []
+        }
+      }
+    }
+  ],
+  "rawPacketHashes": {
+    "cases.json": "644de29832070e6bf01af4cee90cf1e5e66f4142c811aaa70f7a3e905ccdbfde",
+    "provenance.json": "d02c2e290b6d7ceb3baa0b30c03338fe114382002bdac8355b0d162a2e62c088",
+    "requests-responses.json": "9d254b686ec40306dd1424a08dd8b935ae6bbdbf3383d1afc6728de4b4cb1ff7"
+  }
+}

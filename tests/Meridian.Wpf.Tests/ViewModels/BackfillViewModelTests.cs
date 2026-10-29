@@ -7,6 +7,21 @@ namespace Meridian.Wpf.Tests.ViewModels;
 public sealed class BackfillViewModelTests
 {
     [Fact]
+    public void CredentialEntryPoints_UseOwnedConnectionManagementWithoutEnvironmentMutation()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\BackfillPage.xaml"));
+        var codeBehind = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\BackfillPage.xaml.cs"));
+        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\BackfillViewModel.cs"));
+
+        xaml.Should().Contain("BackfillManageOwnedCredentials");
+        xaml.Should().Contain("ManageOwnedCredentials_Click");
+        codeBehind.Should().Contain("_viewModel.NavigateToOwnedCredentials()");
+        viewModel.Should().Contain("_navigationService.NavigateTo(\"CredentialManagement\")");
+        codeBehind.Should().NotContain("new ApiKeyDialog");
+        viewModel.Should().NotContain("SetEnvironmentVariable");
+    }
+
+    [Fact]
     public void BuildStartSetupState_WithoutSymbols_DisablesStartAndExplainsRecovery()
     {
         var state = BackfillViewModel.BuildStartSetupState(

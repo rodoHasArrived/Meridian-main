@@ -174,7 +174,7 @@ public sealed partial class SecurityMasterCashFlowService
         };
         if (projection.Schedule.Any(entry => entry.RateEvidence is not null))
             inputs.Add(new("FloatingCouponModel", BondFloatingRateEvidence.ModelVersion));
-        if (string.Equals(security.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase) && projection.ScheduleEvidence is not null)
+        if (SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CarriesBondCouponStructure && projection.ScheduleEvidence is not null)
             inputs.Add(new("ContractualEconomics", BondContractualEconomics.ModelVersion));
         foreach (var curve in curves.OrderBy(curve => curve.IndexName, StringComparer.Ordinal))
             inputs.Add(curve.RetainedInput ?? new BondCalculationInput("ForwardCurveContent", curve.IndexName,

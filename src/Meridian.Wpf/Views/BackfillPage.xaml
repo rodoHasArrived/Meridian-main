@@ -670,92 +670,12 @@
                                        Style="{StaticResource CardHeaderStyle}"
                                        Margin="0,8,0,16" />
 
-                            <!-- Info Banner -->
-                            <Border Background="{StaticResource InfoColorBrush}"
-                                    Opacity="0.15"
-                                    CornerRadius="6"
-                                    Padding="12"
-                                    Margin="0,0,0,16">
-                                <StackPanel>
-                                    <TextBlock Text="Secure Storage"
-                                               FontWeight="SemiBold"
-                                               Foreground="{StaticResource InfoColorBrush}" />
-                                    <TextBlock Text="API keys are stored in Windows Credential Manager, not in config files."
-                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                               TextWrapping="Wrap" />
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Nasdaq API Key -->
-                            <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                                    CornerRadius="8"
-                                    Padding="16"
-                                    Margin="0,0,0,12">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Nasdaq Data Link (Quandl)"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                        <TextBlock x:Name="NasdaqKeyStatusText"
-                                                   Text="{Binding NasdaqKeyStatusText}"
-                                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                                   FontSize="12" />
-                                    </StackPanel>
-
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                        <Button x:Name="SetNasdaqKeyButton"
-                                                Content="Set Key"
-                                                Style="{StaticResource SecondaryButtonStyle}"
-                                                Click="SetNasdaqApiKey_Click"
-                                                Margin="0,0,8,0" />
-                                        <Button x:Name="ClearNasdaqKeyButton"
-                                                Content="Clear"
-                                                Style="{StaticResource GhostButtonStyle}"
-                                                Visibility="{Binding IsNasdaqKeyClearVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                                                Click="ClearNasdaqApiKey_Click" />
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
-
-                            <!-- OpenFIGI API Key -->
-                            <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                                    CornerRadius="8"
-                                    Padding="16">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <StackPanel Grid.Column="0">
-                                        <TextBlock Text="OpenFIGI (Symbol Resolution)"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                        <TextBlock x:Name="OpenFigiKeyStatusText"
-                                                   Text="{Binding OpenFigiKeyStatusText}"
-                                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                                   FontSize="12" />
-                                    </StackPanel>
-
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                        <Button x:Name="SetOpenFigiKeyButton"
-                                                Content="Set Key"
-                                                Style="{StaticResource SecondaryButtonStyle}"
-                                                Click="SetOpenFigiApiKey_Click"
-                                                Margin="0,0,8,0" />
-                                        <Button x:Name="ClearOpenFigiKeyButton"
-                                                Content="Clear"
-                                                Style="{StaticResource GhostButtonStyle}"
-                                                Visibility="{Binding IsOpenFigiKeyClearVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                                                Click="ClearOpenFigiApiKey_Click" />
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
+                            <TextBlock Text="Save, rotate, verify or remove credentials for an explicitly selected owned connection in Settings. Backfill uses the host’s configured provider ownership; changing credentials does not activate a runtime binding."
+                                       TextWrapping="Wrap" Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,0,0,16" />
+                            <Button Content="Manage owned credentials"
+                                    Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left"
+                                    AutomationProperties.AutomationId="BackfillManageOwnedCredentials"
+                                    Click="ManageOwnedCredentials_Click" />
                         </StackPanel>
                     </Border>
                 </Expander>

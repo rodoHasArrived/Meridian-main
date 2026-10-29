@@ -1,0 +1,46 @@
+REVIEW     docs/status/coverage-report.md: Protected suffix marker is missing or duplicated
+Incoming main: a5b2589f0395d054bec0b59672a990419ef237ed
+GENERATED  docs/generated/repository-structure.md
+GENERATED  docs/status/doc-health-dashboard.json
+GENERATED  docs/status/doc-health-dashboard.md
+REVIEW     database/manifest/contracts.json
+REVIEW     database/manifest/dependencies.json
+REVIEW     docs/generated/database/contracts/security-master-contracts-page-01.md
+REVIEW     docs/generated/database/contracts/security-master-contracts-page-02.md
+REVIEW     docs/generated/database/contracts/security-master-contracts-page-03.md
+REVIEW     docs/generated/database/contracts/security-master-contracts-page-04.md
+REVIEW     docs/generated/database/contracts/security-master-contracts-page-05.md
+REVIEW     docs/generated/database/contracts/security-master-contracts-page-06.md
+REVIEW     docs/generated/database/contracts/security-master-contracts.md
+REVIEW     docs/generated/database/data-object-catalog.md
+REVIEW     docs/generated/database/diagrams/contracts-security-master-contracts-page-03.mmd
+REVIEW     docs/generated/database/diagrams/contracts-security-master-contracts-page-04.mmd
+REVIEW     docs/generated/database/diagrams/contracts-security-master-contracts-page-05.mmd
+REVIEW     docs/generated/database/diagrams/contracts-security-master-contracts-page-06.mmd
+REVIEW     docs/source/generated/source-hash-manifest.json
+REVIEW     docs/status/coverage-report.md
+REVIEW     src/Meridian.Application/SecurityMaster/SecurityMasterService.cs
+REVIEW     src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs
+REVIEW     src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs
+3 generated conflict(s); 19 conflict(s) require review.
+Selected incoming output. Resolve the remaining conflicts, then regenerate and validate before committing.
+Repair: review_required; report: /workspace/Meridian-main/artifacts/next-work-20261028/pr-3319-generated-repair/report.json
+Review conflict: database/manifest/contracts.json
+Review conflict: database/manifest/dependencies.json
+Review conflict: docs/generated/database/contracts/security-master-contracts-page-01.md
+Review conflict: docs/generated/database/contracts/security-master-contracts-page-02.md
+Review conflict: docs/generated/database/contracts/security-master-contracts-page-03.md
+Review conflict: docs/generated/database/contracts/security-master-contracts-page-04.md
+Review conflict: docs/generated/database/contracts/security-master-contracts-page-05.md
+Review conflict: docs/generated/database/contracts/security-master-contracts-page-06.md
+Review conflict: docs/generated/database/contracts/security-master-contracts.md
+Review conflict: docs/generated/database/data-object-catalog.md
+Review conflict: docs/generated/database/diagrams/contracts-security-master-contracts-page-03.mmd
+Review conflict: docs/generated/database/diagrams/contracts-security-master-contracts-page-04.mmd
+Review conflict: docs/generated/database/diagrams/contracts-security-master-contracts-page-05.mmd
+Review conflict: docs/generated/database/diagrams/contracts-security-master-contracts-page-06.mmd
+Review conflict: docs/source/generated/source-hash-manifest.json
+Review conflict: docs/status/coverage-report.md
+Review conflict: src/Meridian.Application/SecurityMaster/SecurityMasterService.cs
+Review conflict: src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs
+Review conflict: src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs

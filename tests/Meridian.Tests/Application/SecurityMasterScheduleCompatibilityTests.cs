@@ -138,6 +138,13 @@ public sealed class SecurityMasterScheduleCompatibilityTests
         }
 
         var calendars = new StaticBusinessDayCalendarSource([BusinessDayCalendars.WeekendsOnly]);
+        var calendarConstructor = typeof(SecurityMasterCashFlowService).GetConstructor(
+            [typeof(IBusinessDayCalendarSource), .. ServiceParameterTypes]);
+        calendarConstructor.Should().NotBeNull("compiled calendar-aware hosts bind this exact seven-argument signature");
+        var reflectedCalendar = (SecurityMasterCashFlowService)calendarConstructor!.Invoke(
+            [calendars, store, Array.Empty<IStructuredCashFlowProvider>(), query, logger, bridge, curves]);
+        reflectedCalendar.CalendarSource.Should().BeSameAs(calendars);
+        (await reflectedCalendar.GetCashFlowSourceAsync(SecurityId)).Should().BeSameAs(retained);
         var calendarAware = new SecurityMasterCashFlowService(calendars, store, [], query, logger);
         calendarAware.CalendarSource.Should().BeSameAs(calendars);
         (await calendarAware.GetCashFlowSourceAsync(SecurityId)).Should().BeSameAs(retained);

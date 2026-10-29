@@ -35,6 +35,7 @@ public static partial class SecurityMasterEndpoints
 
         var group = app.MapGroup(string.Empty).WithTags("SecurityMaster");
         group.AddEndpointFilter(RequireViewSecurityMasterPermission);
+        MapContractualCashFlowPreview(group, jsonOptions);
 
         /// <summary>
         /// Retrieves a security detail by its internal UUID. Returns full economic definition including terms, identifiers, and status.

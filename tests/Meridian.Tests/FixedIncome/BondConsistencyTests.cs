@@ -375,6 +375,17 @@ public sealed class BondConsistencyTests
         (await service.ReplayProjectionAsync(current.ContentSha256))!.Schedule.Should().Equal(current.Projection.Schedule);
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("bond-analytics-v1")]
+    public async Task CompanionContractsCannotBeIgnoredByYieldAnalytics(string? calculationVersion)
+    {
+        var security = Bond(new() { ["assetClassTermsVersion"] = 4, ["cashFlowContract"] = new { version = 1 } });
+        var result = (await new BondAnalyticsService(Query(security)).CalculateAsync(
+            new(security.SecurityId, new(AsOf), Yield: 0.05m) { CalculationVersion = calculationVersion }))!;
+        result.Blockers.Should().ContainSingle().Which.Code.Should().Be("UnsupportedCashFlowContract");
+    }
+
     internal static PortfolioCashLadderInputs Inputs(SecurityDetailDto security, StructuredCashFlowProjectionDto projection)
     {
         var detail = new AssetObligationProjectionService().ProjectFromSecurityMaster(security, new(AsOf), projection);

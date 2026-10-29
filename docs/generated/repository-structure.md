@@ -1792,6 +1792,7 @@ Meridian-main
 │   │   ├── account-oversight-evidence.md
 │   │   ├── brokerage-account-snapshot.md
 │   │   ├── business-day-calendar.md
+│   │   ├── contractual-cash-flow-projection.md
 │   │   ├── contractual-schedule.md
 │   │   ├── corporate-action-case.md
 │   │   ├── credit-support.md
@@ -2586,7 +2587,28 @@ Meridian-main
 │   │   │   │   ├── migration-draft-1366.png
 │   │   │   │   └── README.md
 │   │   │   ├── next-work-20261028
-│   │   │   │   └── release-readiness.md
+│   │   │   │   ├── mark-close-browser
+│   │   │   │   │   ├── capture-mark-and-close.mjs
+│   │   │   │   │   ├── close.json
+│   │   │   │   │   ├── M4-missing-date.png
+│   │   │   │   │   ├── mark-and-close.json
+│   │   │   │   │   └── S4-accounting-details.png
+│   │   │   │   ├── credential-ownership.md
+│   │   │   │   ├── credential-ui.md
+│   │   │   │   ├── local-validation.json
+│   │   │   │   ├── lot-acceptance.md
+│   │   │   │   ├── lot-browser-regression.json
+│   │   │   │   ├── mark-close-acceptance.md
+│   │   │   │   ├── operator-target.md
+│   │   │   │   ├── pr-3319-generated-repair-report.json
+│   │   │   │   ├── pr-3319-generated-repair.txt
+│   │   │   │   ├── pr-queue-conflicts.json
+│   │   │   │   ├── pr-queue.md
+│   │   │   │   ├── release-readiness.md
+│   │   │   │   ├── selected-dotnet-tests.json
+│   │   │   │   ├── signing-readiness-40294900031-3.json
+│   │   │   │   ├── task-receipt.md
+│   │   │   │   └── working-memory.yml
 │   │   │   ├── next-work-20261029
 │   │   │   │   ├── accounting-expansion.md
 │   │   │   │   ├── README.md
@@ -4291,6 +4313,8 @@ Meridian-main
 │   │   │   └── ScheduledBackfillService.cs
 │   │   ├── SecurityMaster
 │   │   │   ├── CashFlow
+│   │   │   │   ├── ContractualCashFlowPreviewService.cs
+│   │   │   │   ├── FileContractualCashFlowRunStore.cs
 │   │   │   │   ├── ScheduleSpecFactory.cs
 │   │   │   │   ├── SecurityPrincipalBalance.cs
 │   │   │   │   ├── StructuredCashFlowLedgerBridge.cs
@@ -4646,6 +4670,13 @@ Meridian-main
 │   │   │   ├── IBusinessDayCalendar.cs
 │   │   │   ├── IBusinessDayCalendarSource.cs
 │   │   │   └── JointBusinessDayCalendar.cs
+│   │   ├── CashFlows
+│   │   │   ├── ContractualCashFlowContracts.cs
+│   │   │   ├── ContractualCashFlowEngine.cs
+│   │   │   ├── ContractualCashFlowEngine.Exercise.cs
+│   │   │   ├── ContractualCashFlowEngine.Prepayment.cs
+│   │   │   ├── ContractualCashFlowEngine.Walk.cs
+│   │   │   └── SecurityContractualCashFlowTerms.cs
 │   │   ├── Catalog
 │   │   │   ├── DirectoryIndex.cs
 │   │   │   ├── ICanonicalSymbolRegistry.cs
@@ -8464,6 +8495,7 @@ Meridian-main
 │   │   │   ├── CheckpointEndpoints.cs
 │   │   │   ├── CommodityReferenceEndpoints.cs
 │   │   │   ├── ConfigEndpoints.cs
+│   │   │   ├── ContractualCashFlowRunEndpoints.cs
 │   │   │   ├── CookieCsrfMiddleware.cs
 │   │   │   ├── CoveredCallEndpoints.cs
 │   │   │   ├── CredentialEndpoints.cs
@@ -8553,6 +8585,7 @@ Meridian-main
 │   │   │   ├── RiskEndpoints.cs
 │   │   │   ├── SamplingEndpoints.cs
 │   │   │   ├── SecureReportingDistributionEndpoints.cs
+│   │   │   ├── SecurityMasterEndpoints.CashFlowPreview.cs
 │   │   │   ├── SecurityMasterEndpoints.CorporateActionOperations.cs
 │   │   │   ├── SecurityMasterEndpoints.cs
 │   │   │   ├── SecurityMasterEndpoints.Curves.cs
@@ -9881,6 +9914,7 @@ Meridian-main
 │   │   │   ├── ProviderIntegrationContractsTests.cs
 │   │   │   ├── ProviderIntegrationManifestIdentityTests.cs
 │   │   │   └── VerifiedOperationOutcomeTests.cs
+│   │   ├── ContractualCashFlowEngineTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Contracts.UnitTests.csproj
 │   │   └── README.md
@@ -10809,6 +10843,7 @@ Meridian-main
 │   │   │   │   └── ProviderModuleSetupServiceTests.cs
 │   │   │   ├── Wizard
 │   │   │   │   └── WizardConfigurationStepTests.cs
+│   │   │   ├── ContractualCashFlowPreviewTests.cs
 │   │   │   ├── DirectLendingSchedulePeriodsTests.cs
 │   │   │   ├── DirectLendingServiceTests.cs
 │   │   │   ├── FileReconciliationRunRepositoryTests.cs
@@ -11645,6 +11680,7 @@ Meridian-main
 │   │   │   ├── BondCalculationReplayTests.cs
 │   │   │   ├── BondProjectionGoldenTests.cs
 │   │   │   ├── CanonicalRegistryCoverageSourceTests.cs
+│   │   │   ├── ContractualCashFlowCompanionPostgresTests.cs
 │   │   │   ├── CorporateActionAccountingMigrationTests.cs
 │   │   │   ├── CorporateActionAccountingPostgresRoundTripTests.cs
 │   │   │   ├── CorporateActionCaseAccountingPolicyTests.cs
@@ -11722,6 +11758,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterTests.cs
 │   │   │   ├── SecurityAssetTermFormModelTests.cs
 │   │   │   ├── SecurityAssetTermsFieldEditValidatorTests.cs
+│   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.ContractualCompanions.cs
 │   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.cs
 │   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.ReadableTwins.cs
 │   │   │   ├── SecurityAssetTermsSchemaTests.cs
@@ -12181,6 +12218,7 @@ Meridian-main
 │   │   │   ├── CloseReadinessSubjectSourceTests.cs
 │   │   │   ├── CollateralExposureServiceTests.cs
 │   │   │   ├── ConfigServiceBaseLockTests.cs
+│   │   │   ├── ContractualCashFlowEndpointTests.cs
 │   │   │   ├── CookieCsrfProtectionTests.cs
 │   │   │   ├── CorporateActionOperationsAuthorizationTests.cs
 │   │   │   ├── CorporateActionOperationsEndpointTests.cs

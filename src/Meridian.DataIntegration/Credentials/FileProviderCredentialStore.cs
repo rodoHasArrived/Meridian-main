@@ -1098,6 +1098,10 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
         var descriptor = RequireDescriptor(update.ProviderId);
         if (scope is not null && update.ExternalAccountId is not null && !string.Equals(update.ExternalAccountId.Trim(), scope.ExternalAccountId, StringComparison.Ordinal))
             throw new InvalidDataException("Verified account does not match its credential ownership scope.");
+        // An owned verification must identify the exact secret sent to the provider. Without
+        // this precondition a late response could verify a replacement saved by another operator.
+        if (scope is not null && string.IsNullOrWhiteSpace(update.ExpectedCredentialGeneration))
+            throw new ProviderCredentialConflictException();
         var storageKey = scope?.StorageKey(descriptor.ProviderId) ?? descriptor.ProviderId;
         var verifiedAt = update.VerifiedAt ?? DateTimeOffset.UtcNow;
 

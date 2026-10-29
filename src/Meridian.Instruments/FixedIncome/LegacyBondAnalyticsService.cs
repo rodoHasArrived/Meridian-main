@@ -77,6 +77,8 @@ internal sealed class LegacyBondAnalyticsService : IBondAnalyticsService
             return Refuse("CalculationPolicyBlocked", policyBlocker);
         if (!string.Equals(security.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase))
             return Refuse("UnsupportedAssetClass", "This analytics model supports canonical Bond securities only.");
+        if (Meridian.Contracts.CashFlows.SecurityContractualCashFlowTerms.IsDeclared(security.AssetClass, security.AssetSpecificTerms))
+            return Refuse("UnsupportedCashFlowContract", "This record declares a cashFlowContract; use its contractual cash-flow preview rather than fixed/zero yield analytics.");
         if ((request.CleanPrice is null) == (request.Yield is null))
             return Refuse("PriceOrYieldRequired", "Supply exactly one clean price per 100 face or annual yield fraction.");
         if (request.CleanPrice is <= 0m)

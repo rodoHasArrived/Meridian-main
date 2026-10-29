@@ -107,6 +107,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             ProductionServiceRegistrationPolicy.IsProductionComposition(services));
 
         services.TryAddSingleton<ISecurityValidationSnapshotStore, FileSecurityValidationSnapshotStore>();
+        services.TryAddScoped<Meridian.Contracts.CashFlows.IContractualCashFlowPreviewService, ContractualCashFlowPreviewService>();
+        services.TryAddSingleton<Meridian.Contracts.CashFlows.IContractualCashFlowRunStore, FileContractualCashFlowRunStore>();
         services.TryAddSingleton<ISecurityValidationGateService, SecurityValidationGateService>();
         services.TryAddSingleton<DatabaseMigrationReadinessReceipt>();
         services.TryAddSingleton(sp => new LocalTenantMigrationGate(

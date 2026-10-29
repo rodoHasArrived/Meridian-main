@@ -40,7 +40,7 @@ public static partial class PortfolioCashLadderEngine
         var currencies = LatestRunFlows(operations).Select(flow => flow.Currency).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         if (currencies.Length != 1 || string.IsNullOrWhiteSpace(currencies[0]))
             throw new InvalidOperationException("Declared bond scenario requires one retained cash-flow currency.");
-        return new(operations.Subject.SecurityId, "Bond", default, operations.Subject.DisplayName,
+        return new(operations.Subject.SecurityId, operations.Subject.AssetClass, default, operations.Subject.DisplayName,
             currencies[0], common, asset, [], [], terms.VersionNumber,
             new DateTimeOffset(terms.EffectiveDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero), null);
     }

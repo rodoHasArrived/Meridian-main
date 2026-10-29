@@ -159,7 +159,7 @@ public sealed partial class SecurityMasterCashFlowService
             var interest = 0m;
             if (annualRate > 0m && outstanding > 0m)
             {
-                if (unifiedEconomics && string.Equals(security.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase))
+                if (unifiedEconomics && SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CarriesBondCouponStructure)
                 {
                     if (!BondContractualEconomics.TryCoupon(period, schedule, dayCount, annualRate,
                             block.CouponCashBasis, out var per100, out var reason))
@@ -343,7 +343,7 @@ public sealed partial class SecurityMasterCashFlowService
             {
                 return true;
             }
-            if (unifiedEconomics && string.Equals(security.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase))
+            if (unifiedEconomics && SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CarriesBondCouponStructure)
             {
                 if (!BondContractualEconomics.TryAccruedCoupon(period, schedule, dayCount, annualRate,
                         levelBasis ? "Level" : "DayCount", start, out var before, out reason)

@@ -56,8 +56,8 @@ public static class BondExerciseEconomics
         refusal = null;
         var payload = security.AssetSpecificTerms;
         var result = new List<BondRedemptionScenario>();
-        var hasCalls = Array(payload, "callSchedule", out var calls);
-        var hasPuts = Array(payload, "putSchedule", out var puts);
+        var hasCalls = Array(payload, SecurityVersionedTerms.CallScheduleKey, out var calls);
+        var hasPuts = Array(payload, SecurityVersionedTerms.PutScheduleKey, out var puts);
         if (payload.TryGetProperty("isCallable", out var callable) && callable.ValueKind == JsonValueKind.True && !hasCalls
             || Date(payload, "mandatoryPutDate") is not null || Date(payload, "preRefundDate") is not null)
         {

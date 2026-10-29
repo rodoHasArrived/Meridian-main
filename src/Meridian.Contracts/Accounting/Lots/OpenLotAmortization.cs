@@ -324,6 +324,8 @@ public static class OpenLotAmortization
         // spellings declare nothing.
         if (!followsDeclaredSchedule && AnyTerm(sources, SecurityVersionedTerms.ScheduleConventionsKey, SecurityAssetTermsSchema.IsPopulatedTermValue))
             throw new ArgumentException("Amortization does not support declared schedule conventions; the bullet coupon grid follows none of them.");
+        if (AnyTerm(sources, Meridian.Contracts.CashFlows.SecurityContractualCashFlowTerms.Key, SecurityAssetTermsSchema.IsPopulatedTermValue))
+            throw new ArgumentException("Amortization does not support contractual cash-flow companions or forecast assumptions.");
         foreach (var name in new[] { "floatingIndex", "floatingRateIndex", "referenceIndex", "callDate", "preRefundDate", "mandatoryPutDate" })
         {
             if (FirstTerm(sources, [name]) is { } value && value.ValueKind != JsonValueKind.Null
