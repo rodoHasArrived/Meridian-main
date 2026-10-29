@@ -250,16 +250,23 @@ public sealed class ContractualCashFlowEngineTests
         action.Should().Throw<ArgumentException>();
     }
 
-    [Fact]
-    public void Replay_is_independent_of_current_calendars_and_curves()
+    [Theory]
+    [InlineData("Following")]
+    [InlineData("Unadjusted")]
+    public void Replay_is_independent_of_current_calendars_and_curves(string adjustment)
     {
-        var contract = Contract(Stream with { Conventions = ScheduleConventionTerms.Empty with { PaymentCalendars = ["WEEKENDS"], BusinessDayConvention = "Following" } });
+        var contract = Contract(Stream with { Conventions = ScheduleConventionTerms.Empty with { PaymentCalendars = ["WEEKENDS"], BusinessDayConvention = adjustment } }) with
+        {
+            Exercises = [new(CashFlowExerciseSide.Call, Issue, Maturity, CashFlowExerciseStyle.American, 100, "main")]
+        };
         var result = ContractualCashFlowEngine.Calculate(contract, Request, new StaticBusinessDayCalendarSource([BusinessDayCalendars.WeekendsOnly]));
         var run = new ContractualCashFlowRun(Guid.NewGuid(), "Security", Guid.NewGuid(), Request.KnowledgeCutoff, contract, Request, result);
         var replayed = ContractualCashFlowEngine.Replay(run);
         replayed.Events.Should().Equal(result.Events);
         replayed.Evidence.InputHash.Should().Be(result.Evidence.InputHash);
         replayed.Evidence.OutputHash.Should().Be(result.Evidence.OutputHash);
+        result.Evidence.Calendars.Single().CoverageStart.Should().BeOnOrBefore(Issue);
+        result.Evidence.Calendars.Single().CoverageEnd.Should().BeOnOrAfter(Maturity);
         ContractualCashFlowEngine.Verify(run).Should().BeTrue();
         ContractualCashFlowEngine.Verify(run with
         {
