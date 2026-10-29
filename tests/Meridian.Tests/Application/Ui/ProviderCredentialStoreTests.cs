@@ -329,7 +329,9 @@ public sealed class ScopedProviderCredentialStoreTests : IDisposable
         (await restarted.ReadScopedAsync("alpaca", second))!.Get("SecretKey").Should().Be("second-secret");
         await restarted.SaveScopedAsync(new ProviderCredentialSaveRequest("alpaca",
             new Dictionary<string, string?> { ["KeyId"] = "rotated-key" }, first.Environment, "operator"), first);
-        await restarted.RecordScopedVerificationAsync(new("alpaca", true, ExternalAccountId: first.ExternalAccountId, Actor: "operator"), first);
+        var rotated = (await restarted.ReadScopedAsync("alpaca", first))!;
+        await restarted.RecordScopedVerificationAsync(new("alpaca", true, ExternalAccountId: first.ExternalAccountId, Actor: "operator")
+        { ExpectedCredentialGeneration = rotated.CredentialGeneration }, first);
         (await restarted.ReadScopedAsync("alpaca", first))!.Get("SecretKey").Should().Be("first-secret");
         (await restarted.ReadScopedAsync("alpaca", second))!.LastVerifiedAt.Should().BeNull();
         await restarted.DeleteScopedAsync("alpaca", first, "operator");

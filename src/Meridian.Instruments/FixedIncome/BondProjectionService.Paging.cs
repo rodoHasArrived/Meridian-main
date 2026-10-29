@@ -1,7 +1,7 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using Meridian.Contracts.FixedIncome;
+using Meridian.Contracts.Integrity;
 using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Instruments.FixedIncome;
@@ -78,5 +78,5 @@ public sealed partial class BondProjectionService
     }
 
     private static string QueryHash(string queryKey)
-        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(queryKey)));
+        => Sha256Digest.ComputeUtf8(queryKey).ToUpperInvariant();
 }

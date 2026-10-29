@@ -1,6 +1,6 @@
-using System.Security.Cryptography;
 using System.Text.Json;
 using Meridian.Contracts.FixedIncome;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Application.SecurityMaster;
@@ -180,7 +180,7 @@ public sealed partial class SecurityMasterCashFlowService
     internal static string ReceiptHash(SecurityCashFlowCalculationReceipt receipt)
         => Hash(JsonSerializer.SerializeToUtf8Bytes(receipt with { ContentSha256 = string.Empty }, SecurityCashFlowReceiptJsonContext.Default.SecurityCashFlowCalculationReceipt));
 
-    private static string Hash(byte[] content) => Convert.ToHexStringLower(SHA256.HashData(content));
+    private static string Hash(byte[] content) => Sha256Digest.Compute(content);
 
     private static StructuredCashFlowProjectionDto ExportProjection(SecurityCashFlowCalculationReceipt receipt, bool retained)
         => retained ? receipt.Projection with

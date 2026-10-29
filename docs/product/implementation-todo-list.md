@@ -200,6 +200,12 @@ there is no provider-wide retry or automatic ownership. Credential edits do not 
 runtime. Ownership creation, host-default binding, explicit legacy migration/rollback and complete
 `PRD-002` release evidence remain open.
 
+The [2026-10-28 continuation](../testing/evidence/next-work-20261028/credential-ownership.md)
+also removes initial WPF setup/Backfill environment-secret writers in favor of the owned editor,
+refuses legacy setup after partial ownership loss, and requires the tested credential generation
+for scoped verification. These bounded fixes and recovery tests do not close the host-default
+authority or ownership migration/rollback clauses; `PRD-002` remains implementation-in-progress.
+
 WPF governed reporting now opens retained generated trial-balance amounts through the shared proof
 drawer. Every declared journal and line must have support; historical contributors retain original
 posting-period manifest identity, amounts remain exact, and old run responses cannot restore proof

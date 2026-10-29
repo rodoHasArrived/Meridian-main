@@ -35,6 +35,8 @@ AtMaturity, and resolves only the declaring block's calendars. The prototype is 
 fallback; both factories retain their separate refusal and calendar tests. See the
 [contractual schedule rollout](../../docs/domain/contractual-schedule.md#future-expansion-notes)
 for the declared engine and remaining 5b work.
+Cash-flow service composition retains its exact six-argument and calendar-aware seven-argument
+CLR constructors alongside the extended policy and calculation-receipt composition paths.
 
 Freshness monitoring begins with live ingress or collector subscription attempts, not configured symbols in an idle workstation. An unused UI monitor does not publish empty snapshots over an active collector's process-wide metrics. Internal reconciliation retains observed `tradeFill.price` only for the single-currency share movement, never a commission leg or a price inferred from fee-inclusive net cash.
 
@@ -255,6 +257,8 @@ refuses a provider family with retained tenant ownership, incomplete explicit ow
 connection identity before saving or reading vault state. The ownership check and both vault operations
 hold the same configuration lease as connection writers. Callers must select an authorized retained
 connection for scoped setup; this guard does not migrate legacy credentials or the default resolver.
+Retained credential-environment metadata also blocks legacy setup when its tenant was lost or removed;
+partial ownership cannot reactivate provider-wide credential writes or status reads.
 Its later source/connection/binding
 update rechecks ownership under the shared transaction and refuses a provider-wide reference if an
 owner arrived after the vault phase. It preserves concurrent changes and assigns source IDs from

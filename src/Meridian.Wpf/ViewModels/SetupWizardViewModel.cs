@@ -25,8 +25,6 @@ public sealed class SetupWizardViewModel : BindableBase
     private string _configPath = string.Empty;
     private string _selectedProvider = string.Empty;
     private string _storageLocation = "data";
-    private string _nasdaqApiKey = string.Empty;
-    private string _openFigiApiKey = string.Empty;
     private string _backendStatusText = "Checking backend status...";
     private string _backendStatusDetailText = "No connection check performed yet.";
     private string _backendStatusTone = "Neutral";
@@ -51,6 +49,7 @@ public sealed class SetupWizardViewModel : BindableBase
         TestConnectionCommand = new AsyncRelayCommand(RefreshBackendStatusAsync, CanRunCommand);
         StartBackendCommand = new AsyncRelayCommand(StartBackendAsync, CanRunCommand);
         SaveAndContinueCommand = new AsyncRelayCommand(SaveAndContinueAsync, CanRunCommand);
+        ManageOwnedCredentialsCommand = new RelayCommand(() => _navigator.NavigateTo("CredentialManagement"), CanRunCommand);
         UseDefaultStorageCommand = new RelayCommand(() => StorageLocation = "data", CanRunCommand);
         OpenInstructionsCommand = new RelayCommand(
             () => _linkLauncher.Open(InstructionsUrl),
@@ -70,6 +69,8 @@ public sealed class SetupWizardViewModel : BindableBase
     public AsyncRelayCommand StartBackendCommand { get; }
 
     public AsyncRelayCommand SaveAndContinueCommand { get; }
+
+    public RelayCommand ManageOwnedCredentialsCommand { get; }
 
     public RelayCommand UseDefaultStorageCommand { get; }
 
@@ -91,18 +92,6 @@ public sealed class SetupWizardViewModel : BindableBase
     {
         get => _storageLocation;
         set => SetProperty(ref _storageLocation, value ?? string.Empty);
-    }
-
-    public string NasdaqApiKey
-    {
-        get => _nasdaqApiKey;
-        set => SetProperty(ref _nasdaqApiKey, value ?? string.Empty);
-    }
-
-    public string OpenFigiApiKey
-    {
-        get => _openFigiApiKey;
-        set => SetProperty(ref _openFigiApiKey, value ?? string.Empty);
     }
 
     public string BackendStatusText
@@ -156,6 +145,7 @@ public sealed class SetupWizardViewModel : BindableBase
             TestConnectionCommand.NotifyCanExecuteChanged();
             StartBackendCommand.NotifyCanExecuteChanged();
             SaveAndContinueCommand.NotifyCanExecuteChanged();
+            ManageOwnedCredentialsCommand.NotifyCanExecuteChanged();
             UseDefaultStorageCommand.NotifyCanExecuteChanged();
             OpenInstructionsCommand.NotifyCanExecuteChanged();
         }
@@ -180,10 +170,6 @@ public sealed class SetupWizardViewModel : BindableBase
             SelectedProvider = configuration.SelectedProvider;
             StorageLocation = configuration.StorageLocation;
             ConfigStatusText = configuration.StatusText;
-
-            var apiKeys = _stateService.LoadStoredApiKeys();
-            NasdaqApiKey = apiKeys.NasdaqDataLinkApiKey;
-            OpenFigiApiKey = apiKeys.OpenFigiApiKey;
 
             await EnsureBackendAvailableAsync();
         });
@@ -271,7 +257,6 @@ public sealed class SetupWizardViewModel : BindableBase
             }
 
             ConfigStatusText = saveResult.Message;
-            _stateService.SaveApiKeys(NasdaqApiKey, OpenFigiApiKey);
 
             var startResult = await _stateService.StartBackendAsync();
             if (!startResult.Success)
@@ -291,7 +276,7 @@ public sealed class SetupWizardViewModel : BindableBase
             }
 
             ValidationStatusText = "Configuration saved and backend verified. Opening Strategy Workspace...";
-            _notificationSink.NotifySuccess("Setup Wizard", "Setup complete. Welcome!");
+            _notificationSink.NotifySuccess("Setup Wizard", "Workstation configuration saved. Provider credentials and activation remain in Settings.");
 
             _navigator.NavigateTo("StrategyShell");
         });
