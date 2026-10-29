@@ -160,6 +160,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotRedemptionYieldDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotReliefMethod"
     },
     {
@@ -197,6 +203,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotValidation"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorst"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorstDto"
     },
     {
       "kind": "contract-set-member",
@@ -748,6 +766,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.BindProviderRuntimeCredentialRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.CanonicalProviderAliasResponse"
     },
     {
@@ -803,6 +827,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.ConnectionHealthSnapshotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.CreateOwnedProviderConnectionRequest"
     },
     {
       "kind": "contract-set-member",
@@ -1265,6 +1295,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.ProviderConnectionTest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.ProviderCredentialMigrationRequest"
     },
     {
       "kind": "contract-set-member",
@@ -25996,6 +26032,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorstDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto",
       "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
     },
     {
@@ -26147,6 +26189,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotSuccessorTargetDto",
       "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorstDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotRedemptionYieldDto"
     },
     {
       "kind": "contract-reference",
@@ -26919,6 +26967,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Api.CreateOwnedProviderConnectionRequest",
+      "target": "contract:Meridian.Contracts.Api.CreateProviderConnectionRequest"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Api.CreateProviderConnectionRequest",
       "target": "contract:Meridian.Contracts.Api.ProviderRouteScopeDto"
     },
@@ -27665,6 +27719,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
       "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDirection"
     },
     {
       "kind": "contract-reference",
@@ -28595,6 +28655,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
       "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDirection"
     },
     {
       "kind": "contract-reference",
@@ -54538,7 +54604,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "fb36fe92484b614451794de0dc4b9906c18c3d0ecfaeb6cf7c2db7e09cb3f6f3",
+  "fingerprint": "6e2ce5c4a396198b7fc6cca7fe6ba30e7964849f980d934fb34a4161b8e8b8fd",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -54748,6 +54814,12 @@
       "label": "Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownLotDto"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotRedemptionYieldDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotRedemptionYieldDto"
+    },
+    {
       "classification": "enum",
       "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotReliefMethod",
       "kind": "contract-type",
@@ -54788,6 +54860,18 @@
       "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotValidation",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Accounting.Lots.OpenLotValidation"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorst",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorst"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorstDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorstDto"
     },
     {
       "classification": "request",
@@ -55336,6 +55420,12 @@
       "label": "Meridian.Contracts.Api.BboResponse"
     },
     {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Api.BindProviderRuntimeCredentialRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.BindProviderRuntimeCredentialRequest"
+    },
+    {
       "classification": "response",
       "id": "contract:Meridian.Contracts.Api.CanonicalProviderAliasResponse",
       "kind": "contract-type",
@@ -55394,6 +55484,12 @@
       "id": "contract:Meridian.Contracts.Api.ConnectionHealthSnapshotDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Api.ConnectionHealthSnapshotDto"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Api.CreateOwnedProviderConnectionRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.CreateOwnedProviderConnectionRequest"
     },
     {
       "classification": "request",
@@ -55856,6 +55952,12 @@
       "id": "contract:Meridian.Contracts.Api.ProviderConnectionTest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Api.ProviderConnectionTest"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Api.ProviderCredentialMigrationRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.ProviderCredentialMigrationRequest"
     },
     {
       "classification": "request",
@@ -79821,11 +79923,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3474,
-    "contract_set_memberships": 4320,
-    "edges": 9061,
+    "contract_references": 3479,
+    "contract_set_memberships": 4326,
+    "edges": 9072,
     "foreign_keys": 155,
     "logical_references": 6,
-    "nodes": 4389
+    "nodes": 4395
   }
 }

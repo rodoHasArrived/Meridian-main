@@ -284,11 +284,12 @@ stored under its case-sensitive scope key stay reachable. New connections retain
 credential environment (for example QuickBooks `live` is kept as `production`). Existing environments
 remain exact ownership identities: an update that would change a retained alias is refused until an
 explicit configuration-and-vault migration can preserve any OAuth tokens stored under that scope. Shared
-configuration and API DTOs preserve the fields on reload. Default runtime ownership propagation and
-remaining whole-configuration snapshot callers still require integration; external editors do not honor the sidecar transaction.
+configuration and API DTOs preserve the fields on reload. Explicit host defaults now propagate
+ownership through the ConfigStore-bound resolver. Remaining whole-configuration snapshot callers
+still require integration; external editors do not honor the sidecar transaction.
 
 `StoredProviderCredentialResolver` uses the credential store as the complete authority for catalog-managed
-providers, including the store's permitted environment fallback. Missing records remain unconfigured;
+providers; only entirely legacy provider families retain the store's permitted environment fallback. Missing records remain unconfigured;
 partial or deliberately removed fields cannot be filled from legacy configuration or another credential
 source. Unmanaged provider types retain their legacy resolver. Storage failures propagate to callers.
 
@@ -296,9 +297,10 @@ The scope-bound `StoredProviderCredentialResolver` constructor accepts an `IScop
 and trusted `ProviderCredentialScope`. It resolves only that tenant, connection, external account and
 environment, rejects unmanaged and non-catalog provider types, and never falls back to provider-wide
 records or config.
-The scoped store registration aliases the existing vault instance. Default host construction and the
-legacy setup route still use provider-wide resolution until authorized scope is propagated by callers;
-this constructor alone does not establish end-to-end tenant isolation.
+The scoped store registration aliases the existing vault instance. Default host construction uses
+the ConfigStore-bound resolver to propagate the explicitly selected retained scope. The legacy setup
+mutation route is restricted to unowned provider families. An owned family without a valid host
+binding blocks; supplying the scoped constructor alone does not create ownership or authorize a caller.
 
 `OAuthTokenRefreshService` also accepts trusted `ownershipScope`. Scoped instances load and persist
 only that owner's OAuth tokens, including refresh responses and cache recovery after audit failure,
@@ -472,8 +474,9 @@ Core workstation host. Do not introduce a second listener or independent monitor
   owed audit record is journaled in the vault's `provider-credentials.audit.pending.jsonl` for replay by
   `ProviderCredentialAuditReplayHostedService` at startup or by the next vault mutation. Disposal never
   rewrites a cached token snapshot. Production postures fail closed off Windows (ADR-019 platform guard),
-  so the non-Windows local key file is a scope-out rather than an open PRD-002 clause; browser, WPF,
-  setup and default-runtime credential ownership remain open PRD-002 requirements.
+  so the non-Windows local key file is a scope-out rather than an open PRD-002 clause. Owned setup
+  and runtime-binding API paths are implemented; browser/WPF ownership-management flows and installed
+  end-to-end acceptance remain open PRD-002 requirements.
   Provider plugin assembly loading and `DataSourceRegistry` discovery now live in
   ProviderSdk; Application and WPF consume the loader instead of keeping reflection-based provider
   discovery in Application services. Default provider setup handlers are registered through one

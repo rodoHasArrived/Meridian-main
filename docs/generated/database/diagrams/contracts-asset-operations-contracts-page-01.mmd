@@ -130,6 +130,7 @@ classDiagram
         +Meridian_Contracts_Accounting_Lots_OpenLotSuccessorInstructionDto? CorporateAction
         +AssetAccountingCorrectionReferenceDto? Correction
         +string Currency
+        +OpenLotDirection Direction
         +PostingRuleJournalCandidateRequestDto? DraftedCandidate
         +string? DraftedCandidateFingerprint
         +PostingRuleJournalCandidateResultDto? DraftedCandidateResult
@@ -137,7 +138,6 @@ classDiagram
         +AssetLotMutationInstructionDto? DraftedLotMutation
         +string? DraftedLotMutationFingerprint
         +EconomicEventReferenceDto EconomicEvent
-        +DateOnly EffectiveDate
     }
     class Meridian_Contracts_AssetOperations_AssetAccountingEventSpineValidator["AssetAccountingEventSpineValidator"] {
     }
