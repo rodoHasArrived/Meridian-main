@@ -46,7 +46,9 @@ public sealed record OpenLotAmortizationProjectionDto(
 /// <summary>Bounded fixed-rate bullet projection using the shared financial kernels and acquisition FX.</summary>
 public static class OpenLotAmortization
 {
-    public const string ModelVersion = "canonical-lot-amortization-v2";
+    public const string ModelVersion = "canonical-lot-amortization-v3";
+    /// <summary>Frozen regular-calendar model retained for immutable instruction replay.</summary>
+    public const string CalendarModelVersion = "canonical-lot-amortization-v2";
 
     public static string SecurityHash(SecurityProjectionRecord security)
     {
@@ -74,7 +76,8 @@ public static class OpenLotAmortization
     private static OpenLotAmortizationProjectionDto ProjectCore(OpenLotAmortizationInstructionDto instruction)
     {
         ArgumentNullException.ThrowIfNull(instruction);
-        if (instruction.CalculationVersion is not null && instruction.CalculationVersion != ModelVersion)
+        if (instruction.CalculationVersion is not null && instruction.CalculationVersion != ModelVersion
+            && instruction.CalculationVersion != CalendarModelVersion)
             throw new ArgumentException("Amortization calculation version is unsupported.");
         var lot = instruction.ExpectedLot;
         OpenLotValidation.Validate(lot);
@@ -128,13 +131,16 @@ public static class OpenLotAmortization
         var detail = new SecurityDetailDto(security.SecurityId, security.AssetClass, security.Status, security.DisplayName,
             security.Currency, security.CommonTerms, security.AssetSpecificTerms, security.Identifiers, security.Aliases,
             security.Version, security.EffectiveFrom, security.EffectiveTo);
-        ValidateBulletReference(detail);
+        var followsDeclaredSchedule = instruction.CalculationVersion == ModelVersion
+            && AnyTerm(StructuredCashFlowTermsResolver.EnumerateTermSources(detail),
+                SecurityVersionedTerms.ScheduleConventionsKey, SecurityAssetTermsSchema.IsPopulatedTermValue);
+        ValidateBulletReference(detail, followsDeclaredSchedule);
         var reference = StructuredCashFlowTermsResolver.Resolve(detail);
         var convention = DayCountConventions.Parse(reference.DayCountConvention);
         if (reference.MaturityDate is not { } maturity || maturity <= lot.AcquiredDate
             || instruction.AsOfDate <= lot.AcquiredDate || instruction.AsOfDate > maturity
-            || convention is DayCountConvention.Unknown or DayCountConvention.Business252 or DayCountConvention.ActualActualIcma
-                or DayCountConvention.ThirtyE360Isda
+            || convention is DayCountConvention.Unknown or DayCountConvention.Business252
+            || (!followsDeclaredSchedule && convention is DayCountConvention.ActualActualIcma or DayCountConvention.ThirtyE360Isda)
             || reference.HasFactorSchedule || reference.HasLegs || reference.HasPrincipalSchedule || reference.HasStepCouponSchedule
             || reference.InflationIndex is not null || reference.InflationIndexRatio is not null
             || reference.InflationBaseIndexValue is not null || (reference.CurrentFactor is { } factor && factor != 1m))
@@ -142,7 +148,12 @@ public static class OpenLotAmortization
         var faceLot = new FaceValueLot(lot.LotId, lot.SecurityId, scheduleLot.AcquiredDate, scheduleLot.OriginalQuantity,
             scheduleLot.Acquisition.TransactionCostBasis * terms.ParBasis / scheduleLot.OriginalQuantity, terms.BookedFactor, terms.ParBasis);
         decimal fullBasis;
-        if (terms.AmortizationMethod == BondAmortizationMethod.StraightLine)
+        if (followsDeclaredSchedule)
+        {
+            fullBasis = OpenLotDeclaredAmortization.Project(faceLot, detail, reference, convention,
+                instruction.AsOfDate, terms.AmortizationMethod, terms.EffectiveYield);
+        }
+        else if (terms.AmortizationMethod == BondAmortizationMethod.StraightLine)
         {
             fullBasis = faceLot.AmortizedBasisAsOf(convention, maturity, instruction.AsOfDate);
         }
@@ -207,7 +218,7 @@ public static class OpenLotAmortization
         _ => throw new ArgumentException("Constant-yield amortization requires an explicit supported coupon frequency.")
     };
 
-    private static void ValidateBulletReference(SecurityDetailDto detail)
+    private static void ValidateBulletReference(SecurityDetailDto detail, bool followsDeclaredSchedule)
     {
         var descriptor = SecurityAssetClassCatalog.GetOrDefault(detail.AssetClass);
         var assetClass = descriptor.AssetClass;
@@ -225,8 +236,10 @@ public static class OpenLotAmortization
         if (SecurityAssetClassCatalog.GetOrDefault(assetClass).CarriesBondCouponStructure)
         {
             var couponType = OwnedString(sources, ["couponType", "couponKind"]);
-            if (couponType is not ("Fixed" or "ZeroCoupon")
-                || OwnedDecimal(sources, ["fixedCouponRate", "couponRate", "coupon", "annualRate"]) is not { } coupon
+            var coupon = OwnedDecimal(sources, ["fixedCouponRate", "couponRate", "coupon", "annualRate"]);
+            if (followsDeclaredSchedule && couponType == "ZeroCoupon" && coupon is null)
+                coupon = 0m;
+            if (couponType is not ("Fixed" or "ZeroCoupon") || coupon is null
                 || coupon < 0m || (couponType == "ZeroCoupon" && coupon != 0m))
                 throw new ArgumentException("Bond amortization requires explicit supported Fixed or ZeroCoupon structure and a complete coupon rate.");
             var callable = OwnedString(sources, ["isCallable"]);
@@ -258,7 +271,7 @@ public static class OpenLotAmortization
         // A declared scheduleConventions block (ADR-024; writable from the contract step) moves payment
         // dates, stubs and the coupon unit, and the bullet coupon grid follows none of them. Unset
         // spellings declare nothing.
-        if (AnyTerm(sources, SecurityVersionedTerms.ScheduleConventionsKey, SecurityAssetTermsSchema.IsPopulatedTermValue))
+        if (!followsDeclaredSchedule && AnyTerm(sources, SecurityVersionedTerms.ScheduleConventionsKey, SecurityAssetTermsSchema.IsPopulatedTermValue))
             throw new ArgumentException("Amortization does not support declared schedule conventions; the bullet coupon grid follows none of them.");
         foreach (var name in new[] { "floatingIndex", "floatingRateIndex", "referenceIndex", "callDate", "preRefundDate", "mandatoryPutDate" })
         {

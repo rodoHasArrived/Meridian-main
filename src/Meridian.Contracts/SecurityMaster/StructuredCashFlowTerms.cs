@@ -1,4 +1,12 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Contracts.SecurityMaster;
+
+/// <summary>The contractual coupon structure; absence never asserts a zero coupon.</summary>
+public enum SecurityCouponKind { Unknown, Fixed, Floating, ZeroCoupon, Step, InflationLinked }
+
+/// <summary>The declared unit of an annual rate, independently of its magnitude.</summary>
+public enum SecurityCouponRateUnit { Unspecified, Percent, Fraction }
 
 /// <summary>
 /// Strongly typed economic terms resolved once from a security's raw term JSON, replacing the
@@ -22,6 +30,19 @@ public sealed record StructuredCashFlowTerms(
     decimal? InflationBaseIndexValue = null,
     decimal? InflationIndexRatio = null)
 {
+    // These resolved helpers do not change legacy TermsUsed JSON or retained receipt fingerprints.
+    [JsonIgnore]
+    public SecurityCouponKind CouponKind { get; init; }
+
+    [JsonIgnore]
+    public SecurityCouponRateUnit CouponRateUnit { get; init; }
+
+    [JsonIgnore]
+    public decimal? CapRate { get; init; }
+
+    [JsonIgnore]
+    public decimal? FloorRate { get; init; }
+
     /// <summary>An empty term set used when a security carries no readable structured terms.</summary>
     public static StructuredCashFlowTerms Empty { get; } = new(
         MaturityDate: null,

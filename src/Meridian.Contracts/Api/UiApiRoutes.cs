@@ -473,6 +473,15 @@ public static class UiApiRoutes
     public const string ReferenceDataBondAccrualConvention = "/api/reference-data/bonds/{securityId:guid}/accrual-convention";
     public const string ReferenceDataBondIssuerLadder = "/api/reference-data/bonds/issuer-ladder";
     public const string ReferenceDataBondMaturityLadder = "/api/reference-data/bonds/maturity-ladder";
+    public const string ReferenceDataBondAnalytics = "/api/reference-data/bonds/{securityId:guid}/analytics";
+    public const string ReferenceDataBondSettlementConsideration = "/api/reference-data/bonds/settlement-consideration";
+    public const string ReferenceDataBondIssuerLadderPage = "/api/reference-data/bonds/issuer-ladder/page";
+    public const string ReferenceDataBondMaturityLadderPage = "/api/reference-data/bonds/maturity-ladder/page";
+    public const string ReferenceDataBondMigrationPreview = "/api/reference-data/bonds/migration-preview";
+    public const string ReferenceDataBondMigrationSubmit = "/api/reference-data/bonds/migration-submit";
+    public const string ReferenceDataBondCutoverReadiness = "/api/reference-data/bonds/cutover-readiness";
+    public const string ReferenceDataBondCutover = "/api/reference-data/bonds/cutover";
+    public const string ReferenceDataBondMigrationBatchPreview = "/api/reference-data/bonds/migration-preview/batch";
     public const string WorkstationAssetOperations = "/api/workstation/assets/{securityId:guid}/operations";
     public const string ReferenceDataOptionContract = "/api/reference-data/options/contracts/{contractSymbol}";
     public const string ReferenceDataOptionSeries = "/api/reference-data/options/series/{optionChainId}";

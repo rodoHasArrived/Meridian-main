@@ -4933,6 +4933,27 @@ describe("AccountingScreen", () => {
     });
   });
 
+  it("preserves a manually selected bond through detail tabs after the explorer selected another security", async () => {
+    const user = userEvent.setup();
+    const explorer = await api.getFinancialRecordExplorer("security-instrument");
+    const sourceRow = explorer.rows[0];
+    const selectedRow = { ...sourceRow, recordId: "security-instrument:sec-dev-001", detail: { ...sourceRow.detail, recordId: "security-instrument:sec-dev-001" } };
+    vi.mocked(api.getFinancialRecordExplorer).mockResolvedValueOnce({ ...explorer, rows: [selectedRow], selectedRecord: selectedRow.detail });
+    const bondId = "33333333-3333-3333-3333-333333333333";
+    vi.mocked(api.searchSecurities).mockResolvedValueOnce([{ securityId: bondId, displayName: "Reviewed corporate bond", status: "Active", classification: { assetClass: "Bond", subType: "Corporate", primaryIdentifierKind: "Cusip", primaryIdentifierValue: "123456AB1" }, economicDefinition: { currency: "USD", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, subType: "Corporate", assetFamily: "FixedIncome", issuerType: "Corporate" } }]);
+    vi.mocked(api.getSecurityIdentity).mockImplementation(async (securityId) => ({ securityId, displayName: securityId === bondId ? "Reviewed corporate bond" : "Apple Inc.", assetClass: securityId === bondId ? "Bond" : "Equity", status: "Active", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, identifiers: [], aliases: [] }));
+    await renderAccountingScreen(data, "/accounting/security-master");
+    await waitFor(() => expect(api.getSecurityIdentity).toHaveBeenCalledWith("sec-dev-001"));
+    await user.type(screen.getByPlaceholderText("Search securities…"), "bond");
+    const row = await screen.findByRole("row", { name: /Reviewed corporate bond/ }, { timeout: SECURITY_MASTER_SEARCH_TIMEOUT_MS });
+    await user.click(row);
+    await waitFor(() => expect(row).toHaveAttribute("aria-selected", "true"));
+    await user.click(screen.getByRole("tab", { name: /^Evidence/ }));
+    expect(await screen.findByRole("heading", { name: "Bond analytics" })).toBeInTheDocument();
+    expect(row).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByLabelText("Clean price / 100")).toHaveValue("");
+  });
+
   it("announces security search failures as alerts", async () => {
     vi.mocked(api.searchSecurities).mockRejectedValueOnce(new Error("Provider offline"));
 

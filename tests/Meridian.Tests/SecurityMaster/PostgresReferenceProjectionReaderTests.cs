@@ -269,7 +269,7 @@ public sealed class PostgresReferenceProjectionReaderTests
             "maturity_date", "lifecycle_stat", "issue_date", "call_date", "is_callable", "day_count_convention",
             "settlement_cycle_days", "holiday_calendar_id", "coupon_kind", "fixed_coupon_rate", "floating_rate_index",
             "floating_spread_bps", "version", "subclass", "par", "payment_frequency", "legal_final_maturity",
-            "pre_refund_date", "mandatory_put_date"
+            "pre_refund_date", "mandatory_put_date", "asset_specific_terms", "effective_to_date"
         ];
         var bond = Map(joined, PostgresBondReferenceProjectionStore.MapBondRow, Spine("USD")
             .With("issuer_name", "Issuer").With("seniority", "Senior").With("maturity_date", Maturity)
@@ -282,7 +282,7 @@ public sealed class PostgresReferenceProjectionReaderTests
         string[] lifecycle =
         [
             "security_id", "lifecycle_stat", "issue_date", "call_date", "maturity_date", "is_callable", "version",
-            "subclass", "par", "payment_frequency", "legal_final_maturity", "pre_refund_date", "mandatory_put_date"
+            "subclass", "par", "payment_frequency", "legal_final_maturity", "pre_refund_date", "mandatory_put_date", "effective_to_date"
         ];
         var lifecycleRow = Map(lifecycle, PostgresBondReferenceProjectionStore.MapLifecycleRow, new Sample()
             .With("security_id", SecurityId).With("lifecycle_stat", "Active").With("maturity_date", Maturity)

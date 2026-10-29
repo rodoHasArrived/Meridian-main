@@ -40,6 +40,8 @@ requires the complete canonical instruction for exchange/refunding and explicitl
 transfers; other split/merger projections keep their existing mapping behavior. Optional canonical
 instructions retain their exact reviewed payload on the Projected event.
 
+Bond calculations use explicit economic/settlement/recorded cutoffs. Declared Asset Operations projections consume the shared cash-flow service and stable period identities. Bond analytics exposes per-100 clean/dirty prices, accrued interest, yield and risk with typed capability blockers; principal factors remain separate from inflation indexation. Bond migration previews stage normal Security Master drafts; the persisted full-inventory cutover gate blocks undeclared live calculations without rewriting historical journals. See [bond expansion](../../docs/engineering/plans/bond-capability-expansion.md).
+
 ## Purpose
 
 Physical bounded-context module project for instrument terms, contracts, obligations,

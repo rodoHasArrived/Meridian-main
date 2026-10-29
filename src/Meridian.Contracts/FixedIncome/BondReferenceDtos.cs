@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.SecurityMaster;
 
@@ -119,4 +120,23 @@ public sealed record BondReferenceDto(
     BondAccrualConventionDto? AccrualConvention,
     long Version,
     BondSinkingFundDto? SinkingFund = null,
-    BondInflationLinkedDto? InflationLinked = null);
+    BondInflationLinkedDto? InflationLinked = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] BondPrincipalFactorDto? PrincipalFactor = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] BondCouponStructureDto? CouponStructure = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ScheduleConventionTerms? ScheduleConventions = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] JsonElement? CallSchedule = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] JsonElement? PutSchedule = null);
+
+/// <summary>Outstanding-principal evidence, separate from inflation indexation.</summary>
+public sealed record BondPrincipalFactorDto(decimal? CurrentFactor, DateOnly? FactorDate, JsonElement? Schedule);
+
+/// <summary>Coupon-structure terms retained for downstream capability checks and calculations.</summary>
+public sealed record BondCouponStructureDto(
+    string? Kind,
+    decimal? CapRate,
+    decimal? FloorRate,
+    JsonElement? StepSchedule,
+    string? RateUnit);
+
+/// <summary>A bounded issuer or maturity page. The cursor is opaque and bound to its query.</summary>
+public sealed record BondReferencePageDto(IReadOnlyList<BondReferenceDto> Items, string? NextCursor);

@@ -62,6 +62,8 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
     private readonly IAccountingPostingCandidateAuthorityBuilder _authorityBuilder;
     private readonly ILedgerJournalStore _journalStore;
     private readonly ISecurityMasterStore? _securityMasterStore;
+    private readonly Meridian.Contracts.FixedIncome.IBondCalculationPolicy? _bondCalculationPolicy;
+    private readonly Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService? _bondSettlementConsiderationService;
 
     /// <summary>
     /// Creates the governed spine only when every authority and durable-ledger dependency exists.
@@ -77,7 +79,9 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
         IAccountingConfigurationService? configurationService,
         IAccountingPostingCandidateAuthorityBuilder? authorityBuilder,
         ILedgerJournalStore? journalStore,
-        ISecurityMasterStore? securityMasterStore = null)
+        ISecurityMasterStore? securityMasterStore = null,
+        Meridian.Contracts.FixedIncome.IBondCalculationPolicy? bondCalculationPolicy = null,
+        Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService? bondSettlementConsiderationService = null)
     {
         if (eventStore is null ||
             positionStore is null ||
@@ -100,7 +104,9 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
             configurationService,
             authorityBuilder,
             journalStore,
-            securityMasterStore);
+            securityMasterStore,
+            bondCalculationPolicy,
+            bondSettlementConsiderationService);
     }
 
     public AssetAccountingEventSpineService(
@@ -112,7 +118,9 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
         IAccountingConfigurationService configurationService,
         IAccountingPostingCandidateAuthorityBuilder authorityBuilder,
         ILedgerJournalStore journalStore,
-        ISecurityMasterStore? securityMasterStore = null)
+        ISecurityMasterStore? securityMasterStore = null,
+        Meridian.Contracts.FixedIncome.IBondCalculationPolicy? bondCalculationPolicy = null,
+        Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService? bondSettlementConsiderationService = null)
     {
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _positionStore = positionStore ?? throw new ArgumentNullException(nameof(positionStore));
@@ -123,6 +131,8 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
         _authorityBuilder = authorityBuilder ?? throw new ArgumentNullException(nameof(authorityBuilder));
         _journalStore = journalStore ?? throw new ArgumentNullException(nameof(journalStore));
         _securityMasterStore = securityMasterStore;
+        _bondCalculationPolicy = bondCalculationPolicy;
+        _bondSettlementConsiderationService = bondSettlementConsiderationService;
     }
 
     public async Task<AssetAccountingEventSpineDto?> GetLatestAsync(
@@ -401,6 +411,8 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
         var source = sourceRecord.Projection;
         ValidateSourceRecord(sourceRecord);
         ValidateRequestAssertions(request, source);
+        if (request.LotMutation?.Acquisition is { SettlementConsideration: not null } settlementAcquisition)
+            await BondSettlementPostingGuard.RequireVerifiedAsync(settlementAcquisition, _bondSettlementConsiderationService, ct).ConfigureAwait(false);
         RequireAssertion(PayloadEquals(source.CorporateAction, request.LotMutation?.CorporateAction),
             "A retained successor projection requires the exact canonical lot instruction; it cannot be omitted or replaced.");
         RequireAssertion(PayloadEquals(source.CapitalReturn, request.LotMutation?.CapitalReturn),
@@ -774,7 +786,11 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
         if (lotIssues.Count > 0)
             throw new ArgumentException(string.Join(" ", lotIssues), nameof(request.LotMutation));
         if (request.LotMutation?.Acquisition is { } acquisition)
+        {
             SpineAcquisitionLotFacts.RequireCompleteNewAcquisition(acquisition);
+            BondSettlementPostingGuard.RequireScope(acquisition, request.Scope.SecurityId,
+                request.Scope.ExpectedSecurityVersion, request.Currency);
+        }
     }
 
     private static void ValidateSourceRecord(AssetAccountingEventProjectionRecord sourceRecord)
@@ -1017,6 +1033,8 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
         {
             var amortization = requested.Amortization
                 ?? throw new InvalidOperationException("Canonical lot amortization requires retained reviewed inputs.");
+            if (amortization.Reversal is null)
+                await BondAmortizationPolicyGuard.RequireAsync(_bondCalculationPolicy, amortization.Security, ct).ConfigureAwait(false);
             var projection = OpenLotAmortization.Project(amortization);
             RequireAssertion(amortization.ExpectedLot.SecurityId == source.Scope.SecurityId
                 && amortization.ExpectedLot.BookPositionId == source.Scope.BookPositionId

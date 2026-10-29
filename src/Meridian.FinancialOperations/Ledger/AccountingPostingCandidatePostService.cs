@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
@@ -36,19 +37,25 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
     private readonly ILedgerJournalStore? _journalStore;
     private readonly IAtomicTaxLotJournalStore? _atomicTaxLotStore;
     private readonly IAssetAccountingEventProjectionStore? _assetAccountingEventStore;
+    private readonly IBondCalculationPolicy? _bondCalculationPolicy;
+    private readonly IBondSettlementConsiderationService? _bondSettlementConsiderationService;
 
     public AccountingPostingCandidatePostService(
         IAccountingPostingCandidateWriteBuilder candidateBuilder,
         ILedgerJournalStore? journalStore = null,
         IAtomicTaxLotJournalStore? atomicTaxLotStore = null,
         IAssetAccountingEventProjectionStore? assetAccountingEventStore = null,
-        IAccountingPostingCandidateAuthorityBuilder? authorityBuilder = null)
+        IAccountingPostingCandidateAuthorityBuilder? authorityBuilder = null,
+        IBondCalculationPolicy? bondCalculationPolicy = null,
+        IBondSettlementConsiderationService? bondSettlementConsiderationService = null)
     {
         _candidateBuilder = candidateBuilder ?? throw new ArgumentNullException(nameof(candidateBuilder));
         _authorityBuilder = authorityBuilder ?? candidateBuilder as IAccountingPostingCandidateAuthorityBuilder;
         _journalStore = journalStore;
         _atomicTaxLotStore = atomicTaxLotStore ?? journalStore as IAtomicTaxLotJournalStore;
         _assetAccountingEventStore = assetAccountingEventStore;
+        _bondCalculationPolicy = bondCalculationPolicy;
+        _bondSettlementConsiderationService = bondSettlementConsiderationService;
     }
 
     public async Task<PostedPostingRuleJournalCandidateResultDto> PostCandidateAsync(
@@ -1107,6 +1114,11 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
                 authority.Drafted.Projection.DraftedCandidateResult!,
                 acquisition.AccountId,
                 request.Candidate.EventAmount);
+            await BondSettlementPostingGuard.RequireVerifiedAsync(acquisition, _bondSettlementConsiderationService, ct).ConfigureAwait(false);
+            BondSettlementPostingGuard.RequireScope(acquisition, authority.Projected.Projection.Scope.SecurityId,
+                authority.Projected.Projection.Scope.ExpectedSecurityVersion, request.Candidate.Currency);
+            BondSettlementPostingGuard.RequireJournal(acquisition,
+                authority.Drafted.Projection.DraftedCandidateResult!, approvedWrite.Entry);
             acquisitionLot = new LedgerTaxLotRecord(
                 acquisition.TaxLotRecordId,
                 ledgerBook.LedgerBookId,
@@ -1199,6 +1211,8 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         {
             var inputs = instruction.Amortization
                 ?? throw new InvalidOperationException("Amortization requires retained canonical lot and reference inputs.");
+            if (!hasExistingJournal && inputs.Reversal is null)
+                await BondAmortizationPolicyGuard.RequireAsync(_bondCalculationPolicy, inputs.Security, ct).ConfigureAwait(false);
             var projection = OpenLotAmortization.Project(inputs);
             RequireAssetAssertion(inputs.ExpectedLot.SecurityId == authority.Context.SecurityId
                 && inputs.ExpectedLot.BookPositionId == authority.Context.BookPositionId

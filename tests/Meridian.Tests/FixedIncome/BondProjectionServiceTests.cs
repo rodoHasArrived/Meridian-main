@@ -65,7 +65,7 @@ public sealed class BondProjectionServiceTests
                 null,
                 9));
 
-        var service = new BondProjectionService(securityStore, projectionStore);
+        var service = new BondProjectionService(securityStore, projectionStore, new FixedClock());
 
         var result = await service.GetReferenceAsync(securityId);
 
@@ -103,7 +103,7 @@ public sealed class BondProjectionServiceTests
                 125m,
                 4));
 
-        var service = new BondProjectionService(securityStore, projectionStore);
+        var service = new BondProjectionService(securityStore, projectionStore, new FixedClock());
 
         var result = await service.GetAccrualConventionAsync(securityId);
 
@@ -137,7 +137,7 @@ public sealed class BondProjectionServiceTests
                 PreRefundDate: new DateOnly(2027, 1, 15),
                 MandatoryPutDate: new DateOnly(2031, 1, 15)));
 
-        var service = new BondProjectionService(securityStore, projectionStore);
+        var service = new BondProjectionService(securityStore, projectionStore, new FixedClock());
 
         var result = await service.GetLifecycleAsync(securityId);
 
@@ -190,4 +190,9 @@ public sealed class BondProjectionServiceTests
             null,
             Array.Empty<SecurityIdentifierDto>(),
             Array.Empty<SecurityAliasDto>());
+    private sealed class FixedClock : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => new(2030, 1, 1, 0, 0, 0, TimeSpan.Zero);
+    }
+
 }

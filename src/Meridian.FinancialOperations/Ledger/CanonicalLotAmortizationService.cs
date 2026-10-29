@@ -1,5 +1,6 @@
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.FixedIncome;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
 using Meridian.Storage.SecurityMaster;
@@ -19,7 +20,8 @@ public sealed record CanonicalLotAmortizationPreview(
 public sealed class CanonicalLotAmortizationService(
     ILedgerJournalStore? lots,
     ISecurityMasterStore? securities,
-    IInstrumentPositionProjectionStore? positions)
+    IInstrumentPositionProjectionStore? positions,
+    IBondCalculationPolicy? bondCalculationPolicy = null)
 {
     /// <summary>Prepares an inverse from retained posting economics and reviewed reference authority.</summary>
     public Task<CanonicalLotAmortizationPreview> PreviewReversalAsync(
@@ -58,7 +60,7 @@ public sealed class CanonicalLotAmortizationService(
             Security = security,
             SecurityEvidence = securityEvidence ?? inputs.SecurityEvidence,
             ExpectedBookPositionVersion = position.Version,
-            CalculationVersion = OpenLotAmortization.ModelVersion,
+            CalculationVersion = inputs.CalculationVersion,
             Reversal = new(mutationBatchId, original.Journal.Entry.JournalEntryId, mutation.LotBefore!.ToOpenLot())
         };
         return new(instruction, OpenLotAmortization.Project(instruction));
@@ -81,6 +83,7 @@ public sealed class CanonicalLotAmortizationService(
             ?? throw new InvalidOperationException("The canonical lot was not found in the requested book.");
         var security = await securityStore.GetProjectionAsync(retained.SecurityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("Versioned Security Master evidence is unavailable.");
+        await BondAmortizationPolicyGuard.RequireAsync(bondCalculationPolicy, security, ct).ConfigureAwait(false);
         var position = await positionStore.GetBookPositionAsync(retained.BookPositionId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("The authoritative book position is unavailable.");
         if (position.SecurityId != retained.SecurityId || position.BookContext.LedgerBookId != ledgerBookId)

@@ -20,6 +20,8 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
+import { BondAnalyticsPanel } from "@/components/meridian/bond-analytics-panel";
+import { BondMigrationPreviewPanel } from "@/components/meridian/bond-migration-preview-panel";
 import { CoveragePassportDrillIn } from "@/components/meridian/coverage-passport-drill-in";
 import { ReconciliationComparisonPanel } from "@/components/accounting";
 import {
@@ -1586,10 +1588,12 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
   const selectSecurityFromExplorer = useCallback((recordId: string) => {
     const securityId = resolveExplorerSecurityId(recordId);
-    if (securityId && securityId !== securityMaster.selectedSecurityId) {
+    // Explorer selection changes drive this callback. Depending on the detail selection would
+    // replay the explorer's old row after every manual search selection and overwrite it.
+    if (securityId) {
       securityMaster.selectSecurity(securityId);
     }
-  }, [securityMaster.selectSecurity, securityMaster.selectedSecurityId]);
+  }, [securityMaster.selectSecurity]);
   const [accountingSystemProviders, setAccountingSystemProviders] = useState<AccountingSystemProvider[]>([]);
   const [accountingSystemImport, setAccountingSystemImport] = useState<AccountingSystemImportDetail | null>(null);
   const [accountingSystemMappingProfiles, setAccountingSystemMappingProfiles] = useState<ExternalGlMappingProfile[]>([]);
@@ -3318,11 +3322,23 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                   </div>
                 </TabPanel>
                 <TabPanel>
+                  <div className="flex flex-col gap-4">
                   <SecurityDetailsPanel
                     entry={selectedSecurityEntry}
                     identity={securityMaster.identity}
                     tradingParameters={securityMaster.tradingParameters}
                   />
+                  {selectedSecurityEntry && ["bond", "fixedincome"].includes(selectedSecurityEntry.classification.assetClass.toLowerCase().replace(/[\s_-]/g, "")) ? (
+                    <>
+                    <BondAnalyticsPanel key={securityMaster.selectedSecurityId} securityId={securityMaster.selectedSecurityId} />
+                    <BondMigrationPreviewPanel
+                      key={`migration-${securityMaster.selectedSecurityId}`}
+                      securityId={securityMaster.selectedSecurityId}
+                      expectedVersion={securityMaster.identity?.securityId === securityMaster.selectedSecurityId ? securityMaster.identity.version : null}
+                    />
+                    </>
+                  ) : null}
+                  </div>
                 </TabPanel>
               </Tabs>
             </section>

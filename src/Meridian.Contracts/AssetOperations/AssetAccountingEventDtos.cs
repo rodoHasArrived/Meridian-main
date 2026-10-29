@@ -307,7 +307,9 @@ public sealed record AssetAcquisitionLotDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     Meridian.Contracts.FixedIncome.BondAmortizationMethod? AmortizationMethod = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    decimal? EffectiveYield = null)
+    decimal? EffectiveYield = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    Meridian.Contracts.FixedIncome.BondSettlementConsiderationDto? SettlementConsideration = null)
 {
     /// <summary>
     /// True when the instruction states the acquisition-time par conventions of a face-denominated
@@ -1001,6 +1003,7 @@ public static class AssetLotMutationInstructionValidator
                 issues.Add("Acquisition lot date must equal the accounting event effective date.");
             if (acquisition.Quantity * acquisition.UnitCost != eventAmount)
                 issues.Add("Acquisition lot quantity times unit cost must equal the accounting event amount.");
+            issues.AddRange(Meridian.Contracts.FixedIncome.BondSettlementConsideration.ValidateAcquisition(acquisition, retainedEvidence));
             if (!string.IsNullOrWhiteSpace(instruction.AssetAccountId) &&
                 !string.Equals(instruction.AssetAccountId, acquisition.AccountId, StringComparison.Ordinal))
                 issues.Add("Acquisition instruction asset account must exactly match the acquisition lot account.");

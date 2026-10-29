@@ -523,6 +523,8 @@ signed ledger report pack. Those lot reports are retained in the ledger populati
 renders the same evidence. Whole-unit split legs sharing a security and position remain separate
 through their reviewed lot labels; only refunded successors receive Schedule D treatment.
 
+Bond routes expose explicitly dated analytics, bounded reference pages, settlement preparation and reviewed migration. Submission carries preview fingerprints rather than browser-rounded economic amounts, rechecks inputs on the server and stages a normal workbench draft. Administrative cutover requires a fresh complete inventory hash. These routes preserve permission declarations and server-resolved actors.
+
 ## Purpose
 
 UI shared contains shared UI read models, endpoint adapters, and compatibility shims for browser

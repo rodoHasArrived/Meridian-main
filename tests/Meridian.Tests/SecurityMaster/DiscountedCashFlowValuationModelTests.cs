@@ -3,6 +3,7 @@ using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.SecurityMaster.Valuation;
 using Meridian.Contracts.Calendars;
+using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -51,9 +52,11 @@ public sealed class DiscountedCashFlowValuationModelTests
         result.Inputs.Single(static input => input.Kind == "SecurityTerms").Version.Should().Be(bond.Version);
         result.Diagnostics.Should().ContainSingle(static d => d.StartsWith("DirtyValue", StringComparison.Ordinal));
 
-        // An undeclared projection carries no schedule evidence, so the inputs and diagnostics are
-        // exactly these, member for member.
-        result.Inputs.Should().Equal(
+        // The context path now retains source/model evidence as well as the pricing inputs.
+        result.Inputs.Single(input => input.Kind == "CashFlowSource").ContentSha256.Should().HaveLength(64);
+        result.Inputs.Single(input => input.Kind == "CalculationModel").Reference.Should().Be(SecurityMasterCashFlowService.ContextCalculationVersion);
+        result.Inputs.Where(input => input.Kind is "DiscountCurveVersion" or "SecurityTerms")
+            .Select(input => input.Kind == "SecurityTerms" ? input with { ContentSha256 = null } : input).Should().Equal(
             new SecurityValuationInputDto("DiscountCurveVersion", "USD-DISCOUNT-TEST", version.CurveVersionId, 1, version.ContentSha256, AsOf, version.RecordedAt),
             new SecurityValuationInputDto("SecurityTerms", bond.Version.ToString(), bond.SecurityId, bond.Version));
         result.Diagnostics.Should().Equal(DirtyValueDiagnostic);
@@ -79,7 +82,8 @@ public sealed class DiscountedCashFlowValuationModelTests
         result.PresentValue.Should().Be(1_100_000.00m, "50,000 + 50,000 + 1,000,000 on unit discount factors");
         result.Price.Should().Be(110m);
         result.MarketValue.Should().Be(550_000.00m, "500,000 face x 110 / 100");
-        result.Inputs.Should().Equal(
+        result.Inputs.Where(input => input.Kind is not ("CashFlowSource" or "CalculationModel"))
+            .Select(input => input.Kind == "SecurityTerms" ? input with { ContentSha256 = null } : input).Should().Equal(
             new SecurityValuationInputDto("DiscountCurveVersion", "USD-DISCOUNT-TEST", version.CurveVersionId, 1, version.ContentSha256, AsOf, version.RecordedAt),
             new SecurityValuationInputDto("SecurityTerms", "1", bond.SecurityId, 1),
             new SecurityValuationInputDto("ScheduleKernel", "contractual-schedule-kernel-v1"),
@@ -96,7 +100,7 @@ public sealed class DiscountedCashFlowValuationModelTests
 
         undeclaredResult.IsBlocked.Should().BeFalse(string.Join("; ", undeclaredResult.Blockers.Select(static b => b.Reason)));
         undeclaredResult.PresentValue.Should().Be(1_100_000.00m);
-        undeclaredResult.Inputs.Select(static input => input.Kind).Should().Equal("DiscountCurveVersion", "SecurityTerms");
+        undeclaredResult.Inputs.Select(static input => input.Kind).Should().Equal("DiscountCurveVersion", "SecurityTerms", "CashFlowSource", "CalculationModel");
         undeclaredResult.Diagnostics.Should().Equal(DirtyValueDiagnostic);
     }
 
@@ -235,7 +239,7 @@ public sealed class DiscountedCashFlowValuationModelTests
         var version = ValuationTestSecurities.Version(definition, AsOfDate, ValuationTestSecurities.SwapDiscountPoints);
         var payment = new StructuredCashFlowScheduleEntry(new DateTimeOffset(2026, 4, 1, 0, 0, 0, TimeSpan.Zero), 0m, -8_125m, 1m);
         var cashFlows = Substitute.For<ISecurityMasterCashFlowService>();
-        cashFlows.GetProjectionAsOfAsync(swap.SecurityId, StructuredCashFlowScenario.Base, AsOf, Arg.Any<CancellationToken>())
+        cashFlows.GetProjectionAsync(swap, StructuredCashFlowScenario.Base, Arg.Any<BondCalculationContext>(), Arg.Any<CancellationToken>())
             .Returns(new StructuredCashFlowProjectionDto(
                 swap.SecurityId, StructuredCashFlowSourceKind.CalculatedBullet, StructuredCashFlowScenario.Base, AsOf, [payment],
                 StructuredCashFlowStaleness.Fresh, DateTimeOffset.UtcNow,
@@ -351,7 +355,7 @@ public sealed class DiscountedCashFlowValuationModelTests
         var definition = ValuationTestSecurities.DiscountDefinition();
         var curveAsOf = new DateOnly(2026, 2, 1);
         var later = ValuationTestSecurities.Version(definition, curveAsOf, (curveAsOf, 1.00m), (new DateOnly(2028, 1, 1), 1.00m)) with { RecordedAt = AsOf.AddDays(40) };
-        var model = Build(bond, Curves(definition, later));
+        var model = Build(bond, Curves(definition, later), retainedSourceUpdatedUtc: AsOf);
 
         var result = await model.ValueAsync(
             new SecurityValuationRequest(bond.SecurityId, AsOf, KnownAt: AsOf.AddDays(1), Curves: [new SecurityValuationCurveInput("Discount", definition.CurveId, later.CurveVersionId)]),
@@ -496,7 +500,8 @@ public sealed class DiscountedCashFlowValuationModelTests
         ISecurityForwardCurveProvider? forwardCurves = null,
         StructuredCashFlowSourceKind? source = StructuredCashFlowSourceKind.CalculatedBullet,
         StructuredCashFlowStaleness freshness = StructuredCashFlowStaleness.Fresh,
-        IBusinessDayCalendarSource? calendars = null)
+        IBusinessDayCalendarSource? calendars = null,
+        DateTimeOffset? retainedSourceUpdatedUtc = null)
     {
         // The projection judges freshness on the wall clock: a source updated now is Fresh, one
         // updated a month ago Stale, and one with no update time Unknown.
@@ -506,6 +511,7 @@ public sealed class DiscountedCashFlowValuationModelTests
             StructuredCashFlowStaleness.Stale => DateTimeOffset.UtcNow.AddDays(-30),
             _ => null
         };
+        lastUpdatedUtc = retainedSourceUpdatedUtc ?? lastUpdatedUtc;
         var store = Substitute.For<ISecurityMasterCashFlowStore>();
         store.GetSourceAsync(security.SecurityId, Arg.Any<CancellationToken>())
             .Returns(source is { } kind
