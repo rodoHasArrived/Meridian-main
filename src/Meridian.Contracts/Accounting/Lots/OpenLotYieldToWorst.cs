@@ -18,6 +18,13 @@ public static class OpenLotYieldToWorst
 {
     public static OpenLotYieldToWorstDto Select(OpenLotDto lot, SecurityProjectionRecord security)
     {
+        try { return SelectCore(lot, security); }
+        catch (ArithmeticException exception)
+        { throw new ArgumentException("Redemption yields exceed supported decimal calculation bounds.", nameof(lot), exception); }
+    }
+
+    private static OpenLotYieldToWorstDto SelectCore(OpenLotDto lot, SecurityProjectionRecord security)
+    {
         OpenLotValidation.Validate(lot);
         if (lot.SecurityId != security.SecurityId || lot.Acquisition.FaceValueTerms is not { } terms)
             throw new ArgumentException("Redemption yields require matching Security Master identity and retained face terms.");
@@ -55,6 +62,9 @@ public static class OpenLotYieldToWorst
             {
                 if (row.ValueKind != JsonValueKind.Object)
                     throw new ArgumentException("Redemption schedule entries must be complete objects.");
+                var members = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                if (row.EnumerateObject().Any(property => !members.Add(property.Name)))
+                    throw new ArgumentException("Redemption schedule entries cannot contain ambiguous duplicate members.");
                 var prefix = kind.ToLowerInvariant();
                 var dateText = SecurityTermReader.ReadString(row, prefix + "Date");
                 if (!DateOnly.TryParseExact(dateText, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture,

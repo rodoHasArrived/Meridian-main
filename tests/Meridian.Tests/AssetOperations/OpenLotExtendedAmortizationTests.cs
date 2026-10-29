@@ -8,6 +8,15 @@ namespace Meridian.Tests.AssetOperations;
 
 public sealed class OpenLotExtendedAmortizationTests
 {
+    [Fact]
+    public void V3WithoutReviewedTreatment_IsRefused()
+    {
+        var instruction = AtomicTaxLotJournalStoreTests.AmortPureInstruction(110m, 10m,
+            BondAmortizationMethod.StraightLine, null) with { CalculationVersion = OpenLotAmortization.ExtendedModelVersion };
+        var project = () => OpenLotAmortization.Project(instruction);
+        project.Should().Throw<ArgumentException>().WithMessage("*explicit v3 reviewed instruction*");
+    }
+
     [Theory]
     [InlineData(90, 95)]
     [InlineData(110, 105)]
@@ -65,6 +74,47 @@ public sealed class OpenLotExtendedAmortizationTests
         comparison.Selected.AnnualYield.Should().BeApproximately((decimal)Math.Sqrt(100d / 90d) - 1m, 0.00000000001m);
         var projected = OpenLotAmortization.Project(instruction with { YieldToWorst = comparison });
         projected.TransactionCostBasis.Should().BeApproximately((decimal)Math.Sqrt(90d * 100d), 0.00000000001m);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(100)]
+    public void NonParCall_PreservesActualCouponAndBothQuoteDenominations(int parBasis)
+    {
+        var instruction = Callable(110m, 10m, 105m, 90m);
+        var lot = instruction.ExpectedLot;
+        instruction = instruction with { ExpectedLot = lot with { Acquisition = lot.Acquisition with
+            { FaceValueTerms = lot.Acquisition.FaceValueTerms! with { ParBasis = parBasis } } } };
+        var comparison = OpenLotYieldToWorst.Select(instruction.ExpectedLot, instruction.Security);
+        comparison.Selected.Kind.Should().Be("Call");
+        comparison.Selected.AnnualYield.Should().BeApproximately(115m / 110m - 1m, 0.00000000001m);
+        var result = OpenLotAmortization.Project(instruction with { YieldToWorst = comparison });
+        result.TransactionCostBasis.Should().Be(105m);
+        result.FunctionalCostBasis.Should().Be(115.5m);
+    }
+
+    [Fact]
+    public void RemainingFace_AppliesPartialDisposalAndFactorExactlyOnce()
+    {
+        var instruction = AtomicTaxLotJournalStoreTests.AmortPureInstruction(110m, 10m,
+            BondAmortizationMethod.StraightLine, null);
+        instruction = instruction with { CalculationVersion = OpenLotAmortization.ExtendedModelVersion,
+            AmortizeRemainingFace = true, ExpectedLot = instruction.ExpectedLot with { OpenQuantity = 50m,
+                CurrentFactor = 0.5m, OpenTransactionCostBasis = 27.5m, OpenFunctionalCostBasis = 30.25m } };
+        var result = OpenLotAmortization.Project(instruction);
+        result.TransactionCostBasis.Should().Be(26.25m);
+        result.FunctionalCostBasis.Should().Be(28.875m);
+    }
+
+    [Fact]
+    public void DuplicateExerciseMembersCannotHideAdverseAuthority()
+    {
+        var instruction = Callable(110m, 10m, 100m, 100m);
+        var raw = instruction.Security.CommonTerms.GetRawText().Replace("\"exerciseStyle\":\"European\"",
+            "\"exerciseStyle\":\"European\",\"ExerciseStyle\":\"American\"", StringComparison.Ordinal);
+        var security = instruction.Security with { CommonTerms = JsonDocument.Parse(raw).RootElement.Clone() };
+        var select = () => OpenLotYieldToWorst.Select(instruction.ExpectedLot, security);
+        select.Should().Throw<ArgumentException>().WithMessage("*duplicate members*");
     }
 
     [Theory]

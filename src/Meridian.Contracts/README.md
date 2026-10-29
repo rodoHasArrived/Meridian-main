@@ -20,6 +20,8 @@ holder put yields remain separately visible alternatives. Selection, all alterna
 calculation version are retained and recomputed before posting. Make-whole, exercise windows,
 notice/cadence rules, irregular coupon dates and structured cash-flow schedules still refuse.
 Historical v1/v2 payloads omit these new fields and retain their original arithmetic and gates.
+Short direction is retained on the Expected/Projected accounting event before drafting, and the
+lot instruction must match it. Historical Long events omit that field and preserve their bytes.
 
 Provider ownership command DTOs carry a connection request/environment, explicit host provider
 selection, or a migration identity/expected generation. Tenant and actor are absent by design and

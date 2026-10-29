@@ -183,7 +183,8 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
             PostedJournalImpact: null,
             TaxLotMutationBatchId: null,
             Correction: request.Correction,
-            CorporateAction: request.CorporateAction, CapitalReturn: request.CapitalReturn, FactorPaydown: request.FactorPaydown);
+            CorporateAction: request.CorporateAction, CapitalReturn: request.CapitalReturn, FactorPaydown: request.FactorPaydown)
+            { Direction = request.Direction };
         var projectedSpine = expectedSpine with
         {
             SpineVersion = 2,
@@ -827,6 +828,8 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
     {
         RequireAssertion(request.ExpectedSpineVersion == source.SpineVersion, "Expected spine version does not match the retained Projected snapshot.");
         RequireAssertion(request.EventKind == source.EventKind, "Asset accounting event kind does not match the retained Projected snapshot.");
+        RequireAssertion((request.LotMutation?.Direction ?? OpenLotDirection.Long) == source.Direction,
+            "Lot direction must match the immutable Projected accounting event direction.");
         RequireAssertion(request.EventAmount == source.EventAmount, "Asset accounting event amount does not match the retained Projected snapshot.");
         RequireAssertion(string.Equals(request.Currency, source.Currency, StringComparison.Ordinal), "Asset accounting event currency does not match the retained Projected snapshot.");
         RequireAssertion(PayloadEquals(request.Scope, source.Scope), "Asset accounting event scope does not match the retained Projected snapshot.");
@@ -1363,9 +1366,7 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
     private static void ValidatePosition(AssetAccountingEventSpineDto source, BookPositionDto position, OpenLotDirection? direction = null)
     {
         if (source.EventKind is AssetAccountingEventKindDto.Acquisition or AssetAccountingEventKindDto.Disposal)
-            RequireAssertion(direction is null
-                ? position.PositionSide is BookPositionSides.Long or BookPositionSides.Asset or BookPositionSides.Short or BookPositionSides.Liability
-                : direction == OpenLotDirection.Short
+            RequireAssertion((direction ?? source.Direction) == OpenLotDirection.Short
                 ? position.PositionSide is BookPositionSides.Short or BookPositionSides.Liability
                 : position.PositionSide is BookPositionSides.Long or BookPositionSides.Asset,
                 "The current lot acquisition/disposal path requires a Long or Asset position; short and liability positions require separate posting authority.");

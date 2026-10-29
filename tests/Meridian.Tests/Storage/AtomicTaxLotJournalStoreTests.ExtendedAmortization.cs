@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.FixedIncome;
+using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 
 namespace Meridian.Tests.Storage;
@@ -26,9 +27,10 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         posted.Journal.Entry.Lines.Single(line => line.Account == AmortAccount).Credit.Should().Be(10_125m);
         (await fixture.Restart().AppendAssetPostingAsync(command)).IsExactReplay.Should().BeTrue();
         var changed = command.Amortization! with { AmortizeRemainingFace = false };
-        var tampered = (command with { Amortization = changed,
-            Journal = command.Journal with { PostingCommand = command.Journal.PostingCommand! with { LotAmortization = changed } } }).WithComputedFingerprint();
-        var retry = () => fixture.Restart().AppendAssetPostingAsync(tampered);
+        var retry = () => fixture.Restart().AppendAssetPostingAsync((command with { Amortization = changed,
+            Journal = command.Journal with { PostingCommand = command.Journal.PostingCommand! with { LotAmortization = changed } } }).WithComputedFingerprint());
         await retry.Should().ThrowAsync<LedgerValidationException>();
+        (await fixture.Restart().GetAtomicTaxLotPostingAsync(command.MutationBatchId))!.MutatedLots.Single()
+            .ToOpenLot().OpenTransactionCostBasis.Should().Be(903_375m);
     }
 }

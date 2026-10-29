@@ -212,6 +212,10 @@ public sealed record AssetAccountingEventSpineDto(
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public AssetAccountingPreparationRevisionDto? PreparationRevision { get; init; }
 
+    /// <summary>Retained before drafting; historical events are Long and omit this property.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public OpenLotDirection Direction { get; init; }
+
     public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = RetainedEvidence ?? [];
 
     public IReadOnlyList<AssetAccountingStageEvidenceDto> Stages { get; init; } = Stages ?? [];
@@ -243,6 +247,9 @@ public sealed record ProjectAssetAccountingEventRequestDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public OpenLotDirection Direction { get; init; }
+
     public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } =
         RetainedEvidence ?? [];
 }
@@ -464,6 +471,9 @@ public static class AssetAccountingEventSpineValidator
         }
 
         var issues = new List<string>();
+        if (!Enum.IsDefined(spine.Direction) || (spine.Direction == OpenLotDirection.Short
+            && spine.EventKind is not (AssetAccountingEventKindDto.Acquisition or AssetAccountingEventKindDto.Disposal)))
+            issues.Add("Retained lot direction must be supported by the accounting event kind.");
         if (spine.EventId == Guid.Empty)
             issues.Add("Asset accounting event id is required.");
         if (spine.EventVersion <= 0)
@@ -697,6 +707,8 @@ public static class AssetAccountingEventSpineValidator
         }
 
         var hasDraftedStage = spine.Stages.Any(static stage => stage.Stage == AssetAccountingLifecycleStageDto.Drafted);
+        if (spine.DraftedLotMutation is { } directionInstruction && directionInstruction.Direction != spine.Direction)
+            issues.Add("Drafted lot direction must match the retained accounting event direction.");
         if (spine.CorporateAction is { } successorProjection)
         {
             issues.AddRange(AssetLotMutationInstructionValidator.Validate(spine.EventKind,

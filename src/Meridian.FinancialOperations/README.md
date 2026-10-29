@@ -18,6 +18,8 @@ cannot approve or post. Reversal preparation preserves the original calculation 
 The existing event spine now carries direction through short opening/cover candidates, matching
 liability credits/debits to positive retained quantities. The atomic store certifies complete
 cash/liability/result economics; approvals, period control and exact replay remain shared.
+Projection retains explicit direction before drafting; the candidate cannot change it or use an
+opposite-side position. The canonical relief guard also checks the carrying account's type.
 
 All six shipped statement connectors capture executed mapping semantics at parse time. Display labels and review notes do not change that fingerprint; fields, activity mappings, culture, date formats and CSV options do. The retained import supplies comparison proof on replay. Legacy artifact upgrade verifies the original shape and adopts retained bytes without inventing mapping evidence.
 
