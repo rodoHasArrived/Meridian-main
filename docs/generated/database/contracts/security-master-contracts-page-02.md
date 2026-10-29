@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 2 of 6
 
-Objects 81-160 of 474. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 478. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -444,6 +444,8 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_IOtcExposureService["IOtcExposureService"] {
     }
+    class Meridian_Contracts_SecurityMaster_ISecurityCashFlowReceiptStore["ISecurityCashFlowReceiptStore"] {
+    }
     class Meridian_Contracts_SecurityMaster_ISecurityCorporateActionsQueryService["ISecurityCorporateActionsQueryService"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityCoverageSymbolSource["ISecurityCoverageSymbolSource"] {
@@ -453,8 +455,6 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_ISecurityForwardCurveProvider["ISecurityForwardCurveProvider"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityIdentityQueryService["ISecurityIdentityQueryService"] {
-    }
-    class Meridian_Contracts_SecurityMaster_ISecurityMasterAmender["ISecurityMasterAmender"] {
     }
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionDto

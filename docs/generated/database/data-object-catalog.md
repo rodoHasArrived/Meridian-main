@@ -4,7 +4,7 @@
 
 This is a source inventory of public DTOs and related contract objects. Database-to-contract links are explicit module associations; they do not assert one-to-one structural equivalence.
 
-- Public contract objects: 3104
+- Public contract objects: 3142
 - Namespaces: 59
 
 ## Classifications
@@ -12,24 +12,24 @@ This is a source inventory of public DTOs and related contract objects. Database
 | Classification | Count |
 | --- | ---: |
 | `catalog` | 13 |
-| `class` | 277 |
+| `class` | 279 |
 | `configuration` | 20 |
-| `dto` | 1462 |
-| `enum` | 434 |
+| `dto` | 1471 |
+| `enum` | 437 |
 | `event` | 5 |
 | `payload` | 63 |
-| `record` | 381 |
+| `record` | 392 |
 | `record_struct` | 10 |
-| `request` | 170 |
+| `request` | 176 |
 | `response` | 91 |
-| `result` | 45 |
-| `service_contract` | 124 |
+| `result` | 47 |
+| `service_contract` | 129 |
 | `struct` | 9 |
 
 ## Database-adjacent diagrams
 
 - [`ledger-contracts`](contracts/ledger-contracts.md): 344 objects; mapped schemas: `ledger`.
-- [`security-master-contracts`](contracts/security-master-contracts.md): 474 objects; mapped schemas: `security_master`.
+- [`security-master-contracts`](contracts/security-master-contracts.md): 478 objects; mapped schemas: `security_master`.
 - [`direct-lending-contracts`](contracts/direct-lending-contracts.md): 99 objects; mapped schemas: `security_master`.
 - [`asset-operations-contracts`](contracts/asset-operations-contracts.md): 130 objects; mapped schemas: `asset_operations`.
 - [`fund-governance-contracts`](contracts/fund-governance-contracts.md): 141 objects; mapped schemas: `fund_accounts`, `fund_structure`.

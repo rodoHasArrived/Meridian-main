@@ -199,6 +199,7 @@ classDiagram
         +decimal? OriginalFace
         +decimal? ParBasis
         +decimal Quantity
+        +Meridian_Contracts_FixedIncome_BondSettlementConsiderationDto? SettlementConsideration
         +Guid TaxLotRecordId
         +decimal UnitCost
     }
