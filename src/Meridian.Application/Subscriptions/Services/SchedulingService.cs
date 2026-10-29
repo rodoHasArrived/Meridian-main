@@ -18,19 +18,35 @@ public sealed class SchedulingService : IAsyncDisposable
     private readonly ConfigStore _configStore;
     private readonly string _schedulesPath;
     private readonly ILogger _log;
-    private readonly ConcurrentDictionary<string, SubscriptionSchedule> _schedules = new();
+    private volatile IReadOnlyDictionary<string, SubscriptionSchedule> _schedules = new Dictionary<string, SubscriptionSchedule>();
     private readonly ConcurrentDictionary<string, ScheduleExecutionStatus> _executionStatus = new();
     private readonly Timer _timer;
     private readonly object _gate = new();
+    private readonly SemaphoreSlim _mutationLock = new(1, 1);
+    private readonly CancellationTokenSource _lifetime = new();
+    private readonly Dictionary<string, Task<ScheduleExecutionStatus>> _running = new();
+    private readonly Func<SubscriptionSchedule, CancellationToken, Task<int>> _applySchedule;
+    private Task? _disposeTask;
     private bool _disposed;
 
     public SchedulingService(ConfigStore configStore, string? schedulesPath = null, ILogger? log = null)
+        : this(configStore, schedulesPath, log, null)
+    {
+    }
+
+    internal SchedulingService(
+        ConfigStore configStore,
+        string? schedulesPath,
+        ILogger? log,
+        Func<SubscriptionSchedule, CancellationToken, Task<int>>? applySchedule)
     {
         _configStore = configStore ?? throw new ArgumentNullException(nameof(configStore));
         _schedulesPath = schedulesPath ?? Path.Combine(
             Path.GetDirectoryName(configStore.ConfigPath) ?? ".",
             "schedules.json");
         _log = log ?? LoggingSetup.ForContext<SchedulingService>();
+
+        _applySchedule = applySchedule ?? ApplyScheduleAsync;
 
         // Check every minute
         _timer = new Timer(CheckSchedules, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
@@ -41,8 +57,18 @@ public sealed class SchedulingService : IAsyncDisposable
     /// </summary>
     public async Task InitializeAsync(CancellationToken ct = default)
     {
-        await LoadSchedulesAsync(ct);
-        _log.Information("Scheduling service initialized with {Count} schedules", _schedules.Count);
+        await _mutationLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            lock (_gate)
+                ObjectDisposedException.ThrowIf(_disposed, this);
+            await LoadSchedulesAsync(ct).ConfigureAwait(false);
+            _log.Information("Scheduling service initialized with {Count} schedules", _schedules.Count);
+        }
+        finally
+        {
+            _mutationLock.Release();
+        }
     }
 
     /// <summary>
@@ -93,8 +119,11 @@ public sealed class SchedulingService : IAsyncDisposable
             Description: request.Description
         );
 
-        _schedules[schedule.Id] = schedule;
-        await SaveSchedulesAsync(ct);
+        await MutateSchedulesAsync(snapshot =>
+        {
+            snapshot[schedule.Id] = schedule;
+            return (true, schedule);
+        }, ct).ConfigureAwait(false);
 
         _log.Information("Created schedule {ScheduleId}: {Name}", schedule.Id, schedule.Name);
         return schedule;
@@ -108,20 +137,24 @@ public sealed class SchedulingService : IAsyncDisposable
         CreateScheduleRequest request,
         CancellationToken ct = default)
     {
-        if (!_schedules.TryGetValue(scheduleId, out var existing))
-            return null;
-
-        var updated = existing with
+        var updated = await MutateSchedulesAsync<SubscriptionSchedule?>(snapshot =>
         {
-            Name = request.Name,
-            Symbols = request.Symbols,
-            Action = request.Action,
-            Timing = request.Timing,
-            Description = request.Description
-        };
+            if (!snapshot.TryGetValue(scheduleId, out var existing))
+                return (false, null);
 
-        _schedules[scheduleId] = updated;
-        await SaveSchedulesAsync(ct);
+            var replacement = existing with
+            {
+                Name = request.Name,
+                Symbols = request.Symbols,
+                Action = request.Action,
+                Timing = request.Timing,
+                Description = request.Description
+            };
+            snapshot[scheduleId] = replacement;
+            return (true, replacement);
+        }, ct).ConfigureAwait(false);
+        if (updated is null)
+            return null;
 
         _log.Information("Updated schedule {ScheduleId}", scheduleId);
         return updated;
@@ -135,12 +168,15 @@ public sealed class SchedulingService : IAsyncDisposable
         bool enabled,
         CancellationToken ct = default)
     {
-        if (!_schedules.TryGetValue(scheduleId, out var existing))
+        var found = await MutateSchedulesAsync(snapshot =>
+        {
+            if (!snapshot.TryGetValue(scheduleId, out var existing))
+                return (false, false);
+            snapshot[scheduleId] = existing with { IsEnabled = enabled };
+            return (true, true);
+        }, ct).ConfigureAwait(false);
+        if (!found)
             return false;
-
-        var updated = existing with { IsEnabled = enabled };
-        _schedules[scheduleId] = updated;
-        await SaveSchedulesAsync(ct);
 
         _log.Information("Schedule {ScheduleId} {Action}", scheduleId, enabled ? "enabled" : "disabled");
         return true;
@@ -151,11 +187,13 @@ public sealed class SchedulingService : IAsyncDisposable
     /// </summary>
     public async Task<bool> DeleteScheduleAsync(string scheduleId, CancellationToken ct = default)
     {
-        if (!_schedules.TryRemove(scheduleId, out _))
+        var removed = await MutateSchedulesAsync(snapshot =>
+        {
+            var found = snapshot.Remove(scheduleId);
+            return (found, found);
+        }, ct).ConfigureAwait(false);
+        if (!removed)
             return false;
-
-        _executionStatus.TryRemove(scheduleId, out _);
-        await SaveSchedulesAsync(ct);
 
         _log.Information("Deleted schedule {ScheduleId}", scheduleId);
         return true;
@@ -168,6 +206,9 @@ public sealed class SchedulingService : IAsyncDisposable
         string scheduleId,
         CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
+        lock (_gate)
+            ObjectDisposedException.ThrowIf(_disposed, this);
         if (!_schedules.TryGetValue(scheduleId, out var schedule))
         {
             return new ScheduleExecutionStatus(
@@ -179,31 +220,81 @@ public sealed class SchedulingService : IAsyncDisposable
             );
         }
 
-        return await ExecuteScheduleAsync(schedule, ct);
+        return await StartExecution(schedule, ct).ConfigureAwait(false);
     }
 
-    private void CheckSchedules(object? state)
-    {
-        if (_disposed)
-            return;
+    private void CheckSchedules(object? state) => CheckSchedules(DateTimeOffset.UtcNow);
 
+    internal void CheckSchedules(DateTimeOffset now)
+    {
         lock (_gate)
         {
-            var now = DateTimeOffset.UtcNow;
+            if (_disposed)
+                return;
 
             foreach (var schedule in _schedules.Values.Where(s => s.IsEnabled))
             {
                 try
                 {
-                    if (ShouldExecute(schedule, now))
-                    {
-                        _ = ExecuteScheduleAsync(schedule, CancellationToken.None);
-                    }
+                    if (!_running.ContainsKey(schedule.Id) && ShouldExecute(schedule, now))
+                        _ = StartExecution(schedule, CancellationToken.None);
                 }
                 catch (Exception ex)
                 {
                     _log.Error(ex, "Error checking schedule {ScheduleId}", schedule.Id);
                 }
+            }
+        }
+    }
+
+    private Task<ScheduleExecutionStatus> StartExecution(SubscriptionSchedule schedule, CancellationToken ct)
+    {
+        lock (_gate)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            ct.ThrowIfCancellationRequested();
+            if (_running.TryGetValue(schedule.Id, out var running))
+                return running.WaitAsync(ct);
+
+            var completion = new TaskCompletionSource<ScheduleExecutionStatus>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _running.Add(schedule.Id, completion.Task);
+            _ = CompleteExecutionAsync(schedule, ct, completion);
+            return completion.Task;
+        }
+    }
+
+    private async Task CompleteExecutionAsync(
+        SubscriptionSchedule schedule,
+        CancellationToken ct,
+        TaskCompletionSource<ScheduleExecutionStatus> completion)
+    {
+        // Admission is published before any user or configuration-store work can start.
+        await Task.Yield();
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(ct, _lifetime.Token);
+        try
+        {
+            var status = await ExecuteScheduleAsync(schedule, linked.Token).ConfigureAwait(false);
+            lock (_gate)
+            {
+                _running.Remove(schedule.Id);
+                completion.TrySetResult(status);
+            }
+        }
+        catch (OperationCanceledException ex) when (linked.IsCancellationRequested)
+        {
+            lock (_gate)
+            {
+                _running.Remove(schedule.Id);
+                completion.TrySetCanceled(ex.CancellationToken);
+            }
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Unexpected schedule execution failure for {ScheduleId}", schedule.Id);
+            lock (_gate)
+            {
+                _running.Remove(schedule.Id);
+                completion.TrySetException(ex);
             }
         }
     }
@@ -260,64 +351,14 @@ public sealed class SchedulingService : IAsyncDisposable
 
         try
         {
-            var scheduleSymbolSet = new HashSet<string>(schedule.Symbols, StringComparer.OrdinalIgnoreCase);
-
-            affected = await _configStore.UpdateAsync(cfg =>
-            {
-                var symbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
-                var affected = 0;
-
-                if (schedule.Action == ScheduleAction.Enable)
-                {
-                    // Enable: set SubscribeTrades and SubscribeDepth to true
-                    for (var i = 0; i < symbols.Count; i++)
-                    {
-                        if (scheduleSymbolSet.Contains(symbols[i].Symbol))
-                        {
-                            symbols[i] = symbols[i] with
-                            {
-                                SubscribeTrades = true,
-                                SubscribeDepth = true
-                            };
-                            affected++;
-                        }
-                    }
-
-                    // Add missing symbols
-                    foreach (var symbolName in schedule.Symbols)
-                    {
-                        if (!symbols.Any(s => s.Symbol.Equals(symbolName, StringComparison.OrdinalIgnoreCase)))
-                        {
-                            symbols.Add(new SymbolConfig(symbolName));
-                            affected++;
-                        }
-                    }
-                }
-                else // Disable
-                {
-                    // Disable: set SubscribeTrades and SubscribeDepth to false
-                    for (var i = 0; i < symbols.Count; i++)
-                    {
-                        if (scheduleSymbolSet.Contains(symbols[i].Symbol))
-                        {
-                            symbols[i] = symbols[i] with
-                            {
-                                SubscribeTrades = false,
-                                SubscribeDepth = false
-                            };
-                            affected++;
-                        }
-                    }
-                }
-
-                return (cfg with { Symbols = symbols.ToArray() }, affected);
-            }, ct);
+            ct.ThrowIfCancellationRequested();
+            affected = await _applySchedule(schedule, ct).ConfigureAwait(false);
 
             _log.Information(
                 "Executed schedule {ScheduleId}: {Action} {Count} symbols",
                 schedule.Id, schedule.Action, affected);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             error = ex.Message;
             _log.Error(ex, "Failed to execute schedule {ScheduleId}", schedule.Id);
@@ -333,8 +374,68 @@ public sealed class SchedulingService : IAsyncDisposable
             affected
         );
 
-        _executionStatus[schedule.Id] = status;
+        lock (_gate)
+        {
+            if (_schedules.ContainsKey(schedule.Id))
+                _executionStatus[schedule.Id] = status;
+        }
         return status;
+    }
+
+    private async Task<int> ApplyScheduleAsync(SubscriptionSchedule schedule, CancellationToken ct)
+    {
+        var scheduleSymbolSet = new HashSet<string>(schedule.Symbols, StringComparer.OrdinalIgnoreCase);
+
+        return await _configStore.UpdateAsync(cfg =>
+        {
+            var symbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
+            var affected = 0;
+
+            if (schedule.Action == ScheduleAction.Enable)
+            {
+                // Enable: set SubscribeTrades and SubscribeDepth to true
+                for (var i = 0; i < symbols.Count; i++)
+                {
+                    if (scheduleSymbolSet.Contains(symbols[i].Symbol))
+                    {
+                        symbols[i] = symbols[i] with
+                        {
+                            SubscribeTrades = true,
+                            SubscribeDepth = true
+                        };
+                        affected++;
+                    }
+                }
+
+                // Add missing symbols
+                foreach (var symbolName in schedule.Symbols)
+                {
+                    if (!symbols.Any(s => s.Symbol.Equals(symbolName, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        symbols.Add(new SymbolConfig(symbolName));
+                        affected++;
+                    }
+                }
+            }
+            else // Disable
+            {
+                // Disable: set SubscribeTrades and SubscribeDepth to false
+                for (var i = 0; i < symbols.Count; i++)
+                {
+                    if (scheduleSymbolSet.Contains(symbols[i].Symbol))
+                    {
+                        symbols[i] = symbols[i] with
+                        {
+                            SubscribeTrades = false,
+                            SubscribeDepth = false
+                        };
+                        affected++;
+                    }
+                }
+            }
+
+            return (cfg with { Symbols = symbols.ToArray() }, affected);
+        }, ct);
     }
 
     private static DateTimeOffset? CalculateNextRun(SubscriptionSchedule schedule, DateTimeOffset from)
@@ -405,10 +506,11 @@ public sealed class SchedulingService : IAsyncDisposable
                 PropertyNameCaseInsensitive = true
             });
 
-            foreach (var schedule in schedules ?? Enumerable.Empty<SubscriptionSchedule>())
-            {
-                _schedules[schedule.Id] = schedule;
-            }
+            var snapshot = (schedules ?? [])
+                .GroupBy(schedule => schedule.Id)
+                .ToDictionary(group => group.Key, group => group.Last());
+            lock (_gate)
+                _schedules = snapshot;
         }
         catch (OperationCanceledException)
         {
@@ -422,16 +524,46 @@ public sealed class SchedulingService : IAsyncDisposable
         }
     }
 
-    private async Task SaveSchedulesAsync(CancellationToken ct)
+    private async Task<T> MutateSchedulesAsync<T>(
+        Func<Dictionary<string, SubscriptionSchedule>, (bool Changed, T Result)> mutate,
+        CancellationToken ct)
+    {
+        await _mutationLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            lock (_gate)
+                ObjectDisposedException.ThrowIf(_disposed, this);
+            var snapshot = _schedules.ToDictionary(pair => pair.Key, pair => pair.Value);
+            var (changed, result) = mutate(snapshot);
+            if (!changed)
+                return result;
+
+            await SaveSchedulesAsync(snapshot.Values, ct).ConfigureAwait(false);
+            // Once publication commits, cancellation must not leave memory on the old snapshot.
+            lock (_gate)
+            {
+                _schedules = snapshot;
+                foreach (var id in _executionStatus.Keys.Where(id => !snapshot.ContainsKey(id)))
+                    _executionStatus.TryRemove(id, out _);
+            }
+            return result;
+        }
+        finally
+        {
+            _mutationLock.Release();
+        }
+    }
+
+    private async Task SaveSchedulesAsync(IEnumerable<SubscriptionSchedule> schedules, CancellationToken ct)
     {
         try
         {
-            var json = JsonSerializer.Serialize(_schedules.Values.ToList(), new JsonSerializerOptions
+            var json = JsonSerializer.Serialize(schedules.ToList(), new JsonSerializerOptions
             {
                 WriteIndented = true,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             });
-            await AtomicFileWriter.WriteAsync(_schedulesPath, json, ct);
+            await AtomicFileWriter.WriteAsync(_schedulesPath, json, ct).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -440,14 +572,39 @@ public sealed class SchedulingService : IAsyncDisposable
         catch (Exception ex)
         {
             _log.Error(ex, "Failed to save schedules to {Path}", _schedulesPath);
+            throw;
         }
     }
 
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
-        if (_disposed)
-            return;
-        _disposed = true;
-        await _timer.DisposeAsync();
+        lock (_gate)
+        {
+            if (_disposeTask is null)
+            {
+                _disposed = true;
+                _disposeTask = DisposeCoreAsync(_running.Values.ToArray());
+            }
+            return new ValueTask(_disposeTask);
+        }
+    }
+
+    private async Task DisposeCoreAsync(Task<ScheduleExecutionStatus>[] running)
+    {
+        await Task.Yield();
+        await _timer.DisposeAsync().ConfigureAwait(false);
+        await _lifetime.CancelAsync().ConfigureAwait(false);
+        try
+        {
+            await Task.WhenAll(running).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (_lifetime.IsCancellationRequested)
+        {
+            // Owned executions have observed shutdown; all tracked tasks have settled.
+        }
+        // Join an already-admitted persistence operation before releasing lifetime resources.
+        await _mutationLock.WaitAsync().ConfigureAwait(false);
+        _mutationLock.Release();
+        _lifetime.Dispose();
     }
 }
