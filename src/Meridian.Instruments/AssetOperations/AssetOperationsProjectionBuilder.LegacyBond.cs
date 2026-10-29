@@ -53,7 +53,7 @@ public static partial class AssetOperationsProjectionBuilder
             context.AsOf,
             "SecurityMaster",
             subject.SecurityId.ToString("D"));
-        var flows = ProjectFixedIncomeCashFlows(bond, projectionRunId, asOfDate).ToArray();
+        var flows = ProjectFixedIncomeCashFlowsAsOf(bond, projectionRunId, asOfDate).ToArray();
         var ledger = new[]
         {
             new AssetLedgerProjectionDto(
@@ -100,8 +100,13 @@ public static partial class AssetOperationsProjectionBuilder
 
     internal static IReadOnlyList<AssetProjectedCashFlowDto> ProjectFixedIncomeCashFlows(
         BondReferenceDto bond,
+        Guid projectionRunId)
+        => BuildBondProjectedCashFlows(bond, projectionRunId, null).ToArray();
+
+    internal static IReadOnlyList<AssetProjectedCashFlowDto> ProjectFixedIncomeCashFlowsAsOf(
+        BondReferenceDto bond,
         Guid projectionRunId,
-        DateOnly? asOfDate = null)
+        DateOnly asOfDate)
         => BuildBondProjectedCashFlows(bond, projectionRunId, asOfDate).ToArray();
 
     private static IEnumerable<AssetProjectedCashFlowDto> BuildBondProjectedCashFlows(

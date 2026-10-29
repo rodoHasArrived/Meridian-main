@@ -321,7 +321,7 @@ public sealed partial class AssetObligationProjectionService
             yield break;
         }
 
-        foreach (var flow in AssetOperationsProjectionBuilder.ProjectFixedIncomeCashFlows(reference, projectionRunId, projectionAsOf))
+        foreach (var flow in AssetOperationsProjectionBuilder.ProjectFixedIncomeCashFlowsAsOf(reference, projectionRunId, projectionAsOf))
         {
             yield return flow;
         }

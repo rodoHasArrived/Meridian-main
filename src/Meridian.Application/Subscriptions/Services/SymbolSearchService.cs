@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using Meridian.Core.Logging;
 using Meridian.Core.Subscriptions.Models;
@@ -21,11 +20,9 @@ public sealed class SymbolSearchService : IDisposable
     private readonly List<ISymbolSearchProvider> _providers = new();
     private readonly OpenFigiClient? _figiClient;
     private readonly MetadataEnrichmentService _metadataService;
-    private readonly ConcurrentDictionary<string, CachedSearchResult> _searchCache = new(StringComparer.OrdinalIgnoreCase);
-    private readonly ConcurrentDictionary<string, CachedDetails> _detailsCache = new(StringComparer.OrdinalIgnoreCase);
+    private readonly BoundedSearchCache<SymbolSearchResponse> _searchCache;
+    private readonly BoundedSearchCache<SymbolDetails> _detailsCache;
     private readonly ILogger _log;
-    private readonly TimeSpan _searchCacheDuration;
-    private readonly TimeSpan _detailsCacheDuration;
     private bool _disposed;
 
     /// <summary>
@@ -39,8 +36,8 @@ public sealed class SymbolSearchService : IDisposable
     {
         _log = log ?? LoggingSetup.ForContext<SymbolSearchService>();
         _metadataService = metadataService ?? new MetadataEnrichmentService();
-        _searchCacheDuration = searchCacheDuration ?? TimeSpan.FromMinutes(5);
-        _detailsCacheDuration = detailsCacheDuration ?? TimeSpan.FromMinutes(30);
+        _searchCache = new(searchCacheDuration ?? TimeSpan.FromMinutes(5));
+        _detailsCache = new(detailsCacheDuration ?? TimeSpan.FromMinutes(30));
 
         // Initialize default providers
         InitializeDefaultProviders();
@@ -61,8 +58,8 @@ public sealed class SymbolSearchService : IDisposable
         _providers.AddRange(providers.OrderBy(p => p.Priority));
         _figiClient = figiClient;
         _metadataService = metadataService;
-        _searchCacheDuration = searchCacheDuration ?? TimeSpan.FromMinutes(5);
-        _detailsCacheDuration = detailsCacheDuration ?? TimeSpan.FromMinutes(30);
+        _searchCache = new(searchCacheDuration ?? TimeSpan.FromMinutes(5));
+        _detailsCache = new(detailsCacheDuration ?? TimeSpan.FromMinutes(30));
     }
 
     private void InitializeDefaultProviders()
@@ -85,6 +82,7 @@ public sealed class SymbolSearchService : IDisposable
     /// </summary>
     public async Task<IReadOnlyList<ProviderStatus>> GetProvidersAsync(CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var tasks = _providers.Select(async p =>
         {
             bool available;
@@ -92,7 +90,7 @@ public sealed class SymbolSearchService : IDisposable
             {
                 available = await p.IsAvailableAsync(ct).ConfigureAwait(false);
             }
-            catch
+            catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
             {
                 available = false;
             }
@@ -110,7 +108,7 @@ public sealed class SymbolSearchService : IDisposable
             {
                 figiAvailable = await _figiClient.IsAvailableAsync(ct).ConfigureAwait(false);
             }
-            catch
+            catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
             {
                 figiAvailable = false;
             }
@@ -119,6 +117,7 @@ public sealed class SymbolSearchService : IDisposable
         var result = statuses.ToList();
         result.Add(new ProviderStatus("openfigi", "OpenFIGI", 100, figiAvailable));
 
+        ct.ThrowIfCancellationRequested();
         return result;
     }
 
@@ -131,6 +130,7 @@ public sealed class SymbolSearchService : IDisposable
     public async Task<SymbolSearchResponse> SearchAsync(SymbolSearchRequest request, CancellationToken ct = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        ct.ThrowIfCancellationRequested();
 
         if (string.IsNullOrWhiteSpace(request.Query))
         {
@@ -156,10 +156,10 @@ public sealed class SymbolSearchService : IDisposable
 
         // Check cache
         var cacheKey = BuildCacheKey(request);
-        if (_searchCache.TryGetValue(cacheKey, out var cached) && !cached.IsExpired)
+        if (_searchCache.TryGetValue(cacheKey, out var cached))
         {
             _log.Debug("Returning cached search results for {Query}", request.Query);
-            return cached.Response;
+            return cached;
         }
 
         var sw = Stopwatch.StartNew();
@@ -204,7 +204,7 @@ public sealed class SymbolSearchService : IDisposable
 
                 return (Provider: p.Name, Results: results);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
             {
                 _log.Warning(ex, "Symbol search failed for provider {Provider}", p.Name);
                 return (Provider: p.Name, Results: Array.Empty<SymbolSearchResult>());
@@ -255,7 +255,7 @@ public sealed class SymbolSearchService : IDisposable
                 if (!sources.Contains("openfigi"))
                     sources.Add("openfigi");
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
             {
                 _log.Warning(ex, "Failed to enrich search results with FIGI");
             }
@@ -272,7 +272,8 @@ public sealed class SymbolSearchService : IDisposable
         );
 
         // Cache the response
-        _searchCache[cacheKey] = new CachedSearchResult(response, _searchCacheDuration);
+        ct.ThrowIfCancellationRequested();
+        _searchCache.Set(cacheKey, response);
 
         _log.Information("Symbol search for {Query} returned {Count} results from {Sources} in {ElapsedMs}ms",
             request.Query, deduped.Count, string.Join(", ", sources), sw.ElapsedMilliseconds);
@@ -330,6 +331,7 @@ public sealed class SymbolSearchService : IDisposable
         CancellationToken ct = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        ct.ThrowIfCancellationRequested();
 
         if (string.IsNullOrWhiteSpace(symbol))
             return null;
@@ -338,10 +340,10 @@ public sealed class SymbolSearchService : IDisposable
 
         // Check cache
         var cacheKey = $"{normalizedSymbol}:{provider ?? "any"}";
-        if (_detailsCache.TryGetValue(cacheKey, out var cached) && !cached.IsExpired)
+        if (_detailsCache.TryGetValue(cacheKey, out var cached))
         {
             _log.Debug("Returning cached details for {Symbol}", symbol);
-            return cached.Details;
+            return cached;
         }
 
         // Get providers to query
@@ -367,7 +369,7 @@ public sealed class SymbolSearchService : IDisposable
                     break;
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
             {
                 _log.Warning(ex, "Failed to get details for {Symbol} from {Provider}", symbol, p.Name);
             }
@@ -395,16 +397,17 @@ public sealed class SymbolSearchService : IDisposable
                     };
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
             {
                 _log.Warning(ex, "Failed to enrich details with FIGI for {Symbol}", symbol);
             }
         }
 
         // Cache the result
+        ct.ThrowIfCancellationRequested();
         if (details is not null)
         {
-            _detailsCache[cacheKey] = new CachedDetails(details, _detailsCacheDuration);
+            _detailsCache.Set(cacheKey, details);
         }
 
         return details;
@@ -421,6 +424,7 @@ public sealed class SymbolSearchService : IDisposable
         CancellationToken ct = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        ct.ThrowIfCancellationRequested();
 
         if (_figiClient is null)
         {
@@ -442,6 +446,7 @@ public sealed class SymbolSearchService : IDisposable
         CancellationToken ct = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        ct.ThrowIfCancellationRequested();
 
         if (_figiClient is null)
         {
@@ -536,20 +541,10 @@ public sealed class SymbolSearchService : IDisposable
         }
 
         _figiClient?.Dispose();
+        _searchCache.Clear();
+        _detailsCache.Clear();
     }
 
-
-    private sealed record CachedSearchResult(SymbolSearchResponse Response, TimeSpan Duration)
-    {
-        public DateTimeOffset CreatedAt { get; } = DateTimeOffset.UtcNow;
-        public bool IsExpired => DateTimeOffset.UtcNow - CreatedAt > Duration;
-    }
-
-    private sealed record CachedDetails(SymbolDetails Details, TimeSpan Duration)
-    {
-        public DateTimeOffset CreatedAt { get; } = DateTimeOffset.UtcNow;
-        public bool IsExpired => DateTimeOffset.UtcNow - CreatedAt > Duration;
-    }
 
 }
 

@@ -143,7 +143,7 @@ public sealed class BondSettlementConsiderationTests
             ("Assets/Cash", 0m, 82_225m, LedgerAccountType.Asset)
         };
         var lines = values.Select(value => new LedgerEntry(Guid.NewGuid(), id, AsOf,
-            new LedgerAccount(value.Item1, value.Item4), value.Item2, value.Item3, "Settlement",
+            new LedgerAccount(value.Item1, value.Item4), value.Item2, value.Item3, "Bond settlement",
             currency: new LedgerEntryCurrency("USD", "USD", value.Item2, value.Item3, 1m))).ToArray();
         var generated = values.Select((value, index) => new GeneratedPostingLineDto(index.ToString(), value.Item1,
             value.Item2 > 0m ? AccountingTemplateLineSideDto.Debit : AccountingTemplateLineSideDto.Credit,
