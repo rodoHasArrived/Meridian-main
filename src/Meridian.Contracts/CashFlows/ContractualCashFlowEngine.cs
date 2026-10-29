@@ -35,6 +35,10 @@ public static partial class ContractualCashFlowEngine
             {
                 var calendar = ResolveCalendar(stream, calendars);
                 var tracked = calendar is null ? null : new ObservedCalendar(calendar);
+                // Retain declared calendars even when an unadjusted schedule makes no queries.
+                // The complete term also supports the American eligibility predicate on replay.
+                tracked?.IsBusinessDay(contract.IssueDate);
+                tracked?.IsBusinessDay(contract.MaturityDate);
                 var schedule = BuildSchedule(contract, stream, tracked);
                 var entries = ResolveExercises(contract, stream, schedule, tracked);
                 eligibility.AddRange(entries.Select(e => e.Eligibility));

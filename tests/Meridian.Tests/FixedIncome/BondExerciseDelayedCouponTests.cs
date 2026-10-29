@@ -95,13 +95,21 @@ public sealed class BondExerciseDelayedCouponTests
         var payload = new Dictionary<string, object?>
         {
             ["assetClassTermsVersion"] = 3,
-            ["issueDate"] = "2026-01-15", ["maturity"] = "2028-01-15",
-            ["couponType"] = "Fixed", ["couponRate"] = 5m, ["dayCount"] = "30/360",
-            ["par"] = 100m, ["paymentFrequency"] = "SemiAnnual", ["isCallable"] = kind == "Call",
+            ["issueDate"] = "2026-01-15",
+            ["maturity"] = "2028-01-15",
+            ["couponType"] = "Fixed",
+            ["couponRate"] = 5m,
+            ["dayCount"] = "30/360",
+            ["par"] = 100m,
+            ["paymentFrequency"] = "SemiAnnual",
+            ["isCallable"] = kind == "Call",
             ["scheduleConventions"] = new
             {
-                accrualAdjusted = false, couponRateUnit = "Percent", couponCashBasis = "Level",
-                paymentLagBusinessDays = 2, paymentCalendars = new[] { "WEEKENDS" }
+                accrualAdjusted = false,
+                couponRateUnit = "Percent",
+                couponCashBasis = "Level",
+                paymentLagBusinessDays = 2,
+                paymentCalendars = new[] { "WEEKENDS" }
             }
         };
         var prefix = kind == "Call" ? "call" : "put";
@@ -113,7 +121,8 @@ public sealed class BondExerciseDelayedCouponTests
                 ["exerciseStyle"] = "European", ["priceBasis"] = "PercentOfPar"
             }
         };
-        if (kind == "Call") payload["callDate"] = exerciseDate;
+        if (kind == "Call")
+            payload["callDate"] = exerciseDate;
         return new(Guid.NewGuid(), "Bond", SecurityStatusDto.Active, "Delayed-coupon bond", "USD",
             JsonSerializer.SerializeToElement(new { }), JsonSerializer.SerializeToElement(payload), [], [], 1, AsOf, null);
     }
