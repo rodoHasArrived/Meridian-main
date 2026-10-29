@@ -873,7 +873,8 @@ public sealed class ProviderConnectionEndpointsTests
         await vault.SaveScopedAsync(new ProviderCredentialSaveRequest("polygon", new Dictionary<string, string?> { ["ApiKey"] = "key-a" }, "default"), configured);
         await vault.SaveScopedAsync(new ProviderCredentialSaveRequest("polygon", new Dictionary<string, string?> { ["ApiKey"] = "key-b" }, "default"), verified);
         await vault.RecordScopedVerificationAsync(new ProviderCredentialVerificationUpdate("polygon", Success: true, ExternalAccountId: "account-b",
-            VerifiedAt: DateTimeOffset.UtcNow, Actor: "provider-ops"), verified);
+            VerifiedAt: DateTimeOffset.UtcNow, Actor: "provider-ops")
+        { ExpectedCredentialGeneration = (await vault.ReadScopedAsync("polygon", verified))!.CredentialGeneration }, verified);
         var client = app.GetTestClient();
 
         var tenantRows = await ReadAsync<ProviderConnectionRowDto[]>(await client.GetAsync("/api/providers/connections"));

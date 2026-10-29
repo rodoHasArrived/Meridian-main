@@ -8,6 +8,7 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Configuration;
 using Meridian.Ui.Services.Services;
+using ProviderIdentity = Meridian.Infrastructure.Adapters.Core.ProviderIdentity;
 using ProviderCatalogEntry = Meridian.Ui.Services.Services.ProviderCatalogEntry;
 using WpfServices = Meridian.Wpf.Services;
 
@@ -22,6 +23,10 @@ public sealed class CredentialEntryViewModel : BindableBase
 
     public string ProviderId { get; init; } = string.Empty;
     public string ConnectionId { get; init; } = string.Empty;
+    public string ProviderFamilyId { get; init; } = string.Empty;
+    public string TenantId { get; init; } = string.Empty;
+    public string ExternalAccountId { get; init; } = string.Empty;
+    public string CredentialEnvironment { get; init; } = string.Empty;
     public string DisplayName { get; init; } = string.Empty;
     public string CredentialType { get; init; } = string.Empty;
     public bool HasCredentials { get; set; }
@@ -123,6 +128,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             if (SetProperty(ref _selectedCredential, value))
             {
                 IsEditPanelVisible = false;
+                EditFields.Clear();
                 IsTestResultVisible = false;
                 NotifyCredentialCommands();
                 SelectionStatusLoad = LoadSelectedStatusAsync(value);
@@ -223,11 +229,15 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             {
                 // Managed providers such as QuickBooks or Plaid are absent from the local market-data
                 // catalog but are still owned connections; the service schema drives their editor.
-                var provider = catalog.FirstOrDefault(item => string.Equals(item.Id, connection.ProviderFamilyId, StringComparison.OrdinalIgnoreCase));
+                var provider = catalog.FirstOrDefault(item => ProviderIdentity.EqualsId(item.Id, connection.ProviderFamilyId));
                 Credentials.Add(new CredentialEntryViewModel
                 {
                     ProviderId = provider?.Id ?? connection.ProviderFamilyId,
                     ConnectionId = connection.ConnectionId,
+                    ProviderFamilyId = connection.ProviderFamilyId,
+                    TenantId = connection.TenantId!,
+                    ExternalAccountId = connection.ExternalAccountId!,
+                    CredentialEnvironment = connection.CredentialEnvironment!,
                     DisplayName = $"{connection.DisplayName} · {connection.ExternalAccountId} · {connection.CredentialEnvironment}",
                     CredentialType = provider is null ? "Provider credentials" : GetCredentialType(provider),
                     RequiresCredentials = provider is null || provider.CredentialFields.Length > 0,
@@ -258,12 +268,8 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         var statuses = await _settingsService.GetProviderCredentialStatusesAsync(connectionId: selected.ConnectionId);
         if (version != _credentialLoadVersion || statusVersion != _selectedStatusVersion || !ReferenceEquals(SelectedCredential, selected))
             return;
-        // A connection-scoped read returns exactly one service row, keyed by the canonical provider ID.
-        // Prefer it so a retained alias (alpha-vantage, qbo) still finds its connection's status.
-        var serviceRows = statuses.Where(item => item.HasServiceFieldSchema).ToArray();
-        var status = serviceRows.Length == 1
-            ? serviceRows[0]
-            : statuses.FirstOrDefault(item => string.Equals(item.ProviderId, selected.ProviderId, StringComparison.OrdinalIgnoreCase));
+        // A foreign provider's single schema row cannot authorize edits for this connection.
+        var status = statuses.SingleOrDefault(item => ProviderIdentity.EqualsId(item.ProviderId, selected.ProviderId));
         selected.ServiceFields = status?.CredentialFields;
         selected.HasCredentials = status?.State is CredentialState.Configured or CredentialState.Partial;
         // Keep the schema even when verification superseded this read. Its status label
@@ -368,7 +374,10 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         IsBusy = true;
         try
         {
+            await ValidateOwnedConnectionAsync(selected);
+            if (!ReferenceEquals(SelectedCredential, selected)) return;
             var state = await _settingsService.SaveProviderCredentialsAsync(selected.ProviderId, fields, selected.ConnectionId);
+            if (!ReferenceEquals(SelectedCredential, selected)) return;
             IsEditPanelVisible = false;
             EditFields.Clear();
             await LoadCredentialsAsync();
@@ -408,7 +417,10 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         IsBusy = true;
         try
         {
+            await ValidateOwnedConnectionAsync(selected);
+            if (!ReferenceEquals(SelectedCredential, selected)) return;
             await _settingsService.RemoveProviderCredentialsAsync(selected.ProviderId, selected.ConnectionId);
+            if (!ReferenceEquals(SelectedCredential, selected)) return;
             IsEditPanelVisible = false;
             IsTestResultVisible = false;
             EditFields.Clear();
@@ -455,6 +467,8 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         var success = false;
         try
         {
+            await ValidateOwnedConnectionAsync(selected);
+            if (!ReferenceEquals(SelectedCredential, selected)) return;
             success = await _settingsService.VerifyProviderCredentialsAsync(selected.ProviderId, selected.ConnectionId);
         }
         catch (Exception)
@@ -474,6 +488,22 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
                 : $"{selected.DisplayName}: verification was not confirmed by the service.";
             TestResultColor = selected.StatusColor;
         }
+    }
+
+    private async Task ValidateOwnedConnectionAsync(CredentialEntryViewModel selected)
+    {
+        var connections = await _settingsService.GetOwnedCredentialConnectionsAsync();
+        var matches = connections.Where(connection => string.Equals(connection.ConnectionId, selected.ConnectionId, StringComparison.Ordinal)).ToArray();
+        if (matches.Length == 1 && matches[0].ProviderFamilyId == selected.ProviderFamilyId
+            && matches[0].TenantId == selected.TenantId && matches[0].ExternalAccountId == selected.ExternalAccountId
+            && matches[0].CredentialEnvironment == selected.CredentialEnvironment)
+            return;
+        if (ReferenceEquals(SelectedCredential, selected))
+        {
+            SelectedCredential = null;
+            StatusMessage = "Selected connection ownership changed or was removed. Reload owned connections before retrying.";
+        }
+        throw new InvalidOperationException("The retained credential ownership no longer matches the selected connection.");
     }
 
     private async Task TestAllCredentialsAsync()

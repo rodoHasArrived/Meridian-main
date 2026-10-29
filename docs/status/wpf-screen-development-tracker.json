@@ -7,7 +7,7 @@
     "name": "scripts/generate-diagrams.mjs --tracker-only",
     "version": "1.0.0"
   },
-  "sourceFingerprint": "60b9062839c1",
+  "sourceFingerprint": "f3fe9edfc79e",
   "baselineDate": "2026-06-17",
   "summary": {
     "screenCount": 98,
@@ -2863,6 +2863,7 @@
         "tests/Meridian.Wpf.Tests/ViewModels/ProviderViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/ScheduleManagerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/SetupWizardViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SystemHealthViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/TradingWorkspaceShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WelcomePageViewModelTests.cs",
@@ -2889,7 +2890,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +39 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +40 more."
         }
       ],
       "openTaskCount": 0
@@ -3779,6 +3780,7 @@
         "tests/Meridian.Wpf.Tests/ViewModels/SettingsViewModelAssetProfileTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SettingsViewModelOperationsControlTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SettingsViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/SetupWizardViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WelcomePageViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceAttentionRibbonViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspacePageViewModelTests.cs",
@@ -3800,7 +3802,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, +19 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, +20 more."
         }
       ],
       "openTaskCount": 0
@@ -3823,7 +3825,9 @@
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/BackfillViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/CredentialManagementViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/SetupWizardViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/SecretInputControlTests.cs"
       ],
       "status": "evidence-current",
@@ -3838,7 +3842,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, +2 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, +4 more."
         }
       ],
       "openTaskCount": 0

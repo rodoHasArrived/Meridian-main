@@ -34,6 +34,14 @@ environment or configuration. Environment fallback is a Development/Test or expl
 migration path and is disabled by default for packaged/customer builds. See
 [environment controls](../reference/environment-variables.md).
 
+Desktop initial setup and Backfill open **Manage owned credentials** in Settings. Select an existing
+connection explicitly before saving, rotating, verifying or removing credentials. These entry points
+do not read, replace or delete legacy user-environment secrets. The editor rechecks the retained
+provider, connection, tenant, external account and environment before each command; changed ownership
+requires reloading the connection list. Workstation configuration and credential changes do not
+activate a host runtime binding.
+
+
 ## Prerequisites and execution context
 
 - Use the Windows workstation's Settings/provider-connection surface while signed in as an operator

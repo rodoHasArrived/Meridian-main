@@ -159,5 +159,6 @@ public interface IScopedProviderCredentialStore : IProviderCredentialStore
         ProviderCredentialReadResult expectedConnection, CancellationToken ct = default)
         => throw new NotSupportedException("This credential store cannot conditionally retain scoped rotated credentials.");
     Task DeleteScopedAsync(string providerId, ProviderCredentialScope scope, string? actor = null, CancellationToken ct = default);
+    /// <summary>Records a result only for the nonblank expected credential generation that was tested.</summary>
     Task RecordScopedVerificationAsync(ProviderCredentialVerificationUpdate update, ProviderCredentialScope scope, CancellationToken ct = default);
 }

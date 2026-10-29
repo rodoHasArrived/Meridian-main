@@ -3,6 +3,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
+using Meridian.Contracts.Configuration;
 using Xunit;
 
 namespace Meridian.Tests.Application.Config;
@@ -12,6 +13,79 @@ public sealed class ScopedCredentialRecoveryTests : IDisposable
     private readonly string _root = Path.Combine(Path.GetTempPath(), "meridian-scoped-recovery", Guid.NewGuid().ToString("N"));
     private static readonly ProviderCredentialScope Owner = new("tenant-a", "connection-a", "account-a", "paper");
     private static readonly ProviderCredentialScope Other = new("tenant-b", "connection-a", "account-a", "paper");
+
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData("", true)]
+    [InlineData(" ", true)]
+    [InlineData(null, false)]
+    public async Task ScopedVerification_WithoutTestedGenerationCannotVerifyOrInvalidateReplacement(string? generation, bool success)
+    {
+        var vault = new FileProviderCredentialStore(_root);
+        await vault.SaveScopedAsync(Request("tested"), Owner);
+        await vault.SaveScopedAsync(Request("replacement"), Owner);
+        var current = (await vault.ReadScopedAsync("alpaca", Owner))!;
+        await vault.RecordScopedVerificationAsync(new("alpaca", true, ExternalAccountId: Owner.ExternalAccountId)
+        { ExpectedCredentialGeneration = current.CredentialGeneration }, Owner);
+        var vaultBefore = await File.ReadAllBytesAsync(vault.VaultPath);
+        var auditPath = Path.Combine(Path.GetDirectoryName(vault.VaultPath)!, "provider-credentials.audit.jsonl");
+        var auditBefore = await File.ReadAllBytesAsync(auditPath);
+
+        var verify = () => vault.RecordScopedVerificationAsync(new("alpaca", success,
+            ExternalAccountId: Owner.ExternalAccountId)
+        { ExpectedCredentialGeneration = generation }, Owner);
+
+        await verify.Should().ThrowAsync<ProviderCredentialConflictException>();
+        (await File.ReadAllBytesAsync(vault.VaultPath)).Should().Equal(vaultBefore);
+        (await File.ReadAllBytesAsync(auditPath)).Should().Equal(auditBefore);
+        (await vault.GetScopedStatusAsync("alpaca", Owner)).VerificationState.Should().Be(ProviderVerificationStateDto.Verified);
+    }
+
+    [Fact]
+    public async Task LegacyImportAndOwnedRotation_KeepVerificationSeparateAndNeverRecoverRevokedSecret()
+    {
+        var vault = new FileProviderCredentialStore(_root);
+        await vault.ImportLegacyAsync([Request("legacy")]);
+        var legacy = (await vault.ReadForProviderAsync("alpaca"))!;
+        await vault.RecordVerificationAsync(new("alpaca", true, ExternalAccountId: Owner.ExternalAccountId)
+        { ExpectedCredentialGeneration = legacy.CredentialGeneration });
+        // Historical verification never authorizes or creates a tenant-owned connection.
+        (await vault.ReadScopedAsync("alpaca", Owner)).Should().BeNull();
+        await vault.SaveScopedAsync(Request("owned"), Owner);
+        await vault.SaveScopedAsync(Request("foreign"), Other);
+        var owned = (await vault.ReadScopedAsync("alpaca", Owner))!;
+        (await vault.GetScopedStatusAsync("alpaca", Owner)).VerificationState.Should().NotBe(ProviderVerificationStateDto.Verified);
+        await vault.RecordScopedVerificationAsync(new("alpaca", true, ExternalAccountId: Owner.ExternalAccountId)
+        { ExpectedCredentialGeneration = owned.CredentialGeneration }, Owner);
+        var verified = (await vault.ReadScopedAsync("alpaca", Owner))!;
+
+        var replacementGeneration = await vault.SaveScopedRotatedCredentialsAsync(Request("replacement"), Owner, verified);
+        var staleRotation = () => vault.SaveScopedRotatedCredentialsAsync(Request("late-rotation"), Owner, verified);
+        await staleRotation.Should().ThrowAsync<ProviderCredentialConflictException>();
+        var staleVerification = () => vault.RecordScopedVerificationAsync(new("alpaca", true,
+            ExternalAccountId: Owner.ExternalAccountId)
+        { ExpectedCredentialGeneration = verified.CredentialGeneration }, Owner);
+        await staleVerification.Should().ThrowAsync<ProviderCredentialConflictException>();
+
+        // A completed remote rotation invalidates the old secret; recovery must retain its replacement.
+        await File.WriteAllTextAsync(vault.VaultPath, "corrupt-primary");
+        var recovered = new FileProviderCredentialStore(_root);
+        var replacement = (await recovered.ReadScopedAsync("alpaca", Owner))!;
+        replacement.CredentialGeneration.Should().Be(replacementGeneration);
+        replacement.Get("KeyId").Should().Be("replacement");
+        (await recovered.GetScopedStatusAsync("alpaca", Owner)).VerificationState.Should().NotBe(ProviderVerificationStateDto.Verified);
+        (await recovered.ReadScopedAsync("alpaca", Other))!.Get("KeyId").Should().Be("foreign");
+        (await recovered.ReadForProviderAsync("alpaca"))!.Get("KeyId").Should().Be("legacy");
+
+        await recovered.DeleteScopedAsync("alpaca", Owner, "operator");
+        await File.WriteAllTextAsync(recovered.VaultPath, "corrupt-primary-again");
+        var afterDelete = new FileProviderCredentialStore(_root);
+        (await afterDelete.ReadScopedAsync("alpaca", Owner)).Should().BeNull();
+        (await afterDelete.ReadScopedAsync("alpaca", Other))!.Get("KeyId").Should().Be("foreign");
+        (await afterDelete.ReadForProviderAsync("alpaca"))!.Get("KeyId").Should().Be("legacy");
+        var audit = await File.ReadAllTextAsync(Path.Combine(_root, ".mdc", "provider-credentials.audit.jsonl"));
+        audit.Should().NotContain("secret-owned").And.NotContain("secret-replacement").And.NotContain("secret-foreign");
+    }
 
     [Theory]
     [InlineData("current")]
