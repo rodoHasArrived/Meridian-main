@@ -145,8 +145,10 @@ public sealed class ProviderCredentialOwnershipMigrationTests : IDisposable
                 environment = "live",
                 fields = new Dictionary<string, string>
                 {
-                    ["ClientId"] = "legacy-client", ["ClientSecret"] = "legacy-secret",
-                    ["RefreshToken"] = "legacy-refresh", ["RealmId"] = "account-a"
+                    ["ClientId"] = "legacy-client",
+                    ["ClientSecret"] = "legacy-secret",
+                    ["RefreshToken"] = "legacy-refresh",
+                    ["RealmId"] = "account-a"
                 },
                 metadata = new Dictionary<string, string> { ["credentialGeneration"] = "legacy-generation" }
             }

@@ -25,8 +25,11 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var opening = (original with
         {
             Direction = OpenLotDirection.Short,
-            AcquisitionLot = original.AcquisitionLot with { Account = liability,
-                Acquisition = original.AcquisitionLot.Acquisition! with { Direction = OpenLotDirection.Short } },
+            AcquisitionLot = original.AcquisitionLot with
+            {
+                Account = liability,
+                Acquisition = original.AcquisitionLot.Acquisition! with { Direction = OpenLotDirection.Short }
+            },
             Journal = WithShortLines(original.Journal, ShortLotJournalProjector.Open(liability, 10_000m), original.ExpectedPeriodVersion)
         }).WithComputedFingerprint();
         var posted = await database.JournalStore.AppendAssetPostingAsync(opening);
@@ -110,10 +113,14 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             SourceEventId: write.SourceEventId, ExpectedVersion: periodVersion,
             ApprovalState: AccountingPostingApprovalStateDto.Approved, ApprovalId: "independent-short-review",
             OperatorRationale: "Reviewed short cash, liability and realized book accounting", LedgerBookId: write.LedgerBookId)
-            { Actor = "independent-controller" };
-        return write with { PostingCommand = posting, Entry = new(entry.JournalEntryId, entry.Timestamp, entry.Description,
+        { Actor = "independent-controller" };
+        return write with
+        {
+            PostingCommand = posting,
+            Entry = new(entry.JournalEntryId, entry.Timestamp, entry.Description,
             lines.Select(line => new LedgerEntry(Guid.NewGuid(), entry.JournalEntryId, entry.Timestamp, line.account,
                 line.debit, line.credit, entry.Description, entry.Lines[0].Dimensions,
-                new LedgerEntryCurrency("USD", "USD", line.debit, line.credit, 1m))).ToArray(), entry.Metadata) };
+                new LedgerEntryCurrency("USD", "USD", line.debit, line.credit, 1m))).ToArray(), entry.Metadata)
+        };
     }
 }

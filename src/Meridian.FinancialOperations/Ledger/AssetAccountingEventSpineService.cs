@@ -184,7 +184,7 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
             TaxLotMutationBatchId: null,
             Correction: request.Correction,
             CorporateAction: request.CorporateAction, CapitalReturn: request.CapitalReturn, FactorPaydown: request.FactorPaydown)
-            { Direction = request.Direction };
+        { Direction = request.Direction };
         var projectedSpine = expectedSpine with
         {
             SpineVersion = 2,

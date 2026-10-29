@@ -18,7 +18,8 @@ public static class OpenLotYieldToWorst
 {
     public static OpenLotYieldToWorstDto Select(OpenLotDto lot, SecurityProjectionRecord security)
     {
-        try { return SelectCore(lot, security); }
+        try
+        { return SelectCore(lot, security); }
         catch (ArithmeticException exception)
         { throw new ArgumentException("Redemption yields exceed supported decimal calculation bounds.", nameof(lot), exception); }
     }

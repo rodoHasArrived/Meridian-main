@@ -1164,7 +1164,8 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
                         request.AcquisitionTermsCompletion is { } completion
                             ? [.. request.Candidate.RetainedEvidence, completion.Evidence]
                             : request.Candidate.RetainedEvidence,
-                        SpineAcquisitionLotCompletion.PostingApprovalEvidence(request)) with { Direction = instruction.Direction }
+                        SpineAcquisitionLotCompletion.PostingApprovalEvidence(request)) with
+                    { Direction = instruction.Direction }
                 };
             }
 

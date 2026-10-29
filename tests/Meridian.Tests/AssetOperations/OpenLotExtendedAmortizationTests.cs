@@ -12,7 +12,8 @@ public sealed class OpenLotExtendedAmortizationTests
     public void V3WithoutReviewedTreatment_IsRefused()
     {
         var instruction = AtomicTaxLotJournalStoreTests.AmortPureInstruction(110m, 10m,
-            BondAmortizationMethod.StraightLine, null) with { CalculationVersion = OpenLotAmortization.ExtendedModelVersion };
+            BondAmortizationMethod.StraightLine, null) with
+        { CalculationVersion = OpenLotAmortization.ExtendedModelVersion };
         var project = () => OpenLotAmortization.Project(instruction);
         project.Should().Throw<ArgumentException>().WithMessage("*explicit v3 reviewed instruction*");
     }
@@ -29,14 +30,21 @@ public sealed class OpenLotExtendedAmortizationTests
         {
             CalculationVersion = OpenLotAmortization.ExtendedModelVersion,
             AmortizeRemainingFace = true,
-            ExpectedLot = lot with { CurrentFactor = 0.5m,
-                OpenTransactionCostBasis = price / 2m, OpenFunctionalCostBasis = price * 1.1m / 2m }
+            ExpectedLot = lot with
+            {
+                CurrentFactor = 0.5m,
+                OpenTransactionCostBasis = price / 2m,
+                OpenFunctionalCostBasis = price * 1.1m / 2m
+            }
         };
         var result = OpenLotAmortization.Project(instruction);
         result.TransactionCostBasis.Should().Be(fullTarget / 2m);
         result.FunctionalCostBasis.Should().Be(fullTarget / 2m * 1.1m);
-        var again = instruction with { ExpectedLot = instruction.ExpectedLot with
-        { OpenTransactionCostBasis = result.TransactionCostBasis, OpenFunctionalCostBasis = result.FunctionalCostBasis, Version = 2 } };
+        var again = instruction with
+        {
+            ExpectedLot = instruction.ExpectedLot with
+            { OpenTransactionCostBasis = result.TransactionCostBasis, OpenFunctionalCostBasis = result.FunctionalCostBasis, Version = 2 }
+        };
         OpenLotAmortization.Project(again).FunctionalMovement.Should().Be(0m);
         var legacy = () => OpenLotAmortization.Project(instruction with { CalculationVersion = OpenLotAmortization.ModelVersion });
         legacy.Should().Throw<ArgumentException>().WithMessage("*explicit v3*");
@@ -83,8 +91,14 @@ public sealed class OpenLotExtendedAmortizationTests
     {
         var instruction = Callable(110m, 10m, 105m, 90m);
         var lot = instruction.ExpectedLot;
-        instruction = instruction with { ExpectedLot = lot with { Acquisition = lot.Acquisition with
-            { FaceValueTerms = lot.Acquisition.FaceValueTerms! with { ParBasis = parBasis } } } };
+        instruction = instruction with
+        {
+            ExpectedLot = lot with
+            {
+                Acquisition = lot.Acquisition with
+                { FaceValueTerms = lot.Acquisition.FaceValueTerms! with { ParBasis = parBasis } }
+            }
+        };
         var comparison = OpenLotYieldToWorst.Select(instruction.ExpectedLot, instruction.Security);
         comparison.Selected.Kind.Should().Be("Call");
         comparison.Selected.AnnualYield.Should().BeApproximately(115m / 110m - 1m, 0.00000000001m);
@@ -98,9 +112,18 @@ public sealed class OpenLotExtendedAmortizationTests
     {
         var instruction = AtomicTaxLotJournalStoreTests.AmortPureInstruction(110m, 10m,
             BondAmortizationMethod.StraightLine, null);
-        instruction = instruction with { CalculationVersion = OpenLotAmortization.ExtendedModelVersion,
-            AmortizeRemainingFace = true, ExpectedLot = instruction.ExpectedLot with { OpenQuantity = 50m,
-                CurrentFactor = 0.5m, OpenTransactionCostBasis = 27.5m, OpenFunctionalCostBasis = 30.25m } };
+        instruction = instruction with
+        {
+            CalculationVersion = OpenLotAmortization.ExtendedModelVersion,
+            AmortizeRemainingFace = true,
+            ExpectedLot = instruction.ExpectedLot with
+            {
+                OpenQuantity = 50m,
+                CurrentFactor = 0.5m,
+                OpenTransactionCostBasis = 27.5m,
+                OpenFunctionalCostBasis = 30.25m
+            }
+        };
         var result = OpenLotAmortization.Project(instruction);
         result.TransactionCostBasis.Should().Be(26.25m);
         result.FunctionalCostBasis.Should().Be(28.875m);
@@ -146,13 +169,21 @@ public sealed class OpenLotExtendedAmortizationTests
         {
             CommonTerms = JsonSerializer.SerializeToElement(new
             {
-                maturityDate = "2027-01-01", dayCountConvention = "30/360", couponRate = coupon,
-                paymentFrequency = "Annual", couponType = coupon == 0m ? "ZeroCoupon" : "Fixed", isCallable = true,
+                maturityDate = "2027-01-01",
+                dayCountConvention = "30/360",
+                couponRate = coupon,
+                paymentFrequency = "Annual",
+                couponType = coupon == 0m ? "ZeroCoupon" : "Fixed",
+                isCallable = true,
                 callSchedule = new[] { new { callDate = date, callPrice, exerciseStyle = style, priceBasis = basis, priceType } },
                 putSchedule = new[] { new { putDate = "2026-01-01", putPrice, exerciseStyle = "European", priceBasis = "PercentOfPar" } }
             })
         };
-        return instruction with { CalculationVersion = OpenLotAmortization.ExtendedModelVersion, Security = security,
-            SecurityEvidence = instruction.SecurityEvidence with { ContentHashSha256 = OpenLotAmortization.SecurityHash(security) } };
+        return instruction with
+        {
+            CalculationVersion = OpenLotAmortization.ExtendedModelVersion,
+            Security = security,
+            SecurityEvidence = instruction.SecurityEvidence with { ContentHashSha256 = OpenLotAmortization.SecurityHash(security) }
+        };
     }
 }
