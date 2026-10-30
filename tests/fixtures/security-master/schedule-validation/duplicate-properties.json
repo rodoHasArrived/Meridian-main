@@ -1,0 +1,478 @@
+[
+{
+  "id": "duplicate-exact-factor-container",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"factorScheduleEntries":[{"asOfDate":"2026-01-01","factor":0.8}],"factorScheduleEntries":[{"asOfDate":"2026-01-01","factor":0.7}]},
+  "factorPresence": "Invalid",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [],
+  "principal": [],
+  "steps": [],
+  "diagnostics": [
+    {
+      "code": "SM_SCHEDULE_MEMBER_DUPLICATE",
+      "path": "assetSpecificTerms.factorScheduleEntries"
+    }
+  ]
+},
+{
+  "id": "duplicate-case-factor-container",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"factorScheduleEntries":[{"asOfDate":"2026-01-01","factor":0.8}],"FACTORSCHEDULEENTRIES":[{"asOfDate":"2026-01-01","factor":0.7}]},
+  "factorPresence": "Invalid",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [],
+  "principal": [],
+  "steps": [],
+  "diagnostics": [
+    {
+      "code": "SM_SCHEDULE_MEMBER_DUPLICATE",
+      "path": "assetSpecificTerms.FACTORSCHEDULEENTRIES"
+    }
+  ]
+},
+{
+  "id": "duplicate-exact-principal-container",
+  "assetClass": "DirectLoan",
+  "assetSpecificTerms": {"principalSchedule":[{"paymentDate":"2026-01-01","amount":10}],"principalSchedule":[]},
+  "factorPresence": "Absent",
+  "principalPresence": "Invalid",
+  "stepPresence": "Absent",
+  "factors": [],
+  "principal": [],
+  "steps": [],
+  "diagnostics": [
+    {
+      "code": "SM_SCHEDULE_MEMBER_DUPLICATE",
+      "path": "assetSpecificTerms.principalSchedule"
+    }
+  ]
+},
+{
+  "id": "duplicate-case-step-container",
+  "assetClass": "Bond",
+  "assetSpecificTerms": {"stepSchedule":[{"effectiveDate":"2026-01-01","rate":4}],"StepSchedule":[]},
+  "factorPresence": "Absent",
+  "principalPresence": "Absent",
+  "stepPresence": "Invalid",
+  "factors": [],
+  "principal": [],
+  "steps": [],
+  "diagnostics": [
+    {
+      "code": "SM_SCHEDULE_MEMBER_DUPLICATE",
+      "path": "assetSpecificTerms.StepSchedule"
+    }
+  ]
+},
+{
+  "id": "duplicate-exact-factor-date-member",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"factorScheduleEntries":[{"asOfDate":"2026-01-01","asOfDate":"2026-02-01","factor":0.8}]},
+  "factorPresence": "Invalid",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [],
+  "principal": [],
+  "steps": [],
+  "diagnostics": [
+    {
+      "code": "SM_SCHEDULE_MEMBER_DUPLICATE",
+      "path": "assetSpecificTerms.factorScheduleEntries[0].asOfDate"
+    }
+  ]
+},
+{
+  "id": "duplicate-case-factor-date-member",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"factorScheduleEntries":[{"asOfDate":"2026-01-01","ASOFDATE":"2026-02-01","factor":0.8}]},
+  "factorPresence": "Invalid",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [],
+  "principal": [],
+  "steps": [],
+  "diagnostics": [
+    {
+      "code": "SM_SCHEDULE_MEMBER_DUPLICATE",
+      "path": "assetSpecificTerms.factorScheduleEntries[0].ASOFDATE"
+    }
+  ]
+},
+{
+  "id": "duplicate-exact-factor-value-member",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"factorScheduleEntries":[{"asOfDate":"2026-01-01","factor":0.8,"factor":0.7}]},
+  "factorPresence": "Invalid",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [],
+  "principal": [],
+  "steps": [],
+  "diagnostics": [
+    {
+      "code": "SM_SCHEDULE_MEMBER_DUPLICATE",
+      "path": "assetSpecificTerms.factorScheduleEntries[0].factor"
+    }
+  ]
+},
+{
+  "id": "duplicate-case-factor-value-member",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"factorScheduleEntries":[{"asOfDate":"2026-01-01","factor":0.8,"Factor":0.7}]},
+  "factorPresence": "Invalid",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [],
+  "principal": [],
+  "steps": [],
+  "diagnostics": [
+    {
+      "code": "SM_SCHEDULE_MEMBER_DUPLICATE",
+      "path": "assetSpecificTerms.factorScheduleEntries[0].Factor"
+    }
+  ]
+},
+{
+  "id": "duplicate-equal-factor-value-member",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"factorScheduleEntries":[{"asOfDate":"2026-01-01","factor":0.8,"factor":0.8}]},
+  "factorPresence": "Invalid",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [],
+  "principal": [],
+  "steps": [],
+  "diagnostics": [
+    {
+      "code": "SM_SCHEDULE_MEMBER_DUPLICATE",
+      "path": "assetSpecificTerms.factorScheduleEntries[0].factor"
+    }
+  ]
+},
+{
+  "id": "duplicate-principal-value-member",
+  "assetClass": "DirectLoan",
+  "assetSpecificTerms": {"principalSchedule":[{"paymentDate":"2026-01-01","amount":10,"amount":20}]},
+  "factorPresence": "Absent",
+  "principalPresence": "Invalid",
+  "stepPresence": "Absent",
+  "factors": [],
+  "principal": [],
+  "steps": [],
+  "diagnostics": [
+    {
+      "code": "SM_SCHEDULE_MEMBER_DUPLICATE",
+      "path": "assetSpecificTerms.principalSchedule[0].amount"
+    }
+  ]
+},
+{
+  "id": "duplicate-step-date-member",
+  "assetClass": "Bond",
+  "assetSpecificTerms": {"stepSchedule":[{"effectiveDate":"2026-01-01","EFFECTIVEDATE":"2026-02-01","rate":4}]},
+  "factorPresence": "Absent",
+  "principalPresence": "Absent",
+  "stepPresence": "Invalid",
+  "factors": [],
+  "principal": [],
+  "steps": [],
+  "diagnostics": [
+    {
+      "code": "SM_SCHEDULE_MEMBER_DUPLICATE",
+      "path": "assetSpecificTerms.stepSchedule[0].EFFECTIVEDATE"
+    }
+  ]
+},
+{
+  "id": "duplicate-exact-profile-with-schedule",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"profileFields":{"factorScheduleEntries":[{"asOfDate":"2026-01-01","factor":0.8}]},"profileFields":{"factorScheduleEntries":[{"asOfDate":"2026-01-01","factor":0.7}]}},
+  "factorPresence": "Invalid",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [],
+  "principal": [],
+  "steps": [],
+  "diagnostics": [
+    {
+      "code": "SM_SCHEDULE_MEMBER_DUPLICATE",
+      "path": "assetSpecificTerms.profileFields"
+    }
+  ]
+},
+{
+  "id": "duplicate-case-profile-with-schedule",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"profileFields":{"factorScheduleEntries":[]},"ProfileFields":{"factorScheduleEntries":[{"asOfDate":"2026-01-01","factor":0.7}]}},
+  "factorPresence": "Invalid",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [],
+  "principal": [],
+  "steps": [],
+  "diagnostics": [
+    {
+      "code": "SM_SCHEDULE_MEMBER_DUPLICATE",
+      "path": "assetSpecificTerms.ProfileFields"
+    }
+  ]
+},
+{
+  "id": "duplicate-profile-only-one-contains-schedule",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"profileFields":{"factorScheduleEntries":[]},"profileFields":{"operatorNote":"no replacement schedule"}},
+  "factorPresence": "Invalid",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [],
+  "principal": [],
+  "steps": [],
+  "diagnostics": [
+    {
+      "code": "SM_SCHEDULE_MEMBER_DUPLICATE",
+      "path": "assetSpecificTerms.profileFields"
+    }
+  ]
+},
+{
+  "id": "duplicate-legacy-factor-container-arithmetic-and-evidence",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"factorSchedule":"Trustee statement","factorSchedule":[{"asOfDate":"2026-01-01","factor":0.8}]},
+  "factorPresence": "Invalid",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [],
+  "principal": [],
+  "steps": [],
+  "diagnostics": [
+    {
+      "code": "SM_SCHEDULE_MEMBER_DUPLICATE",
+      "path": "assetSpecificTerms.factorSchedule"
+    }
+  ]
+},
+{
+  "id": "distinct-factor-value-aliases-forward",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"factorScheduleEntries":[{"asOfDate":"2026-01-01","factor":0.8,"currentFactor":0.7}]},
+  "factorPresence": "Populated",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [
+    {
+      "date": "2026-01-01",
+      "value": 0.8
+    }
+  ],
+  "principal": [],
+  "steps": [],
+  "diagnostics": []
+},
+{
+  "id": "distinct-factor-value-aliases-reversed",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"factorScheduleEntries":[{"asOfDate":"2026-01-01","currentFactor":0.7,"factor":0.8}]},
+  "factorPresence": "Populated",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [
+    {
+      "date": "2026-01-01",
+      "value": 0.8
+    }
+  ],
+  "principal": [],
+  "steps": [],
+  "diagnostics": []
+},
+{
+  "id": "distinct-factor-date-aliases-forward",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"factorScheduleEntries":[{"asOfDate":"2026-01-01","date":"2026-02-01","factor":0.8}]},
+  "factorPresence": "Populated",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [
+    {
+      "date": "2026-01-01",
+      "value": 0.8
+    }
+  ],
+  "principal": [],
+  "steps": [],
+  "diagnostics": []
+},
+{
+  "id": "distinct-factor-date-aliases-reversed",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"factorScheduleEntries":[{"date":"2026-02-01","asOfDate":"2026-01-01","factor":0.8}]},
+  "factorPresence": "Populated",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [
+    {
+      "date": "2026-01-01",
+      "value": 0.8
+    }
+  ],
+  "principal": [],
+  "steps": [],
+  "diagnostics": []
+},
+{
+  "id": "duplicate-lower-source-is-shadowed",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"profileFields":{"factorScheduleEntries":[{"asOfDate":"2026-01-01","factor":0.8}]},"factorScheduleEntries":false,"FactorScheduleEntries":[]},
+  "factorPresence": "Populated",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [
+    {
+      "date": "2026-01-01",
+      "value": 0.8
+    }
+  ],
+  "principal": [],
+  "steps": [],
+  "diagnostics": []
+},
+{
+  "id": "duplicate-lower-container-alias-is-shadowed",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"factorScheduleEntries":[{"asOfDate":"2026-01-01","factor":0.8}],"factorSchedules":false,"FACTORSCHEDULES":[]},
+  "factorPresence": "Populated",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [
+    {
+      "date": "2026-01-01",
+      "value": 0.8
+    }
+  ],
+  "principal": [],
+  "steps": [],
+  "diagnostics": []
+},
+{
+  "id": "duplicate-lower-value-alias-is-shadowed",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"factorScheduleEntries":[{"asOfDate":"2026-01-01","factor":0.8,"currentFactor":0.7,"CURRENTFACTOR":0.6}]},
+  "factorPresence": "Populated",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [
+    {
+      "date": "2026-01-01",
+      "value": 0.8
+    }
+  ],
+  "principal": [],
+  "steps": [],
+  "diagnostics": []
+},
+{
+  "id": "duplicate-lower-date-alias-is-shadowed",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"factorScheduleEntries":[{"asOfDate":"2026-01-01","date":"2026-02-01","DATE":"2026-03-01","factor":0.8}]},
+  "factorPresence": "Populated",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [
+    {
+      "date": "2026-01-01",
+      "value": 0.8
+    }
+  ],
+  "principal": [],
+  "steps": [],
+  "diagnostics": []
+},
+{
+  "id": "duplicate-profile-without-schedules-is-opaque",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"profileFields":{"operatorNote":"one"},"ProfileFields":{"operatorNote":"two"},"factorScheduleEntries":[{"asOfDate":"2026-01-01","factor":0.8}]},
+  "factorPresence": "Populated",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [
+    {
+      "date": "2026-01-01",
+      "value": 0.8
+    }
+  ],
+  "principal": [],
+  "steps": [],
+  "diagnostics": []
+},
+{
+  "id": "duplicate-free-text-factor-evidence-is-not-arithmetic",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"factorSchedule":"Trustee statement one","FactorSchedule":"Trustee statement two","factorSchedules":[{"date":"2026-01-01","factor":0.8}]},
+  "factorPresence": "Populated",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [
+    {
+      "date": "2026-01-01",
+      "value": 0.8
+    }
+  ],
+  "principal": [],
+  "steps": [],
+  "diagnostics": []
+},
+{
+  "id": "duplicate-null-first-container-precedes-alias-fallback",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"factorScheduleEntries":null,"factorScheduleEntries":[{"asOfDate":"2026-01-01","factor":0.8}],"factorSchedules":[{"date":"2026-01-01","factor":0.7}]},
+  "factorPresence": "Invalid",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [],
+  "principal": [],
+  "steps": [],
+  "diagnostics": [
+    {
+      "code": "SM_SCHEDULE_MEMBER_DUPLICATE",
+      "path": "assetSpecificTerms.factorScheduleEntries"
+    }
+  ]
+},
+{
+  "id": "duplicate-null-first-value-precedes-alias-fallback",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"factorScheduleEntries":[{"asOfDate":"2026-01-01","factor":null,"Factor":0.8,"currentFactor":0.7}]},
+  "factorPresence": "Invalid",
+  "principalPresence": "Absent",
+  "stepPresence": "Absent",
+  "factors": [],
+  "principal": [],
+  "steps": [],
+  "diagnostics": [
+    {
+      "code": "SM_SCHEDULE_MEMBER_DUPLICATE",
+      "path": "assetSpecificTerms.factorScheduleEntries[0].Factor"
+    }
+  ]
+},
+{
+  "id": "duplicate-profile-invalidates-each-asserted-kind-once",
+  "assetClass": "StructuredCredit",
+  "assetSpecificTerms": {"profileFields":{"factorScheduleEntries":[],"principalSchedule":[]},"ProfileFields":{"factorScheduleEntries":[{"asOfDate":"2026-01-01","factor":0.8}],"principalSchedule":[{"paymentDate":"2026-01-01","amount":10}]}},
+  "factorPresence": "Invalid",
+  "principalPresence": "Invalid",
+  "stepPresence": "Absent",
+  "factors": [],
+  "principal": [],
+  "steps": [],
+  "diagnostics": [
+    {
+      "code": "SM_SCHEDULE_MEMBER_DUPLICATE",
+      "path": "assetSpecificTerms.ProfileFields"
+    }
+  ]
+}
+]

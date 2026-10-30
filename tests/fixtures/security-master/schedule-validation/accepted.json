@@ -1,0 +1,764 @@
+[
+  {
+    "id": "absent-is-not-empty",
+    "assetClass": "Bond",
+    "assetSpecificTerms": {
+      "assetClassTermsVersion": 1
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "explicit-empty-all-schedules",
+    "assetClass": "Bond",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [],
+      "principalSchedule": [],
+      "stepSchedule": []
+    },
+    "factorPresence": "Empty",
+    "principalPresence": "Empty",
+    "stepPresence": "Empty",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "legacy-null-is-absent",
+    "assetClass": "Bond",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": null,
+      "principalSchedule": null,
+      "stepSchedule": null
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "factor-reference-is-evidence",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorSchedule": "See trustee report 2026-07"
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "typed-factors-before-reference",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        {
+          "asOfDate": "2026-07-01",
+          "factor": 0.8
+        },
+        {
+          "asOfDate": "2026-01-01",
+          "factor": 1
+        }
+      ],
+      "factorSchedule": "See trustee report 2026-07"
+    },
+    "factorPresence": "Populated",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [
+      {
+        "date": "2026-01-01",
+        "value": 1
+      },
+      {
+        "date": "2026-07-01",
+        "value": 0.8
+      }
+    ],
+    "principal": [],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "factor-boundaries-zero-and-one",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        {
+          "asOfDate": "2026-01-01",
+          "factor": 1
+        },
+        {
+          "asOfDate": "2026-02-01",
+          "factor": 0
+        }
+      ]
+    },
+    "factorPresence": "Populated",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [
+      {
+        "date": "2026-01-01",
+        "value": 1
+      },
+      {
+        "date": "2026-02-01",
+        "value": 0
+      }
+    ],
+    "principal": [],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "factor-array-legacy-aliases",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorSchedule": [
+        {
+          "factorDate": "2026-01-01",
+          "currentFactor": "0.90"
+        },
+        {
+          "effectiveDate": "2026-02-01",
+          "factor": 0.8
+        },
+        {
+          "date": "2026-03-01",
+          "factor": 0.7
+        }
+      ]
+    },
+    "factorPresence": "Populated",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [
+      {
+        "date": "2026-01-01",
+        "value": 0.9
+      },
+      {
+        "date": "2026-02-01",
+        "value": 0.8
+      },
+      {
+        "date": "2026-03-01",
+        "value": 0.7
+      }
+    ],
+    "principal": [],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "factor-plural-and-case-aliases",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "FACTORSCHEDULES": [
+        {
+          "ASOFDATE": "2026-01-01T00:00:00Z",
+          "CURRENTFACTOR": "0.90"
+        }
+      ]
+    },
+    "factorPresence": "Populated",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [
+      {
+        "date": "2026-01-01",
+        "value": 0.9
+      }
+    ],
+    "principal": [],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "factor-member-null-falls-back-to-alias",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        {
+          "asOfDate": null,
+          "date": "2026-01-01",
+          "factor": null,
+          "currentFactor": 0.8
+        }
+      ]
+    },
+    "factorPresence": "Populated",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [
+      {
+        "date": "2026-01-01",
+        "value": 0.8
+      }
+    ],
+    "principal": [],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "principal-same-date-aggregation",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        {
+          "paymentDate": "2028-06-30",
+          "amount": 25
+        },
+        {
+          "paymentDate": "2027-06-30",
+          "amount": 30
+        },
+        {
+          "paymentDate": "2027-06-30",
+          "amount": 10
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Populated",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [
+      {
+        "date": "2027-06-30",
+        "value": 40
+      },
+      {
+        "date": "2028-06-30",
+        "value": 25
+      }
+    ],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "principal-equivalent-single-row",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        {
+          "paymentDate": "2027-06-30",
+          "amount": 40
+        },
+        {
+          "paymentDate": "2028-06-30",
+          "amount": 25
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Populated",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [
+      {
+        "date": "2027-06-30",
+        "value": 40
+      },
+      {
+        "date": "2028-06-30",
+        "value": 25
+      }
+    ],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "principal-legacy-numeric-string",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "PRINCIPALSCHEDULE": [
+        {
+          "PAYMENTDATE": "2027-06-30T00:00:00Z",
+          "AMOUNT": "1,250.50"
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Populated",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [
+      {
+        "date": "2027-06-30",
+        "value": 1250.5
+      }
+    ],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "steps-unsorted-including-zero",
+    "assetClass": "Bond",
+    "assetSpecificTerms": {
+      "couponType": "Step",
+      "stepSchedule": [
+        {
+          "effectiveDate": "2028-01-01",
+          "rate": 5
+        },
+        {
+          "effectiveDate": "2027-01-01",
+          "rate": 0
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Absent",
+    "stepPresence": "Populated",
+    "factors": [],
+    "principal": [],
+    "steps": [
+      {
+        "date": "2027-01-01",
+        "value": 0
+      },
+      {
+        "date": "2028-01-01",
+        "value": 5
+      }
+    ],
+    "diagnostics": []
+  },
+  {
+    "id": "step-coupon-legacy-alias",
+    "assetClass": "Bond",
+    "assetSpecificTerms": {
+      "stepCouponSchedule": [
+        {
+          "stepDate": "2027-01-01",
+          "couponRate": "4.50"
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Absent",
+    "stepPresence": "Populated",
+    "factors": [],
+    "principal": [],
+    "steps": [
+      {
+        "date": "2027-01-01",
+        "value": 4.5
+      }
+    ],
+    "diagnostics": []
+  },
+  {
+    "id": "coupon-steps-case-alias",
+    "assetClass": "Bond",
+    "assetSpecificTerms": {
+      "COUPONSTEPS": [
+        {
+          "DATE": "2027-01-01",
+          "RATE": 4.5
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Absent",
+    "stepPresence": "Populated",
+    "factors": [],
+    "principal": [],
+    "steps": [
+      {
+        "date": "2027-01-01",
+        "value": 4.5
+      }
+    ],
+    "diagnostics": []
+  },
+  {
+    "id": "profile-factors-have-authority",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "customProfileId": "schedule-corpus",
+      "profileVersion": 1,
+      "profileFields": {
+        "factorSchedules": [
+          {
+            "date": "2026-01-01",
+            "factor": 0.8
+          }
+        ]
+      },
+      "factorScheduleEntries": [
+        {
+          "asOfDate": "2026-01-01",
+          "factor": 0.2
+        }
+      ]
+    },
+    "commonTerms": {
+      "factorScheduleEntries": [
+        {
+          "asOfDate": "2026-01-01",
+          "factor": 0.1
+        }
+      ]
+    },
+    "factorPresence": "Populated",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [
+      {
+        "date": "2026-01-01",
+        "value": 0.8
+      }
+    ],
+    "principal": [],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "profile-empty-suppresses-invalid-lower-source",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "customProfileId": "schedule-corpus",
+      "profileVersion": 1,
+      "profileFields": {
+        "factorScheduleEntries": []
+      },
+      "factorScheduleEntries": "malformed"
+    },
+    "commonTerms": {
+      "factorScheduleEntries": [
+        null
+      ]
+    },
+    "factorPresence": "Empty",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "profile-valid-suppresses-invalid-lower-source",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "customProfileId": "schedule-corpus",
+      "profileVersion": 1,
+      "profileFields": {
+        "factorScheduleEntries": [
+          {
+            "asOfDate": "2026-01-01",
+            "factor": 0.8
+          }
+        ]
+      },
+      "factorScheduleEntries": false
+    },
+    "factorPresence": "Populated",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [
+      {
+        "date": "2026-01-01",
+        "value": 0.8
+      }
+    ],
+    "principal": [],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "null-profile-falls-back-to-root",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "customProfileId": "schedule-corpus",
+      "profileVersion": 1,
+      "profileFields": {
+        "factorScheduleEntries": null
+      },
+      "factorScheduleEntries": [
+        {
+          "asOfDate": "2026-01-01",
+          "factor": 0.8
+        }
+      ]
+    },
+    "factorPresence": "Populated",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [
+      {
+        "date": "2026-01-01",
+        "value": 0.8
+      }
+    ],
+    "principal": [],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "null-primary-container-falls-back-to-alias",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": null,
+      "factorSchedules": [
+        {
+          "date": "2026-01-01",
+          "factor": 0.8
+        }
+      ]
+    },
+    "factorPresence": "Populated",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [
+      {
+        "date": "2026-01-01",
+        "value": 0.8
+      }
+    ],
+    "principal": [],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "common-terms-principal-fallback",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {},
+    "commonTerms": {
+      "principalSchedule": [
+        {
+          "paymentDate": "2027-01-01",
+          "amount": 20
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Populated",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [
+      {
+        "date": "2027-01-01",
+        "value": 20
+      }
+    ],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "explicit-empty-principal-suppresses-common",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": []
+    },
+    "commonTerms": {
+      "principalSchedule": [
+        {
+          "paymentDate": "2027-01-01",
+          "amount": 20
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Empty",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "non-profile-class-keeps-resolver-profile-precedence",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "profileFields": {
+        "principalSchedule": [
+          {
+            "paymentDate": "2027-01-01",
+            "amount": 30
+          }
+        ]
+      },
+      "principalSchedule": [
+        {
+          "paymentDate": "2027-01-01",
+          "amount": 20
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Populated",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [
+      {
+        "date": "2027-01-01",
+        "value": 30
+      }
+    ],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "common-terms-factor-fallback",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {},
+    "commonTerms": {
+      "factorSchedules": [
+        {
+          "date": "2026-01-01",
+          "factor": 0.8
+        }
+      ]
+    },
+    "factorPresence": "Populated",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [
+      {
+        "date": "2026-01-01",
+        "value": 0.8
+      }
+    ],
+    "principal": [],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "common-terms-step-fallback",
+    "assetClass": "Bond",
+    "assetSpecificTerms": {},
+    "commonTerms": {
+      "couponSteps": [
+        {
+          "date": "2027-01-01",
+          "rate": 4.5
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Absent",
+    "stepPresence": "Populated",
+    "factors": [],
+    "principal": [],
+    "steps": [
+      {
+        "date": "2027-01-01",
+        "value": 4.5
+      }
+    ],
+    "diagnostics": []
+  },
+  {
+    "id": "factor-retains-eleven-decimal-places",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        {
+          "asOfDate": "2026-01-01",
+          "factor": 0.12345678901
+        }
+      ]
+    },
+    "factorPresence": "Populated",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [
+      {
+        "date": "2026-01-01",
+        "value": 0.12345678901
+      }
+    ],
+    "principal": [],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "principal-retains-sub-ten-decimal-amount",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        {
+          "paymentDate": "2027-01-01",
+          "amount": 1e-11
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Populated",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [
+      {
+        "date": "2027-01-01",
+        "value": 1e-11
+      }
+    ],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "principal-retains-eighteen-integer-digits",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        {
+          "paymentDate": "2027-01-01",
+          "amount": 1000000000000000000
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Populated",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [
+      {
+        "date": "2027-01-01",
+        "value": 1000000000000000000
+      }
+    ],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "principal-retains-decimal-max-single-row",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        {
+          "paymentDate": "2027-01-01",
+          "amount": 79228162514264337593543950335
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Populated",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [
+      {
+        "date": "2027-01-01",
+        "value": 79228162514264337593543950335
+      }
+    ],
+    "steps": [],
+    "diagnostics": []
+  }
+]

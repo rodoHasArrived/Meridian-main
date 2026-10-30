@@ -509,7 +509,7 @@ erDiagram
         uuid security_id PK,FK
         integer ordinal PK
         date payment_date
-        numeric_28_10_ amount
+        numeric amount
     }
     security_master_direct_loan_projection {
         uuid security_id PK
@@ -1589,7 +1589,7 @@ erDiagram
         uuid security_id PK,FK
         integer ordinal PK
         date as_of_date
-        numeric_18_10_ factor
+        numeric factor
     }
     security_master_structured_credit_projection {
         uuid security_id PK

@@ -1,0 +1,461 @@
+[
+  {
+    "id": "factor-inexact-above-one-number",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        { "asOfDate": "2027-01-01", "factor": 1.00000000000000000000000000001 }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [{"code":"SM_SCHEDULE_VALUE_INVALID","path":"assetSpecificTerms.factorScheduleEntries[0].factor"}]
+  },
+  {
+    "id": "factor-inexact-negative-tiny-number",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        { "asOfDate": "2027-01-01", "factor": -0.00000000000000000000000000001 }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [{"code":"SM_SCHEDULE_VALUE_INVALID","path":"assetSpecificTerms.factorScheduleEntries[0].factor"}]
+  },
+  {
+    "id": "factor-inexact-within-range-number",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        { "asOfDate": "2027-01-01", "factor": 0.123456789012345678901234567891 }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [{"code":"SM_SCHEDULE_VALUE_INVALID","path":"assetSpecificTerms.factorScheduleEntries[0].factor"}]
+  },
+  {
+    "id": "step-inexact-negative-tiny-number",
+    "assetClass": "Bond",
+    "assetSpecificTerms": {
+      "couponType": "Step",
+      "stepSchedule": [
+        { "effectiveDate": "2027-01-01", "rate": -0.00000000000000000000000000001 }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Absent",
+    "stepPresence": "Invalid",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [{"code":"SM_SCHEDULE_VALUE_INVALID","path":"assetSpecificTerms.stepSchedule[0].rate"}]
+  },
+  {
+    "id": "principal-inexact-underflow-number",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        { "paymentDate": "2027-01-01", "amount": 0.00000000000000000000000000001 }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Invalid",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [{"code":"SM_SCHEDULE_VALUE_INVALID","path":"assetSpecificTerms.principalSchedule[0].amount"}]
+  },
+  {
+    "id": "principal-inexact-large-fraction-number",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        { "paymentDate": "2027-01-01", "amount": 1000000000000000000.00000000001 }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Invalid",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [{"code":"SM_SCHEDULE_VALUE_INVALID","path":"assetSpecificTerms.principalSchedule[0].amount"}]
+  },
+  {
+    "id": "factor-inexact-above-one-string",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        { "asOfDate": "2027-01-01", "factor": "1.00000000000000000000000000001" }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [{"code":"SM_SCHEDULE_VALUE_INVALID","path":"assetSpecificTerms.factorScheduleEntries[0].factor"}]
+  },
+  {
+    "id": "factor-inexact-negative-tiny-string",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        { "asOfDate": "2027-01-01", "factor": "-0.00000000000000000000000000001" }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [{"code":"SM_SCHEDULE_VALUE_INVALID","path":"assetSpecificTerms.factorScheduleEntries[0].factor"}]
+  },
+  {
+    "id": "factor-inexact-within-range-string",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        { "asOfDate": "2027-01-01", "factor": "0.123456789012345678901234567891" }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [{"code":"SM_SCHEDULE_VALUE_INVALID","path":"assetSpecificTerms.factorScheduleEntries[0].factor"}]
+  },
+  {
+    "id": "step-inexact-negative-tiny-string",
+    "assetClass": "Bond",
+    "assetSpecificTerms": {
+      "couponType": "Step",
+      "stepSchedule": [
+        { "effectiveDate": "2027-01-01", "rate": "-0.00000000000000000000000000001" }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Absent",
+    "stepPresence": "Invalid",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [{"code":"SM_SCHEDULE_VALUE_INVALID","path":"assetSpecificTerms.stepSchedule[0].rate"}]
+  },
+  {
+    "id": "principal-inexact-underflow-string",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        { "paymentDate": "2027-01-01", "amount": "0.00000000000000000000000000001" }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Invalid",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [{"code":"SM_SCHEDULE_VALUE_INVALID","path":"assetSpecificTerms.principalSchedule[0].amount"}]
+  },
+  {
+    "id": "principal-inexact-large-fraction-string",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        { "paymentDate": "2027-01-01", "amount": "1000000000000000000.00000000001" }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Invalid",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [{"code":"SM_SCHEDULE_VALUE_INVALID","path":"assetSpecificTerms.principalSchedule[0].amount"}]
+  },
+  {
+    "id": "principal-total-inexact-large-first",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        { "paymentDate": "2027-01-01", "amount": 1000000000000000000 },
+        { "paymentDate": "2027-01-01", "amount": 0.00000000001 }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Invalid",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [{"code":"SM_SCHEDULE_SUM_PRECISION","path":"assetSpecificTerms.principalSchedule[1].amount"}]
+  },
+  {
+    "id": "principal-total-overflow-large-first",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        { "paymentDate": "2027-01-01", "amount": 79228162514264337593543950335 },
+        { "paymentDate": "2027-01-01", "amount": 0.0000000000000000000000000001 }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Invalid",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [{"code":"SM_SCHEDULE_SUM_OVERFLOW","path":"assetSpecificTerms.principalSchedule[1].amount"}]
+  },
+  {
+    "id": "principal-exact-final-total-large-first",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        { "paymentDate": "2027-01-01", "amount": 1000000000000000000 },
+        { "paymentDate": "2027-01-01", "amount": 0.00000000001 },
+        { "paymentDate": "2027-01-01", "amount": 0.00000000001 },
+        { "paymentDate": "2027-01-01", "amount": 0.00000000001 },
+        { "paymentDate": "2027-01-01", "amount": 0.00000000001 },
+        { "paymentDate": "2027-01-01", "amount": 0.00000000001 },
+        { "paymentDate": "2027-01-01", "amount": 0.00000000001 },
+        { "paymentDate": "2027-01-01", "amount": 0.00000000001 },
+        { "paymentDate": "2027-01-01", "amount": 0.00000000001 },
+        { "paymentDate": "2027-01-01", "amount": 0.00000000001 },
+        { "paymentDate": "2027-01-01", "amount": 0.00000000001 }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Populated",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [{ "date": "2027-01-01", "value": 1000000000000000000.0000000001 }],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "principal-total-inexact-large-last",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        { "paymentDate": "2027-01-01", "amount": 0.00000000001 },
+        { "paymentDate": "2027-01-01", "amount": 1000000000000000000 }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Invalid",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [{"code":"SM_SCHEDULE_SUM_PRECISION","path":"assetSpecificTerms.principalSchedule[1].amount"}]
+  },
+  {
+    "id": "principal-total-overflow-large-last",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        { "paymentDate": "2027-01-01", "amount": 0.0000000000000000000000000001 },
+        { "paymentDate": "2027-01-01", "amount": 79228162514264337593543950335 }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Invalid",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [{"code":"SM_SCHEDULE_SUM_OVERFLOW","path":"assetSpecificTerms.principalSchedule[1].amount"}]
+  },
+  {
+    "id": "principal-exact-final-total-large-last",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        { "paymentDate": "2027-01-01", "amount": 0.00000000001 },
+        { "paymentDate": "2027-01-01", "amount": 0.00000000001 },
+        { "paymentDate": "2027-01-01", "amount": 0.00000000001 },
+        { "paymentDate": "2027-01-01", "amount": 0.00000000001 },
+        { "paymentDate": "2027-01-01", "amount": 0.00000000001 },
+        { "paymentDate": "2027-01-01", "amount": 0.00000000001 },
+        { "paymentDate": "2027-01-01", "amount": 0.00000000001 },
+        { "paymentDate": "2027-01-01", "amount": 0.00000000001 },
+        { "paymentDate": "2027-01-01", "amount": 0.00000000001 },
+        { "paymentDate": "2027-01-01", "amount": 0.00000000001 },
+        { "paymentDate": "2027-01-01", "amount": 1000000000000000000 }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Populated",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [{ "date": "2027-01-01", "value": 1000000000000000000.0000000001 }],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "factor-exact-trailing-zero-number",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        { "asOfDate": "2027-01-01", "factor": 0.80000000000000000000000000000000000000000000000000 }
+      ]
+    },
+    "factorPresence": "Populated",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [{ "date": "2027-01-01", "value": 0.8 }],
+    "principal": [],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "factor-exact-trailing-zero-string",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        { "asOfDate": "2027-01-01", "factor": "0.80000000000000000000000000000000000000000000000000" }
+      ]
+    },
+    "factorPresence": "Populated",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [{ "date": "2027-01-01", "value": 0.8 }],
+    "principal": [],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "factor-exact-json-positive-exponent",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        { "asOfDate": "2027-01-01", "factor": 8e-1 }
+      ]
+    },
+    "factorPresence": "Populated",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [{ "date": "2027-01-01", "value": 0.8 }],
+    "principal": [],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "factor-exact-json-minimum-decimal",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        { "asOfDate": "2027-01-01", "factor": 1e-28 }
+      ]
+    },
+    "factorPresence": "Populated",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [{ "date": "2027-01-01", "value": 0.0000000000000000000000000001 }],
+    "principal": [],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "principal-exact-json-positive-exponent",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        { "paymentDate": "2027-01-01", "amount": 1e+18 }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Populated",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [{ "date": "2027-01-01", "value": 1000000000000000000 }],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "principal-exact-json-minimum-decimal",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        { "paymentDate": "2027-01-01", "amount": 1e-28 }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Populated",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [{ "date": "2027-01-01", "value": 0.0000000000000000000000000001 }],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "principal-exact-invariant-grouped-leading-sign",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        { "paymentDate": "2027-01-01", "amount": " +1,234.5000 " }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Populated",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [{ "date": "2027-01-01", "value": 1234.5 }],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "principal-exact-invariant-grouped-trailing-sign",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        { "paymentDate": "2027-01-01", "amount": "1,234.5000+" }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Populated",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [{ "date": "2027-01-01", "value": 1234.5 }],
+    "steps": [],
+    "diagnostics": []
+  },
+  {
+    "id": "step-exact-excess-trailing-zeros",
+    "assetClass": "Bond",
+    "assetSpecificTerms": {
+      "couponType": "Step",
+      "stepSchedule": [
+        { "effectiveDate": "2027-01-01", "rate": "4.50000000000000000000000000000000000000000000000000" }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Absent",
+    "stepPresence": "Populated",
+    "factors": [],
+    "principal": [],
+    "steps": [{ "date": "2027-01-01", "value": 4.5 }],
+    "diagnostics": []
+  }
+]

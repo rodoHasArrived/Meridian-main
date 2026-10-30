@@ -1897,6 +1897,7 @@ Meridian-main
 │   │   │   │   ├── security-master-contracts-page-04.md
 │   │   │   │   ├── security-master-contracts-page-05.md
 │   │   │   │   ├── security-master-contracts-page-06.md
+│   │   │   │   ├── security-master-contracts-page-07.md
 │   │   │   │   └── security-master-contracts.md
 │   │   │   ├── diagrams
 │   │   │   │   ├── asset_operations.mmd
@@ -1922,6 +1923,7 @@ Meridian-main
 │   │   │   │   ├── contracts-security-master-contracts-page-04.mmd
 │   │   │   │   ├── contracts-security-master-contracts-page-05.mmd
 │   │   │   │   ├── contracts-security-master-contracts-page-06.mmd
+│   │   │   │   ├── contracts-security-master-contracts-page-07.mmd
 │   │   │   │   ├── fund_accounts.mmd
 │   │   │   │   ├── fund_structure.mmd
 │   │   │   │   ├── identity_access.mmd
@@ -4929,6 +4931,8 @@ Meridian-main
 │   │   │   ├── SecurityCommands.cs
 │   │   │   ├── SecurityCurves.cs
 │   │   │   ├── SecurityDtos.cs
+│   │   │   ├── SecurityEconomicScheduleParser.cs
+│   │   │   ├── SecurityEconomicScheduleValidation.cs
 │   │   │   ├── SecurityEvents.cs
 │   │   │   ├── SecurityFactorHistory.cs
 │   │   │   ├── SecurityForwardCurve.cs
@@ -4948,6 +4952,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterSchemaVersions.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassification.cs
 │   │   │   ├── SecurityQueries.cs
+│   │   │   ├── SecurityScheduleDecimal.cs
 │   │   │   ├── SecurityTermBlocks.cs
 │   │   │   ├── SecurityTermConventions.cs
 │   │   │   ├── SecurityTermReader.cs
@@ -6885,7 +6890,8 @@ Meridian-main
 │   │   │   │   ├── 054_otc_exposure_and_collateral.sql
 │   │   │   │   ├── 055_security_governance_events_otc_collateral_stream.sql
 │   │   │   │   ├── 056_otc_contract_lifecycle_events.sql
-│   │   │   │   └── 057_terms_capability_floor.sql
+│   │   │   │   ├── 057_terms_capability_floor.sql
+│   │   │   │   └── 058_security_master_schedule_decimal_precision.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -9748,6 +9754,11 @@ Meridian-main
 │   │   │   │   └── face-value-lot-constant-yield.json
 │   │   │   └── KNOWN-DEFECTS.md
 │   │   ├── security-master
+│   │   │   ├── schedule-validation
+│   │   │   │   ├── accepted.json
+│   │   │   │   ├── duplicate-properties.json
+│   │   │   │   ├── numeric-exactness.json
+│   │   │   │   └── rejected.json
 │   │   │   ├── terms-element-shapes
 │   │   │   │   └── versioned-containers.json
 │   │   │   ├── terms-golden
@@ -11679,7 +11690,12 @@ Meridian-main
 │   │   │   ├── SecurityCurvesMigrationTests.cs
 │   │   │   ├── SecurityCurvesPostgresTests.cs
 │   │   │   ├── SecurityDayCountTermTests.cs
+│   │   │   ├── SecurityEconomicScheduleFixtureCorpus.cs
+│   │   │   ├── SecurityEconomicScheduleMappingTests.cs
+│   │   │   ├── SecurityEconomicSchedulePostgresTests.cs
+│   │   │   ├── SecurityEconomicSchedulePrecisionMigrationTests.cs
 │   │   │   ├── SecurityEconomicScheduleReplayRefusalTests.cs
+│   │   │   ├── SecurityEconomicScheduleValidationTests.cs
 │   │   │   ├── SecurityEconomicTermsClassAwareBridgeTests.cs
 │   │   │   ├── SecurityEconomicTermsV2BridgeCoverageTests.cs
 │   │   │   ├── SecurityEconomicTypedFactorHistoryTests.cs

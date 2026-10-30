@@ -11260,6 +11260,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleParser"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleValidation"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster"
     },
     {
@@ -11585,6 +11603,30 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRecordProvenance"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityScheduleDiagnostic"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityScheduleParseResult"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecuritySchedulePresence"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityScheduleValidationException"
     },
     {
       "kind": "contract-set-member",
@@ -25162,6 +25204,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleParser"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleValidation"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster"
     },
     {
@@ -25487,6 +25547,30 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRecordProvenance"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityScheduleDiagnostic"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityScheduleParseResult"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecuritySchedulePresence"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityScheduleValidationException"
     },
     {
       "kind": "contract-set-member",
@@ -37773,6 +37857,30 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleValidation",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityScheduleParseResult"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleValidation",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredFactorScheduleEntry"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleValidation",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleValidation",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredStepCouponEntry"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster",
       "target": "contract:Meridian.Contracts.Schema.ISchemaUpcaster"
     },
@@ -37967,6 +38075,24 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityRawPriceDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityPriceUnit"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityScheduleParseResult",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityScheduleDiagnostic"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityScheduleParseResult",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecuritySchedulePresence"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityScheduleValidationException",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityScheduleDiagnostic"
     },
     {
       "kind": "contract-reference",
@@ -54538,7 +54664,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "fb36fe92484b614451794de0dc4b9906c18c3d0ecfaeb6cf7c2db7e09cb3f6f3",
+  "fingerprint": "72be0cb3ebbc20ee2017312078dae7597c451880c8f0465a15cb55c83ef71bc6",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -65848,6 +65974,24 @@
       "label": "Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord"
     },
     {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleKind",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleKind"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleParser",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleParser"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleValidation",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleValidation"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster",
       "kind": "contract-type",
@@ -66176,6 +66320,30 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityRecordProvenance",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityRecordProvenance"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityScheduleDiagnostic",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityScheduleDiagnostic"
+    },
+    {
+      "classification": "result",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityScheduleParseResult",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityScheduleParseResult"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecuritySchedulePresence",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecuritySchedulePresence"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityScheduleValidationException",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityScheduleValidationException"
     },
     {
       "classification": "request",
@@ -79821,11 +79989,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3474,
-    "contract_set_memberships": 4320,
-    "edges": 9061,
+    "contract_references": 3481,
+    "contract_set_memberships": 4334,
+    "edges": 9082,
     "foreign_keys": 155,
     "logical_references": 6,
-    "nodes": 4389
+    "nodes": 4396
   }
 }

@@ -100,8 +100,7 @@ public sealed class StructuredCashFlowTermsResolverTests
             {
                 new { paymentDate = "2028-06-30", amount = 25m },
                 new { paymentDate = "2027-06-30", amount = 30m },
-                new { paymentDate = "2027-06-30", amount = 10m },
-                new { paymentDate = "2029-06-30", amount = -1m }
+                new { paymentDate = "2027-06-30", amount = 10m }
             }
         }));
 
@@ -119,6 +118,26 @@ public sealed class StructuredCashFlowTermsResolverTests
                 second.PaymentDate.Should().Be(new DateOnly(2028, 6, 30));
                 second.Amount.Should().Be(25m);
             });
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void Resolve_NonpositivePrincipalRefusesTheScheduleInsteadOfDroppingTheRow(decimal amount)
+    {
+        var security = Build(JsonSerializer.SerializeToElement(new
+        {
+            principalSchedule = new[]
+            {
+                new { paymentDate = "2027-06-30", amount = 10m },
+                new { paymentDate = "2028-06-30", amount }
+            }
+        }));
+
+        Action resolve = () => StructuredCashFlowTermsResolver.Resolve(security);
+        var diagnostic = resolve.Should().Throw<SecurityScheduleValidationException>().Which.Diagnostics.Should().ContainSingle().Which;
+        diagnostic.Code.Should().Be("SM_SCHEDULE_RANGE_INVALID");
+        diagnostic.Path.Should().Be("assetSpecificTerms.principalSchedule[1].amount");
     }
 
     [Fact]
