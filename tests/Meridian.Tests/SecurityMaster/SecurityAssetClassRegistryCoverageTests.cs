@@ -200,10 +200,10 @@ public sealed class SecurityAssetClassRegistryCoverageTests
     }
 
     [Theory]
-    [InlineData("Bond", 2, 3)]
-    [InlineData("CertificateOfDeposit", 2, 3)]
-    [InlineData("StructuredCredit", 3, 4)]
-    public void ReadAheadClasses_OfferNoTermIntroducedAboveTheWriteVersion(string assetClass, int blockSince, int scheduleSince)
+    [InlineData("Bond", 2, 3, 4)]
+    [InlineData("CertificateOfDeposit", 2, 3, 4)]
+    [InlineData("StructuredCredit", 3, 4, 5)]
+    public void ReadAheadClasses_OfferNoTermIntroducedAboveTheWriteVersion(string assetClass, int blockSince, int scheduleSince, int companionSince)
     {
         // The schema declares exactly these terms above what the class writes, each within what it reads ...
         var writes = SecurityAssetClassCatalog.GetTermsVersion(assetClass);
@@ -215,8 +215,9 @@ public sealed class SecurityAssetClassRegistryCoverageTests
         SecurityAssetTermsSchema.Fields(assetClass)
             .Where(field => field.SinceTermsVersion > SecurityAssetClassCatalog.GetStampFloor(assetClass))
             .Select(static field => (field.Key, field.SinceTermsVersion))
-            .Should().Equal(("scheduleConventions", blockSince), ("callSchedule", scheduleSince), ("putSchedule", scheduleSince));
-        readOnly.Should().BeEmpty("all historical declared root schedule terms are now within the writer ceiling");
+            .Should().Equal(("scheduleConventions", blockSince), ("callSchedule", scheduleSince), ("putSchedule", scheduleSince), ("cashFlowContract", companionSince));
+        readOnly.Should().Equal(new[] { ("cashFlowContract", companionSince) },
+            "the calculation companion remains readable ahead of the unchanged schedule writer");
         readOnly.Should().OnlyContain(term => term.SinceTermsVersion > writes && term.SinceTermsVersion <= reads, assetClass);
 
         // ... and they are exactly the declared terms no write surface offers.
@@ -232,18 +233,20 @@ public sealed class SecurityAssetClassRegistryCoverageTests
     }
 
     [Fact]
-    public void Swap_OffersItsLegsBlock_WhileTheLegScheduleConventionsStaysReadOnly()
+    public void Swap_OffersItsLegsBlock_WhileLegConventionsAndTheCalculationCompanionStayReadOnly()
     {
-        // Swap reads version 2 through an element field of legs, so every top-level term stays
-        // writable and offered; the leg block is refused inside a legs value instead.
+        // Swap writes version 1. Its version-2 leg conventions and version-3 calculation
+        // companion remain outside every write surface.
         var definition = SecurityAssetClassRegistry.Get("Swap");
         definition.Fields.Select(static field => field.Key)
-            .Should().Equal(SecurityAssetTermsSchema.Fields("Swap").Select(static field => field.Key));
+            .Should().Equal("effectiveDate", "maturityDate", "legs");
+        SecurityAssetTermsSchema.Fields("Swap").Where(static field => field.SinceTermsVersion > 1)
+            .Select(static field => (field.Key, field.SinceTermsVersion)).Should().Equal(("cashFlowContract", 3));
         definition.UiHints.Select(static hint => hint.Key).Should().Equal("effectiveDate", "maturityDate", "legs");
         SecurityTermBlocks.For("Swap").Select(static field => field.Key).Should().Equal("legs");
         SecurityAssetTermsSchema.ElementFields("Swap", "legs")
             .Should().ContainSingle(static field => field.Key == "scheduleConventions")
-            .Which.SinceTermsVersion.Should().Be(SecurityAssetClassCatalog.GetReadsTermsThrough("Swap"))
+            .Which.SinceTermsVersion.Should().Be(2)
             .And.BeGreaterThan(SecurityAssetClassCatalog.GetTermsVersion("Swap"));
     }
 }

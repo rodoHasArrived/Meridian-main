@@ -68,14 +68,15 @@ public sealed class SecurityVersionedTermsTests
     }
 
     [Fact]
-    public void TheVersionedContainers_AreTheScheduleBlocksAndTheCallPutArrays()
+    public void TheVersionedContainers_AreTheScheduleBlocksCallPutArraysAndCalculationCompanions()
     {
         VersionedContainers().Select(static container => $"{container.AssetClass}.{container.Path}").Should().BeEquivalentTo(new[]
         {
-            "Bond.scheduleConventions", "Bond.callSchedule", "Bond.putSchedule",
-            "CertificateOfDeposit.scheduleConventions", "CertificateOfDeposit.callSchedule", "CertificateOfDeposit.putSchedule",
-            "StructuredCredit.scheduleConventions", "StructuredCredit.callSchedule", "StructuredCredit.putSchedule",
-            "Swap.legs[].scheduleConventions",
+            "Bond.scheduleConventions", "Bond.callSchedule", "Bond.putSchedule", "Bond.cashFlowContract",
+            "CertificateOfDeposit.scheduleConventions", "CertificateOfDeposit.callSchedule", "CertificateOfDeposit.putSchedule", "CertificateOfDeposit.cashFlowContract",
+            "DirectLoan.cashFlowContract",
+            "StructuredCredit.scheduleConventions", "StructuredCredit.callSchedule", "StructuredCredit.putSchedule", "StructuredCredit.cashFlowContract",
+            "Swap.legs[].scheduleConventions", "Swap.cashFlowContract",
         });
 
         // Containers that predate per-class versioning, and later scalar terms, are not versioned containers.
@@ -218,13 +219,13 @@ public sealed class SecurityVersionedTermsTests
     [Fact]
     public void ReadDeclaredScheduleConventions_IsUnreadable_WithTheReadGuardsText()
     {
-        var terms = Terms(4, $"{BondBody},\"scheduleConventions\":{CanonicalBlock}");
+        var terms = Terms(5, $"{BondBody},\"scheduleConventions\":{CanonicalBlock}");
 
         var read = SecurityVersionedTerms.ReadDeclaredScheduleConventions("Bond", terms);
 
         read.Status.Should().Be(SecurityDeclaredConventionsStatus.Unreadable);
         read.Block.IsEmpty.Should().BeTrue();
-        read.UnreadableReason.Should().Be("Unsupported assetClassTermsVersion '4' for asset class 'Bond'; this node reads versions 1 through 3.")
+        read.UnreadableReason.Should().Be("Unsupported assetClassTermsVersion '5' for asset class 'Bond'; this node reads versions 1 through 4.")
             .And.Be(ReadGuardMessage("Bond", terms));
     }
 
@@ -313,7 +314,7 @@ public sealed class SecurityVersionedTermsTests
         SecurityVersionedTerms.ReadDeclaredLegScheduleConventions("Bond", Terms(2, $"{BondBody},\"scheduleConventions\":{CanonicalBlock}"))
             .Status.Should().Be(SecurityDeclaredConventionsStatus.None, "a Bond has no array term with a leg block");
 
-        var unreadable = Swap(3, $"\"legs\":[{FixedLeg},{longLeg}]");
+        var unreadable = Swap(4, $"\"legs\":[{FixedLeg},{longLeg}]");
         var read = SecurityVersionedTerms.ReadDeclaredLegScheduleConventions("Swap", unreadable);
         read.Status.Should().Be(SecurityDeclaredConventionsStatus.Unreadable);
         read.UnreadableReason.Should().Be(ReadGuardMessage("Swap", unreadable));
@@ -330,9 +331,9 @@ public sealed class SecurityVersionedTermsTests
             ("Bond", Json("""{"schemaVersion":2,"termsFormat":"economic","assetClassTermsVersion":9}"""),
                 "Terms payload for asset class 'Bond' declares termsFormat 'economic', which is not an asset-specific-terms format; " +
                 "route it through SecurityAssetSpecificTermsUpcasterChain before reading."),
-            ("Bond", Terms(4, BondBody), "Unsupported assetClassTermsVersion '4' for asset class 'Bond'; this node reads versions 1 through 3."),
-            ("StructuredCredit", Terms(0, "\"tranche\":\"A-1\""), "Unsupported assetClassTermsVersion '0' for asset class 'StructuredCredit'; this node reads versions 1 through 4."),
-            ("Swap", Terms(3, "\"legs\":[]"), "Unsupported assetClassTermsVersion '3' for asset class 'Swap'; this node reads versions 1 through 2."),
+            ("Bond", Terms(5, BondBody), "Unsupported assetClassTermsVersion '5' for asset class 'Bond'; this node reads versions 1 through 4."),
+            ("StructuredCredit", Terms(0, "\"tranche\":\"A-1\""), "Unsupported assetClassTermsVersion '0' for asset class 'StructuredCredit'; this node reads versions 1 through 5."),
+            ("Swap", Terms(4, "\"legs\":[]"), "Unsupported assetClassTermsVersion '4' for asset class 'Swap'; this node reads versions 1 through 3."),
         };
 
         foreach (var (assetClass, terms, expected) in refused)

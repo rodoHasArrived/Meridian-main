@@ -146,6 +146,77 @@ public sealed class ContractualCashFlowPreviewTests
         result.ExerciseEligibility.Single().StreamId.Should().Be(result.ResolvedContract.Streams.Single().StreamId);
     }
 
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData(1, false)]
+    [InlineData(2, true)]
+    [InlineData(3, true)]
+    public async Task Swap_leg_conventions_change_economics_only_at_their_declaring_version(int? termsVersion, bool declared)
+    {
+        var id = Guid.NewGuid();
+        var security = Security(id) with
+        {
+            AssetClass = "Swap",
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+            {
+                assetClassTermsVersion = termsVersion,
+                effectiveDate = "2026-01-01",
+                maturityDate = "2027-01-01",
+                legs = new[]
+                {
+                    new
+                    {
+                        legId = "fixed",
+                        currency = "USD",
+                        direction = "Receive",
+                        fixedRate = .05m,
+                        notional = 1000m,
+                        paymentFrequency = "Quarterly",
+                        dayCount = "ACT/365",
+                        scheduleConventions = new { couponRateUnit = "Percent", accrualAdjusted = false }
+                    }
+                }
+            })
+        };
+        var query = Substitute.For<ISecurityMasterQueryService>();
+        query.GetRecordedByIdAsOfAsync(id, Cutoff, Arg.Any<CancellationToken>()).Returns(security);
+        var result = await new ContractualCashFlowPreviewService(query, Substitute.For<ISecurityMasterCashFlowService>())
+            .PreviewSecurityAsync(id, Request);
+
+        result!.Blockers.Should().BeEmpty();
+        var stream = result.ResolvedContract!.Streams.Should().ContainSingle().Which;
+        stream.FixedRate.Should().Be(declared ? .0005m : .05m);
+        stream.Conventions!.IsEmpty.Should().Be(!declared,
+            "a stray leg block on an unstamped or version-1 swap cannot change its retained economics");
+        result.Events.Sum(static item => item.CashInterest).Should().BeApproximately(declared ? .5m : 50m, .00000003m);
+    }
+
+    [Fact]
+    public async Task Retained_swap_packet_replays_its_normalized_contract_after_the_source_mapping_is_corrected()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-cashflow-test-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            // A packet calculated before the source-version gate retained the already-converted
+            // .05 percent rate. Replay must use that contract, never remap the source row as .05.
+            var contract = new ContractualCashFlowContract(Issue, Issue.AddYears(1), "USD",
+                [new("fixed", 1000m, 3, DayCountConvention.Actual365, .0005m,
+                    Conventions: ScheduleConventionTerms.Empty with { CouponRateUnit = "Percent", AccrualAdjusted = false })]);
+            var result = ContractualCashFlowEngine.Calculate(contract, Request, sourceVersion: "security:retained:version:1");
+            var run = new ContractualCashFlowRun(Guid.NewGuid(), "Security", Guid.NewGuid(), Cutoff, contract, Request, result, "operator");
+            var options = new StorageOptions { RootPath = root };
+            await new FileContractualCashFlowRunStore(options).SaveAsync(run);
+
+            var retained = await new FileContractualCashFlowRunStore(options).GetAsync(run.SubjectKind, run.SubjectId, run.RunId);
+            ContractualCashFlowEngine.Verify(retained!).Should().BeTrue();
+            var replayed = ContractualCashFlowEngine.Replay(retained!);
+            replayed.Evidence.Should().BeEquivalentTo(result.Evidence);
+            replayed.Events.Should().Equal(result.Events);
+            replayed.Events.Sum(static item => item.CashInterest).Should().BeApproximately(.5m, .00000003m);
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    }
+
     [Fact]
     public async Task Replay_packet_survives_restart_refuses_changed_identity_and_detects_tampering()
     {

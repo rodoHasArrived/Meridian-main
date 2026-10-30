@@ -126,6 +126,10 @@ public sealed class ContractualCashFlowPreviewService(
         if (terms.Legs is { Count: > 0 } legs)
         {
             var rawLegs = security.AssetSpecificTerms.TryGetProperty("legs", out var array) && array.ValueKind == JsonValueKind.Array ? array.EnumerateArray().ToArray() : [];
+            var legConventionsField = SecurityAssetTermsSchema.ElementFields(security.AssetClass, "legs")
+                .FirstOrDefault(static field => field.Key == SecurityVersionedTerms.ScheduleConventionsKey);
+            var decodesLegConventions = legConventionsField is not null
+                && SecurityVersionedTerms.Decoding(security.AssetClass, security.AssetSpecificTerms, writeMode: false).Decodes(legConventionsField);
             for (var i = 0; i < legs.Count; i++)
             {
                 var leg = legs[i];
@@ -135,8 +139,8 @@ public sealed class ContractualCashFlowPreviewService(
                 if (legs.Count > 1 && leg.Direction is null)
                     throw new ContractInputUnavailable("Every leg needs a retained pay/receive direction.");
                 var bondCoupon = descriptor.CarriesBondCouponStructure && rawLegs.Length == 0;
-                var block = bondCoupon ? conventions : i < rawLegs.Length
-                    ? SecurityVersionedTerms.ReadScheduleConventions(rawLegs[i], "scheduleConventions") : ScheduleConventionTerms.Empty;
+                var block = bondCoupon ? conventions : decodesLegConventions && i < rawLegs.Length
+                    ? SecurityVersionedTerms.ReadScheduleConventions(rawLegs[i], SecurityVersionedTerms.ScheduleConventionsKey) : ScheduleConventionTerms.Empty;
                 streams.Add(new(leg.LegId, leg.Notional ?? principal ?? throw new ContractInputUnavailable("Every leg needs a retained notional."), Months(leg.PaymentFrequency ?? terms.PaymentFrequency),
                     DayCount(leg.DayCountConvention ?? terms.DayCountConvention), Rate(leg.FixedRate, block), leg.Direction ?? CashFlowLegDirection.Receive,
                     leg.ExchangesPrincipal, block, PrincipalSchedule: bondCoupon ? terms.PrincipalSchedule : null,
@@ -162,8 +166,8 @@ public sealed class ContractualCashFlowPreviewService(
         }
         var exercises = new List<ContractualExerciseEntry>();
         var exerciseStreamId = streams.Count == 1 ? streams[0].StreamId : "main";
-        ReadExercises("callSchedule", CashFlowExerciseSide.Call);
-        ReadExercises("putSchedule", CashFlowExerciseSide.Put);
+        ReadExercises(SecurityVersionedTerms.CallScheduleKey, CashFlowExerciseSide.Call);
+        ReadExercises(SecurityVersionedTerms.PutScheduleKey, CashFlowExerciseSide.Put);
         return new(issue, maturity, security.Currency, streams, exercises);
 
         void ReadExercises(string key, CashFlowExerciseSide side)

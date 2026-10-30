@@ -124,8 +124,12 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
            "replaces the terms wholesale, so any field the patch omits is dropped with them — and note that a deactivation " +
            "cannot carry a patch, so repair it first.";
 
-    [Fact]
-    public async Task Create_StampedAboveTheReadableVersion_Returns400WithTheUnsupportedVersionReason()
+    [Theory]
+    [InlineData(4,
+        "assetClassTermsVersion '4' for asset class 'Bond' is readable but not writable on this node: it reads versions 1 through 4 and writes version 3. Submit the terms at version 3, or apply the change from a node that writes version 4.")]
+    [InlineData(5,
+        "Unsupported assetClassTermsVersion '5' for asset class 'Bond'; this node reads versions 1 through 4.")]
+    public async Task Create_StampedAboveTheWriteVersion_Returns400WithTheSpecificRefusalReason(int stamp, string reason)
     {
         var securityId = Guid.NewGuid();
         using var harness = new CanonicalServiceHarness();
@@ -133,11 +137,10 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
 
         using var response = await app.GetTestClient().PostAsJsonAsync(
             "/api/security-master",
-            CreateRequest(securityId, "Bond", AheadOfWriteFixtures.BondTerms(stamp: 4, withBlock: false)),
+            CreateRequest(securityId, "Bond", AheadOfWriteFixtures.BondTerms(stamp, withBlock: false)),
             WebJson);
 
-        await AssertRefusedAsync(response,
-            "Unsupported assetClassTermsVersion '4' for asset class 'Bond'; this node reads versions 1 through 3.");
+        await AssertRefusedAsync(response, reason);
         await harness.AssertNothingWrittenAsync();
     }
 
@@ -272,7 +275,7 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
 
         await AssertRefusedAsync(response,
             "assetClassTermsVersion '2' for asset class 'Swap' is readable but not writable on this node: it reads " +
-            "versions 1 through 2 and writes version 1. Submit the terms at version 1, or apply the change from a node that writes version 2.");
+            "versions 1 through 3 and writes version 1. Submit the terms at version 1, or apply the change from a node that writes version 2.");
         await harness.AssertNothingWrittenAsync();
     }
 

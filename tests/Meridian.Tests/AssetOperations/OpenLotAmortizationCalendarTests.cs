@@ -250,7 +250,7 @@ public sealed class OpenLotAmortizationCalendarTests
     [Theory]
     [InlineData("")]
     [InlineData("canonical-lot-amortization-v1")]
-    [InlineData("canonical-lot-amortization-v5")]
+    [InlineData("canonical-lot-amortization-v6")]
     public void UnsupportedCalculationVersion_IsRefused(string version)
     {
         var instruction = Instruction(new DateOnly(2025, 1, 1), new DateOnly(2026, 1, 1), new DateOnly(2025, 7, 1),
@@ -260,6 +260,20 @@ public sealed class OpenLotAmortizationCalendarTests
         var project = () => OpenLotAmortization.Project(instruction);
 
         project.Should().Throw<ArgumentException>().WithMessage("*calculation version is unsupported*");
+    }
+
+    [Theory]
+    [InlineData(OpenLotAmortization.DeclaredModelVersion)]
+    [InlineData(OpenLotAmortization.UnifiedDeclaredModelVersion)]
+    public void DeclaredCalculationVersion_WithoutDeclaredConventions_IsRefused(string version)
+    {
+        var instruction = Instruction(new DateOnly(2025, 1, 1), new DateOnly(2026, 1, 1), new DateOnly(2025, 7, 1),
+            "Actual/365", 2, 10m, 110m, annualYield: 0m) with
+        { CalculationVersion = version };
+
+        var project = () => OpenLotAmortization.Project(instruction);
+
+        project.Should().Throw<ArgumentException>().WithMessage("*requires explicit contractual schedule conventions*");
     }
 
     // Independent annuity present value, expressed per 100 face. The production kernel

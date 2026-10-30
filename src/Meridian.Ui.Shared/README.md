@@ -13,7 +13,7 @@ last_reviewed: 2026-10-28
 
 Portfolio cash-ladder composition supplies the configured business-day calendars to the shared Instruments scenario engine. Declared issuer-call and holder-put scenarios use retained projection terms and calendar hashes; floating shocks consume retained per-reset inputs. Scenario blockers remain visible through the existing decision-readiness response; no new approval or payment authority is introduced.
 
-Shared cash-flow preview endpoints expose calculation-only exercise and prepayment scenarios with view permission. Separate retention endpoints require modification permission, bind retries to immutable run IDs, and retrieve the complete replay evidence. Loan retention preserves the existing tenant write gate. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
+Shared cash-flow preview endpoints expose calculation-only exercise and prepayment scenarios with view permission. Separate retention endpoints require modification permission, bind retries to immutable run IDs, and retrieve the complete replay evidence. Loan retention preserves the existing tenant write gate. Loan preview and retention share the actor-scoped direct-lending mutation budget; exhaustion refuses the request before calculation or retained-evidence access. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
 
 Provider ownership endpoints derive tenant and actor from authenticated context and require credential,
 provider and configuration administration. Creation, migration preview, transfer/rollback and host

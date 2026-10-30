@@ -48,7 +48,9 @@ internal static class ContractualCashFlowRunEndpoints
         .WithName("RetainContractual" + kind + "CashFlowRun")
         .RequirePermission(modify)
         .AddEndpointFilter(EndpointAuthorization.Require(modify))
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .RequireRateLimiting(kind == "Loan"
+            ? UiEndpoints.DirectLendingMutationRateLimitPolicy
+            : UiEndpoints.MutationRateLimitPolicy)
         .Produces<ContractualCashFlowRun>().Produces(StatusCodes.Status400BadRequest).Produces(StatusCodes.Status404NotFound).Produces(StatusCodes.Status409Conflict);
         if (kind == "Loan")
             writeRoute.RequireFundScopedWriteTenant();

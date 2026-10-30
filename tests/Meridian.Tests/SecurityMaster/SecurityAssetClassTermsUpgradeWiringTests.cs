@@ -57,12 +57,12 @@ public sealed class SecurityAssetClassTermsUpgradeWiringTests
         SecurityMasterMapping.ToRecord(Record(V1Text)).Kind.Should().Be(v2);
         SecurityMasterMapping.ToRecord(Record(UnstampedText)).Kind.Should().Be(v2);
 
-        // The guard still sees the stored payload before the hook, so a stamp above what the node
-        // reads (versions 3 and 4 are readable ahead of write since 2026-10-25) is refused as before.
+        // The guard still sees the stored payload before the hook. Version 5 adds the readable
+        // calculation companion; the next version remains unsupported.
         var newer = () => SecurityMasterMapping.ToRecord(
-            Record(V1Text.Replace("\"assetClassTermsVersion\":1", "\"assetClassTermsVersion\":5", StringComparison.Ordinal)));
+            Record(V1Text.Replace("\"assetClassTermsVersion\":1", "\"assetClassTermsVersion\":6", StringComparison.Ordinal)));
         newer.Should().Throw<InvalidOperationException>()
-            .WithMessage("Unsupported assetClassTermsVersion '5' for asset class 'StructuredCredit'; this node reads versions 1 through 4.");
+            .WithMessage("Unsupported assetClassTermsVersion '6' for asset class 'StructuredCredit'; this node reads versions 1 through 5.");
     }
 
     // A StructuredCredit row stamped 3 by a node that writes version 3; this node reads it ahead of

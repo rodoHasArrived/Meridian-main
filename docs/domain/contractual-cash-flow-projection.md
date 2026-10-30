@@ -26,6 +26,8 @@ are unchanged. The companion is decoded only at its introduction stamp and outsi
 envelopes. A stray key on an older row stays inert. Unsupported members and contract versions
 refuse; existing call/put entry shapes and declared mapping v1 remain frozen. The generic terms
 writer cannot activate this companion until a later reviewed write-capability rollout.
+Swap leg schedule conventions likewise take effect only from their declared terms version 2;
+stray convention blocks on unstamped or version-1 rows do not change projected rates or cash.
 
 Existing retained scalar terms are adapted where complete. Missing origination dates are never
 replaced by effective-from dates. Factor-based balances without reconcilable history, custom loan

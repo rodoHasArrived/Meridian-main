@@ -432,10 +432,8 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
-    public async Task UpdateSecurityField_ProfileEnvelopeStampedAboveWhatThisNodeReads_IsRefusedWithTheReadReason()
+    public async Task UpdateSecurityField_ProfileEnvelopeAtReadableCompanionVersion_IsRefusedWithTheWriteReason()
     {
-        // Stamped 5, the envelope is not readable here at all, so the refusal must say so rather than
-        // call it readable but not writable.
         var harness = new Harness(currentVersion: 3);
         harness.SetPassportAssetClass("StructuredCredit");
         var stamped = JsonNode.Parse(ProfileBackedStructuredCreditEnvelope)!.AsObject();
@@ -447,9 +445,30 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             .Should().ThrowAsync<ArgumentException>();
 
         refused.Which.Message.Should().Be(
+            "assetClassTermsVersion '5' for asset class 'StructuredCredit' is readable but not writable on this node: " +
+            "it reads versions 1 through 5 and writes version 4. Submit the terms at version 4, or apply the change from a node that writes version 5.");
+        await AssertNothingStagedAsync(harness);
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_ProfileEnvelopeStampedAboveWhatThisNodeReads_IsRefusedWithTheReadReason()
+    {
+        // Stamped 6, the envelope is not readable here at all, so the refusal must say so rather than
+        // call it readable but not writable.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("StructuredCredit");
+        var stamped = JsonNode.Parse(ProfileBackedStructuredCreditEnvelope)!.AsObject();
+        stamped[SecurityTermsEnvelope.AssetClassTermsVersionKey] = 6;
+        harness.SetProjectionAssetTerms("StructuredCredit", AheadOfWriteFixtures.Parse(stamped.ToJsonString()));
+
+        var refused = await harness.Service
+            .Invoking(s => s.UpdateSecurityFieldAsync(ProfileFieldEdit("assetSpecificTerms.profileFields.tranche", "A-2")))
+            .Should().ThrowAsync<ArgumentException>();
+
+        refused.Which.Message.Should().Be(
             $"The effective profileFields overlay for security '{SecurityId:D}' could not be reconstructed and validated " +
-            "against the resolved asset class 'StructuredCredit' (Unsupported assetClassTermsVersion '5' for asset class " +
-            "'StructuredCredit'; this node reads versions 1 through 4.); the namespace only accepts validated writes.");
+            "against the resolved asset class 'StructuredCredit' (Unsupported assetClassTermsVersion '6' for asset class " +
+            "'StructuredCredit'; this node reads versions 1 through 5.); the namespace only accepts validated writes.");
         await AssertNothingStagedAsync(harness);
     }
 
