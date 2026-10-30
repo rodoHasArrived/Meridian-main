@@ -103,6 +103,202 @@ public sealed class ContractualCashFlowPreviewTests
         result.Events.Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData("swapLegs")]
+    [InlineData("cashFlowLegs")]
+    [InlineData("LEGS")]
+    public async Task Foreign_currency_swap_leg_alias_cannot_bypass_the_currency_refusal(string legContainer)
+    {
+        var id = Guid.NewGuid();
+        var security = Security(id) with
+        {
+            AssetClass = "Swap",
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new Dictionary<string, object?>
+            {
+                ["assetClassTermsVersion"] = 2,
+                ["effectiveDate"] = "2026-01-01",
+                ["maturityDate"] = "2027-01-01",
+                [legContainer] = new[]
+                {
+                    new { legId = "foreign", currency = "EUR", direction = "Receive", fixedRate = .05m,
+                        notional = 1000m, paymentFrequency = "Quarterly", dayCount = "ACT/365" }
+                }
+            })
+        };
+        var query = Substitute.For<ISecurityMasterQueryService>();
+        query.GetRecordedByIdAsOfAsync(id, Cutoff, Arg.Any<CancellationToken>()).Returns(security);
+        var result = await new ContractualCashFlowPreviewService(query, Substitute.For<ISecurityMasterCashFlowService>())
+            .PreviewSecurityAsync(id, Request);
+
+        result!.Blockers.Should().ContainSingle().Which.Code.Should().Be("ContractInputsUnavailable");
+        result.Events.Should().BeEmpty("foreign leg cash cannot be relabeled as the security currency");
+        result.ResolvedContract.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData(true, "EUR")]
+    [InlineData(true, "USD")]
+    [InlineData(false, "USD")]
+    public async Task Malformed_swap_leg_rows_cannot_shift_the_retained_currency_or_conventions(bool nullBeforeLeg, string currency)
+    {
+        var id = Guid.NewGuid();
+        var leg = new
+        {
+            legId = "retained",
+            currency,
+            direction = "Receive",
+            fixedRate = .05m,
+            notional = 1000m,
+            paymentFrequency = "Quarterly",
+            dayCount = "ACT/365",
+            scheduleConventions = new { couponRateUnit = "Percent", accrualAdjusted = false }
+        };
+        var security = Security(id) with
+        {
+            AssetClass = "Swap",
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+            {
+                assetClassTermsVersion = 2,
+                effectiveDate = "2026-01-01",
+                maturityDate = "2027-01-01",
+                legs = nullBeforeLeg ? new object?[] { null, leg } : new object?[] { leg, null }
+            })
+        };
+        var query = Substitute.For<ISecurityMasterQueryService>();
+        query.GetRecordedByIdAsOfAsync(id, Cutoff, Arg.Any<CancellationToken>()).Returns(security);
+        var result = await new ContractualCashFlowPreviewService(query, Substitute.For<ISecurityMasterCashFlowService>())
+            .PreviewSecurityAsync(id, Request);
+
+        result!.Blockers.Should().ContainSingle().Which.Code.Should().Be("ContractInputsUnavailable");
+        result.Events.Should().BeEmpty("malformed retained legs cannot be skipped before pairing currency and rate conventions");
+        result.ResolvedContract.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("swapLegs", 1, 50)]
+    [InlineData("swapLegs", 2, .5)]
+    [InlineData("cashFlowLegs", 1, 50)]
+    [InlineData("cashFlowLegs", 2, .5)]
+    [InlineData("LEGS", 1, 50)]
+    [InlineData("LEGS", 2, .5)]
+    public async Task Same_currency_swap_leg_aliases_preserve_the_declared_rate_unit(string legContainer, int version, decimal interest)
+    {
+        var id = Guid.NewGuid();
+        var security = Security(id) with
+        {
+            AssetClass = "Swap",
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new Dictionary<string, object?>
+            {
+                ["assetClassTermsVersion"] = version,
+                ["effectiveDate"] = "2026-01-01",
+                ["maturityDate"] = "2027-01-01",
+                [legContainer] = new[]
+                {
+                    new { legId = "retained", currency = "USD", direction = "Receive", fixedRate = .05m,
+                        notional = 1000m, paymentFrequency = "Quarterly", dayCount = "ACT/365",
+                        scheduleConventions = new { couponRateUnit = "Percent", accrualAdjusted = false } }
+                }
+            })
+        };
+        var query = Substitute.For<ISecurityMasterQueryService>();
+        query.GetRecordedByIdAsOfAsync(id, Cutoff, Arg.Any<CancellationToken>()).Returns(security);
+        var result = await new ContractualCashFlowPreviewService(query, Substitute.For<ISecurityMasterCashFlowService>())
+            .PreviewSecurityAsync(id, Request);
+
+        result!.Blockers.Should().BeEmpty();
+        result.ResolvedContract!.Currency.Should().Be("USD");
+        result.Events.Sum(static item => item.CashInterest).Should().BeApproximately(interest, .00000003m);
+    }
+
+    [Fact]
+    public async Task A_retained_leg_array_with_no_object_rows_cannot_fall_back_to_a_scalar_stream()
+    {
+        var id = Guid.NewGuid();
+        var security = Security(id) with
+        {
+            AssetClass = "Swap",
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+            {
+                assetClassTermsVersion = 2,
+                effectiveDate = "2026-01-01",
+                maturityDate = "2027-01-01",
+                par = 1000m,
+                couponRate = .05m,
+                paymentFrequency = "Quarterly",
+                dayCount = "ACT/365",
+                legs = new object?[] { null, "invalid" }
+            })
+        };
+        var query = Substitute.For<ISecurityMasterQueryService>();
+        query.GetRecordedByIdAsOfAsync(id, Cutoff, Arg.Any<CancellationToken>()).Returns(security);
+        var result = await new ContractualCashFlowPreviewService(query, Substitute.For<ISecurityMasterCashFlowService>())
+            .PreviewSecurityAsync(id, Request);
+
+        result!.Blockers.Should().ContainSingle().Which.Code.Should().Be("ContractInputsUnavailable");
+        result.Events.Should().BeEmpty();
+        result.ResolvedContract.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("profile", "EUR")]
+    [InlineData("profile", "USD")]
+    [InlineData("root", "EUR")]
+    [InlineData("root", "USD")]
+    [InlineData("common", "EUR")]
+    [InlineData("common", "USD")]
+    public async Task Retained_leg_currency_and_conventions_follow_the_resolvers_source_authority(string source, string currency)
+    {
+        var id = Guid.NewGuid();
+        object Leg(string legId, string legCurrency, decimal fixedRate) => new
+        {
+            legId,
+            currency = legCurrency,
+            fixedRate,
+            direction = "Receive",
+            notional = 1000m,
+            paymentFrequency = "Quarterly",
+            dayCount = "ACT/365",
+            scheduleConventions = new { couponRateUnit = "Percent", accrualAdjusted = false }
+        };
+        var selected = Leg("selected", currency, .05m);
+        var shadow = Leg("shadow", currency == "USD" ? "EUR" : "USD", .08m);
+        var terms = new Dictionary<string, object?>
+        {
+            ["assetClassTermsVersion"] = 2,
+            ["effectiveDate"] = "2026-01-01",
+            ["maturityDate"] = "2027-01-01",
+            // An empty higher-priority array still allows the first populated alias/source.
+            ["legs"] = source == "profile" ? new[] { shadow } : Array.Empty<object>()
+        };
+        if (source == "profile")
+            terms["profileFields"] = new { swapLegs = new[] { selected } };
+        else if (source == "root")
+            terms["swapLegs"] = new[] { selected };
+        var security = Security(id) with
+        {
+            AssetClass = "Swap",
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(terms),
+            CommonTerms = JsonSerializer.SerializeToElement(new { cashFlowLegs = new[] { source == "common" ? selected : shadow } })
+        };
+        var query = Substitute.For<ISecurityMasterQueryService>();
+        query.GetRecordedByIdAsOfAsync(id, Cutoff, Arg.Any<CancellationToken>()).Returns(security);
+        var result = await new ContractualCashFlowPreviewService(query, Substitute.For<ISecurityMasterCashFlowService>())
+            .PreviewSecurityAsync(id, Request);
+
+        if (currency == "EUR")
+        {
+            result!.Blockers.Should().ContainSingle().Which.Code.Should().Be("ContractInputsUnavailable");
+            result.Events.Should().BeEmpty();
+            result.ResolvedContract.Should().BeNull();
+        }
+        else
+        {
+            result!.Blockers.Should().BeEmpty();
+            result.ResolvedContract!.Streams.Should().ContainSingle().Which.StreamId.Should().Be("selected");
+            result.Events.Sum(static item => item.CashInterest).Should().BeApproximately(.5m, .00000003m);
+        }
+    }
+
     [Fact]
     public async Task Canonical_floating_bond_retains_declared_calendar_cap_and_exercise_stream_with_original_curve_metadata()
     {

@@ -123,9 +123,11 @@ public sealed class ContractualCashFlowPreviewService(
         var principal = terms.PrincipalFace;
         var conventions = SecurityVersionedTerms.ReadDeclaredScheduleConventions(security.AssetClass, security.AssetSpecificTerms).Block;
         var streams = new List<ContractualCashFlowStream>();
+        var rawLegs = ReadRetainedLegRows(security);
         if (terms.Legs is { Count: > 0 } legs)
         {
-            var rawLegs = security.AssetSpecificTerms.TryGetProperty("legs", out var array) && array.ValueKind == JsonValueKind.Array ? array.EnumerateArray().ToArray() : [];
+            if (rawLegs.Length > 0 && rawLegs.Length != legs.Count)
+                throw new ContractInputUnavailable("Retained leg rows do not match the resolved contractual legs.");
             var legConventionsField = SecurityAssetTermsSchema.ElementFields(security.AssetClass, "legs")
                 .FirstOrDefault(static field => field.Key == SecurityVersionedTerms.ScheduleConventionsKey);
             var decodesLegConventions = legConventionsField is not null
@@ -198,6 +200,27 @@ public sealed class ContractualCashFlowPreviewService(
                     Int(row, "minimumNoticeDays"), Int(row, "maximumNoticeDays"), Text(row, "noticeDayType"), Text(row, "priceBasis") ?? "PercentOfPar"));
             }
         }
+    }
+
+    private static JsonElement[] ReadRetainedLegRows(SecurityDetailDto security)
+    {
+        // Use the resolver's authority order and the schema-owned leg aliases. Pairing its filtered
+        // legs with a different raw array can drop currencies or apply another leg's rate units.
+        var container = SecurityAssetTermsSchema.Field("Swap", "legs")!;
+        foreach (var source in StructuredCashFlowTermsResolver.EnumerateTermSources(security))
+        {
+            foreach (var key in new[] { container.Key }.Concat(container.Aliases))
+            {
+                if (!SecurityTermReader.TryGetProperty(source, key, out var array)
+                    || array.ValueKind != JsonValueKind.Array || array.GetArrayLength() == 0)
+                    continue;
+                var rows = array.EnumerateArray().ToArray();
+                if (rows.Any(static row => row.ValueKind != JsonValueKind.Object))
+                    throw new ContractInputUnavailable("Retained contractual leg arrays must contain only object rows; malformed legs cannot be skipped.");
+                return rows;
+            }
+        }
+        return [];
     }
 
     public static ContractualCashFlowContract FromLoan(DirectLendingTermsDto terms, LoanServicingStateDto servicing)

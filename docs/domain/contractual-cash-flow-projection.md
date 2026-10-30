@@ -28,6 +28,9 @@ refuse; existing call/put entry shapes and declared mapping v1 remain frozen. Th
 writer cannot activate this companion until a later reviewed write-capability rollout.
 Swap leg schedule conventions likewise take effect only from their declared terms version 2;
 stray convention blocks on unstamped or version-1 rows do not change projected rates or cash.
+Scalar swap projections read leg currencies and conventions from the same retained source and
+supported alias as the shared terms reader. Nonobject leg rows block preview before mapping;
+valid aliases and source precedence are preserved.
 
 Existing retained scalar terms are adapted where complete. Missing origination dates are never
 replaced by effective-from dates. Factor-based balances without reconcilable history, custom loan
