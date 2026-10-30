@@ -497,6 +497,12 @@ internal static class FundStructureProjector
         DateTimeOffset asOf)
     {
         var organizations = FilterVisible(snapshot.Organizations, activeOnly, asOf, static candidate => (candidate.EffectiveFrom, candidate.EffectiveTo));
+        // Preserve partial-input compatibility only when the window-filtered input has no roots.
+        // Status or requested-id filtering must not turn an empty selection into a wildcard.
+        var allowUnscopedBusinesses = !organizationId.HasValue && organizations.Count == 0;
+        organizations = organizations
+            .Where(candidate => !activeOnly || candidate.IsActive)
+            .ToList();
         var businesses = FilterVisible(snapshot.Businesses, activeOnly, asOf, static candidate => (candidate.EffectiveFrom, candidate.EffectiveTo));
         var clients = FilterVisible(snapshot.Clients, activeOnly, asOf, static candidate => (candidate.EffectiveFrom, candidate.EffectiveTo));
         var funds = FilterVisible(snapshot.Funds, activeOnly, asOf, static candidate => (candidate.EffectiveFrom, candidate.EffectiveTo));
@@ -519,7 +525,7 @@ internal static class FundStructureProjector
 
         var organizationIds = organizations.Select(static organization => organization.OrganizationId).ToHashSet();
         businesses = businesses
-            .Where(candidate => organizationIds.Count == 0 || organizationIds.Contains(candidate.OrganizationId))
+            .Where(candidate => allowUnscopedBusinesses || organizationIds.Contains(candidate.OrganizationId))
             .ToList();
         var businessIds = businesses.Select(static business => business.BusinessId).ToHashSet();
 
@@ -532,10 +538,16 @@ internal static class FundStructureProjector
         var vehicleIds = vehicles.Select(static vehicle => vehicle.VehicleId).ToHashSet();
         portfolios = portfolios.Where(candidate => businessIds.Contains(candidate.BusinessId)).ToList();
         var portfolioIds = portfolios.Select(static portfolio => portfolio.InvestmentPortfolioId).ToHashSet();
+        // Account-derived entities may extend an already selected branch, but must not recreate
+        // an explicit empty organization/business scope from unrelated account references.
+        var accountsForEntityScope = organizationId.HasValue || businessId.HasValue
+            ? GetScopeAccounts(accounts, activeLinks, entityIds: Array.Empty<Guid>(),
+                fundIds, sleeveIds, vehicleIds, portfolioIds)
+            : accounts;
         var entityIds = vehicles.Select(static vehicle => vehicle.LegalEntityId)
             .Concat(funds.SelectMany(static fund => fund.EntityIds))
             .Concat(portfolios.Where(static portfolio => portfolio.EntityId.HasValue).Select(static portfolio => portfolio.EntityId!.Value))
-            .Concat(accounts.Where(static account => account.EntityId.HasValue).Select(static account => account.EntityId!.Value))
+            .Concat(accountsForEntityScope.Where(static account => account.EntityId.HasValue).Select(static account => account.EntityId!.Value))
             .ToHashSet();
         entities = entities
             .Where(candidate =>

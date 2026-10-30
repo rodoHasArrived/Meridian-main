@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
@@ -8,161 +9,500 @@ using Xunit;
 namespace Meridian.FundStructure.Tests;
 
 /// <summary>
-/// One contract, run against both <see cref="IFundStructureService"/> implementations.
+/// One domain-filtering contract exercised through both service implementations. The PostgreSQL
+/// runner uses a store double: this proves shared service behavior, not database or tenant authority.
+/// Tenant admission and production/local composition have separate contracts.
 /// </summary>
-/// <remarks>
-/// <para>
-/// Both implementations ship. `StorageFeatureRegistration` selects Postgres or in-memory on whether
-/// a connection string is configured, and the WPF desktop workstation registers the in-memory one
-/// unconditionally — so these are two shipping products, not a production path and a test double.
-/// They also carry 25 same-named private helpers, of which six differ structurally.
-/// </para>
-/// <para>
-/// The specific question these tests exist to answer (#2612): the Postgres service's visible scope
-/// cascade begins at fund level, while the in-memory service additionally narrows businesses by
-/// organization and clients and funds by business. If Postgres does not apply that upper-level
-/// narrowing, an organization-scoped caller can see records belonging to another organization.
-/// These assertions state what both implementations must do, so the answer is a test result rather
-/// than an argument about which file to read.
-/// </para>
-/// </remarks>
 public abstract class FundStructureScopeContractTests
 {
-    private static readonly DateTimeOffset EffectiveFrom = new(2026, 01, 01, 0, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset AsOf = new(2026, 01, 15, 0, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset EffectiveFrom = AsOf.AddDays(-1);
 
-    protected abstract IFundStructureService CreateService();
+    protected abstract IFundStructureService CreateService(
+        IFundAccountService accounts, IGovernanceSharedDataAccessService? metadata = null);
 
-    /// <summary>Two organizations, each owning one business, one client, and one fund.</summary>
-    private sealed record Fixture(
-        Guid OrganizationA, Guid BusinessA, Guid ClientA, Guid FundA,
-        Guid OrganizationB, Guid BusinessB, Guid ClientB, Guid FundB);
+    // Organizations have no update command. Seed persisted DTOs through each adapter to exercise
+    // independent IsActive and EffectiveTo fields without reflection or a new production API.
+    protected abstract Task<IFundStructureService> CreateFromSnapshotAsync(
+        OrganizationStructureGraphDto snapshot, IFundAccountService accounts,
+        IGovernanceSharedDataAccessService? metadata = null);
 
-    private static async Task<Fixture> SeedAsync(IFundStructureService service)
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task OrganizationScopedQuery_ReturnsOnlyMatchingDescendantsAndAccounts(bool withMetadata)
     {
-        var f = new Fixture(
-            Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),
-            Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+        var fixture = await SeedAsync(withMetadata);
+        var views = await QueryAsync(fixture.Service, fixture.A.OrganizationId);
 
-        foreach (var (org, business, client, fund, tag) in new[]
-                 {
-                     (f.OrganizationA, f.BusinessA, f.ClientA, f.FundA, "A"),
-                     (f.OrganizationB, f.BusinessB, f.ClientB, f.FundB, "B"),
-                 })
+        AssertScope(views, [fixture.A.OrganizationId], fixture.A);
+        Assert.Equal(fixture.Metadata?.Value, views.Graph.SharedDataAccess);
+        Assert.Equal(fixture.Metadata?.Value, views.Accounting.SharedDataAccess);
+        Assert.All(views.Graph.Accounts,
+            account => Assert.Equal(fixture.Metadata?.Value, account.SharedDataAccess));
+        Assert.All(views.Graph.InvestmentPortfolios,
+            portfolio => Assert.Equal(fixture.Metadata?.Value, portfolio.SharedDataAccess));
+    }
+
+    [Fact]
+    public async Task BusinessScopedQuery_ReturnsOnlyMatchingDescendants()
+    {
+        var fixture = await SeedAsync();
+        var views = await QueryAsync(fixture.Service, businessId: fixture.A.BusinessId);
+
+        AssertScope(views, [fixture.A.OrganizationId, fixture.B.OrganizationId], fixture.A);
+    }
+
+    [Fact]
+    public async Task UnscopedQuery_ReturnsBothOrganizationsAndTheirDescendants()
+    {
+        var fixture = await SeedAsync();
+        var views = await QueryAsync(fixture.Service);
+
+        AssertScope(views, [fixture.A.OrganizationId, fixture.B.OrganizationId], fixture.A, fixture.B);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UnknownOrganization_DoesNotBecomeAnUnscopedQuery(bool withMetadata)
+    {
+        var fixture = await SeedAsync(withMetadata);
+        AssertScope(await QueryAsync(fixture.Service),
+            [fixture.A.OrganizationId, fixture.B.OrganizationId], fixture.A, fixture.B);
+
+        foreach (var unknownOrganization in new[] { Guid.NewGuid(), Guid.Empty })
         {
-            await service.CreateOrganizationAsync(new CreateOrganizationRequest(
-                org, $"ORG-{tag}", $"Organization {tag}", "USD", EffectiveFrom, "contract-test"));
-
-            await service.CreateBusinessAsync(new CreateBusinessRequest(
-                business, org, BusinessKindDto.FundManager,
-                $"BUS-{tag}", $"Business {tag}", "USD", EffectiveFrom, "contract-test"));
-
-            await service.CreateClientAsync(new CreateClientRequest(
-                client, business, $"CLI-{tag}", $"Client {tag}", "USD", EffectiveFrom, "contract-test"));
-
-            await service.CreateFundAsync(new CreateFundRequest(
-                fund, $"FND-{tag}", $"Fund {tag}", "USD", EffectiveFrom, "contract-test",
-                Description: null, BusinessId: business));
+            AssertScope(await QueryAsync(fixture.Service, unknownOrganization), []);
+            AssertScope(await QueryAsync(fixture.Service, unknownOrganization, fixture.A.BusinessId), []);
         }
+    }
 
-        return f;
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ConflictingOrganizationAndBusinessFilters_RetainOnlyTheOrganizationRoot(bool unknownBusiness)
+    {
+        var fixture = await SeedAsync();
+        AssertScope(await QueryAsync(fixture.Service),
+            [fixture.A.OrganizationId, fixture.B.OrganizationId], fixture.A, fixture.B);
+
+        var businessId = unknownBusiness ? Guid.NewGuid() : fixture.B.BusinessId;
+        var views = await QueryAsync(fixture.Service, fixture.A.OrganizationId, businessId);
+
+        AssertScope(views, [fixture.A.OrganizationId]);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task InactiveOrganization_RespectsActiveOnlyWithoutWideningTheScope(bool activeOnly)
+    {
+        var fixture = await SeedAsync();
+        var snapshot = await SnapshotAsync(fixture);
+        snapshot = snapshot with
+        {
+            Organizations = snapshot.Organizations.Select(organization =>
+                organization.OrganizationId == fixture.A.OrganizationId
+                    ? organization with { IsActive = false }
+                    : organization).ToList()
+        };
+        var service = await CreateFromSnapshotAsync(snapshot, fixture.Accounts);
+        var views = await QueryAsync(service, fixture.A.OrganizationId, activeOnly: activeOnly);
+
+        if (activeOnly)
+            AssertScope(views, []);
+        else
+        {
+            AssertScope(views, [fixture.A.OrganizationId], fixture.A);
+            Assert.False(Assert.Single(views.Graph.Organizations).IsActive);
+        }
     }
 
     [Fact]
-    public async Task OrganizationScopedQuery_ExcludesBusinessesOwnedByAnotherOrganization()
+    public async Task InactiveOrganizations_DoNotActivateUnscopedMissingRootCompatibility()
     {
-        var service = CreateService();
-        var fixture = await SeedAsync(service);
+        var fixture = await SeedAsync();
+        var snapshot = await SnapshotAsync(fixture);
+        var orphan = snapshot.Businesses[0] with
+        {
+            BusinessId = Guid.NewGuid(),
+            OrganizationId = Guid.NewGuid(),
+            Code = "ORPHAN",
+            Name = "Business without a retained organization",
+            ClientIds = [],
+            FundIds = [],
+            InvestmentPortfolioIds = []
+        };
+        snapshot = snapshot with
+        {
+            Organizations = snapshot.Organizations.Select(organization => organization with { IsActive = false }).ToList(),
+            Businesses = [.. snapshot.Businesses, orphan]
+        };
+        var service = await CreateFromSnapshotAsync(snapshot, fixture.Accounts);
 
-        var graph = await service.GetOrganizationStructureAsync(
-            new OrganizationStructureQuery(OrganizationId: fixture.OrganizationA));
+        // The roots exist within the effective window. Disabling them must not turn a previously
+        // excluded orphan business into an unscoped match through the missing-root compatibility path.
+        AssertScope(await QueryAsync(service, activeOnly: false),
+            [fixture.A.OrganizationId, fixture.B.OrganizationId], fixture.A, fixture.B);
+        AssertScope(await QueryAsync(service, fixture.A.OrganizationId), []);
+        var views = await QueryAsync(service);
 
-        var businessIds = graph.Businesses.Select(b => b.BusinessId).ToList();
-        Assert.Contains(fixture.BusinessA, businessIds);
-        // A caller scoped to one organization must not see a business owned by another.
-        Assert.DoesNotContain(fixture.BusinessB, businessIds);
+        Assert.Empty(views.Graph.Organizations);
+        Assert.Empty(views.Graph.Businesses);
+        Assert.Empty(views.Graph.Clients);
+        Assert.Empty(views.Graph.Funds);
+        Assert.Empty(views.Graph.Sleeves);
+        Assert.Empty(views.Graph.Vehicles);
+        Assert.Empty(views.Graph.InvestmentPortfolios);
+        Assert.All(views.Graph.Nodes,
+            node => Assert.True(node.Kind is FundStructureNodeKindDto.Entity or FundStructureNodeKindDto.Account));
+        Assert.Empty(views.Graph.OwnershipLinks);
+        Assert.Empty(views.Graph.Assignments);
+        // Unscoped account-derived entity visibility remains independent of this structural filter.
+        Assert.NotEmpty(views.Graph.Entities);
+        Assert.NotEmpty(views.Graph.Accounts);
+        Assert.Null(views.Accounting.Organization);
+        Assert.Null(views.Accounting.Business);
+        Assert.Empty(views.Accounting.InvestmentPortfolios);
+        Assert.Empty(views.Accounting.Accounts);
+        Assert.Empty(views.Accounting.LedgerGroups);
+        Assert.NotNull(views.Accounting.Assignments);
+        Assert.Empty(views.Accounting.Assignments);
+    }
+
+    [Theory]
+    [InlineData(true, -1)]
+    [InlineData(true, 0)]
+    [InlineData(true, 1)]
+    [InlineData(true, 2)]
+    [InlineData(false, -1)]
+    [InlineData(false, 0)]
+    [InlineData(false, 1)]
+    [InlineData(false, 2)]
+    public async Task OrganizationEffectiveWindow_IsInclusiveAndAppliesEvenWhenActiveOnlyIsFalse(
+        bool activeOnly, int boundary)
+    {
+        var fixture = await SeedAsync();
+        var snapshot = await SnapshotAsync(fixture);
+        var end = AsOf.AddDays(1);
+        snapshot = snapshot with
+        {
+            Organizations = snapshot.Organizations.Select(organization =>
+                organization.OrganizationId == fixture.A.OrganizationId
+                    ? organization with { EffectiveFrom = AsOf, EffectiveTo = end }
+                    : organization).ToList()
+        };
+        var service = await CreateFromSnapshotAsync(snapshot, fixture.Accounts);
+        var queryTime = boundary switch
+        {
+            -1 => AsOf.AddTicks(-1),
+            0 => AsOf,
+            1 => end,
+            _ => end.AddTicks(1)
+        };
+        // Children and the other organization remain effective at all four instants. A failure
+        // cannot be masked by independently filtering every descendant out of the fixture.
+        var positive = await QueryAsync(service, fixture.B.OrganizationId, asOf: queryTime);
+        Assert.Equal(fixture.B.BusinessId, Assert.Single(positive.Graph.Businesses).BusinessId);
+        Assert.Contains(positive.Graph.Accounts, account => account.AccountId == fixture.B.DirectAccountId);
+        var views = await QueryAsync(service, fixture.A.OrganizationId,
+            activeOnly: activeOnly, asOf: queryTime);
+
+        if (boundary is 0 or 1)
+            AssertScope(views, [fixture.A.OrganizationId], fixture.A);
+        else
+            AssertScope(views, []);
     }
 
     [Fact]
-    public async Task OrganizationScopedQuery_ExcludesClientsOwnedByAnotherOrganization()
+    public async Task EmptyStructureSnapshot_DoesNotRecoverScopeFromAvailableAccounts()
     {
-        var service = CreateService();
-        var fixture = await SeedAsync(service);
+        var fixture = await SeedAsync();
+        AssertScope(await QueryAsync(fixture.Service),
+            [fixture.A.OrganizationId, fixture.B.OrganizationId], fixture.A, fixture.B);
+        var empty = new OrganizationStructureGraphDto([], [], [], [], [], [], [], [], [], [], [], []);
+        var service = await CreateFromSnapshotAsync(empty, fixture.Accounts);
 
-        var graph = await service.GetOrganizationStructureAsync(
-            new OrganizationStructureQuery(OrganizationId: fixture.OrganizationA));
+        // The account dependency remains populated. These are empty, already-authorized structure
+        // inputs, not a test of whether this service authenticates a tenant.
+        Assert.NotEmpty(await fixture.Accounts.QueryAccountsAsync(new AccountStructureQuery()));
+        AssertScope(await QueryAsync(service), []);
+        AssertScope(await QueryAsync(service, fixture.A.OrganizationId), []);
+    }
 
-        // Clients belong to a business, which belongs to an organization, so the scope must cascade.
-        Assert.DoesNotContain(fixture.ClientB, graph.Clients.Select(c => c.ClientId).ToList());
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UnscopedQuery_PreservesPartialInputWithoutVisibleOrganizationRoots(bool missingOrganizations)
+    {
+        var fixture = await SeedAsync();
+        var snapshot = await SnapshotAsync(fixture);
+        snapshot = snapshot with
+        {
+            Organizations = missingOrganizations ? [] : snapshot.Organizations
+                .Select(organization => organization with { EffectiveFrom = AsOf.AddDays(1) }).ToList()
+        };
+        var service = await CreateFromSnapshotAsync(snapshot, fixture.Accounts);
+
+        // Keep the existing optional-filter behavior for already-authorized partial inputs.
+        // A missing organization selector is different from a selector that matches no root.
+        AssertScope(await QueryAsync(service), [], fixture.A, fixture.B);
+        AssertScope(await QueryAsync(service, businessId: fixture.A.BusinessId), [], fixture.A);
+        AssertScope(await QueryAsync(service, fixture.A.OrganizationId), []);
     }
 
     [Fact]
-    public async Task OrganizationScopedQuery_ExcludesFundsOwnedByAnotherOrganization()
+    public async Task UnscopedQuery_PreservesStandaloneEntityAccountWithoutAssigningItToAnOrganization()
     {
-        var service = CreateService();
-        var fixture = await SeedAsync(service);
+        var accounts = new InMemoryFundAccountService();
+        var service = CreateService(accounts);
+        var entityId = Guid.NewGuid();
+        var accountId = Guid.NewGuid();
+        await service.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            entityId, LegalEntityTypeDto.Vehicle, "STANDALONE", "Standalone entity", "US", "USD",
+            EffectiveFrom, "contract-test"));
+        await accounts.CreateAccountAsync(new CreateAccountRequest(
+            accountId, AccountTypeDto.Custody, "STANDALONE", "Standalone account", "USD",
+            EffectiveFrom, "contract-test", EntityId: entityId));
 
-        var graph = await service.GetOrganizationStructureAsync(
-            new OrganizationStructureQuery(OrganizationId: fixture.OrganizationA));
-
-        // A fund attached to another organization's business is outside the requested scope.
-        Assert.DoesNotContain(fixture.FundB, graph.Funds.Select(x => x.FundId).ToList());
+        var views = await QueryAsync(service);
+        Assert.Empty(views.Graph.Organizations);
+        Assert.Empty(views.Graph.Businesses);
+        Assert.Equal(entityId, Assert.Single(views.Graph.Entities).EntityId);
+        Assert.Equal(accountId, Assert.Single(views.Graph.Accounts).AccountId);
+        AssertIds([entityId, accountId], views.Graph.Nodes.Select(node => node.NodeId));
+        // Accounting separately requires a business/fund/portfolio relationship, even unscoped.
+        Assert.Empty(views.Accounting.Accounts);
+        Assert.Empty(views.Accounting.LedgerGroups);
+        AssertScope(await QueryAsync(service, Guid.NewGuid()), []);
+        AssertScope(await QueryAsync(service, businessId: Guid.NewGuid()), []);
     }
 
-    [Fact]
-    public async Task BusinessScopedQuery_ExcludesClientsOwnedByAnotherBusiness()
+    private async Task<Fixture> SeedAsync(bool withMetadata = false)
     {
-        var service = CreateService();
-        var fixture = await SeedAsync(service);
-
-        var graph = await service.GetOrganizationStructureAsync(
-            new OrganizationStructureQuery(BusinessId: fixture.BusinessA));
-
-        var clientIds = graph.Clients.Select(c => c.ClientId).ToList();
-        Assert.Contains(fixture.ClientA, clientIds);
-        // A caller scoped to one business must not see another business's clients.
-        Assert.DoesNotContain(fixture.ClientB, clientIds);
+        var accounts = new InMemoryFundAccountService();
+        var metadata = withMetadata ? new SharedDataAccess() : null;
+        var fixture = new Fixture(CreateService(accounts, metadata), accounts, new Branch("A"), new Branch("B"), metadata);
+        foreach (var branch in new[] { fixture.A, fixture.B })
+        {
+            var service = fixture.Service;
+            await service.CreateOrganizationAsync(new CreateOrganizationRequest(
+                branch.OrganizationId, $"ORG-{branch.Tag}", $"Organization {branch.Tag}", "USD", EffectiveFrom, "contract-test"));
+            await service.CreateBusinessAsync(new CreateBusinessRequest(
+                branch.BusinessId, branch.OrganizationId, BusinessKindDto.FundManager,
+                $"BUS-{branch.Tag}", $"Business {branch.Tag}", "USD", EffectiveFrom, "contract-test"));
+            await service.CreateClientAsync(new CreateClientRequest(
+                branch.ClientId, branch.BusinessId, $"CLI-{branch.Tag}", $"Client {branch.Tag}", "USD", EffectiveFrom, "contract-test"));
+            await service.CreateFundAsync(new CreateFundRequest(
+                branch.FundId, $"FND-{branch.Tag}", $"Fund {branch.Tag}", "USD", EffectiveFrom, "contract-test", BusinessId: branch.BusinessId));
+            await service.CreateSleeveAsync(new CreateSleeveRequest(
+                branch.SleeveId, branch.FundId, $"SLV-{branch.Tag}", "Sleeve", EffectiveFrom, "contract-test"));
+            foreach (var entityId in new[] { branch.EntityId, branch.AccountEntityId })
+                await service.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+                    entityId, LegalEntityTypeDto.Vehicle, $"ENT-{entityId:N}", "Entity", "US", "USD", EffectiveFrom, "contract-test"));
+            await service.CreateVehicleAsync(new CreateVehicleRequest(
+                branch.VehicleId, branch.FundId, branch.EntityId, $"VEH-{branch.Tag}", "Vehicle", "USD", EffectiveFrom, "contract-test"));
+            await service.CreateInvestmentPortfolioAsync(new CreateInvestmentPortfolioRequest(
+                branch.PortfolioId, branch.BusinessId, $"PF-{branch.Tag}", "Portfolio", "USD", EffectiveFrom, "contract-test", FundId: branch.FundId));
+            // This entity is reachable only through an otherwise in-scope account. Narrowing entity
+            // seeds must preserve it; removing every account-derived entity would break this case.
+            await accounts.CreateAccountAsync(new CreateAccountRequest(
+                branch.DirectAccountId, AccountTypeDto.Custody, $"DIRECT-{branch.Tag}", "Direct account", "USD",
+                EffectiveFrom, "contract-test", EntityId: branch.AccountEntityId, FundId: branch.FundId,
+                LedgerReference: $"BOOK-{branch.Tag}"));
+            await accounts.CreateAccountAsync(new CreateAccountRequest(
+                branch.EntityAccountId, AccountTypeDto.Bank, $"ENTITY-{branch.Tag}", "Entity account", "USD",
+                EffectiveFrom, "contract-test", EntityId: branch.EntityId, LedgerReference: $"BOOK-{branch.Tag}"));
+            await accounts.CreateAccountAsync(new CreateAccountRequest(
+                branch.LinkedAccountId, AccountTypeDto.Custody, $"LINKED-{branch.Tag}", "Linked account", "USD",
+                EffectiveFrom, "contract-test", LedgerReference: "FALLBACK"));
+            await service.LinkNodesAsync(new LinkFundStructureNodesRequest(
+                branch.AccountLinkId, branch.PortfolioId, branch.LinkedAccountId,
+                OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "contract-test"));
+            await service.AssignNodeAsync(new AssignFundStructureNodeRequest(
+                branch.AssignmentId, branch.LinkedAccountId, "LedgerGroup", $"ASSIGNED-{branch.Tag}",
+                EffectiveFrom, "contract-test", IsPrimary: true));
+        }
+        return fixture;
     }
 
-    [Fact]
-    public async Task UnscopedQuery_ReturnsBothOrganizations()
+    private static Task<OrganizationStructureGraphDto> SnapshotAsync(Fixture fixture) =>
+        fixture.Service.GetOrganizationStructureAsync(new OrganizationStructureQuery(ActiveOnly: false, AsOf: AsOf));
+
+    private static async Task<Views> QueryAsync(IFundStructureService service, Guid? organizationId = null,
+        Guid? businessId = null, bool activeOnly = true, DateTimeOffset? asOf = null) => new(
+            await service.GetOrganizationStructureAsync(new OrganizationStructureQuery(
+                OrganizationId: organizationId, BusinessId: businessId, ActiveOnly: activeOnly, AsOf: asOf ?? AsOf)),
+            await service.GetAccountingViewAsync(new AccountingStructureQuery(
+                OrganizationId: organizationId, BusinessId: businessId, ActiveOnly: activeOnly, AsOf: asOf ?? AsOf)));
+
+    private static void AssertScope(Views views, IReadOnlyList<Guid> organizationIds, params Branch[] branches)
     {
-        // Guards the assertions above: if the scoped queries returned nothing at all they would pass
-        // vacuously, so pin that the fixture really did produce two organizations' worth of records.
-        var service = CreateService();
-        var fixture = await SeedAsync(service);
+        var graph = views.Graph;
+        var accounting = views.Accounting;
+        AssertIds(organizationIds, graph.Organizations.Select(item => item.OrganizationId));
+        AssertIds(branches.Select(item => item.BusinessId), graph.Businesses.Select(item => item.BusinessId));
+        AssertIds(branches.Select(item => item.ClientId), graph.Clients.Select(item => item.ClientId));
+        AssertIds(branches.Select(item => item.FundId), graph.Funds.Select(item => item.FundId));
+        AssertIds(branches.Select(item => item.SleeveId), graph.Sleeves.Select(item => item.SleeveId));
+        AssertIds(branches.Select(item => item.VehicleId), graph.Vehicles.Select(item => item.VehicleId));
+        AssertIds(branches.SelectMany(item => new[] { item.EntityId, item.AccountEntityId }), graph.Entities.Select(item => item.EntityId));
+        AssertIds(branches.Select(item => item.PortfolioId), graph.InvestmentPortfolios.Select(item => item.InvestmentPortfolioId));
+        var accountIds = branches.SelectMany(item => item.AccountIds).ToList();
+        AssertIds(accountIds, graph.Accounts.Select(item => item.AccountId));
+        var nodeIds = organizationIds.Concat(branches.SelectMany(item => item.DescendantNodeIds)).ToHashSet();
+        AssertIds(nodeIds, graph.Nodes.Select(item => item.NodeId));
+        Assert.All(graph.OwnershipLinks, link =>
+        {
+            Assert.Contains(link.ParentNodeId, nodeIds);
+            Assert.Contains(link.ChildNodeId, nodeIds);
+        });
+        AssertIds(branches.Select(item => item.AssignmentId), graph.Assignments.Select(item => item.AssignmentId));
+        if (branches.Length == 0)
+            Assert.Empty(graph.OwnershipLinks);
+        else
+            foreach (var branch in branches)
+                Assert.Contains(graph.OwnershipLinks, link => link.OwnershipLinkId == branch.AccountLinkId);
 
-        var graph = await service.GetOrganizationStructureAsync(new OrganizationStructureQuery());
+        if (organizationIds.Count == 0)
+            Assert.Null(accounting.Organization);
+        else
+        {
+            Assert.NotNull(accounting.Organization);
+            Assert.Contains(accounting.Organization.OrganizationId, organizationIds);
+        }
+        if (branches.Length == 0)
+            Assert.Null(accounting.Business);
+        else
+        {
+            Assert.NotNull(accounting.Business);
+            Assert.Contains(accounting.Business.BusinessId, branches.Select(item => item.BusinessId));
+        }
+        AssertIds(branches.Select(item => item.PortfolioId), accounting.InvestmentPortfolios.Select(item => item.InvestmentPortfolioId));
+        AssertIds(accountIds, accounting.Accounts.Select(item => item.AccountId));
+        AssertIds(accountIds, accounting.LedgerGroups.SelectMany(item => item.AccountIds));
+        Assert.Equal(branches.SelectMany(item => new[] { $"BOOK-{item.Tag}", $"ASSIGNED-{item.Tag}" }).Order(),
+            accounting.LedgerGroups.Select(item => item.DisplayName).Order());
+        Assert.NotNull(accounting.Assignments);
+        AssertIds(branches.Select(item => item.AssignmentId), accounting.Assignments.Select(item => item.AssignmentId));
+    }
 
-        var organizationIds = graph.Organizations.Select(o => o.OrganizationId).ToList();
-        Assert.Contains(fixture.OrganizationA, organizationIds);
-        Assert.Contains(fixture.OrganizationB, organizationIds);
-        var allBusinessIds = graph.Businesses.Select(b => b.BusinessId).ToList();
-        Assert.Contains(fixture.BusinessA, allBusinessIds);
-        Assert.Contains(fixture.BusinessB, allBusinessIds);
+    private static void AssertIds(IEnumerable<Guid> expected, IEnumerable<Guid> actual) =>
+        Assert.Equal(expected.Order(), actual.Order());
+
+    private sealed record Views(OrganizationStructureGraphDto Graph, AccountingStructureViewDto Accounting);
+    private sealed record Fixture(IFundStructureService Service, InMemoryFundAccountService Accounts,
+        Branch A, Branch B, SharedDataAccess? Metadata);
+
+    private sealed class Branch(string tag)
+    {
+        public string Tag { get; } = tag;
+        public Guid OrganizationId { get; } = Guid.NewGuid();
+        public Guid BusinessId { get; } = Guid.NewGuid();
+        public Guid ClientId { get; } = Guid.NewGuid();
+        public Guid FundId { get; } = Guid.NewGuid();
+        public Guid SleeveId { get; } = Guid.NewGuid();
+        public Guid VehicleId { get; } = Guid.NewGuid();
+        public Guid EntityId { get; } = Guid.NewGuid();
+        public Guid AccountEntityId { get; } = Guid.NewGuid();
+        public Guid PortfolioId { get; } = Guid.NewGuid();
+        public Guid DirectAccountId { get; } = Guid.NewGuid();
+        public Guid EntityAccountId { get; } = Guid.NewGuid();
+        public Guid LinkedAccountId { get; } = Guid.NewGuid();
+        public Guid AccountLinkId { get; } = Guid.NewGuid();
+        public Guid AssignmentId { get; } = Guid.NewGuid();
+        public IEnumerable<Guid> AccountIds => [DirectAccountId, EntityAccountId, LinkedAccountId];
+        public IEnumerable<Guid> DescendantNodeIds =>
+            [BusinessId, ClientId, FundId, SleeveId, VehicleId, EntityId, AccountEntityId, PortfolioId, .. AccountIds];
+    }
+
+    private sealed class SharedDataAccess : IGovernanceSharedDataAccessService
+    {
+        public FundStructureSharedDataAccessDto Value { get; } = new(
+            new SecurityMasterAccessSummaryDto(true, "Available", true, true, true),
+            new HistoricalPriceAccessSummaryDto(true, false, 0, [], "No stored prices"),
+            new BackfillAccessSummaryDto(true, false, 1, null, null, null, null, null, 0, 0, "Available"));
+
+        public Task<FundStructureSharedDataAccessDto> GetSharedDataAccessAsync(CancellationToken ct = default) =>
+            Task.FromResult(Value);
     }
 }
 
-/// <summary>The contract as enforced by the implementation the WPF desktop workstation ships.</summary>
+/// <summary>Exercises the local service directly, outside production or tenant-guard composition.</summary>
 public sealed class InMemoryFundStructureScopeContractTests : FundStructureScopeContractTests
 {
-    protected override IFundStructureService CreateService()
-        => new InMemoryFundStructureService(new InMemoryFundAccountService());
+    protected override IFundStructureService CreateService(
+        IFundAccountService accounts, IGovernanceSharedDataAccessService? metadata = null) =>
+        new InMemoryFundStructureService(accounts, metadata, persistencePath: null);
+
+    protected override async Task<IFundStructureService> CreateFromSnapshotAsync(
+        OrganizationStructureGraphDto snapshot, IFundAccountService accounts,
+        IGovernanceSharedDataAccessService? metadata = null)
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"meridian-scope-contract-{Guid.NewGuid():N}.json");
+        try
+        {
+            var state = new
+            {
+                Version = 1,
+                snapshot.Organizations,
+                snapshot.Businesses,
+                snapshot.Clients,
+                snapshot.Funds,
+                snapshot.Sleeves,
+                snapshot.Vehicles,
+                snapshot.Entities,
+                snapshot.InvestmentPortfolios,
+                snapshot.OwnershipLinks,
+                snapshot.Assignments,
+                LinkedAccountIds = snapshot.Accounts.Select(account => account.AccountId).ToList()
+            };
+            await File.WriteAllTextAsync(path, JsonSerializer.Serialize(state, new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+            return new InMemoryFundStructureService(accounts, metadata, path);
+        }
+        finally
+        {
+            // The read-only test service has captured the JSON; no persisted fixture is retained.
+            File.Delete(path);
+        }
+    }
 }
 
-/// <summary>
-/// The same contract as enforced by the implementation a Postgres-configured deployment ships.
-/// </summary>
-/// <remarks>
-/// Backed by <see cref="FakeFundStructureStore"/> rather than PostgreSQL. The rules under test are
-/// service-layer — <c>PostgresFundStructureStore</c> does no cross-entity filtering — so this
-/// exercises the real scoping code, and it runs everywhere instead of skipping wherever no database
-/// is available.
-/// </remarks>
+/// <summary>Exercises the real PostgreSQL service with an unpartitioned store double, without skips.</summary>
 public sealed class PostgresFundStructureScopeContractTests : FundStructureScopeContractTests
 {
-    protected override IFundStructureService CreateService()
-        => new PostgresFundStructureService(
-            new FakeFundStructureStore(),
-            new InMemoryFundAccountService(),
-            new FundStructurePolicyService());
+    protected override IFundStructureService CreateService(
+        IFundAccountService accounts, IGovernanceSharedDataAccessService? metadata = null) =>
+        new PostgresFundStructureService(new FakeFundStructureStore(), accounts, new FundStructurePolicyService(), metadata);
+
+    protected override async Task<IFundStructureService> CreateFromSnapshotAsync(
+        OrganizationStructureGraphDto snapshot, IFundAccountService accounts,
+        IGovernanceSharedDataAccessService? metadata = null)
+    {
+        var store = new FakeFundStructureStore();
+        foreach (var item in snapshot.Organizations)
+            await store.UpsertOrganizationAsync(item);
+        foreach (var item in snapshot.Businesses)
+            await store.UpsertBusinessAsync(item);
+        foreach (var item in snapshot.Clients)
+            await store.UpsertClientAsync(item);
+        foreach (var item in snapshot.Funds)
+            await store.UpsertFundAsync(item);
+        foreach (var item in snapshot.Sleeves)
+            await store.UpsertSleeveAsync(item);
+        foreach (var item in snapshot.Vehicles)
+            await store.UpsertVehicleAsync(item);
+        foreach (var item in snapshot.Entities)
+            await store.UpsertLegalEntityAsync(item);
+        foreach (var item in snapshot.InvestmentPortfolios)
+            await store.UpsertInvestmentPortfolioAsync(item);
+        foreach (var item in snapshot.OwnershipLinks)
+            await store.UpsertOwnershipLinkAsync(item);
+        foreach (var item in snapshot.Assignments)
+            await store.UpsertAssignmentAsync(item);
+        foreach (var item in snapshot.Accounts)
+            await store.UpsertLinkedAccountIdAsync(item.AccountId);
+        return new PostgresFundStructureService(store, accounts, new FundStructurePolicyService(), metadata);
+    }
 }
