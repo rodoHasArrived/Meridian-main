@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-28
+**Reviewed:** 2026-10-31
 
 This is the canonical developer and agent entrypoint for Meridian engineering and contribution work.
 
@@ -113,7 +113,7 @@ credentials. Warnings also produce a nonzero exit; read which capability is miss
 attempting that lane. Live-provider credentials and PostgreSQL are not prerequisites for a focused
 browser or Python check. Doctor is a diagnostic, not proof that the selected lane passes.
 
-Choose the lane that covers the change while iterating. A lane runs its maintained prerequisites
+A lane is selected by the area you changed; the risk tier (below) decides the minimum local validation. Choose the lane that covers the change while iterating. A lane runs its maintained prerequisites
 and checks in order; focused test commands below are useful for a shorter edit/test loop.
 
 | Change or failure | Maintained lane | Additional prerequisites |
@@ -271,7 +271,7 @@ validation-status --summary`, then `dotnet build-server shutdown`. Stop only aba
 `dotnet`, `MSBuild`, `testhost`, `csc`, or `VBCSCompiler` PIDs after confirming their command lines
 point at this checkout; do not kill unrelated local .NET services.
 
-For local pre-PR proof across the highest-value free tools, use:
+For optional local proof (recommended at Level 2/3) across the highest-value free tools, use:
 
 ```powershell
 pwsh ./scripts/dev/run-local-quality.ps1

@@ -92,3 +92,4 @@ A solid provider task usually includes:
 - State provider type, contracts implemented, and closest existing pattern used.
 - Summarize implementation, configuration, DI, resilience, serialization, and tests.
 - Name any vendor-doc uncertainty or live-credential limitation without asking for secrets in chat.
+- Label provider evidence as exactly one of `synthetic-verified`, `live-verified`, `live-untested`, or `unsupported` in the PR/summary. Recorded fixtures, vendor docs, and mock-server tests are `synthetic-verified` at most; only an authorized run against the real provider is `live-verified`.

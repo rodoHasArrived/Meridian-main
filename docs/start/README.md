@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-28
+**Reviewed:** 2026-10-31
 
 Use this page for the fastest safe orientation in a fresh Meridian checkout. Run commands from the
 repository root unless a command says otherwise.
@@ -302,8 +302,10 @@ python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian
 ```
 
 After a lane fails, open `artifacts/ci-summary/<lane>/summary.md` for the failed step and reproduction
-commands. Correct the failure, rerun that lane, then run `bash scripts/ci.sh` before handing off
-PR-ready work. GitHub Actions remains the authoritative merge result.
+commands. Correct the failure and rerun that lane. The full `bash scripts/ci.sh` aggregate is
+optional at Level 1, recommended at Level 2, and worth running when practical at Level 3 or for
+build/CI-tooling changes (see [verification tiers](../ai/solo-developer-workflow.md#verification-tiers));
+state which checks ran. The hosted `Meridian CI / quality-gate` remains the authoritative merge result.
 
 If local machine limits make a lane unreliable, follow the
 [recovery and hosted Targeted Test guidance](../engineering/README.md#buildtestrun).
@@ -315,7 +317,7 @@ python build/scripts/ci/dispatch-targeted-test.py --ref <branch> --mode dotnet-f
 
 Use `python build/python/cli/buildctl.py recommend-validation --base origin/main` for
 project-specific incremental commands, or add `--fresh` for handoff recommendations. The complete
-local gate supports bounded .NET/browser overlap and `--jobs 1` for serial execution;
+local gate (tiered, not required for every PR) supports bounded .NET/browser overlap and `--jobs 1` for serial execution;
 `bash scripts/ci.sh --cold` records a fresh-build full-gate measurement with dependency caches
 retained. See [measurement details](../development/build-observability.md#local-feedback-latency-and-observed-retries).
 

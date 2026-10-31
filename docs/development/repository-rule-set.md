@@ -94,15 +94,19 @@ This rule set defines the non-negotiable standards for contributing to Meridian 
 
 Start with the narrow checks for the touched area in
 [Engineering](../engineering/README.md#buildtestrun), using the serialized `buildctl.py test`
-runner for local .NET tests and Windows validation for WPF. From the repository root, run the
-canonical pre-PR gate:
+runner for local .NET tests and Windows validation for WPF. Scale the rest to the risk tier in the
+[solo-developer workflow](../ai/solo-developer-workflow.md#verification-tiers):
+
+- Level 1: the focused checks are enough; the full local aggregate is optional.
+- Level 2: add targeted tests of the changed invariants; the full aggregate is recommended.
+- Level 3 and build/CI-tooling changes: run the full aggregate when practical.
 
 ```bash
 bash scripts/ci.sh
 ```
 
-Record the commands, results, and any unverified platform/service requirements in the PR.
-GitHub Actions is the authoritative integration result. Follow
+Record the commands run, the results, what was not run, and any unverified platform/service
+requirements in the PR. The hosted `Meridian CI / quality-gate` is the authoritative integration result. Follow
 [CI/CD ownership](../engineering/ci-cd-optimization.md) and investigate required-check failures;
 a selected local test project is not the full repository gate.
 
@@ -180,9 +184,9 @@ review, or the prohibited actions in `AGENTS.md`.
 A change is considered done when all are true:
 
 - Acceptance criteria are met.
-- Relevant build/tests and `bash scripts/ci.sh` pass.
+- Relevant build/tests for the change's risk tier pass (the full `bash scripts/ci.sh` is optional at Level 1, recommended at Level 2, and run when practical at Level 3 or for build/CI-tooling changes), and the PR states what ran and what did not.
 - Required docs updated.
-- Security/secret handling reviewed.
+- Security/secret handling reviewed by a separate AI review agent, with the owner's decision recorded.
 - PR description includes scope, risks, validation.
 - The feature branch is pushed, a PR targets `main`, and required GitHub Actions checks pass.
 

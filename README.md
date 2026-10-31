@@ -229,14 +229,14 @@ Use the smallest lane that covers your change during development:
 | .NET source and tests | `bash scripts/ci.sh --lane verify-dotnet` |
 | Workflow and lane contracts | `bash scripts/ci.sh --lane verify-workflows` |
 
-Before completing PR work, run the canonical repository gate:
-
-```bash
-bash scripts/ci.sh
-```
+Scale local validation to the risk tier in the
+[solo-developer workflow](docs/ai/solo-developer-workflow.md#verification-tiers): Level 1 needs only the focused
+lane, Level 2 should add targeted invariant tests (the full aggregate `bash scripts/ci.sh` is
+recommended), and Level 3 or build/CI-tooling changes should run it when practical. State which
+checks ran and which did not.
 
 Contribute through a `codex/<short-task-name>` branch and a pull request targeting `main`.
-Required GitHub Actions checks remain the merge authority.
+The hosted `Meridian CI / quality-gate` remains the authoritative merge result.
 See [Engineering](docs/engineering/README.md#buildtestrun) for desktop and release validation,
 build isolation, and hosted validation when local tooling is unavailable.
 
