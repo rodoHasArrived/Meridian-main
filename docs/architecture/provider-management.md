@@ -1,8 +1,8 @@
 # Provider Management Architecture
 
-**Version:** 3.8 | **Last Updated:** 2026-08-05
+**Version:** 3.8 (historical architecture description) | **Reviewed:** 2026-10-30
 
-This document describes the provider management architecture used by Meridian. It covers provider contracts, discovery, lifecycle management, failover, health monitoring, degradation scoring, and data quality operations.
+This document describes provider management concepts and earlier architecture patterns. **Source authority warning:** the dated implementation inventories, location shortcuts, pricing/quota examples, and provider capability tables below are historical illustrations, not a current readiness, runtime-registration, or entitlement certification. For current shared-contract coverage, consult the [provider capability matrix](../reference/provider-capability-matrix.md), the [source-owned adapter readiness registry](../source/data/adapter-readiness.yml), and the [generated readiness matrix](../source/generated/adapter-readiness-matrix.md). For actual activation verify [`ProviderCapabilityDescriptorCatalog`](../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs), registration/factories, configuration, credentials, and hosted evidence. Distinguish the ProviderSdk compatibility `IDataSource`/`DataSourceRegistry` lane from the shared adapter-contract catalog; neither one implies production acceptance.
 
 See also:
 
@@ -52,7 +52,7 @@ UI / API Layer
                                 │   (base: BaseHistoricalDataProvider)
                                 └── Symbol Search: Alpaca, AlphaVantage,
                                                    Finnhub, Polygon, Tiingo,
-                                                   TwelveData, OpenFIGI
+                                                   TwelveData, EDGAR (OpenFIGI uses a separate identifier resolver)
                                     (base: BaseSymbolSearchProvider)
 ```
 
@@ -246,7 +246,7 @@ All located under `src/Meridian.Infrastructure/Adapters/`.
 | Twelve Data | `TwelveDataSymbolSearchProvider` | Yes | `/symbol_search` results with client-side asset/exchange filtering | 8/min |
 | Finnhub | `FinnhubSymbolSearchProvider` | Yes | US, International | 60/min |
 | Polygon | `PolygonSymbolSearchProvider` | Yes | US | 5/min (free) |
-| OpenFIGI | `OpenFigiClient` | No | Global (ID mapping) | Varies |
+| OpenFIGI | `OpenFigiSymbolResolver` | N/A | Identifier mapping, not shared symbol search | Verify provider terms |
 | StockSharp | _not implemented_ | — | — | Deferred/unwired; see `docs/reference/provider-integration-status.md` |
 
 Located under `src/Meridian.Infrastructure/Adapters/` provider folders.
