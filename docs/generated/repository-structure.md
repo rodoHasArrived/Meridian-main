@@ -9453,6 +9453,9 @@ Meridian-main
 │   │   │   ├── ScatterAnalysisViewModel.cs
 │   │   │   ├── ScheduleManagerViewModel.cs
 │   │   │   ├── SecurityConflictLaneModels.cs
+│   │   │   ├── SecurityMaster
+│   │   │   │   ├── BondAnalyticsViewModel.cs
+│   │   │   │   └── BondMigrationPreviewViewModel.cs
 │   │   │   ├── SecurityMasterDeactivateViewModel.cs
 │   │   │   ├── SecurityMasterEditViewModel.cs
 │   │   │   ├── SecurityMasterViewModel.Authorization.cs
@@ -12722,6 +12725,7 @@ Meridian-main
 │   │   │   ├── EvidenceWorkbenchViewModelTests.cs
 │   │   │   ├── ExportPresetsViewModelTests.cs
 │   │   │   ├── FactorPaydownViewModelTests.Approval.cs
+│   │   │   ├── BondAnalyticsViewModelTests.cs
 │   │   │   ├── FactorPaydownViewModelTests.cs
 │   │   │   ├── FinancialRecordExplorerViewModelTests.cs
 │   │   │   ├── FundAccountsViewModelTests.cs

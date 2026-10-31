@@ -166,6 +166,181 @@
                 <Button Content="Publish" Command="{Binding PublishCommand}" Padding="12,6" />
             </StackPanel>
 
+            <!-- Bond analytics (Bond/CD passports only; shared contracts with the browser Evidence tab) -->
+            <StackPanel Visibility="{Binding HasBondTools, Converter={StaticResource BooleanToVisibility}}"
+                        AutomationProperties.Name="Bond analytics">
+                <TextBlock Text="Bond analytics" FontWeight="SemiBold" Margin="0,24,0,2" />
+                <TextBlock Text="Settlement-aware values calculated by the server from retained bond terms. Imported pricing fields remain separate; this analysis grants no posting or trading authority."
+                           Opacity="0.7" TextWrapping="Wrap" />
+                <Grid DataContext="{Binding BondAnalytics}" Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,8">
+                        <TextBlock Text="Calculation date (UTC)" Opacity="0.8" />
+                        <DatePicker SelectedDate="{Binding AsOf}" AutomationProperties.Name="Calculation date" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="8,0,8,8">
+                        <TextBlock Text="Settlement date" Opacity="0.8" />
+                        <DatePicker SelectedDate="{Binding SettlementDate}" AutomationProperties.Name="Settlement date" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="8,0,0,8">
+                        <TextBlock Text="Recorded cutoff (UTC ISO 8601, optional)" Opacity="0.8" />
+                        <TextBox Text="{Binding KnownAt, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Recorded cutoff" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,8,8" VerticalAlignment="Bottom">
+                        <CheckBox Content="Price from annual yield instead of clean price" IsChecked="{Binding UseYield}" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="8,0,8,8">
+                        <TextBlock Text="{Binding ValueLabel}" Opacity="0.8" />
+                        <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Price or yield" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="8,0,0,8">
+                        <TextBlock Text="Yield convention" Opacity="0.8" />
+                        <ComboBox ItemsSource="{Binding YieldConventions}" SelectedItem="{Binding Convention}" AutomationProperties.Name="Yield convention" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal">
+                        <Button Content="Calculate bond analytics" Command="{Binding CalculateCommand}" Padding="12,6" />
+                        <TextBlock Text="{Binding StatusText}" Margin="12,0,0,0" VerticalAlignment="Center" Opacity="0.8" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,8,0,0">
+                        <TextBlock Text="{Binding ProvenanceText}" Opacity="0.7" TextWrapping="Wrap" />
+                        <ItemsControl ItemsSource="{Binding Blockers}" Visibility="{Binding IsBlocked, Converter={StaticResource BooleanToVisibility}}" AutomationProperties.Name="Calculation blockers">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" Foreground="{StaticResource ErrorColorBrush}" TextWrapping="Wrap" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <ItemsControl ItemsSource="{Binding Metrics}" Visibility="{Binding HasResult, Converter={StaticResource BooleanToVisibility}}" AutomationProperties.Name="Bond analytics metrics">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,4,18,4" MinWidth="160">
+                                        <TextBlock Text="{Binding Label}" Opacity="0.7" FontSize="11" />
+                                        <TextBlock Text="{Binding Value}" FontFamily="Consolas" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Expander Header="Projected contractual payments (per 100 face; not observed payments or posted journals)"
+                                  Visibility="{Binding HasResult, Converter={StaticResource BooleanToVisibility}}" Margin="0,6,0,0">
+                            <DataGrid ItemsSource="{Binding CashFlows}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="260"
+                                      AutomationProperties.Name="Projected bond payments">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Payment date" Binding="{Binding PaymentDate}" />
+                                    <DataGridTextColumn Header="Accrual period" Binding="{Binding AccrualPeriod}" />
+                                    <DataGridTextColumn Header="Interest / 100" Binding="{Binding Interest}" />
+                                    <DataGridTextColumn Header="Principal / 100" Binding="{Binding Principal}" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Expander>
+                        <ItemsControl ItemsSource="{Binding ExerciseScenarios}" Margin="0,6,0,0" AutomationProperties.Name="Contractual exercise scenarios">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" FontSize="11" TextWrapping="Wrap" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <ItemsControl ItemsSource="{Binding Diagnostics}" Margin="0,6,0,0" AutomationProperties.Name="Calculation diagnostics">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" FontSize="11" Opacity="0.8" TextWrapping="Wrap" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Convention migration preview -->
+                <Expander Header="Review bond convention migration" Margin="0,16,0,0" DataContext="{Binding BondMigration}"
+                          AutomationProperties.Name="Bond convention migration">
+                    <StackPanel Margin="0,8,0,0">
+                        <TextBlock Text="Compare legacy and candidate payments before proposing a governed terms change. This preview does not change terms, posted journals, or published reports."
+                                   Opacity="0.7" TextWrapping="Wrap" />
+                        <Grid Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,8">
+                                <TextBlock Text="Preview date (UTC)" Opacity="0.8" />
+                                <DatePicker SelectedDate="{Binding AsOf}" AutomationProperties.Name="Preview date" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="8,0,8,8">
+                                <TextBlock Text="Settlement date (blank = preview date)" Opacity="0.8" />
+                                <DatePicker SelectedDate="{Binding SettlementDate}" AutomationProperties.Name="Migration settlement date" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="0" Grid.Column="2" Margin="8,0,0,8">
+                                <TextBlock Text="Retained coupon unit" Opacity="0.8" />
+                                <ComboBox ItemsSource="{Binding CouponRateUnits}" SelectedItem="{Binding CouponRateUnit}" AutomationProperties.Name="Retained coupon unit" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,8,8">
+                                <TextBlock Text="Coupon cash basis" Opacity="0.8" />
+                                <ComboBox ItemsSource="{Binding CouponCashBases}" SelectedItem="{Binding CouponCashBasis}" AutomationProperties.Name="Coupon cash basis" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Grid.Column="1" Margin="8,0,8,8">
+                                <TextBlock Text="Business-day adjustment" Opacity="0.8" />
+                                <ComboBox ItemsSource="{Binding BusinessDayConventions}" SelectedItem="{Binding BusinessDayConvention}" AutomationProperties.Name="Business-day adjustment" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Grid.Column="2" Margin="8,0,0,8">
+                                <TextBlock Text="Retained payment calendar IDs (comma-separated)" Opacity="0.8" />
+                                <TextBox Text="{Binding PaymentCalendars, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Payment calendars" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal">
+                                <CheckBox Content="Adjust accrual dates" IsChecked="{Binding AccrualAdjusted}" Margin="0,0,16,0" />
+                                <CheckBox Content="Keep end-of-month anchor" IsChecked="{Binding EndOfMonthRule}" Margin="0,0,16,0" />
+                                <Button Content="Preview convention migration" Command="{Binding PreviewCommand}" Padding="12,6" />
+                            </StackPanel>
+                        </Grid>
+                        <TextBlock Text="{Binding StatusText}" Margin="0,8,0,0" Opacity="0.8" TextWrapping="Wrap" />
+                        <ItemsControl ItemsSource="{Binding Gaps}" AutomationProperties.Name="Migration gaps">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" Foreground="{StaticResource ErrorColorBrush}" TextWrapping="Wrap" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <DataGrid ItemsSource="{Binding Differences}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="260" Margin="0,6,0,0"
+                                  Visibility="{Binding HasPreview, Converter={StaticResource BooleanToVisibility}}"
+                                  AutomationProperties.Name="Bond migration payment comparison">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Payment date" Binding="{Binding PaymentDate}" />
+                                <DataGridTextColumn Header="Prior principal" Binding="{Binding PreviousPrincipal}" />
+                                <DataGridTextColumn Header="Candidate principal" Binding="{Binding CandidatePrincipal}" />
+                                <DataGridTextColumn Header="Prior interest" Binding="{Binding PreviousInterest}" />
+                                <DataGridTextColumn Header="Candidate interest" Binding="{Binding CandidateInterest}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <TextBlock Text="{Binding FingerprintText}" FontFamily="Consolas" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" />
+                        <StackPanel Visibility="{Binding HasPreview, Converter={StaticResource BooleanToVisibility}}" Margin="0,8,0,0">
+                            <TextBlock Text="Review justification (required; creates a draft only)" Opacity="0.8" />
+                            <TextBox Text="{Binding Justification, UpdateSourceTrigger=PropertyChanged}" MaxLength="2000" AutomationProperties.Name="Review justification" />
+                            <Button Content="Stage governed draft" Command="{Binding StageCommand}" Padding="12,6" Margin="0,6,0,0" HorizontalAlignment="Left" />
+                            <TextBlock Text="{Binding StagedText}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </StackPanel>
+                </Expander>
+            </StackPanel>
+
         </StackPanel>
     </ScrollViewer>
 </UserControl>

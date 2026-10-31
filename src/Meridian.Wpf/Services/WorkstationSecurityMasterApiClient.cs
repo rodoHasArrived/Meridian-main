@@ -1,4 +1,5 @@
 using Meridian.Contracts.Api;
+using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
@@ -57,6 +58,19 @@ public interface IWorkstationSecurityMasterApiClient
     /// </summary>
     Task<SecurityAssetClassDefinitionDto?> GetAssetClassDefinitionAsync(string assetClass, CancellationToken ct = default)
         => Task.FromResult<SecurityAssetClassDefinitionDto?>(null);
+
+    // ── Bond analytics and convention migration (shared-contract parity with the browser panels) ──
+    // Read-only, explicitly dated analysis over retained terms; no result grants posting authority.
+
+    Task<ApiResponse<BondAnalyticsResult>> GetBondAnalyticsAsync(BondAnalyticsRequest request, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<BondAnalyticsResult>.Fail("Bond analytics is unavailable in this host.", 501));
+
+    /// <summary>Hash-bound economic preview; staging goes through the ordinary Security Master draft workflow.</summary>
+    Task<ApiResponse<BondMigrationPreviewDto>> PreviewBondMigrationAsync(BondMigrationPreviewRequest request, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<BondMigrationPreviewDto>.Fail("Bond migration preview is unavailable in this host.", 501));
+
+    Task<ApiResponse<SecurityMasterEditResultDto>> StageBondMigrationAsync(BondMigrationSubmitRequest request, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<SecurityMasterEditResultDto>.Fail("Bond migration staging is unavailable in this host.", 501));
 }
 
 /// <summary>
@@ -154,6 +168,30 @@ public sealed class WorkstationSecurityMasterApiClient : IWorkstationSecurityMas
         return (await _apiClient.GetWithResponseAsync<SecurityAssetClassDefinitionDto>(endpoint, ct).ConfigureAwait(false))
             .DataOrLoggedNull("Get asset-class definition");
     }
+
+    public Task<ApiResponse<BondAnalyticsResult>> GetBondAnalyticsAsync(BondAnalyticsRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var query = new List<string> { "asOf=" + Uri.EscapeDataString(request.Context.AsOf.ToString("O", CultureInfo.InvariantCulture)) };
+        if (request.Context.SettlementDate is { } settlement)
+            query.Add("settlementDate=" + settlement.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        if (request.Context.KnownAt is { } knownAt)
+            query.Add("knownAt=" + Uri.EscapeDataString(knownAt.ToString("O", CultureInfo.InvariantCulture)));
+        if (request.CleanPrice is { } price)
+            query.Add("cleanPrice=" + price.ToString(CultureInfo.InvariantCulture));
+        if (request.Yield is { } yield)
+            query.Add("yield=" + yield.ToString(CultureInfo.InvariantCulture));
+        if (request.YieldConvention is { } convention)
+            query.Add("yieldConvention=" + convention);
+        return _apiClient.GetWithResponseAsync<BondAnalyticsResult>(
+            SecurityIdRoute(UiApiRoutes.ReferenceDataBondAnalytics, request.SecurityId) + "?" + string.Join("&", query), ct);
+    }
+
+    public Task<ApiResponse<BondMigrationPreviewDto>> PreviewBondMigrationAsync(BondMigrationPreviewRequest request, CancellationToken ct = default)
+        => _apiClient.PostWithResponseAsync<BondMigrationPreviewDto>(UiApiRoutes.ReferenceDataBondMigrationPreview, request, ct);
+
+    public Task<ApiResponse<SecurityMasterEditResultDto>> StageBondMigrationAsync(BondMigrationSubmitRequest request, CancellationToken ct = default)
+        => _apiClient.PostWithResponseAsync<SecurityMasterEditResultDto>(UiApiRoutes.ReferenceDataBondMigrationSubmit, request, ct);
 
     private static string SecurityIdRoute(string routeTemplate, Guid securityId)
         => routeTemplate.Replace("{securityId:guid}", securityId.ToString("D"), StringComparison.Ordinal);

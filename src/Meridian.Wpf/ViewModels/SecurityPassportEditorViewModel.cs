@@ -10,6 +10,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.ViewModels.SecurityMaster;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -68,8 +69,34 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
             ? string.Empty
             : $"Editing {(string.IsNullOrWhiteSpace(Symbol) ? SecurityId.ToString("D") : Symbol)} at v{Version}.";
 
+        // Bond and CD passports get the same calculated analytics and convention-migration review the
+        // browser Evidence tab offers, over the shared contracts; other asset classes show nothing.
+        var carriesBondCoupon = SecurityId != Guid.Empty
+            && SecurityAssetClassCatalog.GetOrDefault(AssetClass).CarriesBondCouponStructure;
+        BondAnalytics = carriesBondCoupon ? new BondAnalyticsViewModel(_client, SecurityId, Version) : null;
+        BondMigration = carriesBondCoupon ? new BondMigrationPreviewViewModel(_client, SecurityId, Version) : null;
+
         _ = LoadSchemaAsync(AssetClass);
     }
+
+    private BondAnalyticsViewModel? _bondAnalytics;
+    private BondMigrationPreviewViewModel? _bondMigration;
+
+    /// <summary>Calculated bond analytics for Bond/CD passports; null for every other asset class.</summary>
+    public BondAnalyticsViewModel? BondAnalytics
+    {
+        get => _bondAnalytics;
+        private set { if (SetProperty(ref _bondAnalytics, value)) OnPropertyChanged(nameof(HasBondTools)); }
+    }
+
+    /// <summary>Hash-bound convention migration preview for Bond/CD passports; null otherwise.</summary>
+    public BondMigrationPreviewViewModel? BondMigration
+    {
+        get => _bondMigration;
+        private set { if (SetProperty(ref _bondMigration, value)) OnPropertyChanged(nameof(HasBondTools)); }
+    }
+
+    public bool HasBondTools => BondAnalytics is not null;
 
     private CancellationTokenSource? _schemaLoad;
 

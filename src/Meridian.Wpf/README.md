@@ -13,6 +13,11 @@ last_reviewed: 2026-10-15
 
 Fund Ledger defaults and resets to all reconciliation cases, includes explicitly fund-scoped statement cases without strategy runs, and shows retained source observation and occurrence age separately from case status. Exact lineage evidence is available in the source-observation disclosure. Missing strategy comparison detail preserves the selected case and reports unknown counts.
 
+The Security Master passport editor offers the browser's bond analytics and convention-migration
+review for Bond/CD passports (`ViewModels/SecurityMaster/`): server-calculated, explicitly dated
+analytics shown as exact decimals, and a hash-bound migration preview that stages an ordinary
+governed draft. The desktop never prices locally and resubmits digests, not displayed amounts.
+
 Strategy composition registers the canonical Security Master resolver and position adjuster, then
 exposes narrow query ports and legacy aliases through `AddSecurityMasterContractAdapters()`.
 The adjustment-service factory selects its canonical query and resolver constructor explicitly,
