@@ -73,7 +73,7 @@ Stable lookup details for storage and streaming should live in reference, genera
 | [Database Schema](database-schema.md) | Maintained PostgreSQL schema-control map with generated ER diagrams, public contract-object diagrams, migration inventory, policy results, and dependency metadata. |
 | [EDGAR Reference Data](edgar-reference-data.md) | EDGAR filer, ticker association, XBRL fact, filing-derived security data, CLI, API, and local storage reference. |
 | [Contract Compatibility Matrix](contract-compatibility-matrix.md) | Shared contract/versioning baseline for workstation routes, DTOs, services, and migration behavior. |
-| [Provider Capability Matrix](provider-capability-matrix.md) | Adapter coverage and readiness states by capability surface. |
+| [Provider Capability Matrix](provider-capability-matrix.md) | Shared provider-contract coverage, runtime boundaries, and validation links. |
 | [Interactive Brokers and Alpaca Capability Expansion Review](broker-provider-capability-expansion-review.md) | Evidence-based provider expansion opportunities, priorities, and safety boundaries. |
 | [Interactive Brokers API Compatibility](interactive-brokers-api-compatibility.md) | Official SDK inputs, opt-in runtime build, release evidence, and compatibility limits. |
 | [Provider Validation Matrix](provider-validation-matrix.md) | Wave 1 provider gate matrix and promotion evidence criteria. |
