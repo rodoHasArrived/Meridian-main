@@ -1,5 +1,15 @@
 import type { BondCalculationContext, BondDecimal } from "./bond-analytics.types";
 
+/** Kernel business-day conventions accepted by the schedule writer; the server refuses anything else. */
+export const BUSINESS_DAY_CONVENTIONS = [
+  "Unadjusted",
+  "Following",
+  "ModifiedFollowing",
+  "Preceding",
+  "ModifiedPreceding"
+] as const;
+export type BusinessDayConvention = (typeof BUSINESS_DAY_CONVENTIONS)[number];
+
 export interface BondMigrationPreviewRequest {
   securityId: string;
   expectedVersion: number;
@@ -8,7 +18,7 @@ export interface BondMigrationPreviewRequest {
     couponRateUnit: "Percent" | "Fraction";
     couponCashBasis: "Level" | "DayCount";
     accrualAdjusted: boolean;
-    businessDayConvention: string;
+    businessDayConvention: BusinessDayConvention;
     endOfMonthRule: boolean;
     paymentCalendars?: string[];
   };

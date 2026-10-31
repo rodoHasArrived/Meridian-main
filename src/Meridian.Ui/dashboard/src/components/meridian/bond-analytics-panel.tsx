@@ -9,6 +9,7 @@ import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { getBondAnalytics } from "@/lib/api/bond-analytics.api";
 import { describeApiError } from "@/lib/api-errors";
+import { DECIMAL_LITERAL, bondDecimalText, utcInstantFromLocalInput } from "@/lib/bond-decimal-format";
 import type {
   BondAnalyticsQuery,
   BondAnalyticsResult,
@@ -38,9 +39,7 @@ const cashFlowColumns: DenseDataTableColumn<CashFlow>[] = [
   }
 ];
 
-function decimalText(value: BondDecimal | null | undefined): string {
-  return value == null ? "Unavailable" : String(value);
-}
+const decimalText = (value: BondDecimal | null | undefined): string => bondDecimalText(value);
 
 export interface BondAnalyticsPanelProps {
   securityId: string;
@@ -84,7 +83,7 @@ export function BondAnalyticsPanel({ securityId, calculate = getBondAnalytics }:
     request.current = controller;
     setResult(null);
     setError(null);
-    if (!asOf || !settlementDate || !value.trim() || !/^-?\d+(?:\.\d+)?$/.test(value.trim())) {
+    if (!asOf || !settlementDate || !value.trim() || !DECIMAL_LITERAL.test(value.trim())) {
       setError("Enter calculation and settlement dates and a decimal price or annual yield.");
       return;
     }
@@ -92,7 +91,7 @@ export function BondAnalyticsPanel({ securityId, calculate = getBondAnalytics }:
       asOf: `${asOf}T00:00:00Z`,
       settlementDate,
       yieldConvention: convention,
-      ...(knownAt ? { knownAt: `${knownAt}:00Z` } : {}),
+      ...(knownAt ? { knownAt: utcInstantFromLocalInput(knownAt) } : {}),
       [inputKind]: value.trim()
     };
     setPending(true);
@@ -154,7 +153,11 @@ export function BondAnalyticsPanel({ securityId, calculate = getBondAnalytics }:
                   onChange={(e) => edit(() => setAsOf(e.target.value))}
                 />
               </FormRow>
-              <FormRow label="Settlement date" labelFor={`${id}-settlement`}>
+              <FormRow
+                label="Settlement date"
+                labelFor={`${id}-settlement`}
+                hint="Defaults to the calculation date; enter the contractual T+N settlement for a traded price."
+              >
                 <Input
                   id={`${id}-settlement`}
                   type="date"
@@ -210,7 +213,7 @@ export function BondAnalyticsPanel({ securityId, calculate = getBondAnalytics }:
                 </Select>
               </FormRow>
             </FormGrid>
-            <Button type="submit" className="w-fit">
+            <Button type="submit" className="w-fit" aria-busy={pending}>
               {pending ? "Calculating…" : "Calculate bond analytics"}
             </Button>
           </fieldset>
@@ -239,8 +242,8 @@ export function BondAnalyticsPanel({ securityId, calculate = getBondAnalytics }:
                 title="Calculation blocked"
                 detail={
                   <ul className="list-disc pl-4">
-                    {result.blockers.map((blocker) => (
-                      <li key={blocker.code}>
+                    {result.blockers.map((blocker, index) => (
+                      <li key={`${blocker.code}:${index}`}>
                         {blocker.code}: {blocker.reason}
                       </li>
                     ))}
@@ -264,7 +267,7 @@ export function BondAnalyticsPanel({ securityId, calculate = getBondAnalytics }:
                 detail={
                   <ul className="list-disc pl-4">
                     {result.diagnostics.map((diagnostic, index) => (
-                      <li key={index}>{diagnostic}</li>
+                      <li key={`${index}:${diagnostic}`}>{diagnostic}</li>
                     ))}
                   </ul>
                 }

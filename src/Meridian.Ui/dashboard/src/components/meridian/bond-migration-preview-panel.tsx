@@ -10,36 +10,49 @@ import { TextArea } from "@/components/ui/text-area";
 import { describeApiError, isApiError } from "@/lib/api-errors";
 import { previewBondMigration, stageBondMigration } from "@/lib/api/bond-migration.api";
 import type { SecurityMasterEditResult } from "@/lib/api/security-master-workbench.api";
-import type { BondMigrationPreview, BondMigrationPreviewRequest } from "@/types/bond-migration.types";
+import { bondDecimalText } from "@/lib/bond-decimal-format";
+import {
+  BUSINESS_DAY_CONVENTIONS,
+  type BondMigrationPreview,
+  type BondMigrationPreviewRequest,
+  type BusinessDayConvention
+} from "@/types/bond-migration.types";
 
-type CashDifference = BondMigrationPreview["cashDifferences"][number];
+type CashDifference = BondMigrationPreview["cashDifferences"][number] & { rowId: string };
 const differenceColumns: DenseDataTableColumn<CashDifference>[] = [
   { id: "date", label: "Payment date", render: (row) => row.paymentDate },
   {
     id: "old-principal",
     label: "Prior principal",
     align: "right",
-    render: (row) => String(row.previousPrincipal)
+    render: (row) => bondDecimalText(row.previousPrincipal)
   },
   {
     id: "new-principal",
     label: "Candidate principal",
     align: "right",
-    render: (row) => String(row.candidatePrincipal)
+    render: (row) => bondDecimalText(row.candidatePrincipal)
   },
   {
     id: "old-interest",
     label: "Prior interest",
     align: "right",
-    render: (row) => String(row.previousInterest)
+    render: (row) => bondDecimalText(row.previousInterest)
   },
   {
     id: "new-interest",
     label: "Candidate interest",
     align: "right",
-    render: (row) => String(row.candidateInterest)
+    render: (row) => bondDecimalText(row.candidateInterest)
   }
 ];
+const conventionLabels: Record<BusinessDayConvention, string> = {
+  Unadjusted: "Unadjusted",
+  Following: "Following",
+  ModifiedFollowing: "Modified following",
+  Preceding: "Preceding",
+  ModifiedPreceding: "Modified preceding"
+};
 
 export function BondMigrationPreviewPanel({
   securityId,
@@ -54,9 +67,10 @@ export function BondMigrationPreviewPanel({
 }) {
   const id = useId();
   const [asOf, setAsOf] = useState(() => new Date().toISOString().slice(0, 10));
+  const [settlementDate, setSettlementDate] = useState("");
   const [unit, setUnit] = useState<"" | "Percent" | "Fraction">("");
   const [basis, setBasis] = useState<"Level" | "DayCount">("DayCount");
-  const [convention, setConvention] = useState("Unadjusted");
+  const [convention, setConvention] = useState<BusinessDayConvention>("Unadjusted");
   const [calendars, setCalendars] = useState("");
   const [adjustAccrual, setAdjustAccrual] = useState(false);
   const [endOfMonth, setEndOfMonth] = useState(false);
@@ -68,6 +82,7 @@ export function BondMigrationPreviewPanel({
   const [staged, setStaged] = useState<SecurityMasterEditResult | null>(null);
   const [refreshRequired, setRefreshRequired] = useState(false);
   const controller = useRef<AbortController | null>(null);
+  const stageController = useRef<AbortController | null>(null);
   const stagedResult = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (staged) stagedResult.current?.focus();
@@ -80,7 +95,10 @@ export function BondMigrationPreviewPanel({
     setStaging(false);
     setStaged(null);
     setRefreshRequired(false);
-    return () => controller.current?.abort();
+    return () => {
+      controller.current?.abort();
+      stageController.current?.abort();
+    };
   }, [securityId, expectedVersion]);
 
   function edit(change: () => void) {
@@ -120,7 +138,7 @@ export function BondMigrationPreviewPanel({
       expectedVersion,
       context: {
         asOf: `${asOf}T00:00:00Z`,
-        settlementDate: asOf,
+        settlementDate: settlementDate || asOf,
         securityVersion: expectedVersion
       },
       scheduleConventions: {
@@ -155,8 +173,9 @@ export function BondMigrationPreviewPanel({
   async function stageReviewedPreview(event: FormEvent) {
     event.preventDefault();
     if (!result?.canStage || !justification.trim() || staging || staged || refreshRequired) return;
+    stageController.current?.abort();
     const requestController = new AbortController();
-    controller.current = requestController;
+    stageController.current = requestController;
     setStaging(true);
     setError(null);
     try {
@@ -220,6 +239,18 @@ export function BondMigrationPreviewPanel({
                   onChange={(e) => edit(() => setAsOf(e.target.value))}
                 />
               </FormRow>
+              <FormRow
+                label="Settlement date"
+                labelFor={`${id}-settlement`}
+                hint="Defaults to the preview date when left blank."
+              >
+                <Input
+                  id={`${id}-settlement`}
+                  type="date"
+                  value={settlementDate}
+                  onChange={(e) => edit(() => setSettlementDate(e.target.value))}
+                />
+              </FormRow>
               <FormRow label="Retained coupon unit" labelFor={`${id}-unit`}>
                 <Select
                   id={`${id}-unit`}
@@ -246,13 +277,13 @@ export function BondMigrationPreviewPanel({
                 <Select
                   id={`${id}-adjustment`}
                   value={convention}
-                  onChange={(e) => edit(() => setConvention(e.target.value))}
+                  onChange={(e) => edit(() => setConvention(e.target.value as BusinessDayConvention))}
                 >
-                  <option value="Unadjusted">Unadjusted</option>
-                  <option value="Following">Following</option>
-                  <option value="ModifiedFollowing">Modified following</option>
-                  <option value="Preceding">Preceding</option>
-                  <option value="ModifiedPreceding">Modified preceding</option>
+                  {BUSINESS_DAY_CONVENTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {conventionLabels[option]}
+                    </option>
+                  ))}
                 </Select>
               </FormRow>
               <FormRow
@@ -281,7 +312,7 @@ export function BondMigrationPreviewPanel({
                 </div>
               </FormRow>
             </FormGrid>
-            <Button type="submit" variant="outline" className="w-fit">
+            <Button type="submit" variant="outline" className="w-fit" aria-busy={pending}>
               {pending ? "Preparing preview…" : "Preview convention migration"}
             </Button>
           </fieldset>
@@ -298,15 +329,21 @@ export function BondMigrationPreviewPanel({
               tone={result.canStage ? "info" : "warning"}
               title={result.canStage ? "Preview ready for governed review" : "Migration has unresolved gaps"}
               detail={
-                result.canStage
-                  ? "Review the changed payments and fingerprint before creating a terms revision through the existing Security Master workflow."
-                  : result.gaps.join(" ")
+                result.canStage ? (
+                  "Review the changed payments and fingerprint before creating a terms revision through the existing Security Master workflow."
+                ) : (
+                  <ul className="list-disc pl-4">
+                    {result.gaps.map((gap, index) => (
+                      <li key={`${index}:${gap}`}>{gap}</li>
+                    ))}
+                  </ul>
+                )
               }
             />
             <DenseDataTable
               columns={differenceColumns}
-              rows={result.cashDifferences}
-              getRowId={(row) => row.paymentDate}
+              rows={result.cashDifferences.map((row, index) => ({ ...row, rowId: `${row.paymentDate}:${index}` }))}
+              getRowId={(row) => row.rowId}
               ariaLabel="Bond migration payment comparison"
               caption="Prior and candidate economic payments, without changing ledger facts"
               emptyText="No payment differences were returned."
@@ -332,7 +369,7 @@ export function BondMigrationPreviewPanel({
                       onChange={(e) => setJustification(e.target.value)}
                     />
                   </FormRow>
-                  <Button type="submit" className="w-fit" disabled={!justification.trim()}>
+                  <Button type="submit" className="w-fit" disabled={!justification.trim()} aria-busy={staging}>
                     {staging ? "Creating governed draft…" : "Stage governed draft"}
                   </Button>
                 </fieldset>

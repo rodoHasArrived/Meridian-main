@@ -35,8 +35,11 @@ v3 fields are omitted when absent. Exact replay still precedes current reference
 admission. Corrections use immutable reversal/rebook receipts, never changes to posted journals.
 
 Unsupported exercise windows, Bermudan/American exercise, make-whole formulas, notice/cadence
-rules, irregular coupon dates, declared schedule conventions, structured principal or coupon
-schedules and forecast prepayments still block. These need their own valuation inputs and proof;
+rules, irregular coupon dates, structured principal or coupon schedules and forecast prepayments
+still block. Declared schedule conventions block the v3 remaining-face/yield-to-worst model only;
+declared bonds amortize through `canonical-lot-amortization-v5`, which shares the analytics
+coupon, stub, accrual and discount-time calculator (the interim v4 model was removed before any
+instruction was produced). These need their own valuation inputs and proof;
 they are not interpreted as absent. Short manufactured income, corporate actions and tax
 character and short reversal/rebook also remain separate treatments. Tax reports refuse to infer short-sale character from
 opening-lot age. Broader consumer certification and live Windows acceptance remain open.

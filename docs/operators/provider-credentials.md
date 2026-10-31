@@ -78,8 +78,10 @@ See concrete variable names and binding keys in [Environment Variables](../refer
 
 Ownership administration requires `ManageCredentials`, `ManageProviders`, and `ModifyConfig`, an
 authenticated operator, and a server-resolved tenant. Requests cannot supply their tenant or actor.
-These shared commands are available to either workstation; Settings credential editing still selects
-an already-owned connection.
+These shared commands are exposed by the workstation HTTP API. Neither the browser nor the WPF
+workstation surfaces them yet; that operator UI is tracked as a parity gap in the
+[WPF web-UI alignment plan](../engineering/plans/wpf-web-ui-alignment-plan.md). Settings credential
+editing still selects an already-owned connection.
 
 1. `POST /api/provider-routing/connections` with `{ "connection": { "connectionId": "paper-a",
    "providerFamilyId": "alpaca", "displayName": "Paper account A", "externalAccountId": "reviewed-account-id" },

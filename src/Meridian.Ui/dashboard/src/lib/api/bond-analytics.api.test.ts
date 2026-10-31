@@ -58,7 +58,7 @@ describe("bond calculation API adapters", () => {
         couponRateUnit: "Percent" as const,
         couponCashBasis: "DayCount" as const,
         accrualAdjusted: false,
-        businessDayConvention: "Unadjusted",
+        businessDayConvention: "Unadjusted" as const,
         endOfMonthRule: true
       }
     };
@@ -80,7 +80,7 @@ describe("bond calculation API adapters", () => {
         couponRateUnit: "Percent" as const,
         couponCashBasis: "DayCount" as const,
         accrualAdjusted: false,
-        businessDayConvention: "Unadjusted",
+        businessDayConvention: "Unadjusted" as const,
         endOfMonthRule: true
       }
     };
@@ -111,7 +111,7 @@ describe("bond calculation API adapters", () => {
         couponRateUnit: "Percent" as const,
         couponCashBasis: "DayCount" as const,
         accrualAdjusted: false,
-        businessDayConvention: "Unadjusted",
+        businessDayConvention: "Unadjusted" as const,
         endOfMonthRule: false
       }
     };
