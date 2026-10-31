@@ -6,7 +6,7 @@ using Meridian.Tests.Storage;
 
 namespace Meridian.Tests.AssetOperations;
 
-public sealed class OpenLotDeclaredAmortizationTests
+public sealed class OpenLotUnifiedAmortizationTests
 {
     [Fact]
     public void OddFirstPeriod_PaysTheContractualStubAndRetainsPrincipalAtMaturity()
@@ -23,7 +23,7 @@ public sealed class OpenLotDeclaredAmortizationTests
         result.TransactionCostBasis.Should().BeApproximately(104m, 0.0000000001m);
         result.FunctionalCostBasis.Should().BeApproximately(114.4m, 0.0000000001m);
         OpenLotAmortization.Project(instruction with { AsOfDate = maturity }).TransactionCostBasis.Should().Be(100m);
-        instruction.CalculationVersion.Should().Be("canonical-lot-amortization-v4");
+        instruction.CalculationVersion.Should().Be("canonical-lot-amortization-v5");
         var old = () => OpenLotAmortization.Project(instruction with { CalculationVersion = OpenLotAmortization.CalendarModelVersion });
         old.Should().Throw<ArgumentException>().WithMessage("*does not support declared schedule conventions*");
     }
@@ -129,7 +129,7 @@ public sealed class OpenLotDeclaredAmortizationTests
             SecurityEvidence = instruction.SecurityEvidence with
             { EffectiveDate = acquired, ContentHashSha256 = OpenLotAmortization.SecurityHash(security) },
             AsOfDate = asOf,
-            CalculationVersion = OpenLotAmortization.DeclaredModelVersion
+            CalculationVersion = OpenLotAmortization.UnifiedDeclaredModelVersion
         };
     }
 }

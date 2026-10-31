@@ -5,8 +5,10 @@ using Meridian.Contracts.SecurityMaster.Schedules;
 namespace Meridian.Contracts.Accounting.Lots;
 
 /// <summary>
-/// V5 fixed-rate bullet amortization on explicitly declared contractual periods. Supports odd first
-/// and final periods without changing any v1/v2/v3 replay. Unretained business-day calendars are refused.
+/// V5 fixed-rate bullet amortization on explicitly declared contractual periods, priced through the
+/// shared <see cref="BondContractualEconomics"/> kernel so lot basis, analytics and cash projections
+/// agree. Supports odd first and final periods without changing any v1/v2/v3 replay. Unretained
+/// business-day calendars are refused.
 /// </summary>
 internal static class OpenLotUnifiedAmortization
 {

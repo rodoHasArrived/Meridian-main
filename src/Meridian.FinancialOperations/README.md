@@ -19,7 +19,7 @@ IB Flex remote retrieval resolves the guarded legacy-runtime credential-store ke
 cannot use unassigned credentials after rollback. Hosts without that guard, authoritative configuration
 or vault service keep file parsing available while remote retrieval remains unavailable.
 
-New declared-bond amortization previews select `canonical-lot-amortization-v5`, using the same coupon, stub, accrual and discount-time calculator as analytics. Existing v4 instructions remain replayable with their original calculations. Settlement verification requests the retained analytics model version. Existing review, period controls, balanced posting and immutable lot/journal boundaries remain authoritative.
+New declared-bond amortization previews select `canonical-lot-amortization-v5`, using the same coupon, stub, accrual and discount-time calculator as analytics. Settlement verification requests the retained analytics model version. Existing review, period controls, balanced posting and immutable lot/journal boundaries remain authoritative.
 
 `CanonicalLotAmortizationService.PreviewExtendedAsync` explicitly selects v3 remaining-face
 amortization and/or automatic yield-to-worst. It retains the complete comparison for independent

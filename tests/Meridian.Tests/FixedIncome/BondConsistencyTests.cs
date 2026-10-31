@@ -82,10 +82,6 @@ public sealed class BondConsistencyTests
         };
         OpenLotAmortization.Project(instruction).TransactionCostBasis.Should().BeApproximately(105m, 0.0000000001m);
         OpenLotAmortization.Project(instruction with { AsOfDate = new(2027, 1, 1) }).TransactionCostBasis.Should().Be(100m);
-        // V4's different stub convention remains available and cannot silently adopt v5 economics.
-        var old = () => OpenLotAmortization.Project(instruction with { CalculationVersion = OpenLotAmortization.DeclaredModelVersion });
-        if (fixtureIndex == 0)
-            old.Should().Throw<ArgumentException>().WithMessage("*yield does not reconcile*");
     }
 
     [Theory]

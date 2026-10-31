@@ -56,13 +56,12 @@ public static class OpenLotAmortization
 {
     public const string ModelVersion = "canonical-lot-amortization-v2";
     public const string ExtendedModelVersion = "canonical-lot-amortization-v3";
-    public const string DeclaredModelVersion = "canonical-lot-amortization-v4";
     public const string UnifiedDeclaredModelVersion = "canonical-lot-amortization-v5";
     /// <summary>Frozen regular-calendar model retained for immutable instruction replay.</summary>
     public const string CalendarModelVersion = ModelVersion;
 
     public static bool IsCurrentVersion(string? version)
-        => version is ModelVersion or ExtendedModelVersion or DeclaredModelVersion or UnifiedDeclaredModelVersion;
+        => version is ModelVersion or ExtendedModelVersion or UnifiedDeclaredModelVersion;
 
     public static string SecurityHash(SecurityProjectionRecord security)
     {
@@ -148,10 +147,10 @@ public static class OpenLotAmortization
         var detail = new SecurityDetailDto(security.SecurityId, security.AssetClass, security.Status, security.DisplayName,
             security.Currency, security.CommonTerms, security.AssetSpecificTerms, security.Identifiers, security.Aliases,
             security.Version, security.EffectiveFrom, security.EffectiveTo);
-        var followsDeclaredSchedule = instruction.CalculationVersion is DeclaredModelVersion or UnifiedDeclaredModelVersion
+        var followsDeclaredSchedule = instruction.CalculationVersion == UnifiedDeclaredModelVersion
             && AnyTerm(StructuredCashFlowTermsResolver.EnumerateTermSources(detail),
                 SecurityVersionedTerms.ScheduleConventionsKey, SecurityAssetTermsSchema.IsPopulatedTermValue);
-        if (instruction.CalculationVersion is DeclaredModelVersion or UnifiedDeclaredModelVersion && !followsDeclaredSchedule)
+        if (instruction.CalculationVersion == UnifiedDeclaredModelVersion && !followsDeclaredSchedule)
             throw new ArgumentException("Declared amortization model requires explicit contractual schedule conventions.");
         ValidateBulletReference(detail, instruction.YieldToWorst is not null, instruction.AmortizeRemainingFace, followsDeclaredSchedule);
         var reference = StructuredCashFlowTermsResolver.Resolve(detail);
@@ -183,11 +182,8 @@ public static class OpenLotAmortization
         decimal fullBasis;
         if (followsDeclaredSchedule)
         {
-            fullBasis = instruction.CalculationVersion == UnifiedDeclaredModelVersion
-                ? OpenLotUnifiedAmortization.Project(faceLot, detail, reference, convention,
-                    instruction.AsOfDate, terms.AmortizationMethod, terms.EffectiveYield)
-                : OpenLotDeclaredAmortization.Project(faceLot, detail, reference, convention,
-                    instruction.AsOfDate, terms.AmortizationMethod, terms.EffectiveYield);
+            fullBasis = OpenLotUnifiedAmortization.Project(faceLot, detail, reference, convention,
+                instruction.AsOfDate, terms.AmortizationMethod, terms.EffectiveYield);
         }
         else if (terms.AmortizationMethod == BondAmortizationMethod.StraightLine)
         {

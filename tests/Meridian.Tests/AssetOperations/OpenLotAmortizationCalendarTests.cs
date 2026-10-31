@@ -250,6 +250,7 @@ public sealed class OpenLotAmortizationCalendarTests
     [Theory]
     [InlineData("")]
     [InlineData("canonical-lot-amortization-v1")]
+    [InlineData("canonical-lot-amortization-v4")]
     [InlineData("canonical-lot-amortization-v6")]
     public void UnsupportedCalculationVersion_IsRefused(string version)
     {
@@ -263,7 +264,6 @@ public sealed class OpenLotAmortizationCalendarTests
     }
 
     [Theory]
-    [InlineData(OpenLotAmortization.DeclaredModelVersion)]
     [InlineData(OpenLotAmortization.UnifiedDeclaredModelVersion)]
     public void DeclaredCalculationVersion_WithoutDeclaredConventions_IsRefused(string version)
     {
