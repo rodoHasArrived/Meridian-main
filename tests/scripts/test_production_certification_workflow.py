@@ -27,15 +27,14 @@ class ProductionCertificationWorkflowTests(unittest.TestCase):
         cls.integrations = INTEGRATIONS_PATH.read_text(encoding="utf-8")
         cls.coverlet_settings = COVERLET_SETTINGS_PATH.read_text(encoding="utf-8")
 
-    def test_certifies_main_pushes_without_path_filters_and_retains_other_triggers(self) -> None:
+    def test_runs_on_schedule_dispatch_and_release_calls_but_not_ordinary_main_pushes(self) -> None:
         # BaseLoader keeps the YAML 1.1 word "on" as a string, as GitHub does.
         workflow = yaml.load(self.workflow, Loader=yaml.BaseLoader)
         triggers = workflow["on"]
-        self.assertEqual(triggers["push"]["branches"], ["main"])
-        self.assertNotIn("tags", triggers["push"])
+        # Certification is release/scheduled evidence, not an ordinary main-push completion check.
+        self.assertNotIn("push", triggers)
+        self.assertNotIn("pull_request", triggers)
         self.assertIn("workflow_call", triggers)
-        self.assertNotIn("paths", triggers["push"])
-        self.assertNotIn("paths-ignore", triggers["push"])
         self.assertEqual(triggers["schedule"], [{"cron": "17 3 * * 0"}])
         self.assertIn("workflow_dispatch", triggers)
         self.assertEqual(workflow["concurrency"]["cancel-in-progress"], "false")

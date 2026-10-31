@@ -115,6 +115,8 @@ class ValidationPlanTests(unittest.TestCase):
         self.assertNotIn("--profile", command)
         self.assertNotIn("--no-build", command)
         self.assertEqual(data["requiredFinalChecks"][0]["argv"], ["bash", "scripts/ci.sh"])
+        self.assertFalse(data["requiredFinalChecks"][0]["required"])
+        self.assertTrue(all(c["required"] for c in data["requiredFinalChecks"][1:]))
 
     def test_shared_contracts_force_both_consumers_without_refs(self):
         self.project("src/Meridian.Contracts")
@@ -264,6 +266,37 @@ class ValidationPlanTests(unittest.TestCase):
         self.assertIn(["bash", "scripts/ci.sh", "--lane", "verify-docs"], commands)
         self.assertIn(["bash", "scripts/ci.sh", "--lane", "verify-workflows"], commands)
         self.assertEqual(data["requiredFinalChecks"][0]["argv"], ["bash", "scripts/ci.sh"])
+
+    def test_local_ci_optional_for_routine_and_required_for_ci_tooling(self):
+        for changed in (["docs/a.md"], ["src/Meridian.Ui/dashboard/src/a.ts"]):
+            data = self.recommend(*changed)
+            local = data["requiredFinalChecks"][0]
+            self.assertEqual(local["id"], "local-ci")
+            self.assertFalse(local["required"])
+            self.assertIn("Optional", local["reason"])
+        for changed in ("scripts/ci.sh", ".github/workflows/ci.yml", "build/ci/lane-manifest.json",
+                        "build/python/cli/validation_plan.py"):
+            data = self.recommend(changed)
+            self.assertTrue(data["requiredFinalChecks"][0]["required"], changed)
+            self.assertIn("Required", data["requiredFinalChecks"][0]["reason"])
+        data = self.recommend("docs/a.md")
+        self.assertEqual(data["schemaVersion"], 1)
+        self.assertIsInstance(data["requiredFinalChecks"], list)
+        hosted = [c["name"] for c in data["requiredFinalChecks"] if c.get("kind") == "github"]
+        self.assertEqual(hosted, ["Meridian CI / quality-gate", "Meridian CI / integration-gate"])
+
+    def test_text_output_labels_final_checks_by_tier(self):
+        def render(path):
+            out = io.StringIO()
+            args = argparse.Namespace(root=self.root, changed_file=[path], from_git=False, base=None,
+                                      json=False, output=None, fresh=False)
+            with redirect_stdout(out):
+                self.assertEqual(plan.run_cli(args), 0)
+            return out.getvalue()
+        docs = render("docs/a.md")
+        self.assertIn("Final checks (by risk tier): bash scripts/ci.sh (optional); Meridian CI / quality-gate", docs)
+        self.assertNotIn("Required final checks", docs)
+        self.assertIn("Final checks (by risk tier): bash scripts/ci.sh; Meridian CI", render("scripts/ci.sh"))
 
     def test_cli_base_argument_includes_branch_scope_and_never_runs_checks(self):
         def git(*args):

@@ -78,7 +78,7 @@ npm run dev:fixtures -- --doctor
 Recommendations explain the selected checks and any uncertain coverage; they do not run tests.
 .NET recommendations use a stable, project-specific session profile for incremental iteration.
 Build-definition changes select a new profile automatically; ordinary source edits keep it warm.
-Add `--fresh` to recommend independent outputs for handoff; required final checks are retained.
+Add `--fresh` to recommend independent outputs for handoff; final checks are reported by risk tier (hosted gates always; the full local `bash scripts/ci.sh` is optional for routine changes and required for CI-tooling paths).
 Use `recommend-validation --base origin/main` to include committed branch changes as well as
 working-tree changes, or repeat `--changed-file <path>` to preview an explicit scope. The npm
 shortcut is `npm run checks:recommend -- --base origin/main`. See the

@@ -163,7 +163,9 @@ Unrelated shared guidance update.
         rendered = markdown(packet)
         self.assertIn(brief["acceptanceExample"], rendered)
         self.assertIn(brief["exclusions"][0], rendered)
-        self.assertIn("Required final checks remain", rendered)
+        self.assertIn("Final checks (by risk tier)", rendered)
+        self.assertIn("(optional:", rendered)
+        self.assertIn("Meridian CI / quality-gate", rendered)
         self.assertTrue(any(source["path"] == "brief.json" for source in packet["sources"]))
         check_packet(self.root, packet)
 
