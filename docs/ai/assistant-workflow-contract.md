@@ -4,6 +4,8 @@
 **Owner:** core-team
 **Reviewed:** 2026-06-16
 
+**Proportional default for solo development:** [Solo-developer workflow](solo-developer-workflow.md). Read its risk-tiered validation and synthetic-data rules before applying detailed orchestration guidance. No requirement here implies the existence of an independent human review team or mandates live financial-provider credentials for normal development. Existing GitHub enforcement and explicit sensitive-operation safeguards still control.
+
 This contract is the shared operating standard for AI-assisted development in Meridian. It applies
 to Codex, Claude, GitHub Copilot, MCP clients, reusable prompt templates, CI prompt generation, and
 manual assistant sessions, including local AI maintenance tooling used by automations.
