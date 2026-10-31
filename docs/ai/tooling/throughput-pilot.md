@@ -109,7 +109,7 @@ Use `recommend-validation --fresh` to request fresh isolated builds instead; thi
 checks or change their final validation requirements.
 
 Recommendations contain command argument arrays, affected paths, selection reasons, input hashes,
-consumer impact, unknown-coverage warnings, and retained final-check requirements. They use
+consumer impact, unknown-coverage warnings, and tiered final checks. They use
 path-based proof selection and the reverse .NET project-reference graph. A shared contract or
 workstation-service change includes both browser and WPF consumers. Known Python, development
 launcher, and browser test paths select focused checks; documentation and workflow changes also
@@ -122,8 +122,14 @@ Context packets include the same validation plan and bind its consulted inputs t
 checking. Review the plan, run the applicable commands during iteration, and retain their actual
 results separately. Project references are a conservative approximation: runtime wiring, reflection,
 MSBuild imports/expressions, and external dependencies can require more checks than the graph
-identifies. Unknown files and unresolved dependencies require manual proof selection. Full
-`bash scripts/ci.sh` and GitHub's required checks remain completion requirements.
+identifies. Unknown files and unresolved dependencies require manual proof selection.
+Final checks follow the [verification tiers](../solo-developer-workflow.md#verification-tiers):
+GitHub's hosted `quality-gate` and `integration-gate` stay authoritative for every change, while the
+full local `bash scripts/ci.sh` is reported as optional (`required: false`) unless the changed paths
+include `scripts/ci.sh`, `.github/workflows/`, `build/ci/`, or `build/python/`, where it is
+`required: true`. Skipped local aggregates are recorded honestly, not hidden. The JSON
+`requiredFinalChecks` list and `schemaVersion` are unchanged; each entry gains an additive
+`required` field.
 
 Choose tools proportionally: when the shared-guidance edit is already located, edit the canonical
 block and use the generator directly. Build a packet for discovery, cross-module work, or resuming

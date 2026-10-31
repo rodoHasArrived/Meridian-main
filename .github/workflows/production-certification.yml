@@ -19,9 +19,6 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "17 3 * * 0"
-  push:
-    branches:
-      - main
 
 permissions:
   contents: read

@@ -2,13 +2,15 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-30
+**Reviewed:** 2026-10-31
 
 Use this reference to identify the shared provider contracts implemented in Meridian and the
 boundaries of their runtime exposure. The matrix covers all 22 direct folders under
 [`src/Meridian.Infrastructure/Adapters/`](../../src/Meridian.Infrastructure/Adapters/).
 The source and test definitions were inspected at `fcd72ec33307770b3f432e48daaf22bff25c2f8f`;
 this review does not establish a successful live-provider session or operator acceptance.
+
+Evidence note: where a `complete` row rests on offline, mock, simulator, or fixture tests (no dated live run), read it as **synthetic-verified** in the [solo-developer evidence labels](../ai/solo-developer-workflow.md#provider-evidence-labels), not **live-verified**. `complete` here does not claim compatibility with the live provider; absent a recorded live run, the live status is `live-untested`.
 
 ## Readiness Interpretation
 

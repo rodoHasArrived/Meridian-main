@@ -14,8 +14,10 @@ stricter rules, add a closer `AGENTS.md` or `AGENTS.override.md` rather than exp
 - Run `git status --short` before editing and preserve unrelated user-owned changes.
 - Follow the root `AGENTS.md` protected-branch policy: local work may happen on `main` when the
   user explicitly requests it or the checkout is intentionally operating there. Do not bypass
-  GitHub protections; for PR-ready publishing, use a `codex/<short-task-name>` branch and PR, run
-  `bash scripts/ci.sh` before representing completed work, and treat GitHub Actions
+  GitHub protections; for PR-ready publishing, use a `codex/<short-task-name>` branch and PR, scale
+  local validation to the risk tier in `docs/ai/solo-developer-workflow.md#verification-tiers`
+  (the full `bash scripts/ci.sh` is optional at Level 1, recommended at Level 2, run when practical
+  at Level 3 or for build/CI-tooling changes), say what ran and what did not, and treat GitHub Actions
   `Meridian CI / quality-gate` as the merge authority.
   Its four canonical lanes remain unchanged; the always-reported
   `Meridian CI / integration-gate` companion reports service-backed PostgreSQL tests shared with
