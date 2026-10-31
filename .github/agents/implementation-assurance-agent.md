@@ -55,8 +55,10 @@ Use this lane whenever the task creates or updates an agent or skill package.
    Local work may happen on `main` when the user explicitly requests it or the checkout is
    intentionally operating there; for PR-ready publishing, use a `codex/<short-task-name>` branch
    unless GitHub repository rules explicitly allow the requested protected-branch flow. Run
-   required commands and capture outputs. For completed PR-ready work, run `bash scripts/ci.sh`;
-   GitHub Actions `Meridian CI / quality-gate` is the authoritative merge check. If local machine
+   required commands and capture outputs. Choose the full `bash scripts/ci.sh` by risk tier
+   ([verification tiers](../../docs/ai/solo-developer-workflow.md#verification-tiers)): optional at
+   Level 1, recommended at Level 2, run when practical at Level 3 or for build/CI-tooling changes;
+   report what ran and what did not. GitHub Actions `Meridian CI / quality-gate` is the authoritative merge check. If local machine
    capacity, restore, or MSBuild locks block proof, run `python build/python/cli/buildctl.py
    validation-status --summary`, then `dotnet build-server shutdown`; stop only abandoned
    repo-owned `dotnet`/`MSBuild`/`testhost`/compiler PIDs whose command lines clearly point at this
@@ -77,7 +79,7 @@ for explicit edit-start timing and retained receipts.
 
 
 ```bash
-# Canonical PR gate
+# Full local aggregate (tiered: optional L1, recommended L2, when practical L3/CI tooling)
 bash scripts/ci.sh
 
 # Gate 1: Build

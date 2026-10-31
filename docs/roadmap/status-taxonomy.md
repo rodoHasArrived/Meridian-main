@@ -20,3 +20,16 @@
 | `blocked` | Work cannot proceed until the blocker is resolved. |
 
 Legacy values `on_track`, `watch`, and `at_risk` are accepted during migration for compatibility with existing status language.
+
+## Mapping to the solo-developer completion vocabulary
+
+[Solo-developer workflow](../ai/solo-developer-workflow.md#completion-vocabulary) uses Planned, In progress, Verified, and Released for human communication. This mapping is communication guidance only; it makes no schema change and does not alter any registry status or health value.
+
+| Registry status | Solo-developer wording |
+| --- | --- |
+| `planned` | Planned |
+| `in_progress` | In progress |
+| `ready_for_acceptance`, `accepted` | Verified for the stated scope; the recorded implementation and evidence posture decides, and the scope and unresolved limitations must be stated. Operator or governance acceptance is a separate fact, not a precondition for development verification. |
+| `done` | Verified; Released only when included in an identified supported release. |
+
+Blocked is not a status. Express it through `health: blocked` or `health: red` and state the blocker in prose.

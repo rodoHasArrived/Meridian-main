@@ -23,7 +23,7 @@ bypasses, self-approval, self-merge, or skipped status checks.
 
 ### Solo-Developer Development Model
 
-Read [the proportional solo-developer workflow](docs/ai/solo-developer-workflow.md) first. The developer is the sole product and merge decision-maker; AI assistance does not imply a human review organization. Use synthetic data by default and do not demand live-account/provider credentials for ordinary development.
+Read [the proportional solo-developer workflow](docs/ai/solo-developer-workflow.md) first. The developer is the sole product and merge decision-maker; AI assistance does not imply a human review organization, and an AI agent review is not independent human review. Use synthetic data by default and do not demand live-account/provider credentials for ordinary development.
 
 ### Default Branch Workflow
 
@@ -34,7 +34,7 @@ GitHub repository rules allow, use the pull-request workflow:
 2. Create or use a branch named `codex/<short-task-name>`.
 3. Make only changes that are required for the assigned task.
 4. Add or update appropriate automated tests.
-5. Run risk-appropriate focused checks described in `docs/ai/solo-developer-workflow.md`; attempt `bash scripts/ci.sh` when proportionate or required, and state precisely if it was not run.
+5. Run the checks for the change's Level 1/2/3 tier in `docs/ai/solo-developer-workflow.md#verification-tiers` (routine, financial/architectural, sensitive/destructive); attempt `bash scripts/ci.sh` when proportionate or required, and state precisely if it was not run.
 6. Never claim a check passed when it failed, was unavailable, or was not attempted.
 7. Commit the completed change to the feature branch.
 8. Push the feature branch to GitHub.

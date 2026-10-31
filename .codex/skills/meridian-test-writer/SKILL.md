@@ -115,6 +115,7 @@ name the new scenario before proceeding.
 
 ## Meridian-Specific Guidance
 
+- **Provider evidence label:** when tests cover a provider adapter, label the evidence `synthetic-verified`, `live-verified`, `live-untested`, or `unsupported`. Recorded fixtures, vendor docs, and mock-server tests are `synthetic-verified` at most; only an authorized run against the real provider is `live-verified`.
 - Providers belong in the infrastructure/provider-oriented test areas.
 - **For streaming providers (Pattern B):** study the provider's official API docs and use the exact
   wire-format field names/types when constructing test inputs. See the Provider Wire-Format Catalog

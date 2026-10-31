@@ -138,8 +138,10 @@ selects serial execution. `bash scripts/ci.sh --cold` measures fresh build outpu
 caches retained. Warm edit-to-result timing requires an explicit edit-start timestamp. See
 `docs/development/build-observability.md` for measurement definitions and retained evidence.
 
-For completed PR-ready work, use `bash scripts/ci.sh`; GitHub Actions `Meridian CI / quality-gate`
-is the authoritative merge result. Local work may happen on `main` when the user explicitly requests
+Scale local validation to the risk tier in `docs/ai/solo-developer-workflow.md#verification-tiers`:
+the full `bash scripts/ci.sh` aggregate is optional at Level 1, recommended at Level 2, and run when
+practical at Level 3 or for build/CI-tooling changes; state which checks ran and which did not.
+GitHub Actions `Meridian CI / quality-gate` is the authoritative merge result. Local work may happen on `main` when the user explicitly requests
 it or the checkout is intentionally operating there, but PR-ready publishing should flow through a
 `codex/<short-task-name>` branch and PR targeting `main` unless GitHub repository rules explicitly
 allow the requested protected-branch flow.

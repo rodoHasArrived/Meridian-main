@@ -1,5 +1,7 @@
 # What To Work On Next — Meridian (2026-09-27)
 
+**Snapshot:** Historical snapshot - superseded by roadmap registry for current status.
+
 **Status:** prioritization input; not a governance decision and not a roadmap-status document
 **Owner:** core-team
 **Reviewed:** 2026-09-27

@@ -2,7 +2,7 @@
 
 **Status:** canonical  
 **Owner:** core-team  
-**Reviewed:** 2026-06-30
+**Reviewed:** 2026-10-31
 
 **Last Updated:** 2026-06-30
 **Scope:** Active Wave 1 provider confidence, checkpoint resumability, and Parquet Level 2 flush proof
@@ -16,6 +16,8 @@ For the unified per-broker phase/blocker/evidence view, see [`provider-integrati
 
 - ✅ Closed with executable repo evidence
 - ⚠️ Bounded: meaningful evidence exists, but at least one vendor or runtime condition remains manual
+
+Evidence note: a ✅ row whose offline/CI evidence is mock-, fixture-, or simulator-based is **synthetic-verified** (see [provider evidence labels](../ai/solo-developer-workflow.md#provider-evidence-labels)). It is not **live-verified** and is not production certification; without a recorded live run the live status is `live-untested`. Where a row says live/manual evidence is "Not required", that scopes the claim to synthetic verification.
 
 ## Wave 1 Matrix
 
@@ -43,7 +45,9 @@ Each run must link the provider packet set to readiness/inbox verification resul
 | Operator inbox dependency assumptions | `GET /api/workstation/operator/inbox` snapshot (or endpoint test evidence) + linked readiness work-item mapping evidence | Confirm inbox blockers/severity/routing remain aligned with readiness acceptance gates for affected provider/account scopes. | Mark `pending` if inbox/readiness alignment is incomplete. |
 | DK1 operator approval | `artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json` | Record `validForDk1Exit`, `signedOwners`, and missing owners tied to the same run-date packet set. | Mark `signed` only when `validForDk1Exit=true` and required owners are present. |
 
-Regression index rule: a provider-impacting change is promotion-eligible only when all five rows are linked to the same run date and no row remains in `pending` status.
+Regression index rule (release and promotion decisions only): when a provider-impacting change is being considered for **promotion or release**, it is promotion-eligible only when all five rows are linked to the same run date and no row remains in `pending` status. This is not a gate on ordinary development PRs; those follow the verification tiers in [`docs/ai/solo-developer-workflow.md`](../ai/solo-developer-workflow.md) and need only the evidence for their tier, with a missing live credential recorded as `live-untested` rather than as a blocker.
+
+Evidence labels apply to the promotion decision as follows: `synthetic-verified` (deterministic fixtures or simulators) supports development acceptance but is not live evidence; `live-verified` requires an authorized run against the real provider with a dated record held privately by the owner and is the label a promotion to live use depends on; `live-untested` and `unsupported` must be stated as such and never promoted without the evidence they name.
 
 ## 2026-05-20 focused Robinhood polling hardening
 

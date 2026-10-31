@@ -928,7 +928,6 @@ Meridian-main
 │   ├── labeler.yml
 │   ├── labels.yml
 │   ├── markdown-link-check-config.json
-│   ├── PULL_REQUEST_TEMPLATE.md
 │   ├── pull_request_template.md
 │   ├── pull_request_template_desktop.md
 │   └── spellcheck-config.yml
@@ -3042,6 +3041,7 @@ Meridian-main
 │   │   ├── endpoint-fixture-isolation.md
 │   │   ├── README.md
 │   │   ├── reporting-followups-2026-10-28.md
+│   │   ├── synthetic-scenario-index.md
 │   │   ├── w10-amount-provenance.md
 │   │   ├── w10-mark-seam-operator-acceptance.md
 │   │   ├── wave2-cockpit-reliability-evidence-runbook.md
@@ -12786,6 +12786,7 @@ Meridian-main
 │   │   ├── test_documentation_workflow.py
 │   │   ├── test_endpoint_benchmark.py
 │   │   ├── test_export_project_artifact_workflow.py
+│   │   ├── test_fund_economics_golden_consistency.py
 │   │   ├── test_generate_contract_review_packet.py
 │   │   ├── test_generate_dependency_graph.py
 │   │   ├── test_generate_desktop_user_manual.py
