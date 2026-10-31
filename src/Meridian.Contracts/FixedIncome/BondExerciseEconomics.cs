@@ -26,10 +26,19 @@ public static class BondExerciseEconomics
         decimal annualRate, BondYieldConvention convention, int frequency, decimal dirtyPrice,
         IReadOnlyList<BondAnalyticsCashFlow> flows, IBusinessDayCalendarSource? calendars,
         out IReadOnlyList<BondExerciseYield> yields, out string? refusal)
+        => TryCalculate(security, terms, declared, schedule, settlement, annualRate, convention, frequency, dirtyPrice,
+            flows, calendars, BondEconomicsCompatibility.Current, out yields, out refusal);
+
+    public static bool TryCalculate(SecurityDetailDto security, StructuredCashFlowTerms terms,
+        DeclaredScheduleResolution declared, ScheduleGenerationResult schedule, DateOnly settlement,
+        decimal annualRate, BondYieldConvention convention, int frequency, decimal dirtyPrice,
+        IReadOnlyList<BondAnalyticsCashFlow> flows, IBusinessDayCalendarSource? calendars,
+        BondEconomicsCompatibility compatibility,
+        out IReadOnlyList<BondExerciseYield> yields, out string? refusal)
     {
         yields = [];
         if (!TryResolveScenarios(security, terms, declared, schedule, settlement, annualRate, convention,
-                frequency, flows, calendars, out var scenarios, out refusal))
+                frequency, flows, calendars, compatibility, out var scenarios, out refusal))
             return false;
         var result = new List<BondExerciseYield>();
         foreach (var item in scenarios)
@@ -51,9 +60,24 @@ public static class BondExerciseEconomics
         decimal annualRate, BondYieldConvention convention, int frequency,
         IReadOnlyList<BondAnalyticsCashFlow> flows, IBusinessDayCalendarSource? calendars,
         out IReadOnlyList<BondRedemptionScenario> yields, out string? refusal)
+        => TryResolveScenarios(security, terms, declared, schedule, settlement, annualRate, convention, frequency,
+            flows, calendars, BondEconomicsCompatibility.Current, out yields, out refusal);
+
+    /// <summary>
+    /// <see cref="BondEconomicsCompatibility.AnalyticsV1"/> reproduces the retained v1 exercise
+    /// arithmetic: no delayed-coupon entitlement refusal, exercise accrual prorated from the whole
+    /// coupon, and exercise discount time measured on the coupon grid to the exercise date.
+    /// </summary>
+    public static bool TryResolveScenarios(SecurityDetailDto security, StructuredCashFlowTerms terms,
+        DeclaredScheduleResolution declared, ScheduleGenerationResult schedule, DateOnly settlement,
+        decimal annualRate, BondYieldConvention convention, int frequency,
+        IReadOnlyList<BondAnalyticsCashFlow> flows, IBusinessDayCalendarSource? calendars,
+        BondEconomicsCompatibility compatibility,
+        out IReadOnlyList<BondRedemptionScenario> yields, out string? refusal)
     {
         yields = [];
         refusal = null;
+        var legacy = compatibility == BondEconomicsCompatibility.AnalyticsV1;
         var payload = security.AssetSpecificTerms;
         var result = new List<BondRedemptionScenario>();
         var hasCalls = Array(payload, SecurityVersionedTerms.CallScheduleKey, out var calls);
@@ -112,7 +136,7 @@ public static class BondExerciseEconomics
                             return false;
                         // An elapsed notice deadline does not prove a call was not already announced.
                         // Keep the contractual scenario and expose its deadline for evidence review.
-                        if (flows.Any(flow => flow.Interest > 0m && flow.AccrualEnd <= exercise
+                        if (!legacy && flows.Any(flow => flow.Interest > 0m && flow.AccrualEnd <= exercise
                                 && exercise < flow.PaymentDate))
                         {
                             refusal = "Exercise crosses an earned but unpaid coupon; delayed-payment entitlement requires supported retained cash evidence.";
@@ -128,12 +152,27 @@ public static class BondExerciseEconomics
                         if (period is not null && annualRate != 0m)
                         {
                             var dayCount = DayCountConventions.Parse(terms.DayCountConvention);
-                            if (!BondContractualEconomics.TryAccruedCoupon(period, schedule, dayCount, annualRate,
-                                    declared.Conventions.CouponCashBasis, exercise, out couponAccrued, out refusal))
+                            if (legacy)
+                            {
+                                if (!BondContractualEconomics.TryCoupon(period, schedule, dayCount, annualRate,
+                                        declared.Conventions.CouponCashBasis, out var wholeCoupon, out refusal)
+                                    || !BondContractualEconomics.TryProratedCoupon(period, schedule, dayCount, wholeCoupon, exercise,
+                                        "Exercise accrual period has no positive fraction.", out couponAccrued, out refusal))
+                                    return false;
+                            }
+                            else if (!BondContractualEconomics.TryAccruedCoupon(period, schedule, dayCount, annualRate,
+                                         declared.Conventions.CouponCashBasis, exercise, out couponAccrued, out refusal))
                                 return false;
                         }
                         decimal time;
-                        if (matchingPayments.Length > 0)
+                        if (legacy)
+                        {
+                            if (!BondContractualEconomics.TryTime(schedule, settlement, exercise,
+                                    DayCountConventions.Parse(terms.DayCountConvention), annualRate == 0m,
+                                    convention, out time, out refusal))
+                                return false;
+                        }
+                        else if (matchingPayments.Length > 0)
                         {
                             // Redemption and the coupon paid on the same date must use the same
                             // retained discount time, including the actual/365 payment lag.

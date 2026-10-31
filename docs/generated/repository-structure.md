@@ -6087,16 +6087,13 @@ Meridian-main
 │   │   │   ├── EquityProjectionService.cs
 │   │   │   └── IEquityReferenceService.cs
 │   │   ├── FixedIncome
-│   │   │   ├── BondAnalyticsSchedule.cs
 │   │   │   ├── BondAnalyticsService.cs
-│   │   │   ├── BondExerciseAnalytics.cs
 │   │   │   ├── BondMigrationService.cs
 │   │   │   ├── BondProjectionService.cs
 │   │   │   ├── BondProjectionService.Paging.cs
 │   │   │   ├── BondReferenceTermMapper.cs
 │   │   │   ├── FileBondCalculationPolicy.cs
 │   │   │   ├── IBondReferenceService.cs
-│   │   │   ├── LegacyBondAnalyticsService.cs
 │   │   │   └── UnavailableBondMigrationService.cs
 │   │   ├── Futures
 │   │   │   ├── FutureProjectionService.cs

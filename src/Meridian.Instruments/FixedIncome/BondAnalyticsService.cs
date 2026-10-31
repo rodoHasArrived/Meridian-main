@@ -10,9 +10,16 @@ namespace Meridian.Instruments.FixedIncome;
 /// Fixed/zero-coupon analytics on declared contractual schedules. Every input is resolved once;
 /// no journal, source assignment, price observation or trade is mutated by a calculation.
 /// </summary>
+/// <remarks>
+/// <c>bond-analytics-v2</c> is the current model. <c>bond-analytics-v1</c> remains dispatchable for
+/// retained settlement-receipt verification and replays through the same shared kernels in
+/// <see cref="BondEconomicsCompatibility.AnalyticsV1"/> mode; its output is pinned by the
+/// bond-analytics-versions golden fixture.
+/// </remarks>
 public sealed class BondAnalyticsService : IBondAnalyticsService
 {
     public const string ModelVersion = "bond-analytics-v2";
+    public const string LegacyModelVersion = "bond-analytics-v1";
     private readonly ISecurityMasterQueryService _query;
     private readonly IBusinessDayCalendarSource? _calendars;
     private readonly IBondCalculationPolicy? _policy;
@@ -29,27 +36,43 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Context);
-        if (request.CalculationVersion == LegacyBondAnalyticsService.ModelVersion)
-            return await new LegacyBondAnalyticsService(_query, _calendars, _policy).CalculateAsync(request, ct).ConfigureAwait(false);
-        if (request.CalculationVersion is not null && request.CalculationVersion != ModelVersion)
-            return Blocked(request, request.Context, string.Empty, "UnsupportedCalculationVersion", "The requested analytics version is unsupported.");
+        var model = request.CalculationVersion switch
+        {
+            null or ModelVersion => CurrentModel,
+            LegacyModelVersion => LegacyModel,
+            _ => null
+        };
+        if (model is null)
+            return Blocked(request, request.Context, string.Empty, "UnsupportedCalculationVersion",
+                "The requested analytics version is unsupported.", CurrentModel);
         try
-        { return await CalculateCoreAsync(request, ct).ConfigureAwait(false); }
+        { return await CalculateCoreAsync(request, model, ct).ConfigureAwait(false); }
         catch (SecurityScheduleValidationException exception)
         {
-            return Blocked(request, request.Context, string.Empty, "InvalidEconomicSchedule", exception.Message);
+            return Blocked(request, request.Context, string.Empty, "InvalidEconomicSchedule", exception.Message, model);
         }
         catch (ArithmeticException)
         {
             return Blocked(request, request.Context, string.Empty, "CalculationBoundsExceeded",
-                "Bond inputs exceed the supported decimal calculation bounds.");
+                "Bond inputs exceed the supported decimal calculation bounds.", model);
         }
     }
 
-    private async Task<BondAnalyticsResult?> CalculateCoreAsync(BondAnalyticsRequest request, CancellationToken ct)
+    /// <summary>Everything that differs between retained analytics versions.</summary>
+    private sealed record AnalyticsModel(
+        string Version,
+        BondEconomicsCompatibility Compatibility,
+        bool RecordsContractualEconomicsInput,
+        string CompanionRefusal);
+
+    private static readonly AnalyticsModel CurrentModel = new(ModelVersion, BondEconomicsCompatibility.Current, true,
+        "This bond declares a contractual cash-flow companion; vanilla yield analytics cannot represent its economics. Use the retained contractual cash-flow preview.");
+
+    private static readonly AnalyticsModel LegacyModel = new(LegacyModelVersion, BondEconomicsCompatibility.AnalyticsV1, false,
+        "This record declares a cashFlowContract; use its contractual cash-flow preview rather than fixed/zero yield analytics.");
+
+    private async Task<BondAnalyticsResult?> CalculateCoreAsync(BondAnalyticsRequest request, AnalyticsModel model, CancellationToken ct)
     {
-        ArgumentNullException.ThrowIfNull(request);
-        ArgumentNullException.ThrowIfNull(request.Context);
         var context = request.Context;
         var settlement = context.SettlementDate ?? DateOnly.FromDateTime(context.AsOf.UtcDateTime);
         context = context with { SettlementDate = settlement };
@@ -62,17 +85,19 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
                 return null;
             var current = await _query.GetByIdAsync(request.SecurityId, ct).ConfigureAwait(false);
             return current is null ? null : Blocked(request, context, current.Currency,
-                "HistoricalTermsUnavailable", "No retained security terms are eligible at the requested knowledge cutoff.");
+                "HistoricalTermsUnavailable", "No retained security terms are eligible at the requested knowledge cutoff.", model);
         }
         ct.ThrowIfCancellationRequested();
         var inputs = new List<BondCalculationInput>
         {
             new("SecurityTerms", security.SecurityId.ToString("D"), security.Version,
                 Sha256Digest.ComputeUtf8(security.CommonTerms.GetRawText() + "\n" + security.AssetSpecificTerms.GetRawText())),
-            new("CalculationModel", ModelVersion), new("PricingModel", BondPricingMath.ModelVersion), new("ContractualEconomics", BondContractualEconomics.ModelVersion)
+            new("CalculationModel", model.Version), new("PricingModel", BondPricingMath.ModelVersion)
         };
+        if (model.RecordsContractualEconomicsInput)
+            inputs.Add(new("ContractualEconomics", BondContractualEconomics.ModelVersion));
         BondAnalyticsResult Refuse(string code, string reason)
-            => Blocked(request, context, security.Currency, code, reason, inputs);
+            => Blocked(request, context, security.Currency, code, reason, model, inputs);
         if (context.AsOf == default || context.AsOf.Offset != TimeSpan.Zero
             || context.KnownAt is { Offset: var offset } && offset != TimeSpan.Zero)
             return Refuse("InvalidContext", "Economic and knowledge cutoffs must be explicit UTC timestamps.");
@@ -86,7 +111,7 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
         if (!SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CarriesBondCouponStructure)
             return Refuse("UnsupportedAssetClass", "This analytics model supports canonical Bond securities only.");
         if (Meridian.Contracts.CashFlows.SecurityContractualCashFlowTerms.IsDeclared(security.AssetClass, security.AssetSpecificTerms))
-            return Refuse("UnsupportedCashFlowContract", "This bond declares a contractual cash-flow companion; vanilla yield analytics cannot represent its economics. Use the retained contractual cash-flow preview.");
+            return Refuse("UnsupportedCashFlowContract", model.CompanionRefusal);
         if ((request.CleanPrice is null) == (request.Yield is null))
             return Refuse("PriceOrYieldRequired", "Supply exactly one clean price per 100 face or annual yield fraction.");
         if (request.CleanPrice is <= 0m)
@@ -138,7 +163,7 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
             if (_calendars is not null && _calendars.TryGet(calendarId, out var calendar))
                 inputs.Add(new("DeclaredCalendar", calendarId, ContentSha256: calendar.ContentHash));
         if (!BondContractualEconomics.TryBuild(security.SecurityId, terms, declared, schedule, settlement,
-                annualRate.Value, zeroCoupon, convention.Value, out var flows, out var accrued, out var refusal))
+                annualRate.Value, zeroCoupon, convention.Value, model.Compatibility, out var flows, out var accrued, out var refusal))
             return Refuse("CashFlowRefused", refusal!);
         var priceFlows = flows.Select(static flow => new BondPricingCashFlow(flow.Interest + flow.Principal, flow.TimeInYears)).ToArray();
         var yield = request.Yield.GetValueOrDefault();
@@ -150,7 +175,7 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
             return Refuse("PricingRefused", refusal!);
         if (!BondExerciseEconomics.TryCalculate(security, terms, declared, schedule, settlement,
                 annualRate.Value, convention.Value, paymentsPerYear, measures!.DirtyPrice,
-                flows, _calendars, out var exerciseYields, out refusal))
+                flows, _calendars, model.Compatibility, out var exerciseYields, out refusal))
             return Refuse("ExerciseScheduleRefused", refusal!);
         var clean = measures!.DirtyPrice - accrued;
         if (clean <= 0m)
@@ -165,15 +190,15 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
             diagnostics.Add("An exercise notice deadline precedes the analysis date; retained notice evidence is required to determine actual exercise status.");
         if (context.KnownAt is not null)
             diagnostics.Add("Recorded timestamps establish retained-row eligibility, not historical transaction visibility.");
-        return new(security.SecurityId, security.Currency, ModelVersion, context, convention,
+        return new(security.SecurityId, security.Currency, model.Version, context, convention,
             clean, measures.DirtyPrice, accrued, yield, annualRate * 100m / clean,
             measures.MacaulayDuration, measures.ModifiedDuration, measures.Convexity, measures.Dv01,
             worst, flows, exerciseYields, inputs, [], Capabilities(true), diagnostics);
     }
 
     private static BondAnalyticsResult Blocked(BondAnalyticsRequest request, BondCalculationContext context,
-        string currency, string code, string reason, IReadOnlyList<BondCalculationInput>? inputs = null)
-        => new(request.SecurityId, currency, ModelVersion, context, request.YieldConvention,
+        string currency, string code, string reason, AnalyticsModel model, IReadOnlyList<BondCalculationInput>? inputs = null)
+        => new(request.SecurityId, currency, model.Version, context, request.YieldConvention,
             null, null, null, null, null, null, null, null, null, null,
             [], [], inputs ?? [], [new(code, reason)], Capabilities(false, reason), []);
 

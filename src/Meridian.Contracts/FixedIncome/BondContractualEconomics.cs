@@ -13,6 +13,19 @@ public static class BondContractualEconomics
         DeclaredScheduleResolution declared, ScheduleGenerationResult schedule, DateOnly settlement,
         decimal annualRate, bool zeroCoupon, BondYieldConvention yieldConvention,
         out IReadOnlyList<BondAnalyticsCashFlow> flows, out decimal accrued, out string? refusal)
+        => TryBuild(securityId, terms, declared, schedule, settlement, annualRate, zeroCoupon, yieldConvention,
+            BondEconomicsCompatibility.Current, out flows, out accrued, out refusal);
+
+    /// <summary>
+    /// <paramref name="compatibility"/> selects the retained arithmetic. <see cref="BondEconomicsCompatibility.AnalyticsV1"/>
+    /// prorates accrued interest by day-count fraction and discounts to the payment date; the current
+    /// mode uses <see cref="TryAccruedCoupon"/> and measures payment-lag time from the accrual end.
+    /// </summary>
+    public static bool TryBuild(Guid securityId, StructuredCashFlowTerms terms,
+        DeclaredScheduleResolution declared, ScheduleGenerationResult schedule, DateOnly settlement,
+        decimal annualRate, bool zeroCoupon, BondYieldConvention yieldConvention,
+        BondEconomicsCompatibility compatibility,
+        out IReadOnlyList<BondAnalyticsCashFlow> flows, out decimal accrued, out string? refusal)
     {
         flows = [];
         accrued = 0m;
@@ -39,11 +52,18 @@ public static class BondContractualEconomics
                 return false;
             if (period.AccrualStart <= settlement && settlement < period.AccrualEnd && !zero)
             {
-                if (!TryAccruedCoupon(period, schedule, dayCount, annualRate,
-                        declared.Conventions.CouponCashBasis, settlement, out accrued, out refusal))
+                if (compatibility == BondEconomicsCompatibility.AnalyticsV1)
+                {
+                    if (!TryProratedCoupon(period, schedule, dayCount, interest, settlement,
+                            "Coupon period must have a positive accrual fraction.", out accrued, out refusal))
+                        return false;
+                }
+                else if (!TryAccruedCoupon(period, schedule, dayCount, annualRate,
+                             declared.Conventions.CouponCashBasis, settlement, out accrued, out refusal))
                     return false;
             }
-            var discountDate = !zero && yieldConvention == BondYieldConvention.NominalPeriodic
+            var discountDate = compatibility == BondEconomicsCompatibility.Current
+                && !zero && yieldConvention == BondYieldConvention.NominalPeriodic
                 && period.PaymentDate > period.AccrualEnd ? period.AccrualEnd : period.PaymentDate;
             if (!TryTime(schedule, settlement, discountDate, dayCount, zero,
                     yieldConvention, out var time, out refusal))
@@ -88,6 +108,27 @@ public static class BondContractualEconomics
         }
         else
             coupon = 100m * annualRate * fraction;
+        return true;
+    }
+
+    /// <summary>
+    /// Retained <c>bond-analytics-v1</c> accrual: the whole period coupon scaled by the elapsed
+    /// day-count fraction over the full period fraction, regardless of declared cash basis.
+    /// </summary>
+    public static bool TryProratedCoupon(SchedulePeriod period, ScheduleGenerationResult schedule,
+        DayCountConvention convention, decimal wholeCoupon, DateOnly date, string emptyPeriodRefusal,
+        out decimal accrued, out string? refusal)
+    {
+        accrued = 0m;
+        if (!ScheduleDayCount.TryFraction(convention, period, schedule, period.AccrualStart, date, out var partial, out refusal)
+            || !ScheduleDayCount.TryPeriodFraction(convention, period, schedule, out var full, out refusal))
+            return false;
+        if (full <= 0m)
+        {
+            refusal = emptyPeriodRefusal;
+            return false;
+        }
+        accrued = wholeCoupon * partial / full;
         return true;
     }
 

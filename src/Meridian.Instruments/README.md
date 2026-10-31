@@ -11,7 +11,7 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Instruments
 
-Bond analytics v2 consumes the shared Contracts economics and exercise calculators; explicit analytics v1 dispatch preserves retained settlement verification. The cash ladder v2 uses projection-bound terms for declared call/put proceeds and per-reset evidence for floating shocks. Already-observed resets remain fixed; future index rates are shifted before contractual spread and cap/floor application. Missing evidence and unsupported signed coupon cash block the scenario. `LegacyPortfolioCashLadderEngine` retains v1 behavior for explicit historical replay; undeclared records keep their compatibility behavior.
+Bond analytics v2 consumes the shared Contracts economics and exercise calculators. Explicit `bond-analytics-v1` dispatch preserves retained settlement verification by replaying through the same kernels in `BondEconomicsCompatibility.AnalyticsV1` mode; the two versions share one code path and are pinned by the `bond-analytics-versions` golden fixture. The cash ladder v2 uses projection-bound terms for declared call/put proceeds and per-reset evidence for floating shocks. Already-observed resets remain fixed; future index rates are shifted before contractual spread and cap/floor application. Missing evidence and unsupported signed coupon cash block the scenario. `LegacyPortfolioCashLadderEngine` retains v1 behavior for explicit historical replay; undeclared records keep their compatibility behavior.
 
 Both analytics versions return a blocked result when shared economic-schedule validation fails,
 retaining its source and row diagnostics and exposing no partial metrics. Unrelated query or storage
