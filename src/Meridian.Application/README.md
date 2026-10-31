@@ -6,14 +6,14 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-10-21
+last_reviewed: 2026-10-31
 ---
 
 # src/Meridian.Application
 
 Bond cash-flow context receipts now use `bond-cash-flow-context-v2`, sharing declared fixed-coupon economics and retaining floating reset evidence. Replay dispatches v1 through its original arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
 
-`ContractualCashFlowPreviewService` resolves retained Security Master/direct-lending facts and pinned curves for the shared calculation engine. Swap leg conventions are decoded only at or above their declared terms version, preserving inert residue on earlier rows. Currency and convention lookup follow the shared resolver's source and alias ordering; malformed leg rows block calculation before raw and typed rows are paired. `FileContractualCashFlowRunStore` publishes write-once, verifiable replay packets under the data root; replay uses the packet's normalized contract without rerunning current source mapping. Missing historical balance/notice evidence and assigned provider schedules block rather than falling back. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
+`ContractualCashFlowPreviewService` resolves retained Security Master/direct-lending facts and pinned curves for the shared calculation engine. Swap leg conventions are decoded only at or above their declared terms version, preserving inert residue on earlier rows. Currency and convention lookup follow the shared resolver's source and alias ordering; malformed leg rows block calculation before raw and typed rows are paired. Invalid retained economic schedules produce a structured `ContractInputsUnavailable` blocker before calculation or run persistence; unrelated storage and runtime failures still propagate. `FileContractualCashFlowRunStore` publishes write-once, verifiable replay packets under the data root; replay uses the packet's normalized contract without rerunning current source mapping. Missing historical balance/notice evidence and assigned provider schedules block rather than falling back. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
 
 `ProviderRuntimeCredentialService` owns explicit host defaults and ownership-checked migration
 commands. Host composition supplies the current `ConfigStore` to `StoredProviderCredentialResolver`;
@@ -36,6 +36,13 @@ under review even when retained evidence is ready. Requests and scoped evidence 
 alias resolution, so securitized evidence cannot satisfy Bond or CustomAsset requirements.
 Profile-based reclassification also reads registry mappings and refuses contradictory classification
 metadata in both the envelope and nested profile fields.
+
+Security Master schema validation and canonical mapping consume the shared typed economic-schedule
+parser. Invalid selected rows produce the same source-path diagnostics as cash-flow resolution and
+PostgreSQL projections. Mapping preserves the original valid row order and carries selected common-term
+schedules through create, read and amendment, including common-only schedule changes. Retained economic
+replay keeps the original common and asset documents. See
+[dated economic schedule validation](../../docs/domain/security.md#dated-economic-schedule-validation).
 
 The internal `SecurityMaster/CashFlow/ScheduleSpecFactory` remains a preparatory adapter over decoded
 F# conventions, with its broader day/week cadence and explicit common-calendar fallback tests.
@@ -877,6 +884,29 @@ Core workstation host. Do not introduce a second listener or independent monitor
   at the service boundary; projection never reads persistence or mutates command state.
   `FundStructureProjectionContractTests` exercises these views, effective windows, enrichment,
   and snapshot isolation across both implementations.
+  Organization graph and accounting queries distinguish an omitted organization selector from
+  an explicit organization that is unknown, inactive under `ActiveOnly`, or outside its effective
+  window. An explicit empty organization/business intersection cannot repopulate descendants
+  through account entity references; only accounts already connected to the selected structural
+  scope contribute those entity references. Unscoped partial snapshots retain their existing
+  behavior; status filtering cannot newly enable the missing-root fallback. Effective-date
+  endpoints remain inclusive, including when `ActiveOnly` is false.
+  Advisory and fund-operating views apply the same organization status rule: an inactive root
+  produces no view under `ActiveOnly`, while historical status remains readable inside its
+  effective window when `ActiveOnly` is false.
+  Descendant- or ledger-filtered accounting reads return assignments for their selected accounts,
+  applicable portfolios, and the account ancestry used by ledger-group precedence. Unrelated
+  branch assignments cannot survive an empty selection. These narrowed reads include organization
+  and business context only when explicitly selected, avoiding an arbitrary first tenant root.
+  Organization/business-only and unscoped reads retain their existing context behavior.
+  `LedgerReference` retains the existing portfolio list while narrowing account-linked assignments.
+  `FundStructureScopeContractTests` applies the same expectations to both service implementations;
+  its PostgreSQL runner uses a store double, separate from database persistence validation and
+  the tenant-boundary regressions in `FundStructureTenantScopeTests`.
+  `FundStructureScopePostgresTests` migrates real structure/account stores, seeds strict tenant
+  ownership, and recreates services for each read. Its coverage includes persisted inactive roots,
+  microsecond effective-window boundaries, empty intersections, inherited ledger assignments,
+  valid-empty versus unresolved tenant authority, and foreign-owned accounts with visible parents.
   `FundStructureCashFlowReadService` owns shared governance cash-flow orchestration, scope
   resolution, ladders, variance, trend fallback, and optional Security Master projections.
   Both persistence services pass captured structure, authorized accounts, shared metadata, and

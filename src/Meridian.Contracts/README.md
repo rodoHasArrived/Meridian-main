@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-10-21
+last_reviewed: 2026-10-31
 ---
 
 # src/Meridian.Contracts
@@ -31,6 +31,14 @@ Provider ownership command DTOs carry a connection request/environment, explicit
 selection, or a migration identity/expected generation. Tenant and actor are absent by design and
 come from authenticated server context. Credential migration receipts live with the vault contract;
 none of these commands expose secret values.
+
+`SecurityEconomicScheduleParser` owns typed factor, principal and coupon-step parsing for cash-flow
+resolution, schema/field-edit validation, canonical mapping and PostgreSQL projection. Its result
+distinguishes absence, explicit empty ownership and invalid input with original source/row diagnostics.
+Calculation entries are sorted and same-date principal payments aggregated; source entries retain
+their valid original order for codec replay. No malformed rows or duplicate factor/step dates are
+silently discarded. See [dated economic schedules](../../docs/domain/security.md#dated-economic-schedule-validation)
+for aliases, precedence, ranges and the shared regression corpus.
 
 `SecurityAssetPackRegistry` owns operational readiness specifications, depth targets, registered
 profile-to-class mappings and profile classification keywords. Every catalog class receives a

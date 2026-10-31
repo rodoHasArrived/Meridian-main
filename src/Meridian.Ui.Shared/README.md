@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-28
+last_reviewed: 2026-10-31
 ---
 
 # src/Meridian.Ui.Shared
@@ -47,6 +47,16 @@ revision and sequence authority. Missing or ambiguous balances remain null. Prov
 comparisons project complete authoritative statement revisions before summing; ambiguity produces an
 unavailable comparison instead of duplicated income. Governance cash-flow reads return HTTP 409 with
 an explicit evidence-unavailable problem when relevant statement authorities conflict.
+
+Fund-structure graph responses require scoped authority for every serialized summary and typed
+structural reference, including parent and child IDs retained outside the node presentation filter.
+The shared read guard also checks every supplied selector. A narrow account/entity grant cannot
+authorize a broader organization graph payload; insufficient authority returns HTTP 403. Matching
+organization/business reads remain available with authority for the full serialized scope, alongside
+administrator unscoped reads and authorized single-node reads through the focused legacy graph.
+Authorization uses current identity grants and
+lineage independently of the query's historical `AsOf`; historical data does not supply present
+permission. Batched checks reuse the Identity-owned scoped authorization service.
 
 Legacy fund-account queue status, family-office reconciliation and workspace summaries consume the
 shared batched retained-result contract. Superseded failures and unverified checks do not count as

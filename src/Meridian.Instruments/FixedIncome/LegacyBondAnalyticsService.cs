@@ -31,6 +31,10 @@ internal sealed class LegacyBondAnalyticsService : IBondAnalyticsService
         ArgumentNullException.ThrowIfNull(request.Context);
         try
         { return await CalculateCoreAsync(request, ct).ConfigureAwait(false); }
+        catch (SecurityScheduleValidationException exception)
+        {
+            return Blocked(request, request.Context, string.Empty, "InvalidEconomicSchedule", exception.Message);
+        }
         catch (ArithmeticException)
         {
             return Blocked(request, request.Context, string.Empty, "CalculationBoundsExceeded",

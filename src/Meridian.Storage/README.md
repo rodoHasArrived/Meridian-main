@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-31
 ---
 
 # src/Meridian.Storage
@@ -23,6 +23,15 @@ history projector continues to refuse an inferred opening-age character.
 V3 remaining-face amortization verifies each immutable paydown receipt before walking prior
 partial-disposal/amortization history. The current/booked factor scales surviving face once;
 booked durable quantity and acquisition FX stay retained. V1/v2 keep the historical paydown gate.
+
+Security Master projection writes validate dated economic schedules through Contracts-owned
+`SecurityEconomicScheduleParser` before mutation. Invalid schedules raise source/row diagnostics
+and roll back rather than deleting prior projections or publishing partial schedules. Principal and
+factor child rows bind the same sorted, validated values as cash-flow resolution, including intentional
+same-date principal aggregation and governed/common-term source precedence. Retained JSON and
+version stamps remain unchanged. Forward migration 058 widens only the two schedule-value columns
+to unconstrained numeric, preserving full accepted decimal precision. See
+[dated economic schedules](../../docs/domain/security.md#dated-economic-schedule-validation).
 
 Atomic writes retain the existing flushed-temp-then-publish sequence. On Windows, if the rename
 is denied while an existing destination is open, publication uses `File.Replace` with a temporary

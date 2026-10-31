@@ -63,6 +63,110 @@ public sealed class FundStructureEndpointAuthorizationTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
+    [Theory]
+    [InlineData(AccessScopeKindDto.Account, FundStructureNodeKindDto.Account)]
+    [InlineData(AccessScopeKindDto.LegalEntity, FundStructureNodeKindDto.Entity)]
+    public async Task OrganizationGraph_NodeGrantCannotAuthorizeUnrelatedSummaryCollections(
+        AccessScopeKindDto scopeKind, FundStructureNodeKindDto nodeKind)
+    {
+        var allowedId = Guid.NewGuid();
+        await using var app = await CreateAppAsync([(scopeKind, allowedId)], useRetainedAssignments: true);
+        var allowed = await SeedGraphBranchAsync(app, "ALLOWED",
+            entityId: nodeKind == FundStructureNodeKindDto.Entity ? allowedId : null,
+            accountId: nodeKind == FundStructureNodeKindDto.Account ? allowedId : null);
+        var unrelated = await SeedGraphBranchAsync(app, "UNRELATED");
+        var authorization = app.Services.GetRequiredService<IScopedAuthorizationService>();
+        (await authorization.AuthorizeAsync("fund-structure-user", UserPermission.ManageFundStructure,
+            scopeKind, allowedId, UserPermission.ManageFundStructure)).IsAllowed.Should().BeTrue();
+        (await authorization.AuthorizeAsync("fund-structure-user", UserPermission.ManageFundStructure,
+            AccessScopeKindDto.Account, unrelated.AccountId, UserPermission.ManageFundStructure))
+            .IsAllowed.Should().BeFalse();
+
+        // NodeId is a presentation filter: the service intentionally retains summary collections.
+        // Prove those collections are populated before asking the HTTP boundary to protect them.
+        var raw = await app.Services.GetRequiredService<IFundStructureService>()
+            .GetOrganizationStructureAsync(new(NodeId: allowedId, NodeKind: nodeKind));
+        raw.Nodes.Should().ContainSingle().Which.NodeId.Should().Be(allowedId);
+        raw.Accounts.Select(account => account.AccountId).Should().Contain([allowed.AccountId, unrelated.AccountId]);
+        raw.Entities.Select(entity => entity.EntityId).Should().Contain([allowed.EntityId, unrelated.EntityId]);
+
+        var focused = await app.GetTestClient().GetAsync(
+            $"/api/fund-structure/legacy-graph?nodeKind={nodeKind}&nodeId={allowedId:D}");
+        focused.StatusCode.Should().Be(HttpStatusCode.OK,
+            "the focused graph contains only the authorized node, without wider summary collections");
+        var focusedGraph = await focused.Content.ReadFromJsonAsync<FundStructureGraphDto>(JsonOptions);
+        focusedGraph.Should().NotBeNull();
+        focusedGraph!.Nodes.Should().ContainSingle().Which.NodeId.Should().Be(allowedId);
+
+        var response = await app.GetTestClient().GetAsync(
+            $"/api/fund-structure/graph?nodeKind={nodeKind}&nodeId={allowedId:D}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden,
+            "one node grant cannot authorize the wider organization graph summary payload");
+    }
+
+    [Fact]
+    public async Task OrganizationGraph_AllowedBusinessCannotAuthorizeAnUnrelatedOrganizationSelector()
+    {
+        var allowedBusinessId = Guid.NewGuid();
+        await using var app = await CreateAppAsync(
+            [(AccessScopeKindDto.Business, allowedBusinessId)], useRetainedAssignments: true);
+        await SeedGraphBranchAsync(app, "ALLOWED", businessId: allowedBusinessId);
+        var unrelated = await SeedGraphBranchAsync(app, "UNRELATED");
+
+        var response = await app.GetTestClient().GetAsync(
+            $"/api/fund-structure/graph?businessId={allowedBusinessId:D}&organizationId={unrelated.OrganizationId:D}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden,
+            "the empty business intersection still returns the requested organization root");
+    }
+
+    [Fact]
+    public async Task OrganizationGraph_OrganizationGrantRetainsMatchingBusinessAndNodePresentationQueries()
+    {
+        var allowedOrganizationId = Guid.NewGuid();
+        await using var app = await CreateAppAsync(
+            [(AccessScopeKindDto.Organization, allowedOrganizationId)], useRetainedAssignments: true);
+        var externalPortfolioReference = Guid.NewGuid().ToString("D");
+        var allowed = await SeedGraphBranchAsync(app, "ALLOWED", organizationId: allowedOrganizationId,
+            portfolioReference: externalPortfolioReference);
+        var unrelated = await SeedGraphBranchAsync(app, "UNRELATED");
+        var response = await app.GetTestClient().GetAsync(
+            $"/api/fund-structure/graph?organizationId={allowed.OrganizationId:D}&businessId={allowed.BusinessId:D}"
+            + $"&nodeKind=Account&nodeId={allowed.AccountId:D}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var graph = await response.Content.ReadFromJsonAsync<OrganizationStructureGraphDto>(JsonOptions);
+        graph.Should().NotBeNull();
+        graph!.Nodes.Should().ContainSingle().Which.NodeId.Should().Be(allowed.AccountId);
+        graph.Organizations.Should().ContainSingle().Which.OrganizationId.Should().Be(allowed.OrganizationId);
+        graph.Businesses.Should().ContainSingle().Which.BusinessId.Should().Be(allowed.BusinessId);
+        graph.Entities.Should().ContainSingle().Which.EntityId.Should().Be(allowed.EntityId);
+        graph.Accounts.Should().ContainSingle().Which.AccountId.Should().Be(allowed.AccountId);
+        graph.Accounts[0].PortfolioId.Should().Be(externalPortfolioReference,
+            "a GUID-shaped external brokerage reference is account metadata, not a structural portfolio selector");
+        graph.Accounts.Should().NotContain(account => account.AccountId == unrelated.AccountId);
+    }
+
+    [Fact]
+    public async Task OrganizationGraph_AdminUnscopedReadRetainsPopulatedAuthorizedInput()
+    {
+        await using var app = await CreateAppAsync([], permissions: UserPermission.AdminMaintenance,
+            useRetainedAssignments: true);
+        var first = await SeedGraphBranchAsync(app, "FIRST");
+        var second = await SeedGraphBranchAsync(app, "SECOND");
+
+        var response = await app.GetTestClient().GetAsync("/api/fund-structure/graph");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var graph = await response.Content.ReadFromJsonAsync<OrganizationStructureGraphDto>(JsonOptions);
+        graph.Should().NotBeNull();
+        graph!.Organizations.Select(organization => organization.OrganizationId)
+            .Should().BeEquivalentTo([first.OrganizationId, second.OrganizationId]);
+        graph.Accounts.Select(account => account.AccountId)
+            .Should().BeEquivalentTo([first.AccountId, second.AccountId]);
+    }
+
     [Fact]
     public async Task CashFlowView_UnassignedLedgerGroup_ShouldDenyUnscopedReadForNonAdmin()
     {
@@ -132,7 +236,8 @@ public sealed class FundStructureEndpointAuthorizationTests
 
     private static async Task<WebApplication> CreateAppAsync(
         IReadOnlyCollection<(AccessScopeKindDto Kind, Guid Id)> allowedScopes,
-        UserPermission permissions = UserPermission.ManageFundStructure)
+        UserPermission permissions = UserPermission.ManageFundStructure,
+        bool useRetainedAssignments = false)
     {
         var fundAccountService = new InMemoryFundAccountService();
         var fundStructureService = new InMemoryFundStructureService(fundAccountService);
@@ -144,8 +249,10 @@ public sealed class FundStructureEndpointAuthorizationTests
         builder.WebHost.UseTestServer();
         builder.Services.AddSingleton<IFundAccountService>(fundAccountService);
         builder.Services.AddSingleton<IFundStructureService>(fundStructureService);
-        builder.Services.AddSingleton<IScopedAuthorizationService>(
-            new TestScopedAuthorizationService(allowedScopes));
+        builder.Services.AddSingleton<IScopedAuthorizationService>(useRetainedAssignments
+            ? new ScopedAccessService(new TestScopedAccessAssignmentStore(allowedScopes),
+                new FundStructureAccessScopeLineageProvider(fundStructureService))
+            : new TestScopedAuthorizationService(allowedScopes));
 
         var app = builder.Build();
         app.Use(async (context, next) =>
@@ -159,14 +266,16 @@ public sealed class FundStructureEndpointAuthorizationTests
         return app;
     }
 
-    private static async Task SeedFundAsync(IFundStructureService structureService, Guid fundId)
+    private static async Task<(Guid OrganizationId, Guid BusinessId)> SeedFundAsync(
+        IFundStructureService structureService, Guid fundId,
+        Guid? organizationId = null, Guid? businessId = null)
     {
-        var organizationId = Guid.NewGuid();
-        var businessId = Guid.NewGuid();
+        var organization = organizationId ?? Guid.NewGuid();
+        var business = businessId ?? Guid.NewGuid();
         var effectiveFrom = new DateTimeOffset(2026, 6, 16, 0, 0, 0, TimeSpan.Zero);
 
         await structureService.CreateOrganizationAsync(new CreateOrganizationRequest(
-            organizationId,
+            organization,
             $"ORG-{Guid.NewGuid():N}"[..12].ToUpperInvariant(),
             "Endpoint Auth Organization",
             "USD",
@@ -174,8 +283,8 @@ public sealed class FundStructureEndpointAuthorizationTests
             "endpoint-auth-test"));
 
         await structureService.CreateBusinessAsync(new CreateBusinessRequest(
-            businessId,
-            organizationId,
+            business,
+            organization,
             BusinessKindDto.FundManager,
             $"BUS-{Guid.NewGuid():N}"[..12].ToUpperInvariant(),
             "Endpoint Auth Business",
@@ -190,7 +299,56 @@ public sealed class FundStructureEndpointAuthorizationTests
             "USD",
             effectiveFrom,
             "endpoint-auth-test",
-            BusinessId: businessId));
+            BusinessId: business));
+        return (organization, business);
+    }
+
+    private static async Task<GraphBranch> SeedGraphBranchAsync(
+        WebApplication app, string tag, Guid? organizationId = null, Guid? businessId = null,
+        Guid? entityId = null, Guid? accountId = null, string? portfolioReference = null)
+    {
+        var service = app.Services.GetRequiredService<IFundStructureService>();
+        var fundId = Guid.NewGuid();
+        var hierarchy = await SeedFundAsync(service, fundId, organizationId, businessId);
+        var effectiveFrom = new DateTimeOffset(2026, 6, 16, 0, 0, 0, TimeSpan.Zero);
+        var entity = await service.CreateLegalEntityAsync(new(entityId ?? Guid.NewGuid(),
+            LegalEntityTypeDto.Vehicle, $"ENTITY-{tag}", $"Entity {tag}", "US", "USD", effectiveFrom, "endpoint-auth-test"));
+        var account = await app.Services.GetRequiredService<IFundAccountService>().CreateAccountAsync(new(
+            accountId ?? Guid.NewGuid(), AccountTypeDto.Custody, $"ACCOUNT-{tag}", $"Account {tag}",
+            "USD", effectiveFrom, "endpoint-auth-test", FundId: fundId, EntityId: entity.EntityId,
+            PortfolioId: portfolioReference));
+        await service.LinkNodesAsync(new(Guid.NewGuid(), fundId, entity.EntityId,
+            OwnershipRelationshipTypeDto.Owns, effectiveFrom, "endpoint-auth-test", OwnershipPercent: 100m));
+        await service.LinkNodesAsync(new(Guid.NewGuid(), fundId, account.AccountId,
+            OwnershipRelationshipTypeDto.Operates, effectiveFrom, "endpoint-auth-test"));
+        return new(hierarchy.OrganizationId, hierarchy.BusinessId, fundId, entity.EntityId, account.AccountId);
+    }
+
+    private sealed record GraphBranch(Guid OrganizationId, Guid BusinessId, Guid FundId, Guid EntityId, Guid AccountId);
+
+    // Only assignment persistence is doubled: authorization decisions and ancestry are production
+    // implementations, so the fixtures verify that an organization grant reaches its real children.
+    private sealed class TestScopedAccessAssignmentStore(
+        IReadOnlyCollection<(AccessScopeKindDto Kind, Guid Id)> scopes) : IScopedAccessAssignmentStore
+    {
+        private readonly IReadOnlyList<UserAccessAssignmentDto> _assignments = scopes.Select(scope => new UserAccessAssignmentDto(
+            Guid.NewGuid(), "fund-structure-user", AccessPrincipalKindDto.User, scope.Kind, scope.Id,
+            "FundOperator", null, [nameof(UserPermission.ManageFundStructure)], (long)UserPermission.ManageFundStructure,
+            DateTimeOffset.UtcNow.AddDays(-1), null, "test-admin", "Endpoint scope regression", "endpoint-scope-test",
+            1, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow)).ToArray();
+
+        public Task<IReadOnlyList<UserAccessAssignmentDto>> ListAsync(CancellationToken ct = default)
+            => Task.FromResult(_assignments);
+
+        public Task<UserAccessAssignmentDto?> GetAsync(Guid assignmentId, CancellationToken ct = default)
+            => Task.FromResult(_assignments.FirstOrDefault(assignment => assignment.AssignmentId == assignmentId));
+
+        public Task<UserAccessAssignmentDto> CreateAsync(UserAccessAssignmentDto assignment, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<UserAccessAssignmentDto> ReplaceAsync(
+            UserAccessAssignmentDto assignment, long expectedVersion, CancellationToken ct = default)
+            => throw new NotSupportedException();
     }
 
     private sealed class TestScopedAuthorizationService : IScopedAuthorizationService

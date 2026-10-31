@@ -31,6 +31,7 @@ public sealed class ContractualCashFlowPreviewService(
         try
         { contract = request.ContractOverride ?? FromSecurity(security); }
         catch (ContractInputUnavailable ex) { return Blocked(request, "ContractInputsUnavailable", ex.Message); }
+        catch (SecurityScheduleValidationException ex) { return Blocked(request, "ContractInputsUnavailable", ex.Message); }
         return await CalculateAsync(contract, request, $"security:{securityId}:version:{security.Version}",
             ContractualCashFlowEngine.Hash(new { security.CommonTerms, security.AssetSpecificTerms }), ct).ConfigureAwait(false);
     }

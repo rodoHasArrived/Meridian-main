@@ -159,6 +159,7 @@ internal static class FundStructureProjector
         }
 
         var organization = FilterVisible(snapshot.Organizations, query.ActiveOnly, asOf, static candidate => (candidate.EffectiveFrom, candidate.EffectiveTo))
+            .Where(candidate => !query.ActiveOnly || candidate.IsActive)
             .FirstOrDefault(candidate => candidate.OrganizationId == business.OrganizationId);
         if (organization is null)
         {
@@ -246,6 +247,7 @@ internal static class FundStructureProjector
         }
 
         var organization = FilterVisible(snapshot.Organizations, query.ActiveOnly, asOf, static candidate => (candidate.EffectiveFrom, candidate.EffectiveTo))
+            .Where(candidate => !query.ActiveOnly || candidate.IsActive)
             .FirstOrDefault(candidate => candidate.OrganizationId == business.OrganizationId);
         if (organization is null)
         {
@@ -400,14 +402,19 @@ internal static class FundStructureProjector
             .Where(account => IsAccountInAccountingScope(account, query, accountScope, scoped.OwnershipLinks))
             .ToList();
 
+        var hasNarrowedAccountSelection = HasAccountingAccountScopeFilter(query) || query.LedgerReference is not null;
         var organization = query.OrganizationId.HasValue
             ? scoped.Organizations.FirstOrDefault(candidate => candidate.OrganizationId == query.OrganizationId.Value)
-            : scoped.Organizations.FirstOrDefault();
+            : !hasNarrowedAccountSelection ? scoped.Organizations.FirstOrDefault() : null;
         var business = query.BusinessId.HasValue
             ? scoped.Businesses.FirstOrDefault(candidate => candidate.BusinessId == query.BusinessId.Value)
-            : scoped.Businesses.FirstOrDefault();
+            : !hasNarrowedAccountSelection ? scoped.Businesses.FirstOrDefault() : null;
+        var assignments = hasNarrowedAccountSelection
+            ? FilterAccountingAssignments(scoped, accounts, portfolios, query.LedgerReference is not null,
+                organization?.OrganizationId, business?.BusinessId)
+            : scoped.Assignments;
         var portfolioById = portfolios.ToDictionary(static portfolio => portfolio.InvestmentPortfolioId);
-        var ledgerAssignments = LedgerGroupingRules.BuildLedgerAssignments(scoped.Assignments);
+        var ledgerAssignments = LedgerGroupingRules.BuildLedgerAssignments(assignments);
 
         var ledgerGroups = accounts
             .GroupBy(account => LedgerGroupingRules.ResolveLedgerGroupId(account, ledgerAssignments))
@@ -457,7 +464,7 @@ internal static class FundStructureProjector
             accounts,
             ledgerGroups,
             sharedDataAccess,
-            scoped.Assignments);
+            assignments);
     }
 
     internal static IReadOnlyList<AccountSummaryDto> AttachSharedDataAccess(
@@ -497,6 +504,12 @@ internal static class FundStructureProjector
         DateTimeOffset asOf)
     {
         var organizations = FilterVisible(snapshot.Organizations, activeOnly, asOf, static candidate => (candidate.EffectiveFrom, candidate.EffectiveTo));
+        // Preserve partial-input compatibility only when the window-filtered input has no roots.
+        // Status or requested-id filtering must not turn an empty selection into a wildcard.
+        var allowUnscopedBusinesses = !organizationId.HasValue && organizations.Count == 0;
+        organizations = organizations
+            .Where(candidate => !activeOnly || candidate.IsActive)
+            .ToList();
         var businesses = FilterVisible(snapshot.Businesses, activeOnly, asOf, static candidate => (candidate.EffectiveFrom, candidate.EffectiveTo));
         var clients = FilterVisible(snapshot.Clients, activeOnly, asOf, static candidate => (candidate.EffectiveFrom, candidate.EffectiveTo));
         var funds = FilterVisible(snapshot.Funds, activeOnly, asOf, static candidate => (candidate.EffectiveFrom, candidate.EffectiveTo));
@@ -519,7 +532,7 @@ internal static class FundStructureProjector
 
         var organizationIds = organizations.Select(static organization => organization.OrganizationId).ToHashSet();
         businesses = businesses
-            .Where(candidate => organizationIds.Count == 0 || organizationIds.Contains(candidate.OrganizationId))
+            .Where(candidate => allowUnscopedBusinesses || organizationIds.Contains(candidate.OrganizationId))
             .ToList();
         var businessIds = businesses.Select(static business => business.BusinessId).ToHashSet();
 
@@ -532,10 +545,16 @@ internal static class FundStructureProjector
         var vehicleIds = vehicles.Select(static vehicle => vehicle.VehicleId).ToHashSet();
         portfolios = portfolios.Where(candidate => businessIds.Contains(candidate.BusinessId)).ToList();
         var portfolioIds = portfolios.Select(static portfolio => portfolio.InvestmentPortfolioId).ToHashSet();
+        // Account-derived entities may extend an already selected branch, but must not recreate
+        // an explicit empty organization/business scope from unrelated account references.
+        var accountsForEntityScope = organizationId.HasValue || businessId.HasValue
+            ? GetScopeAccounts(accounts, activeLinks, entityIds: Array.Empty<Guid>(),
+                fundIds, sleeveIds, vehicleIds, portfolioIds)
+            : accounts;
         var entityIds = vehicles.Select(static vehicle => vehicle.LegalEntityId)
             .Concat(funds.SelectMany(static fund => fund.EntityIds))
             .Concat(portfolios.Where(static portfolio => portfolio.EntityId.HasValue).Select(static portfolio => portfolio.EntityId!.Value))
-            .Concat(accounts.Where(static account => account.EntityId.HasValue).Select(static account => account.EntityId!.Value))
+            .Concat(accountsForEntityScope.Where(static account => account.EntityId.HasValue).Select(static account => account.EntityId!.Value))
             .ToHashSet();
         entities = entities
             .Where(candidate =>
@@ -746,6 +765,50 @@ internal static class FundStructureProjector
         }
 
         return IsAccountInAccountingBusinessScope(account, accountScope, ownershipLinks);
+    }
+
+    private static IReadOnlyList<FundStructureAssignmentDto> FilterAccountingAssignments(
+        StructureScope scoped,
+        IReadOnlyList<AccountSummaryDto> accounts,
+        IReadOnlyList<InvestmentPortfolioSummaryDto> portfolios,
+        bool ledgerReferenceFiltered,
+        Guid? organizationId,
+        Guid? businessId)
+    {
+        var accountIds = accounts.Select(static account => account.AccountId).ToHashSet();
+        var portfolioIds = portfolios.Select(static portfolio => portfolio.InvestmentPortfolioId).ToHashSet();
+        var nodeIds = accountIds.ToHashSet();
+
+        // Retain every actual account reference used by LedgerGroupingRules, so narrowing the
+        // response does not discard an inherited portfolio, sleeve, vehicle, fund or entity map.
+        foreach (var account in accounts)
+        {
+            if (TryParseGuid(account.PortfolioId, out var portfolioId))
+                nodeIds.Add(portfolioId);
+            if (account.SleeveId is Guid sleeveId)
+                nodeIds.Add(sleeveId);
+            if (account.VehicleId is Guid vehicleId)
+                nodeIds.Add(vehicleId);
+            if (account.FundId is Guid fundId)
+                nodeIds.Add(fundId);
+            if (account.EntityId is Guid entityId)
+                nodeIds.Add(entityId);
+        }
+
+        if (!ledgerReferenceFiltered)
+            nodeIds.UnionWith(portfolioIds);
+        else
+            nodeIds.UnionWith(scoped.OwnershipLinks
+                .Where(link => portfolioIds.Contains(link.ParentNodeId) && accountIds.Contains(link.ChildNodeId))
+                .Select(static link => link.ParentNodeId));
+
+        // LedgerReference only filters accounts. The existing broader portfolio list must not
+        // reintroduce unrelated assignments when no account matches that ledger reference.
+        if (organizationId.HasValue)
+            nodeIds.Add(organizationId.Value);
+        if (businessId.HasValue)
+            nodeIds.Add(businessId.Value);
+        return scoped.Assignments.Where(assignment => nodeIds.Contains(assignment.NodeId)).ToList();
     }
 
     private static AccountingAccountScope BuildAccountingAccountScope(

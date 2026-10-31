@@ -1453,6 +1453,7 @@ Meridian-main
 │   │   ├── model-routing-telemetry.md
 │   │   ├── parallel-task-manifest-template.md
 │   │   ├── README.md
+│   │   ├── solo-developer-workflow.md
 │   │   ├── work-modes.md
 │   │   └── working-memory.md
 │   ├── architecture
@@ -1899,6 +1900,7 @@ Meridian-main
 │   │   │   │   ├── security-master-contracts-page-04.md
 │   │   │   │   ├── security-master-contracts-page-05.md
 │   │   │   │   ├── security-master-contracts-page-06.md
+│   │   │   │   ├── security-master-contracts-page-07.md
 │   │   │   │   └── security-master-contracts.md
 │   │   │   ├── diagrams
 │   │   │   │   ├── asset_operations.mmd
@@ -1924,6 +1926,7 @@ Meridian-main
 │   │   │   │   ├── contracts-security-master-contracts-page-04.mmd
 │   │   │   │   ├── contracts-security-master-contracts-page-05.mmd
 │   │   │   │   ├── contracts-security-master-contracts-page-06.mmd
+│   │   │   │   ├── contracts-security-master-contracts-page-07.mmd
 │   │   │   │   ├── fund_accounts.mmd
 │   │   │   │   ├── fund_structure.mmd
 │   │   │   │   ├── identity_access.mmd
@@ -4970,6 +4973,8 @@ Meridian-main
 │   │   │   ├── SecurityCommands.cs
 │   │   │   ├── SecurityCurves.cs
 │   │   │   ├── SecurityDtos.cs
+│   │   │   ├── SecurityEconomicScheduleParser.cs
+│   │   │   ├── SecurityEconomicScheduleValidation.cs
 │   │   │   ├── SecurityEvents.cs
 │   │   │   ├── SecurityFactorHistory.cs
 │   │   │   ├── SecurityForwardCurve.cs
@@ -4989,6 +4994,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterSchemaVersions.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassification.cs
 │   │   │   ├── SecurityQueries.cs
+│   │   │   ├── SecurityScheduleDecimal.cs
 │   │   │   ├── SecurityTermBlocks.cs
 │   │   │   ├── SecurityTermConventions.cs
 │   │   │   ├── SecurityTermReader.cs
@@ -6952,7 +6958,8 @@ Meridian-main
 │   │   │   │   ├── 054_otc_exposure_and_collateral.sql
 │   │   │   │   ├── 055_security_governance_events_otc_collateral_stream.sql
 │   │   │   │   ├── 056_otc_contract_lifecycle_events.sql
-│   │   │   │   └── 057_terms_capability_floor.sql
+│   │   │   │   ├── 057_terms_capability_floor.sql
+│   │   │   │   └── 058_security_master_schedule_decimal_precision.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -8538,6 +8545,7 @@ Meridian-main
 │   │   │   ├── FundStructureEndpoints.ReportingRunStream.cs
 │   │   │   ├── FundStructureEndpoints.ReportingScheduleAuthority.cs
 │   │   │   ├── FundStructureEndpoints.ReportingTombstones.cs
+│   │   │   ├── FundStructureEndpoints.ScopeAuthorization.cs
 │   │   │   ├── FundStructureEndpoints.StructuredReportingExport.cs
 │   │   │   ├── FutureReferenceEndpoints.cs
 │   │   │   ├── FxSpotReferenceEndpoints.cs
@@ -9833,6 +9841,11 @@ Meridian-main
 │   │   │   │   └── face-value-lot-constant-yield.json
 │   │   │   └── KNOWN-DEFECTS.md
 │   │   ├── security-master
+│   │   │   ├── schedule-validation
+│   │   │   │   ├── accepted.json
+│   │   │   │   ├── duplicate-properties.json
+│   │   │   │   ├── numeric-exactness.json
+│   │   │   │   └── rejected.json
 │   │   │   ├── terms-element-shapes
 │   │   │   │   └── versioned-containers.json
 │   │   │   ├── terms-golden
@@ -9928,6 +9941,8 @@ Meridian-main
 │   │   │   ├── ProviderIntegrationContractsTests.cs
 │   │   │   ├── ProviderIntegrationManifestIdentityTests.cs
 │   │   │   └── VerifiedOperationOutcomeTests.cs
+│   │   ├── SecurityMaster
+│   │   │   └── StructuredCashFlowTermsResolverIntegrationTests.cs
 │   │   ├── ContractualCashFlowEngineTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Contracts.UnitTests.csproj
@@ -9994,6 +10009,7 @@ Meridian-main
 │   │   ├── FundStructureCashFlowContractTests.cs
 │   │   ├── FundStructurePolicyServiceTests.cs
 │   │   ├── FundStructureProjectionContractTests.cs
+│   │   ├── FundStructureScopeContractTests.Accounting.cs
 │   │   ├── FundStructureScopeContractTests.cs
 │   │   ├── FundStructureSetupWorkflowServiceTests.cs
 │   │   ├── FundStructureStoreTenantContractTests.cs
@@ -10865,6 +10881,7 @@ Meridian-main
 │   │   │   ├── Wizard
 │   │   │   │   └── WizardConfigurationStepTests.cs
 │   │   │   ├── ContractualCashFlowPreviewTests.cs
+│   │   │   ├── ContractualCashFlowScheduleRefusalTests.cs
 │   │   │   ├── DirectLendingSchedulePeriodsTests.cs
 │   │   │   ├── DirectLendingServiceTests.cs
 │   │   │   ├── FileReconciliationRunRepositoryTests.cs
@@ -11220,6 +11237,7 @@ Meridian-main
 │   │   │   └── RecurringJournalStoreTests.cs
 │   │   ├── FixedIncome
 │   │   │   ├── BondAnalyticsMathTests.cs
+│   │   │   ├── BondAnalyticsScheduleRefusalTests.cs
 │   │   │   ├── BondAnalyticsServiceTests.cs
 │   │   │   ├── BondCanonicalProjectionTests.cs
 │   │   │   ├── BondConsistencyTests.cs
@@ -11469,6 +11487,8 @@ Meridian-main
 │   │   │   ├── ConnectionRetryIntegrationTests.cs
 │   │   │   ├── EndpointStubDetectionTests.cs
 │   │   │   ├── FixtureProviderTests.cs
+│   │   │   ├── FundStructureScopePostgresTests.cs
+│   │   │   ├── FundStructureScopePostgresTests.Fixture.cs
 │   │   │   ├── FundStructureTenantBackfillPostgresTests.cs
 │   │   │   ├── GracefulShutdownIntegrationTests.cs
 │   │   │   ├── ProviderGoldenPathScenarioGenerator.cs
@@ -11789,7 +11809,12 @@ Meridian-main
 │   │   │   ├── SecurityCurvesMigrationTests.cs
 │   │   │   ├── SecurityCurvesPostgresTests.cs
 │   │   │   ├── SecurityDayCountTermTests.cs
+│   │   │   ├── SecurityEconomicScheduleFixtureCorpus.cs
+│   │   │   ├── SecurityEconomicScheduleMappingTests.cs
+│   │   │   ├── SecurityEconomicSchedulePostgresTests.cs
+│   │   │   ├── SecurityEconomicSchedulePrecisionMigrationTests.cs
 │   │   │   ├── SecurityEconomicScheduleReplayRefusalTests.cs
+│   │   │   ├── SecurityEconomicScheduleValidationTests.cs
 │   │   │   ├── SecurityEconomicTermsClassAwareBridgeTests.cs
 │   │   │   ├── SecurityEconomicTermsV2BridgeCoverageTests.cs
 │   │   │   ├── SecurityEconomicTypedFactorHistoryTests.cs

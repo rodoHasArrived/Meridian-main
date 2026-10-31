@@ -550,12 +550,10 @@ public sealed class SecurityTermsProjectionRegistryTests
     }
 
     [Fact]
-    public void TryBuild_SkipsPrincipalInstalmentsTheCashFlowPathDoesNotRecognise()
+    public void TryBuild_RefusesNonpositivePrincipalWithoutPublishingAPartialSchedule()
     {
-        // StructuredCashFlowTermsResolver discards instalments with a non-positive amount, so
-        // projecting one would have the relational read model report a contractual payment the
-        // canonical path does not. The surrounding schedule still projects: this is a value the
-        // domain defines as "not a payment", not a malformed row.
+        // Every retained row must be valid. Removing nonpositive instalments would turn rejected
+        // source evidence into an apparently complete schedule in both cash-flow and SQL readers.
         var record = Record("DirectLoan", new
         {
             schemaVersion = 1,
@@ -570,15 +568,11 @@ public sealed class SecurityTermsProjectionRegistryTests
             }
         });
 
-        PostgresSecurityMasterStore.TryBuildTermsProjection(Descriptor("DirectLoan"), record, out var plan)
-            .Should().BeTrue();
-
-        var schedule = plan.ChildRows("direct_loan_principal_schedule_projection");
-        schedule.Should().HaveCount(2);
-        Column(schedule[0], "amount").Should().Be(1_250_000m);
-        Column(schedule[1], "amount").Should().Be(750_000m);
-        // Ordinal stays contiguous, so the projected schedule reads as its own sequence.
-        schedule.Select(row => Column(row, "ordinal")).Should().Equal(0, 1);
+        Action build = () => PostgresSecurityMasterStore.TryBuildTermsProjection(Descriptor("DirectLoan"), record, out _);
+        var diagnostics = build.Should().Throw<SecurityScheduleValidationException>().Which.Diagnostics;
+        diagnostics.Should().HaveCount(2).And.OnlyContain(diagnostic => diagnostic.Code == "SM_SCHEDULE_RANGE_INVALID");
+        diagnostics.Select(diagnostic => diagnostic.Path).Should().Equal(
+            "assetSpecificTerms.principalSchedule[1].amount", "assetSpecificTerms.principalSchedule[2].amount");
     }
 
     [Fact]
@@ -611,8 +605,8 @@ public sealed class SecurityTermsProjectionRegistryTests
     [Fact]
     public void TryBuild_RefusesTheWholeProjectionWhenAScheduleRowIsMalformed()
     {
-        // A schedule that silently loses a row still reads as a complete schedule and would
-        // misstate amortization; an absent projection reads as "not projected".
+        // Invalid retained evidence is distinguished from an inapplicable or absent projection,
+        // and cannot erase the prior valid rows through the ordinary no-projection delete path.
         var record = Record("StructuredCredit", new
         {
             schemaVersion = 1,
@@ -627,8 +621,10 @@ public sealed class SecurityTermsProjectionRegistryTests
             }
         });
 
-        PostgresSecurityMasterStore.TryBuildTermsProjection(Descriptor("StructuredCredit"), record, out _)
-            .Should().BeFalse();
+        Action build = () => PostgresSecurityMasterStore.TryBuildTermsProjection(Descriptor("StructuredCredit"), record, out _);
+        var diagnostic = build.Should().Throw<SecurityScheduleValidationException>().Which.Diagnostics.Should().ContainSingle().Which;
+        diagnostic.Code.Should().Be("SM_SCHEDULE_VALUE_REQUIRED");
+        diagnostic.Path.Should().Be("assetSpecificTerms.factorScheduleEntries[1].factor");
     }
 
     [Fact]

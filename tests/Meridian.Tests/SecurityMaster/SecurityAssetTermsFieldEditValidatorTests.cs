@@ -189,7 +189,7 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
         "*greater than zero*")]
     [InlineData("Bond", "assetSpecificTerms.principalSchedule",
         "[{\"paymentDate\":\"not-a-date\",\"amount\":500}]",
-        "*parseable 'paymentDate'*")]
+        "*principalSchedule[0].paymentDate*parseable date*")]
     [InlineData("StructuredCredit", "assetSpecificTerms.factorScheduleEntries",
         "[{\"asOfDate\":\"2026-01-01\",\"factor\":1.5}]",
         "*between zero and one*")]

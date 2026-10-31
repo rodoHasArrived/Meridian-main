@@ -514,6 +514,15 @@
       "sha256": "0bef8d17b01c2bf8c7db06559af9db546217bb1359c720dfa6423d431149b40d"
     },
     {
+      "filename": "058_security_master_schedule_decimal_precision.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 58,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/058_security_master_schedule_decimal_precision.sql",
+      "schema": "security_master",
+      "sha256": "57b6128e514c884ac5bb41e5dcf667d38a241c36050b93e0a43c7572dedb3079"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -1388,7 +1397,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "ca3b4dfe92f42d1afa5224c309ef35f2b3e07accfc147e4280790c1619b9970b",
+  "fingerprint": "c4b3ae17df99f23c67e100768a3c435d518b103db1b6a3ebd1875991ecce904c",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1626,9 +1635,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 154,
+    "files": 155,
     "migration_sets": 10,
-    "waivers": 26,
+    "waivers": 27,
     "warnings": 0
   },
   "waivers": [
@@ -1806,6 +1815,13 @@
       "reason": "Scoped lexical false positive submitted for schema/storage review: BEFORE TRUNCATE declares a rejection trigger protecting append-only OTC lifecycle history. This migration executes no TRUNCATE or data removal. PostgreSQL regression coverage attempts UPDATE, DELETE and TRUNCATE and verifies retained replay. Preserve the trigger.",
       "review_after": "2027-04-28",
       "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/058_security_master_schedule_decimal_precision.sql",
+      "reason": "Proposed exception submitted for independent human Security Master, cash-flow and schema/storage review; approval remains pending. Widens only direct_loan_principal_schedule_projection.amount and structured_credit_factor_schedule_projection.factor from bounded numeric typmods to unconstrained numeric, preserving every existing value and all accepted canonical decimal precision. No row, column or retained source document is removed. Apply through the transactional migration runner and advisory migration lock with a reviewed operational window for the ALTER TABLE locks; validate populated upgrade and fresh installation before rollout. Failed-upgrade rollback remains transactional. Do not downgrade after higher precision or larger principal values have been accepted. Previously rounded projection values are not reconstructed by this DDL; exact recovery requires separately governed replay from retained source terms.",
+      "review_after": "2027-04-30",
+      "rule_id": "migration-alter-column-type"
     },
     {
       "category": "removed_migrations",

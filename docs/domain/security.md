@@ -2,7 +2,7 @@
 
 **Status:** active guidance  
 **Owner:** core-team  
-**Reviewed:** 2026-06-16
+**Reviewed:** 2026-10-30
 
 ## Definition
 
@@ -82,7 +82,8 @@ commands on the enlisted connection.
 
 This does not make approval workflow persistence or downstream publish handlers part of a distributed
 transaction. Their existing reconciliation and idempotent retry contracts still apply. It does not
-implement the remaining typed-schedule, payload-family, effective-history or shared-economics work.
+implement payload-family, effective-history or shared-economics changes; dated schedule validation
+is described separately below.
 
 Deployment requires human schema/storage review and a coordinated writer rollout: drain old writer
 instances, apply migration 036 through the normal migration runner, then start the updated instances.
@@ -98,6 +99,72 @@ PostgreSQL lock, then verifies incompatible-date rejection, approval exclusion d
 creation, SQL-failure rollback, cancellation rollback, concurrent reads and composition guards.
 The service-backed GitHub Actions integration lane is the required database proof; skipped local
 PostgreSQL tests do not satisfy it.
+
+## Dated economic schedule validation
+
+`SecurityEconomicScheduleParser` is the common boundary for factor history, coupon steps and
+contractual principal payments. The cash-flow resolver, schema validation, whole-schedule field
+edits, canonical mapping and PostgreSQL projections consume its typed results and diagnostics.
+This validates supplied economic rows; it does not change the contractual period-generation
+kernel or the versioned call/put and schedule-convention rules.
+
+| Schedule | Accepted row rules | Accepted calculation/projection values |
+| --- | --- | --- |
+| Factor history | Parseable date, factor in `[0, 1]`, unique dates, non-increasing factors in chronological order | Date-sorted factor points |
+| Coupon steps | Parseable date, nonnegative rate, unique dates | Date-sorted coupon steps |
+| Principal payments | Parseable date, strictly positive amount, exactly representable same-date total | Same-date amounts summed exactly, then date-sorted |
+
+An absent or JSON-null schedule allows the next source to be considered. An explicit empty array
+claims ownership and prevents fallback. A non-null malformed selected declaration also claims
+ownership but fails with diagnostics; it never becomes an empty schedule or falls through to lower
+authority. Source priority remains `profileFields`, outer asset terms, then common terms. Container
+and row aliases are case-insensitive, and valid legacy decimal strings and date/timestamp values
+remain readable. The free-text `factorSchedule` field stays an operational evidence reference;
+its legacy array form is arithmetic, while `factorScheduleEntries` has first alias priority.
+
+The result distinguishes absent, empty, populated and invalid schedules. Invalid results expose no
+partial entries. Stable `SM_SCHEDULE_*` diagnostics identify the selected source, actual member
+spelling and original zero-based row index, such as
+`assetSpecificTerms.profileFields.factorScheduleEntries[1].factor`. Duplicate factor and step dates
+are refused even when values match; input order never selects economic truth. Repeated spellings
+of a selected JSON member are also refused before JSONB can discard or reorder them; distinct
+aliases keep their documented priority. Required row members are checked on retained reads and
+partial submissions of whole schedules alike. A class schema can separately require an explicit
+schedule assertion (DirectLoan principal payments); a partial submitted-field update can omit it.
+
+Numeric values must be exactly representable as CLR decimals. Parsing must not round an out-of-range
+factor into range or a small negative rate to zero. Insignificant trailing zeros and exactly
+representable JSON exponent notation remain valid. Principal aggregation accumulates the complete
+same-date total exactly before converting it to a decimal, so row order cannot lose a small payment
+or change acceptance. A total outside the decimal range yields `SM_SCHEDULE_SUM_OVERFLOW`; an
+in-range total requiring rounding yields `SM_SCHEDULE_SUM_PRECISION`. Both identify the last
+contributing source amount and expose no partial schedule.
+
+Calculations and relational child tables use normalized entries. Domain codecs use the same valid
+typed rows in their original order, retaining separate same-date principal rows for historical
+round trips. Canonical create/read/amend mapping carries selected common-term schedules into the
+typed kind, including a common-only schedule amendment, so a later revision does not discard them.
+Parsing does not rewrite stored JSON, change version stamps, filter dates relative to
+today or reconstruct missing historical terms. Canonical commands retain contextual checks such as
+maturity windows and principal totals versus par. Nested swap notional/reset schedules and versioned
+call/put entries keep their separate contracts.
+
+PostgreSQL refuses invalid schedules before projection mutation. A failed new write or amendment
+does not publish partial children, delete the prior projection, advance its version or move a replay
+checkpoint. Migration `058_security_master_schedule_decimal_precision.sql` widens only the factor
+and principal child-value columns to unconstrained PostgreSQL `numeric`, so every accepted CLR
+`decimal` survives persistence without scale rounding or numeric overflow. Apply it through the
+normal migration runner before using the corrected projection writer. It preserves existing stored
+values; it does not reconstruct previously rounded projections or change retained event evidence.
+Any rebuild from retained source terms remains an explicit operational action. Existing invalid
+retained input requires an explicit governed correction before these consumers can use it.
+
+The shared fixture corpus is under `tests/fixtures/security-master/schedule-validation/`.
+`SecurityEconomicScheduleValidationTests` compares typed values or code/path diagnostics across
+the resolver, schema and relational plan; `SecurityEconomicSchedulePostgresTests` exercises database
+round trips and rollback with the same fixtures. Hosted checks and independent Security Master and
+cash-flow review remain required before merge. Passing these tests does not establish that accounting
+entries were previously incorrect or that operators have accepted a deployment.
 
 ## Asset-class operational wiring
 

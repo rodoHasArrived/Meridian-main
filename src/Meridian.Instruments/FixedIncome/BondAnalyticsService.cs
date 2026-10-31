@@ -35,6 +35,10 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
             return Blocked(request, request.Context, string.Empty, "UnsupportedCalculationVersion", "The requested analytics version is unsupported.");
         try
         { return await CalculateCoreAsync(request, ct).ConfigureAwait(false); }
+        catch (SecurityScheduleValidationException exception)
+        {
+            return Blocked(request, request.Context, string.Empty, "InvalidEconomicSchedule", exception.Message);
+        }
         catch (ArithmeticException)
         {
             return Blocked(request, request.Context, string.Empty, "CalculationBoundsExceeded",

@@ -177,6 +177,15 @@ classDiagram
         +string? IssuerType
         +string? LegacyAssetClass
     }
+    class Meridian_Contracts_SecurityMaster_SecurityEconomicScheduleKind["SecurityEconomicScheduleKind"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityEconomicScheduleParser["SecurityEconomicScheduleParser"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityEconomicScheduleValidation["SecurityEconomicScheduleValidation"] {
+        +SecurityScheduleParseResult~StructuredFactorScheduleEntry~ FactorSchedule
+        +SecurityScheduleParseResult~StructuredPrincipalScheduleEntry~ PrincipalSchedule
+        +SecurityScheduleParseResult~StructuredStepCouponEntry~ StepCouponSchedule
+    }
     class Meridian_Contracts_SecurityMaster_SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster["SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster"] {
         +IReadOnlyList~string~ BridgedModules
         +IReadOnlyList~string~ DroppedModules
@@ -423,30 +432,11 @@ classDiagram
         +DateTimeOffset? ReviewedAt
         +string? Reviewer
     }
-    class Meridian_Contracts_SecurityMaster_SecurityPaymentFrequency["SecurityPaymentFrequency"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityPaymentFrequencyExtensions["SecurityPaymentFrequencyExtensions"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto["SecurityPriceGoldenCopyDto"] {
-        +IReadOnlyList~SecurityComparisonPriceDto~ ComparisonPrices
-        +int? DaysStale
-        +DateTimeOffset? EvaluatedAsOf
-        +decimal GoldenCopyPrice
-        +DateTimeOffset? HierarchyAsOf
-        +SecurityPricingHierarchyDto? HierarchySnapshot
-        +bool IsStaleFallback
-        +DateTimeOffset? KnowledgeAsOf
-        +DateTimeOffset PriceAsOf
-        +SecurityPriceKind PriceKind
-        +Guid SecurityId
-        +string SelectedSource
-    }
     Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt --> Meridian_Contracts_SecurityMaster_SecurityCashFlowSourceDto
     Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt --> Meridian_Contracts_SecurityMaster_SecurityDetailDto
     Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt --> Meridian_Contracts_SecurityMaster_SecurityForwardCurve
     Meridian_Contracts_SecurityMaster_SecurityClosePriceInputDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceOverrideDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceLineDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceOverrideDto
-    Meridian_Contracts_SecurityMaster_SecurityClosePriceLineDto --> Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceSetDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceApprovalDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceSetDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceBlockerDto
@@ -475,4 +465,3 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference --> Meridian_Contracts_SecurityMaster_SecurityEconomicDefinitionRecord
     Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference --> Meridian_Contracts_SecurityMaster_SecurityMasterReportingResolutionMode
     Meridian_Contracts_SecurityMaster_SecurityOverrideAuditEntryDto --> Meridian_Contracts_SecurityMaster_SecurityOverrideApprovalStatusDto
-    Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityComparisonPriceDto

@@ -153,6 +153,78 @@ public sealed class FundStructureTenantScopeTests
         Assert.DoesNotContain(legacyOrganization, nodeIds);
     }
 
+    [Fact]
+    public async Task FailClosed_EmptyAuthorizedScopeStaysEmptyAndDoesNotDefaultToForeignRecords()
+    {
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var accountService = new InMemoryFundAccountService();
+        var beta = await SeedOrganizationAsync(store, TenantBeta, "BETA");
+        var betaService = CreateService(
+            store, TenantBeta, TenantScopeEnforcementOptions.FailClosed, accountService);
+        var entity = await betaService.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            Guid.NewGuid(), LegalEntityTypeDto.LimitedPartner, "LP-BETA-EMPTY", "Beta Limited Partner",
+            "US", "USD", EffectiveFrom, "tenant-scope-test"));
+        var account = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(), AccountTypeDto.Custody, "ACC-BETA-EMPTY", "Beta Custody Account",
+            "USD", EffectiveFrom, "tenant-scope-test", FundId: beta.FundId, EntityId: entity.EntityId));
+        await betaService.AssignNodeAsync(new AssignFundStructureNodeRequest(
+            Guid.NewGuid(), account.AccountId, LedgerGroupingRules.LedgerGroupAssignmentType,
+            "BETA.OPS:PRIMARY", EffectiveFrom, "tenant-scope-test"));
+
+        var asOf = EffectiveFrom.AddDays(1);
+        var betaGraph = await betaService.GetOrganizationStructureAsync(
+            new OrganizationStructureQuery(AsOf: asOf));
+        Assert.Contains(betaGraph.Businesses, business => business.BusinessId == beta.BusinessId);
+        Assert.Contains(betaGraph.Entities, candidate => candidate.EntityId == entity.EntityId);
+        Assert.Contains(betaGraph.Accounts, candidate => candidate.AccountId == account.AccountId);
+        Assert.NotEmpty(betaGraph.OwnershipLinks);
+        Assert.NotEmpty(betaGraph.Assignments);
+
+        // Alpha has a valid identity but owns none of this populated store. Neither an omitted
+        // organization filter nor a requested foreign organization may turn the empty authorized
+        // snapshot into an unscoped query. The account seam deliberately returns Beta's records.
+        var alphaService = CreateService(
+            store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed, accountService);
+        foreach (var organizationId in new Guid?[] { null, beta.OrganizationId })
+        {
+            var graph = await alphaService.GetOrganizationStructureAsync(
+                new OrganizationStructureQuery(OrganizationId: organizationId, AsOf: asOf));
+            Assert.Empty(graph.Organizations);
+            Assert.Empty(graph.Businesses);
+            Assert.Empty(graph.Clients);
+            Assert.Empty(graph.Funds);
+            Assert.Empty(graph.Sleeves);
+            Assert.Empty(graph.Vehicles);
+            Assert.Empty(graph.Entities);
+            Assert.Empty(graph.InvestmentPortfolios);
+            Assert.Empty(graph.Accounts);
+            Assert.Empty(graph.Nodes);
+            Assert.Empty(graph.OwnershipLinks);
+            Assert.Empty(graph.Assignments);
+
+            var accounting = await alphaService.GetAccountingViewAsync(
+                new AccountingStructureQuery(OrganizationId: organizationId, AsOf: asOf));
+            Assert.Null(accounting.Organization);
+            Assert.Null(accounting.Business);
+            Assert.Empty(accounting.InvestmentPortfolios);
+            Assert.Empty(accounting.Accounts);
+            Assert.Empty(accounting.LedgerGroups);
+            Assert.NotNull(accounting.Assignments);
+            Assert.Empty(accounting.Assignments);
+        }
+
+        // Missing authority is a refusal, not the valid empty result above. Supplying a domain
+        // organization id cannot provide the independent tenant authority either read requires.
+        var tenantless = CreateService(
+            store, callerTenantId: null, TenantScopeEnforcementOptions.FailClosed, accountService);
+        await Assert.ThrowsAsync<FundStructureTenantScopeException>(() =>
+            tenantless.GetOrganizationStructureAsync(
+                new OrganizationStructureQuery(OrganizationId: beta.OrganizationId, AsOf: asOf)));
+        await Assert.ThrowsAsync<FundStructureTenantScopeException>(() =>
+            tenantless.GetAccountingViewAsync(
+                new AccountingStructureQuery(OrganizationId: beta.OrganizationId, AsOf: asOf)));
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]

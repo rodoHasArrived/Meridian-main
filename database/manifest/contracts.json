@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "999581f43f75c8a3277347545ddfac947daa387b5ff973a4d0323c378d927696",
+      "fingerprint": "8aba725ce4b1f103116c529607e2573b58bcd858d8fb2cbbe927441617121996",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -1966,6 +1966,9 @@
         "Meridian.Contracts.SecurityMaster.SecurityDetailDto",
         "Meridian.Contracts.SecurityMaster.SecurityDistributionCorporateActionTerms",
         "Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord",
+        "Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleKind",
+        "Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleParser",
+        "Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleValidation",
         "Meridian.Contracts.SecurityMaster.SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster",
         "Meridian.Contracts.SecurityMaster.SecurityEvidenceLinkDto",
         "Meridian.Contracts.SecurityMaster.SecurityFactorHistoryConflict",
@@ -2021,6 +2024,10 @@
         "Meridian.Contracts.SecurityMaster.SecurityProjectionRecord",
         "Meridian.Contracts.SecurityMaster.SecurityRawPriceDto",
         "Meridian.Contracts.SecurityMaster.SecurityRecordProvenance",
+        "Meridian.Contracts.SecurityMaster.SecurityScheduleDiagnostic",
+        "Meridian.Contracts.SecurityMaster.SecurityScheduleParseResult",
+        "Meridian.Contracts.SecurityMaster.SecuritySchedulePresence",
+        "Meridian.Contracts.SecurityMaster.SecurityScheduleValidationException",
         "Meridian.Contracts.SecurityMaster.SecuritySearchRequest",
         "Meridian.Contracts.SecurityMaster.SecuritySettlementMethod",
         "Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord",
@@ -4075,7 +4082,7 @@
       "directories": [
         "src/Meridian.Contracts/SecurityMaster"
       ],
-      "fingerprint": "23229b2ff87c22cc03a1600b59f8cce2f94ffc532286079848d250b47b2df4c6",
+      "fingerprint": "a3599bcc31f8ac2618a9dc0b7749610d94aa066218d883b9b24159bca4331a45",
       "id": "security-master-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.SecurityMaster"
@@ -4432,6 +4439,9 @@
         "Meridian.Contracts.SecurityMaster.SecurityDetailDto",
         "Meridian.Contracts.SecurityMaster.SecurityDistributionCorporateActionTerms",
         "Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord",
+        "Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleKind",
+        "Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleParser",
+        "Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleValidation",
         "Meridian.Contracts.SecurityMaster.SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster",
         "Meridian.Contracts.SecurityMaster.SecurityEvidenceLinkDto",
         "Meridian.Contracts.SecurityMaster.SecurityFactorHistoryConflict",
@@ -4487,6 +4497,10 @@
         "Meridian.Contracts.SecurityMaster.SecurityProjectionRecord",
         "Meridian.Contracts.SecurityMaster.SecurityRawPriceDto",
         "Meridian.Contracts.SecurityMaster.SecurityRecordProvenance",
+        "Meridian.Contracts.SecurityMaster.SecurityScheduleDiagnostic",
+        "Meridian.Contracts.SecurityMaster.SecurityScheduleParseResult",
+        "Meridian.Contracts.SecurityMaster.SecuritySchedulePresence",
+        "Meridian.Contracts.SecurityMaster.SecurityScheduleValidationException",
         "Meridian.Contracts.SecurityMaster.SecuritySearchRequest",
         "Meridian.Contracts.SecurityMaster.SecuritySettlementMethod",
         "Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord",
@@ -4565,7 +4579,7 @@
       ]
     }
   ],
-  "fingerprint": "3c523e8fc7b5fce931fd842dda35555a6e8b0be0ad114fce9bbd901135ceb7c6",
+  "fingerprint": "244ef1e0cdc6ba169b65eb6ff7cc03a3c148eb451831a091d6a43c60bcf330b2",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6686,7 +6700,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "53249647c6aabe9a754fdaa1980c8eff1bcb0e114c6493f68ff7b1f698452fad",
+      "fingerprint": "b547c789350fb2d871fbd1dd780648bbce4295c0784119c5866fcf0c295071c5",
       "mapped_schemas": [
         "security_master"
       ],
@@ -7023,6 +7037,9 @@
         "Meridian.Contracts.SecurityMaster.SecurityDetailDto",
         "Meridian.Contracts.SecurityMaster.SecurityDistributionCorporateActionTerms",
         "Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord",
+        "Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleKind",
+        "Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleParser",
+        "Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleValidation",
         "Meridian.Contracts.SecurityMaster.SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster",
         "Meridian.Contracts.SecurityMaster.SecurityEvidenceLinkDto",
         "Meridian.Contracts.SecurityMaster.SecurityFactorHistoryConflict",
@@ -7078,6 +7095,10 @@
         "Meridian.Contracts.SecurityMaster.SecurityProjectionRecord",
         "Meridian.Contracts.SecurityMaster.SecurityRawPriceDto",
         "Meridian.Contracts.SecurityMaster.SecurityRecordProvenance",
+        "Meridian.Contracts.SecurityMaster.SecurityScheduleDiagnostic",
+        "Meridian.Contracts.SecurityMaster.SecurityScheduleParseResult",
+        "Meridian.Contracts.SecurityMaster.SecuritySchedulePresence",
+        "Meridian.Contracts.SecurityMaster.SecurityScheduleValidationException",
         "Meridian.Contracts.SecurityMaster.SecuritySearchRequest",
         "Meridian.Contracts.SecurityMaster.SecuritySettlementMethod",
         "Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord",
@@ -264604,6 +264625,187 @@
       "type_parameters": []
     },
     {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "Factor",
+          "source_line": 15,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Principal",
+          "source_line": 16,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "StepCoupon",
+          "source_line": 17,
+          "value": null
+        }
+      ],
+      "fingerprint": "b33a1fc22b74e4d44a301fb66cc1f2ad3a2d0a6367e3aa035cb4b8c5137e9b18",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleKind",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleKind",
+      "kind": "enum",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "SecurityEconomicScheduleKind",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleKind",
+      "references": [],
+      "source": {
+        "line": 13,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs"
+      },
+      "sources": [
+        {
+          "line": 13,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "82d8c74e76a5e0683be1b551071827030048fdbd6bed2c7fff48f0adfc600e63",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleParser",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleParser",
+      "kind": "class",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "SecurityEconomicScheduleParser",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleParser",
+      "references": [],
+      "source": {
+        "line": 11,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleParser.cs"
+      },
+      "sources": [
+        {
+          "line": 11,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleParser.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "a57c84f8d617d23f453a3fea5b319024029a34be24ce1463d7bd358c7836fee1",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleValidation",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleValidation",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FactorSchedule",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "SecurityScheduleParseResult<StructuredFactorScheduleEntry>",
+          "source_line": 46,
+          "type": "SecurityScheduleParseResult<StructuredFactorScheduleEntry>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PrincipalSchedule",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "SecurityScheduleParseResult<StructuredPrincipalScheduleEntry>",
+          "source_line": 47,
+          "type": "SecurityScheduleParseResult<StructuredPrincipalScheduleEntry>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "StepCouponSchedule",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "SecurityScheduleParseResult<StructuredStepCouponEntry>",
+          "source_line": 48,
+          "type": "SecurityScheduleParseResult<StructuredStepCouponEntry>"
+        }
+      ],
+      "name": "SecurityEconomicScheduleValidation",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleValidation",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.SecurityScheduleParseResult",
+        "Meridian.Contracts.SecurityMaster.StructuredFactorScheduleEntry",
+        "Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry",
+        "Meridian.Contracts.SecurityMaster.StructuredStepCouponEntry"
+      ],
+      "source": {
+        "line": 45,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs"
+      },
+      "sources": [
+        {
+          "line": 45,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
       "base_types": [
         "ISchemaUpcaster<SecurityAssetSpecificTerms>"
       ],
@@ -270015,6 +270217,322 @@
         {
           "line": 26,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "cb33c39b8c540df8de7993cd98387af3e97188caedcb68b92b94327a1f3c12c8",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityScheduleDiagnostic",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityScheduleDiagnostic",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Code",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 21,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Message",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 21,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Path",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 21,
+          "type": "string"
+        }
+      ],
+      "name": "SecurityScheduleDiagnostic",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityScheduleDiagnostic",
+      "references": [],
+      "source": {
+        "line": 21,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs"
+      },
+      "sources": [
+        {
+          "line": 21,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "result",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "d287df993de989d0f1881d70f11f1dc54853304b7447094b0545d300ce762d01",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityScheduleParseResult",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityScheduleParseResult",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "SecurityScheduleDiagnostic",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Diagnostics",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<SecurityScheduleDiagnostic>",
+          "source_line": 30,
+          "type": "IReadOnlyList<SecurityScheduleDiagnostic>"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "T",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Entries",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<T>",
+          "source_line": 29,
+          "type": "IReadOnlyList<T>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Presence",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "SecuritySchedulePresence",
+          "source_line": 28,
+          "type": "SecuritySchedulePresence"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "T",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceEntries",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<T>",
+          "source_line": 41,
+          "type": "IReadOnlyList<T>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourcePath",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 31,
+          "type": "string?"
+        }
+      ],
+      "name": "SecurityScheduleParseResult",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityScheduleParseResult",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.SecurityScheduleDiagnostic",
+        "Meridian.Contracts.SecurityMaster.SecuritySchedulePresence"
+      ],
+      "source": {
+        "line": 27,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs"
+      },
+      "sources": [
+        {
+          "line": 27,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs"
+        }
+      ],
+      "type_parameters": [
+        "T"
+      ]
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "Absent",
+          "source_line": 6,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Empty",
+          "source_line": 7,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Populated",
+          "source_line": 8,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Invalid",
+          "source_line": 9,
+          "value": null
+        }
+      ],
+      "fingerprint": "a99f72126b6bc3e0f1e64a17a18d84b650195d92ba278d8049e7d877602e6c8d",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecuritySchedulePresence",
+      "id": "Meridian.Contracts.SecurityMaster.SecuritySchedulePresence",
+      "kind": "enum",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "SecuritySchedulePresence",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecuritySchedulePresence",
+      "references": [],
+      "source": {
+        "line": 4,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs"
+      },
+      "sources": [
+        {
+          "line": 4,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [
+        "InvalidOperationException"
+      ],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "e0824cb5df11412d5943faf20cbc67677d929013e2f82eb9164b0bf3c4550aeb",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityScheduleValidationException",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityScheduleValidationException",
+      "kind": "class",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "SecurityScheduleDiagnostic",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Diagnostics",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<SecurityScheduleDiagnostic>",
+          "source_line": 79,
+          "type": "IReadOnlyList<SecurityScheduleDiagnostic>"
+        }
+      ],
+      "name": "SecurityScheduleValidationException",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityScheduleValidationException",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.SecurityScheduleDiagnostic"
+      ],
+      "source": {
+        "line": 70,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs"
+      },
+      "sources": [
+        {
+          "line": 70,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs"
         }
       ],
       "type_parameters": []
