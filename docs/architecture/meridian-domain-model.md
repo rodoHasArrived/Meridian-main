@@ -2,7 +2,7 @@
 
 **Status:** active guidance  
 **Owner:** core-team  
-**Reviewed:** 2026-10-28
+**Reviewed:** 2026-10-30
 
 ## Purpose
 
@@ -11,8 +11,11 @@ This document defines the compact domain model that AI sessions should use befor
 ## Core Concepts
 
 The core model is customer-neutral. `Fund` remains a first-class specialization, but the platform
-root is an operational finance record scoped by organization, entity, portfolio, account, book,
-period, evidence, approval, journal, report, and audit trail.
+root is a governed operational record scoped by organization, entity, portfolio, account, book,
+period, strategy, order, execution, evidence, approval, journal, report, and audit trail.
+Strategy formulation, order management, and governed strategy execution join financial operations
+as explicit product objectives. Their expanded workflows remain planned under `W13-STRAT-001` and
+`W13-OMS-001`; the concepts below do not assert complete runtime coverage.
 
 | Concept | Definition | Primary relationships |
 | --- | --- | --- |
@@ -25,6 +28,12 @@ period, evidence, approval, journal, report, and audit trail.
 | Ledger Account | Accounting classification used for balanced debit and credit postings within a book. | Belongs to the book's chart of accounts and receives journal lines; a financial Account can map to several ledger accounts under declared accounting policy. |
 | Fund | Legal or reporting vehicle whose books, capital, positions, and reports must be controlled. | Specializes entity/portfolio/book behavior for fund administration, investor capital, and private-capital operations. |
 | Security | Canonical identity for a financial instrument or investable interest. | Security Master owns identity, identifiers, classification, and reference evidence; Instruments and Asset Operations add terms, roles, positions, and economic projections keyed by `SecurityId`. |
+| Strategy Definition / Retained Artifact | Versioned investment logic, universe, parameter schema, data dependencies, risk constraints, and supported execution modes. | Belongs to an authorized owner scope; a run binds its exact retained version and inputs. This is a domain concept, not a claim of one universally adopted implementation type. |
+| Strategy Run | Scoped evaluation or execution of a retained strategy version in a declared backtest, replay, paper, or live mode. | Retains inputs, data and calculation versions, account context where required, results, lifecycle events, and parent/child run lineage. |
+| Promotion Decision | Retained authorization to advance a particular strategy/run into a permitted next mode under current policy. | Binds exact evidence and reviewed operands; does not itself place orders or replace account authorization and runtime admission. |
+| Order Intent | Reviewed discretionary instruction or strategy decision requesting an order in a declared financial account. | Retains origin, owner/account scope, requested terms, strategy/run lineage where applicable, risk evidence, and command identity before admission to the OMS. |
+| Order | Authoritative order-management record joining admitted intent, client identity, requested terms, observed lifecycle, and broker identities. | Owns amendment/replacement and cancellation history; broker observations establish external outcomes, and approved execution controls govern actions. |
+| Execution Report / Fill | Retained broker or supported simulator observation about an order and any executed quantity, price, fees, and timing. | Links to exact order and event identity, lifecycle recovery, portfolio effects, and the governed accounting handoff; it cannot directly rewrite a posted journal. |
 | Instrument Role | Effective-dated relationship an instrument has to a governed scope, such as holder, issuer, lender, borrower, payer, or receiver. | Connects a Security to a book, entity, portfolio, account, or counterparty without changing Security Master ownership. |
 | Netting Set Exposure Snapshot | Append-only, versioned valuation of the bilateral contracts in one netting set on one date: netting basis, gross and net exposure, collateral held and the credit support movement each side's agreement terms imply. | Derived from the netting set's contracts, each contract's valuation and the collateral balances under its collateral agreement; cites the Securities valued; is not a ledger balance. See [Credit Support](../domain/credit-support.md). |
 | Margin Call | One collateral movement from an exposure snapshot taken through issue, agreement, dispute, settlement or cancellation; its amount is copied from the snapshot. | Belongs to a netting set and its collateral agreement, cites the snapshot it was issued from, and is recorded in the Security Master governance log with its actor on every step. |
@@ -62,6 +71,14 @@ period, evidence, approval, journal, report, and audit trail.
 - Candidate journals are reviewed drafts, while position state, projection events, and balance
   snapshots are rebuildable views. The posted journal remains the sole accounting truth.
 - Operational records require retained source evidence or an explicit operator rationale.
+- Strategy validation, promotion, account authorization, and live order admission are separate
+  decisions. A changed definition, run input, account, or evidence version cannot reuse stale
+  approval. A manual order must use an explicit authority contract, never invented strategy lineage.
+- Order intent and requested amendments/cancellations remain distinct from confirmed broker
+  outcomes. Uncertain dispatch, pending replacement, and unresolved exposure must remain visible.
+- Duplicate or out-of-order execution reports and restart recovery must preserve order identity
+  and avoid duplicate economic effects or accounting handoff. The OMS owns order truth; the ledger
+  owns posted accounting truth.
 - Fund scope must not be required unless the workflow is explicitly fund, investor, or private-capital specific.
 - UI workflows must expose status, source, validation state, and review actions when records affect accounting or reconciliation.
 - Shared service/read-model seams should support both desktop and browser workstation surfaces.
@@ -71,6 +88,21 @@ period, evidence, approval, journal, report, and audit trail.
 ## Shared Surface Rule
 
 Browser and WPF workflows can use different presentation patterns, but they should share record identifiers, filters, saved views, status definitions, proof-ribbon states, evidence links, approval states, audit events, endpoint contracts, and read models. Presentation can diverge; business state cannot.
+
+## Strategy and Execution Ownership
+
+- Strategy services own formulation, retained definitions and run evidence, promotion decisions,
+  and strategy lifecycle. Unsupported authoring constructs or execution modes remain explicit.
+- Execution services own authoritative order admission, risk/control coordination, routing,
+  lifecycle recovery, and retained broker outcomes. Strategies and operator tickets use shared
+  execution services; clients do not maintain independent order truth or bypass the gateway.
+- Portfolio and financial services consume retained execution effects through the existing
+  governed handoff. Fill receipt, accounting acceptance, and journal posting retain distinct
+  authority, outcome, and recovery evidence.
+
+The [strategy, order, and execution dictionary](../domain/strategy-order-execution.md) connects
+these requirements to current source boundaries and the planned W13 acceptance work. The existing
+instrument-to-accounting dependency direction below remains intact.
 
 ## Instrument and Accounting Ownership
 

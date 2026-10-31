@@ -17,7 +17,7 @@ do_not_edit: true
 
 # Roadmap Register
 
-Snapshot date: 2026-10-28
+Snapshot date: 2026-10-30
 
 ## W1-DATA-001 - Provider trust gate and data confidence baseline
 | Field | Value |
@@ -1698,6 +1698,85 @@ Registered in the unranked fund-operations direction under DEC-FUND-OPERATIONS-D
 - `SRC-DESIGN-DOCUMENTS`
 - `SRC-STORAGE`
 - `SRC-CONTRACTS`
+- `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
+- `SRC-UI-DASHBOARD`
+- `SRC-WPF`
+
+## W13-OMS-001 - Governed order management and broker execution workbench
+| Field | Value |
+| --- | --- |
+| Wave | W13 |
+| Status | planned |
+| Health | green |
+| Priority | medium |
+| Owner lane | Execution and Fund Accounts |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-10-30 |
+
+### Current Summary
+
+Adopted as planned product direction under DEC-TRADING-STRATEGY-DIRECTION-001 and charter Section 22.7. Meridian should operate as an order management tool for reviewed operator intent and approved strategy execution, with durable lifecycle state, broker reconciliation, risk controls, and accounting continuity. Extend the existing OMS, order gateways, durable report/fill handoff, paper realism, and execution controls rather than recreate W2, W7, or accepted W9-PAPER-003, W9-ALPACA-004, and W9-SAFETY-007 foundations. W11-EXEC-001 retains its ownership-only scope. PRD-006 and PRD-007 retain their hardening gates. This row is unranked and planned; no current broker/account configuration, historical acceptance, code presence, or green CI alone proves the expanded order-management workflow ready.
+
+### Exit Criteria
+
+- The declared slice names supported broker/account ownership, instrument classes, sizing conventions, order types, time-in-force rules, paper/live modes, and deployment posture. Capability evidence and refusal behavior cover unsupported combinations; configured integration alone cannot imply tested live support.
+- Before exposing manual live orders, define and review an explicit operator-intent and execution-account authority contract. Current live admission requires a retained FundAccountId, the exact promoted runId, promotion audit evidence, and a current readiness snapshot. Either the selected workflow legitimately supplies that authority or a reviewed manual-intent path supplies equivalent scoped authorization, readiness, risk, and audit controls; missing strategy context cannot be filled with invented runs or bypassed gates.
+- Operator order tickets and strategy-generated intents use one authoritative OMS and shared contracts for order identity, account scope, risk admission, gateway dispatch, lifecycle transitions, and durable evidence. Pre-trade authorization, provider ownership, instrument/reference validity, positions, limits, and execution controls are rechecked at the authoritative command boundary; stale or incomplete authority blocks dispatch.
+- Submit, acknowledgment, partial/full fill, rejection, expiration, cancel, and cancel/replace retain broker observations and exact intent/order relationships. Pending, disputed, or indeterminate broker state stays visible. An unconfirmed replacement or requested cancellation cannot appear terminal, and cancel-all retains per-order outcomes and unresolved live exposure after the breaker blocks new submissions.
+- Duplicate and out-of-order reports, client-order-ID conflicts, concurrent commands, reconnect gaps, interrupted commits, lost acknowledgments, and restart preserve durable receipts and monotonic lifecycle/fill state without duplicate dispatch or financial consequences. Recovery reconciles broker observations before resuming uncertain work and retains failures requiring operator resolution.
+- Broker orders, fills, positions, and cash reconcile to retained internal execution evidence and the existing governed financial handoff. Exactly-once accounting consequences are demonstrated through idempotent replay and durable recovery; corrections preserve lineage, and the ledger remains the sole source of posted accounting truth.
+- Browser and WPF use shared services for tickets, working orders, history, fills, recovery, readiness, risk decisions, and safety actions. Unsupported or unwired controls expose an explicit reason; the supported operator workflow includes authorized cancellation, breaker activation, reconnect recovery, and evidence inspection.
+- Development verification uses a bounded synthetic/paper rehearsal, focused checks, and separate AI critique for consequential execution/risk, storage/security, and accounting changes under docs/ai/solo-developer-workflow.md. The developer owns acceptance decisions. A live-support claim additionally requires separately authorized broker-backed evidence for the named configuration and applicable product approvals; ordinary development needs no live credentials or human review organization. Existing W9 reservations and P0 release gates retain their production scope until their own evidence closes them; product-scope adoption cannot authorize live orders, credential changes, bypasses, or release certification.
+
+### Source Modules
+
+- `SRC-EXECUTION`
+- `SRC-EXECUTION-SDK`
+- `SRC-RISK`
+- `SRC-INFRASTRUCTURE`
+- `SRC-STORAGE`
+- `SRC-CONTRACTS`
+- `SRC-LEDGER`
+- `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
+- `SRC-UI-DASHBOARD`
+- `SRC-WPF`
+
+## W13-STRAT-001 - Governed strategy formulation and execution lifecycle
+| Field | Value |
+| --- | --- |
+| Wave | W13 |
+| Status | planned |
+| Health | green |
+| Priority | medium |
+| Owner lane | Strategy Analytics |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-10-30 |
+
+### Current Summary
+
+Adopted as planned product direction under DEC-TRADING-STRATEGY-DIRECTION-001 and charter Section 22.7. Meridian should support strategy formulation, research, backtesting, paper validation, governed live execution, and ongoing review as one retained lifecycle. Build on existing strategy definitions, Designer documents, QuantScript, immutable run inputs and artifacts, promotion services, and W13-OMS-001's canonical order path. Preserve the bounded W2/W3/W6/W7 and W9 evidence and reuse PRD-007, PRD-012, PRD-020, and PRD-106 for existing durability, isolation, activation, and orchestration work. This row is unranked; registration adopts no delivery date, changes no existing work queue, and establishes no implementation, independent review, operator acceptance, broker capability, or release certification.
+
+### Exit Criteria
+
+- The declared slice identifies a supported strategy family, authoring route, instruments, data dependencies, execution modes, account, and broker capability. Existing definitions, Designer documents, QuantScript, and retained run/artifact records converge on one versioned strategy-artifact identity; parameters, universe, decision rules, cost assumptions, risk limits, and approval history remain reproducible after edits.
+- Shared server-side validation and orchestration bind every request to exact strategy and data versions, owner scope, canonical inputs, engine/model versions, and supported capabilities before recording run results. Missing, stale, ambiguous, or unsupported inputs produce truthful blocked, degraded, or deferred states; no surface fabricates a completed run or financial result.
+- Backtest and paper evidence retains reproducible inputs, execution and cost assumptions, fills, metrics, warnings, and independently calculated expected results for the selected strategy. Alternative authoring routes cannot inherit the bounded Covered Call acceptance without their own host-composed evidence; current PRD-106 orchestration and recovery work remains separately tracked.
+- Promotion preserves exact parent/child run and strategy-artifact lineage, scoped account authority, retained evidence, independent approval, current readiness, and revocable live authorization. Approved deterministic strategy execution operates within its retained mandate; model-generated suggestions and changed strategy inputs cannot authorize trades or reuse stale approval.
+- Strategy-generated intents enter the same governed OMS, risk, gateway, and fill/reconciliation path as W13-OMS-001. The existing retained FundAccountId and promoted run identity remain authoritative until an explicitly reviewed account/intent contract supersedes them; display labels, runtime parameters, or synthetic promotion records cannot supply missing authority.
+- Closed-expression Designer execution remains distinct from arbitrary-code execution. Each supported authoring route proves its actual runtime capabilities and containment; arbitrary scripts require the PRD-012 isolation and resource limits before entering a supported production envelope, and unsupported constructs remain visibly deferred.
+- Start, pause, stop, resume, fault, recovery, and revision transitions retain intent, current run state, open-order and exposure posture, cancellation outcomes, and audit lineage. Concurrent commands, interrupted writes, lost acknowledgments, cancellation-resistant work, and restart recover the committed outcome without repeated external actions or duplicate financial consequences.
+- Browser and WPF use shared definitions, validation, run state, approvals, and evidence. A bounded end-to-end rehearsal follows one formulated strategy through backtest, reviewed paper validation, authorized execution, observed fills, reconciliation, and governed accounting handoff; paper evidence cannot substitute for separately authorized live-broker acceptance or frozen-release certification.
+
+### Source Modules
+
+- `SRC-STRATEGIES`
+- `SRC-BACKTESTING`
+- `SRC-QUANTSCRIPT`
+- `SRC-EXECUTION`
+- `SRC-CONTRACTS`
+- `SRC-STORAGE`
 - `SRC-UI-SHARED`
 - `SRC-UI-SERVICES`
 - `SRC-UI-DASHBOARD`
