@@ -1,35 +1,23 @@
-## Summary
+## What changed and why
 
-Describe the Meridian behavior changed by this pull request.
+Briefly explain the behavior changed and intended outcome.
 
-## Reason
+## Risk and verification
 
-Explain the requirement, issue, or defect being addressed.
+Risk: [ ] Routine  [ ] Domain/financial  [ ] Sensitive/security/deployment
 
-## Testing performed
+- Checks **actually run** and results:
+- Checks not run or blocked (and why):
+- Significant remaining risks / follow-ups (or `none known`):
+- Evidence scope: [ ] Synthetic  [ ] Live verified  [ ] Live untested  [ ] Not applicable
 
-- [ ] `bash scripts/ci.sh` completed successfully
-- [ ] Relevant unit tests were added or updated
-- [ ] Relevant integration tests were added or updated
-- [ ] GitHub Actions `quality-gate` passed
+See [solo-developer workflow](../docs/ai/solo-developer-workflow.md). No live credentials are required for ordinary public development. Do not describe AI critique as independent human approval.
 
-## Safety review
+## Safety and governance
 
-- [ ] This pull request targets `main`
-- [ ] No direct push to `main` was performed
-- [ ] No tests were disabled or bypassed
-- [ ] No secrets or credentials were committed
-- [ ] No unrelated changes were included
+- [ ] No credentials, private account data, or unrelated changes included
+- [ ] Financial/security invariants remain protected where applicable
+- [ ] Existing required GitHub checks and branch rules remain in force
+- [ ] Governance files changed (list them and note owner-review requirement, or `none`):
 
-## Governance changes
-
-Check every governance file modified:
-
-- [ ] No governance files changed
-- [ ] `.github/workflows/**`
-- [ ] `.github/CODEOWNERS`
-- [ ] `.github/pull_request_template.md`
-- [ ] `AGENTS.md`
-- [ ] `scripts/ci.sh`
-
-Governance-file changes require explicit human approval.
+This template is a reporting aid, not a new mandatory full-suite or human-review gate. Do not merge or activate sensitive functionality without the developer's explicit authorization.

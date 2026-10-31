@@ -4,7 +4,9 @@
 **Owner:** core-team
 **Reviewed:** 2026-06-16
 
-This document is the master index for AI guidance in the Meridian repository. It now treats repository orientation as a first-class step before specialist task guidance.
+This document is the master index for AI guidance in the Meridian repository.
+
+**First for everyday contributions:** [Solo-developer and AI-assisted workflow](solo-developer-workflow.md). Use lightweight focused validation and synthetic fixtures by default; detailed coordination documents are for genuinely complex work, not routine PR paperwork. It now treats repository orientation as a first-class step before specialist task guidance.
 
 ---
 

@@ -21,6 +21,10 @@ when the user explicitly requests it or the checkout is intentionally operating
 there. This local permission does not allow direct protected-branch pushes,
 bypasses, self-approval, self-merge, or skipped status checks.
 
+### Solo-Developer Development Model
+
+Read [the proportional solo-developer workflow](docs/ai/solo-developer-workflow.md) first. The developer is the sole product and merge decision-maker; AI assistance does not imply a human review organization. Use synthetic data by default and do not demand live-account/provider credentials for ordinary development.
+
 ### Default Branch Workflow
 
 Unless the task explicitly requires a different protected-branch flow that
@@ -30,8 +34,8 @@ GitHub repository rules allow, use the pull-request workflow:
 2. Create or use a branch named `codex/<short-task-name>`.
 3. Make only changes that are required for the assigned task.
 4. Add or update appropriate automated tests.
-5. Run `bash scripts/ci.sh`.
-6. Do not represent a change as complete when that command fails.
+5. Run risk-appropriate focused checks described in `docs/ai/solo-developer-workflow.md`; attempt `bash scripts/ci.sh` when proportionate or required, and state precisely if it was not run.
+6. Never claim a check passed when it failed, was unavailable, or was not attempted.
 7. Commit the completed change to the feature branch.
 8. Push the feature branch to GitHub.
 9. Open or update a pull request targeting `main`.
@@ -45,7 +49,7 @@ When GitHub Actions fails:
 
 1. Inspect the failure.
 2. Correct the underlying problem.
-3. Run `bash scripts/ci.sh` again.
+3. Rerun relevant focused checks, plus `bash scripts/ci.sh` if applicable or required.
 4. Push a new commit to the same pull-request branch.
 5. Do not merge or request bypass of the failed check.
 
@@ -81,11 +85,11 @@ Pull-request work is complete only when:
 
 - The requested implementation is present.
 - Relevant tests were added or updated.
-- `bash scripts/ci.sh` succeeds.
+- Risk-appropriate verification is reported truthfully; mandatory hosted checks are not bypassed.
 - The branch is pushed to GitHub.
 - A pull request targeting `main` exists.
 - The pull request explains the change and test evidence.
-- Required GitHub Actions checks pass.
+- Required GitHub Actions checks pass before any authorized merge; a draft may remain open while checks run.
 
 A passing local or Codex-environment test is preliminary evidence only. GitHub
 Actions remains the merge authority.

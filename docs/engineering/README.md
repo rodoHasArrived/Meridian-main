@@ -5,6 +5,8 @@
 **Reviewed:** 2026-10-28
 
 This is the canonical developer and agent entrypoint for Meridian engineering and contribution work.
+
+**Solo-developer quick path:** [Proportional AI-assisted workflow](../ai/solo-developer-workflow.md). Start with the smallest relevant validation, use synthetic data, report actual checks, and reserve full certification for a separate release decision. Existing required GitHub checks remain enforceable; this is not a CI bypass.
 It replaces hand-built planning and historical engineering prose with active operating guidance.
 
 ## Audience Paths
