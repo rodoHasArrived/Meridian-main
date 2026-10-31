@@ -11,8 +11,24 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$OutputRoot,
     [ValidateRange(1024, 65535)]
-    [int]$Port = 18080
+    [int]$Port = 18080,
+    [string]$PopulationSpecification = 'docs/testing/evidence/w10-615abde9/population.json',
+    [switch]$AllowDirty
 )
+
+function Write-PacketFile {
+    param([Parameter(Mandatory = $true)][string]$Path, [Parameter(Mandatory = $true)][string]$Content)
+    # Publish each packet file through a staged write and rename so an interrupted run never
+    # leaves a partially written manifest that could be mistaken for a complete preparation.
+    $staging = "$Path.$([Guid]::NewGuid().ToString('N')).tmp"
+    try {
+        Set-Content -LiteralPath $staging -Value $Content -Encoding utf8NoBOM -NoNewline
+        Move-Item -LiteralPath $staging -Destination $Path
+    }
+    finally {
+        if (Test-Path -LiteralPath $staging) { Remove-Item -LiteralPath $staging -Force }
+    }
+}
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -24,7 +40,13 @@ if (Test-Path -LiteralPath $target) {
 $candidate = (& git -C $repoRoot rev-parse HEAD).Trim()
 if ($LASTEXITCODE -ne 0 -or $candidate -notmatch '^[0-9a-f]{40}$') { throw 'Cannot resolve candidate commit.' }
 $dirty = -not [string]::IsNullOrWhiteSpace((& git -C $repoRoot status --porcelain | Out-String))
-$populationSource = Join-Path $repoRoot 'docs/testing/evidence/w10-615abde9/population.json'
+if ($dirty -and -not $AllowDirty) {
+    throw 'The worktree has uncommitted changes, so the recorded candidate commit would not describe the built code. Commit or stash first, or pass -AllowDirty to record a dirty candidate deliberately.'
+}
+$populationSource = if ([IO.Path]::IsPathRooted($PopulationSpecification)) { $PopulationSpecification } else { Join-Path $repoRoot $PopulationSpecification }
+if (-not (Test-Path -LiteralPath $populationSource -PathType Leaf)) {
+    throw "Population specification '$populationSource' was not found."
+}
 $populationHash = (Get-FileHash -LiteralPath $populationSource -Algorithm SHA256).Hash.ToLowerInvariant()
 $dataRoot = Join-Path $target 'data'
 $null = New-Item -ItemType Directory -Path $dataRoot
@@ -34,7 +56,7 @@ $configPath = Join-Path $target 'appsettings.json'
     DataSource = 'Synthetic'
     TenantScopeEnforcement = 'fail-closed'
     ProviderConnections = @{ Connections = @(); Bindings = @(); RuntimeCredentials = @() }
-} | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $configPath -Encoding utf8NoBOM
+} | ConvertTo-Json -Depth 8 | ForEach-Object { Write-PacketFile -Path $configPath -Content $_ }
 Copy-Item -LiteralPath $populationSource -Destination (Join-Path $target 'population-specification.json')
 $manifest = [ordered]@{
     schema = 'meridian.next-work-acceptance-preparation.v1'
@@ -56,7 +78,7 @@ $manifest = [ordered]@{
     jointLiveSessionOrder = @('LOT', 'SEAM', 'MARK', 'RECON')
     decisions = @('LOT', 'MARK', 'SEAM', 'RECON') | ForEach-Object { @{ criterion = $_; verdict = 'pending'; evidence = @() } }
 }
-$manifest | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath (Join-Path $target 'preparation.json') -Encoding utf8NoBOM
+$manifest | ConvertTo-Json -Depth 10 | ForEach-Object { Write-PacketFile -Path (Join-Path $target 'preparation.json') -Content $_ }
 $instructions = @"
 This directory is preparation, not financial evidence or acceptance.
 
@@ -77,5 +99,5 @@ state outside DataRoot. Do not point an existing production desktop session at t
 
 No financial records have been provisioned. No live run or verdict is recorded by this script.
 "@
-$instructions | Set-Content -LiteralPath (Join-Path $target 'NEXT-STEPS.txt') -Encoding utf8NoBOM
+Write-PacketFile -Path (Join-Path $target 'NEXT-STEPS.txt') -Content $instructions
 Write-Output (Join-Path $target 'preparation.json')

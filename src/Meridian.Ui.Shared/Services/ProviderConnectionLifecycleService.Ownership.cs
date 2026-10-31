@@ -5,9 +5,14 @@ namespace Meridian.Ui.Shared.Services;
 
 public sealed partial class ProviderConnectionLifecycleService
 {
+    /// <summary>Application configuration authority over the same path as the workstation store; created once per service.</summary>
+    private Meridian.Application.UI.ConfigStore? _ownershipAuthority;
+
     private async Task<IDisposable> AcquireOwnershipLeaseAsync(string providerId, bool enforceLegacyOwnership, CancellationToken ct)
     {
-        var authority = new Meridian.Application.UI.ConfigStore(_configStore.ConfigPath);
+        // The configuration lease is the cross-process .lock sidecar beside the config file, so it
+        // is exclusive for readers and writers alike; there is no shared-read variant to request.
+        var authority = _ownershipAuthority ??= new Meridian.Application.UI.ConfigStore(_configStore.ConfigPath);
         var lease = await authority.AcquireWriteLeaseAsync(ct).ConfigureAwait(false);
         try
         {

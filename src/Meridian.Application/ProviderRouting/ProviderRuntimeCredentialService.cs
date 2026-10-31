@@ -1,24 +1,33 @@
 using Meridian.Application.UI;
 using Meridian.Core.Config;
 using Meridian.DataIntegration.Credentials;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.ProviderRouting;
 
 /// <summary>Explicit host credential selection and ownership-checked migration commands.</summary>
-public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IProviderCredentialStore credentialStore)
+public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IProviderCredentialStore credentialStore,
+    ILogger<ProviderRuntimeCredentialService>? logger = null)
 {
+    private readonly ILogger<ProviderRuntimeCredentialService> _logger = logger ?? NullLogger<ProviderRuntimeCredentialService>.Instance;
+
     public async Task<ProviderCredentialStoreStatus> GetMigrationPreviewAsync(string providerId, string connectionId,
         string tenantId, CancellationToken ct = default)
     {
+        // The preview is a read, but ownership must be checked against configuration that cannot
+        // change underneath the vault status read. The configuration lease is an exclusive
+        // cross-process file lock with no shared-read mode, so the write lease is the only option.
         using var lease = await configStore.AcquireWriteLeaseAsync(ct).ConfigureAwait(false);
         var provider = RequireProvider(providerId);
         RequireScope(configStore.LoadRequired(), provider, connectionId, tenantId);
         return await credentialStore.GetStatusAsync(provider, ct).ConfigureAwait(false);
     }
 
-    public Task<ProviderRuntimeCredentialBinding> BindAsync(string providerId, string connectionId, string tenantId,
-        CancellationToken ct = default)
-        => configStore.UpdateRequiredAsync(config =>
+    public async Task<ProviderRuntimeCredentialBinding> BindAsync(string providerId, string connectionId, string tenantId,
+        CancellationToken ct = default, string? actor = null)
+    {
+        var bound = await configStore.UpdateRequiredAsync(config =>
         {
             var provider = RequireProvider(providerId);
             RequireScope(config, provider, connectionId, tenantId);
@@ -38,7 +47,11 @@ public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IP
             };
             ResolveScope(updated, provider);
             return (updated, next);
-        }, ct);
+        }, ct).ConfigureAwait(false);
+        _logger.LogInformation("Bound host runtime credentials for provider {ProviderId} to connection {ConnectionId} in tenant {TenantId} by {Actor}.",
+            bound.ProviderId, bound.ConnectionId, bound.TenantId, actor ?? "unattributed");
+        return bound;
+    }
 
     public async Task<ProviderCredentialMigrationReceipt> TransferAsync(string providerId, string connectionId, string tenantId,
         string migrationId, string? expectedGeneration, string actor, bool rollback, CancellationToken ct = default)
@@ -49,10 +62,18 @@ public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IP
         var migration = credentialStore as IProviderCredentialOwnershipMigration
             ?? throw new NotSupportedException("Credential vault does not support explicit ownership migration.");
         if (rollback)
-            return await migration.RollbackMigrationAsync(provider, scope, migrationId, actor, ct).ConfigureAwait(false);
+        {
+            var rolledBack = await migration.RollbackMigrationAsync(provider, scope, migrationId, actor, ct).ConfigureAwait(false);
+            _logger.LogInformation("Rolled back credential ownership migration {MigrationId} for provider {ProviderId} from connection {ConnectionId} in tenant {TenantId} by {Actor}.",
+                migrationId, provider, connectionId, tenantId, actor);
+            return rolledBack;
+        }
         if (string.IsNullOrWhiteSpace(expectedGeneration))
             throw new ArgumentException("Migration requires the expected credential generation of the record being transferred.", nameof(expectedGeneration));
-        return await migration.MigrateToScopeAsync(provider, scope, migrationId, expectedGeneration, actor, ct).ConfigureAwait(false);
+        var migrated = await migration.MigrateToScopeAsync(provider, scope, migrationId, expectedGeneration, actor, ct).ConfigureAwait(false);
+        _logger.LogInformation("Migrated credential ownership {MigrationId} for provider {ProviderId} to connection {ConnectionId} in tenant {TenantId} at generation {CredentialGeneration} by {Actor}.",
+            migrationId, provider, connectionId, tenantId, expectedGeneration, actor);
+        return migrated;
     }
 
     /// <summary>Null is permitted only for an entirely legacy provider family, never a partial owner or dangling default.</summary>

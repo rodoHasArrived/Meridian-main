@@ -38,7 +38,7 @@ public static class DirectLendingEndpoints
         // same gates explicitly.
         group.RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending);
         mutationGroup.RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending);
-        group.MapContractualCashFlowRuns("/{subjectId:guid}/projections/contractual-runs", "Loan",
+        group.MapContractualCashFlowRuns("/{subjectId:guid}/projections/contractual-runs", ContractualCashFlowSubjectKinds.Loan,
             UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, jsonOptions);
 
         group.MapPost("/{loanId:guid}/projections/preview", async (Guid loanId, ContractualCashFlowRequest? request, HttpContext context) =>

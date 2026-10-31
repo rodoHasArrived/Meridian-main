@@ -15,6 +15,8 @@ internal static class ContractualCashFlowRunEndpoints
     internal static void MapContractualCashFlowRuns(this RouteGroupBuilder group, string path, string kind,
         UserPermission view, UserPermission modify, JsonSerializerOptions json)
     {
+        if (!ContractualCashFlowSubjectKinds.IsSupported(kind))
+            throw new ArgumentException("Unsupported contractual cash-flow subject kind.", nameof(kind));
         var writeRoute = group.MapPost(path, async (Guid subjectId, CreateContractualCashFlowRunRequest? request, HttpContext context) =>
         {
             if (request is null || request.Projection is null || request.RunId == Guid.Empty)
@@ -32,7 +34,7 @@ internal static class ContractualCashFlowRunEndpoints
                     return ContractualCashFlowEngine.Hash(retained.Request) == ContractualCashFlowEngine.Hash(request.Projection)
                         ? Results.Json(retained, json) : Results.Conflict("Run identity is already bound to a different request.");
                 var preview = context.RequestServices.GetRequiredService<IContractualCashFlowPreviewService>();
-                var result = kind == "Security"
+                var result = kind == ContractualCashFlowSubjectKinds.Security
                     ? await preview.PreviewSecurityAsync(subjectId, request.Projection, context.RequestAborted).ConfigureAwait(false)
                     : await preview.PreviewLoanAsync(subjectId, request.Projection, context.RequestAborted).ConfigureAwait(false);
                 if (result is null)
@@ -47,12 +49,11 @@ internal static class ContractualCashFlowRunEndpoints
         })
         .WithName("RetainContractual" + kind + "CashFlowRun")
         .RequirePermission(modify)
-        .AddEndpointFilter(EndpointAuthorization.Require(modify))
-        .RequireRateLimiting(kind == "Loan"
+        .RequireRateLimiting(kind == ContractualCashFlowSubjectKinds.Loan
             ? UiEndpoints.DirectLendingMutationRateLimitPolicy
             : UiEndpoints.MutationRateLimitPolicy)
         .Produces<ContractualCashFlowRun>().Produces(StatusCodes.Status400BadRequest).Produces(StatusCodes.Status404NotFound).Produces(StatusCodes.Status409Conflict);
-        if (kind == "Loan")
+        if (kind == ContractualCashFlowSubjectKinds.Loan)
             writeRoute.RequireFundScopedWriteTenant();
 
         group.MapGet(path + "/{runId:guid}", async (Guid subjectId, Guid runId, HttpContext context) =>
@@ -68,7 +69,7 @@ internal static class ContractualCashFlowRunEndpoints
 
     private static async Task<bool> ExistsAsync(HttpContext context, string kind, Guid subjectId)
     {
-        if (kind == "Security")
+        if (kind == ContractualCashFlowSubjectKinds.Security)
             return await context.RequestServices.GetRequiredService<ISecurityMasterQueryService>()
             .GetByIdAsync(subjectId, context.RequestAborted).ConfigureAwait(false) is not null;
         var loans = context.RequestServices.GetService<IDirectLendingService>();

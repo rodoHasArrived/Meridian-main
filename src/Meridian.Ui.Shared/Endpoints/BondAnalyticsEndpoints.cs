@@ -13,16 +13,20 @@ public static class BondAnalyticsEndpoints
 {
     public static void MapBondAnalyticsEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
-        app.MapPost(UiApiRoutes.ReferenceDataBondSettlementConsideration, async (
+        // Analytics read retained Security Master terms, so the same tenant scope that gates the
+        // migration routes applies here; an unscoped request is refused rather than served globally.
+        var group = app.MapGroup(string.Empty).RequireWorkstationTenantScope();
+        group.MapPost(UiApiRoutes.ReferenceDataBondSettlementConsideration, async (
             BondSettlementConsiderationRequest request,
             [FromServices] IBondSettlementConsiderationService service, CancellationToken ct) =>
             Results.Json(await service.PrepareAsync(request, ct).ConfigureAwait(false), jsonOptions))
             .WithTags("BondAnalytics")
             .WithName("PrepareBondSettlementConsideration")
             .RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
+            .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
             .Produces<BondSettlementPreparationResult>();
 
-        app.MapGet(UiApiRoutes.ReferenceDataBondAnalytics, async (
+        group.MapGet(UiApiRoutes.ReferenceDataBondAnalytics, async (
             Guid securityId,
             [FromQuery] DateTimeOffset asOf,
             [FromQuery] DateOnly? settlementDate,

@@ -27,7 +27,7 @@ public static class ProviderCredentialOwnershipEndpoints
 
         group.MapPut("/{connectionId}/runtime-credentials", (string connectionId, BindProviderRuntimeCredentialRequest request,
             HttpContext context, [FromServices] ProviderRuntimeCredentialService service) => ExecuteAsync(context, async (tenant, actor) =>
-                Results.Json(await service.BindAsync(request.ProviderId, connectionId, tenant, context.RequestAborted)
+                Results.Json(await service.BindAsync(request.ProviderId, connectionId, tenant, context.RequestAborted, actor)
                     .ConfigureAwait(false), jsonOptions)))
             .WithName("BindProviderRuntimeCredentials").RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 

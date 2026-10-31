@@ -14,9 +14,9 @@ public static partial class SecurityMasterEndpoints
 {
     private static void MapContractualCashFlowPreview(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
-        group.MapContractualCashFlowRuns("/api/security-master/{subjectId:guid}/cashflow-projections/runs", "Security",
+        group.MapContractualCashFlowRuns(UiApiRoutes.SecurityMasterCashFlowProjectionRuns, ContractualCashFlowSubjectKinds.Security,
             UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, jsonOptions);
-        group.MapPost(UiApiRoutes.SecurityMasterCashFlowProjections + "/preview", async (
+        group.MapPost(UiApiRoutes.SecurityMasterCashFlowProjectionPreview, async (
             Guid securityId, ContractualCashFlowRequest? request,
             [FromServices] IContractualCashFlowPreviewService service, CancellationToken ct) =>
         {

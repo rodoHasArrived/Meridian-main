@@ -20,7 +20,8 @@ public static class BondMigrationEndpoints
             BondMigrationPreviewRequest request, [FromServices] IBondMigrationService service, CancellationToken ct) =>
             ExecuteAsync(async () => Results.Json(await service.PreviewAsync(request, ct).ConfigureAwait(false), jsonOptions)))
             .WithName("PreviewBondMigration")
-            .RequireAnyPermission(UserPermission.ModifySecurityMaster);
+            .RequireAnyPermission(UserPermission.ModifySecurityMaster)
+            .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapPost(UiApiRoutes.ReferenceDataBondMigrationBatchPreview, (
             BondMigrationBatchPreviewRequest request, [FromServices] IBondMigrationService service, CancellationToken ct) =>
@@ -39,7 +40,8 @@ public static class BondMigrationEndpoints
                 return Results.Json(previews, jsonOptions);
             }))
             .WithName("PreviewBondMigrationBatch")
-            .RequireAnyPermission(UserPermission.ModifySecurityMaster);
+            .RequireAnyPermission(UserPermission.ModifySecurityMaster)
+            .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapPost(UiApiRoutes.ReferenceDataBondMigrationSubmit, (
             BondMigrationSubmitRequest request, HttpContext context,
@@ -60,7 +62,8 @@ public static class BondMigrationEndpoints
                 return Results.Json(result, jsonOptions);
             }))
             .WithName("StageBondMigration")
-            .RequireAnyPermission(UserPermission.ModifySecurityMaster);
+            .RequireAnyPermission(UserPermission.ModifySecurityMaster)
+            .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet(UiApiRoutes.ReferenceDataBondCutoverReadiness, (
             [FromServices] IBondMigrationService service, CancellationToken ct) =>
@@ -79,7 +82,8 @@ public static class BondMigrationEndpoints
                 return Results.Json(receipt, jsonOptions);
             }))
             .WithName("EnableBondCalculationCutover")
-            .RequireAnyPermission(UserPermission.AdminMaintenance);
+            .RequireAnyPermission(UserPermission.AdminMaintenance)
+            .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 
     private static async Task<IResult> ExecuteAsync(Func<Task<IResult>> action)

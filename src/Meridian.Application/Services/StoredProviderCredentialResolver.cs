@@ -75,6 +75,10 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
         // Storage failures propagate instead of silently switching credential ownership.
         // Hold ownership stable while opening the selected vault record. A configuration writer
         // cannot reassign/remove the connection between authorization and secret resolution.
+        // IProviderCredentialResolver.CreateContext is synchronous by contract (provider factories
+        // construct adapters synchronously), and the configuration lease is an exclusive cross-process
+        // file lock with no shared-read mode, so this blocking acquisition is structural. Keep provider
+        // construction off request threads rather than widening the lease here.
         using var ownershipLease = _configStore?.AcquireWriteLeaseAsync().GetAwaiter().GetResult();
         var scope = _scope ?? (_configStore is null ? null : ProviderRouting.ProviderRuntimeCredentialService.ResolveScope(
             _configStore.LoadRequired(), providerId));

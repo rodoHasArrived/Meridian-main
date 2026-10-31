@@ -55,7 +55,7 @@ public sealed class FileContractualCashFlowRunStore(StorageOptions options) : IC
 
     private string FilePath(string kind, Guid subjectId, Guid runId)
     {
-        if (kind is not ("Security" or "Loan") || subjectId == Guid.Empty || runId == Guid.Empty)
+        if (!ContractualCashFlowSubjectKinds.IsSupported(kind) || subjectId == Guid.Empty || runId == Guid.Empty)
             throw new ArgumentException("A supported subject kind and non-empty subject/run identities are required.");
         return Path.Combine(_root, kind, subjectId.ToString("N"), runId.ToString("N") + ".json");
     }

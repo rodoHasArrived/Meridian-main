@@ -67,6 +67,7 @@ public sealed class BondAnalyticsEndpointsTests
         app.Use(async (context, next) =>
         {
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "bond-test-tenant";
             await next();
         });
         app.MapBondAnalyticsEndpoints(new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });

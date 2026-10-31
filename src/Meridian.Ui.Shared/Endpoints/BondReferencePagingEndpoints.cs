@@ -14,7 +14,8 @@ public static class BondReferencePagingEndpoints
 {
     public static void MapBondReferencePagingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
-        app.MapGet(UiApiRoutes.ReferenceDataBondIssuerLadderPage, (
+        var group = app.MapGroup(string.Empty).RequireWorkstationTenantScope();
+        group.MapGet(UiApiRoutes.ReferenceDataBondIssuerLadderPage, (
             [FromQuery] string issuerName, [FromQuery] int? pageSize, [FromQuery] string? cursor,
             [FromQuery] DateOnly? asOf, [FromServices] IBondReferenceService service, CancellationToken ct) =>
             PageAsync(() => service.GetIssuerLadderPageAsync(issuerName, pageSize ?? 100, cursor, asOf, ct), jsonOptions))
@@ -22,7 +23,7 @@ public static class BondReferencePagingEndpoints
             .RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
             .Produces<BondReferencePageDto>().Produces(StatusCodes.Status400BadRequest);
 
-        app.MapGet(UiApiRoutes.ReferenceDataBondMaturityLadderPage, (
+        group.MapGet(UiApiRoutes.ReferenceDataBondMaturityLadderPage, (
             [FromQuery] DateOnly from, [FromQuery] DateOnly to, [FromQuery] int? pageSize,
             [FromQuery] string? cursor, [FromQuery] DateOnly? asOf,
             [FromServices] IBondReferenceService service, CancellationToken ct) =>
