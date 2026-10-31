@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-06-04
+**Reviewed:** 2026-10-30
 
 This document provides guidance for AI assistants working with data providers in Meridian. Data providers form the foundation of the data collection pillar, feeding real-time and historical market data into backtesting, paper trading, and live execution pipelines.
 
@@ -58,7 +58,10 @@ Use the following maintained sources instead:
 
 The capability matrix covers 22 direct adapter folders across six shared contracts; that is **not** a count of deployed, validated, or production-accepted vendor connections. A class or runtime descriptor is not proof that credentials, entitlements, vendor SDKs, live-provider tests, and operator approval have been satisfied. In particular, IBKR's simulation path is not a substitute for its vendor-backed runtime; Polygon hosted corporate-action ingestion is distinct from shared on-demand retrieval; and review-only corporate-action feeds must not be treated as automatic acceptance authority.
 
-## File Locations
+## Legacy file-location and implementation examples
+
+**Historical guidance, not authoritative inventory:** The class tables, counts, old shorthand paths, hard-coded rate limits, and example configuration values that follow were compiled earlier in 2026 and may be incomplete or obsolete. Do not infer that every listed path or example is current; verify against the actual repository tree and current provider contracts before implementing changes. OpenFIGI maps identifiers using `ISymbolResolver`, not `ISymbolSearchProvider`. The current provider capability matrix and generated readiness registry linked above take precedence over these examples.
+
 
 ### Core Abstractions (ProviderSdk)
 | File | Purpose |
