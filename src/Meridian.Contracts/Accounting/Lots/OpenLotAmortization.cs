@@ -144,9 +144,7 @@ public static class OpenLotAmortization
                 restored.OpenTransactionCostBasis - lot.OpenTransactionCostBasis,
                 restored.OpenFunctionalCostBasis - lot.OpenFunctionalCostBasis);
         }
-        var detail = new SecurityDetailDto(security.SecurityId, security.AssetClass, security.Status, security.DisplayName,
-            security.Currency, security.CommonTerms, security.AssetSpecificTerms, security.Identifiers, security.Aliases,
-            security.Version, security.EffectiveFrom, security.EffectiveTo);
+        var detail = security.ToDetail();
         var followsDeclaredSchedule = instruction.CalculationVersion == UnifiedDeclaredModelVersion
             && AnyTerm(StructuredCashFlowTermsResolver.EnumerateTermSources(detail),
                 SecurityVersionedTerms.ScheduleConventionsKey, SecurityAssetTermsSchema.IsPopulatedTermValue);
@@ -193,7 +191,7 @@ public static class OpenLotAmortization
                  && (redemption?.AnnualYield ?? terms.EffectiveYield) is { } annualYield
                  && annualYield > -1m && reference.CouponRate is { } coupon && coupon >= 0m)
         {
-            var frequency = Frequency(reference.PaymentFrequency);
+            var frequency = Frequency(reference.PaymentFrequency, "Constant-yield amortization requires an explicit supported coupon frequency.");
             coupon /= redemptionRatio;
             if (instruction.CalculationVersion is null)
             {
@@ -246,13 +244,14 @@ public static class OpenLotAmortization
             JsonSerializer.SerializeToElement(left, OpenLotAmortizationJsonContext.Default.OpenLotAmortizationInstructionDto),
             JsonSerializer.SerializeToElement(right, OpenLotAmortizationJsonContext.Default.OpenLotAmortizationInstructionDto));
 
-    private static int Frequency(string? value) => value?.Trim().ToLowerInvariant() switch
+    /// <summary>Regular coupon payments per year accepted by the lot amortization and redemption-yield kernels.</summary>
+    internal static int Frequency(string? value, string refusal) => value?.Trim().ToLowerInvariant() switch
     {
         "annual" or "annually" or "1" => 1,
         "semiannual" or "semi-annual" or "semiannually" or "2" => 2,
         "quarterly" or "4" => 4,
         "monthly" or "12" => 12,
-        _ => throw new ArgumentException("Constant-yield amortization requires an explicit supported coupon frequency.")
+        _ => throw new ArgumentException(refusal)
     };
 
     internal static void ValidateBulletReference(SecurityDetailDto detail, bool automaticRedemption, bool remainingFace,

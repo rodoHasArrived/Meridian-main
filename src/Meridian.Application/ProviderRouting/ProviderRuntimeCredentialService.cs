@@ -58,17 +58,13 @@ public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IP
     {
         var provider = RequireProvider(providerId);
         var section = config.ProviderConnections;
-        var bindings = (section?.RuntimeCredentials ?? []).Where(binding => SameProvider(binding.ProviderId, provider)).ToArray();
-        if (bindings.Length == 1)
+        var ownership = ProviderOwnershipRules.Evaluate(section, provider);
+        if (ownership.RuntimeBindingCount == 1)
         {
-            var binding = bindings[0];
+            var binding = (section?.RuntimeCredentials ?? []).Single(binding => SameProvider(binding.ProviderId, provider));
             return RequireScope(config, provider, binding.ConnectionId, binding.TenantId);
         }
-        if (bindings.Length > 1 || (section?.OwnershipRequiredProviders ?? []).Any(candidate => SameProvider(candidate, provider)) ||
-            (section?.Connections ?? []).Any(connection => SameProvider(connection.ProviderFamilyId, provider) &&
-            (connection.TenantId is not null || connection.CredentialEnvironment is not null ||
-                string.IsNullOrWhiteSpace(connection.ConnectionId) || (section?.Connections ?? []).Count(other =>
-                    string.Equals(other.ConnectionId, connection.ConnectionId, StringComparison.OrdinalIgnoreCase)) != 1)))
+        if (ownership.RequiresScopedOwnership)
             throw new InvalidOperationException("An explicit, unambiguous runtime credential connection is required.");
         return null;
     }

@@ -10,10 +10,7 @@ internal static class BondAmortizationPolicyGuard
     {
         if (policy is null)
             return;
-        var detail = new SecurityDetailDto(security.SecurityId, security.AssetClass, security.Status,
-            security.DisplayName, security.Currency, security.CommonTerms, security.AssetSpecificTerms,
-            security.Identifiers, security.Aliases, security.Version, security.EffectiveFrom, security.EffectiveTo);
-        if (await policy.GetBlockerAsync(detail, ct).ConfigureAwait(false) is { } blocker)
+        if (await policy.GetBlockerAsync(security.ToDetail(), ct).ConfigureAwait(false) is { } blocker)
             throw new InvalidOperationException(blocker);
     }
 }

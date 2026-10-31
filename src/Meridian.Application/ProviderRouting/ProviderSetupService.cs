@@ -312,25 +312,7 @@ public sealed class ProviderSetupService
     }
 
     private static bool RequiresScopedSetup(AppConfig config, string providerId)
-    {
-        var connections = config.ProviderConnections?.Connections ?? [];
-        var family = ProviderCredentialCatalog.NormalizeProviderId(providerId);
-        // A retained host selection requires scoped ownership even if its connection was lost.
-        if ((config.ProviderConnections?.RuntimeCredentials ?? []).Any(binding =>
-            string.Equals(ProviderCredentialCatalog.NormalizeProviderId(binding.ProviderId), family, StringComparison.OrdinalIgnoreCase)) ||
-            (config.ProviderConnections?.OwnershipRequiredProviders ?? []).Any(candidate =>
-            string.Equals(ProviderCredentialCatalog.NormalizeProviderId(candidate), family, StringComparison.OrdinalIgnoreCase)))
-            return true;
-        return connections.Where(connection => string.Equals(
-                ProviderCredentialCatalog.NormalizeProviderId(connection.ProviderFamilyId), family,
-                StringComparison.OrdinalIgnoreCase))
-            // CredentialEnvironment is retained only by the owned-connection workflow. Losing
-            // the tenant part of that ownership must not reactivate the legacy provider-wide path.
-            .Any(connection => connection.TenantId is not null || connection.CredentialEnvironment is not null ||
-                string.IsNullOrWhiteSpace(connection.ConnectionId) ||
-                connections.Count(candidate => string.Equals(candidate.ConnectionId, connection.ConnectionId,
-                    StringComparison.OrdinalIgnoreCase)) != 1);
-    }
+        => ProviderOwnershipRules.Evaluate(config.ProviderConnections, providerId).RequiresScopedOwnership;
 
     private static string[] NormalizeCapabilities(IReadOnlyList<string>? capabilities)
         => capabilities?

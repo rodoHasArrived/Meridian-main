@@ -21,16 +21,13 @@ public static class ShortLotJournalProjector
             lines.Add((Cash(carryingAccount), 0m, coverCost));
         var result = relievedProceeds - coverCost;
         if (result > 0m)
-            lines.Add((string.IsNullOrWhiteSpace(carryingAccount.FinancialAccountId)
-                ? LedgerAccounts.RealizedGain : LedgerAccounts.RealizedGainFor(carryingAccount.FinancialAccountId), 0m, result));
+            lines.Add((LedgerAccounts.RealizedGainOrDefault(carryingAccount.FinancialAccountId), 0m, result));
         else if (result < 0m)
-            lines.Add((string.IsNullOrWhiteSpace(carryingAccount.FinancialAccountId)
-                ? LedgerAccounts.RealizedLoss : LedgerAccounts.RealizedLossFor(carryingAccount.FinancialAccountId), -result, 0m));
+            lines.Add((LedgerAccounts.RealizedLossOrDefault(carryingAccount.FinancialAccountId), -result, 0m));
         return lines;
     }
 
-    private static LedgerAccount Cash(LedgerAccount account) => string.IsNullOrWhiteSpace(account.FinancialAccountId)
-        ? LedgerAccounts.Cash : LedgerAccounts.CashAccount(account.FinancialAccountId);
+    private static LedgerAccount Cash(LedgerAccount account) => LedgerAccounts.CashFor(account.FinancialAccountId);
 
     private static void Validate(LedgerAccount account, decimal basis)
     {

@@ -1,3 +1,5 @@
+using Meridian.Contracts.SecurityMaster;
+
 namespace Meridian.Contracts.CashFlows;
 
 public static partial class ContractualCashFlowEngine
@@ -28,7 +30,7 @@ public static partial class ContractualCashFlowEngine
             }
             var exponent = assumption.Method == CashFlowPrepaymentMethod.Smm
                 ? (double)days / DateTime.DaysInMonth(cursor.Year, cursor.Month)
-                : assumption.Method == CashFlowPrepaymentMethod.Cpr ? (double)days / 365d
+                : assumption.Method == CashFlowPrepaymentMethod.Cpr ? (double)days / (double)DayCountConventions.DaysPerYear365
                 : (double)days / DateTime.DaysInMonth(cursor.Year, cursor.Month) / 12d;
             survival *= Math.Pow(1d - (double)value, exponent);
             cursor = stop;

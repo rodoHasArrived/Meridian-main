@@ -29,14 +29,12 @@ public static class OpenLotYieldToWorst
         OpenLotValidation.Validate(lot);
         if (lot.SecurityId != security.SecurityId || lot.Acquisition.FaceValueTerms is not { } terms)
             throw new ArgumentException("Redemption yields require matching Security Master identity and retained face terms.");
-        var detail = new SecurityDetailDto(security.SecurityId, security.AssetClass, security.Status, security.DisplayName,
-            security.Currency, security.CommonTerms, security.AssetSpecificTerms, security.Identifiers, security.Aliases,
-            security.Version, security.EffectiveFrom, security.EffectiveTo);
+        var detail = security.ToDetail();
         OpenLotAmortization.ValidateBulletReference(detail, automaticRedemption: true, remainingFace: true);
         var reference = StructuredCashFlowTermsResolver.Resolve(detail);
         if (reference.MaturityDate is not { } maturity || reference.CouponRate is not { } coupon || coupon < 0m)
             throw new ArgumentException("Redemption yields require explicit maturity and fixed coupon terms.");
-        var frequency = Frequency(reference.PaymentFrequency);
+        var frequency = OpenLotAmortization.Frequency(reference.PaymentFrequency, "Redemption yields require an explicit regular coupon frequency.");
         var candidates = new List<OpenLotRedemptionYieldDto> { Price("Maturity", maturity, 100m) };
         foreach (var kind in new[] { "Call", "Put" })
         {
@@ -106,13 +104,4 @@ public static class OpenLotYieldToWorst
             return new(kind, date, price, face.RegularScheduleAnnualYield(date, coupon / ratio, frequency));
         }
     }
-
-    internal static int Frequency(string? value) => value?.Trim().ToLowerInvariant() switch
-    {
-        "annual" or "annually" or "1" => 1,
-        "semiannual" or "semi-annual" or "semiannually" or "2" => 2,
-        "quarterly" or "4" => 4,
-        "monthly" or "12" => 12,
-        _ => throw new ArgumentException("Redemption yields require an explicit regular coupon frequency.")
-    };
 }

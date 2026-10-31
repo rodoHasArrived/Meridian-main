@@ -484,15 +484,9 @@ public static class LedgerTaxLotReliefProjector
         decimal disallowedLoss)
     {
         var financialAccountId = input.FinancialAccountId;
-        var cash = string.IsNullOrWhiteSpace(financialAccountId)
-            ? LedgerAccounts.Cash
-            : LedgerAccounts.CashAccount(financialAccountId);
-        var gain = string.IsNullOrWhiteSpace(financialAccountId)
-            ? LedgerAccounts.RealizedGain
-            : LedgerAccounts.RealizedGainFor(financialAccountId);
-        var loss = string.IsNullOrWhiteSpace(financialAccountId)
-            ? LedgerAccounts.RealizedLoss
-            : LedgerAccounts.RealizedLossFor(financialAccountId);
+        var cash = LedgerAccounts.CashFor(financialAccountId);
+        var gain = LedgerAccounts.RealizedGainOrDefault(financialAccountId);
+        var loss = LedgerAccounts.RealizedLossOrDefault(financialAccountId);
 
         var lines = new List<(LedgerAccount account, decimal debit, decimal credit)>
         {

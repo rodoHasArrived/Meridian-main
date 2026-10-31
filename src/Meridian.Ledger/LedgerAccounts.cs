@@ -46,6 +46,18 @@ public static class LedgerAccounts
     public static LedgerAccount CashAccount(string financialAccountId) =>
         CreateScoped("Cash", LedgerAccountType.Asset, financialAccountId);
 
+    /// <summary>The cash account that settles activity on <paramref name="financialAccountId"/>, or the unscoped account when none is given.</summary>
+    public static LedgerAccount CashFor(string? financialAccountId) =>
+        string.IsNullOrWhiteSpace(financialAccountId) ? Cash : CashAccount(financialAccountId);
+
+    /// <summary>The realized-gain account for <paramref name="financialAccountId"/>, or the unscoped account when none is given.</summary>
+    public static LedgerAccount RealizedGainOrDefault(string? financialAccountId) =>
+        string.IsNullOrWhiteSpace(financialAccountId) ? RealizedGain : RealizedGainFor(financialAccountId);
+
+    /// <summary>The realized-loss account for <paramref name="financialAccountId"/>, or the unscoped account when none is given.</summary>
+    public static LedgerAccount RealizedLossOrDefault(string? financialAccountId) =>
+        string.IsNullOrWhiteSpace(financialAccountId) ? RealizedLoss : RealizedLossFor(financialAccountId);
+
     public static LedgerAccount CapitalAccountFor(string financialAccountId) =>
         CreateScoped("Capital Account", LedgerAccountType.Equity, financialAccountId);
 

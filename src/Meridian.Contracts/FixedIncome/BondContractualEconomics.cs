@@ -69,7 +69,7 @@ public static class BondContractualEconomics
                     yieldConvention, out var time, out refusal))
                 return false;
             if (discountDate < period.PaymentDate)
-                time += (period.PaymentDate.DayNumber - discountDate.DayNumber) / 365m;
+                time += (period.PaymentDate.DayNumber - discountDate.DayNumber) / DayCountConventions.DaysPerYear365;
             if (interest > 0m || period.IsFinal)
                 result.Add(new(SchedulePeriodId.Derive(securityId, "bond-analytics", period), period.PaymentDate,
                     period.AccrualStart, period.AccrualEnd, interest, period.IsFinal ? 100m : 0m, time));
@@ -177,7 +177,7 @@ public static class BondContractualEconomics
         }
         if (zeroCoupon || convention != BondYieldConvention.NominalPeriodic)
         {
-            time = (payment.DayNumber - settlement.DayNumber) / 365m;
+            time = (payment.DayNumber - settlement.DayNumber) / DayCountConventions.DaysPerYear365;
             return true;
         }
         if (schedule.Spec.Tenor.PeriodsPerYear is not { } frequency)
@@ -197,7 +197,7 @@ public static class BondContractualEconomics
         }
         var lastAccrual = schedule.Periods[^1].AccrualEnd;
         if (payment > lastAccrual)
-            time += (payment.DayNumber - Math.Max(settlement.DayNumber, lastAccrual.DayNumber)) / 365m;
+            time += (payment.DayNumber - Math.Max(settlement.DayNumber, lastAccrual.DayNumber)) / DayCountConventions.DaysPerYear365;
         if (time <= 0m)
         {
             refusal = "Payment has no positive time on the declared coupon grid.";

@@ -8,10 +8,8 @@ public sealed partial class PostgresLedgerJournalStore
     private static decimal DisposalRecognizedGainOrLoss(JournalEntry entry, LedgerAccount assetAccount)
     {
         var financialAccountId = assetAccount.FinancialAccountId;
-        var gainAccount = string.IsNullOrWhiteSpace(financialAccountId)
-            ? LedgerAccounts.RealizedGain : LedgerAccounts.RealizedGainFor(financialAccountId);
-        var lossAccount = string.IsNullOrWhiteSpace(financialAccountId)
-            ? LedgerAccounts.RealizedLoss : LedgerAccounts.RealizedLossFor(financialAccountId);
+        var gainAccount = LedgerAccounts.RealizedGainOrDefault(financialAccountId);
+        var lossAccount = LedgerAccounts.RealizedLossOrDefault(financialAccountId);
         // Names identify candidate result lines only; full account equality establishes authority.
         // Validate both price paths before a same-named asset can pass as replacement basis.
         if (entry.Lines.Any(line =>
@@ -60,14 +58,11 @@ public sealed partial class PostgresLedgerJournalStore
     private static decimal ValidateExplicitDisposalPrice(
         AtomicTaxLotJournalCommand command, LedgerAccount assetAccount, decimal salePrice)
     {
-        var cashAccount = string.IsNullOrWhiteSpace(assetAccount.FinancialAccountId)
-            ? LedgerAccounts.Cash : LedgerAccounts.CashAccount(assetAccount.FinancialAccountId);
+        var cashAccount = LedgerAccounts.CashFor(assetAccount.FinancialAccountId);
         var currencyCashAccount = LedgerAccounts.CashInCurrency(
             ResolveAtomicFunctionalCurrency(command.Journal), assetAccount.FinancialAccountId);
-        var gainAccount = string.IsNullOrWhiteSpace(assetAccount.FinancialAccountId)
-            ? LedgerAccounts.RealizedGain : LedgerAccounts.RealizedGainFor(assetAccount.FinancialAccountId);
-        var lossAccount = string.IsNullOrWhiteSpace(assetAccount.FinancialAccountId)
-            ? LedgerAccounts.RealizedLoss : LedgerAccounts.RealizedLossFor(assetAccount.FinancialAccountId);
+        var gainAccount = LedgerAccounts.RealizedGainOrDefault(assetAccount.FinancialAccountId);
+        var lossAccount = LedgerAccounts.RealizedLossOrDefault(assetAccount.FinancialAccountId);
         bool IsCash(LedgerEntry line) => line.Account == cashAccount || line.Account == currencyCashAccount;
         var entry = command.Journal.Entry;
         var cashLines = entry.Lines.Where(IsCash).ToArray();

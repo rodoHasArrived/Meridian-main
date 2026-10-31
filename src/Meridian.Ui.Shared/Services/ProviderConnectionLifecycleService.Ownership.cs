@@ -23,16 +23,7 @@ public sealed partial class ProviderConnectionLifecycleService
                 // Missing authority cannot establish an entirely legacy family. In particular,
                 // losing configuration after rollback must not activate the restored legacy record.
                 var section = authority.LoadRequired().ProviderConnections;
-                var connections = section?.Connections ?? [];
-                if ((section?.RuntimeCredentials ?? []).Any(binding => string.Equals(
-                        ProviderCredentialCatalog.NormalizeProviderId(binding.ProviderId), providerId, StringComparison.OrdinalIgnoreCase)) ||
-                    (section?.OwnershipRequiredProviders ?? []).Any(candidate => string.Equals(
-                        ProviderCredentialCatalog.NormalizeProviderId(candidate), providerId, StringComparison.OrdinalIgnoreCase)) ||
-                    connections.Where(connection => string.Equals(ProviderCredentialCatalog.NormalizeProviderId(connection.ProviderFamilyId),
-                        providerId, StringComparison.OrdinalIgnoreCase))
-                    .Any(connection => connection.TenantId is not null || connection.CredentialEnvironment is not null ||
-                        string.IsNullOrWhiteSpace(connection.ConnectionId) || connections.Count(other =>
-                            string.Equals(other.ConnectionId, connection.ConnectionId, StringComparison.OrdinalIgnoreCase)) != 1))
+                if (ProviderOwnershipRules.Evaluate(section, providerId).RequiresScopedOwnership)
                     throw new UnauthorizedAccessException("Select an explicitly owned credential connection.");
             }
             return lease;

@@ -3,6 +3,7 @@ using Meridian.Storage.Archival;
 using Meridian.Core.IO;
 using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
+using Meridian.Application.ProviderRouting;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Core.Logging;
 using Meridian.Application.Services;
@@ -31,11 +32,7 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
             if (credentialStore is not null)
                 return new StoredProviderCredentialResolver(credentialStore, fallback, configStore);
             var config = File.Exists(configStore.ConfigPath) ? configStore.LoadRequired() : configStore.Load();
-            var section = config.ProviderConnections;
-            if (section?.RuntimeCredentials is { Length: > 0 } || section?.OwnershipRequiredProviders is { Length: > 0 } ||
-                (section?.Connections ?? []).Any(connection => connection.TenantId is not null || connection.CredentialEnvironment is not null ||
-                    string.IsNullOrWhiteSpace(connection.ConnectionId) || (section?.Connections ?? []).Count(other =>
-                        string.Equals(other.ConnectionId, connection.ConnectionId, StringComparison.OrdinalIgnoreCase)) != 1))
+            if (ProviderOwnershipRules.AnyScopedOwnership(config.ProviderConnections))
                 throw new InvalidOperationException("Owned provider runtime credentials require a credential vault.");
             return fallback;
         });
