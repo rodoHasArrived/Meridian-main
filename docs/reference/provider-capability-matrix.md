@@ -1,75 +1,148 @@
-# Provider Capability Matrix (Adapter Readiness)
+# Provider Capability Matrix
 
-**Status:** canonical  
-**Owner:** core-team  
-**Reviewed:** 2026-06-30
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-10-30
 
-**Last Updated:** 2026-06-30
-
-This matrix enumerates every adapter subfolder under `src/Meridian.Infrastructure/Adapters/` and records capability coverage for:
-
-Canonical source note: this file is the canonical adapter readiness source used for governance/readiness review in this repository.
-
-- streaming
-- historical
-- symbol search
-- options chain
-- corporate actions
-- brokerage sync / execution
-
-State tags:
-
-- **complete**: production-ready implementation exists in the folder for the capability.
-- **partial**: capability exists but is scoped, read-only, or otherwise limited.
-- **experimental**: early/incomplete implementation, mapper-only path, or not yet fully wired.
-- **template-only**: scaffold/sample only, no active provider behavior.
+Use this reference to identify the shared provider contracts implemented in Meridian and the
+boundaries of their runtime exposure. The matrix covers all 22 direct folders under
+[`src/Meridian.Infrastructure/Adapters/`](../../src/Meridian.Infrastructure/Adapters/).
+The source and test definitions were inspected at `fcd72ec33307770b3f432e48daaf22bff25c2f8f`;
+this review does not establish a successful live-provider session or operator acceptance.
 
 ## Readiness Interpretation
 
-Use the matrix as capability evidence, not as a blanket production-readiness label:
+Capability coverage, runtime availability, and acceptance have different evidence owners:
 
-- `Alpaca`, `Polygon`, and `InteractiveBrokers` are the only adapter rows currently marked
-  `complete` overall.
-- `Robinhood` and `NYSE` expose important runtime surfaces, but their overall state remains
-  `partial`: Robinhood is unofficial and bounded by manual broker-session evidence, while NYSE
-  still depends on entitlement/session evidence outside the active Wave 1 closure.
-- The free-tier historical providers (`AlphaVantage`, `Finnhub`, `Fred`, `NasdaqDataLink`,
-  `Stooq`, `Tiingo`, `TwelveData`, and `YahooFinance`) are not production-grade streaming rows.
-  They are inventory/backfill rows unless a capability column says otherwise.
-- A `complete` historical/backfill cell means the adapter surface and deterministic tests exist; it
-  does not mean cross-provider gap-remediation SLA enforcement is complete. Use
-  [Provider Backfill Operations](../operators/provider-backfill-operations.md) and
-  [Provider Validation Matrix](provider-validation-matrix.md) for ordering, checkpoint, remediation,
-  and evidence-closure posture.
-- `OpenFigi`, `Edgar`, `Tradier`, and `TradeStation` must not be promoted from partial or
-  experimental support to production provider readiness without provider-specific runtime,
-  governance, and validation evidence.
+| Question | Source of truth |
+| --- | --- |
+| Which shared contracts does an adapter declare? | [`ProviderCapabilityDescriptorCatalog`](../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs), summarized below. |
+| What is the family's implementation state, owner, risk, and next action? | [Adapter readiness registry](../source/data/adapter-readiness.yml) and its [generated matrix](../source/generated/adapter-readiness-matrix.md). |
+| Can the configured host construct and use the capability? | Descriptor/module factories, [provider credentials](../operators/provider-credentials.md), and [`ProviderReadinessService`](../../src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs). |
+| What validation and sign-off does a use require? | [Provider Validation Matrix](provider-validation-matrix.md) and [validation evidence schema](provider-validation-evidence-schema.md). |
 
-## Adapter Capability + Risk Matrix
+The registry owns family readiness labels such as `complete`, `partial`, `experimental`, and
+`template-only`; this page does not maintain a second overall readiness inventory. A completed
+implementation or passing deterministic test does not establish account entitlement, live
+connectivity, data completeness, permission to trade, or production certification. Historical
+validation packets apply to their recorded scope and run, not automatically to the reviewed commit.
 
-| Adapter | Streaming | Historical | Symbol Search | Options Chain | Corporate Actions | Brokerage Sync / Execution | Overall State | Ownership | Dependency / Operational Risks |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `Alpaca` | complete | complete | complete | complete | complete | complete | complete | Data Integrations + Brokerage Integrations | API key/secret setup, account entitlement differences, websocket session reliability, rate-limit tiers. |
-| `AlphaVantage` | template-only | complete | partial | template-only | partial | template-only | partial | Data Integrations | Strict per-minute/day API limits, key provisioning, free-tier throttling and response-shape drift; symbol-search support is keyword/region scoped, and corporate-action coverage is limited to adjusted-daily dividend/split projection. |
-| `Core` | template-only | template-only | template-only | template-only | template-only | template-only | template-only | Platform Infrastructure | Shared abstractions only; misuse risk if downstream adapters assume runtime behavior from base types. |
-| `Edgar` | template-only | template-only | complete | template-only | partial | template-only | partial | Security Master & Reference Data | SEC endpoint availability, filing-schema variance, backoff/compliance for public data endpoints. |
-| `Failover` | partial | template-only | template-only | template-only | template-only | template-only | partial | Platform Infrastructure | Non-deterministic upstream outages drive behavior; correctness depends on provider health scoring quality. |
-| `Finnhub` | template-only | complete | complete | template-only | partial | template-only | partial | Data Integrations | Token limits, per-plan endpoint entitlements, burst throttling, upstream payload drift; corporate-action coverage is limited to credential-gated `/stock/dividend` and `/stock/split` projection. |
-| `Fred` | template-only | complete | partial | template-only | template-only | template-only | partial | Research Data | API key setup, macro-series release lag/revisions, low-frequency dataset semantics; series-search support is credential-gated over the official FRED `series/search` endpoint. |
-| `InteractiveBrokers` | complete | complete | template-only | template-only | template-only | complete | complete | Data Integrations + Brokerage Integrations | IB Gateway/TWS runtime dependency, IBAPI version compatibility, session lifecycle and entitlement complexity. |
-| `NYSE` | complete | partial | partial | template-only | partial | template-only | partial | Exchange Integrations | Credentialed exchange access, licensing constraints, feed-format stability, market-hours dependent behavior. |
-| `NasdaqDataLink` | template-only | complete | partial | template-only | partial | template-only | partial | Data Integrations | Dataset-specific entitlement, API quota limits, and dataset/ticker ambiguity; symbol search is credential-gated and returns exact `DATABASE/DATASET` codes, while corporate-action coverage is limited to dataset `Ex-Dividend`/`Split Ratio` projection. |
-| `OpenFigi` | template-only | template-only | partial | template-only | template-only | template-only | partial | Security Master & Reference Data | API quota/rate-limit controls, identifier mapping ambiguity, request batching constraints. |
-| `Polygon` | complete | complete | complete | complete | complete | template-only | complete | Data Integrations | Tier-dependent endpoint access, websocket reconnect pressure, strict API-limit windows, external network variability. |
-| `Robinhood` | complete | complete | complete | complete | template-only | partial | partial | Data Integrations + Brokerage Integrations | Unofficial/consumer workflow volatility, auth/token lifecycle sensitivity, non-deterministic brokerage behavior. |
-| `Stooq` | template-only | complete | template-only | template-only | template-only | template-only | partial | Data Integrations | Unofficial/free endpoint stability, scraping/parsing drift, availability uncertainty. |
-| `Synthetic` | complete | complete | partial | complete | template-only | template-only | experimental | Platform Infrastructure | Deterministic test harness by design; risk is realism gap vs live providers and scenario coverage bias. |
-| `Templates` | template-only | template-only | template-only | template-only | template-only | template-only | template-only | Platform Infrastructure | Scaffolding only; accidental production registration is the primary risk. |
-| `Tiingo` | template-only | complete | partial | template-only | partial | template-only | partial | Data Integrations | Token setup, paid-plan feature gating, utility-search response-shape drift, request-throttle and pagination variability; symbol search is credential-gated and client-filtered, and corporate-action coverage is limited to adjusted-EOD dividend/split projection. |
-| `TradeStation` | template-only | template-only | template-only | template-only | template-only | experimental | experimental | Brokerage Integrations | Mapper-only asset currently; descriptor and hosted-gateway guardrails keep it out of runtime provider surfaces until OAuth/session orchestration and execution lifecycle support exist. |
-| `Tradier` | template-only | template-only | template-only | experimental | template-only | experimental | experimental | Brokerage Integrations | Mapper-only asset currently; descriptor and hosted-gateway guardrails keep it out of runtime provider surfaces until sandbox/live divergence, option payload variability, auth, and limit controls are closed. |
-| `TwelveData` | template-only | complete | partial | template-only | partial | template-only | partial | Data Integrations | Tiered interval history access, quota constraints, symbol coverage and interval normalization risk; symbol-search support is credential-gated and client-filtered over `/symbol_search`, and corporate-action coverage is paid-plan/credential-gated over `/dividends` and `/splits`. |
-| `YahooFinance` | template-only | complete | template-only | template-only | template-only | template-only | partial | Data Integrations | Unofficial endpoint contract risk, anti-bot throttling/format drift, network and parsing nondeterminism; runtime descriptor coverage pins Yahoo to historical/fallback only and fails closed for streaming/search/corporate-action/brokerage claims. |
+## Shared Contract Capability Matrix
+
+**Yes** means a compatible implementation is declared in the catalog for that contract.
+**—** means the family advertises no slot for that contract; it can still have separate interfaces,
+hosted ingestion, financial-connectivity functions, or mapping utilities described below.
+Neither value describes the provider's full commercial API or whether a configured instance is
+currently enabled.
+
+| Column | Shared contract and scope |
+| --- | --- |
+| Streaming | `IMarketDataClient`; transport and supported event types vary by adapter. |
+| Historical | `IHistoricalDataProvider`; interval, dataset, adjustment, and asset coverage remain provider-specific. |
+| Search | `ISymbolSearchProvider`; this is distinct from identifier resolution. |
+| Options | `IOptionsChainProvider`; this is distinct from broker-specific option-definition requests. |
+| Corporate actions | On-demand `ICorporateActionProvider`; separate ingestion and historical evidence do not imply this contract. |
+| Brokerage | `IBrokerageGateway`; account/portfolio/activity synchronization and individual order operations require their own support. |
+
+| Adapter folder (provider ID) | Streaming | Historical | Search | Options | Corporate actions | Brokerage | Capability boundary |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `Alpaca` (`alpaca`) | Yes | Yes | Yes | Yes | Yes | Yes | Feed, asset class, credentials, and paper/live environment are separately selected; corporate actions cover dividend/split announcements. |
+| `AlphaVantage` (`alphavantage`) | — | Yes | Yes | — | Yes | — | Credential/enable-gated history and keyword search; adjusted-daily dividend/split projection is review-only. |
+| `Core` | — | — | — | — | — | — | Shared factories, contracts, pacing, and orchestration; not an independent provider family. |
+| `Edgar` (`edgar`) | — | — | Yes | — | — | — | SEC company/ticker discovery; filing and Security Master ingestion use separate contracts. |
+| `Failover` | — | — | — | — | — | — | Composite streaming orchestration over catalogued providers; no independent family descriptor. |
+| `Finnhub` (`finnhub`) | — | Yes | Yes | — | Yes | — | Daily/intraday candles and symbol search; dividend/split endpoint projection is review-only. |
+| `Fred` (`fred`) | — | Yes | Yes | — | — | — | Economic-series observations and discovery, with module-owned factories; observations are represented as synthetic OHLC bars. |
+| `InteractiveBrokers` (`ibkr`) | Yes | Yes | — | — | — | Yes | Default build surfaces can simulate; real broker connectivity requires the official vendor runtime described below. |
+| `NasdaqDataLink` (`nasdaq`) | — | Yes | Yes | — | Yes | — | Dataset history and exact `DATABASE/DATASET` search; review-only dividend/split projection depends on dataset fields. |
+| `NYSE` (`nyse`) | Yes | — | — | — | — | — | Shared streaming adapter plus a separate ProviderSdk compatibility data source. |
+| `OpenFigi` (`openfigi`) | — | — | — | — | — | — | Catalogued identifier resolver; mapping/search uses `ISymbolResolver`, not `ISymbolSearchProvider`. |
+| `Plaid` | — | — | — | — | — | — | Financial-connectivity client and connection persistence under Plaid-specific contracts. |
+| `Polygon` (`polygon`) | Yes | Yes | Yes | Yes | — | — | Corporate actions use hosted Security Master ingestion; streaming coverage is narrower than overall family coverage. |
+| `Robinhood` (`robinhood`) | Yes | Yes | Yes | Yes | — | Yes | Unofficial session-based integration; streaming is REST-polled BBO quotes; search is enable-gated, and options additionally require an access token. |
+| `Stooq` (`stooq`) | — | Yes | — | — | — | — | End-of-day CSV history. |
+| `Synthetic` (`synthetic`) | Yes | Yes | Yes | Yes | — | — | Deterministic simulation; streaming/search are equity-only, with separate synthetic option chains and historical corporate-action evidence. |
+| `Templates` | — | — | — | — | — | — | Copy-only scaffolds excluded from runtime registration. |
+| `Tiingo` (`tiingo`) | — | Yes | Yes | — | Yes | — | Adjusted end-of-day history and utility search; `divCash`/`splitFactor` projection is review-only. |
+| `TradeStation` | — | — | — | — | — | — | Payload mappers and reconciliation evidence; no concrete shared runtime gateway. |
+| `Tradier` | — | — | — | — | — | — | Canonical mappers and reconciliation evidence; no shared options or runtime gateway implementation. |
+| `TwelveData` (`twelvedata`) | — | Yes | Yes | — | Yes | — | Daily `time_series` history and symbol search; dividend/split endpoints are review-only. |
+| `YahooFinance` (`yahoo`) | — | Yes | — | — | — | — | Historical/fallback adapter with daily and supported intraday aggregate bars; no streaming/search/on-demand corporate-action slot. |
+
+### Runtime activation and streaming limits
+
+- Descriptor factories may return no instance when configuration or credentials disable a
+  capability. This does not authorize substitution with another provider family. FRED's hosted
+  factories are published only after successful
+  [`FredProviderModule`](../../src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs)
+  registration, with final enable/credential checks. Catalog presence alone does not activate them.
+- Alpaca declares equities, options, crypto, and news stream asset classes. A connected equities
+  socket does not prove the other streams are active. Feed-specific routing and entitlements remain
+  separate, and readiness requires authentication and subscription acknowledgments; see
+  [asset-stream routing tests](../../tests/Meridian.Tests/Infrastructure/Providers/AlpacaAssetStreamRoutingTests.cs)
+  and [connection-readiness tests](../../tests/Meridian.Tests/Infrastructure/Providers/AlpacaConnectionReadinessTests.cs).
+- Polygon's declared streaming instruments are equities, equity options, and index options.
+  Its broader family metadata must not be interpreted as equal streaming coverage for forex,
+  crypto, or indexes. The shared client does not support market depth.
+- Robinhood implements the streaming contract through REST polling of best-bid/offer quotes.
+  Trade and market-depth subscriptions are unsupported. Its options path requires both the
+  Robinhood backfill enable flag and a resolved access token. See
+  [`ProviderFactory.Runtime`](../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs)
+  and [`RobinhoodMarketDataClient`](../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs).
+- Historical adapters have distinct interval, timestamp, adjustment, and dataset semantics. FRED
+  observations are economic series, not market trades; Nasdaq Data Link identifiers are dataset
+  codes. Use [Provider Backfill Operations](../operators/provider-backfill-operations.md) for
+  ordering, checkpoints, fallback, and coverage evidence. An empty result alone does not establish
+  complete historical coverage or the absence of corporate actions.
+
+### Interfaces outside the six shared contracts
+
+These implemented paths explain why a family can have useful behavior beside a **—** cell:
+
+| Family | Separate surface and limit |
+| --- | --- |
+| EDGAR | [`EdgarReferenceDataProvider`](../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarReferenceDataProvider.cs) and [`EdgarSecurityMasterIngestProvider`](../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs) serve reference/filing and Security Master ingestion. The catalog separately declares its shared symbol-search adapter; these ingestion paths do not implement `ICorporateActionProvider`. |
+| NYSE | [`NYSEDataSource`](../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs) implements ProviderSdk realtime/historical contracts, including compatibility dividend/split access. It is catalogued as `CompatibilityDataSource`; its historical helper is not an `IHistoricalDataProvider`. |
+| OpenFIGI | [`OpenFigiSymbolResolver`](../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs) is catalogued as `SymbolResolver`. Its identifier mapping and search results do not implement the shared symbol-search contract. |
+| Plaid | [`PlaidHttpClient`](../../src/Meridian.Infrastructure/Adapters/Plaid/PlaidHttpClient.cs) and [`FilePlaidConnectionRepository`](../../src/Meridian.Infrastructure/Adapters/Plaid/FilePlaidConnectionRepository.cs) implement financial-connectivity ports. Use [Plaid operations](../operators/plaid-provider-operations.md); these are not market-data or brokerage-gateway registrations. |
+| Polygon | [`PolygonCorporateActionFetcher`](../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs) is hosted Security Master ingestion, not an on-demand `ICorporateActionProvider`. |
+| Synthetic | [`SyntheticHistoricalDataProvider`](../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs) provides historical corporate-action evidence through `ICorporateActionSource`, not an on-demand corporate-action provider. |
+| Interactive Brokers | [`IBDataServices`](../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs) exposes broker-specific scanner discovery, contract details, option-chain definitions, and other entitlement-aware data services. These do not fill the generic search/options slots. |
+
+### Corporate-action release and acceptance
+
+The six on-demand corporate-action adapters above implement dividend/split retrieval or projection;
+this does not imply support for every corporate-action type or permission to apply an observation.
+Their declared release statuses are:
+
+| Provider(s) | `CorporateActionProviderReleaseStatusDto` | Acceptance implication |
+| --- | --- | --- |
+| Alpaca | `AcceptanceEligible` | Eligible for the acceptance path when the required source evidence and workflow controls are satisfied; the label is not acceptance of an individual event. |
+| AlphaVantage, Finnhub, NasdaqDataLink, Tiingo, TwelveData | `ReviewOnly` | Observations remain staged for review; cross-provider agreement does not promote the provider or authorize automatic application. |
+
+[`CorporateActionIngestOrchestratorTests`](../../tests/Meridian.Tests/SecurityMaster/CorporateActionIngestOrchestratorTests.cs)
+checks review-only consensus staging, evidence requirements, and rejection of provider attempts to
+raise their release status through command content.
+[`CorporateActionOperationsServiceTests`](../../tests/Meridian.Tests/SecurityMaster/CorporateActionOperationsServiceTests.cs)
+checks that acceptance fails closed for a review-only provider release. Missing credentials,
+endpoint failures, or partial responses must not be interpreted as verified absence of actions.
+
+### Brokerage and Interactive Brokers runtime
+
+[`HostedBrokerageGatewayServiceCollectionExtensions`](../../src/Meridian/HostedBrokerageGatewayServiceCollectionExtensions.cs)
+registers Alpaca, Interactive Brokers (`ibkr`, with `ib` compatibility alias), and Robinhood gateways
+and their account/portfolio/activity synchronization surfaces. Robinhood uses a read-only adapter
+for synchronization; its gateway is a separate execution surface. Supported order operations still
+vary by gateway. Tradier and TradeStation remain mapper-only and unregistered, as checked by
+[`HostedBrokerageGatewayRegistrationTests`](../../tests/Meridian.Tests/Execution/HostedBrokerageGatewayRegistrationTests.cs).
+
+Interactive Brokers requires special build interpretation: default builds do not load an official
+IB API assembly or establish real broker connectivity. Real runtime builds require
+`EnableIbApiVendor=true` and exactly one official SDK input, `IBApiProjectPath` or `IBApiDllPath`.
+`EnableIbApiSmoke=true` is compile/callback compatibility evidence, not live runtime evidence.
+Use [IB API Compatibility](interactive-brokers-api-compatibility.md) for the supported build and
+release-evidence contract, and the [IB onboarding runbook](../operators/provider-onboarding-interactive-brokers.md)
+for session and entitlement validation.
 
 ## Live execution manual override routes
 
@@ -93,9 +166,23 @@ provider certification or establish live-trading readiness. Endpoint behavior an
 are covered by
 [`ExecutionGovernanceEndpointsTests`](../../tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs).
 
-## Notes
+## Evidence and Maintenance
 
-- The matrix is folder-based: capability states are assigned from concrete adapter artifacts present in each subfolder (for example `*MarketDataClient`, `*HistoricalDataProvider`, `*SymbolSearchProvider`, `*OptionsChainProvider`, `*CorporateAction*`, `*BrokerageGateway`/`*BrokerageSync*`).
-- `ProviderCapabilityDescriptorCatalog` is contract-based: it registers only concrete adapters that implement the shared runtime provider contracts. Folder-level support such as EDGAR Security Master ingestion, OpenFIGI mapping, NYSE ProviderSdk sources, or mapper-only Tradier/TradeStation assets does not become a runtime descriptor until a compatible shared contract implementation exists.
-- `Core` and `Templates` are intentionally non-provider runtime folders and are marked `template-only` by design.
-- `TradeStation` and `Tradier` currently expose mapper-focused artifacts in this tree; `ProviderCapabilityDescriptorCatalogTests` and `HostedBrokerageGatewayRegistrationTests` keep them out of runtime provider surfaces until full adapter classes and wiring are present.
+The linked tests describe executable regression coverage; their presence is not a claim that a
+particular run passed. Record the tested commit, results, and any required provider/session evidence
+when making a readiness decision.
+
+| Boundary | Inspectable regression evidence |
+| --- | --- |
+| Descriptor/interface parity, supported capabilities, and all direct adapter folders | [`ProviderCapabilityDescriptorCatalogTests`](../../tests/Meridian.Tests/Providers/ProviderCapabilityDescriptorCatalogTests.cs). |
+| Hosted module registration and late credential/configuration gating | [`FredProviderModuleCompositionTests`](../../tests/Meridian.Tests/Application/Composition/FredProviderModuleCompositionTests.cs) and [`ProviderFactoryCredentialContextTests`](../../tests/Meridian.Tests/Infrastructure/Providers/ProviderFactoryCredentialContextTests.cs). |
+| Historical request/response scope, secondary search, and corporate-action projection | [Provider-specific tests](../../tests/Meridian.Tests/Infrastructure/Providers/) and the per-family evidence links in the [generated adapter matrix](../source/generated/adapter-readiness-matrix.md). |
+| Hosted brokerage exposure and exclusion of mapper-only experiments | [`HostedBrokerageGatewayRegistrationTests`](../../tests/Meridian.Tests/Execution/HostedBrokerageGatewayRegistrationTests.cs). |
+| Manual override route consistency | [`test_live_execution_controls_route_consistency.py`](../../tests/scripts/test_live_execution_controls_route_consistency.py). |
+
+When a capability changes, update the catalog/factory implementation, its contract tests, and the
+[source-owned registry](../source/data/adapter-readiness.yml), then regenerate its matrix. Update
+this reference for contract or interpretation changes. Retain implementation readiness, live-provider
+validation, and operator acceptance as separate claims. Provider quotas, licensing, and commercial
+entitlements must be checked against current provider terms and the configured account before use;
+repository pacing defaults do not establish those allowances.

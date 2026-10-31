@@ -1,8 +1,8 @@
 # Meridian Design System — Programmed Institutionalism
 
-**Production-ready · June 2026**
+**Design-system package documentation · historical June 2026 maturity claim; not Meridian production certification**
 
-An operator-workstation design system for **Meridian** — a self-hosted trading, market-data, research, and reporting platform. Meridian collects equities data from providers (Polygon, IBKR, Databento…), maintains a security master, runs backfills and quality scans, executes backtests/strategy runs, and operates live & paper trading with accounting and report-pack delivery.
+A reusable operator-workstation design-system package for **Meridian** — a self-hosted trading, market-data, research, and reporting platform. Meridian collects equities data from providers (Polygon, IBKR, Databento…), maintains a security master, runs backfills and quality scans, executes backtests/strategy runs, and operates live & paper trading with accounting and report-pack delivery.
 
 This system is grounded in the **desktop application** (`src/Meridian.Wpf`), whose visual language is **"Institutional Ops"**: a **light** workstation — a warm-paper canvas (`#F2F0EC`) of flat architect-white panels, capped by a warm near-black brand bar and status bar (`#1F1D1A`). One muted copper accent (`#A85436`), desaturated semantic colors used as alpha-10 washes (never solid fills), Segoe UI + Cascadia Mono, and structure built from **visible, load-bearing borders — no shadows, no glow, no gradients**. Think a Bloomberg-grade institutional terminal: utilitarian, flat, hard-edged — not a soft consumer-fintech app.
 
