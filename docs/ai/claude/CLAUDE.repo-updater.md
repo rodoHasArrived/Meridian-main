@@ -2,203 +2,136 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-06-04
+**Reviewed:** 2026-10-30
 
-This document explains how an AI agent with shell access should use the `ai-repo-updater.py` script to systematically analyse and improve the Meridian repository.
+[`build/scripts/ai-repo-updater.py`](../../../build/scripts/ai-repo-updater.py) is a diagnostic
+assistant, not the repository's acceptance gate. Its findings, exit codes, and limited verification
+must not be presented as proof that the entire repository is correct or production-ready.
 
 ## Overview
 
-The `build/scripts/ai-repo-updater.py` script is a purpose-built toolkit that gives an AI agent structured, machine-readable insight into the repository's health. It replaces ad-hoc file searching with deterministic auditors that check for known convention violations, documentation gaps, test coverage holes, and CI/CD issues.
+The script offers heuristic audits, JSON/Markdown reports, known-error lookup, a working-tree diff
+summary, and legacy verification/maintenance commands. Start with the relevant source and
+[documentation ownership contract](../../documentation-ownership.md); use an audit to identify
+candidates, then establish whether each finding actually applies.
 
-**Location:** `build/scripts/ai-repo-updater.py`
+An old review date alone does not make a document wrong. Conversely, a new date or warning banner
+does not repair an invalid command, invented API, or contradicted persistence instruction.
 
 ## Workflow
 
-Follow this loop when asked to "update", "improve", or "audit" the repository:
-
-```
-1. AUDIT   → Discover what needs fixing
-2. PLAN    → Prioritise findings by severity
-3. FIX     → Implement changes (one category at a time)
-4. VERIFY  → Confirm the build and tests still pass
-5. REPEAT  → Re-audit until clean or time-boxed
-```
-
 ### Step 1 — Audit
 
-Run the full audit to get a prioritised improvement plan:
+Run from the repository root, keeping transient results outside maintained documentation:
 
 ```bash
-python3 build/scripts/ai-repo-updater.py audit
+python3 build/scripts/ai-repo-updater.py audit-docs --json-output artifacts/documentation-audit/findings.json
+python3 build/scripts/ai-repo-updater.py audit-ai-docs --summary
+python3 build/scripts/ai-repo-updater.py known-errors
 ```
 
-The output is JSON with three sections:
-- **summary** — counts by severity (critical, warning, info, suggestion)
-- **improvement_plan** — grouped findings sorted by worst severity
-- **findings** — every individual finding with file, line, message, and fix hint
-
-For targeted work, use a sub-auditor:
-
-```bash
-python3 build/scripts/ai-repo-updater.py audit-code      # C#/F# conventions
-python3 build/scripts/ai-repo-updater.py audit-docs       # Documentation quality
-python3 build/scripts/ai-repo-updater.py audit-tests      # Test coverage gaps
-python3 build/scripts/ai-repo-updater.py audit-config     # CI/CD and config issues
-python3 build/scripts/ai-repo-updater.py audit-providers  # Provider completeness
-```
-
-Save results to a file for later reference:
-
-```bash
-python3 build/scripts/ai-repo-updater.py audit --json-output /tmp/audit.json
-```
+Audits return `summary`, `improvement_plan`, and individual `findings`. **A completed audit returns
+exit code 0 even when its report contains critical findings.** Inspect the report, including
+warnings about nested auditor failures; successful process execution is not a clean audit.
 
 ### Step 2 — Review Known Errors
 
-Before making changes, check what mistakes prior AI agents have made:
-
-```bash
-python3 build/scripts/ai-repo-updater.py known-errors
-```
-
-This parses `docs/ai/ai-known-errors.md` and returns structured entries. Cross-reference your planned changes against these entries to avoid repeating known mistakes.
+Use `known-errors` to inspect recorded mistakes before selecting a change. Re-read the current
+source and tests rather than treating an earlier error entry as proof that the same defect remains.
 
 ### Step 3 — Fix
 
-Work through findings by category, starting with `critical` severity:
+Verify each proposed `fix_hint` against the current implementation and repository policy. The
+provider auditor is a heuristic over a limited interface list; an attribute suggestion does not
+replace the descriptor/factory registration contract. See the
+[provider implementation guide](../../development/provider-implementation.md).
 
-1. Read the finding's `file` and `line`.
-2. Apply the `fix_hint`.
-3. Mark the category done before moving to the next.
-
-**Rules while fixing:**
-- Follow all conventions in `CLAUDE.md` (sealed classes, CancellationToken, structured logging, etc.).
-- Never introduce Version attributes on PackageReference (Central Package Management).
-- If you fix an AI-caused regression, add an entry to `docs/ai/ai-known-errors.md`.
+Keep unrelated work intact, change only the affected owner documents, and preserve historical
+evidence as historical. Do not modify generated output by hand or change source behavior merely
+to silence a heuristic. A class-name-based missing-test finding is not a measured coverage result.
 
 ### Step 4 — Verify
 
-After each batch of fixes, confirm nothing is broken:
+Use the maintained lanes and focused checks in [Engineering](../../engineering/README.md):
 
 ```bash
-python3 build/scripts/ai-repo-updater.py verify
+bash scripts/ci.sh --lane verify-docs
+# Full local aggregate, when applicable or required:
+bash scripts/ci.sh
 ```
 
-This runs `dotnet build`, `dotnet test`, and `dotnet format --verify-no-changes`. The output is JSON with pass/fail per step and `overall_ok: true|false`.
+The updater's `verify` command remains available, but its implementation runs only:
 
-If verify fails, fix the issue before continuing.
+| Step | Actual command |
+| --- | --- |
+| Build | `dotnet build -c Release --nologo -v quiet` |
+| Test | `dotnet test tests/Meridian.Tests -c Release --nologo -v quiet --no-build` |
+| Lint | `dotnet format --verify-no-changes --no-restore` |
+
+Each subprocess has a 300-second timeout. After shared preflight, `verify` returns 0 for its own
+successful steps or 1 for failure; blocked preflight returns 2. Its `overall_ok` does **not** cover
+the complete test-project roster, browser lane, documentation lane, workflow lane, native desktop
+validation, or service-backed integrations. Do not substitute it for a required hosted check.
 
 ### Step 5 — Generate Report
 
-Create a human-readable markdown report:
-
 ```bash
-python3 build/scripts/ai-repo-updater.py report --output docs/generated/improvement-report.md
+python3 build/scripts/ai-repo-updater.py report --output artifacts/documentation-audit/report.md
 ```
+
+An explicit output avoids the command's default `docs/generated/improvement-report.md` destination.
+Reports are observations, not approvals. Retain the inspected revision and distinguish actual
+source findings, suggested work, checks executed, and checks not run.
 
 ### Step 6 — Summarise Changes
 
-Before committing, generate a diff summary:
-
 ```bash
 python3 build/scripts/ai-repo-updater.py diff-summary
 ```
 
-Use the output to draft a clear commit message describing what changed and why.
+This summarizes uncommitted working-tree changes. Review the complete PR diff as well; a clean
+working tree says nothing about the correctness of already committed changes.
 
 ## Commands Reference
 
-| Command | Purpose | Output |
-|---------|---------|--------|
-| `audit` | Full repository audit (all analysers) | JSON with findings + plan |
-| `audit-code` | C#/F# convention violations | JSON |
-| `audit-docs` | Documentation quality analysis | JSON |
-| `audit-tests` | Test coverage gap detection | JSON |
-| `audit-config` | CI/CD and configuration issues | JSON |
-| `audit-providers` | Provider implementation completeness | JSON |
-| `verify` | Build + test + lint validation | JSON with pass/fail |
-| `report` | Generate markdown improvement report | Markdown file |
-| `known-errors` | Load known AI error entries | JSON |
-| `diff-summary` | Summarise uncommitted git changes | JSON |
+| Commands | Scope |
+| --- | --- |
+| `audit` | Combines the code, docs, tests, config, provider, and AI-documentation auditors. |
+| `audit-code`, `audit-docs`, `audit-tests`, `audit-config`, `audit-providers`, `audit-ai-docs` | Select one diagnostic area; read findings rather than only the exit status. |
+| `known-errors`, `diff-summary` | Inspect recorded errors or uncommitted changes. |
+| `report` | Runs the combined audit and writes Markdown; explicit output is recommended. |
+| `verify` | Limited legacy build/test/format sequence described above. |
+| `maintenance-light`, `maintenance-full` | Execute maintenance steps and emit status artifacts; inspect their individual steps and resulting working-tree changes. |
 
 ## Common Flags
 
-| Flag | Short | Purpose |
-|------|-------|---------|
-| `--root PATH` | `-r` | Override repository root |
-| `--output PATH` | `-o` | Write markdown output |
-| `--json-output PATH` | `-j` | Write JSON output |
-| `--summary` | `-s` | Print summary to stdout |
+`--root`/`-r`, `--output`/`-o`, `--json-output`/`-j`, and `--summary`/`-s` are supported.
+Maintenance additionally accepts `--status-file` and `--summary-file`; its default outputs are
+`.ai/maintenance-status.json` and `.ai/MAINTENANCE_STATUS.md`. Use `--help` on the checked-out
+script before automating arguments. Relative output paths are safest when invoked from the repo root.
 
 ## What Each Auditor Checks
 
-### Code Auditor (`audit-code`)
-- Async methods missing `CancellationToken` parameter
-- String interpolation in logger calls (should use structured parameters)
-- Direct `new HttpClient()` instantiation (should use `IHttpClientFactory`)
-- Blocking async with `.Result` or `.Wait()` (deadlock risk)
-- `Task.Run` used for I/O-bound operations
-- Public classes not marked `sealed`
-
-### Documentation Auditor (`audit-docs`)
-- Broken internal markdown links
-- Stub documentation files (fewer than 3 content lines)
-- Outdated "Last Updated" timestamps
-- ADR files missing required sections (Status, Context, Decision, Consequences)
-
-### Test Auditor (`audit-tests`)
-- Important classes (Services, Providers, Clients, etc.) without corresponding test classes
-
-### Configuration Auditor (`audit-config`)
-- Hardcoded secrets in workflow files
-- Deprecated GitHub Action versions
-- `PackageReference` with `Version=` attribute (CPM violation)
-
-### Provider Auditor (`audit-providers`)
-- Provider classes missing `[ImplementsAdr]` attribute
-- Provider classes missing `[DataSource]` attribute
+These are text/pattern-based diagnostics, not a compiler, authorization review, accounting proof,
+or live-provider certification. Review false positives and scope omissions before changing code.
+In particular, the maintenance helper still contains a missing-SDK recommendation naming .NET 9;
+use the repository's `global.json` and Engineering prerequisites instead of that stale hint.
+This guide documents the limitation; it does not claim the helper was repaired.
 
 ## Example Session
 
-```bash
-# 1. Start with a full audit
-python3 build/scripts/ai-repo-updater.py audit --json-output /tmp/audit.json
-
-# 2. Check known errors to avoid
-python3 build/scripts/ai-repo-updater.py known-errors
-
-# 3. Fix critical findings first, then warnings
-# ... (make edits based on findings) ...
-
-# 4. Verify changes
-python3 build/scripts/ai-repo-updater.py verify
-
-# 5. Re-audit to confirm improvements
-python3 build/scripts/ai-repo-updater.py audit-code --summary
-
-# 6. Generate report and summarise
-python3 build/scripts/ai-repo-updater.py report --output docs/generated/improvement-report.md
-python3 build/scripts/ai-repo-updater.py diff-summary
-```
+A useful audit closes a concrete discrepancy: identify the incorrect claim, read its source owner,
+replace the active guidance, run the applicable focused check, and report the new PR head and
+remaining limitations. Repeatedly running audits until every heuristic is silent is not the goal.
 
 ## Integration with Makefile
 
-The script is available via make targets:
-
-```bash
-make ai-audit            # Full audit
-make ai-audit-code       # Code conventions only
-make ai-audit-docs       # Documentation only
-make ai-verify           # Build + test + lint
-make ai-report           # Generate improvement report
-```
+Make targets are optional wrappers. Prefer the direct script and maintained lane entrypoints above;
+do not assume a wrapper exists or represents the full gate without checking the current Makefile.
 
 ## Related Resources
 
-- **Master AI index:** [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/docs/ai/README.md)
-- **Root context:** [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/CLAUDE.md) § AI Repository Updater
-- **Error prevention:** [`docs/ai/ai-known-errors.md`](../ai-known-errors.md)
-
----
-
-*Last Updated: 2026-03-16*
+- [Repository policy](../../../AGENTS.md)
+- [CI ownership and validation](CLAUDE.actions.md)
+- [Engineering](../../engineering/README.md)
+- [Documentation ownership](../../documentation-ownership.md)

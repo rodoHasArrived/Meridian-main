@@ -5,7 +5,7 @@ schema:
 
 design_source:
   path: docs/product/meridian-design-document.md
-  version: "1.5"
+  version: "1.6"
   sections:
     - "7. Bounded Context Map"
     - "8. Context Ownership Matrix"
@@ -17,6 +17,7 @@ design_source:
     - "17. Integration Strategy"
     - "18. Reporting Strategy"
     - "19. Document and Evidence Strategy"
+    - "22.7 Strategy and Order-Management Direction"
     - "23. Foundational Product Slice"
     - "24. Roadmap Alignment, Scope Gates, and Claim Rules"
 
@@ -24,7 +25,9 @@ adaptation_status: active
 adaptation_mode: executable-design-contract
 
 product_baseline:
-  scope: W1-W5 operational record baseline
+  scope: W1-W5 operational record baseline for the financial-operations package
+  scope_role: bounded-financial-foundation
+  development_ceiling: false
   canonical_workflow:
     - Import
     - Validate
@@ -160,9 +163,31 @@ bounded_contexts:
     design_module: Meridian.Reporting
     deferral_reason: Full forecasting engines remain expansion work; current strategy/report evidence supports later planning.
   - name: Research & Analytics
-    stage: deferred
-    design_module: Meridian.Workflow
-    deferral_reason: Backtesting Studio is delayed behind W1-W5; existing strategy evidence remains connected through shared workflow and reporting seams.
+    stage: planned
+    scope_status: adopted
+    adoption_decision: DEC-TRADING-STRATEGY-DIRECTION-001
+    roadmap_items:
+      - W13-STRAT-001
+    runtime_projects:
+      - src/Meridian.Strategies
+      - src/Meridian.Backtesting
+      - src/Meridian.Backtesting.Sdk
+      - src/Meridian.QuantScript
+    boundary: Existing strategy definitions, Designer and QuantScript routes, retained run/artifact records, and promotion foundations support the planned formulation-through-execution workflow. The financial MVP does not rank or defer this direction; existing bounded evidence does not accept the full W13 outcome.
+  - name: Trading & Execution
+    stage: planned
+    scope_status: adopted
+    adoption_decision: DEC-TRADING-STRATEGY-DIRECTION-001
+    roadmap_items:
+      - W13-OMS-001
+    runtime_projects:
+      - src/Meridian.Execution
+      - src/Meridian.Execution.Sdk
+      - src/Meridian.Risk
+      - src/Meridian.Strategies
+      - src/Meridian.Backtesting
+    ownership_roadmap_item: W11-EXEC-001
+    boundary: Existing OMS, gateways, paper/live controls, pre-trade enforcement, and strategy/backtesting seams retain their current responsibilities. W11-EXEC-001 still owns the planned boundary-enforcement work; this mapping creates no new design module and claims no completed ownership refactor, manual-order authority, live activation, or release acceptance.
   - name: Risk Management
     stage: deferred
     design_module: Meridian.Platform
@@ -281,3 +306,5 @@ source_evidence:
   source_readme_registry: docs/source/data/source-readme-coverage.yml
   design_module_conformance: docs/architecture/design-module-conformance.yml
   module_map: docs/architecture/module-map.md
+  roadmap_registry: docs/roadmap/data/roadmap-items.yml
+  direction_decisions: docs/roadmap/data/decision-log.yml

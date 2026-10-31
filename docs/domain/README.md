@@ -2,7 +2,7 @@
 
 **Status:** active guidance  
 **Owner:** core-team  
-**Reviewed:** 2026-10-28
+**Reviewed:** 2026-10-30
 
 This directory contains Meridian's domain dictionary for AI-assisted and human development.
 Start with the [Meridian Domain Model](../architecture/meridian-domain-model.md) for shared scope,
@@ -17,6 +17,7 @@ follow-up.
 
 Start with:
 
+- [Strategy, Orders, and Execution](strategy-order-execution.md)
 - [Brokerage Account Snapshot](brokerage-account-snapshot.md)
 - [Corporate Action Case](corporate-action-case.md)
 - [Fund Event](fund-event.md)

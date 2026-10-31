@@ -1805,7 +1805,8 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── recurring-journal.md
 │   │   ├── security-asset-pack-admission.md
-│   │   └── security.md
+│   │   ├── security.md
+│   │   └── strategy-order-execution.md
 │   ├── engineering
 │   │   ├── blueprints
 │   │   │   ├── accounting
@@ -12990,6 +12991,7 @@ Meridian-main
 │   │   ├── test_task_context.py
 │   │   ├── test_throughput_metrics.py
 │   │   ├── test_validate_agent_definitions.py
+│   │   ├── test_validate_design_document_adaptation.py
 │   │   ├── test_validate_doc_hashes.py
 │   │   ├── test_validate_npm_audit.py
 │   │   ├── test_validate_observability_contract.py

@@ -6,7 +6,7 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-10-21
+last_reviewed: 2026-10-30
 ---
 
 # src/Meridian.Backtesting
@@ -128,8 +128,10 @@ or rejected; a declaration or eligible metric result alone never becomes checkli
 `BacktestStudioRunOrchestrator` applies the same contract when called directly and its isolated
 tests remain useful contract proof, but no workstation host composes it. The Strategy Designer
 endpoint also requires exactly one captured canonical result, while its production compiler
-currently captures none, so it fails closed rather than serving as W6 closure evidence. Broader
-Studio UX remains deferred.
+currently captures none, so it fails closed rather than serving as W6 closure evidence. Expanded
+strategy formulation and validation are planned under `W13-STRAT-001`, with shared orchestration
+tracked by `PRD-106`; the scope decision does not close these implementation or acceptance gaps.
+See the [expanded objectives](../../docs/product/implementation-todo-list.md#expanded-strategy-and-order-management-objectives).
 
 ## Execution realism and result trustworthiness
 

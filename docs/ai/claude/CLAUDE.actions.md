@@ -2,76 +2,90 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-06-04
+**Reviewed:** 2026-10-30
 
-This guide covers the current Meridian GitHub Actions surface. Keep it aligned with
-`.github/workflows/README.md` and `docs/engineering/README.md`.
+Use this guide to select and interpret validation, not to maintain a second workflow inventory.
+The [workflow guide](../../../.github/workflows/README.md) owns hosted lane behavior;
+[Engineering](../../engineering/README.md) owns local prerequisites and reproduction commands.
+Follow [AGENTS.md](../../../AGENTS.md) for the current contribution and review requirements.
 
 ## Workflow Inventory
 
-The active workflow set is documented in `.github/workflows/README.md`; use that file
-as the source of truth before editing workflow behavior.
+| Surface | Current responsibility |
+| --- | --- |
+| `Meridian CI` (`meridian-ci.yml`) | Runs `verify-dotnet`, `verify-browser`, `verify-docs`, and `verify-workflows`; their stable aggregate is `quality-gate`. |
+| `Meridian CI / integration-gate` | Separately reports service-backed PostgreSQL integration evidence from the shared `service-backed-integrations.yml` workflow. It is not a fifth local `scripts/ci.sh` lane. |
+| Legacy `CI` (`ci.yml`) | Owns Secret Scan and nightly/manual coverage/scenario execution, not the canonical .NET/browser/docs lanes. |
+| Documentation Automation | Validates documentation and runs maintained generation/freshness checks. Generated changes belong to their generators, not manual edits. |
+| Windows Desktop Build / Targeted Test | Provide Windows desktop validation and whitelisted manually selected hosted checks. A targeted pass establishes only its selected scope. |
+| Production Certification / release workflows | Produce separately scoped integration, recovery, packaging, and release evidence; ordinary development verification is not production certification. |
 
-| Workflow | File | Trigger | Purpose |
-| --- | --- | --- | --- |
-| CI | `ci.yml` | Pull requests, pushes to `main`, nightly, manual | `verify-fast`, source-doc determinism, browser workstation validation, and scheduled/manual `verify-full` coverage. |
-| CodeQL | `codeql.yml` | Pull requests, pushes to `main`, weekly, manual | CodeQL analysis for C# and JavaScript/TypeScript; C# uses an explicit .NET 10 restore/build. |
-| Golden Path Validation | `golden-path-validation.yml` | Golden-path surface changes, pushes to `main`, manual | Browser W4 parity, WPF W4 acceptance, pilot-acceptance evidence, and readiness dashboard generation. |
-| Windows Desktop Build | `windows-desktop-build.yml` | Pull requests, pushes to `main`, manual | Full WPF build and tests on Windows, plus desktop publish smoke. |
-| Publish Smoke | `publish-smoke.yml` | Manual | Uploads standalone Windows publish output for collector, desktop, or web workstation smoke inspection. |
-| Desktop Installer Packaging | `desktop-installer-packaging.yml` | Tag pushes, manual | Builds desktop installer packages and attaches release assets for tag runs. |
-| Maintenance | `maintenance.yml` | Workflow/docs/tooling changes, weekly, manual | Workflow hygiene, tooling metadata validation, Action YAML linting, and AI contract freshness checks. |
+This is an ownership map, not the complete workflow or trigger list. Consult the workflow guide
+and the actual YAML for event filters, inputs, required jobs, artifacts, and retention. Do not infer
+that an untriggered or skipped job passed, or that a proposal to consolidate CI has changed the YAML.
 
 ## Common Tasks
 
 ### Validate CI Locally
 
+Run from the repository root. Select the narrowest meaningful check for the change, and expand
+according to the current repository policy and risk. The maintained entrypoint is
+[`scripts/ci.sh`](../../../scripts/ci.sh), not a copied sequence of restore/build/npm commands:
+
 ```bash
-dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
-dotnet format Meridian.sln --verify-no-changes --verbosity minimal --no-restore
-dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore /p:EnableWindowsTargeting=true /p:UseAppHost=false
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" /p:EnableWindowsTargeting=true
-npm install --prefix src/Meridian.Ui/dashboard --include=optional
-npm --prefix src/Meridian.Ui/dashboard run test
-npm --prefix src/Meridian.Ui/dashboard run build
+bash scripts/ci.sh --lane verify-docs
+# Other focused lanes: verify-dotnet, verify-browser, verify-workflows
+# Full local aggregate, when applicable or required:
+bash scripts/ci.sh
 ```
+
+`verify-fast` combines .NET and browser checks only; it is not the full gate. The default
+`quality-gate` covers all four local lanes. Shared prerequisite checks run before the selected
+work. Use the SDK/tool versions and pinned requirements documented in Engineering, rather than
+installing a different runtime merely to satisfy an old example.
+
+The local entrypoint defaults `MERIDIAN_DISABLE_DOCKER_TESTS` to `true` unless already set.
+A local aggregate pass therefore does not replace hosted PostgreSQL integration evidence.
+Record the actual command, tested commit, result, and missing prerequisites. An unavailable or
+unattempted full gate must be reported as such, not as a pass.
 
 ### Validate Desktop Locally
 
-Run these from a Windows shell:
-
-```powershell
-dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
-dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None
-dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj -c Release --no-restore --filter "Category!=Integration&FullyQualifiedName!~Integration" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
-```
+Use the maintained Windows commands in Engineering or the hosted Windows/Targeted Test workflow.
+The browser and WPF workstations are both active product surfaces. A portable .NET build or a
+browser test does not prove native WPF behavior, packaging, or installer operation.
 
 ### Validate Workflow Hygiene
 
 ```bash
-python build/scripts/ci/check-workflow-hygiene.py
+bash scripts/ci.sh --lane verify-workflows
 ```
+
+This is broader than invoking the standalone hygiene script: the maintained lane includes its
+prerequisites and associated validation. Editing this guide does not authorize workflow, required
+check, permission, branch-protection, or release-policy changes.
 
 ## Standards
 
-- Use repository-relative paths only.
-- Use read-only workflow permissions unless a write is explicitly required.
-- Use explicit restore/build/test phases.
-- Keep publish workflows manual and artifact-only unless a release/deployment workflow is deliberately reintroduced.
-- Keep generated build, test, and publish outputs out of Git.
+Keep code, configuration, tests, and generated outputs under their existing owners. Do not alter
+checks or add skip directives to make a documentation PR green. Use synthetic fixtures for routine
+development; live account credentials are not a prerequisite to documenting or testing synthetic
+behavior. Never copy secrets or account data into logs, documentation, or public evidence.
 
 ## Troubleshooting
 
-- **NETSDK1100**: Ensure `EnableWindowsTargeting=true` is set for non-Windows solution builds.
-- **NU1008**: Remove package versions from project files; central package management lives in `Directory.Packages.props`.
-- **Format check fails**: Run `dotnet format Meridian.sln` locally and review the diff.
-- **Workflow hygiene fails**: Remove stale workflow references, local absolute paths, duplicated workflow names, or tracked generated artifacts.
+Read the failed step and retained logs before rerunning. Local lane summaries live under
+`artifacts/ci-summary/`; the workflow guide describes hosted evidence. Use Engineering's
+validation-status and build-lock recovery guidance before starting overlapping builds.
+
+For hosted results, bind conclusions to the PR's latest head and the actual run attempt. A pass
+on `main`, an earlier head, or another attempt is not proof for the current change. Distinguish
+successful checks, failed checks, pending work, and checks that did not run. Retain any material
+failure instead of assuming it is flaky. Keep owner review and merge decisions separate from CI.
 
 ## Related Documentation
 
-- [Workflow README](../../../.github/workflows/README.md)
+- [Workflow guide](../../../.github/workflows/README.md)
 - [Engineering entrypoint](../../engineering/README.md)
-- [Build, Test, Run](../../engineering/README.md)
-- [Start guide](../../start/README.md)
-
-*Last Updated: 2026-06-01*
+- [Documentation ownership](../../documentation-ownership.md)
+- [Repository updater limitations](CLAUDE.repo-updater.md)
