@@ -8465,6 +8465,7 @@ Meridian-main
 │   │   │   ├── FundStructureEndpoints.ReportingRunStream.cs
 │   │   │   ├── FundStructureEndpoints.ReportingScheduleAuthority.cs
 │   │   │   ├── FundStructureEndpoints.ReportingTombstones.cs
+│   │   │   ├── FundStructureEndpoints.ScopeAuthorization.cs
 │   │   │   ├── FundStructureEndpoints.StructuredReportingExport.cs
 │   │   │   ├── FutureReferenceEndpoints.cs
 │   │   │   ├── FxSpotReferenceEndpoints.cs
@@ -9919,6 +9920,7 @@ Meridian-main
 │   │   ├── FundStructureCashFlowContractTests.cs
 │   │   ├── FundStructurePolicyServiceTests.cs
 │   │   ├── FundStructureProjectionContractTests.cs
+│   │   ├── FundStructureScopeContractTests.Accounting.cs
 │   │   ├── FundStructureScopeContractTests.cs
 │   │   ├── FundStructureSetupWorkflowServiceTests.cs
 │   │   ├── FundStructureStoreTenantContractTests.cs
@@ -11373,6 +11375,8 @@ Meridian-main
 │   │   │   ├── ConnectionRetryIntegrationTests.cs
 │   │   │   ├── EndpointStubDetectionTests.cs
 │   │   │   ├── FixtureProviderTests.cs
+│   │   │   ├── FundStructureScopePostgresTests.cs
+│   │   │   ├── FundStructureScopePostgresTests.Fixture.cs
 │   │   │   ├── FundStructureTenantBackfillPostgresTests.cs
 │   │   │   ├── GracefulShutdownIntegrationTests.cs
 │   │   │   ├── ProviderGoldenPathScenarioGenerator.cs

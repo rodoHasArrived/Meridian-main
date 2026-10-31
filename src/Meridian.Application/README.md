@@ -858,6 +858,29 @@ Core workstation host. Do not introduce a second listener or independent monitor
   at the service boundary; projection never reads persistence or mutates command state.
   `FundStructureProjectionContractTests` exercises these views, effective windows, enrichment,
   and snapshot isolation across both implementations.
+  Organization graph and accounting queries distinguish an omitted organization selector from
+  an explicit organization that is unknown, inactive under `ActiveOnly`, or outside its effective
+  window. An explicit empty organization/business intersection cannot repopulate descendants
+  through account entity references; only accounts already connected to the selected structural
+  scope contribute those entity references. Unscoped partial snapshots retain their existing
+  behavior; status filtering cannot newly enable the missing-root fallback. Effective-date
+  endpoints remain inclusive, including when `ActiveOnly` is false.
+  Advisory and fund-operating views apply the same organization status rule: an inactive root
+  produces no view under `ActiveOnly`, while historical status remains readable inside its
+  effective window when `ActiveOnly` is false.
+  Descendant- or ledger-filtered accounting reads return assignments for their selected accounts,
+  applicable portfolios, and the account ancestry used by ledger-group precedence. Unrelated
+  branch assignments cannot survive an empty selection. These narrowed reads include organization
+  and business context only when explicitly selected, avoiding an arbitrary first tenant root.
+  Organization/business-only and unscoped reads retain their existing context behavior.
+  `LedgerReference` retains the existing portfolio list while narrowing account-linked assignments.
+  `FundStructureScopeContractTests` applies the same expectations to both service implementations;
+  its PostgreSQL runner uses a store double, separate from database persistence validation and
+  the tenant-boundary regressions in `FundStructureTenantScopeTests`.
+  `FundStructureScopePostgresTests` migrates real structure/account stores, seeds strict tenant
+  ownership, and recreates services for each read. Its coverage includes persisted inactive roots,
+  microsecond effective-window boundaries, empty intersections, inherited ledger assignments,
+  valid-empty versus unresolved tenant authority, and foreign-owned accounts with visible parents.
   `FundStructureCashFlowReadService` owns shared governance cash-flow orchestration, scope
   resolution, ladders, variance, trend fallback, and optional Security Master projections.
   Both persistence services pass captured structure, authorized accounts, shared metadata, and
