@@ -1,11 +1,11 @@
 {
-  "total_files": 786,
-  "total_lines": 179575,
+  "total_files": 788,
+  "total_lines": 179718,
   "orphaned_count": 260,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 315,
-  "average_lines": 228.5,
+  "average_lines": 228.1,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -824,7 +824,7 @@
     },
     {
       "path": "AGENTS.md",
-      "line_count": 182,
+      "line_count": 186,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1000,7 +1000,7 @@
     },
     {
       "path": "CLAUDE.md",
-      "line_count": 228,
+      "line_count": 229,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1144,7 +1144,7 @@
     },
     {
       "path": "docs/ai/assistant-workflow-contract.md",
-      "line_count": 643,
+      "line_count": 645,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1216,7 +1216,7 @@
     },
     {
       "path": "docs/ai/claude/CLAUDE.structure.md",
-      "line_count": 1567,
+      "line_count": 1566,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1408,7 +1408,7 @@
     },
     {
       "path": "docs/ai/README.md",
-      "line_count": 279,
+      "line_count": 281,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1417,6 +1417,14 @@
     {
       "path": "docs/ai/skills/README.md",
       "line_count": 172,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/ai/solo-developer-workflow.md",
+      "line_count": 76,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2568,7 +2576,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 559,
+      "line_count": 570,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2577,6 +2585,14 @@
     {
       "path": "docs/engineering/security-master-architecture-audit-2026-08-13.md",
       "line_count": 230,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/solo-developer-ci-consolidation.md",
+      "line_count": 45,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2992,7 +3008,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12997,
+      "line_count": 12998,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3448,7 +3464,7 @@
     },
     {
       "path": "docs/product/implementation-todo-list.md",
-      "line_count": 792,
+      "line_count": 794,
       "has_heading": true,
       "todo_count": 5,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

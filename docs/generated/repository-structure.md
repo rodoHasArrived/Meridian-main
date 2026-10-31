@@ -928,7 +928,6 @@ Meridian-main
 │   ├── labeler.yml
 │   ├── labels.yml
 │   ├── markdown-link-check-config.json
-│   ├── PULL_REQUEST_TEMPLATE.md
 │   ├── pull_request_template.md
 │   ├── pull_request_template_desktop.md
 │   └── spellcheck-config.yml
@@ -1453,6 +1452,7 @@ Meridian-main
 │   │   ├── model-routing-telemetry.md
 │   │   ├── parallel-task-manifest-template.md
 │   │   ├── README.md
+│   │   ├── solo-developer-workflow.md
 │   │   ├── work-modes.md
 │   │   └── working-memory.md
 │   ├── architecture
@@ -1854,6 +1854,7 @@ Meridian-main
 │   │   ├── production-readiness-audit-2026-07-27.md
 │   │   ├── README.md
 │   │   ├── security-master-architecture-audit-2026-08-13.md
+│   │   ├── solo-developer-ci-consolidation.md
 │   │   ├── web-development.md
 │   │   └── wpf-perf-uiux-audit-2026-06-14.md
 │   ├── examples

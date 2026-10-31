@@ -83,7 +83,7 @@ Use `recommend-validation --base origin/main` to include committed branch change
 working-tree changes, or repeat `--changed-file <path>` to preview an explicit scope. The npm
 shortcut is `npm run checks:recommend -- --base origin/main`. See the
 [focused validation guide](../ai/tooling/throughput-pilot.md#recommend-focused-validation) and
-[browser diagnostics](web-development.md) for details. The required full gate below still applies.
+[browser diagnostics](web-development.md) for details. The hosted `quality-gate` remains the authoritative merge result.
 
 Shared assistant context already has a canonical generator. Edit the marked section in
 `.claude/skills/_shared/project-context.md`, run `npm run guidance:sync`, then
@@ -130,20 +130,28 @@ and focused commands for recognized failures. Retained build logs and .NET shard
 under `artifacts/build-logs/` and `artifacts/test-results/dotnet/`. Diagnose resource or lock
 contention with `validation-status` and the recovery guidance below before starting another build.
 
-For completed PR-ready work, run the full canonical repository gate after the focused checks:
+Scale local validation to the risk tier in the [solo-developer workflow](../ai/solo-developer-workflow.md#verification-tiers):
+
+| Tier | Local expectation before opening a PR |
+| --- | --- |
+| Level 1 - routine (docs, styling, isolated utilities, low-risk UI) | The matching focused lane above. The hosted `quality-gate` provides the full result. |
+| Level 2 - financial or architectural | Focused lanes plus targeted tests of the changed invariants (positive and negative); run the PostgreSQL-backed tests for storage or financial-persistence changes. |
+| Level 3 - sensitive or destructive | Everything in Level 2, adversarial and fail-closed tests, and the full gate below when practical. |
+
+The full canonical repository gate is optional locally for Level 1 and recommended for Level 2/3:
 
 ```powershell
 bash scripts/ci.sh
 ```
 
-The local aggregate overlaps .NET and browser verification when resources permit, then runs docs
+State honestly in the PR which checks ran. The local aggregate overlaps .NET and browser verification when resources permit, then runs docs
 and workflow verification serially. Use `--jobs 1` for serial execution or `--jobs 2` to request
 bounded overlap. Each invocation retains its own lane evidence and waits for all required results.
 `bash scripts/ci.sh --cold` measures a full gate with fresh .NET build outputs while retaining
 dependency caches. See [local feedback measurements](../development/build-observability.md#local-feedback-latency-and-observed-retries)
 for receipts, warm edit-to-result timing, and the exact meaning of cold.
 
-Focused checks and environment diagnostics do not replace this gate or the required hosted checks.
+Focused checks and environment diagnostics do not replace the required hosted checks.
 
 GitHub Actions `Meridian CI / quality-gate` is the authoritative merge result. Local work may
 happen on `main` when the user explicitly requests it or the checkout is intentionally operating
