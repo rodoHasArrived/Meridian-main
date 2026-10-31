@@ -6,13 +6,15 @@
 
 ## What Meridian Is
 
-Meridian is a modular, configurable, self-hosted financial operations platform for organizations
-that need to prove, reconcile, approve, account for, and report financial activity. Its purpose is
-to turn fragmented source data into controlled operational records and financial outputs that a
-reviewer can reconstruct.
+Meridian is a modular, configurable, self-hosted platform for financial operations, strategy
+formulation, order management, and governed strategy execution. Operators should be able to develop
+and validate investment strategies, manage orders and broker-confirmed executions, and reconcile
+their economic effects through portfolio records, accounting, close, reporting, and retained
+evidence.
 
 The shared model starts with organization, entity, portfolio, account, book, period, operational
-event, evidence, approval, journal, report, and audit trail. Fund management, investor capital, and
+event, strategy definition and run, order, execution, evidence, approval, journal, report, and audit
+trail. Fund management, investor capital, and
 private-capital operations are first-class specializations of that model. Ordinary accounting,
 portfolio, and reporting workflows must work without requiring a fund.
 
@@ -21,17 +23,20 @@ This vision summarizes the [design charter](../product/meridian-design-document.
 architectural constraints; their inclusion does not establish implemented coverage, operator
 acceptance, or production readiness.
 
-## Product Promise: Numbers With Reconstructable Proof
+## Product Promise: Decisions, Execution, and Numbers With Proof
 
-The product promise is a financial number delivered with the evidence needed to explain its
-source, calculation, accounting treatment, reconciliation, approval, and downstream use. Operators
+The product promise connects a retained strategy or order decision to its observed outcome and
+connects a financial number to its source, calculation, accounting treatment, reconciliation,
+approval, and downstream use. Operators
 and reviewers should be able to answer three questions: what changed, who approved it, and why an
 affected operation or output remains blocked.
 
 The operational proof chain connects retained source evidence, normalized and validated records,
 reconciliation and exception resolution, reviewed posting candidates, immutable journals, close
 packages, report lines, delivery records, and audit support. Capital-account impact joins that
-chain where the workflow is fund-specific.
+chain where the workflow is fund-specific. Strategy and order workflows add the retained
+definition, run inputs, validation results, promotion decision, scoped order intent, risk verdict,
+broker observations, and fill-to-accounting handoff where those stages apply.
 
 The **Number Passport** is the shared, read-only proof view for a financial subject. It binds
 stable record and version identifiers to authenticated owner scope, book, basis, amount and
@@ -46,9 +51,32 @@ A released package retains the figures, source versions, approval, and proof ass
 release; later corrections create linked amendments or restatements. Missing, ambiguous,
 restricted, unsupported, or stale support must be visible without exposing unauthorized evidence.
 
-## First Trusted Close
+## Three Connected Operator Outcomes
 
-The first packaged outcome is a bounded close-support workflow for one entity, one supported book
+| Outcome | Required operator result |
+| --- | --- |
+| Formulate and validate a strategy | Retain the strategy version, rules, universe, parameters, data dependencies, assumptions, results, and review decisions; distinguish backtest, paper, and live modes. |
+| Manage orders and execute strategies | Review discretionary or strategy-originated intent, apply account authority and risk controls, submit and monitor orders, govern amendments and cancellations, and recover broker-confirmed outcomes. |
+| Reconcile, close, and report | Connect independent source and execution evidence to portfolio and accounting effects, resolve exceptions, approve results, and release reproducible reports. |
+
+Order management and strategy formulation/execution are explicit product objectives under
+`DEC-TRADING-STRATEGY-DIRECTION-001`, with planned delivery and acceptance tracked by `W13-OMS-001`
+and `W13-STRAT-001`. They share the operational evidence model with financial operations.
+Accounting workflows need no strategy origin; a research experiment need not post a journal.
+The existing close package does not gate all strategy or order-management development.
+
+The first OMS slice must declare its broker/account, instrument, order-type, and mode support.
+A manual order requires an explicit governed intent and account-authority contract; it must not
+fabricate a strategy run to satisfy today's strategy-linked live-admission gate. A strategy slice
+must retain one supported formulation-to-result-to-promotion-to-execution path. Both build on the
+existing OMS, strategy lifecycle, risk, and gateway services and require their own operator evidence.
+See [strategy, orders, and execution](../domain/strategy-order-execution.md) for shared concepts and
+[implementation follow-up](../product/implementation-todo-list.md#expanded-strategy-and-order-management-objectives)
+for concrete work.
+
+### First Trusted Close
+
+The financial-operations package begins with a bounded close-support workflow for one entity, one supported book
 and functional currency, and one declared period on durable storage. The
 [delivery and acceptance plan](../product/meridian-design-document.md#226-delivery-acceptance-and-rollout)
 defines its dependencies and financial gates:
@@ -87,7 +115,8 @@ listed workflow or financial convention is delivered.
 | Evidence Vault and Audit Studio | Retained sources, immutable manifests, evidence requests, audit trails, and reconstructable support packages. |
 | Reporting Studio and Delivery | Approved datasets, report-line provenance, controlled financial statements, retained packages, recipient authority, and amendment history. |
 | Data and Provider Operations | Governed connections, acquisition, normalization, validation, source freshness, lineage, and recovery. |
-| Strategy and Execution Continuity | Research, backtest, paper-validation, live-promotion, and execution records linked to operational and accounting evidence within adopted scope. |
+| Strategy Formulation and Validation | Versioned definitions, supported Designer/QuantScript/template workflows, reproducible research and backtests, paper evaluation, promotion decisions, and retained lifecycle evidence. |
+| Order Management and Execution | Discretionary and strategy-originated order intent, scoped risk and admission, routing, broker-confirmed lifecycle, amendments, cancellations, recovery, operator controls, and financial handoff. |
 | Fund Accounting and Capital Accounts | Fund-specific participation, contributions, allocations, fees, distributions, investor statements, and capital-to-ledger reconciliation. |
 
 The shared core should support assets, liabilities, commitments, and other already-modeled
@@ -101,8 +130,9 @@ directions deepen the common model. Their sequencing and completion remain regis
 
 ## Architectural Implication
 
-Every new feature should strengthen data confidence, retained evidence, reconciliation, approvals,
-accounting records, multi-asset operational coverage, close support, or governed reporting.
+Every new feature should strengthen strategy formulation and validation, order lifecycle integrity,
+governed execution, data confidence, retained evidence, reconciliation, approvals, accounting
+records, multi-asset operational coverage, close support, or governed reporting.
 
 The implementation follows the [modular operational monolith](../adr/017-modular-operational-monolith.md)
 and [module boundaries](module-map.md). Security Master owns canonical security identity;
@@ -110,6 +140,13 @@ Asset Operations owns economic interpretation and projections; Financial Operati
 generation, book context, and review; Ledger and Storage own durable accounting truth. Evidence
 graphs, search, analytics, and UI read models compose those records without acquiring posting or
 approval authority.
+
+Strategy services own definitions, run evidence, and promotion/lifecycle decisions. Execution
+services own order admission, risk/control coordination, routing, and retained broker outcomes.
+Both workstations use the same OMS and gateway seams. An order request, pending replacement, or
+cancellation request cannot be represented as a confirmed broker outcome; strategy approval alone
+does not authorize an account for live trading. Execution evidence reaches the existing governed
+financial handoff without granting the OMS authority to mutate posted journals.
 
 ### Financial Authority and Integrity
 
@@ -155,7 +192,6 @@ the owning shared service before creating presentation-specific logic.
 
 Meridian should not drift into being primarily:
 
-- a general trading order or execution management system;
 - a CRM, full cap-table platform, or outsourced services operation;
 - a payment processor or live bill-pay operation;
 - a broad self-service investor portal;
@@ -177,7 +213,8 @@ sampling review, and a kill switch; material or high-risk actions retain per-ite
 
 ## Scope and Acceptance
 
-Activate and prove existing capabilities through real operator workflows before adding breadth.
+Activate and prove existing capabilities through real operator workflows as the expanded
+strategy and order-management objectives are delivered in bounded slices.
 The earlier W1-W5 baseline establishes operational-record invariants and sequencing evidence;
 current charter, roadmap, source evidence, and explicit user direction govern expansion. Earlier
 baselines are not development ceilings.
@@ -191,11 +228,18 @@ Use the source that owns the question:
 | Implemented behavior and physical ownership | Owning source, tests, and [source documentation mesh](../source/README.md). |
 | Production-release blockers and required evidence | [Implementation and Readiness Tracker](../product/implementation-todo-list.md). |
 
-A proven slice runs through the supported operator path on durable storage, exposes truthful
-blockers, retains reproducible financial and evidence results, and records acceptance for its
-declared scenario. Source inspection, a merged change, or green CI alone does not establish that
-acceptance. Required independent human review remains in place.
+Development follows the [solo-developer workflow](../ai/solo-developer-workflow.md): use
+deterministic synthetic data, focused checks, and separate AI critique where the changed risk
+warrants it. Routine development does not require live accounts, institutional operators, or
+production certification. AI critique is not independent human approval.
+
+A supported operator slice states its data and operating scope, exposes truthful blockers,
+retains reproducible results, and proves its applicable durability and recovery requirements.
+Synthetic verification, live-provider verification, product acceptance, and release certification
+remain separate claims. The developer owns merge and activation decisions; required product
+approvals and GitHub rules remain in force.
 
 Production-release claims additionally require packaging, operator preflight, and the applicable
-hosted checks and retained release evidence on one frozen commit. This vision does not adopt new
-roadmap scope, change delivery ranks, or certify a capability or release.
+hosted checks and retained release evidence on one frozen commit. The W13 decision adopts product
+direction only; it does not change existing delivery ranks, certify a capability or release, or
+authorize live broker activity.

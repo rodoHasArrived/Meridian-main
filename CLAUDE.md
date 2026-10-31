@@ -15,6 +15,8 @@ Meridian is a .NET 10 trading and operational-finance platform with fund operati
 - an active WPF desktop workstation (co-equal UI lane) whose current focus is web-UI parity over shared contracts,
 - MCP and AI workflow assets for repository navigation and task automation.
 
+**Solo-developer default:** [Proportional AI-assisted workflow](docs/ai/solo-developer-workflow.md). One developer owns merge and activation decisions; use synthetic fixtures and targeted checks. Live accounts, invented human review teams, and full production certification are not prerequisites for ordinary development. GitHub required checks still apply.
+
 ## Critical Rules
 
 1. Make the safest change that satisfies the request.
@@ -75,8 +77,7 @@ python3 build/scripts/docs/validate-skill-packages.py
 
 GNU Make targets are optional convenience wrappers. In Windows shells where `where.exe make` finds
 nothing, use the direct `dotnet`, `npm`, `pwsh`, and `python` commands above instead of `make ...`.
-For completed PR-ready work, `bash scripts/ci.sh` is the canonical local/Codex verification
-command; the GitHub-hosted `quality-gate` check remains authoritative before merge.
+For PR-ready work, use risk-appropriate checks first and state honestly if the full local `bash scripts/ci.sh` was not run; the GitHub-hosted `quality-gate` remains authoritative where required before merge.
 
 For incremental .NET iteration, `buildctl.py recommend-validation` selects a stable session profile
 per test project; add `--fresh` for independent-output recommendations. The local full gate overlaps

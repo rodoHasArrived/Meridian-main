@@ -119,7 +119,29 @@ def build_payload(root: Path) -> dict[str, Any]:
         "generatedAtUtc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "repository": root.name,
         "activeScope": {
-            "productThesis": "Meridian proves operational records from source evidence to governed output.",
+            "productThesis": (
+                "Meridian connects financial operations, strategy formulation and validation, "
+                "order management, and governed strategy execution through retained evidence "
+                "and shared authority."
+            ),
+            "scopeDecision": "DEC-TRADING-STRATEGY-DIRECTION-001",
+            "plannedDelivery": ["W13-STRAT-001", "W13-OMS-001"],
+            "executionSupportRule": (
+                "The strategy and OMS decision adopts product direction only. The W13 rows "
+                "remain planned and unranked; supported modes, accounts, brokers, instruments, "
+                "and order types require their own implementation and acceptance evidence. "
+                "Promotion, account authority, risk controls, readiness, and runtime support "
+                "remain separate admission checks. The trusted-close package is a bounded "
+                "financial outcome, not a development ceiling."
+            ),
+            "developmentVerification": (
+                "Follow docs/ai/solo-developer-workflow.md: default to deterministic synthetic "
+                "data, focused checks, and separate AI critique when risk warrants it. Ordinary "
+                "development does not require live accounts, institutional operators, or "
+                "production certification. AI critique is not independent human approval. "
+                "The developer retains merge and sensitive activation decisions, and product "
+                "approvals and required GitHub checks remain in force."
+            ),
             "proofChain": [
                 "source evidence",
                 "normalized record",
@@ -133,6 +155,19 @@ def build_payload(root: Path) -> dict[str, Any]:
                 "delivery record",
                 "audit evidence",
             ],
+            "strategyExecutionChain": [
+                "retained strategy definition and inputs",
+                "reproducible validation and run evidence",
+                "version-bound review and promotion",
+                "account-scoped order intent and risk admission",
+                "OMS lifecycle and confirmed broker outcomes",
+                "recovery, reconciliation, and governed economic handoff",
+            ],
+            "journeyBoundary": (
+                "Manual orders require explicit actor/account authority and retain their true "
+                "origin; they do not fabricate strategy lineage. Accounting may start from "
+                "external operational evidence, and research may end with retained analysis."
+            ),
             "workspaceNavigation": ["Trading", "Portfolio", "Accounting", "Reporting", "Strategy", "Data", "Settings"],
             "activeSurfaces": [
                 "src/Meridian.Wpf/",
@@ -146,7 +181,6 @@ def build_payload(root: Path) -> dict[str, Any]:
             ],
             "deferredByDefault": [
                 "mobile applications",
-                "full live trading",
                 "full payment execution",
                 "broad client portal",
                 "no-code workflow builder",
@@ -154,6 +188,7 @@ def build_payload(root: Path) -> dict[str, Any]:
             ],
         },
         "recommendedLoadOrder": [
+            "docs/ai/solo-developer-workflow.md",
             "docs/ai/navigation/README.md",
             "docs/ai/generated/repo-navigation.md",
             "docs/product/meridian-design-document.md",
@@ -193,11 +228,23 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "",
         payload["activeScope"]["productThesis"],
         "",
-        "### Proof Chain",
+        f"Scope decision: `{payload['activeScope']['scopeDecision']}`. Planned delivery: "
+        + ", ".join(f"`{item}`" for item in payload["activeScope"]["plannedDelivery"])
+        + ".",
+        "",
+        payload["activeScope"]["executionSupportRule"],
+        "",
+        payload["activeScope"]["developmentVerification"],
+        "",
+        "### Financial Proof Chain",
         "",
     ]
     for step in payload["activeScope"]["proofChain"]:
         lines.append(f"- {step}")
+    lines.extend(["", "### Strategy and Execution Evidence", ""])
+    for step in payload["activeScope"]["strategyExecutionChain"]:
+        lines.append(f"- {step}")
+    lines.extend(["", payload["activeScope"]["journeyBoundary"]])
     lines.extend(
         [
             "",

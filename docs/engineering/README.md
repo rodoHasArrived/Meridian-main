@@ -5,6 +5,8 @@
 **Reviewed:** 2026-10-28
 
 This is the canonical developer and agent entrypoint for Meridian engineering and contribution work.
+
+**Solo-developer quick path:** [Proportional AI-assisted workflow](../ai/solo-developer-workflow.md). Start with the smallest relevant validation, use synthetic data, report actual checks, and reserve full certification for a separate release decision. Existing required GitHub checks remain enforceable; this is not a CI bypass.
 It replaces hand-built planning and historical engineering prose with active operating guidance.
 
 ## Audience Paths
@@ -23,6 +25,7 @@ It replaces hand-built planning and historical engineering prose with active ope
 - **WPF performance and UI/UX audit:** [WPF Performance & UI/UX Refinement Audit 2026-06-14](wpf-perf-uiux-audit-2026-06-14.md) *(dated; its changes were not compiled or run when written)*
 - **Release-evidence working ledger:** [Production-Certification Evidence Chain](production-certification-evidence-chain.md)
 - **CI/CD ownership and rollout:** [CI/CD validation ownership](ci-cd-optimization.md)
+- **Solo-developer CI consolidation:** [Measured removal of duplicate CI execution](solo-developer-ci-consolidation.md) (proposal; preserves required checks and financial safety coverage)
 - **Pipeline budget measurements (PRD-112):** [Bounded benchmark lane and retained evidence](pipeline-benchmark.md)
 - **Docs regeneration automation constraints:** [Docs Regeneration Automation — Design Constraints](docs-regeneration-automation-design.md)
 - **Browser/docs regeneration and generated merge conflicts:** [Prepare an isolated repair and reviewed-hash merge](generated-merge-recovery.md)
