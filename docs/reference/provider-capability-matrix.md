@@ -2,7 +2,7 @@
 
 **Status:** canonical  
 **Owner:** core-team  
-**Reviewed:** 2026-06-30
+**Reviewed:** 2026-10-31
 
 **Last Updated:** 2026-06-30
 
@@ -23,6 +23,8 @@ State tags:
 - **partial**: capability exists but is scoped, read-only, or otherwise limited.
 - **experimental**: early/incomplete implementation, mapper-only path, or not yet fully wired.
 - **template-only**: scaffold/sample only, no active provider behavior.
+
+Evidence note: where a `complete` row rests on offline, mock, simulator, or fixture tests (no dated live run), read it as **synthetic-verified** in the [solo-developer evidence labels](../ai/solo-developer-workflow.md#provider-evidence-labels), not **live-verified**. `complete` here does not claim compatibility with the live provider; absent a recorded live run, the live status is `live-untested`.
 
 ## Readiness Interpretation
 

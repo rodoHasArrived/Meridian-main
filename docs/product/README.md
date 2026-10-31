@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-05
+**Reviewed:** 2026-10-31
 
 Start here for Meridian's product direction, delivery evidence, and release-readiness questions.
 This page routes stakeholders to the owning document; it does not maintain a second status tracker.
@@ -28,9 +28,11 @@ rows. Their inputs are the [program-state registry](../roadmap/data/program-stat
 [roadmap-item registry](../roadmap/data/roadmap-items.yml).
 
 Check the [Implementation and Readiness Tracker](implementation-todo-list.md) separately for the
-P0 release gate. A capability's acceptance is bounded by its recorded evidence; it does not certify
-a production release. Release claims require the tracker, roadmap evidence, packaging, operator
-preflight, and required GitHub Actions evidence to agree on the same release commit.
+P0 production release gate. A capability's acceptance is bounded by its recorded evidence; it does not certify
+a production release. For a production release candidate only, release claims require the tracker,
+roadmap evidence, packaging, operator preflight, and required GitHub Actions evidence to agree on the
+same release commit. Development verification on synthetic data does not wait on operator acceptance or
+production certification; see the [Solo-developer workflow](../ai/solo-developer-workflow.md) for tiers and vocabulary.
 
 ## Canonical Product Design Charter
 
@@ -55,7 +57,13 @@ Use the source that owns the question:
 
 - Describe a capability as closed or done only when its roadmap row and supporting evidence agree.
 - Describe work as planned only when the registry records that state.
-- Keep implemented behavior, operator acceptance, and production certification distinct.
+- Keep four states distinct: implemented behavior, verification on synthetic data (development
+  verification), operator acceptance, and production certification. Development verification does not
+  wait on operator acceptance or production certification, and does not imply either.
+- In prose, the [solo-developer completion vocabulary](../ai/solo-developer-workflow.md#completion-vocabulary)
+  (Planned, In progress, Verified for a stated scope, Released) is communication guidance only; roadmap
+  statuses are unchanged. For providers, say `synthetic-verified`, `live-verified`, `live-untested`, or
+  `unsupported`.
 - Link claims to their roadmap evidence and the relevant [operator procedure](../operators/README.md)
   or [reference contract](../reference/README.md).
 - Treat a review, brainstorm, prototype, or delivery plan as a dated input; it does not change status.

@@ -2,9 +2,23 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-06-16
+**Reviewed:** 2026-10-31
 
 **Proportional default for solo development:** [Solo-developer workflow](solo-developer-workflow.md). Read its risk-tiered validation and synthetic-data rules before applying detailed orchestration guidance. No requirement here implies the existence of an independent human review team or mandates live financial-provider credentials for normal development. Existing GitHub enforcement and explicit sensitive-operation safeguards still control.
+
+**Tier mapping.** The solo-developer workflow is adopted; its Level 1/2/3 tiers set how much
+verification and review a change needs. This contract's gates and risk levels map onto them and
+never lower them: unconditional human-approval gates below (migrations, credentials, trading,
+approvals, permissions, audit evidence) stay in force at every tier.
+
+| Solo tier | Typical contract risk level | Gate posture |
+| --- | --- | --- |
+| Level 1 - routine | Low-risk edits, docs, UI, isolated utilities | No extra gate beyond the shared safety rules |
+| Level 2 - financial or architectural | Ledger/accounting, storage, provider adapters, shared contracts | Separate-agent review plus residual-risk summary; contract human gates still apply where they name the action |
+| Level 3 - sensitive or destructive | Money movement, live trading, destructive migrations, auth/secrets, production deployment | Explicit gate; owner acceptance recorded directly by the owner |
+
+For the AI roles table (developer, planning, implementation, verification, review) see
+[Agent roles](solo-developer-workflow.md#agent-roles).
 
 This contract is the shared operating standard for AI-assisted development in Meridian. It applies
 to Codex, Claude, GitHub Copilot, MCP clients, reusable prompt templates, CI prompt generation, and
@@ -442,6 +456,11 @@ When editing `src/**`, assistants must:
   Put that logic in services, agents, scripts, utilities, configuration, or documentation.
 - Respect existing worktree changes. Treat unrelated edits as user-owned unless explicitly told to
   revert them.
+- An AI agent is never the independent human reviewer. Agents must not impersonate an independent
+  human reviewer, fabricate approval evidence, or self-approve. Owner acceptance for sensitive areas
+  is recorded directly by the owner, not written on the owner's behalf by an agent.
+- Small single-agent tasks do not need coordinator escalation, handoff packets, or manifests; use
+  those only for genuine multi-agent, multi-lane, or cross-subsystem work.
 - For generated AI artifacts, update the generator or source input when one exists; do not hand-edit
   generated outputs unless the workflow explicitly allows it.
 

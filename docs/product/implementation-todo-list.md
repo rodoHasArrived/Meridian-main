@@ -2,7 +2,7 @@
 
 **Status:** active; production certification blocked  
 **Owner:** core-team  
-**Reviewed:** 2026-10-28 (bounded source reconciliation against `9306ce56fa`; historical certification baseline retained)
+**Reviewed:** 2026-10-31 (development/production readiness definitions added; prior: 2026-10-28 bounded source reconciliation against `9306ce56fa`; historical certification baseline retained)
 **Prior review:** 2026-10-20 (ADR-019/ADR-020 core-team sign-off, `v0.1.0-rc.1` pushed by the owner on 2026-10-21 against `c51c5d8d`, the merge of PR #3239; its tag run failed closed on missing signing secrets and the tree's docs lane is red, so `v0.1.0-rc.2` on a green `main` head is the corrected candidate, PRD-002 platform fail-closed, concurrent-configuration and credential/audit commit closures; historical rows retain their recorded review scope)
 **Baseline:** reviewed `main` commit `e0ecd952d24b1e8d09a8de282ed90c98cffe1bb3`; Meridian CI and Production Certification passed on that commit on 2026-10-14. Production readiness remains blocked pending the complete frozen-release evidence set, operator review, signed release evidence, and required GitHub Actions activation
 **Previous production audit:** `f0ac384a2` on 2026-07-11
@@ -24,6 +24,10 @@ future-dated scalar factor early. Regression sources live in
 This records implementation progress, not a new test run or release acceptance.
 Factor-paydown operator activation and the existing frozen-release evidence gates
 remain open.
+
+## Development Readiness Versus Production Readiness
+
+**Development readiness** means Meridian builds, tests, and demonstrates a documented capability on reproducible synthetic data, with safeguards on dangerous operations, verified at the tier its risk requires; it is reported as Verified for a stated scope and does not wait on this tracker. **Production readiness** means Meridian is suitable for a specifically defined real operating environment, with secret management, independent validation, disaster recovery, deployment assurance, and operational controls; this tracker is its checklist, and the Production Definition below governs it. See the [Solo-developer workflow](../ai/solo-developer-workflow.md#development-readiness-and-production-readiness).
 
 ## Production Definition
 

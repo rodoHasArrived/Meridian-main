@@ -2,10 +2,14 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-06-04
+**Reviewed:** 2026-10-31
 
 Use this checklist for tasks that involve multiple agents, skill lanes, or handoffs across Codex,
 Claude, Copilot, MCP clients, or local maintenance scripts.
+
+**Scope:** applies when two or more agents or lanes actually coordinate. One agent switching
+between skills is not a handoff and does not need a packet. The required packet fields below are
+unchanged for work that is in scope.
 
 ## 1) Scope and Ownership
 

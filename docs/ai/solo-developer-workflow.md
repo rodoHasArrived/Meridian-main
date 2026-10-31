@@ -37,6 +37,17 @@ If the full local `bash scripts/ci.sh` is unavailable or disproportionate to a r
 - Describe provider evidence accurately: `synthetic-verified`, `live-verified`, `live-untested`, or `unsupported`. Simulated success is not evidence of live compatibility.
 - Keep real-money execution and unsafe real-account operations disabled unless separately authorized and safely configured.
 
+### Provider evidence labels
+
+| Label | Meaning |
+| --- | --- |
+| `synthetic-verified` | Behavior is proven against Meridian's deterministic synthetic fixtures or simulators. Shows conformance to Meridian's own contract, not provider behavior. |
+| `live-verified` | Exercised against the real provider, with a dated record held privately by the owner (no credentials or account data in the public repository). |
+| `live-untested` | No live run has happened. This is the default when no live credential is available. |
+| `unsupported` | The capability is not offered. |
+
+Record the label in the PR's "Evidence scope" and in the adapter or provider readiness docs for the affected provider. A missing live credential yields `live-untested`; it never blocks a build, test run, or PR. Never promote a label without the evidence it names.
+
 ## Completion vocabulary
 
 - **Planned:** not started.

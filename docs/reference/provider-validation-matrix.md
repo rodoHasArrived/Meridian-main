@@ -2,7 +2,7 @@
 
 **Status:** canonical  
 **Owner:** core-team  
-**Reviewed:** 2026-06-30
+**Reviewed:** 2026-10-31
 
 **Last Updated:** 2026-06-30
 **Scope:** Active Wave 1 provider confidence, checkpoint resumability, and Parquet Level 2 flush proof
@@ -16,6 +16,8 @@ For the unified per-broker phase/blocker/evidence view, see [`provider-integrati
 
 - ✅ Closed with executable repo evidence
 - ⚠️ Bounded: meaningful evidence exists, but at least one vendor or runtime condition remains manual
+
+Evidence note: a ✅ row whose offline/CI evidence is mock-, fixture-, or simulator-based is **synthetic-verified** (see [provider evidence labels](../ai/solo-developer-workflow.md#provider-evidence-labels)). It is not **live-verified** and is not production certification; without a recorded live run the live status is `live-untested`. Where a row says live/manual evidence is "Not required", that scopes the claim to synthetic verification.
 
 ## Wave 1 Matrix
 

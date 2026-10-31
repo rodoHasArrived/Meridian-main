@@ -25,7 +25,7 @@ It replaces hand-built planning and historical engineering prose with active ope
 - **WPF performance and UI/UX audit:** [WPF Performance & UI/UX Refinement Audit 2026-06-14](wpf-perf-uiux-audit-2026-06-14.md) *(dated; its changes were not compiled or run when written)*
 - **Release-evidence working ledger:** [Production-Certification Evidence Chain](production-certification-evidence-chain.md)
 - **CI/CD ownership and rollout:** [CI/CD validation ownership](ci-cd-optimization.md)
-- **Solo-developer CI consolidation:** [Measured removal of duplicate CI execution](solo-developer-ci-consolidation.md) (proposal; preserves required checks and financial safety coverage)
+- **Solo-developer CI consolidation:** [Measured removal of duplicate CI execution](solo-developer-ci-consolidation.md) (audit and owner-approval follow-ups; preserves required checks and financial safety coverage)
 - **Pipeline budget measurements (PRD-112):** [Bounded benchmark lane and retained evidence](pipeline-benchmark.md)
 - **Docs regeneration automation constraints:** [Docs Regeneration Automation — Design Constraints](docs-regeneration-automation-design.md)
 - **Browser/docs regeneration and generated merge conflicts:** [Prepare an isolated repair and reviewed-hash merge](generated-merge-recovery.md)
