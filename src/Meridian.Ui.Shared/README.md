@@ -11,7 +11,7 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Ui.Shared
 
-Portfolio cash-ladder composition supplies the configured business-day calendars to the shared Instruments scenario engine. Declared issuer-call and holder-put scenarios use retained projection terms and calendar hashes; floating shocks consume retained per-reset inputs. Scenario blockers remain visible through the existing decision-readiness response; no new approval or payment authority is introduced.
+Portfolio cash-ladder composition supplies the configured business-day calendars to the shared Instruments scenario engine. Declared issuer-call and holder-put scenarios use retained projection terms and calendar hashes; floating shocks consume retained per-reset inputs. Scenario blockers remain visible through the existing decision-readiness response; no new approval or payment authority is introduced. The optional `engineVersion` query selects explicit `portfolio-cash-ladder-v1` replay; an unknown version returns a blocked ladder with no contributions that names the unsupported version rather than falling back silently.
 
 Shared cash-flow preview endpoints expose calculation-only exercise and prepayment scenarios with view permission. Separate retention endpoints require modification permission, bind retries to immutable run IDs, and retrieve the complete replay evidence. Loan retention preserves the existing tenant write gate. Loan preview and retention share the actor-scoped direct-lending mutation budget; exhaustion refuses the request before calculation or retained-evidence access. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
 

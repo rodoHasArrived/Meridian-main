@@ -9822,7 +9822,10 @@ Meridian-main
 │   │   │       ├── special-dividend-25pct-synthetic.json
 │   │   │       └── t-wbd-spinoff-2022.json
 │   │   ├── fixed-income
-│   │   │   └── bond-consistency.json
+│   │   │   ├── bond-consistency.json
+│   │   │   └── golden
+│   │   │       ├── bond-analytics-versions.json
+│   │   │       └── portfolio-cash-ladder-versions.json
 │   │   ├── fund-economics
 │   │   │   └── golden
 │   │   │       └── fund-economics-worked-examples.json
@@ -10957,6 +10960,7 @@ Meridian-main
 │   │   │   ├── PortfolioCashLadderEngineTests.cs
 │   │   │   ├── PortfolioCashLadderReadServiceTests.cs
 │   │   │   ├── PortfolioCashLadderScheduleCharacterizationTests.cs
+│   │   │   ├── PortfolioCashLadderVersionGoldenTests.cs
 │   │   │   └── RetainedEvidenceIdentityValidatorTests.cs
 │   │   ├── Backtesting
 │   │   │   └── PluginBacktestStrategyLiveSourceTests.cs

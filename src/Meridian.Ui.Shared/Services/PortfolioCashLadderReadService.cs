@@ -123,7 +123,8 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
 
         // Validate raw currencies before any amount arithmetic, using the engine's own run,
         // horizon, position, scenario, and capital-kind selection. Excluded provider rows cannot affect cash.
-        var contributionCurrencies = PortfolioCashLadderEngine.GetContributionCurrencies(inputs, query.ScenarioId).ToArray();
+        var engine = ResolveEngine(query.EngineVersion, decisionBlockers);
+        var contributionCurrencies = engine.GetContributionCurrencies(inputs, query.ScenarioId).ToArray();
         if (contributionCurrencies.Any(static currency => string.IsNullOrWhiteSpace(currency)))
         {
             decisionBlockers.Add("A contributing cash flow or capital activity is missing currency evidence.");
@@ -140,7 +141,34 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
                 $"Projected flows include {string.Join(", ", foreignFlowCurrencies)} while the base currency is {baseCurrency}; no authoritative FX conversion source is registered.");
         }
 
-        return PortfolioCashLadderEngine.Build(inputs with { DecisionBlockers = decisionBlockers }, query.ScenarioId);
+        return engine.Build(inputs with { DecisionBlockers = decisionBlockers }, query.ScenarioId);
+    }
+
+    /// <summary>A retained ladder engine: its currency selection and its build must come from the same version.</summary>
+    private sealed record LadderEngine(
+        Func<PortfolioCashLadderInputs, string?, IEnumerable<string>> GetContributionCurrencies,
+        Func<PortfolioCashLadderInputs, string?, PortfolioCashLadderDto> Build);
+
+    private static readonly LadderEngine CurrentEngine =
+        new(PortfolioCashLadderEngine.GetContributionCurrencies, PortfolioCashLadderEngine.Build);
+
+    private static readonly LadderEngine LegacyEngine =
+        new(LegacyPortfolioCashLadderEngine.GetContributionCurrencies, LegacyPortfolioCashLadderEngine.Build);
+
+    /// <summary>
+    /// Explicit historical replay selects the retained v1 engine by its exact version string. An
+    /// unknown version never silently falls back: the response is blocked, carries no contributions,
+    /// and names the unsupported version alongside the versions that are retained.
+    /// </summary>
+    private static LadderEngine ResolveEngine(string? engineVersion, List<string> decisionBlockers)
+    {
+        if (engineVersion is null || string.Equals(engineVersion, PortfolioCashLadderEngine.EngineVersion, StringComparison.Ordinal))
+            return CurrentEngine;
+        if (string.Equals(engineVersion, LegacyPortfolioCashLadderEngine.EngineVersion, StringComparison.Ordinal))
+            return LegacyEngine;
+        decisionBlockers.Add(
+            $"Cash ladder engine version '{engineVersion}' is not retained; use '{PortfolioCashLadderEngine.EngineVersion}' or replay '{LegacyPortfolioCashLadderEngine.EngineVersion}'.");
+        return CurrentEngine;
     }
 
     private async Task<(IReadOnlyList<PortfolioCashLadderPositionDto> Positions, IReadOnlyList<string> Notices)> LoadPositionsAsync(
