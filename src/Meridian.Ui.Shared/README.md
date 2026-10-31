@@ -21,6 +21,14 @@ binding use shared Application services. Lifecycle vault operations revalidate o
 configuration leases; network verification stays outside so rotation can proceed, and returning
 results still require the current generation. Security Master snapshot-lot economics use
 `Position.ExactQuantity`, including legacy fractional short direction, rather than rounded positions.
+Legacy lifecycle secret access requires existing readable configuration. Any retained host binding,
+including dangling or aliased selections, prevents provider-wide fallback. Default QuickBooks, Xero,
+NetSuite, Plaid, IB Flex and module compatibility runtime composition uses the legacy-only ownership
+guard; owned families cannot activate unassigned or options credentials after rollback. Explicit selected-connection verification
+continues through the scoped lifecycle. Accounting imports and Plaid item workflows still require a
+tenant-aware runtime before owned-provider rollout. Module tests refuse before provider configuration
+or probing, and unavailable owned credential metadata does not fall back to environment values. The
+compatibility sidecar importer validates the entire provider batch before atomic vault import.
 
 Source comparison requires a completed recovery checkpoint with matching run/import IDs, artifact hashes and counts, plus executed mapping proof shared by the import and match artifact. Failed or running recovery cannot clear observations. Named SLA calendars load once per host from DataRoot/reconciliation/sla-calendars.json; see the reconciliation operating procedure.
 An unfinished recovery refuses publication so the report workflow can retry after completion.

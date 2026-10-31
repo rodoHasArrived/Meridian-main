@@ -276,10 +276,20 @@ public sealed partial class AccountingSystemIntegrationServiceTests
             var unverified = await service.CreateExportPackageAsync(request with { EvidenceLinks = [.. request.EvidenceLinks, .. evidence] });
             unverified.ValidationIssues.Should().Contain(issue => issue.Code == "ExternalGlProviderConnectionUnverified");
             unverified.Certification!.State.Should().Be(AccountingCertificationStateDto.Draft);
-            var lifecycle = new ProviderConnectionLifecycleService(credentials,
-                new ConfigStore(Path.Combine(Path.GetTempPath(), $"unused-gl-config-{Guid.NewGuid():N}.json")),
-                NullLogger<ProviderConnectionLifecycleService>.Instance, accountingSystemProviders: [provider]);
-            (await lifecycle.VerifyAsync(id, actor: "controller")).Success.Should().BeTrue();
+            var configRoot = Path.Combine(Path.GetTempPath(), "meridian-gl-owned-controls", Guid.NewGuid().ToString("N"));
+            try
+            {
+                var config = new ConfigStore(Path.Combine(configRoot, "config.json"));
+                await config.SaveAsync(new Meridian.Core.Config.AppConfig(DataRoot: configRoot));
+                var lifecycle = new ProviderConnectionLifecycleService(credentials, config,
+                    NullLogger<ProviderConnectionLifecycleService>.Instance, accountingSystemProviders: [provider]);
+                (await lifecycle.VerifyAsync(id, actor: "controller")).Success.Should().BeTrue();
+            }
+            finally
+            {
+                if (Directory.Exists(configRoot))
+                    Directory.Delete(configRoot, recursive: true);
+            }
             var verified = await service.CreateExportPackageAsync(request with { EvidenceLinks = [.. request.EvidenceLinks, .. evidence] });
             verified.ValidationIssues.Should().NotContain(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
             verified.Certification!.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);

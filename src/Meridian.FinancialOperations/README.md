@@ -11,6 +11,14 @@ last_reviewed: 2026-10-14
 
 # src/Meridian.FinancialOperations
 
+Accounting provider discovery translates the typed ownership-required refusal into an explicit disabled
+row while retaining unrelated provider rows. Configuration and storage failures remain errors. Default
+QuickBooks, Xero and NetSuite imports cannot consume owned credentials until their runtime selects an
+authorized tenant/connection; selected-connection verification does not grant import authority.
+IB Flex remote retrieval resolves the guarded legacy-runtime credential-store key. Owned families
+cannot use unassigned credentials after rollback. Hosts without that guard, authoritative configuration
+or vault service keep file parsing available while remote retrieval remains unavailable.
+
 New declared-bond amortization previews select `canonical-lot-amortization-v5`, using the same coupon, stub, accrual and discount-time calculator as analytics. Existing v4 instructions remain replayable with their original calculations. Settlement verification requests the retained analytics model version. Existing review, period controls, balanced posting and immutable lot/journal boundaries remain authoritative.
 
 `CanonicalLotAmortizationService.PreviewExtendedAsync` explicitly selects v3 remaining-face

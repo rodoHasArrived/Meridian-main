@@ -19,6 +19,11 @@ internal sealed class ProviderRoutingFeatureRegistration : IServiceFeatureRegist
 
         services.TryAddSingleton<ProviderConnectionService>();
         services.TryAddSingleton<ProviderRuntimeCredentialService>();
+        services.TryAddSingleton<LegacyProviderRuntimeCredentialStore>();
+        services.TryAddKeyedSingleton<IProviderCredentialStore>(ProviderCredentialStoreServiceKeys.LegacyRuntime,
+            (sp, _) => sp.GetService<UI.ConfigStore>() is null || sp.GetService<IProviderCredentialStore>() is null
+                ? null!
+                : sp.GetRequiredService<LegacyProviderRuntimeCredentialStore>());
         services.TryAddSingleton<ProviderBindingService>();
         services.AddDefaultProviderSetupHandlers();
         services.TryAddSingleton<IProviderSetupRegistry, ProviderSetupRegistry>();

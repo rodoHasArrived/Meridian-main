@@ -21,6 +21,14 @@ it revalidates one retained tenant/connection/account/environment under the conf
 reading the scoped vault. Owned, ambiguous or dangling selections never fall back. Entirely legacy
 families retain their prior policy. Host selection requires provider reconstruction; credential editing
 does not hot-activate a running collector. See [credential operations](../../docs/operators/provider-credentials.md#explicit-connection-ownership-and-host-selection).
+Legacy setup refuses a retained runtime binding even when its connection or ownership marker is
+missing. `LegacyProviderRuntimeCredentialStore` guards runtimes that do not yet carry trusted
+tenant/connection identity: every vault read and mutation requires readable configuration and an
+entirely legacy provider family under the configuration lease. Owned families remain unavailable to
+these runtimes until tenant-aware selection is implemented; the guard does not choose another owner.
+Atomic legacy sidecar import validates the complete batch under one configuration lease before vault
+mutation. The shared legacy-runtime DI key makes IB Flex remote retrieval opt in to this guard;
+hosts without an authoritative configuration or credential-store service retain file import only.
 
 `SecurityMasterOperationalReadinessService` consumes the asset-pack registry for all class-specific
 readiness metadata. It publishes every catalog class and keeps catalog-derived fallback profiles

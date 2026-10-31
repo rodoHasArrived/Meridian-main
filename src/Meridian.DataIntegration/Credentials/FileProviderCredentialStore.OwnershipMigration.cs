@@ -42,7 +42,12 @@ public sealed partial class FileProviderCredentialStore
                 // A completed command is an immutable receipt, including after subsequent rotation.
                 // Retrying migration after rollback never re-applies an old transfer.
                 if (!rollback || receipt.RolledBack)
+                {
+                    // The first attempt may have stopped after publishing the primary receipt.
+                    // Repair from current bytes, including later replacements, never the old secret.
+                    await RepairCurrentRecoveryGenerationAsync(ct).ConfigureAwait(false);
                     return receipt;
+                }
             }
             else if (rollback)
                 throw new ProviderCredentialConflictException();

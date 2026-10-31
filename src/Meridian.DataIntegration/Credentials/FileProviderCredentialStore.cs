@@ -205,6 +205,9 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
                 updated.ExternalAccountId = scope.ExternalAccountId;
 
             vault.Providers[storageKey] = updated;
+            // A replacement must durably invalidate the original migration's rollback authority.
+            var invalidateMigrationRollback = scope is not null && vault.OwnershipMigrations.Values.Any(migration =>
+                !migration.RolledBack && migration.ProviderId == descriptor.ProviderId && migration.Scope == scope);
             var auditLine = BuildAuditLine(
                 descriptor,
                 "save",
@@ -215,7 +218,8 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
             await CommitWithAuditAsync(
                 vault,
                 auditLine,
-                () => WriteVaultAsync(vault, ct, retainCurrentGenerationAsBackup: retainCurrentGenerationAsBackup),
+                () => WriteVaultAsync(vault, ct, discardPreviousGeneration: invalidateMigrationRollback,
+                    retainCurrentGenerationAsBackup: retainCurrentGenerationAsBackup),
                 descriptor.ProviderId, "save",
                 new AuditCommitCheck("provider-save", storageKey, updated.Metadata["credentialGeneration"], null),
                 ct).ConfigureAwait(false);
@@ -1622,7 +1626,9 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
         // so readers never observe an in-place copy's truncated intermediate generation.
         if (discardPreviousGeneration)
         {
-            // Deletion must remove every recoverable copy before it can be acknowledged.
+            // Preserve a readable source if this operation recovered from the only good backup.
+            if (File.Exists(_vaultBackupPath))
+                await ReadOrRestorePrimaryGenerationAsync(ct).ConfigureAwait(false);
             File.Delete(_vaultBackupPath);
         }
         else if (File.Exists(VaultPath))

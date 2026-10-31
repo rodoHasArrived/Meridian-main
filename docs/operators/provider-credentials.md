@@ -88,8 +88,11 @@ an already-owned connection.
 2. Enter secrets through the existing selected-connection credential route, or explicitly migrate a
    retained provider-wide vault record below. No secret belongs in ownership requests.
 3. `PUT /api/provider-routing/connections/paper-a/runtime-credentials` with `{ "providerId": "alpaca" }`
-   selects that owned connection for host provider construction. Restart through the lifecycle
-   supervisor, then verify. Editing credentials does not hot-activate an already running collector.
+   selects that owned connection for host provider construction. Keep collection, imports and trading
+   stopped while reconstructing provider instances through the lifecycle supervisor. Verify the
+   selected connection's actual provider account and environment before an operator releases activity.
+   Binding and vault scope identify the intended owner; neither proves which upstream account a secret
+   reaches. Editing credentials does not hot-activate an already running collector.
 
 The host revalidates the selected tenant, connection, provider, enabled state, account and environment
 before reading secrets. Owned providers without an explicit selection block construction; missing
@@ -99,10 +102,30 @@ connection leaves its host default dangling so removal cannot silently select le
 Entirely legacy families retain their existing fallback policy.
 The retained `ownershipRequiredProviders` marker survives connection deletion, including deletion
 before a host default was selected. Removing ownership cannot implicitly re-enable legacy credentials.
+Missing authoritative configuration blocks credential access. Restore the reviewed configuration,
+including ownership markers and runtime selections, before retrying; an empty replacement config is
+not a recovery procedure. A dangling runtime selection also blocks legacy setup and credential commands.
+
+Default QuickBooks, Xero and NetSuite accounting import adapters are legacy-only. Once their provider
+family requires ownership, they report a disabled runtime and refuse credential access, including
+after rollback. Their import requests do not yet select a tenant-authorized connection. Explicit
+selected-connection verification remains available, but successful verification does not enable these
+default import adapters. Tenant-aware accounting import selection and its independent review remain
+rollout prerequisites. Separate OAuth-token runtime cutover also requires provider-specific evidence.
+The default Plaid workstation runtime is also legacy-only: owned families refuse link, item and transfer
+credential access before provider calls or fallback to configured options. A tenant-authorized Plaid
+item/connection runtime is required before that family can resume activity under owned credentials.
+The same restriction applies to default IB Flex remote statement retrieval and provider-module
+compatibility testing. IB Flex file import remains available without remote credentials. Module tests
+refuse before configuring or probing a provider, and module credential status cannot borrow environment
+values for an owned family. Legacy sidecar import validates every provider in its batch before any
+credential is imported; ownership conflicts preserve the sidecar for operator investigation.
 
 ### Reviewed migration and rollback
 
-Stop affected provider activity before changing ownership. Obtain a non-secret preview with
+Stop affected provider activity and drain in-flight requests before changing ownership. The
+configuration lease protects each credential access; it cannot revoke secrets already read by a
+provider client or cancel an upstream request. Obtain a non-secret preview with
 `GET /api/provider-routing/connections/paper-a/credentials/migration-preview?providerId=alpaca`.
 Review provider, account and environment, and retain `auditMetadata.credentialGeneration`.
 Environment-only fallback is not a retained vault generation and cannot be migrated by this command.
@@ -118,6 +141,10 @@ Transfer and retry receipt publish in one encrypted vault generation. Both recov
 contain the transfer; corruption recovery cannot revive the unassigned copy. The audit journal
 retains deferred appends for replay, with `auditPending` status. Retry the same command and operation
 identity after a lost response; do not create a new identity to bypass a conflict.
+An interrupted recovery-copy publication is repaired from the current committed generation by that
+retry, including any later credential replacement. The retry neither restores the original secret nor
+repeats the transfer audit event. If recovery-copy repair fails, keep activity stopped and correct the
+storage fault before retrying. A failed publication must retain its last readable generation.
 
 To undo an unrotated transfer, submit the same provider and migration identity to
 `POST /api/provider-routing/connections/paper-a/credentials/rollback`. Rollback moves the retained
@@ -127,15 +154,52 @@ generations, occupied legacy destinations, foreign owners and mismatched operati
 Never restore a pre-rotation vault backup: the provider may have invalidated that token. Repeated
 migration or rollback commands return the retained receipt without repeating a later operation.
 
+### Recovery after rollback
+
+Rollback intentionally leaves the selected connection without credentials. Use the following recovery
+sequence while affected provider activity remains stopped:
+
+1. Retain the rollback receipt and the reviewed tenant, provider, connection, external account,
+   environment and runtime binding. Read
+   `GET /api/providers/connections?connectionId=paper-a` in the intended tenant session. Confirm that
+   this selected connection is unavailable. The aggregate provider catalog may still describe the
+   unassigned record; it is not evidence that the selected runtime is usable.
+2. Decide which credential is authoritative. If the returned unassigned secret is still valid for the
+   intended owner, obtain a **fresh migration preview** and review its current generation. Submit a
+   **new, explicitly reviewed migration identity** to transfer that generation into the empty owned
+   scope. Reusing the original rolled-back identity only returns its receipt and will not transfer
+   again. A new identity is appropriate for this new recovery decision, never to bypass an uncertain
+   result or a generation conflict.
+3. If replacement credentials are required, save them through Settings with the connection selected,
+   or through `PUT /api/providers/alpaca/credentials?connectionId=paper-a`. Do not repair an owned
+   connection through a provider-wide route, environment variable or old vault backup. If rollback
+   was refused because credentials changed or rotated, preserve the current scoped generation and
+   repair that connection; do not attempt to restore the original token.
+4. Check the retained connection and host binding again. If ownership needs correction, use the
+   explicit owned-connection and binding commands with the reviewed identity. Retain before/after
+   configuration evidence and operator attribution; the vault migration receipt does not separately
+   audit the host-binding change. Reconstruct affected provider instances while activity stays stopped.
+5. Verify through `POST /api/providers/alpaca/verify?connectionId=paper-a` and reread the selected
+   connection. Retain actual upstream account/environment evidence and the credential generation used
+   for verification. Resolve pending audit or storage failures, then obtain the authorized operator's
+   release decision. The legacy-only accounting, Plaid, IB Flex remote-fetch and module-test paths
+   described above remain unavailable for owned families.
+
+For interrupted commands, first retry the original provider, scope, migration identity and expected
+generation. Do not infer rollback, successful verification or permission to resume from a transport
+error, an immutable retry receipt, or a successful migration response alone. A concurrent ownership
+change requires reloading and independently reviewing the retained connection before a new command.
+
 Use canonical provider-scoped routes for new tooling and operator automation:
 
 | Route | Method | Purpose |
 |---|---|---|
-| `/api/providers/{providerId}/credentials` | `PUT` | Upsert provider credentials. |
-| `/api/providers/{providerId}/credentials` | `DELETE` | Remove provider credentials. |
-| `/api/providers/{providerId}/verify` | `POST` | Verify provider connectivity with current credentials. |
+| `/api/providers/{providerId}/credentials?connectionId={connectionId}` | `PUT` | Save credentials for the selected owned connection. |
+| `/api/providers/{providerId}/credentials?connectionId={connectionId}` | `DELETE` | Remove credentials only from the selected owned connection. |
+| `/api/providers/{providerId}/verify?connectionId={connectionId}` | `POST` | Verify the selected connection's current credential generation. |
 
-Compatibility routes for legacy clients remain supported under `/api/credentials/*`, but should not be used for new automation.
+Omit `connectionId` only for an entirely legacy provider family. Compatibility routes under
+`/api/credentials/*` do not bypass ownership requirements and should not be used for new automation.
 
 ## Quick credential validation checklist
 
@@ -146,7 +210,7 @@ Compatibility routes for legacy clients remain supported under `/api/credentials
 
 ```powershell
 Invoke-RestMethod "$meridianBaseUrl/api/config/effective" -WebSession $operatorSession
-Invoke-RestMethod "$meridianBaseUrl/api/providers/connections" -WebSession $operatorSession
+Invoke-RestMethod "$meridianBaseUrl/api/providers/connections?connectionId=paper-a" -WebSession $operatorSession
 ```
 
 3. In Settings, save or rotate the selected connection's credentials, then use its verification
@@ -195,6 +259,17 @@ For any credential-impacting change, include:
 - Validation packet and summary for the changed provider.
 - Readiness/inbox snapshot evidence in the same run.
 - Missing or partial sign-off owners in the DK1 packet if applicable.
+
+For ownership migration or rollback, also retain:
+
+| Evidence | Required observation |
+| --- | --- |
+| Account and environment | The selected connection's actual provider response matches the intended external account and environment; declared scope alone is insufficient. |
+| Generation and operations | Preview generation, immutable migration/rollback receipts, replacement generation when applicable, and completed audit replay agree. |
+| Reconstruction | Affected activity was stopped, in-flight requests drained and old provider instances discarded; reconstructed instances use the retained host binding. |
+| Recovery drill | On the supported Windows user/host, interrupted publication and restart preserve the selected ownership, current replacement and recovery copy; no unassigned/config/environment fallback occurs. |
+| Refusals | Wrong tenant/account, concurrent ownership change, stale generation and rollback after replacement refuse without changing unrelated records. |
+| Runtime eligibility | Owned accounting imports, Plaid activity, IB Flex remote retrieval and module compatibility tests remain blocked until their tenant-aware runtime paths are implemented and reviewed. |
 
 Use this in the support/evidence handoff index for promotion decisions.
 

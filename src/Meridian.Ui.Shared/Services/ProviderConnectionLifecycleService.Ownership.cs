@@ -20,9 +20,13 @@ public sealed partial class ProviderConnectionLifecycleService
             }
             else if (enforceLegacyOwnership)
             {
-                var section = (File.Exists(authority.ConfigPath) ? authority.LoadRequired() : authority.Load()).ProviderConnections;
+                // Missing authority cannot establish an entirely legacy family. In particular,
+                // losing configuration after rollback must not activate the restored legacy record.
+                var section = authority.LoadRequired().ProviderConnections;
                 var connections = section?.Connections ?? [];
-                if ((section?.OwnershipRequiredProviders ?? []).Any(candidate => string.Equals(
+                if ((section?.RuntimeCredentials ?? []).Any(binding => string.Equals(
+                        ProviderCredentialCatalog.NormalizeProviderId(binding.ProviderId), providerId, StringComparison.OrdinalIgnoreCase)) ||
+                    (section?.OwnershipRequiredProviders ?? []).Any(candidate => string.Equals(
                         ProviderCredentialCatalog.NormalizeProviderId(candidate), providerId, StringComparison.OrdinalIgnoreCase)) ||
                     connections.Where(connection => string.Equals(ProviderCredentialCatalog.NormalizeProviderId(connection.ProviderFamilyId),
                         providerId, StringComparison.OrdinalIgnoreCase))
