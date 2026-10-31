@@ -473,6 +473,47 @@
                 </StackPanel>
             </Border>
 
+            <!-- Bond calculation cutover (shared reference-data routes; reviewer is server-resolved) -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16"
+                    Visibility="{Binding HasBondCutover, Converter={StaticResource BoolToVisibilityConverter}}"
+                    AutomationProperties.Name="Bond calculation cutover console">
+                <StackPanel DataContext="{Binding BondCutover}">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBlock Text="&#xE8A5;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16" Margin="0,0,8,0" VerticalAlignment="Center" />
+                        <TextBlock Text="Bond calculation cutover" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Opacity="0.7" TextWrapping="Wrap"
+                               Text="Reads the complete active-bond inventory, requires a reviewed block for every bond without supported declared conventions, and submits the fresh inventory hash to enable the durable live-calculation gate. Amendments name the current receipt hash. Historical receipts and posted journals are never rewritten." />
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <Button Content="Load inventory" Command="{Binding LoadCommand}" Padding="12,6" AutomationProperties.Name="Load the complete active bond inventory" />
+                        <TextBlock Text="{Binding GateText}" Margin="12,0,0,0" VerticalAlignment="Center" FontWeight="SemiBold" />
+                    </StackPanel>
+                    <StackPanel Visibility="{Binding HasInventory, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0,8,0,0">
+                        <TextBlock FontFamily="Consolas" FontSize="11" TextWrapping="Wrap">
+                            <Run Text="Inventory " /><Run Text="{Binding InventoryHash, Mode=OneWay}" /><Run Text=" · current receipt " /><Run Text="{Binding CurrentReceiptHash, Mode=OneWay}" />
+                        </TextBlock>
+                        <DataGrid ItemsSource="{Binding Rows}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+                                  HeadersVisibility="Column" MaxHeight="320" Margin="0,8,0,0" AutomationProperties.Name="Active bond cutover inventory">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Bond" Binding="{Binding DisplayName}" IsReadOnly="True" Width="220" />
+                                <DataGridTextColumn Header="Version" Binding="{Binding Version}" IsReadOnly="True" Width="70" />
+                                <DataGridTextColumn Header="Content hash" Binding="{Binding ContentHash}" IsReadOnly="True" Width="180" FontFamily="Consolas" />
+                                <DataGridTextColumn Header="Declared conventions" Binding="{Binding DeclarationText}" IsReadOnly="True" Width="260" />
+                                <DataGridTextColumn Header="Reviewed block reason" Binding="{Binding BlockReason, UpdateSourceTrigger=PropertyChanged}" Width="*" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <CheckBox IsChecked="{Binding Reviewed}" Content="I reviewed this complete inventory and every block reason" VerticalAlignment="Center"
+                                      AutomationProperties.Name="Confirm bond cutover inventory review" />
+                            <Button Content="{Binding SubmitLabel}" Command="{Binding SubmitCommand}" Padding="12,6" Margin="12,0,0,0"
+                                    Style="{StaticResource AccentButtonStyle}" AutomationProperties.Name="Submit bond calculation cutover" />
+                        </StackPanel>
+                    </StackPanel>
+                    <TextBlock Text="{Binding ReceiptText}" FontFamily="Consolas" FontSize="11" Margin="0,8,0,0" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding StatusText}" Margin="0,8,0,0" Opacity="0.8" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
             <!-- Maintenance History -->
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel>

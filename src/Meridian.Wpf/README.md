@@ -24,6 +24,12 @@ owned connection, preview the non-secret vault status, migrate only with the pre
 generation, roll back the exact retained receipt, and bind the host runtime credential. Tenant and
 actor are server-resolved; the section is hidden when the host registers no workstation API client.
 
+Admin maintenance carries the bond calculation cutover console (`ViewModels/Settings/
+BondCutoverConsoleViewModel` over `WorkstationBondCutoverApiClient`): load the complete active-bond
+inventory on demand, give every undeclared bond a reviewed block bound to its retained version and
+content hash, confirm the review, and submit the inventory hash (echoing the current receipt hash
+when amending). The reviewer is the server-resolved actor.
+
 Strategy composition registers the canonical Security Master resolver and position adjuster, then
 exposes narrow query ports and legacy aliases through `AddSecurityMasterContractAdapters()`.
 The adjustment-service factory selects its canonical query and resolver constructor explicitly,

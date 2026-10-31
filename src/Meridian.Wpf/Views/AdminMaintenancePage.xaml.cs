@@ -3,6 +3,8 @@ using System.Windows.Controls;
 using Meridian.Ui.Services;
 using Meridian.Wpf.ViewModels;
 
+using Meridian.Wpf.Services;
+
 namespace Meridian.Wpf.Views;
 
 /// <summary>
@@ -16,10 +18,10 @@ public partial class AdminMaintenancePage : Page
 {
     private readonly AdminMaintenanceViewModel _viewModel;
 
-    public AdminMaintenancePage(IAdminMaintenanceService adminService)
+    public AdminMaintenancePage(IAdminMaintenanceService adminService, IWorkstationBondCutoverApiClient bondCutoverClient)
     {
         InitializeComponent();
-        _viewModel = new AdminMaintenanceViewModel(adminService);
+        _viewModel = new AdminMaintenanceViewModel(adminService, bondCutoverClient);
         DataContext = _viewModel;
 
         Loaded += AdminMaintenancePage_Loaded;

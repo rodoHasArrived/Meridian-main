@@ -75,6 +75,7 @@ import {
 import { BankingPaymentApprovalsPanel } from "@/screens/accounting-screen.payment-approvals";
 import { BreakAuditRebuildCheck } from "@/screens/accounting-screen.break-audit-rebuild";
 import { AuditChainIntegrityPanel } from "@/screens/accounting-screen.audit-integrity";
+import { BondCutoverConsolePanel } from "@/screens/accounting-screen.bond-cutover";
 import { ReconciliationReadinessPanel } from "@/screens/accounting-screen.reconciliation-readiness";
 import { AccountingOnboardingPanel } from "@/screens/accounting-screen.onboarding-panel";
 import { ReconciliationWorkbench, ReconciliationStatementRuns } from "./accounting-screen.reconciliation-workbench";
@@ -2320,6 +2321,10 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
 
       {sectionVisibility.showConfiguration ? (
         <AuditChainIntegrityPanel />
+      ) : null}
+
+      {sectionVisibility.showConfiguration ? (
+        <BondCutoverConsolePanel />
       ) : null}
 
       {sectionVisibility.showJournalEntries ? (

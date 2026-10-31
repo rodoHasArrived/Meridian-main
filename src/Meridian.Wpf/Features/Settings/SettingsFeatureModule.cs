@@ -85,6 +85,7 @@ public sealed class SettingsFeatureModule : IDesktopFeatureModule
         services.AddTransient<WorkflowLibraryViewModel>();
         services.AddSingleton<WpfCredentialService>();
         services.AddSingleton<IWorkstationProviderOwnershipApiClient, WorkstationProviderOwnershipApiClient>();
+        services.AddSingleton<IWorkstationBondCutoverApiClient, WorkstationBondCutoverApiClient>();
         services.AddTransient<CredentialManagementViewModel>();
     }
 

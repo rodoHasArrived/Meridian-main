@@ -7612,6 +7612,7 @@ Meridian-main
 │   │   │   │   │   │   ├── banking-payments.api.ts
 │   │   │   │   │   │   ├── bond-analytics.api.test.ts
 │   │   │   │   │   │   ├── bond-analytics.api.ts
+│   │   │   │   │   │   ├── bond-cutover.api.ts
 │   │   │   │   │   │   ├── bond-migration.api.ts
 │   │   │   │   │   │   ├── break-audit-rebuild.api.ts
 │   │   │   │   │   │   ├── capital-call-issuance.api.ts
@@ -7850,6 +7851,8 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.asset-workflow.ts
 │   │   │   │   │   ├── accounting-screen.audit-integrity.test.tsx
 │   │   │   │   │   ├── accounting-screen.audit-integrity.tsx
+│   │   │   │   │   ├── accounting-screen.bond-cutover.test.tsx
+│   │   │   │   │   ├── accounting-screen.bond-cutover.tsx
 │   │   │   │   │   ├── accounting-screen.audit-integrity.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.audit-integrity.view-model.ts
 │   │   │   │   │   ├── accounting-screen.basis-bridge.view-model.ts
@@ -8259,6 +8262,7 @@ Meridian-main
 │   │   │   │   │   ├── audit-integrity.ts
 │   │   │   │   │   ├── banking-payments.types.ts
 │   │   │   │   │   ├── bond-analytics.types.ts
+│   │   │   │   │   ├── bond-cutover.types.ts
 │   │   │   │   │   ├── bond-migration.types.ts
 │   │   │   │   │   ├── brokerage-recovery.ts
 │   │   │   │   │   ├── canonical-symbol.ts
@@ -9302,6 +9306,7 @@ Meridian-main
 │   │   │   ├── WorkspaceShellStateProviders.cs
 │   │   │   ├── WorkspaceStateTokenStore.cs
 │   │   │   ├── WorkstationAccountingApiClient.cs
+│   │   │   ├── WorkstationBondCutoverApiClient.cs
 │   │   │   ├── WorkstationOperatingContextScopeResolver.cs
 │   │   │   ├── WorkstationOperatingContextService.cs
 │   │   │   ├── WorkstationOperatorInboxApiClient.cs
@@ -9468,6 +9473,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterViewModel.Authorization.cs
 │   │   │   ├── SecurityMasterViewModel.cs
 │   │   │   ├── Settings
+│   │   │   │   ├── BondCutoverConsoleViewModel.cs
 │   │   │   │   └── ProviderOwnershipAdministrationViewModel.cs
 │   │   │   ├── SecurityMasterViewModel.Import.cs
 │   │   │   ├── SecurityMasterViewModel.Sections.cs
@@ -12735,6 +12741,7 @@ Meridian-main
 │   │   │   ├── ExportPresetsViewModelTests.cs
 │   │   │   ├── FactorPaydownViewModelTests.Approval.cs
 │   │   │   ├── BondAnalyticsViewModelTests.cs
+│   │   │   ├── BondCutoverConsoleViewModelTests.cs
 │   │   │   ├── FactorPaydownViewModelTests.cs
 │   │   │   ├── ProviderOwnershipAdministrationViewModelTests.cs
 │   │   │   ├── FinancialRecordExplorerViewModelTests.cs

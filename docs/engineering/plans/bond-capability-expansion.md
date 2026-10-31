@@ -54,6 +54,12 @@ yield-to-worst v3 models retain their schemas, admission and replay arithmetic.
    refuses cutover. Subsequent undeclared or explicitly blocked records cannot silently use legacy
    calculations. Repeated requests must retain the original committed receipt.
 
+Steps 5–6 have an operator console in both workstations: the browser Accounting configuration
+section (`accounting-screen.bond-cutover.tsx`) and the WPF Admin maintenance page
+(`BondCutoverConsoleViewModel`). Both require AdminMaintenance, read the inventory only on demand,
+bind each block to the row's retained version and content hash, and send the current receipt hash
+when amending; the server records the authenticated actor as reviewer.
+
 Existing posted journals and published evidence are never rewritten by this procedure. Historical
 receipt replay retains its calculation version; corrections use existing reversal/restatement
 workflows. Recorded timestamps establish eligibility among retained rows, not historic transaction

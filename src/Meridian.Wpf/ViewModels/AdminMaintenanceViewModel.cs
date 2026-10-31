@@ -15,6 +15,10 @@ public sealed class AdminMaintenanceViewModel : BindableBase
 {
     private readonly IAdminMaintenanceService _adminService;
 
+    /// <summary>Bond calculation cutover console (web-UI parity); null when the host registers no workstation API client.</summary>
+    public Settings.BondCutoverConsoleViewModel? BondCutover { get; }
+    public bool HasBondCutover => BondCutover is not null;
+
     // ---- Schedule config ----
     private bool _scheduleEnabled;
     private string _cronExpression = "0 2 * * *";
@@ -70,9 +74,10 @@ public sealed class AdminMaintenanceViewModel : BindableBase
     private string _statusTitle = string.Empty;
     private string _statusMessage = string.Empty;
 
-    public AdminMaintenanceViewModel(IAdminMaintenanceService adminService)
+    public AdminMaintenanceViewModel(IAdminMaintenanceService adminService, Services.IWorkstationBondCutoverApiClient? bondCutoverClient = null)
     {
         _adminService = adminService;
+        BondCutover = bondCutoverClient is null ? null : new Settings.BondCutoverConsoleViewModel(bondCutoverClient);
         SaveScheduleCommand = new AsyncRelayCommand(SaveScheduleWithFeedbackAsync, () => CanSaveSchedule);
         PreviewCleanupCommand = new AsyncRelayCommand(PreviewCleanupAsync, () => !IsCleanupBusy);
         RequestExecuteCleanupCommand = new RelayCommand(RequestExecuteCleanup, () => CanExecuteCleanup && !IsCleanupBusy);
