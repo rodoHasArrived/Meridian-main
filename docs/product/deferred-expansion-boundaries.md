@@ -4,12 +4,35 @@ doc_schema: meridian.product-boundary
 doc_schema_version: "1.0.0"
 owner: core-team
 status: active
-last_reviewed: 2026-08-03
+last_reviewed: 2026-10-30
 ---
 
 # Deferred Expansion Boundaries
 
 This document records the narrow acceptance boundaries for product areas that remain deferred beyond the operational-record baseline. These boundaries are not implementation claims; they define the minimum evidence that must exist before a future roadmap row can move one of these areas into active build scope. A completed boundary item in the implementation tracker means the scope decision and reopening gate are explicit, not that the deferred product has shipped.
+
+## Strategy and Order Management Are Explicit Objectives
+
+`DEC-TRADING-STRATEGY-DIRECTION-001` expands Meridian's objectives to include strategy formulation
+and validation, order management, and governed strategy execution alongside financial operations.
+The direction is registered as `W13-STRAT-001` and `W13-OMS-001`; it does not adopt a delivery rank
+or accept an implementation. The [design charter](meridian-design-document.md#227-strategy-and-order-management-direction)
+owns the outcomes and acceptance boundaries, while the [implementation tracker](implementation-todo-list.md)
+owns follow-up and release evidence. The financial close package is not a prerequisite for all
+strategy or OMS development.
+
+Specific strategy languages, order types, asset classes, accounts, providers, and deployment modes
+still require declared support and retained proof. Existing W6/W7 and W9 evidence keeps its original
+scope. Current live order admission retains its run/account/readiness requirements; a broader
+operator-directed OMS path needs an explicit reviewed order-intent authority contract rather than
+a fabricated strategy run or a bypass of promotion, risk, credential, or account controls.
+Unsupported execution modes remain blocked, arbitrary-code runtime isolation remains mandatory
+where applicable, and broker uncertainty must be resolved through retained recovery evidence.
+
+Broker order execution and treasury payment release are separate authority boundaries. This scope
+expansion does not enable live trading, authorize movement of money, waive release certification,
+or reopen the deferred product areas below. Their existing controls and reopening criteria remain
+in force.
 
 ## Treasury Payments
 

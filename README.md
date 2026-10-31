@@ -1,16 +1,25 @@
 # Meridian
 
-Meridian is a .NET 10 operational-finance and trading platform in active delivery. It connects source data, reconciliation, accounting, approvals, and governed reporting so financial operations teams can trace a reported number back to its evidence. Fund management is a first-class specialization within the common financial core.
+Meridian is a .NET 10 operational-finance and trading platform in active delivery. Its objectives
+include financial operations, strategy formulation and validation, order management, and governed
+strategy execution. Shared records and evidence connect investment decisions, broker outcomes,
+portfolio activity, reconciliation, accounting, approvals, and reporting. Fund management is a
+first-class specialization within the common model.
 
 Start with the [seeded demo](#see-it-working-in-one-command), the [source setup guide](docs/start/README.md), or the [documentation index](docs/README.md).
 
 The core product promise is simple:
 
-> Meridian does not just show the number. Meridian proves the number.
+> Develop strategies, govern orders and execution, and deliver financial results with evidence.
 
-For an end user, Meridian is intended to reduce disconnected spreadsheets, inbox handoffs, opaque reconciliations, and hard-to-audit report preparation. The system keeps source evidence, workflow state, approvals, ledger impact, reconciliation history, report provenance, and audit trails connected so an operator can answer:
+For an end user, Meridian is intended to connect strategy research, trading, and financial
+operations while reducing disconnected spreadsheets, inbox handoffs, opaque reconciliations, and
+hard-to-audit report preparation. The product design connects source evidence, strategy versions,
+order intent, broker observations, workflow state, approvals, ledger impact, report provenance,
+and audit trails so an operator can answer:
 
 - What happened?
+- Which strategy or operator instruction produced the order, what authorized it, and what did the broker confirm?
 - Can it be trusted?
 - What still needs review, approval, reconciliation, evidence, or reporting?
 - Which report, ledger entry, close blocker, or operational decision depends on it?
@@ -80,6 +89,7 @@ Use the owning records for status instead of a second capability checklist here:
 | What is implemented, and what blocks release? | [Implementation and Readiness Tracker](docs/product/implementation-todo-list.md) |
 | Which milestones have accepted evidence? | [Generated roadmap summary](docs/roadmap/generated/ROADMAP_SUMMARY.md), rendered from the [roadmap registry](docs/roadmap/README.md) |
 | What should be worked on next? | [Product Plans](docs/product/plans/README.md) |
+| What follows from the expanded strategy and OMS objectives? | [Strategy and order-management follow-up](docs/product/implementation-todo-list.md#expanded-strategy-and-order-management-objectives) |
 
 A completed roadmap row applies to its named scope and linked evidence. Release decisions still
 require current preflight, packaging, deployment, and required GitHub Actions evidence for the
@@ -100,10 +110,13 @@ Trading, Portfolio, Accounting, Reporting, Strategy, Data, Settings
 
 ## End-User Value
 
-Meridian is valuable when a financial operations user needs to move from fragmented records to a governed operational answer.
+Meridian's intended value spans financial operators, researchers, portfolio managers, and traders
+who need to connect decisions, execution, and financial records with reviewable evidence.
 
-It helps the user:
+The target workflows help users:
 
+- formulate versioned strategies, inspect their data and parameter assumptions, and compare retained validation and run evidence;
+- manage authorized orders and strategy execution through supported account, broker, risk, promotion, and recovery controls;
 - import provider, broker, custodian, statement, or file evidence while retaining the original source;
 - validate mappings, freshness, provider confidence, and data quality before downstream use;
 - reconcile positions, transactions, balances, capital activity, and accounting records;
@@ -113,7 +126,12 @@ It helps the user:
 - produce report packs and exports that can be traced back to source records, approvals, and audit history;
 - use browser or WPF workstations without duplicating business rules in each client.
 
-The near-term product wedge is a Close, Data, and Evidence Control Tower: a finance operations layer that sits above spreadsheets, custodians, brokers, administrators, portfolio systems, general ledgers, banks, and document stores so users can close faster and verify every reported number.
+The Close, Data, and Evidence Control Tower remains a bounded financial-operations package.
+Strategy formulation, order management, and governed execution are peer objectives under the
+[design charter](docs/product/meridian-design-document.md#227-strategy-and-order-management-direction).
+Their expanded scope does not establish complete OMS coverage, live-trading authority, or release
+certification. The [strategy, order, and execution domain guide](docs/domain/strategy-order-execution.md)
+defines the shared concepts and authority boundaries.
 
 ## Future Plans
 

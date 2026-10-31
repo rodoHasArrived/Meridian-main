@@ -2,40 +2,37 @@
 
 **Status:** active guidance  
 **Owner:** core-team  
-**Reviewed:** 2026-06-16
+**Reviewed:** 2026-10-30
 
 ## Purpose
 
 The Meridian Development Intelligence Framework (MDIF) makes future AI-assisted development sessions understand Meridian as consistently as a senior architect would. It provides a compact, repeatable context spine for code, tests, migrations, UI components, services, reports, and documentation.
 
-MDIF is not a product feature embedded into Meridian. It is a repository governance and generation framework that keeps a growing operational-finance platform architecturally coherent.
+MDIF is not a product feature embedded into Meridian. It is a repository governance and generation framework that keeps the operational-finance and trading platform architecturally coherent.
 
-The framework is intentionally scoped to Meridian's current product direction: an operational proof layer for organization, entity, portfolio, account, book, fund, accounting, reconciliation, close, reporting, delivery, and audit workflows. It should make agents better at preserving Meridian's shared contracts and proof chains, not encourage broad autonomous AI features inside the product.
+The framework follows the current charter's objectives: financial operations, strategy formulation
+and validation, order management, and governed strategy execution. It helps agents preserve shared
+contracts, record ownership, and evidence through those workflows. Expanded objectives do not
+authorize autonomous model output to approve, dispatch orders, post journals, or release reports.
 
 ## Meridian-Specific Operating Thesis
 
-Meridian should be modeled as a customer-neutral operational finance platform. Fund operations are
+Meridian should be modeled as a customer-neutral financial-operations and trading platform. Fund operations are
 an important specialization, but generated architecture should start from neutral scope concepts:
-organization, entity, portfolio, account, book, period, operational event, evidence, approval,
-journal, report, and audit trail.
+organization, entity, portfolio, account, book, period, strategy, strategy run, order, execution
+report, operational event, evidence, approval, journal, report, and audit trail.
 
-AI-assisted work in Meridian should optimize for one outcome: every generated artifact should make it easier to prove an operational record from source evidence to governed output.
+AI-assisted work should strengthen a declared operator outcome and make its inputs, decisions,
+authority, results, and recovery reconstructable. A financial close is not a prerequisite for all
+strategy or OMS work; neither a strategy run nor an order fill establishes accounting acceptance.
 
-The active proof chain is:
+The connected proof paths are:
 
-```text
-source evidence
--> normalized record
--> validation
--> reconciliation
--> exception resolution
--> journal / ledger impact
--> capital account impact
--> close package
--> report line
--> delivery record
--> audit evidence
-```
+| Workflow | Evidence and authority to preserve |
+| --- | --- |
+| Financial operations | Retained source, normalized record, validation, reconciliation, exception disposition, approved journal, close package, report line, delivery, and audit evidence; capital-account impact where applicable |
+| Strategy formulation and validation | Exact strategy version, parameters, data and runtime assumptions, reproducible run results, paper evidence, and authorized promotion |
+| Order management and execution | Operator or strategy intent, account and pre-trade authority, durable command identity, broker-confirmed state, fills, recovery, and accounting handoff |
 
 Use the current design charter, roadmap registry, source evidence, and explicit user direction to
 evaluate expansion. Prior baselines describe accepted evidence; they are not development ceilings.
@@ -76,6 +73,11 @@ MDIF starts with five artifacts that should be loaded or referenced before large
 5. [`Meridian Context Exporter`](../../build/scripts/ai/meridian_context_exporter.py) - generated context snapshot tool.
 
 For operational-record work, pair the accounting context with [`Operational Evidence Context`](../ai/context/operational-evidence-context.md). That context is the compact rule pack for the current proof-layer product wedge.
+For strategy and OMS work, also load the
+[strategy, order, and execution dictionary](../domain/strategy-order-execution.md), the
+[execution boundary context](../ai/context/README.md#execution-boundary-context), and the relevant
+source-module guidance. The [expanded-objective tracker](../product/implementation-todo-list.md#expanded-strategy-and-order-management-objectives)
+owns follow-up; generated artifacts must not invent delivery status or live authority.
 
 ## Usage Contract for AI Sessions
 
@@ -94,11 +96,13 @@ Before broad implementation, an AI session should:
 
 Generated code, tests, UI, and docs should pass these filters before implementation:
 
-- Does it strengthen data confidence, retained evidence, reconciliation, approvals, accounting records, multi-asset operational coverage, governed reports, or audit evidence?
+- Does it strengthen a declared financial-operations, strategy-formulation, order-management, or governed-execution outcome while preserving the applicable evidence and control boundaries?
 - Does it avoid requiring fund scope unless the workflow is explicitly fund, investor, or private-capital specific?
 - Does it preserve the active operator navigation model: `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`?
 - Does it use shared contracts, endpoint read models, and services before creating separate browser or WPF logic?
-- Does it keep AI inside reviewed assistance, extraction, explanation, draft preparation, or discrepancy detection rather than autonomous posting, approval, payment release, or report publication?
+- Does it keep model output inside reviewed assistance and prevent it from granting approval, live order authority, posting, payment release, or report publication?
+- Does deterministic strategy execution retain the approved version, account authority, promotion, runtime-isolation, pre-trade risk, and live operator-control gates rather than treating a model suggestion or successful backtest as permission to trade?
+- Does it distinguish requested order actions from broker-confirmed outcomes and preserve uncertainty, recovery, and the canonical accounting handoff?
 - Does it keep mobile development out of scope and evaluate other expansion through the current
   charter, roadmap, source evidence, and explicit user direction while preserving the operational
   proof chain?

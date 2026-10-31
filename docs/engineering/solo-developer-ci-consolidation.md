@@ -61,8 +61,35 @@ The [attempt-specific jobs response](https://api.github.com/repos/rodoHasArrived
 contains both jobs (`total_count=2`); the run metadata records one attempt.
 These are start-to-completion intervals, not rounded billable minutes or costs.
 
-Record the first completed candidate run and subsequent comparable PR runs in the
-PR discussion and existing [CI operational metrics](ci-cd-optimization.md#measurement-and-promotion).
+The first candidate completed with a generated-output freshness failure. Both
+documentation jobs failed, as required; the compatibility verdict did not hide the
+producer's failure. A nearby successful pre-change run helps expose queue variation:
+
+| Observation / attempt 1 | Outcome | Elapsed runner time | Creation to both results |
+| --- | --- | --- | --- |
+| [Recorded baseline 41171030506](https://github.com/rodoHasArrived/Meridian-main/actions/runs/41171030506) | Success | 31 + 89 = 120 seconds (2.00 minutes) | 92 seconds |
+| [Nearby pre-change 41173179254](https://github.com/rodoHasArrived/Meridian-main/actions/runs/41173179254) | Success | 27 + 122 = 149 seconds (2.48 minutes) | 915 seconds |
+| [First candidate 41173208592](https://github.com/rodoHasArrived/Meridian-main/actions/runs/41173208592) | Failure | 3 + 153 = 156 seconds (2.60 minutes) | 910 seconds |
+
+All three are pull-request runs with two jobs. The nearby control at
+`e64d6dbda7d2997f1d1b824e9b4df949e8e8ecbe` was created 23 seconds before the
+candidate at `7598d5f96fe244b734271d651a1c2761d093c21c`. Their attempt-specific
+[control jobs](https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/41173179254/attempts/1/jobs?per_page=100)
+and [candidate jobs](https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/41173208592/attempts/1/jobs?per_page=100)
+retain the timestamps. Candidate generation took two convergence passes and 92
+seconds, compared with 39 seconds in the recorded baseline and 55 in the nearby
+control. The candidate worker waited 673 seconds to start; its dependent verdict
+waited another 81 seconds and executed for 3 seconds. These observations establish
+neither runner savings nor faster feedback. Preserve the failed attempt when adding
+the repaired run; do not compare unsuccessful extra work as a clean performance trial.
+
+The unmodified `ci-metrics.py` confirms 120, 149 and 156 runner-seconds from these
+attempts. This scoped export does not cover every workflow or required check, so
+global completeness and required-check completeness remain unverified. Broad
+promotion targets are not an additional gate for this focused change.
+
+Record the corrected candidate and subsequent comparable PR runs in the existing
+PR description and [CI operational metrics](ci-cd-optimization.md#measurement-and-promotion).
 Use the existing `collect-actions.py` and `ci-metrics.py`, not another reporting job.
 Preserve all pages, retries, unsuccessful work, event type, SHA and run/attempt IDs.
 Compare documentation runner-minutes and creation-to-both-results latency separately
@@ -72,8 +99,9 @@ completion when the applicable protection policy is unavailable.
 The new short verdict adds a scheduling boundary; moving unique checks also changes
 parallelism. Therefore reduced runner work does **not** guarantee lower PR feedback
 latency. Keep baseline/candidate outcomes and queue time visible; do not declare a
-performance win from removed commands alone. At implementation time no post-change
-hosted measurement has yet been established.
+performance win from removed commands alone. The first post-change observation above
+is diagnostic; successful hosted validation and a comparable timing observation
+remain necessary before claiming this increment is complete.
 
 ## Remaining work, only where measurements justify it
 

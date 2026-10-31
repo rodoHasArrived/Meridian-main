@@ -1,10 +1,10 @@
-# Meridian Design Document — Version 1.5
+# Meridian Design Document — Version 1.6
 
 **Status:** active
 **Placement:** canonical
 **Owner:** core-team
-**Reviewed:** 2026-10-28
-**Supersedes:** Version 1.4 (financial authority and complementary design 2026-10-19), Version 1.3 (structure and registered W11 direction), Version 1.2 (status refresh in the same review cycle), Version 1.1 (registry snapshot 2026-09-28), Version 1.0 (registry snapshot
+**Reviewed:** 2026-10-30
+**Supersedes:** Version 1.5 (fund operations and incremental delivery), Version 1.4 (financial authority and complementary design 2026-10-19), Version 1.3 (structure and registered W11 direction), Version 1.2 (status refresh in the same review cycle), Version 1.1 (registry snapshot 2026-09-28), Version 1.0 (registry snapshot
 2026-08-03), and Version 0.25 (full text preserved at
 [`archive/docs/design/meridian-design-document-v0.25.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/design/meridian-design-document-v0.25.md))
 **Source:** Ground-up rewrite of the 0.15–0.25 charter lineage. Grounded in the roadmap registry
@@ -20,6 +20,10 @@ candidates; it does not adopt those candidates into the delivery roadmap or cert
 Version 1.5 adds user-directed fund-operations functionality under
 `DEC-FUND-OPERATIONS-DIRECTION-001` and defines incremental delivery, opening-state controls,
 acceptance evidence, and rollout in Sections 22.5–22.6. This registers planning scope only.
+Version 1.6 records the user's expanded objectives under `DEC-TRADING-STRATEGY-DIRECTION-001`:
+financial operations, strategy formulation and validation, order management, and governed
+strategy execution are peer product outcomes. Section 22.7 defines the additional direction and
+acceptance boundaries; it does not change existing delivery ranks or certify implementation.
 
 > **Status facts in this charter are snapshots.** Where a registry row and this document disagree,
 > the registry (`docs/roadmap/data/roadmap-items.yml`) wins; fix this document rather than citing
@@ -42,6 +46,7 @@ acceptance evidence, and rollout in Sections 22.5–22.6. This registers plannin
 | Metric definitions and calculation safeguards | [Metrics](#15-north-star-metrics), [measurement contract](#16-measurement-contract) |
 | Complementary capabilities to evaluate next | [Design candidates](#253-complementary-capability-candidates) |
 | Fund operations, delivery dependencies, acceptance, and rollout | [Fund operations](#225-fund-operations-depth), [delivery and acceptance](#226-delivery-acceptance-and-rollout) |
+| Strategy formulation, order management, and governed execution | [Strategy and order-management direction](#227-strategy-and-order-management-direction) |
 
 Normative words: **must / must never** mark invariants that hold in every profile; **direction**
 marks an accepted hardening target tied to a registry row that is not yet complete. **Candidate**
@@ -74,8 +79,9 @@ across otherwise capable tools:
 * Close-management tools coordinate tasks across data and accounting systems.
 * Fund administrators provide certification services with their own review and delivery cycles.
 
-The opportunity is the number delivered with its proof attached. These are customer-discovery
-hypotheses, not verified claims that every competing product lacks a capability.
+The opportunity includes financial numbers delivered with their proof and investment decisions
+carried through a verifiable strategy and order lifecycle. These are customer-discovery hypotheses,
+not verified claims that every competing product lacks a capability.
 
 ### 1.2 The Product Promise
 
@@ -85,6 +91,12 @@ hypotheses, not verified claims that every competing product lacks a capability.
 > stakeholder an answer they can check.
 >
 > Ask any question. Verify every answer.
+
+The expanded product promise also covers formulating and validating investment strategies,
+managing orders, and executing strategies under explicit account authority and risk controls.
+Each outcome retains its inputs, decisions, versions, observed results, and recovery history.
+Financial operations and trading share this evidence model without making a completed close a
+prerequisite for strategy research or order-management development.
 
 A number is **proven** when its evidence chain is current, reconciled, approved, and
 reconstructable on demand. That definition is the product's unit of value, its quality bar, and its
@@ -102,9 +114,15 @@ The customer buys three compounding outcomes:
 3. **A close that compounds.** Every resolved exception, approved mapping, and certified dataset
    makes the next period faster. Proof is an asset that accrues, not a cost that recurs.
 
-The operating question every surface must answer remains:
+The financial-operations question remains:
 
 > Can Meridian prove, book, reconcile, approve, and report this number?
+
+Strategy and trading surfaces must also answer: which strategy or operator instruction produced
+this order, which scope and controls authorized it, what did the broker confirm, and how are its
+portfolio and accounting effects reconciled? The registered outcomes in Section 22.7 require their
+own bounded acceptance evidence; the existing financial-proof metrics do not certify execution
+quality or strategy performance.
 
 And the design law for every operator action remains:
 
@@ -114,12 +132,15 @@ And the design law for every operator action remains:
 
 ### 1.3 What Meridian Is — and Is Not
 
-Meridian is a modular, configurable, self-hosted financial operations platform for fund
+Meridian is a modular, configurable, self-hosted platform for financial operations, strategy
+formulation and validation, order management, and governed strategy execution. It serves fund
 administrators, private fund managers and fund CFOs, registered investment advisors, family
-offices, and hybrid institutional teams. Fund management is a first-class **specialization**, not
+offices, and hybrid institutional teams, including their researchers, portfolio managers, traders,
+and financial operators. Fund management is a first-class **specialization**, not
 the platform root model: core language, contracts, and new architecture use customer-neutral
 concepts — organization, entity, portfolio, account, book, period, transaction, operational event,
-obligation, evidence, approval, journal, report, audit trail — and reserve fund, investor, capital
+obligation, strategy, strategy run, order, execution report, evidence, approval, journal, report,
+audit trail — and reserve fund, investor, capital
 account, and fund event for workflows that are explicitly fund/private-capital specific.
 
 For Meridian-posted books, **Meridian is the source of all ledger truth**. During shadow adoption,
@@ -127,9 +148,15 @@ the customer's external official books retain their authority until a governed c
 owns the parallel records it posts and the evidence it retains. External accounting imports never
 overwrite Meridian-posted entries. Section 11.3 defines the authority boundary by adoption phase.
 
+Order management and strategy execution are explicit objectives, including operator-directed
+orders and strategy-generated orders. Supported asset classes, order types, brokers, accounts,
+execution modes, and deployment profiles must be declared and proven separately. This scope
+decision does not enable live trading, grant account authority, or establish OMS/EMS replacement
+coverage for any particular customer.
+
 Meridian is **not**:
 
-* a trading OMS/EMS, CRM, or cap-table platform,
+* a CRM or cap-table platform,
 * a payment processor or live bill-pay operation,
 * a broad self-service investor portal,
 * a mobile-first product (there is no mobile lane; see Section 5.4),
@@ -152,11 +179,12 @@ the complete operator workflow, its retained proof, and the customer's observed 
    sample, or synthetic data is loudly labeled; unsupported persistence fails closed; missing or
    stale evidence renders as `review-required` or `blocked`, never as implicit success. Honesty is
    a design requirement to validate in every supported workflow (Section 2.3).
-3. **Decision-to-delivery continuity on one spine.** The same governed evidence model spans
-   strategy research, backtesting, paper validation, live-promotion governance, execution records,
-   reconciliation, the ledger, the close, and stakeholder delivery. Meridian's codebase carries
-   both trading and close capabilities (Section 5); customer evaluation must establish the value
-   of connecting them relative to the customer's existing tools.
+3. **Strategy, orders, and financial operations with shared evidence.** Strategy formulation,
+   backtesting, paper validation, authorized live promotion, order entry and lifecycle management,
+   execution, reconciliation, accounting, close, and delivery are direct product outcomes.
+   Meridian's codebase carries bounded trading and close capabilities (Section 5); Section 22.7
+   defines the additional strategy and OMS direction. Customer evaluation must establish the
+   value and supported coverage of each workflow and their connections.
 4. **Whole-balance-sheet modeling.** Assets, liabilities, commitments, guarantees, collateral, tax
    obligations, intercompany balances, and contingent exposures are modeled as equal citizens
    through contract packs (Section 22).
@@ -252,6 +280,9 @@ scope across nine versions; Versions 1.0–1.2 grew none, and Version 1.3 adds d
 registered `planned` rows (Section 22.4). Version 1.4 adds complementary design candidates
 for evaluation (Section 25.3) without changing those adopted rows or their order.
 Version 1.5 registers fund-operations direction with proposed delivery slices (Sections 22.5–22.6); W12 has no adopted delivery rank.
+Version 1.6 adds the strategy and order-management direction in Section 22.7. Reuse and activation
+remain the default implementation approach within those objectives; the earlier close package is
+not a prerequisite for all strategy or OMS work. W13 has no adopted delivery rank.
 
 The activation register records capability posture, not registry status ("supported foundation"
 means the capability exists in source with tests but is not the wired operator path; the row's
@@ -341,7 +372,7 @@ packages — inexpensive to grant, cheap to operate. A broad self-service portal
 
 Design-level posture, not committed pricing:
 
-* **Enter with the Close, Data and Evidence Control Tower** (Section 22): sit above existing
+* **Retain the Close, Data and Evidence Control Tower package** (Section 22): sit above existing
   spreadsheets, GLs, portfolio systems, banks, custodians, and document stores in shadow mode;
   prove value through reconciliations, close readiness, and verified reporting before owning
   official books.
@@ -352,9 +383,13 @@ Design-level posture, not committed pricing:
 * **Make verification cheap to spread.** Stakeholder and reviewer access (auditor, LP, trustee,
   advisor) should be inexpensive or free; each grant extends the proof network and seeds the next
   customer.
-* **Stage to native accounting.** Control tower first; native multi-book ledger and private-capital
-  accounting second; ecosystem (connector SDK, certified packs, template marketplace) third
-  (Section 22).
+* **Stage financial-operations adoption.** Within that package, control tower first; native
+  multi-book ledger and private-capital accounting second; ecosystem (connector SDK, certified
+  packs, template marketplace) third (Section 22).
+
+Strategy formulation and order management are additional product objectives, with their bounded
+delivery direction in Section 22.7. The financial package sequence does not rank or defer those
+objectives. This revision establishes no new commercial entry order, pricing, or market claim.
 
 ### 2.6 Depth After Activation (W10)
 
@@ -421,7 +456,12 @@ administrators, investment accountants, operations analysts, portfolio operation
 treasury operations personnel, RIA operations staff, family office operations staff,
 reconciliation specialists, and reporting analysts.
 
-The primary operator workflow — and the platform's canonical spine:
+**Strategy and Trading Operators** include investment analysts, quantitative researchers,
+portfolio managers, and traders who formulate investment logic, evaluate evidence, manage orders,
+and supervise execution. Their strategy and order decisions retain the same scoped authority,
+version history, truthful state, and audit discipline as financial-operations decisions.
+
+The financial-operations workflow remains:
 
 ```text
 Import
@@ -431,6 +471,12 @@ Import
 → Approve
 → Report
 ```
+
+The connected strategy and trading workflow is: formulate → validate → backtest or replay → review
+and paper validation → authorized promotion → order management and execution → reconciliation.
+Operator-directed orders enter through their own governed order-intent path; they must not acquire
+authority from a fabricated strategy run. Each workflow can deliver a bounded outcome without
+requiring the other to be complete, while shared records preserve downstream continuity.
 
 ### 4.2 Persona Matrix (condensed)
 
@@ -444,10 +490,10 @@ Import
 | Data Operations Analyst | Primary Operator | Healthy pipelines and provider feeds | Daily |
 | Treasury Operations Specialist | Primary Operator | Liquidity and cash movement control | Daily |
 | Reporting Analyst | Primary Operator | Accurate reports and packages | Daily / Monthly |
-| Portfolio Manager | Investment User | Monitor and manage portfolio outcomes | Daily / Weekly |
-| Investment Analyst | Investment User | Research investments and opportunities | Daily |
-| Quantitative Researcher | Investment User | Develop and validate strategies | Daily / Weekly |
-| Trader | Investment User | Execute or monitor trading activity | Daily |
+| Portfolio Manager | Primary Operator / Investment User | Formulate investment decisions and govern portfolio outcomes | Daily / Weekly |
+| Investment Analyst | Primary Operator / Investment User | Research investments and formulate strategies | Daily |
+| Quantitative Researcher | Primary Operator / Investment User | Develop, validate, and compare strategies | Daily / Weekly |
+| Trader | Primary Operator / Investment User | Manage orders and supervise execution | Daily |
 | Risk Manager | Governance / Investment User | Monitor investment and operational risk | Daily / Weekly |
 | CFO | Executive | Financial accuracy and liquidity oversight | Weekly / Monthly |
 | CIO | Executive | Portfolio strategy and risk oversight | Weekly / Monthly |
@@ -469,6 +515,8 @@ live with the owning workflows (Sections 6, 11, 18).
 | Journey | Trigger | Primary surface | Output | Retained evidence |
 | --- | --- | --- | --- | --- |
 | Data Operations daily workflow | Provider/file arrival, provider-health or schema-drift alert, downstream blocker | `Data` import-run queue and provider validation packets | Certified import run, rejected run with repair instructions, replay request, or blocked downstream output | Import Run Evidence Contract |
+| Strategy formulation and validation | Investment thesis, new strategy version, parameter or data change | `Strategy` design, run review, and promotion surfaces | Retained strategy/run evidence, reviewed paper candidate, or actionable blocked/deferred state | Exact strategy version, inputs, data and cost assumptions, validation findings, run results, and promotion decision |
+| Order management and strategy execution | Authorized operator order intent or promoted strategy decision | `Trading` order, execution, and control surfaces | Broker-confirmed lifecycle and fills, retained cancellation/amendment outcome, or explicit uncertainty requiring recovery | Account authority, originating intent, pre-trade checks, command identity, broker reports, recovery history, and accounting handoff |
 | Fund Accountant monthly close | Period close opens, NAV support due, administrator package arrives, late activity | `Accounting` close cockpit, ledger explorer, capital account workbench | Closed period, NAV support, investor statements, or blocked-close report | NAV Readiness Packet |
 | CFO control review | Weekly control meeting, close checkpoint, material exception, package deadline | Executive control brief across `Accounting`, `Reporting`, `Portfolio` | Approved actions, held packages, escalations, board-ready summary | Executive Financial Control Brief |
 | Compliance review | Access certification, audit request, permission change, legal hold | `Settings` access review, audit timeline, evidence vault | Certified/revoked access, audit response, policy exception, legal-hold evidence set | Audit Event Catalog + Scoped Access Review Packet |
@@ -547,8 +595,9 @@ blocker and the original evidence. This is a required validation scenario, not a
 ## 5. Current Implementation Baseline
 
 This design document is not a greenfield specification. Meridian has a large, tested foundation
-that this charter directs toward higher value; the strategy (Section 2) is to activate and prove
-it, not to widen it.
+that this charter directs toward higher value. Reuse and activation remain the starting point for
+the financial-operations, strategy, and order-management objectives; new work closes explicitly
+registered workflow gaps rather than creating parallel engines or unverified capability claims.
 
 ### 5.1 Evidence Sources
 
@@ -595,7 +644,8 @@ not yet the wired operator path, and the W9 slate exists precisely to close that
 ### 5.3 Registry Status
 
 This is the only place in the charter that states registry status (program snapshot 2026-10-14,
-plus the W11 rows registered 2026-10-16 and W12 rows registered 2026-10-17). When it disagrees with `docs/roadmap/data/roadmap-items.yml`,
+plus the W11 rows registered 2026-10-16, W12 rows registered 2026-10-17, and W13 direction registered
+2026-10-30). When it disagrees with `docs/roadmap/data/roadmap-items.yml`,
 the registry wins; fix this section and nothing else.
 
 **Closed baselines** (registry status `done`, evidence complete). W1-W5 form the accepted
@@ -612,7 +662,7 @@ operational record baseline:
 | W5X `W5X-FINOPS-001` | Financial Operations control center (Operations Continuity, close readiness, approval policy, close calendar, breaks, checklists, audit evidence, governed reopen) |
 | W5X `W5X-CONNECT-001` | Statement connector library with preview, confidence, drift detection, idempotency, retained source evidence |
 | W5X `W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001` | Bounded browser-first Evidence Vault productization and statement reconciliation onboarding, including production-authority projection into queryable Statement evidence |
-| W6 `W6-BTSTUDIO-001` | Bounded governed evidence loop on the host-composed browser Covered Call path: scoped retained Evidence Vault authority before queueing, exact strategy-run lineage, governed Backtest-to-Paper promotion, and four fail-closed checklist projections backed by durable operator/audit authority and a matching same-scope Paper child; broader Studio UX remains deferred |
+| W6 `W6-BTSTUDIO-001` | Bounded governed evidence loop on the host-composed browser Covered Call path: scoped retained Evidence Vault authority before queueing, exact strategy-run lineage, governed Backtest-to-Paper promotion, and four fail-closed checklist projections backed by durable operator/audit authority and a matching same-scope Paper child; broader Studio workflows remain outside this completion claim and are planned under `W13-STRAT-001` |
 | W7 `W7-LIVE-001` | Bounded live-readiness governance gate: paper-to-live promotion requires the full evidence set plus a manual override; broader live execution productization remains outside this completion claim |
 | W9 `W9-ASSET-010` | Asset Accounting Event Spine: one governed event spine from acquisition to disposal; Expected/Projected/Drafted/Approved/Posted/Reconciled/Reported as distinct states; lot creation and versioned selected-lot disposal joined to the immutable journal in one idempotent, serializable transaction |
 | W9 `W9-DEMO-002` | One-command seeded demo on durable storage (`DEC-W9-DONE-001`) |
@@ -621,9 +671,9 @@ Status vocabulary: `accepted` means an operator decision accepted the implementa
 `done` additionally requires the lane-owned release or status documentation. Neither certifies a
 production deployment profile (Section 5.1).
 
-**Every open row**, in wave order and adopted rank where one exists. W12 is unranked; its display
-order is a stable inventory order. The proposed delivery slices in Section 22.6 do not adopt a W12
-rank, accept an entire row, or reprioritize the adopted W9–W11 work:
+**Every open row**, in wave order and adopted rank where one exists. W12 and W13 are unranked;
+their display order is a stable inventory order. The delivery direction in Sections 22.6–22.7
+does not adopt ranks, accept an entire row, or reprioritize the adopted work:
 
 | Rank | ID | Status | Decision | Capability |
 | --- | --- | --- | --- | --- |
@@ -640,7 +690,7 @@ rank, accept an entire row, or reprioritize the adopted W9–W11 work:
 | W9 · 9 | `W9-INGEST-009` | `accepted` | `DEC-W9-ACCEPTANCE-006` | Institutional statement ingestion (CAMT.053/BAI2) and deterministic split matching on the live path |
 | W9 · 11 | `W9-CORPACT-011` | `accepted` | `DEC-W9-ACCEPTANCE-007` | Corporate-action approval and posting lane (unsupported branches blocked; posting role assigned by governed custom profile) |
 | W10 · 1 | `W10-MARK-001` | `in_progress` | `DEC-DEPTH-SLATE-001` | Fail-closed stale-mark policy: one shared valuation freshness policy, blocking by default, mark age shown in browser and WPF |
-| W10 · 2 | `W10-RECON-001` | `planned` | `DEC-DEPTH-SLATE-001` | Durable break lineage identity and run-over-run break diff |
+| W10 · 2 | `W10-RECON-001` | `in_progress` | `DEC-DEPTH-SLATE-001` | Durable break lineage identity and run-over-run break diff |
 | W10 · 3 | `W10-PROV-001` | `in_progress` | `DEC-DEPTH-SLATE-001` | Ledger-amount evidence subject and shared proof drawer; first slice covers posted debit and credit amounts in the browser Ledger Explorer and WPF Posted Ledger |
 | W10 · 4 | `W10-RECON-002` | `planned` | `DEC-DEPTH-SLATE-001` | Break clustering and bulk resolution |
 | W10 · 5 | `W10-JRNL-001` | `in_progress` | `DEC-DEPTH-SLATE-001` | Durable recurring journal schedules and a draft-only runner that never submits, approves, or posts |
@@ -663,13 +713,16 @@ rank, accept an entire row, or reprioritize the adopted W9–W11 work:
 | W12 · unranked | `W12-YEND-001` | `planned` | `DEC-FUND-OPERATIONS-DIRECTION-001` | Fiscal year-end close and opening-balance roll-forward (Sections 6.2.1, 11.7) |
 | W12 · unranked | `W12-FINRPT-001` | `planned` | `DEC-FUND-OPERATIONS-DIRECTION-001` | Ledger-backed financial statement control pack (Section 18.1) |
 | W12 · unranked | `W12-CREDIT-001` | `planned` | `DEC-FUND-OPERATIONS-DIRECTION-001` | DirectLoan operations and evidence reconciliation (Section 6.8) |
+| W13 · unranked | `W13-STRAT-001` | `planned` | `DEC-TRADING-STRATEGY-DIRECTION-001` | Strategy formulation, validation, and governed execution workflow (Section 22.7) |
+| W13 · unranked | `W13-OMS-001` | `planned` | `DEC-TRADING-STRATEGY-DIRECTION-001` | Operator order management and durable execution lifecycle (Section 22.7) |
 
 `W9-DEMO-002` (rank 2) and `W9-ASSET-010` are `done` and listed with the closed baselines above.
 No roadmap decision was recorded between the 2026-09-28 and 2026-10-14 snapshots; the changes in
 that interval are rows moving into implementation, not acceptances. `DEC-CHARTER-DIRECTION-001`
 (2026-10-16) registers the W11 rows only. `DEC-FUND-OPERATIONS-DIRECTION-001` (2026-10-17)
-registers the five W12 rows. Both decisions accept planning scope, not implementation or
-operator acceptance; W9 acceptance records and release gates remain unchanged.
+registers the five W12 rows. `DEC-TRADING-STRATEGY-DIRECTION-001` (2026-10-30) registers the two
+W13 rows for the user's expanded objectives. These decisions accept planning scope, not
+implementation or operator acceptance; prior acceptance records and release gates remain unchanged.
 
 The W9 ordering is strategy, not backlog trivia: truth before demonstration, honest gates before
 surface, deliverables before breadth, safety and governance never overpromised, trusted intake
@@ -731,7 +784,8 @@ product is not complete. "Planned productization" must never be presented as shi
 | Alternative Asset Management | Supported foundation | Private-credit models, governed custom asset profiles, structured/private asset coverage |
 | Financing & Capital Structure Analysis | Design-led foundation | Partial support through fund, vehicle, account, and ledger models |
 | Planning, Forecasting & Decision Support | Design-led foundation | Strategy, run comparison, and reporting evidence exist; engines remain future work |
-| Research & Analytics | Implemented evidence | Strategy lifecycle, QuantScript, realistic backtesting runtime, promotion evidence, and the bounded `W6-BTSTUDIO-001` Covered Call scoped-Vault-to-governed-Paper evidence loop; broader Studio UX remains deferred |
+| Research & Analytics | Implemented evidence | Strategy lifecycle, QuantScript, realistic backtesting runtime, promotion evidence, and the bounded `W6-BTSTUDIO-001` Covered Call scoped-Vault-to-governed-Paper evidence loop; expanded formulation and Studio workflows are planned under `W13-STRAT-001`, with shared orchestration tracked by `PRD-106` |
+| Trading & Execution | Implemented evidence | Existing OMS/gateway lifecycle, risk and readiness controls, broker-fill recovery, and accounting handoff within bounded W2/W7/W9 evidence; expanded manual and strategy-driven OMS workflows are planned under `W13-OMS-001`, while `W11-EXEC-001` retains its separate ownership scope |
 | Risk Management | Supported foundation | Pre-trade risk rules, activated kill-switch/cancel-all and fat-finger/notional/collar controls (`W9-SAFETY-007`), live-readiness controls; enterprise risk remains expansion work |
 | Client & Stakeholder Reporting | Implemented evidence | Governed report packs, provenance, export evidence, publication/restatement lifecycle |
 | Collaboration & Communication | Design-led foundation | Workflow assignment, comments, audit events, queue state |
@@ -1013,9 +1067,11 @@ linked to cash, budget, close, and report objects. Engines remain future work.
 
 ### 6.11 Research & Analytics
 
-Investment research and strategy development: notes, watchlists, screening, QuantScript notebooks,
+Strategy formulation and validation are direct product objectives: notes, watchlists, screening,
+versioned strategy definitions and parameters, QuantScript notebooks,
 backtesting with realistic fill and cost models, walk-forward analysis, paper portfolios, strategy
-run comparison, and promotion evidence. The bounded W6 path starts from the browser Covered Call
+run comparison, and promotion evidence. The expanded end-to-end direction is in Section 22.7;
+the current foundation and its limitations remain distinct. The bounded W6 path starts from the browser Covered Call
 form, applies count/value/aggregate budgets, resolves a strict canonical retained Evidence Vault
 manifest inside the authenticated tenant/company scope, records the pre-execution entry through the
 shared strategy-run repository, and preserves exact scope and lineage through replay, review, and
@@ -1119,7 +1175,7 @@ language.
 | Alternative Assets | Real estate, private credit, private equity, structured assets, valuation inputs, asset-level cash flows |
 | Financing & Capital Structure | Debt facilities, synthetic financing, loan agreements, capital stacks, covenants, collateral terms, leverage analysis |
 | Planning & Forecasting | Forecast models, scenarios, assumptions, stress tests, planning cases, decision records |
-| Research & Analytics | Research notes, watchlists, investment theses, backtests, strategy runs, analytical workspaces |
+| Research & Analytics | Research notes, watchlists, investment theses, versioned strategy definitions, parameters, backtests, strategy runs, and analytical workspaces |
 | Risk Management | Risk rules, metrics, limits, exposure calculations, concentration checks, breaches |
 | Trading & Execution | Orders and order lifecycle, fills, broker gateway sessions, paper sessions, kill-switch and cancel-all actions, pre-trade check outcomes, paper-to-live promotion gates. Risk rule definitions stay in Risk Management; fills reach the ledger only through a published posting contract, and the ledger remains the only accounting truth |
 | Workflow & Task | Tasks, assignments, statuses, approvals, escalations, SLA tracking |
@@ -1143,6 +1199,11 @@ Section 12.1 target. Today it is owned by `src/Meridian.Execution/`, `src/Meridi
 test is `W11-EXEC-001`. The accounting ledger is in the same position: it belongs to Financial
 Operations and Portfolio Records but lives in `src/Meridian.Ledger/` and its F# kernels.
 
+The expanded `W13-STRAT-001` and `W13-OMS-001` operator outcomes reuse these owners and seams.
+`W11-EXEC-001` establishes architectural ownership; it does not accept complete strategy or OMS
+workflows. Strategy evaluation, order authority, broker observations, and ledger posting retain
+their distinct responsibilities under Section 22.7.
+
 ---
 
 ## 8. Context Ownership Matrix
@@ -1160,9 +1221,9 @@ Operations and Portfolio Records but lives in `src/Meridian.Ledger/` and its F# 
 | Alternative Assets | Yes | Yes | Yes | Yes | Later |
 | Financing & Capital Structure | Yes | Yes | Yes | Yes | Later |
 | Planning & Forecasting | Yes | Yes | Yes | Yes | Later |
-| Research & Analytics | Yes | Yes | Yes | Yes | Later |
+| Research & Analytics | Yes | Yes | Yes | Yes | Separate strategy direction (22.7) |
 | Risk Management | Yes | Yes | Yes | Yes | Later |
-| Trading & Execution | Yes | Yes | Yes | Yes | Later |
+| Trading & Execution | Yes | Yes | Yes | Yes | Separate OMS direction (22.7) |
 | Workflow & Task | Yes | Yes | Yes | Yes | Yes |
 | Audit & Compliance | Yes | Yes | Yes | Yes | Yes |
 | Reporting & Client Delivery | Partial | Yes | Yes | Yes | Yes |
@@ -1170,6 +1231,8 @@ Operations and Portfolio Records but lives in `src/Meridian.Ledger/` and its F# 
 
 This is a target ownership/package matrix, not an implementation inventory. "Later" refers to
 the broader package described in Section 9.2; it does not undo acceptance of bounded capabilities.
+The financial-package column does not rank the strategy or OMS objectives or require a completed
+close before their implementation. Their bounded outcomes have their own acceptance contracts.
 The conceptual owners below resolve finance-specific boundaries without adding a new context:
 
 | Responsibility | Authoritative owner |
@@ -1189,12 +1252,11 @@ and current physical-project mappings.
 
 ## 9. Recommended MVP Contexts
 
-The first build focuses on the operational foundation. "Later" below is the sequencing of that
-first build, not a statement that a context is absent: Research & Analytics, Risk Management, and
-Trading & Execution already carry bounded, accepted evidence (W2, W3, W6, W7, and the W9 paper,
-fill-streaming, and safety rows) ahead of this MVP order, as Section 5.5 records. The MVP order
-still governs which contexts must be complete before Meridian claims the foundational slice
-(Section 23).
+This section preserves the financial-operations package's operational foundation and its
+acceptance dependencies. Research & Analytics and Trading & Execution are peer product objectives
+under Section 22.7, not globally deferred contexts. Their bounded existing evidence (W2, W3, W6,
+W7, and the W9 paper, fill-streaming, and safety rows) retains its scope. The financial MVP order
+governs the foundational slice in Section 23; it does not rank strategy or OMS delivery.
 
 ### 9.1 MVP Contexts
 
@@ -1214,19 +1276,18 @@ still governs which contexts must be complete before Meridian claims the foundat
 
 ### 9.2 Later Expansion Contexts
 
-These are broader package extensions, not blanket deferrals of every capability in each domain.
-Accepted research-to-paper, live-governance, multi-asset, and pre-trade safety slices remain part
-of the existing baseline. Broader enterprise risk, forecasting, payment execution, and alternative
-asset automation retain their separate evidence and reopening gates.
+These are broader financial-package extensions, not blanket deferrals of every capability in each
+domain. Accepted research-to-paper, live-governance, multi-asset, and pre-trade safety slices remain
+part of the existing baseline. Strategy formulation and order management have their own direction
+in Section 22.7. Broader enterprise risk, forecasting, payment execution, and alternative-asset
+automation retain their separate evidence and reopening gates.
 
 ```text
 1. Treasury & Payments
 2. Alternative Assets
 3. Financing & Capital Structure
 4. Planning & Forecasting
-5. Research & Analytics
-6. Risk Management
-7. Trading & Execution
+5. Risk Management — enterprise expansion
 ```
 
 ### 9.3 MVP Screen Inventory
@@ -1269,6 +1330,8 @@ participation adds economic dimensions where the fund specialization applies.
 | Entity → Financial Account | Bank, custody, investment, and other operational accounts; positions and observed activity |
 | Entity → Book → Accounting Period | Accounting basis, currency, policies, ledger accounts, journals, and period authority |
 | Instrument / Contract → Obligation | Versioned terms, rights, duties, and expected cash flows |
+| Strategy Definition → Strategy Run → Promotion Decision | Exact strategy version, scoped inputs and results, and authority for a supported next mode |
+| Authorized Order Intent → Order → Execution Report | Operator or strategy origin, account and risk authority, requested terms, broker-confirmed outcomes, and recovery |
 | Operational Event / Transaction → Accounting Impact | Retained evidence links actual activity to any governed journal, reconciliation, report, and audit record |
 | Fund → Class / Series → Investor Participation | Optional allocation, unit-register, and capital-account dimensions tied to the accounting records |
 
@@ -1287,6 +1350,11 @@ relationships; the dictionary owns individual business definitions.
 | Organization | Operating group governed within a tenant | Administrator operating company, advisory organization |
 | Entity | Legal or economic party | Fund, trust, LLC, individual, SPV |
 | Portfolio | Investment or operating grouping | Strategy sleeve, treasury portfolio |
+| Strategy Definition | Versioned investment logic, parameters, universe, dependencies, and supported modes | Reviewed Designer document or supported strategy implementation |
+| Strategy Run | Scoped evaluation or execution of exact strategy and input versions | Backtest, replay, paper run, authorized live run |
+| Promotion Decision | Retained approval for a supported transition tied to exact run, evidence, and account scope | Backtest-to-Paper or Paper-to-Live decision |
+| Order | Durable scoped instruction and observed lifecycle, linked to its operator or strategy origin | Submission, partial fill, amendment, cancellation, uncertain dispatch |
+| Execution Report | Broker or supported simulator observation processed through the order lifecycle and accounting handoff | Acknowledgement, fill, rejection, replacement confirmation |
 | Relationship | Link between entities | Owner, beneficiary, advisor, custodian, lender, borrower |
 | Account | Financial container where assets, cash, or activity live | Bank account, custody account, investment account |
 | Book | Entity-scoped accounting record with an explicit basis, functional currency, calendar, and policy versions | Management book, shadow book, separately supported statutory or tax basis |
@@ -1330,6 +1398,8 @@ page before broad code generation.
 | Tenant → Entity → Account | An account, its transactions, positions, and cash balances retain their entity and isolation scope |
 | Entity → Book → Period / Ledger Account | Journals use the book's policies and period authority; ledger-account identity is distinct from financial-account identity |
 | Account → Position → Instrument | A holding resolves an authoritative instrument and the terms applicable to the valuation date |
+| Strategy Definition → Run → Promotion Decision | A mode transition retains the exact strategy, inputs, results, account, and approval; changed inputs require renewed review |
+| Order Intent → Order → Execution Report → Accounting Handoff | Requested actions and broker-confirmed outcomes remain distinct; fills reach the ledger through its governed posting boundary |
 | Entity → Contract → Obligation / Expected Cash Flow | Rights, duties, and schedules retain the source contract and effective version |
 | Transaction / Operational Event → Journal Entry | A posting links evidence and approvals to balanced accounting lines in the applicable book |
 | Fund / Class / Series → Investor Participation → Capital Account | Effective participation determines allocation; balances reconcile to the applicable ledger and issued NAV/statement |
@@ -1940,9 +2010,11 @@ operator evidence are out of scope absent a roadmap decision.
 
 ## 22. Target Architecture and Product Wedge
 
-The target architecture is a common financial core (multi-book ledger
-records, positions, valuations, source vault, documents, workflows, reconciliations, reporting,
-data connections, evidence graph, governed permissions) with vertical packages:
+The target architecture is a common operational core spanning financial records and trading:
+strategy definitions and runs, order lifecycles, broker observations, multi-book ledger records,
+positions, valuations, source vault, documents, workflows, reconciliations, reporting, data
+connections, evidence graph, and governed permissions. Financial specializations compose this
+core through their existing ownership boundaries:
 
 | Common platform | Fund Administration package | Family Office package |
 | --- | --- | --- |
@@ -1955,16 +2027,17 @@ architectural roles, not assertions that all components are deployed or independ
 The graph and warehouse are **projections, not competing books of record**; current composition and
 migration ownership follow Section 12.
 
-**Market-entry wedge.** The first packaged product is the **Close, Data and Evidence Control
-Tower**: entity and ownership graphs, asset/liability registry, document and source-data vault,
+**Financial-operations package.** The **Close, Data and Evidence Control Tower** remains a bounded
+package: entity and ownership graphs, asset/liability registry, document and source-data vault,
 CSV/spreadsheet/email/SFTP ingestion, priority bank and custodian connectors, opening-balance and
 position reconciliations, close checklists, reviewer workflows, exception management, consolidated
 reporting, Number Passports, audit-ready close binders, and governed read-only stakeholder views.
-Stage two becomes the native accounting system (multi-book ledger, private-capital accounting).
-Stage three builds the ecosystem: connector SDK, certified asset packs, policy and report template
-marketplace, and controlled AI agents.
+Its adoption sequence proceeds to native accounting (multi-book ledger, private-capital
+accounting), then the ecosystem: connector SDK, certified asset packs, policy and report template
+marketplace, and controlled AI agents. This package sequence does not defer strategy formulation
+or OMS development behind a completed financial close.
 
-The initial commercial evaluation centers on a financial-operations preparer and a Controller/CFO
+The financial-package evaluation centers on a financial-operations preparer and a Controller/CFO
 reviewing one entity/book/period from customer source intake through a reconciled close-support
 package. Inputs are retained source files, account mappings, opening balances, and an explicit
 designation of official versus shadow books. The acceptance artifact is a reviewable package with
@@ -1975,9 +2048,10 @@ Tower, not a claim that its full inventory ships at once.
 Product discovery must still select the first buyer segment from Section 3, validate source access
 and customer effort, and establish willingness to pay. Product owns that decision; domain owners
 and the operator sponsor own the bounded acceptance. No numerical onboarding target, pricing,
-competitive superiority, or segment preference is established without recorded evidence. Trading
-research and execution records support the operational proof chain; Meridian's first package does
-not promise broad OMS/EMS replacement.
+competitive superiority, or segment preference is established without recorded evidence. Strategy
+formulation, order management, and governed execution are peer product objectives under Section
+22.7. Specific OMS replacement coverage and live use require their own supported workflow,
+account/provider envelope, and acceptance evidence; the scope revision creates no such claim.
 
 The north-star metric is **Verified Coverage** (Section 1.5).
 
@@ -2143,7 +2217,7 @@ envelope in Section 12.3 continues to govern these workflows.
 
 ### 22.6 Delivery, Acceptance, and Rollout
 
-The delivery plan begins with one usable monthly-close workflow and adds supported financial
+The financial-operations delivery plan begins with one usable monthly-close workflow and adds supported financial
 combinations after that workflow is proved. A bounded slice has its own evidence and limitations;
 it does not discharge the remaining exit criteria of its parent roadmap rows. Implementation and
 operator evidence belong in the existing tracker and registry, not in a second status table here.
@@ -2250,6 +2324,79 @@ financial corrections follow the governed adjustment/reopen route. Production us
 the current release-certification and operator-readiness gates in Section 24. A passed rehearsal
 does not change a roadmap row's status by itself.
 
+### 22.7 Strategy and Order-Management Direction
+
+`DEC-TRADING-STRATEGY-DIRECTION-001` records the user's expanded objectives: Meridian may serve
+as an order-management tool and a strategy formulation and execution tool alongside its financial
+operations workflows. The direction registers `W13-STRAT-001` and `W13-OMS-001`; their status is
+recorded in Section 5.3. Neither row has an adopted delivery rank. Existing acceptance decisions,
+the user-recorded financial work queue, and production-release gates retain their scope.
+
+| Direction | Operator outcome | Foundations and boundary |
+| --- | --- | --- |
+| `W13-STRAT-001` — strategy formulation, validation, and governed execution | Retain a strategy definition and version, inspect data and parameter assumptions, compare reproducible runs, complete supported paper validation, and supervise an authorized execution or an explicit blocked/deferred result. | Reuse Strategy Designer, QuantScript and supported strategy implementations, shared run/evidence stores, promotion services, and execution gateways. `PRD-007`, `PRD-012`, `PRD-020`, and `PRD-106` govern the relevant durability, runtime, activation, and orchestration dependencies. |
+| `W13-OMS-001` — order management and execution lifecycle | Prepare an authorized order, inspect pre-trade consequences, submit it through a supported gateway, monitor acknowledgements/fills, amend or cancel it, and reconcile uncertain outcomes after restart. | Reuse the existing OMS, typed gateway contracts, risk and operator controls, recovery journal, fill funnel, and accounting handoff. `PRD-006`, `PRD-007`, and `W11-EXEC-001` govern the relevant lifecycle, durable evidence, and architectural boundaries. |
+
+These outcomes are direct product capabilities. A close package is not a prerequisite for a
+strategy experiment or OMS delivery. Conversely, neither an executed strategy nor an order fill
+accepts the downstream accounting, close, or reporting workflow. Shared services own domain
+decisions; browser and WPF project the same permissions, results, blockers, and evidence through
+the existing `Strategy`, `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Data`, and `Settings`
+workspaces.
+
+**Development verification.** Follow the [solo-developer workflow](../ai/solo-developer-workflow.md):
+use deterministic synthetic data and the narrowest meaningful checks, with separate AI critique
+for consequential financial, authorization, storage, or security changes. Routine development
+does not require live credentials, institutional operators, or production certification. State
+whether evidence is synthetic-verified, live-verified, live-untested, or unsupported; those labels
+do not migrate the roadmap schema or satisfy runtime promotion/account authority. AI critique is
+not independent human approval, and the developer retains merge and sensitive activation decisions.
+
+**Strategy and account authority.** A run binds the exact strategy version, parameters, universe,
+input snapshots, calculation/runtime versions, execution mode, and applicable account scope.
+Changing those operands requires a new run or governed revision and renewed dependent review.
+An eligible backtest result is not paper acceptance, and paper acceptance is not live authority.
+Promotion retains the exact source run, evidence, approved target mode, and authorized execution
+account. Unsupported constructs or runtime modes remain visibly blocked or `ActivationDeferred`.
+Arbitrary-code execution remains subject to `PRD-012`; a product objective does not enable an
+in-process production script runner or change the pre-run validator's live-disabled behavior.
+
+**Operator-directed orders.** Strategy-generated and operator-directed intents must be
+distinguishable. Current live order admission requires its retained `runId`, `fundAccountId`,
+readiness, and operator-control evidence. A broader manual OMS workflow needs an explicit,
+reviewed order-intent and account-authority contract before it can use another admission path.
+It must not invent a strategy run, reuse an unrelated promotion, or remove current gates to make
+an order admissible. For every supported path, server-owned permissions, account ownership,
+credential bindings, broker capabilities, and pre-trade risk determine whether dispatch is allowed.
+
+**Order and financial truth.** Submission intent, broker acknowledgement, partial or complete
+fill, amendment request, cancellation request, and confirmed terminal state retain distinct
+meaning. An uncertain submission or replacement remains reserved and recoverable; a timeout does
+not authorize a blind resubmission. Original and replacement identities survive recovery, and
+duplicate or out-of-order observations must not create duplicate fills or accounting effects.
+Portfolio effects and journal posting consume the canonical handoff; the OMS and strategy engine
+cannot write competing ledger truth or bypass book, period, basis, or approval controls.
+
+**Required acceptance evidence.** Start with a declared strategy family and order workflow on a
+named supported account/provider/mode, with retained exclusions and independently reviewed expected
+results. Record the source commit, exact host composition, supported storage and recovery ownership,
+operator walkthrough, permissions, strategy/order identities, broker or labeled simulator reports,
+and portfolio/accounting reconciliation. Exercise changed-input and stale-approval refusal;
+missing data, credentials, authority, or risk configuration; partial fills; duplicate and
+out-of-order reports; amend/cancel races and unconfirmed replacements; ambiguous dispatch; and
+restart before and after broker acknowledgement and accounting handoff. Recovery must reconcile
+existing effects before any new dispatch, and browser/WPF evidence must agree for the declared
+workflow. A supported simulator proves its stated model, not live broker behavior.
+
+Independent review and the existing P0 and operator-readiness gates apply to any production
+envelope containing these capabilities. Live operation additionally requires the established
+account, promotion, manual live-control, risk, and credential authority; this documentation does
+not authorize a trade. Provider, asset-class, order-type, strategy-language, or deployment expansion
+needs its own bounded contract and evidence. Treasury payment release, enterprise risk, broad
+portals, generic workflow design, and mobile retain their separate scope boundaries. Execution
+tasks and evidence belong in the [implementation tracker](implementation-todo-list.md); this
+section creates no second status ledger or unmeasured performance promise.
+
 ---
 
 ## 23. Foundational Product Slice
@@ -2276,8 +2423,10 @@ shared manual journal entry workbench over retained private-capital fund events.
 **Remaining expansion work** (explicitly not implied complete): full treasury payment execution;
 full alternative asset operations; forecasting and enterprise risk engines; proof-layer expansion
 beyond the accepted W5X control-center boundary; complex capital structure modeling; full client
-portal; no-code workflow designer; full live-trading readiness; Backtesting Studio beyond
-evidence linking. Mobile applications remain a **closed lane**, not a sequenced expansion item.
+portal; no-code workflow designer; and the strategy/OMS outcomes in Section 22.7 beyond their
+bounded existing evidence. Strategy formulation and execution are registered objectives, not
+implied complete by this foundational slice. Mobile applications remain a **closed lane**, not a
+sequenced expansion item.
 
 **Why this slice works** — it proves the core value chain:
 
@@ -2307,13 +2456,14 @@ Fragmented data
 | Historical rationale and evaluation inputs | Dated product reviews and plans; recheck against current evidence |
 
 **Active scope gate.** A capability belongs in active scope when current source evidence, roadmap
-status, or user direction supports it. New work must strengthen data confidence, reconciliation,
-approvals, accounting records, close support, retained evidence, workflow controls, or governed
-reporting before expanding research, live trading, payments, forecasting, risk, portal,
-workflow-designer, or scale-out lanes. Mobile remains closed unless explicitly reopened through
-its separate roadmap decision. Prior baselines are sequencing anchors and evidence,
-not development ceilings — but under the activation doctrine (Section 2.1), expansion competes
-against activation and activation usually wins.
+status, or user direction supports it. Financial operations, strategy formulation and validation,
+order management, and governed strategy execution are explicit objectives. Work must strengthen
+a declared operator outcome while retaining data confidence, scoped authority, risk controls,
+reconciliation, financial integrity, and evidence where applicable. Reuse and activation remain
+the default approach; prior baselines and the financial close package are not ceilings or blanket
+prerequisites for strategy and OMS work. New delivery slices require registered scope, dependencies,
+exit criteria, and evidence. Payments, enterprise risk, forecasting, portals, workflow-designer,
+and other deferred lanes retain their separate decisions; mobile remains closed.
 
 **Claim rules.**
 
@@ -2335,7 +2485,7 @@ dashboards; broader self-service reporting and analytics beyond the governed pla
 designer; document-portal collaboration beyond the Evidence Vault boundary; broad collaboration
 tooling; mobile (closed).
 
-**Planned direction is not reopened scope.** The W11 rows (Section 22.4) are bounded so they do
+**Bounded direction preserves unrelated scope gates.** The W11 rows (Section 22.4) are bounded so they do
 not reopen a deferred lane: `W11-STAKE-001` grants read-only access to one delivered package and is
 not the broad client portal; `W11-SHADOW-001` reconciles against the customer's books and moves no
 money; `W11-PACK-001` governs packs for already-modeled classes and adds no asset-operations lane.
@@ -2346,6 +2496,11 @@ The W12 direction (Section 22.5) similarly deepens existing accounting and fund 
 `W12-FINRPT-001` governs financial definitions and agreement checks on the existing renderer.
 These rows do not authorize live payments, new vertical-system adapters, full alternative-asset
 operations, unrestricted capital-structure modeling, a broad portal, or a new reporting platform.
+
+The W13 direction (Section 22.7) explicitly expands the product objective to strategy formulation,
+order management, and governed strategy execution. It does not accept existing workflow gaps,
+change roadmap ranks, authorize live account access, or certify any broker, order type, strategy,
+or deployment. W6/W7 and W9 acceptance remains bounded to the evidence originally recorded.
 
 **Prohibited as scope creep:** full cap-table system, outsourced services
 operation, live payment processor, broad investor portal, autonomous-agent workflows bypassing
@@ -2390,6 +2545,13 @@ fee-state ownership and event order, annual closing representations, report-mapp
 concurrent/retry behavior, and operator rehearsal evidence become explicit. The five W12 rows retain their identifiers, ownership, planning scope, and planned posture. No runtime implementation, operator acceptance,
 or release certification is asserted by these documentation revisions.
 
+Version 1.6 records the user's expanded strategy and OMS objectives through
+`DEC-TRADING-STRATEGY-DIRECTION-001` and the two W13 rows. It makes financial operations, strategy
+formulation and validation, order management, and governed strategy execution peer outcomes;
+retains the bounded financial close package; and specifies authority, recovery, and acceptance
+requirements for the additional workflows. Existing metric formulas, delivery ranks, historical
+acceptance, runtime restrictions, financial controls, and release gates remain unchanged.
+
 The superseded Version 0.25 text — including the Executive Marketecture Deck and the v0.15–v0.20
 addenda in their original form — is preserved at
 [`archive/docs/design/meridian-design-document-v0.25.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/design/meridian-design-document-v0.25.md).
@@ -2416,6 +2578,7 @@ addenda in their original form — is preserved at
 | 1.3 | Structure and direction: registry status consolidated into one table (Section 5.3) and removed from Sections 2.1, 2.6, and 5.5; exact formulas, scope, owners, and implementing rows for all five north-star metrics (1.5); Trading & Execution added as a bounded context, with projects outside the module target named (7.1, 7.3, 8, 9, 12.1); MVP "Later" clarified against shipped evidence, and Home Dashboard marked cross-cutting (9); canonical state vocabulary (11.8); operational and non-functional requirements (12.3); Number Passport minimal contract (22.1), contract-pack path (22.2), and planned Verified Coverage view, shadow-mode onboarding, and stakeholder verification access (22.3), registered as W11 rows under `DEC-CHARTER-DIRECTION-001` (22.4) |
 | **1.4** | **Integrated clarification and complementary design: financial authority, measurement safeguards preserving W11 formulas, domain ownership, interaction acceptance, and retained passport proof; six bounded capability candidates with dependencies and acceptance scenarios. Existing W9/W10/W11 direction and acceptance preserved** |
 | **1.5** | **Incremental delivery and acceptance: first monthly-close proof, conditional dependency boundaries, approved opening economic state, fee-event sequencing, pre-/post-close and opening representations, complete statement mapping, concurrency/recovery evidence, and measured operator rehearsal (22.6). All functionality is stated as Meridian requirements; the five W12 rows remain planned and unranked** |
+| **1.6** | **Expanded strategy and OMS objectives under `DEC-TRADING-STRATEGY-DIRECTION-001`: peer financial-operations, strategy formulation/validation, order-management, and governed-execution outcomes; corresponding operator journeys and domain concepts; explicit manual-order authority, recovery, and acceptance boundaries (22.7). The two W13 rows are planned and unranked; existing metrics, priorities, acceptance, and release authority are preserved** |
 
 ### 25.3 Complementary Capability Candidates
 

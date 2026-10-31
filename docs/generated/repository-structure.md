@@ -1453,6 +1453,7 @@ Meridian-main
 │   │   ├── model-routing-telemetry.md
 │   │   ├── parallel-task-manifest-template.md
 │   │   ├── README.md
+│   │   ├── solo-developer-workflow.md
 │   │   ├── work-modes.md
 │   │   └── working-memory.md
 │   ├── architecture
@@ -1803,7 +1804,8 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── recurring-journal.md
 │   │   ├── security-asset-pack-admission.md
-│   │   └── security.md
+│   │   ├── security.md
+│   │   └── strategy-order-execution.md
 │   ├── engineering
 │   │   ├── blueprints
 │   │   │   ├── accounting
@@ -1854,6 +1856,7 @@ Meridian-main
 │   │   ├── production-readiness-audit-2026-07-27.md
 │   │   ├── README.md
 │   │   ├── security-master-architecture-audit-2026-08-13.md
+│   │   ├── solo-developer-ci-consolidation.md
 │   │   ├── web-development.md
 │   │   └── wpf-perf-uiux-audit-2026-06-14.md
 │   ├── examples
@@ -12781,6 +12784,7 @@ Meridian-main
 │   │   ├── test_doc_render_determinism.py
 │   │   ├── test_doctor_profiles.py
 │   │   ├── test_documentation_workflow.py
+│   │   ├── test_documentation_workflow_consolidation.py
 │   │   ├── test_endpoint_benchmark.py
 │   │   ├── test_export_project_artifact_workflow.py
 │   │   ├── test_generate_contract_review_packet.py
@@ -12866,6 +12870,7 @@ Meridian-main
 │   │   ├── test_task_context.py
 │   │   ├── test_throughput_metrics.py
 │   │   ├── test_validate_agent_definitions.py
+│   │   ├── test_validate_design_document_adaptation.py
 │   │   ├── test_validate_doc_hashes.py
 │   │   ├── test_validate_npm_audit.py
 │   │   ├── test_validate_observability_contract.py

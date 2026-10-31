@@ -2,9 +2,15 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-10-28 (bounded source-owner and Security Master seam refresh)
+**Reviewed:** 2026-10-30 (product-objective alignment; source ownership retained)
 
 This map gives maintainers a quick layer-oriented view of Meridian.
+
+The current [design charter](../product/meridian-design-document.md) covers financial operations,
+strategy formulation and validation, order management, and governed strategy execution. These
+objectives reuse the source owners below; naming them does not establish complete operator
+coverage or release acceptance. Their additional delivery work is tracked under the
+[expanded strategy and order-management objectives](../product/implementation-todo-list.md#expanded-strategy-and-order-management-objectives).
 
 For complete product design document adaptation, use
 [`design-document-adaptation.md`](design-document-adaptation.md). For the physical bounded-context
@@ -50,14 +56,14 @@ flowchart LR
 | Domain/Core/Contracts | `src/Meridian.Domain`, `src/Meridian.Core`, `src/Meridian.Contracts` | Keep business and contract types UI-independent, including workstation, private-capital, reporting, and identity payloads consumed by multiple surfaces |
 | Providers/Infrastructure | `src/Meridian.Infrastructure*`, `src/Meridian.ProviderSdk` | Isolate external API integration behind provider contracts |
 | Storage | `src/Meridian.Storage` | Preserve WAL and atomic-write durability expectations |
-| Execution/Risk | `src/Meridian.Execution*`, `src/Meridian.Risk` | Isolate broker gateways, paper/live controls, and pre-trade validation |
+| Execution/Risk | `src/Meridian.Execution*`, `src/Meridian.Risk` | Own order lifecycle and broker gateways, paper/live controls, execution recovery, and pre-trade validation within their published contracts |
 | Accounting and Ledger | `src/Meridian.Ledger`, `src/Meridian.FSharp.Ledger` | Own ledger behavior, private-capital fund-event reconstruction, capital-account subledger impact, treasury ledger metadata, and accounting-record boundaries |
 | Financial Operations | `src/Meridian.FinancialOperations` | Own close, reconciliation, accounting-basis workflows, and preparation of governed ledger instructions |
 | Instruments | `src/Meridian.Instruments` | Own instrument economics, Security Master-keyed Asset Operations, cash-flow projections, and factor-paydown projections |
 | Reference Data | `src/Meridian.ReferenceData` | Own asset-class/instrument-kind mapping, profile catalog contracts, and seeded approved asset-profile templates |
 | Reporting | `src/Meridian.Reporting` | Own governed report-pack behavior, report-writer grids, filters, formulas, lineage, publication, restatement, and report-generation semantics |
 | Identity and Access | `src/Meridian.Identity` | Own sessions, role profiles, scoped access, fund/account traversal authorization, and company-scoped user account/profile state |
-| Strategy/Backtesting | `src/Meridian.Strategies`, `src/Meridian.Backtesting*`, `src/Meridian.QuantScript` | Keep strategy lifecycle, replay, and scripting reusable outside UI |
+| Strategy/Backtesting | `src/Meridian.Strategies`, `src/Meridian.Backtesting*`, `src/Meridian.QuantScript` | Keep strategy definitions, validation, run evidence, promotion, replay, and supported scripting reusable outside UI |
 | UI Shared | `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared` | Own workstation DTO projection and endpoint/read-model support for accounting configuration, private-capital drill-through, report packs, auth/session adapters, and shared browser/WPF workflows |
 | UI Surfaces | `src/Meridian.Ui/dashboard`, `src/Meridian.Wpf` | Keep views thin; put state, labels, disabled reasons, and commands in view models |
 
@@ -70,7 +76,7 @@ flowchart LR
 - Browser workstation logic should prefer view-model/read-model seams instead of
   hardcoding workflow state in React components.
 - Browser workstation work and WPF desktop workstation work are two active co-equal operator UI lanes over shared contracts; WPF's current focus is web-UI parity (`W8-WPF-PARITY-001`).
-- Browser surfaces and retained WPF compatibility should consume shared DTOs, services, and route definitions for accounting, reporting, private-capital, and identity workflows instead of duplicating business rules.
+- Browser and WPF surfaces should consume shared DTOs, services, and route definitions for strategy, order, accounting, reporting, private-capital, and identity workflows instead of duplicating business rules.
 - Security Master query, command, resolver and live-position adjustment contracts are owned by
   `Meridian.Contracts.SecurityMaster`. Execution and Backtesting have no Application project
   reference. Identity, trading parameters and corporate actions have narrow query interfaces;
@@ -152,9 +158,15 @@ coordination in the facade. See the
 
 ## Operational Record Boundaries
 
-The current product direction is the W1-W5 operational record baseline: data confidence, retained source evidence, reconciliation, approvals, accounting records, multi-asset operational coverage, and governed reports. Within that baseline:
+The W1-W5 operational-record baseline establishes data confidence, retained evidence,
+reconciliation, approvals, accounting, multi-asset coverage, and governed reporting invariants.
+It is not a ceiling on the charter's strategy and OMS objectives. Shared ownership connects those
+workflows without merging strategy intent, broker observations, portfolio projections, and posted
+accounting into a competing source of truth:
 
 - `src/Meridian.Contracts` declares shared workstation, ledger, private-capital, report-pack, report-writer, and identity-facing payloads and routes.
+- `src/Meridian.Strategies` owns strategy definitions, scoped run history, promotion records, and strategy read services; supported evaluation and runtime behavior use the existing Backtesting and QuantScript seams.
+- `src/Meridian.Execution` owns order commands, lifecycle, broker observations, recovery, and fill handoff through the OMS boundary above; `src/Meridian.Risk` owns pre-trade risk policy. A requested action or an accepted strategy result is not a broker confirmation or ledger posting.
 - `src/Meridian.Ledger` reconstructs posted private-capital fund-event ledger state, capital-account subledger impact, treasury context, and period/report handoff metadata.
 - `src/Meridian.FinancialOperations` owns accounting-close, reconciliation, accounting-record, approval, casework, and close-workflow semantics that coordinate ledger evidence into operational records.
 - `src/Meridian.Reporting` renders governed report packs and no-code report-writer grids with saved filters, formulas, filtered-input counts, and lineage.
@@ -162,6 +174,11 @@ The current product direction is the W1-W5 operational record baseline: data con
 - External GL and provider systems remain evidence inputs where configured; Meridian-owned ledger records, retained evidence, approvals, and report outputs are the operational record surface.
 - Storage journal records, UI projections, report-pack links, and workflow records are intentionally separate persistence or presentation surfaces. They may carry source-owned identifiers, evidence links, state labels, and DTO snapshots, but they must not redefine posting rules, trial-balance math, close-readiness gates, reconciliation classifications, or accounting approval semantics outside `src/Meridian.Ledger` and `src/Meridian.FinancialOperations`.
 - New accounting-like models outside the ledger or Financial Operations owners must be projection-, persistence-, reporting-, or workflow-specific, named for that role, and covered by the `AccountingSemanticBoundaryTests` allowlist so reviewers can distinguish intentional boundary surfaces from duplicated accounting semantics.
+
+The [strategy, order, and execution dictionary](../domain/strategy-order-execution.md) defines the
+shared business meanings. Current run/account/readiness admission and runtime-isolation limits
+remain in force. A broader operator-directed order path needs its own reviewed authority contract;
+it cannot manufacture a strategy run or bypass promotion, credential, risk, or live-control gates.
 
 ## Fund Structure Service Refactor Boundaries (Staged Migration)
 
