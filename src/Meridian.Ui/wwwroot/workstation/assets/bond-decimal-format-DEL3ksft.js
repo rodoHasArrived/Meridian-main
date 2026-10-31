@@ -1,0 +1,1 @@
+import{n as e,r as t}from"./ledger-tax-results-format-CdLY15nE.js";function n(n,r=`Unavailable`){return n==null?r:typeof n==`number`?Number.isFinite(n)?String(n):r:t(n)?e(n):n}var r=/^-?(?:\d+(?:\.\d*)?|\.\d+)$/;function i(e){return/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(e)?`${e}:00Z`:`${e}Z`}export{n,i as r,r as t};

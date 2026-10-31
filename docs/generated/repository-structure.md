@@ -7335,6 +7335,8 @@ Meridian-main
 │   │   │   │   │   │   ├── bond-migration-preview-panel.tsx
 │   │   │   │   │   │   ├── command-palette.actions.test.ts
 │   │   │   │   │   │   ├── command-palette.actions.ts
+│   │   │   │   │   │   ├── contractual-cash-flow-workbench.test.tsx
+│   │   │   │   │   │   ├── contractual-cash-flow-workbench.tsx
 │   │   │   │   │   │   ├── command-palette.entity-search.test.ts
 │   │   │   │   │   │   ├── command-palette.entity-search.ts
 │   │   │   │   │   │   ├── command-palette.test.tsx
@@ -7618,6 +7620,7 @@ Meridian-main
 │   │   │   │   │   │   ├── capital-call-issuance.api.ts
 │   │   │   │   │   │   ├── close-preparation.api.test.ts
 │   │   │   │   │   │   ├── close-preparation.api.ts
+│   │   │   │   │   │   ├── contractual-cash-flow.api.ts
 │   │   │   │   │   │   ├── corporate-actions.api.ts
 │   │   │   │   │   │   ├── covered-call.api.test.ts
 │   │   │   │   │   │   ├── covered-call.api.ts
@@ -8266,6 +8269,7 @@ Meridian-main
 │   │   │   │   │   ├── bond-migration.types.ts
 │   │   │   │   │   ├── brokerage-recovery.ts
 │   │   │   │   │   ├── canonical-symbol.ts
+│   │   │   │   │   ├── contractual-cash-flow.types.ts
 │   │   │   │   │   ├── close-preparation.ts
 │   │   │   │   │   ├── consolidation.ts
 │   │   │   │   │   ├── covered-call.types.ts
@@ -9307,6 +9311,7 @@ Meridian-main
 │   │   │   ├── WorkspaceStateTokenStore.cs
 │   │   │   ├── WorkstationAccountingApiClient.cs
 │   │   │   ├── WorkstationBondCutoverApiClient.cs
+│   │   │   ├── WorkstationContractualCashFlowApiClient.cs
 │   │   │   ├── WorkstationOperatingContextScopeResolver.cs
 │   │   │   ├── WorkstationOperatingContextService.cs
 │   │   │   ├── WorkstationOperatorInboxApiClient.cs
@@ -9395,6 +9400,8 @@ Meridian-main
 │   │   │   ├── BatchBacktestViewModel.cs
 │   │   │   ├── BindableBase.cs
 │   │   │   ├── CarryTradeBacktestViewModel.cs
+│   │   │   ├── CashFlows
+│   │   │   │   └── ContractualCashFlowScenarioViewModel.cs
 │   │   │   ├── CashFlowViewModel.cs
 │   │   │   ├── ChartingPageViewModel.cs
 │   │   │   ├── ClusterStatusViewModel.cs
@@ -12742,6 +12749,7 @@ Meridian-main
 │   │   │   ├── FactorPaydownViewModelTests.Approval.cs
 │   │   │   ├── BondAnalyticsViewModelTests.cs
 │   │   │   ├── BondCutoverConsoleViewModelTests.cs
+│   │   │   ├── ContractualCashFlowScenarioViewModelTests.cs
 │   │   │   ├── FactorPaydownViewModelTests.cs
 │   │   │   ├── ProviderOwnershipAdministrationViewModelTests.cs
 │   │   │   ├── FinancialRecordExplorerViewModelTests.cs

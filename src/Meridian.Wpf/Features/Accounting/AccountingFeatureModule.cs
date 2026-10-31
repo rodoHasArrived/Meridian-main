@@ -91,6 +91,7 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.AddSingleton<CashFinancingReadService>();
         services.AddSingleton<IWorkstationReconciliationApiClient, WorkstationReconciliationApiClient>();
         services.AddSingleton<IWorkstationSecurityMasterApiClient, WorkstationSecurityMasterApiClient>();
+        services.AddSingleton<IWorkstationContractualCashFlowApiClient, WorkstationContractualCashFlowApiClient>();
         // Operator accounting-configuration traffic goes through the server's governed HTTP
         // surface (audit finding P8) so the server stays the single writer and stamps the
         // session actor; the in-process IAccountingConfigurationService below remains for

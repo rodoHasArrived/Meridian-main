@@ -30,6 +30,13 @@ inventory on demand, give every undeclared bond a reviewed block bound to its re
 content hash, confirm the review, and submit the inventory hash (echoing the current receipt hash
 when amending). The reviewer is the server-resolved actor.
 
+The passport editor (every security) and the Direct Lending Evidence tab (selected facility) carry
+the browser's cash-flow scenario workbench (`ViewModels/CashFlows/ContractualCashFlowScenarioViewModel`
+over `WorkstationContractualCashFlowApiClient`): hypothetical valuation date, knowledge cutoff,
+horizon, rate shock, eligibility-driven exercise selections and one prepayment assumption; the event
+ladder, blockers and evidence hashes as exact server decimals; retained runs under a client-generated
+identity that any edit renews; and replay verification of a loaded run by output hash.
+
 Strategy composition registers the canonical Security Master resolver and position adjuster, then
 exposes narrow query ports and legacy aliases through `AddSecurityMasterContractAdapters()`.
 The adjustment-service factory selects its canonical query and resolver constructor explicitly,

@@ -9,6 +9,8 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ContractualCashFlowWorkbench } from "@/components/meridian/contractual-cash-flow-workbench";
+import { Select } from "@/components/ui/select";
 import { Landmark, RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -203,9 +205,31 @@ export function LoanBookScreen({ summary }: { summary?: LoanPortfolioSummary | n
               emptyText={view.emptyText}
               ariaLabel={view.tableAriaLabel}
             />
+            <LoanScenarioSection loans={view.rows.map((row) => ({ loanId: row.loanId, facilityName: row.facilityName }))} />
           </>
         ) : null}
       </CardContent>
     </Card>
+  );
+}
+
+/**
+ * Cash-flow scenarios for one facility over the shared contractual projection routes. The loan is
+ * chosen explicitly; nothing is projected until the operator asks.
+ */
+function LoanScenarioSection({ loans }: { loans: Array<{ loanId: string; facilityName: string }> }) {
+  const [loanId, setLoanId] = useState("");
+  const selected = loans.find((loan) => loan.loanId === loanId) ?? null;
+  if (loans.length === 0) return null;
+  return (
+    <div className="mt-4 grid gap-3" aria-label="Loan cash-flow scenarios">
+      <label className="grid max-w-md gap-1 text-xs font-medium text-muted-foreground">Facility for cash-flow scenarios
+        <Select value={loanId} aria-label="Scenario facility" onChange={(event) => setLoanId(event.target.value)}>
+          <option value="">Select a facility</option>
+          {loans.map((loan) => <option key={loan.loanId} value={loan.loanId}>{`${loan.facilityName} · ${loan.loanId}`}</option>)}
+        </Select>
+      </label>
+      {selected ? <ContractualCashFlowWorkbench subjectKind="Loan" subjectId={selected.loanId} subjectLabel={selected.facilityName} /> : null}
+    </div>
   );
 }

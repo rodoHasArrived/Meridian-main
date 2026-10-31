@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Contracts.CashFlows;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels.SecurityMaster;
 
@@ -23,10 +24,13 @@ namespace Meridian.Wpf.ViewModels;
 public sealed partial class SecurityPassportEditorViewModel : BindableBase
 {
     private readonly IWorkstationSecurityMasterApiClient _client;
+    private readonly IWorkstationContractualCashFlowApiClient? _cashFlowClient;
+    private CashFlows.ContractualCashFlowScenarioViewModel? _cashFlowScenarios;
 
-    public SecurityPassportEditorViewModel(IWorkstationSecurityMasterApiClient client)
+    public SecurityPassportEditorViewModel(IWorkstationSecurityMasterApiClient client, IWorkstationContractualCashFlowApiClient? cashFlowClient = null)
     {
         _client = client ?? throw new ArgumentNullException(nameof(client));
+        _cashFlowClient = cashFlowClient;
     }
 
     /// <summary>
@@ -75,6 +79,11 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
             && SecurityAssetClassCatalog.GetOrDefault(AssetClass).CarriesBondCouponStructure;
         BondAnalytics = carriesBondCoupon ? new BondAnalyticsViewModel(_client, SecurityId, Version) : null;
         BondMigration = carriesBondCoupon ? new BondMigrationPreviewViewModel(_client, SecurityId, Version) : null;
+        // Every security may be projected; the server resolves the contract or returns blockers.
+        CashFlowScenarios = _cashFlowClient is not null && SecurityId != Guid.Empty
+            ? new CashFlows.ContractualCashFlowScenarioViewModel(_cashFlowClient, ContractualCashFlowSubjectKinds.Security, SecurityId,
+                string.IsNullOrWhiteSpace(Symbol) ? SecurityId.ToString("D") : Symbol)
+            : null;
 
         _ = LoadSchemaAsync(AssetClass);
     }
@@ -97,6 +106,15 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
     }
 
     public bool HasBondTools => BondAnalytics is not null;
+
+    /// <summary>Cash-flow scenario workbench (web-UI parity); null when the host registers no cash-flow client.</summary>
+    public CashFlows.ContractualCashFlowScenarioViewModel? CashFlowScenarios
+    {
+        get => _cashFlowScenarios;
+        private set { if (SetProperty(ref _cashFlowScenarios, value)) OnPropertyChanged(nameof(HasCashFlowScenarios)); }
+    }
+
+    public bool HasCashFlowScenarios => CashFlowScenarios is not null;
 
     private CancellationTokenSource? _schemaLoad;
 
