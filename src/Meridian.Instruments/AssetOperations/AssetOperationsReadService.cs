@@ -37,7 +37,7 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
         _projectionStore = projectionStore;
         _securityMasterQueryService = securityMasterQueryService;
         _bondReferenceService = bondReferenceService;
-        _obligationProjectionService = obligationProjectionService ?? new AssetObligationProjectionService(bondPolicy);
+        _obligationProjectionService = obligationProjectionService ?? new AssetObligationProjectionService(bondPolicy, clock ?? TimeProvider.System);
         _positionProjectionStore = positionProjectionStore;
         _cashFlows = cashFlows;
         _clock = clock ?? TimeProvider.System;
@@ -82,7 +82,7 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
         AssetOperationsDetailDto detail;
         if (published is not null)
         {
-            detail = AssetOperationsProjectionBuilder.WithTermsObligationsTimeline(published);
+            detail = AssetOperationsProjectionBuilder.WithTermsObligationsTimeline(published, _clock.GetUtcNow());
         }
         else
         {
@@ -161,35 +161,6 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
                 ? _securityMasterQueryService.GetRecordedByIdAsOfAsync(securityId, knownAt, ct)
                 : _securityMasterQueryService.GetByIdAsync(securityId, ct);
 
-    private static AssetOperationsDetailDto BuildIdentityOnlyOperations(SecurityDetailDto security)
-    {
-        var subject = BuildSubject(security);
-        var readiness = new AssetOperationsReadinessDto(
-            subject.SecurityId,
-            "ReviewRequired",
-            subject.OperationalProfile,
-            ["Identity"],
-            subject.OperationalProfile.Except(["Identity"], StringComparer.OrdinalIgnoreCase).ToArray(),
-            ["Publish a reviewed Asset Operations projection and attach accepted retained evidence before treating this Security Master subject as ready."],
-            DateTimeOffset.UtcNow,
-            "SecurityMaster",
-            subject.SecurityId.ToString("D"));
-
-        var detail = new AssetOperationsDetailDto(
-            subject,
-            [],
-            [],
-            [],
-            [],
-            [],
-            [],
-            [],
-            [],
-            readiness,
-            []);
-        return AssetOperationsProjectionBuilder.WithTermsObligationsTimeline(detail);
-    }
-
     private static AssetOperationSubjectDto BuildSubject(SecurityDetailDto security)
         => new(
             security.SecurityId,
@@ -244,9 +215,12 @@ public static partial class AssetOperationsProjectionBuilder
         IReadOnlyDictionary<Guid, IReadOnlyList<ProjectedCashFlowDto>> projectedCashFlowsByRun,
         IReadOnlyList<CashTransactionDto> actualActivity,
         IReadOnlyList<ReconciliationRunDto> reconciliationRuns,
-        IReadOnlyDictionary<Guid, IReadOnlyList<ReconciliationResultDto>> reconciliationResultsByRun)
+        IReadOnlyDictionary<Guid, IReadOnlyList<ReconciliationResultDto>> reconciliationResultsByRun,
+        DateTimeOffset? generatedAt = null)
     {
         ArgumentNullException.ThrowIfNull(contract);
+        // Callers with a clock supply generatedAt; the wall clock is only the fallback for callers without one.
+        var now = generatedAt ?? DateTimeOffset.UtcNow;
 
         var securityReference = contract.CurrentTerms.SecurityMasterReference
             ?? throw new InvalidOperationException("Direct lending Asset Operations projection requires a Security Master reference.");
@@ -281,7 +255,7 @@ public static partial class AssetOperationsProjectionBuilder
                 "LoanStatus",
                 contract.Status.ToString(),
                 contract.EffectiveDate,
-                DateTimeOffset.UtcNow,
+                now,
                 "DirectLending",
                 contract.LoanId.ToString("D"),
                 $"Loan is {contract.Status}.")
@@ -367,7 +341,7 @@ public static partial class AssetOperationsProjectionBuilder
         };
 
         var readyCapabilities = ReadyCapabilities(subject.OperationalProfile, terms, lifecycle, flows, activity, reconciliations, reconciliationResults, ledger);
-        var readiness = BuildReadiness(subject, readyCapabilities, "DirectLending", contract.LoanId.ToString("D"));
+        var readiness = BuildReadiness(subject, readyCapabilities, "DirectLending", contract.LoanId.ToString("D"), evaluatedAt: now);
 
         var projection = new AssetOperationsProjectionDto(
             subject,
@@ -381,14 +355,14 @@ public static partial class AssetOperationsProjectionBuilder
             ledger,
             readiness,
             lifecycle);
-        return WithTermsObligationsTimeline(projection);
+        return WithTermsObligationsTimeline(projection, now);
     }
 
     private static Guid DirectLendingProjectionIdentity(Guid loanId, Guid securityId, FormattableString item)
         => new(Sha256Digest.ComputeBytesUtf8(
             FormattableString.Invariant($"meridian/direct-lending/assets/{loanId:N}/{securityId:N}/{FormattableString.Invariant(item)}")).AsSpan(0, 16));
 
-    public static AssetOperationsDetailDto WithTermsObligationsTimeline(AssetOperationsDetailDto detail)
+    public static AssetOperationsDetailDto WithTermsObligationsTimeline(AssetOperationsDetailDto detail, DateTimeOffset? now = null)
     {
         ArgumentNullException.ThrowIfNull(detail);
         if (detail.TermsObligationsTimeline is not null)
@@ -406,7 +380,8 @@ public static partial class AssetOperationsProjectionBuilder
                 detail.ProjectedCashFlows,
                 detail.ActualActivity,
                 detail.ReconciliationResults,
-                detail.LedgerProjections)
+                detail.LedgerProjections,
+                now ?? DateTimeOffset.UtcNow)
         };
     }
 
@@ -477,7 +452,7 @@ public static partial class AssetOperationsProjectionBuilder
         return detail with { Readiness = readiness };
     }
 
-    private static AssetOperationsProjectionDto WithTermsObligationsTimeline(AssetOperationsProjectionDto projection)
+    private static AssetOperationsProjectionDto WithTermsObligationsTimeline(AssetOperationsProjectionDto projection, DateTimeOffset? now = null)
     {
         ArgumentNullException.ThrowIfNull(projection);
         if (projection.TermsObligationsTimeline is not null)
@@ -495,7 +470,8 @@ public static partial class AssetOperationsProjectionBuilder
                 projection.ProjectedCashFlows,
                 projection.ActualActivity,
                 projection.ReconciliationResults,
-                projection.LedgerProjections)
+                projection.LedgerProjections,
+                now ?? DateTimeOffset.UtcNow)
         };
     }
 
@@ -507,14 +483,15 @@ public static partial class AssetOperationsProjectionBuilder
         IReadOnlyList<AssetProjectedCashFlowDto> projectedCashFlows,
         IReadOnlyList<AssetActualActivityDto> actualActivity,
         IReadOnlyList<AssetReconciliationResultDto> reconciliationResults,
-        IReadOnlyList<AssetLedgerProjectionDto> ledgerProjections)
+        IReadOnlyList<AssetLedgerProjectionDto> ledgerProjections,
+        DateTimeOffset now)
     {
         var latestRun = projectionRuns.MaxBy(static run => run.GeneratedAt);
         var projectionAsOf = latestRun?.ProjectionAsOf
             ?? projectedCashFlows.MinBy(static flow => flow.DueDate)?.DueDate
             ?? terms.MaxBy(static row => row.EffectiveDate)?.EffectiveDate
-            ?? DateOnly.FromDateTime(DateTime.UtcNow.Date);
-        var generatedAt = latestRun?.GeneratedAt ?? DateTimeOffset.UtcNow;
+            ?? DateOnly.FromDateTime(now.UtcDateTime.Date);
+        var generatedAt = latestRun?.GeneratedAt ?? now;
         var events = new List<AssetTermsObligationTimelineEventDto>();
 
         foreach (var flow in projectedCashFlows.OrderBy(static flow => flow.DueDate).ThenBy(static flow => flow.SequenceNumber))

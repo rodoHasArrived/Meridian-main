@@ -35,6 +35,9 @@ public sealed record PortfolioCashLadderInputs(
     /// engine returns a blocked result with no buckets or breach flags.
     /// </summary>
     public IReadOnlyList<string> DecisionBlockers { get; init; } = [];
+
+    /// <summary>The ladder's generation timestamp; the read service supplies its clock so results are testable and replayable.</summary>
+    public DateTimeOffset? GeneratedAt { get; init; }
 }
 
 /// <summary>
@@ -223,7 +226,7 @@ public static partial class PortfolioCashLadderEngine
                 ScenarioCatalog,
                 Assumptions: [],
                 Warnings: warnings.Concat(inputs.DecisionBlockers).Distinct(StringComparer.Ordinal).ToArray(),
-                DateTimeOffset.UtcNow,
+                inputs.GeneratedAt ?? DateTimeOffset.UtcNow,
                 SecuritiesEvaluated: 0,
                 SecuritiesWithFlows: 0,
                 IsDecisionReady: false,
@@ -320,7 +323,7 @@ public static partial class PortfolioCashLadderEngine
             ScenarioCatalog,
             assumptions,
             warnings,
-            DateTimeOffset.UtcNow,
+            inputs.GeneratedAt ?? DateTimeOffset.UtcNow,
             inputs.Positions.Count,
             securitiesWithFlows,
             IsDecisionReady: true,

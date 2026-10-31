@@ -149,7 +149,7 @@ public sealed partial class SecurityMasterCashFlowService
         StructuredCashFlowScenario scenario, BondCalculationContext context, StructuredCashFlowTerms terms,
         IReadOnlyDictionary<string, SecurityForwardCurve> curves, StructuredCashFlowStaleness? retainedFreshness = null, bool unifiedEconomics = true)
     {
-        var assessmentTime = context.KnownAt ?? DateTimeOffset.UtcNow;
+        var assessmentTime = context.KnownAt ?? _clock.GetUtcNow();
         var freshness = retainedFreshness ?? (source.LastUpdatedUtc is not { } updated ? StructuredCashFlowStaleness.Unknown
             : assessmentTime - updated > StalenessThreshold ? StructuredCashFlowStaleness.Stale : StructuredCashFlowStaleness.Fresh);
         var projection = BuildCalculatedProjectionCore(security, source.SourceKind, scenario, freshness,

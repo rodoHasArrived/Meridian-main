@@ -103,8 +103,7 @@ public sealed partial class PostgresLedgerJournalStore
         if (command.MutationKind == AtomicTaxLotMutationKind.Acquisition && command.AcquisitionLot!.Acquisition is null)
             throw new LedgerValidationException("New atomic acquisitions require complete canonical acquisition facts.");
         if (command.MutationKind == AtomicTaxLotMutationKind.Acquisition
-            && command.AcquisitionLot!.Account.AccountType != (command.Direction == OpenLotDirection.Short
-                ? LedgerAccountType.Liability : LedgerAccountType.Asset))
+            && !OpenLotCarryingAccounts.Matches(command.AcquisitionLot!.Account, command.Direction))
             throw new LedgerValidationException("New long-lot acquisitions require an asset carrying account; short opening requires a liability carrying account.");
 
         // Unversioned instructions preserve historical receipt fingerprints and calculations,
@@ -1376,8 +1375,7 @@ public sealed partial class PostgresLedgerJournalStore
             !string.Equals(lot.Currency, functionalCurrency, StringComparison.OrdinalIgnoreCase) ||
             lot.UnitCost != selection.ExpectedUnitCost ||
             lot.Acquisition?.Direction != command.Direction ||
-            lot.Account.AccountType != (command.Direction == OpenLotDirection.Short
-                ? LedgerAccountType.Liability : LedgerAccountType.Asset) ||
+            !OpenLotCarryingAccounts.Matches(lot.Account, command.Direction) ||
             lot.Version != selection.ExpectedVersion ||
             lot.OpenQuantity != selection.ExpectedOpenQuantity ||
             lot.OpenQuantity < selection.Quantity)

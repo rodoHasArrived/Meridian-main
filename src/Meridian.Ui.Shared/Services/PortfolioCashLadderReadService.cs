@@ -23,6 +23,7 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
     private readonly IPortfolioCashBalanceProvider? _cashBalanceProvider;
     private readonly IPortfolioCapitalScheduleProvider? _capitalScheduleProvider;
     private readonly Meridian.Contracts.Calendars.IBusinessDayCalendarSource? _calendars;
+    private readonly TimeProvider _clock;
 
     public PortfolioCashLadderReadService(
         ISecurityMasterQueryService? securityMasterQueryService = null,
@@ -30,8 +31,10 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
         IPortfolioHoldingsSource? holdingsSource = null,
         IPortfolioCashBalanceProvider? cashBalanceProvider = null,
         IPortfolioCapitalScheduleProvider? capitalScheduleProvider = null,
-        Meridian.Contracts.Calendars.IBusinessDayCalendarSource? calendars = null)
+        Meridian.Contracts.Calendars.IBusinessDayCalendarSource? calendars = null,
+        TimeProvider? clock = null)
     {
+        _clock = clock ?? TimeProvider.System;
         _securityMasterQueryService = securityMasterQueryService;
         _assetOperationsQueryService = assetOperationsQueryService;
         _holdingsSource = holdingsSource;
@@ -47,7 +50,8 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
         ArgumentNullException.ThrowIfNull(query);
         ct.ThrowIfCancellationRequested();
 
-        var asOfDate = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var now = _clock.GetUtcNow();
+        var asOfDate = DateOnly.FromDateTime(now.UtcDateTime.Date);
         var horizonDays = Math.Max(1, query.HorizonDays);
         var windowEnd = asOfDate.AddDays(horizonDays);
 
@@ -118,6 +122,7 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
             Math.Max(1, query.BucketDays))
         {
             Calendars = _calendars,
+            GeneratedAt = now,
             PositionSourceNotices = positionNotices
         };
 

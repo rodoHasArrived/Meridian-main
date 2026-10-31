@@ -46,10 +46,20 @@ public static partial class ContractualCashFlowEngine
         var scheduledPayment = stream.Amortization == CashFlowAmortization.LevelPayment ? LevelPayment(balance, periods, stream, request, schedule, curves) : 0;
         var terminated = false;
         var hasElectiveReduction = continuation;
+        // Periods from the schedule kernel are in accrual order, so the set accruing between two
+        // consecutive timeline dates is a moving window instead of a scan per date. Payment and
+        // accrual-end lookups use grouped dictionaries that preserve period order within a date.
+        var ordered = IsAccrualOrdered(periods);
+        var endingOn = periods.GroupBy(static p => p.AccrualEnd).ToDictionary(static g => g.Key, static g => g.ToArray());
+        var payingOn = periods.GroupBy(static p => p.PaymentDate).ToDictionary(static g => g.Key, static g => g.ToArray());
+        var windowStart = 0;
         foreach (var date in timeline)
         {
             var opening = balance;
-            foreach (var p in periods.Where(p => p.AccrualStart < date && p.AccrualEnd > previous))
+            if (ordered)
+                while (windowStart < periods.Count && periods[windowStart].AccrualEnd <= previous)
+                    windowStart++;
+            foreach (var p in ordered ? AccruingWindow(periods, windowStart, date) : periods.Where(p => p.AccrualStart < date && p.AccrualEnd > previous))
             {
                 var left = previous > p.AccrualStart ? previous : p.AccrualStart;
                 var right = date < p.AccrualEnd ? date : p.AccrualEnd;
@@ -77,14 +87,14 @@ public static partial class ContractualCashFlowEngine
             if (!continuation && stream.OpeningBalanceDate == date && stream.OpeningBalance is { } evidence && Cash(balance) != Cash(evidence))
                 throw Refuse("OpeningBalanceHistoryMissing", "Dated outstanding balance does not reconcile to the retained contractual history.");
             var capitalized = 0m;
-            foreach (var p in periods.Where(p => p.AccrualEnd == date))
+            foreach (var p in endingOn.GetValueOrDefault(date, []))
             {
                 capitalized += pikAccrued[p.Sequence];
                 pikAccrued[p.Sequence] = 0;
             }
             balance += capitalized;
             var cashInterest = 0m;
-            foreach (var p in periods.Where(p => p.PaymentDate == date))
+            foreach (var p in payingOn.GetValueOrDefault(date, []))
             {
                 cashInterest += cashAccrued[p.Sequence];
                 cashAccrued[p.Sequence] = 0;
@@ -106,7 +116,7 @@ public static partial class ContractualCashFlowEngine
                 }
                 else
                     balance -= scheduled;
-                if (periods.Any(p => p.PaymentDate == date) && stream.Amortization is CashFlowAmortization.EqualPrincipal or CashFlowAmortization.LevelPayment)
+                if (payingOn.ContainsKey(date) && stream.Amortization is CashFlowAmortization.EqualPrincipal or CashFlowAmortization.LevelPayment)
                 {
                     var repayment = stream.Amortization == CashFlowAmortization.EqualPrincipal ? regularPrincipal : decimal.Max(0m, scheduledPayment - cashInterest - capitalized);
                     repayment = decimal.Min(balance, repayment);
@@ -258,5 +268,20 @@ public static partial class ContractualCashFlowEngine
             sum += discount;
         }
         return balance / sum;
+    }
+
+    private static bool IsAccrualOrdered(IReadOnlyList<SchedulePeriod> periods)
+    {
+        for (var i = 1; i < periods.Count; i++)
+            if (periods[i].AccrualStart < periods[i - 1].AccrualStart || periods[i].AccrualEnd < periods[i - 1].AccrualEnd)
+                return false;
+        return true;
+    }
+
+    /// <summary>Periods from <paramref name="start"/> whose accrual begins before <paramref name="date"/>, in period order.</summary>
+    private static IEnumerable<SchedulePeriod> AccruingWindow(IReadOnlyList<SchedulePeriod> periods, int start, DateOnly date)
+    {
+        for (var i = start; i < periods.Count && periods[i].AccrualStart < date; i++)
+            yield return periods[i];
     }
 }

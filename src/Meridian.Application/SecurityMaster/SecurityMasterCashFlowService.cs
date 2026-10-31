@@ -36,6 +36,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
     private readonly IBusinessDayCalendarSource? _calendars;
     private readonly IBondCalculationPolicy? _bondPolicy;
     private readonly ISecurityCashFlowReceiptStore? _receiptStore;
+    private readonly TimeProvider _clock;
 
     private static readonly TimeSpan StalenessThreshold = TimeSpan.FromDays(7);
 
@@ -87,8 +88,10 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         IStructuredCashFlowLedgerBridge? ledgerBridge = null,
         ISecurityForwardCurveProvider? forwardCurves = null,
         IBondCalculationPolicy? bondPolicy = null,
-        ISecurityCashFlowReceiptStore? receiptStore = null)
+        ISecurityCashFlowReceiptStore? receiptStore = null,
+        TimeProvider? clock = null)
     {
+        _clock = clock ?? TimeProvider.System;
         _store = store;
         _providers = providers?.ToList() ?? [];
         _queryService = queryService;

@@ -1,8 +1,32 @@
+using Meridian.Contracts.Accounting.Lots;
+using Meridian.Contracts.Ledger;
+
 namespace Meridian.Ledger;
 
 /// <summary>Book accounting only: opening proceeds are a liability; a cover relieves that liability.</summary>
 public static class ShortLotJournalProjector
 {
+    /// <summary>Functional-currency cost of covering <paramref name="coveredQuantity"/> at the explicit execution price, at ledger rounding.</summary>
+    public static decimal CoverCost(decimal coveredQuantity, decimal coverPrice)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(coveredQuantity);
+        ArgumentOutOfRangeException.ThrowIfNegative(coverPrice);
+        return LedgerCurrencyRounding.RoundCurrency(coveredQuantity * coverPrice);
+    }
+
+    /// <summary>
+    /// True when the journal carries exactly the projected lines: the same count, and each expected
+    /// account/debit/credit triple present exactly once. Extra, missing or inverted lines fail.
+    /// </summary>
+    public static bool MatchesExactly(IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> expected,
+        IReadOnlyList<LedgerEntry> actual)
+    {
+        ArgumentNullException.ThrowIfNull(expected);
+        ArgumentNullException.ThrowIfNull(actual);
+        return actual.Count == expected.Count && expected.All(line =>
+            actual.Count(item => item.Account == line.account && item.Debit == line.debit && item.Credit == line.credit) == 1);
+    }
+
     public static IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> Open(
         LedgerAccount carryingAccount, decimal proceeds)
     {
@@ -32,7 +56,7 @@ public static class ShortLotJournalProjector
     private static void Validate(LedgerAccount account, decimal basis)
     {
         ArgumentNullException.ThrowIfNull(account);
-        if (account.AccountType != LedgerAccountType.Liability)
+        if (!OpenLotCarryingAccounts.Matches(account, OpenLotDirection.Short))
             throw new ArgumentException("Short lots require an explicit liability carrying account.");
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(basis);
     }

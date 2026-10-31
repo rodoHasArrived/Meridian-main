@@ -16,12 +16,16 @@ public sealed partial class AssetObligationProjectionService
 
     private const string SecurityMasterSourceDomain = "SecurityMaster";
     private readonly IBondCalculationPolicy? _bondPolicy;
+    private readonly TimeProvider _clock;
 
-    public AssetObligationProjectionService(IBondCalculationPolicy? bondPolicy = null)
-        => _bondPolicy = bondPolicy;
+    public AssetObligationProjectionService(IBondCalculationPolicy? bondPolicy = null, TimeProvider? clock = null)
+    {
+        _bondPolicy = bondPolicy;
+        _clock = clock ?? TimeProvider.System;
+    }
 
     public AssetOperationsDetailDto ProjectFromSecurityMaster(SecurityDetailDto security)
-        => ProjectFromSecurityMaster(security, new BondCalculationContext(DateTimeOffset.UtcNow));
+        => ProjectFromSecurityMaster(security, new BondCalculationContext(_clock.GetUtcNow()));
 
     /// <summary>Maps a canonical calculation without repeating coupon or principal arithmetic.</summary>
     public AssetOperationsDetailDto ProjectFromSecurityMaster(
@@ -156,7 +160,9 @@ public sealed partial class AssetObligationProjectionService
             ledger,
             readiness,
             lifecycle);
-        return AssetOperationsProjectionBuilder.WithTermsObligationsTimeline(detail);
+        // The calculation context's economic cutoff is the deterministic "now" for a projection
+        // built from retained terms; it keeps the obligation timeline replayable without a wall clock.
+        return AssetOperationsProjectionBuilder.WithTermsObligationsTimeline(detail, context.AsOf);
     }
 
     public static IReadOnlyList<AssetTermsObligationTimelineEventDto> BuildProjectedObligationEvents(

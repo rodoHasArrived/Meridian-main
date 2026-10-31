@@ -1,7 +1,6 @@
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
-using static Meridian.Contracts.Ledger.LedgerCurrencyRounding;
 
 namespace Meridian.Storage.Ledger;
 
@@ -23,12 +22,11 @@ public sealed partial class PostgresLedgerJournalStore
             {
                 if (command.DisposalSalePrice is not { } coverPrice)
                     throw new LedgerValidationException("Short covers require the explicit functional-currency execution price.");
-                var cost = RoundCurrency(command.DisposalSelections!.Sum(selection => selection.Quantity) * coverPrice);
+                var cost = ShortLotJournalProjector.CoverCost(command.DisposalSelections!.Sum(selection => selection.Quantity), coverPrice);
                 expected = ShortLotJournalProjector.Cover(account, basis, cost);
             }
-            var actual = command.Journal.Entry.Lines;
-            if (actual.Count != expected.Count || expected.Any(line =>
-                    actual.Count(item => item.Account == line.account && item.Debit == line.debit && item.Credit == line.credit) != 1))
+            // Storage admits the journal; the expected lines and cost arithmetic are Ledger rules.
+            if (!ShortLotJournalProjector.MatchesExactly(expected, command.Journal.Entry.Lines))
                 throw new LedgerValidationException("Short opening/cover journal must exactly retain cash, liability relief and realized book result; extra or inverted lines are refused.");
         }
         catch (ArgumentException exception)
