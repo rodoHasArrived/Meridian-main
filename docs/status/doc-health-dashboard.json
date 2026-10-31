@@ -1,11 +1,11 @@
 {
-  "total_files": 792,
-  "total_lines": 180518,
+  "total_files": 793,
+  "total_lines": 180565,
   "orphaned_count": 260,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 315,
-  "average_lines": 227.9,
+  "average_lines": 227.7,
   "health_score": 83,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2592,7 +2592,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 561,
+      "line_count": 562,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2601,6 +2601,14 @@
     {
       "path": "docs/engineering/security-master-architecture-audit-2026-08-13.md",
       "line_count": 230,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/solo-developer-ci-consolidation.md",
+      "line_count": 45,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3016,7 +3024,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 13120,
+      "line_count": 13121,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
