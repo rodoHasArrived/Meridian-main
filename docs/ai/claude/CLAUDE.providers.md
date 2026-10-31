@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-06-04
+**Reviewed:** 2026-10-30
 
 This document provides guidance for AI assistants working with data providers in Meridian. Data providers form the foundation of the data collection pillar, feeding real-time and historical market data into backtesting, paper trading, and live execution pipelines.
 
@@ -45,56 +45,23 @@ The system uses a unified abstraction layer supporting both **real-time streamin
 
 ---
 
-## Current Provider Inventory (2026-03-31)
+## Provider inventory and capability authority (October 2026)
 
-The repository currently includes **32 concrete provider implementations** plus shared base and
-registry components. That figure is a dated snapshot and predates the StockSharp correction below:
-rows marked _not implemented_ have no adapter in the tree and are not part of the count.
+The former March 2026 count of 32 concrete implementations and the hand-maintained provider tables were snapshots, not a reliable runtime inventory. Do not use them to determine production readiness, live connection availability, or operator acceptance.
 
-### Streaming / Hybrid Providers
-| Provider | Class | Path |
-|----------|-------|------|
-| Alpaca | `AlpacaMarketDataClient` | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs` |
-| Interactive Brokers | `IBMarketDataClient` | `src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs` |
-| Interactive Brokers (simulation) | `IBSimulationClient` | `src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs` |
-| NYSE | `NyseMarketDataClient` | `src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs` |
-| NYSE (data source) | `NYSEDataSource` | `src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs` |
-| Polygon | `PolygonMarketDataClient` | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs` |
-| StockSharp | _not implemented_ | No adapter exists in the tree; deferred per `docs/reference/provider-integration-status.md` |
-| Synthetic | `SyntheticMarketDataClient` | `src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs` |
-| Streaming failover | `FailoverAwareMarketDataClient` | `src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs` |
+Use the following maintained sources instead:
 
-### Historical Providers
-| Provider | Class | Path |
-|----------|-------|------|
-| Alpaca | `AlpacaHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs` |
-| Alpha Vantage | `AlphaVantageHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` |
-| Composite failover | `CompositeHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs` |
-| Finnhub | `FinnhubHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs` |
-| FRED | `FredHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs` |
-| Interactive Brokers | `IBHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs` |
-| Nasdaq Data Link | `NasdaqDataLinkHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs` |
-| Polygon | `PolygonHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs` |
-| StockSharp | _not implemented_ | No adapter exists in the tree; deferred per `docs/reference/provider-integration-status.md` |
-| Stooq | `StooqHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs` |
-| Synthetic | `SyntheticHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs` |
-| Tiingo | `TiingoHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs` |
-| Twelve Data | `TwelveDataHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs` |
-| Yahoo Finance | `YahooFinanceHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs` |
+- [Provider capability matrix](../../reference/provider-capability-matrix.md) — shared provider contracts, direct adapter coverage, runtime caveats, and provider-specific limitations.
+- [Generated adapter readiness matrix](../../source/generated/adapter-readiness-matrix.md) — canonical adapter maturity and ownership, derived from the source-owned registry.
+- [Provider integration status](../../reference/provider-integration-status.md) — integration-specific operational notes and deferred work.
+- [Provider management architecture](../../architecture/provider-management.md) — discovery, routing, lifecycle, monitoring, and failover architecture.
 
-### Symbol Search Providers
-| Provider | Class | Path |
-|----------|-------|------|
-| Alpaca | `AlpacaSymbolSearchProvider` | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs` |
-| EDGAR | `EdgarSymbolSearchProvider` | `src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs` |
-| Finnhub | `FinnhubSymbolSearchProvider` | `src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProvider.cs` |
-| OpenFIGI | `OpenFigiClient` | `src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs` |
-| Polygon | `PolygonSymbolSearchProvider` | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs` |
-| Robinhood | `RobinhoodSymbolSearchProvider` | `src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs` |
-| StockSharp | _not implemented_ | No adapter exists in the tree; deferred per `docs/reference/provider-integration-status.md` |
-| Synthetic | `SyntheticMarketDataClient` | `src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs` |
+The capability matrix covers 22 direct adapter folders across six shared contracts; that is **not** a count of deployed, validated, or production-accepted vendor connections. A class or runtime descriptor is not proof that credentials, entitlements, vendor SDKs, live-provider tests, and operator approval have been satisfied. In particular, IBKR's simulation path is not a substitute for its vendor-backed runtime; Polygon hosted corporate-action ingestion is distinct from shared on-demand retrieval; and review-only corporate-action feeds must not be treated as automatic acceptance authority.
 
-## File Locations
+## Legacy file-location and implementation examples
+
+**Historical guidance, not authoritative inventory:** The class tables, counts, old shorthand paths, hard-coded rate limits, and example configuration values that follow were compiled earlier in 2026 and may be incomplete or obsolete. Do not infer that every listed path or example is current; verify against the actual repository tree and current provider contracts before implementing changes. OpenFIGI maps identifiers using `ISymbolResolver`, not `ISymbolSearchProvider`. The current provider capability matrix and generated readiness registry linked above take precedence over these examples.
+
 
 ### Core Abstractions (ProviderSdk)
 | File | Purpose |

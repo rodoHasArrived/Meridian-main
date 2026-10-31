@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-06-04
+**Reviewed:** 2026-10-30
 
 This sub-document covers the REST API endpoints and application service catalogue for Meridian.
 Load this when working on endpoints, API clients, monitoring services, backtesting, portfolio tracking, or strategy management.
@@ -13,7 +13,7 @@ Load this when working on endpoints, API clients, monitoring services, backtesti
 
 The application exposes a REST API when running with `--mode desktop`.
 
-**Implementation Note:** 300 route constants in `UiApiRoutes.cs` across 38 endpoint files. Core endpoints (status, health, config, backfill) are fully functional. A small number of advanced endpoints may return stub responses or 501 Not Implemented.
+**Implementation note (current-source authority):** The old count of 300 route constants and 38 endpoint files was a June 2026 snapshot and must not be used for coverage or completeness decisions. The expanded [`UiApiRoutes`](../../../src/Meridian.Contracts/Api/UiApiRoutes.cs), endpoint implementations under [`Meridian.Ui.Shared/Endpoints`](../../../src/Meridian.Ui.Shared/Endpoints/), and the maintained [API reference](../../reference/api-reference.md) own active route behavior. Some endpoints expressly reject unsupported operations. The tables below are navigation examples from the earlier guide, **not** a complete audited list or a guarantee that every operation is active, authenticated, and backed by durable services. Verify route, HTTP method, permission, host registration, and the specific response path in source and tests before calling it.
 
 ### Core Endpoints
 | Endpoint | Method | Purpose |
@@ -226,4 +226,4 @@ This section used to enumerate workflow files by hand, and every entry had gone 
 
 ---
 
-*Last Updated: 2026-03-18*
+*Historical service lists retained for orientation; route authority is the source-linked API reference.*

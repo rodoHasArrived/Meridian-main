@@ -7,6 +7,11 @@
 Start here for Meridian's product direction, delivery evidence, and release-readiness questions.
 This page routes stakeholders to the owning document; it does not maintain a second status tracker.
 
+Meridian's objectives include financial operations, strategy formulation and validation, order
+management, and governed strategy execution. These outcomes share evidence, scoped authority, and
+financial integrity. The existing close package is a bounded financial workflow, not a prerequisite
+for every strategy or order-management capability.
+
 ## What a Stakeholder Should Read Here
 
 | Your question | Start here |
@@ -15,6 +20,7 @@ This page routes stakeholders to the owning document; it does not maintain a sec
 | What has been delivered, accepted, or planned? | [Generated Roadmap Summary](../roadmap/generated/ROADMAP_SUMMARY.md) and [Roadmap Register](../roadmap/generated/roadmap-register.md) |
 | What blocks a production release? | [Implementation and Readiness Tracker](implementation-todo-list.md) |
 | What should we work on next? | [Product Plans — Next-Work Determinations](plans/README.md#next-work-determinations) |
+| What work follows from the strategy and OMS scope expansion? | [Expanded strategy and order-management objectives](implementation-todo-list.md#expanded-strategy-and-order-management-objectives) |
 | Why was a direction chosen, or what did a review find? | [Product Review and Decision History](review-history.md) |
 | Where is a technical plan or blueprint? | [Plans and Blueprints Register](../engineering/blueprints/README.md) |
 | What evidence is needed before expanding scope? | [Deferred Expansion Boundaries](deferred-expansion-boundaries.md) |
@@ -38,6 +44,11 @@ production certification; see the [Solo-developer workflow](../ai/solo-developer
 
 The [Meridian Design Document](meridian-design-document.md) owns product scope, customer needs,
 operating principles, and capability intent. Start there before changing stakeholder narrative.
+Its [strategy and OMS direction](meridian-design-document.md#227-strategy-and-order-management-direction)
+records `DEC-TRADING-STRATEGY-DIRECTION-001` and the W13 objectives. Scope registration does not
+establish implemented coverage, operator acceptance, a delivery rank, or permission to trade live.
+The [strategy, order, and execution dictionary](../domain/strategy-order-execution.md) defines the
+shared concepts and authority boundaries.
 Use the [Core Extensibility Model](../architecture/core-extensibility-model.md) for the engineering
 boundary between shared financial-operations objects and governed tenant configuration.
 
@@ -47,7 +58,7 @@ Use the source that owns the question:
 
 | Question | Authoritative source |
 | --- | --- |
-| Delivery state, acceptance, and sequencing | [Roadmap Registry](../roadmap/README.md) and its generated views |
+| Delivery state, acceptance, and sequencing | [Roadmap Registry](../roadmap/README.md); canonical data lives in `docs/roadmap/data/*.yml`, and generated views summarize it |
 | Product scope and design intent | [Meridian Design Document](meridian-design-document.md) |
 | Production-readiness execution and P0 evidence | [Implementation and Readiness Tracker](implementation-todo-list.md) |
 | Implemented module behavior and ownership | [Source Documentation Mesh](../source/README.md) and the owning source README |
@@ -68,8 +79,18 @@ Use the source that owns the question:
   or [reference contract](../reference/README.md).
 - Treat a review, brainstorm, prototype, or delivery plan as a dated input; it does not change status.
 
-The operating proof chain is **Import → Validate → Reconcile → Approve → Report**. Check evidence
-through that chain when assessing a new or changed stakeholder claim.
+Check claims against the evidence path for the declared workflow:
+
+| Outcome | Connected evidence |
+| --- | --- |
+| Financial operations | Source intake, validation, reconciliation, reviewed accounting, approval, close, and reporting |
+| Strategy formulation and validation | Strategy version, parameters, data and runtime assumptions, run results, paper evidence, and promotion decision |
+| Order management and execution | Authorized operator or strategy intent, account and pre-trade checks, broker observations, recovery, and portfolio/accounting reconciliation |
+
+A completed stage does not approve its successor. Order intent is distinct from broker-confirmed
+state, and execution evidence is distinct from journal-posting authority. Model suggestions cannot
+grant their own approval or live authority; approved deterministic strategies remain subject to
+the supported runtime, promotion, account, risk, and operator-control gates.
 
 ## Product-Owner Validation
 

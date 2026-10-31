@@ -217,3 +217,52 @@ decisions:
       - W12-YEND-001
       - W12-FINRPT-001
       - W12-CREDIT-001
+
+  - id: DEC-TRADING-STRATEGY-DIRECTION-001
+    title: Adopt order management and strategy formulation/execution as product direction
+    status: accepted
+    decided_on: 2026-10-30
+    owner_lane: Core Team
+    summary: >-
+      The repository owner explicitly requested that Meridian may serve as an order management
+      tool and a strategy formulation and execution tool, with the project documentation and
+      implementation list updated accordingly. Charter Section 22.7 and planned W13-OMS-001 and
+      W13-STRAT-001 register that expanded direction. The decision accepts product scope only;
+      it records no implementation completion, independent reviewer verdict, operator acceptance,
+      enabled live configuration, broker certification, or production release. Both rows remain
+      planned with planned evidence, no adopted delivery rank, and no due date. The required
+      priority field uses the registry template's medium default; no relative delivery rank,
+      schedule, or deadline is adopted. Existing W9-W12
+      sequence values, dependencies, the separate LOT then MARK then SEAM work queue, and frozen
+      release gates remain intact. W11-EXEC-001 continues to own the execution bounded-context
+      clarification and does not inherit the new productization criteria.
+      The work extends existing strategy definitions, Designer and QuantScript routes, retained
+      strategy-run/artifact identity, promotion, OMS, gateways, paper realism, risk controls,
+      and durable broker/fill/accounting handoffs. Existing W2/W3/W6/W7 completion and W9
+      acceptance evidence retain their exact scope and reservations. PRD-006, PRD-007, PRD-012,
+      PRD-020, and PRD-106 remain the owners of existing gateway, durability, isolation,
+      activation, and orchestration work. The first supported slice declares a strategy or
+      operator-intent path, account, instrument, broker capability, execution mode, and retained
+      evidence before claiming broader coverage. Manual live-order productization must resolve
+      the current promoted-run and FundAccountId readiness dependency through an explicit
+      reviewed intent/account authority design; it cannot fabricate strategy runs or remove
+      the live admission gate. Strategy-generated orders and manual intents converge on one
+      governed OMS while the ledger retains posted accounting authority.
+      Ordinary development follows docs/ai/solo-developer-workflow.md with deterministic synthetic
+      data, focused checks, and separate AI critique where risk warrants it. Live credentials,
+      institutional operators, and production certification are not prerequisites to a routine PR.
+      The developer owns acceptance, merge, and sensitive activation decisions; AI critique is
+      not independent human approval and does not replace required product approvals.
+      Research, strategy formulation, and order/execution productization are no longer blanket
+      deferred product goals. Capabilities may be developed and verified within a declared
+      synthetic scope; live-support and production-release claims remain unavailable until their
+      applicable validation, product approvals, operating authority, and release requirements
+      are met. No live orders, credential changes, approval bypasses, or release
+      activation are authorized by this documentation decision. The neutral core, existing seven
+      workspace roots, shared browser/WPF seams, supported deployment envelope, immutable journals,
+      and scoped financial controls remain. Unrelated payment execution, broad portal, general
+      no-code workflow design, detached enterprise risk/forecasting, and mobile exclusions remain.
+    related_roadmap_items:
+      - W13-OMS-001
+      - W13-STRAT-001
+      - W11-EXEC-001
