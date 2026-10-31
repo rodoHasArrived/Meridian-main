@@ -177,9 +177,7 @@ public static class SecurityAssetTermsFieldEditValidator
             // overlay entry instead of asserting a typed one.
             if (nestedPath.Length > 0
                 && !string.IsNullOrWhiteSpace(newValue)
-                && (string.Equals(field.Key, "principalSchedule", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(field.Key, "factorScheduleEntries", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(field.Key, "stepSchedule", StringComparison.OrdinalIgnoreCase)))
+                && SecurityEconomicScheduleParser.TryGetKind(field.Key, out _))
             {
                 error =
                     $"'{field.Key}' rows carry schedule-wide domain invariants that a nested edit cannot " +
@@ -240,16 +238,24 @@ public static class SecurityAssetTermsFieldEditValidator
             return false;
         }
 
-        // A syntactically valid array is not enough for the KNOWN contractual schedules: their
-        // rows carry the same domain invariants the canonical F# command enforces (positive
-        // instalments, factors within [0, 1], unique non-increasing factor dates), and staging a
-        // row set the domain would reject puts a draft and provenance row behind a contract that
-        // can never persist canonically.
+        // Whole economic schedules share their parsing and diagnostics with cash-flow resolution,
+        // schema validation and relational projection. Do not run another strict JSON-kind check
+        // afterward: the shared contract owns supported row aliases and numeric-string coercion.
         if (field.Type == SecurityAssetTermFieldType.Array
-            && !ScheduleRowsSatisfyDomainInvariants(field.Key, newValue, out var scheduleError))
+            && SecurityEconomicScheduleParser.TryGetKind(field.Key, out var scheduleKind))
         {
-            error = scheduleError;
-            return false;
+            using var replacement = JsonDocument.Parse(newValue);
+            var schedules = SecurityEconomicScheduleParser.ParseContainer(
+                scheduleKind, replacement.RootElement, BuildCanonicalPath(field.Key, string.Empty));
+            if (!schedules.IsValid)
+            {
+                error = string.Join(" ", schedules.Diagnostics.Select(static diagnostic =>
+                    $"{diagnostic.Path}: {diagnostic.Message}"));
+                return false;
+            }
+
+            canonicalFieldPath = BuildCanonicalPath(field.Key, nestedPath);
+            return true;
         }
 
         if (field.Type is SecurityAssetTermFieldType.Object or SecurityAssetTermFieldType.Array)
@@ -402,182 +408,6 @@ public static class SecurityAssetTermsFieldEditValidator
                 var path = indexDepth == 0 ? populated[0].Path : $"{field.Key}.{nestedPath}.{populated[0].Field.Key}";
                 error = SecurityTermsEnvelope.DescribeNotYetWritable(assetClass, path, populated[0].Field.SinceTermsVersion);
                 return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static bool ScheduleRowsSatisfyDomainInvariants(string fieldKey, string newValue, out string? error)
-    {
-        error = null;
-        if (string.Equals(fieldKey, "principalSchedule", StringComparison.OrdinalIgnoreCase))
-        {
-            return PrincipalScheduleRowsAreValid(newValue, out error);
-        }
-
-        if (string.Equals(fieldKey, "factorScheduleEntries", StringComparison.OrdinalIgnoreCase))
-        {
-            return FactorScheduleRowsAreValid(newValue, out error);
-        }
-
-        if (string.Equals(fieldKey, "stepSchedule", StringComparison.OrdinalIgnoreCase))
-        {
-            return StepScheduleRowsAreValid(newValue, out error);
-        }
-
-        return true;
-    }
-
-    /// <summary>
-    /// Mirrors the canonical F# Bond step-coupon rules a whole-schedule replacement must satisfy
-    /// row-locally: each row is an object with a parseable effective date and a non-negative rate,
-    /// and effective dates are unique. The date-versus-maturity window stays at the canonical amend
-    /// seam, which re-validates the published overlay against the record.
-    /// </summary>
-    private static bool StepScheduleRowsAreValid(string newValue, out string? error)
-    {
-        error = null;
-        var dates = new List<DateOnly>();
-        using var document = JsonDocument.Parse(newValue);
-        foreach (var row in document.RootElement.EnumerateArray())
-        {
-            if (row.ValueKind != JsonValueKind.Object
-                || !TryReadRowDate(row, out var effectiveDate, "effectiveDate", "stepDate", "date")
-                || !TryReadRowDecimal(row, out var rate, "rate", "couponRate"))
-            {
-                error = "Each stepSchedule row must be an object with a parseable 'effectiveDate' and numeric 'rate'.";
-                return false;
-            }
-
-            if (rate < 0m)
-            {
-                error = "stepSchedule rates must be zero or greater — negative step coupons are rejected by the canonical Bond contract.";
-                return false;
-            }
-
-            dates.Add(effectiveDate);
-        }
-
-        if (dates.Distinct().Count() != dates.Count)
-        {
-            error = "stepSchedule effective dates must be unique — two rates on one date make the payable coupon depend on input ordering.";
-            return false;
-        }
-
-        return true;
-    }
-
-    /// <summary>
-    /// Mirrors the canonical F# Bond rules a whole-schedule replacement must satisfy row-locally:
-    /// each row is an object with a parseable payment date and a strictly positive amount.
-    /// Record-contextual rules (dates within issue/maturity, the schedule-versus-par cap) stay at
-    /// the canonical amend seam, which re-validates the published overlay.
-    /// </summary>
-    private static bool PrincipalScheduleRowsAreValid(string newValue, out string? error)
-    {
-        error = null;
-        using var document = JsonDocument.Parse(newValue);
-        foreach (var row in document.RootElement.EnumerateArray())
-        {
-            if (row.ValueKind != JsonValueKind.Object
-                || !TryReadRowDate(row, out _, "paymentDate")
-                || !TryReadRowDecimal(row, out var amount, "amount"))
-            {
-                error = "Each principalSchedule row must be an object with a parseable 'paymentDate' and numeric 'amount'.";
-                return false;
-            }
-
-            if (amount <= 0m)
-            {
-                error = "principalSchedule amounts must be greater than zero — non-positive instalments are rejected by the canonical Bond contract.";
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /// <summary>
-    /// Mirrors the canonical F# StructuredCredit factor-schedule rules: every factor within
-    /// [0, 1], unique as-of dates, and non-increasing factors in date order — the same invariants
-    /// that make the effective outstanding principal well defined.
-    /// </summary>
-    private static bool FactorScheduleRowsAreValid(string newValue, out string? error)
-    {
-        error = null;
-        var entries = new List<(DateOnly AsOfDate, decimal Factor)>();
-        using var document = JsonDocument.Parse(newValue);
-        foreach (var row in document.RootElement.EnumerateArray())
-        {
-            if (row.ValueKind != JsonValueKind.Object
-                || !TryReadRowDate(row, out var asOfDate, "asOfDate", "factorDate", "effectiveDate", "date")
-                || !TryReadRowDecimal(row, out var factor, "factor", "currentFactor"))
-            {
-                error = "Each factorScheduleEntries row must be an object with a parseable as-of date and numeric factor.";
-                return false;
-            }
-
-            if (factor < 0m || factor > 1m)
-            {
-                error = "factorScheduleEntries factors must be between zero and one — factors above one project cash flows exceeding the original principal.";
-                return false;
-            }
-
-            entries.Add((asOfDate, factor));
-        }
-
-        if (entries.Select(static entry => entry.AsOfDate).Distinct().Count() != entries.Count)
-        {
-            error = "factorScheduleEntries dates must be unique — two factors on the same date make the outstanding principal depend on input ordering.";
-            return false;
-        }
-
-        var ordered = entries.OrderBy(static entry => entry.AsOfDate).ToArray();
-        for (var i = 1; i < ordered.Length; i++)
-        {
-            if (ordered[i].Factor > ordered[i - 1].Factor)
-            {
-                error = "factorScheduleEntries must be non-increasing in date order — a rising factor would grow outstanding principal.";
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private static bool TryReadRowDate(JsonElement row, out DateOnly value, params string[] propertyNames)
-    {
-        value = default;
-        foreach (var property in row.EnumerateObject())
-        {
-            foreach (var name in propertyNames)
-            {
-                if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase)
-                    && property.Value.ValueKind == JsonValueKind.String
-                    && DateOnly.TryParse(property.Value.GetString(), CultureInfo.InvariantCulture, out value))
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private static bool TryReadRowDecimal(JsonElement row, out decimal value, params string[] propertyNames)
-    {
-        value = default;
-        foreach (var property in row.EnumerateObject())
-        {
-            foreach (var name in propertyNames)
-            {
-                if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase)
-                    && property.Value.ValueKind == JsonValueKind.Number
-                    && property.Value.TryGetDecimal(out value))
-                {
-                    return true;
-                }
             }
         }
 

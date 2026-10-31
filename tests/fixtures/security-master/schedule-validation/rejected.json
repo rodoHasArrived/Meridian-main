@@ -1,0 +1,1043 @@
+[
+  {
+    "id": "factor-container-object",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": {}
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_CONTAINER_INVALID",
+        "path": "assetSpecificTerms.factorScheduleEntries"
+      }
+    ]
+  },
+  {
+    "id": "factor-container-string",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": "broken"
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_CONTAINER_INVALID",
+        "path": "assetSpecificTerms.factorScheduleEntries"
+      }
+    ]
+  },
+  {
+    "id": "factor-container-number",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": 12
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_CONTAINER_INVALID",
+        "path": "assetSpecificTerms.factorScheduleEntries"
+      }
+    ]
+  },
+  {
+    "id": "factor-container-boolean",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": false
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_CONTAINER_INVALID",
+        "path": "assetSpecificTerms.factorScheduleEntries"
+      }
+    ]
+  },
+  {
+    "id": "factor-row-null",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        null
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_ROW_INVALID",
+        "path": "assetSpecificTerms.factorScheduleEntries[0]"
+      }
+    ]
+  },
+  {
+    "id": "factor-row-scalar",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        12
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_ROW_INVALID",
+        "path": "assetSpecificTerms.factorScheduleEntries[0]"
+      }
+    ]
+  },
+  {
+    "id": "factor-row-array",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        []
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_ROW_INVALID",
+        "path": "assetSpecificTerms.factorScheduleEntries[0]"
+      }
+    ]
+  },
+  {
+    "id": "factor-missing-date",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        {
+          "factor": 0.8
+        }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_DATE_REQUIRED",
+        "path": "assetSpecificTerms.factorScheduleEntries[0].asOfDate"
+      }
+    ]
+  },
+  {
+    "id": "factor-invalid-date",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        {
+          "factorDate": "not-a-date",
+          "factor": 0.8
+        }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_DATE_INVALID",
+        "path": "assetSpecificTerms.factorScheduleEntries[0].factorDate"
+      }
+    ]
+  },
+  {
+    "id": "factor-missing-value",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        {
+          "asOfDate": "2026-01-01"
+        }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_VALUE_REQUIRED",
+        "path": "assetSpecificTerms.factorScheduleEntries[0].factor"
+      }
+    ]
+  },
+  {
+    "id": "factor-invalid-value",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        {
+          "asOfDate": "2026-01-01",
+          "currentFactor": "bad"
+        }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_VALUE_INVALID",
+        "path": "assetSpecificTerms.factorScheduleEntries[0].currentFactor"
+      }
+    ]
+  },
+  {
+    "id": "factor-unrepresentable-decimal",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        {
+          "asOfDate": "2026-01-01",
+          "factor": "79228162514264337593543950336"
+        }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_VALUE_INVALID",
+        "path": "assetSpecificTerms.factorScheduleEntries[0].factor"
+      }
+    ]
+  },
+  {
+    "id": "factor-range-negative",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        {
+          "asOfDate": "2026-01-01",
+          "factor": -0.01
+        }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_RANGE_INVALID",
+        "path": "assetSpecificTerms.factorScheduleEntries[0].factor"
+      }
+    ]
+  },
+  {
+    "id": "factor-range-above-one",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        {
+          "asOfDate": "2026-01-01",
+          "factor": 1.01
+        }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_RANGE_INVALID",
+        "path": "assetSpecificTerms.factorScheduleEntries[0].factor"
+      }
+    ]
+  },
+  {
+    "id": "factor-duplicate-forward",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        {
+          "asOfDate": "2026-01-01",
+          "factor": 0.8
+        },
+        {
+          "asOfDate": "2026-01-01",
+          "factor": 0.7
+        }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_DUPLICATE_DATE",
+        "path": "assetSpecificTerms.factorScheduleEntries[1].asOfDate"
+      }
+    ]
+  },
+  {
+    "id": "factor-duplicate-reverse",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        {
+          "asOfDate": "2026-01-01",
+          "factor": 0.7
+        },
+        {
+          "asOfDate": "2026-01-01",
+          "factor": 0.8
+        }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_DUPLICATE_DATE",
+        "path": "assetSpecificTerms.factorScheduleEntries[1].asOfDate"
+      }
+    ]
+  },
+  {
+    "id": "factor-duplicate-equal",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        {
+          "asOfDate": "2026-01-01",
+          "factor": 0.8
+        },
+        {
+          "asOfDate": "2026-01-01",
+          "factor": 0.8
+        }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_DUPLICATE_DATE",
+        "path": "assetSpecificTerms.factorScheduleEntries[1].asOfDate"
+      }
+    ]
+  },
+  {
+    "id": "factor-increasing",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        {
+          "asOfDate": "2026-01-01",
+          "factor": 0.7
+        },
+        {
+          "asOfDate": "2026-02-01",
+          "factor": 0.8
+        }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_FACTOR_INCREASE",
+        "path": "assetSpecificTerms.factorScheduleEntries[1].factor"
+      }
+    ]
+  },
+  {
+    "id": "factor-increasing-input-reversed",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        {
+          "asOfDate": "2026-02-01",
+          "factor": 0.8
+        },
+        {
+          "asOfDate": "2026-01-01",
+          "factor": 0.7
+        }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_FACTOR_INCREASE",
+        "path": "assetSpecificTerms.factorScheduleEntries[0].factor"
+      }
+    ]
+  },
+  {
+    "id": "factor-invalid-primary-member-not-hidden-by-alias",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        {
+          "asOfDate": "bad",
+          "date": "2026-01-01",
+          "factor": 0.8
+        }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_DATE_INVALID",
+        "path": "assetSpecificTerms.factorScheduleEntries[0].asOfDate"
+      }
+    ]
+  },
+  {
+    "id": "factor-invalid-primary-container-not-hidden-by-alias",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": {},
+      "factorSchedules": [
+        {
+          "date": "2026-01-01",
+          "factor": 0.8
+        }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_CONTAINER_INVALID",
+        "path": "assetSpecificTerms.factorScheduleEntries"
+      }
+    ]
+  },
+  {
+    "id": "profile-invalid-suppresses-valid-root",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "customProfileId": "schedule-corpus",
+      "profileVersion": 1,
+      "profileFields": {
+        "factorScheduleEntries": [
+          {
+            "asOfDate": "2026-01-01"
+          }
+        ]
+      },
+      "factorScheduleEntries": [
+        {
+          "asOfDate": "2026-01-01",
+          "factor": 0.8
+        }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_VALUE_REQUIRED",
+        "path": "assetSpecificTerms.profileFields.factorScheduleEntries[0].factor"
+      }
+    ]
+  },
+  {
+    "id": "outer-invalid-suppresses-valid-common",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        {
+          "asOfDate": "bad",
+          "factor": 0.8
+        }
+      ]
+    },
+    "commonTerms": {
+      "factorScheduleEntries": [
+        {
+          "asOfDate": "2026-01-01",
+          "factor": 0.8
+        }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_DATE_INVALID",
+        "path": "assetSpecificTerms.factorScheduleEntries[0].asOfDate"
+      }
+    ]
+  },
+  {
+    "id": "common-factor-malformed-diagnostic-source",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {},
+    "commonTerms": {
+      "factorSchedules": [
+        false
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_ROW_INVALID",
+        "path": "commonTerms.factorSchedules[0]"
+      }
+    ]
+  },
+  {
+    "id": "principal-container-object",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": {}
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Invalid",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_CONTAINER_INVALID",
+        "path": "assetSpecificTerms.principalSchedule"
+      }
+    ]
+  },
+  {
+    "id": "principal-container-string",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": "broken"
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Invalid",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_CONTAINER_INVALID",
+        "path": "assetSpecificTerms.principalSchedule"
+      }
+    ]
+  },
+  {
+    "id": "principal-row-null",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        null
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Invalid",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_ROW_INVALID",
+        "path": "assetSpecificTerms.principalSchedule[0]"
+      }
+    ]
+  },
+  {
+    "id": "principal-missing-date",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        {
+          "amount": 10
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Invalid",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_DATE_REQUIRED",
+        "path": "assetSpecificTerms.principalSchedule[0].paymentDate"
+      }
+    ]
+  },
+  {
+    "id": "principal-missing-amount",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        {
+          "paymentDate": "2027-01-01"
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Invalid",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_VALUE_REQUIRED",
+        "path": "assetSpecificTerms.principalSchedule[0].amount"
+      }
+    ]
+  },
+  {
+    "id": "principal-invalid-amount",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        {
+          "paymentDate": "2027-01-01",
+          "amount": true
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Invalid",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_VALUE_INVALID",
+        "path": "assetSpecificTerms.principalSchedule[0].amount"
+      }
+    ]
+  },
+  {
+    "id": "principal-range-zero",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        {
+          "paymentDate": "2027-01-01",
+          "amount": 10
+        },
+        {
+          "paymentDate": "2028-01-01",
+          "amount": 0
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Invalid",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_RANGE_INVALID",
+        "path": "assetSpecificTerms.principalSchedule[1].amount"
+      }
+    ]
+  },
+  {
+    "id": "principal-range-negative",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        {
+          "paymentDate": "2027-01-01",
+          "amount": 10
+        },
+        {
+          "paymentDate": "2028-01-01",
+          "amount": -1
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Invalid",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_RANGE_INVALID",
+        "path": "assetSpecificTerms.principalSchedule[1].amount"
+      }
+    ]
+  },
+  {
+    "id": "principal-same-date-sum-overflow",
+    "assetClass": "DirectLoan",
+    "assetSpecificTerms": {
+      "principalSchedule": [
+        {
+          "paymentDate": "2027-01-01",
+          "amount": "79228162514264337593543950335"
+        },
+        {
+          "paymentDate": "2027-01-01",
+          "amount": 1
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Invalid",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_SUM_OVERFLOW",
+        "path": "assetSpecificTerms.principalSchedule[1].amount"
+      }
+    ]
+  },
+  {
+    "id": "step-container-object",
+    "assetClass": "Bond",
+    "assetSpecificTerms": {
+      "stepSchedule": {}
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Absent",
+    "stepPresence": "Invalid",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_CONTAINER_INVALID",
+        "path": "assetSpecificTerms.stepSchedule"
+      }
+    ]
+  },
+  {
+    "id": "step-row-null",
+    "assetClass": "Bond",
+    "assetSpecificTerms": {
+      "stepSchedule": [
+        null
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Absent",
+    "stepPresence": "Invalid",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_ROW_INVALID",
+        "path": "assetSpecificTerms.stepSchedule[0]"
+      }
+    ]
+  },
+  {
+    "id": "step-missing-date",
+    "assetClass": "Bond",
+    "assetSpecificTerms": {
+      "stepSchedule": [
+        {
+          "rate": 4.5
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Absent",
+    "stepPresence": "Invalid",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_DATE_REQUIRED",
+        "path": "assetSpecificTerms.stepSchedule[0].effectiveDate"
+      }
+    ]
+  },
+  {
+    "id": "step-missing-rate",
+    "assetClass": "Bond",
+    "assetSpecificTerms": {
+      "stepSchedule": [
+        {
+          "effectiveDate": "2027-01-01"
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Absent",
+    "stepPresence": "Invalid",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_VALUE_REQUIRED",
+        "path": "assetSpecificTerms.stepSchedule[0].rate"
+      }
+    ]
+  },
+  {
+    "id": "step-invalid-alias-date",
+    "assetClass": "Bond",
+    "assetSpecificTerms": {
+      "couponSteps": [
+        {
+          "date": "bad",
+          "couponRate": 4.5
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Absent",
+    "stepPresence": "Invalid",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_DATE_INVALID",
+        "path": "assetSpecificTerms.couponSteps[0].date"
+      }
+    ]
+  },
+  {
+    "id": "step-negative-rate",
+    "assetClass": "Bond",
+    "assetSpecificTerms": {
+      "stepSchedule": [
+        {
+          "effectiveDate": "2027-01-01",
+          "rate": -0.01
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Absent",
+    "stepPresence": "Invalid",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_RANGE_INVALID",
+        "path": "assetSpecificTerms.stepSchedule[0].rate"
+      }
+    ]
+  },
+  {
+    "id": "step-duplicate-forward",
+    "assetClass": "Bond",
+    "assetSpecificTerms": {
+      "stepSchedule": [
+        {
+          "effectiveDate": "2027-01-01",
+          "rate": 4
+        },
+        {
+          "effectiveDate": "2027-01-01",
+          "rate": 5
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Absent",
+    "stepPresence": "Invalid",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_DUPLICATE_DATE",
+        "path": "assetSpecificTerms.stepSchedule[1].effectiveDate"
+      }
+    ]
+  },
+  {
+    "id": "step-duplicate-reverse",
+    "assetClass": "Bond",
+    "assetSpecificTerms": {
+      "stepSchedule": [
+        {
+          "effectiveDate": "2027-01-01",
+          "rate": 5
+        },
+        {
+          "effectiveDate": "2027-01-01",
+          "rate": 4
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Absent",
+    "stepPresence": "Invalid",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_DUPLICATE_DATE",
+        "path": "assetSpecificTerms.stepSchedule[1].effectiveDate"
+      }
+    ]
+  },
+  {
+    "id": "step-duplicate-equal",
+    "assetClass": "Bond",
+    "assetSpecificTerms": {
+      "stepSchedule": [
+        {
+          "effectiveDate": "2027-01-01",
+          "rate": 4
+        },
+        {
+          "effectiveDate": "2027-01-01",
+          "rate": 4
+        }
+      ]
+    },
+    "factorPresence": "Absent",
+    "principalPresence": "Absent",
+    "stepPresence": "Invalid",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_DUPLICATE_DATE",
+        "path": "assetSpecificTerms.stepSchedule[1].effectiveDate"
+      }
+    ]
+  },
+  {
+    "id": "factor-null-aliases-preserve-actual-paths",
+    "assetClass": "StructuredCredit",
+    "assetSpecificTerms": {
+      "factorScheduleEntries": [
+        {
+          "FaCtOrDaTe": null,
+          "CurrentFactor": null
+        }
+      ]
+    },
+    "factorPresence": "Invalid",
+    "principalPresence": "Absent",
+    "stepPresence": "Absent",
+    "factors": [],
+    "principal": [],
+    "steps": [],
+    "diagnostics": [
+      {
+        "code": "SM_SCHEDULE_DATE_REQUIRED",
+        "path": "assetSpecificTerms.factorScheduleEntries[0].FaCtOrDaTe"
+      },
+      {
+        "code": "SM_SCHEDULE_VALUE_REQUIRED",
+        "path": "assetSpecificTerms.factorScheduleEntries[0].CurrentFactor"
+      }
+    ]
+  }
+]

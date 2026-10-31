@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-10-21
+last_reviewed: 2026-10-30
 ---
 
 # src/Meridian.Application
@@ -17,6 +17,13 @@ under review even when retained evidence is ready. Requests and scoped evidence 
 alias resolution, so securitized evidence cannot satisfy Bond or CustomAsset requirements.
 Profile-based reclassification also reads registry mappings and refuses contradictory classification
 metadata in both the envelope and nested profile fields.
+
+Security Master schema validation and canonical mapping consume the shared typed economic-schedule
+parser. Invalid selected rows produce the same source-path diagnostics as cash-flow resolution and
+PostgreSQL projections. Mapping preserves the original valid row order and carries selected common-term
+schedules through create, read and amendment, including common-only schedule changes. Retained economic
+replay keeps the original common and asset documents. See
+[dated economic schedule validation](../../docs/domain/security.md#dated-economic-schedule-validation).
 
 The internal `SecurityMaster/CashFlow/ScheduleSpecFactory` remains a preparatory adapter over decoded
 F# conventions, with its broader day/week cadence and explicit common-calendar fallback tests.

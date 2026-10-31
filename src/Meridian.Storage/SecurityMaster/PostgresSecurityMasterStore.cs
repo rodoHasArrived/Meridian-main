@@ -404,6 +404,14 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         SecurityProjectionRecord record,
         CancellationToken ct)
     {
+        // Validate before any SQL mutation, including generic/hand-written projections. A rejected
+        // schedule must not delete prior children, advance the retained version or move a replay
+        // checkpoint. The original term blob remains the evidence written below.
+        var scheduleTerms = SecurityAssetClassTermsUpgrader.TryUpgradeForRead(record.AssetClass, record.AssetSpecificTerms, out var upgradedTerms)
+            ? upgradedTerms
+            : record.AssetSpecificTerms;
+        SecurityEconomicScheduleParser.Parse(scheduleTerms, record.CommonTerms).ThrowIfInvalid();
+
         // The class the row held before this write decides which stale projection, if any, has to
         // be cleared below. Read under a per-security advisory lock plus the row lock the upsert is
         // about to take anyway, so a competing writer cannot change the class — or create the row

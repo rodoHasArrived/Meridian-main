@@ -132,31 +132,22 @@ internal sealed record SecurityTermsProjectionColumn(
 /// </param>
 /// <param name="Type">The element value type.</param>
 /// <param name="Required">
-/// Whether the column is NOT NULL. A malformed element — one missing a required key, or carrying it
-/// with the wrong JSON kind — suppresses the entire projection rather than writing a partial
-/// schedule: a half-projected principal or factor schedule reads as a complete one and would
-/// misstate amortization, whereas an absent projection reads as "not projected".
-/// </param>
-/// <param name="MustBePositive">
-/// Whether a row whose value here is zero or negative is skipped rather than projected. Mirrors
-/// <c>StructuredCashFlowTermsResolver.ReadPrincipalSchedule</c>, which discards instalments with a
-/// non-positive amount: projecting one would have the relational read model report a contractual
-/// payment the canonical cash-flow path does not recognise. Unlike a malformed element, this is a
-/// value the domain defines as "not a payment", so it is dropped rather than suppressing the
-/// projection.
+/// Whether the column is NOT NULL. For generic child arrays, a missing or malformed required
+/// value suppresses the projection. Economic schedules instead use the shared typed parser and
+/// refuse the write with diagnostics before any projection mutation; they never publish partial rows.
 /// </param>
 internal sealed record SecurityTermsProjectionChildColumn(
     string ColumnName,
     string ElementKey,
     SecurityAssetTermFieldType Type,
-    bool Required = false,
-    bool MustBePositive = false);
+    bool Required = false);
 
 /// <summary>
 /// A child projection table fanned out from one declared array term (a covenant list, a principal
 /// instalment schedule, a dated factor schedule). Rows are keyed by
-/// <c>(security_id, ordinal)</c> so the persisted order matches the array order in the terms
-/// document, and are replaced wholesale on every write.
+/// <c>(security_id, ordinal)</c> and are replaced wholesale on every write. Economic schedules
+/// use the shared parser's date order and same-date principal aggregation; other child tables
+/// retain terms-document order.
 /// </summary>
 /// <param name="TableName">Target SQL table (unqualified).</param>
 /// <param name="TermKey">
@@ -477,7 +468,7 @@ internal static partial class SecurityTermsProjectionRegistry
                     Columns:
                     [
                         new("payment_date", "paymentDate", SecurityAssetTermFieldType.Date, Required: true),
-                        new("amount", "amount", SecurityAssetTermFieldType.Decimal, Required: true, MustBePositive: true)
+                        new("amount", "amount", SecurityAssetTermFieldType.Decimal, Required: true)
                     ])
             ]),
         new(

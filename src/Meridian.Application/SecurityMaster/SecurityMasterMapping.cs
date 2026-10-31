@@ -16,22 +16,49 @@ internal static class SecurityMasterMapping
             SecurityId.NewSecurityId(request.SecurityId),
             ToCommonTerms(request.CommonTerms),
             ToFSharpList(request.Identifiers.Select(ToIdentifier)),
-            ToSecurityKind(request.AssetClass, request.AssetSpecificTerms, SecurityKindMappingMode.Write),
+            ToSecurityKind(request.AssetClass, request.AssetSpecificTerms, request.CommonTerms, SecurityKindMappingMode.Write),
             request.EffectiveFrom,
             ToProvenance(request.SourceSystem, request.UpdatedBy, request.SourceRecordId, request.Reason, request.EffectiveFrom));
 
     public static AmendTerms ToAmendCommand(AmendSecurityTermsRequest request, SecurityProjectionRecord current)
-        => new(
+    {
+        var kind = FSharpOption<SecurityKind>.None;
+        if (request.AssetSpecificTermsPatch is JsonElement assetSpecific)
+        {
+            kind = FSharpOption<SecurityKind>.Some(ToSecurityKind(current.AssetClass, assetSpecific,
+                request.CommonTerms ?? current.CommonTerms, SecurityKindMappingMode.Write));
+        }
+        else if (request.CommonTerms is JsonElement submittedCommon
+            && current.AssetClass is "Bond" or "DirectLoan" or "StructuredCredit")
+        {
+            var assetTerms = SecurityAssetClassTermsUpgrader.UpgradeForRead(current.AssetClass, current.AssetSpecificTerms);
+            var schedules = SecurityEconomicScheduleParser.Parse(assetTerms, submittedCommon);
+            schedules.ThrowIfInvalid();
+            if (IsCommonSchedule(schedules.FactorSchedule)
+                || IsCommonSchedule(schedules.PrincipalSchedule)
+                || IsCommonSchedule(schedules.StepCouponSchedule))
+            {
+                // Common metadata cannot serialize a schedule. Carry a selected common assertion
+                // into the typed kind so a common-only amendment cannot discard it. The unchanged
+                // asset document retains its read-version rules, including readable-ahead terms.
+                kind = FSharpOption<SecurityKind>.Some(ToSecurityKind(
+                    current.AssetClass, current.AssetSpecificTerms, submittedCommon));
+            }
+        }
+
+        return new(
             SecurityId.NewSecurityId(request.SecurityId),
             request.ExpectedVersion,
             request.CommonTerms is JsonElement common ? FSharpOption<CommonTerms>.Some(ToCommonTerms(common)) : FSharpOption<CommonTerms>.None,
-            request.AssetSpecificTermsPatch is JsonElement assetSpecific
-                ? FSharpOption<SecurityKind>.Some(ToSecurityKind(current.AssetClass, assetSpecific, SecurityKindMappingMode.Write))
-                : FSharpOption<SecurityKind>.None,
+            kind,
             ToFSharpList(request.IdentifiersToAdd.Select(ToIdentifier)),
             ToFSharpList(request.IdentifiersToExpire.Select(ToIdentifier)),
             request.EffectiveFrom,
             ToProvenance(request.SourceSystem, request.UpdatedBy, request.SourceRecordId, request.Reason, request.EffectiveFrom));
+    }
+
+    private static bool IsCommonSchedule<T>(SecurityScheduleParseResult<T> schedule)
+        => schedule.IsPresent && schedule.SourcePath?.StartsWith("commonTerms.", StringComparison.Ordinal) == true;
 
     public static DeactivateSecurity ToDeactivateCommand(DeactivateSecurityRequest request)
         => new(
@@ -46,7 +73,7 @@ internal static class SecurityMasterMapping
             ToSecurityStatus(record.Status),
             ToCommonTerms(record.CommonTerms),
             ToFSharpList(record.Identifiers.Select(ToIdentifier)),
-            ToSecurityKind(record.AssetClass, record.AssetSpecificTerms),
+            ToSecurityKind(record.AssetClass, record.AssetSpecificTerms, record.CommonTerms),
             record.Version,
             record.EffectiveFrom,
             ToOption(record.EffectiveTo),
@@ -248,7 +275,8 @@ internal static class SecurityMasterMapping
     /// <summary>
     /// Distinguishes command mapping (create/amend requests) from record reconstruction. Write
     /// mapping is strict: a malformed payload must fail the command instead of being coerced into
-    /// a different kind. Read mapping stays tolerant so legacy rows remain loadable.
+    /// a different kind. Read mapping retains legacy vocabulary defaults; economic schedules use
+    /// the shared parsing contract in both modes so malformed rows cannot disappear on reconstruction.
     /// </summary>
     private enum SecurityKindMappingMode
     {
@@ -256,7 +284,8 @@ internal static class SecurityMasterMapping
         Write
     }
 
-    private static SecurityKind ToSecurityKind(string assetClass, JsonElement json, SecurityKindMappingMode mode = SecurityKindMappingMode.Read)
+    private static SecurityKind ToSecurityKind(string assetClass, JsonElement json, JsonElement commonTerms,
+        SecurityKindMappingMode mode = SecurityKindMappingMode.Read)
     {
         EnsureSupportedAssetSchemaVersion(assetClass, json, mode);
         if (mode == SecurityKindMappingMode.Write)
@@ -271,6 +300,15 @@ internal static class SecurityMasterMapping
         // terms version (ADR-024). Identity steps return the same element.
         json = SecurityAssetClassTermsUpgrader.UpgradeForRead(assetClass, json);
         var terms = ResolveAssetTermsJson(json);
+        SecurityEconomicScheduleValidation? economicSchedules = null;
+        if (assetClass is "Bond" or "DirectLoan" or "StructuredCredit")
+        {
+            economicSchedules = SecurityEconomicScheduleParser.Parse(json, commonTerms);
+            economicSchedules.ThrowIfInvalid();
+        }
+        // Domain snapshots retain the valid typed source rows, including their order and split
+        // same-date principal payments. Sorting/aggregation belongs to calculated and relational
+        // views, not to reconstructing a retained record or emitting its next domain snapshot.
 
         var kind = assetClass switch
         {
@@ -304,6 +342,7 @@ internal static class SecurityMasterMapping
             "Bond" => SecurityKind.NewBond(ToBondTerms(
                 json,
                 mode,
+                economicSchedules!,
                 ReadScheduleConventions(json, assetClass, versionedTerms),
                 ReadCallPutSchedules(json, assetClass, versionedTerms))),
             "FxSpot" => SecurityKind.NewFxSpot(new FxSpotTerms(
@@ -372,7 +411,8 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalDecimal(json, "spreadBps")),
                 ToOption(GetOptionalDecimal(json, "currentCouponRate")),
                 ToOption(GetOptionalString(json, "resetFrequency")),
-                ToFSharpList(GetOptionalArrayItems(json, "principalSchedule").Select(ToPrincipalPaymentEntry)),
+                ToFSharpList(economicSchedules!.PrincipalSchedule.SourceEntries.Select(static entry =>
+                    new PrincipalPaymentEntry(entry.PaymentDate, entry.Amount))),
                 ToOption(GetOptionalString(json, "pricingSource")))),
             "StructuredCredit" => SecurityKind.NewStructuredCredit(new StructuredCreditTerms(
                 GetRequiredString(terms, "tranche"),
@@ -382,7 +422,8 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalDecimal(terms, "currentFactor")),
                 GetRequiredString(terms, "couponOrIndex"),
                 ToOption(GetOptionalString(terms, "factorSchedule")),
-                ToFSharpList(GetOptionalArrayItemsStrict(terms, "factorScheduleEntries").Select(ToFactorScheduleEntry)),
+                ToFSharpList(economicSchedules!.FactorSchedule.SourceEntries.Select(static entry =>
+                    new FactorScheduleEntry(entry.AsOfDate, entry.Factor))),
                 ToOption(GetOptionalDateOnly(terms, "maturity")),
                 // Typed tranche terms are optional, but a WRITE must not read a malformed supplied
                 // value as absent: persisting null for a numeric kind, "1.5" months or an unparseable
@@ -760,6 +801,7 @@ internal static class SecurityMasterMapping
     private static BondTerms ToBondTerms(
         JsonElement json,
         SecurityKindMappingMode mode,
+        SecurityEconomicScheduleValidation economicSchedules,
         ScheduleConventions scheduleConventions,
         CallPutSchedules callPutSchedules)
     {
@@ -774,7 +816,8 @@ internal static class SecurityMasterMapping
                 ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode)),
             "ZeroCoupon" => BondCouponStructure.ZeroCoupon,
             "Step" => BondCouponStructure.NewStep(
-                ToFSharpList(GetOptionalArrayItemsStrict(json, "stepSchedule").Select(ToStepCouponEntry)),
+                ToFSharpList(economicSchedules.StepCouponSchedule.SourceEntries.Select(static entry =>
+                    new StepCouponEntry(entry.EffectiveDate, entry.Rate))),
                 ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode)),
             // The scalar couponRate slot carries the inflation-linked REAL rate; couponType
             // discriminates, so a fixed-coupon read can never pick up an indexed rate.
@@ -811,7 +854,8 @@ internal static class SecurityMasterMapping
             ToOption(GetOptionalDateOnly(json, "legalFinalMaturity")),
             ToOption(GetOptionalDateOnly(json, "preRefundDate")),
             ToOption(GetOptionalDateOnly(json, "mandatoryPutDate")),
-            ToFSharpList(GetOptionalArrayItemsStrict(json, "principalSchedule").Select(ToPrincipalPaymentEntry)),
+            ToFSharpList(economicSchedules.PrincipalSchedule.SourceEntries.Select(static entry =>
+                new PrincipalPaymentEntry(entry.PaymentDate, entry.Amount))),
             scheduleConventions,
             callPutSchedules);
     }
@@ -1141,21 +1185,6 @@ internal static class SecurityMasterMapping
             GetRequiredString(json, "threshold"),
             ToOption(GetOptionalString(json, "notes")));
 
-    private static PrincipalPaymentEntry ToPrincipalPaymentEntry(JsonElement json)
-        => new(
-            GetRequiredDateOnly(json, "paymentDate"),
-            GetRequiredDecimal(json, "amount"));
-
-    private static StepCouponEntry ToStepCouponEntry(JsonElement json)
-        => new(
-            GetRequiredDateOnly(json, "effectiveDate"),
-            GetRequiredDecimal(json, "rate"));
-
-    private static FactorScheduleEntry ToFactorScheduleEntry(JsonElement json)
-        => new(
-            GetRequiredDateOnly(json, "asOfDate"),
-            GetRequiredDecimal(json, "factor"));
-
     private static Provenance ToProvenance(string sourceSystem, string updatedBy, string? sourceRecordId, string? reason, DateTimeOffset asOf)
         => new(sourceSystem, ToOption(sourceRecordId), asOf, updatedBy, ToOption(reason));
 
@@ -1315,25 +1344,6 @@ internal static class SecurityMasterMapping
         {
             yield return item;
         }
-    }
-
-    /// <summary>
-    /// Like <see cref="GetOptionalArrayItems"/>, but a property that is PRESENT with the wrong JSON
-    /// kind fails instead of reading as absent. Used for contractual schedules: silently treating a
-    /// malformed <c>principalSchedule</c>/<c>factorScheduleEntries</c> as missing would let domain
-    /// validation succeed and persist a snapshot that deleted the submitted schedule — projecting a
-    /// sinker as a bullet — rather than rejecting the invalid terms.
-    /// </summary>
-    private static IEnumerable<JsonElement> GetOptionalArrayItemsStrict(JsonElement json, string propertyName)
-    {
-        if (json.TryGetProperty(propertyName, out var value)
-            && value.ValueKind is not (JsonValueKind.Array or JsonValueKind.Null or JsonValueKind.Undefined))
-        {
-            throw new InvalidOperationException(
-                $"Property '{propertyName}' must be a JSON array when present, but was {value.ValueKind}.");
-        }
-
-        return GetOptionalArrayItems(json, propertyName);
     }
 
     private static string GetRequiredString(JsonElement json, string propertyName)

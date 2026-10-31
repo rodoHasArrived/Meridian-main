@@ -291,16 +291,16 @@ public sealed class SchemaTermsValidationTests
     }
 
     [Theory]
-    [InlineData("Bond", "principalSchedule", "paymentDate", "assetSpecificTerms.principalSchedule.0.paymentDate")]
-    [InlineData("Bond", "stepSchedule", "effectiveDate", "assetSpecificTerms.stepSchedule.0.effectiveDate")]
-    [InlineData("DirectLoan", "principalSchedule", "paymentDate", "assetSpecificTerms.principalSchedule.0.paymentDate")]
-    [InlineData("StructuredCredit", "factorScheduleEntries", "asOfDate", "assetSpecificTerms.factorScheduleEntries.0.asOfDate")]
-    public void SubmittedArrayItems_RejectMalformedDatesBeforeDecoding(string assetClass, string container, string member, string path)
+    [InlineData("Bond", "principalSchedule", "paymentDate", "amount", "assetSpecificTerms.principalSchedule[0].paymentDate")]
+    [InlineData("Bond", "stepSchedule", "effectiveDate", "rate", "assetSpecificTerms.stepSchedule[0].effectiveDate")]
+    [InlineData("DirectLoan", "principalSchedule", "paymentDate", "amount", "assetSpecificTerms.principalSchedule[0].paymentDate")]
+    [InlineData("StructuredCredit", "factorScheduleEntries", "asOfDate", "factor", "assetSpecificTerms.factorScheduleEntries[0].asOfDate")]
+    public void SubmittedArrayItems_RejectMalformedDatesBeforeDecoding(string assetClass, string container, string member, string numericMember, string path)
     {
         var schema = new SchemaTermsAssetClassValidator(assetClass);
         var terms = JsonSerializer.SerializeToElement(new Dictionary<string, object?>
         {
-            [container] = new[] { new Dictionary<string, object?> { [member] = "not-a-date" } }
+            [container] = new[] { new Dictionary<string, object?> { [member] = "not-a-date", [numericMember] = 1m } }
         });
 
         schema.ValidateSubmittedFieldsForWrite(terms).Should().ContainSingle()
@@ -325,11 +325,8 @@ public sealed class SchemaTermsValidationTests
     }
 
     [Theory]
-    [InlineData("Bond", "principalSchedule")]
-    [InlineData("Bond", "stepSchedule")]
     [InlineData("DirectLoan", "covenants")]
     [InlineData("CommitmentGuarantee", "covenants")]
-    [InlineData("StructuredCredit", "factorScheduleEntries")]
     [InlineData("Swap", "legs")]
     public void ObjectArrayShapes_RejectScalarAndNullItems(string assetClass, string container)
     {
@@ -338,6 +335,19 @@ public sealed class SchemaTermsValidationTests
 
         issues.Should().HaveCount(2).And.OnlyContain(issue => issue.Code == SchemaTermsAssetClassValidator.TypeCode);
         issues.SelectMany(issue => issue.AffectedFields).Should().Equal($"assetSpecificTerms.{container}.0", $"assetSpecificTerms.{container}.1");
+    }
+
+    [Theory]
+    [InlineData("Bond", "principalSchedule")]
+    [InlineData("Bond", "stepSchedule")]
+    [InlineData("StructuredCredit", "factorScheduleEntries")]
+    public void EconomicScheduleRows_UseTheSharedDiagnosticsForScalarAndNullItems(string assetClass, string container)
+    {
+        var terms = JsonSerializer.SerializeToElement(new Dictionary<string, object?> { [container] = new object?[] { 12, null } });
+        var issues = new SchemaTermsAssetClassValidator(assetClass).ValidateSubmittedFieldsForWrite(terms);
+
+        issues.Should().HaveCount(2).And.OnlyContain(issue => issue.Code == "SM_SCHEDULE_ROW_INVALID");
+        issues.SelectMany(issue => issue.AffectedFields).Should().Equal($"assetSpecificTerms.{container}[0]", $"assetSpecificTerms.{container}[1]");
     }
 
     [Fact]

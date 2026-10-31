@@ -1492,7 +1492,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
         await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(EditWith(
                 """[{"asOfDate":"2026-01-01","factor":0.5},{"asOfDate":"2026-02-01","factor":0.8}]""")))
             .Should().ThrowAsync<ArgumentException>("a rising factor schedule violates the StructuredCredit invariants")
-            .WithMessage("*structured_credit_factor_schedule_not_monotonic*");
+            .WithMessage("*assetSpecificTerms.profileFields.factorScheduleEntries[1].factor*SM_SCHEDULE_FACTOR_INCREASE*");
 
         await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(EditWith("garbage")))
             .Should().ThrowAsync<ArgumentException>("a non-array value cannot reconstruct into the resolved kind and fails closed")

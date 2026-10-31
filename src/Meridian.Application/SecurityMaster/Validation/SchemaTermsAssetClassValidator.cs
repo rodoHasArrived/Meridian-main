@@ -10,8 +10,9 @@ namespace Meridian.Application.SecurityMaster.Validation;
 /// present under its key or one of its aliases, a present field must carry the declared JSON type,
 /// and a closed-vocabulary field must carry a declared value. The hand-written class validators
 /// keep only the semantic rules the schema cannot express (ranges, date order, cross-field
-/// conditions); the presence and shape rules come from here, so a field added to the schema is
-/// validated without anyone writing a rule for it.
+/// conditions). Economic schedules use <see cref="SecurityEconomicScheduleParser"/> for presence,
+/// shape and row diagnostics, sharing the cash-flow and relational projection contract; all other
+/// presence and shape rules come from the schema.
 /// </summary>
 internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValidator
 {
@@ -33,7 +34,7 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
     public bool HasSchema => _fields.Count > 0;
 
     public IReadOnlyList<SecurityValidationIssueDto> Validate(SecurityValidationContext context)
-        => Validate(context.Record.AssetSpecificTerms, forWrite: false);
+        => Validate(context.Record.AssetSpecificTerms, forWrite: false, commonTerms: context.Record.CommonTerms);
 
     /// <summary>
     /// Checks new canonical writes against the fields this node writes. Unlike retained-row
@@ -41,25 +42,41 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
     /// Readable-ahead fields are deliberately left to the versioned-term round-trip guard.
     /// </summary>
     public IReadOnlyList<SecurityValidationIssueDto> ValidateForWrite(SecurityValidationContext context)
-        => Validate(context.Record.AssetSpecificTerms, forWrite: true);
+        => Validate(context.Record.AssetSpecificTerms, forWrite: true, commonTerms: context.Record.CommonTerms);
 
     /// <summary>Checks supplied members before tolerant decoding can discard malformed input.</summary>
     public IReadOnlyList<SecurityValidationIssueDto> ValidateSubmittedFieldsForWrite(JsonElement terms)
         => Validate(terms, forWrite: true, requirePresence: false);
 
-    private IReadOnlyList<SecurityValidationIssueDto> Validate(JsonElement terms, bool forWrite, bool requirePresence = true)
+    private IReadOnlyList<SecurityValidationIssueDto> Validate(
+        JsonElement terms, bool forWrite, bool requirePresence = true, JsonElement commonTerms = default)
     {
+        // Submitted terms may omit unrelated top-level fields, but a supplied schedule is a whole
+        // assertion: every row must parse. Read diagnostics and write admission therefore use the
+        // same schedule pass, including governed ownership and common-term fallback.
+        var economicSchedules = SecurityEconomicScheduleParser.Parse(terms, commonTerms);
+        var issues = economicSchedules.Diagnostics
+            .Select(static diagnostic => SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Error,
+                diagnostic.Code,
+                "Economic schedule is invalid",
+                diagnostic.Message,
+                [diagnostic.Path],
+                $"Correct {diagnostic.Path} before the security is used downstream."))
+            .ToList();
+
         if (terms.ValueKind != JsonValueKind.Object)
         {
             // The record-shape validator owns the non-object payload diagnostic.
-            return [];
+            return issues;
         }
 
         var profileGoverned = SecurityTermsEnvelope.IsProfileGovernedPayload(AssetClass, terms);
         if (forWrite && profileGoverned)
         {
-            // Class schemas do not govern approved profile payloads (ADR-024).
-            return [];
+            // Class schemas do not govern approved profile payloads (ADR-024). The shared
+            // economic schedule pass above still validates the source the resolver consumes.
+            return issues;
         }
 
         // A field above the class's write version (ADR-024, readable before writable) is checked only
@@ -73,8 +90,7 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
             : Math.Max(writes, SecurityTermsEnvelope.ResolveAssetClassTermsVersion(terms));
         var versionedTerms = SecurityVersionedTerms.Decoding(AssetClass, terms, writeMode: forWrite);
 
-        var issues = new List<SecurityValidationIssueDto>();
-        ValidateFields(terms, _fields, "", "assetSpecificTerms", decodesThrough, versionedTerms,
+        ValidateFields(terms, _fields, "", "assetSpecificTerms", decodesThrough, versionedTerms, economicSchedules,
             requirePresence, forWrite, issues);
         return issues;
     }
@@ -86,6 +102,7 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
         string valuePath,
         int decodesThrough,
         SecurityVersionedTermDecoding versionedTerms,
+        SecurityEconomicScheduleValidation economicSchedules,
         bool requirePresence,
         bool forWrite,
         List<SecurityValidationIssueDto> issues)
@@ -100,6 +117,28 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
             }
 
             var path = $"{valuePath}.{field.Key}";
+            // These schedules are already validated as selected typed sources. Preserve a class's
+            // required top-level assertion (DirectLoan principalSchedule), using shared presence so
+            // a governed/common fallback qualifies and an invalid declaration is not called absent.
+            // Partial submitted-field validation still permits omitted top-level fields.
+            if (schemaPath.Length == 0 && SecurityEconomicScheduleParser.TryGetKind(field.Key, out var scheduleKind))
+            {
+                var present = scheduleKind switch
+                {
+                    SecurityEconomicScheduleKind.Factor => economicSchedules.FactorSchedule.IsPresent,
+                    SecurityEconomicScheduleKind.Principal => economicSchedules.PrincipalSchedule.IsPresent,
+                    _ => economicSchedules.StepCouponSchedule.IsPresent
+                };
+                if (field.Type == SecurityAssetTermFieldType.Array && !present
+                    && ValidateField(field, exists: false, default, path, requirePresence) is { } requiredIssue)
+                {
+                    issues.Add(requiredIssue);
+                }
+                // Row aliases, type coercion and shadowed sources belong solely to the parser.
+                // Its free-text factorSchedule exemption also retains the evidence-reference field.
+                continue;
+            }
+
             var exists = TryGetUnderKeyOrAlias(terms, field, out var value);
             // Versioned containers use ADR-024's unset vocabulary before JSON-kind checks:
             // null, [], {}, and wholly unset members all declare no term.
@@ -125,7 +164,7 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
             }
             if (field.Type == SecurityAssetTermFieldType.Object)
             {
-                ValidateFields(value, children, childSchemaPath, path, decodesThrough, versionedTerms,
+                ValidateFields(value, children, childSchemaPath, path, decodesThrough, versionedTerms, economicSchedules,
                     requirePresence: forWrite && requirePresence, forWrite, issues);
             }
             else if (field.Type == SecurityAssetTermFieldType.Array)
@@ -144,7 +183,7 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
                         issues.Add(TypeIssue(field.Key, SecurityAssetTermFieldType.Object, item, itemPath));
                         continue;
                     }
-                    ValidateFields(item, children, childSchemaPath, itemPath, decodesThrough, versionedTerms,
+                    ValidateFields(item, children, childSchemaPath, itemPath, decodesThrough, versionedTerms, economicSchedules,
                         requirePresence: forWrite && requirePresence, forWrite, issues);
                 }
             }
