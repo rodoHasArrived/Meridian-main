@@ -48,9 +48,11 @@ public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IP
         var scope = RequireScope(configStore.LoadRequired(), provider, connectionId, tenantId);
         var migration = credentialStore as IProviderCredentialOwnershipMigration
             ?? throw new NotSupportedException("Credential vault does not support explicit ownership migration.");
-        return rollback
-            ? await migration.RollbackMigrationAsync(provider, scope, migrationId, actor, ct).ConfigureAwait(false)
-            : await migration.MigrateToScopeAsync(provider, scope, migrationId, expectedGeneration!, actor, ct).ConfigureAwait(false);
+        if (rollback)
+            return await migration.RollbackMigrationAsync(provider, scope, migrationId, actor, ct).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(expectedGeneration))
+            throw new ArgumentException("Migration requires the expected credential generation of the record being transferred.", nameof(expectedGeneration));
+        return await migration.MigrateToScopeAsync(provider, scope, migrationId, expectedGeneration, actor, ct).ConfigureAwait(false);
     }
 
     /// <summary>Null is permitted only for an entirely legacy provider family, never a partial owner or dangling default.</summary>

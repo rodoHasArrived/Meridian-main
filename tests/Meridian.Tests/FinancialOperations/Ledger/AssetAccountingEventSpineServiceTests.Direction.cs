@@ -28,7 +28,7 @@ public sealed partial class AssetAccountingEventSpineServiceTests
 
         var project = () => service.ProjectAsync(fixture.Request);
 
-        await project.Should().ThrowAsync<InvalidOperationException>().WithMessage("*requires a Long or Asset position*");
+        await project.Should().ThrowAsync<InvalidOperationException>().WithMessage("*requires a Long or Asset book position*");
         await store.DidNotReceiveWithAnyArgs().AppendAsync(default!, default, default, default);
     }
 
@@ -50,7 +50,7 @@ public sealed partial class AssetAccountingEventSpineServiceTests
 
         var draft = () => service.BuildPostingCandidateAsync(request);
 
-        await draft.Should().ThrowAsync<InvalidOperationException>().WithMessage("*requires a Long or Asset position*");
+        await draft.Should().ThrowAsync<InvalidOperationException>().WithMessage("*requires a Long or Asset book position*");
         await store.DidNotReceiveWithAnyArgs().AppendAsync(default!, default, default, default);
     }
 

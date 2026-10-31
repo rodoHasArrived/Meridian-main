@@ -63,8 +63,12 @@ public static class ProviderCredentialOwnershipEndpoints
             return await command(tenant.TenantId!, actor).ConfigureAwait(false);
         }
         catch (UnauthorizedAccessException) { return EndpointHelpers.Forbidden(); }
-        catch (ArgumentException) { return Results.BadRequest(new { error = "A valid provider, connection, environment and operation identity are required." }); }
-        catch (InvalidDataException) { return Results.Conflict(new { error = "Credential ownership does not match the retained account or environment." }); }
-        catch (InvalidOperationException) { return Results.Conflict(new { error = "Credential ownership or generation changed, or the requested transfer is unavailable. Reload the retained connection." }); }
+        catch (ArgumentException) { return Results.BadRequest(new { code = "OwnershipRequestInvalid", error = "A valid provider, connection, environment, operation identity and expected credential generation are required." }); }
+        catch (InvalidDataException) { return Results.Conflict(new { code = "OwnershipScopeMismatch", error = "Credential ownership does not match the retained account or environment." }); }
+        catch (NotSupportedException) { return Results.Conflict(new { code = "VaultMigrationUnsupported", error = "The configured credential vault does not support explicit ownership migration; configure the file-backed vault before transferring ownership." }); }
+        catch (ProviderCredentialConflictException) { return Results.Conflict(new { code = "CredentialGenerationConflict", error = "Credential ownership or generation changed since the preview. Reload the retained connection and preview again." }); }
+        // Remaining operation refusals carry a specific, operator-facing reason (for example a
+        // separate legacy OAuth token that must be migrated first); surface it rather than a generic text.
+        catch (InvalidOperationException exception) { return Results.Conflict(new { code = "OwnershipTransferBlocked", error = exception.Message }); }
     }
 }

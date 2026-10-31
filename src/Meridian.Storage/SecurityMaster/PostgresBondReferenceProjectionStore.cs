@@ -104,13 +104,15 @@ public sealed class PostgresBondReferenceProjectionStore : IBondReferenceProject
         ArgumentException.ThrowIfNullOrWhiteSpace(issuerName);
         var parameters = PageParameters(pageSize, afterMaturity, afterSecurityId);
         parameters.Add(new NpgsqlParameter("issuer_name", issuerName.Trim()));
+        // Filter on the same issuer satellite the array route reads, so both routes see one
+        // issuer population and the (issuer_name, maturity_date) index applies. bond_projection's
+        // maturity_date is NOT NULL, so the keyset needs no null coalescing.
         return _reader.QueryAsync(BondSelectSql(
             """
-            where bp.issuer_name = @issuer_name
+            where bip.issuer_name = @issuer_name
               and (@has_cursor = false or
-                   (coalesce(bp.maturity_date, 'infinity'::date), bp.security_id) >
-                   (coalesce(@after_maturity, 'infinity'::date), @after_security_id))
-            order by bp.maturity_date nulls last, bp.security_id
+                   (bp.maturity_date, bp.security_id) > (@after_maturity, @after_security_id))
+            order by bp.maturity_date, bp.security_id
             limit @page_limit
             """), parameters, MapBondRow, ct);
     }

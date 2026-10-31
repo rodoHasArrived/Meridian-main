@@ -36,6 +36,6 @@ public static class BondReferencePagingEndpoints
     {
         try
         { return Results.Json(await query().ConfigureAwait(false), options); }
-        catch (ArgumentException exception) { return Results.BadRequest(new { error = exception.Message }); }
+        catch (ArgumentException exception) { return Results.BadRequest(new { code = "BondReferencePageRequestInvalid", error = EndpointHelpers.RefusalDetail(exception) }); }
     }
 }

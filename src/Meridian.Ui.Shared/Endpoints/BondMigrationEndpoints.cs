@@ -88,11 +88,11 @@ public static class BondMigrationEndpoints
         { return await action().ConfigureAwait(false); }
         catch (ArgumentException exception)
         {
-            return Results.BadRequest(new { error = exception.Message });
+            return Results.BadRequest(new { code = "BondMigrationRequestInvalid", error = EndpointHelpers.RefusalDetail(exception) });
         }
         catch (InvalidOperationException exception)
         {
-            return Results.Conflict(new { error = exception.Message });
+            return Results.Conflict(new { code = "BondMigrationStateConflict", error = EndpointHelpers.RefusalDetail(exception) });
         }
     }
 }

@@ -42,7 +42,7 @@ internal static class ContractualCashFlowRunEndpoints
                 var run = new ContractualCashFlowRun(request.RunId, kind, subjectId, DateTimeOffset.UtcNow, result.ResolvedContract, request.Projection, result, actor);
                 return Results.Json(await store.SaveAsync(run, context.RequestAborted).ConfigureAwait(false), json);
             }
-            catch (ArgumentException ex) { return Results.ValidationProblem(new Dictionary<string, string[]> { ["projection"] = [ex.Message] }); }
+            catch (ArgumentException ex) { return Results.ValidationProblem(new Dictionary<string, string[]> { ["projection"] = [EndpointHelpers.RefusalDetail(ex)] }); }
             catch (InvalidOperationException) { return Results.Conflict("Run identity conflicts with retained data."); }
         })
         .WithName("RetainContractual" + kind + "CashFlowRun")

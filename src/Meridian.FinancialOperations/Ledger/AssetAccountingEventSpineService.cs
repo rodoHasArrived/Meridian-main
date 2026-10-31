@@ -1387,7 +1387,9 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
             RequireAssertion((direction ?? source.Direction) == OpenLotDirection.Short
                 ? position.PositionSide is BookPositionSides.Short or BookPositionSides.Liability
                 : position.PositionSide is BookPositionSides.Long or BookPositionSides.Asset,
-                "The current lot acquisition/disposal path requires a Long or Asset position; short and liability positions require separate posting authority.");
+                (direction ?? source.Direction) == OpenLotDirection.Short
+                    ? "A Short lot acquisition/disposal requires a Short or Liability book position."
+                    : "A Long lot acquisition/disposal requires a Long or Asset book position.");
         RequireAssertion(position.PositionId == source.Scope.BookPositionId, "Resolved book-position identity does not match the Projected snapshot.");
         RequireAssertion(position.SecurityId == source.Scope.SecurityId, "Resolved book-position security does not match the Projected snapshot.");
         RequireAssertion(position.Version == source.Scope.ExpectedBookPositionVersion, "Resolved book-position version is stale relative to the Projected snapshot.");

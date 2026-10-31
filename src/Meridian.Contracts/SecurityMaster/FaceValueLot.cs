@@ -718,11 +718,9 @@ public sealed record FaceValueLot : IUnitizedLot
     }
 
     /// <summary>
-    /// Solves the per-period yield that discounts the level coupon stream plus par redemption to
-    /// the acquisition price, by bisection — the pricing function is strictly decreasing in yield,
-    /// so the bracket converges unconditionally. Precision is far below a cent on realistic faces.
+    /// Annual yield on the same regular coupon grid used by canonical amortization, solved per period
+    /// by bisection and certified against the acquisition price. Refuses an unbracketed yield.
     /// </summary>
-    /// <summary>Prices the same regular coupon grid used by canonical amortization. Refuses an unbracketed yield.</summary>
     public decimal RegularScheduleAnnualYield(DateOnly redemptionDate, decimal annualCouponRatePercent, int paymentsPerYear)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(annualCouponRatePercent);
@@ -737,6 +735,11 @@ public sealed record FaceValueLot : IUnitizedLot
         return yield * paymentsPerYear;
     }
 
+    /// <summary>
+    /// Solves the per-period yield that discounts the level coupon stream plus par redemption to
+    /// the acquisition price, by bisection — the pricing function is strictly decreasing in yield,
+    /// so the bracket converges unconditionally. Precision is far below a cent on realistic faces.
+    /// </summary>
     private static decimal SolveYieldPerPeriod(decimal pricePerUnit, decimal couponPerPeriod, int totalPeriods)
     {
         var low = -0.5m;
