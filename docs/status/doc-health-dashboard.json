@@ -1,11 +1,11 @@
 {
-  "total_files": 789,
-  "total_lines": 179253,
+  "total_files": 790,
+  "total_lines": 179388,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 326,
-  "average_lines": 227.2,
+  "average_lines": 227.1,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -599,7 +599,7 @@
     },
     {
       "path": ".agents/skills/meridian-code-review/SKILL.md",
-      "line_count": 365,
+      "line_count": 376,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -631,7 +631,7 @@
     },
     {
       "path": ".agents/skills/meridian-implementation-assurance/SKILL.md",
-      "line_count": 147,
+      "line_count": 154,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -655,7 +655,7 @@
     },
     {
       "path": ".agents/skills/meridian-provider-builder/SKILL.md",
-      "line_count": 377,
+      "line_count": 378,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -815,7 +815,7 @@
     },
     {
       "path": ".agents/skills/meridian-test-writer/SKILL.md",
-      "line_count": 328,
+      "line_count": 329,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1439,7 +1439,7 @@
     },
     {
       "path": "docs/ai/tooling/throughput-pilot.md",
-      "line_count": 256,
+      "line_count": 262,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2599,7 +2599,7 @@
     },
     {
       "path": "docs/engineering/solo-developer-ci-consolidation.md",
-      "line_count": 64,
+      "line_count": 72,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3015,7 +3015,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 13000,
+      "line_count": 13002,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3503,7 +3503,7 @@
     },
     {
       "path": "docs/product/plans/next-work-determination-2026-09-27.md",
-      "line_count": 293,
+      "line_count": 295,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3511,7 +3511,7 @@
     },
     {
       "path": "docs/product/plans/next-work-determination-2026-10-02.md",
-      "line_count": 312,
+      "line_count": 314,
       "has_heading": true,
       "todo_count": 9,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3519,7 +3519,7 @@
     },
     {
       "path": "docs/product/plans/next-work-determination-2026-10-04.md",
-      "line_count": 342,
+      "line_count": 344,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3527,7 +3527,7 @@
     },
     {
       "path": "docs/product/plans/next-work-determination-2026-10-05.md",
-      "line_count": 265,
+      "line_count": 267,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3535,7 +3535,7 @@
     },
     {
       "path": "docs/product/plans/next-work-determination-2026-10-16.md",
-      "line_count": 298,
+      "line_count": 300,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3543,7 +3543,7 @@
     },
     {
       "path": "docs/product/plans/next-work-determination-2026-10-20.md",
-      "line_count": 305,
+      "line_count": 307,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3551,7 +3551,7 @@
     },
     {
       "path": "docs/product/plans/next-work-determination-2026-10-24.md",
-      "line_count": 369,
+      "line_count": 371,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3559,7 +3559,7 @@
     },
     {
       "path": "docs/product/plans/next-work-determination-2026-10-25.md",
-      "line_count": 263,
+      "line_count": 265,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3567,7 +3567,7 @@
     },
     {
       "path": "docs/product/plans/next-work-determination-2026-10-27.md",
-      "line_count": 294,
+      "line_count": 296,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3591,7 +3591,7 @@
     },
     {
       "path": "docs/product/plans/README.md",
-      "line_count": 47,
+      "line_count": 53,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3919,7 +3919,7 @@
     },
     {
       "path": "docs/reference/provider-validation-matrix.md",
-      "line_count": 191,
+      "line_count": 193,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4743,7 +4743,7 @@
     },
     {
       "path": "docs/testing/README.md",
-      "line_count": 46,
+      "line_count": 52,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4752,6 +4752,14 @@
     {
       "path": "docs/testing/reporting-followups-2026-10-28.md",
       "line_count": 29,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/synthetic-scenario-index.md",
+      "line_count": 67,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
