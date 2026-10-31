@@ -77,10 +77,13 @@ class DocumentationWorkflowTests(unittest.TestCase):
             self.assertEqual(1, consumer.count("build/scripts/ci/check-generated-output.py"))
             self.assertNotIn("render-roadmap-docs.py", consumer)
             self.assertNotIn("render-source-docs.py", consumer)
-        validators = "\n".join(step.get("run", "") for step in jobs["validate-docs"]["steps"])
-        for name in ("rules-engine.py", "validate-examples.py", "check-ai-inventory.py",
-                     "check-codex-memory.py", "check-ai-handoff.py", "check-ai-contract-drift.py"):
-            self.assertIn(name, validators)
+        # Unique validators execute in the same worker as generation. The core
+        # profile owns the other four; the consolidation suite checks that catalog
+        # and executes the compatibility gate's success/failure/cancel/skip cases.
+        for name in ("rules-engine.py", "check-codex-memory.py"):
+            self.assertIn(name, runs)
+        self.assertEqual(jobs["validate-docs"]["needs"], "regenerate-docs")
+        self.assertEqual(jobs["validate-docs"]["if"], "always()")
 
     def test_manual_runs_are_isolated_from_push_and_from_other_dispatches(self) -> None:
         workflow = yaml.load(self.workflow, Loader=yaml.BaseLoader)
