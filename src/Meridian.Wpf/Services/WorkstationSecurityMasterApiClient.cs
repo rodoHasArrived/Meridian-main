@@ -71,6 +71,13 @@ public interface IWorkstationSecurityMasterApiClient
 
     Task<ApiResponse<SecurityMasterEditResultDto>> StageBondMigrationAsync(BondMigrationSubmitRequest request, CancellationToken ct = default)
         => Task.FromResult(ApiResponse<SecurityMasterEditResultDto>.Fail("Bond migration staging is unavailable in this host.", 501));
+
+    /// <summary>Bounded keyset page of one issuer's bonds; the cursor is opaque and bound to its query.</summary>
+    Task<ApiResponse<BondReferencePageDto>> GetBondIssuerLadderPageAsync(string issuerName, int pageSize, string? cursor, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<BondReferencePageDto>.Fail("Bond reference paging is unavailable in this host.", 501));
+
+    Task<ApiResponse<BondReferencePageDto>> GetBondMaturityLadderPageAsync(DateOnly from, DateOnly to, int pageSize, string? cursor, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<BondReferencePageDto>.Fail("Bond reference paging is unavailable in this host.", 501));
 }
 
 /// <summary>
@@ -192,6 +199,26 @@ public sealed class WorkstationSecurityMasterApiClient : IWorkstationSecurityMas
 
     public Task<ApiResponse<SecurityMasterEditResultDto>> StageBondMigrationAsync(BondMigrationSubmitRequest request, CancellationToken ct = default)
         => _apiClient.PostWithResponseAsync<SecurityMasterEditResultDto>(UiApiRoutes.ReferenceDataBondMigrationSubmit, request, ct);
+
+    public Task<ApiResponse<BondReferencePageDto>> GetBondIssuerLadderPageAsync(string issuerName, int pageSize, string? cursor, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(issuerName);
+        var query = new List<string> { "issuerName=" + Uri.EscapeDataString(issuerName.Trim()), "pageSize=" + pageSize.ToString(CultureInfo.InvariantCulture) };
+        if (!string.IsNullOrWhiteSpace(cursor)) query.Add("cursor=" + Uri.EscapeDataString(cursor));
+        return _apiClient.GetWithResponseAsync<BondReferencePageDto>(UiApiRoutes.ReferenceDataBondIssuerLadderPage + "?" + string.Join("&", query), ct);
+    }
+
+    public Task<ApiResponse<BondReferencePageDto>> GetBondMaturityLadderPageAsync(DateOnly from, DateOnly to, int pageSize, string? cursor, CancellationToken ct = default)
+    {
+        var query = new List<string>
+        {
+            "from=" + from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            "to=" + to.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            "pageSize=" + pageSize.ToString(CultureInfo.InvariantCulture)
+        };
+        if (!string.IsNullOrWhiteSpace(cursor)) query.Add("cursor=" + Uri.EscapeDataString(cursor));
+        return _apiClient.GetWithResponseAsync<BondReferencePageDto>(UiApiRoutes.ReferenceDataBondMaturityLadderPage + "?" + string.Join("&", query), ct);
+    }
 
     private static string SecurityIdRoute(string routeTemplate, Guid securityId)
         => routeTemplate.Replace("{securityId:guid}", securityId.ToString("D"), StringComparison.Ordinal);

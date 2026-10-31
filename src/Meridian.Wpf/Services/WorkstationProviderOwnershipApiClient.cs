@@ -14,6 +14,10 @@ public interface IWorkstationProviderOwnershipApiClient
     Task<ApiResponse<ProviderConnectionDto[]>> GetConnectionsAsync(CancellationToken ct = default);
     Task<ApiResponse<ProviderConnectionDto>> CreateOwnedConnectionAsync(CreateOwnedProviderConnectionRequest request, CancellationToken ct = default);
     Task<ApiResponse<ProviderRuntimeCredentialBinding>> BindRuntimeCredentialAsync(string connectionId, BindProviderRuntimeCredentialRequest request, CancellationToken ct = default);
+    /// <summary>Whether the retained binding has reached running instances of the host.</summary>
+    Task<ApiResponse<ProviderRuntimeCredentialApplicationStatus>> GetRuntimeCredentialStatusAsync(string connectionId, string providerId, CancellationToken ct = default);
+    /// <summary>Opt-in, never hot: the default host reports the binding as pending a deliberate restart.</summary>
+    Task<ApiResponse<ProviderRuntimeCredentialApplicationStatus>> ApplyRuntimeCredentialAsync(string connectionId, ApplyProviderRuntimeCredentialRequest request, CancellationToken ct = default);
     /// <summary>Non-secret preview; its <c>AuditMetadata["credentialGeneration"]</c> is the token a migrate command must echo.</summary>
     Task<ApiResponse<ProviderCredentialStoreStatus>> PreviewMigrationAsync(string connectionId, string providerId, CancellationToken ct = default);
     Task<ApiResponse<ProviderCredentialMigrationReceipt>> MigrateAsync(string connectionId, ProviderCredentialMigrationRequest request, CancellationToken ct = default);
@@ -37,6 +41,13 @@ public sealed class WorkstationProviderOwnershipApiClient : IWorkstationProvider
 
     public Task<ApiResponse<ProviderRuntimeCredentialBinding>> BindRuntimeCredentialAsync(string connectionId, BindProviderRuntimeCredentialRequest request, CancellationToken ct = default)
         => _apiClient.PutWithResponseAsync<ProviderRuntimeCredentialBinding>(Route(UiApiRoutes.ProviderRoutingConnectionRuntimeCredentials, connectionId), request, ct);
+
+    public Task<ApiResponse<ProviderRuntimeCredentialApplicationStatus>> GetRuntimeCredentialStatusAsync(string connectionId, string providerId, CancellationToken ct = default)
+        => _apiClient.GetWithResponseAsync<ProviderRuntimeCredentialApplicationStatus>(
+            Route(UiApiRoutes.ProviderRoutingConnectionRuntimeCredentialStatus, connectionId) + "?providerId=" + Uri.EscapeDataString(providerId), ct);
+
+    public Task<ApiResponse<ProviderRuntimeCredentialApplicationStatus>> ApplyRuntimeCredentialAsync(string connectionId, ApplyProviderRuntimeCredentialRequest request, CancellationToken ct = default)
+        => _apiClient.PostWithResponseAsync<ProviderRuntimeCredentialApplicationStatus>(Route(UiApiRoutes.ProviderRoutingConnectionRuntimeCredentialApply, connectionId), request, ct);
 
     public Task<ApiResponse<ProviderCredentialStoreStatus>> PreviewMigrationAsync(string connectionId, string providerId, CancellationToken ct = default)
         => _apiClient.GetWithResponseAsync<ProviderCredentialStoreStatus>(

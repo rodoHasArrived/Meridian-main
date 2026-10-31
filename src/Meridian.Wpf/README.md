@@ -37,6 +37,10 @@ horizon, rate shock, eligibility-driven exercise selections and one prepayment a
 ladder, blockers and evidence hashes as exact server decimals; retained runs under a client-generated
 identity that any edit renews; and replay verification of a loaded run by output hash.
 
+The Security Master page's "Bond Ladders" tab (`ViewModels/SecurityMaster/BondReferenceLadderViewModel`)
+pages issuer and maturity ladders through the bounded keyset routes behind an explicit "Load more";
+the opaque cursor stays bound to its query and a changed query discards accumulated rows.
+
 Strategy composition registers the canonical Security Master resolver and position adjuster, then
 exposes narrow query ports and legacy aliases through `AddSecurityMasterContractAdapters()`.
 The adjustment-service factory selects its canonical query and resolver constructor explicitly,

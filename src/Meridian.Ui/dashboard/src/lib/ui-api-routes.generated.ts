@@ -97,6 +97,8 @@ export const UI_API_ROUTES = {
   ProviderHealth: "/api/providers/health",
   ProviderReadiness: "/api/providers/readiness",
   ProviderRoutingConnections: "/api/provider-routing/connections",
+  ProviderRoutingConnectionRuntimeCredentialStatus: "/api/provider-routing/connections/{connectionId}/runtime-credentials/status",
+  ProviderRoutingConnectionRuntimeCredentialApply: "/api/provider-routing/connections/{connectionId}/runtime-credentials/apply",
   ProviderRoutingConnectionRuntimeCredentials: "/api/provider-routing/connections/{connectionId}/runtime-credentials",
   ProviderRoutingConnectionCredentialMigrationPreview: "/api/provider-routing/connections/{connectionId}/credentials/migration-preview",
   ProviderRoutingConnectionCredentialMigrate: "/api/provider-routing/connections/{connectionId}/credentials/migrate",

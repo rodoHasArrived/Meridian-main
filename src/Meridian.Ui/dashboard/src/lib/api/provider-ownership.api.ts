@@ -2,11 +2,13 @@ import { apiGetJson, apiPostJson, apiPutJson, type ApiRequestOptions } from "@/l
 import { UI_API_ROUTES } from "@/lib/ui-api-routes.generated";
 import type { ProviderRoutingConnection } from "@/types";
 import type {
+  ApplyProviderRuntimeCredentialRequest,
   BindProviderRuntimeCredentialRequest,
   CreateOwnedProviderConnectionRequest,
   ProviderCredentialMigrationReceipt,
   ProviderCredentialMigrationRequest,
   ProviderCredentialStoreStatus,
+  ProviderRuntimeCredentialApplicationStatus,
   ProviderRuntimeCredentialBinding
 } from "@/types/provider-ownership.types";
 
@@ -42,4 +44,16 @@ export function migrateProviderCredential(connectionId: string, request: Provide
 export function rollbackProviderCredential(connectionId: string, request: ProviderCredentialMigrationRequest, options: ApiRequestOptions = {}) {
   return apiPostJson<ProviderCredentialMigrationReceipt>(
     connectionRoute(UI_API_ROUTES.ProviderRoutingConnectionCredentialRollback, connectionId), request, strict(options));
+}
+
+/** Whether the retained binding for this connection has reached running instances of the host. */
+export function getProviderRuntimeCredentialStatus(connectionId: string, providerId: string, options: ApiRequestOptions = {}) {
+  return apiGetJson<ProviderRuntimeCredentialApplicationStatus>(
+    `${connectionRoute(UI_API_ROUTES.ProviderRoutingConnectionRuntimeCredentialStatus, connectionId)}?providerId=${encodeURIComponent(providerId)}`, strict(options));
+}
+
+/** Opt-in, never hot: asks the host to recycle running instances under the retained binding; the default host reports pending restart. */
+export function applyProviderRuntimeCredential(connectionId: string, request: ApplyProviderRuntimeCredentialRequest, options: ApiRequestOptions = {}) {
+  return apiPostJson<ProviderRuntimeCredentialApplicationStatus>(
+    connectionRoute(UI_API_ROUTES.ProviderRoutingConnectionRuntimeCredentialApply, connectionId), request, strict(options));
 }

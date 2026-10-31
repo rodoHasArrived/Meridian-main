@@ -95,7 +95,76 @@ public sealed class ProviderCredentialOwnershipEndpointsTests : IDisposable
         (await app.Services.GetRequiredService<IProviderCredentialStore>().ReadForProviderAsync("alpaca"))!.Get("KeyId").Should().Be("legacy-key");
     }
 
-    private async Task<WebApplication> CreateAppAsync(UserPermission permissions = Permissions, bool tenant = true, bool actor = true)
+    [Fact]
+    public async Task RuntimeCredentialBinding_StaysPendingRestartUntilAnApplierRecyclesRunningInstances()
+    {
+        var applier = new RecordingApplier();
+        await using var app = await CreateAppAsync(applier: applier);
+        var http = app.GetTestClient();
+        (await http.PostAsJsonAsync("/api/provider-routing/connections", new CreateOwnedProviderConnectionRequest(
+            new("owned", "alpaca", "Paper evidence", ExternalAccountId: "account-a"), "paper"))).StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var unbound = await http.GetFromJsonAsync<ProviderRuntimeCredentialApplicationStatus>(
+            "/api/provider-routing/connections/owned/runtime-credentials/status?providerId=alpaca");
+        unbound!.IsBound.Should().BeFalse();
+        unbound.PendingRestart.Should().BeFalse();
+        var applyUnbound = await http.PostAsJsonAsync("/api/provider-routing/connections/owned/runtime-credentials/apply", new ApplyProviderRuntimeCredentialRequest("alpaca"));
+        applyUnbound.StatusCode.Should().Be(HttpStatusCode.Conflict, "nothing can be applied before a binding exists");
+
+        (await http.PutAsJsonAsync("/api/provider-routing/connections/owned/runtime-credentials", new BindProviderRuntimeCredentialRequest("alpaca"))).StatusCode.Should().Be(HttpStatusCode.OK);
+        var pending = await http.GetFromJsonAsync<ProviderRuntimeCredentialApplicationStatus>(
+            "/api/provider-routing/connections/owned/runtime-credentials/status?providerId=alpaca");
+        pending!.IsBound.Should().BeTrue();
+        pending.PendingRestart.Should().BeTrue("a binding changed after host start has not reached running instances");
+        pending.BoundAt.Should().NotBeNull();
+        pending.AppliedAt.Should().BeNull();
+
+        applier.Outcome = ProviderRuntimeCredentialApplyOutcome.PendingRestart;
+        var stillPending = await http.PostAsJsonAsync("/api/provider-routing/connections/owned/runtime-credentials/apply", new ApplyProviderRuntimeCredentialRequest("alpaca"));
+        stillPending.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await stillPending.Content.ReadFromJsonAsync<ProviderRuntimeCredentialApplicationStatus>())!.PendingRestart.Should().BeTrue();
+
+        applier.Outcome = ProviderRuntimeCredentialApplyOutcome.Applied;
+        var applied = await http.PostAsJsonAsync("/api/provider-routing/connections/owned/runtime-credentials/apply", new ApplyProviderRuntimeCredentialRequest("alpaca"));
+        applied.StatusCode.Should().Be(HttpStatusCode.OK);
+        var status = await applied.Content.ReadFromJsonAsync<ProviderRuntimeCredentialApplicationStatus>();
+        status!.PendingRestart.Should().BeFalse();
+        status.AppliedAt.Should().NotBeNull();
+        applier.Applied.Should().ContainSingle().Which.Should().Be(("alpaca", "tenant-a", "owned", "operator-a"));
+    }
+
+    [Fact]
+    public async Task RuntimeCredentialApply_DefaultHostHasNoHotActivation()
+    {
+        await using var app = await CreateAppAsync();
+        var http = app.GetTestClient();
+        (await http.PostAsJsonAsync("/api/provider-routing/connections", new CreateOwnedProviderConnectionRequest(
+            new("owned", "alpaca", "Paper evidence", ExternalAccountId: "account-a"), "paper"))).StatusCode.Should().Be(HttpStatusCode.OK);
+        (await http.PutAsJsonAsync("/api/provider-routing/connections/owned/runtime-credentials", new BindProviderRuntimeCredentialRequest("alpaca"))).StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var response = await http.PostAsJsonAsync("/api/provider-routing/connections/owned/runtime-credentials/apply", new ApplyProviderRuntimeCredentialRequest("alpaca"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var status = await response.Content.ReadFromJsonAsync<ProviderRuntimeCredentialApplicationStatus>();
+        status!.PendingRestart.Should().BeTrue("the default applier never recycles instances in process");
+        status.Detail.Should().Contain("restart the host deliberately");
+    }
+
+    private sealed class RecordingApplier : IProviderRuntimeCredentialApplier
+    {
+        public ProviderRuntimeCredentialApplyOutcome Outcome { get; set; } = ProviderRuntimeCredentialApplyOutcome.PendingRestart;
+        public List<(string ProviderId, string TenantId, string ConnectionId, string Actor)> Applied { get; } = [];
+
+        public Task<ProviderRuntimeCredentialApplyOutcome> ApplyAsync(ProviderRuntimeCredentialBinding binding, string actor, CancellationToken ct = default)
+        {
+            if (Outcome == ProviderRuntimeCredentialApplyOutcome.Applied)
+                Applied.Add((binding.ProviderId, binding.TenantId, binding.ConnectionId, actor));
+            return Task.FromResult(Outcome);
+        }
+    }
+
+    private async Task<WebApplication> CreateAppAsync(UserPermission permissions = Permissions, bool tenant = true, bool actor = true,
+        IProviderRuntimeCredentialApplier? applier = null)
     {
         Directory.CreateDirectory(_root);
         await Config.SaveAsync(new AppConfig(DataRoot: _root));
@@ -107,6 +176,8 @@ public sealed class ProviderCredentialOwnershipEndpointsTests : IDisposable
         builder.Services.AddSingleton(new ConfigStore(Config.ConfigPath));
         builder.Services.AddSingleton<IProviderCredentialStore>(store);
         builder.Services.AddSingleton<ProviderConnectionService>();
+        if (applier is not null)
+            builder.Services.AddSingleton(applier);
         builder.Services.AddSingleton<ProviderRuntimeCredentialService>();
         builder.Services.AddSingleton<ProviderConnectionLifecycleService>();
         builder.Services.AddRateLimiter(options => options.AddPolicy(UiEndpoints.MutationRateLimitPolicy, _ => RateLimitPartition.GetNoLimiter("test")));

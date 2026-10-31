@@ -106,6 +106,36 @@ public sealed class ProviderOwnershipAdministrationViewModelTests
     }
 
     [Fact]
+    public async Task Bind_ShowsPendingRestart_AndApplyClearsItOnlyWhenTheHostRecycles()
+    {
+        var client = new Mock<IWorkstationProviderOwnershipApiClient>();
+        client.Setup(c => c.BindRuntimeCredentialAsync("paper-a", It.IsAny<BindProviderRuntimeCredentialRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ApiResponse<ProviderRuntimeCredentialBinding>.Ok(new ProviderRuntimeCredentialBinding("alpaca", "tenant-a", "paper-a")));
+        var bound = new DateTimeOffset(2026, 10, 31, 0, 0, 0, TimeSpan.Zero);
+        client.Setup(c => c.GetRuntimeCredentialStatusAsync("paper-a", "alpaca", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ApiResponse<ProviderRuntimeCredentialApplicationStatus>.Ok(new("alpaca", "tenant-a", "paper-a", true, true, bound, null, "pending")));
+        client.SetupSequence(c => c.ApplyRuntimeCredentialAsync("paper-a", It.IsAny<ApplyProviderRuntimeCredentialRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ApiResponse<ProviderRuntimeCredentialApplicationStatus>.Ok(new("alpaca", "tenant-a", "paper-a", true, true, bound, null, "pending")))
+            .ReturnsAsync(ApiResponse<ProviderRuntimeCredentialApplicationStatus>.Ok(new("alpaca", "tenant-a", "paper-a", true, false, bound, bound.AddMinutes(5), "applied")));
+        var view = new ProviderOwnershipAdministrationViewModel(client.Object) { ProviderId = "alpaca" };
+        view.OwnedConnections.Add(Connection("paper-a"));
+        view.SelectedConnection = view.OwnedConnections[0];
+
+        view.ApplyRuntimeCommand.CanExecute(null).Should().BeFalse("nothing is pending before a bind or check");
+        await view.BindCommand.ExecuteAsync(null);
+        view.RuntimeApplicationText.Should().StartWith("Pending restart");
+        view.ApplyRuntimeCommand.CanExecute(null).Should().BeTrue();
+
+        await view.ApplyRuntimeCommand.ExecuteAsync(null);
+        view.StatusText.Should().Contain("no in-process provider recycle");
+        view.ApplyRuntimeCommand.CanExecute(null).Should().BeTrue();
+
+        await view.ApplyRuntimeCommand.ExecuteAsync(null);
+        view.RuntimeApplicationText.Should().StartWith("Applied: running instances resolve credentials under paper-a");
+        view.ApplyRuntimeCommand.CanExecute(null).Should().BeFalse();
+    }
+
+    [Fact]
     public async Task CreateConnection_SendsNoTenantOrActor()
     {
         var client = new Mock<IWorkstationProviderOwnershipApiClient>();

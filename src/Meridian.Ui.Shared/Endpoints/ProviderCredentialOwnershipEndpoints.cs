@@ -31,6 +31,18 @@ public static class ProviderCredentialOwnershipEndpoints
                     .ConfigureAwait(false), jsonOptions)))
             .WithName("BindProviderRuntimeCredentials").RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
+        group.MapGet("/{connectionId}/runtime-credentials/status", (string connectionId, string providerId, HttpContext context,
+            [FromServices] ProviderRuntimeCredentialService service) => ExecuteAsync(context, (tenant, actor) =>
+                Task.FromResult(Results.Json(service.GetApplicationStatus(providerId, connectionId, tenant), jsonOptions))))
+            .WithName("GetProviderRuntimeCredentialApplicationStatus");
+
+        // Opt-in, never hot: the host's applier decides whether running instances can be recycled.
+        group.MapPost("/{connectionId}/runtime-credentials/apply", (string connectionId, ApplyProviderRuntimeCredentialRequest request,
+            HttpContext context, [FromServices] ProviderRuntimeCredentialService service) => ExecuteAsync(context, async (tenant, actor) =>
+                Results.Json(await service.ApplyAsync(request.ProviderId, connectionId, tenant, actor, context.RequestAborted)
+                    .ConfigureAwait(false), jsonOptions)))
+            .WithName("ApplyProviderRuntimeCredentials").RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
         group.MapGet("/{connectionId}/credentials/migration-preview", (string connectionId, string providerId,
             HttpContext context, [FromServices] ProviderRuntimeCredentialService service) => ExecuteAsync(context, async (tenant, actor) =>
                 Results.Json(await service.GetMigrationPreviewAsync(providerId, connectionId, tenant, context.RequestAborted)

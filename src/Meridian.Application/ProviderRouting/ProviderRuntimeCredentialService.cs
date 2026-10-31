@@ -1,4 +1,5 @@
 using Meridian.Application.UI;
+using Meridian.Contracts.Api;
 using Meridian.Core.Config;
 using Meridian.DataIntegration.Credentials;
 using Microsoft.Extensions.Logging;
@@ -8,9 +9,12 @@ namespace Meridian.Application.ProviderRouting;
 
 /// <summary>Explicit host credential selection and ownership-checked migration commands.</summary>
 public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IProviderCredentialStore credentialStore,
-    ILogger<ProviderRuntimeCredentialService>? logger = null)
+    ILogger<ProviderRuntimeCredentialService>? logger = null, ProviderRuntimeCredentialApplicationTracker? applicationTracker = null,
+    IProviderRuntimeCredentialApplier? applier = null)
 {
     private readonly ILogger<ProviderRuntimeCredentialService> _logger = logger ?? NullLogger<ProviderRuntimeCredentialService>.Instance;
+    private readonly ProviderRuntimeCredentialApplicationTracker _applicationTracker = applicationTracker ?? new ProviderRuntimeCredentialApplicationTracker();
+    private readonly IProviderRuntimeCredentialApplier _applier = applier ?? new NoInProcessProviderRecycleApplier();
 
     public async Task<ProviderCredentialStoreStatus> GetMigrationPreviewAsync(string providerId, string connectionId,
         string tenantId, CancellationToken ct = default)
@@ -48,9 +52,60 @@ public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IP
             ResolveScope(updated, provider);
             return (updated, next);
         }, ct).ConfigureAwait(false);
-        _logger.LogInformation("Bound host runtime credentials for provider {ProviderId} to connection {ConnectionId} in tenant {TenantId} by {Actor}.",
+        _applicationTracker.MarkBound(bound.ProviderId);
+        _logger.LogInformation("Bound host runtime credentials for provider {ProviderId} to connection {ConnectionId} in tenant {TenantId} by {Actor}; running instances keep their credentials until applied or restarted.",
             bound.ProviderId, bound.ConnectionId, bound.TenantId, actor ?? "unattributed");
         return bound;
+    }
+
+    /// <summary>Whether the retained binding for this connection has reached running instances of this host.</summary>
+    public ProviderRuntimeCredentialApplicationStatus GetApplicationStatus(string providerId, string connectionId, string tenantId)
+    {
+        var provider = RequireProvider(providerId);
+        var config = configStore.LoadRequired();
+        RequireScope(config, provider, connectionId, tenantId);
+        var binding = CurrentBinding(config, provider, tenantId);
+        var (boundAt, appliedAt, pending) = _applicationTracker.Get(provider);
+        if (binding is null || !string.Equals(binding.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase))
+            return new(provider, tenantId, connectionId, false, false, null, null, "No retained host binding selects this connection.");
+        return new(provider, tenantId, connectionId, true, pending, boundAt, appliedAt, pending
+            ? "The binding is retained but running provider instances still hold their earlier credentials. Apply it to running instances or restart the host deliberately."
+            : "Running provider instances resolve credentials under this binding.");
+    }
+
+    /// <summary>
+    /// Asks the host's applier to recycle the provider's running instances under the retained binding. The
+    /// default host has no in-process recycle and reports the binding as pending a deliberate restart.
+    /// </summary>
+    public async Task<ProviderRuntimeCredentialApplicationStatus> ApplyAsync(string providerId, string connectionId, string tenantId,
+        string actor, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(actor);
+        var provider = RequireProvider(providerId);
+        var config = configStore.LoadRequired();
+        RequireScope(config, provider, connectionId, tenantId);
+        var binding = CurrentBinding(config, provider, tenantId);
+        if (binding is null || !string.Equals(binding.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Bind the connection as the host runtime credential before applying it to running instances.");
+        var outcome = await _applier.ApplyAsync(binding, actor, ct).ConfigureAwait(false);
+        if (outcome == ProviderRuntimeCredentialApplyOutcome.Applied)
+        {
+            _applicationTracker.MarkApplied(provider);
+            _logger.LogInformation("Applied host runtime credential binding for provider {ProviderId} (connection {ConnectionId}, tenant {TenantId}) to running instances by {Actor}.",
+                binding.ProviderId, binding.ConnectionId, binding.TenantId, actor);
+        }
+        else
+        {
+            _logger.LogInformation("Host runtime credential binding for provider {ProviderId} stays pending a deliberate restart; no in-process recycle is registered (requested by {Actor}).",
+                binding.ProviderId, actor);
+        }
+        return GetApplicationStatus(provider, connectionId, tenantId);
+    }
+
+    private static ProviderRuntimeCredentialBinding? CurrentBinding(AppConfig config, string provider, string tenantId)
+    {
+        var bindings = (config.ProviderConnections?.RuntimeCredentials ?? []).Where(binding => SameProvider(binding.ProviderId, provider)).ToArray();
+        return bindings.Length == 1 && string.Equals(bindings[0].TenantId, tenantId, StringComparison.Ordinal) ? bindings[0] : null;
     }
 
     public async Task<ProviderCredentialMigrationReceipt> TransferAsync(string providerId, string connectionId, string tenantId,

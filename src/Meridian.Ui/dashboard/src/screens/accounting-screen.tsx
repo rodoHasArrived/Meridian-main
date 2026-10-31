@@ -22,6 +22,7 @@ import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
 import { BondAnalyticsPanel } from "@/components/meridian/bond-analytics-panel";
 import { BondMigrationPreviewPanel } from "@/components/meridian/bond-migration-preview-panel";
+import { BondReferenceLadderPanel } from "@/components/meridian/bond-reference-ladder-panel";
 import { CoveragePassportDrillIn } from "@/components/meridian/coverage-passport-drill-in";
 import { ReconciliationComparisonPanel } from "@/components/accounting";
 import {
@@ -3291,10 +3292,13 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                   </div>
                 </TabPanel>
                 <TabPanel>
-                  <ReferenceDataWorkbenchPanel
-                    view={securityMaster.referenceDataWorkbenchView}
-                    onSelect={securityMaster.selectReferenceDataEndpoint}
-                  />
+                  <div className="space-y-4">
+                    <ReferenceDataWorkbenchPanel
+                      view={securityMaster.referenceDataWorkbenchView}
+                      onSelect={securityMaster.selectReferenceDataEndpoint}
+                    />
+                    <BondReferenceLadderPanel />
+                  </div>
                 </TabPanel>
                 <TabPanel>
                   <div className="space-y-4">

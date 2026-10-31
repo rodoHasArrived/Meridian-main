@@ -98,6 +98,13 @@ credential editing still selects an already-owned connection.
    selected connection's actual provider account and environment before an operator releases activity.
    Binding and vault scope identify the intended owner; neither proves which upstream account a secret
    reaches. Editing credentials does not hot-activate an already running collector.
+4. `GET .../runtime-credentials/status?providerId=alpaca` reports whether that binding has reached
+   running provider instances of this host: a binding changed after host start is `pendingRestart`
+   until it is applied or the host is deliberately restarted. `POST .../runtime-credentials/apply`
+   asks the host's registered applier to recycle the provider's instances under the binding; the
+   default host registers no in-process recycle and reports the binding as still pending. Both
+   workstations show this state beside the bind action ("Check running instances", "Apply to running
+   instances"). Nothing activates hot.
 
 The host revalidates the selected tenant, connection, provider, enabled state, account and environment
 before reading secrets. Owned providers without an explicit selection block construction; missing

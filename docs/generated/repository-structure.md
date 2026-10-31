@@ -4308,6 +4308,7 @@ Meridian-main
 │   │   │   ├── ProviderOwnershipRules.cs
 │   │   │   ├── ProviderRoutingEngine.cs
 │   │   │   ├── ProviderRoutingMapper.cs
+│   │   │   ├── ProviderRuntimeCredentialApplication.cs
 │   │   │   ├── ProviderRuntimeCredentialService.cs
 │   │   │   └── ProviderSetupService.cs
 │   │   ├── Reconciliation
@@ -7333,6 +7334,8 @@ Meridian-main
 │   │   │   │   │   │   ├── bond-analytics-panel.tsx
 │   │   │   │   │   │   ├── bond-migration-preview-panel.test.tsx
 │   │   │   │   │   │   ├── bond-migration-preview-panel.tsx
+│   │   │   │   │   │   ├── bond-reference-ladder-panel.test.tsx
+│   │   │   │   │   │   ├── bond-reference-ladder-panel.tsx
 │   │   │   │   │   │   ├── command-palette.actions.test.ts
 │   │   │   │   │   │   ├── command-palette.actions.ts
 │   │   │   │   │   │   ├── contractual-cash-flow-workbench.test.tsx
@@ -7616,6 +7619,7 @@ Meridian-main
 │   │   │   │   │   │   ├── bond-analytics.api.ts
 │   │   │   │   │   │   ├── bond-cutover.api.ts
 │   │   │   │   │   │   ├── bond-migration.api.ts
+│   │   │   │   │   │   ├── bond-reference.api.ts
 │   │   │   │   │   │   ├── break-audit-rebuild.api.ts
 │   │   │   │   │   │   ├── capital-call-issuance.api.ts
 │   │   │   │   │   │   ├── close-preparation.api.test.ts
@@ -8267,6 +8271,7 @@ Meridian-main
 │   │   │   │   │   ├── bond-analytics.types.ts
 │   │   │   │   │   ├── bond-cutover.types.ts
 │   │   │   │   │   ├── bond-migration.types.ts
+│   │   │   │   │   ├── bond-reference.types.ts
 │   │   │   │   │   ├── brokerage-recovery.ts
 │   │   │   │   │   ├── canonical-symbol.ts
 │   │   │   │   │   ├── contractual-cash-flow.types.ts
@@ -9474,7 +9479,8 @@ Meridian-main
 │   │   │   ├── SecurityConflictLaneModels.cs
 │   │   │   ├── SecurityMaster
 │   │   │   │   ├── BondAnalyticsViewModel.cs
-│   │   │   │   └── BondMigrationPreviewViewModel.cs
+│   │   │   │   ├── BondMigrationPreviewViewModel.cs
+│   │   │   │   └── BondReferenceLadderViewModel.cs
 │   │   │   ├── SecurityMasterDeactivateViewModel.cs
 │   │   │   ├── SecurityMasterEditViewModel.cs
 │   │   │   ├── SecurityMasterViewModel.Authorization.cs
@@ -12749,6 +12755,7 @@ Meridian-main
 │   │   │   ├── FactorPaydownViewModelTests.Approval.cs
 │   │   │   ├── BondAnalyticsViewModelTests.cs
 │   │   │   ├── BondCutoverConsoleViewModelTests.cs
+│   │   │   ├── BondReferenceLadderViewModelTests.cs
 │   │   │   ├── ContractualCashFlowScenarioViewModelTests.cs
 │   │   │   ├── FactorPaydownViewModelTests.cs
 │   │   │   ├── ProviderOwnershipAdministrationViewModelTests.cs

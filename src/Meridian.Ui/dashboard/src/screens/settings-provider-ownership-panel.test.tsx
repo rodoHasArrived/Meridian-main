@@ -65,9 +65,33 @@ describe("provider ownership panel", () => {
     expect(bind).toHaveBeenCalledWith("paper-a", { providerId: "alpaca" });
   });
 
+  it("shows the pending-restart state after binding and applies only when an applier recycles", async () => {
+    const bind = vi.fn().mockResolvedValue({ providerId: "alpaca", tenantId: "tenant-a", connectionId: "paper-a" });
+    const base = { providerId: "alpaca", tenantId: "tenant-a", connectionId: "paper-a", isBound: true, boundAt: "2026-10-31T00:00:00Z", detail: "" };
+    const runtimeStatus = vi.fn().mockResolvedValue({ ...base, pendingRestart: true, appliedAt: null });
+    const apply = vi.fn()
+      .mockResolvedValueOnce({ ...base, pendingRestart: true, appliedAt: null })
+      .mockResolvedValueOnce({ ...base, pendingRestart: false, appliedAt: "2026-10-31T00:05:00Z" });
+    render(<ProviderOwnershipPanel providerId="alpaca" displayName="Alpaca" connection={owned("paper-a")} api={{ bind, runtimeStatus, apply }} />);
+
+    const applyButton = screen.getByRole("button", { name: "Apply to running instances" });
+    expect(applyButton).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Bind as host runtime credential" }));
+    expect(await screen.findByLabelText("Alpaca runtime application status")).toHaveTextContent(/Pending restart/);
+    expect(runtimeStatus).toHaveBeenCalledWith("paper-a", "alpaca");
+    expect(applyButton).toBeEnabled();
+
+    fireEvent.click(applyButton);
+    await screen.findByText(/no in-process provider recycle/);
+    expect(apply).toHaveBeenCalledWith("paper-a", { providerId: "alpaca" });
+    fireEvent.click(applyButton);
+    expect(await screen.findByLabelText("Alpaca runtime application status")).toHaveTextContent(/Applied: running instances resolve credentials under paper-a/);
+    expect(applyButton).toBeDisabled();
+  });
+
   it("disables every connection command until the editor selects an owned connection", () => {
     render(<ProviderOwnershipPanel providerId="alpaca" displayName="Alpaca" connection={null} api={{}} />);
-    for (const name of ["Preview migration", "Migrate to this connection", "Roll back migration", "Bind as host runtime credential"]) {
+    for (const name of ["Preview migration", "Migrate to this connection", "Roll back migration", "Bind as host runtime credential", "Check running instances", "Apply to running instances"]) {
       expect(screen.getByRole("button", { name })).toBeDisabled();
     }
     expect(screen.getByLabelText("Alpaca ownership status")).toHaveTextContent(/Select an owned connection above/);

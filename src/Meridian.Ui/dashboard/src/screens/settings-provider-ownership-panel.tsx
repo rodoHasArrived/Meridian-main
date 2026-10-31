@@ -4,14 +4,20 @@ import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { describeApiError } from "@/lib/api-errors";
 import {
+  applyProviderRuntimeCredential,
   bindProviderRuntimeCredential,
   createOwnedProviderConnection,
+  getProviderRuntimeCredentialStatus,
   migrateProviderCredential,
   previewProviderCredentialMigration,
   rollbackProviderCredential
 } from "@/lib/api/provider-ownership.api";
 import type { ProviderRoutingConnection } from "@/types";
-import type { ProviderCredentialMigrationReceipt, ProviderCredentialStoreStatus } from "@/types/provider-ownership.types";
+import type {
+  ProviderCredentialMigrationReceipt,
+  ProviderCredentialStoreStatus,
+  ProviderRuntimeCredentialApplicationStatus
+} from "@/types/provider-ownership.types";
 
 export interface ProviderOwnershipPanelProps {
   providerId: string;
@@ -25,6 +31,8 @@ export interface ProviderOwnershipPanelProps {
     preview?: typeof previewProviderCredentialMigration;
     migrate?: typeof migrateProviderCredential;
     rollback?: typeof rollbackProviderCredential;
+    runtimeStatus?: typeof getProviderRuntimeCredentialStatus;
+    apply?: typeof applyProviderRuntimeCredential;
   };
 }
 
@@ -43,11 +51,14 @@ export function ProviderOwnershipPanel({ providerId, displayName, connection, on
   const preview = api.preview ?? previewProviderCredentialMigration;
   const migrate = api.migrate ?? migrateProviderCredential;
   const rollback = api.rollback ?? rollbackProviderCredential;
+  const runtimeStatus = api.runtimeStatus ?? getProviderRuntimeCredentialStatus;
+  const apply = api.apply ?? applyProviderRuntimeCredential;
 
   const [newConnection, setNewConnection] = useState({ connectionId: "", displayName: "", externalAccountId: "", environment: "paper" });
   const [status, setStatus] = useState<ProviderCredentialStoreStatus | null>(null);
   const [migrationId, setMigrationId] = useState<string>(() => newMigrationId());
   const [receipt, setReceipt] = useState<ProviderCredentialMigrationReceipt | null>(null);
+  const [application, setApplication] = useState<ProviderRuntimeCredentialApplicationStatus | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<string>("Select an owned connection above to preview, migrate, roll back or bind its credentials.");
   const [error, setError] = useState<string | null>(null);
@@ -59,6 +70,7 @@ export function ProviderOwnershipPanel({ providerId, displayName, connection, on
   useEffect(() => {
     setStatus(null);
     setReceipt(null);
+    setApplication(null);
     setError(null);
     setMessage(selectedId ? "Preview the retained vault status before migrating." : "Select an owned connection above.");
   }, [selectedId]);
@@ -166,11 +178,40 @@ export function ProviderOwnershipPanel({ providerId, displayName, connection, on
             onClick={() => void run("bind", async () => {
               const next = await bind(selected!.connectionId, { providerId });
               if (next.connectionId.toLowerCase() !== selected!.connectionId.toLowerCase()) throw new Error("The binding names another connection.");
-              return `Host runtime credentials for ${next.providerId} now select ${next.connectionId} in tenant ${next.tenantId}. Running instances keep their current credentials until restarted.`;
+              setApplication(await runtimeStatus(selected!.connectionId, providerId));
+              return `Host runtime credentials for ${next.providerId} now select ${next.connectionId} in tenant ${next.tenantId}. Running instances keep their current credentials until applied or restarted.`;
             })}>
             {busy === "bind" ? "Binding…" : "Bind as host runtime credential"}
           </Button>
+          <Button size="sm" variant="outline" disabled={!selected || busy !== null} aria-busy={busy === "runtime-status"}
+            onClick={() => void run("runtime-status", async () => {
+              const next = await runtimeStatus(selected!.connectionId, providerId);
+              setApplication(next);
+              return next.detail;
+            })}>
+            {busy === "runtime-status" ? "Checking…" : "Check running instances"}
+          </Button>
+          <Button size="sm" variant="outline" disabled={!selected || !application?.pendingRestart || busy !== null} aria-busy={busy === "apply"}
+            onClick={() => void run("apply", async () => {
+              const next = await apply(selected!.connectionId, { providerId });
+              setApplication(next);
+              return next.pendingRestart
+                ? "This host has no in-process provider recycle; the binding stays pending until the host is deliberately restarted."
+                : `Running ${next.providerId} instances now resolve credentials under ${next.connectionId}.`;
+            })}>
+            {busy === "apply" ? "Applying…" : "Apply to running instances"}
+          </Button>
         </div>
+
+        {application ? (
+          <p className="text-muted-foreground" aria-label={`${displayName} runtime application status`}>
+            {application.isBound
+              ? application.pendingRestart
+                ? `Pending restart: bound ${application.boundAt ?? ""} but running instances still hold earlier credentials.`
+                : `Applied: running instances resolve credentials under ${application.connectionId}${application.appliedAt ? ` since ${application.appliedAt}` : ""}.`
+              : "Not bound: no retained host binding selects this connection."}
+          </p>
+        ) : null}
 
         {status ? (
           <dl className="grid grid-cols-2 gap-2 md:grid-cols-4" aria-label={`${displayName} migration preview`}>

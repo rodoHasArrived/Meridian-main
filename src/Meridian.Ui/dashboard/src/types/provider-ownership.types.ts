@@ -71,3 +71,23 @@ export type ProviderOwnershipErrorCode =
   | "VaultMigrationUnsupported"
   | "CredentialGenerationConflict"
   | "OwnershipTransferBlocked";
+
+export interface ApplyProviderRuntimeCredentialRequest {
+  providerId: string;
+}
+
+/**
+ * Whether the retained host binding has reached running provider instances in this host process. A
+ * binding changed after host start stays pending until an in-process recycle applies it or the host is
+ * deliberately restarted; nothing activates hot.
+ */
+export interface ProviderRuntimeCredentialApplicationStatus {
+  providerId: string;
+  tenantId: string;
+  connectionId: string;
+  isBound: boolean;
+  pendingRestart: boolean;
+  boundAt: string | null;
+  appliedAt: string | null;
+  detail: string;
+}

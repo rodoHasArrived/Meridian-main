@@ -33,6 +33,7 @@ public sealed class ProviderOwnershipAdministrationViewModel : BindableBase
     private ProviderCredentialStoreStatus? _preview;
     private ProviderCredentialMigrationReceipt? _receipt;
     private string _migrationId = Guid.NewGuid().ToString("N");
+    private ProviderRuntimeCredentialApplicationStatus? _application;
 
     public ProviderOwnershipAdministrationViewModel(IWorkstationProviderOwnershipApiClient client)
     {
@@ -43,6 +44,8 @@ public sealed class ProviderOwnershipAdministrationViewModel : BindableBase
         MigrateCommand = new AsyncRelayCommand(MigrateAsync, () => !IsBusy && SelectedConnection is not null && ExpectedGeneration is not null);
         RollbackCommand = new AsyncRelayCommand(RollbackAsync, () => !IsBusy && SelectedConnection is not null && _receipt is { RolledBack: false });
         BindCommand = new AsyncRelayCommand(BindAsync, () => !IsBusy && SelectedConnection is not null);
+        CheckRuntimeCommand = new AsyncRelayCommand(CheckRuntimeAsync, () => !IsBusy && SelectedConnection is not null);
+        ApplyRuntimeCommand = new AsyncRelayCommand(ApplyRuntimeAsync, () => !IsBusy && SelectedConnection is not null && _application is { PendingRestart: true });
     }
 
     public ObservableCollection<ProviderConnectionDto> OwnedConnections { get; } = new();
@@ -52,6 +55,8 @@ public sealed class ProviderOwnershipAdministrationViewModel : BindableBase
     public IAsyncRelayCommand MigrateCommand { get; }
     public IAsyncRelayCommand RollbackCommand { get; }
     public IAsyncRelayCommand BindCommand { get; }
+    public IAsyncRelayCommand CheckRuntimeCommand { get; }
+    public IAsyncRelayCommand ApplyRuntimeCommand { get; }
 
     public string ProviderId
     {
@@ -87,6 +92,14 @@ public sealed class ProviderOwnershipAdministrationViewModel : BindableBase
             : null;
 
     public ProviderCredentialMigrationReceipt? Receipt => _receipt;
+    public ProviderRuntimeCredentialApplicationStatus? RuntimeApplication => _application;
+    public string RuntimeApplicationText => _application is { } a
+        ? a.IsBound
+            ? a.PendingRestart
+                ? $"Pending restart: bound {a.BoundAt:O} but running instances still hold earlier credentials."
+                : $"Applied: running instances resolve credentials under {a.ConnectionId}{(a.AppliedAt is { } at ? $" since {at:O}" : string.Empty)}."
+            : "Not bound: no retained host binding selects this connection."
+        : string.Empty;
 
     public string PreviewText => _preview is { } preview
         ? $"{preview.CredentialState} · {preview.CredentialSource} · environment {preview.Environment ?? "Unspecified"} · generation {ExpectedGeneration ?? "None"}"
@@ -221,11 +234,58 @@ public sealed class ProviderOwnershipAdministrationViewModel : BindableBase
             if (!response.Success || response.Data is null) { StatusText = Refused("The binding was refused", response); return; }
             if (!string.Equals(response.Data.ConnectionId, connection.ConnectionId, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("The binding names another connection.");
-            StatusText = $"Host runtime credentials for {response.Data.ProviderId} now select {response.Data.ConnectionId} in tenant {response.Data.TenantId}. Running instances keep their current credentials until restarted.";
+            var status = await _client.GetRuntimeCredentialStatusAsync(connection.ConnectionId, ProviderId.Trim(), _operation!.Token).ConfigureAwait(true);
+            if (generation != _generation) return;
+            SetApplication(status.Success ? status.Data : null);
+            StatusText = $"Host runtime credentials for {response.Data.ProviderId} now select {response.Data.ConnectionId} in tenant {response.Data.TenantId}. Running instances keep their current credentials until applied or restarted.";
         }
         catch (OperationCanceledException) { }
         catch (Exception ex) { if (generation == _generation) StatusText = $"The binding was refused: {ex.Message}"; }
         finally { End(generation); }
+    }
+
+    private async Task CheckRuntimeAsync()
+    {
+        if (SelectedConnection is not { } connection) return;
+        var generation = Begin("Checking running instances…");
+        try
+        {
+            var response = await _client.GetRuntimeCredentialStatusAsync(connection.ConnectionId, ProviderId.Trim(), _operation!.Token).ConfigureAwait(true);
+            if (generation != _generation) return;
+            if (!response.Success || response.Data is null) { StatusText = Refused("Runtime status is unavailable", response); return; }
+            SetApplication(response.Data);
+            StatusText = response.Data.Detail;
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex) { if (generation == _generation) StatusText = $"Runtime status is unavailable: {ex.Message}"; }
+        finally { End(generation); }
+    }
+
+    private async Task ApplyRuntimeAsync()
+    {
+        if (SelectedConnection is not { } connection || _application is not { PendingRestart: true }) return;
+        var generation = Begin("Applying binding to running instances…");
+        try
+        {
+            var response = await _client.ApplyRuntimeCredentialAsync(connection.ConnectionId, new ApplyProviderRuntimeCredentialRequest(ProviderId.Trim()), _operation!.Token).ConfigureAwait(true);
+            if (generation != _generation) return;
+            if (!response.Success || response.Data is null) { StatusText = Refused("The binding could not be applied", response); return; }
+            SetApplication(response.Data);
+            StatusText = response.Data.PendingRestart
+                ? "This host has no in-process provider recycle; the binding stays pending until the host is deliberately restarted."
+                : $"Running {response.Data.ProviderId} instances now resolve credentials under {response.Data.ConnectionId}.";
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex) { if (generation == _generation) StatusText = $"The binding could not be applied: {ex.Message}"; }
+        finally { End(generation); }
+    }
+
+    private void SetApplication(ProviderRuntimeCredentialApplicationStatus? application)
+    {
+        _application = application;
+        RaisePropertyChanged(nameof(RuntimeApplication));
+        RaisePropertyChanged(nameof(RuntimeApplicationText));
+        ApplyRuntimeCommand.NotifyCanExecuteChanged();
     }
 
     private static string Refused<T>(string prefix, ApiResponse<T> response) where T : class
@@ -256,8 +316,11 @@ public sealed class ProviderOwnershipAdministrationViewModel : BindableBase
         _operation = null;
         _preview = null;
         _receipt = null;
+        _application = null;
         _busy = false;
         RaisePropertyChanged(nameof(IsBusy));
+        RaisePropertyChanged(nameof(RuntimeApplication));
+        RaisePropertyChanged(nameof(RuntimeApplicationText));
         StatusText = status;
         RaiseResultChanged();
     }
@@ -279,5 +342,7 @@ public sealed class ProviderOwnershipAdministrationViewModel : BindableBase
         MigrateCommand.NotifyCanExecuteChanged();
         RollbackCommand.NotifyCanExecuteChanged();
         BindCommand.NotifyCanExecuteChanged();
+        CheckRuntimeCommand.NotifyCanExecuteChanged();
+        ApplyRuntimeCommand.NotifyCanExecuteChanged();
     }
 }

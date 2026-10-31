@@ -60,6 +60,12 @@ section (`accounting-screen.bond-cutover.tsx`) and the WPF Admin maintenance pag
 bind each block to the row's retained version and content hash, and send the current receipt hash
 when amending; the server records the authenticated actor as reviewer.
 
+Reference ladders: both workstations now page the issuer and maturity ladders through the bounded
+keyset routes (`.../issuer-ladder/page`, `.../maturity-ladder/page`). The unbounded array routes
+(`.../issuer-ladder`, `.../maturity-ladder`) stay only for the reference-data endpoint catalog; retire
+them in a reviewed follow-up once no retained workflow evidence names them, with a roadmap note rather
+than a silent removal.
+
 Existing posted journals and published evidence are never rewritten by this procedure. Historical
 receipt replay retains its calculation version; corrections use existing reversal/restatement
 workflows. Recorded timestamps establish eligibility among retained rows, not historic transaction
