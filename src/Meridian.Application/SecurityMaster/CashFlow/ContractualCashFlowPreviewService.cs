@@ -33,7 +33,7 @@ public sealed class ContractualCashFlowPreviewService(
         catch (ContractInputUnavailable ex) { return Blocked(request, "ContractInputsUnavailable", ex.Message); }
         catch (SecurityScheduleValidationException ex) { return Blocked(request, "ContractInputsUnavailable", ex.Message); }
         return await CalculateAsync(contract, request, $"security:{securityId}:version:{security.Version}",
-            ContractualCashFlowEngine.Hash(new { security.CommonTerms, security.AssetSpecificTerms }), ct).ConfigureAwait(false);
+            ContractualCashFlowEngine.Hash(new SecurityTermsDigest(security.CommonTerms, security.AssetSpecificTerms)), ct).ConfigureAwait(false);
     }
 
     public async Task<ContractualCashFlowResult?> PreviewLoanAsync(Guid loanId, ContractualCashFlowRequest request, CancellationToken ct = default)
@@ -278,5 +278,5 @@ public sealed class ContractualCashFlowPreviewService(
     private static ContractualCashFlowResult Blocked(ContractualCashFlowRequest request, string code, string reason)
         => new([], [], [], [new(code, reason)], new(ContractualCashFlowVersions.Engine, ContractualCashFlowVersions.Mapping,
             ContractualCashFlowVersions.Prepayment, Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerator.KernelVersion,
-            ContractualCashFlowEngine.Hash(request), ContractualCashFlowEngine.Hash(new { code, reason }), "", "unavailable", request.ContractOverride is not null, [], [], []));
+            ContractualCashFlowEngine.Hash(request), ContractualCashFlowEngine.Hash(new CalculationBlockerDigest(code, reason)), "", "unavailable", request.ContractOverride is not null, [], [], []));
 }

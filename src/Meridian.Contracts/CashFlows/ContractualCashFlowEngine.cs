@@ -10,8 +10,16 @@ namespace Meridian.Contracts.CashFlows;
 /// <summary>Deterministic, calculation-only engine. No wall clock, I/O, or ledger effects.</summary>
 public static partial class ContractualCashFlowEngine
 {
-    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
-    public static string Hash<T>(T value) => Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(value, Json));
+    private static string Hash<T>(T value, System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> typeInfo)
+        => Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(value, typeInfo));
+
+    public static string Hash(ContractualCashFlowContract contract) => Hash(contract, ContractualCashFlowJsonContext.Default.ContractualCashFlowContract);
+    public static string Hash(ContractualCashFlowRequest request) => Hash(request, ContractualCashFlowJsonContext.Default.ContractualCashFlowRequest);
+    public static string Hash(ContractualCashFlowEvidence evidence) => Hash(evidence, ContractualCashFlowJsonContext.Default.ContractualCashFlowEvidence);
+    public static string Hash(ContractualCashFlowInputDigest digest) => Hash(digest, ContractualCashFlowJsonContext.Default.ContractualCashFlowInputDigest);
+    public static string Hash(ContractualCashFlowOutputDigest digest) => Hash(digest, ContractualCashFlowJsonContext.Default.ContractualCashFlowOutputDigest);
+    public static string Hash(SecurityTermsDigest digest) => Hash(digest, ContractualCashFlowJsonContext.Default.SecurityTermsDigest);
+    public static string Hash(CalculationBlockerDigest digest) => Hash(digest, ContractualCashFlowJsonContext.Default.CalculationBlockerDigest);
 
     public static ContractualCashFlowResult Calculate(
         ContractualCashFlowContract contract, ContractualCashFlowRequest request,
@@ -78,8 +86,8 @@ public static partial class ContractualCashFlowEngine
         var calendarEvidence = snapshots.Values.OrderBy(c => c.CalendarId, StringComparer.Ordinal).ToArray();
         var curveEvidence = market.OrderBy(c => c.Definition.CurveKey, StringComparer.Ordinal).ToArray();
         sourceTermsHash ??= Hash(contract);
-        var inputHash = Hash(new { contract, request, calendarEvidence, curveEvidence, sourceVersion, sourceTermsHash });
-        var outputHash = Hash(new { Events = ordered, Eligibility = eligibility, Calculations = calculations, Blockers = blockers });
+        var inputHash = Hash(new ContractualCashFlowInputDigest(contract, request, calendarEvidence, curveEvidence, sourceVersion, sourceTermsHash));
+        var outputHash = Hash(new ContractualCashFlowOutputDigest(ordered, eligibility, calculations, blockers));
         return new(ordered, eligibility, calculations, blockers,
             new(ContractualCashFlowVersions.Engine, ContractualCashFlowVersions.Mapping, ContractualCashFlowVersions.Prepayment,
                 ScheduleGenerator.KernelVersion, inputHash, outputHash, sourceTermsHash ?? Hash(contract), sourceVersion,
@@ -96,13 +104,8 @@ public static partial class ContractualCashFlowEngine
 
     public static bool Verify(ContractualCashFlowRun run)
     {
-        var actualOutput = Hash(new
-        {
-            Events = run.Result.Events,
-            Eligibility = run.Result.ExerciseEligibility,
-            Calculations = run.Result.ExerciseCalculations,
-            Blockers = run.Result.Blockers
-        });
+        var actualOutput = Hash(new ContractualCashFlowOutputDigest(run.Result.Events, run.Result.ExerciseEligibility,
+            run.Result.ExerciseCalculations, run.Result.Blockers));
         var replay = Replay(run);
         return actualOutput == run.Result.Evidence.OutputHash && replay.Evidence.OutputHash == actualOutput
             && Hash(replay.Evidence) == Hash(run.Result.Evidence)

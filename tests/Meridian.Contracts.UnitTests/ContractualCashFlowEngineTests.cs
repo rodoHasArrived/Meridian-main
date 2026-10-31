@@ -450,4 +450,27 @@ public sealed class ContractualCashFlowEngineTests
         var version = new SecurityCurveVersionDto(Guid.NewGuid(), id, "treasury", 1, Issue, Request.KnowledgeCutoff, null, "test", "test", [new(Issue, value), new(Maturity, value)], "fixture");
         return new(definition, version);
     }
+
+    /// <summary>
+    /// Retained packets verify by recomputing these digests, so the bytes the engine hashes are a
+    /// compatibility contract. These literals were captured from the reflection-based serializer
+    /// before hashing moved to the source-generated context; a change here means retained runs
+    /// would no longer verify and needs a new hash version, not an updated literal.
+    /// </summary>
+    [Fact]
+    public void Hashes_are_a_retained_compatibility_contract()
+    {
+        var contract = Contract() with
+        {
+            Exercises = [new(CashFlowExerciseSide.Call, Issue.AddMonths(6), Issue.AddMonths(6), CashFlowExerciseStyle.European, 101, "main")]
+        };
+        var result = ContractualCashFlowEngine.Calculate(contract, Request);
+
+        result.Blockers.Should().BeEmpty();
+        ContractualCashFlowEngine.Hash(contract).Should().Be("67c7503688b7a0121992561b79b90f5547424835cb0be48407c2306493807eaa");
+        ContractualCashFlowEngine.Hash(Request).Should().Be("03a5534a852f4cfabed2e35785740f34d55ccd164b702c711bb27b1bb7ac1467");
+        result.Evidence.InputHash.Should().Be("80993d9ac4087f0e956a13f8d103b56945a0b5403f70fa49ae073a9418d395ea");
+        result.Evidence.OutputHash.Should().Be("8434a9b65b19150ff1fef69f46f43abe109d6457c4cd526401ec383c916e9a5f");
+        ContractualCashFlowEngine.Hash(result.Evidence).Should().Be("747e93d0f162d2386804677ac2a2b15e790801495fd249508c2b0be2ed608455");
+    }
 }

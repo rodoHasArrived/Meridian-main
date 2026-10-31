@@ -7,7 +7,6 @@ namespace Meridian.Application.SecurityMaster.CashFlow;
 /// <summary>Write-once replay packets. A retry reads its retained packet before looking up live inputs.</summary>
 public sealed class FileContractualCashFlowRunStore(StorageOptions options) : IContractualCashFlowRunStore
 {
-    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
     private readonly string _root = Path.Combine(options.RootPath, "contractual-cashflow-runs");
 
     public async Task<ContractualCashFlowRun?> GetAsync(string subjectKind, Guid subjectId, Guid runId, CancellationToken ct = default)
@@ -16,7 +15,7 @@ public sealed class FileContractualCashFlowRunStore(StorageOptions options) : IC
         if (!File.Exists(path))
             return null;
         await using var input = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 65536, FileOptions.Asynchronous);
-        var retained = await JsonSerializer.DeserializeAsync<ContractualCashFlowRun>(input, Json, ct).ConfigureAwait(false)
+        var retained = await JsonSerializer.DeserializeAsync(input, ContractualCashFlowJsonContext.Default.ContractualCashFlowRun, ct).ConfigureAwait(false)
             ?? throw new InvalidDataException("Empty contractual cash-flow run.");
         if (retained.SubjectKind != subjectKind || retained.SubjectId != subjectId || retained.RunId != runId
             || !ContractualCashFlowEngine.Verify(retained))
@@ -35,7 +34,7 @@ public sealed class FileContractualCashFlowRunStore(StorageOptions options) : IC
         {
             await using (var file = new FileStream(staging, FileMode.CreateNew, FileAccess.Write, FileShare.None, 65536, FileOptions.Asynchronous | FileOptions.WriteThrough))
             {
-                await JsonSerializer.SerializeAsync(file, run, Json, ct).ConfigureAwait(false);
+                await JsonSerializer.SerializeAsync(file, run, ContractualCashFlowJsonContext.Default.ContractualCashFlowRun, ct).ConfigureAwait(false);
                 await file.FlushAsync(ct).ConfigureAwait(false);
                 file.Flush(flushToDisk: true);
             }
