@@ -4,6 +4,8 @@
 
 Use these instructions for every task in this repository to improve quality, reliability, and review speed.
 
+**Solo-developer default:** follow [risk-based development guidance](../docs/ai/solo-developer-workflow.md). The project uses synthetic financial data and one developer's decisions; ordinary PRs need focused verification, not invented human approvers or live-provider connections. Keep GitHub-required checks and financial/security invariants intact.
+
 > **See also:** [docs/ai/assistant-workflow-contract.md](../docs/ai/assistant-workflow-contract.md) for shared provider-agnostic rules, [CLAUDE.md](../CLAUDE.md) for full project context, and [docs/ai/README.md](../docs/ai/README.md) for the master AI resource index.
 
 ## 0) Standard execution flow
@@ -75,7 +77,7 @@ Always do the following before opening a PR:
 7. When editing `src/**`, read the nearest source README and keep `docs/source/data/*.yml`
    synchronized when module ownership, validation, roadmap mapping, diagrams, or TODO scope changes.
 8. If editing shared handoff, manifest, or AI work-mode guidance, run `python build/scripts/docs/check-ai-handoff.py --strict`.
-9. For completed PR-ready work, run `bash scripts/ci.sh`; GitHub Actions `Meridian CI / quality-gate` is the authoritative merge check.
+9. Use proportionate focused verification for PR-ready work; state whether the full local `bash scripts/ci.sh` was run, failed, or was unavailable. GitHub Actions `Meridian CI / quality-gate` remains authoritative where required before merge.
 
 ## 4) Build and test commands
 
