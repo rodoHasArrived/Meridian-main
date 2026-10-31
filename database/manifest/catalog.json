@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "d1d28f5f550433093c3fb39a0c75dced830372cde26a43a452ad4e56d1c4ae8e",
+  "database_fingerprint": "e88634cc1e9f105dcc30480e76932f8370be403777bc9d00ae627e95eaeb55d5",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -16697,7 +16697,7 @@
       "object": "column:security_master.direct_loan_covenant_projection.threshold"
     },
     {
-      "fingerprint": "4132ae7754430870d35f02da9c8d51aca4130be3be9ca94947b74ff5102966a3",
+      "fingerprint": "37bc07de5620f8f69b4518033af034eb5e10ef5e8253bc93fc229ebb7fa200fe",
       "object": "column:security_master.direct_loan_principal_schedule_projection.amount"
     },
     {
@@ -20313,7 +20313,7 @@
       "object": "column:security_master.structured_credit_factor_schedule_projection.as_of_date"
     },
     {
-      "fingerprint": "2bfecffae9ec5ba5812e2b4669d34d003ccff2fce7c915e9c47179d5d70f0594",
+      "fingerprint": "453f2212d31a1410cfbe8043889ee77f53adb7cdfeb6b454706bbca330119f74",
       "object": "column:security_master.structured_credit_factor_schedule_projection.factor"
     },
     {
@@ -30753,7 +30753,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "7bea5bb0ecaf87dbec40641ee87c44130688146d4ce76d77f0a5d38b38050664",
+      "fingerprint": "3056ec46dcbeb379e234a7deb42eed4fa13d3dfe34b17cdc32b8560109d57b2c",
       "object": "schema:security_master"
     },
     {
@@ -31341,7 +31341,7 @@
       "object": "table:security_master.direct_loan_covenant_projection"
     },
     {
-      "fingerprint": "f3440e495f31f914a52e7c344695a237d13697ca9cb66e4aefac6f300951ac98",
+      "fingerprint": "4746407a7829a6f7b2c4e0626b68e37201a7e41f82161fc20612a3961354d2d5",
       "object": "table:security_master.direct_loan_principal_schedule_projection"
     },
     {
@@ -31665,7 +31665,7 @@
       "object": "table:security_master.servicing_revision_source"
     },
     {
-      "fingerprint": "c3d6243aa1021c82aafd421ccc1d69215c502a5b0218e4600184a99d74d003fc",
+      "fingerprint": "6c5d22b8e5a5d6f8f23075a8927b25028f83124ccbf1a2350bc024e51b2080ea",
       "object": "table:security_master.structured_credit_factor_schedule_projection"
     },
     {
@@ -131463,7 +131463,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "7bea5bb0ecaf87dbec40641ee87c44130688146d4ce76d77f0a5d38b38050664",
+      "fingerprint": "3056ec46dcbeb379e234a7deb42eed4fa13d3dfe34b17cdc32b8560109d57b2c",
       "foreign_tables": [],
       "functions": [
         {
@@ -145462,9 +145462,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "4132ae7754430870d35f02da9c8d51aca4130be3be9ca94947b74ff5102966a3",
+              "fingerprint": "37bc07de5620f8f69b4518033af034eb5e10ef5e8253bc93fc229ebb7fa200fe",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -145524,7 +145524,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "f3440e495f31f914a52e7c344695a237d13697ca9cb66e4aefac6f300951ac98",
+          "fingerprint": "4746407a7829a6f7b2c4e0626b68e37201a7e41f82161fc20612a3961354d2d5",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -175241,9 +175241,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(18,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "2bfecffae9ec5ba5812e2b4669d34d003ccff2fce7c915e9c47179d5d70f0594",
+              "fingerprint": "453f2212d31a1410cfbe8043889ee77f53adb7cdfeb6b454706bbca330119f74",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -175303,7 +175303,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "c3d6243aa1021c82aafd421ccc1d69215c502a5b0218e4600184a99d74d003fc",
+          "fingerprint": "6c5d22b8e5a5d6f8f23075a8927b25028f83124ccbf1a2350bc024e51b2080ea",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -192498,9 +192498,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "4132ae7754430870d35f02da9c8d51aca4130be3be9ca94947b74ff5102966a3",
+              "fingerprint": "37bc07de5620f8f69b4518033af034eb5e10ef5e8253bc93fc229ebb7fa200fe",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -192560,7 +192560,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "f3440e495f31f914a52e7c344695a237d13697ca9cb66e4aefac6f300951ac98",
+          "fingerprint": "4746407a7829a6f7b2c4e0626b68e37201a7e41f82161fc20612a3961354d2d5",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -222012,9 +222012,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(18,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "2bfecffae9ec5ba5812e2b4669d34d003ccff2fce7c915e9c47179d5d70f0594",
+              "fingerprint": "453f2212d31a1410cfbe8043889ee77f53adb7cdfeb6b454706bbca330119f74",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -222074,7 +222074,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "c3d6243aa1021c82aafd421ccc1d69215c502a5b0218e4600184a99d74d003fc",
+          "fingerprint": "6c5d22b8e5a5d6f8f23075a8927b25028f83124ccbf1a2350bc024e51b2080ea",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [

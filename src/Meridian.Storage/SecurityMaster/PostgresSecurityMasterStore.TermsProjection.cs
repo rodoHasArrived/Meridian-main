@@ -29,7 +29,7 @@ public sealed partial class PostgresSecurityMasterStore
     /// <param name="Value">The bound value, already <see cref="DBNull"/> where the term is absent.</param>
     internal sealed record SecurityTermsProjectionValue(string ColumnName, object Value);
 
-    /// <summary>The rows to write into one child projection table, in terms-document order.</summary>
+    /// <summary>The rows to write into one child table; economic schedules use validated date order.</summary>
     internal sealed record SecurityTermsProjectionChildRows(
         string TableName,
         IReadOnlyList<IReadOnlyList<SecurityTermsProjectionValue>> Rows);
@@ -45,7 +45,8 @@ public sealed partial class PostgresSecurityMasterStore
         string TableName,
         IReadOnlyList<SecurityTermsProjectionValue> Columns,
         IReadOnlyList<SecurityTermsProjectionChildRows> Children,
-        IReadOnlyList<SecurityTermsProjectionSatelliteRow> Satellites)
+        IReadOnlyList<SecurityTermsProjectionSatelliteRow> Satellites,
+        SecurityEconomicScheduleValidation Schedules)
     {
         /// <summary>The bound value for <paramref name="columnName"/>, or null when the column is not projected.</summary>
         internal object? Value(string columnName)
@@ -93,11 +94,10 @@ public sealed partial class PostgresSecurityMasterStore
     /// declares, or reports that the record has no projection.
     /// <para>
     /// There is no projection when the record carries a different asset class, when a gating term is
-    /// missing, or when a child array holds a malformed element. The last case is deliberate: a
-    /// principal or factor schedule that lost a row still reads as a complete schedule and would
-    /// misstate amortization, so a partial decode suppresses the projection instead of publishing
-    /// it. Callers delete any stale rows on a false result, which is what keeps a record that
-    /// changes asset class from leaving an orphaned projection behind.
+    /// missing, or when a non-schedule child array holds a malformed element. Invalid economic
+    /// schedules instead throw <see cref="SecurityScheduleValidationException"/> with the shared
+    /// row diagnostics. They must not look like an inapplicable projection: callers delete stale
+    /// rows on a false result, while invalid economics must abort the transaction.
     /// </para>
     /// </summary>
     internal static bool TryBuildTermsProjection(
@@ -123,6 +123,8 @@ public sealed partial class PostgresSecurityMasterStore
         }
 
         var terms = record.AssetSpecificTerms;
+        var schedules = SecurityEconomicScheduleParser.Parse(terms, record.CommonTerms);
+        schedules.ThrowIfInvalid();
         var profileFields = ResolveProfileFields(descriptor.AssetClass, terms);
         if (!TryBuildTableColumns(
                 record,
@@ -139,7 +141,7 @@ public sealed partial class PostgresSecurityMasterStore
         var children = new List<SecurityTermsProjectionChildRows>(descriptor.ChildTables.Count);
         foreach (var child in descriptor.ChildTables)
         {
-            if (!TryBuildChildRows(terms, profileFields, record.SecurityId, child, out var rows))
+            if (!TryBuildChildRows(terms, profileFields, record.SecurityId, child, schedules, out var rows))
             {
                 return false;
             }
@@ -170,7 +172,7 @@ public sealed partial class PostgresSecurityMasterStore
             satellites.Add(new(satellite.TableName, satelliteColumns));
         }
 
-        plan = new(descriptor.TableName, columns, children, satellites);
+        plan = new(descriptor.TableName, columns, children, satellites, schedules);
         return true;
     }
 
@@ -238,9 +240,16 @@ public sealed partial class PostgresSecurityMasterStore
         JsonElement? profileFields,
         Guid securityId,
         SecurityTermsProjectionChildTable child,
+        SecurityEconomicScheduleValidation schedules,
         out IReadOnlyList<IReadOnlyList<SecurityTermsProjectionValue>> rows)
     {
         rows = [];
+
+        if (SecurityEconomicScheduleParser.TryGetKind(child.TermKey, out var scheduleKind))
+        {
+            rows = BuildEconomicScheduleRows(securityId, child, schedules, scheduleKind);
+            return true;
+        }
 
         // An absent schedule, or one present as JSON null (the serializer's rendering of an empty
         // optional list), is an empty schedule; anything else non-array is a shape the contract
@@ -271,7 +280,6 @@ public sealed partial class PostgresSecurityMasterStore
                 new("ordinal", ordinal),
             };
 
-            var skipRow = false;
             foreach (var column in child.Columns)
             {
                 // Element keys are read from the element itself; the profile envelope only nests the
@@ -282,18 +290,7 @@ public sealed partial class PostgresSecurityMasterStore
                     return false;
                 }
 
-                if (column.MustBePositive && value is decimal amount && amount <= 0m)
-                {
-                    skipRow = true;
-                    break;
-                }
-
                 row.Add(new(column.ColumnName, value ?? DBNull.Value));
-            }
-
-            if (skipRow)
-            {
-                continue;
             }
 
             built.Add(row);
@@ -302,6 +299,42 @@ public sealed partial class PostgresSecurityMasterStore
 
         rows = built;
         return true;
+    }
+
+    private static IReadOnlyList<IReadOnlyList<SecurityTermsProjectionValue>> BuildEconomicScheduleRows(
+        Guid securityId,
+        SecurityTermsProjectionChildTable child,
+        SecurityEconomicScheduleValidation schedules,
+        SecurityEconomicScheduleKind kind)
+    {
+        IEnumerable<(DateOnly Date, decimal Value)> entries = kind switch
+        {
+            SecurityEconomicScheduleKind.Factor => schedules.FactorSchedule.Entries.Select(static row => (row.AsOfDate, row.Factor)),
+            SecurityEconomicScheduleKind.Principal => schedules.PrincipalSchedule.Entries.Select(static row => (row.PaymentDate, row.Amount)),
+            SecurityEconomicScheduleKind.StepCoupon => schedules.StepCouponSchedule.Entries.Select(static row => (row.EffectiveDate, row.Rate)),
+            _ => throw new ArgumentOutOfRangeException(nameof(kind))
+        };
+        var rows = new List<IReadOnlyList<SecurityTermsProjectionValue>>();
+        foreach (var (date, value) in entries)
+        {
+            var row = new List<SecurityTermsProjectionValue>
+            {
+                new("security_id", securityId),
+                new("ordinal", rows.Count)
+            };
+            foreach (var column in child.Columns)
+            {
+                object projected = column.ElementKey switch
+                {
+                    "asOfDate" or "paymentDate" or "effectiveDate" => date.ToDateTime(TimeOnly.MinValue),
+                    "factor" or "amount" or "rate" => value,
+                    _ => throw new InvalidOperationException($"Unknown economic schedule column '{column.ElementKey}'.")
+                };
+                row.Add(new(column.ColumnName, projected));
+            }
+            rows.Add(row);
+        }
+        return rows;
     }
 
     /// <summary>

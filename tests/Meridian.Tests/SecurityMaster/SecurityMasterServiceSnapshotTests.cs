@@ -2332,7 +2332,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
                 null,
                 "create")))
             .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
-            .WithMessage("*SM_TERM_TYPE_INVALID*assetSpecificTerms.principalSchedule*");
+            .WithMessage("*SM_SCHEDULE_CONTAINER_INVALID*assetSpecificTerms.principalSchedule*");
 
         await eventStore.DidNotReceive().AppendAsync(Arg.Any<Guid>(), Arg.Any<long>(), Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(), Arg.Any<CancellationToken>());
         await store.DidNotReceive().UpsertProjectionAsync(Arg.Any<SecurityProjectionRecord>(), Arg.Any<CancellationToken>());
@@ -3028,7 +3028,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
                 null,
                 "create")))
             .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
-            .WithMessage("Property 'factorScheduleEntries' must be a JSON array when present, but was String.");
+            .WithMessage("*SM_SCHEDULE_CONTAINER_INVALID*assetSpecificTerms.profileFields.factorScheduleEntries*");
 
         await eventStore.DidNotReceive().AppendAsync(
             Arg.Any<Guid>(),
