@@ -55,7 +55,6 @@ public sealed partial class AssetAccountingEventSpineServiceTests
     }
 
     [Theory]
-    [InlineData(OpenLotDirection.Short)]
     [InlineData((OpenLotDirection)99)]
     public async Task UnsupportedInstructionDirection_IsRejectedBeforeAuthorityReads(OpenLotDirection direction)
     {
@@ -74,6 +73,55 @@ public sealed partial class AssetAccountingEventSpineServiceTests
 
         await draft.Should().ThrowAsync<ArgumentException>();
         await store.DidNotReceiveWithAnyArgs().GetAsync(default, default, default, default);
+        await store.DidNotReceiveWithAnyArgs().AppendAsync(default!, default, default, default);
+    }
+
+    [Fact]
+    public async Task ShortProjection_RetainsExplicitDirectionBeforeDrafting()
+    {
+        var fixture = BuildFixture(AssetAccountingEventKindDto.Acquisition);
+        fixture = fixture with { Position = fixture.Position with { PositionSide = BookPositionSides.Short } };
+        var (service, store) = DirectionService(fixture);
+        store.AppendAsync(Arg.Any<AssetAccountingEventSpineDto>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var projection = call.Arg<AssetAccountingEventSpineDto>();
+                return Task.FromResult(new AssetAccountingEventAppendResult(projection, ComputeFingerprint(projection), false));
+            });
+        var effect = fixture.Request.ProjectedEffect;
+        var request = fixture.Request with
+        {
+            Direction = OpenLotDirection.Short,
+            ProjectedEffect = effect with
+            {
+                Lines = [new("Assets:Cash", fixture.Request.EventAmount, 0m, "USD", Dimensions: effect.Lines[0].Dimensions),
+            new("Liabilities:ShortInvestments", 0m, fixture.Request.EventAmount, "USD", Dimensions: effect.Lines[0].Dimensions)]
+            }
+        };
+        var result = await service.ProjectAsync(request);
+        result.Spine.Direction.Should().Be(OpenLotDirection.Short);
+        System.Text.Json.JsonSerializer.Serialize(result.Spine).Should().Contain("\"Direction\":\"Short\"");
+        await store.Received(2).AppendAsync(Arg.Is<AssetAccountingEventSpineDto>(projection => projection.Direction == OpenLotDirection.Short),
+            Arg.Any<long>(), fixture.Position.Version, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task DraftCannotChangeTheRetainedProjectedDirection()
+    {
+        var fixture = BuildFixture(AssetAccountingEventKindDto.Acquisition);
+        var (service, store) = DirectionService(fixture);
+        var retained = BuildProjectedSpine(fixture);
+        store.GetAsync(retained.EventId, 1, 2, Arg.Any<CancellationToken>())
+            .Returns(new AssetAccountingEventProjectionRecord(retained, ComputeFingerprint(retained)));
+        var request = BuildCandidateRequest(fixture) with
+        {
+            LotMutation = new AssetLotMutationInstructionDto(
+            AssetLotMutationIntentDto.Acquire, new AssetAcquisitionLotDto(Guid.NewGuid(), "changed-direction",
+                fixture.Request.EconomicEvent.EffectiveDate, 1m, fixture.Request.EventAmount, "Liabilities:ShortInvestments"))
+            { Direction = OpenLotDirection.Short }
+        };
+        var draft = () => service.BuildPostingCandidateAsync(request);
+        await draft.Should().ThrowAsync<InvalidOperationException>().WithMessage("*immutable Projected*direction*");
         await store.DidNotReceiveWithAnyArgs().AppendAsync(default!, default, default, default);
     }
 

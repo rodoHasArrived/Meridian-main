@@ -2,6 +2,19 @@
 
 **Status:** supporting evidence bound; live population and operator decisions pending
 
+**Target preparation — 2026-10-29:** Use a dedicated Windows x64 test user on the development
+workstation, or a disposable VM when the PC hosts production. WPF retains per-user state under
+`%LocalAppData%\Meridian`, so DataRoot isolation alone is insufficient. Use the existing two-account,
+eight-position population below, a dedicated nonproduction PostgreSQL database, and one host/client
+candidate. Prepare a new packet with
+`pwsh scripts/dev/prepare-next-work-acceptance.ps1 -OutputRoot "$env:LOCALAPPDATA\MeridianAcceptance\session-20261029"`.
+The script refuses an existing directory, writes only isolated scaffolding and non-secret identities,
+and leaves provisioning, runtime execution and every verdict pending. It can also run on Linux to
+check packet generation; that is not Windows evidence. Follow its NEXT-STEPS file, replace logical
+population keys with returned service identities, and run SEAM before MARK in the joint live session.
+See the [2026-10-29 continuation boundaries](evidence/next-work-20261029/README.md) and its retained
+signing-prerequisite recheck for the current implementation and remaining proof requirements.
+
 **Owner:** Accounting and Ledger / Workstation Shell and UX / designated operator
 
 **Reviewed:** 2026-10-09

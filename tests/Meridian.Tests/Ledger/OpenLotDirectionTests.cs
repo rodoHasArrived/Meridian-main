@@ -122,8 +122,8 @@ public sealed class OpenLotDirectionTests
         var bindExecution = () => execution.BindCanonical(lot);
         var bindSimulation = () => simulation.BindCanonical(lot);
 
-        bindExecution.Should().Throw<InvalidOperationException>().WithMessage("*direction-aware posting*");
-        bindSimulation.Should().Throw<InvalidOperationException>().WithMessage("*direction-aware posting*");
+        bindExecution.Should().Throw<InvalidOperationException>().WithMessage("*directions differ*");
+        bindSimulation.Should().Throw<InvalidOperationException>().WithMessage("*directions differ*");
     }
 
     [Fact]
@@ -137,7 +137,7 @@ public sealed class OpenLotDirectionTests
 
         var validate = () => CanonicalOpenLotDisposalGuard.Validate([retained], [selection], LedgerTaxLotReliefMethod.Fifo, "USD");
 
-        validate.Should().Throw<LedgerValidationException>().WithMessage("*Short covers require direction-aware posting*");
+        validate.Should().Throw<LedgerValidationException>().WithMessage("*short cover requires a liability*");
     }
 
     [Fact]

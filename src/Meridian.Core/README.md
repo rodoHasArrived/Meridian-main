@@ -11,6 +11,12 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Core
 
+`ProviderConnectionsConfig.RuntimeCredentials` holds optional explicit host defaults keyed by
+canonical provider and retained tenant/connection identity. It is additive and omitted when absent;
+Application owns validation and resolution. It contains no secrets and confers no verification.
+`OwnershipRequiredProviders` retains the boundary when an owned connection is removed, so even
+deletion before host selection cannot implicitly reactivate provider-wide fallback.
+
 `IProviderCredentialStore.ReadCredentialRecordAsync` distinguishes a selected empty credential record from proven absence. Compatibility stores conservatively retain an unknown/empty selection; module setup cannot combine its missing fields with ambient credentials.
 
 

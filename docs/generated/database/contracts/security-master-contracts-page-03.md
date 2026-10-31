@@ -2,11 +2,13 @@
 
 # `security-master-contracts` data objects - page 3 of 7
 
-Objects 161-240 of 481. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 485. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_ISecurityMasterAmender["ISecurityMasterAmender"] {
+    }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterCashFlowService["ISecurityMasterCashFlowService"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterCorporateActionCommandService["ISecurityMasterCorporateActionCommandService"] {
@@ -431,20 +433,6 @@ classDiagram
         +string Reason
         +CorporateActionCaseScopeDto? ScopeAssertion
         +string TenantId
-    }
-    class Meridian_Contracts_SecurityMaster_PreferredEquityTermsDto["PreferredEquityTermsDto"] {
-        +decimal? AdditionalDividendThreshold
-        +DateOnly? CallableDate
-        +string? Classification
-        +decimal? DividendRate
-        +string? DividendType
-        +bool? IsCumulative
-        +string? LiquidationPreferenceKind
-        +decimal? LiquidationPreferenceMultiple
-        +bool? ParticipatesInCommonDividends
-        +DateOnly? RedemptionDate
-        +decimal? RedemptionPrice
-        +Guid SecurityId
     }
     Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService --> Meridian_Contracts_SecurityMaster_ISecurityTradingParametersQueryService
     Meridian_Contracts_SecurityMaster_IssueOtcMarginCallRequest --> Meridian_Contracts_SecurityMaster_OtcMovementKind

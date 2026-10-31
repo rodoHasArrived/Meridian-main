@@ -2,11 +2,31 @@
 
 # `security-master-contracts` data objects - page 6 of 7
 
-Objects 401-480 of 481. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 485. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityPaymentFrequency["SecurityPaymentFrequency"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityPaymentFrequencyExtensions["SecurityPaymentFrequencyExtensions"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto["SecurityPriceGoldenCopyDto"] {
+        +IReadOnlyList~SecurityComparisonPriceDto~ ComparisonPrices
+        +int? DaysStale
+        +DateTimeOffset? EvaluatedAsOf
+        +decimal GoldenCopyPrice
+        +DateTimeOffset? HierarchyAsOf
+        +SecurityPricingHierarchyDto? HierarchySnapshot
+        +bool IsStaleFallback
+        +DateTimeOffset? KnowledgeAsOf
+        +DateTimeOffset PriceAsOf
+        +SecurityPriceKind PriceKind
+        +Guid SecurityId
+        +string SelectedSource
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityPriceKind["SecurityPriceKind"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityPriceUnit["SecurityPriceUnit"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityPricingHierarchyDto["SecurityPricingHierarchyDto"] {
@@ -274,18 +294,18 @@ classDiagram
         +Guid SecurityId
     }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg["StructuredCashFlowLeg"] {
+        +decimal? CapRate
         +decimal? CurrentIndexRate
+        +string? CurrentIndexRateSource
+        +DateOnly? CurrentIndexResetDate
         +string? DayCountConvention
         +CashFlowLegDirection? Direction
         +bool ExchangesPrincipal
         +decimal? FixedRate
+        +decimal? FloorRate
+        +bool HasDeclaredResetSchedule
         +string? IndexName
         +string LegId
-        +decimal? Notional
-        +IReadOnlyList~StructuredCashFlowNotionalStep~? NotionalSchedule
-        +string? PaymentFrequency
-        +CashFlowLegRateKind RateKind
-        +IReadOnlyList~StructuredCashFlowResetFixing~? ResetSchedule
     }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule["StructuredCashFlowLegSchedule"] {
         +CashFlowLegDirection? Direction
@@ -302,6 +322,7 @@ classDiagram
         +DateTimeOffset AsOf
         +string? BlockedReason
         +IReadOnlyList~StructuredFactorScheduleEntry~? FactorSchedule
+        +IReadOnlyList~Meridian_Contracts_FixedIncome_BondCalculationInput~? InputManifest
         +bool IsNormalizedPer100
         +IReadOnlyList~StructuredCashFlowLegSchedule~? LegSchedules
         +StructuredCashFlowScenario Scenario
@@ -310,7 +331,6 @@ classDiagram
         +Guid SecurityId
         +StructuredCashFlowSourceKind SourceKind
         +DateTimeOffset? SourceLastUpdatedUtc
-        +StructuredCashFlowStaleness Staleness
     }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowResetFixing["StructuredCashFlowResetFixing"] {
         +decimal? FixingRate
@@ -319,10 +339,15 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowScenario["StructuredCashFlowScenario"] {
     }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry["StructuredCashFlowScheduleEntry"] {
+        +DateOnly? AccrualEnd
+        +DateOnly? AccrualStart
         +decimal Factor
         +decimal InterestAmount
         +DateTimeOffset PeriodDate
         +decimal PrincipalAmount
+        +Meridian_Contracts_FixedIncome_BondFloatingRateEvidence? RateEvidence
+        +DateOnly? UnadjustedEnd
+        +DateOnly? UnadjustedStart
     }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEvidence["StructuredCashFlowScheduleEvidence"] {
         +IReadOnlyList~StructuredCashFlowCalendarEvidence~ Calendars
@@ -335,18 +360,18 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowStaleness["StructuredCashFlowStaleness"] {
     }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms["StructuredCashFlowTerms"] {
+        +decimal? CapRate
+        +SecurityCouponKind CouponKind
         +decimal? CouponRate
+        +SecurityCouponRateUnit CouponRateUnit
         +decimal? CurrentFactor
         +string? DayCountConvention
         +StructuredCashFlowTerms Empty
         +IReadOnlyList~StructuredFactorScheduleEntry~ FactorSchedule
+        +decimal? FloorRate
         +decimal? InflationBaseIndexValue
         +string? InflationIndex
         +decimal? InflationIndexRatio
-        +DateOnly? IssueDate
-        +IReadOnlyList~StructuredCashFlowLeg~? Legs
-        +DateOnly? MaturityDate
-        +string? PaymentFrequency
     }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowTermsResolver["StructuredCashFlowTermsResolver"] {
     }
@@ -484,54 +509,9 @@ classDiagram
         +decimal ThresholdOurs
         +decimal ThresholdTheirs
     }
-    class Meridian_Contracts_SecurityMaster_UpsertOtcCollateralBalanceRequest["UpsertOtcCollateralBalanceRequest"] {
-        +Guid? BalanceId
-        +Guid CollateralAgreementId
-        +string Currency
-        +OtcCollateralDirection Direction
-        +string EligibleCollateralDescription
-        +OtcCollateralKind Kind
-        +string? Notes
-        +decimal Quantity
-        +string? Reference
-        +Guid? SecurityId
-        +decimal UnitValue
-        +string? UpdatedBy
-    }
-    class Meridian_Contracts_SecurityMaster_UpsertOtcContractRequest["UpsertOtcContractRequest"] {
-        +string? ConfirmationReference
-        +Guid? ContractId
-        +OtcContractDirection Direction
-        +DateOnly EffectiveDate
-        +string? ExternalTradeId
-        +Guid NettingSetId
-        +string? Notes
-        +decimal Notional
-        +string NotionalCurrency
-        +Guid SecurityId
-        +OtcContractStatus Status
-        +DateOnly? TerminationDate
-    }
-    class Meridian_Contracts_SecurityMaster_UpsertOtcMasterAgreementRequest["UpsertOtcMasterAgreementRequest"] {
-        +DateOnly AgreementDate
-        +Guid? AgreementId
-        +OtcMasterAgreementType AgreementType
-        +string Counterparty
-        +string? CounterpartyLei
-        +string? GoverningLaw
-        +string? Notes
-        +string OurEntity
-        +Guid? OurEntityId
-        +string? UpdatedBy
-    }
-    class Meridian_Contracts_SecurityMaster_UpsertOtcNettingSetRequest["UpsertOtcNettingSetRequest"] {
-        +Guid? CollateralAgreementId
-        +Guid MasterAgreementId
-        +string Name
-        +Guid? NettingSetId
-        +string? Notes
-        +string? UpdatedBy
-    }
+    Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceKind
+    Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceUnit
+    Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPricingHierarchyDto
     Meridian_Contracts_SecurityMaster_SecurityProjectionRecord --> Meridian_Contracts_SecurityMaster_SecurityStatusDto
     Meridian_Contracts_SecurityMaster_SecurityRawPriceDto --> Meridian_Contracts_SecurityMaster_SecurityPriceUnit
     Meridian_Contracts_SecurityMaster_SecurityScheduleParseResult --> Meridian_Contracts_SecurityMaster_SecurityScheduleDiagnostic

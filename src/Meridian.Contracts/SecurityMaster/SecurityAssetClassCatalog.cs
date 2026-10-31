@@ -125,9 +125,10 @@ public static class SecurityAssetClassCatalog
                     rationale: "Version 2 adds the optional scheduleConventions block and changes no version-1 term, so a version-1 payload reads it as unset (ADR-024, 2026-10-25)."),
                 SecurityAssetClassTermsUpgrade.Identity(
                     fromVersion: 2,
-                    rationale: "Version 3 adds the optional callSchedule and putSchedule arrays and changes no version-2 term, so a version-2 payload reads them as unset (ADR-024, 2026-10-25).")
+                    rationale: "Version 3 adds the optional callSchedule and putSchedule arrays and changes no version-2 term, so a version-2 payload reads them as unset (ADR-024, 2026-10-25)."),
+                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 3, rationale: "Version 4 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29).")
             ],
-            ReadableTermsVersion: null) { StampFloor = 1 },
+            ReadableTermsVersion: 4) { StampFloor = 1 },
         new(
             AssetClass: "FxSpot",
             AssetPackIds: ["derivatives-fx"],
@@ -205,9 +206,10 @@ public static class SecurityAssetClassCatalog
                     rationale: "Version 2 adds the optional scheduleConventions block and changes no version-1 term, so a version-1 payload reads it as unset (ADR-024, 2026-10-25)."),
                 SecurityAssetClassTermsUpgrade.Identity(
                     fromVersion: 2,
-                    rationale: "Version 3 adds the optional callSchedule and putSchedule arrays and changes no version-2 term, so a version-2 payload reads them as unset (ADR-024, 2026-10-25).")
+                    rationale: "Version 3 adds the optional callSchedule and putSchedule arrays and changes no version-2 term, so a version-2 payload reads them as unset (ADR-024, 2026-10-25)."),
+                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 3, rationale: "Version 4 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29).")
             ],
-            ReadableTermsVersion: null) { StampFloor = 1 },
+            ReadableTermsVersion: 4) { StampFloor = 1 },
         new(
             AssetClass: "CommercialPaper",
             AssetPackIds: ["fixed-income"],
@@ -338,9 +340,10 @@ public static class SecurityAssetClassCatalog
             [
                 SecurityAssetClassTermsUpgrade.Identity(
                     fromVersion: 1,
-                    rationale: "Version 2 adds the optional scheduleConventions block to each leg and changes no version-1 term, so a version-1 payload reads it as unset on every leg (ADR-024, 2026-10-25).")
+                    rationale: "Version 2 adds the optional scheduleConventions block to each leg and changes no version-1 term, so a version-1 payload reads it as unset on every leg (ADR-024, 2026-10-25)."),
+                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 2, rationale: "Version 3 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29).")
             ],
-            ReadableTermsVersion: 2),
+            ReadableTermsVersion: 3),
         new(
             AssetClass: "DirectLoan",
             AssetPackIds: ["private-loan-credit", "mortgage-facility-intercompany"],
@@ -360,7 +363,9 @@ public static class SecurityAssetClassCatalog
             ],
             AssetOperationsCapabilities: AssetOperationsCapabilitySet.DirectLending,
             AmortizesTowardPar: true,
-            Aliases: ["Loan", "AmortizingLoan", "BankLoan"]),
+            Aliases: ["Loan", "AmortizingLoan", "BankLoan"],
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29).")],
+            ReadableTermsVersion: 2),
         new(
             AssetClass: "StructuredCredit",
             AssetPackIds: ["fixed-income"],
@@ -397,9 +402,10 @@ public static class SecurityAssetClassCatalog
                     rationale: "Version 3 adds the optional scheduleConventions block and changes no version-2 term, so a version-2 payload reads it as unset (ADR-024, 2026-10-25)."),
                 SecurityAssetClassTermsUpgrade.Identity(
                     fromVersion: 3,
-                    rationale: "Version 4 adds the optional callSchedule and putSchedule arrays and changes no version-3 term, so a version-3 payload reads them as unset (ADR-024, 2026-10-25).")
+                    rationale: "Version 4 adds the optional callSchedule and putSchedule arrays and changes no version-3 term, so a version-3 payload reads them as unset (ADR-024, 2026-10-25)."),
+                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 4, rationale: "Version 5 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29).")
             ],
-            ReadableTermsVersion: null,
+            ReadableTermsVersion: 5,
             SupportsProfileBackedTerms: true,
             Aliases: [.. SecurityCanonicalAssetHomes.SecuritizedLabels.Where(static label => label != "StructuredCredit")],
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.AssetBackedSecurity) { StampFloor = 2 },

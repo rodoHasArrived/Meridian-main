@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace Meridian.Storage.SecurityMaster;
 
 /// <summary>
@@ -10,6 +12,16 @@ public interface IBondReferenceProjectionStore
     Task<BondAccrualConventionProjectionRow?> GetAccrualConventionAsync(Guid securityId, CancellationToken ct = default);
     Task<IReadOnlyList<BondProjectionRow>> GetIssuerLadderAsync(string issuerName, CancellationToken ct = default);
     Task<IReadOnlyList<BondProjectionRow>> GetMaturityLadderAsync(DateOnly from, DateOnly to, CancellationToken ct = default);
+
+    /// <summary>Returns at most pageSize plus one rows, using a maturity/security-id keyset.</summary>
+    Task<IReadOnlyList<BondProjectionRow>> GetIssuerLadderPageAsync(string issuerName, int pageSize,
+        DateOnly? afterMaturity, Guid? afterSecurityId, CancellationToken ct = default)
+        => throw new NotSupportedException("This bond projection store does not support bounded issuer paging.");
+
+    /// <summary>Returns at most pageSize plus one rows, using a maturity/security-id keyset.</summary>
+    Task<IReadOnlyList<BondProjectionRow>> GetMaturityLadderPageAsync(DateOnly from, DateOnly to, int pageSize,
+        DateOnly? afterMaturity, Guid? afterSecurityId, CancellationToken ct = default)
+        => throw new NotSupportedException("This bond projection store does not support bounded maturity paging.");
 }
 
 public sealed record BondProjectionRow(
@@ -38,7 +50,9 @@ public sealed record BondProjectionRow(
     string? PaymentFrequency = null,
     DateOnly? LegalFinalMaturity = null,
     DateOnly? PreRefundDate = null,
-    DateOnly? MandatoryPutDate = null);
+    DateOnly? MandatoryPutDate = null,
+    JsonElement? CanonicalTerms = null,
+    DateOnly? EffectiveTo = null);
 
 public sealed record BondLifecycleProjectionRow(
     Guid SecurityId,
@@ -54,7 +68,8 @@ public sealed record BondLifecycleProjectionRow(
     string? PaymentFrequency = null,
     DateOnly? LegalFinalMaturity = null,
     DateOnly? PreRefundDate = null,
-    DateOnly? MandatoryPutDate = null);
+    DateOnly? MandatoryPutDate = null,
+    DateOnly? EffectiveTo = null);
 
 public sealed record BondAccrualConventionProjectionRow(
     Guid SecurityId,

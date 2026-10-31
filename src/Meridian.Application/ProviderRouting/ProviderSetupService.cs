@@ -315,6 +315,12 @@ public sealed class ProviderSetupService
     {
         var connections = config.ProviderConnections?.Connections ?? [];
         var family = ProviderCredentialCatalog.NormalizeProviderId(providerId);
+        // A retained host selection requires scoped ownership even if its connection was lost.
+        if ((config.ProviderConnections?.RuntimeCredentials ?? []).Any(binding =>
+            string.Equals(ProviderCredentialCatalog.NormalizeProviderId(binding.ProviderId), family, StringComparison.OrdinalIgnoreCase)) ||
+            (config.ProviderConnections?.OwnershipRequiredProviders ?? []).Any(candidate =>
+            string.Equals(ProviderCredentialCatalog.NormalizeProviderId(candidate), family, StringComparison.OrdinalIgnoreCase)))
+            return true;
         return connections.Where(connection => string.Equals(
                 ProviderCredentialCatalog.NormalizeProviderId(connection.ProviderFamilyId), family,
                 StringComparison.OrdinalIgnoreCase))

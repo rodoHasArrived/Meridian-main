@@ -214,9 +214,11 @@ public sealed class OpenLotAmortizationCalendarTests
             "historical commands must retain their serialized fingerprint input");
         historical.TransactionCostBasis.Should().Be(105.041095890411m);
         historical.TransactionMovement.Should().Be(-4.958904109589m);
-        instruction.CalculationVersion.Should().Be("canonical-lot-amortization-v2");
+        instruction.CalculationVersion.Should().Be(OpenLotAmortization.ModelVersion);
         current.TransactionCostBasis.Should().Be(105m);
         current.TransactionMovement.Should().Be(-5m);
+        OpenLotAmortization.Project(instruction with { CalculationVersion = OpenLotAmortization.CalendarModelVersion })
+            .Should().Be(current, "retained v2 instructions keep their exact regular-calendar economics after v3 is introduced");
         var currentJson = JsonSerializer.Serialize(instruction, options);
         JsonSerializer.Deserialize<OpenLotAmortizationInstructionDto>(currentJson, options)!.CalculationVersion
             .Should().Be(OpenLotAmortization.ModelVersion);
@@ -248,7 +250,7 @@ public sealed class OpenLotAmortizationCalendarTests
     [Theory]
     [InlineData("")]
     [InlineData("canonical-lot-amortization-v1")]
-    [InlineData("canonical-lot-amortization-v3")]
+    [InlineData("canonical-lot-amortization-v6")]
     public void UnsupportedCalculationVersion_IsRefused(string version)
     {
         var instruction = Instruction(new DateOnly(2025, 1, 1), new DateOnly(2026, 1, 1), new DateOnly(2025, 7, 1),
@@ -258,6 +260,20 @@ public sealed class OpenLotAmortizationCalendarTests
         var project = () => OpenLotAmortization.Project(instruction);
 
         project.Should().Throw<ArgumentException>().WithMessage("*calculation version is unsupported*");
+    }
+
+    [Theory]
+    [InlineData(OpenLotAmortization.DeclaredModelVersion)]
+    [InlineData(OpenLotAmortization.UnifiedDeclaredModelVersion)]
+    public void DeclaredCalculationVersion_WithoutDeclaredConventions_IsRefused(string version)
+    {
+        var instruction = Instruction(new DateOnly(2025, 1, 1), new DateOnly(2026, 1, 1), new DateOnly(2025, 7, 1),
+            "Actual/365", 2, 10m, 110m, annualYield: 0m) with
+        { CalculationVersion = version };
+
+        var project = () => OpenLotAmortization.Project(instruction);
+
+        project.Should().Throw<ArgumentException>().WithMessage("*requires explicit contractual schedule conventions*");
     }
 
     // Independent annuity present value, expressed per 100 face. The production kernel

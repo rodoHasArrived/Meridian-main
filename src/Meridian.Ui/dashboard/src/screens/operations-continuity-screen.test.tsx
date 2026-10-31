@@ -1666,7 +1666,8 @@ describe("OperationsContinuityScreen", () => {
     const user = userEvent.setup();
     renderScreen();
 
-    await user.click(await screen.findByRole("button", { name: "Publish close package for 2026-05" }));
+    const commandSpine = await screen.findByRole("table", { name: "Financial Operations command spine" });
+    await user.click(await within(commandSpine).findByRole("button", { name: "Publish close package for 2026-05" }));
 
     await waitFor(() => {
       expect(closeOperationsContinuityWorkflow).toHaveBeenCalledWith(

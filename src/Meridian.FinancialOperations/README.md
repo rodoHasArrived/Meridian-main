@@ -11,6 +11,26 @@ last_reviewed: 2026-10-14
 
 # src/Meridian.FinancialOperations
 
+Accounting provider discovery translates the typed ownership-required refusal into an explicit disabled
+row while retaining unrelated provider rows. Configuration and storage failures remain errors. Default
+QuickBooks, Xero and NetSuite imports cannot consume owned credentials until their runtime selects an
+authorized tenant/connection; selected-connection verification does not grant import authority.
+IB Flex remote retrieval resolves the guarded legacy-runtime credential-store key. Owned families
+cannot use unassigned credentials after rollback. Hosts without that guard, authoritative configuration
+or vault service keep file parsing available while remote retrieval remains unavailable.
+
+New declared-bond amortization previews select `canonical-lot-amortization-v5`, using the same coupon, stub, accrual and discount-time calculator as analytics. Existing v4 instructions remain replayable with their original calculations. Settlement verification requests the retained analytics model version. Existing review, period controls, balanced posting and immutable lot/journal boundaries remain authoritative.
+
+`CanonicalLotAmortizationService.PreviewExtendedAsync` explicitly selects v3 remaining-face
+amortization and/or automatic yield-to-worst. It retains the complete comparison for independent
+review; posting recomputes it from the locked lot and Security Master evidence. This service
+cannot approve or post. Reversal preparation preserves the original calculation version/policy.
+The existing event spine now carries direction through short opening/cover candidates, matching
+liability credits/debits to positive retained quantities. The atomic store certifies complete
+cash/liability/result economics; approvals, period control and exact replay remain shared.
+Projection retains explicit direction before drafting; the candidate cannot change it or use an
+opposite-side position. The canonical relief guard also checks the carrying account's type.
+
 All six shipped statement connectors capture executed mapping semantics at parse time. Display labels and review notes do not change that fingerprint; fields, activity mappings, culture, date formats and CSV options do. The retained import supplies comparison proof on replay. Legacy artifact upgrade verifies the original shape and adopts retained bytes without inventing mapping evidence.
 
 Configured reconciliation assignment ranks every available tolerated dimension by its own allowed variance: quantities, cash or market value, observed price, and settlement distance. Missing one-sided prices remain unavailable. Rule-list precedence and retained applied-rule evidence are unchanged.
@@ -367,6 +387,8 @@ actor can review fresh lots, period versions and proposed accounts. The spine se
 current authority and appends a predecessor-bound preparation revision for the same source event;
 it retains every prior snapshot. The existing store version check makes stale candidate creation
 and recovery compete for one next version. Once Drafted authority exists, this recovery is refused.
+
+Bond settlement preparation separates clean acquisition basis, purchased accrued-interest receivable and separately expensed fees. New settlement-bearing acquisition instructions are revalidated at admission and posting against source evidence and balanced journal components. Live amortization observes the shared bond-cutover policy; retained reversals and idempotent posting replay preserve their original economics.
 
 ## Purpose
 

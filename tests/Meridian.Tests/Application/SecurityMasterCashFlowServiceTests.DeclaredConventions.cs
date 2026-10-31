@@ -57,7 +57,13 @@ public sealed partial class SecurityMasterCashFlowServiceTests
             WeekendsSource);
 
         projection.BlockedReason.Should().BeNull();
-        projection.Schedule.Should().Equal(Row(t0.AddMonths(36), principal: 1000m, interest: 150.0000m, factor: 0m));
+        projection.Schedule.Should().Equal(Row(t0.AddMonths(36), principal: 1000m, interest: 150.0000m, factor: 0m) with
+        {
+            AccrualStart = t0,
+            AccrualEnd = t0.AddMonths(36),
+            UnadjustedStart = t0,
+            UnadjustedEnd = t0.AddMonths(36)
+        });
         projection.ScheduleEvidence.Should().NotBeNull();
         projection.ScheduleEvidence!.KernelVersion.Should().Be("contractual-schedule-kernel-v1");
         projection.ScheduleEvidence.DeclaredMappingVersion.Should().Be("security-master-declared-schedule-v1");
@@ -337,7 +343,7 @@ public sealed partial class SecurityMasterCashFlowServiceTests
     [Fact]
     public async Task DeclaredConventions_ABondStampedAboveWhatThisNodeReads_FailsClosedWithTheReadGuardReason()
     {
-        var terms = DeclaredBond(MinimalBlock, D(2041, 1, 31), D(2043, 1, 31), "SemiAnnual", stamp: 4);
+        var terms = DeclaredBond(MinimalBlock, D(2041, 1, 31), D(2043, 1, 31), "SemiAnnual", stamp: SecurityAssetClassCatalog.GetOrDefault("Bond").ReadsTermsThrough + 1);
         SecurityTermsEnvelope.TryGetReadRefusal("Bond", terms, out var guardReason).Should().BeTrue();
 
         var projection = await ProjectDeclaredAsync(terms, WeekendsSource);

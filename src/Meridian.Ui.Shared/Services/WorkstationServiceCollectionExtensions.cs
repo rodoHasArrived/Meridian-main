@@ -6,6 +6,7 @@ using Meridian.Application.Composition;
 using Meridian.Application.Config.Credentials;
 using Meridian.Application.DirectLending;
 using Meridian.Application.FundStructure;
+using Meridian.Application.ProviderRouting;
 using Meridian.Application.Reconciliation;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
@@ -308,7 +309,18 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IProviderSetupRegistry, ProviderSetupRegistry>();
         services.TryAddSingleton<ProviderConnectionLifecycleService>();
         services.TryAddSingleton<ProviderReadinessService>();
-        services.TryAddSingleton<IQuickBooksOnlineConnectionStore, QuickBooksOnlineProviderCredentialConnectionStore>();
+        // These runtimes do not carry a trusted tenant/connection per import, statement or Plaid item.
+        // Keep them legacy-only until that ownership is propagated through their full workflows.
+        services.TryAddSingleton<LegacyProviderRuntimeCredentialStore>(sp => new(
+            new Meridian.Application.UI.ConfigStore(sp.GetRequiredService<ConfigStore>().ConfigPath),
+            sp.GetRequiredService<Meridian.DataIntegration.Credentials.IProviderCredentialStore>()));
+        services.TryAddKeyedSingleton<Meridian.DataIntegration.Credentials.IProviderCredentialStore>(
+            ProviderCredentialStoreServiceKeys.LegacyRuntime, (sp, _) =>
+                sp.GetService<Meridian.Application.UI.ConfigStore>() is null
+                    || sp.GetService<Meridian.DataIntegration.Credentials.IProviderCredentialStore>() is null
+                    ? null! : sp.GetRequiredService<LegacyProviderRuntimeCredentialStore>());
+        services.TryAddSingleton<IQuickBooksOnlineConnectionStore>(sp => new QuickBooksOnlineProviderCredentialConnectionStore(
+            sp.GetRequiredService<LegacyProviderRuntimeCredentialStore>()));
         services.AddHttpClient<IQuickBooksOnlineClient, QuickBooksOnlineHttpClient>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, QuickBooksFixtureAccountingProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, XeroFixtureAccountingProvider>());
@@ -317,9 +329,9 @@ public static class WorkstationServiceCollectionExtensions
         services.AddHttpClient("external-gl-read-only")
             .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
         services.TryAddSingleton<XeroAccountingProvider>(sp => new XeroAccountingProvider(
-            sp.GetRequiredService<Meridian.DataIntegration.Credentials.IProviderCredentialStore>(), sp.GetRequiredService<IHttpClientFactory>().CreateClient("external-gl-read-only")));
+            sp.GetRequiredService<LegacyProviderRuntimeCredentialStore>(), sp.GetRequiredService<IHttpClientFactory>().CreateClient("external-gl-read-only")));
         services.TryAddSingleton<NetSuiteAccountingProvider>(sp => new NetSuiteAccountingProvider(
-            sp.GetRequiredService<Meridian.DataIntegration.Credentials.IProviderCredentialStore>(), sp.GetRequiredService<IHttpClientFactory>().CreateClient("external-gl-read-only")));
+            sp.GetRequiredService<LegacyProviderRuntimeCredentialStore>(), sp.GetRequiredService<IHttpClientFactory>().CreateClient("external-gl-read-only")));
         services.AddSingleton<IAccountingSystemProvider>(sp => sp.GetRequiredService<XeroAccountingProvider>());
         services.AddSingleton<IAccountingSystemProvider>(sp => sp.GetRequiredService<NetSuiteAccountingProvider>());
         services.TryAddSingleton<AccountingSystemIntegrationService>();
@@ -358,7 +370,10 @@ public static class WorkstationServiceCollectionExtensions
             new FilePlaidConnectionRepository(ResolveWorkstationDataDirectory(sp), sp.GetRequiredService<IAtomicFileWriter>()));
         services.TryAddSingleton<IPlaidClient>(sp =>
             new PlaidHttpClient(sp.GetRequiredService<IHttpClientFactory>().CreateClient(nameof(PlaidHttpClient))));
-        services.TryAddSingleton<PlaidWorkstationService>();
+        services.TryAddSingleton(sp => new PlaidWorkstationService(
+            sp.GetRequiredService<IPlaidClient>(), sp.GetRequiredService<IPlaidConnectionRepository>(),
+            sp.GetRequiredService<LegacyProviderRuntimeCredentialStore>(), sp.GetRequiredService<PlaidOptions>(),
+            sp.GetRequiredService<ILogger<PlaidWorkstationService>>(), sp.GetService<IFundAccountService>(), sp.GetService<Meridian.FinancialOperations.Banking.IBankingService>()));
         services.TryAddSingleton<IPlaidIngestionService>(sp => sp.GetRequiredService<PlaidWorkstationService>());
         services.TryAddSingleton<IPlaidTransferService>(sp => sp.GetRequiredService<PlaidWorkstationService>());
         services.TryAddSingleton(sp => new BankFeedTransportService(
@@ -1197,7 +1212,7 @@ public static class WorkstationServiceCollectionExtensions
             var configStore = sp.GetRequiredService<ConfigStore>();
             var dataRoot = configStore.GetDataRoot();
             return new ProviderCredentialStore(
-                sp.GetRequiredService<Meridian.DataIntegration.Credentials.IProviderCredentialStore>(),
+                sp.GetRequiredService<LegacyProviderRuntimeCredentialStore>(),
                 dataRoot);
         });
         services.TryAddSingleton<IProviderModuleSetupService, ProviderModuleSetupService>();

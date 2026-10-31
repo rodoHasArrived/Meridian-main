@@ -182,6 +182,23 @@ public sealed class OpenLotConvergenceTests
         changed.Should().Throw<InvalidOperationException>();
     }
 
+    [Fact]
+    public void ExecutionAndBacktesting_ExplicitShortsBindTheSamePositiveCanonicalQuantity()
+    {
+        var record = Lot(1);
+        var canonical = record.ToOpenLot();
+        canonical = canonical with { Acquisition = canonical.Acquisition with { Direction = OpenLotDirection.Short } };
+        var opened = new DateTimeOffset(record.AcquiredDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var execution = new TaxLot(record.TaxLotRecordId, "SHORT", -10m, 100m, opened)
+        { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m };
+        var simulation = new OpenLot(record.TaxLotRecordId, "SHORT", 10m, 100m, opened, Guid.NewGuid())
+        { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m, IsShort = true };
+        execution.BindCanonical(canonical).Should().BeSameAs(canonical);
+        simulation.BindCanonical(canonical).Should().BeSameAs(canonical);
+        var opposite = () => (execution with { Quantity = 10m }).BindCanonical(canonical);
+        opposite.Should().Throw<InvalidOperationException>().WithMessage("*directions differ*");
+    }
+
     internal static LedgerTaxLotRecord Lot(int day, decimal quantity = 10m, decimal price = 100m, decimal fx = 1.1m)
     {
         var id = Guid.NewGuid();

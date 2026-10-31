@@ -6,6 +6,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.DirectLending;
 using Meridian.Identity.Auth;
+using Meridian.Contracts.CashFlows;
 using Meridian.Contracts.DirectLending;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
@@ -30,8 +31,14 @@ public sealed class DirectLendingEndpointsTests
         using var quiet = new Meridian.Tests.Application.Composition.ProductionEnvironmentQuietScope();
         using var bypass = new Meridian.Tests.Application.Composition.EnvironmentVariableScope("MDC_DISABLE_RATE_LIMIT", "true");
         var service = new InMemoryDirectLendingService();
-        await using var app = await CreateAppAsync(services => services.AddSingleton<IDirectLendingService>(service),
-            forceRateLimit: true);
+        var cashFlows = Substitute.For<IContractualCashFlowPreviewService>();
+        var runs = Substitute.For<IContractualCashFlowRunStore>();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IDirectLendingService>(service);
+            services.AddSingleton(cashFlows);
+            services.AddSingleton(runs);
+        }, forceRateLimit: true);
         var client = app.GetTestClient();
         var loan = await service.CreateLoanAsync(BuildCreateRequest());
         client.DefaultRequestHeaders.Add("X-Command-Id", Guid.NewGuid().ToString());
@@ -41,7 +48,7 @@ public sealed class DirectLendingEndpointsTests
             using var accepted = await client.PostAsJsonAsync($"/api/loans/{loan.LoanId}/projections", request);
             accepted.StatusCode.Should().Be(HttpStatusCode.OK);
         }
-        // Both write routes share the same owned budget.
+        // Derived writes and contractual calculation/retention routes share the same owned budget.
         using var rejected = await client.PostAsync($"/api/loans/{loan.LoanId}/reconcile", null);
         rejected.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
         rejected.Headers.RetryAfter.Should().NotBeNull();
@@ -49,6 +56,21 @@ public sealed class DirectLendingEndpointsTests
         rejected.Headers.RetryAfter.Delta!.Value.Should().BeGreaterThan(TimeSpan.Zero);
         (await service.GetProjectionsAsync(loan.LoanId)).Should().ContainSingle();
         (await service.GetReconciliationRunsAsync(loan.LoanId)).Should().BeEmpty();
+
+        var cashFlowRequest = new ContractualCashFlowRequest(new(2026, 6, 30),
+            new(2026, 6, 30, 0, 0, 0, TimeSpan.Zero));
+        using var rejectedPreview = await client.PostAsJsonAsync(
+            $"/api/loans/{loan.LoanId}/projections/preview", cashFlowRequest);
+        using var rejectedRetention = await client.PostAsJsonAsync(
+            $"/api/loans/{loan.LoanId}/projections/contractual-runs",
+            new CreateContractualCashFlowRunRequest(Guid.NewGuid(), cashFlowRequest));
+        foreach (var response in new[] { rejectedPreview, rejectedRetention })
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
+            response.Headers.RetryAfter!.Delta!.Value.Should().BeGreaterThan(TimeSpan.Zero);
+        }
+        cashFlows.ReceivedCalls().Should().BeEmpty("throttling precedes calculation");
+        runs.ReceivedCalls().Should().BeEmpty("throttling precedes retained-evidence reads or writes");
     }
 
     [Theory]

@@ -955,7 +955,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
 
         public static async Task<AmortFixture> CreateAsync(bool premium,
             AccountingBasisKindDto accountingBasis = AccountingBasisKindDto.Primary, Guid? organizationId = null,
-            bool factorPool = false)
+            bool factorPool = false, BondAmortizationMethod factorAmortization = BondAmortizationMethod.NoAmortization,
+            bool declaredEconomics = false)
         {
             var server = await PostgresTestServer.CreateAsync("MERIDIAN_LEDGER_CONNECTION_STRING");
             var options = new LedgerJournalStoreOptions
@@ -979,13 +980,13 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 await new AssetOperationsMigrationRunner(assetOptions).EnsureMigratedAsync();
                 var fixture = new AmortFixture(server, options, new(securityOptions), new(assetOptions), accountingBasis, organizationId, factorPool)
                 { SecuritySchema = securityOptions.Schema };
-                await fixture.SeedAsync(premium);
+                await fixture.SeedAsync(premium, factorAmortization, declaredEconomics);
                 return fixture;
             }
             catch { await server.DisposeAsync(); throw; }
         }
 
-        private async Task SeedAsync(bool premium)
+        private async Task SeedAsync(bool premium, BondAmortizationMethod factorAmortization, bool declaredEconomics)
         {
             var ownerId = Guid.NewGuid();
             var at = new DateTimeOffset(2025, 1, 1, 12, 0, 0, TimeSpan.Zero);
@@ -1000,6 +1001,24 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             Security = FactorPool
                 ? AmortSecurity(Guid.NewGuid()) with { Currency = "USD", DisplayName = "Worked factor pool" }
                 : AmortSecurity(Guid.NewGuid());
+            if (declaredEconomics)
+                Security = Security with
+                {
+                    CommonTerms = JsonSerializer.SerializeToElement(new { }),
+                    AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+                    {
+                        assetClassTermsVersion = 3,
+                        issueDate = "2025-01-01",
+                        maturity = "2027-01-01",
+                        couponType = "Fixed",
+                        couponRate = 10m,
+                        dayCount = "30/360",
+                        par = 100m,
+                        paymentFrequency = "Annual",
+                        isCallable = false,
+                        scheduleConventions = new { accrualAdjusted = false, couponRateUnit = "Percent", couponCashBasis = "Level" }
+                    })
+                };
             await Securities.UpsertProjectionAsync(Security);
             Security = (await Securities.GetProjectionAsync(Security.SecurityId))!;
             var evidence = BuildEvidence("amort-owned-source", 'a') with { EffectiveDate = AmortAcquired };
@@ -1023,7 +1042,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             {
                 // The worked lot: 1,000,000 of par booked at factor 0.95 (950,000 of face) at 101.5,
                 // cost 964,250, USD throughout; nothing has been relieved yet.
-                Lot = await AcquireFactorLotAsync("factor-pool-lot", 950_000m, AmortAcquired);
+                Lot = await AcquireFactorLotAsync("factor-pool-lot", 950_000m, AmortAcquired, amortizationMethod: factorAmortization);
                 await Store.SaveTaxLotPolicyAsync(new(Guid.NewGuid(), BookId, AmortAccount, LedgerTaxLotReliefMethod.Fifo,
                     "amort-fifo-v1", AmortAcquired, at, at));
                 return;
@@ -1058,7 +1077,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         /// is 9,500 units at unit cost 101.5. The lot opens at its booked factor.
         /// </summary>
         public async Task<LedgerTaxLotRecord> AcquireFactorLotAsync(string lotId, decimal originalFace, DateOnly acquired,
-            LedgerAccount? account = null, decimal pricePercentOfPar = 101.5m, decimal bookedFactor = 0.95m)
+            LedgerAccount? account = null, decimal pricePercentOfPar = 101.5m, decimal bookedFactor = 0.95m,
+            BondAmortizationMethod amortizationMethod = BondAmortizationMethod.NoAmortization)
         {
             var at = new DateTimeOffset(acquired.ToDateTime(new TimeOnly(12, 0)), TimeSpan.Zero);
             var id = Guid.NewGuid();
@@ -1067,7 +1087,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             var source = BuildEvidence("factor-acquisition-" + id.ToString("N"), 'a') with
             { EffectiveDate = acquired, SubjectType = "OpenLotAcquisition", SubjectId = id.ToString("D") };
             var acquisition = new OpenLotAcquisitionDto(LotQuantityBasis.Face, "USD", "USD", 1m, basis, basis, acquired,
-                new(100m, bookedFactor, BondAmortizationMethod.NoAmortization, null), [source]);
+                new(100m, bookedFactor, amortizationMethod, null), [source]);
             var batchId = Guid.NewGuid();
             var journal = Journal(AcquisitionPeriod, acquired, "factor-acquisition:" + id.ToString("N"), basis, basis, assetDebit: true,
                 account ?? AmortAccount);
@@ -1083,11 +1103,19 @@ public sealed partial class AtomicTaxLotJournalStoreTests
 
         public AtomicTaxLotJournalCommand Command(decimal amountOffset = 0m, OpenLotDto? expectedLot = null,
             DateOnly? asOf = null, OpenLotAmortizationReversalDto? reversal = null,
-            AtomicTaxLotJournalResult? corrects = null)
+            AtomicTaxLotJournalResult? corrects = null, bool remainingFace = false, bool automaticYieldToWorst = false,
+            string calculationVersion = OpenLotAmortization.ModelVersion)
         {
             var instruction = new OpenLotAmortizationInstructionDto(expectedLot ?? Lot.ToOpenLot(), Security,
                 AmortSecurityEvidence(Security), 1, asOf ?? AmortAsOf,
-                CalculationVersion: OpenLotAmortization.ModelVersion, Reversal: reversal);
+                CalculationVersion: calculationVersion, Reversal: reversal);
+            if (remainingFace || automaticYieldToWorst)
+                instruction = instruction with
+                {
+                    CalculationVersion = OpenLotAmortization.ExtendedModelVersion,
+                    AmortizeRemainingFace = remainingFace,
+                    YieldToWorst = automaticYieldToWorst ? OpenLotYieldToWorst.Select(instruction.ExpectedLot, Security) : null
+                };
             var projection = OpenLotAmortization.Project(instruction);
             var key = "amort-period:" + Guid.NewGuid().ToString("N");
             var journal = Journal(Period, instruction.AsOfDate, key, Math.Abs(projection.TransactionMovement) + amountOffset,
@@ -1107,7 +1135,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 EvidenceLinks = evidence.Select(item => item.EvidenceUri).ToArray()
             };
             var lineage = new ProjectionLineageDto(Guid.NewGuid(), null, "canonical-lot-amortization",
-                OpenLotAmortization.ModelVersion, "amortization-v1", "base", instruction.AsOfDate,
+                instruction.CalculationVersion!, "amortization-v1", "base", instruction.AsOfDate,
                 journal.Entry.Timestamp, eventEvidence.SourceSystem, eventEvidence.SourceReference, economicEvent)
             { BookPositionId = PositionId, RetainedEvidence = evidence, EvidenceLinks = economicEvent.EvidenceLinks };
             var posting = journal.PostingCommand! with

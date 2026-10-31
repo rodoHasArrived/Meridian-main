@@ -807,3 +807,15 @@ This command verifies referenced files and directories exist; it does not valida
   Zero-rate coupons bypass day-count computation as before. Business/252 records every segment and
   full-period window it queries in existing calendar/coverage evidence, and the declared ledger
   gate remains in force.
+
+## Calculation-only contractual companion — 2026-10-29
+
+The optional `cashFlowContract` version-1 document is readable at Bond/CD terms version 4,
+StructuredCredit 5, Swap 3 and DirectLoan 2. Existing write ceilings, stamp floors, frozen call/put
+entries and declared mapping v1 are unchanged. Older rows do not decode stray companion keys.
+The shared calculation engine supplies exercise/notice scenarios, standard make-whole formulas,
+explicit/structured coupons and principal, per-leg conventions, and deterministic prepayments.
+Its outputs remain nonpostable; legacy calculated consumers refuse a declaring companion.
+See [Contractual Cash-Flow Projection](../domain/contractual-cash-flow-projection.md) for API,
+formula, source-evidence, replay and rollout boundaries. This records source capability, not fleet
+write activation, actual exercise authority, or release acceptance.

@@ -28,6 +28,8 @@ using Meridian.Application.Tenancy;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
 using Meridian.Contracts.DirectLending;
+using Meridian.Contracts.Calendars;
+using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Domain;
 using Meridian.Contracts.Integrations;
@@ -105,6 +107,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             ProductionServiceRegistrationPolicy.IsProductionComposition(services));
 
         services.TryAddSingleton<ISecurityValidationSnapshotStore, FileSecurityValidationSnapshotStore>();
+        services.TryAddScoped<Meridian.Contracts.CashFlows.IContractualCashFlowPreviewService, ContractualCashFlowPreviewService>();
+        services.TryAddSingleton<Meridian.Contracts.CashFlows.IContractualCashFlowRunStore, FileContractualCashFlowRunStore>();
         services.TryAddSingleton<ISecurityValidationGateService, SecurityValidationGateService>();
         services.TryAddSingleton<DatabaseMigrationReadinessReceipt>();
         services.TryAddSingleton(sp => new LocalTenantMigrationGate(
@@ -487,6 +491,19 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterService, NullSecurityMasterService>();
         services.TryAddSingleton<ISecurityMasterCorporateActionCommandService, NullSecurityMasterCorporateActionCommandService>();
         services.TryAddSingleton<IBondReferenceService, NullBondReferenceService>();
+        services.TryAddSingleton<IBondAnalyticsService, BondAnalyticsService>();
+        services.TryAddSingleton<IBondSettlementConsiderationService, BondSettlementConsiderationService>();
+        services.TryAddSingleton<FileBondCalculationPolicy>(sp => new FileBondCalculationPolicy(
+            Path.Combine(sp.GetRequiredService<StorageOptions>().RootPath, "bonds", "cutover.json"),
+            sp.GetService<IBusinessDayCalendarSource>()));
+        services.TryAddSingleton<IBondCalculationPolicy>(sp => sp.GetRequiredService<FileBondCalculationPolicy>());
+        services.TryAddSingleton<ISecurityCashFlowReceiptStore>(sp => new FileSecurityCashFlowReceiptStore(
+            Path.Combine(sp.GetRequiredService<StorageOptions>().RootPath, "bonds", "calculations")));
+        services.TryAddSingleton<IBondMigrationService>(sp =>
+            sp.GetService<ISecurityMasterStore>() is { } store
+                ? new BondMigrationService(store, sp.GetRequiredService<ISecurityMasterCashFlowService>(),
+                    sp.GetRequiredService<FileBondCalculationPolicy>(), sp.GetService<IBusinessDayCalendarSource>())
+                : new UnavailableBondMigrationService());
         services.TryAddSingleton<IOptionReferenceService, NullOptionReferenceService>();
         services.TryAddSingleton<IOptionChainImportService, NullOptionChainImportService>();
         services.TryAddSingleton<IEquityReferenceService, NullEquityReferenceService>();

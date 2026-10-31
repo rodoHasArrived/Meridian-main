@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**1689 / 9810** items documented (**17.2%**) &mdash; Grade: **F**
+**1708 / 9916** items documented (**17.2%**) &mdash; Grade: **F**
 
 ```text
 [===-----------------] 17.2%
@@ -15,15 +15,15 @@
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 1600 | 9320 | 17.2% | F |
-| API Endpoints | 88 | 336 | 26.2% | F |
+| Public Classes / Interfaces | 1619 | 9420 | 17.2% | F |
+| API Endpoints | 88 | 342 | 25.7% | F |
 | Configuration Options | 1 | 143 | 0.7% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 0 | 11 | 0.0% | F |
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (7720 undocumented)
+### Public Classes / Interfaces (7801 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -77,9 +77,9 @@
 | `CrossSourceBackfillClosureDecision` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:533` |
 | `CrossSourceBackfillDiscrepancy` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:605` |
 | `CrossSourceBackfillProviderError` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:618` |
-| ... and 7670 more | |
+| ... and 7751 more | |
 
-### API Endpoints (248 undocumented)
+### API Endpoints (254 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -106,34 +106,34 @@
 | `/api/compliance/access-reviews/assess` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:88` |
 | `/api/compliance/access-reviews/run` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:104` |
 | `/api/compliance/access-reviews` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:126` |
-| `/api/loans` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:41` |
-| `/api/loans/{loanId}` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:71` |
-| `/api/loans/{loanId}/projections/contract` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:86` |
-| `/api/loans/{loanId}/history` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:101` |
-| `/api/loans/{loanId}/rebuild-state` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:115` |
-| `/api/loans/{loanId}/terms-versions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:133` |
-| `/api/loans/{loanId}/projections/terms-versions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:147` |
-| `/api/loans/{loanId}/terms` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:161` |
-| `/api/loans/{loanId}/activate` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:192` |
-| `/api/loans/{loanId}/servicing-state` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:215` |
-| `/api/loans/{loanId}/projections/servicing` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:230` |
-| `/api/loans/{loanId}/projections/drawdown-lots` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:245` |
-| `/api/loans/{loanId}/projections/revisions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:259` |
-| `/api/loans/{loanId}/projections/accruals` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:273` |
-| `/api/loans/{loanId}/drawdowns` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:287` |
-| `/api/loans/{loanId}/rate-resets` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:318` |
-| `/api/loans/{loanId}/payments/principal` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:349` |
-| `/api/loans/{loanId}/accruals/daily` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:380` |
-| `/api/loans/{loanId}/payments` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:411` |
-| `/api/loans/{loanId}/cash-transactions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:438` |
-| `/api/loans/{loanId}/payment-allocations` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:446` |
-| `/api/loans/{loanId}/fees` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:454` |
-| `/api/loans/{loanId}/fee-balances` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:481` |
-| `/api/loans/operations` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:489` |
-| `/api/loans/servicer-statements/preview` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:502` |
-| `/api/loans/servicer-statements/import` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:526` |
-| `/api/loans/servicer-statements/{batchId}` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:550` |
-| ... and 198 more | |
+| `/api/loans/{loanId}/projections/preview` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:44` |
+| `/api/loans` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:66` |
+| `/api/loans/{loanId}` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:96` |
+| `/api/loans/{loanId}/projections/contract` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:111` |
+| `/api/loans/{loanId}/history` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:126` |
+| `/api/loans/{loanId}/rebuild-state` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:140` |
+| `/api/loans/{loanId}/terms-versions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:158` |
+| `/api/loans/{loanId}/projections/terms-versions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:172` |
+| `/api/loans/{loanId}/terms` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:186` |
+| `/api/loans/{loanId}/activate` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:217` |
+| `/api/loans/{loanId}/servicing-state` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:240` |
+| `/api/loans/{loanId}/projections/servicing` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:255` |
+| `/api/loans/{loanId}/projections/drawdown-lots` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:270` |
+| `/api/loans/{loanId}/projections/revisions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:284` |
+| `/api/loans/{loanId}/projections/accruals` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:298` |
+| `/api/loans/{loanId}/drawdowns` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:312` |
+| `/api/loans/{loanId}/rate-resets` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:343` |
+| `/api/loans/{loanId}/payments/principal` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:374` |
+| `/api/loans/{loanId}/accruals/daily` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:405` |
+| `/api/loans/{loanId}/payments` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:436` |
+| `/api/loans/{loanId}/cash-transactions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:463` |
+| `/api/loans/{loanId}/payment-allocations` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:471` |
+| `/api/loans/{loanId}/fees` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:479` |
+| `/api/loans/{loanId}/fee-balances` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:506` |
+| `/api/loans/operations` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:514` |
+| `/api/loans/servicer-statements/preview` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:527` |
+| `/api/loans/servicer-statements/import` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:551` |
+| ... and 204 more | |
 
 ### Configuration Options (142 undocumented)
 
@@ -209,8 +209,8 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 7720 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
-2. **API Endpoints**: 248 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
+1. **Public Classes / Interfaces**: 7801 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
+2. **API Endpoints**: 254 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 142 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 4. **ADR Implementations**: Referenced ADR(s) ADR-001, ADR-007, ADR-010, ADR-006, ADR-015, ADR-013, ADR-004, ADR-005, ADR-014, ADR-002, ADR-016 have no corresponding file in `docs/adr/`. Create the missing ADR document(s) using `docs/adr/_template.md`.
 

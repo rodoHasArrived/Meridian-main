@@ -6,10 +6,29 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-28
+last_reviewed: 2026-10-31
 ---
 
 # src/Meridian.Ui.Shared
+
+Portfolio cash-ladder composition supplies the configured business-day calendars to the shared Instruments scenario engine. Declared issuer-call and holder-put scenarios use retained projection terms and calendar hashes; floating shocks consume retained per-reset inputs. Scenario blockers remain visible through the existing decision-readiness response; no new approval or payment authority is introduced.
+
+Shared cash-flow preview endpoints expose calculation-only exercise and prepayment scenarios with view permission. Separate retention endpoints require modification permission, bind retries to immutable run IDs, and retrieve the complete replay evidence. Loan retention preserves the existing tenant write gate. Loan preview and retention share the actor-scoped direct-lending mutation budget; exhaustion refuses the request before calculation or retained-evidence access. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
+
+Provider ownership endpoints derive tenant and actor from authenticated context and require credential,
+provider and configuration administration. Creation, migration preview, transfer/rollback and host
+binding use shared Application services. Lifecycle vault operations revalidate ownership under short
+configuration leases; network verification stays outside so rotation can proceed, and returning
+results still require the current generation. Security Master snapshot-lot economics use
+`Position.ExactQuantity`, including legacy fractional short direction, rather than rounded positions.
+Legacy lifecycle secret access requires existing readable configuration. Any retained host binding,
+including dangling or aliased selections, prevents provider-wide fallback. Default QuickBooks, Xero,
+NetSuite, Plaid, IB Flex and module compatibility runtime composition uses the legacy-only ownership
+guard; owned families cannot activate unassigned or options credentials after rollback. Explicit selected-connection verification
+continues through the scoped lifecycle. Accounting imports and Plaid item workflows still require a
+tenant-aware runtime before owned-provider rollout. Module tests refuse before provider configuration
+or probing, and unavailable owned credential metadata does not fall back to environment values. The
+compatibility sidecar importer validates the entire provider batch before atomic vault import.
 
 Source comparison requires a completed recovery checkpoint with matching run/import IDs, artifact hashes and counts, plus executed mapping proof shared by the import and match artifact. Failed or running recovery cannot clear observations. Named SLA calendars load once per host from DataRoot/reconciliation/sla-calendars.json; see the reconciliation operating procedure.
 An unfinished recovery refuses publication so the report workflow can retry after completion.
@@ -532,6 +551,8 @@ and adds verified predecessor/successor snapshots to `corporate-action-lot-evide
 signed ledger report pack. Those lot reports are retained in the ledger population, so replay
 renders the same evidence. Whole-unit split legs sharing a security and position remain separate
 through their reviewed lot labels; only refunded successors receive Schedule D treatment.
+
+Bond routes expose explicitly dated analytics, bounded reference pages, settlement preparation and reviewed migration. Submission carries preview fingerprints rather than browser-rounded economic amounts, rechecks inputs on the server and stages a normal workbench draft. Administrative cutover requires a fresh complete inventory hash. These routes preserve permission declarations and server-resolved actors.
 
 ## Purpose
 

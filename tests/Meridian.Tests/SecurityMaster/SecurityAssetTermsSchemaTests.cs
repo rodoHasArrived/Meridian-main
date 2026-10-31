@@ -202,8 +202,9 @@ public sealed class SecurityAssetTermsSchemaTests
 
     private static readonly string[] ScheduleReadAheadClasses = ["Bond", "CertificateOfDeposit", "StructuredCredit"];
 
-    // Every top-level term a read-ahead class declares above its write version.
-    private static readonly IReadOnlyList<string> ReadOnlyTermKeys = ["scheduleConventions", "callSchedule", "putSchedule"];
+    // Historical schedule containers remain writable; the calculation companion is still read-only.
+    private static readonly IReadOnlyList<string> ScheduleTermKeys = ["scheduleConventions", "callSchedule", "putSchedule"];
+    private static readonly string[] CalculationCompanionClasses = ["Bond", "CertificateOfDeposit", "StructuredCredit", "Swap", "DirectLoan"];
 
     [Theory]
     [InlineData("Bond", 3)]
@@ -234,8 +235,10 @@ public sealed class SecurityAssetTermsSchemaTests
         }
 
         // Appended after the block, so every earlier refusal text and the order of populated terms hold.
-        SecurityAssetTermsSchema.Fields(assetClass).TakeLast(3).Select(static field => field.Key)
-            .Should().Equal(ReadOnlyTermKeys);
+        SecurityAssetTermsSchema.Fields(assetClass).Where(field => field.SinceTermsVersion <= since)
+            .TakeLast(3).Select(static field => field.Key).Should().Equal(ScheduleTermKeys);
+        SecurityAssetTermsSchema.Fields(assetClass).TakeLast(4).Select(static field => field.Key)
+            .Should().Equal(ScheduleTermKeys.Append("cashFlowContract"));
     }
 
     [Fact]
@@ -432,20 +435,24 @@ public sealed class SecurityAssetTermsSchemaTests
             var writable = SecurityAssetTermsSchema.WritableFields(assetClass);
 
             writable.Should().Equal(SecurityAssetTermsSchema.Fields(assetClass).Where(field => field.SinceTermsVersion <= writes), assetClass);
-            writable.Should().NotContain(field => ReadOnlyTermKeys.Contains(field.Key) && field.SinceTermsVersion > writes, assetClass);
+            writable.Should().NotContain(field => field.SinceTermsVersion > writes, assetClass);
         }
 
-        foreach (var assetClass in ScheduleReadAheadClasses)
+        foreach (var assetClass in CalculationCompanionClasses)
         {
+            SecurityAssetTermsSchema.Fields(assetClass)
+                .Where(field => field.SinceTermsVersion > SecurityAssetClassCatalog.GetTermsVersion(assetClass))
+                .Select(static field => field.Key).Should().Equal(new[] { "cashFlowContract" }, assetClass);
             SecurityAssetTermsSchema.WritableFields(assetClass).Select(static field => field.Key).Should().Equal(
-                SecurityAssetTermsSchema.Fields(assetClass).Select(static field => field.Key),
+                SecurityAssetTermsSchema.Fields(assetClass).Where(static field => field.Key != "cashFlowContract").Select(static field => field.Key),
                 assetClass);
         }
 
         SecurityAssetTermsSchema.WritableFields("StructuredCredit").Select(static field => field.Key)
             .Should().Contain(["seniority", "nonCallPeriodEnd"], "the version-2 tranche terms remain writable")
-            .And.Contain(ReadOnlyTermKeys, "declared schedule containers are writable through the version-4 ceiling");
-        SecurityAssetTermsSchema.WritableFields("Swap").Should().Equal(SecurityAssetTermsSchema.Fields("Swap"), "a swap's block lives on its legs");
+            .And.Contain(ScheduleTermKeys, "declared schedule containers are writable through the version-4 ceiling");
+        SecurityAssetTermsSchema.WritableFields("Swap").Select(static field => field.Key)
+            .Should().Equal("effectiveDate", "maturityDate", "legs");
         SecurityAssetTermsSchema.WritableFields("Equity").Should().Equal(SecurityAssetTermsSchema.Fields("Equity"));
         SecurityAssetTermsSchema.WritableFields("Nope").Should().BeEmpty();
     }

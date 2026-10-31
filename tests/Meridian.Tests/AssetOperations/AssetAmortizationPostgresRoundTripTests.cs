@@ -25,8 +25,10 @@ namespace Meridian.Tests.AssetOperations;
 
 /// <summary>Exercises preparation, Rules Studio, independent approval and Posted authority together.</summary>
 [Trait("Category", "Integration")]
-public sealed class AssetAmortizationPostgresRoundTripTests
+public sealed class AssetAmortizationPostgresRoundTripTests : IDisposable
 {
+    private readonly string _directory = Path.Combine(Path.GetTempPath(), "amortization-pipeline-" + Guid.NewGuid().ToString("N"));
+
     [LedgerDatabaseFact]
     public Task CanonicalAmortization_Premium_ApprovedSpineRetainsHistoricalEvidenceAndReplaysAfterRestart()
         => AssertGovernedAmortizationAsync(premium: true);
@@ -59,7 +61,7 @@ public sealed class AssetAmortizationPostgresRoundTripTests
     public Task CanonicalAmortization_ReversalUsesRetainedEconomicsAfterSecurityEffectiveWindowEnds()
         => AssertGovernedAmortizationAsync(premium: true, reversalReferenceChange: "ended");
 
-    private static async Task AssertGovernedAmortizationAsync(
+    private async Task AssertGovernedAmortizationAsync(
         bool premium, bool constantYield = false, string convention = "30/360", bool legacy = false,
         string? reversalReferenceChange = null)
     {
@@ -458,9 +460,15 @@ public sealed class AssetAmortizationPostgresRoundTripTests
         (await restartedJournal.GetByPeriodAsync(period.PeriodId, ct)).Should().HaveCount(2);
     }
 
-    private static ServiceProvider ComposePrimaryHost(
+    private ServiceProvider ComposePrimaryHost(
         LedgerJournalStoreOptions ledger, SecurityMasterOptions securities, AssetOperationsOptions assets)
     {
+        var configPath = Path.Combine(_directory, "appsettings.json");
+        if (!File.Exists(configPath))
+        {
+            Directory.CreateDirectory(_directory);
+            File.WriteAllText(configPath, JsonSerializer.Serialize(new { DataRoot = Path.Combine(_directory, "data") }));
+        }
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["MERIDIAN_DATABASE_URL"] = ledger.ConnectionString,
@@ -474,9 +482,23 @@ public sealed class AssetAmortizationPostgresRoundTripTests
         }).Build();
         var services = new ServiceCollection().AddLogging()
             .DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
-        var options = CompositionOptions.Minimal with { Configuration = configuration, EnableProcessWideHostedServices = false };
+        var options = CompositionOptions.Minimal with
+        {
+            ConfigPath = configPath,
+            Configuration = configuration,
+            EnableProcessWideHostedServices = false
+        };
+        // Match the primary host's prerequisite order and retain its real file-backed bond
+        // cutover policy. The same isolated configuration and data root survive host recreation.
+        new ConfigurationFeatureRegistration().Register(services, options);
         new StorageFeatureRegistration().Register(services, options);
         new LedgerFeatureRegistration().Register(services, options);
         return services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
+    }
+
+    public void Dispose()
+    {
+        if (Directory.Exists(_directory))
+            Directory.Delete(_directory, recursive: true);
     }
 }

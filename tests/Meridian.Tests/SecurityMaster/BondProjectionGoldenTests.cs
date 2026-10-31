@@ -195,6 +195,34 @@ public sealed class BondProjectionGoldenTests : IClassFixture<SecurityMasterData
         (await reader.GetIssuerLadderAsync("Acme Corp")).Should().Contain(row => row.SecurityId == securityId);
     }
 
+    [Fact]
+    public async Task Bond_KeysetPagesAreBounded_AndRetainCanonicalStructures()
+    {
+        var issuer = $"Paging-{Guid.NewGuid():N}";
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        var ids = new[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+        foreach (var id in ids)
+        {
+            var terms = JsonNode.Parse(Full.Terms)!.AsObject();
+            terms["issuerName"] = issuer;
+            terms["principalSchedule"] = JsonNode.Parse("""[{"paymentDate":"2090-06-15","amount":20}]""");
+            await store.UpsertProjectionAsync(Record(id, Full with { Terms = terms.ToJsonString() }));
+        }
+
+        var reader = new PostgresBondReferenceProjectionStore(_fixture.Options);
+        var first = await reader.GetIssuerLadderPageAsync(issuer, 1, null, null);
+        first.Should().HaveCount(2, "the second row is the bounded lookahead sentinel");
+        first[0].CanonicalTerms!.Value.GetProperty("principalSchedule")[0].GetProperty("amount").GetDecimal().Should().Be(20m);
+        var second = await reader.GetIssuerLadderPageAsync(issuer, 1, first[0].MaturityDate, first[0].SecurityId);
+        var third = await reader.GetIssuerLadderPageAsync(issuer, 1, second[0].MaturityDate, second[0].SecurityId);
+        third.Should().ContainSingle();
+        new[] { first[0].SecurityId, second[0].SecurityId, third[0].SecurityId }.Should().BeEquivalentTo(ids);
+
+        var maturityPage = await reader.GetMaturityLadderPageAsync(new DateOnly(2091, 6, 15), new DateOnly(2091, 6, 15),
+            1, null, null);
+        maturityPage.Should().HaveCount(2);
+    }
+
     private async Task<string?> ReadRowAsync(string table, Guid securityId)
     {
         await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);

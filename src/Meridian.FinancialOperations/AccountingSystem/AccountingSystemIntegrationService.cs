@@ -1579,7 +1579,7 @@ public sealed partial class AccountingSystemIntegrationService
             string.Equals(provider.ProviderId, QuickBooksOnlineProviderId, StringComparison.OrdinalIgnoreCase));
         if (quickBooks is IAccountingSystemConnectionMetadataProvider metadataProvider)
         {
-            var metadata = await metadataProvider.GetConnectionMetadataAsync(ct).ConfigureAwait(false);
+            var metadata = await ReadConnectionMetadataAsync(quickBooks.ProviderId, metadataProvider, ct).ConfigureAwait(false);
             if (metadata.HasLocalConfig && metadata.MissingFields.Count == 0)
             {
                 return QuickBooksOnlineProviderId;
@@ -1596,7 +1596,7 @@ public sealed partial class AccountingSystemIntegrationService
         AccountingSystemConnectionMetadataDto? metadata = null;
         if (provider is IAccountingSystemConnectionMetadataProvider metadataProvider)
         {
-            metadata = await metadataProvider.GetConnectionMetadataAsync(ct).ConfigureAwait(false);
+            metadata = await ReadConnectionMetadataAsync(provider.ProviderId, metadataProvider, ct).ConfigureAwait(false);
         }
 
         var state = metadata is { HasLocalConfig: false }

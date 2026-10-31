@@ -4,6 +4,7 @@ using System.Xml.Linq;
 using Meridian.Contracts.Integrity;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Execution.Sdk;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors.IbFlex;
 
@@ -37,6 +38,7 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
     /// </param>
     public IbFlexStatementConnector(
         StatementMappingProfileCatalog catalog,
+        [FromKeyedServices(ProviderCredentialStoreServiceKeys.LegacyRuntime)]
         IProviderCredentialStore? credentialStore = null,
         IIbFlexWebServiceClient? webServiceClient = null,
         StatementIngressLimits? limits = null)
