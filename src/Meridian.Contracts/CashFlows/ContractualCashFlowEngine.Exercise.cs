@@ -1,4 +1,5 @@
 using Meridian.Contracts.Calendars;
+using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.SecurityMaster.Schedules;
 
@@ -170,18 +171,20 @@ public static partial class ContractualCashFlowEngine
     }
 
     private static decimal Discount(decimal rate, decimal years, int compounds)
-    {
-        if (compounds > 0 && 1m + rate / compounds <= 0)
-            throw Refuse("DiscountRateInvalid", "Periodic discount base must be positive.");
-        var value = compounds == 0 ? Math.Exp(-(double)(rate * years)) : Math.Pow((double)(1m + rate / compounds), -(double)(compounds * years));
-        if (!double.IsFinite(value) || value <= 0)
-            throw Refuse("DiscountRateInvalid", "Discount factor is outside the supported range.");
-        return (decimal)value;
-    }
+        => DiscountMath.TryContractualFactor(rate, years, compounds, out var factor, out var code, out var message)
+            ? factor
+            : throw Refuse(code!, message!);
+
+    /// <summary>
+    /// Pillars sorted once per retained curve version. The interpolation below deliberately keeps its
+    /// own coverage rules and decimal operation order rather than delegating to
+    /// <see cref="SecurityCurveRules.ValueAt"/>: both are part of every retained packet's output hash.
+    /// </summary>
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<SecurityCurveVersionDto, SecurityCurvePointDto[]> SortedPillars = new();
 
     private static decimal CurveValue(CashFlowCurveSnapshot market, DateOnly date, bool extrapolate)
     {
-        var points = market.Version.Points.OrderBy(p => p.Date).ToArray();
+        var points = SortedPillars.GetValue(market.Version, static version => version.Points.OrderBy(static p => p.Date).ToArray());
         if (points.Length == 0)
             throw Refuse("CurveEmpty", "Curve has no pillars.");
         if (date < market.Version.AsOf || !extrapolate && date > points[^1].Date)

@@ -41,7 +41,7 @@ public static class BondPricingMath
         foreach (var flow in flows)
         {
             var time = (double)flow.TimeInYears;
-            if (!Discount(y, time, convention, m, out var discount, out var modified, out var convexity))
+            if (!DiscountMath.TryYieldFactor(y, time, convention, m, out var discount, out var modified, out var convexity))
             {
                 refusal = "Yield produces a nonpositive discount base or exceeds supported calculation bounds.";
                 return false;
@@ -156,35 +156,12 @@ public static class BondPricingMath
         var sum = 0d;
         foreach (var flow in flows)
         {
-            if (!Discount(yield, (double)flow.TimeInYears, convention, frequency,
+            if (!DiscountMath.TryYieldFactor(yield, (double)flow.TimeInYears, convention, frequency,
                     out var discount, out _, out _))
                 return double.PositiveInfinity;
             sum += (double)flow.Amount * discount;
         }
         return sum;
-    }
-
-    private static bool Discount(double y, double time, BondYieldConvention convention, double frequency,
-        out double discount, out double modified, out double convexity)
-    {
-        var divisor = convention == BondYieldConvention.NominalPeriodic ? frequency : 1d;
-        var basis = convention == BondYieldConvention.Simple ? 1d + y * time : 1d + y / divisor;
-        discount = modified = convexity = 0d;
-        if (basis <= 0d)
-            return false;
-        if (convention == BondYieldConvention.Simple)
-        {
-            discount = 1d / basis;
-            modified = time / basis;
-            convexity = 2d * modified * modified;
-        }
-        else
-        {
-            discount = Math.Pow(basis, -divisor * time);
-            modified = time / basis;
-            convexity = time * (time + 1d / divisor) / (basis * basis);
-        }
-        return !double.IsNaN(discount);
     }
 
     private static decimal Round(double value) => decimal.Round((decimal)value, 12, MidpointRounding.AwayFromZero);
