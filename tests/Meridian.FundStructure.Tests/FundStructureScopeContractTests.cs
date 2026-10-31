@@ -13,7 +13,7 @@ namespace Meridian.FundStructure.Tests;
 /// runner uses a store double: this proves shared service behavior, not database or tenant authority.
 /// Tenant admission and production/local composition have separate contracts.
 /// </summary>
-public abstract class FundStructureScopeContractTests
+public abstract partial class FundStructureScopeContractTests
 {
     private static readonly DateTimeOffset AsOf = new(2026, 01, 15, 0, 0, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset EffectiveFrom = AsOf.AddDays(-1);
@@ -117,6 +117,9 @@ public abstract class FundStructureScopeContractTests
             AssertScope(views, [fixture.A.OrganizationId], fixture.A);
             Assert.False(Assert.Single(views.Graph.Organizations).IsActive);
         }
+
+        await AssertBusinessViewsAsync(service, fixture.A, visible: !activeOnly,
+            activeOnly: activeOnly, asOf: AsOf, organizationIsActive: false);
     }
 
     [Fact]
@@ -213,6 +216,9 @@ public abstract class FundStructureScopeContractTests
             AssertScope(views, [fixture.A.OrganizationId], fixture.A);
         else
             AssertScope(views, []);
+
+        await AssertBusinessViewsAsync(service, fixture.A, visible: boundary is 0 or 1,
+            activeOnly: activeOnly, asOf: queryTime);
     }
 
     [Fact]
@@ -336,6 +342,36 @@ public abstract class FundStructureScopeContractTests
                 OrganizationId: organizationId, BusinessId: businessId, ActiveOnly: activeOnly, AsOf: asOf ?? AsOf)),
             await service.GetAccountingViewAsync(new AccountingStructureQuery(
                 OrganizationId: organizationId, BusinessId: businessId, ActiveOnly: activeOnly, AsOf: asOf ?? AsOf)));
+
+    private static async Task AssertBusinessViewsAsync(IFundStructureService service, Branch branch,
+        bool visible, bool activeOnly, DateTimeOffset asOf, bool organizationIsActive = true)
+    {
+        var advisory = await service.GetAdvisoryViewAsync(new AdvisoryStructureQuery(
+            branch.BusinessId, OrganizationId: branch.OrganizationId, ActiveOnly: activeOnly, AsOf: asOf));
+        var operating = await service.GetFundOperatingViewAsync(new FundOperatingStructureQuery(
+            branch.BusinessId, OrganizationId: branch.OrganizationId, ActiveOnly: activeOnly, AsOf: asOf));
+
+        // Aggregate the two view assertions so a regression reports both mismatched read paths.
+        Assert.All(new[]
+        {
+            (Organization: advisory?.Organization, Business: advisory?.Business),
+            (Organization: operating?.Organization, Business: operating?.Business)
+        }, view =>
+        {
+            if (!visible)
+            {
+                Assert.Null(view.Organization);
+                Assert.Null(view.Business);
+                return;
+            }
+
+            Assert.NotNull(view.Organization);
+            Assert.NotNull(view.Business);
+            Assert.Equal(branch.OrganizationId, view.Organization.OrganizationId);
+            Assert.Equal(organizationIsActive, view.Organization.IsActive);
+            Assert.Equal(branch.BusinessId, view.Business.BusinessId);
+        });
+    }
 
     private static void AssertScope(Views views, IReadOnlyList<Guid> organizationIds, params Branch[] branches)
     {

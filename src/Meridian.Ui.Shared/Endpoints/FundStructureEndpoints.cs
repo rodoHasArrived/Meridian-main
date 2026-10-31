@@ -556,6 +556,11 @@ public static partial class FundStructureEndpoints
             }
 
             var result = await service.GetOrganizationStructureAsync(query, context.RequestAborted).ConfigureAwait(false);
+            var responseGuard = await RequireOrganizationGraphResponseAccessAsync(result, context).ConfigureAwait(false);
+            if (responseGuard is not null)
+            {
+                return responseGuard;
+            }
             return Results.Json(result, jsonOptions);
         })
         .WithName("GetOrganizationStructureGraph").RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
@@ -1867,7 +1872,7 @@ public static partial class FundStructureEndpoints
 
     private static async Task<IResult?> RequireScopedFundStructureReadAccessAsync(
         HttpContext context,
-        params (AccessScopeKindDto Kind, Guid? Id)[] orderedScopes)
+        params (AccessScopeKindDto Kind, Guid? Id)[] requestedScopes)
     {
         if (!EndpointAuthorization.TryGetPermissions(context, out _))
         {
@@ -1879,19 +1884,18 @@ public static partial class FundStructureEndpoints
             return null;
         }
 
-        var scope = orderedScopes.FirstOrDefault(static candidate => candidate.Id.HasValue);
-        if (!scope.Id.HasValue)
+        var scopes = requestedScopes
+            .Where(static candidate => candidate.Id.HasValue)
+            .Select(static candidate => (candidate.Kind, Id: candidate.Id!.Value))
+            .ToArray();
+        if (scopes.Length == 0)
         {
             return EndpointHelpers.Forbidden();
         }
 
-        var allowed = await EndpointAuthorization.HasScopedPermissionAsync(
-            context,
-            UserPermission.ManageFundStructure,
-            scope.Kind,
-            scope.Id.Value,
-            context.RequestAborted).ConfigureAwait(false);
-
+        // A grant for one supplied selector cannot authorize the other requested roots. An
+        // empty domain intersection may still retain an organization/business summary.
+        var allowed = await HasFundStructureScopesAccessAsync(scopes, context).ConfigureAwait(false);
         return allowed ? null : EndpointHelpers.Forbidden();
     }
 

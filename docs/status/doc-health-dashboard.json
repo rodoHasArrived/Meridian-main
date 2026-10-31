@@ -1,11 +1,11 @@
 {
   "total_files": 785,
-  "total_lines": 179404,
+  "total_lines": 179427,
   "orphaned_count": 260,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 315,
-  "average_lines": 228.5,
+  "average_lines": 228.6,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -6152,7 +6152,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 1357,
+      "line_count": 1370,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6440,7 +6440,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2975,
+      "line_count": 2985,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
