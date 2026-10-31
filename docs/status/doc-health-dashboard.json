@@ -1,11 +1,11 @@
 {
   "total_files": 790,
-  "total_lines": 179388,
+  "total_lines": 179484,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 326,
-  "average_lines": 227.1,
+  "average_lines": 227.2,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2599,7 +2599,7 @@
     },
     {
       "path": "docs/engineering/solo-developer-ci-consolidation.md",
-      "line_count": 72,
+      "line_count": 167,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3015,7 +3015,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 13002,
+      "line_count": 13003,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
