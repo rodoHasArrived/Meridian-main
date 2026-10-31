@@ -6,7 +6,7 @@ description: >
   routing, and a traceable summary. Trigger on requests to certify completeness, confirm scope
   alignment, gather rollout evidence, or update AI and agent catalogs after new capabilities land.
 license: See repository LICENSE
-last_updated: 2026-04-13
+last_updated: 2026-10-31
 compatibility: >
   Portable Agent Skill package for Agent Skills-compatible hosts. Reads repository files plus the
   bundled scripts for doc routing and lightweight evaluation scoring. No external network access
@@ -30,7 +30,14 @@ proof, and routing updates to the right AI catalogs.
 
 ## Definition Of Done
 
-A task delivered by this skill is complete when **all** of the following are true:
+Scale the Definition Of Done to the change tier in [`docs/ai/solo-developer-workflow.md`](../../../docs/ai/solo-developer-workflow.md):
+
+- **Level 1 (routine):** relevant build or targeted test passes (when applicable), docs updated if behavior changed, and a short summary of what ran and what did not.
+- **Level 2/3, or multi-agent work:** all items below apply, including the rubric and the requirement -> evidence matrix. Level 3 also needs adversarial, negative, rollback, and fail-closed evidence, and owner acceptance recorded by the owner.
+
+Report status as Verified within a stated scope; development verification is not production certification, and an agent never self-approves.
+
+For Level 2/3 or multi-agent work, a task delivered by this skill is complete when **all** of the following are true:
 
 - **Build passes:** at least one of `dotnet build` or `dotnet test` targeting the touched project runs without errors.
 - **Tests cover the change:** happy path, failure path, and cancellation or disposal are covered or explicitly cited as gaps.
@@ -43,7 +50,7 @@ A task delivered by this skill is complete when **all** of the following are tru
 
 ## Integration Pattern
 
-Follow this 4-step loop for every implementation-assurance task:
+Follow this 4-step loop for implementation-assurance tasks (Level 1 tasks may collapse it to a brief summary):
 
 ### 1 — Gather Context
 
