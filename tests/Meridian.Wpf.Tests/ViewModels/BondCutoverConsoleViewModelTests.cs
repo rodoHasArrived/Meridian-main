@@ -1,5 +1,6 @@
 #if WINDOWS
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -57,6 +58,34 @@ public sealed class BondCutoverConsoleViewModelTests
         view.SubmitLabel.Should().Be("Amend cutover");
         view.CurrentReceiptHash.Should().Be("receipt-1");
         view.Reviewed.Should().BeFalse("a refreshed inventory restarts the review");
+    }
+
+    [Fact]
+    public async Task BatchPreview_SendsOneConventionSetForUndeclaredBonds_AndStagesNothing()
+    {
+        var client = new Mock<IWorkstationBondCutoverApiClient>();
+        client.Setup(c => c.GetReadinessAsync(It.IsAny<CancellationToken>())).ReturnsAsync(ApiResponse<BondMigrationInventoryDto>.Ok(Inventory()));
+        BondMigrationBatchPreviewRequest? sent = null;
+        client.Setup(c => c.PreviewMigrationBatchAsync(It.IsAny<BondMigrationBatchPreviewRequest>(), It.IsAny<CancellationToken>()))
+            .Callback<BondMigrationBatchPreviewRequest, CancellationToken>((request, _) => sent = request)
+            .ReturnsAsync((BondMigrationBatchPreviewRequest request, CancellationToken _) => ApiResponse<BondMigrationPreviewDto[]>.Ok(
+                request.Bonds.Select(bond => new BondMigrationPreviewDto(bond, "bbb222", "preview-hash", null, null,
+                    [new(new DateOnly(2027, 1, 31), 0m, 0m, 12.5m, 0.125m)], [], true)).ToArray()));
+        var view = new BondCutoverConsoleViewModel(client.Object) { BatchBusinessDayConvention = "Following" };
+
+        view.PreviewBatchCommand.CanExecute(null).Should().BeFalse("no inventory yet");
+        await view.LoadCommand.ExecuteAsync(null);
+        view.PreviewBatchCommand.CanExecute(null).Should().BeTrue();
+        await view.PreviewBatchCommand.ExecuteAsync(null);
+
+        sent.Should().NotBeNull();
+        sent!.Bonds.Should().ContainSingle().Which.SecurityId.Should().Be(Undeclared);
+        sent.Bonds[0].ExpectedVersion.Should().Be(7);
+        sent.Bonds[0].ScheduleConventions.GetProperty("businessDayConvention").GetString().Should().Be("Following");
+        sent.Bonds[0].ScheduleConventions.GetProperty("couponRateUnit").GetString().Should().Be("Percent");
+        view.BatchPreviews.Should().ContainSingle().Which.CanStage.Should().BeTrue();
+        view.BatchSummaryText.Should().StartWith("1 of 1 can be staged");
+        client.Verify(c => c.CutoverAsync(It.IsAny<BondMigrationCutoverRequest>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]

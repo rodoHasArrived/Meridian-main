@@ -889,6 +889,39 @@ Registered 2026-08-29 to close a registry gap - durable corporate action process
 - `SRC-STORAGE`
 - `SRC-UI-SHARED`
 
+## W10-BOND-001 - Bond analytics, declared-schedule migration and contractual cash-flow projection
+| Field | Value |
+| --- | --- |
+| Wave | W10 |
+| Status | in_progress |
+| Health | green |
+| Priority | medium |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-10-31 |
+
+### Current Summary
+
+Registers the fixed-income depth lane that PR #3328 (draft) carries so its capability has a roadmap home instead of living only inside W10-LOT-002 notes. The lane adds server-calculated bond analytics (v1 retained for replay, v2 on the shared BondContractualEconomics kernel with exact server decimals), a hash-bound declared-schedule convention migration that stages ordinary governed Security Master drafts, an administrative live-calculation cutover that binds the complete active inventory hash and explicit reviewed blocks to retained version and content hashes, bounded keyset issuer and maturity ladders, and a contractual cash-flow engine with exercise and prepayment scenarios whose retained runs are complete replay packets verified by output hash. Browser and WPF consume every seam through shared contracts: analytics and migration review on the passport, the cutover console, the cash-flow scenario workbench on asset detail, the loan book and the Direct Lending Evidence tab, and paged reference ladders. Golden fixtures pin bond-analytics v1/v2 and portfolio-cash-ladder v1 output; source-generated JSON contexts pin engine hashes. This row records in-progress implementation only: no cutover of customer data, no live operator acceptance, and no release certification is claimed, and curve pins, batch staging, settlement-consideration posting and floating-rate analytics remain open.
+
+### Exit Criteria
+
+- Bond analytics, migration preview, cutover, keyset ladders and contractual cash-flow projection have browser and WPF consumers over shared contracts, with displayed amounts never resubmitted and every blocker surfaced as a refusal rather than a silent fallback.
+- Retained analytics receipts, cutover receipts and cash-flow runs replay byte-identically under their recorded versions; golden fixtures and hash pins change only through a reviewed increment that names the affected version.
+- A reviewed cutover enables the durable live-calculation gate for one complete inventory hash; later undeclared or explicitly blocked bonds cannot silently use legacy calculations, and amendments name the current receipt hash.
+- Operator acceptance of the cutover procedure and the scenario workbench on a dedicated nonproduction host is recorded under docs/testing before any row-level acceptance; mocked browser checks, scratch compilation and green CI do not substitute for it.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-DESIGN-INSTRUMENTS`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-STORAGE`
+- `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
+- `SRC-UI-DASHBOARD`
+- `SRC-WPF`
+
 ## W10-DEBT-001 - God-file burn-down against the file-size ratchet
 | Field | Value |
 | --- | --- |

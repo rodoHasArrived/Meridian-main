@@ -266,3 +266,20 @@ decisions:
       - W13-OMS-001
       - W13-STRAT-001
       - W11-EXEC-001
+  - id: DEC-W10-BOND-REGISTER-001
+    title: Register the bond analytics and contractual cash-flow lane as W10-BOND-001
+    status: accepted
+    decided_on: 2026-10-31
+    owner_lane: Core Team
+    summary: >-
+      The fixed-income depth work carried by draft PR #3328 (bond analytics v1/v2, hash-bound
+      declared-schedule migration, administrative live-calculation cutover, keyset reference ladders,
+      and the contractual cash-flow engine with retained replayable runs) had no roadmap row; its
+      status lived only in W10-LOT-002 notes. W10-BOND-001 is registered as an unranked in-progress
+      W10 depth row so the capability, its exit criteria and its open items (curve pins, batch
+      staging, settlement-consideration posting, floating-rate analytics, operator acceptance) have an
+      owner. The decision changes no existing status, sequence, dependency, acceptance or release
+      authority, and records no customer-data cutover.
+    related_roadmap_items:
+      - W10-BOND-001
+      - W10-LOT-002

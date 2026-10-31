@@ -2225,6 +2225,56 @@ items:
         path: docs/engineering/plans/god-file-burn-down-plan.md
     last_reviewed: 2026-08-29
 
+  - id: W10-BOND-001
+    title: Bond analytics, declared-schedule migration and contractual cash-flow projection
+    wave: W10
+    stage_gates:
+      - AccountingRecords
+      - PortfolioLedgerReview
+    workspace:
+      - Accounting
+      - Portfolio
+    owner_lane: Accounting and Ledger
+    status: in_progress
+    health: green
+    priority: medium
+    evidence_posture: in_progress
+    current_summary: >-
+      Registers the fixed-income depth lane that PR #3328 (draft) carries so its capability has a
+      roadmap home instead of living only inside W10-LOT-002 notes. The lane adds server-calculated
+      bond analytics (v1 retained for replay, v2 on the shared BondContractualEconomics kernel with
+      exact server decimals), a hash-bound declared-schedule convention migration that stages
+      ordinary governed Security Master drafts, an administrative live-calculation cutover that binds
+      the complete active inventory hash and explicit reviewed blocks to retained version and content
+      hashes, bounded keyset issuer and maturity ladders, and a contractual cash-flow engine with
+      exercise and prepayment scenarios whose retained runs are complete replay packets verified by
+      output hash. Browser and WPF consume every seam through shared contracts: analytics and
+      migration review on the passport, the cutover console, the cash-flow scenario workbench on
+      asset detail, the loan book and the Direct Lending Evidence tab, and paged reference ladders.
+      Golden fixtures pin bond-analytics v1/v2 and portfolio-cash-ladder v1 output; source-generated
+      JSON contexts pin engine hashes. This row records in-progress implementation only: no cutover of
+      customer data, no live operator acceptance, and no release certification is claimed, and curve
+      pins, batch staging, settlement-consideration posting and floating-rate analytics remain open.
+    exit_criteria:
+      - Bond analytics, migration preview, cutover, keyset ladders and contractual cash-flow projection have browser and WPF consumers over shared contracts, with displayed amounts never resubmitted and every blocker surfaced as a refusal rather than a silent fallback.
+      - Retained analytics receipts, cutover receipts and cash-flow runs replay byte-identically under their recorded versions; golden fixtures and hash pins change only through a reviewed increment that names the affected version.
+      - A reviewed cutover enables the durable live-calculation gate for one complete inventory hash; later undeclared or explicitly blocked bonds cannot silently use legacy calculations, and amendments name the current receipt hash.
+      - Operator acceptance of the cutover procedure and the scenario workbench on a dedicated nonproduction host is recorded under docs/testing before any row-level acceptance; mocked browser checks, scratch compilation and green CI do not substitute for it.
+    source_modules:
+      - SRC-CONTRACTS
+      - SRC-DESIGN-INSTRUMENTS
+      - SRC-DESIGN-FINANCIAL-OPERATIONS
+      - SRC-STORAGE
+      - SRC-UI-SHARED
+      - SRC-UI-SERVICES
+      - SRC-UI-DASHBOARD
+      - SRC-WPF
+    evidence:
+      - type: reference
+        path: docs/engineering/plans/bond-capability-expansion.md
+      - type: reference
+        path: docs/testing/evidence/next-work-20261029/README.md
+    last_reviewed: 2026-10-31
   - id: W11-PASSPORT-001
     title: Number Passport contract across amount surfaces
     wave: W11

@@ -509,6 +509,32 @@
                                     Style="{StaticResource AccentButtonStyle}" AutomationProperties.Name="Submit bond calculation cutover" />
                         </StackPanel>
                     </StackPanel>
+                    <Expander Header="Preview candidate conventions for undeclared bonds (batch, read-only)" Margin="0,12,0,0"
+                              Visibility="{Binding HasInventory, Converter={StaticResource BoolToVisibilityConverter}}" AutomationProperties.Name="Batch migration preview">
+                        <StackPanel Margin="0,8,0,0">
+                            <TextBlock Opacity="0.7" TextWrapping="Wrap"
+                                       Text="Applies one candidate convention set to up to 100 undeclared bonds and compares payments. Staging still happens per bond from its passport with a reviewed justification; this preview changes nothing." />
+                            <WrapPanel Margin="0,8,0,0">
+                                <ComboBox ItemsSource="{Binding CouponRateUnits}" SelectedItem="{Binding BatchCouponRateUnit}" Width="110" Margin="0,0,8,8" AutomationProperties.Name="Batch coupon rate unit" />
+                                <ComboBox ItemsSource="{Binding CouponCashBases}" SelectedItem="{Binding BatchCouponCashBasis}" Width="110" Margin="0,0,8,8" AutomationProperties.Name="Batch coupon cash basis" />
+                                <ComboBox ItemsSource="{Binding BusinessDayConventions}" SelectedItem="{Binding BatchBusinessDayConvention}" Width="170" Margin="0,0,8,8" AutomationProperties.Name="Batch business day convention" />
+                                <CheckBox IsChecked="{Binding BatchAccrualAdjusted}" Content="Accrual adjusted" Margin="0,0,8,8" VerticalAlignment="Center" />
+                                <CheckBox IsChecked="{Binding BatchEndOfMonthRule}" Content="End-of-month rule" Margin="0,0,8,8" VerticalAlignment="Center" />
+                                <Button Content="Preview undeclared bonds" Command="{Binding PreviewBatchCommand}" Padding="12,6" Margin="0,0,0,8" AutomationProperties.Name="Preview candidate conventions for undeclared bonds" />
+                            </WrapPanel>
+                            <DataGrid ItemsSource="{Binding BatchPreviews}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" MaxHeight="240" AutomationProperties.Name="Batch migration preview results">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Bond" Binding="{Binding DisplayName}" Width="220" />
+                                    <DataGridTextColumn Header="Version" Binding="{Binding Version}" Width="70" />
+                                    <DataGridTextColumn Header="Changed payments" Binding="{Binding ChangedPayments}" Width="130" />
+                                    <DataGridTextColumn Header="Gaps" Binding="{Binding Gaps}" Width="*" />
+                                    <DataGridCheckBoxColumn Header="Can stage" Binding="{Binding CanStage}" Width="80" />
+                                    <DataGridTextColumn Header="Preview hash" Binding="{Binding PreviewHash}" Width="180" FontFamily="Consolas" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <TextBlock Text="{Binding BatchSummaryText}" Margin="0,6,0,0" Opacity="0.8" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Expander>
                     <TextBlock Text="{Binding ReceiptText}" FontFamily="Consolas" FontSize="11" Margin="0,8,0,0" TextWrapping="Wrap" />
                     <TextBlock Text="{Binding StatusText}" Margin="0,8,0,0" Opacity="0.8" TextWrapping="Wrap" />
                 </StackPanel>

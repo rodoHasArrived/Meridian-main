@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
@@ -40,6 +41,9 @@ public sealed class BondCutoverRowViewModel : BindableBase
     public BondMigrationBlockDto ToBlock() => new(Row.SecurityId, Row.Version, Row.SecurityContentSha256, _blockReason.Trim());
 }
 
+/// <summary>One batch preview result row; amounts are never resubmitted.</summary>
+public sealed record BondCutoverBatchPreviewRow(string DisplayName, long Version, int ChangedPayments, string Gaps, bool CanStage, string PreviewHash);
+
 /// <summary>
 /// Desktop parity for the browser bond calculation cutover console (bond-capability-expansion steps 5–6):
 /// read the complete active inventory, require a reviewed block for every bond without supported declared
@@ -61,6 +65,59 @@ public sealed class BondCutoverConsoleViewModel : BindableBase
         _client = client ?? throw new ArgumentNullException(nameof(client));
         LoadCommand = new AsyncRelayCommand(LoadAsync, () => !IsBusy);
         SubmitCommand = new AsyncRelayCommand(SubmitAsync, () => CanSubmit);
+        PreviewBatchCommand = new AsyncRelayCommand(PreviewBatchAsync, () => !IsBusy && UndeclaredCount > 0);
+    }
+
+    public IAsyncRelayCommand PreviewBatchCommand { get; }
+    public IReadOnlyList<string> CouponRateUnits { get; } = ["Percent", "Fraction"];
+    public IReadOnlyList<string> CouponCashBases { get; } = ["Level", "DayCount"];
+    public IReadOnlyList<string> BusinessDayConventions { get; } = ["Unadjusted", "Following", "ModifiedFollowing", "Preceding", "ModifiedPreceding"];
+    private string _batchCouponRateUnit = "Percent";
+    private string _batchCouponCashBasis = "Level";
+    private string _batchBusinessDayConvention = "Unadjusted";
+    private bool _batchAccrualAdjusted;
+    private bool _batchEndOfMonthRule;
+    public string BatchCouponRateUnit { get => _batchCouponRateUnit; set => SetProperty(ref _batchCouponRateUnit, value ?? "Percent"); }
+    public string BatchCouponCashBasis { get => _batchCouponCashBasis; set => SetProperty(ref _batchCouponCashBasis, value ?? "Level"); }
+    public string BatchBusinessDayConvention { get => _batchBusinessDayConvention; set => SetProperty(ref _batchBusinessDayConvention, value ?? "Unadjusted"); }
+    public bool BatchAccrualAdjusted { get => _batchAccrualAdjusted; set => SetProperty(ref _batchAccrualAdjusted, value); }
+    public bool BatchEndOfMonthRule { get => _batchEndOfMonthRule; set => SetProperty(ref _batchEndOfMonthRule, value); }
+    public ObservableCollection<BondCutoverBatchPreviewRow> BatchPreviews { get; } = new();
+    private string _batchSummary = string.Empty;
+    public string BatchSummaryText { get => _batchSummary; private set => SetProperty(ref _batchSummary, value); }
+
+    /// <summary>Read-only comparison of one candidate convention set across up to 100 undeclared bonds; staging stays per bond.</summary>
+    private async Task PreviewBatchAsync()
+    {
+        if (_inventory is not { } inventory) return;
+        var candidates = inventory.Bonds.Where(row => !row.HasDeclaredConventions).Take(100).ToArray();
+        if (candidates.Length == 0) { StatusText = "Every active bond already declares supported conventions; nothing to preview."; return; }
+        var asOf = DateTimeOffset.UtcNow;
+        var conventions = JsonSerializer.SerializeToElement(new
+        {
+            couponRateUnit = BatchCouponRateUnit, couponCashBasis = BatchCouponCashBasis, accrualAdjusted = BatchAccrualAdjusted,
+            businessDayConvention = BatchBusinessDayConvention, endOfMonthRule = BatchEndOfMonthRule
+        });
+        var request = new BondMigrationBatchPreviewRequest(candidates
+            .Select(row => new BondMigrationPreviewRequest(row.SecurityId, row.Version, new BondCalculationContext(asOf, DateOnly.FromDateTime(asOf.UtcDateTime), null, row.Version), conventions))
+            .ToArray());
+        var token = Begin($"Previewing candidate conventions for {candidates.Length} undeclared bond(s)…");
+        try
+        {
+            var response = await _client.PreviewMigrationBatchAsync(request, token).ConfigureAwait(true);
+            if (token.IsCancellationRequested) return;
+            if (!response.Success || response.Data is null) { Refused("Batch migration preview was refused", response.StatusCode, response.ErrorMessage); return; }
+            BatchPreviews.Clear();
+            var names = inventory.Bonds.ToDictionary(row => row.SecurityId, row => row.DisplayName);
+            foreach (var preview in response.Data)
+                BatchPreviews.Add(new(names.TryGetValue(preview.Request.SecurityId, out var name) ? name : preview.Request.SecurityId.ToString("D"),
+                    preview.Request.ExpectedVersion, preview.CashDifferences.Count, preview.Gaps.Count == 0 ? "None" : string.Join("; ", preview.Gaps), preview.CanStage, preview.PreviewSha256));
+            BatchSummaryText = $"{response.Data.Count(p => p.CanStage)} of {response.Data.Length} can be staged with these conventions; the rest report gaps. Staging happens per bond from its passport.";
+            StatusText = "Batch preview complete; nothing was staged.";
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex) { if (!token.IsCancellationRequested) StatusText = $"Batch migration preview was refused: {ex.Message}"; }
+        finally { End(token); }
     }
 
     public ObservableCollection<BondCutoverRowViewModel> Rows { get; } = new();
@@ -204,6 +261,7 @@ public sealed class BondCutoverConsoleViewModel : BindableBase
     {
         LoadCommand.NotifyCanExecuteChanged();
         SubmitCommand.NotifyCanExecuteChanged();
+        PreviewBatchCommand.NotifyCanExecuteChanged();
         RaisePropertyChanged(nameof(CanSubmit));
     }
 }

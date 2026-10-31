@@ -6,6 +6,9 @@ import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { isAbortError, isApiError } from "@/lib/api-errors";
 import { enableBondCalculationCutover, getBondCutoverReadiness } from "@/lib/api/bond-cutover.api";
+import { previewBondMigrationBatch } from "@/lib/api/bond-migration.api";
+import { Select } from "@/components/ui/select";
+import { BUSINESS_DAY_CONVENTIONS, type BondMigrationPreview, type BondMigrationPreviewRequest, type BusinessDayConvention } from "@/types/bond-migration.types";
 import type {
   BondMigrationBlock,
   BondMigrationCutoverReceipt,
@@ -14,6 +17,18 @@ import type {
 } from "@/types/bond-cutover.types";
 
 const shortHash = (hash: string) => (hash.length > 12 ? `${hash.slice(0, 12)}…` : hash);
+
+export interface BondCutoverConsolePanelProps {
+  api?: { batchPreview?: typeof previewBondMigrationBatch };
+}
+
+interface BatchConventions {
+  couponRateUnit: "Percent" | "Fraction";
+  couponCashBasis: "Level" | "DayCount";
+  accrualAdjusted: boolean;
+  businessDayConvention: BusinessDayConvention;
+  endOfMonthRule: boolean;
+}
 
 interface Notice {
   title: string;
@@ -28,8 +43,12 @@ interface Notice {
  * records the authenticated actor as reviewer. Amending an enabled cutover echoes the current receipt
  * hash, so a receipt that changed underneath the operator is refused rather than overwritten.
  */
-export function BondCutoverConsolePanel() {
+export function BondCutoverConsolePanel({ api = {} }: BondCutoverConsolePanelProps = {}) {
+  const batchPreview = api.batchPreview ?? previewBondMigrationBatch;
   const [inventory, setInventory] = useState<BondMigrationInventory | null>(null);
+  const [conventions, setConventions] = useState<BatchConventions>({ couponRateUnit: "Percent", couponCashBasis: "Level", accrualAdjusted: false, businessDayConvention: "Unadjusted", endOfMonthRule: false });
+  const [batch, setBatch] = useState<BondMigrationPreview[] | null>(null);
+  const [batchBusy, setBatchBusy] = useState(false);
   const [reasons, setReasons] = useState<Record<string, string>>({});
   const [reviewed, setReviewed] = useState(false);
   const [receipt, setReceipt] = useState<BondMigrationCutoverReceipt | null>(null);
@@ -118,6 +137,45 @@ export function BondCutoverConsolePanel() {
     }
   }, [blocks, inventory, refuse]);
 
+  async function previewBatch() {
+    if (!inventory) return;
+    const candidates = inventory.bonds.filter((row) => !row.hasDeclaredConventions).slice(0, 100);
+    if (candidates.length === 0) { setNotice({ title: "Nothing to preview", detail: "Every active bond already declares supported conventions." }); return; }
+    inFlight.current?.abort();
+    const controller = new AbortController();
+    inFlight.current = controller;
+    setBatchBusy(true);
+    setError(null);
+    setNotice(null);
+    setBatch(null);
+    try {
+      const asOf = new Date().toISOString().slice(0, 10);
+      const requests: BondMigrationPreviewRequest[] = candidates.map((row) => ({
+        securityId: row.securityId,
+        expectedVersion: row.version,
+        context: { asOf: `${asOf}T00:00:00Z`, settlementDate: asOf, securityVersion: row.version },
+        scheduleConventions: { ...conventions }
+      }));
+      const previews = await batchPreview(requests, { signal: controller.signal });
+      if (controller.signal.aborted) return;
+      setBatch(previews);
+    } catch (reason) {
+      if (isAbortError(reason) || controller.signal.aborted) return;
+      refuse(reason, "Batch migration preview was refused.");
+    } finally {
+      if (inFlight.current === controller) setBatchBusy(false);
+    }
+  }
+
+  const batchColumns: DenseDataTableColumn<BondMigrationPreview>[] = [
+    { id: "bond", label: "Bond", render: (row) => inventory?.bonds.find((bond) => bond.securityId === row.request.securityId)?.displayName ?? row.request.securityId },
+    { id: "version", label: "Version", align: "right", render: (row) => row.request.expectedVersion },
+    { id: "diffs", label: "Changed payments", align: "right", render: (row) => row.cashDifferences.length },
+    { id: "gaps", label: "Gaps", render: (row) => row.gaps.length > 0 ? row.gaps.join("; ") : "None" },
+    { id: "stage", label: "Can stage", render: (row) => row.canStage ? "Yes" : "No" },
+    { id: "hash", label: "Preview hash", render: (row) => <span className="font-mono" title={row.previewSha256}>{shortHash(row.previewSha256)}</span> }
+  ];
+
   const columns: DenseDataTableColumn<BondMigrationInventoryRow>[] = [
     { id: "bond", label: "Bond", render: (row) => <span className="font-medium text-foreground">{row.displayName}</span> },
     { id: "version", label: "Version", align: "right", render: (row) => row.version },
@@ -192,6 +250,53 @@ export function BondCutoverConsolePanel() {
             </span>
           </div>
         </div>
+      ) : null}
+
+      {inventory && undeclared.length > 0 ? (
+        <details className="mt-3 rounded-md border border-border/70 bg-secondary/10 px-3 py-2 text-xs" aria-label="Batch migration preview">
+          <summary className="cursor-pointer font-semibold">Preview candidate conventions for undeclared bonds (batch, read-only)</summary>
+          <p className="mt-2 text-muted-foreground">
+            Applies one candidate convention set to up to 100 undeclared bonds and compares payments. Staging still happens per
+            bond from its passport with a reviewed justification; this preview changes nothing.
+          </p>
+          <div className="mt-2 grid gap-2 md:grid-cols-5">
+            <label className="grid gap-1 font-medium text-muted-foreground">Coupon unit
+              <Select value={conventions.couponRateUnit} aria-label="Batch coupon rate unit" disabled={batchBusy}
+                onChange={(e) => setConventions((prev) => ({ ...prev, couponRateUnit: e.target.value as BatchConventions["couponRateUnit"] }))}>
+                <option value="Percent">Percent</option><option value="Fraction">Fraction</option>
+              </Select>
+            </label>
+            <label className="grid gap-1 font-medium text-muted-foreground">Cash basis
+              <Select value={conventions.couponCashBasis} aria-label="Batch coupon cash basis" disabled={batchBusy}
+                onChange={(e) => setConventions((prev) => ({ ...prev, couponCashBasis: e.target.value as BatchConventions["couponCashBasis"] }))}>
+                <option value="Level">Level</option><option value="DayCount">Day count</option>
+              </Select>
+            </label>
+            <label className="grid gap-1 font-medium text-muted-foreground">Business day convention
+              <Select value={conventions.businessDayConvention} aria-label="Batch business day convention" disabled={batchBusy}
+                onChange={(e) => setConventions((prev) => ({ ...prev, businessDayConvention: e.target.value as BusinessDayConvention }))}>
+                {BUSINESS_DAY_CONVENTIONS.map((convention) => <option key={convention} value={convention}>{convention}</option>)}
+              </Select>
+            </label>
+            <Checkbox checked={conventions.accrualAdjusted} disabled={batchBusy} label="Accrual adjusted" aria-label="Batch accrual adjusted"
+              onCheckedChange={(checked) => setConventions((prev) => ({ ...prev, accrualAdjusted: checked }))} />
+            <Checkbox checked={conventions.endOfMonthRule} disabled={batchBusy} label="End-of-month rule" aria-label="Batch end-of-month rule"
+              onCheckedChange={(checked) => setConventions((prev) => ({ ...prev, endOfMonthRule: checked }))} />
+          </div>
+          <Button size="sm" variant="outline" className="mt-2" disabled={batchBusy || busy !== null} aria-busy={batchBusy} onClick={() => void previewBatch()}
+            aria-label="Preview candidate conventions for undeclared bonds">
+            {batchBusy ? "Previewing…" : `Preview ${Math.min(undeclared.length, 100)} undeclared bond${undeclared.length === 1 ? "" : "s"}`}
+          </Button>
+          {batch ? (
+            <div className="mt-2 grid gap-2">
+              <DenseDataTable rows={batch} getRowId={(row) => `${row.request.securityId}:${row.previewSha256}`} columns={batchColumns}
+                ariaLabel="Batch migration preview results" caption={null} emptyText="No previews were returned." />
+              <p className="text-muted-foreground" role="status" aria-live="polite">
+                {batch.filter((row) => row.canStage).length} of {batch.length} can be staged with these conventions; the rest report gaps.
+              </p>
+            </div>
+          ) : null}
+        </details>
       ) : null}
 
       {receipt ? (

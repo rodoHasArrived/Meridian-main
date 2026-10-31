@@ -12,6 +12,8 @@ public interface IWorkstationBondCutoverApiClient
 {
     Task<ApiResponse<BondMigrationInventoryDto>> GetReadinessAsync(CancellationToken ct = default);
     Task<ApiResponse<BondMigrationCutoverReceiptDto>> CutoverAsync(BondMigrationCutoverRequest request, CancellationToken ct = default);
+    /// <summary>Read-only batch comparison of one candidate convention set across up to 100 bonds; staging stays per bond.</summary>
+    Task<ApiResponse<BondMigrationPreviewDto[]>> PreviewMigrationBatchAsync(BondMigrationBatchPreviewRequest request, CancellationToken ct = default);
 }
 
 public sealed class WorkstationBondCutoverApiClient : IWorkstationBondCutoverApiClient
@@ -30,5 +32,11 @@ public sealed class WorkstationBondCutoverApiClient : IWorkstationBondCutoverApi
     {
         ArgumentNullException.ThrowIfNull(request);
         return _apiClient.PostWithResponseAsync<BondMigrationCutoverReceiptDto>(UiApiRoutes.ReferenceDataBondCutover, request, ct);
+    }
+
+    public Task<ApiResponse<BondMigrationPreviewDto[]>> PreviewMigrationBatchAsync(BondMigrationBatchPreviewRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return _apiClient.PostWithResponseAsync<BondMigrationPreviewDto[]>(UiApiRoutes.ReferenceDataBondMigrationBatchPreview, request, ct);
     }
 }
