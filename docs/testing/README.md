@@ -43,4 +43,10 @@ Re-running a scenario must produce identical results. Existing examples:
 
 Simulated success proves Meridian's behavior against its own contract. It is not evidence of provider or custodian behavior; use the `synthetic-verified` and `live-untested` labels from the [solo-developer workflow](../ai/solo-developer-workflow.md#provider-evidence-labels).
 
-Follow-ups (not done here): no single index lists every scenario with its expected holdings, basis, journals, reconciliation differences, and close balances; the mixed-credit set has no documented end-to-end expected-close-balance assertion linked from this folder; scenario seeds are not uniformly recorded.
+Scenario index: [Synthetic scenario index](synthetic-scenario-index.md) lists each existing scenario with its path, coverage, seed or as-of date, consuming tests, and which outcomes are and are not asserted.
+
+Follow-ups:
+
+- Done: the index above; a python consistency check for the fund-economics worked examples (`tests/scripts/test_fund_economics_golden_consistency.py`).
+- Blocked on dotnet: a C# end-to-end test over the mixed-credit set with expected recon differences and close balances (no C# test loads it today); a bank/custodian/broker/administrator scenario with close balances; multi-account corporate-action and fund-close assertions.
+- Open, no tooling needed: a uniform seed and as-of convention for scenario manifests (many entries are "not recorded" in the index).
