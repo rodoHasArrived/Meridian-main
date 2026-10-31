@@ -175,11 +175,21 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
 
     public CredentialManagementViewModel(
         WpfServices.CredentialService credentialService,
-        WpfServices.NotificationService notificationService)
+        WpfServices.NotificationService notificationService,
+        WpfServices.IWorkstationProviderOwnershipApiClient? ownershipClient = null)
         : this(SettingsConfigurationService.Instance, notificationService)
     {
         ArgumentNullException.ThrowIfNull(credentialService);
+        Ownership = ownershipClient is null ? null : new Settings.ProviderOwnershipAdministrationViewModel(ownershipClient);
     }
+
+    /// <summary>
+    /// Ownership administration over the shared provider-routing commands (web-UI parity); null when the
+    /// host has no workstation API client, in which case the page hides the section.
+    /// </summary>
+    public Settings.ProviderOwnershipAdministrationViewModel? Ownership { get; }
+
+    public bool HasOwnershipAdministration => Ownership is not null;
 
     internal CredentialManagementViewModel(SettingsConfigurationService settingsService, NotificationServiceBase notificationService)
     {

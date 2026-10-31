@@ -18,6 +18,12 @@ review for Bond/CD passports (`ViewModels/SecurityMaster/`): server-calculated, 
 analytics shown as exact decimals, and a hash-bound migration preview that stages an ordinary
 governed draft. The desktop never prices locally and resubmits digests, not displayed amounts.
 
+Credential management offers the browser's ownership administration (`ViewModels/Settings/
+ProviderOwnershipAdministrationViewModel` over `WorkstationProviderOwnershipApiClient`): create an
+owned connection, preview the non-secret vault status, migrate only with the previewed credential
+generation, roll back the exact retained receipt, and bind the host runtime credential. Tenant and
+actor are server-resolved; the section is hidden when the host registers no workstation API client.
+
 Strategy composition registers the canonical Security Master resolver and position adjuster, then
 exposes narrow query ports and legacy aliases through `AddSecurityMasterContractAdapters()`.
 The adjustment-service factory selects its canonical query and resolver constructor explicitly,

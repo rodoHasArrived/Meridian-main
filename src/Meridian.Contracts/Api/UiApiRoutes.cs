@@ -116,6 +116,10 @@ public static class UiApiRoutes
     public const string ProviderHealth = "/api/providers/health";
     public const string ProviderReadiness = "/api/providers/readiness";
     public const string ProviderRoutingConnections = "/api/provider-routing/connections";
+    public const string ProviderRoutingConnectionRuntimeCredentials = "/api/provider-routing/connections/{connectionId}/runtime-credentials";
+    public const string ProviderRoutingConnectionCredentialMigrationPreview = "/api/provider-routing/connections/{connectionId}/credentials/migration-preview";
+    public const string ProviderRoutingConnectionCredentialMigrate = "/api/provider-routing/connections/{connectionId}/credentials/migrate";
+    public const string ProviderRoutingConnectionCredentialRollback = "/api/provider-routing/connections/{connectionId}/credentials/rollback";
     public const string ProviderRoutingBindings = "/api/provider-routing/bindings";
     public const string ProviderRoutingTrustSnapshots = "/api/provider-routing/trust-snapshots";
     public const string ProviderRoutingPreview = "/api/provider-routing/preview";
