@@ -11,6 +11,9 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Ledger
 
+`ShortCarryProjector` derives the borrow-fee and payment-in-lieu journals (expense debit, cash
+credit) from a reviewed `ShortCarryInstruction`; it refuses long lots, non-functional currencies,
+zero-rounding charges and mixed inputs, and changes no lot quantity or basis.
 `ShortLotJournalProjector` owns book accounting for governed short opening and cover; `Reverse`
 yields the exact inverse of a posted short journal for immutable reversal receipts. Quantities
 and retained proceeds stay positive; direction selects liability accounting. A cover relieves
