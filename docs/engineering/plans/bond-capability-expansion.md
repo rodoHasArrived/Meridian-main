@@ -32,6 +32,12 @@ yield-to-worst v3 models retain their schemas, admission and replay arithmetic.
 ## Public seams
 
 - `BondCalculationContext` names economic date, settlement date, recorded cutoff and pinned inputs.
+- `BondSettlementConsiderationDto` optionally names the book's functional currency and the
+  settlement-date FX rate (stacked branch). Consideration stays in the bond's currency; the posting
+  guard requires every component line to carry the bond currency as transaction currency, the book
+  currency, that rate, and the component translated once and rounded to the book currency's minor
+  units. No FX result arises at settlement; later remeasurement of the foreign cash balance belongs
+  to the translation lane. Same-currency receipts omit both fields and keep their fingerprints.
 - `IBondAnalyticsService` produces metrics, projected payments, capabilities and typed blockers.
 - Cash-flow context overloads preserve existing call signatures as compatibility adapters.
 - Reference array routes remain available; paged routes use bounded keyset cursors.

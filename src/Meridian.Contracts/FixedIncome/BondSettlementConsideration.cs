@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
 
@@ -13,7 +14,11 @@ public sealed record BondSettlementConsiderationRequest(
     string SourceEvidenceId,
     string CashAccountId,
     string AccruedInterestAccountId,
-    string? FeesAccountId = null);
+    string? FeesAccountId = null,
+    /// <summary>The ledger book's functional currency when it differs from the bond's currency; null for a same-currency settlement.</summary>
+    string? FunctionalCurrency = null,
+    /// <summary>Settlement-date rate from the bond's currency to the functional currency; required when the currencies differ.</summary>
+    decimal? SettlementFxRateToFunctional = null);
 
 /// <summary>
 /// Reviewed acquisition settlement economics. Quotes and accrued interest are per 100 face;
@@ -39,7 +44,24 @@ public sealed record BondSettlementConsiderationDto(
     string CashAccountId,
     string AccruedInterestAccountId,
     string? FeesAccountId,
-    IReadOnlyList<BondCalculationInput> Inputs);
+    IReadOnlyList<BondCalculationInput> Inputs,
+    // Omitted when absent so every retained same-currency receipt keeps its fingerprint.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? FunctionalCurrency = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? SettlementFxRateToFunctional = null)
+{
+    /// <summary>True when the book's functional currency differs from the bond's currency.</summary>
+    public bool IsForeignCurrency => FunctionalCurrency is { } functional && !string.Equals(functional, Currency, StringComparison.Ordinal);
+
+    /// <summary>The functional currency every journal line's debit and credit are stated in.</summary>
+    public string EffectiveFunctionalCurrency => IsForeignCurrency ? FunctionalCurrency! : Currency;
+
+    /// <summary>The FX multiplier each line carries: the retained settlement rate, or one for a same-currency settlement.</summary>
+    public decimal EffectiveFxRateToFunctional => IsForeignCurrency ? SettlementFxRateToFunctional!.Value : 1m;
+
+    /// <summary>A transaction-currency amount translated once to the functional currency at the settlement rate, rounded to its minor units.</summary>
+    public decimal ToFunctional(decimal transactionAmount)
+        => IsForeignCurrency ? BondSettlementConsideration.Round(transactionAmount * SettlementFxRateToFunctional!.Value, FunctionalCurrency!) : transactionAmount;
+}
 
 public sealed record BondSettlementPreparationResult(
     BondSettlementConsiderationDto? Settlement,
@@ -85,6 +107,17 @@ public static class BondSettlementConsideration
             || receipt.Inputs.Count(input => input.Kind == "SecurityTerms") != 1 || !receipt.Inputs.Any(input => input.Kind == "SecurityTerms"
                 && input.Key == receipt.SecurityId.ToString("D") && input.Version is > 0 && IsSha256(input.ContentSha256)))
             issues.Add("Bond settlement requires hash-bound versioned Security Master calculation inputs.");
+        if (receipt.FunctionalCurrency is { } functional)
+        {
+            if (string.IsNullOrWhiteSpace(functional) || functional != functional.Trim().ToUpperInvariant())
+                issues.Add("Bond settlement functional currency must be an upper-case currency code.");
+            else if (functional == receipt.Currency && receipt.SettlementFxRateToFunctional is not (null or 1m))
+                issues.Add("A same-currency bond settlement carries no settlement FX rate other than one.");
+            else if (functional != receipt.Currency && receipt.SettlementFxRateToFunctional is not > 0m)
+                issues.Add("A foreign-currency bond settlement requires the positive settlement-date FX rate to the functional currency.");
+        }
+        else if (receipt.SettlementFxRateToFunctional is not null)
+            issues.Add("A settlement FX rate requires the functional currency it converts to.");
         if (issues.Count > 0)
             return issues;
         try
