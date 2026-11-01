@@ -10,7 +10,7 @@
 [2026-10-27 determination](next-work-determination-2026-10-27.md), whose bar is **not** met —
 `v0.1.0-rc.2` is not tagged and the signing secrets have not been refused.
 **Method:** read the `Meridian CI`, `CI` and `Production Certification` `push` run history on
-`main` by `head_sha`; read all nine job conclusions of `Meridian CI` run 6127 on the current head
+`main` by `head_sha`; read all nine job conclusions of `Meridian CI` run 41304234618 on the baseline head
 and pulled the failing job's log; reproduced the failure locally with `npm ci` plus
 `node scripts/generate-diagrams.mjs --tracker-only`, then re-verified with
 `python3 build/scripts/run-maintained-generation.py --docs-only`; read
@@ -39,18 +39,14 @@ sites; ran the certification lane's own npm-audit gate at its `--fail-level high
 
 ## The one-line answer
 
-The delivery-system backlog that the last six determinations ranked **is substantially gone**. What
-remains is one red lane on `main` (fixed in this branch), one human decision that has now been
-named by seven consecutive passes, and a product lane whose five W10 rows all need the *same*
-thing: evidence, not more source. **The next work is the product lane.**
+The delivery-system backlog that the last six determinations ranked **is substantially gone**. The baseline's red documentation lane was repaired on `main` by #3354. What remains is a separate release-signing decision and product work requiring both implementation and retained acceptance evidence. **The next work is the product lane.**
 
-## `main` is red, on the same defect class that made `rc.1` uncertifiable
+## Historical baseline: generated-documentation failure subsequently repaired by #3354
 
 This is the decisive finding, and it reverses the predecessor's headline.
 
 The 2026-10-27 determination opened by reporting `4fb27518` as "the first `main` head in this
-series green across **both** gating lanes." That head is five days behind. On the current head,
-`Meridian CI` run 6127 is **red**:
+series green across **both** gating lanes." That head is five days behind. On the historical baseline `7ca57b62`, `Meridian CI` run 41304234618 was **red**:
 
 | Job | Conclusion |
 | --- | --- |
@@ -63,7 +59,7 @@ series green across **both** gating lanes." That head is five days behind. On th
 | `integration-gate` | success |
 | `quality-gate` | **failure** (aggregator, consequent) |
 
-Eight of nine jobs are green. The failure is one step — "Verify whole-repo generated documentation
+Six jobs succeeded, two failed (`verify-docs` and its consequent `quality-gate`), and one alternate integration-evidence job was skipped. The failure is one step — "Verify whole-repo generated documentation
 is committed" — and its log is unambiguous:
 
 ```text
@@ -88,8 +84,7 @@ regeneration was partial, the docs lane went red, and an immutable tag was cut o
 Eleven days later the identical mechanism has reddened `main` again. The lesson the program paid a
 tag for has not been mechanized.
 
-**Fixed in this branch**, because it is two lines and the predecessor's own precedent is to land a
-release-unblocking fix rather than recommend it a second time:
+**Reproduced on this branch and subsequently fixed on `main` by #3354**; the branch does not independently repair the current base:
 
 1. **Reproduced** at the baseline: `npm ci`, then
    `node scripts/generate-diagrams.mjs --tracker-only` → both tracker files modified.
@@ -194,7 +189,7 @@ are `green`; **`W10-RECON-001` is the only `yellow` row in the registry.**
 The user-requested queue is unchanged and now genuinely unblocked: **`W10-LOT-002` →
 `W10-MARK-001` → `W10-SEAM-001`, before `W10-RECON-001`** in that queue only.
 
-**The useful observation is that none of these rows is short of source.** Read against
+**These rows need retained evidence, but some also have unfinished implementation and consumer cutover work.** Read against
 `docs/testing/evidence/next-work-20261029/README.md`, which states each row's delivered boundary and
 its outstanding requirement, the pattern is uniform:
 
@@ -205,9 +200,7 @@ its outstanding requirement, the pattern is uniform:
 | `W10-SEAM-001` | Same host/client candidate with complete declared scope, missing/stale/mismatched contributor refusal, repair recovery, live verdicts in both clients |
 | `W10-RECON-001` | Current automated lineage proofs plus a retained run sequence demonstrating recurrence, valid clearing and business-calendar escalation |
 
-Every entry is an evidence artifact, not a feature. **The next concrete unit of product work is a
-retained evidence packet for `W10-LOT-002`, run on a single candidate build, not another increment
-of source.** The queue order says `LOT` first; the evidence record already names the test selection
+The next concrete unit of product work is a bounded synthetic `W10-LOT-002` implementation-and-proof slice, followed by a retained evidence packet on a single candidate build. The queue order says `LOT` first; the evidence record already names the test selection
 (`CanonicalOpenLotConsumerTests`, `FactorPaydown`, and the rest) and requires PostgreSQL results to
 be distinguished from ordinary ones.
 
@@ -237,8 +230,7 @@ must keep failing; only the diagnostic should change, and it must not become a s
 
 ## The gap worth closing, since the same defect has now cost two heads
 
-`rc.1` was lost to uncommitted generated-doc drift after a merge; `main` is red today for the same
-reason. The drift gate correctly refuses, and `Generated Repair Publisher` — now working — produces
+`rc.1` was lost to uncommitted generated-doc drift after a merge; the November 1 baseline was red for the same reason, but #3354 subsequently repaired `main`. The drift gate correctly refuses, and `Generated Repair Publisher` — now working — produces
 the patch. What is missing is the step that applies it before the next merge rather than after a red
 run. #3232's `.gitattributes` / regenerate-on-merge follow-up is the item that addresses this, and
 its justification has changed: it is no longer "the publisher is broken," it is "a working publisher
@@ -280,10 +272,10 @@ downstream PR can trip will keep charging the queue for defects it did not cause
 | **P0** | **Provision `MDC_SIGNING_CERT_PFX_BASE64` and `MDC_SIGNING_CERT_PASSWORD`, or formally refuse them** | `PRD-014`. Seventh consecutive determination to name it. Two tags in the repository, neither certifiable; `Release Readiness` has two runs ever, both failed. No engineering moves this |
 | **P0** | **Restate the `rc.2` precondition as an action: dispatch `Production Certification` on the tag candidate and read that run** | `ea51dd620` dropped the push-to-`main` trigger. The last four `main` pushes have no certification run at all, so "green across both lanes on a push head" can no longer become true. The lane is not required; it is weekly and on demand |
 | **P0** | **`PRD-002`'s remaining clauses** — browser/WPF/setup/default-runtime credential ownership; legacy ownership/verification migration, rollback and rotation proof | Still the tracker's only code-rather-than-signature P0. The C1–C8 and #3328/#3329 series advanced it; the clauses themselves are not recorded closed |
-| **P1** | **Produce the `W10-LOT-002` evidence packet on one candidate build** | The user-requested queue's head, no longer gated behind anything. `next-work-20261029` already names the test selection and requires PostgreSQL results kept separate. All five W10 rows are short of *evidence*, not source — this is the first one |
+| **P1** | **Produce the `W10-LOT-002` evidence packet on one candidate build** | The user-requested queue's head, no longer gated behind anything. `next-work-20261029` already names the test selection and requires PostgreSQL results kept separate. Evidence and remaining implementation/consumer cutover are both in scope; begin with a bounded synthetic slice |
 | **P1** | **Re-review `W10-RECON-001` and set its health from the merged head** | The registry's only `yellow` row, `last_reviewed: 2026-09-26`, describing PR #3004 as its pending implementation. #3004 merged 2026-10-28 |
 | **P1** | **Fix the two `verify-workflows` races** — `ignore_cleanup_errors=True`; the `disposable.py` reconcile window | The only item here that got worse: 380 call sites across 119 files, up from 321/98, still zero using the flag. `quality-gate` is required, and this reddens it with no code defect |
-| **P1** | **Promote the `.gitattributes` / regenerate-on-merge follow-up** | Re-justified, not carried: `Generated Repair Publisher` now succeeds (runs 974–978 green after #3232). The remaining gap is that nothing applies its patch before the next merge — which is what cost `rc.1` and cost this head, twice over: `7ca57b62` left both the WPF tracker and the `SRC-APP`/`SRC-WPF` source hashes stale |
+| **P1** | **Promote the `.gitattributes` / regenerate-on-merge follow-up** | Re-justified, not carried: `Generated Repair Publisher` now succeeds (runs 974–978 green after #3232). The remaining gap is that nothing applies its patch before the next merge — which is what cost `rc.1` and cost the historical baseline, twice over: `7ca57b62` left both the WPF tracker and the `SRC-APP`/`SRC-WPF` source hashes stale |
 | **P1** | **Run the reviewed source-hash validator in CI** | `validate-doc-hashes.py` lives only in `make/docs.mk`, `make/ai.mk` and the merge tool; **no workflow runs it**. Manifest drift on `main` is therefore invisible to every required check and surfaces only as a failed non-required `generated-repair` check on an unrelated downstream PR — it hit this branch and #3354 |
 | **P2** | **Add a `pwsh` preflight to the script-test lane that fails once with an accurate message** — not a `skipUnless` guard | Carried forward intact, including the predecessor's correction. Dropped to P2 because the lane has been green since the outage healed |
 | **P2** | **Rebase the eight D-series PRs stacked on #3328, and resolve #3352** | #3328 merged as `b735371a`, so #3339–#3346 are stacked on landed history. All eight currently measure conflict-free; #3352's two conflicts are both resolver-covered `doc-health-dashboard` paths |
@@ -301,7 +293,7 @@ last one phrased around the release. The delivery-system backlog this series exi
 worked off: of six items ranked a week ago, four are closed. The remaining release question is one
 person's decision about two secrets, and a seventh ranking document did not move it.
 
-**What should replace this series is a product-evidence record, not another ranking.** The five W10
-rows are each short of a named, retainable evidence packet, and
+**What should replace this series is a product-evidence record, not another ranking.** The W10
+rows need bounded implementation closure where outstanding as well as named, retainable evidence packets, and
 `docs/testing/evidence/next-work-20261029/README.md` already specifies what each one must contain.
 That is a thing to produce, not to prioritize.
