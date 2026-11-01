@@ -252,7 +252,8 @@ public sealed class OpenLotExtendedAmortizationTests
     private static Dictionary<string, object> CallRow(string date, decimal callPrice, string style = "European", string? endDate = null, string priceType = "Fixed")
     {
         var call = new Dictionary<string, object> { ["callDate"] = date, ["callPrice"] = callPrice, ["exerciseStyle"] = style, ["priceBasis"] = "PercentOfPar", ["priceType"] = priceType };
-        if (endDate is not null) call["callEndDate"] = endDate;
+        if (endDate is not null)
+            call["callEndDate"] = endDate;
         return call;
     }
 
@@ -262,8 +263,10 @@ public sealed class OpenLotExtendedAmortizationTests
     {
         var instruction = AtomicTaxLotJournalStoreTests.AmortPureInstruction(price, coupon, BondAmortizationMethod.ConstantYield, 0.05m);
         var call = new Dictionary<string, object> { ["callDate"] = date, ["callPrice"] = callPrice, ["exerciseStyle"] = style, ["priceBasis"] = basis, ["priceType"] = priceType };
-        if (endDate is not null) call["callEndDate"] = endDate;
-        if (exerciseFrequency is not null) call[exerciseFrequencyKey] = exerciseFrequency;
+        if (endDate is not null)
+            call["callEndDate"] = endDate;
+        if (exerciseFrequency is not null)
+            call[exerciseFrequencyKey] = exerciseFrequency;
         var security = instruction.Security with
         {
             CommonTerms = JsonSerializer.SerializeToElement(new
