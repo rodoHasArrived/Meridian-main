@@ -31,14 +31,14 @@
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
       "readme_hash": "b1185c3efcfbe17c860f05bae3bc6a30e5462ca49c817eb36a2852cf18c81b37",
-      "source_hash": "025eb65d1a1a3a6ad2c8debb6af86357d72203331284903e117f797f19faa272"
+      "source_hash": "7dce13afb11d77d4dafc8740fd1214e692ff9bf075a0ae18ea7d8ceeafb6bf52"
     },
     {
       "id": "SRC-CORE",
       "path": "src/Meridian.Core",
       "readme": "src/Meridian.Core/README.md",
       "readme_hash": "40127d01aa9a3812f69a888965abee6821a5ae9153e6e054335af95c0eefa991",
-      "source_hash": "d2a6f4e4df7fc4d11297950a60075cb9aca2396c36e5581f87d7cb450cbe8ffd"
+      "source_hash": "2fba03b35baab5fc8ad296809f5a81704e85b8f35f3f2f6c880903e12cbaba0e"
     },
     {
       "id": "SRC-DESIGN-AUDIT",
@@ -73,7 +73,7 @@
       "path": "src/Meridian.FinancialOperations",
       "readme": "src/Meridian.FinancialOperations/README.md",
       "readme_hash": "ae71e5cd252649ec4a8ced5a3aad930325874bb621f386c40f1dbd7cc1789316",
-      "source_hash": "e530f7ade06c9625aa1e3da63d9e0b65ba0b279c36b274e4773ae1233cbcbc71"
+      "source_hash": "8b8118d978c5d475e5a2554a38afb7a1529e0275b5c377d5539674f49be16739"
     },
     {
       "id": "SRC-DESIGN-IDENTITY",
@@ -205,8 +205,8 @@
       "id": "SRC-LEDGER",
       "path": "src/Meridian.Ledger",
       "readme": "src/Meridian.Ledger/README.md",
-      "readme_hash": "c869b7d07929e93a1598ff5f84c7460c6856fcffd5d771c8f0c442d11ace5796",
-      "source_hash": "af68d79609efcd3dba57b6161d8202dea59e28796d711b6090582eb627886840"
+      "readme_hash": "215991e12346c6da302b553bae36a2a0aa6d6caa3440486c9611012fb029a477",
+      "source_hash": "87a326d94bd4515b166adddb4081d819b0396c2ea0c43a4a5d6f59332f88aca4"
     },
     {
       "id": "SRC-LIFECYCLE-SUPERVISOR",

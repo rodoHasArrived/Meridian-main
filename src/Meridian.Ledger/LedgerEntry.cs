@@ -85,11 +85,13 @@ public sealed record LedgerEntry
 
             // The functional amount must be the transaction amount converted at the recorded FX rate,
             // so the ledger never persists mutually inconsistent currency evidence (e.g. a USD 1 leg
-            // tagged as EUR 100 at 1.1). Allow a one-cent tolerance for 2-dp posting rounding.
+            // tagged as EUR 100 at 1.1). Allow one minor unit of the functional currency for posting
+            // rounding (one cent for 2-dp currencies, one yen for JPY), never less than one cent.
             var functionalAmount = debit > 0m ? debit : credit;
             var transactionAmount = currency.IsDebit ? currency.TransactionDebit : currency.TransactionCredit;
             var expectedFunctional = transactionAmount * currency.FxRateToFunctional;
-            if (Math.Abs(functionalAmount - expectedFunctional) > 0.01m)
+            var tolerance = Math.Max(0.01m, Meridian.Core.Currency.CurrencyMinorUnits.OneMinorUnit(currency.FunctionalCurrency));
+            if (Math.Abs(functionalAmount - expectedFunctional) > tolerance)
             {
                 throw new LedgerValidationException(
                     $"Functional amount {functionalAmount} does not match transaction amount {transactionAmount} " +

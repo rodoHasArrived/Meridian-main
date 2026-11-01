@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "1d15997a9cd41e5518505bc5a4c8bc43790b2a6f29d397508e81619aa3c94d54",
+      "fingerprint": "bbca2fb91c9c459acd0ca3f6ca21b17639fbf7b5a7516abe023a0f33230d316b",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -49,6 +49,8 @@
         "Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorstDto",
         "Meridian.Contracts.Accounting.Lots.RetainOpenLotBackfillEvidenceRequest",
         "Meridian.Contracts.Accounting.Lots.ReviewOpenLotBackfillEvidenceRequest",
+        "Meridian.Contracts.Accounting.Lots.ShortCarryInstruction",
+        "Meridian.Contracts.Accounting.Lots.ShortCarryKind",
         "Meridian.Contracts.AccountingSystem.AccountingApprovalQueueConfigurationDto",
         "Meridian.Contracts.AccountingSystem.AccountingCertificationArtifactIssueDto",
         "Meridian.Contracts.AccountingSystem.AccountingCertificationArtifactLaneStatusDto",
@@ -4591,7 +4593,7 @@
       ]
     }
   ],
-  "fingerprint": "605554fa8643f0ab920d93ecf0c64b91bae29dc6a443aa570c10bbd94b28c064",
+  "fingerprint": "19adb4f53dc6d4a8d67656a86362ec52c4ec1d0fefe750cfce0876fddd4e8b9e",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4602,7 +4604,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "1ec3af7d12eee10ca9251c2bd3c3b61adf8c427ab8f960bf8df8a6af96fee2be",
+      "fingerprint": "f14916a3092f36fff12ff4dec66c9d1e7cd83723e2be57a940c7a6b98da8fa91",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Accounting.Lots",
       "object_ids": [
@@ -4643,7 +4645,9 @@
         "Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorst",
         "Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorstDto",
         "Meridian.Contracts.Accounting.Lots.RetainOpenLotBackfillEvidenceRequest",
-        "Meridian.Contracts.Accounting.Lots.ReviewOpenLotBackfillEvidenceRequest"
+        "Meridian.Contracts.Accounting.Lots.ReviewOpenLotBackfillEvidenceRequest",
+        "Meridian.Contracts.Accounting.Lots.ShortCarryInstruction",
+        "Meridian.Contracts.Accounting.Lots.ShortCarryKind"
       ]
     },
     {
@@ -12505,6 +12509,300 @@
         {
           "line": 33,
           "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotBackfillDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "96ab32104573e0b07f5cc868654d84cdfe938feb180f5f182b001549948e038c",
+      "full_name": "Meridian.Contracts.Accounting.Lots.ShortCarryInstruction",
+      "id": "Meridian.Contracts.Accounting.Lots.ShortCarryInstruction",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccrualEnd",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 38,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccrualStart",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 37,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AmountPerUnit",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 43,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AnnualRate",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 41,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Currency",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 44,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DaysPerYear",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "int?",
+          "source_line": 42,
+          "type": "int?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Direction",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "OpenLotDirection",
+          "source_line": 35,
+          "type": "OpenLotDirection"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FunctionalCurrency",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 45,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Kind",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ShortCarryKind",
+          "source_line": 36,
+          "type": "ShortCarryKind"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LotId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 34,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "ShortCarryInstruction.CurrentModelVersion",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ModelVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 47,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Quantity",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 39,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ReferencePrice",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 40,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceEvidenceId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 46,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TaxLotRecordId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 33,
+          "type": "Guid"
+        }
+      ],
+      "name": "ShortCarryInstruction",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.ShortCarryInstruction",
+      "references": [
+        "Meridian.Contracts.Accounting.Lots.OpenLotDirection",
+        "Meridian.Contracts.Accounting.Lots.ShortCarryKind"
+      ],
+      "source": {
+        "line": 32,
+        "path": "src/Meridian.Contracts/Accounting/Lots/ShortCarryInstruction.cs"
+      },
+      "sources": [
+        {
+          "line": 32,
+          "path": "src/Meridian.Contracts/Accounting/Lots/ShortCarryInstruction.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [
+        {
+          "explicit_value": true,
+          "name": "BorrowFee",
+          "source_line": 7,
+          "value": "0"
+        },
+        {
+          "explicit_value": true,
+          "name": "PaymentInLieu",
+          "source_line": 9,
+          "value": "1"
+        }
+      ],
+      "fingerprint": "82b5eb65bc51314662f53d6eaab62b45e2b7ff175df6c712490927739e5400bf",
+      "full_name": "Meridian.Contracts.Accounting.Lots.ShortCarryKind",
+      "id": "Meridian.Contracts.Accounting.Lots.ShortCarryKind",
+      "kind": "enum",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "ShortCarryKind",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.ShortCarryKind",
+      "references": [],
+      "source": {
+        "line": 4,
+        "path": "src/Meridian.Contracts/Accounting/Lots/ShortCarryInstruction.cs"
+      },
+      "sources": [
+        {
+          "line": 4,
+          "path": "src/Meridian.Contracts/Accounting/Lots/ShortCarryInstruction.cs"
         }
       ],
       "type_parameters": []
