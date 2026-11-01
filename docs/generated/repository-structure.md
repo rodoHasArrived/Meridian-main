@@ -4613,6 +4613,7 @@ Meridian-main
 │   │   │       ├── OpenLotDto.cs
 │   │   │       ├── OpenLotFactorPaydown.cs
 │   │   │       ├── OpenLotSuccessors.cs
+│   │   │       ├── ShortCorrection.cs
 │   │   │       ├── OpenLotUnifiedAmortization.cs
 │   │   │       ├── OpenLotValidation.cs
 │   │   │       └── OpenLotYieldToWorst.cs
@@ -5582,6 +5583,7 @@ Meridian-main
 │   │   │   ├── CanonicalLotCorporateActionService.cs
 │   │   │   ├── FactorPaydownLotInstructionService.cs
 │   │   │   ├── LedgerJournalConstruction.cs
+│   │   │   ├── ShortCorrectionGuard.cs
 │   │   │   ├── SpineAcquisitionLotCompletion.cs
 │   │   │   └── SpineAcquisitionLotFacts.cs
 │   │   ├── MiddleOffice
@@ -11253,7 +11255,8 @@ Meridian-main
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.PreparationRevision.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.ReferenceAuthority.cs
 │   │   │   │   ├── AssetAccountingLifecycleSeparationTests.cs
-│   │   │   │   └── BondSettlementConsiderationTests.cs
+│   │   │   │   ├── BondSettlementConsiderationTests.cs
+│   │   │   │   └── ShortCorrectionTests.cs
 │   │   │   ├── OperationsContinuity
 │   │   │   │   ├── FinancialOperationsCommandCenterReadService.AcceptanceTests.cs
 │   │   │   │   ├── FinancialOperationsCommandCenterReadService.PublicationTests.cs

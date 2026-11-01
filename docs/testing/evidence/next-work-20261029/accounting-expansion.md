@@ -8,6 +8,8 @@ certification or an operator verdict.
 | --- | --- | --- |
 | Short opening | Debit cash, credit a liability for positive opening proceeds. | Explicit Short direction, matching Short/Liability position, canonical acquisition facts and existing independent posting approval. |
 | Short cover | Debit relieved opening proceeds, credit execution cash cost, recognize proceeds less cost as book gain/loss. | Explicit functional-currency execution price, homogeneous canonical relief pool, effective relief-policy revision, versioned selections and existing approval. |
+| Short reversal and rebook (stacked branch) | A reversal is the exact inverse of the posted opening or cover journal and restores the lot as it was; a rebook follows a retained reversal and is an ordinary opening or cover derived from corrected inputs. Posted journals are never edited. | Immutable `ShortCorrectionReceipt` naming the corrected mutation and journal, the restored Short lot, reviewed reason and actor; `ShortCorrectionGuard` refuses re-priced, partial or re-dated reversals and unlinked or drifting rebooks. |
+| Short-sale tax character (stacked branch) | Reporting a covered short needs an explicit reviewed `ShortSaleCharacterAttestation` (ShortTerm or LongTerm, reviewer, UTC instant, substantive justification, complete evidence). Opening-lot age never establishes character. | Absence keeps the existing reporting refusal; incomplete attestations are refused with their issues. |
 | Remaining-face amortization | Continue the acquisition schedule for surviving booked quantity times current/booked factor. Retain acquisition FX. | Explicit calculation v3, immutable paydown receipt and prior disposal/basis history; locked lot and Security Master inputs. |
 | Automatic yield-to-worst | Solve the regular-coupon yield for maturity and each fixed-price European whole call/put. Select the minimum maturity/issuer-call yield, with deterministic date/kind tie-breaking. | Full alternative list and selected date/price/yield are retained in the reviewed v3 instruction and recomputed before posting. |
 
@@ -40,8 +42,11 @@ still block. Declared schedule conventions block the v3 remaining-face/yield-to-
 declared bonds amortize through `canonical-lot-amortization-v5`, which shares the analytics
 coupon, stub, accrual and discount-time calculator (the interim v4 model was removed before any
 instruction was produced). These need their own valuation inputs and proof;
-they are not interpreted as absent. Short manufactured income, corporate actions and tax
-character and short reversal/rebook also remain separate treatments. Tax reports refuse to infer short-sale character from
+they are not interpreted as absent. Short reversal/rebook receipts and the tax-character
+attestation have contracts and guards but no atomic store path yet: `ValidateShortLotJournal` still
+refuses `CorrectsMutationBatchId` for shorts and `CanonicalDisposalHistoryProjector` still refuses
+short covers; wiring both needs the PostgreSQL proof this environment cannot run. Short manufactured
+income and corporate actions remain separate treatments. Tax reports refuse to infer short-sale character from
 opening-lot age. Broader consumer certification and live Windows acceptance remain open.
 
 Required proof includes balanced gain/flat/loss covers, positive remaining quantity and basis,

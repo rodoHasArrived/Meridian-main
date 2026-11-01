@@ -11,7 +11,8 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Ledger
 
-`ShortLotJournalProjector` owns book accounting for governed short opening and cover. Quantities
+`ShortLotJournalProjector` owns book accounting for governed short opening and cover; `Reverse`
+yields the exact inverse of a posted short journal for immutable reversal receipts. Quantities
 and retained proceeds stay positive; direction selects liability accounting. A cover relieves
 opening proceeds against cash execution cost and recognizes the difference as book gain/loss.
 It does not infer short-sale tax character or manufacture corporate-action payments.
