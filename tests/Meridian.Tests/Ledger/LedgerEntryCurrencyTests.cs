@@ -48,6 +48,31 @@ public sealed class LedgerEntryCurrencyTests
     }
 
     [Fact]
+    public void FunctionalAmount_ToleratesOneMinorUnitOfAZeroDecimalFunctionalCurrency()
+    {
+        // USD 1,200 at 150.123 is 180,147.6 JPY; a JPY book states whole yen, so 180,148 is the consistent amount.
+        var usdInJpyBook = new LedgerEntryCurrency("USD", "JPY", transactionDebit: 1_200m, transactionCredit: 0m, fxRateToFunctional: 150.123m);
+        var entry = new LedgerEntry(Guid.NewGuid(), Guid.NewGuid(), Timestamp, LedgerAccounts.Cash, 180_148m, 0m, "cash", dimensions: null, currency: usdInJpyBook);
+        entry.Debit.Should().Be(180_148m);
+
+        var offByTwoYen = () => new LedgerEntry(Guid.NewGuid(), Guid.NewGuid(), Timestamp, LedgerAccounts.Cash, 180_150m, 0m, "cash", dimensions: null, currency: usdInJpyBook);
+        offByTwoYen.Should().Throw<LedgerValidationException>().WithMessage("*does not match transaction amount*");
+        var centBookKeepsCentTolerance = () => new LedgerEntry(Guid.NewGuid(), Guid.NewGuid(), Timestamp, LedgerAccounts.Cash, 110.5m, 0m, "cash", dimensions: null,
+            currency: new LedgerEntryCurrency("EUR", "USD", transactionDebit: 100m, transactionCredit: 0m, fxRateToFunctional: 1.1m));
+        centBookKeepsCentTolerance.Should().Throw<LedgerValidationException>().WithMessage("*does not match transaction amount*");
+    }
+
+    [Theory]
+    [InlineData("USD")]
+    [InlineData("JPY")]
+    [InlineData("KWD")]
+    [InlineData("CLF")]
+    [InlineData("EUR")]
+    public void CoreAndContractsMinorUnitTablesAgree(string currency)
+        => Meridian.Core.Currency.CurrencyMinorUnits.GetPrecision(currency)
+            .Should().Be(Meridian.Contracts.Ledger.CurrencyMinorUnits.GetPrecision(currency));
+
+    [Fact]
     public void MultiCurrencyProjection_ProducesCurrencyAwareLines()
     {
         var input = new MultiCurrencyJournalInput(

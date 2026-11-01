@@ -70,6 +70,14 @@ public static class LedgerAccounts
     public static LedgerAccount RealizedFxLossOrDefault(string? financialAccountId) =>
         string.IsNullOrWhiteSpace(financialAccountId) ? RealizedFxLoss : CreateScoped("Realized FX Loss", LedgerAccountType.Expense, financialAccountId);
 
+    /// <summary>The stock borrow fee expense account for <paramref name="financialAccountId"/>, or the unscoped account when none is given.</summary>
+    public static LedgerAccount StockBorrowFeeExpenseOrDefault(string? financialAccountId) =>
+        string.IsNullOrWhiteSpace(financialAccountId) ? StockBorrowFeeExpense : StockBorrowFeeExpenseFor(financialAccountId);
+
+    /// <summary>The dividend expense account (payments in lieu on short positions) for <paramref name="financialAccountId"/>, or the unscoped account when none is given.</summary>
+    public static LedgerAccount DividendExpenseOrDefault(string? financialAccountId) =>
+        string.IsNullOrWhiteSpace(financialAccountId) ? DividendExpense : DividendExpenseFor(financialAccountId);
+
     public static LedgerAccount CapitalAccountFor(string financialAccountId) =>
         CreateScoped("Capital Account", LedgerAccountType.Equity, financialAccountId);
 
