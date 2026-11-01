@@ -428,6 +428,9 @@ rather than measured at a size the broker will not route.
 - **Margin models.** `RegTMarginModel`'s short rates (150 % initial, 130 % maintenance) are credit-balance rates. Requirements are reported against net equity (long MV − short MV + cash) as `(rate − 1) × |short MV|`, so a compliant short no longer raises a false margin call. `PortfolioMarginModel` equity subtracts the short liability.
 - **Fail-closed pricing.** `CheckMarginStatus` evaluates portfolio and per-position equity at the same supplied prices, never the stored marks. Both models, and `PaperTradingPortfolio.CheckMarginStatus`, throw `MarginPriceUnavailableException` when an open position has no price, instead of skipping it. Flat positions need no price.
 - **Exact quantities.** Margin sizing, `PortfolioStatePositionTracker` and `PositionReconciliationService` use `ExactQuantity`, so fractional holdings are not rounded to whole shares.
+- **Broker cancels.** `BrokerageGatewayAdapter.CancelAsync` propagates caller cancellation instead of returning `false` ("broker refused").
+- **Futures P&L.** `FuturePosition.UnrealizedPnl` excludes mark-to-market already settled into `RealizedPnl`, so each daily settlement is counted once.
+- **Allocation weights.** `ProportionalAllocationEngine.Allocate` validates rule weights (non-empty, non-negative, non-zero sum) even for rules built with `AllocationRule`'s positional constructor.
 
 ## Diagrams
 
