@@ -10032,6 +10032,7 @@ Meridian-main
 │   │   ├── CanonicalizationTests.fs
 │   │   ├── CashFlowProjectorTests.fs
 │   │   ├── DeterministicInvariantTests.fs
+│   │   ├── DirectLendingAggregateServicingTests.fs
 │   │   ├── DirectLendingInteropTests.fs
 │   │   ├── DirectLendingScheduleCharacterizationTests.fs
 │   │   ├── DomainTests.fs
@@ -10077,6 +10078,7 @@ Meridian-main
 │   │   └── WorkstationModeRunnerTests.cs
 │   ├── Meridian.LifecycleSupervisor.Tests
 │   │   ├── LauncherPolicyTests.cs
+│   │   ├── LauncherReceiptMonitorEdgeTests.cs
 │   │   ├── LifecycleDatabaseAclTests.cs
 │   │   ├── LifecycleDatabaseToolTests.cs
 │   │   ├── LifecycleStartupOutcomeTests.cs
@@ -10659,6 +10661,7 @@ Meridian-main
 │   │   │       ├── ZiggyCreatures.FusionCache.Serialization.SystemTextJson.dll
 │   │   │       └── ZstdSharp.dll
 │   │   ├── BacktestProxyRealismTests.cs
+│   │   ├── ContainedProcessTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.QuantScript.Tests.csproj
 │   │   ├── NotebookExecutionSessionTests.cs
@@ -10667,15 +10670,18 @@ Meridian-main
 │   │   ├── PriceSeriesTests.cs
 │   │   ├── QuantScriptCompositionAndLaunchTests.cs
 │   │   ├── QuantScriptNotebookStoreTests.cs
+│   │   ├── QuantScriptWorkerProgramTests.cs
 │   │   ├── QuantScriptWorkerProtocolTests.cs
 │   │   ├── RoslynScriptCompilerTests.cs
 │   │   ├── ScriptRunnerTests.cs
 │   │   ├── StatisticsEngineTests.cs
 │   │   └── TechnicalSeriesExtensionsTests.cs
 │   ├── Meridian.Setup.Tests
+│   │   ├── InstallationStagingTests.cs
 │   │   ├── InstallationTransactionTests.cs
 │   │   ├── Meridian.Setup.Tests.csproj
-│   │   └── PayloadPackageTests.cs
+│   │   ├── PayloadPackageTests.cs
+│   │   └── SetupTransactionLeaseTests.cs
 │   ├── Meridian.Tests
 │   │   ├── Application
 │   │   │   ├── Accounting
@@ -11021,6 +11027,7 @@ Meridian-main
 │   │   ├── Compliance
 │   │   │   ├── AccessReviewServiceTests.cs
 │   │   │   ├── CompliancePolicyEngineTests.cs
+│   │   │   ├── FileComplianceApprovalStoreTests.cs
 │   │   │   └── ImmutableAuditLogServiceTests.cs
 │   │   ├── Contracts
 │   │   │   └── CoreExtensibilityContractsTests.cs
@@ -11606,6 +11613,9 @@ Meridian-main
 │   │   │   ├── ShareClassUnitRegisterTests.cs
 │   │   │   └── YearEndCloseTests.cs
 │   │   ├── Mcp
+│   │   │   ├── McpRepoRootFixture.cs
+│   │   │   ├── RepoEditToolsTests.cs
+│   │   │   ├── RepoPathServiceTests.cs
 │   │   │   └── ToolProcessRunnerTests.cs
 │   │   ├── MoneyMarketFunds
 │   │   │   └── MoneyMarketFundProjectionServiceTests.cs
