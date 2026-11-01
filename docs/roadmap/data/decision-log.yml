@@ -283,3 +283,34 @@ decisions:
     related_roadmap_items:
       - W10-BOND-001
       - W10-LOT-002
+  - id: DEC-VALUE-PROPOSITION-001
+    title: Restate the value proposition around decisions, execution, and proof without widening scope
+    status: accepted
+    decided_on: 2026-11-01
+    owner_lane: Core Team
+    summary: >-
+      The owner directed an adversarial review of a proposed expansion of Meridian's end-user value
+      proposition (eight product domains, twelve prioritized capabilities, seven role workspaces, an
+      individual-investor persona, and a bond lifecycle MVP); the review is retained at
+      docs/product/value-proposition-review-2026-11-01.md. Design charter Version 1.7 adopts the
+      refined proposition: Meridian shows what a decision will do before it is made, records what
+      actually happened, and proves every resulting number while stating plainly which numbers it
+      cannot prove yet. The promise is organized around three questions, each with a proof object and
+      a checkable test, and Verified Coverage remains the primary metric with unchanged formulas.
+      Preview Fidelity is recorded as an unregistered candidate metric, and five design candidates are
+      added (pre-trade financial impact preview, decision trace, decision-to-proof reference slice,
+      evidence-grounded explanation assistant, and single-principal attestation). Small investment
+      teams that run the front office and the books themselves are recorded as a first-buyer
+      discovery hypothesis only; the customer table and its order are unchanged. Whether the v1
+      single-operator envelope should support single-principal attestation remains an open decision.
+      The decision registers no roadmap row and changes no rank, status, dependency, acceptance,
+      metric formula, deployment envelope, ADR, or release authority, and it reopens no deferred lane.
+      Declined elements of the proposal stay out of scope: a configurable workflow builder, a
+      third-party strategy marketplace, forecasting and enterprise-risk expansion, a retail segment,
+      an insurance investment accounting segment, and new root workspaces.
+    related_roadmap_items:
+      - W11-COVER-001
+      - W11-PASSPORT-001
+      - W13-STRAT-001
+      - W13-OMS-001
+      - W10-BOND-001

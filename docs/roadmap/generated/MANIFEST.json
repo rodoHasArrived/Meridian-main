@@ -6,7 +6,7 @@
   "inputs": [
     {
       "path": "docs/roadmap/data/decision-log.yml",
-      "sha256": "834dbffd2ba1377dba3f36c73135abe4106900f5cb59236f918c4bd0dd4e76a7"
+      "sha256": "98d7e179463bb3a19a4e974365be81f078e0d7a7ecc9ec03765a530821b555a0"
     },
     {
       "path": "docs/roadmap/data/document-index.yml",
