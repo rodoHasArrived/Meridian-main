@@ -190,6 +190,33 @@ public class PortableDataPackagerTests : TempDirectoryTestBase
     }
 
     [Fact]
+    public async Task CreatePackageAsync_EmbeddedManifest_ListsSupplementaryFiles()
+    {
+        await CreateTestJsonlFileAsync("AAPL/Trade/2026-01-03.jsonl", new[]
+        {
+            new { Timestamp = "2026-01-03T10:00:00Z", Symbol = "AAPL", Price = 185.50m, Size = 100 }
+        });
+
+        var result = await _packager.CreatePackageAsync(new PackageOptions
+        {
+            Name = "supplementary-inventory",
+            OutputDirectory = TestOutputDir,
+            IncludeLoaderScripts = true
+        });
+
+        result.Success.Should().BeTrue();
+        result.Manifest!.SupplementaryFiles.Should().NotBeNullOrEmpty();
+
+        // The copy inside the zip must carry the same inventory as the returned manifest.
+        using var archive = ZipFile.OpenRead(result.PackagePath!);
+        using var reader = new StreamReader(archive.GetEntry("manifest.json")!.Open());
+        using var json = JsonDocument.Parse(await reader.ReadToEndAsync());
+        json.RootElement.TryGetProperty("supplementaryFiles", out var embedded).Should().BeTrue();
+        embedded.ValueKind.Should().Be(JsonValueKind.Array);
+        embedded.GetArrayLength().Should().Be(result.Manifest.SupplementaryFiles!.Length);
+    }
+
+    [Fact]
     public async Task CreatePackageAsync_WithChecksums_ShouldComputeSha256()
     {
         // Arrange
@@ -423,6 +450,7 @@ public class PortableDataPackagerTests : TempDirectoryTestBase
         contents.TotalFiles.Should().Be(1);
         contents.Symbols.Should().Contain("AAPL");
         contents.Files.Should().NotBeEmpty();
+        contents.PackageSizeBytes.Should().Be(new FileInfo(createResult.PackagePath!).Length);
     }
 
     [Fact]

@@ -22,6 +22,13 @@ public sealed class ParquetConversionService
 
     private const int DefaultRowGroupSize = 10_000;
 
+    /// <summary>
+    /// Test seam: invoked after each source line is read during schema discovery
+    /// (<c>"discover"</c>) and after each row group is written (<c>"row-group"</c>), so tests can
+    /// cancel at a deterministic point. Null in production.
+    /// </summary>
+    internal Action<string>? Checkpoint { get; set; }
+
     public ParquetConversionService(StorageOptions options)
     {
         _options = options;
@@ -193,6 +200,7 @@ public sealed class ParquetConversionService
                     await WriteRowGroupAsync(writer, schema, batch, ct).ConfigureAwait(false);
                     convertedRecords += batch.Count;
                     batch.Clear();
+                    Checkpoint?.Invoke("row-group");
                 }
             }
 
@@ -206,7 +214,7 @@ public sealed class ParquetConversionService
         return convertedRecords;
     }
 
-    private static async Task<DataField[]> DiscoverSchemaAsync(string path, CancellationToken ct)
+    private async Task<DataField[]> DiscoverSchemaAsync(string path, CancellationToken ct)
     {
         var fieldTypes = new Dictionary<string, Type>(StringComparer.Ordinal);
 
@@ -217,6 +225,7 @@ public sealed class ParquetConversionService
             ct.ThrowIfCancellationRequested();
 
             var line = await reader.ReadLineAsync(ct).ConfigureAwait(false);
+            Checkpoint?.Invoke("discover");
             if (string.IsNullOrWhiteSpace(line) || !TryParseRecord(line, out var record))
                 continue;
 

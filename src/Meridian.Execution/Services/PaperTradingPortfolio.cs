@@ -350,8 +350,6 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
             var marginBorrowed = account.Positions.Values.Sum(static p => p.MarginBorrowed);
             var effectiveCash = account.Cash - marginBorrowed;
-            // Net equity: the short market value is a liability and must be subtracted.
-            var equity = effectiveCash + account.LongMarketValue - account.ShortMarketValue;
             var executionPositions = account.Positions.ToDictionary(
                 kv => kv.Key,
                 kv => kv.Value.ToExecutionPosition(),
@@ -362,6 +360,11 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                 executionPositions,
                 prices,
                 effectiveCash);
+
+            // Net equity at the SUPPLIED prices (long MV − short MV + cash), the same snapshot the
+            // portfolio requirement used. The account's stored marks may be stale, and a
+            // per-position view priced differently could miss a call the portfolio view reports.
+            var equity = effectiveCash + portfolioReq.NotionalValue;
 
             var posRequirements = new List<MarginRequirement>();
             foreach (var (symbol, pos) in executionPositions)

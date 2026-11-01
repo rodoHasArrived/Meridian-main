@@ -421,11 +421,6 @@ public sealed partial class PortableDataPackager
         {
             using var archive = new ZipArchive(packageStream, ZipArchiveMode.Create, leaveOpen: true);
 
-            // Add manifest
-            await AddFileToZipAsync(archive, ManifestFileName,
-                JsonSerializer.Serialize(manifest, MarketDataJsonContext.PrettyPrintOptions),
-                compressionLevel, ct);
-
             // Add data files
             var processedCount = 0;
             foreach (var file in sourceFiles)
@@ -442,6 +437,12 @@ public sealed partial class PortableDataPackager
 
             // Add supplementary files
             await AddSupplementaryFilesAsync(archive, manifest, options, compressionLevel, ct);
+
+            // The manifest goes in last so it carries the supplementary-file inventory that
+            // AddSupplementaryFilesAsync just populated. Readers locate it by name, not position.
+            await AddFileToZipAsync(archive, ManifestFileName,
+                JsonSerializer.Serialize(manifest, MarketDataJsonContext.PrettyPrintOptions),
+                compressionLevel, ct);
         }, ct);
     }
 

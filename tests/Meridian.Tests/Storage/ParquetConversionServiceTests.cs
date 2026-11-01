@@ -177,6 +177,41 @@ public class ParquetConversionServiceTests : IDisposable
         result.Errors.Should().Be(0);
     }
 
+    [Theory]
+    [InlineData("discover")]
+    [InlineData("row-group")]
+    public async Task ConvertCompletedDaysAsync_CancelledMidFile_PublishesNothingAndRetryConvertsAllRows(string phase)
+    {
+        var yesterday = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1));
+        var records = Enumerable.Range(0, 25_000)
+            .Select(i => new { Timestamp = DateTime.UtcNow.AddDays(-1).AddMilliseconds(i).ToString("o"), Symbol = "QQQ", Price = 500.0 + i, Size = i })
+            .ToArray();
+        await CreateTestJsonlFileAsync($"QQQ.Trade.{yesterday:yyyy-MM-dd}.jsonl", records);
+
+        using var cts = new CancellationTokenSource();
+        var service = new ParquetConversionService(new StorageOptions { RootPath = _testDataRoot })
+        {
+            // Cancel at the first checkpoint of the chosen phase: mid-discovery, or after the
+            // first of three row groups has been written.
+            Checkpoint = reached => { if (reached == phase) cts.Cancel(); }
+        };
+
+        var act = () => service.ConvertCompletedDaysAsync(ct: cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        var parquetDir = Path.Combine(_testDataRoot, "_parquet");
+        (Directory.Exists(parquetDir) ? Directory.EnumerateFiles(parquetDir, "*", SearchOption.AllDirectories) : [])
+            .Should().BeEmpty("a cancelled conversion must leave neither a partial output nor a temp file");
+
+        // The next run must not treat the cancelled file as already converted.
+        service.Checkpoint = null;
+        var retry = await service.ConvertCompletedDaysAsync();
+
+        retry.SkippedAlreadyConverted.Should().Be(0);
+        retry.FilesConverted.Should().Be(1);
+        retry.RecordsConverted.Should().Be(25_000);
+    }
+
     private async Task CreateTestJsonlFileAsync<T>(string fileName, T[] records)
     {
         var filePath = Path.Combine(_testDataRoot, fileName);

@@ -357,7 +357,8 @@ public sealed partial class PortableDataPackager
             CreatedAt = manifest.CreatedAt,
             TotalFiles = manifest.TotalFiles,
             TotalEvents = manifest.TotalEvents,
-            PackageSizeBytes = manifest.PackageSizeBytes,
+            // The embedded manifest cannot record the size of the file that contains it.
+            PackageSizeBytes = new FileInfo(packagePath).Length,
             UncompressedSizeBytes = manifest.UncompressedSizeBytes,
             Symbols = manifest.Symbols,
             EventTypes = manifest.EventTypes,

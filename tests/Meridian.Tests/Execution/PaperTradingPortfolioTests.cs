@@ -854,6 +854,23 @@ public sealed class PaperTradingPortfolioMarginRulesTests
     }
 
     [Fact]
+    public void CheckMarginStatus_PositionEquity_UsesSuppliedPricesNotStoredMarks()
+    {
+        // $5k cash, short 100 @ $100 → $15k credit balance. Check at $120 WITHOUT updating the
+        // stored mark: net equity = 15,000 − 12,000 = 3,000 vs 30 % × 12,000 = 3,600 → −600.
+        var portfolio = BuildRegTPortfolio(5_000m);
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Sell, qty: 100, price: 100m));
+
+        var status = portfolio.CheckMarginStatus("margin-1",
+            new Dictionary<string, decimal> { ["AAPL"] = 120m });
+
+        status.PortfolioRequirement.ExcessLiquidity.Should().Be(-600m);
+        status.PositionRequirements.Should().ContainSingle()
+            .Which.ExcessLiquidity.Should().Be(-600m,
+                "per-position equity must use the same price snapshot as the portfolio view");
+    }
+
+    [Fact]
     public void CheckMarginStatus_MissingPriceForOpenPosition_FailsClosed()
     {
         var portfolio = BuildRegTPortfolio(100_000m);
