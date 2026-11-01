@@ -30,16 +30,24 @@ public sealed record ShortCoverTerms(
     /// <summary>The reason the terms cannot produce a journal, or null.</summary>
     public string? Refusal()
     {
-        if (CoveredQuantity <= 0m) return "Covered quantity must be positive.";
-        if (CoverPrice < 0m) return "Cover price cannot be negative.";
-        if (Fees < 0m) return "Fees cannot be negative.";
-        if (string.IsNullOrWhiteSpace(TransactionCurrency) || string.IsNullOrWhiteSpace(FunctionalCurrency)) return "Transaction and functional currencies are required.";
+        if (CoveredQuantity <= 0m)
+            return "Covered quantity must be positive.";
+        if (CoverPrice < 0m)
+            return "Cover price cannot be negative.";
+        if (Fees < 0m)
+            return "Fees cannot be negative.";
+        if (string.IsNullOrWhiteSpace(TransactionCurrency) || string.IsNullOrWhiteSpace(FunctionalCurrency))
+            return "Transaction and functional currencies are required.";
         if (TransactionCurrency != TransactionCurrency.Trim().ToUpperInvariant() || FunctionalCurrency != FunctionalCurrency.Trim().ToUpperInvariant())
             return "Currency codes must be upper-case ISO codes without surrounding whitespace.";
-        if (AcquisitionFxRateToFunctional <= 0m || CoverFxRateToFunctional <= 0m) return "Acquisition and cover FX rates must be positive.";
-        if (IsFunctionalCurrency && (AcquisitionFxRateToFunctional != 1m || CoverFxRateToFunctional != 1m)) return "Same-currency covers must carry FX rates of exactly one.";
-        if (RelievedProceedsFunctional <= 0m) return "Relieved opening proceeds must be positive.";
-        if (ModelVersion != CurrentModelVersion) return $"Unsupported short cover model version '{ModelVersion}'.";
+        if (AcquisitionFxRateToFunctional <= 0m || CoverFxRateToFunctional <= 0m)
+            return "Acquisition and cover FX rates must be positive.";
+        if (IsFunctionalCurrency && (AcquisitionFxRateToFunctional != 1m || CoverFxRateToFunctional != 1m))
+            return "Same-currency covers must carry FX rates of exactly one.";
+        if (RelievedProceedsFunctional <= 0m)
+            return "Relieved opening proceeds must be positive.";
+        if (ModelVersion != CurrentModelVersion)
+            return $"Unsupported short cover model version '{ModelVersion}'.";
         return null;
     }
 }
