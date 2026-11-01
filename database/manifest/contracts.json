@@ -4593,7 +4593,7 @@
       ]
     }
   ],
-  "fingerprint": "cf4ccb47a7400241d2ad4f72d53b438774391d7b0fc8e535fcdd67b0c3dc82ee",
+  "fingerprint": "19adb4f53dc6d4a8d67656a86362ec52c4ec1d0fefe750cfce0876fddd4e8b9e",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -7373,7 +7373,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "db5594c3f476068af0a5c5ca21db74a340d9982dbc266f2c016b31e43bd08848",
+      "fingerprint": "4d796e13d67f5b94f45ca4f4e50177d06a22c07035c4481ef20fc9b89739cefe",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Workstation",
       "object_ids": [
@@ -434336,7 +434336,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "13b57ce4595f93e659ff339b3d17548d6dacb24b1d517a59e611587d9afc964b",
+      "fingerprint": "cfa474e115c7baefba214dd632af700661f2a2033a5b90d7e2c90e5f8f22932c",
       "full_name": "Meridian.Contracts.Workstation.WorkstationWorkspaceCatalog",
       "id": "Meridian.Contracts.Workstation.WorkstationWorkspaceCatalog",
       "kind": "class",
@@ -434353,7 +434353,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<WorkstationWorkspaceDefinition>",
-          "source_line": 100,
+          "source_line": 86,
           "type": "IReadOnlyList<WorkstationWorkspaceDefinition>"
         }
       ],

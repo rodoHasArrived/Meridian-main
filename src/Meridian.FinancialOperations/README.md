@@ -1116,6 +1116,11 @@ summary review stages. These artifacts are review rows backed by retained workfl
 do not create a path for assistant-origin posting, approval, payment release, report publication, or
 evidence deletion.
 
+## Audit hardening (2026-11)
+
+- **Statement reconciliation cancellation.** `StatementReconciliationOrchestrator` rethrows caller cancellation instead of writing a durable `Failed` checkpoint. The checkpoint stays at its last completed stage, so the run can resume.
+- **Daily reconciliation runs.** `ReconciliationRunOrchestrator` keys runs as `recon:<yyyy-MM-dd>:<CCY>`, so runs for different base currencies never share a cached result. Capture is serialized per key: concurrent first runs capture once, and a slow capture for one key never blocks cached lookups or captures for another.
+
 ## Diagrams
 
 `DIA-ASSURANCE-LOOP`

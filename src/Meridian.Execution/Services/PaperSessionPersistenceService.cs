@@ -510,15 +510,6 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
     }
 
     /// <summary>
-    /// Compatibility alias for <see cref="GetActivePortfolio"/>. The returned portfolio is a
-    /// defensive projection; callers cannot mutate authoritative state outside the session's
-    /// durable fill gate. Returns <see langword="null"/> when the session is absent or closed.
-    /// </summary>
-    [Obsolete("Use GetActivePortfolio; mutable session portfolios are no longer exposed.")]
-    public PaperTradingPortfolio? GetLivePortfolio(string sessionId)
-        => GetActivePortfolio(sessionId);
-
-    /// <summary>
     /// Converts a lightweight <see cref="ExecutionFill"/> into an <see cref="ExecutionReport"/>
     /// and records it against the session via <see cref="RecordFillAsync"/>.
     /// </summary>

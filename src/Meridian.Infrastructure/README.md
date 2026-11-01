@@ -492,6 +492,10 @@ Broker statement imports hash the source file bytes and persist the resulting co
 deterministic duplicate key derived from fund account, statement period, and source hash. Source
 paths and original file names remain provenance metadata, not duplicate-detection inputs.
 
+## Audit hardening (2026-11)
+
+- **Backfill failover on timeouts.** `CompositeHistoricalDataProvider` and `CrossProviderValidator` rethrow `OperationCanceledException` only when the caller's token is cancelled. A provider-side timeout, such as `HttpClient.Timeout` surfacing as `TaskCanceledException`, now fails over to the next provider instead of ending the request.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.

@@ -166,6 +166,26 @@ public sealed class DerivativePositionTests
     }
 
     [Fact]
+    public void FuturePosition_AfterSettlement_TotalPnlIsNotDoubleCounted()
+    {
+        var details = new FutureDetails("ES", new DateOnly(2024, 3, 15), 0.25m, 12.50m, 50m, "CME");
+        // Entered at 4800, last settled at 4800: nothing settled yet.
+        var pos = new FuturePosition("ESH24", 2, 4800m, 4800m, 0m, details);
+
+        pos.SettleDaily(4820m); // +20 pts × 2 × 50 = 2,000 settled to cash
+        pos.SettleDaily(4810m); // −10 pts × 2 × 50 = −1,000 settled to cash
+
+        // True P&L since entry: (4810 − 4800) × 2 × 50 = 1,000, all of it settled.
+        pos.RealizedPnl.Should().Be(1_000m);
+        pos.UnrealizedPnl.Should().Be(0m);
+        (pos.RealizedPnl + pos.UnrealizedPnl).Should().Be(1_000m);
+
+        var viaWith = new FuturePosition("ESH24", 2, 4800m, 4800m, 0m, details)
+            .WithSettlement(4820m).WithSettlement(4810m);
+        (viaWith.RealizedPnl + viaWith.UnrealizedPnl).Should().Be(1_000m);
+    }
+
+    [Fact]
     public void FuturePosition_WithSettlement_ReturnsNewInstance()
     {
         var details = new FutureDetails("ES", new DateOnly(2024, 3, 15), 0.25m, 12.50m, 50m, "CME");
