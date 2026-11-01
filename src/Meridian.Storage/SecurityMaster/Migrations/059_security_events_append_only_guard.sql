@@ -14,12 +14,10 @@ begin
 end;
 $$;
 
-drop trigger if exists security_events_append_only on __SCHEMA__.security_events;
 create trigger security_events_append_only
     before update or delete on __SCHEMA__.security_events
     for each row execute function __SCHEMA__.reject_security_event_mutation();
 
-drop trigger if exists security_events_no_truncate on __SCHEMA__.security_events;
 create trigger security_events_no_truncate
     before truncate on __SCHEMA__.security_events
     for each statement execute function __SCHEMA__.reject_security_event_mutation();
