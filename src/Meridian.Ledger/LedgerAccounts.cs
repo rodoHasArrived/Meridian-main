@@ -58,6 +58,18 @@ public static class LedgerAccounts
     public static LedgerAccount RealizedLossOrDefault(string? financialAccountId) =>
         string.IsNullOrWhiteSpace(financialAccountId) ? RealizedLoss : RealizedLossFor(financialAccountId);
 
+    /// <summary>The commission expense account for <paramref name="financialAccountId"/>, or the unscoped account when none is given.</summary>
+    public static LedgerAccount CommissionExpenseOrDefault(string? financialAccountId) =>
+        string.IsNullOrWhiteSpace(financialAccountId) ? CommissionExpense : CommissionExpenseFor(financialAccountId);
+
+    /// <summary>The realized FX gain account for <paramref name="financialAccountId"/>, or the unscoped account when none is given.</summary>
+    public static LedgerAccount RealizedFxGainOrDefault(string? financialAccountId) =>
+        string.IsNullOrWhiteSpace(financialAccountId) ? RealizedFxGain : CreateScoped("Realized FX Gain", LedgerAccountType.Revenue, financialAccountId);
+
+    /// <summary>The realized FX loss account for <paramref name="financialAccountId"/>, or the unscoped account when none is given.</summary>
+    public static LedgerAccount RealizedFxLossOrDefault(string? financialAccountId) =>
+        string.IsNullOrWhiteSpace(financialAccountId) ? RealizedFxLoss : CreateScoped("Realized FX Loss", LedgerAccountType.Expense, financialAccountId);
+
     public static LedgerAccount CapitalAccountFor(string financialAccountId) =>
         CreateScoped("Capital Account", LedgerAccountType.Equity, financialAccountId);
 

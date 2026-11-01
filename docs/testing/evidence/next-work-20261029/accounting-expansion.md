@@ -8,6 +8,7 @@ certification or an operator verdict.
 | --- | --- | --- |
 | Short opening | Debit cash, credit a liability for positive opening proceeds. | Explicit Short direction, matching Short/Liability position, canonical acquisition facts and existing independent posting approval. |
 | Short cover | Debit relieved opening proceeds, credit execution cash cost, recognize proceeds less cost as book gain/loss. | Explicit functional-currency execution price, homogeneous canonical relief pool, effective relief-policy revision, versioned selections and existing approval. |
+| Short cover in transaction currency with fees (`short-cover-currency-v1`, stacked branch) | Credit cash in the transaction currency at the cover FX (cost plus fees, each rounded once to the currency's minor units); debit the relieved opening proceeds at the retained acquisition FX; debit commission expense for the fee; recognize proceeds less cost at acquisition FX as book gain/loss and the FX movement on the cover cost as realized FX gain/loss. Same-currency, fee-free terms reproduce the functional cover exactly. | Reviewed `ShortCoverTerms` carrying the lots' acquisition currency and FX, the settlement-date cover FX and fees; `ShortCoverPostingGuard` proves a direction-homogeneous short pool with one acquisition currency/FX, relieved quantity and functional basis, and exactly the projected currency-aware lines. |
 | Remaining-face amortization | Continue the acquisition schedule for surviving booked quantity times current/booked factor. Retain acquisition FX. | Explicit calculation v3, immutable paydown receipt and prior disposal/basis history; locked lot and Security Master inputs. |
 | Automatic yield-to-worst | Solve the regular-coupon yield for maturity and each fixed-price European whole call/put. Select the minimum maturity/issuer-call yield, with deterministic date/kind tie-breaking. | Full alternative list and selected date/price/yield are retained in the reviewed v3 instruction and recomputed before posting. |
 
@@ -40,8 +41,11 @@ still block. Declared schedule conventions block the v3 remaining-face/yield-to-
 declared bonds amortize through `canonical-lot-amortization-v5`, which shares the analytics
 coupon, stub, accrual and discount-time calculator (the interim v4 model was removed before any
 instruction was produced). These need their own valuation inputs and proof;
-they are not interpreted as absent. Short manufactured income, corporate actions and tax
-character and short reversal/rebook also remain separate treatments. Tax reports refuse to infer short-sale character from
+they are not interpreted as absent. The transaction-currency short cover has a reviewed terms
+record, projector and guard but no atomic store path yet: `ValidateShortLotJournal` still admits
+only the functional-currency cover, and extending the atomic command needs the PostgreSQL proof this
+environment cannot run. Short manufactured income, corporate actions and tax character and short
+reversal/rebook also remain separate treatments. Tax reports refuse to infer short-sale character from
 opening-lot age. Broader consumer certification and live Windows acceptance remain open.
 
 Required proof includes balanced gain/flat/loss covers, positive remaining quantity and basis,
