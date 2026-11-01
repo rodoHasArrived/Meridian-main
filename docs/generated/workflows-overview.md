@@ -32,7 +32,7 @@ This inventory is generated from `.github/workflows/*.yml` and `.github/workflow
 | `.github/workflows/maintenance.yml` | Maintenance | pull_request, push, schedule, workflow_dispatch |
 | `.github/workflows/meridian-ci.yml` | Meridian CI | workflow_call, pull_request, push, merge_group, workflow_dispatch |
 | `.github/workflows/pipeline-benchmark.yml` | Pipeline Budget Benchmark | workflow_dispatch, pull_request, push |
-| `.github/workflows/production-certification.yml` | Production Certification | workflow_call, workflow_dispatch, schedule, push |
+| `.github/workflows/production-certification.yml` | Production Certification | workflow_call, workflow_dispatch, schedule |
 | `.github/workflows/provider-validation.yml` | Provider Validation | workflow_dispatch, schedule |
 | `.github/workflows/publish-smoke.yml` | Publish Smoke | workflow_call, workflow_dispatch |
 | `.github/workflows/release-readiness.yml` | Release Readiness | schedule, workflow_dispatch |
