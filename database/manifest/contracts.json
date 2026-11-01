@@ -4591,7 +4591,7 @@
       ]
     }
   ],
-  "fingerprint": "0fd33a34711dbe51a842b412471f4bf1f8992446ccc2a3097ecebaa5b3f44f34",
+  "fingerprint": "0ce822d7c2ea6ef93e18527b476c52ad78c40f79d13381d399e551e7fa934b3a",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4602,7 +4602,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "1ec3af7d12eee10ca9251c2bd3c3b61adf8c427ab8f960bf8df8a6af96fee2be",
+      "fingerprint": "bf35d8227a72396286c13d86842071f6c2d0643ba00cfaf57df19c3c1f94cb25",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Accounting.Lots",
       "object_ids": [
@@ -11497,7 +11497,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "dc197edb710f8ea31104d9430d801c9f99b6a89051a7a540517d0815542e947f",
+      "fingerprint": "86e24072e636c4b4f58c0d6cdf1b3b2088a7ad729eee7c72197a4cf549e0cbb1",
       "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotRedemptionYieldDto",
       "id": "Meridian.Contracts.Accounting.Lots.OpenLotRedemptionYieldDto",
       "kind": "record",
@@ -11514,7 +11514,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 7,
+          "source_line": 9,
           "type": "decimal"
         },
         {
@@ -11528,7 +11528,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 7,
+          "source_line": 9,
           "type": "DateOnly"
         },
         {
@@ -11542,7 +11542,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 7,
+          "source_line": 9,
           "type": "string"
         },
         {
@@ -11556,7 +11556,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 7,
+          "source_line": 9,
           "type": "decimal"
         }
       ],
@@ -11566,12 +11566,12 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.OpenLotRedemptionYieldDto",
       "references": [],
       "source": {
-        "line": 7,
+        "line": 9,
         "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotYieldToWorst.cs"
       },
       "sources": [
         {
-          "line": 7,
+          "line": 9,
           "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotYieldToWorst.cs"
         }
       ],
@@ -12127,7 +12127,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "1b9d432aef7ffe98acff2523a0bd2dfba7c1543c4ba8b03e5401f2d483bc55ee",
+      "fingerprint": "dae2912873aaed4d6d43c5cb7194cd0ee320d6b2eb6382e7d10cf0e0986be12c",
       "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorst",
       "id": "Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorst",
       "kind": "class",
@@ -12139,12 +12139,12 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorst",
       "references": [],
       "source": {
-        "line": 17,
+        "line": 20,
         "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotYieldToWorst.cs"
       },
       "sources": [
         {
-          "line": 17,
+          "line": 20,
           "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotYieldToWorst.cs"
         }
       ],
@@ -12160,7 +12160,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "e9e6fed0151ba83d2da0361cff1f52f014481d588c87c9e5b3d86b4b98874301",
+      "fingerprint": "9e67cd6e11570344dfeaabd4512a64536e30306a8b15ceb7a0439984f9429748",
       "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorstDto",
       "id": "Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorstDto",
       "kind": "record",
@@ -12177,7 +12177,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OpenLotRedemptionYieldDto>",
-          "source_line": 11,
+          "source_line": 13,
           "type": "IReadOnlyList<OpenLotRedemptionYieldDto>"
         },
         {
@@ -12191,7 +12191,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OpenLotRedemptionYieldDto",
-          "source_line": 10,
+          "source_line": 12,
           "type": "OpenLotRedemptionYieldDto"
         }
       ],
@@ -12203,12 +12203,12 @@
         "Meridian.Contracts.Accounting.Lots.OpenLotRedemptionYieldDto"
       ],
       "source": {
-        "line": 10,
+        "line": 12,
         "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotYieldToWorst.cs"
       },
       "sources": [
         {
-          "line": 10,
+          "line": 12,
           "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotYieldToWorst.cs"
         }
       ],
