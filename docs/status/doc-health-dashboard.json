@@ -1,6 +1,6 @@
 {
   "total_files": 795,
-  "total_lines": 180519,
+  "total_lines": 180537,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -2519,7 +2519,7 @@
     },
     {
       "path": "docs/engineering/plans/bond-capability-expansion.md",
-      "line_count": 113,
+      "line_count": 129,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2855,7 +2855,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-05.md",
-      "line_count": 475,
+      "line_count": 466,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2863,7 +2863,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-06.md",
-      "line_count": 550,
+      "line_count": 546,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2871,7 +2871,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-07.md",
-      "line_count": 84,
+      "line_count": 98,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3031,7 +3031,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 13180,
+      "line_count": 13181,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
