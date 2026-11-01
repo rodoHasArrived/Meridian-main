@@ -85,6 +85,7 @@ Every test-writing task follows this 4-step workflow:
 - Commit the test file to the appropriate test project subdirectory
 - Create a PR via GitHub referencing the issue or code review finding that prompted the tests
 - Request review; confirm the new tests pass in CI before marking complete
+- Label provider evidence as exactly one of `synthetic-verified`, `live-verified`, `live-untested`, or `unsupported` in the PR/summary when tests cover a provider adapter. Recorded fixtures, vendor docs, and mock-server tests are `synthetic-verified` at most; only an authorized run against the real provider is `live-verified`.
 
 ---
 

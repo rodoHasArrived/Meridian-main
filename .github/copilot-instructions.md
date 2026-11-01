@@ -1,10 +1,12 @@
 # Copilot Repository Instructions
 
-**Last Updated:** 2026-06-16
+**Last Updated:** 2026-10-31
 
 Use these instructions for every task in this repository to improve quality, reliability, and review speed.
 
 **Solo-developer default:** follow [risk-based development guidance](../docs/ai/solo-developer-workflow.md). The project uses synthetic financial data and one developer's decisions; ordinary PRs need focused verification, not invented human approvers or live-provider connections. Keep GitHub-required checks and financial/security invariants intact.
+
+**Tiers, roles, evidence:** pick a Level 1/2/3 verification tier in [Verification tiers](../docs/ai/solo-developer-workflow.md#verification-tiers) (full local `bash scripts/ci.sh` is optional at Level 1, recommended at Level 2, run when practical at Level 3 or for build/CI-tooling changes; always say what ran and what did not). Use the AI roles table under [Agent roles](../docs/ai/solo-developer-workflow.md#agent-roles) and label provider claims with the [provider evidence labels](../docs/ai/solo-developer-workflow.md#provider-evidence-labels) (`synthetic-verified`, `live-verified`, `live-untested`, `unsupported`). Hosted `Meridian CI / quality-gate` stays the authoritative merge result.
 
 > **See also:** [docs/ai/assistant-workflow-contract.md](../docs/ai/assistant-workflow-contract.md) for shared provider-agnostic rules, [CLAUDE.md](../CLAUDE.md) for full project context, and [docs/ai/README.md](../docs/ai/README.md) for the master AI resource index.
 

@@ -55,7 +55,8 @@ Every provider build task follows this 4-step workflow:
 ### 4 — COMPLETE (MCP)
 - Commit the new provider files and test scaffold
 - Create a PR via GitHub summarizing the provider, its capabilities, and the compliance checklist status
-- Request review; the `meridian-code-review` skill's Lens 5 checklist is the acceptance gate
+- Request review; the `meridian-code-review` skill's Lens 5 checklist (plus its Level 2/3 invariants overlay) is the review checklist; a separate AI agent review is not independent human review, and the developer decides on merge
+- Label provider evidence as exactly one of `synthetic-verified`, `live-verified`, `live-untested`, or `unsupported` in the PR/summary. Recorded fixtures, vendor docs, and mock-server tests are `synthetic-verified` at most; only an authorized run against the real provider is `live-verified`.
 
 ---
 
