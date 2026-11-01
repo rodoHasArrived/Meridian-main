@@ -4619,7 +4619,8 @@ Meridian-main
 │   │   │       ├── OpenLotValidation.cs
 │   │   │       ├── OpenLotYieldToWorst.cs
 │   │   │       ├── ShortCarryInstruction.cs
-│   │   │       └── ShortCorrection.cs
+│   │   │       ├── ShortCorrection.cs
+│   │   │       └── ShortCoverTerms.cs
 │   │   ├── AccountingSystem
 │   │   │   └── AccountingSystemDtos.cs
 │   │   ├── Api
@@ -5593,6 +5594,7 @@ Meridian-main
 │   │   │   ├── LedgerJournalConstruction.cs
 │   │   │   ├── ShortCarryPostingGuard.cs
 │   │   │   ├── ShortCorrectionGuard.cs
+│   │   │   ├── ShortCoverPostingGuard.cs
 │   │   │   ├── SpineAcquisitionLotCompletion.cs
 │   │   │   └── SpineAcquisitionLotFacts.cs
 │   │   ├── MiddleOffice
@@ -11272,7 +11274,8 @@ Meridian-main
 │   │   │   │   ├── AssetAccountingLifecycleSeparationTests.cs
 │   │   │   │   ├── BondSettlementConsiderationTests.cs
 │   │   │   │   ├── ShortCarryTests.cs
-│   │   │   │   └── ShortCorrectionTests.cs
+│   │   │   │   ├── ShortCorrectionTests.cs
+│   │   │   │   └── ShortCoverCurrencyTests.cs
 │   │   │   ├── OperationsContinuity
 │   │   │   │   ├── FinancialOperationsCommandCenterReadService.AcceptanceTests.cs
 │   │   │   │   ├── FinancialOperationsCommandCenterReadService.PublicationTests.cs
