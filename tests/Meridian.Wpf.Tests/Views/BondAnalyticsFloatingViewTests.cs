@@ -90,16 +90,12 @@ public sealed class BondAnalyticsFloatingViewTests
                 metrics.Items.Cast<BondMetricRow>().Should().Contain(row => row.Label.StartsWith("SpreadDv01") && Number(row.Value) > 0m);
                 metrics.Items.Cast<BondMetricRow>().Should().NotContain(row => row.Label.StartsWith("Yield to worst"), "v3 calculates no exercise scenarios");
 
-                foreach (var expander in Descendants<Expander>(view).Where(control => control.Header?.ToString()?.StartsWith("Projected contractual payments") == true
-                    || control.Header?.ToString()?.StartsWith("Floating coupon reset evidence") == true).ToArray())
-                    expander.IsExpanded = true;
-                window.UpdateLayout();
-                var payments = Named<DataGrid>(view, "Projected bond payments");
+                var payments = await ExpandGridAsync(view, "Projected contractual payments", "Projected bond payments");
                 payments.Items.Cast<BondCashFlowRow>().Should().HaveCount(4);
                 Number(payments.Items.Cast<BondCashFlowRow>().First().Interest).Should().Be(2m);
                 payments.Items.Cast<BondCashFlowRow>().Skip(1).Should().OnlyContain(row => Number(row.Interest) == 1.5m);
                 Number(payments.Items.Cast<BondCashFlowRow>().Last().Principal).Should().Be(100m);
-                var resetEvidence = Named<DataGrid>(view, "Floating coupon reset evidence");
+                var resetEvidence = await ExpandGridAsync(view, "Floating coupon reset evidence", "Floating coupon reset evidence");
                 resetEvidence.Items.Cast<BondCashFlowRow>().Should().Contain(row => row.ResetDate == "2026-01-15"
                     && row.FixingStatus == "Observed fixing" && row.IndexName == "SOFR" && Number(row.IndexRate) == 0.03m
                     && Number(row.SpreadBps) == 100m && Number(row.CouponRate) == 0.04m && row.Source == "Retained reset schedule");
@@ -147,6 +143,38 @@ public sealed class BondAnalyticsFloatingViewTests
         => Descendants<T>(root).Single(control => AutomationProperties.GetName(control) == name);
 
     private static decimal Number(string value) => decimal.Parse(value, System.Globalization.CultureInfo.InvariantCulture);
+
+    private static async Task<DataGrid> ExpandGridAsync(DependencyObject root, string headerPrefix, string gridName)
+    {
+        var expanders = Descendants<Expander>(root).Where(control => control.Header?.ToString()?.StartsWith(headerPrefix) == true).ToArray();
+        expanders.Should().ContainSingle($"the {headerPrefix} expander must be present in the actual editor");
+        var expander = expanders[0];
+        var grid = expander.Content is DataGrid direct ? direct
+            : ((Panel)expander.Content).Children.OfType<DataGrid>().Single();
+        AutomationProperties.GetName(grid).Should().Be(gridName);
+        var loaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        RoutedEventHandler onLoaded = (_, _) => loaded.TrySetResult();
+        grid.Loaded += onLoaded;
+        try
+        {
+            if (grid.IsLoaded) loaded.TrySetResult();
+            expander.IsExpanded = true;
+            expander.BringIntoView();
+            // The Material Design expander attaches its content through template bindings on the
+            // dispatcher. UpdateLayout alone cannot flush that binding work; await the actual grid.
+            await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+            await loaded.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            grid.UpdateLayout();
+            expander.IsExpanded.Should().BeTrue();
+            grid.IsVisible.Should().BeTrue("expanded payment evidence must render in the editor");
+            PresentationSource.FromVisual(grid).Should().NotBeNull("the test must inspect the rendered grid, not detached controls");
+            return grid;
+        }
+        finally
+        {
+            grid.Loaded -= onLoaded;
+        }
+    }
 
     private static IEnumerable<T> Descendants<T>(DependencyObject root) where T : DependencyObject
     {

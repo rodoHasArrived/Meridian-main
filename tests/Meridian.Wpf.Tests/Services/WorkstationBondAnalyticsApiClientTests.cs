@@ -2,9 +2,9 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Ui.Services;
+using Meridian.Ui.Shared.Endpoints;
 using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Tests.Services;
@@ -52,7 +52,7 @@ public sealed class WorkstationBondAnalyticsApiClientTests
         var response = await new WorkstationSecurityMasterApiClient(api).GetBondAnalyticsAsync(new BondAnalyticsRequest(
             SecurityId, new BondCalculationContext(AsOf), Yield: 0.03m) { CalculationVersion = "bond-analytics-v3" });
 
-        response.Success.Should().BeTrue();
+        response.Success.Should().BeTrue(response.ErrorMessage);
         response.Data!.SpreadDv01.Should().Be(0.019512345678m);
         var coupon = response.Data.CashFlows.Should().ContainSingle().Which.FloatingCoupon;
         coupon.Should().NotBeNull();
@@ -73,8 +73,9 @@ public sealed class WorkstationBondAnalyticsApiClientTests
 
     private static HttpResponseMessage Json<T>(T value) => new(HttpStatusCode.OK)
     {
-        Content = new StringContent(JsonSerializer.Serialize(value, new JsonSerializerOptions(DesktopJsonOptions.Api)
-        { NumberHandling = JsonNumberHandling.WriteAsString }), Encoding.UTF8, "application/json")
+        // BondAnalyticsEndpoints uses these standard numeric-JSON options. Factor-paydown's
+        // route-specific decimal-string policy does not apply to the analytics endpoint.
+        Content = new StringContent(JsonSerializer.Serialize(value, UiEndpoints.CreateEndpointJsonOptions()), Encoding.UTF8, "application/json")
     };
 
     private sealed class Factory(HttpMessageHandler handler) : IHttpClientFactory
