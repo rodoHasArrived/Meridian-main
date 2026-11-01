@@ -92,7 +92,7 @@ public sealed class EtlAuditStore
     {
         var path = GetAuditPath(jobId, "events.jsonl");
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        await File.AppendAllTextAsync(path, JsonSerializer.Serialize(auditEvent, _jsonOptions) + Environment.NewLine, ct).ConfigureAwait(false);
+        await DurableLineAppender.AppendLineAsync(path, JsonSerializer.Serialize(auditEvent, _jsonOptions), ct).ConfigureAwait(false);
     }
 
     public async Task SaveCheckpointAsync(string jobId, EtlCheckpointToken checkpoint, CancellationToken ct = default)
@@ -133,6 +133,46 @@ public sealed class EtlRejectSink
     {
         var path = Path.Combine(_rejectRoot, jobId, "rejects.jsonl");
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        await File.AppendAllTextAsync(path, JsonSerializer.Serialize(record, _jsonOptions) + Environment.NewLine, ct).ConfigureAwait(false);
+        await DurableLineAppender.AppendLineAsync(path, JsonSerializer.Serialize(record, _jsonOptions), ct).ConfigureAwait(false);
+    }
+}
+
+/// <summary>
+/// Appends whole JSONL lines to retained ETL logs. Concurrent appends to the same file are
+/// serialized so lines cannot interleave, and each line is flushed to disk before returning so
+/// an acknowledged audit or reject record survives a crash.
+/// </summary>
+internal static class DurableLineAppender
+{
+    // Striped rather than per-path so the lock table cannot grow with the number of jobs.
+    private static readonly SemaphoreSlim[] Stripes =
+        Enumerable.Range(0, 64).Select(static _ => new SemaphoreSlim(1, 1)).ToArray();
+
+    public static async Task AppendLineAsync(string path, string line, CancellationToken ct)
+    {
+        var fullPath = Path.GetFullPath(path);
+        var stripe = Stripes[(StringComparer.Ordinal.GetHashCode(fullPath) & int.MaxValue) % Stripes.Length];
+        var bytes = Encoding.UTF8.GetBytes(line + Environment.NewLine);
+
+        await stripe.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            // Once the lock is held the line is written in full: cancelling mid-write could
+            // leave a torn record that later readers would have to skip.
+            await using var stream = new FileStream(
+                fullPath,
+                FileMode.Append,
+                FileAccess.Write,
+                FileShare.Read,
+                bufferSize: 4096,
+                FileOptions.Asynchronous);
+            await stream.WriteAsync(bytes, CancellationToken.None).ConfigureAwait(false);
+            await stream.FlushAsync(CancellationToken.None).ConfigureAwait(false);
+            stream.Flush(flushToDisk: true);
+        }
+        finally
+        {
+            stripe.Release();
+        }
     }
 }

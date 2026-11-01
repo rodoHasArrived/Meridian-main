@@ -27,7 +27,7 @@ public sealed class ReconciliationRunOrchestratorTests
         adapter.CaptureCount.Should().Be(1);
         result.run.SnapshotVersion.Should().Be(1);
         result.run.BusinessDate.Should().Be(BusinessDate);
-        result.run.IdempotencyKey.Should().Be("recon:2026-05-28");
+        result.run.IdempotencyKey.Should().Be("recon:2026-05-28:USD");
         result.run.ToleranceProfileId.Should().Be(StatementToleranceProfile.DefaultProfileId);
         // A single unmatched position must surface as a true break through the engine.
         result.breaks.Should().ContainSingle(b => b.Classification == BreakClassification.TrueBreak);
@@ -45,6 +45,33 @@ public sealed class ReconciliationRunOrchestratorTests
         adapter.CaptureCount.Should().Be(1, "an idempotent re-request must reuse the captured run");
         second.run.RunId.Should().Be(first.run.RunId);
         second.run.SnapshotVersion.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task RunDailyAsync_DifferentBaseCurrency_DoesNotReuseCachedRun()
+    {
+        var adapter = new CountingSourceAdapter(ReconciliationSourceType.Prime);
+        var orchestrator = CreateOrchestrator(adapter);
+
+        var usd = await orchestrator.RunDailyAsync(BusinessDate, RunTimestamp, "USD", rerun: false, CreateTolerances(), CancellationToken.None);
+        var eur = await orchestrator.RunDailyAsync(BusinessDate, RunTimestamp, "EUR", rerun: false, CreateTolerances(), CancellationToken.None);
+
+        adapter.CaptureCount.Should().Be(2, "a EUR run must not be served the cached USD run");
+        eur.run.RunId.Should().NotBe(usd.run.RunId);
+        eur.run.IdempotencyKey.Should().Be("recon:2026-05-28:EUR");
+    }
+
+    [Fact]
+    public async Task RunDailyAsync_ConcurrentFirstRuns_CaptureOnce()
+    {
+        var adapter = new CountingSourceAdapter(ReconciliationSourceType.Prime);
+        var orchestrator = CreateOrchestrator(adapter);
+
+        var runs = await Task.WhenAll(Enumerable.Range(0, 16).Select(_ => Task.Run(() =>
+            orchestrator.RunDailyAsync(BusinessDate, RunTimestamp, "USD", rerun: false, CreateTolerances(), CancellationToken.None))));
+
+        adapter.CaptureCount.Should().Be(1);
+        runs.Select(r => r.run.RunId).Distinct().Should().ContainSingle();
     }
 
     [Fact]

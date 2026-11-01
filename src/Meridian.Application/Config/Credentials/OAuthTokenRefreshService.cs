@@ -32,6 +32,12 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
     private CancellationTokenSource? _cts;
     private Task? _refreshLoop;
 
+    /// <summary>First delay before retrying a failed start-up; doubles up to <see cref="MaxInitializationRetryDelay"/>.</summary>
+    internal TimeSpan InitializationRetryDelay { get; set; } = TimeSpan.FromSeconds(30);
+
+    /// <summary>Upper bound on the start-up retry delay.</summary>
+    internal TimeSpan MaxInitializationRetryDelay { get; set; } = TimeSpan.FromMinutes(15);
+
     // Events for monitoring
     public event Action<string, OAuthToken>? OnTokenRefreshed;
     public event Action<string, string>? OnRefreshFailed;
@@ -257,16 +263,33 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
 
     private async Task RefreshLoopAsync(CancellationToken ct)
     {
-        try
+        // A failed start-up (vault briefly unavailable, transient I/O) must not end the loop for
+        // good: without a retry, tokens would silently stop refreshing until the process restarts.
+        var retryDelay = InitializationRetryDelay;
+        while (true)
         {
-            await InitializeAsync(ct).ConfigureAwait(false);
+            try
+            {
+                await InitializeAsync(ct).ConfigureAwait(false);
+                break;
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
+            catch (Exception ex)
+            {
+                _log.Error(
+                    "OAuth token refresh initialization failed ({FailureType}); retrying in {RetryDelay}",
+                    ex.GetType().Name, retryDelay);
+            }
+
+            try
+            {
+                await Task.Delay(retryDelay, ct).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
+
+            retryDelay = TimeSpan.FromTicks(Math.Min(retryDelay.Ticks * 2, MaxInitializationRetryDelay.Ticks));
         }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
-        catch (Exception ex)
-        {
-            _log.Error("OAuth token refresh initialization failed ({FailureType}); initialization can be retried", ex.GetType().Name);
-            return;
-        }
+
         while (!ct.IsCancellationRequested)
         {
             try
