@@ -118,6 +118,7 @@ public static class ShortLotJournalProjector
             && currency.FunctionalCurrency == line.FunctionalCurrency
             && currency.TransactionDebit == line.TransactionDebit && currency.TransactionCredit == line.TransactionCredit
             && currency.FxRateToFunctional == line.FxRateToFunctional) == 1);
+    }
 
     /// <summary>The exact inverse of a posted short opening or cover journal: every line's sides swapped, nothing else.</summary>
     public static IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> Reverse(
