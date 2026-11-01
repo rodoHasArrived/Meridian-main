@@ -244,7 +244,25 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Accounting.Lots.ShortCoverTerms"
+      "target": "contract:Meridian.Contracts.Accounting.Lots.ShortCorrectionKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.ShortCorrectionReceipt"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.ShortSaleCharacterAttestation"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.ShortSaleTaxCharacter"
     },
     {
       "kind": "contract-set-member",
@@ -26849,6 +26867,30 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Accounting.Lots.ShortCarryInstruction",
       "target": "contract:Meridian.Contracts.Accounting.Lots.ShortCarryKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.ShortCorrectionReceipt",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.ShortCorrectionReceipt",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.ShortCorrectionKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.ShortSaleCharacterAttestation",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.ShortSaleTaxCharacter"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.ShortSaleCharacterAttestation",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
     },
     {
       "kind": "contract-reference",
@@ -55864,7 +55906,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "8fec15dff3a8b3fcae891d9b563e747f009fabe628fd50a5c4a4391d35508827",
+  "fingerprint": "e6e8bd38b2c2d0f7ebdc5e7fb1e8fe8379433edaa1e34fee79dda4bf0202acbf",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -56158,10 +56200,28 @@
       "label": "Meridian.Contracts.Accounting.Lots.ShortCarryKind"
     },
     {
-      "classification": "record",
-      "id": "contract:Meridian.Contracts.Accounting.Lots.ShortCoverTerms",
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.ShortCorrectionKind",
       "kind": "contract-type",
-      "label": "Meridian.Contracts.Accounting.Lots.ShortCoverTerms"
+      "label": "Meridian.Contracts.Accounting.Lots.ShortCorrectionKind"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.ShortCorrectionReceipt",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.ShortCorrectionReceipt"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.ShortSaleCharacterAttestation",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.ShortSaleCharacterAttestation"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.ShortSaleTaxCharacter",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.ShortSaleTaxCharacter"
     },
     {
       "classification": "dto",
@@ -81747,11 +81807,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3583,
-    "contract_set_memberships": 4432,
-    "edges": 9282,
+    "contract_references": 3587,
+    "contract_set_memberships": 4435,
+    "edges": 9289,
     "foreign_keys": 155,
     "logical_references": 6,
-    "nodes": 4489
+    "nodes": 4492
   }
 }

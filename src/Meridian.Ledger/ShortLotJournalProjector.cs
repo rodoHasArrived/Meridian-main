@@ -118,6 +118,22 @@ public static class ShortLotJournalProjector
             && currency.FunctionalCurrency == line.FunctionalCurrency
             && currency.TransactionDebit == line.TransactionDebit && currency.TransactionCredit == line.TransactionCredit
             && currency.FxRateToFunctional == line.FxRateToFunctional) == 1);
+
+    /// <summary>The exact inverse of a posted short opening or cover journal: every line's sides swapped, nothing else.</summary>
+    public static IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> Reverse(
+        IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> posted)
+    {
+        ArgumentNullException.ThrowIfNull(posted);
+        if (posted.Count == 0)
+            throw new ArgumentException("A reversal needs the posted lines it inverts.");
+        return posted.Select(line => (line.account, line.credit, line.debit)).ToArray();
+    }
+
+    /// <summary>The exact inverse of a posted journal, read back from its retained entries.</summary>
+    public static IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> Reverse(IReadOnlyList<LedgerEntry> posted)
+    {
+        ArgumentNullException.ThrowIfNull(posted);
+        return Reverse(posted.Select(line => (line.Account, line.Debit, line.Credit)).ToArray());
     }
 
     private static LedgerAccount Cash(LedgerAccount account) => LedgerAccounts.CashFor(account.FinancialAccountId);

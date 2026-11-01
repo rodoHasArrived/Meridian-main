@@ -11,6 +11,8 @@ certification or an operator verdict.
 | Short cover in transaction currency with fees (`short-cover-currency-v1`, stacked branch) | Credit cash in the transaction currency at the cover FX (cost plus fees, each rounded once to the currency's minor units); debit the relieved opening proceeds at the retained acquisition FX; debit commission expense for the fee; recognize proceeds less cost at acquisition FX as book gain/loss and the FX movement on the cover cost as realized FX gain/loss. Same-currency, fee-free terms reproduce the functional cover exactly. | Reviewed `ShortCoverTerms` carrying the lots' acquisition currency and FX, the settlement-date cover FX and fees; `ShortCoverPostingGuard` proves a direction-homogeneous short pool with one acquisition currency/FX, relieved quantity and functional basis, and exactly the projected currency-aware lines. |
 | Short borrow fee (`short-carry-v1`, stacked branch) | Debit stock borrow fee expense, credit cash for quantity × lender reference price × annual rate × accrued days / 360 or 365, at ledger rounding. Lot quantity and liability basis are unchanged. | Reviewed `ShortCarryInstruction` naming the open short lot's record and business identity, Short direction, quantity within open quantity, functional-currency only, lender statement evidence; `ShortCarryPostingGuard` proves the journal carries exactly the expense debit and cash credit at FX 1. |
 | Payment in lieu (`short-carry-v1`, stacked branch) | Debit dividend expense, credit cash for quantity × declared gross dividend per unit. | Same instruction and guard with the dividend notice as evidence; no borrow-fee inputs may be present. |
+| Short reversal and rebook (stacked branch) | A reversal is the exact inverse of the posted opening or cover journal and restores the lot as it was; a rebook follows a retained reversal and is an ordinary opening or cover derived from corrected inputs. Posted journals are never edited. | Immutable `ShortCorrectionReceipt` naming the corrected mutation and journal, the restored Short lot, reviewed reason and actor; `ShortCorrectionGuard` refuses re-priced, partial or re-dated reversals and unlinked or drifting rebooks. |
+| Short-sale tax character (stacked branch) | Reporting a covered short needs an explicit reviewed `ShortSaleCharacterAttestation` (ShortTerm or LongTerm, reviewer, UTC instant, substantive justification, complete evidence). Opening-lot age never establishes character. | Absence keeps the existing reporting refusal; incomplete attestations are refused with their issues. |
 | Remaining-face amortization | Continue the acquisition schedule for surviving booked quantity times current/booked factor. Retain acquisition FX. | Explicit calculation v3, immutable paydown receipt and prior disposal/basis history; locked lot and Security Master inputs. |
 | Automatic yield-to-worst | Solve the regular-coupon yield for maturity and each fixed-price European whole call/put. Select the minimum maturity/issuer-call yield, with deterministic date/kind tie-breaking. | Full alternative list and selected date/price/yield are retained in the reviewed v3 instruction and recomputed before posting. |
 
@@ -49,8 +51,10 @@ journals that reference the open short lot is the remaining step, and it needs t
 proof this environment cannot run. The transaction-currency short cover likewise has a reviewed
 terms record, projector and guard but no atomic store path yet: `ValidateShortLotJournal` still
 admits only the functional-currency cover, and extending the atomic command needs the same proof.
-Short corporate actions, tax character and short
-reversal/rebook also remain separate treatments. Tax reports refuse to infer short-sale character from
+Short reversal/rebook receipts and the tax-character attestation likewise have contracts and guards
+but no atomic store path yet: `ValidateShortLotJournal` still refuses `CorrectsMutationBatchId` for
+shorts and `CanonicalDisposalHistoryProjector` still refuses short covers; wiring both needs the same
+proof. Short corporate actions remain a separate treatment. Tax reports refuse to infer short-sale character from
 opening-lot age. Broader consumer certification and live Windows acceptance remain open.
 
 Required proof includes balanced gain/flat/loss covers, positive remaining quantity and basis,
