@@ -423,6 +423,12 @@ metadata chain. Broker-native notional metadata (`notional`, `alpaca:notional`) 
 for gateways implementing `INotionalOrderSizingGateway`; on any other gateway the order is refused
 rather than measured at a size the broker will not route.
 
+## Audit hardening (2026-11)
+
+- **Broker cancels.** `BrokerageGatewayAdapter.CancelAsync` propagates caller cancellation instead of returning `false` ("broker refused").
+- **Futures P&L.** `FuturePosition.UnrealizedPnl` excludes mark-to-market already settled into `RealizedPnl`, so each daily settlement is counted once.
+- **Allocation weights.** `ProportionalAllocationEngine.Allocate` validates rule weights (non-empty, non-negative, non-zero sum) even for rules built with `AllocationRule`'s positional constructor.
+
 ## Diagrams
 
 See `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.

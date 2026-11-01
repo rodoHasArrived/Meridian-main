@@ -1365,6 +1365,10 @@ authority.
 - **Write-ahead log (WAL)** - a crash-safety log that records intended changes before the final
   storage file is updated, making recovery possible if the process stops mid-write.
 
+## Audit hardening (2026-11)
+
+- **ETL audit and reject logs.** `EtlAuditStore` and `EtlRejectSink` append through `DurableLineAppender`. Appends to one file are serialized by striped locks, hashed case-insensitively on Windows and macOS, and each line is flushed to disk. When a log file or job directory is newly created, its directory entry is fsynced before the append is acknowledged.
+
 ## Diagrams
 
 The storage module participates in the repository-level `DIA-ASSURANCE-LOOP` in
