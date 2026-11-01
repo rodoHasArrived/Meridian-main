@@ -458,21 +458,10 @@
                             <Button Content="Retain run" Command="{Binding RetainRunCommand}" Padding="12,6" />
                         </StackPanel>
                         <ItemsControl ItemsSource="{Binding Blockers}" Visibility="{Binding IsBlocked, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0,8,0,0" AutomationProperties.Name="Calculation blockers" />
-                        <DataGrid ItemsSource="{Binding Events}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" MaxHeight="320" Margin="0,8,0,0"
-                                  Visibility="{Binding HasResult, Converter={StaticResource BoolToVisibilityConverter}}" AutomationProperties.Name="Projected cash flows">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Date" Binding="{Binding Date}" />
-                                <DataGridTextColumn Header="Stream" Binding="{Binding StreamId}" />
-                                <DataGridTextColumn Header="Opening balance" Binding="{Binding OpeningBalance}" />
-                                <DataGridTextColumn Header="Cash interest" Binding="{Binding CashInterest}" />
-                                <DataGridTextColumn Header="Scheduled principal" Binding="{Binding ScheduledPrincipal}" />
-                                <DataGridTextColumn Header="Forecast prepayment" Binding="{Binding ForecastPrepayment}" />
-                                <DataGridTextColumn Header="Redeemed principal" Binding="{Binding RedeemedPrincipal}" />
-                                <DataGridTextColumn Header="Premium / penalty" Binding="{Binding PremiumAndPenalty}" />
-                                <DataGridTextColumn Header="Closing balance" Binding="{Binding ClosingBalance}" />
-                                <DataGridTextColumn Header="Direction" Binding="{Binding Direction}" />
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <workstation:DenseDataGridControl Table="{Binding EventsTable}" MaxHeight="320" Margin="0,8,0,0"
+                                                          Visibility="{Binding HasResult, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                          GridAutomationId="DirectLendingScenarioEventsGrid"
+                                                          AutomationProperties.Name="Projected cash flows" />
                         <ItemsControl ItemsSource="{Binding ExerciseCalculations}" Margin="0,4,0,0" AutomationProperties.Name="Exercise calculations" />
                         <TextBlock Text="{Binding EvidenceText}" FontFamily="Consolas" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding RunText}" FontFamily="Consolas" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap" />
