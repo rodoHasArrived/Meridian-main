@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -20,6 +22,7 @@ public sealed class DataSourcesViewModel : BindableBase
 {
     private readonly WpfServices.ConfigService _configService;
     private readonly WpfServices.FirstRunService _firstRunService;
+    private readonly ILogger _logger;
     private bool _isLoading;
 
     // ── Failover ────────────────────────────────────────────────────────
@@ -98,10 +101,12 @@ public sealed class DataSourcesViewModel : BindableBase
 
     public DataSourcesViewModel(
         WpfServices.ConfigService configService,
-        WpfServices.FirstRunService firstRunService)
+        WpfServices.FirstRunService firstRunService,
+        ILogger<DataSourcesViewModel>? logger = null)
     {
         _configService = configService;
         _firstRunService = firstRunService;
+        _logger = logger ?? NullLogger<DataSourcesViewModel>.Instance;
 
         // Load
         LoadCommand = new AsyncRelayCommand(LoadAsync);
@@ -622,19 +627,17 @@ public sealed class DataSourcesViewModel : BindableBase
 
     // ── Fire-and-forget wrappers (property setters cannot be async) ───────
 
-    private async void SaveFailoverSettingsFireAndForget()
-    {
-        try
-        { await SaveFailoverSettingsAsync(); }
-        catch (Exception ex) { ShowStatus($"Failed to update failover settings: {ex.Message}", isError: true); }
-    }
+    private void SaveFailoverSettingsFireAndForget() =>
+        SaveFailoverSettingsAsync().SafeFireAndForget(
+            _logger,
+            "Save failover settings",
+            ex => ShowStatus($"Failed to update failover settings: {ex.Message}", isError: true));
 
-    private async void SetDefaultSourceFireAndForget(string id, bool isHistorical)
-    {
-        try
-        { await SetDefaultSourceAsync(id, isHistorical); }
-        catch (Exception ex) { ShowStatus($"Failed to set default source: {ex.Message}", isError: true); }
-    }
+    private void SetDefaultSourceFireAndForget(string id, bool isHistorical) =>
+        SetDefaultSourceAsync(id, isHistorical).SafeFireAndForget(
+            _logger,
+            "Set default data source",
+            ex => ShowStatus($"Failed to set default source: {ex.Message}", isError: true));
 
     private async Task SaveFailoverSettingsAsync(CancellationToken ct = default)
     {

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Wpf.ViewModels;
@@ -18,10 +19,11 @@ public partial class DataSourcesPage : Page
 
     public DataSourcesPage(
         WpfServices.ConfigService configService,
-        WpfServices.FirstRunService firstRunService)
+        WpfServices.FirstRunService firstRunService,
+        ILogger<DataSourcesViewModel> logger)
     {
         InitializeComponent();
-        _viewModel = new DataSourcesViewModel(configService, firstRunService);
+        _viewModel = new DataSourcesViewModel(configService, firstRunService, logger);
         DataContext = _viewModel;
     }
 
