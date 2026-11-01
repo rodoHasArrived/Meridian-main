@@ -10,6 +10,8 @@ using Meridian.Contracts.CashFlows;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Wpf.Services;
 
+using Meridian.Wpf.Workstation.Models;
+
 namespace Meridian.Wpf.ViewModels.CashFlows;
 
 /// <summary>One eligible exercise entry with the operator's hypothetical selection.</summary>
@@ -80,6 +82,23 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
 
     public ContractualCashFlowScenarioViewModel(IWorkstationContractualCashFlowApiClient client, string subjectKind, Guid subjectId, string subjectLabel)
     {
+        EventsTable = new WorkstationTableModel<CashFlowEventRow>(
+            Events,
+            [
+                new("Date", nameof(CashFlowEventRow.Date), 95),
+                new("Stream", nameof(CashFlowEventRow.StreamId), 110),
+                new("Opening balance", nameof(CashFlowEventRow.OpeningBalance), 120),
+                new("Cash interest", nameof(CashFlowEventRow.CashInterest), 110),
+                new("Scheduled principal", nameof(CashFlowEventRow.ScheduledPrincipal), 130),
+                new("Forecast prepayment", nameof(CashFlowEventRow.ForecastPrepayment), 130),
+                new("Redeemed principal", nameof(CashFlowEventRow.RedeemedPrincipal), 130),
+                new("Premium / penalty", nameof(CashFlowEventRow.PremiumAndPenalty), 120),
+                new("Closing balance", nameof(CashFlowEventRow.ClosingBalance), 120),
+                new("Direction", nameof(CashFlowEventRow.Direction), 90)
+            ],
+            "Projected cash flows",
+            "No projected events",
+            "Preview a scenario to list the projected contractual events.");
         _client = client ?? throw new ArgumentNullException(nameof(client));
         if (!ContractualCashFlowSubjectKinds.IsSupported(subjectKind)) throw new ArgumentException("Unsupported contractual cash-flow subject kind.", nameof(subjectKind));
         if (subjectId == Guid.Empty) throw new ArgumentException("A subject identity is required.", nameof(subjectId));
@@ -100,6 +119,8 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
     public IReadOnlyList<string> PrepaymentPolicies { get; } = Enum.GetNames<CashFlowRecastPolicy>();
     public ObservableCollection<CashFlowExerciseChoiceViewModel> Exercises { get; } = new();
     public ObservableCollection<CashFlowEventRow> Events { get; } = new();
+    /// <summary>Dense-table projection of <see cref="Events"/> for the workstation grid control; rows track the collection.</summary>
+    public WorkstationTableModel<CashFlowEventRow> EventsTable { get; }
     public ObservableCollection<string> Blockers { get; } = new();
     public ObservableCollection<string> ExerciseCalculations { get; } = new();
     public IAsyncRelayCommand PreviewCommand { get; }

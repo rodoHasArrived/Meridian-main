@@ -61,7 +61,7 @@ public sealed class BondAnalyticsViewModelTests
         view.HasResult.Should().BeTrue();
         view.Metrics.Should().Contain(row => row.Label == "Dirty price / 100" && row.Value == "1234567.123456789012");
         view.CashFlows.Should().ContainSingle().Which.Interest.Should().Be("2.5");
-        view.StatusText.Should().Contain("grants no");
+        view.StatusText.Should().Contain("grant no");
     }
 
     [Fact]
