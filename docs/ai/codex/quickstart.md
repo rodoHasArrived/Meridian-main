@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-06-16
+**Reviewed:** 2026-10-31
 
 Use this page for the first 10 minutes of a Codex task in Meridian. It compresses the shared
 workflow into a task routing checklist, proof matrix, and dirty-worktree protocol. Shared policy
@@ -52,8 +52,11 @@ selects explicit offline fixtures. The guide includes readiness and shutdown acc
 11. For source edits under `src/**`, read the nearest `README.md` and identify the module in
    `docs/source/data/source-modules.yml`.
 12. Choose the smallest validation lane from the task-to-proof matrix before editing.
-   For completed PR-ready work, run `bash scripts/ci.sh`; GitHub Actions
-   `Meridian CI / quality-gate` remains the merge authority.
+   Scale the rest to the risk tier in the
+   [solo-developer workflow](../solo-developer-workflow.md#verification-tiers): the full
+   `bash scripts/ci.sh` is optional at Level 1, recommended at Level 2, and run when practical at
+   Level 3 or for build/CI-tooling changes. GitHub Actions `Meridian CI / quality-gate` remains the
+   merge authority.
    For local .NET tests, prefer
    `python build/python/cli/buildctl.py test --project <project> --filter "<filter>" --queue`
    so agent-triggered validation uses isolated outputs and avoids parallel test collisions.
@@ -287,7 +290,7 @@ browser workstation, or product UI code.
 - Memory receipt from `--receipt` when `.codex/memory/index.yml`, a task descriptor, or a goal
   inventory matched the task, plus any `--record-goal-progress` update made during the run.
 - Files changed and why.
-- Validation commands with pass/fail results.
+- Validation commands with pass/fail results, and which tier checks (including the full `bash scripts/ci.sh`) were not run.
 - Unrelated dirty-worktree changes explicitly excluded.
 - Any docs, tests, or generated artifacts intentionally not updated.
 - Residual risk or blocked validation, if any.

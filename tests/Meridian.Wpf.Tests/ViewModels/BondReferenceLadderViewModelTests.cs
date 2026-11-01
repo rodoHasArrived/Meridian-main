@@ -14,7 +14,7 @@ namespace Meridian.Wpf.Tests.ViewModels;
 public sealed class BondReferenceLadderViewModelTests
 {
     private static BondReferenceDto Row(string id, string name, DateOnly maturity) => new(Guid.Parse(id), name, "USD", "ACME", null, $"ISIN-{name}",
-        new BondLifecycleDto(Guid.Parse(id), default, null, null, maturity, false, 1), null, null, 1);
+        new BondLifecycleDto(Guid.Parse(id), default, null, null, maturity, false, 1), null, 1);
 
     private const string A = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
     private const string B = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";

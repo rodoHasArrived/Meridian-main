@@ -574,7 +574,7 @@ Evaluation prereleases remain separate and do not establish production certifica
 
 The coordinator is `desktop-installer-packaging.yml`. Same-repository reusable workflow
 references and explicit SHA checkouts bind the called implementation and validation to the
-coordinator commit. Production certification retains main, weekly and manual entry points;
+coordinator commit. Production certification retains weekly, manual and reusable release entry points (the push-to-`main` trigger was removed under the solo-developer cadence change; see [consolidation](solo-developer-ci-consolidation.md));
 the coordinator replaces its independent tag invocation. Signing and release publication
 permissions stay in the release jobs; validation workflows receive no signing secrets.
 

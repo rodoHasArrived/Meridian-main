@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-05
+**Reviewed:** 2026-10-31
 
 This is the canonical front door for Meridian documentation. Start from an audience or task below,
 then follow the named source of truth. Folder names alone do not establish current status: roadmap,
@@ -15,16 +15,17 @@ For current delivery and acceptance status, use the
 [roadmap register](roadmap/generated/roadmap-register.md). The
 [program-state registry](roadmap/data/program-state.yml) owns the program snapshot.
 
-For production-release blockers and required evidence, use the
-[Implementation and Readiness Tracker](product/implementation-todo-list.md).
-Capability acceptance and release certification have separate evidence requirements; this front
-door does not duplicate their changing status.
+Development status (what is built and verified on synthetic data) and release posture are separate
+questions. For production-release blockers and required evidence, use the
+[Implementation and Readiness Tracker](product/implementation-todo-list.md); it is a production
+checklist, not a gate for ordinary development. Capability acceptance and release certification have
+separate evidence requirements; this front door does not duplicate their changing status.
 
 ## Start By Audience
 
 | Audience | Start here | Use when |
 | --- | --- | --- |
-| Developers and agents | [Engineering](engineering/README.md) | Build, test, architecture, module ownership, source docs, WPF/browser workstation rules, and validation lanes. |
+| Developers and agents | [Engineering](engineering/README.md) and [Solo-developer workflow](ai/solo-developer-workflow.md) | Build, test, architecture, module ownership, source docs, WPF/browser workstation rules, validation lanes, and risk-based verification tiers. |
 | Stakeholders | [Product](product/README.md) | Product narrative, capability status, roadmap interpretation, and evidence-backed investment-operations framing. |
 | Operators | [Operators](operators/README.md) | Provider setup, workstation launch, runbooks, deployment, troubleshooting, and support artifacts. |
 | First-time contributors | [Start](start/README.md) | Fast local orientation, setup, launch, and first safe validation commands. |
@@ -40,7 +41,9 @@ door does not duplicate their changing status.
 | Repository entrypoint | [../README.md](../README.md) |
 | Documentation ownership and migration rules | [Documentation Ownership Contract](documentation-ownership.md) |
 | Current documentation folder inventory | [Documentation Inventory](documentation-inventory.md) |
-| Current delivery and release posture | [Program State](roadmap/data/program-state.yml), [Roadmap Summary](roadmap/generated/ROADMAP_SUMMARY.md), and [Implementation and Readiness Tracker](product/implementation-todo-list.md) |
+| Current development status | [Program State](roadmap/data/program-state.yml) and [Roadmap Summary](roadmap/generated/ROADMAP_SUMMARY.md) |
+| Release posture and production-readiness checklist | [Implementation and Readiness Tracker](product/implementation-todo-list.md) |
+| Development verification tiers and completion vocabulary | [Solo-developer workflow](ai/solo-developer-workflow.md) |
 | Current product direction | [Product](product/README.md) and [Roadmap Registry](roadmap/README.md) |
 | Stakeholder design charter (active) | [Meridian Design Document](product/meridian-design-document.md) |
 | Roadmap registry | [Roadmap Registry](roadmap/README.md) and `docs/roadmap/data/*.yml` |
