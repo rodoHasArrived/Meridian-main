@@ -46,12 +46,19 @@ internal static class BondSettlementPostingGuard
         if (new[] { receipt.CashAccountId, receipt.AccruedInterestAccountId, receipt.FeesAccountId }
             .Any(account => account == acquisition.AccountId))
             throw new InvalidOperationException("Bond clean lot cost, cash, purchased interest and fees require separate accounts.");
-        RequireLine(receipt.CashAccountId, receipt.DirtyConsideration, AccountingTemplateLineSideDto.Credit, LedgerAccountType.Asset);
-        RequireLine(receipt.AccruedInterestAccountId, receipt.PurchasedAccruedInterest, AccountingTemplateLineSideDto.Debit, LedgerAccountType.Asset);
+        // Each component (clean cost, purchased interest, fees) is translated once and rounded to the
+        // functional currency's minor units; the cash credit is the sum of those translated components,
+        // never a separate translation of the dirty total, so the functional journal balances by
+        // construction and no rounding residue needs a home. Same-currency settlements are the FX = 1 case.
+        var functionalCash = receipt.ToFunctional(receipt.CleanConsideration) + receipt.ToFunctional(receipt.PurchasedAccruedInterest)
+            + receipt.ToFunctional(receipt.Fees);
+        RequireLine(receipt.CashAccountId, receipt.DirtyConsideration, functionalCash, AccountingTemplateLineSideDto.Credit, LedgerAccountType.Asset);
+        RequireLine(receipt.AccruedInterestAccountId, receipt.PurchasedAccruedInterest, receipt.ToFunctional(receipt.PurchasedAccruedInterest),
+            AccountingTemplateLineSideDto.Debit, LedgerAccountType.Asset);
         if (receipt.Fees != 0m)
-            RequireLine(receipt.FeesAccountId!, receipt.Fees, AccountingTemplateLineSideDto.Debit, LedgerAccountType.Expense);
+            RequireLine(receipt.FeesAccountId!, receipt.Fees, receipt.ToFunctional(receipt.Fees), AccountingTemplateLineSideDto.Debit, LedgerAccountType.Expense);
 
-        void RequireLine(string accountId, decimal amount, AccountingTemplateLineSideDto side, LedgerAccountType accountType)
+        void RequireLine(string accountId, decimal amount, decimal functional, AccountingTemplateLineSideDto side, LedgerAccountType accountType)
         {
             var matches = retainedCandidate.GeneratedPostingLines.Select((line, index) => (line, index))
                 .Where(item => item.line.AccountPath == accountId).ToArray();
@@ -61,9 +68,6 @@ internal static class BondSettlementPostingGuard
                 throw new InvalidOperationException($"Bond settlement account '{accountId}' must identify exactly one retained journal line.");
             var expected = matches[0];
             var actual = entry.Lines[expected.index];
-            // Each component is translated once at the retained settlement-date rate and rounded to the
-            // functional currency's minor units; a same-currency settlement is the FX = 1 special case.
-            var functional = receipt.ToFunctional(amount);
             if (expected.line.Side != side || expected.line.Amount != amount || expected.line.Currency != receipt.Currency
                 || actual.Account.AccountType != accountType
                 || actual.Currency is not { } transaction || transaction.TransactionCurrency != receipt.Currency

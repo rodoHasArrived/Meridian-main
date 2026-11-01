@@ -50,12 +50,15 @@ public sealed record BondSettlementConsiderationDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? SettlementFxRateToFunctional = null)
 {
     /// <summary>True when the book's functional currency differs from the bond's currency.</summary>
+    [JsonIgnore]
     public bool IsForeignCurrency => FunctionalCurrency is { } functional && !string.Equals(functional, Currency, StringComparison.Ordinal);
 
     /// <summary>The functional currency every journal line's debit and credit are stated in.</summary>
+    [JsonIgnore]
     public string EffectiveFunctionalCurrency => IsForeignCurrency ? FunctionalCurrency! : Currency;
 
     /// <summary>The FX multiplier each line carries: the retained settlement rate, or one for a same-currency settlement.</summary>
+    [JsonIgnore]
     public decimal EffectiveFxRateToFunctional => IsForeignCurrency ? SettlementFxRateToFunctional!.Value : 1m;
 
     /// <summary>A transaction-currency amount translated once to the functional currency at the settlement rate, rounded to its minor units.</summary>

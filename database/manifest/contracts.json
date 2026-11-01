@@ -4593,7 +4593,7 @@
       ]
     }
   ],
-  "fingerprint": "d2d2d7672ddf1e81c35f25abf01caea6938c0ed3b461c1b66d6f1bb04a124363",
+  "fingerprint": "b8401249e7005a5b5cae8b2b1f7ed4a21e23f1a0e2fd979bfaf64ab705c7a3db",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5841,7 +5841,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "e1f3e796061efd95a644b7ab8e133e91f1841d87b4fa2a24f7d23a8fae303390",
+      "fingerprint": "fbaf304af5931d30f11cfdb9b153948e4ea089157c3046f2a885dd47d5037e25",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.FixedIncome",
       "object_ids": [
@@ -131393,7 +131393,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "7f53a2af0c82593313cd623e98e83cf6f3f4dd56f894c0e5ac1249ebee5c8ca0",
+      "fingerprint": "639216d1da9fcc97ee2032ed50961d2cfdef55d45ae72fa1ddd55b2c13c77814",
       "full_name": "Meridian.Contracts.FixedIncome.BondSettlementConsideration",
       "id": "Meridian.Contracts.FixedIncome.BondSettlementConsideration",
       "kind": "class",
@@ -131405,12 +131405,12 @@
       "qualified_name": "Meridian.Contracts.FixedIncome.BondSettlementConsideration",
       "references": [],
       "source": {
-        "line": 84,
+        "line": 87,
         "path": "src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs"
       },
       "sources": [
         {
-          "line": 84,
+          "line": 87,
           "path": "src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs"
         }
       ],
@@ -131953,7 +131953,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "b5069a6a95998eea3679a01ae74d8c7fcbbc82b0bde44f98fe3e17485f054502",
+      "fingerprint": "6763f3c1455e44879af084a758f84ae91681db22468edbea6fe6bc80cc4bd58e",
       "full_name": "Meridian.Contracts.FixedIncome.BondSettlementPreparationResult",
       "id": "Meridian.Contracts.FixedIncome.BondSettlementPreparationResult",
       "kind": "record",
@@ -131970,7 +131970,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<BondAnalyticsBlocker>",
-          "source_line": 68,
+          "source_line": 71,
           "type": "IReadOnlyList<BondAnalyticsBlocker>"
         },
         {
@@ -131984,7 +131984,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "BondSettlementConsiderationDto?",
-          "source_line": 67,
+          "source_line": 70,
           "type": "BondSettlementConsiderationDto?"
         }
       ],
@@ -131997,12 +131997,12 @@
         "Meridian.Contracts.FixedIncome.BondSettlementConsiderationDto"
       ],
       "source": {
-        "line": 66,
+        "line": 69,
         "path": "src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs"
       },
       "sources": [
         {
-          "line": 66,
+          "line": 69,
           "path": "src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs"
         }
       ],
@@ -132370,7 +132370,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "82d14901ba4d543b027c080c1d708661c4b36ab0821cfb30fc694a74cbd6e00a",
+      "fingerprint": "650001862ec23bf7fe6632761a65d4e26457df6ea50565138b1fe75e71974b32",
       "full_name": "Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService",
       "id": "Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService",
       "kind": "interface",
@@ -132382,12 +132382,12 @@
       "qualified_name": "Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService",
       "references": [],
       "source": {
-        "line": 73,
+        "line": 76,
         "path": "src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs"
       },
       "sources": [
         {
-          "line": 73,
+          "line": 76,
           "path": "src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs"
         }
       ],

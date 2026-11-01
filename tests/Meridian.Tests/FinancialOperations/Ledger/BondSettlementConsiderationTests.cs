@@ -183,8 +183,51 @@ public sealed class BondSettlementConsiderationTests
         journal.Lines.Single(line => line.Account.Name == "Assets/Cash").Credit.Should().Be(66_421.34m);
     }
 
+    [Fact]
+    public void SameCurrencyReceipt_SerializesWithoutDerivedFxMembers_SoRetainedFingerprintsAreUnchanged()
+    {
+        var json = System.Text.Json.JsonSerializer.Serialize(Receipt(), new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web));
+        json.Should().NotContain("functionalCurrency").And.NotContain("settlementFxRateToFunctional")
+            .And.NotContain("isForeignCurrency").And.NotContain("effectiveFunctionalCurrency").And.NotContain("effectiveFxRateToFunctional");
+        var foreign = System.Text.Json.JsonSerializer.Serialize(Receipt() with { Currency = "EUR", FunctionalCurrency = "USD", SettlementFxRateToFunctional = 1.0875m },
+            new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web));
+        foreign.Should().Contain("\"functionalCurrency\":\"USD\"").And.NotContain("effective").And.NotContain("isForeignCurrency");
+    }
+
+    [Fact]
+    public void PostingGuard_CashCreditIsTheSumOfTranslatedComponents_SoRoundingNeverUnbalancesTheJournal()
+    {
+        // 81,000 / 1,200 / 25 EUR at 1.08753: the rounded components sum to 89,422.16 while the dirty total
+        // translated on its own would round to 89,422.15. The cash credit follows the components.
+        var eur = Receipt() with { Currency = "EUR", FunctionalCurrency = "USD", SettlementFxRateToFunctional = 1.08753m };
+        var acquisition = Acquisition() with { SettlementConsideration = eur };
+        var expectedCash = eur.ToFunctional(81_000m) + eur.ToFunctional(1_200m) + eur.ToFunctional(25m);
+        expectedCash.Should().Be(89_422.16m);
+        eur.ToFunctional(82_225m).Should().Be(89_422.15m, "translating the dirty total alone loses a cent");
+
+        var (candidate, journal) = ForeignJournal("EUR", "USD", 1.08753m, eur, cashFunctional: expectedCash);
+        BondSettlementPostingGuard.RequireJournal(acquisition, candidate, journal);
+        journal.Lines.Sum(line => line.Debit).Should().Be(journal.Lines.Sum(line => line.Credit));
+
+        var dirtyTranslatedAlone = () => BondSettlementPostingGuard.RequireJournal(acquisition, candidate, ForeignJournal("EUR", "USD", 1.08753m, eur).Journal);
+        dirtyTranslatedAlone.Should().Throw<InvalidOperationException>().WithMessage("*does not match its reviewed consideration component*");
+    }
+
+    [Fact]
+    public void PostingGuard_UsdBondInJpyBook_StatesWholeYenAndBalances()
+    {
+        var usd = Receipt() with { FunctionalCurrency = "JPY", SettlementFxRateToFunctional = 150.123m };
+        BondSettlementConsideration.Validate(usd).Should().BeEmpty();
+        usd.ToFunctional(1_200m).Should().Be(180_148m);
+        var acquisition = Acquisition() with { SettlementConsideration = usd };
+        var cash = usd.ToFunctional(81_000m) + usd.ToFunctional(1_200m) + usd.ToFunctional(25m);
+        var (candidate, journal) = ForeignJournal("USD", "JPY", 150.123m, usd, functionalRounding: amount => decimal.Round(amount, 0, MidpointRounding.AwayFromZero), cashFunctional: cash);
+        BondSettlementPostingGuard.RequireJournal(acquisition, candidate, journal);
+        journal.Lines.Single(line => line.Account.Name == "Assets/Cash").Credit.Should().Be(cash);
+    }
+
     private static (PostingRuleJournalCandidateResultDto Candidate, JournalEntry Journal) ForeignJournal(string transactionCurrency, string functionalCurrency, decimal fx,
-        BondSettlementConsiderationDto receipt, Func<decimal, decimal>? functionalRounding = null)
+        BondSettlementConsiderationDto receipt, Func<decimal, decimal>? functionalRounding = null, decimal? cashFunctional = null)
     {
         functionalRounding ??= amount => decimal.Round(amount, 2, MidpointRounding.AwayFromZero);
         var id = Guid.NewGuid();
@@ -196,7 +239,8 @@ public sealed class BondSettlementConsiderationTests
             ("Assets/Cash", 0m, receipt.DirtyConsideration, LedgerAccountType.Asset)
         };
         var lines = values.Select(value => new LedgerEntry(Guid.NewGuid(), id, AsOf,
-            new LedgerAccount(value.Item1, value.Item4), functionalRounding(value.Item2 * fx), functionalRounding(value.Item3 * fx), "Bond settlement",
+            new LedgerAccount(value.Item1, value.Item4), functionalRounding(value.Item2 * fx),
+            value.Item3 > 0m && cashFunctional is { } cash ? cash : functionalRounding(value.Item3 * fx), "Bond settlement",
             currency: new LedgerEntryCurrency(transactionCurrency, functionalCurrency, value.Item2, value.Item3, fx))).ToArray();
         var generated = values.Select((value, index) => new GeneratedPostingLineDto(index.ToString(), value.Item1,
             value.Item2 > 0m ? AccountingTemplateLineSideDto.Debit : AccountingTemplateLineSideDto.Credit,
