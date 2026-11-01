@@ -24,10 +24,10 @@ public sealed class ShortCoverCurrencyTests
 
         lines.Should().BeEquivalentTo(new[]
         {
-            new ShortCoverLine(Liability, 4_840m, 0m, "USD", 4_840m, 0m, 1m),
-            new ShortCoverLine(LedgerAccounts.CashInCurrency("EUR", "broker-1"), 0m, 5_000m, "EUR", 0m, 4_000m, 1.25m),
-            new ShortCoverLine(LedgerAccounts.RealizedGainOrDefault("broker-1"), 0m, 440m, "USD", 0m, 440m, 1m),
-            new ShortCoverLine(LedgerAccounts.RealizedFxLossOrDefault("broker-1"), 600m, 0m, "USD", 600m, 0m, 1m)
+            new ShortCoverLine(Liability, 4_840m, 0m, "USD", 4_840m, 0m, 1m, "USD"),
+            new ShortCoverLine(LedgerAccounts.CashInCurrency("EUR", "broker-1"), 0m, 5_000m, "EUR", 0m, 4_000m, 1.25m, "USD"),
+            new ShortCoverLine(LedgerAccounts.RealizedGainOrDefault("broker-1"), 0m, 440m, "USD", 0m, 440m, 1m, "USD"),
+            new ShortCoverLine(LedgerAccounts.RealizedFxLossOrDefault("broker-1"), 600m, 0m, "USD", 600m, 0m, 1m, "USD")
         });
         lines.Sum(line => line.Debit).Should().Be(lines.Sum(line => line.Credit));
     }
@@ -42,7 +42,7 @@ public sealed class ShortCoverCurrencyTests
         cash.Credit.Should().Be(4_502.23m);
         cash.TransactionCredit.Should().Be(4_007.49m);
         lines.Single(line => line.Account == LedgerAccounts.CommissionExpenseFor("broker-1")).Should().Be(
-            new ShortCoverLine(LedgerAccounts.CommissionExpenseFor("broker-1"), 8.41m, 0m, "EUR", 7.49m, 0m, 1.123456m));
+            new ShortCoverLine(LedgerAccounts.CommissionExpenseFor("broker-1"), 8.41m, 0m, "EUR", 7.49m, 0m, 1.123456m, "USD"));
         lines.Should().NotContain(line => line.Account == LedgerAccounts.RealizedGainOrDefault("broker-1") || line.Account == LedgerAccounts.RealizedLossOrDefault("broker-1"),
             "4,400 relieved against 4,400 at acquisition FX is a flat book result");
         lines.Single(line => line.Account == LedgerAccounts.RealizedFxLossOrDefault("broker-1")).Debit.Should().Be(93.82m);
@@ -89,6 +89,9 @@ public sealed class ShortCoverCurrencyTests
             (Terms(fees: -1m), "*Fees cannot be negative*"),
             (Terms(coverFx: 0m), "*FX rates must be positive*"),
             (Terms(tx: "USD", acquisitionFx: 1m, coverFx: 1.01m), "*Same-currency covers must carry FX rates of exactly one*"),
+            (Terms(tx: " USD ", acquisitionFx: 1m, coverFx: 1.01m), "*upper-case ISO codes*"),
+            (Terms(tx: "eur"), "*upper-case ISO codes*"),
+            (Terms(quantity: 1m, price: 0.01m, acquisitionFx: 0.1m, coverFx: 0.1m, relieved: 1m), "*rounds to zero in the functional currency*"),
             (Terms(relieved: 0m), "*non-zero*"),
             (Terms() with { ModelVersion = "short-cover-currency-v0" }, "*Unsupported short cover model version*")
         };
@@ -130,6 +133,31 @@ public sealed class ShortCoverCurrencyTests
     }
 
     [Fact]
+    public void Guard_RefusesLinesRelabelledWithAnotherFunctionalCurrency()
+    {
+        var terms = Terms(relieved: 4_840m, coverFx: 1.25m);
+        var expected = ShortLotJournalProjector.CoverInCurrency(Liability, terms);
+        expected.Should().OnlyContain(line => line.FunctionalCurrency == "USD");
+
+        var relabelled = () => ShortCoverPostingGuard.RequireJournal(terms, Liability, Entry(expected.Select(line => line with { FunctionalCurrency = "GBP" }).ToArray()));
+        relabelled.Should().Throw<ArgumentException>().WithMessage("*exactly the liability relief*");
+    }
+
+    [Fact]
+    public void UsdCoverInJpyBook_StatesWholeYen_AndItsLedgerEntriesConstruct()
+    {
+        // USD 1 at cover FX 150.4 is JPY 150.4, stated as JPY 150; the ledger tolerates one yen for a zero-decimal book.
+        var terms = Terms(quantity: 1m, price: 1m, tx: "USD", fn: "JPY", acquisitionFx: 150m, coverFx: 150.4m, relieved: 150m);
+        var lines = ShortLotJournalProjector.CoverInCurrency(LedgerAccounts.ShortSecuritiesPayable("ACME", "broker-1"), terms);
+        var cash = lines.Single(line => line.Account == LedgerAccounts.CashInCurrency("USD", "broker-1"));
+        cash.Credit.Should().Be(150m);
+        cash.FunctionalCurrency.Should().Be("JPY");
+        var journal = Entry(lines);
+        journal.Lines.Sum(line => line.Debit).Should().Be(journal.Lines.Sum(line => line.Credit));
+        ShortCoverPostingGuard.RequireJournal(terms, LedgerAccounts.ShortSecuritiesPayable("ACME", "broker-1"), journal);
+    }
+
+    [Fact]
     public void ShortReliefPools_AreDirectionHomogeneous_AndHonourLifoAndHifo()
     {
         var service = new OpenLotReliefService();
@@ -167,6 +195,6 @@ public sealed class ShortCoverCurrencyTests
         var id = Guid.NewGuid();
         var at = new DateTimeOffset(2026, 11, 1, 0, 0, 0, TimeSpan.Zero);
         return new JournalEntry(id, at, "Short cover", lines.Select(line => new LedgerEntry(Guid.NewGuid(), id, at, line.Account, line.Debit, line.Credit,
-            "Short cover", new LedgerLineDimensionSet(), new LedgerEntryCurrency(line.TransactionCurrency, "USD", line.TransactionDebit, line.TransactionCredit, line.FxRateToFunctional))).ToArray());
+            "Short cover", new LedgerLineDimensionSet(), new LedgerEntryCurrency(line.TransactionCurrency, line.FunctionalCurrency, line.TransactionDebit, line.TransactionCredit, line.FxRateToFunctional))).ToArray());
     }
 }

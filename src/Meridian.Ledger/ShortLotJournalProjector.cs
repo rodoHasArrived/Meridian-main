@@ -5,7 +5,7 @@ namespace Meridian.Ledger;
 
 /// <summary>One projected currency-aware short cover line; functional amounts plus the transaction leg.</summary>
 public sealed record ShortCoverLine(LedgerAccount Account, decimal Debit, decimal Credit, string TransactionCurrency,
-    decimal TransactionDebit, decimal TransactionCredit, decimal FxRateToFunctional);
+    decimal TransactionDebit, decimal TransactionCredit, decimal FxRateToFunctional, string FunctionalCurrency);
 
 /// <summary>Book accounting only: opening proceeds are a liability; a cover relieves that liability.</summary>
 public static class ShortLotJournalProjector
@@ -82,29 +82,31 @@ public static class ShortLotJournalProjector
         var cash = terms.IsFunctionalCurrency ? LedgerAccounts.CashFor(financialAccountId) : LedgerAccounts.CashInCurrency(tx, financialAccountId);
         var lines = new List<ShortCoverLine>
         {
-            new(carryingAccount, terms.RelievedProceedsFunctional, 0m, fn, terms.RelievedProceedsFunctional, 0m, 1m)
+            new(carryingAccount, terms.RelievedProceedsFunctional, 0m, fn, terms.RelievedProceedsFunctional, 0m, 1m, fn)
         };
         var cashTx = coverCostTx + feesTx;
         var cashFn = coverCostFn + feesFn;
+        if (cashTx > 0m && cashFn == 0m)
+            throw new ArgumentException("The cover cash rounds to zero in the functional currency; a settlement below one functional minor unit is not a supported treatment.");
         if (cashFn > 0m || cashTx > 0m)
-            lines.Add(new(cash, 0m, cashFn, tx, 0m, cashTx, terms.CoverFxRateToFunctional));
+            lines.Add(new(cash, 0m, cashFn, tx, 0m, cashTx, terms.CoverFxRateToFunctional, fn));
         if (feesFn > 0m)
-            lines.Add(new(LedgerAccounts.CommissionExpenseOrDefault(financialAccountId), feesFn, 0m, tx, feesTx, 0m, terms.CoverFxRateToFunctional));
+            lines.Add(new(LedgerAccounts.CommissionExpenseOrDefault(financialAccountId), feesFn, 0m, tx, feesTx, 0m, terms.CoverFxRateToFunctional, fn));
         if (bookResult > 0m)
-            lines.Add(new(LedgerAccounts.RealizedGainOrDefault(financialAccountId), 0m, bookResult, fn, 0m, bookResult, 1m));
+            lines.Add(new(LedgerAccounts.RealizedGainOrDefault(financialAccountId), 0m, bookResult, fn, 0m, bookResult, 1m, fn));
         else if (bookResult < 0m)
-            lines.Add(new(LedgerAccounts.RealizedLossOrDefault(financialAccountId), -bookResult, 0m, fn, -bookResult, 0m, 1m));
+            lines.Add(new(LedgerAccounts.RealizedLossOrDefault(financialAccountId), -bookResult, 0m, fn, -bookResult, 0m, 1m, fn));
         if (fxResult > 0m)
-            lines.Add(new(LedgerAccounts.RealizedFxGainOrDefault(financialAccountId), 0m, fxResult, fn, 0m, fxResult, 1m));
+            lines.Add(new(LedgerAccounts.RealizedFxGainOrDefault(financialAccountId), 0m, fxResult, fn, 0m, fxResult, 1m, fn));
         else if (fxResult < 0m)
-            lines.Add(new(LedgerAccounts.RealizedFxLossOrDefault(financialAccountId), -fxResult, 0m, fn, -fxResult, 0m, 1m));
+            lines.Add(new(LedgerAccounts.RealizedFxLossOrDefault(financialAccountId), -fxResult, 0m, fn, -fxResult, 0m, 1m, fn));
         return lines;
     }
 
     /// <summary>
     /// True when the journal carries exactly the projected currency-aware lines: same count, and each
-    /// expected account, functional debit/credit, transaction currency, transaction amounts and FX rate
-    /// present exactly once.
+    /// expected account, functional debit/credit, transaction and functional currencies, transaction
+    /// amounts and FX rate present exactly once.
     /// </summary>
     public static bool MatchesExactly(IReadOnlyList<ShortCoverLine> expected, IReadOnlyList<LedgerEntry> actual)
     {
@@ -113,6 +115,7 @@ public static class ShortLotJournalProjector
         return actual.Count == expected.Count && expected.All(line => actual.Count(item =>
             item.Account == line.Account && item.Debit == line.Debit && item.Credit == line.Credit
             && item.Currency is { } currency && currency.TransactionCurrency == line.TransactionCurrency
+            && currency.FunctionalCurrency == line.FunctionalCurrency
             && currency.TransactionDebit == line.TransactionDebit && currency.TransactionCredit == line.TransactionCredit
             && currency.FxRateToFunctional == line.FxRateToFunctional) == 1);
     }
