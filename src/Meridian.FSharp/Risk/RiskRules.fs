@@ -18,8 +18,18 @@ let positionLimit (ctx: RiskContext) : RiskDecision =
             | OrderSide.Buy -> ctx.Request.Quantity
             | _ -> -ctx.Request.Quantity
 
-        let projectedQuantity = ctx.CurrentPositionQuantity + signedQuantity
-        if abs projectedQuantity > maxPositionSize then
+        let currentQuantity = ctx.CurrentPositionQuantity
+        let projectedQuantity = currentQuantity + signedQuantity
+
+        // A position already over the cap (after a limit was tightened, or a fill outside this
+        // gate) must still be unwindable in steps. An order that shrinks the position on the
+        // same side of zero, or flattens it, is always allowed. One that crosses through zero
+        // still has to land inside the limit, so it cannot open an oversized opposite position.
+        let strictlyReducesSameSide =
+            abs projectedQuantity < abs currentQuantity
+            && (projectedQuantity = 0m || sign projectedQuantity = sign currentQuantity)
+
+        if abs projectedQuantity > maxPositionSize && not strictlyReducesSameSide then
             Reject $"Position limit exceeded: projected {projectedQuantity} > max {maxPositionSize} for {ctx.Request.Symbol}"
         else
             Approve

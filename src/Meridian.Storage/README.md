@@ -1367,6 +1367,8 @@ authority.
 
 ## Audit hardening (2026-11)
 
+- **Portable packages.** `PortableDataPackager` writes through `AtomicFileWriter.WriteStreamAsync`, so a cancelled or failed run never leaves a truncated `.zip` under the final name. The package checksum and size are recorded only on the returned manifest and `PackageResult`, and they match the file on disk. The manifest embedded in the zip leaves them empty, because a file cannot contain its own hash; `ListPackageContentsAsync` reports the size from the file on disk. The embedded manifest is written as the last entry, so it includes the supplementary-file inventory.
+- **Parquet conversion.** `ParquetConversionService` writes atomically and throws on cancellation, so a partial output can never be mistaken for a completed conversion.
 - **ETL audit and reject logs.** `EtlAuditStore` and `EtlRejectSink` append through `DurableLineAppender`. Appends to one file are serialized by striped locks, hashed case-insensitively on Windows and macOS, and each line is flushed to disk. When a log file or job directory is newly created, its directory entry is fsynced before the append is acknowledged.
 
 ## Diagrams

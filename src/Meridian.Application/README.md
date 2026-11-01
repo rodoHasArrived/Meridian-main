@@ -1325,6 +1325,8 @@ workstation-mode host writes these lines to the same file. Verify it with
 
 ## Audit hardening (2026-11)
 
+- **Backfill cancellation.** `HistoricalBackfillService` and `CrossSourceBackfillReconciliationService` rethrow `OperationCanceledException` only for caller cancellation. A provider timeout is recorded as a per-symbol or per-provider failure.
+- **Help text.** `HelpCommand` cites only repository paths that exist, which `HelpCommandTests.HelpText_CitedRepositoryPaths_AllExist` enforces.
 - **OAuth refresh start-up.** If `OAuthTokenRefreshService`'s first initialization fails (vault unavailable, transient I/O), the background loop retries with capped exponential backoff (30 s, doubling to 15 min) instead of exiting. Before, tokens stopped refreshing until the process restarted.
 
 ## Diagrams
