@@ -32,7 +32,12 @@ public sealed partial class FileProviderCredentialStore
             if (receipt.RolledBack)
                 throw new InvalidOperationException("A rolled-back migration has nothing to finalize.");
             if (receipt.FinalizedAt is not null)
+            {
+                // The first attempt may have stopped after publishing the primary generation; a retry
+                // restores the recovery copy from current bytes without another finalization or audit event.
+                await RepairCurrentRecoveryGenerationAsync(ct).ConfigureAwait(false);
                 return receipt;
+            }
             if (!vault.Providers.TryGetValue(scope.StorageKey(descriptor.ProviderId), out var record) || record.Scope != scope)
                 throw new ProviderCredentialConflictException();
             // Finalization needs proof the secret works under its new ownership: a successful verification
@@ -50,7 +55,9 @@ public sealed partial class FileProviderCredentialStore
                 record.Fields.Keys.ToArray(), scope))!.AsObject();
             audit["migrationId"] = migrationId;
             await CommitWithAuditAsync(vault, audit.ToJsonString(JsonOptions),
-                () => WriteVaultAsync(vault, ct, discardPreviousGeneration: false), descriptor.ProviderId, "ownership-finalize",
+                // Both recovery generations must hold the finalized receipt; a backup still carrying the
+                // active receipt would let primary recovery reopen rollback of a finalized migration.
+                () => WriteVaultAsync(vault, ct, discardPreviousGeneration: true), descriptor.ProviderId, "ownership-finalize",
                 new AuditCommitCheck("ownership-finalize", migrationId, null, null), ct).ConfigureAwait(false);
             return receipt;
         }
@@ -73,9 +80,12 @@ public sealed partial class FileProviderCredentialStore
                 return false;
             if (keys.Length > 1)
                 throw new InvalidOperationException("More than one provider-wide OAuth token names this provider; resolve the duplicate before transferring ownership.");
-            var scopedKey = scope.StorageKey(keys[0]);
-            if (vault.ScopedOAuthTokens.ContainsKey(scopedKey))
+            // The target is occupied when the owned scope already holds a token for this provider under
+            // any spelling; two tokens for one provider under one owner would make rollback refuse.
+            if (vault.ScopedOAuthTokens.Values.Any(token => token.Scope == scope
+                    && ProviderCredentialCatalog.NormalizeProviderId(token.ProviderName) == providerId))
                 throw new ProviderCredentialConflictException();
+            var scopedKey = scope.StorageKey(keys[0]);
             vault.ScopedOAuthTokens[scopedKey] = new ScopedOAuthVaultRecord { ProviderName = keys[0], Scope = scope, Token = vault.OAuthTokens[keys[0]] };
             vault.OAuthTokens.Remove(keys[0]);
             return true;
@@ -85,12 +95,28 @@ public sealed partial class FileProviderCredentialStore
         if (owned.Length != 1)
             throw new InvalidOperationException("The transferred OAuth token is no longer held under the owned scope; rollback is refused.");
         var (key, record) = (owned[0].Key, owned[0].Value);
-        if (vault.OAuthTokens.ContainsKey(record.ProviderName) || record.Token is null)
+        // The provider-wide destination is occupied by any token naming this provider, however spelled.
+        if (record.Token is null || vault.OAuthTokens.Keys.Any(name => ProviderCredentialCatalog.NormalizeProviderId(name) == providerId))
             throw new ProviderCredentialConflictException();
         vault.OAuthTokens[record.ProviderName] = record.Token;
         vault.ScopedOAuthTokens.Remove(key);
         return true;
     }
+
+    /// <summary>
+    /// True while a provider-wide OAuth token for <paramref name="providerName"/> has been transferred to an owned
+    /// connection and not rolled back: the owned scope holds the token, and no provider-wide token for the provider
+    /// may be saved or imported beside it, whatever runtime still caches the transferred value.
+    /// </summary>
+    private static bool IsOAuthTokenTransferred(ProviderCredentialVault vault, string providerName)
+    {
+        var providerId = ProviderCredentialCatalog.NormalizeProviderId(providerName);
+        return vault.OwnershipMigrations.Values.Any(migration => migration.ProviderId == providerId && migration.OAuthTokenTransferred && !migration.RolledBack)
+            && vault.ScopedOAuthTokens.Values.Any(token => ProviderCredentialCatalog.NormalizeProviderId(token.ProviderName) == providerId);
+    }
+
+    private static ProviderCredentialConflictException TransferredOAuthTokenConflict(string providerName)
+        => new($"The provider-wide OAuth token for {providerName} was transferred to an owned connection; provider-wide token saves are refused so a cached runtime cannot republish it. Roll back the migration to restore provider-wide ownership.");
 
     private async Task<ProviderCredentialMigrationReceipt> TransferOwnershipAsync(string providerId, ProviderCredentialScope scope,
         string migrationId, string? expectedGeneration, string actor, bool rollback, CancellationToken ct)

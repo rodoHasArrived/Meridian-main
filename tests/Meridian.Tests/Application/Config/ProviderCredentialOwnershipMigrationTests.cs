@@ -1,4 +1,6 @@
+using System.Net;
 using FluentAssertions;
+using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
 
 namespace Meridian.Tests.Application.Config;
@@ -199,7 +201,8 @@ public sealed class ProviderCredentialOwnershipMigrationTests : IDisposable
         var store = new FileProviderCredentialStore(_root);
         await store.SaveAsync(Request());
         await store.SaveOAuthTokenAsync("alpaca", new OAuthToken("legacy", "Bearer", DateTimeOffset.UtcNow.AddHours(1)));
-        await store.SaveScopedOAuthTokenAsync("alpaca", new OAuthToken("owned", "Bearer", DateTimeOffset.UtcNow.AddHours(1)), Owner);
+        // The owned token names the provider under another spelling; the target is still occupied.
+        await store.SaveScopedOAuthTokenAsync("Alpaca", new OAuthToken("owned", "Bearer", DateTimeOffset.UtcNow.AddHours(1)), Owner);
         var original = (await store.ReadForProviderAsync("alpaca"))!;
 
         var act = () => store.MigrateToScopeAsync("alpaca", Owner, "migration-conflict", original.CredentialGeneration, "operator");
@@ -207,6 +210,39 @@ public sealed class ProviderCredentialOwnershipMigrationTests : IDisposable
         await act.Should().ThrowAsync<ProviderCredentialConflictException>();
         (await store.ReadForProviderAsync("alpaca"))!.Credentials.Should().BeEquivalentTo(original.Credentials);
         (await store.ReadOAuthTokensAsync()).Should().ContainKey("alpaca");
+    }
+
+    [Fact]
+    public async Task TransferredOAuthToken_CannotBeRepublishedProviderWide_AndACachedRuntimeEvictsItWithoutARemoteRefresh()
+    {
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(Request());
+        using var handler = new RotatingProvider();
+        using var client = new HttpClient(handler);
+        await using var cached = new OAuthTokenRefreshService(_root, httpClient: client, vault: store);
+        cached.RegisterProvider(new OAuthProviderConfig("alpaca", "client", TokenEndpoint: "https://provider.example/token"));
+        var token = new OAuthToken("access-1", "Bearer", DateTimeOffset.UtcNow.AddHours(1), "refresh-1");
+        await cached.StoreTokenAsync("alpaca", token);
+        var original = (await store.ReadForProviderAsync("alpaca"))!;
+
+        (await store.MigrateToScopeAsync("alpaca", Owner, "migration-cache", original.CredentialGeneration, "operator")).OAuthTokenTransferred.Should().BeTrue();
+
+        var refresh = await cached.RefreshTokenAsync("alpaca");
+        refresh.Success.Should().BeFalse();
+        refresh.Error.Should().Contain("ownership changed");
+        handler.Calls.Should().Be(0, "a runtime that no longer owns the token must not rotate it at the provider");
+        cached.GetToken("alpaca").Should().BeNull("the transferred token is evicted from the provider-wide runtime");
+        (await store.ReadScopedOAuthTokensAsync(Owner)).Should().ContainSingle().Which.Value.Should().Be(token, "the owner's refresh token is untouched");
+
+        var republish = () => store.SaveOAuthTokenAsync("Alpaca", new OAuthToken("access-2", "Bearer", DateTimeOffset.UtcNow.AddHours(1), "refresh-2"));
+        await republish.Should().ThrowAsync<ProviderCredentialConflictException>().WithMessage("*transferred to an owned connection*");
+        await store.ImportOAuthTokensAsync(new Dictionary<string, OAuthToken> { ["alpaca"] = token });
+        (await store.ReadOAuthTokensAsync()).Should().BeEmpty("a legacy snapshot never republishes a transferred token provider-wide");
+
+        await store.RollbackMigrationAsync("alpaca", Owner, "migration-cache", "controller");
+        (await store.ReadOAuthTokensAsync()).Should().ContainSingle().Which.Value.Should().Be(token);
+        await store.SaveOAuthTokenAsync("alpaca", new OAuthToken("access-3", "Bearer", DateTimeOffset.UtcNow.AddHours(1), "refresh-3"));
+        (await store.ReadOAuthTokensAsync())["alpaca"].AccessToken.Should().Be("access-3", "rollback restores provider-wide ownership and its saves");
     }
 
     [Fact]
@@ -232,8 +268,19 @@ public sealed class ProviderCredentialOwnershipMigrationTests : IDisposable
         finalized.FinalizedBy.Should().Be("controller");
         finalized.FinalizedAt.Should().NotBeNull();
         finalized.IsActive.Should().BeFalse();
+        var backup = store.VaultPath + ".bak";
+        (await File.ReadAllBytesAsync(backup)).Should().Equal(await File.ReadAllBytesAsync(store.VaultPath),
+            "both recovery generations hold the finalized receipt");
+        File.Delete(backup);
         store = new FileProviderCredentialStore(_root);
         (await store.FinalizeMigrationAsync("alpaca", Owner, "migration-f", "someone-else")).Should().Be(finalized, "finalization is idempotent");
+        File.Exists(backup).Should().BeTrue("a finalized retry repairs the recovery generation");
+        (await File.ReadAllBytesAsync(backup)).Should().Equal(await File.ReadAllBytesAsync(store.VaultPath));
+        File.Delete(store.VaultPath);
+        store = new FileProviderCredentialStore(_root);
+        var recoveredRollback = () => store.RollbackMigrationAsync("alpaca", Owner, "migration-f", "controller");
+        await recoveredRollback.Should().ThrowAsync<InvalidOperationException>().WithMessage("*finalized migration cannot be rolled back*",
+            "recovery from the backup generation cannot reopen rollback of a finalized migration");
         var rollback = () => store.RollbackMigrationAsync("alpaca", Owner, "migration-f", "controller");
         await rollback.Should().ThrowAsync<InvalidOperationException>().WithMessage("*finalized migration cannot be rolled back*");
         (await store.ReadScopedAsync("alpaca", Owner))!.Credentials.Should().BeEquivalentTo(original.Credentials);
@@ -241,7 +288,22 @@ public sealed class ProviderCredentialOwnershipMigrationTests : IDisposable
         (await store.ReadForProviderAsync("alpaca"))!.Get("KeyId").Should().Be("other-key", "a finalized migration no longer blocks a new provider-wide record");
         var audit = await File.ReadAllTextAsync(Path.Combine(Path.GetDirectoryName(store.VaultPath)!, "provider-credentials.audit.jsonl"));
         audit.Should().Contain("ownership-finalize").And.Contain("migration-f");
+        audit.Split('\n').Count(line => line.Contains("ownership-finalize")).Should().Be(1, "retries add no finalization or audit event");
         _ = receipt;
+    }
+
+    private sealed class RotatingProvider : HttpMessageHandler
+    {
+        public int Calls { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            Calls++;
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""{"access_token":"replacement-access","refresh_token":"replacement-refresh","token_type":"Bearer","expires_in":3600}""")
+            });
+        }
     }
 
     public void Dispose()

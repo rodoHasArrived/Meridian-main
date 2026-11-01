@@ -442,6 +442,8 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
                 vault.OAuthTokens.Remove(providerName);
                 vault.LegacyImportedOAuthProviders.Add(providerName);
             }
+            else if (IsOAuthTokenTransferred(vault, providerName))
+                throw TransferredOAuthTokenConflict(providerName);
             else
                 vault.OAuthTokens[providerName] = token;
             // Rotation can invalidate the previous refresh token at the provider immediately.
@@ -476,6 +478,12 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
             {
                 if (!vault.LegacyImportedOAuthProviders.Add(pair.Key))
                     continue;
+                if (IsOAuthTokenTransferred(vault, pair.Key))
+                {
+                    // The owned connection holds this provider's token; a legacy snapshot never republishes it provider-wide.
+                    Log.Warning("Skipped provider-wide OAuth token import for {Provider}: its token was transferred to an owned connection", pair.Key);
+                    continue;
+                }
                 vault.OAuthTokens.TryAdd(pair.Key, pair.Value);
             }
             // A successful import acknowledges that the plaintext source may be erased.
