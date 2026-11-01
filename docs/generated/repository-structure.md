@@ -928,7 +928,6 @@ Meridian-main
 │   ├── labeler.yml
 │   ├── labels.yml
 │   ├── markdown-link-check-config.json
-│   ├── PULL_REQUEST_TEMPLATE.md
 │   ├── pull_request_template.md
 │   ├── pull_request_template_desktop.md
 │   └── spellcheck-config.yml
@@ -3052,6 +3051,7 @@ Meridian-main
 │   │   ├── endpoint-fixture-isolation.md
 │   │   ├── README.md
 │   │   ├── reporting-followups-2026-10-28.md
+│   │   ├── synthetic-scenario-index.md
 │   │   ├── w10-amount-provenance.md
 │   │   ├── w10-mark-seam-operator-acceptance.md
 │   │   ├── wave2-cockpit-reliability-evidence-runbook.md
@@ -4813,14 +4813,15 @@ Meridian-main
 │   │   │   ├── BondAnalyticsDtos.cs
 │   │   │   ├── BondCalculationContext.cs
 │   │   │   ├── BondContractualEconomics.cs
+│   │   │   ├── BondEconomicsCompatibility.cs
 │   │   │   ├── BondExerciseEconomics.cs
 │   │   │   ├── BondFloatingRateEvidence.cs
 │   │   │   ├── BondMigrationApiRequests.cs
 │   │   │   ├── BondMigrationDtos.cs
 │   │   │   ├── BondPricingMath.cs
-│   │   │   ├── DiscountMath.cs
 │   │   │   ├── BondReferenceDtos.cs
 │   │   │   ├── BondSettlementConsideration.cs
+│   │   │   ├── DiscountMath.cs
 │   │   │   └── IBondAnalyticsService.cs
 │   │   ├── FundStructure
 │   │   │   ├── AccountManagementDtos.cs
@@ -7340,8 +7341,6 @@ Meridian-main
 │   │   │   │   │   │   ├── bond-reference-ladder-panel.tsx
 │   │   │   │   │   │   ├── command-palette.actions.test.ts
 │   │   │   │   │   │   ├── command-palette.actions.ts
-│   │   │   │   │   │   ├── contractual-cash-flow-workbench.test.tsx
-│   │   │   │   │   │   ├── contractual-cash-flow-workbench.tsx
 │   │   │   │   │   │   ├── command-palette.entity-search.test.ts
 │   │   │   │   │   │   ├── command-palette.entity-search.ts
 │   │   │   │   │   │   ├── command-palette.test.tsx
@@ -7350,6 +7349,8 @@ Meridian-main
 │   │   │   │   │   │   ├── command-palette.view-model.ts
 │   │   │   │   │   │   ├── companion-pane-window.test.tsx
 │   │   │   │   │   │   ├── companion-pane-window.tsx
+│   │   │   │   │   │   ├── contractual-cash-flow-workbench.test.tsx
+│   │   │   │   │   │   ├── contractual-cash-flow-workbench.tsx
 │   │   │   │   │   │   ├── copy-link-button.test.tsx
 │   │   │   │   │   │   ├── copy-link-button.tsx
 │   │   │   │   │   │   ├── coverage-passport-drill-in.test.tsx
@@ -7860,11 +7861,11 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.asset-workflow.ts
 │   │   │   │   │   ├── accounting-screen.audit-integrity.test.tsx
 │   │   │   │   │   ├── accounting-screen.audit-integrity.tsx
-│   │   │   │   │   ├── accounting-screen.bond-cutover.test.tsx
-│   │   │   │   │   ├── accounting-screen.bond-cutover.tsx
 │   │   │   │   │   ├── accounting-screen.audit-integrity.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.audit-integrity.view-model.ts
 │   │   │   │   │   ├── accounting-screen.basis-bridge.view-model.ts
+│   │   │   │   │   ├── accounting-screen.bond-cutover.test.tsx
+│   │   │   │   │   ├── accounting-screen.bond-cutover.tsx
 │   │   │   │   │   ├── accounting-screen.break-audit-rebuild.test.tsx
 │   │   │   │   │   ├── accounting-screen.break-audit-rebuild.tsx
 │   │   │   │   │   ├── accounting-screen.break-audit-rebuild.view-model.test.ts
@@ -8276,9 +8277,9 @@ Meridian-main
 │   │   │   │   │   ├── bond-reference.types.ts
 │   │   │   │   │   ├── brokerage-recovery.ts
 │   │   │   │   │   ├── canonical-symbol.ts
-│   │   │   │   │   ├── contractual-cash-flow.types.ts
 │   │   │   │   │   ├── close-preparation.ts
 │   │   │   │   │   ├── consolidation.ts
+│   │   │   │   │   ├── contractual-cash-flow.types.ts
 │   │   │   │   │   ├── covered-call.types.ts
 │   │   │   │   │   ├── data-operations-assurance.ts
 │   │   │   │   │   ├── data-quality-watch.types.ts
@@ -9392,6 +9393,15 @@ Meridian-main
 │   │   │   │   ├── FactorPaydownViewModel.cs
 │   │   │   │   ├── FactorPaydownViewModel.RetainedDrafts.cs
 │   │   │   │   └── RecurringJournalQueueViewModel.cs
+│   │   │   ├── CashFlows
+│   │   │   │   └── ContractualCashFlowScenarioViewModel.cs
+│   │   │   ├── SecurityMaster
+│   │   │   │   ├── BondAnalyticsViewModel.cs
+│   │   │   │   ├── BondMigrationPreviewViewModel.cs
+│   │   │   │   └── BondReferenceLadderViewModel.cs
+│   │   │   ├── Settings
+│   │   │   │   ├── BondCutoverConsoleViewModel.cs
+│   │   │   │   └── ProviderOwnershipAdministrationViewModel.cs
 │   │   │   ├── AccountPortfolioViewModel.cs
 │   │   │   ├── ActivityLogViewModel.cs
 │   │   │   ├── AddProviderWizardViewModel.cs
@@ -9407,8 +9417,6 @@ Meridian-main
 │   │   │   ├── BatchBacktestViewModel.cs
 │   │   │   ├── BindableBase.cs
 │   │   │   ├── CarryTradeBacktestViewModel.cs
-│   │   │   ├── CashFlows
-│   │   │   │   └── ContractualCashFlowScenarioViewModel.cs
 │   │   │   ├── CashFlowViewModel.cs
 │   │   │   ├── ChartingPageViewModel.cs
 │   │   │   ├── ClusterStatusViewModel.cs
@@ -9479,17 +9487,10 @@ Meridian-main
 │   │   │   ├── ScatterAnalysisViewModel.cs
 │   │   │   ├── ScheduleManagerViewModel.cs
 │   │   │   ├── SecurityConflictLaneModels.cs
-│   │   │   ├── SecurityMaster
-│   │   │   │   ├── BondAnalyticsViewModel.cs
-│   │   │   │   ├── BondMigrationPreviewViewModel.cs
-│   │   │   │   └── BondReferenceLadderViewModel.cs
 │   │   │   ├── SecurityMasterDeactivateViewModel.cs
 │   │   │   ├── SecurityMasterEditViewModel.cs
 │   │   │   ├── SecurityMasterViewModel.Authorization.cs
 │   │   │   ├── SecurityMasterViewModel.cs
-│   │   │   ├── Settings
-│   │   │   │   ├── BondCutoverConsoleViewModel.cs
-│   │   │   │   └── ProviderOwnershipAdministrationViewModel.cs
 │   │   │   ├── SecurityMasterViewModel.Import.cs
 │   │   │   ├── SecurityMasterViewModel.Sections.cs
 │   │   │   ├── SecurityMasterViewModel.Services.cs
@@ -9859,10 +9860,10 @@ Meridian-main
 │   │   │       ├── special-dividend-25pct-synthetic.json
 │   │   │       └── t-wbd-spinoff-2022.json
 │   │   ├── fixed-income
-│   │   │   ├── bond-consistency.json
-│   │   │   └── golden
-│   │   │       ├── bond-analytics-versions.json
-│   │   │       └── portfolio-cash-ladder-versions.json
+│   │   │   ├── golden
+│   │   │   │   ├── bond-analytics-versions.json
+│   │   │   │   └── portfolio-cash-ladder-versions.json
+│   │   │   └── bond-consistency.json
 │   │   ├── fund-economics
 │   │   │   └── golden
 │   │   │       └── fund-economics-worked-examples.json
@@ -9974,6 +9975,7 @@ Meridian-main
 │   │   │   ├── Text
 │   │   │   │   └── TextPrimitivesTests.cs
 │   │   │   ├── DataProvenanceTests.cs
+│   │   │   ├── DiscountMathTests.cs
 │   │   │   ├── FundStructureContractsJsonContextTests.cs
 │   │   │   ├── InstrumentJournalContractCompatibilityTests.cs
 │   │   │   ├── LedgerReconciliationContractCompatibilityTests.cs
@@ -10989,12 +10991,12 @@ Meridian-main
 │   │   │   ├── OpenLotAmortizationContinuationTests.cs
 │   │   │   ├── OpenLotAmortizationPrecisionTests.cs
 │   │   │   ├── OpenLotCapitalReturnTests.cs
-│   │   │   ├── OpenLotUnifiedAmortizationTests.cs
 │   │   │   ├── OpenLotExtendedAmortizationTests.cs
 │   │   │   ├── OpenLotFactorPaydownTests.cs
 │   │   │   ├── OpenLotSpinOffTests.cs
 │   │   │   ├── OpenLotSuccessorTests.CorporateActions.cs
 │   │   │   ├── OpenLotSuccessorTests.cs
+│   │   │   ├── OpenLotUnifiedAmortizationTests.cs
 │   │   │   ├── PortfolioCashLadderEngineTests.cs
 │   │   │   ├── PortfolioCashLadderReadServiceTests.cs
 │   │   │   ├── PortfolioCashLadderScheduleCharacterizationTests.cs
@@ -11281,6 +11283,7 @@ Meridian-main
 │   │   │   ├── BondAnalyticsMathTests.cs
 │   │   │   ├── BondAnalyticsScheduleRefusalTests.cs
 │   │   │   ├── BondAnalyticsServiceTests.cs
+│   │   │   ├── BondAnalyticsVersionGoldenTests.cs
 │   │   │   ├── BondCanonicalProjectionTests.cs
 │   │   │   ├── BondConsistencyTests.cs
 │   │   │   ├── BondExerciseDelayedCouponTests.cs
@@ -12741,10 +12744,14 @@ Meridian-main
 │   │   │   ├── BackfillViewModelTests.cs
 │   │   │   ├── BacktestViewModelTests.cs
 │   │   │   ├── BatchBacktestViewModelTests.cs
+│   │   │   ├── BondAnalyticsViewModelTests.cs
+│   │   │   ├── BondCutoverConsoleViewModelTests.cs
+│   │   │   ├── BondReferenceLadderViewModelTests.cs
 │   │   │   ├── CashFlowViewModelTests.cs
 │   │   │   ├── ChartingPageViewModelTests.cs
 │   │   │   ├── ClusterStatusViewModelTests.cs
 │   │   │   ├── CollectionSessionViewModelTests.cs
+│   │   │   ├── ContractualCashFlowScenarioViewModelTests.cs
 │   │   │   ├── CredentialManagementViewModelTests.cs
 │   │   │   ├── DataBrowserViewModelTests.cs
 │   │   │   ├── DataExportViewModelTests.cs
@@ -12756,12 +12763,7 @@ Meridian-main
 │   │   │   ├── EvidenceWorkbenchViewModelTests.cs
 │   │   │   ├── ExportPresetsViewModelTests.cs
 │   │   │   ├── FactorPaydownViewModelTests.Approval.cs
-│   │   │   ├── BondAnalyticsViewModelTests.cs
-│   │   │   ├── BondCutoverConsoleViewModelTests.cs
-│   │   │   ├── BondReferenceLadderViewModelTests.cs
-│   │   │   ├── ContractualCashFlowScenarioViewModelTests.cs
 │   │   │   ├── FactorPaydownViewModelTests.cs
-│   │   │   ├── ProviderOwnershipAdministrationViewModelTests.cs
 │   │   │   ├── FinancialRecordExplorerViewModelTests.cs
 │   │   │   ├── FundAccountsViewModelTests.cs
 │   │   │   ├── FundLedgerReconciliationReadStateTests.cs
@@ -12792,6 +12794,7 @@ Meridian-main
 │   │   │   ├── ProviderAccountingViewModelTests.cs
 │   │   │   ├── ProviderDataProjectionViewModelTests.cs
 │   │   │   ├── ProviderHealthViewModelTests.cs
+│   │   │   ├── ProviderOwnershipAdministrationViewModelTests.cs
 │   │   │   ├── ProviderViewModelTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RecurringJournalQueueViewModelTests.cs
@@ -12951,8 +12954,10 @@ Meridian-main
 │   │   ├── test_doc_render_determinism.py
 │   │   ├── test_doctor_profiles.py
 │   │   ├── test_documentation_workflow.py
+│   │   ├── test_documentation_workflow_consolidation.py
 │   │   ├── test_endpoint_benchmark.py
 │   │   ├── test_export_project_artifact_workflow.py
+│   │   ├── test_fund_economics_golden_consistency.py
 │   │   ├── test_generate_contract_review_packet.py
 │   │   ├── test_generate_dependency_graph.py
 │   │   ├── test_generate_desktop_user_manual.py

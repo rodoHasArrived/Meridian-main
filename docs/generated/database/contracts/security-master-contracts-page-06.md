@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 6 of 7
 
-Objects 401-480 of 485. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 486. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -49,6 +49,8 @@ classDiagram
         +string PrimaryIdentifierKind
         +string PrimaryIdentifierValue
         +JsonElement Provenance
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityProjectionRecordExtensions["SecurityProjectionRecordExtensions"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityRawPriceDto["SecurityRawPriceDto"] {
         +decimal Price
@@ -494,20 +496,6 @@ classDiagram
         +DateTimeOffset? EffectiveTo
         +Guid? EntitlementId
         +string? ExpectedRefreshCadence
-    }
-    class Meridian_Contracts_SecurityMaster_UpsertOtcCollateralAgreementRequest["UpsertOtcCollateralAgreementRequest"] {
-        +Guid? CollateralAgreementId
-        +string Currency
-        +DateOnly EffectiveDate
-        +IReadOnlyList~OtcEligibleCollateralDto~ EligibleCollateral
-        +decimal? IndependentAmount
-        +Guid MasterAgreementId
-        +decimal MinimumTransferAmount
-        +string? Notes
-        +decimal? RoundingAmount
-        +DateOnly? TerminationDate
-        +decimal ThresholdOurs
-        +decimal ThresholdTheirs
     }
     Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceKind
     Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceUnit

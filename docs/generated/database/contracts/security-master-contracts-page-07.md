@@ -2,11 +2,25 @@
 
 # `security-master-contracts` data objects - page 7 of 7
 
-Objects 481-485 of 485. References crossing pages remain available in the dependency manifest.
+Objects 481-486 of 486. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_UpsertOtcCollateralAgreementRequest["UpsertOtcCollateralAgreementRequest"] {
+        +Guid? CollateralAgreementId
+        +string Currency
+        +DateOnly EffectiveDate
+        +IReadOnlyList~OtcEligibleCollateralDto~ EligibleCollateral
+        +decimal? IndependentAmount
+        +Guid MasterAgreementId
+        +decimal MinimumTransferAmount
+        +string? Notes
+        +decimal? RoundingAmount
+        +DateOnly? TerminationDate
+        +decimal ThresholdOurs
+        +decimal ThresholdTheirs
+    }
     class Meridian_Contracts_SecurityMaster_UpsertOtcCollateralBalanceRequest["UpsertOtcCollateralBalanceRequest"] {
         +Guid? BalanceId
         +Guid CollateralAgreementId
