@@ -232,6 +232,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.ShortCarryInstruction"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.ShortCarryKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AccountingSystem.AccountingApprovalQueueConfigurationDto"
     },
     {
@@ -26819,6 +26831,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Accounting.Lots.ReviewOpenLotBackfillEvidenceRequest",
       "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.ShortCarryInstruction",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDirection"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.ShortCarryInstruction",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.ShortCarryKind"
     },
     {
       "kind": "contract-reference",
@@ -55834,7 +55858,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "405c3a98aff5710a2cba67c984999179517d9eecf995bb35605218b048fba182",
+  "fingerprint": "7666f88f92aad5458bde6589bee9819615f2c3aa8cdc9d18446c4e5b8fcb4e52",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -56114,6 +56138,18 @@
       "id": "contract:Meridian.Contracts.Accounting.Lots.ReviewOpenLotBackfillEvidenceRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Accounting.Lots.ReviewOpenLotBackfillEvidenceRequest"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.ShortCarryInstruction",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.ShortCarryInstruction"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.ShortCarryKind",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.ShortCarryKind"
     },
     {
       "classification": "dto",
@@ -81699,11 +81735,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3581,
-    "contract_set_memberships": 4429,
-    "edges": 9277,
+    "contract_references": 3583,
+    "contract_set_memberships": 4431,
+    "edges": 9281,
     "foreign_keys": 155,
     "logical_references": 6,
-    "nodes": 4486
+    "nodes": 4488
   }
 }
