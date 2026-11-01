@@ -177,43 +177,45 @@ public sealed class ConfigurationService : IAsyncDisposable
     }
 
     /// <summary>
-    /// Prints provider detection results to console (for CLI commands).
+    /// Formats provider detection results as display text (for CLI commands to print).
     /// </summary>
-    public void PrintProviderDetection(IReadOnlyList<DetectedProvider>? providers = null)
+    public string FormatProviderDetection(IReadOnlyList<DetectedProvider>? providers = null)
     {
         providers ??= DetectProviders();
 
-        Console.WriteLine();
-        Console.WriteLine("Detected Data Providers:");
-        Console.WriteLine("-".PadRight(60, '-'));
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine();
+        sb.AppendLine("Detected Data Providers:");
+        sb.AppendLine("-".PadRight(60, '-'));
 
         foreach (var provider in providers)
         {
             var status = provider.HasCredentials ? "[OK]" : "[--]";
-            Console.WriteLine($"  {status} {provider.DisplayName,-25} Priority: {provider.SuggestedPriority}");
-            Console.WriteLine($"        Capabilities: {string.Join(", ", provider.Capabilities)}");
+            sb.AppendLine($"  {status} {provider.DisplayName,-25} Priority: {provider.SuggestedPriority}");
+            sb.AppendLine($"        Capabilities: {string.Join(", ", provider.Capabilities)}");
 
             if (!provider.HasCredentials && provider.MissingCredentials.Length > 0)
             {
-                Console.WriteLine($"        Missing: {string.Join(", ", provider.MissingCredentials)}");
+                sb.AppendLine($"        Missing: {string.Join(", ", provider.MissingCredentials)}");
             }
         }
 
         var configured = providers.Count(p => p.HasCredentials);
-        Console.WriteLine();
-        Console.WriteLine($"  {configured}/{providers.Count} providers configured");
+        sb.AppendLine();
+        sb.AppendLine($"  {configured}/{providers.Count} providers configured");
 
         if (configured == 0)
         {
-            Console.WriteLine();
-            Console.WriteLine("  To configure providers, set environment variables:");
-            Console.WriteLine("    export ALPACA_KEY_ID=your-key-id");
-            Console.WriteLine("    export ALPACA_SECRET_KEY=your-secret-key");
-            Console.WriteLine();
-            Console.WriteLine("  Or run the configuration wizard:");
-            Console.WriteLine("    Meridian --wizard");
+            sb.AppendLine();
+            sb.AppendLine("  To configure providers, set environment variables:");
+            sb.AppendLine("    export ALPACA_KEY_ID=your-key-id");
+            sb.AppendLine("    export ALPACA_SECRET_KEY=your-secret-key");
+            sb.AppendLine();
+            sb.AppendLine("  Or run the configuration wizard:");
+            sb.AppendLine("    Meridian --wizard");
         }
-        Console.WriteLine();
+        sb.AppendLine();
+        return sb.ToString();
     }
 
 
