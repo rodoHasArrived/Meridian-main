@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "1d15997a9cd41e5518505bc5a4c8bc43790b2a6f29d397508e81619aa3c94d54",
+      "fingerprint": "38657d26eb682cc009416a8ca0dd95a84a99171179662d3e7d884eaf8ce9c4f2",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -49,6 +49,10 @@
         "Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorstDto",
         "Meridian.Contracts.Accounting.Lots.RetainOpenLotBackfillEvidenceRequest",
         "Meridian.Contracts.Accounting.Lots.ReviewOpenLotBackfillEvidenceRequest",
+        "Meridian.Contracts.Accounting.Lots.ShortCorrectionKind",
+        "Meridian.Contracts.Accounting.Lots.ShortCorrectionReceipt",
+        "Meridian.Contracts.Accounting.Lots.ShortSaleCharacterAttestation",
+        "Meridian.Contracts.Accounting.Lots.ShortSaleTaxCharacter",
         "Meridian.Contracts.AccountingSystem.AccountingApprovalQueueConfigurationDto",
         "Meridian.Contracts.AccountingSystem.AccountingCertificationArtifactIssueDto",
         "Meridian.Contracts.AccountingSystem.AccountingCertificationArtifactLaneStatusDto",
@@ -4591,7 +4595,7 @@
       ]
     }
   ],
-  "fingerprint": "0fd33a34711dbe51a842b412471f4bf1f8992446ccc2a3097ecebaa5b3f44f34",
+  "fingerprint": "e6a7e5410620d9fd39f65620cf88b2c8d43c2e3d49e074d52858b8aecae92d64",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4602,7 +4606,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "1ec3af7d12eee10ca9251c2bd3c3b61adf8c427ab8f960bf8df8a6af96fee2be",
+      "fingerprint": "79de15036b798b85323b0fb4756b3fa928e922d214f4929edf327b2e1307e77e",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Accounting.Lots",
       "object_ids": [
@@ -4643,7 +4647,11 @@
         "Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorst",
         "Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorstDto",
         "Meridian.Contracts.Accounting.Lots.RetainOpenLotBackfillEvidenceRequest",
-        "Meridian.Contracts.Accounting.Lots.ReviewOpenLotBackfillEvidenceRequest"
+        "Meridian.Contracts.Accounting.Lots.ReviewOpenLotBackfillEvidenceRequest",
+        "Meridian.Contracts.Accounting.Lots.ShortCorrectionKind",
+        "Meridian.Contracts.Accounting.Lots.ShortCorrectionReceipt",
+        "Meridian.Contracts.Accounting.Lots.ShortSaleCharacterAttestation",
+        "Meridian.Contracts.Accounting.Lots.ShortSaleTaxCharacter"
       ]
     },
     {
@@ -12505,6 +12513,369 @@
         {
           "line": 33,
           "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotBackfillDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [
+        {
+          "explicit_value": true,
+          "name": "Reversal",
+          "source_line": 43,
+          "value": "0"
+        },
+        {
+          "explicit_value": true,
+          "name": "Rebook",
+          "source_line": 45,
+          "value": "1"
+        }
+      ],
+      "fingerprint": "bc1756fd064364f4685b48b931a9c24a989478300d0c8b47f2ce774ba1ec80a9",
+      "full_name": "Meridian.Contracts.Accounting.Lots.ShortCorrectionKind",
+      "id": "Meridian.Contracts.Accounting.Lots.ShortCorrectionKind",
+      "kind": "enum",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "ShortCorrectionKind",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.ShortCorrectionKind",
+      "references": [],
+      "source": {
+        "line": 40,
+        "path": "src/Meridian.Contracts/Accounting/Lots/ShortCorrection.cs"
+      },
+      "sources": [
+        {
+          "line": 40,
+          "path": "src/Meridian.Contracts/Accounting/Lots/ShortCorrection.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "1849382d8f8bc94b961153383d0fd52e2aab586079b54f6624ee32d02e94fdc5",
+      "full_name": "Meridian.Contracts.Accounting.Lots.ShortCorrectionReceipt",
+      "id": "Meridian.Contracts.Accounting.Lots.ShortCorrectionReceipt",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Actor",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 59,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CorrectionId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 53,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CorrectsJournalEntryId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 56,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CorrectsMutationBatchId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 55,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FollowsReversalId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "Guid?",
+          "source_line": 61,
+          "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Kind",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ShortCorrectionKind",
+          "source_line": 54,
+          "type": "ShortCorrectionKind"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Reason",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 58,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RecordedAt",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 60,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RestoresLot",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "OpenLotDto",
+          "source_line": 57,
+          "type": "OpenLotDto"
+        }
+      ],
+      "name": "ShortCorrectionReceipt",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.ShortCorrectionReceipt",
+      "references": [
+        "Meridian.Contracts.Accounting.Lots.OpenLotDto",
+        "Meridian.Contracts.Accounting.Lots.ShortCorrectionKind"
+      ],
+      "source": {
+        "line": 52,
+        "path": "src/Meridian.Contracts/Accounting/Lots/ShortCorrection.cs"
+      },
+      "sources": [
+        {
+          "line": 52,
+          "path": "src/Meridian.Contracts/Accounting/Lots/ShortCorrection.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "7354dd354b086aeebfc7fb9641eb661c51339eaa36b6b33831bc53c55e472dc9",
+      "full_name": "Meridian.Contracts.Accounting.Lots.ShortSaleCharacterAttestation",
+      "id": "Meridian.Contracts.Accounting.Lots.ShortSaleCharacterAttestation",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Character",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ShortSaleTaxCharacter",
+          "source_line": 18,
+          "type": "ShortSaleTaxCharacter"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "RetainedEvidenceIdentityDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Evidence",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<RetainedEvidenceIdentityDto>",
+          "source_line": 22,
+          "type": "IReadOnlyList<RetainedEvidenceIdentityDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Justification",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 21,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ReviewedAtUtc",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 20,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ReviewedBy",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 19,
+          "type": "string"
+        }
+      ],
+      "name": "ShortSaleCharacterAttestation",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.ShortSaleCharacterAttestation",
+      "references": [
+        "Meridian.Contracts.Accounting.Lots.ShortSaleTaxCharacter",
+        "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+      ],
+      "source": {
+        "line": 17,
+        "path": "src/Meridian.Contracts/Accounting/Lots/ShortCorrection.cs"
+      },
+      "sources": [
+        {
+          "line": 17,
+          "path": "src/Meridian.Contracts/Accounting/Lots/ShortCorrection.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [
+        {
+          "explicit_value": true,
+          "name": "ShortTerm",
+          "source_line": 8,
+          "value": "0"
+        },
+        {
+          "explicit_value": true,
+          "name": "LongTerm",
+          "source_line": 9,
+          "value": "1"
+        }
+      ],
+      "fingerprint": "7807e35e0f8494447aec9446e117f59800521ac2fb8b2f0281dcb1451a5dbf93",
+      "full_name": "Meridian.Contracts.Accounting.Lots.ShortSaleTaxCharacter",
+      "id": "Meridian.Contracts.Accounting.Lots.ShortSaleTaxCharacter",
+      "kind": "enum",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "ShortSaleTaxCharacter",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.ShortSaleTaxCharacter",
+      "references": [],
+      "source": {
+        "line": 6,
+        "path": "src/Meridian.Contracts/Accounting/Lots/ShortCorrection.cs"
+      },
+      "sources": [
+        {
+          "line": 6,
+          "path": "src/Meridian.Contracts/Accounting/Lots/ShortCorrection.cs"
         }
       ],
       "type_parameters": []
