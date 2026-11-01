@@ -94,6 +94,25 @@ public sealed class ContractualCashFlowScenarioViewModelTests
 
         await view.VerifyReplayCommand.ExecuteAsync(null);
         view.ReplayStatusText.Should().Be("Replay differs: retained output out-1, current out-2. Source terms unchanged.");
+
+        var other = Guid.NewGuid();
+        client.Setup(c => c.CompareRunsAsync(ContractualCashFlowSubjectKinds.Loan, Subject, pending, other, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ApiResponse<ContractualCashFlowRunComparison>.Ok(new(ContractualCashFlowSubjectKinds.Loan, Subject, pending, other, true, false, false, "out-1", "out-2",
+                [new(new DateOnly(2027, 1, 31), "coupon", 25000m, 25125.5m)], [new("RightOnly", "CurvePinRequired", "Pin the SOFR curve.", "float")])));
+        view.CompareRunsCommand.CanExecute(null).Should().BeFalse("no comparison run named yet");
+        view.CompareRunIdText = pending.ToString("D");
+        await view.CompareRunsCommand.ExecuteAsync(null);
+        view.StatusText.Should().Contain("two different retained runs");
+        view.CompareRunIdText = other.ToString("D");
+        await view.CompareRunsCommand.ExecuteAsync(null);
+        view.ComparisonText.Should().Contain("REPLAY FAILED").And.Contain("different requests").And.Contain("125.5");
+        view.CashDeltas.Should().ContainSingle().Which.Delta.Should().Be(125.5m);
+        view.BlockerDeltas.Should().ContainSingle().Which.Should().Be("Only in second: CurvePinRequired (float): Pin the SOFR curve.");
+
+        await view.LoadRunCommand.ExecuteAsync(null);
+        view.ComparisonText.Should().BeEmpty("a comparison belongs to the pair it was computed for");
+        view.CashDeltas.Should().BeEmpty();
+        view.BlockerDeltas.Should().BeEmpty();
     }
 }
 #endif

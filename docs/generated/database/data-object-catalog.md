@@ -12,13 +12,13 @@ This is a source inventory of public DTOs and related contract objects. Database
 | Classification | Count |
 | --- | ---: |
 | `catalog` | 13 |
-| `class` | 290 |
+| `class` | 291 |
 | `configuration` | 20 |
 | `dto` | 1471 |
-| `enum` | 449 |
+| `enum` | 447 |
 | `event` | 6 |
 | `payload` | 63 |
-| `record` | 420 |
+| `record` | 421 |
 | `record_struct` | 10 |
 | `request` | 179 |
 | `response` | 91 |

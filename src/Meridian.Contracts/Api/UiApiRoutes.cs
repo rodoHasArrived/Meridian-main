@@ -452,6 +452,7 @@ public static class UiApiRoutes
     public const string SecurityMasterCashFlowProjectionPreview = "/api/security-master/{securityId:guid}/cashflow-projections/preview";
     public const string SecurityMasterCashFlowProjectionRuns = "/api/security-master/{subjectId:guid}/cashflow-projections/runs";
     public const string SecurityMasterCashFlowProjectionRun = "/api/security-master/{subjectId:guid}/cashflow-projections/runs/{runId:guid}";
+    public const string SecurityMasterCashFlowProjectionRunCompare = "/api/security-master/{subjectId:guid}/cashflow-projections/runs/{runId:guid}/compare/{otherRunId:guid}";
 
     // Market curves and valuation (G4)
     public const string SecurityMasterCurves = "/api/security-master/curves";
@@ -858,6 +859,7 @@ public static class UiApiRoutes
     public const string DirectLendingProjectionPreview = "/api/loans/{loanId:guid}/projections/preview";
     public const string DirectLendingContractualRuns = "/api/loans/{subjectId:guid}/projections/contractual-runs";
     public const string DirectLendingContractualRun = "/api/loans/{subjectId:guid}/projections/contractual-runs/{runId:guid}";
+    public const string DirectLendingContractualRunCompare = "/api/loans/{subjectId:guid}/projections/contractual-runs/{runId:guid}/compare/{otherRunId:guid}";
     public const string DirectLendingServicerStatementPreview = "/api/loans/servicer-statements/preview";
     public const string DirectLendingServicerStatementImport = "/api/loans/servicer-statements/import";
     public const string DirectLendingServicerStatementById = "/api/loans/servicer-statements/{batchId}";
