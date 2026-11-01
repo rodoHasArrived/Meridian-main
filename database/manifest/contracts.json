@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "8f857aa9e8ccfb152945f1d51167a03eb76f0e1610b5ac8c5da2af90206643fe",
+      "fingerprint": "bbca2fb91c9c459acd0ca3f6ca21b17639fbf7b5a7516abe023a0f33230d316b",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -504,12 +504,10 @@
         "Meridian.Contracts.Calendars.StaticBusinessDayCalendarSource",
         "Meridian.Contracts.CashFlows.CalculationBlockerDigest",
         "Meridian.Contracts.CashFlows.CashFlowAmortization",
-        "Meridian.Contracts.CashFlows.CashFlowBlockerDelta",
         "Meridian.Contracts.CashFlows.CashFlowCalculationBlocker",
         "Meridian.Contracts.CashFlows.CashFlowCalendarSnapshot",
         "Meridian.Contracts.CashFlows.CashFlowCurvePin",
         "Meridian.Contracts.CashFlows.CashFlowCurveSnapshot",
-        "Meridian.Contracts.CashFlows.CashFlowDateDelta",
         "Meridian.Contracts.CashFlows.CashFlowExerciseCalculation",
         "Meridian.Contracts.CashFlows.CashFlowExerciseEligibility",
         "Meridian.Contracts.CashFlows.CashFlowExerciseSide",
@@ -528,8 +526,6 @@
         "Meridian.Contracts.CashFlows.ContractualCashFlowRequest",
         "Meridian.Contracts.CashFlows.ContractualCashFlowResult",
         "Meridian.Contracts.CashFlows.ContractualCashFlowRun",
-        "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparer",
-        "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison",
         "Meridian.Contracts.CashFlows.ContractualCashFlowStream",
         "Meridian.Contracts.CashFlows.ContractualCashFlowSubjectKinds",
         "Meridian.Contracts.CashFlows.ContractualCashFlowVersions",
@@ -4597,7 +4593,7 @@
       ]
     }
   ],
-  "fingerprint": "e2ed7492d2b82ee31c342dc5281a4964f623e5bd7381d0d1512b86cec8cce142",
+  "fingerprint": "b8401249e7005a5b5cae8b2b1f7ed4a21e23f1a0e2fd979bfaf64ab705c7a3db",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5208,18 +5204,16 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "d332400bb77b171bd33ba7db4115b757dd330931649cbab3a6635f23fe1a7ce0",
+      "fingerprint": "f03f10cfb67980c80fbed8e241d5a95fb4f1e470718bef2128f7a4a39aed3112",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.CashFlows",
       "object_ids": [
         "Meridian.Contracts.CashFlows.CalculationBlockerDigest",
         "Meridian.Contracts.CashFlows.CashFlowAmortization",
-        "Meridian.Contracts.CashFlows.CashFlowBlockerDelta",
         "Meridian.Contracts.CashFlows.CashFlowCalculationBlocker",
         "Meridian.Contracts.CashFlows.CashFlowCalendarSnapshot",
         "Meridian.Contracts.CashFlows.CashFlowCurvePin",
         "Meridian.Contracts.CashFlows.CashFlowCurveSnapshot",
-        "Meridian.Contracts.CashFlows.CashFlowDateDelta",
         "Meridian.Contracts.CashFlows.CashFlowExerciseCalculation",
         "Meridian.Contracts.CashFlows.CashFlowExerciseEligibility",
         "Meridian.Contracts.CashFlows.CashFlowExerciseSide",
@@ -5238,8 +5232,6 @@
         "Meridian.Contracts.CashFlows.ContractualCashFlowRequest",
         "Meridian.Contracts.CashFlows.ContractualCashFlowResult",
         "Meridian.Contracts.CashFlows.ContractualCashFlowRun",
-        "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparer",
-        "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison",
         "Meridian.Contracts.CashFlows.ContractualCashFlowStream",
         "Meridian.Contracts.CashFlows.ContractualCashFlowSubjectKinds",
         "Meridian.Contracts.CashFlows.ContractualCashFlowVersions",
@@ -5849,7 +5841,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "ad23870ad9e1f78e6ae777387568f2e2c26129ddf355a659f01dbd87a9b71d4a",
+      "fingerprint": "fbaf304af5931d30f11cfdb9b153948e4ea089157c3046f2a885dd47d5037e25",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.FixedIncome",
       "object_ids": [
@@ -75189,96 +75181,6 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "76d530e97cabe515a7b5ba00f8958638c1e48138dbcea856c30b4c222630c455",
-      "full_name": "Meridian.Contracts.CashFlows.CashFlowBlockerDelta",
-      "id": "Meridian.Contracts.CashFlows.CashFlowBlockerDelta",
-      "kind": "record",
-      "mapped_schemas": [],
-      "members": [
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Code",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 9,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Message",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 9,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Side",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 9,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "StreamId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 9,
-          "type": "string?"
-        }
-      ],
-      "name": "CashFlowBlockerDelta",
-      "namespace": "Meridian.Contracts.CashFlows",
-      "partial": false,
-      "qualified_name": "Meridian.Contracts.CashFlows.CashFlowBlockerDelta",
-      "references": [],
-      "source": {
-        "line": 9,
-        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs"
-      },
-      "sources": [
-        {
-          "line": 9,
-          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs"
-        }
-      ],
-      "type_parameters": []
-    },
-    {
-      "base_types": [],
-      "classification": "record",
-      "containing_type": null,
-      "contract_sets": [
-        "all-contracts"
-      ],
-      "diagram": false,
-      "diagram_contract_sets": [],
-      "enum_members": [],
       "fingerprint": "0df1d2cea6bd9df9e5baf83132b4c0ae2d6548725c75d223bfc649f01758f6e0",
       "full_name": "Meridian.Contracts.CashFlows.CashFlowCalculationBlocker",
       "id": "Meridian.Contracts.CashFlows.CashFlowCalculationBlocker",
@@ -75617,96 +75519,6 @@
         {
           "line": 152,
           "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
-        }
-      ],
-      "type_parameters": []
-    },
-    {
-      "base_types": [],
-      "classification": "record",
-      "containing_type": null,
-      "contract_sets": [
-        "all-contracts"
-      ],
-      "diagram": false,
-      "diagram_contract_sets": [],
-      "enum_members": [],
-      "fingerprint": "ed8e57cc68c5a7cc5e4c66e8d229e0efc29f5bfa11e027cd2b2370e4992037f9",
-      "full_name": "Meridian.Contracts.CashFlows.CashFlowDateDelta",
-      "id": "Meridian.Contracts.CashFlows.CashFlowDateDelta",
-      "kind": "record",
-      "mapped_schemas": [],
-      "members": [
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Date",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "DateOnly",
-          "source_line": 3,
-          "type": "DateOnly"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "LeftNetCash",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "decimal",
-          "source_line": 3,
-          "type": "decimal"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "RightNetCash",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "decimal",
-          "source_line": 3,
-          "type": "decimal"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "StreamId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 3,
-          "type": "string"
-        }
-      ],
-      "name": "CashFlowDateDelta",
-      "namespace": "Meridian.Contracts.CashFlows",
-      "partial": false,
-      "qualified_name": "Meridian.Contracts.CashFlows.CashFlowDateDelta",
-      "references": [],
-      "source": {
-        "line": 3,
-        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs"
-      },
-      "sources": [
-        {
-          "line": 3,
-          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs"
         }
       ],
       "type_parameters": []
@@ -77713,230 +77525,6 @@
         {
           "line": 171,
           "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
-        }
-      ],
-      "type_parameters": []
-    },
-    {
-      "base_types": [],
-      "classification": "class",
-      "containing_type": null,
-      "contract_sets": [
-        "all-contracts"
-      ],
-      "diagram": false,
-      "diagram_contract_sets": [],
-      "enum_members": [],
-      "fingerprint": "4ef722b3bf5d9d982a074e574973263a06291cecc7dadf1e9c4fce64e4e99c06",
-      "full_name": "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparer",
-      "id": "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparer",
-      "kind": "class",
-      "mapped_schemas": [],
-      "members": [],
-      "name": "ContractualCashFlowRunComparer",
-      "namespace": "Meridian.Contracts.CashFlows",
-      "partial": false,
-      "qualified_name": "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparer",
-      "references": [],
-      "source": {
-        "line": 32,
-        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs"
-      },
-      "sources": [
-        {
-          "line": 32,
-          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs"
-        }
-      ],
-      "type_parameters": []
-    },
-    {
-      "base_types": [],
-      "classification": "record",
-      "containing_type": null,
-      "contract_sets": [
-        "all-contracts"
-      ],
-      "diagram": false,
-      "diagram_contract_sets": [],
-      "enum_members": [],
-      "fingerprint": "ff6292ff5cd1a87e351de8e33f642fd69103128d02007d760b3d0c0059fe35ac",
-      "full_name": "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison",
-      "id": "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison",
-      "kind": "record",
-      "mapped_schemas": [],
-      "members": [
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "element_type": "CashFlowBlockerDelta",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "BlockerDeltas",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "IReadOnlyList<CashFlowBlockerDelta>",
-          "source_line": 27,
-          "type": "IReadOnlyList<CashFlowBlockerDelta>"
-        },
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "element_type": "CashFlowDateDelta",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "CashDeltas",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "IReadOnlyList<CashFlowDateDelta>",
-          "source_line": 26,
-          "type": "IReadOnlyList<CashFlowDateDelta>"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "LeftOutputHash",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 24,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "LeftReplayVerified",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "bool",
-          "source_line": 21,
-          "type": "bool"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "LeftRunId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "Guid",
-          "source_line": 19,
-          "type": "Guid"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "RightOutputHash",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 25,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "RightReplayVerified",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "bool",
-          "source_line": 22,
-          "type": "bool"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "RightRunId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "Guid",
-          "source_line": 20,
-          "type": "Guid"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SameRequest",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "bool",
-          "source_line": 23,
-          "type": "bool"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SubjectId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "Guid",
-          "source_line": 18,
-          "type": "Guid"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SubjectKind",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 17,
-          "type": "string"
-        }
-      ],
-      "name": "ContractualCashFlowRunComparison",
-      "namespace": "Meridian.Contracts.CashFlows",
-      "partial": false,
-      "qualified_name": "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison",
-      "references": [
-        "Meridian.Contracts.CashFlows.CashFlowBlockerDelta",
-        "Meridian.Contracts.CashFlows.CashFlowDateDelta"
-      ],
-      "source": {
-        "line": 16,
-        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs"
-      },
-      "sources": [
-        {
-          "line": 16,
-          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs"
         }
       ],
       "type_parameters": []
@@ -131805,7 +131393,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "e21290f05267d485d0c508cde30e7b63d8112d3bd844675e4295559fc304e945",
+      "fingerprint": "639216d1da9fcc97ee2032ed50961d2cfdef55d45ae72fa1ddd55b2c13c77814",
       "full_name": "Meridian.Contracts.FixedIncome.BondSettlementConsideration",
       "id": "Meridian.Contracts.FixedIncome.BondSettlementConsideration",
       "kind": "class",
@@ -131817,12 +131405,12 @@
       "qualified_name": "Meridian.Contracts.FixedIncome.BondSettlementConsideration",
       "references": [],
       "source": {
-        "line": 62,
+        "line": 87,
         "path": "src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs"
       },
       "sources": [
         {
-          "line": 62,
+          "line": 87,
           "path": "src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs"
         }
       ],
@@ -131838,7 +131426,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "00237c6246996291ed02bd54a7a117227856d5a6e479cd3e164b68a4a191bd4d",
+      "fingerprint": "f8eabacb6a2a7c5316d5770853c0c2dc2b14e5ed2db66a7b76b5f13e86176555",
       "full_name": "Meridian.Contracts.FixedIncome.BondSettlementConsiderationDto",
       "id": "Meridian.Contracts.FixedIncome.BondSettlementConsiderationDto",
       "kind": "record",
@@ -131855,7 +131443,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 40,
+          "source_line": 45,
           "type": "string"
         },
         {
@@ -131869,7 +131457,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 32,
+          "source_line": 37,
           "type": "decimal"
         },
         {
@@ -131883,7 +131471,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 30,
+          "source_line": 35,
           "type": "decimal"
         },
         {
@@ -131897,7 +131485,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 39,
+          "source_line": 44,
           "type": "string"
         },
         {
@@ -131911,7 +131499,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 33,
+          "source_line": 38,
           "type": "decimal"
         },
         {
@@ -131925,7 +131513,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 31,
+          "source_line": 36,
           "type": "decimal"
         },
         {
@@ -131939,7 +131527,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "BondCalculationContext",
-          "source_line": 27,
+          "source_line": 32,
           "type": "BondCalculationContext"
         },
         {
@@ -131953,7 +131541,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 25,
+          "source_line": 30,
           "type": "string"
         },
         {
@@ -131967,7 +131555,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 36,
+          "source_line": 41,
           "type": "decimal"
         },
         {
@@ -131981,7 +131569,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 35,
+          "source_line": 40,
           "type": "decimal"
         },
         {
@@ -131995,7 +131583,22 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 41,
+          "source_line": 46,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "FunctionalCurrency",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 49,
           "type": "string?"
         },
         {
@@ -132009,7 +131612,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<BondCalculationInput>",
-          "source_line": 42,
+          "source_line": 47,
           "type": "IReadOnlyList<BondCalculationInput>"
         },
         {
@@ -132023,7 +131626,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 26,
+          "source_line": 31,
           "type": "string"
         },
         {
@@ -132037,7 +131640,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 37,
+          "source_line": 42,
           "type": "decimal"
         },
         {
@@ -132051,7 +131654,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 29,
+          "source_line": 34,
           "type": "decimal"
         },
         {
@@ -132065,7 +131668,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 34,
+          "source_line": 39,
           "type": "decimal"
         },
         {
@@ -132079,8 +131682,23 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 24,
+          "source_line": 29,
           "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "SettlementFxRateToFunctional",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 50,
+          "type": "decimal?"
         },
         {
           "collection": false,
@@ -132093,7 +131711,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 38,
+          "source_line": 43,
           "type": "string"
         },
         {
@@ -132107,7 +131725,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "BondYieldConvention",
-          "source_line": 28,
+          "source_line": 33,
           "type": "BondYieldConvention"
         }
       ],
@@ -132121,12 +131739,12 @@
         "Meridian.Contracts.FixedIncome.BondYieldConvention"
       ],
       "source": {
-        "line": 23,
+        "line": 28,
         "path": "src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs"
       },
       "sources": [
         {
-          "line": 23,
+          "line": 28,
           "path": "src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs"
         }
       ],
@@ -132142,7 +131760,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "ae09c9e496e382f7b7e684e0a3ff7fbc02ea20470eefd8eb1b1d5f6ea7b05d32",
+      "fingerprint": "896c5de1d1ed1f6c558b16e9edacb8970d46bf567390732da72386faa7dc8e83",
       "full_name": "Meridian.Contracts.FixedIncome.BondSettlementConsiderationRequest",
       "id": "Meridian.Contracts.FixedIncome.BondSettlementConsiderationRequest",
       "kind": "record",
@@ -132159,7 +131777,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 15,
+          "source_line": 16,
           "type": "string"
         },
         {
@@ -132173,7 +131791,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "BondAnalyticsRequest",
-          "source_line": 8,
+          "source_line": 9,
           "type": "BondAnalyticsRequest"
         },
         {
@@ -132187,7 +131805,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 10,
+          "source_line": 11,
           "type": "decimal"
         },
         {
@@ -132201,7 +131819,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 14,
+          "source_line": 15,
           "type": "string"
         },
         {
@@ -132215,7 +131833,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 11,
+          "source_line": 12,
           "type": "decimal"
         },
         {
@@ -132230,7 +131848,22 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 16,
+          "source_line": 17,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FunctionalCurrency",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 19,
           "type": "string?"
         },
         {
@@ -132244,7 +131877,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 12,
+          "source_line": 13,
           "type": "decimal"
         },
         {
@@ -132258,8 +131891,23 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 9,
+          "source_line": 10,
           "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SettlementFxRateToFunctional",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 21,
+          "type": "decimal?"
         },
         {
           "collection": false,
@@ -132272,7 +131920,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 13,
+          "source_line": 14,
           "type": "string"
         }
       ],
@@ -132284,12 +131932,12 @@
         "Meridian.Contracts.FixedIncome.BondAnalyticsRequest"
       ],
       "source": {
-        "line": 7,
+        "line": 8,
         "path": "src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs"
       },
       "sources": [
         {
-          "line": 7,
+          "line": 8,
           "path": "src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs"
         }
       ],
@@ -132305,7 +131953,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "860ff4a956ef3f5a1008f18ee6a88e186c55f3ce9416365c638386985ea4dc86",
+      "fingerprint": "6763f3c1455e44879af084a758f84ae91681db22468edbea6fe6bc80cc4bd58e",
       "full_name": "Meridian.Contracts.FixedIncome.BondSettlementPreparationResult",
       "id": "Meridian.Contracts.FixedIncome.BondSettlementPreparationResult",
       "kind": "record",
@@ -132322,7 +131970,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<BondAnalyticsBlocker>",
-          "source_line": 46,
+          "source_line": 71,
           "type": "IReadOnlyList<BondAnalyticsBlocker>"
         },
         {
@@ -132336,7 +131984,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "BondSettlementConsiderationDto?",
-          "source_line": 45,
+          "source_line": 70,
           "type": "BondSettlementConsiderationDto?"
         }
       ],
@@ -132349,12 +131997,12 @@
         "Meridian.Contracts.FixedIncome.BondSettlementConsiderationDto"
       ],
       "source": {
-        "line": 44,
+        "line": 69,
         "path": "src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs"
       },
       "sources": [
         {
-          "line": 44,
+          "line": 69,
           "path": "src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs"
         }
       ],
@@ -132722,7 +132370,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "55d5ef5c61117ae02f100277209e2e81fcc47d10495087b62f5ed19ec69b7041",
+      "fingerprint": "650001862ec23bf7fe6632761a65d4e26457df6ea50565138b1fe75e71974b32",
       "full_name": "Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService",
       "id": "Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService",
       "kind": "interface",
@@ -132734,12 +132382,12 @@
       "qualified_name": "Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService",
       "references": [],
       "source": {
-        "line": 51,
+        "line": 76,
         "path": "src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs"
       },
       "sources": [
         {
-          "line": 51,
+          "line": 76,
           "path": "src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs"
         }
       ],

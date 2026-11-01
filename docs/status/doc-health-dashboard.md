@@ -20,11 +20,7 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 | Metric | Value |
 | -------- | ------- |
 | Total documentation files | 795 |
-<<<<<<< HEAD
-| Total lines | 180,521 |
-=======
-| Total lines | 180,528 |
->>>>>>> origin/codex/pr3328-credential-lifecycle
+| Total lines | 180,525 |
 | Average file size (lines) | 227.1 |
 | Orphaned files | 259 |
 | Files without headings | 157 |
