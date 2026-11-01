@@ -2950,6 +2950,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.CashFlows.CashFlowBlockerDelta"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.CashFlows.CashFlowCalculationBlocker"
     },
     {
@@ -2969,6 +2975,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.CashFlows.CashFlowCurveSnapshot"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.CashFlows.CashFlowDateDelta"
     },
     {
       "kind": "contract-set-member",
@@ -3077,6 +3089,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowRun"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowRunComparer"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison"
     },
     {
       "kind": "contract-set-member",
@@ -29703,6 +29727,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison",
+      "target": "contract:Meridian.Contracts.CashFlows.CashFlowBlockerDelta"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison",
+      "target": "contract:Meridian.Contracts.CashFlows.CashFlowDateDelta"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowStream",
       "target": "contract:Meridian.Contracts.CashFlows.CashFlowAmortization"
     },
@@ -55834,7 +55870,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "405c3a98aff5710a2cba67c984999179517d9eecf995bb35605218b048fba182",
+  "fingerprint": "592a7f155b23cf13b2ed15fbdf61336f6b334cef10dc73eeafc68df373d28f41",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -58835,6 +58871,12 @@
     },
     {
       "classification": "record",
+      "id": "contract:Meridian.Contracts.CashFlows.CashFlowBlockerDelta",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.CashFlows.CashFlowBlockerDelta"
+    },
+    {
+      "classification": "record",
       "id": "contract:Meridian.Contracts.CashFlows.CashFlowCalculationBlocker",
       "kind": "contract-type",
       "label": "Meridian.Contracts.CashFlows.CashFlowCalculationBlocker"
@@ -58856,6 +58898,12 @@
       "id": "contract:Meridian.Contracts.CashFlows.CashFlowCurveSnapshot",
       "kind": "contract-type",
       "label": "Meridian.Contracts.CashFlows.CashFlowCurveSnapshot"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.CashFlows.CashFlowDateDelta",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.CashFlows.CashFlowDateDelta"
     },
     {
       "classification": "record",
@@ -58964,6 +59012,18 @@
       "id": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowRun",
       "kind": "contract-type",
       "label": "Meridian.Contracts.CashFlows.ContractualCashFlowRun"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowRunComparer",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparer"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison"
     },
     {
       "classification": "record",
@@ -81699,11 +81759,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3581,
-    "contract_set_memberships": 4429,
-    "edges": 9277,
+    "contract_references": 3583,
+    "contract_set_memberships": 4433,
+    "edges": 9283,
     "foreign_keys": 155,
     "logical_references": 6,
-    "nodes": 4486
+    "nodes": 4490
   }
 }

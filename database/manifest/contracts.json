@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "1d15997a9cd41e5518505bc5a4c8bc43790b2a6f29d397508e81619aa3c94d54",
+      "fingerprint": "4e019b4e42dcee834efb2b9ed17ff8ef14ae22897883729ce7addf918a2bb55e",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -502,10 +502,12 @@
         "Meridian.Contracts.Calendars.StaticBusinessDayCalendarSource",
         "Meridian.Contracts.CashFlows.CalculationBlockerDigest",
         "Meridian.Contracts.CashFlows.CashFlowAmortization",
+        "Meridian.Contracts.CashFlows.CashFlowBlockerDelta",
         "Meridian.Contracts.CashFlows.CashFlowCalculationBlocker",
         "Meridian.Contracts.CashFlows.CashFlowCalendarSnapshot",
         "Meridian.Contracts.CashFlows.CashFlowCurvePin",
         "Meridian.Contracts.CashFlows.CashFlowCurveSnapshot",
+        "Meridian.Contracts.CashFlows.CashFlowDateDelta",
         "Meridian.Contracts.CashFlows.CashFlowExerciseCalculation",
         "Meridian.Contracts.CashFlows.CashFlowExerciseEligibility",
         "Meridian.Contracts.CashFlows.CashFlowExerciseSide",
@@ -524,6 +526,8 @@
         "Meridian.Contracts.CashFlows.ContractualCashFlowRequest",
         "Meridian.Contracts.CashFlows.ContractualCashFlowResult",
         "Meridian.Contracts.CashFlows.ContractualCashFlowRun",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparer",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison",
         "Meridian.Contracts.CashFlows.ContractualCashFlowStream",
         "Meridian.Contracts.CashFlows.ContractualCashFlowSubjectKinds",
         "Meridian.Contracts.CashFlows.ContractualCashFlowVersions",
@@ -4591,7 +4595,7 @@
       ]
     }
   ],
-  "fingerprint": "0fd33a34711dbe51a842b412471f4bf1f8992446ccc2a3097ecebaa5b3f44f34",
+  "fingerprint": "07840a8af520e20247f89ec5990f0352fe6f4c7d7e36ece7472187919455f7cf",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5200,16 +5204,18 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "f03f10cfb67980c80fbed8e241d5a95fb4f1e470718bef2128f7a4a39aed3112",
+      "fingerprint": "d332400bb77b171bd33ba7db4115b757dd330931649cbab3a6635f23fe1a7ce0",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.CashFlows",
       "object_ids": [
         "Meridian.Contracts.CashFlows.CalculationBlockerDigest",
         "Meridian.Contracts.CashFlows.CashFlowAmortization",
+        "Meridian.Contracts.CashFlows.CashFlowBlockerDelta",
         "Meridian.Contracts.CashFlows.CashFlowCalculationBlocker",
         "Meridian.Contracts.CashFlows.CashFlowCalendarSnapshot",
         "Meridian.Contracts.CashFlows.CashFlowCurvePin",
         "Meridian.Contracts.CashFlows.CashFlowCurveSnapshot",
+        "Meridian.Contracts.CashFlows.CashFlowDateDelta",
         "Meridian.Contracts.CashFlows.CashFlowExerciseCalculation",
         "Meridian.Contracts.CashFlows.CashFlowExerciseEligibility",
         "Meridian.Contracts.CashFlows.CashFlowExerciseSide",
@@ -5228,6 +5234,8 @@
         "Meridian.Contracts.CashFlows.ContractualCashFlowRequest",
         "Meridian.Contracts.CashFlows.ContractualCashFlowResult",
         "Meridian.Contracts.CashFlows.ContractualCashFlowRun",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparer",
+        "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison",
         "Meridian.Contracts.CashFlows.ContractualCashFlowStream",
         "Meridian.Contracts.CashFlows.ContractualCashFlowSubjectKinds",
         "Meridian.Contracts.CashFlows.ContractualCashFlowVersions",
@@ -74883,6 +74891,96 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
+      "fingerprint": "76d530e97cabe515a7b5ba00f8958638c1e48138dbcea856c30b4c222630c455",
+      "full_name": "Meridian.Contracts.CashFlows.CashFlowBlockerDelta",
+      "id": "Meridian.Contracts.CashFlows.CashFlowBlockerDelta",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Code",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 9,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Message",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 9,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Side",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 9,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "StreamId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 9,
+          "type": "string?"
+        }
+      ],
+      "name": "CashFlowBlockerDelta",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.CashFlowBlockerDelta",
+      "references": [],
+      "source": {
+        "line": 9,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs"
+      },
+      "sources": [
+        {
+          "line": 9,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
       "fingerprint": "0df1d2cea6bd9df9e5baf83132b4c0ae2d6548725c75d223bfc649f01758f6e0",
       "full_name": "Meridian.Contracts.CashFlows.CashFlowCalculationBlocker",
       "id": "Meridian.Contracts.CashFlows.CashFlowCalculationBlocker",
@@ -75221,6 +75319,96 @@
         {
           "line": 152,
           "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "ed8e57cc68c5a7cc5e4c66e8d229e0efc29f5bfa11e027cd2b2370e4992037f9",
+      "full_name": "Meridian.Contracts.CashFlows.CashFlowDateDelta",
+      "id": "Meridian.Contracts.CashFlows.CashFlowDateDelta",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Date",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 3,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LeftNetCash",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 3,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RightNetCash",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 3,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "StreamId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 3,
+          "type": "string"
+        }
+      ],
+      "name": "CashFlowDateDelta",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.CashFlowDateDelta",
+      "references": [],
+      "source": {
+        "line": 3,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs"
+      },
+      "sources": [
+        {
+          "line": 3,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs"
         }
       ],
       "type_parameters": []
@@ -77227,6 +77415,230 @@
         {
           "line": 171,
           "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "4ef722b3bf5d9d982a074e574973263a06291cecc7dadf1e9c4fce64e4e99c06",
+      "full_name": "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparer",
+      "id": "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparer",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "ContractualCashFlowRunComparer",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparer",
+      "references": [],
+      "source": {
+        "line": 32,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs"
+      },
+      "sources": [
+        {
+          "line": 32,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "ff6292ff5cd1a87e351de8e33f642fd69103128d02007d760b3d0c0059fe35ac",
+      "full_name": "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison",
+      "id": "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "CashFlowBlockerDelta",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BlockerDeltas",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<CashFlowBlockerDelta>",
+          "source_line": 27,
+          "type": "IReadOnlyList<CashFlowBlockerDelta>"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "CashFlowDateDelta",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CashDeltas",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<CashFlowDateDelta>",
+          "source_line": 26,
+          "type": "IReadOnlyList<CashFlowDateDelta>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LeftOutputHash",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 24,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LeftReplayVerified",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 21,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LeftRunId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 19,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RightOutputHash",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 25,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RightReplayVerified",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 22,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RightRunId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 20,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SameRequest",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 23,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SubjectId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 18,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SubjectKind",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 17,
+          "type": "string"
+        }
+      ],
+      "name": "ContractualCashFlowRunComparison",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison",
+      "references": [
+        "Meridian.Contracts.CashFlows.CashFlowBlockerDelta",
+        "Meridian.Contracts.CashFlows.CashFlowDateDelta"
+      ],
+      "source": {
+        "line": 16,
+        "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs"
+      },
+      "sources": [
+        {
+          "line": 16,
+          "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs"
         }
       ],
       "type_parameters": []
