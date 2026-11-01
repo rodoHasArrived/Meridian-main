@@ -38,20 +38,34 @@ public sealed record BondExerciseNoticeDto(
     public IReadOnlyList<string> Validate()
     {
         var issues = new List<string>();
-        if (NoticeId == Guid.Empty || SecurityId == Guid.Empty) issues.Add("A notice needs its own identity and the security it concerns.");
-        if (string.IsNullOrWhiteSpace(StreamId)) issues.Add("The exercised stream is required.");
-        if (!Enum.IsDefined(Side)) issues.Add("The exercise side must be Call or Put.");
-        if (NoticeDate > ExerciseDate) issues.Add("A notice cannot follow the exercise date it announces.");
-        if (ReceivedDate < NoticeDate) issues.Add("A notice cannot be received before its notice date.");
-        if (Price <= 0m) issues.Add("The noticed redemption price must be positive.");
-        if (Amount is <= 0m) issues.Add("A noticed amount must be positive when stated.");
-        if (SourceDocumentSha256 is not { Length: 64 } || !SourceDocumentSha256.All(Uri.IsHexDigit)) issues.Add("The source document SHA-256 is required.");
-        if (string.IsNullOrWhiteSpace(SourceReference)) issues.Add("The source document reference is required.");
-        if (string.IsNullOrWhiteSpace(RecordedBy)) issues.Add("The recording actor is required.");
-        if (RecordedAtUtc == default || RecordedAtUtc.Offset != TimeSpan.Zero) issues.Add("RecordedAtUtc must be an explicit UTC instant.");
-        if (ApprovalState != ExerciseNoticeApprovalState.Recorded && (string.IsNullOrWhiteSpace(DecidedBy) || DecidedAtUtc is null)) issues.Add("A decided notice names its approver and decision instant.");
-        if (ApprovalState != ExerciseNoticeApprovalState.Recorded && string.Equals(DecidedBy, RecordedBy, StringComparison.OrdinalIgnoreCase)) issues.Add("The recording actor cannot decide their own notice.");
-        if (!Enum.IsDefined(ApprovalState)) issues.Add("Unsupported approval state.");
+        if (NoticeId == Guid.Empty || SecurityId == Guid.Empty)
+            issues.Add("A notice needs its own identity and the security it concerns.");
+        if (string.IsNullOrWhiteSpace(StreamId))
+            issues.Add("The exercised stream is required.");
+        if (!Enum.IsDefined(Side))
+            issues.Add("The exercise side must be Call or Put.");
+        if (NoticeDate > ExerciseDate)
+            issues.Add("A notice cannot follow the exercise date it announces.");
+        if (ReceivedDate < NoticeDate)
+            issues.Add("A notice cannot be received before its notice date.");
+        if (Price <= 0m)
+            issues.Add("The noticed redemption price must be positive.");
+        if (Amount is <= 0m)
+            issues.Add("A noticed amount must be positive when stated.");
+        if (SourceDocumentSha256 is not { Length: 64 } || !SourceDocumentSha256.All(Uri.IsHexDigit))
+            issues.Add("The source document SHA-256 is required.");
+        if (string.IsNullOrWhiteSpace(SourceReference))
+            issues.Add("The source document reference is required.");
+        if (string.IsNullOrWhiteSpace(RecordedBy))
+            issues.Add("The recording actor is required.");
+        if (RecordedAtUtc == default || RecordedAtUtc.Offset != TimeSpan.Zero)
+            issues.Add("RecordedAtUtc must be an explicit UTC instant.");
+        if (ApprovalState != ExerciseNoticeApprovalState.Recorded && (string.IsNullOrWhiteSpace(DecidedBy) || DecidedAtUtc is null))
+            issues.Add("A decided notice names its approver and decision instant.");
+        if (ApprovalState != ExerciseNoticeApprovalState.Recorded && string.Equals(DecidedBy, RecordedBy, StringComparison.OrdinalIgnoreCase))
+            issues.Add("The recording actor cannot decide their own notice.");
+        if (!Enum.IsDefined(ApprovalState))
+            issues.Add("Unsupported approval state.");
         return issues;
     }
 }

@@ -98,7 +98,8 @@ public sealed class BondExerciseNoticeStoreTests : IDisposable
 
         var decisions = await Task.WhenAll(Enumerable.Range(0, 6).Select(async i =>
         {
-            try { await (i % 2 == 0 ? first : second).DecideAsync(Security, notice.NoticeId, i % 3 == 0, "reviewer-" + i, "decision " + i); return true; }
+            try
+            { await (i % 2 == 0 ? first : second).DecideAsync(Security, notice.NoticeId, i % 3 == 0, "reviewer-" + i, "decision " + i); return true; }
             catch (InvalidOperationException e) when (e.Message.Contains("already been decided")) { return false; }
         }));
         decisions.Count(d => d).Should().Be(1, "exactly one decision is retained across both instances");
