@@ -398,6 +398,16 @@ public static class InstrumentTypeDescriptorCatalog
     public static bool TryGet(InstrumentType instrumentType, out InstrumentTypeDescriptor descriptor) =>
         ByInstrumentType.TryGetValue(instrumentType, out descriptor!);
 
+    /// <summary>
+    /// True when the descriptors for <paramref name="assetClass"/> declare a contract multiplier among
+    /// their required economic terms (listed options and futures; not swaps, warrants or FX forwards).
+    /// Clients use this instead of matching the asset-class name so they cannot diverge on which
+    /// classes need a multiplier.
+    /// </summary>
+    public static bool RequiresContractMultiplier(string? assetClass) =>
+        FindBySecurityMasterAssetClass(assetClass).Any(static descriptor =>
+            descriptor.RequiredEconomicTerms.Contains("multiplier", StringComparer.OrdinalIgnoreCase));
+
     public static IReadOnlyList<InstrumentTypeDescriptor> FindBySecurityMasterAssetClass(string? assetClass)
     {
         if (string.IsNullOrWhiteSpace(assetClass))

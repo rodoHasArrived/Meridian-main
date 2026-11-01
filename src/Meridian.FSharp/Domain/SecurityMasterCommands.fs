@@ -577,7 +577,7 @@ module SecurityMaster =
             activeIdentifiers
             |> List.countBy (fun identifier ->
                 SecurityIdentifier.kindName identifier,
-                SecurityIdentifier.normalizeValue identifier.Value,
+                SecurityIdentifier.normalizeIdentifierValue identifier.Kind identifier.Value,
                 identifier |> SecurityIdentifier.provider |> Option.defaultValue String.Empty |> SecurityIdentifier.normalizeValue)
             |> List.filter (fun (_, count) -> count > 1)
             |> List.length
