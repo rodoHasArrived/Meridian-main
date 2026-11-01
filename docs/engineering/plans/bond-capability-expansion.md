@@ -32,6 +32,13 @@ yield-to-worst v3 models retain their schemas, admission and replay arithmetic.
 ## Public seams
 
 - `BondCalculationContext` names economic date, settlement date, recorded cutoff and pinned inputs.
+- `BondExerciseNoticeDto` (stacked branch) is governed evidence that a call or put was actually noticed:
+  source document hash, receipt date, noticed dates, price and amount, recorded by one actor and
+  approved or rejected once by another (`POST /api/security-master/{id}/exercise-notices`,
+  `.../exercise-notices/{noticeId}/decision`). The contractual cash-flow preview accepts a retained
+  (non-hypothetical) scenario exercise only when `IExerciseNoticeVerifier` matches it to an approved
+  notice for that security; loans and hosts without the store keep the existing blocker. Actual
+  redemption posting is a separate treatment; this only establishes evidence.
 - `IBondAnalyticsService` produces metrics, projected payments, capabilities and typed blockers.
 - Cash-flow context overloads preserve existing call signatures as compatibility adapters.
 - Reference array routes remain available; paged routes use bounded keyset cursors.

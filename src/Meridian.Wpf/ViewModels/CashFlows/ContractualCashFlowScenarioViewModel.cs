@@ -18,6 +18,7 @@ public sealed class CashFlowExerciseChoiceViewModel : BindableBase
     private bool _include;
     private string _exerciseDate;
     private string _amount = string.Empty;
+    private string _noticeEvidenceId = string.Empty;
 
     public CashFlowExerciseChoiceViewModel(CashFlowExerciseEligibility entry, Action onChanged)
     {
@@ -35,6 +36,8 @@ public sealed class CashFlowExerciseChoiceViewModel : BindableBase
     public bool Include { get => _include; set { if (SetProperty(ref _include, value)) OnChanged(); } }
     public string ExerciseDate { get => _exerciseDate; set { if (SetProperty(ref _exerciseDate, value ?? string.Empty)) OnChanged(); } }
     public string Amount { get => _amount; set { if (SetProperty(ref _amount, value ?? string.Empty)) OnChanged(); } }
+    /// <summary>Identity of an approved exercise notice; when set the exercise is retained rather than hypothetical.</summary>
+    public string NoticeEvidenceId { get => _noticeEvidenceId; set { if (SetProperty(ref _noticeEvidenceId, value ?? string.Empty)) OnChanged(); } }
 }
 
 /// <summary>Exact server decimals for one projected event; nothing is recomputed on the desktop.</summary>
@@ -153,7 +156,8 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
             if (!DateOnly.TryParseExact(choice.ExerciseDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var exerciseDate)
                 || !decimal.TryParse(choice.Amount, NumberStyles.Number, CultureInfo.InvariantCulture, out var amount))
             { refusal = $"Choose an exercise date and a decimal amount for the {choice.Entry.Side} on {choice.Entry.StreamId}."; return null; }
-            exercises.Add(new SelectedCashFlowExercise(choice.Entry.Side, choice.Entry.EntryStartDate, choice.Entry.StreamId, exerciseDate, exerciseDate, amount));
+            var notice = string.IsNullOrWhiteSpace(choice.NoticeEvidenceId) ? null : choice.NoticeEvidenceId.Trim();
+            exercises.Add(new SelectedCashFlowExercise(choice.Entry.Side, choice.Entry.EntryStartDate, choice.Entry.StreamId, exerciseDate, exerciseDate, amount, notice is null, notice));
         }
         IReadOnlyList<CashFlowPrepaymentAssumption>? prepayments = null;
         if (PrepaymentEnabled)

@@ -38,6 +38,8 @@ interface ExerciseChoice {
   include: boolean;
   exerciseDate: string;
   amount: string;
+  /** Identity of an approved exercise notice; when set the exercise is retained rather than hypothetical. */
+  noticeEvidenceId: string;
 }
 
 const newRunId = () =>
@@ -123,7 +125,9 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
         return `Choose an exercise date and a decimal amount for the ${entry.side.toLowerCase()} on ${entry.streamId}.`;
       exercises.push({
         side: entry.side, entryStartDate: entry.entryStartDate, streamId: entry.streamId,
-        exerciseDate: choice.exerciseDate, noticeDate: choice.exerciseDate, amount: choice.amount.trim(), hypotheticalNotice: true
+        exerciseDate: choice.exerciseDate, noticeDate: choice.exerciseDate, amount: choice.amount.trim(),
+        hypotheticalNotice: !choice.noticeEvidenceId.trim(),
+        noticeEvidenceId: choice.noticeEvidenceId.trim() || null
       });
     }
     if (prepay.enabled && (!prepay.streamId.trim() || !prepay.startDate || !prepay.endDate || !DECIMAL_LITERAL.test(prepay.value.trim())))
@@ -269,10 +273,10 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
 
         {eligibility.length > 0 ? (
           <fieldset className="grid gap-2 md:col-span-4">
-            <legend className="font-medium text-muted-foreground">Exercise selections (hypothetical notices)</legend>
+            <legend className="font-medium text-muted-foreground">Exercise selections (hypothetical unless an approved notice is named)</legend>
             {eligibility.map((entry) => {
               const key = eligibilityKey(entry);
-              const choice = exerciseChoices[key] ?? { include: false, exerciseDate: entry.dates[0] ?? "", amount: "" };
+              const choice = exerciseChoices[key] ?? { include: false, exerciseDate: entry.dates[0] ?? "", amount: "", noticeEvidenceId: "" };
               const update = (next: Partial<ExerciseChoice>) => edit(() => setExerciseChoices((prev) => ({ ...prev, [key]: { ...choice, ...next } })));
               return (
                 <div key={key} className="grid items-center gap-2 md:grid-cols-5">
@@ -289,7 +293,9 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
                   )}
                   <Input placeholder="Amount" value={choice.amount} disabled={!choice.include} aria-label={`Exercise amount for ${entry.streamId}`}
                     onChange={(e) => update({ amount: e.target.value })} />
-                  <span className="text-muted-foreground md:col-span-2">{entry.businessDayCalendarId ? `Notice calendar ${entry.businessDayCalendarId}` : "No notice calendar declared"}</span>
+                  <Input placeholder="Approved notice id (optional)" value={choice.noticeEvidenceId} disabled={!choice.include} aria-label={`Notice evidence for ${entry.streamId}`}
+                    onChange={(e) => update({ noticeEvidenceId: e.target.value })} />
+                  <span className="text-muted-foreground">{entry.businessDayCalendarId ? `Notice calendar ${entry.businessDayCalendarId}` : "No notice calendar declared"}</span>
                 </div>
               );
             })}

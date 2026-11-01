@@ -13,7 +13,8 @@ public sealed class ContractualCashFlowPreviewService(
     ISecurityMasterCashFlowService sources,
     ISecurityCurveStore? curveStore = null,
     IBusinessDayCalendarSource? calendars = null,
-    IDirectLendingService? loans = null) : IContractualCashFlowPreviewService
+    IDirectLendingService? loans = null,
+    IExerciseNoticeVerifier? noticeVerifier = null) : IContractualCashFlowPreviewService
 {
     public async Task<ContractualCashFlowResult?> PreviewSecurityAsync(Guid securityId, ContractualCashFlowRequest request, CancellationToken ct = default)
     {
@@ -33,7 +34,7 @@ public sealed class ContractualCashFlowPreviewService(
         catch (ContractInputUnavailable ex) { return Blocked(request, "ContractInputsUnavailable", ex.Message); }
         catch (SecurityScheduleValidationException ex) { return Blocked(request, "ContractInputsUnavailable", ex.Message); }
         return await CalculateAsync(contract, request, $"security:{securityId}:version:{security.Version}",
-            ContractualCashFlowEngine.Hash(new SecurityTermsDigest(security.CommonTerms, security.AssetSpecificTerms)), ct).ConfigureAwait(false);
+            ContractualCashFlowEngine.Hash(new SecurityTermsDigest(security.CommonTerms, security.AssetSpecificTerms)), ct, securityId).ConfigureAwait(false);
     }
 
     public async Task<ContractualCashFlowResult?> PreviewLoanAsync(Guid loanId, ContractualCashFlowRequest request, CancellationToken ct = default)
@@ -72,7 +73,7 @@ public sealed class ContractualCashFlowPreviewService(
     }
 
     private async Task<ContractualCashFlowResult> CalculateAsync(ContractualCashFlowContract contract, ContractualCashFlowRequest request,
-        string version, string termsHash, CancellationToken ct)
+        string version, string termsHash, CancellationToken ct, Guid? noticeSecurityId = null)
     {
         if (request.ContractOverride is null)
         {
@@ -83,8 +84,16 @@ public sealed class ContractualCashFlowPreviewService(
             catch (ArgumentException) { return Blocked(request, "RetainedContractInvalid", "Retained contractual inputs do not form a valid calculation contract."); }
         }
         ContractualCashFlowEngine.Validate(contract, request);
-        if ((request.Exercises ?? []).Any(e => !e.HypotheticalNotice))
-            return Blocked(request, "NoticeEvidenceVerificationUnavailable", "Retained notices require source verification; this calculation endpoint currently supports hypothetical notices only.");
+        foreach (var retained in (request.Exercises ?? []).Where(e => !e.HypotheticalNotice))
+        {
+            // A retained notice is a claim about the real world; only approved, matching notice evidence
+            // for this security lets it replace a hypothetical one. Loans have no notice evidence store.
+            if (noticeVerifier is null || noticeSecurityId is null)
+                return Blocked(request, "NoticeEvidenceVerificationUnavailable", "Retained notices require source verification; this calculation endpoint currently supports hypothetical notices only.");
+            var verification = await noticeVerifier.VerifyAsync(noticeSecurityId.Value, retained, ct).ConfigureAwait(false);
+            if (!verification.Verified)
+                return Blocked(request, "NoticeEvidenceUnverified", verification.Reason);
+        }
         var curves = new List<CashFlowCurveSnapshot>();
         foreach (var pin in request.CurvePins ?? [])
         {
