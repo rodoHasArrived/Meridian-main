@@ -174,7 +174,9 @@ public sealed class PortfolioCashLadderVersionGoldenTests
             ["breaches"] = bucket.BreachesMinimumBalance,
             ["sources"] = new JsonArray(bucket.Sources.Select(static slice => (JsonNode?)new JsonObject
             {
-                ["source"] = slice.Source, ["amount"] = Dec(slice.Amount), ["flowCount"] = slice.FlowCount
+                ["source"] = slice.Source,
+                ["amount"] = Dec(slice.Amount),
+                ["flowCount"] = slice.FlowCount
             }).ToArray())
         }).ToArray()),
         ["contributions"] = new JsonArray(ladder.Contributions.Select(static row => (JsonNode?)new JsonObject

@@ -337,7 +337,16 @@ class SchemaControlDisposableTests(unittest.TestCase):
 
     def events(self) -> list[dict]:
         path = self.backend / 'events.jsonl'
-        return [json.loads(line) for line in path.read_text().splitlines()] if path.exists() else []
+        if not path.exists():
+            return []
+        events: list[dict] = []
+        for line in path.read_text().splitlines():
+            try:
+                events.append(json.loads(line))
+            except json.JSONDecodeError:
+                # A fake verifier is still appending this record; the polling callers re-read.
+                break
+        return events
 
     def verifier_events(self) -> list[dict]:
         return [event for event in self.events() if event['kind'] == 'verifier']
