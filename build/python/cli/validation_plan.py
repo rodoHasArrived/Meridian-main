@@ -358,11 +358,30 @@ def recommend_validation(root: Path, paths: list[str], *, fresh: bool = False) -
     return {"schemaVersion": 1, "iterationMode": "fresh" if fresh else "warm-profile", "changedPaths": paths, "checks": sorted(checks.values(), key=lambda c: (c["id"], c["argv"])),
             "affectedConsumers": sorted(consumers), "coverageWarnings": sorted(warnings),
             "sources": [{"path": path, "sha256": sha} for path, sha in sorted(sources.items())],
-            "requiredFinalChecks": [
-                {"id": "local-ci", "argv": ["bash", "scripts/ci.sh"], "reason": "Required before completion"},
-                {"id": "quality-gate", "kind": "github", "name": "Meridian CI / quality-gate"},
-                {"id": "integration-gate", "kind": "github", "name": "Meridian CI / integration-gate"}],
-            "policy": "Recommendations only; no commands executed. Focused checks do not replace required final checks."}
+            "requiredFinalChecks": final_checks(paths),
+            "policy": "Recommendations only; no commands executed. Focused checks do not replace the hosted final checks."}
+
+
+# Paths whose change makes the full local aggregate expected (Level 3 / CI-tooling risk).
+LOCAL_CI_REQUIRED_PREFIXES = (".github/workflows/", "build/ci/", "build/python/")
+LOCAL_CI_REQUIRED_PATHS = ("scripts/ci.sh",)
+LOCAL_CI_OPTIONAL_REASON = "Optional full local aggregate; expected for Level 3 and build/CI-tooling changes"
+LOCAL_CI_REQUIRED_REASON = "Required: changed paths include CI tooling or workflow definitions (Level 3)"
+
+
+def local_ci_required(paths) -> bool:
+    return any(p in LOCAL_CI_REQUIRED_PATHS or p.startswith(LOCAL_CI_REQUIRED_PREFIXES) for p in paths)
+
+
+def final_checks(paths) -> list[dict]:
+    """Tier-aware final checks. The hosted gates are always authoritative; the full local
+    aggregate is required only for CI-tooling paths. Entry shape is additive (`required`)."""
+    required = local_ci_required(paths)
+    return [
+        {"id": "local-ci", "argv": ["bash", "scripts/ci.sh"], "required": required,
+         "reason": LOCAL_CI_REQUIRED_REASON if required else LOCAL_CI_OPTIONAL_REASON},
+        {"id": "quality-gate", "kind": "github", "required": True, "name": "Meridian CI / quality-gate"},
+        {"id": "integration-gate", "kind": "github", "required": True, "name": "Meridian CI / integration-gate"}]
 
 
 def run_cli(args) -> int:
@@ -379,7 +398,11 @@ def run_cli(args) -> int:
             lines = [data["policy"], ""]
             lines += [shlex.join(check["argv"]) + "  # " + check["reason"] for check in data["checks"]]
             lines += ["Coverage warning: " + warning for warning in data["coverageWarnings"]]
-            lines += ["Required final checks: bash scripts/ci.sh; Meridian CI / quality-gate; Meridian CI / integration-gate"]
+            parts = []
+            for check in data["requiredFinalChecks"]:
+                label = shlex.join(check["argv"]) if check.get("argv") else check["name"]
+                parts.append(label + ("" if check.get("required", True) else " (optional)"))
+            lines += ["Final checks (by risk tier): " + "; ".join(parts)]
             content = "\n".join(lines) + "\n"
         if args.output:
             output = args.output.resolve()

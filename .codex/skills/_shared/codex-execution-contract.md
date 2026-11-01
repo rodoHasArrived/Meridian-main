@@ -33,6 +33,9 @@ Use this file as the Codex-only execution standard for Meridian skill runs. It c
 
 ## Workflow Disclosure Gate
 
+- Proportionality: the full six-field notification is required for long or multi-step runs (and when
+  scope widens or a blocker changes the plan). A trivial or single-step task needs at most a one-line
+  statement of intent and the validation actually run; do not emit repeated notifications for it.
 - Use the provider-agnostic AI User Notification template in
   `docs/ai/assistant-workflow-contract.md` for startup or orientation, before file edits, during
   longer investigation or validation, when a blocker changes the plan, and before final validation.

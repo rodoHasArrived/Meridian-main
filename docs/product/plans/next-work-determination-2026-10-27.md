@@ -1,5 +1,7 @@
 # What To Work On Next — Meridian (2026-10-27)
 
+**Snapshot:** Dated snapshot (latest at time of writing) - the roadmap registry (`docs/roadmap/README.md`) is authoritative for current status.
+
 **Status:** prioritization input; not a governance decision and not a roadmap-status document
 **Owner:** core-team
 **Reviewed:** 2026-10-27
