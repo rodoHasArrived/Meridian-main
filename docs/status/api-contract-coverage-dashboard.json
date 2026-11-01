@@ -2,13 +2,13 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 20.2,
-  "endpoint_coverage_percent": 30.9,
+  "score_percent": 20.1,
+  "endpoint_coverage_percent": 30.8,
   "contract_coverage_percent": 4.1,
   "summary": {
-    "endpoint_count": 739,
+    "endpoint_count": 740,
     "documented_endpoint_count": 228,
-    "undocumented_endpoint_count": 511,
+    "undocumented_endpoint_count": 512,
     "workstation_contract_count": 962,
     "documented_workstation_contract_count": 39,
     "undocumented_workstation_contract_count": 923
@@ -707,13 +707,13 @@
     {
       "method": "POST",
       "path": "/api/reference-data/bonds/settlement-consideration",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:16",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:19",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/{securityId:guid}/analytics",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:25",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:29",
       "documented": false
     },
     {
@@ -725,25 +725,25 @@
     {
       "method": "POST",
       "path": "/api/reference-data/bonds/migration-preview/batch",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:25",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:26",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/reference-data/bonds/migration-submit",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:44",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:46",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/cutover-readiness",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:65",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:68",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/reference-data/bonds/cutover",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:71",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:74",
       "documented": false
     },
     {
@@ -779,13 +779,13 @@
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/issuer-ladder/page",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:17",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:18",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/maturity-ladder/page",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:25",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:26",
       "documented": false
     },
     {
@@ -3408,6 +3408,12 @@
       "method": "GET",
       "path": "/api/sampling/{sampleId}",
       "source": "src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs:178",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/security-master/{securityId:guid}/cashflow-projections/preview",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:19",
       "documented": false
     },
     {
