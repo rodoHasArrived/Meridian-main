@@ -171,9 +171,18 @@ public sealed class BondSettlementConsiderationTests
         // JPY has no minor units: per-100 quotes round to whole yen; each yen component translates once to cents.
         var jpy = Receipt() with
         {
-            Currency = "JPY", FunctionalCurrency = "USD", SettlementFxRateToFunctional = 0.0066m,
-            OriginalFace = 10_000_000m, BookedFactor = 1m, CleanPricePer100 = 100.5m, AccruedInterestPer100 = 0.1234m,
-            CleanConsideration = 10_050_000m, PurchasedAccruedInterest = 12_340m, Fees = 1_500m, DirtyConsideration = 10_063_840m, ObservedDirtyCash = 10_063_840m
+            Currency = "JPY",
+            FunctionalCurrency = "USD",
+            SettlementFxRateToFunctional = 0.0066m,
+            OriginalFace = 10_000_000m,
+            BookedFactor = 1m,
+            CleanPricePer100 = 100.5m,
+            AccruedInterestPer100 = 0.1234m,
+            CleanConsideration = 10_050_000m,
+            PurchasedAccruedInterest = 12_340m,
+            Fees = 1_500m,
+            DirtyConsideration = 10_063_840m,
+            ObservedDirtyCash = 10_063_840m
         };
         BondSettlementConsideration.Validate(jpy).Should().BeEmpty();
         jpy.ToFunctional(12_340m).Should().Be(81.44m);
