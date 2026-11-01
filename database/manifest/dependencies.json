@@ -2950,6 +2950,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.CashFlows.BondExerciseNoticeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.CashFlows.BondExerciseNoticeJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.CashFlows.CalculationBlockerDigest"
     },
     {
@@ -2957,12 +2969,6 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.CashFlows.CashFlowAmortization"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.CashFlows.CashFlowBlockerDelta"
     },
     {
       "kind": "contract-set-member",
@@ -2987,12 +2993,6 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.CashFlows.CashFlowCurveSnapshot"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.CashFlows.CashFlowDateDelta"
     },
     {
       "kind": "contract-set-member",
@@ -3106,18 +3106,6 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowRunComparer"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowStream"
     },
     {
@@ -3160,6 +3148,30 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.CashFlows.ExerciseNoticeApprovalState"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.CashFlows.ExerciseNoticeDecisionRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.CashFlows.ExerciseNoticeVerification"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.CashFlows.IBondExerciseNoticeStore"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.CashFlows.IContractualCashFlowPreviewService"
     },
     {
@@ -3172,7 +3184,19 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.CashFlows.IExerciseNoticeVerifier"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.CashFlows.MakeWholeFormula"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.CashFlows.RecordBondExerciseNoticeRequest"
     },
     {
       "kind": "contract-set-member",
@@ -29541,6 +29565,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.CashFlows.BondExerciseNoticeDto",
+      "target": "contract:Meridian.Contracts.CashFlows.CashFlowExerciseSide"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.CashFlows.BondExerciseNoticeDto",
+      "target": "contract:Meridian.Contracts.CashFlows.ExerciseNoticeApprovalState"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.CashFlows.CashFlowCurveSnapshot",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCurveDefinitionDto"
     },
@@ -29751,18 +29787,6 @@
     {
       "kind": "contract-reference",
       "label": "",
-      "source": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison",
-      "target": "contract:Meridian.Contracts.CashFlows.CashFlowBlockerDelta"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison",
-      "target": "contract:Meridian.Contracts.CashFlows.CashFlowDateDelta"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
       "source": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowStream",
       "target": "contract:Meridian.Contracts.CashFlows.CashFlowAmortization"
     },
@@ -29855,6 +29879,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.CashFlows.CreateContractualCashFlowRunRequest",
       "target": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowRequest"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.CashFlows.ExerciseNoticeVerification",
+      "target": "contract:Meridian.Contracts.CashFlows.BondExerciseNoticeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.CashFlows.RecordBondExerciseNoticeRequest",
+      "target": "contract:Meridian.Contracts.CashFlows.CashFlowExerciseSide"
     },
     {
       "kind": "contract-reference",
@@ -55894,7 +55930,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "8cbcc19d757caf37a0adaa49837053305af57c36b353d9d1983f1ad2dd6ca6e6",
+  "fingerprint": "70394ff09ca848069c8711d1694eb39243d5e329d1fe00e57d723f525e98253f",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -58894,6 +58930,18 @@
       "label": "Meridian.Contracts.Calendars.StaticBusinessDayCalendarSource"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.CashFlows.BondExerciseNoticeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.CashFlows.BondExerciseNoticeDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.CashFlows.BondExerciseNoticeJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.CashFlows.BondExerciseNoticeJsonContext"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.CashFlows.CalculationBlockerDigest",
       "kind": "contract-type",
@@ -58904,12 +58952,6 @@
       "id": "contract:Meridian.Contracts.CashFlows.CashFlowAmortization",
       "kind": "contract-type",
       "label": "Meridian.Contracts.CashFlows.CashFlowAmortization"
-    },
-    {
-      "classification": "record",
-      "id": "contract:Meridian.Contracts.CashFlows.CashFlowBlockerDelta",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.CashFlows.CashFlowBlockerDelta"
     },
     {
       "classification": "record",
@@ -58934,12 +58976,6 @@
       "id": "contract:Meridian.Contracts.CashFlows.CashFlowCurveSnapshot",
       "kind": "contract-type",
       "label": "Meridian.Contracts.CashFlows.CashFlowCurveSnapshot"
-    },
-    {
-      "classification": "record",
-      "id": "contract:Meridian.Contracts.CashFlows.CashFlowDateDelta",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.CashFlows.CashFlowDateDelta"
     },
     {
       "classification": "record",
@@ -59050,18 +59086,6 @@
       "label": "Meridian.Contracts.CashFlows.ContractualCashFlowRun"
     },
     {
-      "classification": "class",
-      "id": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowRunComparer",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparer"
-    },
-    {
-      "classification": "record",
-      "id": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison"
-    },
-    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowStream",
       "kind": "contract-type",
@@ -59104,6 +59128,30 @@
       "label": "Meridian.Contracts.CashFlows.CreateContractualCashFlowRunRequest"
     },
     {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.CashFlows.ExerciseNoticeApprovalState",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.CashFlows.ExerciseNoticeApprovalState"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.CashFlows.ExerciseNoticeDecisionRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.CashFlows.ExerciseNoticeDecisionRequest"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.CashFlows.ExerciseNoticeVerification",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.CashFlows.ExerciseNoticeVerification"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.CashFlows.IBondExerciseNoticeStore",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.CashFlows.IBondExerciseNoticeStore"
+    },
+    {
       "classification": "service_contract",
       "id": "contract:Meridian.Contracts.CashFlows.IContractualCashFlowPreviewService",
       "kind": "contract-type",
@@ -59116,10 +59164,22 @@
       "label": "Meridian.Contracts.CashFlows.IContractualCashFlowRunStore"
     },
     {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.CashFlows.IExerciseNoticeVerifier",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.CashFlows.IExerciseNoticeVerifier"
+    },
+    {
       "classification": "enum",
       "id": "contract:Meridian.Contracts.CashFlows.MakeWholeFormula",
       "kind": "contract-type",
       "label": "Meridian.Contracts.CashFlows.MakeWholeFormula"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.CashFlows.RecordBondExerciseNoticeRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.CashFlows.RecordBondExerciseNoticeRequest"
     },
     {
       "classification": "class",
@@ -81795,11 +81855,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3585,
-    "contract_set_memberships": 4435,
-    "edges": 9287,
+    "contract_references": 3587,
+    "contract_set_memberships": 4439,
+    "edges": 9293,
     "foreign_keys": 155,
     "logical_references": 6,
-    "nodes": 4492
+    "nodes": 4496
   }
 }

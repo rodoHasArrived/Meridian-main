@@ -454,6 +454,8 @@ public static class UiApiRoutes
     public const string SecurityMasterCashFlowProjectionRuns = "/api/security-master/{subjectId:guid}/cashflow-projections/runs";
     public const string SecurityMasterCashFlowProjectionRun = "/api/security-master/{subjectId:guid}/cashflow-projections/runs/{runId:guid}";
     public const string SecurityMasterCashFlowProjectionRunCompare = "/api/security-master/{subjectId:guid}/cashflow-projections/runs/{runId:guid}/compare/{otherRunId:guid}";
+    public const string SecurityMasterExerciseNotices = "/api/security-master/{securityId:guid}/exercise-notices";
+    public const string SecurityMasterExerciseNoticeDecision = "/api/security-master/{securityId:guid}/exercise-notices/{noticeId:guid}/decision";
 
     // Market curves and valuation (G4)
     public const string SecurityMasterCurves = "/api/security-master/curves";

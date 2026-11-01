@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "bbca2fb91c9c459acd0ca3f6ca21b17639fbf7b5a7516abe023a0f33230d316b",
+      "fingerprint": "dd7d6271a95c61a8d42efc0cbf23e65ba3fb2684e7e78a4ee7eca04c5240b82b",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -502,6 +502,8 @@
         "Meridian.Contracts.Calendars.IBusinessDayCalendarSource",
         "Meridian.Contracts.Calendars.JointBusinessDayCalendar",
         "Meridian.Contracts.Calendars.StaticBusinessDayCalendarSource",
+        "Meridian.Contracts.CashFlows.BondExerciseNoticeDto",
+        "Meridian.Contracts.CashFlows.BondExerciseNoticeJsonContext",
         "Meridian.Contracts.CashFlows.CalculationBlockerDigest",
         "Meridian.Contracts.CashFlows.CashFlowAmortization",
         "Meridian.Contracts.CashFlows.CashFlowCalculationBlocker",
@@ -533,9 +535,15 @@
         "Meridian.Contracts.CashFlows.ContractualExerciseEntry",
         "Meridian.Contracts.CashFlows.ContractualMakeWholeTerms",
         "Meridian.Contracts.CashFlows.CreateContractualCashFlowRunRequest",
+        "Meridian.Contracts.CashFlows.ExerciseNoticeApprovalState",
+        "Meridian.Contracts.CashFlows.ExerciseNoticeDecisionRequest",
+        "Meridian.Contracts.CashFlows.ExerciseNoticeVerification",
+        "Meridian.Contracts.CashFlows.IBondExerciseNoticeStore",
         "Meridian.Contracts.CashFlows.IContractualCashFlowPreviewService",
         "Meridian.Contracts.CashFlows.IContractualCashFlowRunStore",
+        "Meridian.Contracts.CashFlows.IExerciseNoticeVerifier",
         "Meridian.Contracts.CashFlows.MakeWholeFormula",
+        "Meridian.Contracts.CashFlows.RecordBondExerciseNoticeRequest",
         "Meridian.Contracts.CashFlows.SecurityContractualCashFlowTerms",
         "Meridian.Contracts.CashFlows.SecurityTermsDigest",
         "Meridian.Contracts.CashFlows.SelectedCashFlowExercise",
@@ -4593,7 +4601,7 @@
       ]
     }
   ],
-  "fingerprint": "a7bc6829d68dd716ac247e5099016184cfd0ac734c2790b55d6934ffe1592022",
+  "fingerprint": "cafed32d9683fe41f177870e3d2bb870a735af5f5a1cfcb01974f9ba914638a8",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4604,7 +4612,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "78945281a348c8f0f23f80f82b6b2719ef0d0a3cd3f7bbab524692db299f42ab",
+      "fingerprint": "f14916a3092f36fff12ff4dec66c9d1e7cd83723e2be57a940c7a6b98da8fa91",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Accounting.Lots",
       "object_ids": [
@@ -5204,10 +5212,12 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "f03f10cfb67980c80fbed8e241d5a95fb4f1e470718bef2128f7a4a39aed3112",
+      "fingerprint": "8ebbbd8af2efdbf6e646880cc2f37f60939ee685d9d4727166233a509e6a5c1e",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.CashFlows",
       "object_ids": [
+        "Meridian.Contracts.CashFlows.BondExerciseNoticeDto",
+        "Meridian.Contracts.CashFlows.BondExerciseNoticeJsonContext",
         "Meridian.Contracts.CashFlows.CalculationBlockerDigest",
         "Meridian.Contracts.CashFlows.CashFlowAmortization",
         "Meridian.Contracts.CashFlows.CashFlowCalculationBlocker",
@@ -5239,9 +5249,15 @@
         "Meridian.Contracts.CashFlows.ContractualExerciseEntry",
         "Meridian.Contracts.CashFlows.ContractualMakeWholeTerms",
         "Meridian.Contracts.CashFlows.CreateContractualCashFlowRunRequest",
+        "Meridian.Contracts.CashFlows.ExerciseNoticeApprovalState",
+        "Meridian.Contracts.CashFlows.ExerciseNoticeDecisionRequest",
+        "Meridian.Contracts.CashFlows.ExerciseNoticeVerification",
+        "Meridian.Contracts.CashFlows.IBondExerciseNoticeStore",
         "Meridian.Contracts.CashFlows.IContractualCashFlowPreviewService",
         "Meridian.Contracts.CashFlows.IContractualCashFlowRunStore",
+        "Meridian.Contracts.CashFlows.IExerciseNoticeVerifier",
         "Meridian.Contracts.CashFlows.MakeWholeFormula",
+        "Meridian.Contracts.CashFlows.RecordBondExerciseNoticeRequest",
         "Meridian.Contracts.CashFlows.SecurityContractualCashFlowTerms",
         "Meridian.Contracts.CashFlows.SecurityTermsDigest",
         "Meridian.Contracts.CashFlows.SelectedCashFlowExercise"
@@ -11501,7 +11517,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "86e24072e636c4b4f58c0d6cdf1b3b2088a7ad729eee7c72197a4cf549e0cbb1",
+      "fingerprint": "dc197edb710f8ea31104d9430d801c9f99b6a89051a7a540517d0815542e947f",
       "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotRedemptionYieldDto",
       "id": "Meridian.Contracts.Accounting.Lots.OpenLotRedemptionYieldDto",
       "kind": "record",
@@ -11518,7 +11534,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 9,
+          "source_line": 7,
           "type": "decimal"
         },
         {
@@ -11532,7 +11548,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 9,
+          "source_line": 7,
           "type": "DateOnly"
         },
         {
@@ -11546,7 +11562,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 9,
+          "source_line": 7,
           "type": "string"
         },
         {
@@ -11560,7 +11576,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 9,
+          "source_line": 7,
           "type": "decimal"
         }
       ],
@@ -11570,12 +11586,12 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.OpenLotRedemptionYieldDto",
       "references": [],
       "source": {
-        "line": 9,
+        "line": 7,
         "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotYieldToWorst.cs"
       },
       "sources": [
         {
-          "line": 9,
+          "line": 7,
           "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotYieldToWorst.cs"
         }
       ],
@@ -12131,7 +12147,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "dae2912873aaed4d6d43c5cb7194cd0ee320d6b2eb6382e7d10cf0e0986be12c",
+      "fingerprint": "1b9d432aef7ffe98acff2523a0bd2dfba7c1543c4ba8b03e5401f2d483bc55ee",
       "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorst",
       "id": "Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorst",
       "kind": "class",
@@ -12143,12 +12159,12 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorst",
       "references": [],
       "source": {
-        "line": 20,
+        "line": 17,
         "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotYieldToWorst.cs"
       },
       "sources": [
         {
-          "line": 20,
+          "line": 17,
           "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotYieldToWorst.cs"
         }
       ],
@@ -12164,7 +12180,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "9e67cd6e11570344dfeaabd4512a64536e30306a8b15ceb7a0439984f9429748",
+      "fingerprint": "e9e6fed0151ba83d2da0361cff1f52f014481d588c87c9e5b3d86b4b98874301",
       "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorstDto",
       "id": "Meridian.Contracts.Accounting.Lots.OpenLotYieldToWorstDto",
       "kind": "record",
@@ -12181,7 +12197,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OpenLotRedemptionYieldDto>",
-          "source_line": 13,
+          "source_line": 11,
           "type": "IReadOnlyList<OpenLotRedemptionYieldDto>"
         },
         {
@@ -12195,7 +12211,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OpenLotRedemptionYieldDto",
-          "source_line": 12,
+          "source_line": 10,
           "type": "OpenLotRedemptionYieldDto"
         }
       ],
@@ -12207,12 +12223,12 @@
         "Meridian.Contracts.Accounting.Lots.OpenLotRedemptionYieldDto"
       ],
       "source": {
-        "line": 12,
+        "line": 10,
         "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotYieldToWorst.cs"
       },
       "sources": [
         {
-          "line": 12,
+          "line": 10,
           "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotYieldToWorst.cs"
         }
       ],
@@ -75053,6 +75069,320 @@
     },
     {
       "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "62a8a6483bf0c84b826d646cc4bc15a1bc2f76d1db273920b81907eaf1cd8d85",
+      "full_name": "Meridian.Contracts.CashFlows.BondExerciseNoticeDto",
+      "id": "Meridian.Contracts.CashFlows.BondExerciseNoticeDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Amount",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 27,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "ExerciseNoticeApprovalState.Recorded",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ApprovalState",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ExerciseNoticeApprovalState",
+          "source_line": 33,
+          "type": "ExerciseNoticeApprovalState"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DecidedAtUtc",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 35,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DecidedBy",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 34,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DecisionReason",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 36,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExerciseDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 25,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "NoticeDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 24,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "NoticeId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 20,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Price",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 26,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ReceivedDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 29,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RecordedAtUtc",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 32,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RecordedBy",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 31,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SecurityId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 21,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Side",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "CashFlowExerciseSide",
+          "source_line": 23,
+          "type": "CashFlowExerciseSide"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceDocumentSha256",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 28,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceReference",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 30,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "StreamId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 22,
+          "type": "string"
+        }
+      ],
+      "name": "BondExerciseNoticeDto",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.BondExerciseNoticeDto",
+      "references": [
+        "Meridian.Contracts.CashFlows.CashFlowExerciseSide",
+        "Meridian.Contracts.CashFlows.ExerciseNoticeApprovalState"
+      ],
+      "source": {
+        "line": 19,
+        "path": "src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs"
+      },
+      "sources": [
+        {
+          "line": 19,
+          "path": "src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [
+        "JsonSerializerContext"
+      ],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "506a1e5f53b94bc160f0b5434115b712f7316b754840cf80a5b4b5a11457678c",
+      "full_name": "Meridian.Contracts.CashFlows.BondExerciseNoticeJsonContext",
+      "id": "Meridian.Contracts.CashFlows.BondExerciseNoticeJsonContext",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "BondExerciseNoticeJsonContext",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": true,
+      "qualified_name": "Meridian.Contracts.CashFlows.BondExerciseNoticeJsonContext",
+      "references": [],
+      "source": {
+        "line": 113,
+        "path": "src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs"
+      },
+      "sources": [
+        {
+          "line": 113,
+          "path": "src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
       "classification": "record",
       "containing_type": null,
       "contract_sets": [
@@ -78502,6 +78832,233 @@
     },
     {
       "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [
+        {
+          "explicit_value": true,
+          "name": "Recorded",
+          "source_line": 8,
+          "value": "0"
+        },
+        {
+          "explicit_value": true,
+          "name": "Approved",
+          "source_line": 9,
+          "value": "1"
+        },
+        {
+          "explicit_value": true,
+          "name": "Rejected",
+          "source_line": 10,
+          "value": "2"
+        }
+      ],
+      "fingerprint": "a1092258396512fb2c7952d88e6e5dce3bfbdbf692f24121342b8676779b6d34",
+      "full_name": "Meridian.Contracts.CashFlows.ExerciseNoticeApprovalState",
+      "id": "Meridian.Contracts.CashFlows.ExerciseNoticeApprovalState",
+      "kind": "enum",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "ExerciseNoticeApprovalState",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.ExerciseNoticeApprovalState",
+      "references": [],
+      "source": {
+        "line": 6,
+        "path": "src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs"
+      },
+      "sources": [
+        {
+          "line": 6,
+          "path": "src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "request",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "f937e750fc69175f00c37ca1e1a236ec23749dcccde1b96639ae7fd1658e8943",
+      "full_name": "Meridian.Contracts.CashFlows.ExerciseNoticeDecisionRequest",
+      "id": "Meridian.Contracts.CashFlows.ExerciseNoticeDecisionRequest",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Approve",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 85,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Reason",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 85,
+          "type": "string?"
+        }
+      ],
+      "name": "ExerciseNoticeDecisionRequest",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.ExerciseNoticeDecisionRequest",
+      "references": [],
+      "source": {
+        "line": 85,
+        "path": "src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs"
+      },
+      "sources": [
+        {
+          "line": 85,
+          "path": "src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "71f2b09079255505bd24b4ef33eece57610c265fa566364db4b41d1429f0616f",
+      "full_name": "Meridian.Contracts.CashFlows.ExerciseNoticeVerification",
+      "id": "Meridian.Contracts.CashFlows.ExerciseNoticeVerification",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Notice",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "BondExerciseNoticeDto?",
+          "source_line": 87,
+          "type": "BondExerciseNoticeDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Reason",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 87,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Verified",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 87,
+          "type": "bool"
+        }
+      ],
+      "name": "ExerciseNoticeVerification",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.ExerciseNoticeVerification",
+      "references": [
+        "Meridian.Contracts.CashFlows.BondExerciseNoticeDto"
+      ],
+      "source": {
+        "line": 87,
+        "path": "src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs"
+      },
+      "sources": [
+        {
+          "line": 87,
+          "path": "src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "3089c55c496cb8498a0fe4631f252ad3d0fbb0d27b8acd4b7f50800b1d63c713",
+      "full_name": "Meridian.Contracts.CashFlows.IBondExerciseNoticeStore",
+      "id": "Meridian.Contracts.CashFlows.IBondExerciseNoticeStore",
+      "kind": "interface",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "IBondExerciseNoticeStore",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.IBondExerciseNoticeStore",
+      "references": [],
+      "source": {
+        "line": 100,
+        "path": "src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs"
+      },
+      "sources": [
+        {
+          "line": 100,
+          "path": "src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
       "classification": "service_contract",
       "containing_type": null,
       "contract_sets": [
@@ -78568,6 +79125,39 @@
     },
     {
       "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "b7966b005b7f3868952e89a591d698511e510f2c0a8bfeaae3a4682426ae222b",
+      "full_name": "Meridian.Contracts.CashFlows.IExerciseNoticeVerifier",
+      "id": "Meridian.Contracts.CashFlows.IExerciseNoticeVerifier",
+      "kind": "interface",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "IExerciseNoticeVerifier",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.IExerciseNoticeVerifier",
+      "references": [],
+      "source": {
+        "line": 94,
+        "path": "src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs"
+      },
+      "sources": [
+        {
+          "line": 94,
+          "path": "src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
       "classification": "enum",
       "containing_type": null,
       "contract_sets": [
@@ -78608,6 +79198,182 @@
         {
           "line": 18,
           "path": "src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "request",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "f895a87498acf2abeaa3b7343a8d2e6d171dac0125509091982b9954ee77fbdf",
+      "full_name": "Meridian.Contracts.CashFlows.RecordBondExerciseNoticeRequest",
+      "id": "Meridian.Contracts.CashFlows.RecordBondExerciseNoticeRequest",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Amount",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 80,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExerciseDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 78,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "NoticeDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 77,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "NoticeId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 74,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Price",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 79,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ReceivedDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 82,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Side",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "CashFlowExerciseSide",
+          "source_line": 76,
+          "type": "CashFlowExerciseSide"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceDocumentSha256",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 81,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceReference",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 83,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "StreamId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 75,
+          "type": "string"
+        }
+      ],
+      "name": "RecordBondExerciseNoticeRequest",
+      "namespace": "Meridian.Contracts.CashFlows",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.CashFlows.RecordBondExerciseNoticeRequest",
+      "references": [
+        "Meridian.Contracts.CashFlows.CashFlowExerciseSide"
+      ],
+      "source": {
+        "line": 73,
+        "path": "src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs"
+      },
+      "sources": [
+        {
+          "line": 73,
+          "path": "src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs"
         }
       ],
       "type_parameters": []

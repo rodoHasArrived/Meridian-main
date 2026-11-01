@@ -383,6 +383,8 @@ export const UI_API_ROUTES = {
   SecurityMasterCashFlowProjectionRuns: "/api/security-master/{subjectId:guid}/cashflow-projections/runs",
   SecurityMasterCashFlowProjectionRun: "/api/security-master/{subjectId:guid}/cashflow-projections/runs/{runId:guid}",
   SecurityMasterCashFlowProjectionRunCompare: "/api/security-master/{subjectId:guid}/cashflow-projections/runs/{runId:guid}/compare/{otherRunId:guid}",
+  SecurityMasterExerciseNotices: "/api/security-master/{securityId:guid}/exercise-notices",
+  SecurityMasterExerciseNoticeDecision: "/api/security-master/{securityId:guid}/exercise-notices/{noticeId:guid}/decision",
   SecurityMasterCurves: "/api/security-master/curves",
   SecurityMasterCurve: "/api/security-master/curves/{curveId:guid}",
   SecurityMasterCurveVersions: "/api/security-master/curves/{curveId:guid}/versions",
