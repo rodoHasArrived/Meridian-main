@@ -485,6 +485,24 @@
                         </StackPanel>
                         <TextBlock Text="{Binding LoadedRunText}" FontFamily="Consolas" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding ReplayStatusText}" Margin="0,4,0,0" TextWrapping="Wrap" AutomationProperties.Name="Replay verification" />
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <StackPanel Width="320" Margin="0,0,8,0">
+                                <TextBlock Text="Compare with retained run" Opacity="0.8" />
+                                <TextBox Text="{Binding CompareRunIdText, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Comparison run identity" />
+                            </StackPanel>
+                            <Button Content="Compare runs" Command="{Binding CompareRunsCommand}" Padding="12,6" VerticalAlignment="Bottom" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding ComparisonText}" FontFamily="Consolas" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" AutomationProperties.Name="Retained run comparison" />
+                        <ItemsControl ItemsSource="{Binding BlockerDeltas}" Margin="0,4,0,0" AutomationProperties.Name="Blocker differences" />
+                        <DataGrid ItemsSource="{Binding CashDeltas}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" MaxHeight="240" Margin="0,4,0,0" AutomationProperties.Name="Net cash deltas by date">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=yyyy-MM-dd}" />
+                                <DataGridTextColumn Header="Stream" Binding="{Binding StreamId}" />
+                                <DataGridTextColumn Header="First run" Binding="{Binding LeftNetCash}" />
+                                <DataGridTextColumn Header="Second run" Binding="{Binding RightNetCash}" />
+                                <DataGridTextColumn Header="Delta" Binding="{Binding Delta}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
                         <TextBlock Text="{Binding StatusText}" Margin="0,8,0,0" Opacity="0.8" TextWrapping="Wrap" />
                     </StackPanel>
                 </Expander>
