@@ -11,10 +11,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 20.2% |
-| Endpoint coverage | 30.9% |
+| Weighted score | 20.1% |
+| Endpoint coverage | 30.8% |
 | Workstation contract coverage | 4.1% |
-| Endpoints documented | 228 / 739 |
+| Endpoints documented | 228 / 740 |
 | Workstation contracts documented | 39 / 962 |
 
 ## Endpoint Coverage
@@ -508,19 +508,19 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/reconciliation/exceptions` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1044` |
 | `POST` | `/api/reconciliation/exceptions/{exceptionId:guid}/resolve` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1053` |
 | `GET` | `/api/reconciliation/{runId:guid}/results` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1035` |
-| `POST` | `/api/reference-data/bonds/cutover` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:71` |
-| `GET` | `/api/reference-data/bonds/cutover-readiness` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:65` |
+| `POST` | `/api/reference-data/bonds/cutover` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:74` |
+| `GET` | `/api/reference-data/bonds/cutover-readiness` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:68` |
 | `GET` | `/api/reference-data/bonds/issuer-ladder` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:72` |
-| `GET` | `/api/reference-data/bonds/issuer-ladder/page` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:17` |
+| `GET` | `/api/reference-data/bonds/issuer-ladder/page` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:18` |
 | `GET` | `/api/reference-data/bonds/maturity-ladder` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:96` |
-| `GET` | `/api/reference-data/bonds/maturity-ladder/page` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:25` |
+| `GET` | `/api/reference-data/bonds/maturity-ladder/page` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:26` |
 | `POST` | `/api/reference-data/bonds/migration-preview` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:19` |
-| `POST` | `/api/reference-data/bonds/migration-preview/batch` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:25` |
-| `POST` | `/api/reference-data/bonds/migration-submit` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:44` |
-| `POST` | `/api/reference-data/bonds/settlement-consideration` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:16` |
+| `POST` | `/api/reference-data/bonds/migration-preview/batch` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:26` |
+| `POST` | `/api/reference-data/bonds/migration-submit` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:46` |
+| `POST` | `/api/reference-data/bonds/settlement-consideration` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:19` |
 | `GET` | `/api/reference-data/bonds/{securityId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:27` |
 | `GET` | `/api/reference-data/bonds/{securityId:guid}/accrual-convention` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:59` |
-| `GET` | `/api/reference-data/bonds/{securityId:guid}/analytics` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:25` |
+| `GET` | `/api/reference-data/bonds/{securityId:guid}/analytics` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:29` |
 | `GET` | `/api/reference-data/bonds/{securityId:guid}/lifecycle` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:43` |
 | `GET` | `/api/reference-data/certificates-of-deposit/by-issuer` | Gap | `src/Meridian.Ui.Shared/Endpoints/CertificateOfDepositReferenceEndpoints.cs:33` |
 | `GET` | `/api/reference-data/certificates-of-deposit/maturing-before` | Gap | `src/Meridian.Ui.Shared/Endpoints/CertificateOfDepositReferenceEndpoints.cs:44` |
@@ -652,6 +652,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/security-master/structured-credit-reclassification/report` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1881` |
 | `GET` | `/api/security-master/{securityId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:46` |
 | `GET` | `/api/security-master/{securityId:guid}/cashflow-projections` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:85` |
+| `POST` | `/api/security-master/{securityId:guid}/cashflow-projections/preview` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:19` |
 | `GET` | `/api/security-master/{securityId:guid}/cashflow-source` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:44` |
 | `PUT` | `/api/security-master/{securityId:guid}/cashflow-source` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:57` |
 | `GET` | `/api/security-master/{securityId:guid}/contracts` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs:22` |
@@ -1730,7 +1731,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 ## Follow-up Queue
 
-- Document or intentionally suppress 511 mapped endpoint gap(s).
+- Document or intentionally suppress 512 mapped endpoint gap(s).
 - Document or intentionally suppress 923 workstation contract gap(s).
 
 ---
