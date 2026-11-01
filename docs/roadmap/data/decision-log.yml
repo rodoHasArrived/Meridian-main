@@ -314,3 +314,26 @@ decisions:
       - W13-STRAT-001
       - W13-OMS-001
       - W10-BOND-001
+  - id: DEC-SINGLE-PRINCIPAL-001
+    title: Support single-principal operation only through labeled attestation; register W14-ATTEST-001
+    status: accepted
+    decided_on: 2026-11-01
+    owner_lane: Core Team
+    summary: >-
+      Answers the open question recorded by DEC-VALUE-PROPOSITION-001 and design charter Section
+      25.3.12. Source enforces two distinct principals in governed approvals while the ADR-019 v1
+      envelope supports one operator on a local workstation, so the design law's "who approved
+      it?" cannot be answered honestly by a single person today. The decision is that v1 may support
+      a self-directed principal only through an explicit, audited, tenant-scoped attestation path
+      whose results are labeled "attested by preparer - not independently reviewed" everywhere they
+      appear and are reported separately by Verified Coverage; an attestation is never presented as
+      independent review. W14-ATTEST-001 is registered as an unranked planned row to own that
+      outcome, its excluded-class policy, and its evidence. Real maker-checker between distinct
+      principals in a small-team single-node envelope remains a separate future ADR-019 decision.
+      The decision changes no existing rank, status, dependency, acceptance, metric formula,
+      deployment envelope text, PRD-000 sign-off, source enforcement, or release authority, reopens
+      no deferred lane, and does not create a retail product segment.
+    related_roadmap_items:
+      - W14-ATTEST-001
+      - W11-COVER-001
+      - W11-PASSPORT-001

@@ -212,7 +212,8 @@ Meridian is **not**:
 
 A **self-directed principal** — one person who both prepares and approves, typically inside the
 Single Family Office profile — is a supported operating posture only through the explicit,
-labeled single-principal attestation candidate in Section 25.3.12. It is not a retail product
+labeled single-principal attestation registered as `W14-ATTEST-001` under
+`DEC-SINGLE-PRINCIPAL-001` (Section 25.3.12; status in Section 5.3). It is not a retail product
 segment, and it never presents a self-attested result as independently reviewed.
 
 ### 1.4 Differentiation
@@ -716,7 +717,7 @@ not yet the wired operator path, and the W9 slate exists precisely to close that
 
 This is the only place in the charter that states registry status (program snapshot 2026-10-14,
 plus the W11 rows registered 2026-10-16, W12 rows registered 2026-10-17, W13 direction registered
-2026-10-30, and `W10-BOND-001` registered 2026-10-31). When it disagrees with `docs/roadmap/data/roadmap-items.yml`,
+2026-10-30, `W10-BOND-001` registered 2026-10-31, and `W14-ATTEST-001` registered 2026-11-01). When it disagrees with `docs/roadmap/data/roadmap-items.yml`,
 the registry wins; fix this section and nothing else.
 
 **Closed baselines** (registry status `done`, evidence complete). W1-W5 form the accepted
@@ -787,6 +788,7 @@ does not adopt ranks, accept an entire row, or reprioritize the adopted work:
 | W12 · unranked | `W12-CREDIT-001` | `planned` | `DEC-FUND-OPERATIONS-DIRECTION-001` | DirectLoan operations and evidence reconciliation (Section 6.8) |
 | W13 · unranked | `W13-STRAT-001` | `planned` | `DEC-TRADING-STRATEGY-DIRECTION-001` | Strategy formulation, validation, and governed execution workflow (Section 22.7) |
 | W13 · unranked | `W13-OMS-001` | `planned` | `DEC-TRADING-STRATEGY-DIRECTION-001` | Operator order management and durable execution lifecycle (Section 22.7) |
+| W14 · unranked | `W14-ATTEST-001` | `planned` | `DEC-SINGLE-PRINCIPAL-001` | Single-principal attestation for governed approvals in the single-operator envelope (Section 25.3.12) |
 
 `W9-DEMO-002` (rank 2) and `W9-ASSET-010` are `done` and listed with the closed baselines above.
 No roadmap decision was recorded between the 2026-09-28 and 2026-10-14 snapshots; the changes in
@@ -795,7 +797,9 @@ that interval are rows moving into implementation, not acceptances. `DEC-CHARTER
 registers the five W12 rows. `DEC-TRADING-STRATEGY-DIRECTION-001` (2026-10-30) registers the two
 W13 rows for the user's expanded objectives. `DEC-W10-BOND-REGISTER-001` (2026-10-31) registers
 `W10-BOND-001` as an unranked in-progress depth row, and `DEC-VALUE-PROPOSITION-001` (2026-11-01)
-restates the value proposition without registering a row. These decisions accept planning scope, not
+restates the value proposition without registering a row. `DEC-SINGLE-PRINCIPAL-001` (2026-11-01)
+registers `W14-ATTEST-001` as an unranked planned row for the single-principal attestation
+direction in Section 25.3.12; W14 has no adopted rank. These decisions accept planning scope, not
 implementation or operator acceptance; prior acceptance records and release gates remain unchanged.
 
 The W9 ordering is strategy, not backlog trivia: truth before demonstration, honest gates before
@@ -2634,8 +2638,9 @@ hypothesis without changing the customer table; adds Preview Fidelity as an unre
 metric; syncs the missing `W10-BOND-001` status row; and adds five design candidates (25.3.8–25.3.12).
 The review's declined elements — a configurable workflow builder, a third-party strategy
 marketplace, forecasting and enterprise-risk expansion, a retail segment, an insurance segment, and
-new root workspaces — stay out. No row is registered and no rank, status, acceptance, metric
-formula, deployment envelope, or release gate changes.
+new root workspaces — stay out. The restatement itself registers no row; the same-day
+`DEC-SINGLE-PRINCIPAL-001` then registers 25.3.12 as `W14-ATTEST-001`. No rank, status, acceptance,
+metric formula, deployment envelope, or release gate changes.
 
 The superseded Version 0.25 text — including the Executive Marketecture Deck and the v0.15–v0.20
 addenda in their original form — is preserved at
@@ -2664,7 +2669,7 @@ addenda in their original form — is preserved at
 | **1.4** | **Integrated clarification and complementary design: financial authority, measurement safeguards preserving W11 formulas, domain ownership, interaction acceptance, and retained passport proof; six bounded capability candidates with dependencies and acceptance scenarios. Existing W9/W10/W11 direction and acceptance preserved** |
 | **1.5** | **Incremental delivery and acceptance: first monthly-close proof, conditional dependency boundaries, approved opening economic state, fee-event sequencing, pre-/post-close and opening representations, complete statement mapping, concurrency/recovery evidence, and measured operator rehearsal (22.6). All functionality is stated as Meridian requirements; the five W12 rows remain planned and unranked** |
 | **1.6** | **Expanded strategy and OMS objectives under `DEC-TRADING-STRATEGY-DIRECTION-001`: peer financial-operations, strategy formulation/validation, order-management, and governed-execution outcomes; corresponding operator journeys and domain concepts; explicit manual-order authority, recovery, and acceptance boundaries (22.7). The two W13 rows are planned and unranked; existing metrics, priorities, acceptance, and release authority are preserved** |
-| **1.7** | **Value-proposition restatement under `DEC-VALUE-PROPOSITION-001`: one promise across decisions, execution, and proof (1.2); honest unproven states and "every number has a passport; every decision has a trace" (1.4); Preview Fidelity as an unregistered candidate metric (1.5); first-buyer discovery hypothesis (3.1); `W10-BOND-001` status sync (5.3); five candidates — pre-trade impact preview, decision trace, decision-to-proof reference slice, explanation assistant, single-principal attestation (25.3.8–25.3.12). No row, rank, status, acceptance, formula, envelope, or release change** |
+| **1.7** | **Value-proposition restatement under `DEC-VALUE-PROPOSITION-001`: one promise across decisions, execution, and proof (1.2); honest unproven states and "every number has a passport; every decision has a trace" (1.4); Preview Fidelity as an unregistered candidate metric (1.5); first-buyer discovery hypothesis (3.1); `W10-BOND-001` status sync (5.3); five candidates — pre-trade impact preview, decision trace, decision-to-proof reference slice, explanation assistant, single-principal attestation (25.3.8–25.3.12); 25.3.12 registered the same day as `W14-ATTEST-001` under `DEC-SINGLE-PRINCIPAL-001`. No rank, status, acceptance, formula, envelope, or release change** |
 
 ### 25.3 Complementary Capability Candidates
 
@@ -2847,8 +2852,8 @@ or an engineering schedule. Product and owning lanes must record adoption separa
 The Version 1.7 candidates form a second chain. A preview (25.3.8) attaches to an order whose trace
 (25.3.9) ends in the accounting handoff; the reference slice (25.3.10) exercises both inside the
 First Trusted Close; the explanation assistant (25.3.11) follows the variance bridge (25.3.3).
-Take the single-principal decision (25.3.12) first, because it determines how every approval reads
-in the v1 envelope; then evaluate the reference slice, which is mostly activation of existing code;
+The single-principal decision (25.3.12) was taken first and registered as `W14-ATTEST-001`, because
+it determines how every approval reads in the v1 envelope; next evaluate the reference slice, which is mostly activation of existing code;
 then the preview and trace together; and the explanation assistant last. This is a discovery order,
 not a rank.
 
@@ -2976,6 +2981,10 @@ data that may leave the host, and the first bridge type.
 
 #### 25.3.12 Single-Principal Attestation
 
+**Registered** as `W14-ATTEST-001` under `DEC-SINGLE-PRINCIPAL-001` (2026-11-01); status lives in
+Section 5.3. Unlike the other candidates in this section, this is adopted planned direction. The
+text below remains the design intent the row's exit criteria were drawn from.
+
 **Operator outcome:** let a self-directed principal — one person who both prepares and approves,
 typically in a Single Family Office deployment — complete governed workflows honestly. Source
 enforces two principals in governed flows (`MakerCheckerRequired` for corporate-action posting,
@@ -3000,6 +3009,8 @@ attestation label, and Verified Coverage lists the item as attested. Turning the
 off is an audited administrative action. Packages delivered under it reproduce their original
 attestation labels after it is withdrawn, and later items require independent approval.
 
-**Adoption decision:** decide whether v1 supports single-principal operation at all, which classes
-stay excluded, how stakeholders see attestations, and its sequence relative to a small-team
-envelope.
+**Adoption decision:** decided on 2026-11-01 — v1 supports single-principal operation only through
+this labeled attestation path, never as independent review. Still open under the row: which classes
+stay excluded, how stakeholders see attestations in delivered packages, whether attested items count
+toward the Verified Coverage headline (`W11-COVER-001`), and the row's sequence relative to a future
+small-team envelope decision.

@@ -215,7 +215,8 @@ Meridian should not drift into being primarily:
 - a marketplace that distributes third-party executable strategies;
 - an execution-management system or algorithmic execution venue;
 - a retail investing application. A self-directed principal is supported only through the
-  explicitly labeled single-principal attestation candidate, never as independent review.
+  explicitly labeled single-principal attestation direction (`W14-ATTEST-001`), never as
+  independent review.
 
 There is no mobile development lane. Responsive browser validation supports the browser
 workstation; native mobile clients and mobile-first workflows require a separate explicit roadmap
