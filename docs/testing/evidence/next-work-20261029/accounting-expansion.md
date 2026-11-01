@@ -34,9 +34,12 @@ Historical v1/v2 instructions keep their original JSON, arithmetic and admission
 v3 fields are omitted when absent. Exact replay still precedes current reference and period
 admission. Corrections use immutable reversal/rebook receipts, never changes to posted journals.
 
-Unsupported exercise windows, Bermudan/American exercise, make-whole formulas, notice/cadence
-rules, irregular coupon dates, structured principal or coupon schedules and forecast prepayments
-still block. Declared schedule conventions block the v3 remaining-face/yield-to-worst model only;
+Bermudan call and put windows now enter the acquisition-price comparison (stacked branch): every
+regular-grid exercise date in the window, on the row's exercise cadence or the coupon frequency, is a
+retained alternative at the window's fixed price, through the same expansion analytics uses, so the
+selection names the actual worst date. American exercise, make-whole formulas, notice rules,
+off-grid cadences, irregular coupon dates, structured principal or coupon schedules and forecast
+prepayments still block. Declared schedule conventions block the v3 remaining-face/yield-to-worst model only;
 declared bonds amortize through `canonical-lot-amortization-v5`, which shares the analytics
 coupon, stub, accrual and discount-time calculator (the interim v4 model was removed before any
 instruction was produced). These need their own valuation inputs and proof;

@@ -154,6 +154,43 @@ public sealed class OpenLotExtendedAmortizationTests
     }
 
     [Fact]
+    public void BermudanCallWindow_ContributesEveryRegularGridDateAsItsOwnAlternative()
+    {
+        // Annual coupon; Bermudan window from 2026-01-01 to maturity 2027-01-01 at 100: two call dates on the grid.
+        var instruction = Callable(110m, 10m, 100m, 90m, style: "Bermudan", endDate: "2027-01-01");
+        var comparison = OpenLotYieldToWorst.Select(instruction.ExpectedLot, instruction.Security);
+
+        comparison.Alternatives.Where(item => item.Kind == "Call").Select(item => item.Date)
+            .Should().Equal(new DateOnly(2026, 1, 1), new DateOnly(2027, 1, 1));
+        comparison.Selected.Kind.Should().Be("Call");
+        comparison.Selected.Date.Should().Be(new DateOnly(2026, 1, 1), "the first window date at 100 against a 110 cost is the worst issuer outcome");
+        comparison.Selected.AnnualYield.Should().BeApproximately(0m, 0.00000000001m);
+        comparison.Alternatives.Single(item => item.Kind == "Call" && item.Date == new DateOnly(2027, 1, 1)).AnnualYield
+            .Should().Be(comparison.Alternatives.Single(item => item.Kind == "Maturity").AnnualYield, "a par call at maturity is the maturity yield");
+        var retained = OpenLotAmortization.Project(instruction with { YieldToWorst = comparison });
+        retained.TransactionCostBasis.Should().Be(100m);
+    }
+
+    [Fact]
+    public void BermudanWindow_DefaultsItsEndToTheNextRowOrMaturity_AndRefusesEndsPastMaturityOrOffGridCadence()
+    {
+        var open = Callable(110m, 10m, 100m, 90m, style: "Bermudan");
+        OpenLotYieldToWorst.Select(open.ExpectedLot, open.Security).Alternatives.Count(item => item.Kind == "Call").Should().Be(2, "an open window runs to maturity");
+
+        var pastMaturity = Callable(110m, 10m, 100m, 90m, style: "Bermudan", endDate: "2028-01-01");
+        var select = () => OpenLotYieldToWorst.Select(pastMaturity.ExpectedLot, pastMaturity.Security);
+        select.Should().Throw<ArgumentException>().WithMessage("*past maturity*");
+
+        var offGrid = Callable(110m, 10m, 100m, 90m, style: "Bermudan", endDate: "2027-01-01", exerciseFrequency: "SemiAnnual");
+        var semiAnnual = () => OpenLotYieldToWorst.Select(offGrid.ExpectedLot, offGrid.Security);
+        semiAnnual.Should().Throw<ArgumentException>("a semi-annual exercise cadence on an annual coupon grid is irregular for the acquisition-price solver");
+
+        var european = Callable(110m, 10m, 100m, 90m, exerciseFrequency: "Annual");
+        var cadenceOnEuropean = () => OpenLotYieldToWorst.Select(european.ExpectedLot, european.Security);
+        cadenceOnEuropean.Should().Throw<ArgumentException>().WithMessage("*Bermudan windows only*");
+    }
+
+    [Fact]
     public void HistoricalJsonOmitsExtendedPolicyAndSelection()
     {
         var instruction = AtomicTaxLotJournalStoreTests.AmortPureInstruction(110m, 10m, BondAmortizationMethod.StraightLine, null);
@@ -162,9 +199,13 @@ public sealed class OpenLotExtendedAmortizationTests
     }
 
     private static OpenLotAmortizationInstructionDto Callable(decimal price, decimal coupon, decimal callPrice, decimal putPrice,
-        string priceType = "Fixed", string style = "European", string basis = "PercentOfPar", string date = "2026-01-01")
+        string priceType = "Fixed", string style = "European", string basis = "PercentOfPar", string date = "2026-01-01",
+        string? endDate = null, string? exerciseFrequency = null)
     {
         var instruction = AtomicTaxLotJournalStoreTests.AmortPureInstruction(price, coupon, BondAmortizationMethod.ConstantYield, 0.05m);
+        var call = new Dictionary<string, object> { ["callDate"] = date, ["callPrice"] = callPrice, ["exerciseStyle"] = style, ["priceBasis"] = basis, ["priceType"] = priceType };
+        if (endDate is not null) call["callEndDate"] = endDate;
+        if (exerciseFrequency is not null) call["exerciseFrequency"] = exerciseFrequency;
         var security = instruction.Security with
         {
             CommonTerms = JsonSerializer.SerializeToElement(new
@@ -175,7 +216,7 @@ public sealed class OpenLotExtendedAmortizationTests
                 paymentFrequency = "Annual",
                 couponType = coupon == 0m ? "ZeroCoupon" : "Fixed",
                 isCallable = true,
-                callSchedule = new[] { new { callDate = date, callPrice, exerciseStyle = style, priceBasis = basis, priceType } },
+                callSchedule = new[] { call },
                 putSchedule = new[] { new { putDate = "2026-01-01", putPrice, exerciseStyle = "European", priceBasis = "PercentOfPar" } }
             })
         };
