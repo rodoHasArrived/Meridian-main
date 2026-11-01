@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "bbca2fb91c9c459acd0ca3f6ca21b17639fbf7b5a7516abe023a0f33230d316b",
+      "fingerprint": "dd07d0f2c7b8da918958ea5f169fed0b4316ead06b57c94d3d538926659c05ba",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -51,6 +51,7 @@
         "Meridian.Contracts.Accounting.Lots.ReviewOpenLotBackfillEvidenceRequest",
         "Meridian.Contracts.Accounting.Lots.ShortCarryInstruction",
         "Meridian.Contracts.Accounting.Lots.ShortCarryKind",
+        "Meridian.Contracts.Accounting.Lots.ShortCoverTerms",
         "Meridian.Contracts.AccountingSystem.AccountingApprovalQueueConfigurationDto",
         "Meridian.Contracts.AccountingSystem.AccountingCertificationArtifactIssueDto",
         "Meridian.Contracts.AccountingSystem.AccountingCertificationArtifactLaneStatusDto",
@@ -4593,7 +4594,7 @@
       ]
     }
   ],
-  "fingerprint": "19adb4f53dc6d4a8d67656a86362ec52c4ec1d0fefe750cfce0876fddd4e8b9e",
+  "fingerprint": "270c148e80a5591ae90b95aa7baed6e9fb336a5c6b73ed15407fe288723bcb4a",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4604,7 +4605,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "f14916a3092f36fff12ff4dec66c9d1e7cd83723e2be57a940c7a6b98da8fa91",
+      "fingerprint": "5461d3ea6ceffa90a0a95a8aa42e89c023e98a87c52f19629450b621450b5f49",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Accounting.Lots",
       "object_ids": [
@@ -4647,7 +4648,8 @@
         "Meridian.Contracts.Accounting.Lots.RetainOpenLotBackfillEvidenceRequest",
         "Meridian.Contracts.Accounting.Lots.ReviewOpenLotBackfillEvidenceRequest",
         "Meridian.Contracts.Accounting.Lots.ShortCarryInstruction",
-        "Meridian.Contracts.Accounting.Lots.ShortCarryKind"
+        "Meridian.Contracts.Accounting.Lots.ShortCarryKind",
+        "Meridian.Contracts.Accounting.Lots.ShortCoverTerms"
       ]
     },
     {
@@ -7373,7 +7375,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "4d796e13d67f5b94f45ca4f4e50177d06a22c07035c4481ef20fc9b89739cefe",
+      "fingerprint": "db5594c3f476068af0a5c5ca21db74a340d9982dbc266f2c016b31e43bd08848",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Workstation",
       "object_ids": [
@@ -12803,6 +12805,167 @@
         {
           "line": 4,
           "path": "src/Meridian.Contracts/Accounting/Lots/ShortCarryInstruction.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "3bb107e97e7d6173577217ff32d487d267cf13c35039140711e2b37e217f7108",
+      "full_name": "Meridian.Contracts.Accounting.Lots.ShortCoverTerms",
+      "id": "Meridian.Contracts.Accounting.Lots.ShortCoverTerms",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AcquisitionFxRateToFunctional",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 17,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CoveredQuantity",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 12,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CoverFxRateToFunctional",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 18,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CoverPrice",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 13,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Fees",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 14,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FunctionalCurrency",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 16,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "ShortCoverTerms.CurrentModelVersion",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ModelVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 20,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RelievedProceedsFunctional",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 19,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TransactionCurrency",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 15,
+          "type": "string"
+        }
+      ],
+      "name": "ShortCoverTerms",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.ShortCoverTerms",
+      "references": [],
+      "source": {
+        "line": 11,
+        "path": "src/Meridian.Contracts/Accounting/Lots/ShortCoverTerms.cs"
+      },
+      "sources": [
+        {
+          "line": 11,
+          "path": "src/Meridian.Contracts/Accounting/Lots/ShortCoverTerms.cs"
         }
       ],
       "type_parameters": []
@@ -434336,7 +434499,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "cfa474e115c7baefba214dd632af700661f2a2033a5b90d7e2c90e5f8f22932c",
+      "fingerprint": "13b57ce4595f93e659ff339b3d17548d6dacb24b1d517a59e611587d9afc964b",
       "full_name": "Meridian.Contracts.Workstation.WorkstationWorkspaceCatalog",
       "id": "Meridian.Contracts.Workstation.WorkstationWorkspaceCatalog",
       "kind": "class",
@@ -434353,7 +434516,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<WorkstationWorkspaceDefinition>",
-          "source_line": 86,
+          "source_line": 100,
           "type": "IReadOnlyList<WorkstationWorkspaceDefinition>"
         }
       ],
