@@ -75,6 +75,26 @@ public sealed class ReconciliationRunOrchestratorTests
     }
 
     [Fact]
+    public async Task RunDailyAsync_SlowCaptureForOneKey_DoesNotBlockCachedRunForAnother()
+    {
+        var adapter = new GatedCurrencySourceAdapter(ReconciliationSourceType.Prime, blockedCurrency: "EUR");
+        var orchestrator = CreateOrchestrator(adapter);
+        var usd = await orchestrator.RunDailyAsync(BusinessDate, RunTimestamp, "USD", rerun: false, CreateTolerances(), CancellationToken.None);
+
+        var eurRun = orchestrator.RunDailyAsync(BusinessDate, RunTimestamp, "EUR", rerun: false, CreateTolerances(), CancellationToken.None);
+        await adapter.BlockedCaptureStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+        // EUR is mid-capture; the cached USD run must still be served without waiting for it.
+        var cachedUsd = await orchestrator.RunDailyAsync(BusinessDate, RunTimestamp, "USD", rerun: false, CreateTolerances(), CancellationToken.None)
+            .WaitAsync(TimeSpan.FromSeconds(10));
+
+        cachedUsd.run.RunId.Should().Be(usd.run.RunId);
+        eurRun.IsCompleted.Should().BeFalse();
+        adapter.Release.SetResult();
+        (await eurRun).run.IdempotencyKey.Should().Be("recon:2026-05-28:EUR");
+    }
+
+    [Fact]
     public async Task RunDailyAsync_RerunRequested_RecapturesAndBumpsSnapshotVersion()
     {
         var adapter = new CountingSourceAdapter(ReconciliationSourceType.Prime);
@@ -129,16 +149,36 @@ public sealed class ReconciliationRunOrchestratorTests
             [new("p1", "AAPL", null, null, "AAPL", null, 10m, 100m, 1000m, "USD", DateTimeOffset.UtcNow, "p1")],
             []);
 
+    /// <summary>Blocks captures for one base currency until released; others complete at once.</summary>
+    private sealed class GatedCurrencySourceAdapter(ReconciliationSourceType sourceType, string blockedCurrency) : IReconciliationSourceAdapter
+    {
+        public ReconciliationSourceType SourceType { get; } = sourceType;
+        public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource BlockedCaptureStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public async Task<DataSourceSnapshot> CaptureSnapshotAsync(ReconciliationIngestionRequest request, CancellationToken ct)
+        {
+            if (string.Equals(request.BaseCurrency, blockedCurrency, StringComparison.OrdinalIgnoreCase))
+            {
+                BlockedCaptureStarted.TrySetResult();
+                await Release.Task.WaitAsync(ct);
+            }
+
+            return CreateSnapshot($"snap-{SourceType}-{request.BaseCurrency}-{request.SnapshotVersion}", SourceType);
+        }
+    }
+
     private sealed class CountingSourceAdapter(ReconciliationSourceType sourceType) : IReconciliationSourceAdapter
     {
         public ReconciliationSourceType SourceType { get; } = sourceType;
 
-        public int CaptureCount { get; private set; }
+        private int _captureCount;
+        public int CaptureCount => Volatile.Read(ref _captureCount);
 
         public Task<DataSourceSnapshot> CaptureSnapshotAsync(ReconciliationIngestionRequest request, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
-            CaptureCount++;
+            Interlocked.Increment(ref _captureCount);
             return Task.FromResult(CreateSnapshot($"snap-{SourceType}-{request.SnapshotVersion}", SourceType));
         }
     }

@@ -91,7 +91,6 @@ public sealed class EtlAuditStore
     public async Task WriteEventAsync(string jobId, EtlAuditEvent auditEvent, CancellationToken ct = default)
     {
         var path = GetAuditPath(jobId, "events.jsonl");
-        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await DurableLineAppender.AppendLineAsync(path, JsonSerializer.Serialize(auditEvent, _jsonOptions), ct).ConfigureAwait(false);
     }
 
@@ -132,7 +131,6 @@ public sealed class EtlRejectSink
     public async Task AppendAsync(string jobId, EtlRejectRecord record, CancellationToken ct = default)
     {
         var path = Path.Combine(_rejectRoot, jobId, "rejects.jsonl");
-        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await DurableLineAppender.AppendLineAsync(path, JsonSerializer.Serialize(record, _jsonOptions), ct).ConfigureAwait(false);
     }
 }
@@ -148,15 +146,28 @@ internal static class DurableLineAppender
     private static readonly SemaphoreSlim[] Stripes =
         Enumerable.Range(0, 64).Select(static _ => new SemaphoreSlim(1, 1)).ToArray();
 
+    // Windows (and default macOS) file systems are case-insensitive, so differently cased
+    // spellings of one path must land on the same stripe or they would not be serialized.
+    private static readonly StringComparer PathHashComparer =
+        OperatingSystem.IsWindows() || OperatingSystem.IsMacOS()
+            ? StringComparer.OrdinalIgnoreCase
+            : StringComparer.Ordinal;
+
     public static async Task AppendLineAsync(string path, string line, CancellationToken ct)
     {
         var fullPath = Path.GetFullPath(path);
-        var stripe = Stripes[(StringComparer.Ordinal.GetHashCode(fullPath) & int.MaxValue) % Stripes.Length];
+        var stripe = Stripes[(PathHashComparer.GetHashCode(fullPath) & int.MaxValue) % Stripes.Length];
         var bytes = Encoding.UTF8.GetBytes(line + Environment.NewLine);
 
         await stripe.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            var directory = Path.GetDirectoryName(fullPath)!;
+            var createdDirectory = !Directory.Exists(directory);
+            if (createdDirectory)
+                Directory.CreateDirectory(directory);
+            var createdFile = !File.Exists(fullPath);
+
             // Once the lock is held the line is written in full: cancelling mid-write could
             // leave a torn record that later readers would have to skip.
             await using var stream = new FileStream(
@@ -169,6 +180,14 @@ internal static class DurableLineAppender
             await stream.WriteAsync(bytes, CancellationToken.None).ConfigureAwait(false);
             await stream.FlushAsync(CancellationToken.None).ConfigureAwait(false);
             stream.Flush(flushToDisk: true);
+            await stream.DisposeAsync().ConfigureAwait(false);
+
+            // A flushed file is not durable until its directory entry is: after power loss a
+            // never-synced new file (or new job directory) can vanish with acknowledged records.
+            if (createdFile)
+                await AtomicFileWriter.SyncDirectoryAsync(directory, CancellationToken.None).ConfigureAwait(false);
+            if (createdDirectory && Path.GetDirectoryName(directory) is { Length: > 0 } parent)
+                await AtomicFileWriter.SyncDirectoryAsync(parent, CancellationToken.None).ConfigureAwait(false);
         }
         finally
         {

@@ -11,10 +11,13 @@ public sealed class ReconciliationRunOrchestrator(
     IReadOnlyList<IReconciliationSourceAdapter> adapters,
     ReconciliationMatchingEngine matchingEngine)
 {
-    // Guarded by _gate. The gate also serializes check → capture → record, so two concurrent
-    // first runs for the same key cannot both capture and both claim snapshot version 1.
+    // Both dictionaries are guarded by _sync, held only for lookups and writes. Capture is
+    // serialized per idempotency key (check → capture → record), so two concurrent first runs
+    // for one key cannot both claim snapshot version 1, while runs for other dates/currencies
+    // and cached lookups never wait behind a slow capture.
+    private readonly object _sync = new();
     private readonly Dictionary<string, ReconciliationRun> _runByIdempotencyKey = new(StringComparer.OrdinalIgnoreCase);
-    private readonly SemaphoreSlim _gate = new(1, 1);
+    private readonly Dictionary<string, SemaphoreSlim> _keyGates = new(StringComparer.OrdinalIgnoreCase);
 
     public Task<(ReconciliationRun run, IReadOnlyList<MatchGroup> matches, IReadOnlyList<BreakRecord> breaks, IReadOnlyList<MatchEvidence> evidence)> RunDailyAsync(
         DateOnly businessDate,
@@ -59,20 +62,24 @@ public sealed class ReconciliationRunOrchestrator(
         ArgumentException.ThrowIfNullOrWhiteSpace(baseCurrency);
         var key = BuildIdempotencyKey(businessDate, baseCurrency);
 
+        if (!rerun && TryGetRun(key, out var cachedRun))
+            return ServeCached(cachedRun, profile);
+
+        SemaphoreSlim gate;
+        lock (_sync)
+        {
+            if (!_keyGates.TryGetValue(key, out gate!))
+                _keyGates[key] = gate = new SemaphoreSlim(1, 1);
+        }
+
         ReconciliationRun run;
-        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        await gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var priorExists = _runByIdempotencyKey.TryGetValue(key, out var prior);
+            // Re-check under the key gate: a concurrent first run may have just recorded it.
+            var priorExists = TryGetRun(key, out var prior);
             if (priorExists && !rerun)
-            {
-                var cached = matchingEngine.Run(prior!, profile);
-                return (prior! with
-                {
-                    ToleranceProfileId = profile.ProfileId,
-                    ToleranceProfileVersion = profile.Version
-                }, cached.matches, cached.breaks, cached.evidence);
-            }
+                return ServeCached(prior!, profile);
 
             var snapshotVersion = priorExists ? prior!.SnapshotVersion + 1 : 1;
             var request = new ReconciliationIngestionRequest(businessDate, runTimestampUtc, baseCurrency, snapshotVersion);
@@ -82,14 +89,33 @@ public sealed class ReconciliationRunOrchestrator(
                 ToleranceProfileId = profile.ProfileId,
                 ToleranceProfileVersion = profile.Version
             };
-            _runByIdempotencyKey[key] = run;
+            lock (_sync)
+                _runByIdempotencyKey[key] = run;
         }
         finally
         {
-            _gate.Release();
+            gate.Release();
         }
 
         var result = matchingEngine.Run(run, profile);
         return (run, result.matches, result.breaks, result.evidence);
+    }
+
+    private bool TryGetRun(string key, out ReconciliationRun run)
+    {
+        lock (_sync)
+            return _runByIdempotencyKey.TryGetValue(key, out run!);
+    }
+
+    private (ReconciliationRun run, IReadOnlyList<MatchGroup> matches, IReadOnlyList<BreakRecord> breaks, IReadOnlyList<MatchEvidence> evidence) ServeCached(
+        ReconciliationRun prior,
+        StatementToleranceProfile profile)
+    {
+        var cached = matchingEngine.Run(prior, profile);
+        return (prior with
+        {
+            ToleranceProfileId = profile.ProfileId,
+            ToleranceProfileVersion = profile.Version
+        }, cached.matches, cached.breaks, cached.evidence);
     }
 }
