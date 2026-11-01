@@ -195,7 +195,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             if (value is null)
                 return;
 
-            LoadDocumentAsync(value);
+            LoadDocument(value);
         }
     }
 
@@ -1057,7 +1057,11 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     private void AppendConsole(string text, ConsoleEntryKind kind) =>
         ConsoleOutput.Add(new ConsoleEntry(DateTimeOffset.Now, text, kind));
 
-    private async void LoadDocumentAsync(ScriptDocumentEntry document)
+    // Thin void entry point for the property setter; LoadDocumentAsync handles its own errors.
+    private void LoadDocument(ScriptDocumentEntry document) =>
+        LoadDocumentAsync(document).SafeFireAndForget(_logger, "Load QuantScript document");
+
+    private async Task LoadDocumentAsync(ScriptDocumentEntry document)
     {
         if (_loadingDocument)
             return;

@@ -9439,6 +9439,7 @@ Meridian-main
 │   │   │   ├── EvidenceWorkbenchViewModel.cs
 │   │   │   ├── ExportPresetsViewModel.cs
 │   │   │   ├── FinancialRecordExplorerViewModel.cs
+│   │   │   ├── FireAndForget.cs
 │   │   │   ├── FundAccountProviderPanelModels.cs
 │   │   │   ├── FundAccountsViewModel.cs
 │   │   │   ├── FundLedgerViewModel.CloseReadiness.cs
@@ -10901,6 +10902,7 @@ Meridian-main
 │   │   │   ├── Services
 │   │   │   │   ├── CliModeResolverTests.cs
 │   │   │   │   ├── ConfigurationPresetsTests.cs
+│   │   │   │   ├── ConfigurationServiceProviderDetectionTests.cs
 │   │   │   │   ├── ConfigurationServiceTests.cs
 │   │   │   │   ├── CronExpressionParserTests.cs
 │   │   │   │   ├── DailySummaryWebhookDeliveryTests.cs
@@ -12770,6 +12772,7 @@ Meridian-main
 │   │   │   ├── FactorPaydownViewModelTests.Approval.cs
 │   │   │   ├── FactorPaydownViewModelTests.cs
 │   │   │   ├── FinancialRecordExplorerViewModelTests.cs
+│   │   │   ├── FireAndForgetTests.cs
 │   │   │   ├── FundAccountsViewModelTests.cs
 │   │   │   ├── FundLedgerReconciliationReadStateTests.cs
 │   │   │   ├── FundLedgerViewModelTests.cs
