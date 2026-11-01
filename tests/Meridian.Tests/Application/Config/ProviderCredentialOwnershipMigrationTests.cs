@@ -53,7 +53,11 @@ public sealed class ProviderCredentialOwnershipMigrationTests : IDisposable
         if (conflict == "destination")
             await store.SaveScopedAsync(Request("other"), Owner);
         if (conflict == "oauth")
+        {
+            // A provider-wide token transfers with the record; the conflict is a token the owned scope already holds.
             await store.SaveOAuthTokenAsync("alpaca", new OAuthToken("access", "Bearer", DateTimeOffset.UtcNow.AddHours(1), RefreshToken: "refresh"));
+            await store.SaveScopedOAuthTokenAsync("alpaca", new OAuthToken("owned", "Bearer", DateTimeOffset.UtcNow.AddHours(1)), Owner);
+        }
         var before = await File.ReadAllBytesAsync(store.VaultPath);
         var scope = conflict == "environment" ? new ProviderCredentialScope("tenant-a", "connection-a", "account-a", "live") : Owner;
         Func<Task> migrate = () => store.MigrateToScopeAsync("alpaca", scope, "migration-a",
@@ -218,9 +222,11 @@ public sealed class ProviderCredentialOwnershipMigrationTests : IDisposable
         var legacySave = () => store.SaveAsync(Request("other-key"));
         await legacySave.Should().ThrowAsync<ProviderCredentialConflictException>("the active migration still blocks the provider-wide record");
 
-        await store.RecordScopedVerificationAsync(new("alpaca", false, "boom"), Owner);
+        var ownedGeneration = (await store.ReadScopedAsync("alpaca", Owner))!.CredentialGeneration;
+        await store.RecordScopedVerificationAsync(new("alpaca", false, "boom") { ExpectedCredentialGeneration = ownedGeneration }, Owner);
         await unverified.Should().ThrowAsync<InvalidOperationException>("a failed verification does not finalize");
-        await store.RecordScopedVerificationAsync(new("alpaca", true, ExternalAccountId: Owner.ExternalAccountId, Actor: "verifier"), Owner);
+        await store.RecordScopedVerificationAsync(new("alpaca", true, ExternalAccountId: Owner.ExternalAccountId, Actor: "verifier")
+        { ExpectedCredentialGeneration = ownedGeneration }, Owner);
 
         var finalized = await store.FinalizeMigrationAsync("alpaca", Owner, "migration-f", "controller");
         finalized.FinalizedBy.Should().Be("controller");
