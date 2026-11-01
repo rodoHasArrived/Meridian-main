@@ -1,11 +1,11 @@
 {
   "total_files": 795,
-  "total_lines": 180502,
+  "total_lines": 180514,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 326,
-  "average_lines": 227.0,
+  "average_lines": 227.1,
   "health_score": 83,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -3031,7 +3031,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 13171,
+      "line_count": 13175,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4487,7 +4487,7 @@
     },
     {
       "path": "docs/testing/evidence/next-work-20261029/accounting-expansion.md",
-      "line_count": 52,
+      "line_count": 57,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6407,7 +6407,7 @@
     },
     {
       "path": "src/Meridian.Ledger/README.md",
-      "line_count": 390,
+      "line_count": 393,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
