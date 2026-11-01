@@ -5134,6 +5134,8 @@ Meridian-main
 │   │   │   └── ValidatedConfig.cs
 │   │   ├── Contracts
 │   │   │   └── IProviderCredentialStore.cs
+│   │   ├── Currency
+│   │   │   └── CurrencyMinorUnits.cs
 │   │   ├── Diagnostics
 │   │   │   └── RuntimeDiagnosticRedactor.cs
 │   │   ├── Exceptions

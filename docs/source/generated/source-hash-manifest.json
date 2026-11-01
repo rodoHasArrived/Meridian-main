@@ -38,7 +38,7 @@
       "path": "src/Meridian.Core",
       "readme": "src/Meridian.Core/README.md",
       "readme_hash": "40127d01aa9a3812f69a888965abee6821a5ae9153e6e054335af95c0eefa991",
-      "source_hash": "d2a6f4e4df7fc4d11297950a60075cb9aca2396c36e5581f87d7cb450cbe8ffd"
+      "source_hash": "52255c7121efbe4380da83f49424b5925746a3c4d454e4d5bcdfdcbafdaaa038"
     },
     {
       "id": "SRC-DESIGN-AUDIT",
@@ -206,7 +206,7 @@
       "path": "src/Meridian.Ledger",
       "readme": "src/Meridian.Ledger/README.md",
       "readme_hash": "215991e12346c6da302b553bae36a2a0aa6d6caa3440486c9611012fb029a477",
-      "source_hash": "593bb56ade9211e248c308d1f75969de01b003f763f9cd318d9419daeb7134fe"
+      "source_hash": "87a326d94bd4515b166adddb4081d819b0396c2ea0c43a4a5d6f59332f88aca4"
     },
     {
       "id": "SRC-LIFECYCLE-SUPERVISOR",
