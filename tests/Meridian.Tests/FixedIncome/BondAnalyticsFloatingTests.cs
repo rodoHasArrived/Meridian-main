@@ -28,6 +28,13 @@ public sealed class BondAnalyticsFloatingTests
         result.CashFlows.Should().HaveCount(4, "four semi-annual periods remain after a 2026-02-15 settlement on a 2028-01-15 maturity");
         result.CashFlows[0].Interest.Should().Be(2m, "the observed 3% fixing plus 100 bp on a level semi-annual coupon");
         result.CashFlows.Skip(1).Should().OnlyContain(flow => flow.Interest == 1.5m, "forward 2% plus 100 bp");
+        result.CashFlows[0].FloatingCoupon.Should().Be(new BondAnalyticsFloatingCoupon(
+            new DateOnly(2026, 1, 15), true, "SOFR", 0.03m, 100m, 0.04m, "Retained reset schedule"));
+        result.CashFlows.Skip(1).Should().OnlyContain(flow => flow.FloatingCoupon != null
+            && !flow.FloatingCoupon.IsObserved && flow.FloatingCoupon.ResetDate == flow.AccrualStart
+            && flow.FloatingCoupon.IndexName == "SOFR" && flow.FloatingCoupon.IndexRate == 0.02m
+            && flow.FloatingCoupon.SpreadBps == 100m && flow.FloatingCoupon.CouponRate == 0.03m
+            && flow.FloatingCoupon.Source == "test-curve");
         result.CashFlows[^1].Principal.Should().Be(100m);
         result.AccruedInterest.Should().BeApproximately(2m * 30m / 180m, 0.000000000001m, "one 30/360 month of the current 4% coupon at twelve-decimal precision");
         result.YieldToMaturity.Should().Be(0.03m);
@@ -80,6 +87,8 @@ public sealed class BondAnalyticsFloatingTests
         result.IsBlocked.Should().BeFalse(string.Join(" ", result.Blockers.Select(b => b.Reason)));
         result.Inputs.Should().Contain(retained, "the stored curve's own retained version identifies the projection input");
         result.Inputs.Should().NotContain(input => input.Kind == "ForwardCurveContent");
+        result.CashFlows.Skip(1).Should().OnlyContain(flow => flow.FloatingCoupon != null
+            && flow.FloatingCoupon.Source == "Retained forward curve");
 
         var otherVersion = pinned with { Context = new BondCalculationContext(AsOf, Curves: [new BondPinnedCurveInput("Forward:SOFR", curveId, Guid.NewGuid())]) };
         (await service.CalculateAsync(otherVersion))!.Blockers.Should().ContainSingle().Which.Code.Should().Be("ForwardCurveRequired", "a pin naming an unknown version selects nothing");
@@ -112,6 +121,8 @@ public sealed class BondAnalyticsFloatingTests
         result.IsBlocked.Should().BeFalse(string.Join(" ", result.Blockers.Select(b => b.Reason)));
         result.CashFlows.Should().HaveCount(3, "the 2026-07-15 coupon was paid before settlement; three periods remain");
         result.CashFlows.Should().OnlyContain(flow => flow.Interest == 1.5m, "the 2026-07-15 reset is projected at the forward 2% plus 100 bp");
+        result.CashFlows.Should().OnlyContain(flow => flow.FloatingCoupon != null && !flow.FloatingCoupon.IsObserved,
+            "fixing provenance follows the economic cutoff, even when settlement crosses the reset date");
         result.AccruedInterest.Should().BeApproximately(1.5m * 1m / 180m, 0.000000000001m, "one 30/360 day of the projected current coupon accrues to settlement");
 
         var observedAtSettlement = request with { Context = new BondCalculationContext(new DateTimeOffset(2026, 7, 16, 0, 0, 0, TimeSpan.Zero), SettlementDate: new DateOnly(2026, 7, 16)) };
@@ -137,6 +148,36 @@ public sealed class BondAnalyticsFloatingTests
             .CalculateAsync(Request(BondAnalyticsService.FloatingModelVersion, yield: 0.03m)))!;
         bounded.IsBlocked.Should().BeFalse(string.Join(" ", bounded.Blockers.Select(b => b.Reason)));
         bounded.CashFlows[0].Interest.Should().Be(1.75m, "the 4% observed coupon is capped at 3.5% on a level semi-annual coupon");
+        bounded.CashFlows[0].FloatingCoupon!.CouponRate.Should().Be(0.035m);
+        bounded.CashFlows[0].FloatingCoupon!.IndexRate.Should().Be(0.03m, "the effective coupon includes the cap without changing the fixing evidence");
+    }
+
+    [Fact]
+    public async Task V3_ExposesSourcedScalarFixingInFractionUnits_WithoutApplyingItToAnotherReset()
+    {
+        var curves = new InMemorySecurityForwardCurveProvider();
+        curves.Publish(new SecurityForwardCurve("SOFR", new DateOnly(2026, 1, 1), [new(new DateOnly(2026, 1, 1), 0.02m)]));
+        var extraTerms = new Dictionary<string, object?>
+        {
+            ["currentIndexRate"] = 3m,
+            ["currentIndexResetDate"] = "2026-01-15",
+            ["currentIndexRateSource"] = "Synthetic observed SOFR fixing",
+            ["scheduleConventions"] = new { accrualAdjusted = false, couponRateUnit = "Percent", couponCashBasis = "Level" }
+        };
+        var result = (await Service(Floating(resetSchedule: false, extraTerms), curves)
+            .CalculateAsync(Request(BondAnalyticsService.FloatingModelVersion, yield: 0.03m)))!;
+
+        result.IsBlocked.Should().BeFalse();
+        result.CashFlows[0].FloatingCoupon.Should().Be(new BondAnalyticsFloatingCoupon(
+            new DateOnly(2026, 1, 15), true, "SOFR", 0.03m, 100m, 0.04m, "Synthetic observed SOFR fixing"));
+        result.CashFlows[1].FloatingCoupon!.IndexRate.Should().Be(0.02m, "forward rates remain fractions even when observed fixings are declared in percent");
+        result.CashFlows[1].FloatingCoupon!.Source.Should().Be("Content-bound forward curve");
+
+        extraTerms["currentIndexResetDate"] = "2026-01-14";
+        var wrongReset = (await Service(Floating(resetSchedule: false, extraTerms), curves)
+            .CalculateAsync(Request(BondAnalyticsService.FloatingModelVersion, yield: 0.03m)))!;
+        wrongReset.Blockers.Should().ContainSingle().Which.Code.Should().Be("MissingFixing");
+        wrongReset.CashFlows.Should().BeEmpty();
     }
 
     [Fact]
@@ -150,7 +191,9 @@ public sealed class BondAnalyticsFloatingTests
         var fixedV2 = (await Service(Fixed(), curves).CalculateAsync(Request(BondAnalyticsService.ModelVersion, yield: 0.03m)))!;
         fixedV2.IsBlocked.Should().BeFalse();
         fixedV2.SpreadDv01.Should().BeNull("fixed-coupon analytics never report a spread sensitivity");
-        JsonSerializer.Serialize(fixedV2).Should().NotContain("spreadDv01", "the optional field is omitted so retained v1/v2 fixtures keep their bytes");
+        JsonSerializer.Serialize(fixedV2, new JsonSerializerOptions(JsonSerializerDefaults.Web)).Should()
+            .NotContain("\"spreadDv01\"", "the optional field is omitted so retained v1/v2 fixtures keep their bytes")
+            .And.NotContain("\"floatingCoupon\"");
     }
 
     private static BondAnalyticsService Service(SecurityDetailDto security, ISecurityForwardCurveProvider? curves)

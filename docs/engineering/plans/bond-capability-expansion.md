@@ -1,7 +1,7 @@
 # Bond Capability Expansion
 
 **Owner:** Instruments / Accounting and Ledger
-**Reviewed:** 2026-10-29
+**Reviewed:** 2026-11-01
 **Direction:** user-approved staged expansion, including a reviewed full active-bond cutover
 
 ## Outcome and boundaries
@@ -10,7 +10,7 @@ One explicit set of retained bond economics must explain reference data, expecte
 valuation, settlement and accounting support. Security Master remains the identity and terms
 authority. Instruments owns interpretation; Financial Operations owns governed posting candidates;
 Ledger remains the immutable journal authority. Browser integration extends existing Security Master
-details. WPF changes, overnight compounding, inflation-index forecasts, continuous exercise models,
+details and the WPF passport editor. Overnight compounding, inflation-index forecasts, continuous exercise models,
 OAS, convertibles and structured-credit accounting are outside this increment.
 
 ## Delivery and acceptance
@@ -46,14 +46,52 @@ yield-to-worst v3 models retain their schemas, admission and replay arithmetic.
   v3 admits one `Forward:<index>` pin for the bond's own index so a stored curve version can be
   selected explicitly; other curve roles are refused, and v1/v2 still consume no curves. A stored
   curve is recorded by its retained version input; an unretained curve falls back to a
-  source-generated content hash (`ForwardCurveContent`). v1/v2 output is unchanged and the new field
-  is omitted from their serialized results.
+  source-generated content hash (`ForwardCurveContent`). v1/v2 output is unchanged; `SpreadDv01` and
+  per-flow `FloatingCoupon` display evidence are omitted from their serialized results.
 - `IBondAnalyticsService` produces metrics, projected payments, capabilities and typed blockers.
 - Cash-flow context overloads preserve existing call signatures as compatibility adapters.
 - Reference array routes remain available; paged routes use bounded keyset cursors.
 - Migration preview and staging routes require Security Master modification authority. Cutover and
   inventory review require administrative authority; actors are resolved from the authenticated
   request. Staging never approves or publishes its own draft.
+
+## Workstation floating analytics
+
+Browser: **Accounting → Security Master → select a Bond → Evidence → Bond analytics**.
+WPF: **Security Master → open the selected bond's passport editor → Bond analytics**.
+Both panels retain v2 as their default, offer explicit legacy v1, and expose v3 for named-index
+floating bonds. Selection travels through the existing analytics GET's optional
+`calculationVersion` query; the service enforces eligibility. Neither panel guesses eligibility
+from the asset class or substitutes a different model after a refusal.
+
+V3 displays projected coupon cash flows with each reset's observed/forecast status, named index,
+fixing source, reset date, annual-fraction index/effective coupon rates and spread in basis points.
+Observed describes the fixing, not payment receipt. Retained curve versions/hashes remain visible
+in calculation inputs. The projected-flow yield discounts those cash flows and **is not discount
+margin**. DV01 measures a one-basis-point yield change on the fixed projected flows; `SpreadDv01`
+is the signed dirty-price change for a one-basis-point coupon-spread increase at unchanged yield.
+Both sensitivities are price points per 100 face, not position-sized currency exposure.
+
+The deterministic synthetic example used by service, HTTP and workstation tests is:
+
+| Input | Synthetic value |
+| --- | --- |
+| Security | Typed Floating, USD, SOFR + 100 bp, bullet principal |
+| Issue / maturity | 2026-01-15 / 2028-01-15 |
+| Coupon / day count | Semiannual level coupons, 30/360, annual-fraction rates |
+| Calculation / settlement | 2026-02-15 / 2026-02-15 |
+| Observed reset | 2026-01-15: SOFR 0.03 (3%) |
+| Retained synthetic forward curve | 2026-01-01 as-of; flat 0.02 (2%) through 2029-01-01 |
+| Input projected-flow yield | 0.03 (3%), nominal periodic |
+
+Select v3, enter those dates, choose annual yield, enter `0.03`, and calculate. Expected remaining
+interest per 100 is `2`, `1.5`, `1.5`, `1.5`, with `100` principal on the last date; accrued interest
+is `1/3` per 100, rounded at the service's decimal boundary. The first fixing is observed and the
+three future resets are forecasts. Removing the historical fixing yields `MissingFixing`; removing
+the curve yields `ForwardCurveRequired`. Each refusal exposes its code/reason and withholds metrics
+and cash flows. Editing the model or any input clears prior results and invalidates delayed replies.
+This synthetic verification requires no live account or provider. Independent Accounting review
+remains required before merge; AI review and automated tests do not supply that approval.
 
 ## Migration procedure
 

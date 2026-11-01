@@ -361,8 +361,19 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
             if (discountDate < period.PaymentDate)
                 time += (period.PaymentDate.DayNumber - discountDate.DayNumber) / DayCountConventions.DaysPerYear365;
             if (interest > 0m || period.IsFinal)
+            {
+                var curveSource = curve?.Source;
+                var fixingSource = alreadyReset
+                    ? exactReset.HasValue ? "Retained reset schedule" : leg.CurrentIndexRateSource!
+                    : !string.IsNullOrWhiteSpace(curveSource) ? curveSource
+                    : curve?.RetainedInput is not null ? "Retained forward curve" : "Content-bound forward curve";
                 result.Add(new(SchedulePeriodId.Derive(securityId, "bond-analytics", period), period.PaymentDate,
-                    period.AccrualStart, period.AccrualEnd, interest, period.IsFinal ? 100m : 0m, time));
+                    period.AccrualStart, period.AccrualEnd, interest, period.IsFinal ? 100m : 0m, time)
+                {
+                    FloatingCoupon = new(period.AccrualStart, alreadyReset, leg.IndexName!.Trim(), indexFraction,
+                        spread * 10_000m, rate, fixingSource)
+                });
+            }
         }
         if (result.Count == 0)
         { code = "CashFlowRefused"; refusal = "No payments remain after settlement."; return false; }

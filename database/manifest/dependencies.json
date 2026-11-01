@@ -5578,6 +5578,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondAnalyticsFloatingCoupon"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FixedIncome.BondAnalyticsRequest"
     },
     {
@@ -31779,6 +31785,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.FixedIncome.BondAnalyticsCashFlow",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondAnalyticsFloatingCoupon"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.FixedIncome.BondAnalyticsRequest",
       "target": "contract:Meridian.Contracts.FixedIncome.BondCalculationContext"
     },
@@ -55870,7 +55882,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "6a0ca48423438d6dd7abd58920bfca7c0e27faed4c6162f3b1d64cdba9312f53",
+  "fingerprint": "e02b00bddd250508d3493eb1a0a9226695f8c15379cef6c47ef0d17b188eaecc",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -61496,6 +61508,12 @@
       "id": "contract:Meridian.Contracts.FixedIncome.BondAnalyticsCashFlow",
       "kind": "contract-type",
       "label": "Meridian.Contracts.FixedIncome.BondAnalyticsCashFlow"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.FixedIncome.BondAnalyticsFloatingCoupon",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FixedIncome.BondAnalyticsFloatingCoupon"
     },
     {
       "classification": "request",
@@ -81753,11 +81771,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3583,
-    "contract_set_memberships": 4433,
-    "edges": 9283,
+    "contract_references": 3584,
+    "contract_set_memberships": 4434,
+    "edges": 9285,
     "foreign_keys": 155,
     "logical_references": 6,
-    "nodes": 4489
+    "nodes": 4490
   }
 }
