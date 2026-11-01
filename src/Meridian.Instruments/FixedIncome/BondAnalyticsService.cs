@@ -124,7 +124,8 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
             return Refuse("PriceOrYieldRequired", "Supply exactly one clean price per 100 face or annual yield fraction.");
         if (request.CleanPrice is <= 0m)
             return Refuse("InvalidCleanPrice", "Clean price must be positive.");
-        if (context.Curves is { Count: > 0 })
+        // v1/v2 consume no curves. v3 admits one pin per index, checked once its floating leg names the index.
+        if (!model.Floating && context.Curves is { Count: > 0 })
             return Refuse("UnsupportedCurveInput", "Yield-based analytics does not consume curves; use curve valuation for pinned market inputs.");
 
         var terms = StructuredCashFlowTermsResolver.Resolve(security);
@@ -223,8 +224,18 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
         if (legs.Length != 1 || string.IsNullOrWhiteSpace(legs[0].IndexName))
             return refuse("UnsupportedCouponStructure", "Floating-rate analytics requires exactly one floating coupon leg with a named index.");
         var leg = legs[0];
+        var indexName = leg.IndexName!.Trim();
+        var forwardRole = "Forward:" + indexName;
+        if (context.Curves?.Any(pin => !string.Equals(pin.Role?.Trim(), forwardRole, StringComparison.OrdinalIgnoreCase)) == true)
+            return refuse("UnsupportedCurveInput", $"Floating-rate analytics consumes only a '{forwardRole}' pin for the bond's own index; discount or other curve roles belong to curve valuation.");
+        if (context.Curves?.Count(pin => string.Equals(pin.Role?.Trim(), forwardRole, StringComparison.OrdinalIgnoreCase)) > 1)
+            return refuse("UnsupportedCurveInput", $"More than one '{forwardRole}' pin was supplied; one retained curve version selects the projection.");
         if (leg.RateUnit is not (SecurityCouponRateUnit.Percent or SecurityCouponRateUnit.Fraction))
             return refuse("CouponUnitRequired", "A floating bond requires an explicit Percent or Fraction coupon rate unit.");
+        if (leg.CapRate is { } capRate && leg.FloorRate is { } floorRate && floorRate > capRate)
+            return refuse("InvalidRateBounds", "The declared floor rate exceeds the cap rate; contradictory coupon bounds cannot be priced.");
+        if (leg.ResetSchedule?.GroupBy(static row => row.ResetDate).Any(static group => group.Count() > 1) == true)
+            return refuse("DuplicateFixing", "Floating reset dates must be unique; conflicting retained fixings for one reset date cannot be priced.");
         if (terms.IssueDate is not { } issue || terms.MaturityDate is not { } maturity || settlement < issue || settlement >= maturity)
             return refuse("SettlementOutsideLife", "Settlement must be on or after the retained issue date and before maturity.");
         var declared = ScheduleSpecFactory.Resolve(security, terms, _calendars);
@@ -250,18 +261,23 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
         inputs.Add(new("FloatingCoupon", BondFloatingRateEvidence.ModelVersion));
         foreach (var calendar in schedule.CalendarsUsed)
             inputs.Add(new("Calendar", calendar.CalendarId + ":" + calendar.Purpose, ContentSha256: calendar.ContentHash));
-        var needsCurve = schedule.Periods.Any(period => period.PaymentDate > settlement && period.AccrualStart > settlement);
+        // Reset status follows the economic cutoff: a reset dated after AsOf is a future, projected fixing even
+        // when settlement falls after it. Settlement still governs entitlement, accrued interest and discount times.
+        var economicDate = DateOnly.FromDateTime(context.AsOf.UtcDateTime);
+        var needsCurve = schedule.Periods.Any(period => period.PaymentDate > settlement && period.AccrualStart > economicDate);
         SecurityForwardCurve? curve = null;
         if (needsCurve)
         {
-            curve = _forwardCurves is null ? null : await _forwardCurves.GetForwardCurveAsync(leg.IndexName!.Trim(), context, ct).ConfigureAwait(false);
+            curve = _forwardCurves is null ? null : await _forwardCurves.GetForwardCurveAsync(indexName, context, ct).ConfigureAwait(false);
             if (curve is not { Points.Count: > 0 })
-                return refuse("ForwardCurveRequired", $"A retained forward curve for '{leg.IndexName!.Trim()}' eligible at the requested cutoffs is required to project future resets.");
-            inputs.Add(new("ForwardCurve", curve.IndexName, ContentSha256: curve.RetainedInput?.ContentSha256
-                ?? Sha256Digest.ComputeUtf8(System.Text.Json.JsonSerializer.Serialize(curve))));
+                return refuse("ForwardCurveRequired", $"A retained forward curve for '{indexName}' eligible at the requested cutoffs is required to project future resets.");
+            // A stored curve identifies its exact retained version; only an unretained curve falls back to a content hash.
+            inputs.Add(curve.RetainedInput ?? new BondCalculationInput("ForwardCurveContent", curve.IndexName,
+                ContentSha256: Sha256Digest.ComputeUtf8(System.Text.Json.JsonSerializer.Serialize(curve, SecurityForwardCurveJsonContext.Default.SecurityForwardCurve)),
+                AsOf: new DateTimeOffset(curve.AsOfDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero)));
         }
         var spread = leg.SpreadBps.GetValueOrDefault() / 10_000m;
-        if (!TryBuildFloating(security.SecurityId, leg, declared, schedule, settlement, dayCount, convention, curve, spread,
+        if (!TryBuildFloating(security.SecurityId, leg, declared, schedule, settlement, economicDate, dayCount, convention, curve, spread,
                 out var flows, out var accrued, out var currentRate, out var refusal, out var code))
             return refuse(code!, refusal!);
         var priceFlows = flows.Select(static flow => new BondPricingCashFlow(flow.Interest + flow.Principal, flow.TimeInYears)).ToArray();
@@ -275,7 +291,7 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
         if (clean <= 0m)
             return refuse("InvalidCleanPrice", "Calculated clean price is not positive.");
         decimal? spreadDv01 = null;
-        if (TryBuildFloating(security.SecurityId, leg, declared, schedule, settlement, dayCount, convention, curve, spread + 0.0001m,
+        if (TryBuildFloating(security.SecurityId, leg, declared, schedule, settlement, economicDate, dayCount, convention, curve, spread + 0.0001m,
                 out var bumpedFlows, out _, out _, out _, out _)
             && BondPricingMath.TryPrice(bumpedFlows.Select(static flow => new BondPricingCashFlow(flow.Interest + flow.Principal, flow.TimeInYears)).ToArray(),
                 yield, convention, paymentsPerYear, out var bumped, out _))
@@ -292,7 +308,7 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
     }
 
     private static bool TryBuildFloating(Guid securityId, StructuredCashFlowLeg leg, DeclaredScheduleResolution declared,
-        ScheduleGenerationResult schedule, DateOnly settlement, DayCountConvention dayCount, BondYieldConvention convention,
+        ScheduleGenerationResult schedule, DateOnly settlement, DateOnly economicDate, DayCountConvention dayCount, BondYieldConvention convention,
         SecurityForwardCurve? curve, decimal spread, out IReadOnlyList<BondAnalyticsCashFlow> flows, out decimal accrued,
         out decimal currentRate, out string? refusal, out string? code)
     {
@@ -308,8 +324,8 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
                 continue;
             if (period.AccrualEnd <= settlement)
             { code = "CashFlowRefused"; refusal = "Settlement within a delayed-payment coupon window needs separate entitlement rules."; return false; }
-            var alreadyReset = period.AccrualStart <= settlement;
-            var exactReset = leg.ResetSchedule?.FirstOrDefault(row => row.ResetDate == period.AccrualStart)?.FixingRate;
+            var alreadyReset = period.AccrualStart <= economicDate;
+            var exactReset = leg.ResetSchedule?.SingleOrDefault(row => row.ResetDate == period.AccrualStart)?.FixingRate;
             var retainedScalar = !leg.HasDeclaredResetSchedule && leg.CurrentIndexResetDate == period.AccrualStart
                 && !string.IsNullOrWhiteSpace(leg.CurrentIndexRateSource) ? leg.CurrentIndexRate : null;
             var index = alreadyReset ? exactReset ?? retainedScalar : curve?.RateAt(period.AccrualStart);

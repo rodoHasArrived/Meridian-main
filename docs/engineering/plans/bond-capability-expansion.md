@@ -38,9 +38,16 @@ yield-to-worst v3 models retain their schemas, admission and replay arithmetic.
   periods) plus the spread, capped and floored. The yield discounts those projected flows and is not a
   discount margin; duration, convexity and DV01 are rate measures of the projected flows, and the
   optional `SpreadDv01` reprices the flows with the spread raised one basis point at the same yield.
-  A missing historical fixing (`MissingFixing`) or forward curve (`ForwardCurveRequired`) refuses the
-  calculation; exercise scenarios are not calculated for floaters. v1/v2 output is unchanged and the
-  new field is omitted from their serialized results.
+  Reset status follows the economic cutoff (`AsOf`): a reset dated after it is projected even when
+  settlement falls later, while settlement governs entitlement, accrued interest and discount times.
+  A missing historical fixing (`MissingFixing`), a missing forward curve (`ForwardCurveRequired`),
+  duplicate retained fixings for one reset date (`DuplicateFixing`) or a floor above the cap
+  (`InvalidRateBounds`) refuses the calculation; exercise scenarios are not calculated for floaters.
+  v3 admits one `Forward:<index>` pin for the bond's own index so a stored curve version can be
+  selected explicitly; other curve roles are refused, and v1/v2 still consume no curves. A stored
+  curve is recorded by its retained version input; an unretained curve falls back to a
+  source-generated content hash (`ForwardCurveContent`). v1/v2 output is unchanged and the new field
+  is omitted from their serialized results.
 - `IBondAnalyticsService` produces metrics, projected payments, capabilities and typed blockers.
 - Cash-flow context overloads preserve existing call signatures as compatibility adapters.
 - Reference array routes remain available; paged routes use bounded keyset cursors.

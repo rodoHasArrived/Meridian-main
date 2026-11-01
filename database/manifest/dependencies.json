@@ -11890,6 +11890,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityForwardCurvePoint"
     },
     {
@@ -25859,6 +25865,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityForwardCurve"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext"
     },
     {
       "kind": "contract-set-member",
@@ -55858,7 +55870,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "7666f88f92aad5458bde6589bee9819615f2c3aa8cdc9d18446c4e5b8fcb4e52",
+  "fingerprint": "6a0ca48423438d6dd7abd58920bfca7c0e27faed4c6162f3b1d64cdba9312f53",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -67796,6 +67808,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityForwardCurve",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityForwardCurve"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext"
     },
     {
       "classification": "record",
@@ -81736,10 +81754,10 @@
   ],
   "summary": {
     "contract_references": 3583,
-    "contract_set_memberships": 4431,
-    "edges": 9281,
+    "contract_set_memberships": 4433,
+    "edges": 9283,
     "foreign_keys": 155,
     "logical_references": 6,
-    "nodes": 4488
+    "nodes": 4489
   }
 }

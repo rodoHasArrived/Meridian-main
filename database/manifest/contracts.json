@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "bbca2fb91c9c459acd0ca3f6ca21b17639fbf7b5a7516abe023a0f33230d316b",
+      "fingerprint": "bc2819a7ceacbb84aaa8309ed1e83f2f0effb87aa2e43b7faf8a8c10bf89990f",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -1992,6 +1992,7 @@
         "Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceOrigins",
         "Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceRecord",
         "Meridian.Contracts.SecurityMaster.SecurityForwardCurve",
+        "Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext",
         "Meridian.Contracts.SecurityMaster.SecurityForwardCurvePoint",
         "Meridian.Contracts.SecurityMaster.SecurityHistoryRequest",
         "Meridian.Contracts.SecurityMaster.SecurityIdentifierDto",
@@ -4095,7 +4096,7 @@
       "directories": [
         "src/Meridian.Contracts/SecurityMaster"
       ],
-      "fingerprint": "02ad01c9514e11c2d2ea65db4a884d1da4067ac47962ec70223750b2c472c976",
+      "fingerprint": "d1a3ecbf6058b299ad853e46677d7f4d34dc8f7c4c3bc21d18da958867256a00",
       "id": "security-master-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.SecurityMaster"
@@ -4466,6 +4467,7 @@
         "Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceOrigins",
         "Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceRecord",
         "Meridian.Contracts.SecurityMaster.SecurityForwardCurve",
+        "Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext",
         "Meridian.Contracts.SecurityMaster.SecurityForwardCurvePoint",
         "Meridian.Contracts.SecurityMaster.SecurityHistoryRequest",
         "Meridian.Contracts.SecurityMaster.SecurityIdentifierDto",
@@ -4593,7 +4595,7 @@
       ]
     }
   ],
-  "fingerprint": "cb7de580edc43a1aa5dcc26cf012f7773059153a2a2c1dd8167a821845eeddbe",
+  "fingerprint": "b006c8c2359008c0463c4719cd1af95d4bc53e7d271abce3c820857d72169420",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6726,7 +6728,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "1e499402e58381149519ab9d9de3d005226448e014b4e9a5ea3a7d1f0f811734",
+      "fingerprint": "71402a8dd9c48f23bf4d85a52eb4c82fd193b92cab81f70f1dc7a11e4ab6fee9",
       "mapped_schemas": [
         "security_master"
       ],
@@ -7077,6 +7079,7 @@
         "Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceOrigins",
         "Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceRecord",
         "Meridian.Contracts.SecurityMaster.SecurityForwardCurve",
+        "Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext",
         "Meridian.Contracts.SecurityMaster.SecurityForwardCurvePoint",
         "Meridian.Contracts.SecurityMaster.SecurityHistoryRequest",
         "Meridian.Contracts.SecurityMaster.SecurityIdentifierDto",
@@ -245700,7 +245703,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "71c5b1b2d54962c023b49598ea24f8d4e1c8c1924e9240012cbef6257c3338bb",
+      "fingerprint": "20d0c8fb9bad75277495a03a545777a5b62eb91c2e69013b5467cdc37e915b7d",
       "full_name": "Meridian.Contracts.SecurityMaster.ISecurityForwardCurveProvider",
       "id": "Meridian.Contracts.SecurityMaster.ISecurityForwardCurveProvider",
       "kind": "interface",
@@ -245714,12 +245717,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.ISecurityForwardCurveProvider",
       "references": [],
       "source": {
-        "line": 115,
+        "line": 120,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs"
       },
       "sources": [
         {
-          "line": 115,
+          "line": 120,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs"
         }
       ],
@@ -266814,6 +266817,46 @@
       "sources": [
         {
           "line": 15,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [
+        "JsonSerializerContext"
+      ],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "3a994dea560da2f17f0b3be33463f74e39bee11130db4ae40ddc71233efd0079",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext",
+      "kind": "class",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "SecurityForwardCurveJsonContext",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": true,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext",
+      "references": [],
+      "source": {
+        "line": 118,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs"
+      },
+      "sources": [
+        {
+          "line": 118,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs"
         }
       ],
