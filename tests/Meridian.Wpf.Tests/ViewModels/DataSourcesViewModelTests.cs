@@ -99,7 +99,7 @@ public sealed class DataSourcesViewModelTests
         codeBehind.Should().NotContain("DeleteDataSource_Click");
         codeBehind.Should().NotContain("SourceEnabled_Changed");
         codeBehind.Should().Contain("WpfServices.FirstRunService firstRunService");
-        codeBehind.Should().Contain("new DataSourcesViewModel(configService, firstRunService)");
+        codeBehind.Should().Contain("new DataSourcesViewModel(configService, firstRunService, logger)");
         codeBehind.Should().Contain("_viewModel.PolygonApiKey = PolygonApiKeyInput.Secret");
     }
 
