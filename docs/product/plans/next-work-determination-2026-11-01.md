@@ -26,6 +26,17 @@ sites; ran the certification lane's own npm-audit gate at its `--fail-level high
 > remains authoritative for the P0 release gate. Recheck CI results against the live head before
 > acting.
 
+> **Update, same day, before merge.** `main` advanced to `86a1689f2` (#3354) while this document was
+> in review, and that merge independently landed both repairs described below: the WPF tracker
+> fingerprint `403b53986050` and the `SRC-APP`/`SRC-WPF` source hashes `ec06221c…`/`913b64d4…`,
+> byte-equal to the values derived here. **The red head this document opens on is therefore already
+> repaired on `main`, by someone else's change rather than by this branch**, and the two fix commits
+> this branch carries are redundant with `main`. The analysis is left as written, because the
+> baseline, the run numbers and the mechanism are what make the finding reusable — and because two
+> independent derivations landing identical hashes is itself evidence the diagnosis was right. What
+> does *not* survive the update is any claim that this branch fixed `main`; it did not, and the
+> summary table below records that.
+
 ## The one-line answer
 
 The delivery-system backlog that the last six determinations ranked **is substantially gone**. What
@@ -265,7 +276,7 @@ downstream PR can trip will keep charging the queue for defects it did not cause
 
 | Priority | Work | Why now |
 | --- | --- | --- |
-| **P0 — done in this branch** | **Regenerate `docs/status/wpf-screen-development-tracker.{json,md}`** | `Meridian CI` run 6127 is red on `verify-docs`, failing `quality-gate` (a required context) on the current `main` head. Generation converged with zero failed steps; only these two files were uncommitted. Reproduced and re-verified locally; the diff is one fingerprint line per file. Same defect class that made `v0.1.0-rc.1` uncertifiable |
+| **P0 — closed on `main`, not by this branch** | **Regenerate `docs/status/wpf-screen-development-tracker.{json,md}` and the `SRC-APP`/`SRC-WPF` source hashes** | `Meridian CI` run 6127 was red on `verify-docs`, failing `quality-gate` (a required context) on `7ca57b62`. Generation converged with zero failed steps; only these files were uncommitted. Reproduced and re-verified locally. **#3354 (`86a1689f2`) landed the identical repair the same day**, so the item is closed on `main` and this branch's fix commits are redundant. Same defect class that made `v0.1.0-rc.1` uncertifiable — which is the point the two P1 rows below carry forward |
 | **P0** | **Provision `MDC_SIGNING_CERT_PFX_BASE64` and `MDC_SIGNING_CERT_PASSWORD`, or formally refuse them** | `PRD-014`. Seventh consecutive determination to name it. Two tags in the repository, neither certifiable; `Release Readiness` has two runs ever, both failed. No engineering moves this |
 | **P0** | **Restate the `rc.2` precondition as an action: dispatch `Production Certification` on the tag candidate and read that run** | `ea51dd620` dropped the push-to-`main` trigger. The last four `main` pushes have no certification run at all, so "green across both lanes on a push head" can no longer become true. The lane is not required; it is weekly and on demand |
 | **P0** | **`PRD-002`'s remaining clauses** — browser/WPF/setup/default-runtime credential ownership; legacy ownership/verification migration, rollback and rotation proof | Still the tracker's only code-rather-than-signature P0. The C1–C8 and #3328/#3329 series advanced it; the clauses themselves are not recorded closed |

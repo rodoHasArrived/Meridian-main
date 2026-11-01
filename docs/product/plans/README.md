@@ -26,7 +26,7 @@ with retained evidence and carries no ranking.
 
 | Plan | Purpose | Status |
 |---|---|---|
-| [What To Work On Next (2026-11-01)](next-work-determination-2026-11-01.md) | Prioritization input: `rc.2` bar still not met; `main` red on generated-doc drift (fixed in-branch); `Production Certification` no longer runs on `main` pushes, so the precondition must be dispatched; delivery-system backlog largely closed and the product lane is next. | Latest dated snapshot |
+| [What To Work On Next (2026-11-01)](next-work-determination-2026-11-01.md) | Prioritization input: `rc.2` bar still not met; `Production Certification` no longer runs on `main` pushes, so the precondition must be dispatched; delivery-system backlog largely closed and the product lane is next. Opens on a `main` head red from generated-doc drift that #3354 repaired the same day. | Latest dated snapshot |
 | [What To Work On Next (2026-10-27)](next-work-determination-2026-10-27.md) | Prioritization input: the `rc.2` bar is not met (untagged, signing secrets unrefused) although its engineering half is green on `main`. | Historical snapshot |
 | [What To Work On Next (2026-10-25)](next-work-determination-2026-10-25.md) | Prioritization input: `rc.2` bar not met; pins `zod` to clear the dashboard advisory. | Historical snapshot |
 | [What To Work On Next (2026-10-24)](next-work-determination-2026-10-24.md) | Prioritization input: `rc.1` exists; finds it uncertifiable and names the `rc.2` blockers. | Historical snapshot |
