@@ -285,7 +285,9 @@ public static class ScheduleSpecFactory
         var block = read.Block;
 
         // 2. Leg-based terms on a class whose conventions sit at the root are not followed.
-        if (terms.HasLegs)
+        if (terms.HasLegs && !(SecurityAssetClassCatalog.GetOrDefault(assetClass).CarriesBondCouponStructure
+            && terms.Legs is { Count: 1 } && terms.Legs[0].LegId == "bond-coupon"
+            && terms.Legs[0].RateKind == CashFlowLegRateKind.Floating))
         {
             resolution = Refuse(DeclaredScheduleRefusalCode.LegConventionsNotFollowed, LegConventionsNotFollowedReason, block);
             return false;

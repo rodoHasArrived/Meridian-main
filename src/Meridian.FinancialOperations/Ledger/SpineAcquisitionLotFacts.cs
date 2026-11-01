@@ -32,6 +32,9 @@ internal static class SpineAcquisitionLotFacts
         if (acquisition.AmortizationMethod == BondAmortizationMethod.ConstantYield
             && acquisition.EffectiveYield is null or <= -1m)
             throw new ArgumentException("New constant-yield acquisitions require an effective yield greater than -1.");
+        var settlementIssues = BondSettlementConsideration.ValidateAcquisition(acquisition);
+        if (settlementIssues.Count > 0)
+            throw new ArgumentException(string.Join(" ", settlementIssues));
     }
 
     // A lot acquired through the spine states its canonical acquisition facts on the lot of record

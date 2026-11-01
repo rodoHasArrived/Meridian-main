@@ -6,10 +6,29 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-10-30
+last_reviewed: 2026-10-31
 ---
 
 # src/Meridian.Application
+
+Bond cash-flow context receipts now use `bond-cash-flow-context-v2`, sharing declared fixed-coupon economics and retaining floating reset evidence. Replay dispatches v1 through its original arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
+
+`ContractualCashFlowPreviewService` resolves retained Security Master/direct-lending facts and pinned curves for the shared calculation engine. Swap leg conventions are decoded only at or above their declared terms version, preserving inert residue on earlier rows. Currency and convention lookup follow the shared resolver's source and alias ordering; malformed leg rows block calculation before raw and typed rows are paired. Invalid retained economic schedules produce a structured `ContractInputsUnavailable` blocker before calculation or run persistence; unrelated storage and runtime failures still propagate. `FileContractualCashFlowRunStore` publishes write-once, verifiable replay packets under the data root; replay uses the packet's normalized contract without rerunning current source mapping. Missing historical balance/notice evidence and assigned provider schedules block rather than falling back. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
+
+`ProviderRuntimeCredentialService` owns explicit host defaults and ownership-checked migration
+commands. Host composition supplies the current `ConfigStore` to `StoredProviderCredentialResolver`;
+it revalidates one retained tenant/connection/account/environment under the configuration lease before
+reading the scoped vault. Owned, ambiguous or dangling selections never fall back. Entirely legacy
+families retain their prior policy. Host selection requires provider reconstruction; credential editing
+does not hot-activate a running collector. See [credential operations](../../docs/operators/provider-credentials.md#explicit-connection-ownership-and-host-selection).
+Legacy setup refuses a retained runtime binding even when its connection or ownership marker is
+missing. `LegacyProviderRuntimeCredentialStore` guards runtimes that do not yet carry trusted
+tenant/connection identity: every vault read and mutation requires readable configuration and an
+entirely legacy provider family under the configuration lease. Owned families remain unavailable to
+these runtimes until tenant-aware selection is implemented; the guard does not choose another owner.
+Atomic legacy sidecar import validates the complete batch under one configuration lease before vault
+mutation. The shared legacy-runtime DI key makes IB Flex remote retrieval opt in to this guard;
+hosts without an authoritative configuration or credential-store service retain file import only.
 
 `SecurityMasterOperationalReadinessService` consumes the asset-pack registry for all class-specific
 readiness metadata. It publishes every catalog class and keeps catalog-derived fallback profiles
@@ -33,6 +52,8 @@ AtMaturity, and resolves only the declaring block's calendars. The prototype is 
 fallback; both factories retain their separate refusal and calendar tests. See the
 [contractual schedule rollout](../../docs/domain/contractual-schedule.md#future-expansion-notes)
 for the declared engine and remaining 5b work.
+Cash-flow service composition retains its exact six-argument and calendar-aware seven-argument
+CLR constructors alongside the extended policy and calculation-receipt composition paths.
 
 Freshness monitoring begins with live ingress or collector subscription attempts, not configured symbols in an idle workstation. An unused UI monitor does not publish empty snapshots over an active collector's process-wide metrics. Internal reconciliation retains observed `tradeFill.price` only for the single-currency share movement, never a commission leg or a price inferred from fee-inclusive net cash.
 
@@ -286,11 +307,12 @@ stored under its case-sensitive scope key stay reachable. New connections retain
 credential environment (for example QuickBooks `live` is kept as `production`). Existing environments
 remain exact ownership identities: an update that would change a retained alias is refused until an
 explicit configuration-and-vault migration can preserve any OAuth tokens stored under that scope. Shared
-configuration and API DTOs preserve the fields on reload. Default runtime ownership propagation and
-remaining whole-configuration snapshot callers still require integration; external editors do not honor the sidecar transaction.
+configuration and API DTOs preserve the fields on reload. Explicit host defaults now propagate
+ownership through the ConfigStore-bound resolver. Remaining whole-configuration snapshot callers
+still require integration; external editors do not honor the sidecar transaction.
 
 `StoredProviderCredentialResolver` uses the credential store as the complete authority for catalog-managed
-providers, including the store's permitted environment fallback. Missing records remain unconfigured;
+providers; only entirely legacy provider families retain the store's permitted environment fallback. Missing records remain unconfigured;
 partial or deliberately removed fields cannot be filled from legacy configuration or another credential
 source. Unmanaged provider types retain their legacy resolver. Storage failures propagate to callers.
 
@@ -298,9 +320,10 @@ The scope-bound `StoredProviderCredentialResolver` constructor accepts an `IScop
 and trusted `ProviderCredentialScope`. It resolves only that tenant, connection, external account and
 environment, rejects unmanaged and non-catalog provider types, and never falls back to provider-wide
 records or config.
-The scoped store registration aliases the existing vault instance. Default host construction and the
-legacy setup route still use provider-wide resolution until authorized scope is propagated by callers;
-this constructor alone does not establish end-to-end tenant isolation.
+The scoped store registration aliases the existing vault instance. Default host construction uses
+the ConfigStore-bound resolver to propagate the explicitly selected retained scope. The legacy setup
+mutation route is restricted to unowned provider families. An owned family without a valid host
+binding blocks; supplying the scoped constructor alone does not create ownership or authorize a caller.
 
 `OAuthTokenRefreshService` also accepts trusted `ownershipScope`. Scoped instances load and persist
 only that owner's OAuth tokens, including refresh responses and cache recovery after audit failure,
@@ -397,6 +420,8 @@ DI-resolved posture permits unattributed process work. Strict hosts log that the
 withheld, including when a host supplies a later instance/factory override. Strict operation still
 requires per-loan tenant authority before those workers can be enabled.
 
+Bond cash-flow context overloads resolve retained terms once, honor forward-curve recorded cutoffs, and retain content-addressed calculation receipts under `bonds/calculations`. Replay reloads immutable inputs and checks calendar hashes rather than substituting current terms. Storage composition shares the durable bond-cutover policy with calculation and accounting orchestration; the ledger composition preserves independent approval and replay. See [bond expansion](../../docs/engineering/plans/bond-capability-expansion.md).
+
 ## Purpose
 
 Provider-integration REST composition uses `ProviderIntegrationHttpClientTransport.CreateHttpClient`
@@ -474,8 +499,9 @@ Core workstation host. Do not introduce a second listener or independent monitor
   owed audit record is journaled in the vault's `provider-credentials.audit.pending.jsonl` for replay by
   `ProviderCredentialAuditReplayHostedService` at startup or by the next vault mutation. Disposal never
   rewrites a cached token snapshot. Production postures fail closed off Windows (ADR-019 platform guard),
-  so the non-Windows local key file is a scope-out rather than an open PRD-002 clause; browser, WPF,
-  setup and default-runtime credential ownership remain open PRD-002 requirements.
+  so the non-Windows local key file is a scope-out rather than an open PRD-002 clause. Owned setup
+  and runtime-binding API paths are implemented; browser/WPF ownership-management flows and installed
+  end-to-end acceptance remain open PRD-002 requirements.
   Provider plugin assembly loading and `DataSourceRegistry` discovery now live in
   ProviderSdk; Application and WPF consume the loader instead of keeping reflection-based provider
   discovery in Application services. Default provider setup handlers are registered through one

@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Actual365 short first coupon",
+    "dayCount": "ACT/365F",
+    "issue": "2025-12-01",
+    "maturity": "2027-01-01",
+    "firstRegular": "2026-01-01",
+    "firstCoupon": 0.421195652174,
+    "zeroYieldDirty": 105.421195652174,
+    "formula": "Per 100 face: 5% / 2 * 31 actual days / 184 reference days; plus two regular coupons of 2.5 and principal 100."
+  },
+  {
+    "name": "ICMA short first coupon",
+    "dayCount": "ACT/ACT ICMA",
+    "issue": "2025-12-01",
+    "maturity": "2027-01-01",
+    "firstRegular": "2026-01-01",
+    "firstCoupon": 0.421195652174,
+    "zeroYieldDirty": 105.421195652174,
+    "formula": "Per 100 face: 5% / 2 * 31 / 184 using the Jul 1-Jan 1 reference period; plus 5 regular coupon cash and 100 principal."
+  }
+]

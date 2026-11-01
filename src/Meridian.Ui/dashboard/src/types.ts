@@ -30,3 +30,9 @@ export * from "./types/workstation-corporate-actions";
 
 export * from "./types/factor-paydown";
 export * from "./types/asset-accounting-workflow";
+export * from "./types/bond-analytics.types";
+export * from "./types/bond-migration.types";
+export * from "./types/bond-cutover.types";
+export * from "./types/bond-reference.types";
+export * from "./types/contractual-cash-flow.types";
+export * from "./types/provider-ownership.types";

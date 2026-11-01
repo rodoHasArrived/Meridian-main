@@ -6,10 +6,23 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-30
+last_reviewed: 2026-10-31
 ---
 
 # src/Meridian.Storage
+
+Governed short opening/cover now binds explicit direction to the authoritative Short/Liability
+position and liability carrying account. Opening debits cash and credits retained proceeds;
+cover debits relieved proceeds, credits execution cash cost, and books the exact realized result.
+`ShortLotJournalProjector` defines the complete supported shape; extra/inverted lines, missing
+cover prices, cross-direction selections and direct short saves refuse. Atomic publication,
+period locks, effective relief policy, version checks and exact restart replay remain mandatory.
+Short corporate actions and short-sale tax character require separate authority; the existing tax
+history projector continues to refuse an inferred opening-age character.
+
+V3 remaining-face amortization verifies each immutable paydown receipt before walking prior
+partial-disposal/amortization history. The current/booked factor scales surviving face once;
+booked durable quantity and acquisition FX stay retained. V1/v2 keep the historical paydown gate.
 
 Security Master projection writes validate dated economic schedules through Contracts-owned
 `SecurityEconomicScheduleParser` before mutation. Invalid schedules raise source/row diagnostics
@@ -192,10 +205,9 @@ See [the posting contract](../../docs/reference/ledger-journal-store.md#acquisit
 
 Atomic lot commands bind explicit direction to their immutable acquisition facts. Historical
 `Long` remains absent from fingerprints; exact receipt replay still precedes new-write admission.
-New short commands and direct short saves are refused, and new long acquisitions require an asset
-carrying account. Backfill review/application require a Long or Asset book position. Current
-disposal and tax-history projection also refuse short direction, preventing asset-credit or
-opening-age tax rules from silently certifying a short cover.
+Short opening/cover requires a matching liability position/account and certified journal shape.
+Direct short saves remain refused; new long acquisitions require an asset carrying account.
+Legacy backfill still requires Long/Asset scope. Tax-history projection refuses inferred short-sale character.
 
 Security Master migration `040_security_master_governance_events.sql` adds the append-only
 `security_governance_events` log (streams `OperatorOverrides`, `Aliases`, `ProjectionRebuild`);
@@ -698,9 +710,8 @@ difference is non-zero; journal-only append refuses the instruction. `Historical
 dates the factor from `lot_snapshot_after.currentFactor`, so an as-of read before the paydown
 returns the booked factor and full face, and a corporate-action successor inherits and may later
 pay down the factor it was born with. Later disposals relieve the reduced basis. A paid-down lot
-is not amortized: `OpenLotAmortization.Project` refuses an expected lot that holds a
-`CurrentFactor`, and the amortization basis-history guard refuses a lot whose latest adjustment is
-a `FactorPaydown`, so its premium or discount is realized through paydowns and disposal. Focused proof:
+requires explicit v3 remaining-face policy before amortization. V1/v2 refuse `CurrentFactor`
+and a latest `FactorPaydown` adjustment; their premium/discount remains realized through paydowns and disposal. Focused proof:
 `AtomicTaxLotJournalStoreTests.FactorPaydown`, `AtomicTaxLotJournalStoreTests.FactorPaydownPublication`,
 `AtomicTaxLotSuccessorMigrationTests.FactorPaydown`, `OpenLotFactorPaydownTests`.
 

@@ -39,6 +39,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
     private readonly ISecurityMasterRuntimeStatus _securityMasterRuntimeStatus;
     private readonly WpfServices.ISecurityMasterOperatorWorkflowClient _workflowClient;
     private readonly WpfServices.IWorkstationSecurityMasterApiClient _workstationSecurityMasterApiClient;
+    private readonly WpfServices.IWorkstationContractualCashFlowApiClient? _cashFlowClient;
     private readonly WpfServices.FundContextService _fundContextService;
     private readonly WpfServices.NavigationService _navigationService;
     private readonly ISmQueryService _queryService;
@@ -610,6 +611,9 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
     /// different security, a refreshed version, or an in-flight write from a prior security can never bleed in.
     /// </summary>
     private SecurityPassportEditorViewModel _passportEditor;
+    /// <summary>Issuer and maturity ladders over the bounded keyset routes (web-UI parity).</summary>
+    public SecurityMaster.BondReferenceLadderViewModel ReferenceLadders { get; }
+
     public SecurityPassportEditorViewModel PassportEditor
     {
         get => _passportEditor;
@@ -1538,9 +1542,11 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         WpfServices.NavigationService navigationService,
         ISmQueryService queryService,
         ISmService service,
-        WpfServices.DesktopAuthenticationSession? authenticationSession = null)
+        WpfServices.DesktopAuthenticationSession? authenticationSession = null,
+        WpfServices.IWorkstationContractualCashFlowApiClient? cashFlowClient = null)
     {
         _loggingService = loggingService;
+        _cashFlowClient = cashFlowClient;
         _notificationService = notificationService;
         _backfillService = backfillService;
         _importService = importService;
@@ -1561,7 +1567,8 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         }
         _hasPolygonApiKey = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("POLYGON_API_KEY"));
 
-        _passportEditor = new SecurityPassportEditorViewModel(_workstationSecurityMasterApiClient);
+        _passportEditor = new SecurityPassportEditorViewModel(_workstationSecurityMasterApiClient, _cashFlowClient);
+        ReferenceLadders = new SecurityMaster.BondReferenceLadderViewModel(_workstationSecurityMasterApiClient);
 
         CreateNewCommand = new RelayCommand(OnCreateNew, () => CanModifySecurityMaster);
         EditSelectedCommand = new RelayCommand(OnEditSelected, () => HasSelectedSecurity && CanModifySecurityMaster);
@@ -1872,7 +1879,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             && !PassportEditor.IsBusy;
         if (!preserveInProgressWork)
         {
-            PassportEditor = new SecurityPassportEditorViewModel(_workstationSecurityMasterApiClient)
+            PassportEditor = new SecurityPassportEditorViewModel(_workstationSecurityMasterApiClient, _cashFlowClient)
             {
                 Parameter = new SecurityPassportEditorParameter(
                     SecurityId: economic.SecurityId,

@@ -11,7 +11,19 @@ public sealed record ProviderConnectionsConfig(
     ProviderPolicyConfig[]? Policies = null,
     ProviderPresetConfig[]? Presets = null,
     ProviderCertificationConfig[]? Certifications = null
-);
+)
+{
+    /// <summary>Explicit host defaults. Each identity is revalidated against retained connection ownership.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public ProviderRuntimeCredentialBinding[]? RuntimeCredentials { get; init; }
+
+    /// <summary>Retains the ownership boundary after deletion; removing a connection cannot restore legacy fallback.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string[]? OwnershipRequiredProviders { get; init; }
+}
+
+/// <summary>A host-selected provider connection; never a credential value or provider-wide fallback.</summary>
+public sealed record ProviderRuntimeCredentialBinding(string ProviderId, string TenantId, string ConnectionId);
 
 /// <summary>
 /// One credentialed provider relationship.

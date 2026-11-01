@@ -9,7 +9,9 @@ using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Contracts.CashFlows;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.ViewModels.SecurityMaster;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -22,10 +24,13 @@ namespace Meridian.Wpf.ViewModels;
 public sealed partial class SecurityPassportEditorViewModel : BindableBase
 {
     private readonly IWorkstationSecurityMasterApiClient _client;
+    private readonly IWorkstationContractualCashFlowApiClient? _cashFlowClient;
+    private CashFlows.ContractualCashFlowScenarioViewModel? _cashFlowScenarios;
 
-    public SecurityPassportEditorViewModel(IWorkstationSecurityMasterApiClient client)
+    public SecurityPassportEditorViewModel(IWorkstationSecurityMasterApiClient client, IWorkstationContractualCashFlowApiClient? cashFlowClient = null)
     {
         _client = client ?? throw new ArgumentNullException(nameof(client));
+        _cashFlowClient = cashFlowClient;
     }
 
     /// <summary>
@@ -68,8 +73,48 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
             ? string.Empty
             : $"Editing {(string.IsNullOrWhiteSpace(Symbol) ? SecurityId.ToString("D") : Symbol)} at v{Version}.";
 
+        // Bond and CD passports get the same calculated analytics and convention-migration review the
+        // browser Evidence tab offers, over the shared contracts; other asset classes show nothing.
+        var carriesBondCoupon = SecurityId != Guid.Empty
+            && SecurityAssetClassCatalog.GetOrDefault(AssetClass).CarriesBondCouponStructure;
+        BondAnalytics = carriesBondCoupon ? new BondAnalyticsViewModel(_client, SecurityId, Version) : null;
+        BondMigration = carriesBondCoupon ? new BondMigrationPreviewViewModel(_client, SecurityId, Version) : null;
+        // Every security may be projected; the server resolves the contract or returns blockers.
+        CashFlowScenarios = _cashFlowClient is not null && SecurityId != Guid.Empty
+            ? new CashFlows.ContractualCashFlowScenarioViewModel(_cashFlowClient, ContractualCashFlowSubjectKinds.Security, SecurityId,
+                string.IsNullOrWhiteSpace(Symbol) ? SecurityId.ToString("D") : Symbol)
+            : null;
+
         _ = LoadSchemaAsync(AssetClass);
     }
+
+    private BondAnalyticsViewModel? _bondAnalytics;
+    private BondMigrationPreviewViewModel? _bondMigration;
+
+    /// <summary>Calculated bond analytics for Bond/CD passports; null for every other asset class.</summary>
+    public BondAnalyticsViewModel? BondAnalytics
+    {
+        get => _bondAnalytics;
+        private set { if (SetProperty(ref _bondAnalytics, value)) OnPropertyChanged(nameof(HasBondTools)); }
+    }
+
+    /// <summary>Hash-bound convention migration preview for Bond/CD passports; null otherwise.</summary>
+    public BondMigrationPreviewViewModel? BondMigration
+    {
+        get => _bondMigration;
+        private set { if (SetProperty(ref _bondMigration, value)) OnPropertyChanged(nameof(HasBondTools)); }
+    }
+
+    public bool HasBondTools => BondAnalytics is not null;
+
+    /// <summary>Cash-flow scenario workbench (web-UI parity); null when the host registers no cash-flow client.</summary>
+    public CashFlows.ContractualCashFlowScenarioViewModel? CashFlowScenarios
+    {
+        get => _cashFlowScenarios;
+        private set { if (SetProperty(ref _cashFlowScenarios, value)) OnPropertyChanged(nameof(HasCashFlowScenarios)); }
+    }
+
+    public bool HasCashFlowScenarios => CashFlowScenarios is not null;
 
     private CancellationTokenSource? _schemaLoad;
 

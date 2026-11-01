@@ -8,6 +8,7 @@ import { deleteProviderCredentials, getProviderConnections, getProviderRoutingCo
 import { credentialOwnershipKey, ownedCredentialConnections } from "@/lib/provider-credential-scope";
 import type { ProviderConnectionRow, ProviderRoutingConnection, SessionInfo } from "@/types";
 import type { SettingsProviderConnectionRow } from "./settings-screen.view-model";
+import { ProviderOwnershipPanel } from "./settings-provider-ownership-panel";
 
 interface Editor {
   connectionId: string;
@@ -172,5 +173,6 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
     <div role="status" aria-live="polite" className="text-xs text-muted-foreground">{editor.busy ? "Loading selected connection…" : editor.message}</div>
     <div className="text-xs text-muted-foreground" aria-label={`${row.displayName} readiness checks`}>Readiness checks. Provider overview: <span>Verification freshness: {row.freshnessStatus === "delayed" ? "Delayed" : row.freshnessStatus === "stale" ? "Stale" : row.freshnessStatus === "current" ? "Current" : "Not reported"}</span>. Selected connection: {editor.status ? `${editor.status.credentialState} · ${editor.status.verificationState}` : "Select a current owned connection; provider-wide readiness does not authorize credential changes."}</div>
     <p className="text-xs text-muted-foreground">Impact summary: {row.affectedWorkflowsLabel}. Changes apply only to the selected retained connection.</p>
+    {sessionIdentity ? <ProviderOwnershipPanel providerId={row.providerId} displayName={row.displayName} connection={selected ?? null} onChanged={async () => { await loadConnections(); await onRefresh?.(); }} /> : null}
   </section>;
 }

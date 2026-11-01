@@ -3358,11 +3358,10 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                 var quantity = snapshotLot.Lot.Quantity;
                 var price = snapshotLot.Lot.EntryPrice;
                 var position = ResolveSnapshotPosition(latestSnapshot, snapshotLot);
-                var impliedMarketPrice = TryResolveImpliedMarketPrice(position);
                 // IsShort is additive and therefore false when an older persisted snapshot did
                 // not contain the field. Recover direction from the account-scoped signed
                 // position so legacy short lots cannot be presented with inverted economics.
-                var isShort = snapshotLot.Lot.IsShort || (position?.Quantity ?? 0) < 0;
+                var (isShort, unrealizedPnl) = SecurityMasterSnapshotLotEconomics.Project(snapshotLot.Lot, position);
                 var costBasis = snapshotLot.Lot.CostBasis();
                 var accountScopeId = snapshotLot.AccountId
                     ?? snapshotLot.Lot.AccountId
@@ -3393,11 +3392,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                     FactorAdjustedFace: factorAdjustedFace,
                     CostBasis: costBasis,
                     EntryPrice: price,
-                    UnrealizedPnl: impliedMarketPrice.HasValue
-                        ? isShort
-                            ? costBasis - (quantity * impliedMarketPrice.Value)
-                            : (quantity * impliedMarketPrice.Value) - costBasis
-                        : null,
+                    UnrealizedPnl: unrealizedPnl,
                     Currency: detail.Currency,
                     LotStatus: "Open",
                     SourceSystem: "strategy-run-snapshot",
@@ -4666,16 +4661,6 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         }
 
         return lots;
-    }
-
-    private static decimal? TryResolveImpliedMarketPrice(Position? position)
-    {
-        if (position is null || position.Quantity == 0)
-        {
-            return null;
-        }
-
-        return position.AverageCostBasis + (position.UnrealizedPnl / position.Quantity);
     }
 
     private static Position? ResolveSnapshotPosition(

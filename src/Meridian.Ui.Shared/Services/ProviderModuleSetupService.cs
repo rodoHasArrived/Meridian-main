@@ -3,6 +3,7 @@ using Meridian.Core.Config;
 using Meridian.Core.Contracts;
 using Meridian.Infrastructure.Adapters.Core;
 using Microsoft.Extensions.Logging;
+using ProviderCredentialOwnershipRequiredException = Meridian.DataIntegration.Credentials.ProviderCredentialOwnershipRequiredException;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -34,7 +35,7 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
 
     public async Task<IReadOnlyList<ProviderModuleStatusDto>> GetConfiguredModulesAsync(CancellationToken ct = default)
     {
-        var cfg = _configStore.Load();
+        var cfg = new Meridian.Application.UI.ConfigStore(_configStore.ConfigPath).LoadRequired();
         var configuredModules = cfg.ProviderModules?.Modules ?? new Dictionary<string, ProviderModuleSettings>();
         var result = new List<ProviderModuleStatusDto>();
 
@@ -42,7 +43,18 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
         {
             var module = CreateModuleById(moduleId);
 
-            var storedRecord = await _credentialStore.ReadCredentialRecordAsync(moduleId, ct).ConfigureAwait(false);
+            IReadOnlyDictionary<string, string>? storedRecord;
+            string? credentialFailure = null;
+            try
+            {
+                storedRecord = await _credentialStore.ReadCredentialRecordAsync(moduleId, ct).ConfigureAwait(false);
+            }
+            catch (ProviderCredentialOwnershipRequiredException error)
+            {
+                // An unavailable owned record is authoritative and cannot borrow environment values.
+                storedRecord = new Dictionary<string, string>();
+                credentialFailure = error.Message;
+            }
             var storedKeys = (storedRecord ?? new Dictionary<string, string>())
                 .Where(pair => !string.IsNullOrWhiteSpace(pair.Value))
                 .Select(pair => pair.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -76,7 +88,8 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
                 IsConfigured: true,
                 IsRunning: isRunning,
                 CredentialStatus: credStatus,
-                CapabilityNames: module?.Capabilities.SelectMany(GetCapabilityNames).Distinct().ToList() ?? []));
+                CapabilityNames: module?.Capabilities.SelectMany(GetCapabilityNames).Distinct().ToList() ?? [],
+                LastTestResult: credentialFailure));
         }
 
         return result;
@@ -258,7 +271,15 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
         if (module is null)
             return new ProviderModuleTestResult(false, false, false, $"Module '{moduleId}' not found");
 
-        var storedCreds = await _credentialStore.ReadCredentialRecordAsync(moduleId, ct).ConfigureAwait(false);
+        IReadOnlyDictionary<string, string>? storedCreds;
+        try
+        {
+            storedCreds = await _credentialStore.ReadCredentialRecordAsync(moduleId, ct).ConfigureAwait(false);
+        }
+        catch (ProviderCredentialOwnershipRequiredException error)
+        {
+            return new ProviderModuleTestResult(false, false, false, error.Message);
+        }
 
         // Select a whole retained record or an environment-mapped record, matching
         // BuildModuleContexts. A partial or empty selected record remains authoritative.

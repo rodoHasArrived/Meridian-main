@@ -1,5 +1,6 @@
 using System.Globalization;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.FixedIncome;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.SecurityMaster.Valuation;
@@ -16,7 +17,7 @@ namespace Meridian.Application.SecurityMaster.Valuation;
 public sealed class DiscountedCashFlowValuationModel : ISecurityValuationModel
 {
     public const string Key = "discounted-cash-flow";
-    public const string Version = "v1";
+    public const string Version = "v2";
     public const string DiscountRole = "Discount";
 
     private const string FlatForwardRateSource = "flatForward:lastFixing";
@@ -25,15 +26,18 @@ public sealed class DiscountedCashFlowValuationModel : ISecurityValuationModel
     private readonly ISecurityMasterCashFlowService _cashFlows;
     private readonly ISecurityCurveStore _curves;
     private readonly ILogger<DiscountedCashFlowValuationModel> _logger;
+    private readonly IBondCalculationPolicy? _bondPolicy;
 
     public DiscountedCashFlowValuationModel(
         ISecurityMasterCashFlowService cashFlows,
         ISecurityCurveStore curves,
-        ILogger<DiscountedCashFlowValuationModel> logger)
+        ILogger<DiscountedCashFlowValuationModel> logger,
+        IBondCalculationPolicy? bondPolicy = null)
     {
         _cashFlows = cashFlows ?? throw new ArgumentNullException(nameof(cashFlows));
         _curves = curves ?? throw new ArgumentNullException(nameof(curves));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _bondPolicy = bondPolicy;
     }
 
     public SecurityValuationModelKind Kind => SecurityValuationModelKind.DiscountedCashFlow;
@@ -55,6 +59,12 @@ public sealed class DiscountedCashFlowValuationModel : ISecurityValuationModel
         SecurityValuationResult Blocked()
             => SecurityValuationResult.Blocked(request, security, Kind, Key, Version, knowledgeAsOf, blockers, inputs, diagnostics);
 
+        if (_bondPolicy is not null && await _bondPolicy.GetBlockerAsync(security, ct).ConfigureAwait(false) is { } policyReason)
+        {
+            blockers.Add(new SecurityValuationBlockerDto("BondCutoverBlocked", policyReason));
+            return Blocked();
+        }
+
         // 1. The discount curve: pinned on the request, or the one definition in the security's currency.
         var discount = await ResolveDiscountCurveAsync(request, security, asOfDate, blockers, ct).ConfigureAwait(false);
         if (blockers.Count > 0 || discount is null)
@@ -73,7 +83,11 @@ public sealed class DiscountedCashFlowValuationModel : ISecurityValuationModel
             version.RecordedAt));
 
         // 2. The projection as of the valuation date, under the base scenario only.
-        var projection = await _cashFlows.GetProjectionAsOfAsync(security.SecurityId, StructuredCashFlowScenario.Base, request.AsOf, ct).ConfigureAwait(false);
+        var forwardPins = (request.Curves ?? []).Where(input => input.Role?.Trim().StartsWith("Forward:", StringComparison.OrdinalIgnoreCase) == true
+                && input.CurveVersionId is not null)
+            .Select(input => new BondPinnedCurveInput(input.Role.Trim(), input.CurveId, input.CurveVersionId!.Value)).ToArray();
+        var context = new BondCalculationContext(request.AsOf, KnownAt: request.KnownAt, SecurityVersion: security.Version, Curves: forwardPins);
+        var projection = await _cashFlows.GetProjectionAsync(security, StructuredCashFlowScenario.Base, context, ct).ConfigureAwait(false);
         if (projection is null)
         {
             blockers.Add(new SecurityValuationBlockerDto("NoCashFlowSource", "No calculated cash-flow source is assigned to the security, or its flows are client-provided; nothing can be discounted."));
@@ -85,6 +99,10 @@ public sealed class DiscountedCashFlowValuationModel : ISecurityValuationModel
             blockers.Add(new SecurityValuationBlockerDto("ProjectionBlocked", reason));
             return Blocked();
         }
+
+        foreach (var input in (projection.InputManifest ?? []).Where(input => input.Kind is not ("ScheduleKernel" or "ScheduleMapping" or "BusinessDayCalendar")))
+            inputs.Add(new SecurityValuationInputDto(input.Kind, input.Key, input.VersionId, input.Version,
+                input.ContentSha256, input.AsOf, input.RecordedAt));
 
         // The ledger gate refuses to post from a stale or undated source; the valuation reports it.
         switch (projection.Staleness)
@@ -105,7 +123,8 @@ public sealed class DiscountedCashFlowValuationModel : ISecurityValuationModel
             return Blocked();
         }
 
-        inputs.Add(new SecurityValuationInputDto("SecurityTerms", security.Version.ToString(), security.SecurityId, security.Version));
+        if (!inputs.Any(input => input.Kind == "SecurityTerms"))
+            inputs.Add(new SecurityValuationInputDto("SecurityTerms", security.Version.ToString(), security.SecurityId, security.Version));
 
         // A schedule generated from declared conventions (ADR-025) also depends on the kernel, the
         // mapping and each calendar's content, which the terms version does not name; a date a calendar
@@ -287,6 +306,14 @@ public sealed class DiscountedCashFlowValuationModel : ISecurityValuationModel
         SecurityValuationCurveInput? pinned = null;
         foreach (var input in request.Curves ?? [])
         {
+            if (input.Role?.Trim().StartsWith("Forward:", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                var index = input.Role.Trim()["Forward:".Length..];
+                if (string.IsNullOrWhiteSpace(index) || input.CurveVersionId is null
+                    || !(StructuredCashFlowTermsResolver.Resolve(security).Legs ?? []).Any(leg => string.Equals(leg.IndexName?.Trim(), index, StringComparison.OrdinalIgnoreCase)))
+                    blockers.Add(new SecurityValuationBlockerDto("UnsupportedInput", "A forward pin must name a retained version and an index used by the security's floating legs."));
+                continue;
+            }
             if (!string.Equals(input.Role?.Trim(), DiscountRole, StringComparison.OrdinalIgnoreCase))
             {
                 blockers.Add(new SecurityValuationBlockerDto("UnsupportedInput", $"Curve role '{input.Role}' is not supported; forward curves reach the projection through the registered provider."));

@@ -113,9 +113,9 @@ public sealed partial class SecurityMasterCashFlowServiceTests
     }
 
     [Theory]
-    [InlineData("Short", 4.2134)]
-    [InlineData("Long", 4.2093)]
-    public async Task PrincipalConventions_LevelRegularWeightsAndStubDayCountKeepTheirDistinctRules(string stub, decimal totalInterest)
+    [InlineData("Short", 4.2116)]
+    [InlineData("Long", 4.2116)]
+    public async Task PrincipalConventions_LevelWeightsUseTheSameReferencePeriodsForBothStubPolicies(string stub, decimal totalInterest)
     {
         var projection = await ProjectPrincipalConventionsAsync(new
         {
@@ -141,6 +141,8 @@ public sealed partial class SecurityMasterCashFlowServiceTests
         }, new DateOnly(2026, 1, 1));
         projection.BlockedReason.Should().BeNull();
         projection.Schedule.First(row => row.InterestAmount > 0m).InterestAmount.Should().Be(2.4833m);
+        // Jan-Apr weighted coupon 2.4833 + full Apr-Jul coupon 1.5 + 14/92 of 1.5
+        // before the July 15 principal payment = 4.2116 under either reference-period stub layout.
         projection.Schedule.Sum(row => row.InterestAmount).Should().Be(totalInterest);
         projection.Schedule.Sum(row => row.PrincipalAmount).Should().Be(100m);
         projection.Schedule.Last().PrincipalAmount.Should().Be(0m);

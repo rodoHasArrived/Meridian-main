@@ -1,4 +1,5 @@
 using Meridian.Contracts.Api;
+using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
@@ -57,6 +58,26 @@ public interface IWorkstationSecurityMasterApiClient
     /// </summary>
     Task<SecurityAssetClassDefinitionDto?> GetAssetClassDefinitionAsync(string assetClass, CancellationToken ct = default)
         => Task.FromResult<SecurityAssetClassDefinitionDto?>(null);
+
+    // ── Bond analytics and convention migration (shared-contract parity with the browser panels) ──
+    // Read-only, explicitly dated analysis over retained terms; no result grants posting authority.
+
+    Task<ApiResponse<BondAnalyticsResult>> GetBondAnalyticsAsync(BondAnalyticsRequest request, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<BondAnalyticsResult>.Fail("Bond analytics is unavailable in this host.", 501));
+
+    /// <summary>Hash-bound economic preview; staging goes through the ordinary Security Master draft workflow.</summary>
+    Task<ApiResponse<BondMigrationPreviewDto>> PreviewBondMigrationAsync(BondMigrationPreviewRequest request, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<BondMigrationPreviewDto>.Fail("Bond migration preview is unavailable in this host.", 501));
+
+    Task<ApiResponse<SecurityMasterEditResultDto>> StageBondMigrationAsync(BondMigrationSubmitRequest request, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<SecurityMasterEditResultDto>.Fail("Bond migration staging is unavailable in this host.", 501));
+
+    /// <summary>Bounded keyset page of one issuer's bonds; the cursor is opaque and bound to its query.</summary>
+    Task<ApiResponse<BondReferencePageDto>> GetBondIssuerLadderPageAsync(string issuerName, int pageSize, string? cursor, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<BondReferencePageDto>.Fail("Bond reference paging is unavailable in this host.", 501));
+
+    Task<ApiResponse<BondReferencePageDto>> GetBondMaturityLadderPageAsync(DateOnly from, DateOnly to, int pageSize, string? cursor, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<BondReferencePageDto>.Fail("Bond reference paging is unavailable in this host.", 501));
 }
 
 /// <summary>
@@ -153,6 +174,50 @@ public sealed class WorkstationSecurityMasterApiClient : IWorkstationSecurityMas
             "{assetClass}", Uri.EscapeDataString(assetClass.Trim()), StringComparison.Ordinal);
         return (await _apiClient.GetWithResponseAsync<SecurityAssetClassDefinitionDto>(endpoint, ct).ConfigureAwait(false))
             .DataOrLoggedNull("Get asset-class definition");
+    }
+
+    public Task<ApiResponse<BondAnalyticsResult>> GetBondAnalyticsAsync(BondAnalyticsRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var query = new List<string> { "asOf=" + Uri.EscapeDataString(request.Context.AsOf.ToString("O", CultureInfo.InvariantCulture)) };
+        if (request.Context.SettlementDate is { } settlement)
+            query.Add("settlementDate=" + settlement.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        if (request.Context.KnownAt is { } knownAt)
+            query.Add("knownAt=" + Uri.EscapeDataString(knownAt.ToString("O", CultureInfo.InvariantCulture)));
+        if (request.CleanPrice is { } price)
+            query.Add("cleanPrice=" + price.ToString(CultureInfo.InvariantCulture));
+        if (request.Yield is { } yield)
+            query.Add("yield=" + yield.ToString(CultureInfo.InvariantCulture));
+        if (request.YieldConvention is { } convention)
+            query.Add("yieldConvention=" + convention);
+        return _apiClient.GetWithResponseAsync<BondAnalyticsResult>(
+            SecurityIdRoute(UiApiRoutes.ReferenceDataBondAnalytics, request.SecurityId) + "?" + string.Join("&", query), ct);
+    }
+
+    public Task<ApiResponse<BondMigrationPreviewDto>> PreviewBondMigrationAsync(BondMigrationPreviewRequest request, CancellationToken ct = default)
+        => _apiClient.PostWithResponseAsync<BondMigrationPreviewDto>(UiApiRoutes.ReferenceDataBondMigrationPreview, request, ct);
+
+    public Task<ApiResponse<SecurityMasterEditResultDto>> StageBondMigrationAsync(BondMigrationSubmitRequest request, CancellationToken ct = default)
+        => _apiClient.PostWithResponseAsync<SecurityMasterEditResultDto>(UiApiRoutes.ReferenceDataBondMigrationSubmit, request, ct);
+
+    public Task<ApiResponse<BondReferencePageDto>> GetBondIssuerLadderPageAsync(string issuerName, int pageSize, string? cursor, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(issuerName);
+        var query = new List<string> { "issuerName=" + Uri.EscapeDataString(issuerName.Trim()), "pageSize=" + pageSize.ToString(CultureInfo.InvariantCulture) };
+        if (!string.IsNullOrWhiteSpace(cursor)) query.Add("cursor=" + Uri.EscapeDataString(cursor));
+        return _apiClient.GetWithResponseAsync<BondReferencePageDto>(UiApiRoutes.ReferenceDataBondIssuerLadderPage + "?" + string.Join("&", query), ct);
+    }
+
+    public Task<ApiResponse<BondReferencePageDto>> GetBondMaturityLadderPageAsync(DateOnly from, DateOnly to, int pageSize, string? cursor, CancellationToken ct = default)
+    {
+        var query = new List<string>
+        {
+            "from=" + from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            "to=" + to.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            "pageSize=" + pageSize.ToString(CultureInfo.InvariantCulture)
+        };
+        if (!string.IsNullOrWhiteSpace(cursor)) query.Add("cursor=" + Uri.EscapeDataString(cursor));
+        return _apiClient.GetWithResponseAsync<BondReferencePageDto>(UiApiRoutes.ReferenceDataBondMaturityLadderPage + "?" + string.Join("&", query), ct);
     }
 
     private static string SecurityIdRoute(string routeTemplate, Guid securityId)

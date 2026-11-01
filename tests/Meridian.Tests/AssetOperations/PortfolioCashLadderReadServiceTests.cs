@@ -514,6 +514,58 @@ public sealed class PortfolioCashLadderReadServiceTests
             holdingsSource: holdings, cashBalanceProvider: cash ?? BuildCashBalanceProvider(), capitalScheduleProvider: capital);
     }
 
+    [Fact]
+    public async Task GetCashLadderAsync_ExplicitLegacyEngineVersion_ReplaysTheRetainedV1Engine()
+    {
+        var securityId = Guid.NewGuid();
+        var assetOperations = Substitute.For<IAssetOperationsQueryService>();
+        assetOperations.GetOperationsAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildDetail(securityId, "Replay Bond", couponAmount: 100m));
+        var holdings = Substitute.For<IPortfolioHoldingsSource>();
+        holdings.GetHoldingsAsync(Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
+            .Returns(new[] { new PortfolioHoldingDto(securityId, 1m) });
+        var service = new PortfolioCashLadderReadService(
+            assetOperationsQueryService: assetOperations,
+            holdingsSource: holdings,
+            cashBalanceProvider: BuildCashBalanceProvider());
+
+        var current = await service.GetCashLadderAsync(new PortfolioCashLadderQuery(HorizonDays: 30));
+        var legacy = await service.GetCashLadderAsync(new PortfolioCashLadderQuery(HorizonDays: 30,
+            EngineVersion: LegacyPortfolioCashLadderEngine.EngineVersion));
+
+        current.EngineVersion.Should().Be(PortfolioCashLadderEngine.EngineVersion);
+        legacy.EngineVersion.Should().Be(LegacyPortfolioCashLadderEngine.EngineVersion);
+        legacy.BlockingReasons.Should().NotContain(reason => reason.Contains("engine version"));
+        legacy.Contributions.Sum(static row => row.Amount).Should().Be(current.Contributions.Sum(static row => row.Amount));
+    }
+
+    [Fact]
+    public async Task GetCashLadderAsync_UnknownEngineVersion_RendersCurrentLadderButBlocksDecision()
+    {
+        var securityId = Guid.NewGuid();
+        var assetOperations = Substitute.For<IAssetOperationsQueryService>();
+        assetOperations.GetOperationsAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildDetail(securityId, "Replay Bond", couponAmount: 100m));
+        var holdings = Substitute.For<IPortfolioHoldingsSource>();
+        holdings.GetHoldingsAsync(Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
+            .Returns(new[] { new PortfolioHoldingDto(securityId, 1m) });
+        var service = new PortfolioCashLadderReadService(
+            assetOperationsQueryService: assetOperations,
+            holdingsSource: holdings,
+            cashBalanceProvider: BuildCashBalanceProvider());
+
+        var ladder = await service.GetCashLadderAsync(new PortfolioCashLadderQuery(HorizonDays: 30,
+            EngineVersion: "portfolio-cash-ladder-v9"));
+
+        ladder.EngineVersion.Should().Be(PortfolioCashLadderEngine.EngineVersion);
+        ladder.IsDecisionReady.Should().BeFalse();
+        ladder.BlockingReasons.Should().ContainSingle(reason => reason.Contains("portfolio-cash-ladder-v9")
+            && reason.Contains(LegacyPortfolioCashLadderEngine.EngineVersion));
+        // A blocked ladder carries no contributions: an unknown version never produces figures that
+        // could be mistaken for a retained engine's output.
+        ladder.Contributions.Should().BeEmpty();
+    }
+
     private static IPortfolioCashBalanceProvider BuildCashBalanceProvider()
     {
         var provider = Substitute.For<IPortfolioCashBalanceProvider>();

@@ -77,7 +77,8 @@ public enum DayCountConvention
 /// </remarks>
 public static class DayCountConventions
 {
-    private const decimal DaysPerYear365 = 365m;
+    /// <summary>Actual/365 Fixed year basis shared by discount-time, payment-lag and CPR survival arithmetic.</summary>
+    public const decimal DaysPerYear365 = 365m;
     private const decimal DaysPerYear360 = 360m;
     private const decimal DaysPerYear36525 = 365.25m;
     private const decimal BusinessDaysPerYear = 252m;

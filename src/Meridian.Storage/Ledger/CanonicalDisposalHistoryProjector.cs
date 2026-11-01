@@ -231,10 +231,8 @@ public static class CanonicalDisposalHistoryProjector
     {
         var assetAccount = disposal.Account;
         var financialAccountId = assetAccount.FinancialAccountId;
-        var gainAccount = string.IsNullOrWhiteSpace(financialAccountId)
-            ? LedgerAccounts.RealizedGain : LedgerAccounts.RealizedGainFor(financialAccountId);
-        var lossAccount = string.IsNullOrWhiteSpace(financialAccountId)
-            ? LedgerAccounts.RealizedLoss : LedgerAccounts.RealizedLossFor(financialAccountId);
+        var gainAccount = LedgerAccounts.RealizedGainOrDefault(financialAccountId);
+        var lossAccount = LedgerAccounts.RealizedLossOrDefault(financialAccountId);
         bool IsCash(LedgerEntry line) => IsDisposalCash(line, assetAccount, functionalCurrency);
         bool IsReplacementBasis(LedgerEntry line) => !IsCash(line) && line.Account != assetAccount &&
             line.Account.AccountType == LedgerAccountType.Asset && line.Credit == 0m && line.Debit > 0m;

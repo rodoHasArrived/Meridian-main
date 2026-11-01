@@ -20,6 +20,24 @@ internal static class EndpointHelpers
         => ApiProblemDetails.Forbidden(context);
 
     /// <summary>
+    /// The operator-facing reason from a domain refusal exception: the first message line with the
+    /// framework's " (Parameter 'name')" suffix removed. Callers map the exception type to a stable
+    /// response code; this supplies only the human text, never a stack or inner exception.
+    /// </summary>
+    internal static string RefusalDetail(Exception exception)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+        var message = exception.Message ?? string.Empty;
+        var newline = message.IndexOfAny(['\r', '\n']);
+        if (newline >= 0)
+            message = message[..newline];
+        var parameter = message.LastIndexOf(" (Parameter '", StringComparison.Ordinal);
+        if (parameter > 0 && message.EndsWith("')", StringComparison.Ordinal))
+            message = message[..parameter];
+        return string.IsNullOrWhiteSpace(message) ? "The request was refused." : message.Trim();
+    }
+
+    /// <summary>
     /// Handles a synchronous endpoint handler with service null-check and error handling.
     /// </summary>
     internal static IResult HandleSync<TService>(

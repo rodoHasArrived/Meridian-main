@@ -158,6 +158,30 @@ public sealed class AmortizationReversalPreviewTests
         await preview.Should().ThrowAsync<InvalidOperationException>().WithMessage("*retained original amortization mutation*");
     }
 
+    [Fact]
+    public async Task LiveCutoverBlocksNewAmortization_WhileRetainedReversalKeepsItsOriginalEconomics()
+    {
+        var fixture = new Fixture(premium: true);
+        var policy = Substitute.For<IBondCalculationPolicy>();
+        policy.GetBlockerAsync(Arg.Any<SecurityDetailDto>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<string?>(null));
+        var service = new CanonicalLotAmortizationService(fixture.Lots, fixture.Securities, fixture.Positions, policy);
+        var asOf = fixture.Inputs.AsOfDate.AddDays(1);
+
+        var allowed = await service.PreviewAsync(fixture.Before.LedgerBookId, fixture.After.TaxLotRecordId,
+            asOf, fixture.Inputs.SecurityEvidence);
+        allowed.Instruction.CalculationVersion.Should().Be(OpenLotAmortization.ModelVersion);
+        policy.GetBlockerAsync(Arg.Any<SecurityDetailDto>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<string?>("Bond cutover requires reviewed explicit conventions."));
+
+        await service.Invoking(value => value.PreviewAsync(fixture.Before.LedgerBookId, fixture.After.TaxLotRecordId,
+                asOf, fixture.Inputs.SecurityEvidence))
+            .Should().ThrowAsync<InvalidOperationException>().WithMessage("*cutover requires*");
+        var inverse = await service.PreviewReversalAsync(fixture.Before.LedgerBookId, fixture.BatchId);
+        inverse.Projection.TransactionMovement.Should().Be(-fixture.Forward.TransactionMovement);
+        await policy.Received(2).GetBlockerAsync(Arg.Any<SecurityDetailDto>(), Arg.Any<CancellationToken>());
+    }
+
     private sealed class Fixture
     {
         private static readonly DateTimeOffset RecordedAt = new(2026, 1, 2, 0, 0, 0, TimeSpan.Zero);

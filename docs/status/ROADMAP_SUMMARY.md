@@ -51,6 +51,7 @@ Snapshot date: 2026-10-30
 | W9-INGEST-009 | Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher | accepted | green | high | Accounting and Ledger |
 | W9-ASSET-010 | Asset Accounting Event Spine and atomic lot posting | done | green | critical | Accounting and Ledger |
 | W9-CORPACT-011 | Durable corporate action case processing and accounting projection | accepted | green | high | Accounting and Ledger |
+| W10-BOND-001 | Bond analytics, declared-schedule migration and contractual cash-flow projection | in_progress | green | medium | Accounting and Ledger |
 | W10-DEBT-001 | God-file burn-down against the file-size ratchet | planned | green | medium | Workstation Shell and UX |
 | W10-MARK-001 | Fail-closed stale-mark policy and mark-age surfacing | in_progress | green | high | Accounting and Ledger |
 | W10-RECON-001 | Durable break lineage identity and run-over-run break diff | in_progress | yellow | high | Accounting and Ledger |

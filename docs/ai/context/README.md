@@ -15,6 +15,9 @@ This directory contains compact Meridian Development Intelligence Framework cont
 
 Keep packs short and rule-oriented. Do not duplicate full architecture or product documents here; link to the canonical source when a task needs deeper context.
 
+Cash-flow scenario work also reads [Contractual Cash-Flow Projection](../../domain/contractual-cash-flow-projection.md)
+for calculation contracts, optionality, forecast assumptions, replay and nonpostability boundaries.
+
 The [current charter](../../product/meridian-design-document.md#227-strategy-and-order-management-direction)
 includes strategy formulation, order management, and governed execution alongside financial
 operations. Load the [strategy, order, and execution dictionary](../../domain/strategy-order-execution.md)

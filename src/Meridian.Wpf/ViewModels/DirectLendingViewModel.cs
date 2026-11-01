@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Contracts.CashFlows;
 using Meridian.Contracts.DirectLending;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
@@ -18,6 +19,7 @@ namespace Meridian.Wpf.ViewModels;
 public sealed class DirectLendingViewModel : BindableBase
 {
     private readonly ApiClientService _apiClient;
+    private readonly Services.IWorkstationContractualCashFlowApiClient _cashFlowClient;
     private readonly List<LoanSummaryDto> _allLoans = new();
     private InspectorPanelModel _selectedLoanInspector = BuildEmptyLoanInspector();
     private InspectorPanelModel _loanActionInspector = BuildLoanActionInspector(null, isDetailLoading: false, isPostingAccrual: false, string.Empty);
@@ -56,11 +58,25 @@ public sealed class DirectLendingViewModel : BindableBase
         {
             if (SetProperty(ref _selectedLoan, value))
             {
+                LoanScenarios = value is null
+                    ? null
+                    : new CashFlows.ContractualCashFlowScenarioViewModel(_cashFlowClient, ContractualCashFlowSubjectKinds.Loan, value.LoanId, value.FacilityName);
                 RaiseSelectedLoanStateChanged();
                 _ = LoadLoanDetailAsync(value);
             }
         }
     }
+
+    private CashFlows.ContractualCashFlowScenarioViewModel? _loanScenarios;
+
+    /// <summary>Cash-flow scenario workbench for the selected facility (web-UI parity with the loan book).</summary>
+    public CashFlows.ContractualCashFlowScenarioViewModel? LoanScenarios
+    {
+        get => _loanScenarios;
+        private set { if (SetProperty(ref _loanScenarios, value)) RaisePropertyChanged(nameof(HasLoanScenarios)); }
+    }
+
+    public bool HasLoanScenarios => LoanScenarios is not null;
 
     private LoanContractDetailDto? _selectedContract;
     public LoanContractDetailDto? SelectedContract
@@ -242,6 +258,7 @@ public sealed class DirectLendingViewModel : BindableBase
     internal DirectLendingViewModel(ApiClientService apiClient)
     {
         _apiClient = apiClient;
+        _cashFlowClient = new Services.WorkstationContractualCashFlowApiClient(_apiClient);
 
         LoansTable = new WorkstationTableModel<LoanSummaryDto>(
             Loans,

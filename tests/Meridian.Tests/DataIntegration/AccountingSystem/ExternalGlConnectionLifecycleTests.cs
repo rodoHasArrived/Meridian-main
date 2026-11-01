@@ -23,6 +23,8 @@ public sealed class ExternalGlConnectionLifecycleTests
         var root = Path.Combine(Path.GetTempPath(), "meridian-gl-verification", Guid.NewGuid().ToString("N"));
         try
         {
+            var config = new ConfigStore(Path.Combine(root, "config.json"));
+            await config.SaveAsync(new Meridian.Core.Config.AppConfig(DataRoot: root));
             var store = new FileProviderCredentialStore(root);
             var values = new ExternalGlTestStore(id).Values;
             var fields = ProviderCredentialCatalog.Find(id)!.RequiredFields.Where(field => field.Required)
@@ -35,7 +37,7 @@ public sealed class ExternalGlConnectionLifecycleTests
             using var client = new HttpClient(handler);
             CredentialedAccountingProvider provider = id == "xero"
                 ? new XeroAccountingProvider(store, client) : new NetSuiteAccountingProvider(store, client);
-            var lifecycle = new ProviderConnectionLifecycleService(store, new ConfigStore(Path.Combine(root, "config.json")),
+            var lifecycle = new ProviderConnectionLifecycleService(store, config,
                 NullLogger<ProviderConnectionLifecycleService>.Instance, accountingSystemProviders: [provider]);
             var result = await lifecycle.VerifyAsync(id, actor: "accounting-controller");
             result.Success.Should().Be(success);
@@ -70,6 +72,8 @@ public sealed class ExternalGlConnectionLifecycleTests
         var root = Path.Combine(Path.GetTempPath(), "meridian-gl-verification", Guid.NewGuid().ToString("N"));
         try
         {
+            var config = new ConfigStore(Path.Combine(root, "config.json"));
+            await config.SaveAsync(new Meridian.Core.Config.AppConfig(DataRoot: root));
             var store = new FileProviderCredentialStore(root);
             var values = new ExternalGlTestStore(id).Values;
             var fields = ProviderCredentialCatalog.Find(id)!.RequiredFields.Where(entry => entry.Required)
@@ -80,7 +84,7 @@ public sealed class ExternalGlConnectionLifecycleTests
             using var client = new HttpClient(handler);
             CredentialedAccountingProvider provider = id == "xero"
                 ? new XeroAccountingProvider(store, client) : new NetSuiteAccountingProvider(store, client);
-            var lifecycle = new ProviderConnectionLifecycleService(store, new ConfigStore(Path.Combine(root, "config.json")),
+            var lifecycle = new ProviderConnectionLifecycleService(store, config,
                 NullLogger<ProviderConnectionLifecycleService>.Instance, accountingSystemProviders: [provider]);
 
             var result = await lifecycle.VerifyAsync(id, actor: "accounting-controller");

@@ -3,6 +3,7 @@ using Meridian.Storage.Archival;
 using Meridian.Core.IO;
 using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
+using Meridian.Application.ProviderRouting;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Core.Logging;
 using Meridian.Application.Services;
@@ -27,9 +28,13 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
             var configService = sp.GetRequiredService<ConfigurationService>();
             var fallback = new ConfigurationServiceCredentialAdapter(configService);
             var credentialStore = sp.GetService<IProviderCredentialStore>();
-            return credentialStore is null
-                ? fallback
-                : new StoredProviderCredentialResolver(credentialStore, fallback);
+            var configStore = sp.GetRequiredService<ConfigStore>();
+            if (credentialStore is not null)
+                return new StoredProviderCredentialResolver(credentialStore, fallback, configStore);
+            var config = File.Exists(configStore.ConfigPath) ? configStore.LoadRequired() : configStore.Load();
+            if (ProviderOwnershipRules.AnyScopedOwnership(config.ProviderConnections))
+                throw new InvalidOperationException("Owned provider runtime credentials require a credential vault.");
+            return fallback;
         });
 
         var registrationConfig = new ConfigStore(options.ConfigPath).Load();

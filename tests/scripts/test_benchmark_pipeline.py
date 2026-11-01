@@ -282,7 +282,8 @@ class PipelineBenchmarkTests(unittest.TestCase):
             try:
                 stat = Path(f"/proc/{pid}/stat").read_text()
                 return stat.rsplit(") ", 1)[1].split()[0] not in ("Z", "X")
-            except FileNotFoundError:
+            except (FileNotFoundError, ProcessLookupError):
+                # The process can disappear after /proc opens but before the read completes.
                 return False
 
         try:

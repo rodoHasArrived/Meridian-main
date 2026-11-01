@@ -4,7 +4,7 @@
 **Owner:** core-team
 **Reviewed:** 2026-10-31
 
-Generated at: `2026-10-31T05:29:52Z`
+Generated at: `2026-10-31T05:46:15Z`
 
 ## Active Scope
 
@@ -85,6 +85,7 @@ Manual orders require explicit actor/account authority and retain their true ori
 - [Account oversight evidence](../../domain/account-oversight-evidence.md)
 - [Brokerage Account Snapshot](../../domain/brokerage-account-snapshot.md)
 - [Business-Day Calendar](../../domain/business-day-calendar.md)
+- [Contractual Cash-Flow Projection](../../domain/contractual-cash-flow-projection.md)
 - [Contractual Schedule](../../domain/contractual-schedule.md)
 - [Corporate Action Case](../../domain/corporate-action-case.md)
 - [Credit Support](../../domain/credit-support.md)

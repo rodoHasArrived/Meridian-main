@@ -254,13 +254,21 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
         return data;
     }
 
+    // These twins exercise the legacy F# schedule reader. Calculation companions have their own
+    // typed reader and retained-economic replay tests in ContractualCompanions.cs.
+    private static int HistoricalScheduleReadCeiling(string assetClass)
+        => SecurityAssetTermsSchema.Fields(assetClass)
+            .Concat(SecurityAssetTermsSchema.ElementFields(assetClass, "legs"))
+            .Where(field => field.Key is ScheduleConventionsKey or CallScheduleKey or PutScheduleKey)
+            .Select(field => field.SinceTermsVersion).DefaultIfEmpty(1).Max();
+
     // ── (a) Coverage ────────────────────────────────────────────────────────────────────────────
 
     [Fact]
     public void ReadableTwins_CoverExactlyTheHistoricalVersionsAboveTheDocumentFloor()
     {
         var readAhead = SecurityAssetClassCatalog.AssetClasses
-            .Where(static assetClass => SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass) > SecurityAssetClassCatalog.GetStampFloor(assetClass))
+            .Where(static assetClass => HistoricalScheduleReadCeiling(assetClass) > SecurityAssetClassCatalog.GetStampFloor(assetClass))
             .ToArray();
 
         ReadableTwinBlocks.Keys.Should().BeEquivalentTo(
@@ -271,7 +279,7 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
         var readableVersions = readAhead.SelectMany(assetClass => Enumerable
             .Range(
                 SecurityAssetClassCatalog.GetStampFloor(assetClass) + 1,
-                SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass) - SecurityAssetClassCatalog.GetStampFloor(assetClass))
+                HistoricalScheduleReadCeiling(assetClass) - SecurityAssetClassCatalog.GetStampFloor(assetClass))
             .Select(version => $"{assetClass} v{version}"));
         ReadableTwinBlocks.Keys
             .SelectMany(assetClass => ReadableTwinVersionsOf(assetClass).Select(version => $"{assetClass} v{version}"))
@@ -600,10 +608,11 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
     [InlineData("Swap", 2, 1, 2)]
     public void HistoricalReadableTwin_WriteUsesCurrentAuthorityAndSemanticRules(string assetClass, int version, int writes, int reads)
     {
+        HistoricalScheduleReadCeiling(assetClass).Should().Be(reads);
         var twin = ReadableTwin(assetClass, version);
         var expected =
             $"assetClassTermsVersion '{version}' for asset class '{assetClass}' is readable but not writable on this node: " +
-            $"it reads versions 1 through {reads} and writes version {writes}. " +
+            $"it reads versions 1 through {SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass)} and writes version {writes}. " +
             $"Submit the terms at version {writes}, or apply the change from a node that writes version {version}.";
 
         AssertCurrentWriteBoundary(assetClass, twin, expected);
@@ -651,7 +660,7 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
     {
         var create = () => SecurityMasterMapping.ToCreateCommand(CreateRequest(assetClass, terms));
         var amend = () => SecurityMasterMapping.ToAmendCommand(AmendRequest(terms), CurrentProjection(assetClass));
-        if (SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion < SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass))
+        if (SecurityAssetClassCatalog.GetTermsVersion(assetClass) < HistoricalScheduleReadCeiling(assetClass))
         {
             create.Should().Throw<InvalidOperationException>().WithMessage(oldReadOnlyReason);
             amend.Should().Throw<InvalidOperationException>().WithMessage(oldReadOnlyReason);

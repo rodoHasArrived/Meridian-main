@@ -11,6 +11,11 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Ledger
 
+`ShortLotJournalProjector` owns book accounting for governed short opening and cover. Quantities
+and retained proceeds stay positive; direction selects liability accounting. A cover relieves
+opening proceeds against cash execution cost and recognizes the difference as book gain/loss.
+It does not infer short-sale tax character or manufacture corporate-action payments.
+
 Cash-flow reversal remaps accepted retained attribution tags case-insensitively, matching the attribution reader after serialization and line reordering. Unsupported or incomplete attribution still blocks reporting.
 
 

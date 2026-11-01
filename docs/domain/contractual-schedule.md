@@ -204,3 +204,10 @@ These references identify the implementation and its regression scope. The pull 
 actual validation results.
 
 
+
+## Contractual projection extension
+
+The [calculation-only contractual companion](contractual-cash-flow-projection.md) extends exercise,
+notice, make-whole, structured coupon/principal, per-leg conventions and deterministic prepayment
+scenarios under its own mapping/engine version. Existing declared mapping v1 and ledger gates are
+unchanged; the new companion is readable before writable.

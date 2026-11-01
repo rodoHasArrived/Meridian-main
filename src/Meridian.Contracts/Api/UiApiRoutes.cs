@@ -116,6 +116,12 @@ public static class UiApiRoutes
     public const string ProviderHealth = "/api/providers/health";
     public const string ProviderReadiness = "/api/providers/readiness";
     public const string ProviderRoutingConnections = "/api/provider-routing/connections";
+    public const string ProviderRoutingConnectionRuntimeCredentialStatus = "/api/provider-routing/connections/{connectionId}/runtime-credentials/status";
+    public const string ProviderRoutingConnectionRuntimeCredentialApply = "/api/provider-routing/connections/{connectionId}/runtime-credentials/apply";
+    public const string ProviderRoutingConnectionRuntimeCredentials = "/api/provider-routing/connections/{connectionId}/runtime-credentials";
+    public const string ProviderRoutingConnectionCredentialMigrationPreview = "/api/provider-routing/connections/{connectionId}/credentials/migration-preview";
+    public const string ProviderRoutingConnectionCredentialMigrate = "/api/provider-routing/connections/{connectionId}/credentials/migrate";
+    public const string ProviderRoutingConnectionCredentialRollback = "/api/provider-routing/connections/{connectionId}/credentials/rollback";
     public const string ProviderRoutingBindings = "/api/provider-routing/bindings";
     public const string ProviderRoutingTrustSnapshots = "/api/provider-routing/trust-snapshots";
     public const string ProviderRoutingPreview = "/api/provider-routing/preview";
@@ -443,6 +449,9 @@ public static class UiApiRoutes
     // Structured cash flow source assignments
     public const string SecurityMasterCashFlowSource = "/api/security-master/{securityId:guid}/cashflow-source";
     public const string SecurityMasterCashFlowProjections = "/api/security-master/{securityId:guid}/cashflow-projections";
+    public const string SecurityMasterCashFlowProjectionPreview = "/api/security-master/{securityId:guid}/cashflow-projections/preview";
+    public const string SecurityMasterCashFlowProjectionRuns = "/api/security-master/{subjectId:guid}/cashflow-projections/runs";
+    public const string SecurityMasterCashFlowProjectionRun = "/api/security-master/{subjectId:guid}/cashflow-projections/runs/{runId:guid}";
 
     // Market curves and valuation (G4)
     public const string SecurityMasterCurves = "/api/security-master/curves";
@@ -473,6 +482,15 @@ public static class UiApiRoutes
     public const string ReferenceDataBondAccrualConvention = "/api/reference-data/bonds/{securityId:guid}/accrual-convention";
     public const string ReferenceDataBondIssuerLadder = "/api/reference-data/bonds/issuer-ladder";
     public const string ReferenceDataBondMaturityLadder = "/api/reference-data/bonds/maturity-ladder";
+    public const string ReferenceDataBondAnalytics = "/api/reference-data/bonds/{securityId:guid}/analytics";
+    public const string ReferenceDataBondSettlementConsideration = "/api/reference-data/bonds/settlement-consideration";
+    public const string ReferenceDataBondIssuerLadderPage = "/api/reference-data/bonds/issuer-ladder/page";
+    public const string ReferenceDataBondMaturityLadderPage = "/api/reference-data/bonds/maturity-ladder/page";
+    public const string ReferenceDataBondMigrationPreview = "/api/reference-data/bonds/migration-preview";
+    public const string ReferenceDataBondMigrationSubmit = "/api/reference-data/bonds/migration-submit";
+    public const string ReferenceDataBondCutoverReadiness = "/api/reference-data/bonds/cutover-readiness";
+    public const string ReferenceDataBondCutover = "/api/reference-data/bonds/cutover";
+    public const string ReferenceDataBondMigrationBatchPreview = "/api/reference-data/bonds/migration-preview/batch";
     public const string WorkstationAssetOperations = "/api/workstation/assets/{securityId:guid}/operations";
     public const string ReferenceDataOptionContract = "/api/reference-data/options/contracts/{contractSymbol}";
     public const string ReferenceDataOptionSeries = "/api/reference-data/options/series/{optionChainId}";
@@ -837,6 +855,9 @@ public static class UiApiRoutes
     public const string ReconciliationMarginCertifications = "/api/workstation/reconciliation/margin-control/certifications";
     public const string ReconciliationOpenCases = "/api/workstation/reconciliation/cases";
     public const string DirectLendingPortfolioSummary = "/api/loans/portfolio";
+    public const string DirectLendingProjectionPreview = "/api/loans/{loanId:guid}/projections/preview";
+    public const string DirectLendingContractualRuns = "/api/loans/{subjectId:guid}/projections/contractual-runs";
+    public const string DirectLendingContractualRun = "/api/loans/{subjectId:guid}/projections/contractual-runs/{runId:guid}";
     public const string DirectLendingServicerStatementPreview = "/api/loans/servicer-statements/preview";
     public const string DirectLendingServicerStatementImport = "/api/loans/servicer-statements/import";
     public const string DirectLendingServicerStatementById = "/api/loans/servicer-statements/{batchId}";

@@ -1357,6 +1357,46 @@
                                         </DataGrid>
                                     </DockPanel>
                                 </TabItem>
+                                <TabItem Header="Bond Ladders" DataContext="{Binding ReferenceLadders}" AutomationProperties.Name="Bond reference ladders">
+                                    <StackPanel Margin="12">
+                                        <TextBlock Text="Bond reference ladders" Style="{StaticResource CardHeaderStyle}" />
+                                        <TextBlock Text="Bounded keyset pages by issuer or maturity window; each page continues from the previous cursor and a changed query starts over."
+                                                   Opacity="0.7" TextWrapping="Wrap" Margin="0,4,0,8" />
+                                        <WrapPanel>
+                                            <StackPanel Width="150" Margin="0,0,8,8">
+                                                <TextBlock Text="Ladder" Opacity="0.8" />
+                                                <ComboBox ItemsSource="{Binding Modes}" SelectedItem="{Binding Mode}" AutomationProperties.Name="Ladder kind" />
+                                            </StackPanel>
+                                            <StackPanel Width="240" Margin="0,0,8,8" Visibility="{Binding IsIssuerMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                <TextBlock Text="Issuer name" Opacity="0.8" />
+                                                <TextBox Text="{Binding IssuerName, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Issuer name" />
+                                            </StackPanel>
+                                            <StackPanel Width="150" Margin="0,0,8,8">
+                                                <TextBlock Text="Maturing from" Opacity="0.8" />
+                                                <DatePicker SelectedDate="{Binding From}" AutomationProperties.Name="Maturity window start" />
+                                            </StackPanel>
+                                            <StackPanel Width="150" Margin="0,0,8,8">
+                                                <TextBlock Text="Maturing to" Opacity="0.8" />
+                                                <DatePicker SelectedDate="{Binding To}" AutomationProperties.Name="Maturity window end" />
+                                            </StackPanel>
+                                            <Button Content="Load ladder" Command="{Binding LoadCommand}" Padding="12,6" Margin="0,0,8,8" VerticalAlignment="Bottom" />
+                                            <Button Content="Load more" Command="{Binding LoadMoreCommand}" Padding="12,6" Margin="0,0,0,8" VerticalAlignment="Bottom" />
+                                        </WrapPanel>
+                                        <DataGrid ItemsSource="{Binding Rows}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" MaxHeight="420"
+                                                  AutomationProperties.Name="Bond reference ladder rows">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Bond" Binding="{Binding DisplayName}" Width="240" />
+                                                <DataGridTextColumn Header="Identifier" Binding="{Binding Identifier}" Width="140" FontFamily="Consolas" />
+                                                <DataGridTextColumn Header="Issuer" Binding="{Binding Issuer}" Width="180" />
+                                                <DataGridTextColumn Header="Currency" Binding="{Binding Currency}" Width="80" />
+                                                <DataGridTextColumn Header="Maturity" Binding="{Binding Maturity}" Width="110" />
+                                                <DataGridTextColumn Header="Callable" Binding="{Binding Callable}" Width="130" />
+                                                <DataGridTextColumn Header="Version" Binding="{Binding Version}" Width="70" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                        <TextBlock Text="{Binding StatusText}" Opacity="0.8" Margin="0,8,0,0" TextWrapping="Wrap" AutomationProperties.Name="Bond ladder status" />
+                                    </StackPanel>
+                                </TabItem>
                             </TabControl>
                         </StackPanel>
                     </ScrollViewer>

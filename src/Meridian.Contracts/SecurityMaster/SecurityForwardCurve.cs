@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Text.Json.Serialization;
+using Meridian.Contracts.FixedIncome;
 
 namespace Meridian.Contracts.SecurityMaster;
 
@@ -16,6 +18,9 @@ public sealed record SecurityForwardCurve(
     IReadOnlyList<SecurityForwardCurvePoint> Points,
     string? Source = null)
 {
+    /// <summary>The immutable stored curve version behind these projected fixings, when retained.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BondCalculationInput? RetainedInput { get; init; }
     /// <summary>The projected fixing for a reset on <paramref name="resetDate"/>; null when the curve has no points.</summary>
     public decimal? RateAt(DateOnly resetDate)
     {
@@ -110,4 +115,10 @@ public sealed record SecurityForwardCurve(
 public interface ISecurityForwardCurveProvider
 {
     Task<SecurityForwardCurve?> GetForwardCurveAsync(string indexName, DateOnly asOf, CancellationToken ct = default);
+
+    /// <summary>Reads a curve eligible at both cutoffs; providers without recorded-time support refuse strict requests.</summary>
+    Task<SecurityForwardCurve?> GetForwardCurveAsync(string indexName, BondCalculationContext context, CancellationToken ct = default)
+        => context.KnownAt is null && context.Curves is not { Count: > 0 }
+            ? GetForwardCurveAsync(indexName, DateOnly.FromDateTime(context.AsOf.UtcDateTime), ct)
+            : Task.FromResult<SecurityForwardCurve?>(null);
 }

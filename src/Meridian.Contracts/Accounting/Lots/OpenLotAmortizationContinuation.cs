@@ -10,7 +10,7 @@ public sealed record OpenLotAmortizationContinuationDto(
     OpenLotSuccessorInstructionDto Exchange,
     OpenLotAmortizationInstructionDto PredecessorAmortization);
 
-/// <summary>Continues existing v2 economics only across an unchanged one-for-one Reg S/144A exchange.</summary>
+/// <summary>Continues matching versioned economics only across an unchanged one-for-one Reg S/144A exchange.</summary>
 public static class OpenLotAmortizationContinuation
 {
     public const string ModelVersion = "canonical-lot-exchange-continuation-v1";
@@ -28,7 +28,7 @@ public static class OpenLotAmortizationContinuation
         Require(continuation is not null,
             "Corporate-action successors require a separately reviewed amortization/yield continuation; inherited acquisition facts do not authorize a new schedule.");
         Require(continuation!.ModelVersion == ModelVersion && continuation.SuccessorMutationBatchId != Guid.Empty
-            && instruction.CalculationVersion == OpenLotAmortization.ModelVersion,
+            && OpenLotAmortization.IsCurrentVersion(instruction.CalculationVersion),
             "Successor amortization requires a supported version and an immutable exchange receipt.");
         ArgumentNullException.ThrowIfNull(continuation.Exchange);
         ArgumentNullException.ThrowIfNull(continuation.PredecessorAmortization);
@@ -36,8 +36,8 @@ public static class OpenLotAmortizationContinuation
         var prior = continuation.PredecessorAmortization;
         Require(prior.Continuation is null && prior.Reversal is null
             && prior.ExpectedLot.Acquisition.CorporateActionLineage is null
-            && prior.CalculationVersion == OpenLotAmortization.ModelVersion,
-            "Exchange continuation requires an ordinary retained v2 predecessor amortization; successor chains and historical calculations require separate review.");
+            && prior.CalculationVersion == instruction.CalculationVersion,
+            "Exchange continuation requires an ordinary retained predecessor with the same calculation version; successor chains and model upgrades require separate review.");
         OpenLotSuccessors.ValidateRetained(exchange);
         Require(exchange.Projection.Treatment.ActionType == CorporateActionAccountingTypeDto.RegS144AExchange
             && exchange.Successors.Count == 1 && exchange.ExpectedLot.Acquisition.QuantityBasis == LotQuantityBasis.Face,

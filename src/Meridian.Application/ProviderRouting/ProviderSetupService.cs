@@ -312,19 +312,7 @@ public sealed class ProviderSetupService
     }
 
     private static bool RequiresScopedSetup(AppConfig config, string providerId)
-    {
-        var connections = config.ProviderConnections?.Connections ?? [];
-        var family = ProviderCredentialCatalog.NormalizeProviderId(providerId);
-        return connections.Where(connection => string.Equals(
-                ProviderCredentialCatalog.NormalizeProviderId(connection.ProviderFamilyId), family,
-                StringComparison.OrdinalIgnoreCase))
-            // CredentialEnvironment is retained only by the owned-connection workflow. Losing
-            // the tenant part of that ownership must not reactivate the legacy provider-wide path.
-            .Any(connection => connection.TenantId is not null || connection.CredentialEnvironment is not null ||
-                string.IsNullOrWhiteSpace(connection.ConnectionId) ||
-                connections.Count(candidate => string.Equals(candidate.ConnectionId, connection.ConnectionId,
-                    StringComparison.OrdinalIgnoreCase)) != 1);
-    }
+        => ProviderOwnershipRules.Evaluate(config.ProviderConnections, providerId).RequiresScopedOwnership;
 
     private static string[] NormalizeCapabilities(IReadOnlyList<string>? capabilities)
         => capabilities?

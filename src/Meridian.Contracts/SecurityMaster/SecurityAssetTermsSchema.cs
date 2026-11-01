@@ -366,7 +366,8 @@ public static class SecurityAssetTermsSchema
                 // Declared call and put schedules (asset-class terms version 3, readable before
                 // writable: ADR-024). Entry shapes: CallScheduleEntryFields, PutScheduleEntryFields.
                 Opt("callSchedule", SecurityAssetTermFieldType.Array).Since(3),
-                Opt("putSchedule", SecurityAssetTermFieldType.Array).Since(3)
+                Opt("putSchedule", SecurityAssetTermFieldType.Array).Since(3),
+                Opt("cashFlowContract", SecurityAssetTermFieldType.Object).Since(4)
             ],
             ["FxSpot"] =
             [
@@ -401,7 +402,8 @@ public static class SecurityAssetTermsSchema
                 // Declared call and put schedules (asset-class terms version 3, readable before
                 // writable: ADR-024). Entry shapes: CallScheduleEntryFields, PutScheduleEntryFields.
                 Opt("callSchedule", SecurityAssetTermFieldType.Array).Since(3),
-                Opt("putSchedule", SecurityAssetTermFieldType.Array).Since(3)
+                Opt("putSchedule", SecurityAssetTermFieldType.Array).Since(3),
+                Opt("cashFlowContract", SecurityAssetTermFieldType.Object).Since(4)
             ],
             ["CommercialPaper"] =
             [
@@ -461,7 +463,8 @@ public static class SecurityAssetTermsSchema
             [
                 Req("effectiveDate", SecurityAssetTermFieldType.Date),
                 Req("maturityDate", SecurityAssetTermFieldType.Date),
-                Req("legs", SecurityAssetTermFieldType.Array, "swapLegs", "cashFlowLegs")
+                Req("legs", SecurityAssetTermFieldType.Array, "swapLegs", "cashFlowLegs"),
+                Opt("cashFlowContract", SecurityAssetTermFieldType.Object).Since(3)
             ],
             ["DirectLoan"] =
             [
@@ -473,7 +476,8 @@ public static class SecurityAssetTermsSchema
                 Opt("resetFrequency", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.PaymentFrequency),
                 Opt("pricingSource", SecurityAssetTermFieldType.String).AsOperational(),
                 Req("covenants", SecurityAssetTermFieldType.Array),
-                Req("principalSchedule", SecurityAssetTermFieldType.Array)
+                Req("principalSchedule", SecurityAssetTermFieldType.Array),
+                Opt("cashFlowContract", SecurityAssetTermFieldType.Object).Since(2)
             ],
             ["StructuredCredit"] =
             [
@@ -513,7 +517,8 @@ public static class SecurityAssetTermsSchema
                 // Declared call and put schedules (asset-class terms version 4, readable before
                 // writable: ADR-024). Entry shapes: CallScheduleEntryFields, PutScheduleEntryFields.
                 Opt("callSchedule", SecurityAssetTermFieldType.Array).Since(4),
-                Opt("putSchedule", SecurityAssetTermFieldType.Array).Since(4)
+                Opt("putSchedule", SecurityAssetTermFieldType.Array).Since(4),
+                Opt("cashFlowContract", SecurityAssetTermFieldType.Object).Since(5)
             ],
             ["PrivateFundInterest"] =
             [

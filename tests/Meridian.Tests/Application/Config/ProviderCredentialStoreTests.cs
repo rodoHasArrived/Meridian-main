@@ -293,7 +293,7 @@ public sealed class ProviderCredentialStoreTests : IDisposable
         await WriteEncryptedFixtureAsync(store, records, scoped: false);
     }
 
-    private static async Task WriteEncryptedFixtureAsync(FileProviderCredentialStore store, Dictionary<string, object> records, bool scoped)
+    internal static async Task WriteEncryptedFixtureAsync(FileProviderCredentialStore store, Dictionary<string, object> records, bool scoped)
     {
         var plainBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
         {

@@ -50,6 +50,61 @@
           "required": false
         }
       ]
+    },
+    {
+      "termsVersion": 2,
+      "fields": [
+        {
+          "key": "borrower",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "cashFlowContract",
+          "type": "Object",
+          "required": false
+        },
+        {
+          "key": "covenants",
+          "type": "Array",
+          "required": true
+        },
+        {
+          "key": "currentCouponRate",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "maturity",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "pricingSource",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "principalSchedule",
+          "type": "Array",
+          "required": true
+        },
+        {
+          "key": "referenceIndex",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "resetFrequency",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "spreadBps",
+          "type": "Decimal",
+          "required": false
+        }
+      ]
     }
   ]
 }

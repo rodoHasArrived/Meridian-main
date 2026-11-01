@@ -144,7 +144,10 @@ public sealed class ProviderConnectionService
             {
                 ProviderConnections = section with
                 {
-                    Connections = connections.ToArray()
+                    Connections = connections.ToArray(),
+                    OwnershipRequiredProviders = tenantId is null ? section.OwnershipRequiredProviders
+                        : (section.OwnershipRequiredProviders ?? []).Append(ProviderCredentialCatalog.NormalizeProviderId(next.ProviderFamilyId))
+                            .Distinct(StringComparer.OrdinalIgnoreCase).ToArray()
                 }
             }, ProviderRoutingMapper.ToDto(next));
         }, ct).ConfigureAwait(false);
@@ -171,6 +174,9 @@ public sealed class ProviderConnectionService
                 throw new InvalidOperationException("Connection ownership does not match the authorized tenant.");
             if (connections.Count(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)) > 1)
                 throw new InvalidOperationException("Connection ownership is ambiguous.");
+            var removedOwners = connections.Where(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase) &&
+                (c.TenantId is not null || c.CredentialEnvironment is not null))
+                .Select(c => ProviderCredentialCatalog.NormalizeProviderId(c.ProviderFamilyId)).ToArray();
             var removed = connections.RemoveAll(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)) > 0;
             if (!removed)
                 return (cfg, false);
@@ -188,6 +194,8 @@ public sealed class ProviderConnectionService
                 ProviderConnections = section with
                 {
                     Connections = connections.ToArray(),
+                    OwnershipRequiredProviders = removedOwners.Length == 0 ? section.OwnershipRequiredProviders
+                        : (section.OwnershipRequiredProviders ?? []).Concat(removedOwners).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
                     Bindings = bindings,
                     Certifications = certifications
                 }

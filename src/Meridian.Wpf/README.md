@@ -13,6 +13,34 @@ last_reviewed: 2026-10-15
 
 Fund Ledger defaults and resets to all reconciliation cases, includes explicitly fund-scoped statement cases without strategy runs, and shows retained source observation and occurrence age separately from case status. Exact lineage evidence is available in the source-observation disclosure. Missing strategy comparison detail preserves the selected case and reports unknown counts.
 
+The Security Master passport editor offers the browser's bond analytics and convention-migration
+review for Bond/CD passports (`ViewModels/SecurityMaster/`): server-calculated, explicitly dated
+analytics shown as exact decimals, and a hash-bound migration preview that stages an ordinary
+governed draft. The desktop never prices locally and resubmits digests, not displayed amounts.
+
+Credential management offers the browser's ownership administration (`ViewModels/Settings/
+ProviderOwnershipAdministrationViewModel` over `WorkstationProviderOwnershipApiClient`): create an
+owned connection, preview the non-secret vault status, migrate only with the previewed credential
+generation, roll back the exact retained receipt, and bind the host runtime credential. Tenant and
+actor are server-resolved; the section is hidden when the host registers no workstation API client.
+
+Admin maintenance carries the bond calculation cutover console (`ViewModels/Settings/
+BondCutoverConsoleViewModel` over `WorkstationBondCutoverApiClient`): load the complete active-bond
+inventory on demand, give every undeclared bond a reviewed block bound to its retained version and
+content hash, confirm the review, and submit the inventory hash (echoing the current receipt hash
+when amending). The reviewer is the server-resolved actor.
+
+The passport editor (every security) and the Direct Lending Evidence tab (selected facility) carry
+the browser's cash-flow scenario workbench (`ViewModels/CashFlows/ContractualCashFlowScenarioViewModel`
+over `WorkstationContractualCashFlowApiClient`): hypothetical valuation date, knowledge cutoff,
+horizon, rate shock, eligibility-driven exercise selections and one prepayment assumption; the event
+ladder, blockers and evidence hashes as exact server decimals; retained runs under a client-generated
+identity that any edit renews; and replay verification of a loaded run by output hash.
+
+The Security Master page's "Bond Ladders" tab (`ViewModels/SecurityMaster/BondReferenceLadderViewModel`)
+pages issuer and maturity ladders through the bounded keyset routes behind an explicit "Load more";
+the opaque cursor stays bound to its query and a changed query discards accumulated rows.
+
 Strategy composition registers the canonical Security Master resolver and position adjuster, then
 exposes narrow query ports and legacy aliases through `AddSecurityMasterContractAdapters()`.
 The adjustment-service factory selects its canonical query and resolver constructor explicitly,

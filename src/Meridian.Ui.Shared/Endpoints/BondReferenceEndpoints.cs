@@ -26,10 +26,13 @@ public static class BondReferenceEndpoints
 
         group.MapGet(UiApiRoutes.ReferenceDataBondReference, async (
             Guid securityId,
+            [FromQuery] DateOnly? asOf,
             [FromServices] IBondReferenceService service,
             CancellationToken ct) =>
         {
-            var reference = await service.GetReferenceAsync(securityId, ct).ConfigureAwait(false);
+            var reference = asOf is { } date
+                ? await service.GetReferenceAsOfAsync(securityId, date, ct).ConfigureAwait(false)
+                : await service.GetReferenceAsync(securityId, ct).ConfigureAwait(false);
             return reference is null ? Results.NotFound() : Results.Json(reference, jsonOptions);
         })
         .WithName("GetBondReference").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
@@ -39,10 +42,13 @@ public static class BondReferenceEndpoints
 
         group.MapGet(UiApiRoutes.ReferenceDataBondLifecycle, async (
             Guid securityId,
+            [FromQuery] DateOnly? asOf,
             [FromServices] IBondReferenceService service,
             CancellationToken ct) =>
         {
-            var lifecycle = await service.GetLifecycleAsync(securityId, ct).ConfigureAwait(false);
+            var lifecycle = asOf is { } date
+                ? await service.GetLifecycleAsOfAsync(securityId, date, ct).ConfigureAwait(false)
+                : await service.GetLifecycleAsync(securityId, ct).ConfigureAwait(false);
             return lifecycle is null ? Results.NotFound() : Results.Json(lifecycle, jsonOptions);
         })
         .WithName("GetBondLifecycle").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)

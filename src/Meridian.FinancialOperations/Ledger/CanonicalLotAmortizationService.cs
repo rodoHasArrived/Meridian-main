@@ -1,5 +1,6 @@
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.FixedIncome;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
 using Meridian.Storage.SecurityMaster;
@@ -19,7 +20,8 @@ public sealed record CanonicalLotAmortizationPreview(
 public sealed class CanonicalLotAmortizationService(
     ILedgerJournalStore? lots,
     ISecurityMasterStore? securities,
-    IInstrumentPositionProjectionStore? positions)
+    IInstrumentPositionProjectionStore? positions,
+    IBondCalculationPolicy? bondCalculationPolicy = null)
 {
     /// <summary>Prepares an inverse from retained posting economics and reviewed reference authority.</summary>
     public Task<CanonicalLotAmortizationPreview> PreviewReversalAsync(
@@ -58,15 +60,29 @@ public sealed class CanonicalLotAmortizationService(
             Security = security,
             SecurityEvidence = securityEvidence ?? inputs.SecurityEvidence,
             ExpectedBookPositionVersion = position.Version,
-            CalculationVersion = OpenLotAmortization.ModelVersion,
+            CalculationVersion = inputs.CalculationVersion ?? OpenLotAmortization.ModelVersion,
             Reversal = new(mutationBatchId, original.Journal.Entry.JournalEntryId, mutation.LotBefore!.ToOpenLot())
         };
         return new(instruction, OpenLotAmortization.Project(instruction));
     }
 
-    public async Task<CanonicalLotAmortizationPreview> PreviewAsync(
+    public Task<CanonicalLotAmortizationPreview> PreviewAsync(
         Guid ledgerBookId, Guid taxLotRecordId, DateOnly asOfDate,
         RetainedEvidenceIdentityDto securityEvidence, CancellationToken ct = default)
+        => PreviewCoreAsync(ledgerBookId, taxLotRecordId, asOfDate, securityEvidence, false, false, ct);
+
+    /// <summary>Opt-in v3 preparation; the complete automatic selection remains subject to independent posting approval.</summary>
+    public Task<CanonicalLotAmortizationPreview> PreviewExtendedAsync(
+        Guid ledgerBookId, Guid taxLotRecordId, DateOnly asOfDate,
+        RetainedEvidenceIdentityDto securityEvidence, bool amortizeRemainingFace, bool automaticYieldToWorst,
+        CancellationToken ct = default)
+        => PreviewCoreAsync(ledgerBookId, taxLotRecordId, asOfDate, securityEvidence,
+            amortizeRemainingFace, automaticYieldToWorst, ct);
+
+    private async Task<CanonicalLotAmortizationPreview> PreviewCoreAsync(
+        Guid ledgerBookId, Guid taxLotRecordId, DateOnly asOfDate,
+        RetainedEvidenceIdentityDto securityEvidence, bool amortizeRemainingFace, bool automaticYieldToWorst,
+        CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         var lotStore = lots ?? throw new InvalidOperationException(
@@ -81,11 +97,24 @@ public sealed class CanonicalLotAmortizationService(
             ?? throw new InvalidOperationException("The canonical lot was not found in the requested book.");
         var security = await securityStore.GetProjectionAsync(retained.SecurityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("Versioned Security Master evidence is unavailable.");
+        await BondAmortizationPolicyGuard.RequireAsync(bondCalculationPolicy, security, ct).ConfigureAwait(false);
         var position = await positionStore.GetBookPositionAsync(retained.BookPositionId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("The authoritative book position is unavailable.");
         if (position.SecurityId != retained.SecurityId || position.BookContext.LedgerBookId != ledgerBookId)
             throw new InvalidOperationException("Canonical lot and book-position accounting scope differ.");
         var instruction = new OpenLotAmortizationInstructionDto(retained.ToOpenLot(), security, securityEvidence, position.Version, asOfDate);
+        if (!amortizeRemainingFace && !automaticYieldToWorst
+            && Meridian.Contracts.SecurityMaster.SecurityVersionedTerms.ReadDeclaredScheduleConventions(
+                security.AssetClass, security.AssetSpecificTerms).Status
+                == Meridian.Contracts.SecurityMaster.SecurityDeclaredConventionsStatus.Declared)
+            instruction = instruction with { CalculationVersion = OpenLotAmortization.UnifiedDeclaredModelVersion };
+        if (amortizeRemainingFace || automaticYieldToWorst)
+            instruction = instruction with
+            {
+                CalculationVersion = OpenLotAmortization.ExtendedModelVersion,
+                AmortizeRemainingFace = amortizeRemainingFace,
+                YieldToWorst = automaticYieldToWorst ? OpenLotYieldToWorst.Select(retained.ToOpenLot(), security) : null
+            };
         if (retained.Acquisition?.CorporateActionLineage is not null)
             instruction = instruction with
             {

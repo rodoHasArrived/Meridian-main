@@ -212,6 +212,10 @@ public sealed record AssetAccountingEventSpineDto(
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public AssetAccountingPreparationRevisionDto? PreparationRevision { get; init; }
 
+    /// <summary>Retained before drafting; historical events are Long and omit this property.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public OpenLotDirection Direction { get; init; }
+
     public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = RetainedEvidence ?? [];
 
     public IReadOnlyList<AssetAccountingStageEvidenceDto> Stages { get; init; } = Stages ?? [];
@@ -243,6 +247,9 @@ public sealed record ProjectAssetAccountingEventRequestDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public OpenLotDirection Direction { get; init; }
+
     public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } =
         RetainedEvidence ?? [];
 }
@@ -307,7 +314,9 @@ public sealed record AssetAcquisitionLotDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     Meridian.Contracts.FixedIncome.BondAmortizationMethod? AmortizationMethod = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    decimal? EffectiveYield = null)
+    decimal? EffectiveYield = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    Meridian.Contracts.FixedIncome.BondSettlementConsiderationDto? SettlementConsideration = null)
 {
     /// <summary>
     /// True when the instruction states the acquisition-time par conventions of a face-denominated
@@ -464,6 +473,9 @@ public static class AssetAccountingEventSpineValidator
         }
 
         var issues = new List<string>();
+        if (!Enum.IsDefined(spine.Direction) || (spine.Direction == OpenLotDirection.Short
+            && spine.EventKind is not (AssetAccountingEventKindDto.Acquisition or AssetAccountingEventKindDto.Disposal)))
+            issues.Add("Retained lot direction must be supported by the accounting event kind.");
         if (spine.EventId == Guid.Empty)
             issues.Add("Asset accounting event id is required.");
         if (spine.EventVersion <= 0)
@@ -697,6 +709,8 @@ public static class AssetAccountingEventSpineValidator
         }
 
         var hasDraftedStage = spine.Stages.Any(static stage => stage.Stage == AssetAccountingLifecycleStageDto.Drafted);
+        if (spine.DraftedLotMutation is { } directionInstruction && directionInstruction.Direction != spine.Direction)
+            issues.Add("Drafted lot direction must match the retained accounting event direction.");
         if (spine.CorporateAction is { } successorProjection)
         {
             issues.AddRange(AssetLotMutationInstructionValidator.Validate(spine.EventKind,
@@ -982,8 +996,11 @@ public static class AssetLotMutationInstructionValidator
         var issues = new List<string>();
         if (instruction is not null && !Enum.IsDefined(instruction.Direction))
             issues.Add("Lot direction must be Long or Short; quantity cannot establish direction implicitly.");
-        else if (instruction?.Direction == OpenLotDirection.Short)
-            issues.Add("Short-lot posting requires direction-aware opening, cover and reporting authority; the current accounting path supports Long lots only.");
+        else if (instruction?.Direction == OpenLotDirection.Short
+            && eventKind is not (AssetAccountingEventKindDto.Acquisition or AssetAccountingEventKindDto.Disposal))
+            issues.Add("Short-lot posting supports governed opening and cover only.");
+        if (instruction is { Direction: OpenLotDirection.Short, Intent: AssetLotMutationIntentDto.Dispose, DisposalSalePrice: null })
+            issues.Add("Short covers require an explicit functional-currency execution price.");
         if (eventKind == AssetAccountingEventKindDto.Acquisition)
         {
             if (instruction is not { Intent: AssetLotMutationIntentDto.Acquire, Acquisition: { } acquisition } ||
@@ -1001,6 +1018,9 @@ public static class AssetLotMutationInstructionValidator
                 issues.Add("Acquisition lot date must equal the accounting event effective date.");
             if (acquisition.Quantity * acquisition.UnitCost != eventAmount)
                 issues.Add("Acquisition lot quantity times unit cost must equal the accounting event amount.");
+            issues.AddRange(Meridian.Contracts.FixedIncome.BondSettlementConsideration.ValidateAcquisition(acquisition, retainedEvidence));
+            if (acquisition.SettlementConsideration is not null && instruction.Direction != OpenLotDirection.Long)
+                issues.Add("Purchased-interest bond settlement supports held Long acquisitions only.");
             if (!string.IsNullOrWhiteSpace(instruction.AssetAccountId) &&
                 !string.Equals(instruction.AssetAccountId, acquisition.AccountId, StringComparison.Ordinal))
                 issues.Add("Acquisition instruction asset account must exactly match the acquisition lot account.");

@@ -16,8 +16,8 @@ namespace Meridian.Tests.Ui;
 
 /// <summary>
 /// Pins UiServer's logging (ADR-025 rollout): every category still stops below Warning through the
-/// default providers, and the host-start inventory lines alone (the Security Master terms capability
-/// line and each loaded calendar's line) also reach the process's Serilog logger, from Information,
+/// default providers, and the host-start inventory lines alone (the Security Master terms and
+/// contractual cash-flow capability lines and each loaded calendar's line) reach the process's Serilog logger, from Information,
 /// so a workstation-mode host writes them to its log file. Nothing else reaches that logger, even
 /// when the configuration lowers the default level. Sequential because the host test swaps the
 /// process's Serilog logger and the host environment variables.
@@ -56,10 +56,12 @@ public sealed class UiServerLoggingTests : IDisposable
         var events = serilog.Events.ToArray();
         events.Select(static e => (SourceContext(e), e.Level)).Should().Equal(
             (CalendarCategory, LogEventLevel.Information),
+            (CapabilityCategory, LogEventLevel.Information),
             (CapabilityCategory, LogEventLevel.Information));
         events[0].MessageTemplate.Text.Should().StartWith("Loaded business-day calendar {CalendarId} version {CalendarVersion}");
         events[0].Properties["CalendarId"].Should().Be(new ScalarValue("ZZTEST"));
         events[1].MessageTemplate.Text.Should().StartWith("Security Master terms capability: declared mapping {DeclaredMappingVersion}");
+        AssertCashFlowCapabilityLine(events[2]);
 
         // The default providers keep the Warning floor for every category, these two included.
         defaults.Entries.Should().Equal(
@@ -90,7 +92,7 @@ public sealed class UiServerLoggingTests : IDisposable
         await StartCapabilityServiceAsync(provider);
         LogFromOtherCategories(provider.GetRequiredService<ILoggerFactory>());
 
-        serilog.Events.Select(SourceContext).Should().Equal(CalendarCategory, CapabilityCategory);
+        serilog.Events.Select(SourceContext).Should().Equal(CalendarCategory, CapabilityCategory, CapabilityCategory);
         defaults.Entries.Select(static entry => entry.Category).Should().Contain(["Meridian.UiServer", "Microsoft.AspNetCore.Hosting.Diagnostics"]);
         defaults.Entries.Should().Contain(static entry => entry.Category == "Meridian.UiServer" && entry.Level == LogLevel.Information);
     }
@@ -122,15 +124,26 @@ public sealed class UiServerLoggingTests : IDisposable
             var inventory = serilog.Events.Where(static e => SourceContext(e) is CapabilityCategory or CalendarCategory).ToArray();
             inventory.Select(static e => (SourceContext(e), e.Level)).Should().Equal(
                 (CalendarCategory, LogEventLevel.Information),
+                (CapabilityCategory, LogEventLevel.Information),
                 (CapabilityCategory, LogEventLevel.Information));
             inventory[0].Properties["CalendarId"].Should().Be(new ScalarValue("ZZTEST"));
             inventory[1].MessageTemplate.Text.Should().StartWith("Security Master terms capability: declared mapping {DeclaredMappingVersion}");
+            AssertCashFlowCapabilityLine(inventory[2]);
             serilog.Events.Should().NotContain(static e => SourceContext(e) == ProbeCategory);
         }
         finally
         {
             Serilog.Log.Logger = previous;
         }
+    }
+
+    private static void AssertCashFlowCapabilityLine(LogEvent logEvent)
+    {
+        logEvent.MessageTemplate.Text.Should().Be(
+            "Contractual cash-flow calculation capability: engine {Engine}, mapping {Mapping}, prepayment {Prepayment}; calculation-only, companion read-before-write");
+        logEvent.Properties["Engine"].Should().Be(new ScalarValue("contractual-cashflow-v1"));
+        logEvent.Properties["Mapping"].Should().Be(new ScalarValue("contractual-cashflow-mapping-v1"));
+        logEvent.Properties["Prepayment"].Should().Be(new ScalarValue("survival-cpr-smm-psa-v1"));
     }
 
     private ServiceProvider BuildHost(CollectingSink serilog, CapturingLoggerProvider defaults, IConfiguration? configuration)

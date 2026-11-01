@@ -52,6 +52,15 @@ public static class StructuredCashFlowTermsResolver
         var schedules = SecurityEconomicScheduleParser.Parse(assetSpecificTerms, security.CommonTerms);
         schedules.ThrowIfInvalid();
 
+        var couponKind = ResolveCouponKind(sources);
+        var declared = SecurityVersionedTerms.ReadDeclaredScheduleConventions(security.AssetClass, security.AssetSpecificTerms);
+        var rateUnit = declared.Block.CouponRateUnit switch
+        {
+            "Percent" => SecurityCouponRateUnit.Percent,
+            "Fraction" => SecurityCouponRateUnit.Fraction,
+            _ => SecurityCouponRateUnit.Unspecified
+        };
+
         // A financing trade (repo) has a start and an end date rather than an issue and a maturity.
         var isFinancing = SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CashFlowBehavior == SecurityCashFlowBehavior.FinancingInterest;
         return new StructuredCashFlowTerms(
@@ -59,16 +68,92 @@ public static class StructuredCashFlowTermsResolver
             IssueDate: SecurityTermReader.ReadDate(sources, isFinancing ? ["startDate", .. IssueAliases] : IssueAliases),
             PrincipalFace: SecurityTermReader.ReadDecimal(sources, PrincipalFaceAliases),
             CurrentFactor: SecurityTermReader.ReadDecimal(sources, CurrentFactorAliases),
-            CouponRate: ResolveCouponRate(security.AssetClass, sources),
+            CouponRate: couponKind == SecurityCouponKind.ZeroCoupon
+                && SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CarriesBondCouponStructure
+                    ? 0m : ResolveCouponRate(security.AssetClass, sources),
             PaymentFrequency: SecurityTermReader.ReadString(sources, PaymentFrequencyAliases),
             DayCountConvention: SecurityTermReader.ReadString(sources, DayCountAliases),
             FactorSchedule: schedules.FactorSchedule.Entries,
-            Legs: ReadLegs(sources),
+            Legs: ReadLegs(sources) ?? ReadBondFloatingLeg(security.AssetClass, sources, couponKind, rateUnit),
             PrincipalSchedule: schedules.PrincipalSchedule.IsPresent ? schedules.PrincipalSchedule.Entries : null,
             StepCouponSchedule: schedules.StepCouponSchedule.IsPresent ? schedules.StepCouponSchedule.Entries : null,
             InflationIndex: SecurityTermReader.ReadString(sources, InflationIndexAliases),
             InflationBaseIndexValue: SecurityTermReader.ReadDecimal(sources, InflationBaseIndexValueAliases),
-            InflationIndexRatio: SecurityTermReader.ReadDecimal(sources, InflationIndexRatioAliases));
+            InflationIndexRatio: SecurityTermReader.ReadDecimal(sources, InflationIndexRatioAliases))
+        {
+            CouponKind = couponKind,
+            CouponRateUnit = rateUnit,
+            CapRate = SecurityTermReader.ReadDecimal(sources, "capRate"),
+            FloorRate = SecurityTermReader.ReadDecimal(sources, "floorRate")
+        };
+    }
+
+    private static SecurityCouponKind ResolveCouponKind(IReadOnlyList<JsonElement> sources)
+    {
+        foreach (var source in sources)
+        {
+            var token = SecurityTermReader.ReadString(source, "couponType", "couponKind");
+            if (token is null && SecurityTermReader.TryGetProperty(source, "coupon", out var coupon))
+            {
+                token = SecurityTermReader.ReadString(coupon, "kind");
+            }
+            if (token is not null)
+            {
+                return Enum.TryParse<SecurityCouponKind>(token, ignoreCase: true, out var kind)
+                    && Enum.IsDefined(kind) && !int.TryParse(token, out _) ? kind : SecurityCouponKind.Unknown;
+            }
+        }
+        return SecurityCouponKind.Unknown;
+    }
+
+    private static IReadOnlyList<StructuredCashFlowLeg>? ReadBondFloatingLeg(
+        string assetClass, IReadOnlyList<JsonElement> sources, SecurityCouponKind kind, SecurityCouponRateUnit unit)
+    {
+        if (kind != SecurityCouponKind.Floating || !SecurityAssetClassCatalog.GetOrDefault(assetClass).CarriesBondCouponStructure)
+        {
+            return null;
+        }
+
+        // An explicitly empty governed fixing schedule asserts no observations. Do not resurrect
+        // lower-priority pass-through fixings, which would turn forecasts into observed rates.
+        IReadOnlyList<JsonElement> resets = [];
+        var hasDeclaredResets = false;
+        foreach (var source in sources)
+        {
+            if (LegResetScheduleAliases.Any(alias => SecurityTermReader.TryGetProperty(source, alias, out var value)
+                && value.ValueKind == JsonValueKind.Array))
+            {
+                resets = ReadScheduleItems(source, LegResetScheduleAliases);
+                hasDeclaredResets = true;
+                break;
+            }
+        }
+        return
+        [
+            new StructuredCashFlowLeg(
+                "bond-coupon", CashFlowLegRateKind.Floating, CashFlowLegDirection.Receive,
+                FixedRate: null,
+                IndexName: SecurityTermReader.ReadString(sources, "floatingIndex", "floatingRateIndex"),
+                SpreadBps: SecurityTermReader.ReadDecimal(sources, "spreadBps", "floatingSpreadBps"),
+                CurrentIndexRate: SecurityTermReader.ReadDecimal(sources, LegCurrentIndexRateAliases),
+                Notional: SecurityTermReader.ReadDecimal(sources, PrincipalFaceAliases),
+                PaymentFrequency: SecurityTermReader.ReadString(sources, PaymentFrequencyAliases),
+                DayCountConvention: SecurityTermReader.ReadString(sources, DayCountAliases),
+                ExchangesPrincipal: true,
+                ResetSchedule: resets.Select(static item => (
+                        Date: SecurityTermReader.ReadDate(item, "resetDate", "fixingDate", "date"),
+                        Rate: SecurityTermReader.ReadDecimal(item, "fixingRate", "fixing", "rate")))
+                    .Where(static item => item.Date.HasValue)
+                    .Select(static item => new StructuredCashFlowResetFixing(item.Date!.Value, item.Rate)).ToArray())
+            {
+                CapRate = SecurityTermReader.ReadDecimal(sources, "capRate"),
+                FloorRate = SecurityTermReader.ReadDecimal(sources, "floorRate"),
+                RateUnit = unit,
+                HasDeclaredResetSchedule = hasDeclaredResets,
+                CurrentIndexResetDate = SecurityTermReader.ReadDate(sources, "currentIndexResetDate", "currentIndexRateDate"),
+                CurrentIndexRateSource = SecurityTermReader.ReadString(sources, "currentIndexRateSource")
+            }
+        ];
     }
 
     // Discount yield is not a contractual coupon. Bills and discount paper pay principal only;

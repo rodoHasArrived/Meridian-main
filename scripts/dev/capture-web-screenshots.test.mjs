@@ -166,8 +166,11 @@ test("server readiness is bounded when a server accepts connections without resp
 });
 
 test("an HTTP404 is not a ready workstation", async (t) => {
-  const url = await serverUrl(t, (_request, response) => response.writeHead(404).end());
-  await assert.rejects(waitForServer(url, 100, null, []), /HTTP 404/);
+  // Classify a received response independently of cold HTTP-client startup. The hung-socket
+  // case above exercises the real connection deadline.
+  const probe = t.mock.method(globalThis, "fetch", async () => new Response(null, { status: 404 }));
+  await assert.rejects(waitForServer("http://workstation.invalid/workstation/", 100, null, []), /HTTP 404/);
+  assert.ok(probe.mock.callCount() > 0, "Readiness must inspect the unsuccessful HTTP response");
 });
 
 test("readiness reports an exited child with the dev-server log tail", async () => {

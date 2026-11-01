@@ -5,6 +5,9 @@
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Direct Lending">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,16,24,32">
         <Grid MaxWidth="1260">
             <Grid.RowDefinitions>
@@ -383,6 +386,7 @@
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
 
                                 <StackPanel Grid.Row="0" Margin="0,0,0,12">
@@ -400,6 +404,80 @@
                                                                   GridAutomationId="DirectLendingEvidenceGrid"
                                                                   EmptyAutomationId="DirectLendingEvidenceEmptyState"
                                                                   AutomationProperties.Name="Direct lending operations evidence table" />
+
+                                <StackPanel Grid.Row="2" Visibility="{Binding HasLoanScenarios, Converter={StaticResource BoolToVisibilityConverter}}">
+                <!-- Cash-flow scenarios (shared contractual cash-flow routes; hypothetical, never posts) -->
+                <Expander Header="Cash-flow scenarios" Margin="0,16,0,0" DataContext="{Binding LoanScenarios}"
+                          AutomationProperties.Name="Loan cash-flow scenarios">
+                    <StackPanel Margin="0,8,0,0">
+                        <TextBlock Text="Hypothetical projections over current terms, calendars and pinned curves. Nothing here changes terms or posts; retained runs are complete replay packets under a client-generated identity."
+                                   Opacity="0.7" TextWrapping="Wrap" />
+                        <WrapPanel Margin="0,8,0,0">
+                            <StackPanel Width="150" Margin="0,0,8,8">
+                                <TextBlock Text="Valuation date (UTC)" Opacity="0.8" />
+                                <DatePicker SelectedDate="{Binding ValuationDate}" AutomationProperties.Name="Scenario valuation date" />
+                            </StackPanel>
+                            <StackPanel Width="230" Margin="0,0,8,8">
+                                <TextBlock Text="Knowledge cutoff (ISO-8601 instant)" Opacity="0.8" />
+                                <TextBox Text="{Binding KnowledgeCutoff, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Scenario knowledge cutoff" />
+                            </StackPanel>
+                            <StackPanel Width="150" Margin="0,0,8,8">
+                                <TextBlock Text="Horizon (optional)" Opacity="0.8" />
+                                <DatePicker SelectedDate="{Binding Horizon}" AutomationProperties.Name="Scenario horizon" />
+                            </StackPanel>
+                            <StackPanel Width="120" Margin="0,0,8,8">
+                                <TextBlock Text="Rate scenario" Opacity="0.8" />
+                                <ComboBox ItemsSource="{Binding RateScenarios}" SelectedItem="{Binding RateScenario}" AutomationProperties.Name="Scenario rate shock" />
+                            </StackPanel>
+                        </WrapPanel>
+                        <TextBlock Text="Prepayment assumption" FontWeight="SemiBold" Margin="0,4,0,4" />
+                        <WrapPanel>
+                            <CheckBox IsChecked="{Binding PrepaymentEnabled}" Content="Apply" VerticalAlignment="Center" Margin="0,0,8,8" AutomationProperties.Name="Apply a prepayment assumption" />
+                            <TextBox Text="{Binding PrepaymentStreamId, UpdateSourceTrigger=PropertyChanged}" Width="120" Margin="0,0,8,8" IsEnabled="{Binding PrepaymentEnabled}" AutomationProperties.Name="Prepayment stream id" />
+                            <DatePicker SelectedDate="{Binding PrepaymentStart}" Width="140" Margin="0,0,8,8" IsEnabled="{Binding PrepaymentEnabled}" AutomationProperties.Name="Prepayment start date" />
+                            <DatePicker SelectedDate="{Binding PrepaymentEnd}" Width="140" Margin="0,0,8,8" IsEnabled="{Binding PrepaymentEnabled}" AutomationProperties.Name="Prepayment end date" />
+                            <ComboBox ItemsSource="{Binding PrepaymentMethods}" SelectedItem="{Binding PrepaymentMethod}" Width="90" Margin="0,0,8,8" IsEnabled="{Binding PrepaymentEnabled}" AutomationProperties.Name="Prepayment method" />
+                            <TextBox Text="{Binding PrepaymentValue, UpdateSourceTrigger=PropertyChanged}" Width="100" Margin="0,0,8,8" IsEnabled="{Binding PrepaymentEnabled}" AutomationProperties.Name="Prepayment value" />
+                            <ComboBox ItemsSource="{Binding PrepaymentPolicies}" SelectedItem="{Binding PrepaymentPolicy}" Width="150" Margin="0,0,0,8" IsEnabled="{Binding PrepaymentEnabled}" AutomationProperties.Name="Prepayment recast policy" />
+                        </WrapPanel>
+                        <ItemsControl ItemsSource="{Binding Exercises}" AutomationProperties.Name="Exercise selections">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <WrapPanel Margin="0,0,0,4">
+                                        <CheckBox IsChecked="{Binding Include}" Content="{Binding Label}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                        <ComboBox ItemsSource="{Binding Dates}" SelectedItem="{Binding ExerciseDate}" IsEditable="True" Text="{Binding ExerciseDate, UpdateSourceTrigger=PropertyChanged}" Width="130" Margin="0,0,8,0" IsEnabled="{Binding Include}" />
+                                        <TextBox Text="{Binding Amount, UpdateSourceTrigger=PropertyChanged}" Width="120" Margin="0,0,8,0" IsEnabled="{Binding Include}" />
+                                        <TextBlock Text="{Binding CalendarText}" Opacity="0.7" VerticalAlignment="Center" />
+                                    </WrapPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <Button Content="Preview scenario" Command="{Binding PreviewCommand}" Padding="12,6" Margin="0,0,8,0" />
+                            <Button Content="Retain run" Command="{Binding RetainRunCommand}" Padding="12,6" />
+                        </StackPanel>
+                        <ItemsControl ItemsSource="{Binding Blockers}" Visibility="{Binding IsBlocked, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0,8,0,0" AutomationProperties.Name="Calculation blockers" />
+                        <workstation:DenseDataGridControl Table="{Binding EventsTable}" MaxHeight="320" Margin="0,8,0,0"
+                                                          Visibility="{Binding HasResult, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                          GridAutomationId="DirectLendingScenarioEventsGrid"
+                                                          AutomationProperties.Name="Projected cash flows" />
+                        <ItemsControl ItemsSource="{Binding ExerciseCalculations}" Margin="0,4,0,0" AutomationProperties.Name="Exercise calculations" />
+                        <TextBlock Text="{Binding EvidenceText}" FontFamily="Consolas" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding RunText}" FontFamily="Consolas" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap" />
+                        <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                            <StackPanel Width="320" Margin="0,0,8,0">
+                                <TextBlock Text="Retained run identity" Opacity="0.8" />
+                                <TextBox Text="{Binding RunIdText, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Retained run identity" />
+                            </StackPanel>
+                            <Button Content="Load retained run" Command="{Binding LoadRunCommand}" Padding="12,6" Margin="0,0,8,0" VerticalAlignment="Bottom" />
+                            <Button Content="Verify replay" Command="{Binding VerifyReplayCommand}" Padding="12,6" VerticalAlignment="Bottom" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding LoadedRunText}" FontFamily="Consolas" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding ReplayStatusText}" Margin="0,4,0,0" TextWrapping="Wrap" AutomationProperties.Name="Replay verification" />
+                        <TextBlock Text="{Binding StatusText}" Margin="0,8,0,0" Opacity="0.8" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Expander>
+                                </StackPanel>
                             </Grid>
                         </TabItem>
                     </TabControl>

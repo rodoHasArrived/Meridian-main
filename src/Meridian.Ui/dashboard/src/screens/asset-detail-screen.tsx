@@ -11,6 +11,7 @@ import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { getCorporateActions, getSecurityDetail, getSecurityIdentity, getTradingParameters, searchSecurities } from "@/lib/api";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
+import { ContractualCashFlowWorkbench } from "@/components/meridian/contractual-cash-flow-workbench";
 import { buildAssetDetailOverviewViewState, selectExactSecuritySearchResult } from "@/screens/asset-detail-screen.view-model";
 import type { CorporateAction, SecurityIdentityDrillIn, SecurityMasterEntry, TradingParameters } from "@/types";
 
@@ -329,7 +330,8 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
           { id: "overview", label: "Overview" },
           { id: "passport", label: "Passport" },
           { id: "details-lots", label: "Details & Lots" },
-          { id: "trading-parameters", label: "Trading Parameters" }
+          { id: "trading-parameters", label: "Trading Parameters" },
+          { id: "cash-flow-scenarios", label: "Cash-flow scenarios" }
         ]}
       >
         <TabPanel>
@@ -423,6 +425,9 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
               )}
             </CardContent>
           </Card>
+        </TabPanel>
+        <TabPanel>
+          <ContractualCashFlowWorkbench subjectKind="Security" subjectId={entry.securityId} subjectLabel={overview.displayName} />
         </TabPanel>
       </Tabs>
     </ScreenLayout>

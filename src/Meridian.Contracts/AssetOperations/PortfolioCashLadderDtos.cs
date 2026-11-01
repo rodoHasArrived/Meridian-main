@@ -115,12 +115,18 @@ public sealed record PortfolioCashLadderDto(
     IReadOnlyList<string> BlockingReasons);
 
 /// <summary>Query parameters for the portfolio cash ladder read model.</summary>
+/// <remarks>
+/// <see cref="EngineVersion"/> selects a retained ladder engine for explicit historical replay.
+/// Null uses the current engine; <c>portfolio-cash-ladder-v1</c> replays the legacy engine; any
+/// other value returns a blocked ladder that reports the unsupported version.
+/// </remarks>
 public sealed record PortfolioCashLadderQuery(
     string? ScenarioId = null,
     int HorizonDays = 90,
     decimal? MinimumCashThreshold = null,
     int BucketDays = 7,
-    string? FundAccountId = null);
+    string? FundAccountId = null,
+    string? EngineVersion = null);
 
 /// <summary>
 /// One held position as the cash ladder consumes it: the security identity and

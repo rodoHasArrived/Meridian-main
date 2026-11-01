@@ -6,10 +6,16 @@ module_id: SRC-DESIGN-INSTRUMENTS
 path: src/Meridian.Instruments
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-06
+last_reviewed: 2026-10-31
 ---
 
 # src/Meridian.Instruments
+
+Bond analytics v2 consumes the shared Contracts economics and exercise calculators. Explicit `bond-analytics-v1` dispatch preserves retained settlement verification by replaying through the same kernels in `BondEconomicsCompatibility.AnalyticsV1` mode; the two versions share one code path and are pinned by the `bond-analytics-versions` golden fixture. The cash ladder v2 uses projection-bound terms for declared call/put proceeds and per-reset evidence for floating shocks. Already-observed resets remain fixed; future index rates are shifted before contractual spread and cap/floor application. Missing evidence and unsupported signed coupon cash block the scenario. `LegacyPortfolioCashLadderEngine` retains v1 behavior for explicit historical replay, selected only by the exact `portfolio-cash-ladder-v1` engine version on the shared cash-ladder query and never by fallback; both engines are pinned by the `portfolio-cash-ladder-versions` golden fixture. Undeclared records keep their compatibility behavior.
+
+Both analytics versions return a blocked result when shared economic-schedule validation fails,
+retaining its source and row diagnostics and exposing no partial metrics. Unrelated query or storage
+failures remain errors.
 
 `AccountCashForecastEngine` and `AccountCashForecastService` retain bounded account/book cash
 forecasts over the shared `PortfolioCashLadderEngine`. Opening settled cash, expected and observed
@@ -39,6 +45,8 @@ callers retain their no-journal quantity projection. `CorporateActionAssetAccoun
 requires the complete canonical instruction for exchange/refunding and explicitly opted-in lot
 transfers; other split/merger projections keep their existing mapping behavior. Optional canonical
 instructions retain their exact reviewed payload on the Projected event.
+
+Bond calculations use explicit economic/settlement/recorded cutoffs. Declared Asset Operations projections consume the shared cash-flow service and stable period identities. Bond analytics exposes per-100 clean/dirty prices, accrued interest, yield and risk with typed capability blockers; principal factors remain separate from inflation indexation. Bond migration previews stage normal Security Master drafts; the persisted full-inventory cutover gate blocks undeclared live calculations without rewriting historical journals. See [bond expansion](../../docs/engineering/plans/bond-capability-expansion.md).
 
 ## Purpose
 

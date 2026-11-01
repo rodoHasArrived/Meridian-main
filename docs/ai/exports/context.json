@@ -1,5 +1,5 @@
 {
-  "generatedAtUtc": "2026-10-31T05:29:52Z",
+  "generatedAtUtc": "2026-10-31T05:46:15Z",
   "repository": "Meridian-main",
   "activeScope": {
     "productThesis": "Meridian connects financial operations, strategy formulation and validation, order management, and governed strategy execution through retained evidence and shared authority.",
@@ -101,6 +101,10 @@
       {
         "path": "docs/domain/business-day-calendar.md",
         "title": "Business-Day Calendar"
+      },
+      {
+        "path": "docs/domain/contractual-cash-flow-projection.md",
+        "title": "Contractual Cash-Flow Projection"
       },
       {
         "path": "docs/domain/contractual-schedule.md",
@@ -940,7 +944,7 @@
   "counts": {
     "projects": 53,
     "constitutionDocs": 3,
-    "domainDocs": 16,
+    "domainDocs": 17,
     "contextPacks": 2
   }
 }

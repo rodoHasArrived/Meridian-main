@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
@@ -36,19 +37,25 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
     private readonly ILedgerJournalStore? _journalStore;
     private readonly IAtomicTaxLotJournalStore? _atomicTaxLotStore;
     private readonly IAssetAccountingEventProjectionStore? _assetAccountingEventStore;
+    private readonly IBondCalculationPolicy? _bondCalculationPolicy;
+    private readonly IBondSettlementConsiderationService? _bondSettlementConsiderationService;
 
     public AccountingPostingCandidatePostService(
         IAccountingPostingCandidateWriteBuilder candidateBuilder,
         ILedgerJournalStore? journalStore = null,
         IAtomicTaxLotJournalStore? atomicTaxLotStore = null,
         IAssetAccountingEventProjectionStore? assetAccountingEventStore = null,
-        IAccountingPostingCandidateAuthorityBuilder? authorityBuilder = null)
+        IAccountingPostingCandidateAuthorityBuilder? authorityBuilder = null,
+        IBondCalculationPolicy? bondCalculationPolicy = null,
+        IBondSettlementConsiderationService? bondSettlementConsiderationService = null)
     {
         _candidateBuilder = candidateBuilder ?? throw new ArgumentNullException(nameof(candidateBuilder));
         _authorityBuilder = authorityBuilder ?? candidateBuilder as IAccountingPostingCandidateAuthorityBuilder;
         _journalStore = journalStore;
         _atomicTaxLotStore = atomicTaxLotStore ?? journalStore as IAtomicTaxLotJournalStore;
         _assetAccountingEventStore = assetAccountingEventStore;
+        _bondCalculationPolicy = bondCalculationPolicy;
+        _bondSettlementConsiderationService = bondSettlementConsiderationService;
     }
 
     public async Task<PostedPostingRuleJournalCandidateResultDto> PostCandidateAsync(
@@ -153,7 +160,7 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
             SpineAcquisitionLotFacts.RequireCompleteNewAcquisition(newAcquisition);
         if (existing is null && hasAtomicLotMutation
             && assetAuthority?.Drafted.Projection.DraftedLotMutation is { Intent: AssetLotMutationIntentDto.Amortize } amortization
-            && amortization.Amortization?.CalculationVersion != OpenLotAmortization.ModelVersion)
+            && !OpenLotAmortization.IsCurrentVersion(amortization.Amortization?.CalculationVersion))
             throw new InvalidOperationException("New amortization postings require a fresh preview using the current calculation version.");
         if (existing is not null && !hasAtomicLotMutation)
         {
@@ -1106,7 +1113,17 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
                 approvedWrite.Entry,
                 authority.Drafted.Projection.DraftedCandidateResult!,
                 acquisition.AccountId,
-                request.Candidate.EventAmount);
+                request.Candidate.EventAmount, instruction.Direction);
+            if (acquisition.SettlementConsideration is not null && instruction.Direction != OpenLotDirection.Long)
+                throw new InvalidOperationException("Purchased-interest bond settlement supports held Long acquisitions only.");
+            // Historical replay is proved by the immutable atomic command fingerprint below;
+            // it must not depend on today's analytics availability or calculation model.
+            if (!hasExistingJournal)
+                await BondSettlementPostingGuard.RequireVerifiedAsync(acquisition, _bondSettlementConsiderationService, ct).ConfigureAwait(false);
+            BondSettlementPostingGuard.RequireScope(acquisition, authority.Projected.Projection.Scope.SecurityId,
+                authority.Projected.Projection.Scope.ExpectedSecurityVersion, request.Candidate.Currency);
+            BondSettlementPostingGuard.RequireJournal(acquisition,
+                authority.Drafted.Projection.DraftedCandidateResult!, approvedWrite.Entry);
             acquisitionLot = new LedgerTaxLotRecord(
                 acquisition.TaxLotRecordId,
                 ledgerBook.LedgerBookId,
@@ -1164,7 +1181,8 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
                         request.AcquisitionTermsCompletion is { } completion
                             ? [.. request.Candidate.RetainedEvidence, completion.Evidence]
                             : request.Candidate.RetainedEvidence,
-                        SpineAcquisitionLotCompletion.PostingApprovalEvidence(request))
+                        SpineAcquisitionLotCompletion.PostingApprovalEvidence(request)) with
+                    { Direction = instruction.Direction }
                 };
             }
 
@@ -1199,6 +1217,8 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         {
             var inputs = instruction.Amortization
                 ?? throw new InvalidOperationException("Amortization requires retained canonical lot and reference inputs.");
+            if (!hasExistingJournal && inputs.Reversal is null)
+                await BondAmortizationPolicyGuard.RequireAsync(_bondCalculationPolicy, inputs.Security, ct).ConfigureAwait(false);
             var projection = OpenLotAmortization.Project(inputs);
             RequireAssetAssertion(inputs.ExpectedLot.SecurityId == authority.Context.SecurityId
                 && inputs.ExpectedLot.BookPositionId == authority.Context.BookPositionId
@@ -1272,7 +1292,7 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
             instruction.Amortization,
             instruction.CorporateAction,
             instruction.CapitalReturn,
-            factorPaydown: instruction.FactorPaydown);
+            direction: instruction.Direction, factorPaydown: instruction.FactorPaydown);
         command = await BindRetainedReferenceVersionsAsync(command, authority.Context, hasExistingJournal, ct).ConfigureAwait(false);
         return await atomicStore.AppendAssetPostingAsync(command, ct).ConfigureAwait(false);
     }
@@ -1281,14 +1301,14 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         JournalEntry entry,
         PostingRuleJournalCandidateResultDto retainedCandidate,
         string requestedAccountId,
-        decimal eventAmount)
+        decimal eventAmount, OpenLotDirection direction)
     {
         var accountId = RequireText(requestedAccountId, nameof(requestedAccountId));
         var indexes = retainedCandidate.GeneratedPostingLines
             .Select((line, index) => (line, index))
             .Where(item =>
                 string.Equals(item.line.AccountPath, accountId, StringComparison.Ordinal) &&
-                item.line.Side == AccountingTemplateLineSideDto.Debit &&
+                item.line.Side == (direction == OpenLotDirection.Short ? AccountingTemplateLineSideDto.Credit : AccountingTemplateLineSideDto.Debit) &&
                 Math.Abs(item.line.Amount) == eventAmount)
             .Select(static item => item.index)
             .ToArray();
@@ -1299,7 +1319,8 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         }
 
         var durable = entry.Lines[indexes[0]];
-        if (durable.Debit != eventAmount || durable.Credit != 0m)
+        if (durable.Debit != (direction == OpenLotDirection.Short ? 0m : eventAmount)
+            || durable.Credit != (direction == OpenLotDirection.Short ? eventAmount : 0m))
             throw new InvalidOperationException("Acquisition asset-account journal line does not match the retained acquisition amount.");
         if (retainedCandidate.GeneratedPostingLines.Count(line =>
                 string.Equals(line.AccountPath, accountId, StringComparison.Ordinal)) != 1 ||
@@ -1325,14 +1346,15 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
             .Select((line, index) => (line, index))
             .Where(item =>
                 string.Equals(item.line.AccountPath, assetAccountId, StringComparison.Ordinal) &&
-                item.line.Side == AccountingTemplateLineSideDto.Credit &&
+                item.line.Side == (instruction.Direction == OpenLotDirection.Short ? AccountingTemplateLineSideDto.Debit : AccountingTemplateLineSideDto.Credit) &&
                 Math.Abs(item.line.Amount) == expectedCostBasis)
             .Select(static item => item.index)
             .ToArray();
         RequireAssetAssertion(assetReliefIndexes.Length == 1 && assetReliefIndexes[0] < durableEntry.Lines.Count,
             "Disposal journal must contain exactly one retained asset-relief credit for selected-lot cost basis.");
         var durableRelief = durableEntry.Lines[assetReliefIndexes[0]];
-        RequireAssetAssertion(durableRelief.Credit == expectedCostBasis && durableRelief.Debit == 0m,
+        RequireAssetAssertion(durableRelief.Credit == (instruction.Direction == OpenLotDirection.Short ? 0m : expectedCostBasis)
+            && durableRelief.Debit == (instruction.Direction == OpenLotDirection.Short ? expectedCostBasis : 0m),
             "Durable disposal asset-relief line does not equal selected-lot cost basis.");
         RequireAssetAssertion(retainedCandidate.GeneratedPostingLines.Count(line =>
                                   string.Equals(line.AccountPath, assetAccountId, StringComparison.Ordinal)) == 1 &&

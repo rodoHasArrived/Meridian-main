@@ -838,6 +838,10 @@ export function apiPostJson<T>(path: string, body?: unknown, options: ApiRequest
   return postJson<T>(path, body, options);
 }
 
+export function apiPutJson<T>(path: string, body?: unknown, options: ApiRequestOptions = {}): Promise<T> {
+  return putJson<T>(path, body, options);
+}
+
 async function putJson<T>(path: string, body?: unknown, options: ApiRequestOptions = {}): Promise<T> {
   const response = await fetch(path, {
     method: "PUT",

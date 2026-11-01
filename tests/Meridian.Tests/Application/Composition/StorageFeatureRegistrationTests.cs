@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Features;
@@ -9,14 +10,18 @@ using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Application.UI;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.DirectLending;
+using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Store;
 using Meridian.Domain.Reconciliation;
+using Meridian.FinancialOperations.Ledger;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Reconciliation;
+using Meridian.Instruments.FixedIncome;
 using Meridian.PortfolioRecords.FundAccounts;
+using Meridian.Storage;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.FundAccounts;
@@ -181,6 +186,52 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         provider.GetRequiredService<ISecurityIdentityQueryService>().Should().BeSameAs(identity);
         provider.GetRequiredService<ISecurityTradingParametersQueryService>().Should().BeSameAs(trading);
         provider.GetRequiredService<ISecurityCorporateActionsQueryService>().Should().BeSameAs(corporateActions);
+    }
+
+    [Fact]
+    public async Task MinimalComposition_ResolvesAmortizationWithTheRetainedBondPolicyAcrossRestart()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "meridian-amortization-composition-" + Guid.NewGuid().ToString("N"));
+        var configPath = Path.Combine(directory, "appsettings.json");
+        var dataRoot = Path.Combine(directory, "data");
+        Directory.CreateDirectory(directory);
+        File.WriteAllText(configPath, JsonSerializer.Serialize(new { DataRoot = dataRoot }));
+        var options = CompositionOptions.Minimal with
+        {
+            ConfigPath = configPath,
+            EnableProcessWideHostedServices = false,
+            Configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["DOTNET_ENVIRONMENT"] = "Test",
+                ["MERIDIAN_USE_INMEMORY_GOVERNANCE"] = "true"
+            }).Build()
+        };
+        try
+        {
+            using (var provider = new ServiceCollection().AddLogging().AddMarketDataServices(options).BuildServiceProvider())
+            {
+                provider.GetRequiredService<ConfigStore>().ConfigPath.Should().Be(configPath);
+                provider.GetRequiredService<StorageOptions>().RootPath.Should().Be(dataRoot);
+                provider.GetRequiredService<CanonicalLotAmortizationService>().Should().NotBeNull();
+                provider.GetRequiredService<IBondCalculationPolicy>().Should()
+                    .BeSameAs(provider.GetRequiredService<FileBondCalculationPolicy>());
+                (await provider.GetRequiredService<FileBondCalculationPolicy>().ReadAsync()).Should().BeNull();
+            }
+
+            // A retained enabled marker without its receipt must still block after the graph is
+            // rebuilt. Composition must not substitute an in-memory or permissive policy.
+            var policyDirectory = Path.Combine(dataRoot, "bonds");
+            Directory.CreateDirectory(policyDirectory);
+            File.WriteAllText(Path.Combine(policyDirectory, "cutover.json.enabled"), new string('a', 64));
+            using var restarted = new ServiceCollection().AddLogging().AddMarketDataServices(options).BuildServiceProvider();
+            restarted.GetRequiredService<CanonicalLotAmortizationService>().Should().NotBeNull();
+            await restarted.GetRequiredService<FileBondCalculationPolicy>().Invoking(policy => policy.ReadAsync())
+                .Should().ThrowAsync<InvalidDataException>().WithMessage("*receipt is missing*");
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
     }
 
     [Fact]

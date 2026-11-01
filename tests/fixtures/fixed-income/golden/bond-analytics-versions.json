@@ -1,0 +1,4182 @@
+{
+  "description": "Golden bond-analytics-v1 and bond-analytics-v2 results captured before the v1 kernel clones were folded into the shared contractual economics kernel.",
+  "caseCount": 72,
+  "cases": {
+    "bond-analytics-v1|regular-level-30-360|on-coupon|yield-5pct": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "100.0",
+      "dirtyPrice": "100",
+      "accruedInterest": "0.0",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.05",
+      "macaulayDuration": "1.928011781605",
+      "modifiedDuration": "1.880987104005",
+      "convexity": "4.531141151435",
+      "dv01": "0.018809871040",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.0"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.5"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "2.0"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|regular-level-30-360|on-coupon|clean-98.5": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.499999999981",
+      "dirtyPrice": "98.499999999981",
+      "accruedInterest": "0.0",
+      "yieldToMaturity": "0.058052021965",
+      "currentYield": "0.0507614213198067458579195566",
+      "macaulayDuration": "1.927387269787",
+      "modifiedDuration": "1.873020943316",
+      "convexity": "4.493866627703",
+      "dv01": "0.018449256292",
+      "yieldToWorst": "0.058052021965",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.0"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.5"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "2.0"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|regular-level-30-360|mid-period|yield-5pct": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "99.992283656583",
+      "dirtyPrice": "101.242283656583",
+      "accruedInterest": "1.250",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.0500038584694412527270614869",
+      "macaulayDuration": "1.678011781605",
+      "modifiedDuration": "1.637084664981",
+      "convexity": "3.554098066792",
+      "dv01": "0.016574219002",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.25"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.75"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.25"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.75"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|regular-level-30-360|mid-period|clean-98.5": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.499999999949",
+      "dirtyPrice": "99.749999999949",
+      "accruedInterest": "1.250",
+      "yieldToMaturity": "0.059092668319",
+      "currentYield": "0.0507614213198232368780437663",
+      "macaulayDuration": "1.677306323987",
+      "modifiedDuration": "1.629170313502",
+      "convexity": "3.520980616117",
+      "dv01": "0.016250973877",
+      "yieldToWorst": "0.059092668319",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.25"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.75"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.25"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.75"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|regular-level-30-360|on-coupon|yield-5pct": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "100",
+      "dirtyPrice": "100",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.05",
+      "macaulayDuration": "1.928011781605",
+      "modifiedDuration": "1.880987104005",
+      "convexity": "4.531141151435",
+      "dv01": "0.018809871040",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.0"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.5"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "2.0"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|regular-level-30-360|on-coupon|clean-98.5": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.499999999981",
+      "dirtyPrice": "98.499999999981",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.058052021965",
+      "currentYield": "0.0507614213198067458579195566",
+      "macaulayDuration": "1.927387269787",
+      "modifiedDuration": "1.873020943316",
+      "convexity": "4.493866627703",
+      "dv01": "0.018449256292",
+      "yieldToWorst": "0.058052021965",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.0"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.5"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "2.0"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|regular-level-30-360|mid-period|yield-5pct": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "99.992283656583",
+      "dirtyPrice": "101.242283656583",
+      "accruedInterest": "1.250",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.0500038584694412527270614869",
+      "macaulayDuration": "1.678011781605",
+      "modifiedDuration": "1.637084664981",
+      "convexity": "3.554098066792",
+      "dv01": "0.016574219002",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.25"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.75"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.25"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.75"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|regular-level-30-360|mid-period|clean-98.5": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.499999999949",
+      "dirtyPrice": "99.749999999949",
+      "accruedInterest": "1.250",
+      "yieldToMaturity": "0.059092668319",
+      "currentYield": "0.0507614213198232368780437663",
+      "macaulayDuration": "1.677306323987",
+      "modifiedDuration": "1.629170313502",
+      "convexity": "3.520980616117",
+      "dv01": "0.016250973877",
+      "yieldToWorst": "0.059092668319",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.25"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.75"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.25"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.75"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|regular-daycount-30-360|on-coupon|yield-5pct": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "100.00",
+      "dirtyPrice": "100",
+      "accruedInterest": "0.00",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.05",
+      "macaulayDuration": "1.928011781605",
+      "modifiedDuration": "1.880987104005",
+      "convexity": "4.531141151435",
+      "dv01": "0.018809871040",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "0.5"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "1.0"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "1.5"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.500",
+          "principal": "100",
+          "timeInYears": "2.0"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|regular-daycount-30-360|on-coupon|clean-98.5": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.499999999981",
+      "dirtyPrice": "98.499999999981",
+      "accruedInterest": "0.00",
+      "yieldToMaturity": "0.058052021965",
+      "currentYield": "0.0507614213198067458579195566",
+      "macaulayDuration": "1.927387269787",
+      "modifiedDuration": "1.873020943316",
+      "convexity": "4.493866627703",
+      "dv01": "0.018449256292",
+      "yieldToWorst": "0.058052021965",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "0.5"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "1.0"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "1.5"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.500",
+          "principal": "100",
+          "timeInYears": "2.0"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|regular-daycount-30-360|mid-period|yield-5pct": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "99.992283656583",
+      "dirtyPrice": "101.242283656583",
+      "accruedInterest": "1.2500",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.0500038584694412527270614869",
+      "macaulayDuration": "1.678011781605",
+      "modifiedDuration": "1.637084664981",
+      "convexity": "3.554098066792",
+      "dv01": "0.016574219002",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "0.25"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "0.75"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "1.25"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.500",
+          "principal": "100",
+          "timeInYears": "1.75"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|regular-daycount-30-360|mid-period|clean-98.5": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.499999999949",
+      "dirtyPrice": "99.749999999949",
+      "accruedInterest": "1.2500",
+      "yieldToMaturity": "0.059092668319",
+      "currentYield": "0.0507614213198232368780437663",
+      "macaulayDuration": "1.677306323987",
+      "modifiedDuration": "1.629170313502",
+      "convexity": "3.520980616117",
+      "dv01": "0.016250973877",
+      "yieldToWorst": "0.059092668319",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "0.25"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "0.75"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "1.25"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.500",
+          "principal": "100",
+          "timeInYears": "1.75"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|regular-daycount-30-360|on-coupon|yield-5pct": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "100",
+      "dirtyPrice": "100",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.05",
+      "macaulayDuration": "1.928011781605",
+      "modifiedDuration": "1.880987104005",
+      "convexity": "4.531141151435",
+      "dv01": "0.018809871040",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "0.5"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "1.0"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "1.5"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.500",
+          "principal": "100",
+          "timeInYears": "2.0"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|regular-daycount-30-360|on-coupon|clean-98.5": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.499999999981",
+      "dirtyPrice": "98.499999999981",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.058052021965",
+      "currentYield": "0.0507614213198067458579195566",
+      "macaulayDuration": "1.927387269787",
+      "modifiedDuration": "1.873020943316",
+      "convexity": "4.493866627703",
+      "dv01": "0.018449256292",
+      "yieldToWorst": "0.058052021965",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "0.5"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "1.0"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "1.5"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.500",
+          "principal": "100",
+          "timeInYears": "2.0"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|regular-daycount-30-360|mid-period|yield-5pct": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "99.992283656583",
+      "dirtyPrice": "101.242283656583",
+      "accruedInterest": "1.2500",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.0500038584694412527270614869",
+      "macaulayDuration": "1.678011781605",
+      "modifiedDuration": "1.637084664981",
+      "convexity": "3.554098066792",
+      "dv01": "0.016574219002",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "0.25"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "0.75"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "1.25"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.500",
+          "principal": "100",
+          "timeInYears": "1.75"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|regular-daycount-30-360|mid-period|clean-98.5": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.499999999949",
+      "dirtyPrice": "99.749999999949",
+      "accruedInterest": "1.2500",
+      "yieldToMaturity": "0.059092668319",
+      "currentYield": "0.0507614213198232368780437663",
+      "macaulayDuration": "1.677306323987",
+      "modifiedDuration": "1.629170313502",
+      "convexity": "3.520980616117",
+      "dv01": "0.016250973877",
+      "yieldToWorst": "0.059092668319",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "0.25"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "0.75"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.500",
+          "principal": "0",
+          "timeInYears": "1.25"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.500",
+          "principal": "100",
+          "timeInYears": "1.75"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|stub-icma-level|issue|yield-5pct": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "100.004294355846",
+      "dirtyPrice": "100.004294355846",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.0499978529142805011139315758",
+      "macaulayDuration": "1.067900868013",
+      "modifiedDuration": "1.041854505378",
+      "convexity": "1.603200033768",
+      "dv01": "0.010418992463",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "0d66ac97-5022-5b84-97d0-0facb8a60f30",
+          "paymentDate": "2026-01-01",
+          "accrualStart": "2025-12-01",
+          "accrualEnd": "2026-01-01",
+          "interest": "0.4211956521739130434782608695",
+          "principal": "0",
+          "timeInYears": "0.0842391304347826086956521739"
+        },
+        {
+          "flowId": "7c6ad03f-9d3c-56ae-85b3-fee5dd1c0ba1",
+          "paymentDate": "2026-07-01",
+          "accrualStart": "2026-01-01",
+          "accrualEnd": "2026-07-01",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5842391304347826086956521739"
+        },
+        {
+          "flowId": "8852ad99-c5a8-500a-8452-9360ca344902",
+          "paymentDate": "2027-01-01",
+          "accrualStart": "2026-07-01",
+          "accrualEnd": "2027-01-01",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.0842391304347826086956521739"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|stub-icma-level|issue|clean-98.5": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.500000000010",
+      "dirtyPrice": "98.500000000010",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.064600411410",
+      "currentYield": "0.0507614213197918008709320008",
+      "macaulayDuration": "1.067758258350",
+      "modifiedDuration": "1.034348586244",
+      "convexity": "1.580342707108",
+      "dv01": "0.010188333575",
+      "yieldToWorst": "0.064600411410",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "0d66ac97-5022-5b84-97d0-0facb8a60f30",
+          "paymentDate": "2026-01-01",
+          "accrualStart": "2025-12-01",
+          "accrualEnd": "2026-01-01",
+          "interest": "0.4211956521739130434782608695",
+          "principal": "0",
+          "timeInYears": "0.0842391304347826086956521739"
+        },
+        {
+          "flowId": "7c6ad03f-9d3c-56ae-85b3-fee5dd1c0ba1",
+          "paymentDate": "2026-07-01",
+          "accrualStart": "2026-01-01",
+          "accrualEnd": "2026-07-01",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5842391304347826086956521739"
+        },
+        {
+          "flowId": "8852ad99-c5a8-500a-8452-9360ca344902",
+          "paymentDate": "2027-01-01",
+          "accrualStart": "2026-07-01",
+          "accrualEnd": "2027-01-01",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.0842391304347826086956521739"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|stub-icma-level|in-stub|yield-5pct": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "100.001456555891",
+      "dirtyPrice": "100.259608729804",
+      "accruedInterest": "0.258152173913",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.0499992717326621208121081857",
+      "macaulayDuration": "1.016270433230",
+      "modifiedDuration": "0.991483349493",
+      "convexity": "1.476207160159",
+      "dv01": "0.009940573268",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "0d66ac97-5022-5b84-97d0-0facb8a60f30",
+          "paymentDate": "2026-01-01",
+          "accrualStart": "2025-12-01",
+          "accrualEnd": "2026-01-01",
+          "interest": "0.4211956521739130434782608695",
+          "principal": "0",
+          "timeInYears": "0.0326086956521739130434782609"
+        },
+        {
+          "flowId": "7c6ad03f-9d3c-56ae-85b3-fee5dd1c0ba1",
+          "paymentDate": "2026-07-01",
+          "accrualStart": "2026-01-01",
+          "accrualEnd": "2026-07-01",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5326086956521739130434782609"
+        },
+        {
+          "flowId": "8852ad99-c5a8-500a-8452-9360ca344902",
+          "paymentDate": "2027-01-01",
+          "accrualStart": "2026-07-01",
+          "accrualEnd": "2027-01-01",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.0326086956521739130434782609"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|stub-icma-level|in-stub|clean-98.5": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.499999999988",
+      "dirtyPrice": "98.758152173901",
+      "accruedInterest": "0.258152173913",
+      "yieldToMaturity": "0.065276319273",
+      "currentYield": "0.0507614213198031384472673872",
+      "macaulayDuration": "1.016121213107",
+      "modifiedDuration": "0.984005097647",
+      "convexity": "1.454189608824",
+      "dv01": "0.009717852517",
+      "yieldToWorst": "0.065276319273",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "0d66ac97-5022-5b84-97d0-0facb8a60f30",
+          "paymentDate": "2026-01-01",
+          "accrualStart": "2025-12-01",
+          "accrualEnd": "2026-01-01",
+          "interest": "0.4211956521739130434782608695",
+          "principal": "0",
+          "timeInYears": "0.0326086956521739130434782609"
+        },
+        {
+          "flowId": "7c6ad03f-9d3c-56ae-85b3-fee5dd1c0ba1",
+          "paymentDate": "2026-07-01",
+          "accrualStart": "2026-01-01",
+          "accrualEnd": "2026-07-01",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5326086956521739130434782609"
+        },
+        {
+          "flowId": "8852ad99-c5a8-500a-8452-9360ca344902",
+          "paymentDate": "2027-01-01",
+          "accrualStart": "2026-07-01",
+          "accrualEnd": "2027-01-01",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.0326086956521739130434782609"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|stub-icma-level|issue|yield-5pct": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "100.004294355846",
+      "dirtyPrice": "100.004294355846",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.0499978529142805011139315758",
+      "macaulayDuration": "1.067900868013",
+      "modifiedDuration": "1.041854505378",
+      "convexity": "1.603200033768",
+      "dv01": "0.010418992463",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "0d66ac97-5022-5b84-97d0-0facb8a60f30",
+          "paymentDate": "2026-01-01",
+          "accrualStart": "2025-12-01",
+          "accrualEnd": "2026-01-01",
+          "interest": "0.4211956521739130434782608695",
+          "principal": "0",
+          "timeInYears": "0.0842391304347826086956521739"
+        },
+        {
+          "flowId": "7c6ad03f-9d3c-56ae-85b3-fee5dd1c0ba1",
+          "paymentDate": "2026-07-01",
+          "accrualStart": "2026-01-01",
+          "accrualEnd": "2026-07-01",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5842391304347826086956521739"
+        },
+        {
+          "flowId": "8852ad99-c5a8-500a-8452-9360ca344902",
+          "paymentDate": "2027-01-01",
+          "accrualStart": "2026-07-01",
+          "accrualEnd": "2027-01-01",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.0842391304347826086956521739"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|stub-icma-level|issue|clean-98.5": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.500000000010",
+      "dirtyPrice": "98.500000000010",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.064600411410",
+      "currentYield": "0.0507614213197918008709320008",
+      "macaulayDuration": "1.067758258350",
+      "modifiedDuration": "1.034348586244",
+      "convexity": "1.580342707108",
+      "dv01": "0.010188333575",
+      "yieldToWorst": "0.064600411410",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "0d66ac97-5022-5b84-97d0-0facb8a60f30",
+          "paymentDate": "2026-01-01",
+          "accrualStart": "2025-12-01",
+          "accrualEnd": "2026-01-01",
+          "interest": "0.4211956521739130434782608695",
+          "principal": "0",
+          "timeInYears": "0.0842391304347826086956521739"
+        },
+        {
+          "flowId": "7c6ad03f-9d3c-56ae-85b3-fee5dd1c0ba1",
+          "paymentDate": "2026-07-01",
+          "accrualStart": "2026-01-01",
+          "accrualEnd": "2026-07-01",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5842391304347826086956521739"
+        },
+        {
+          "flowId": "8852ad99-c5a8-500a-8452-9360ca344902",
+          "paymentDate": "2027-01-01",
+          "accrualStart": "2026-07-01",
+          "accrualEnd": "2027-01-01",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.0842391304347826086956521739"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|stub-icma-level|in-stub|yield-5pct": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "100.001456555891",
+      "dirtyPrice": "100.259608729804",
+      "accruedInterest": "0.258152173913",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.0499992717326621208121081857",
+      "macaulayDuration": "1.016270433230",
+      "modifiedDuration": "0.991483349493",
+      "convexity": "1.476207160159",
+      "dv01": "0.009940573268",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "0d66ac97-5022-5b84-97d0-0facb8a60f30",
+          "paymentDate": "2026-01-01",
+          "accrualStart": "2025-12-01",
+          "accrualEnd": "2026-01-01",
+          "interest": "0.4211956521739130434782608695",
+          "principal": "0",
+          "timeInYears": "0.0326086956521739130434782609"
+        },
+        {
+          "flowId": "7c6ad03f-9d3c-56ae-85b3-fee5dd1c0ba1",
+          "paymentDate": "2026-07-01",
+          "accrualStart": "2026-01-01",
+          "accrualEnd": "2026-07-01",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5326086956521739130434782609"
+        },
+        {
+          "flowId": "8852ad99-c5a8-500a-8452-9360ca344902",
+          "paymentDate": "2027-01-01",
+          "accrualStart": "2026-07-01",
+          "accrualEnd": "2027-01-01",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.0326086956521739130434782609"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|stub-icma-level|in-stub|clean-98.5": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.499999999988",
+      "dirtyPrice": "98.758152173901",
+      "accruedInterest": "0.258152173913",
+      "yieldToMaturity": "0.065276319273",
+      "currentYield": "0.0507614213198031384472673872",
+      "macaulayDuration": "1.016121213107",
+      "modifiedDuration": "0.984005097647",
+      "convexity": "1.454189608824",
+      "dv01": "0.009717852517",
+      "yieldToWorst": "0.065276319273",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "0d66ac97-5022-5b84-97d0-0facb8a60f30",
+          "paymentDate": "2026-01-01",
+          "accrualStart": "2025-12-01",
+          "accrualEnd": "2026-01-01",
+          "interest": "0.4211956521739130434782608695",
+          "principal": "0",
+          "timeInYears": "0.0326086956521739130434782609"
+        },
+        {
+          "flowId": "7c6ad03f-9d3c-56ae-85b3-fee5dd1c0ba1",
+          "paymentDate": "2026-07-01",
+          "accrualStart": "2026-01-01",
+          "accrualEnd": "2026-07-01",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5326086956521739130434782609"
+        },
+        {
+          "flowId": "8852ad99-c5a8-500a-8452-9360ca344902",
+          "paymentDate": "2027-01-01",
+          "accrualStart": "2026-07-01",
+          "accrualEnd": "2027-01-01",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.0326086956521739130434782609"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|stub-act365-daycount|issue|yield-5pct": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "100.007254949942",
+      "dirtyPrice": "100.007254949942",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.0499963727881814017296123627",
+      "macaulayDuration": "1.067966689603",
+      "modifiedDuration": "1.041918721564",
+      "convexity": "1.603352235460",
+      "dv01": "0.010419943122",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "0d66ac97-5022-5b84-97d0-0facb8a60f30",
+          "paymentDate": "2026-01-01",
+          "accrualStart": "2025-12-01",
+          "accrualEnd": "2026-01-01",
+          "interest": "0.4246575342465753424657534245",
+          "principal": "0",
+          "timeInYears": "0.0842391304347826086956521739"
+        },
+        {
+          "flowId": "7c6ad03f-9d3c-56ae-85b3-fee5dd1c0ba1",
+          "paymentDate": "2026-07-01",
+          "accrualStart": "2026-01-01",
+          "accrualEnd": "2026-07-01",
+          "interest": "2.4794520547945205479452054795",
+          "principal": "0",
+          "timeInYears": "0.5842391304347826086956521739"
+        },
+        {
+          "flowId": "8852ad99-c5a8-500a-8452-9360ca344902",
+          "paymentDate": "2027-01-01",
+          "accrualStart": "2026-07-01",
+          "accrualEnd": "2027-01-01",
+          "interest": "2.5205479452054794520547945205",
+          "principal": "100",
+          "timeInYears": "1.0842391304347826086956521739"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|stub-act365-daycount|issue|clean-98.5": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.500000000027",
+      "dirtyPrice": "98.500000000027",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.064628126469",
+      "currentYield": "0.0507614213197830400164910239",
+      "macaulayDuration": "1.067824000934",
+      "modifiedDuration": "1.034398386077",
+      "convexity": "1.580450452547",
+      "dv01": "0.010188824103",
+      "yieldToWorst": "0.064628126469",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "0d66ac97-5022-5b84-97d0-0facb8a60f30",
+          "paymentDate": "2026-01-01",
+          "accrualStart": "2025-12-01",
+          "accrualEnd": "2026-01-01",
+          "interest": "0.4246575342465753424657534245",
+          "principal": "0",
+          "timeInYears": "0.0842391304347826086956521739"
+        },
+        {
+          "flowId": "7c6ad03f-9d3c-56ae-85b3-fee5dd1c0ba1",
+          "paymentDate": "2026-07-01",
+          "accrualStart": "2026-01-01",
+          "accrualEnd": "2026-07-01",
+          "interest": "2.4794520547945205479452054795",
+          "principal": "0",
+          "timeInYears": "0.5842391304347826086956521739"
+        },
+        {
+          "flowId": "8852ad99-c5a8-500a-8452-9360ca344902",
+          "paymentDate": "2027-01-01",
+          "accrualStart": "2026-07-01",
+          "accrualEnd": "2027-01-01",
+          "interest": "2.5205479452054794520547945205",
+          "principal": "100",
+          "timeInYears": "1.0842391304347826086956521739"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|stub-act365-daycount|after-stub|yield-5pct": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "99.999994182561",
+      "dirtyPrice": "100.931501031876",
+      "accruedInterest": "0.931506849315",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.0500000029087196692129924375",
+      "macaulayDuration": "0.800059748923",
+      "modifiedDuration": "0.780546096510",
+      "convexity": "0.995623235850",
+      "dv01": "0.007878168915",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "7c6ad03f-9d3c-56ae-85b3-fee5dd1c0ba1",
+          "paymentDate": "2026-07-01",
+          "accrualStart": "2026-01-01",
+          "accrualEnd": "2026-07-01",
+          "interest": "2.4794520547945205479452054795",
+          "principal": "0",
+          "timeInYears": "0.3121546961325966850828729282"
+        },
+        {
+          "flowId": "8852ad99-c5a8-500a-8452-9360ca344902",
+          "paymentDate": "2027-01-01",
+          "accrualStart": "2026-07-01",
+          "accrualEnd": "2027-01-01",
+          "interest": "2.5205479452054794520547945205",
+          "principal": "100",
+          "timeInYears": "0.8121546961325966850828729282"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|stub-act365-daycount|after-stub|clean-98.5": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.500000000063",
+      "dirtyPrice": "99.431506849378",
+      "accruedInterest": "0.931506849315",
+      "yieldToMaturity": "0.069274153935",
+      "currentYield": "0.0507614213197644876188513181",
+      "macaulayDuration": "0.799948807945",
+      "modifiedDuration": "0.773168510730",
+      "convexity": "0.976993907297",
+      "dv01": "0.007687731007",
+      "yieldToWorst": "0.069274153935",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "7c6ad03f-9d3c-56ae-85b3-fee5dd1c0ba1",
+          "paymentDate": "2026-07-01",
+          "accrualStart": "2026-01-01",
+          "accrualEnd": "2026-07-01",
+          "interest": "2.4794520547945205479452054795",
+          "principal": "0",
+          "timeInYears": "0.3121546961325966850828729282"
+        },
+        {
+          "flowId": "8852ad99-c5a8-500a-8452-9360ca344902",
+          "paymentDate": "2027-01-01",
+          "accrualStart": "2026-07-01",
+          "accrualEnd": "2027-01-01",
+          "interest": "2.5205479452054794520547945205",
+          "principal": "100",
+          "timeInYears": "0.8121546961325966850828729282"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|stub-act365-daycount|issue|yield-5pct": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "100.007254949942",
+      "dirtyPrice": "100.007254949942",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.0499963727881814017296123627",
+      "macaulayDuration": "1.067966689603",
+      "modifiedDuration": "1.041918721564",
+      "convexity": "1.603352235460",
+      "dv01": "0.010419943122",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "0d66ac97-5022-5b84-97d0-0facb8a60f30",
+          "paymentDate": "2026-01-01",
+          "accrualStart": "2025-12-01",
+          "accrualEnd": "2026-01-01",
+          "interest": "0.4246575342465753424657534245",
+          "principal": "0",
+          "timeInYears": "0.0842391304347826086956521739"
+        },
+        {
+          "flowId": "7c6ad03f-9d3c-56ae-85b3-fee5dd1c0ba1",
+          "paymentDate": "2026-07-01",
+          "accrualStart": "2026-01-01",
+          "accrualEnd": "2026-07-01",
+          "interest": "2.4794520547945205479452054795",
+          "principal": "0",
+          "timeInYears": "0.5842391304347826086956521739"
+        },
+        {
+          "flowId": "8852ad99-c5a8-500a-8452-9360ca344902",
+          "paymentDate": "2027-01-01",
+          "accrualStart": "2026-07-01",
+          "accrualEnd": "2027-01-01",
+          "interest": "2.5205479452054794520547945205",
+          "principal": "100",
+          "timeInYears": "1.0842391304347826086956521739"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|stub-act365-daycount|issue|clean-98.5": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.500000000027",
+      "dirtyPrice": "98.500000000027",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.064628126469",
+      "currentYield": "0.0507614213197830400164910239",
+      "macaulayDuration": "1.067824000934",
+      "modifiedDuration": "1.034398386077",
+      "convexity": "1.580450452547",
+      "dv01": "0.010188824103",
+      "yieldToWorst": "0.064628126469",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "0d66ac97-5022-5b84-97d0-0facb8a60f30",
+          "paymentDate": "2026-01-01",
+          "accrualStart": "2025-12-01",
+          "accrualEnd": "2026-01-01",
+          "interest": "0.4246575342465753424657534245",
+          "principal": "0",
+          "timeInYears": "0.0842391304347826086956521739"
+        },
+        {
+          "flowId": "7c6ad03f-9d3c-56ae-85b3-fee5dd1c0ba1",
+          "paymentDate": "2026-07-01",
+          "accrualStart": "2026-01-01",
+          "accrualEnd": "2026-07-01",
+          "interest": "2.4794520547945205479452054795",
+          "principal": "0",
+          "timeInYears": "0.5842391304347826086956521739"
+        },
+        {
+          "flowId": "8852ad99-c5a8-500a-8452-9360ca344902",
+          "paymentDate": "2027-01-01",
+          "accrualStart": "2026-07-01",
+          "accrualEnd": "2027-01-01",
+          "interest": "2.5205479452054794520547945205",
+          "principal": "100",
+          "timeInYears": "1.0842391304347826086956521739"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|stub-act365-daycount|after-stub|yield-5pct": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "99.999994182561",
+      "dirtyPrice": "100.931501031876",
+      "accruedInterest": "0.931506849315",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.0500000029087196692129924375",
+      "macaulayDuration": "0.800059748923",
+      "modifiedDuration": "0.780546096510",
+      "convexity": "0.995623235850",
+      "dv01": "0.007878168915",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "7c6ad03f-9d3c-56ae-85b3-fee5dd1c0ba1",
+          "paymentDate": "2026-07-01",
+          "accrualStart": "2026-01-01",
+          "accrualEnd": "2026-07-01",
+          "interest": "2.4794520547945205479452054795",
+          "principal": "0",
+          "timeInYears": "0.3121546961325966850828729282"
+        },
+        {
+          "flowId": "8852ad99-c5a8-500a-8452-9360ca344902",
+          "paymentDate": "2027-01-01",
+          "accrualStart": "2026-07-01",
+          "accrualEnd": "2027-01-01",
+          "interest": "2.5205479452054794520547945205",
+          "principal": "100",
+          "timeInYears": "0.8121546961325966850828729282"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|stub-act365-daycount|after-stub|clean-98.5": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.500000000063",
+      "dirtyPrice": "99.431506849378",
+      "accruedInterest": "0.931506849315",
+      "yieldToMaturity": "0.069274153935",
+      "currentYield": "0.0507614213197644876188513181",
+      "macaulayDuration": "0.799948807945",
+      "modifiedDuration": "0.773168510730",
+      "convexity": "0.976993907297",
+      "dv01": "0.007687731007",
+      "yieldToWorst": "0.069274153935",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "7c6ad03f-9d3c-56ae-85b3-fee5dd1c0ba1",
+          "paymentDate": "2026-07-01",
+          "accrualStart": "2026-01-01",
+          "accrualEnd": "2026-07-01",
+          "interest": "2.4794520547945205479452054795",
+          "principal": "0",
+          "timeInYears": "0.3121546961325966850828729282"
+        },
+        {
+          "flowId": "8852ad99-c5a8-500a-8452-9360ca344902",
+          "paymentDate": "2027-01-01",
+          "accrualStart": "2026-07-01",
+          "accrualEnd": "2027-01-01",
+          "interest": "2.5205479452054794520547945205",
+          "principal": "100",
+          "timeInYears": "0.8121546961325966850828729282"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|payment-lag-2bd|issue|yield-5pct": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "99.959403896246",
+      "dirtyPrice": "99.959403896246",
+      "accruedInterest": "0.0",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.0500203062954417661331520644",
+      "macaulayDuration": "0.996026907464",
+      "modifiedDuration": "0.971733568258",
+      "convexity": "1.423942078438",
+      "dv01": "0.009713390823",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping",
+        "Calendar",
+        "DeclaredCalendar"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "59c78a02-ce00-5998-a3b4-82c8fdaae383",
+          "paymentDate": "2026-08-03",
+          "accrualStart": "2026-01-30",
+          "accrualEnd": "2026-07-30",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5083333333333333333333333333"
+        },
+        {
+          "flowId": "58838efa-d981-5442-8d2b-ebebfc556559",
+          "paymentDate": "2027-02-02",
+          "accrualStart": "2026-07-30",
+          "accrualEnd": "2027-01-30",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.0082191780821917808219178082"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|payment-lag-2bd|issue|clean-98.5": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.499999999994",
+      "dirtyPrice": "98.499999999994",
+      "accruedInterest": "0.0",
+      "yieldToMaturity": "0.065192103462",
+      "currentYield": "0.0507614213198000463809940995",
+      "macaulayDuration": "0.995938793076",
+      "modifiedDuration": "0.964499904301",
+      "convexity": "1.402902693578",
+      "dv01": "0.009500324057",
+      "yieldToWorst": "0.065192103462",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping",
+        "Calendar",
+        "DeclaredCalendar"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "59c78a02-ce00-5998-a3b4-82c8fdaae383",
+          "paymentDate": "2026-08-03",
+          "accrualStart": "2026-01-30",
+          "accrualEnd": "2026-07-30",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5083333333333333333333333333"
+        },
+        {
+          "flowId": "58838efa-d981-5442-8d2b-ebebfc556559",
+          "paymentDate": "2027-02-02",
+          "accrualStart": "2026-07-30",
+          "accrualEnd": "2027-01-30",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.0082191780821917808219178082"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|payment-lag-2bd|mid-period|yield-5pct": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "99.951174508438",
+      "dirtyPrice": "101.256730063994",
+      "accruedInterest": "1.305555555556",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.0500244246712467986519159864",
+      "macaulayDuration": "0.734915796353",
+      "modifiedDuration": "0.716991020832",
+      "convexity": "0.869487417433",
+      "dv01": "0.007260016625",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping",
+        "Calendar",
+        "DeclaredCalendar"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "59c78a02-ce00-5998-a3b4-82c8fdaae383",
+          "paymentDate": "2026-08-03",
+          "accrualStart": "2026-01-30",
+          "accrualEnd": "2026-07-30",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.2472222222222222222222222222"
+        },
+        {
+          "flowId": "58838efa-d981-5442-8d2b-ebebfc556559",
+          "paymentDate": "2027-02-02",
+          "accrualStart": "2026-07-30",
+          "accrualEnd": "2027-01-30",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "0.7471080669710806697108066971"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|payment-lag-2bd|mid-period|clean-98.5": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.500000000047",
+      "dirtyPrice": "99.805555555603",
+      "accruedInterest": "1.305555555556",
+      "yieldToMaturity": "0.070234011939",
+      "currentYield": "0.0507614213197727331289134079",
+      "macaulayDuration": "0.734798445902",
+      "modifiedDuration": "0.709869939016",
+      "convexity": "0.852410455428",
+      "dv01": "0.007084896364",
+      "yieldToWorst": "0.070234011939",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping",
+        "Calendar",
+        "DeclaredCalendar"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "59c78a02-ce00-5998-a3b4-82c8fdaae383",
+          "paymentDate": "2026-08-03",
+          "accrualStart": "2026-01-30",
+          "accrualEnd": "2026-07-30",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.2472222222222222222222222222"
+        },
+        {
+          "flowId": "58838efa-d981-5442-8d2b-ebebfc556559",
+          "paymentDate": "2027-02-02",
+          "accrualStart": "2026-07-30",
+          "accrualEnd": "2027-01-30",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "0.7471080669710806697108066971"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|payment-lag-2bd|issue|yield-5pct": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "99.959087792222",
+      "dirtyPrice": "99.959087792222",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.0500204644763580883007729209",
+      "macaulayDuration": "0.996092479573",
+      "modifiedDuration": "0.971797541047",
+      "convexity": "1.424037631176",
+      "dv01": "0.009713999572",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping",
+        "Calendar",
+        "DeclaredCalendar"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "59c78a02-ce00-5998-a3b4-82c8fdaae383",
+          "paymentDate": "2026-08-03",
+          "accrualStart": "2026-01-30",
+          "accrualEnd": "2026-07-30",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.510958904109589041095890411"
+        },
+        {
+          "flowId": "58838efa-d981-5442-8d2b-ebebfc556559",
+          "paymentDate": "2027-02-02",
+          "accrualStart": "2026-07-30",
+          "accrualEnd": "2027-01-30",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.0082191780821917808219178082"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|payment-lag-2bd|issue|clean-98.5": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.500000000089",
+      "dirtyPrice": "98.500000000089",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.065187813941",
+      "currentYield": "0.050761421319751088665000428",
+      "macaulayDuration": "0.996005325338",
+      "modifiedDuration": "0.964566339792",
+      "convexity": "1.403004275175",
+      "dv01": "0.009500978447",
+      "yieldToWorst": "0.065187813941",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping",
+        "Calendar",
+        "DeclaredCalendar"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "59c78a02-ce00-5998-a3b4-82c8fdaae383",
+          "paymentDate": "2026-08-03",
+          "accrualStart": "2026-01-30",
+          "accrualEnd": "2026-07-30",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.510958904109589041095890411"
+        },
+        {
+          "flowId": "58838efa-d981-5442-8d2b-ebebfc556559",
+          "paymentDate": "2027-02-02",
+          "accrualStart": "2026-07-30",
+          "accrualEnd": "2027-01-30",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.0082191780821917808219178082"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|payment-lag-2bd|mid-period|yield-5pct": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "99.950854301849",
+      "dirtyPrice": "101.256409857405",
+      "accruedInterest": "1.305555555556",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.050024584931511731385587915",
+      "macaulayDuration": "0.734981368462",
+      "modifiedDuration": "0.717054993621",
+      "convexity": "0.869550376988",
+      "dv01": "0.007260641432",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping",
+        "Calendar",
+        "DeclaredCalendar"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "59c78a02-ce00-5998-a3b4-82c8fdaae383",
+          "paymentDate": "2026-08-03",
+          "accrualStart": "2026-01-30",
+          "accrualEnd": "2026-07-30",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.2498477929984779299847792999"
+        },
+        {
+          "flowId": "58838efa-d981-5442-8d2b-ebebfc556559",
+          "paymentDate": "2027-02-02",
+          "accrualStart": "2026-07-30",
+          "accrualEnd": "2027-01-30",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "0.7471080669710806697108066971"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|payment-lag-2bd|mid-period|clean-98.5": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.500000000081",
+      "dirtyPrice": "99.805555555637",
+      "accruedInterest": "1.305555555556",
+      "yieldToMaturity": "0.070227725981",
+      "currentYield": "0.0507614213197552114200314703",
+      "macaulayDuration": "0.734865300732",
+      "modifiedDuration": "0.709936681370",
+      "convexity": "0.852478871675",
+      "dv01": "0.007085562489",
+      "yieldToWorst": "0.070227725981",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping",
+        "Calendar",
+        "DeclaredCalendar"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "59c78a02-ce00-5998-a3b4-82c8fdaae383",
+          "paymentDate": "2026-08-03",
+          "accrualStart": "2026-01-30",
+          "accrualEnd": "2026-07-30",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.2498477929984779299847792999"
+        },
+        {
+          "flowId": "58838efa-d981-5442-8d2b-ebebfc556559",
+          "paymentDate": "2027-02-02",
+          "accrualStart": "2026-07-30",
+          "accrualEnd": "2027-01-30",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "0.7471080669710806697108066971"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|european-call-put-notice|on-coupon|yield-5pct": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "100.0",
+      "dirtyPrice": "100",
+      "accruedInterest": "0.0",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.05",
+      "macaulayDuration": "1.928011781605",
+      "modifiedDuration": "1.880987104005",
+      "convexity": "4.531141151435",
+      "dv01": "0.018809871040",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.0"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.5"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "2.0"
+        }
+      ],
+      "exerciseYields": [
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "101",
+          "yield": "0.059852574511",
+          "latestNoticeDate": "2026-12-16",
+          "earliestNoticeDate": null
+        },
+        {
+          "kind": "Put",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "105",
+          "yield": "0.098794830740",
+          "latestNoticeDate": "2026-12-16",
+          "earliestNoticeDate": null
+        }
+      ]
+    },
+    "bond-analytics-v1|european-call-put-notice|on-coupon|clean-98.5": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.499999999981",
+      "dirtyPrice": "98.499999999981",
+      "accruedInterest": "0.0",
+      "yieldToMaturity": "0.058052021965",
+      "currentYield": "0.0507614213198067458579195566",
+      "macaulayDuration": "1.927387269787",
+      "modifiedDuration": "1.873020943316",
+      "convexity": "4.493866627703",
+      "dv01": "0.018449256292",
+      "yieldToWorst": "0.058052021965",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.0"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.5"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "2.0"
+        }
+      ],
+      "exerciseYields": [
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "101",
+          "yield": "0.075670901279",
+          "latestNoticeDate": "2026-12-16",
+          "earliestNoticeDate": null
+        },
+        {
+          "kind": "Put",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "105",
+          "yield": "0.114908507549",
+          "latestNoticeDate": "2026-12-16",
+          "earliestNoticeDate": null
+        }
+      ]
+    },
+    "bond-analytics-v1|european-call-put-notice|mid-period|yield-5pct": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "99.992475191010",
+      "dirtyPrice": "101.048030746566",
+      "accruedInterest": "1.055555555556",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.0500037626876300570521510024",
+      "macaulayDuration": "1.252600965034",
+      "modifiedDuration": "1.222049721984",
+      "convexity": "2.117151153439",
+      "dv01": "0.012348571788",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.2888888888888888888888888889"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.7888888888888888888888888889"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.2888888888888888888888888889"
+        }
+      ],
+      "exerciseYields": [
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "101",
+          "yield": "0.084738671336",
+          "latestNoticeDate": "2026-12-16",
+          "earliestNoticeDate": null
+        },
+        {
+          "kind": "Put",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "105",
+          "yield": "0.226148483626",
+          "latestNoticeDate": "2026-12-16",
+          "earliestNoticeDate": null
+        }
+      ]
+    },
+    "bond-analytics-v1|european-call-put-notice|mid-period|clean-98.5": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.499999999908",
+      "dirtyPrice": "99.555555555464",
+      "accruedInterest": "1.055555555556",
+      "yieldToMaturity": "0.062214287597",
+      "currentYield": "0.0507614213198443659975779257",
+      "macaulayDuration": "1.252254440395",
+      "modifiedDuration": "1.214475574073",
+      "convexity": "2.091437964695",
+      "dv01": "0.012090779049",
+      "yieldToWorst": "0.062214287597",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.2888888888888888888888888889"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.7888888888888888888888888889"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.2888888888888888888888888889"
+        }
+      ],
+      "exerciseYields": [
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "101",
+          "yield": "0.139126491039",
+          "latestNoticeDate": "2026-12-16",
+          "earliestNoticeDate": null
+        },
+        {
+          "kind": "Put",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "105",
+          "yield": "0.284225481001",
+          "latestNoticeDate": "2026-12-16",
+          "earliestNoticeDate": null
+        }
+      ]
+    },
+    "bond-analytics-v2|european-call-put-notice|on-coupon|yield-5pct": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "100",
+      "dirtyPrice": "100",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.05",
+      "macaulayDuration": "1.928011781605",
+      "modifiedDuration": "1.880987104005",
+      "convexity": "4.531141151435",
+      "dv01": "0.018809871040",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.0"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.5"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "2.0"
+        }
+      ],
+      "exerciseYields": [
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "101",
+          "yield": "0.059852574511",
+          "latestNoticeDate": "2026-12-16",
+          "earliestNoticeDate": null
+        },
+        {
+          "kind": "Put",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "105",
+          "yield": "0.098794830740",
+          "latestNoticeDate": "2026-12-16",
+          "earliestNoticeDate": null
+        }
+      ]
+    },
+    "bond-analytics-v2|european-call-put-notice|on-coupon|clean-98.5": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.499999999981",
+      "dirtyPrice": "98.499999999981",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.058052021965",
+      "currentYield": "0.0507614213198067458579195566",
+      "macaulayDuration": "1.927387269787",
+      "modifiedDuration": "1.873020943316",
+      "convexity": "4.493866627703",
+      "dv01": "0.018449256292",
+      "yieldToWorst": "0.058052021965",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.0"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.5"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "2.0"
+        }
+      ],
+      "exerciseYields": [
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "101",
+          "yield": "0.075670901279",
+          "latestNoticeDate": "2026-12-16",
+          "earliestNoticeDate": null
+        },
+        {
+          "kind": "Put",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "105",
+          "yield": "0.114908507549",
+          "latestNoticeDate": "2026-12-16",
+          "earliestNoticeDate": null
+        }
+      ]
+    },
+    "bond-analytics-v2|european-call-put-notice|mid-period|yield-5pct": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "99.992475191010",
+      "dirtyPrice": "101.048030746566",
+      "accruedInterest": "1.055555555556",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.0500037626876300570521510024",
+      "macaulayDuration": "1.252600965034",
+      "modifiedDuration": "1.222049721984",
+      "convexity": "2.117151153439",
+      "dv01": "0.012348571788",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.2888888888888888888888888889"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.7888888888888888888888888889"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.2888888888888888888888888889"
+        }
+      ],
+      "exerciseYields": [
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "101",
+          "yield": "0.084738671336",
+          "latestNoticeDate": "2026-12-16",
+          "earliestNoticeDate": null
+        },
+        {
+          "kind": "Put",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "105",
+          "yield": "0.226148483626",
+          "latestNoticeDate": "2026-12-16",
+          "earliestNoticeDate": null
+        }
+      ]
+    },
+    "bond-analytics-v2|european-call-put-notice|mid-period|clean-98.5": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.499999999908",
+      "dirtyPrice": "99.555555555464",
+      "accruedInterest": "1.055555555556",
+      "yieldToMaturity": "0.062214287597",
+      "currentYield": "0.0507614213198443659975779257",
+      "macaulayDuration": "1.252254440395",
+      "modifiedDuration": "1.214475574073",
+      "convexity": "2.091437964695",
+      "dv01": "0.012090779049",
+      "yieldToWorst": "0.062214287597",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.2888888888888888888888888889"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.7888888888888888888888888889"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.2888888888888888888888888889"
+        }
+      ],
+      "exerciseYields": [
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "101",
+          "yield": "0.139126491039",
+          "latestNoticeDate": "2026-12-16",
+          "earliestNoticeDate": null
+        },
+        {
+          "kind": "Put",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "105",
+          "yield": "0.284225481001",
+          "latestNoticeDate": "2026-12-16",
+          "earliestNoticeDate": null
+        }
+      ]
+    },
+    "bond-analytics-v1|bermudan-quarterly-call|on-coupon|yield-5pct": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "100.0",
+      "dirtyPrice": "100",
+      "accruedInterest": "0.0",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.05",
+      "macaulayDuration": "1.928011781605",
+      "modifiedDuration": "1.880987104005",
+      "convexity": "4.531141151435",
+      "dv01": "0.018809871040",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.0"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.5"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "2.0"
+        }
+      ],
+      "exerciseYields": [
+        {
+          "kind": "Call",
+          "exerciseDate": "2026-07-15",
+          "redemptionPrice": "102",
+          "yield": "0.090000000001",
+          "latestNoticeDate": "2026-07-05",
+          "earliestNoticeDate": "2026-05-16"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2026-10-15",
+          "redemptionPrice": "102",
+          "yield": "0.076570491460",
+          "latestNoticeDate": "2026-10-05",
+          "earliestNoticeDate": "2026-08-16"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "102",
+          "yield": "0.069657673059",
+          "latestNoticeDate": "2027-01-05",
+          "earliestNoticeDate": "2026-11-16"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-04-15",
+          "redemptionPrice": "102",
+          "yield": "0.065692117858",
+          "latestNoticeDate": "2027-04-05",
+          "earliestNoticeDate": "2027-02-14"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-07-15",
+          "redemptionPrice": "102",
+          "yield": "0.062922511290",
+          "latestNoticeDate": "2027-07-05",
+          "earliestNoticeDate": "2027-05-16"
+        }
+      ]
+    },
+    "bond-analytics-v1|bermudan-quarterly-call|on-coupon|clean-98.5": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.499999999981",
+      "dirtyPrice": "98.499999999981",
+      "accruedInterest": "0.0",
+      "yieldToMaturity": "0.058052021965",
+      "currentYield": "0.0507614213198067458579195566",
+      "macaulayDuration": "1.927387269787",
+      "modifiedDuration": "1.873020943316",
+      "convexity": "4.493866627703",
+      "dv01": "0.018449256292",
+      "yieldToWorst": "0.058052021965",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.0"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.5"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "2.0"
+        }
+      ],
+      "exerciseYields": [
+        {
+          "kind": "Call",
+          "exerciseDate": "2026-07-15",
+          "redemptionPrice": "102",
+          "yield": "0.121827411169",
+          "latestNoticeDate": "2026-07-05",
+          "earliestNoticeDate": "2026-05-16"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2026-10-15",
+          "redemptionPrice": "102",
+          "yield": "0.097770714168",
+          "latestNoticeDate": "2026-10-05",
+          "earliestNoticeDate": "2026-08-16"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "102",
+          "yield": "0.085550364550",
+          "latestNoticeDate": "2027-01-05",
+          "earliestNoticeDate": "2026-11-16"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-04-15",
+          "redemptionPrice": "102",
+          "yield": "0.078465019907",
+          "latestNoticeDate": "2027-04-05",
+          "earliestNoticeDate": "2027-02-14"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-07-15",
+          "redemptionPrice": "102",
+          "yield": "0.073599347222",
+          "latestNoticeDate": "2027-07-05",
+          "earliestNoticeDate": "2027-05-16"
+        }
+      ]
+    },
+    "bond-analytics-v1|bermudan-quarterly-call|mid-period|yield-5pct": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "99.994139754550",
+      "dirtyPrice": "100.633028643439",
+      "accruedInterest": "0.638888888889",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.0500029302944474470281171064",
+      "macaulayDuration": "1.335934298367",
+      "modifiedDuration": "1.303350534993",
+      "convexity": "2.362127180677",
+      "dv01": "0.013116011172",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.3722222222222222222222222222"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.8722222222222222222222222222"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.3722222222222222222222222222"
+        }
+      ],
+      "exerciseYields": [
+        {
+          "kind": "Call",
+          "exerciseDate": "2026-10-15",
+          "redemptionPrice": "102",
+          "yield": "0.221476154839",
+          "latestNoticeDate": "2026-10-05",
+          "earliestNoticeDate": "2026-08-16"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "102",
+          "yield": "0.103910532873",
+          "latestNoticeDate": "2027-01-05",
+          "earliestNoticeDate": "2026-11-16"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-04-15",
+          "redemptionPrice": "102",
+          "yield": "0.082123233681",
+          "latestNoticeDate": "2027-04-05",
+          "earliestNoticeDate": "2027-02-14"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-07-15",
+          "redemptionPrice": "102",
+          "yield": "0.072593967536",
+          "latestNoticeDate": "2027-07-05",
+          "earliestNoticeDate": "2027-05-16"
+        }
+      ]
+    },
+    "bond-analytics-v1|bermudan-quarterly-call|mid-period|clean-98.5": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.499999999955",
+      "dirtyPrice": "99.138888888844",
+      "accruedInterest": "0.638888888889",
+      "yieldToMaturity": "0.061510735513",
+      "currentYield": "0.0507614213198201448117704762",
+      "macaulayDuration": "1.335607770921",
+      "modifiedDuration": "1.295756309111",
+      "convexity": "2.335103353381",
+      "dv01": "0.012845984076",
+      "yieldToWorst": "0.061510735513",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.3722222222222222222222222222"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.8722222222222222222222222222"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.3722222222222222222222222222"
+        }
+      ],
+      "exerciseYields": [
+        {
+          "kind": "Call",
+          "exerciseDate": "2026-10-15",
+          "redemptionPrice": "102",
+          "yield": "0.361664662102",
+          "latestNoticeDate": "2026-10-05",
+          "earliestNoticeDate": "2026-08-16"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "102",
+          "yield": "0.146613738335",
+          "latestNoticeDate": "2027-01-05",
+          "earliestNoticeDate": "2026-11-16"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-04-15",
+          "redemptionPrice": "102",
+          "yield": "0.107550773208",
+          "latestNoticeDate": "2027-04-05",
+          "earliestNoticeDate": "2027-02-14"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-07-15",
+          "redemptionPrice": "102",
+          "yield": "0.090696220818",
+          "latestNoticeDate": "2027-07-05",
+          "earliestNoticeDate": "2027-05-16"
+        }
+      ]
+    },
+    "bond-analytics-v2|bermudan-quarterly-call|on-coupon|yield-5pct": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "100",
+      "dirtyPrice": "100",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.05",
+      "macaulayDuration": "1.928011781605",
+      "modifiedDuration": "1.880987104005",
+      "convexity": "4.531141151435",
+      "dv01": "0.018809871040",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.0"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.5"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "2.0"
+        }
+      ],
+      "exerciseYields": [
+        {
+          "kind": "Call",
+          "exerciseDate": "2026-07-15",
+          "redemptionPrice": "102",
+          "yield": "0.090000000001",
+          "latestNoticeDate": "2026-07-05",
+          "earliestNoticeDate": "2026-05-16"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2026-10-15",
+          "redemptionPrice": "102",
+          "yield": "0.076570491460",
+          "latestNoticeDate": "2026-10-05",
+          "earliestNoticeDate": "2026-08-16"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "102",
+          "yield": "0.069657673059",
+          "latestNoticeDate": "2027-01-05",
+          "earliestNoticeDate": "2026-11-16"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-04-15",
+          "redemptionPrice": "102",
+          "yield": "0.065692117858",
+          "latestNoticeDate": "2027-04-05",
+          "earliestNoticeDate": "2027-02-14"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-07-15",
+          "redemptionPrice": "102",
+          "yield": "0.062922511290",
+          "latestNoticeDate": "2027-07-05",
+          "earliestNoticeDate": "2027-05-16"
+        }
+      ]
+    },
+    "bond-analytics-v2|bermudan-quarterly-call|on-coupon|clean-98.5": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.499999999981",
+      "dirtyPrice": "98.499999999981",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.058052021965",
+      "currentYield": "0.0507614213198067458579195566",
+      "macaulayDuration": "1.927387269787",
+      "modifiedDuration": "1.873020943316",
+      "convexity": "4.493866627703",
+      "dv01": "0.018449256292",
+      "yieldToWorst": "0.058052021965",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.0"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.5"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "2.0"
+        }
+      ],
+      "exerciseYields": [
+        {
+          "kind": "Call",
+          "exerciseDate": "2026-07-15",
+          "redemptionPrice": "102",
+          "yield": "0.121827411169",
+          "latestNoticeDate": "2026-07-05",
+          "earliestNoticeDate": "2026-05-16"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2026-10-15",
+          "redemptionPrice": "102",
+          "yield": "0.097770714168",
+          "latestNoticeDate": "2026-10-05",
+          "earliestNoticeDate": "2026-08-16"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "102",
+          "yield": "0.085550364550",
+          "latestNoticeDate": "2027-01-05",
+          "earliestNoticeDate": "2026-11-16"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-04-15",
+          "redemptionPrice": "102",
+          "yield": "0.078465019907",
+          "latestNoticeDate": "2027-04-05",
+          "earliestNoticeDate": "2027-02-14"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-07-15",
+          "redemptionPrice": "102",
+          "yield": "0.073599347222",
+          "latestNoticeDate": "2027-07-05",
+          "earliestNoticeDate": "2027-05-16"
+        }
+      ]
+    },
+    "bond-analytics-v2|bermudan-quarterly-call|mid-period|yield-5pct": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "99.994139754550",
+      "dirtyPrice": "100.633028643439",
+      "accruedInterest": "0.638888888889",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.0500029302944474470281171064",
+      "macaulayDuration": "1.335934298367",
+      "modifiedDuration": "1.303350534993",
+      "convexity": "2.362127180677",
+      "dv01": "0.013116011172",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.3722222222222222222222222222"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.8722222222222222222222222222"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.3722222222222222222222222222"
+        }
+      ],
+      "exerciseYields": [
+        {
+          "kind": "Call",
+          "exerciseDate": "2026-10-15",
+          "redemptionPrice": "102",
+          "yield": "0.221476154839",
+          "latestNoticeDate": "2026-10-05",
+          "earliestNoticeDate": "2026-08-16"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "102",
+          "yield": "0.103910532873",
+          "latestNoticeDate": "2027-01-05",
+          "earliestNoticeDate": "2026-11-16"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-04-15",
+          "redemptionPrice": "102",
+          "yield": "0.082123233681",
+          "latestNoticeDate": "2027-04-05",
+          "earliestNoticeDate": "2027-02-14"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-07-15",
+          "redemptionPrice": "102",
+          "yield": "0.072593967536",
+          "latestNoticeDate": "2027-07-05",
+          "earliestNoticeDate": "2027-05-16"
+        }
+      ]
+    },
+    "bond-analytics-v2|bermudan-quarterly-call|mid-period|clean-98.5": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.499999999955",
+      "dirtyPrice": "99.138888888844",
+      "accruedInterest": "0.638888888889",
+      "yieldToMaturity": "0.061510735513",
+      "currentYield": "0.0507614213198201448117704762",
+      "macaulayDuration": "1.335607770921",
+      "modifiedDuration": "1.295756309111",
+      "convexity": "2.335103353381",
+      "dv01": "0.012845984076",
+      "yieldToWorst": "0.061510735513",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-15",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.3722222222222222222222222222"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-15",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.8722222222222222222222222222"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.3722222222222222222222222222"
+        }
+      ],
+      "exerciseYields": [
+        {
+          "kind": "Call",
+          "exerciseDate": "2026-10-15",
+          "redemptionPrice": "102",
+          "yield": "0.361664662102",
+          "latestNoticeDate": "2026-10-05",
+          "earliestNoticeDate": "2026-08-16"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-01-15",
+          "redemptionPrice": "102",
+          "yield": "0.146613738335",
+          "latestNoticeDate": "2027-01-05",
+          "earliestNoticeDate": "2026-11-16"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-04-15",
+          "redemptionPrice": "102",
+          "yield": "0.107550773208",
+          "latestNoticeDate": "2027-04-05",
+          "earliestNoticeDate": "2027-02-14"
+        },
+        {
+          "kind": "Call",
+          "exerciseDate": "2027-07-15",
+          "redemptionPrice": "102",
+          "yield": "0.090696220818",
+          "latestNoticeDate": "2027-07-05",
+          "earliestNoticeDate": "2027-05-16"
+        }
+      ]
+    },
+    "bond-analytics-v1|call-crossing-lagged-coupon|on-coupon|yield-5pct": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "99.959067294216",
+      "dirtyPrice": "99.959067294216",
+      "accruedInterest": "0.0",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.0500204747337545277982004159",
+      "macaulayDuration": "1.936301906974",
+      "modifiedDuration": "1.889075031194",
+      "convexity": "4.565582517884",
+      "dv01": "0.018883017817",
+      "yieldToWorst": "0.020827179244",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping",
+        "Calendar",
+        "DeclaredCalendar"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-17",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5055555555555555555555555556"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-19",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.0111111111111111111111111111"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-19",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.5111111111111111111111111111"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-18",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "2.0082191780821917808219178082"
+        }
+      ],
+      "exerciseYields": [
+        {
+          "kind": "Call",
+          "exerciseDate": "2026-07-15",
+          "redemptionPrice": "101",
+          "yield": "0.020827179244",
+          "latestNoticeDate": null,
+          "earliestNoticeDate": null
+        }
+      ]
+    },
+    "bond-analytics-v1|call-crossing-lagged-coupon|on-coupon|clean-98.5": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.500000000088",
+      "dirtyPrice": "98.500000000088",
+      "accruedInterest": "0.0",
+      "yieldToMaturity": "0.057799838883",
+      "currentYield": "0.0507614213197516040093793082",
+      "macaulayDuration": "1.935696964612",
+      "modifiedDuration": "1.881326772445",
+      "convexity": "4.529200075594",
+      "dv01": "0.018531068709",
+      "yieldToWorst": "0.050761421318",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping",
+        "Calendar",
+        "DeclaredCalendar"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-17",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.5055555555555555555555555556"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-19",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.0111111111111111111111111111"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-19",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.5111111111111111111111111111"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-18",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "2.0082191780821917808219178082"
+        }
+      ],
+      "exerciseYields": [
+        {
+          "kind": "Call",
+          "exerciseDate": "2026-07-15",
+          "redemptionPrice": "101",
+          "yield": "0.050761421318",
+          "latestNoticeDate": null,
+          "earliestNoticeDate": null
+        }
+      ]
+    },
+    "bond-analytics-v1|call-crossing-lagged-coupon|mid-period|yield-5pct": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "99.950842450485",
+      "dirtyPrice": "101.200842450485",
+      "accruedInterest": "1.250",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0.0500245908630231667790353253",
+      "macaulayDuration": "1.686301906974",
+      "modifiedDuration": "1.645172592170",
+      "convexity": "3.584594102905",
+      "dv01": "0.016649285230",
+      "yieldToWorst": "-0.007930493480",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping",
+        "Calendar",
+        "DeclaredCalendar"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-17",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.2555555555555555555555555556"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-19",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.7611111111111111111111111111"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-19",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.2611111111111111111111111111"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-18",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.7582191780821917808219178082"
+        }
+      ],
+      "exerciseYields": [
+        {
+          "kind": "Call",
+          "exerciseDate": "2026-07-15",
+          "redemptionPrice": "101",
+          "yield": "-0.007930493480",
+          "latestNoticeDate": null,
+          "earliestNoticeDate": null
+        }
+      ]
+    },
+    "bond-analytics-v1|call-crossing-lagged-coupon|mid-period|clean-98.5": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "NominalPeriodic",
+      "cleanPrice": "98.499999999995",
+      "dirtyPrice": "99.749999999995",
+      "accruedInterest": "1.250",
+      "yieldToMaturity": "0.058797808553",
+      "currentYield": "0.0507614213197995310366152183",
+      "macaulayDuration": "1.685619346094",
+      "modifiedDuration": "1.637479250358",
+      "convexity": "3.552274525602",
+      "dv01": "0.016333855522",
+      "yieldToWorst": "0.050439381660",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping",
+        "Calendar",
+        "DeclaredCalendar"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "fd5b13a0-b29c-5340-86ff-80fe85283e93",
+          "paymentDate": "2026-07-17",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2026-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.2555555555555555555555555556"
+        },
+        {
+          "flowId": "001a69a3-4bd1-563c-9ce1-d24b72fd1fcc",
+          "paymentDate": "2027-01-19",
+          "accrualStart": "2026-07-15",
+          "accrualEnd": "2027-01-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "0.7611111111111111111111111111"
+        },
+        {
+          "flowId": "cdeb8540-366f-59de-bc12-6971cecd1966",
+          "paymentDate": "2027-07-19",
+          "accrualStart": "2027-01-15",
+          "accrualEnd": "2027-07-15",
+          "interest": "2.50",
+          "principal": "0",
+          "timeInYears": "1.2611111111111111111111111111"
+        },
+        {
+          "flowId": "f0bba107-19ec-5bac-be9c-4864e5f228e3",
+          "paymentDate": "2028-01-18",
+          "accrualStart": "2027-07-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "2.50",
+          "principal": "100",
+          "timeInYears": "1.7582191780821917808219178082"
+        }
+      ],
+      "exerciseYields": [
+        {
+          "kind": "Call",
+          "exerciseDate": "2026-07-15",
+          "redemptionPrice": "101",
+          "yield": "0.050439381660",
+          "latestNoticeDate": null,
+          "earliestNoticeDate": null
+        }
+      ]
+    },
+    "bond-analytics-v2|call-crossing-lagged-coupon|on-coupon|yield-5pct": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": null,
+      "cleanPrice": null,
+      "dirtyPrice": null,
+      "accruedInterest": null,
+      "yieldToMaturity": null,
+      "currentYield": null,
+      "macaulayDuration": null,
+      "modifiedDuration": null,
+      "convexity": null,
+      "dv01": null,
+      "yieldToWorst": null,
+      "blockers": [
+        "ExerciseScheduleRefused"
+      ],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping",
+        "Calendar",
+        "DeclaredCalendar"
+      ],
+      "cashFlows": [],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|call-crossing-lagged-coupon|on-coupon|clean-98.5": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": null,
+      "cleanPrice": null,
+      "dirtyPrice": null,
+      "accruedInterest": null,
+      "yieldToMaturity": null,
+      "currentYield": null,
+      "macaulayDuration": null,
+      "modifiedDuration": null,
+      "convexity": null,
+      "dv01": null,
+      "yieldToWorst": null,
+      "blockers": [
+        "ExerciseScheduleRefused"
+      ],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping",
+        "Calendar",
+        "DeclaredCalendar"
+      ],
+      "cashFlows": [],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|call-crossing-lagged-coupon|mid-period|yield-5pct": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": null,
+      "cleanPrice": null,
+      "dirtyPrice": null,
+      "accruedInterest": null,
+      "yieldToMaturity": null,
+      "currentYield": null,
+      "macaulayDuration": null,
+      "modifiedDuration": null,
+      "convexity": null,
+      "dv01": null,
+      "yieldToWorst": null,
+      "blockers": [
+        "ExerciseScheduleRefused"
+      ],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping",
+        "Calendar",
+        "DeclaredCalendar"
+      ],
+      "cashFlows": [],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|call-crossing-lagged-coupon|mid-period|clean-98.5": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": null,
+      "cleanPrice": null,
+      "dirtyPrice": null,
+      "accruedInterest": null,
+      "yieldToMaturity": null,
+      "currentYield": null,
+      "macaulayDuration": null,
+      "modifiedDuration": null,
+      "convexity": null,
+      "dv01": null,
+      "yieldToWorst": null,
+      "blockers": [
+        "ExerciseScheduleRefused"
+      ],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping",
+        "Calendar",
+        "DeclaredCalendar"
+      ],
+      "cashFlows": [],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|zero-coupon-annual-effective|issue|yield-5pct": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "AnnualEffective",
+      "cleanPrice": "90.702947845805",
+      "dirtyPrice": "90.702947845805",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0",
+      "macaulayDuration": "2",
+      "modifiedDuration": "1.904761904762",
+      "convexity": "5.442176870748",
+      "dv01": "0.017276751971",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "65ab12bc-ce98-5907-9c53-4f906e5b223a",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "0",
+          "principal": "100",
+          "timeInYears": "2"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|zero-coupon-annual-effective|issue|clean-98.5": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "AnnualEffective",
+      "cleanPrice": "98.499999999952",
+      "dirtyPrice": "98.499999999952",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.007585443720",
+      "currentYield": "0",
+      "macaulayDuration": "2",
+      "modifiedDuration": "1.984943324127",
+      "convexity": "5.909999999997",
+      "dv01": "0.019551691743",
+      "yieldToWorst": "0.007585443720",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "65ab12bc-ce98-5907-9c53-4f906e5b223a",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "0",
+          "principal": "100",
+          "timeInYears": "2"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|zero-coupon-annual-effective|mid-life|yield-5pct": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "AnnualEffective",
+      "cleanPrice": "95.812700335155",
+      "dirtyPrice": "95.812700335155",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0",
+      "macaulayDuration": "0.876712328767",
+      "modifiedDuration": "0.834964122635",
+      "convexity": "1.492369012408",
+      "dv01": "0.008000016727",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "65ab12bc-ce98-5907-9c53-4f906e5b223a",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "0",
+          "principal": "100",
+          "timeInYears": "0.8767123287671232876712328767"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v1|zero-coupon-annual-effective|mid-life|clean-98.5": {
+      "modelVersion": "bond-analytics-v1",
+      "yieldConvention": "AnnualEffective",
+      "cleanPrice": "98.500000000029",
+      "dirtyPrice": "98.500000000029",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.017388442117",
+      "currentYield": "0",
+      "macaulayDuration": "0.876712328767",
+      "modifiedDuration": "0.861728217536",
+      "convexity": "1.589575724421",
+      "dv01": "0.008488022943",
+      "yieldToWorst": "0.017388442117",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "65ab12bc-ce98-5907-9c53-4f906e5b223a",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "0",
+          "principal": "100",
+          "timeInYears": "0.8767123287671232876712328767"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|zero-coupon-annual-effective|issue|yield-5pct": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "AnnualEffective",
+      "cleanPrice": "90.702947845805",
+      "dirtyPrice": "90.702947845805",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0",
+      "macaulayDuration": "2",
+      "modifiedDuration": "1.904761904762",
+      "convexity": "5.442176870748",
+      "dv01": "0.017276751971",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "65ab12bc-ce98-5907-9c53-4f906e5b223a",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "0",
+          "principal": "100",
+          "timeInYears": "2"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|zero-coupon-annual-effective|issue|clean-98.5": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "AnnualEffective",
+      "cleanPrice": "98.499999999952",
+      "dirtyPrice": "98.499999999952",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.007585443720",
+      "currentYield": "0",
+      "macaulayDuration": "2",
+      "modifiedDuration": "1.984943324127",
+      "convexity": "5.909999999997",
+      "dv01": "0.019551691743",
+      "yieldToWorst": "0.007585443720",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "65ab12bc-ce98-5907-9c53-4f906e5b223a",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "0",
+          "principal": "100",
+          "timeInYears": "2"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|zero-coupon-annual-effective|mid-life|yield-5pct": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "AnnualEffective",
+      "cleanPrice": "95.812700335155",
+      "dirtyPrice": "95.812700335155",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.05",
+      "currentYield": "0",
+      "macaulayDuration": "0.876712328767",
+      "modifiedDuration": "0.834964122635",
+      "convexity": "1.492369012408",
+      "dv01": "0.008000016727",
+      "yieldToWorst": "0.05",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "65ab12bc-ce98-5907-9c53-4f906e5b223a",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "0",
+          "principal": "100",
+          "timeInYears": "0.8767123287671232876712328767"
+        }
+      ],
+      "exerciseYields": []
+    },
+    "bond-analytics-v2|zero-coupon-annual-effective|mid-life|clean-98.5": {
+      "modelVersion": "bond-analytics-v2",
+      "yieldConvention": "AnnualEffective",
+      "cleanPrice": "98.500000000029",
+      "dirtyPrice": "98.500000000029",
+      "accruedInterest": "0",
+      "yieldToMaturity": "0.017388442117",
+      "currentYield": "0",
+      "macaulayDuration": "0.876712328767",
+      "modifiedDuration": "0.861728217536",
+      "convexity": "1.589575724421",
+      "dv01": "0.008488022943",
+      "yieldToWorst": "0.017388442117",
+      "blockers": [],
+      "inputKinds": [
+        "SecurityTerms",
+        "CalculationModel",
+        "PricingModel",
+        "ContractualEconomics",
+        "ScheduleKernel",
+        "ScheduleMapping"
+      ],
+      "cashFlows": [
+        {
+          "flowId": "65ab12bc-ce98-5907-9c53-4f906e5b223a",
+          "paymentDate": "2028-01-15",
+          "accrualStart": "2026-01-15",
+          "accrualEnd": "2028-01-15",
+          "interest": "0",
+          "principal": "100",
+          "timeInYears": "0.8767123287671232876712328767"
+        }
+      ],
+      "exerciseYields": []
+    }
+  }
+}
