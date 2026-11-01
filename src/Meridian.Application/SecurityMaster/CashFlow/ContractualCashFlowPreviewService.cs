@@ -90,7 +90,9 @@ public sealed class ContractualCashFlowPreviewService(
             // for this security lets it replace a hypothetical one. Loans have no notice evidence store.
             if (noticeVerifier is null || noticeSecurityId is null)
                 return Blocked(request, "NoticeEvidenceVerificationUnavailable", "Retained notices require source verification; this calculation endpoint currently supports hypothetical notices only.");
-            var verification = await noticeVerifier.VerifyAsync(noticeSecurityId.Value, retained, ct).ConfigureAwait(false);
+            var entry = (contract.Exercises ?? []).FirstOrDefault(e => e.Side == retained.Side && e.StartDate == retained.EntryStartDate
+                && string.Equals(e.StreamId, retained.StreamId, StringComparison.Ordinal));
+            var verification = await noticeVerifier.VerifyAsync(noticeSecurityId.Value, retained, request.KnowledgeCutoff, entry, ct).ConfigureAwait(false);
             if (!verification.Verified)
                 return Blocked(request, "NoticeEvidenceUnverified", verification.Reason);
         }

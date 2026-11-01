@@ -7,7 +7,9 @@ namespace Meridian.Application.SecurityMaster.CashFlow;
 /// <summary>
 /// Governed exercise-notice evidence: one write-once JSON record per notice under the security, a single
 /// decision by a different actor, and verification that a selected scenario exercise restates exactly
-/// what an approved notice says. Nothing here posts a redemption.
+/// what an approved notice says. Nothing here posts a redemption. Writers hold an in-process gate and a
+/// per-notice lock file, so two hosts sharing the storage root cannot both record under one identity or
+/// decide the same notice twice.
 /// </summary>
 public sealed class FileBondExerciseNoticeStore(StorageOptions options, TimeProvider? timeProvider = null) : IBondExerciseNoticeStore, IExerciseNoticeVerifier
 {
@@ -26,8 +28,11 @@ public sealed class FileBondExerciseNoticeStore(StorageOptions options, TimeProv
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            await using var _ = await AcquireFileLockAsync(path, ct).ConfigureAwait(false);
             if (File.Exists(path))
             {
+                // A retry restates the same evidence with a later clock; the first retained record (and its
+                // recording instant) wins, so the recorded-at instant is deliberately not part of the identity.
                 var retained = await ReadAsync(path, ct).ConfigureAwait(false);
                 if (retained.SecurityId != notice.SecurityId || Identity(retained) != Identity(notice))
                     throw new InvalidOperationException("Notice identity is already bound to different evidence.");
@@ -64,9 +69,11 @@ public sealed class FileBondExerciseNoticeStore(StorageOptions options, TimeProv
     public async Task<BondExerciseNoticeDto> DecideAsync(Guid securityId, Guid noticeId, bool approve, string actor, string? reason, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(actor);
+        var path = FilePath(securityId, noticeId);
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            await using var _ = await AcquireFileLockAsync(path, ct).ConfigureAwait(false);
             var notice = await GetAsync(securityId, noticeId, ct).ConfigureAwait(false)
                 ?? throw new InvalidOperationException("The exercise notice does not exist.");
             if (notice.ApprovalState != ExerciseNoticeApprovalState.Recorded)
@@ -82,13 +89,14 @@ public sealed class FileBondExerciseNoticeStore(StorageOptions options, TimeProv
                 DecidedAtUtc = _timeProvider.GetUtcNow(),
                 DecisionReason = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim()
             };
-            await WriteAsync(FilePath(securityId, noticeId), decided, createNew: false, ct).ConfigureAwait(false);
+            await WriteAsync(path, decided, createNew: false, ct).ConfigureAwait(false);
             return decided;
         }
         finally { _gate.Release(); }
     }
 
-    public async Task<ExerciseNoticeVerification> VerifyAsync(Guid securityId, SelectedCashFlowExercise selection, CancellationToken ct = default)
+    public async Task<ExerciseNoticeVerification> VerifyAsync(Guid securityId, SelectedCashFlowExercise selection, DateTimeOffset knowledgeCutoff,
+        ContractualExerciseEntry? entry, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(selection);
         if (selection.HypotheticalNotice)
@@ -100,15 +108,50 @@ public sealed class FileBondExerciseNoticeStore(StorageOptions options, TimeProv
             return new(false, "No exercise notice with that identity is retained for this security.");
         if (notice.ApprovalState != ExerciseNoticeApprovalState.Approved)
             return new(false, $"The exercise notice is {notice.ApprovalState}; only an approved notice supports a retained scenario exercise.", notice);
+        // Evidence that did not exist, or was not yet approved, at the knowledge cutoff cannot inform a scenario
+        // frozen at that cutoff; otherwise a replay at an earlier cutoff would see a later approval.
+        if (notice.RecordedAtUtc > knowledgeCutoff)
+            return new(false, "The exercise notice was recorded after the scenario's knowledge cutoff and cannot inform it.", notice);
+        if (notice.DecidedAtUtc is null || notice.DecidedAtUtc > knowledgeCutoff)
+            return new(false, "The exercise notice was approved after the scenario's knowledge cutoff and cannot inform it.", notice);
         if (notice.Side != selection.Side || !string.Equals(notice.StreamId, selection.StreamId, StringComparison.Ordinal)
             || notice.ExerciseDate != selection.ExerciseDate || notice.NoticeDate != selection.NoticeDate
             || (notice.Amount is { } amount && amount != selection.Amount))
             return new(false, "The selected exercise does not restate the approved notice's side, stream, dates and amount.", notice);
-        return new(true, "Approved notice evidence matches the selected exercise.", notice);
+        if (entry is null)
+            return new(false, "The contract has no exercise entry for the selected side and start date, so the noticed price cannot be checked.", notice);
+        if (entry.MakeWhole is not null)
+            return new(false, "The exercise entry is priced by a make-whole formula; a noticed fixed price cannot be verified against a calculated price, so the notice stays hypothetical until make-whole notice verification exists.", notice);
+        if (entry.CleanPrice is not { } cleanPrice)
+            return new(false, "The exercise entry declares no fixed price to verify the noticed price against.", notice);
+        if (notice.Price != cleanPrice)
+            return new(false, $"The approved notice states price {notice.Price} but the contract's exercise entry declares {cleanPrice}; the scenario would redeem at a price the notice does not support.", notice);
+        return new(true, "Approved notice evidence matches the selected exercise and the contract's exercise price.", notice);
     }
 
+    /// <summary>
+    /// Takes the cross-process lock for one notice file. The lock file is opened exclusively and kept until
+    /// disposal; a competing host retries briefly rather than failing outright.
+    /// </summary>
+    private static async Task<FileStream> AcquireFileLockAsync(string path, CancellationToken ct)
+    {
+        var lockPath = path + ".lock";
+        for (var attempt = 0; ; attempt++)
+        {
+            try
+            {
+                return new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 1, FileOptions.WriteThrough);
+            }
+            catch (IOException) when (attempt < 200)
+            {
+                await Task.Delay(25, ct).ConfigureAwait(false);
+            }
+        }
+    }
+
+    /// <summary>Evidence identity for write-once retries: the stated economics, source and recorder, never the clock.</summary>
     private static string Identity(BondExerciseNoticeDto n)
-        => string.Join("|", n.StreamId, n.Side, n.NoticeDate, n.ExerciseDate, n.Price, n.Amount, n.SourceDocumentSha256, n.ReceivedDate, n.SourceReference, n.RecordedBy, n.RecordedAtUtc.UtcTicks);
+        => string.Join("|", n.StreamId, n.Side, n.NoticeDate, n.ExerciseDate, n.Price, n.Amount, n.SourceDocumentSha256, n.ReceivedDate, n.SourceReference, n.RecordedBy);
 
     private string FilePath(Guid securityId, Guid noticeId)
     {

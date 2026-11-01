@@ -79,6 +79,34 @@ describe("ContractualCashFlowWorkbench", () => {
     expect(screen.getByRole("button", { name: "Retain run" })).toBeDisabled();
   });
 
+  it("sends an exercise selection with its own notice date, defaulting to the exercise date, and refuses a late notice", async () => {
+    api.previewContractualCashFlows.mockResolvedValue(calculated);
+    render(<ContractualCashFlowWorkbench subjectKind="Security" subjectId="sec-1" subjectLabel="ACME 5 2030" />);
+    fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
+    await screen.findByLabelText("Include call exercise on coupon");
+
+    fireEvent.click(screen.getByLabelText("Include call exercise on coupon"));
+    fireEvent.change(screen.getByLabelText("Exercise date for coupon"), { target: { value: "2027-07-31" } });
+    fireEvent.change(screen.getByLabelText("Exercise amount for coupon"), { target: { value: "1000000" } });
+    fireEvent.change(screen.getByLabelText("Notice evidence for coupon"), { target: { value: " 3f2504e0-4f89-11d3-9a0c-0305e82c3301 " } });
+    fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
+    await waitFor(() => expect(api.previewContractualCashFlows).toHaveBeenCalledTimes(2));
+    expect(api.previewContractualCashFlows.mock.calls[1][2].exercises).toEqual([{
+      side: "Call", entryStartDate: "2027-01-31", streamId: "coupon", exerciseDate: "2027-07-31", noticeDate: "2027-07-31",
+      amount: "1000000", hypotheticalNotice: false, noticeEvidenceId: "3f2504e0-4f89-11d3-9a0c-0305e82c3301"
+    }]);
+
+    fireEvent.change(screen.getByLabelText("Notice date for coupon"), { target: { value: "2027-06-30" } });
+    fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
+    await waitFor(() => expect(api.previewContractualCashFlows).toHaveBeenCalledTimes(3));
+    expect(api.previewContractualCashFlows.mock.calls[2][2].exercises?.[0]).toMatchObject({ exerciseDate: "2027-07-31", noticeDate: "2027-06-30" });
+
+    fireEvent.change(screen.getByLabelText("Notice date for coupon"), { target: { value: "2027-08-01" } });
+    fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
+    expect(await screen.findByText(/cannot follow its exercise date/)).toBeInTheDocument();
+    expect(api.previewContractualCashFlows).toHaveBeenCalledTimes(3);
+  });
+
   it("loads a retained run and verifies replay by output hash", async () => {
     const retained: ContractualCashFlowRun = {
       runId: "run-9", subjectKind: "Security", subjectId: "sec-1", recordedAt: "2026-10-30T00:00:00Z", actor: "operator-a",

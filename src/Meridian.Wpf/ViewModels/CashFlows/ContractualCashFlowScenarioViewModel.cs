@@ -21,6 +21,7 @@ public sealed class CashFlowExerciseChoiceViewModel : BindableBase
     private string _exerciseDate;
     private string _amount = string.Empty;
     private string _noticeEvidenceId = string.Empty;
+    private string _noticeDate = string.Empty;
 
     public CashFlowExerciseChoiceViewModel(CashFlowExerciseEligibility entry, Action onChanged)
     {
@@ -38,6 +39,8 @@ public sealed class CashFlowExerciseChoiceViewModel : BindableBase
     public bool Include { get => _include; set { if (SetProperty(ref _include, value)) OnChanged(); } }
     public string ExerciseDate { get => _exerciseDate; set { if (SetProperty(ref _exerciseDate, value ?? string.Empty)) OnChanged(); } }
     public string Amount { get => _amount; set { if (SetProperty(ref _amount, value ?? string.Empty)) OnChanged(); } }
+    /// <summary>Date the notice was (or would be) given, yyyy-MM-dd; blank means the exercise date itself.</summary>
+    public string NoticeDate { get => _noticeDate; set { if (SetProperty(ref _noticeDate, value ?? string.Empty)) OnChanged(); } }
     /// <summary>Identity of an approved exercise notice; when set the exercise is retained rather than hypothetical.</summary>
     public string NoticeEvidenceId { get => _noticeEvidenceId; set { if (SetProperty(ref _noticeEvidenceId, value ?? string.Empty)) OnChanged(); } }
 }
@@ -177,8 +180,14 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
             if (!DateOnly.TryParseExact(choice.ExerciseDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var exerciseDate)
                 || !decimal.TryParse(choice.Amount, NumberStyles.Number, CultureInfo.InvariantCulture, out var amount))
             { refusal = $"Choose an exercise date and a decimal amount for the {choice.Entry.Side} on {choice.Entry.StreamId}."; return null; }
+            var noticeDate = exerciseDate;
+            if (!string.IsNullOrWhiteSpace(choice.NoticeDate)
+                && !DateOnly.TryParseExact(choice.NoticeDate.Trim(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out noticeDate))
+            { refusal = $"Enter the notice date for the {choice.Entry.Side} on {choice.Entry.StreamId} as yyyy-MM-dd, or leave it blank to notice on the exercise date."; return null; }
+            if (noticeDate > exerciseDate)
+            { refusal = $"The notice date for the {choice.Entry.Side} on {choice.Entry.StreamId} cannot follow its exercise date."; return null; }
             var notice = string.IsNullOrWhiteSpace(choice.NoticeEvidenceId) ? null : choice.NoticeEvidenceId.Trim();
-            exercises.Add(new SelectedCashFlowExercise(choice.Entry.Side, choice.Entry.EntryStartDate, choice.Entry.StreamId, exerciseDate, exerciseDate, amount, notice is null, notice));
+            exercises.Add(new SelectedCashFlowExercise(choice.Entry.Side, choice.Entry.EntryStartDate, choice.Entry.StreamId, exerciseDate, noticeDate, amount, notice is null, notice));
         }
         IReadOnlyList<CashFlowPrepaymentAssumption>? prepayments = null;
         if (PrepaymentEnabled)
@@ -298,7 +307,7 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
             foreach (var entry in result.ExerciseEligibility)
             {
                 var choice = new CashFlowExerciseChoiceViewModel(entry, OnExerciseEdited);
-                if (previous.TryGetValue(Key(entry), out var old)) { choice.Include = old.Include; choice.ExerciseDate = old.ExerciseDate; choice.Amount = old.Amount; }
+                if (previous.TryGetValue(Key(entry), out var old)) { choice.Include = old.Include; choice.ExerciseDate = old.ExerciseDate; choice.NoticeDate = old.NoticeDate; choice.Amount = old.Amount; choice.NoticeEvidenceId = old.NoticeEvidenceId; }
                 Exercises.Add(choice);
             }
         }

@@ -209,6 +209,7 @@
                                         <CheckBox IsChecked="{Binding Include}" Content="{Binding Label}" VerticalAlignment="Center" Margin="0,0,8,0" />
                                         <ComboBox ItemsSource="{Binding Dates}" SelectedItem="{Binding ExerciseDate}" IsEditable="True" Text="{Binding ExerciseDate, UpdateSourceTrigger=PropertyChanged}" Width="130" Margin="0,0,8,0" IsEnabled="{Binding Include}" />
                                         <TextBox Text="{Binding Amount, UpdateSourceTrigger=PropertyChanged}" Width="120" Margin="0,0,8,0" IsEnabled="{Binding Include}" />
+                                        <TextBox Text="{Binding NoticeDate, UpdateSourceTrigger=PropertyChanged}" Width="110" Margin="0,0,8,0" IsEnabled="{Binding Include}" AutomationProperties.Name="Notice date" ToolTip="Notice date (yyyy-MM-dd); blank notices on the exercise date" />
                                         <TextBox Text="{Binding NoticeEvidenceId, UpdateSourceTrigger=PropertyChanged}" Width="240" Margin="0,0,8,0" IsEnabled="{Binding Include}" AutomationProperties.Name="Notice evidence" ToolTip="Approved notice id (optional); when set the exercise is retained rather than hypothetical" />
                                         <TextBlock Text="{Binding CalendarText}" Opacity="0.7" VerticalAlignment="Center" />
                                     </WrapPanel>

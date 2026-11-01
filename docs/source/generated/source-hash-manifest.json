@@ -10,7 +10,7 @@
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
       "readme_hash": "aed71460e0c0368934ba3335cffc04a6b5b86350db339481492844761fa29ce4",
-      "source_hash": "e84d52f0339f125a04ff5b15a8fd51038a2b2f8a0111e58d9ce5fb455fe0fdf4"
+      "source_hash": "3f23a9988557815f41b8daf08bf6586228993d79c6e0d9e3ff0e08a33137cf4c"
     },
     {
       "id": "SRC-BACKTESTING",
@@ -31,7 +31,7 @@
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
       "readme_hash": "b1185c3efcfbe17c860f05bae3bc6a30e5462ca49c817eb36a2852cf18c81b37",
-      "source_hash": "ad33eecccc7f23e5f954ca732635922e99680f48267a45c21c8f2ae73a55a166"
+      "source_hash": "62a573d1ef71a6eca4e47c9673b046d60b155f0741ec6c7808c73d6225742823"
     },
     {
       "id": "SRC-CORE",
@@ -262,14 +262,14 @@
       "path": "src/Meridian.Ui",
       "readme": "src/Meridian.Ui/README.md",
       "readme_hash": "761f0e61c9dd9b615673c33ca1a34f580f0bd55079ac5f6cd7524427286a2931",
-      "source_hash": "e67fc0d592251673af9e42232d4d5bba31196d70fd42fa25f02f6edb9d5857cf"
+      "source_hash": "0dbc199745fb8f05109d7ba3bb7a2f6a0069fe22a24e2b6bc34c12b71c9a6fdf"
     },
     {
       "id": "SRC-UI-DASHBOARD",
       "path": "src/Meridian.Ui/dashboard",
       "readme": "src/Meridian.Ui/dashboard/README.md",
       "readme_hash": "16217a29e9c742cb926e317109e7fcbd11ccd42224d0179f3c3e93a2f4bbddca",
-      "source_hash": "e67fc0d592251673af9e42232d4d5bba31196d70fd42fa25f02f6edb9d5857cf"
+      "source_hash": "0dbc199745fb8f05109d7ba3bb7a2f6a0069fe22a24e2b6bc34c12b71c9a6fdf"
     },
     {
       "id": "SRC-UI-SERVICES",
@@ -290,7 +290,7 @@
       "path": "src/Meridian.Wpf",
       "readme": "src/Meridian.Wpf/README.md",
       "readme_hash": "8fb73938a4275fe7cad1e3997275fdcdae00479db89c232175348ab3bc13172e",
-      "source_hash": "4e20aaf3af6cbf9d5d675d47ec5398703b60b0f82f669b42d57297c8f449355d"
+      "source_hash": "b71913e9a3aad9ad4a0d196107e7ca92c5b4f7412ae7cc1876b94d4e28ab9273"
     }
   ],
   "schema": {

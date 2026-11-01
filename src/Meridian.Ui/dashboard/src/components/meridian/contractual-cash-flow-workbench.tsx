@@ -37,6 +37,8 @@ export interface ContractualCashFlowWorkbenchProps {
 interface ExerciseChoice {
   include: boolean;
   exerciseDate: string;
+  /** Date the notice was (or would be) given; blank means the exercise date itself. */
+  noticeDate: string;
   amount: string;
   /** Identity of an approved exercise notice; when set the exercise is retained rather than hypothetical. */
   noticeEvidenceId: string;
@@ -123,9 +125,12 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
       if (!choice?.include) continue;
       if (!choice.exerciseDate || !DECIMAL_LITERAL.test(choice.amount.trim()))
         return `Choose an exercise date and a decimal amount for the ${entry.side.toLowerCase()} on ${entry.streamId}.`;
+      const noticeDate = choice.noticeDate || choice.exerciseDate;
+      if (noticeDate > choice.exerciseDate)
+        return `The notice date for the ${entry.side.toLowerCase()} on ${entry.streamId} cannot follow its exercise date.`;
       exercises.push({
         side: entry.side, entryStartDate: entry.entryStartDate, streamId: entry.streamId,
-        exerciseDate: choice.exerciseDate, noticeDate: choice.exerciseDate, amount: choice.amount.trim(),
+        exerciseDate: choice.exerciseDate, noticeDate, amount: choice.amount.trim(),
         hypotheticalNotice: !choice.noticeEvidenceId.trim(),
         noticeEvidenceId: choice.noticeEvidenceId.trim() || null
       });
@@ -276,10 +281,10 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
             <legend className="font-medium text-muted-foreground">Exercise selections (hypothetical unless an approved notice is named)</legend>
             {eligibility.map((entry) => {
               const key = eligibilityKey(entry);
-              const choice = exerciseChoices[key] ?? { include: false, exerciseDate: entry.dates[0] ?? "", amount: "", noticeEvidenceId: "" };
+              const choice = exerciseChoices[key] ?? { include: false, exerciseDate: entry.dates[0] ?? "", noticeDate: "", amount: "", noticeEvidenceId: "" };
               const update = (next: Partial<ExerciseChoice>) => edit(() => setExerciseChoices((prev) => ({ ...prev, [key]: { ...choice, ...next } })));
               return (
-                <div key={key} className="grid items-center gap-2 md:grid-cols-5">
+                <div key={key} className="grid items-center gap-2 md:grid-cols-6">
                   <Checkbox checked={choice.include} label={`${entry.side} · ${entry.streamId} · ${entry.style} until ${entry.windowEnd}`}
                     aria-label={`Include ${entry.side.toLowerCase()} exercise on ${entry.streamId}`} onCheckedChange={(checked) => update({ include: checked })} />
                   {entry.dates.length > 0 ? (
@@ -291,6 +296,8 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
                     <Input type="date" value={choice.exerciseDate} disabled={!choice.include} aria-label={`Exercise date for ${entry.streamId}`}
                       onChange={(e) => update({ exerciseDate: e.target.value })} />
                   )}
+                  <Input type="date" value={choice.noticeDate} disabled={!choice.include} aria-label={`Notice date for ${entry.streamId}`}
+                    title="Notice date; blank notices on the exercise date" onChange={(e) => update({ noticeDate: e.target.value })} />
                   <Input placeholder="Amount" value={choice.amount} disabled={!choice.include} aria-label={`Exercise amount for ${entry.streamId}`}
                     onChange={(e) => update({ amount: e.target.value })} />
                   <Input placeholder="Approved notice id (optional)" value={choice.noticeEvidenceId} disabled={!choice.include} aria-label={`Notice evidence for ${entry.streamId}`}

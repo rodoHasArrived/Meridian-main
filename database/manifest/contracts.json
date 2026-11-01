@@ -4601,7 +4601,7 @@
       ]
     }
   ],
-  "fingerprint": "b9d2242ccb905e0d25ba7cab98c3c6f81ee1a1f378bacd33759bb5b4058f734b",
+  "fingerprint": "e20ef95057a67121d939799275c1ec96e740e53e7c6105aedd142cba77709f24",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5212,7 +5212,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "d74a6dd90ae5654243784fb1c95832ceec97f803b5baf929f33b512c6ef8d5a8",
+      "fingerprint": "6f0f95c4aa76febe0f0779ca338860ab6711bf6f2bbbdbe730c7ea3ca51474f7",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.CashFlows",
       "object_ids": [
@@ -75358,7 +75358,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "82d8a0b0fcb9870688a23a22cacbabbe710bc95757eef8ebfdccd3b6c12500ac",
+      "fingerprint": "60d65c11971f6334b5090c35d52b390294e19c1ecea94e860b74895fbfd9ec58",
       "full_name": "Meridian.Contracts.CashFlows.BondExerciseNoticeJsonContext",
       "id": "Meridian.Contracts.CashFlows.BondExerciseNoticeJsonContext",
       "kind": "class",
@@ -75370,12 +75370,12 @@
       "qualified_name": "Meridian.Contracts.CashFlows.BondExerciseNoticeJsonContext",
       "references": [],
       "source": {
-        "line": 94,
+        "line": 99,
         "path": "src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs"
       },
       "sources": [
         {
-          "line": 94,
+          "line": 99,
           "path": "src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs"
         }
       ],
@@ -79034,7 +79034,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "6f8896f1f79b64db1f8fbe1f68446d3138cf87cf0f69bf115ad4d67b48f92fbe",
+      "fingerprint": "03f2dd2df7fc2d205f3a0f842713e42edab3359e326550661a9a210eb9aadff1",
       "full_name": "Meridian.Contracts.CashFlows.IBondExerciseNoticeStore",
       "id": "Meridian.Contracts.CashFlows.IBondExerciseNoticeStore",
       "kind": "interface",
@@ -79046,12 +79046,12 @@
       "qualified_name": "Meridian.Contracts.CashFlows.IBondExerciseNoticeStore",
       "references": [],
       "source": {
-        "line": 81,
+        "line": 86,
         "path": "src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs"
       },
       "sources": [
         {
-          "line": 81,
+          "line": 86,
           "path": "src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs"
         }
       ],
@@ -79133,7 +79133,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "47030b6edf4be0d4c1d629990e40cdc48433c13b679473eafd7ff7c177ce8459",
+      "fingerprint": "abfd5bc3035b4f479ae26e6057ddb86881f705441d36270b6e3da09a0584c171",
       "full_name": "Meridian.Contracts.CashFlows.IExerciseNoticeVerifier",
       "id": "Meridian.Contracts.CashFlows.IExerciseNoticeVerifier",
       "kind": "interface",
@@ -79145,12 +79145,12 @@
       "qualified_name": "Meridian.Contracts.CashFlows.IExerciseNoticeVerifier",
       "references": [],
       "source": {
-        "line": 76,
+        "line": 80,
         "path": "src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs"
       },
       "sources": [
         {
-          "line": 76,
+          "line": 80,
           "path": "src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs"
         }
       ],

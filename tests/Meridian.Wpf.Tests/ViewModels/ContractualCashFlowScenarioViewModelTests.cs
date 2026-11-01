@@ -95,5 +95,40 @@ public sealed class ContractualCashFlowScenarioViewModelTests
         await view.VerifyReplayCommand.ExecuteAsync(null);
         view.ReplayStatusText.Should().Be("Replay differs: retained output out-1, current out-2. Source terms unchanged.");
     }
+
+    [Fact]
+    public async Task ExerciseSelection_CarriesItsOwnNoticeDate_DefaultingToTheExerciseDate_AndRefusesALateNotice()
+    {
+        var client = new Mock<IWorkstationContractualCashFlowApiClient>();
+        client.Setup(c => c.PreviewAsync(ContractualCashFlowSubjectKinds.Security, Subject, It.IsAny<ContractualCashFlowRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ApiResponse<ContractualCashFlowResult>.Ok(Calculated()));
+        var view = new ContractualCashFlowScenarioViewModel(client.Object, ContractualCashFlowSubjectKinds.Security, Subject, "ACME 5 2030")
+        {
+            ValuationDate = new DateTime(2026, 10, 31), KnowledgeCutoff = "2026-10-31T09:30:00Z"
+        };
+        await view.PreviewCommand.ExecuteAsync(null);
+        var choice = view.Exercises.Should().ContainSingle().Subject;
+        choice.Include = true;
+        choice.ExerciseDate = "2027-07-31";
+        choice.Amount = "1000000";
+        choice.NoticeEvidenceId = " 3f2504e0-4f89-11d3-9a0c-0305e82c3301 ";
+
+        var selected = view.TryBuildRequest(out var refusal)!.Exercises.Should().ContainSingle().Subject;
+        refusal.Should().BeNull();
+        selected.NoticeDate.Should().Be(new DateOnly(2027, 7, 31), "a blank notice date notices on the exercise date");
+        selected.HypotheticalNotice.Should().BeFalse();
+        selected.NoticeEvidenceId.Should().Be("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
+
+        choice.NoticeDate = "2027-06-30";
+        view.TryBuildRequest(out refusal)!.Exercises![0].NoticeDate.Should().Be(new DateOnly(2027, 6, 30), "the notice date is sent separately from the exercise date");
+
+        choice.NoticeDate = "2027-08-01";
+        view.TryBuildRequest(out refusal).Should().BeNull();
+        refusal.Should().Contain("cannot follow its exercise date");
+
+        choice.NoticeDate = "June 2027";
+        view.TryBuildRequest(out refusal).Should().BeNull();
+        refusal.Should().Contain("yyyy-MM-dd");
+    }
 }
 #endif

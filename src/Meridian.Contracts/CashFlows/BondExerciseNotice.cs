@@ -72,10 +72,15 @@ public sealed record ExerciseNoticeDecisionRequest(bool Approve, string? Reason 
 
 public sealed record ExerciseNoticeVerification(bool Verified, string Reason, BondExerciseNoticeDto? Notice = null);
 
-/// <summary>Source verification a scenario needs before a selected exercise may carry a retained (non-hypothetical) notice.</summary>
+/// <summary>
+/// Source verification a scenario needs before a selected exercise may carry a retained (non-hypothetical) notice.
+/// The verifier sees the scenario's knowledge cutoff, so evidence recorded or approved after it cannot inform
+/// the scenario, and the resolved exercise entry, so the noticed price must restate the contract's own price.
+/// </summary>
 public interface IExerciseNoticeVerifier
 {
-    Task<ExerciseNoticeVerification> VerifyAsync(Guid securityId, SelectedCashFlowExercise selection, CancellationToken ct = default);
+    Task<ExerciseNoticeVerification> VerifyAsync(Guid securityId, SelectedCashFlowExercise selection, DateTimeOffset knowledgeCutoff,
+        ContractualExerciseEntry? entry, CancellationToken ct = default);
 }
 
 public interface IBondExerciseNoticeStore
