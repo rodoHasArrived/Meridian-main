@@ -143,7 +143,7 @@ public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IP
             ?? throw new NotSupportedException("Credential vault does not support explicit ownership migration.");
         var finalized = await migration.FinalizeMigrationAsync(provider, scope, migrationId, actor, ct).ConfigureAwait(false);
         _logger.LogInformation("Finalized credential ownership migration {MigrationId} for provider {ProviderId} on connection {ConnectionId} in tenant {TenantId} by {Actor}.",
-            migrationId, provider, connectionId, tenantId, actor);
+            ProviderRoutingLogValues.Safe(migrationId), provider, ProviderRoutingLogValues.Safe(connectionId), ProviderRoutingLogValues.Safe(tenantId), ProviderRoutingLogValues.Safe(actor));
         return finalized;
     }
 
