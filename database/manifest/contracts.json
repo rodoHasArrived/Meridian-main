@@ -4591,7 +4591,7 @@
       ]
     }
   ],
-  "fingerprint": "0fd33a34711dbe51a842b412471f4bf1f8992446ccc2a3097ecebaa5b3f44f34",
+  "fingerprint": "55f7aaeeda63d3ea75dc2ae689ac7914cffc9992c5dacd776acbea8e169623ab",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5837,7 +5837,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "ad23870ad9e1f78e6ae777387568f2e2c26129ddf355a659f01dbd87a9b71d4a",
+      "fingerprint": "338d8b3baa297a8cbab51282ecbb5db44c4a3bea4d1cbf63961f769f552c2395",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.FixedIncome",
       "object_ids": [
@@ -127639,7 +127639,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "6b74ecf699279d410a01914f1f2c8142763155095b0e5ca485a84d21cf2074ad",
+      "fingerprint": "e26980c9047a5542816ebbe24042ddbc88981644d586fb83cd09543c1705490c",
       "full_name": "Meridian.Contracts.FixedIncome.BondAnalyticsResult",
       "id": "Meridian.Contracts.FixedIncome.BondAnalyticsResult",
       "kind": "record",
@@ -127896,6 +127896,20 @@
           "raw_type": "Guid",
           "source_line": 57,
           "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "SpreadDv01",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "decimal?",
+          "source_line": 86,
+          "type": "decimal?"
         },
         {
           "collection": false,

@@ -11277,8 +11277,8 @@ Meridian-main
 │   │   │   ├── MiddleOfficeOperationsServiceTests.cs
 │   │   │   └── RecurringJournalStoreTests.cs
 │   │   ├── FixedIncome
-│   │   │   ├── BondAnalyticsMathTests.cs
 │   │   │   ├── BondAnalyticsFloatingTests.cs
+│   │   │   ├── BondAnalyticsMathTests.cs
 │   │   │   ├── BondAnalyticsScheduleRefusalTests.cs
 │   │   │   ├── BondAnalyticsServiceTests.cs
 │   │   │   ├── BondAnalyticsVersionGoldenTests.cs
