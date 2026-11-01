@@ -11946,7 +11946,8 @@ Meridian-main
 │   │   │   ├── Banking
 │   │   │   │   └── PostgresBankingIntegrityTests.cs
 │   │   │   ├── Etl
-│   │   │   │   └── EtlJobDefinitionStoreTests.cs
+│   │   │   │   ├── EtlJobDefinitionStoreTests.cs
+│   │   │   │   └── EtlLogAppendConcurrencyTests.cs
 │   │   │   ├── FundAccounts
 │   │   │   │   ├── FundAccountDatabaseFactAttribute.cs
 │   │   │   │   ├── FundAccountDatabaseFixture.cs
