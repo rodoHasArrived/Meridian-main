@@ -4597,7 +4597,7 @@
       ]
     }
   ],
-  "fingerprint": "612020c7b6074a8d5984d0184dc00a846da151779a954a47905b9eaeb9f6ab07",
+  "fingerprint": "6258913a44f48c6ccff1f67eb575ce6bb9e8c549bc0767864e093dedd226d9a6",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4608,7 +4608,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "98c973d45c195ad8e61ef38fbc9ba120b0a5175148860cab4e00f14b02a28612",
+      "fingerprint": "5aef2ea8deed2669e637cdc3f122f1acd2182a81238a97061cd2c0852402cf67",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Accounting.Lots",
       "object_ids": [
@@ -12828,17 +12828,17 @@
         {
           "explicit_value": true,
           "name": "Reversal",
-          "source_line": 43,
+          "source_line": 46,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "Rebook",
-          "source_line": 45,
+          "source_line": 48,
           "value": "1"
         }
       ],
-      "fingerprint": "bc1756fd064364f4685b48b931a9c24a989478300d0c8b47f2ce774ba1ec80a9",
+      "fingerprint": "fc887f805c5c53a7c90acd0e1d24b7136d50813e9ab5e1aa35ac040d386a8b94",
       "full_name": "Meridian.Contracts.Accounting.Lots.ShortCorrectionKind",
       "id": "Meridian.Contracts.Accounting.Lots.ShortCorrectionKind",
       "kind": "enum",
@@ -12850,12 +12850,12 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.ShortCorrectionKind",
       "references": [],
       "source": {
-        "line": 40,
+        "line": 43,
         "path": "src/Meridian.Contracts/Accounting/Lots/ShortCorrection.cs"
       },
       "sources": [
         {
-          "line": 40,
+          "line": 43,
           "path": "src/Meridian.Contracts/Accounting/Lots/ShortCorrection.cs"
         }
       ],
@@ -12871,7 +12871,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "1849382d8f8bc94b961153383d0fd52e2aab586079b54f6624ee32d02e94fdc5",
+      "fingerprint": "1e2d6d7d4e0ecc4f9c1b8ba8aa7a723d4a525976db0adfc7a9baa8d9b6c2090b",
       "full_name": "Meridian.Contracts.Accounting.Lots.ShortCorrectionReceipt",
       "id": "Meridian.Contracts.Accounting.Lots.ShortCorrectionReceipt",
       "kind": "record",
@@ -12888,7 +12888,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 59,
+          "source_line": 62,
           "type": "string"
         },
         {
@@ -12902,7 +12902,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 53,
+          "source_line": 56,
           "type": "Guid"
         },
         {
@@ -12916,7 +12916,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 56,
+          "source_line": 59,
           "type": "Guid"
         },
         {
@@ -12930,7 +12930,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 55,
+          "source_line": 58,
           "type": "Guid"
         },
         {
@@ -12945,7 +12945,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 61,
+          "source_line": 64,
           "type": "Guid?"
         },
         {
@@ -12959,7 +12959,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ShortCorrectionKind",
-          "source_line": 54,
+          "source_line": 57,
           "type": "ShortCorrectionKind"
         },
         {
@@ -12973,7 +12973,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 58,
+          "source_line": 61,
           "type": "string"
         },
         {
@@ -12987,7 +12987,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 60,
+          "source_line": 63,
           "type": "DateTimeOffset"
         },
         {
@@ -13001,7 +13001,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OpenLotDto",
-          "source_line": 57,
+          "source_line": 60,
           "type": "OpenLotDto"
         }
       ],
@@ -13014,12 +13014,12 @@
         "Meridian.Contracts.Accounting.Lots.ShortCorrectionKind"
       ],
       "source": {
-        "line": 52,
+        "line": 55,
         "path": "src/Meridian.Contracts/Accounting/Lots/ShortCorrection.cs"
       },
       "sources": [
         {
-          "line": 52,
+          "line": 55,
           "path": "src/Meridian.Contracts/Accounting/Lots/ShortCorrection.cs"
         }
       ],
