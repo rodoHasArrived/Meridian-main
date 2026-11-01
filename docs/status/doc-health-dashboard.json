@@ -1,6 +1,6 @@
 {
   "total_files": 795,
-  "total_lines": 180520,
+  "total_lines": 180522,
   "orphaned_count": 259,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -2463,7 +2463,7 @@
     },
     {
       "path": "docs/engineering/dead-code-inventory.md",
-      "line_count": 55,
+      "line_count": 57,
       "has_heading": true,
       "todo_count": 6,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
