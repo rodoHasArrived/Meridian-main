@@ -78,7 +78,10 @@ internal static class ContractualCashFlowRunEndpoints
             var right = await store.GetAsync(kind, subjectId, otherRunId, context.RequestAborted).ConfigureAwait(false);
             if (left is null || right is null)
                 return Results.NotFound();
-            return Results.Json(ContractualCashFlowRunComparer.Compare(left, right), json);
+            try
+            { return Results.Json(ContractualCashFlowRunComparer.Compare(left, right), json); }
+            catch (ArgumentException exception)
+            { return Results.BadRequest(exception.Message); }
         }).WithName("CompareContractual" + kind + "CashFlowRuns").RequireAnyPermission(view, modify)
         .Produces<ContractualCashFlowRunComparison>().Produces(StatusCodes.Status400BadRequest).Produces(StatusCodes.Status404NotFound);
     }

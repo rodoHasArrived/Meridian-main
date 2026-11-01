@@ -74,5 +74,10 @@ public sealed class ContractualCashFlowRunComparerTests
         otherSubject.Should().Throw<ArgumentException>().WithMessage("*same subject*");
         var sameRun = () => ContractualCashFlowRunComparer.Compare(left, left);
         sameRun.Should().Throw<ArgumentException>().WithMessage("*two different retained runs*");
+        var eur = Run(0.10m);
+        var otherCurrency = () => ContractualCashFlowRunComparer.Compare(left, eur with { Contract = eur.Contract with { Currency = "eur" } });
+        otherCurrency.Should().Throw<ArgumentException>().WithMessage("*same contract currency*");
+        var sameCurrencyOtherCase = ContractualCashFlowRunComparer.Compare(left, eur with { Contract = eur.Contract with { Currency = "usd" } });
+        sameCurrencyOtherCase.CashDeltas.Should().BeEmpty("the currency comparison is case-insensitive and the schedules agree");
     }
 }

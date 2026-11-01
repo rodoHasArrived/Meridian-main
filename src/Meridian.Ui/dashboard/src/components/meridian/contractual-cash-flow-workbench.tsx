@@ -197,6 +197,7 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
     if (!id) { setError("Enter a retained run identity."); return; }
     setLoadedRun(null);
     setReplayStatus(null);
+    setComparison(null);
     await guard("load", async (signal) => {
       const next = await getContractualCashFlowRun(subjectKind, subjectId, id, { signal });
       if (signal.aborted) return;

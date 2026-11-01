@@ -108,6 +108,11 @@ public sealed class ContractualCashFlowScenarioViewModelTests
         view.ComparisonText.Should().Contain("REPLAY FAILED").And.Contain("different requests").And.Contain("125.5");
         view.CashDeltas.Should().ContainSingle().Which.Delta.Should().Be(125.5m);
         view.BlockerDeltas.Should().ContainSingle().Which.Should().Be("Only in second: CurvePinRequired (float): Pin the SOFR curve.");
+
+        await view.LoadRunCommand.ExecuteAsync(null);
+        view.ComparisonText.Should().BeEmpty("a comparison belongs to the pair it was computed for");
+        view.CashDeltas.Should().BeEmpty();
+        view.BlockerDeltas.Should().BeEmpty();
     }
 }
 #endif

@@ -262,6 +262,7 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
     private async Task LoadRunAsync()
     {
         if (!Guid.TryParse(RunIdText, out var runId)) { StatusText = "Enter a retained run identity."; return; }
+        ClearComparison();
         var token = Begin("Loading retained run…");
         try
         {
@@ -302,10 +303,21 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
         finally { End(token); }
     }
 
+    /// <summary>A comparison belongs to the pair it was computed for; loading another run or starting a new comparison drops it first.</summary>
+    private void ClearComparison()
+    {
+        _comparison = null;
+        CashDeltas.Clear();
+        BlockerDeltas.Clear();
+        RaisePropertyChanged(nameof(Comparison));
+        RaisePropertyChanged(nameof(ComparisonText));
+    }
+
     private async Task CompareRunsAsync()
     {
         if (_loadedRun is not { } run || !Guid.TryParse(CompareRunIdText, out var other)) return;
         if (other == run.RunId) { StatusText = "Choose two different retained runs to compare."; return; }
+        ClearComparison();
         var token = Begin("Comparing retained runs…");
         try
         {

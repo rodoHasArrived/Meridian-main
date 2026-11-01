@@ -39,6 +39,8 @@ public static class ContractualCashFlowRunComparer
             throw new ArgumentException("Only retained runs of the same subject can be compared.");
         if (left.RunId == right.RunId)
             throw new ArgumentException("Choose two different retained runs to compare.");
+        if (!string.Equals(left.Contract.Currency, right.Contract.Currency, StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException("Only retained runs in the same contract currency can be compared; amounts are never converted.");
 
         var leftCash = NetCashByDateAndStream(left.Result.Events);
         var rightCash = NetCashByDateAndStream(right.Result.Events);

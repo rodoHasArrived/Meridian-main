@@ -124,5 +124,9 @@ describe("ContractualCashFlowWorkbench", () => {
     expect(section).toHaveTextContent(/run-9 \(replay verified\) vs run-10 \(REPLAY FAILED\) · different requests · total net cash delta 125.5/);
     expect(screen.getByLabelText("Blocker differences")).toHaveTextContent("Only in second: CurvePinRequired (float): Pin the SOFR curve.");
     expect(screen.getByText("125.5", { selector: "td, td *" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Load retained run" }));
+    await screen.findByLabelText("Loaded retained run");
+    expect(screen.queryByLabelText("Retained run comparison")).toBeNull();
   });
 });
