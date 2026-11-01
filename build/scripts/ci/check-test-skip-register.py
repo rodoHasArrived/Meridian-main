@@ -16,6 +16,9 @@ This gate makes every skip an explicit, owned, expiring decision:
 
 - every ``Skip = "..."`` in a test project must have a matching register entry naming an
   owner, a category, tracking, and a review-by date;
+- ``tracking`` must resolve: a roadmap/backlog ID present in ``roadmap-items.yml`` or the
+  implementation TODO list, a GitHub ``#NNN`` reference, or an existing repository path;
+- a reason that starts with ``Quarantined`` must be registered in the ``quarantined`` category;
 - register entries whose ``review_by`` has passed fail the gate, so a quarantine cannot
   outlive its review without somebody re-deciding;
 - register entries that match no skip in the source fail, so the register cannot rot after
@@ -48,6 +51,21 @@ DEFAULT_TESTS_DIR = REPO_ROOT / "tests"
 
 VALID_CATEGORIES = {"environment-gated", "quarantined"}
 REQUIRED_FIELDS = ("path", "test", "reason", "owner", "category", "tracking", "review_by")
+
+# A non-empty `tracking` string was all the gate required, so "TBD" or "see chat" satisfied it and
+# a quarantine could carry an ID that resolves to nothing. Tracking must now be one of:
+#   - a roadmap/backlog ID (e.g. W9-ASSET-010, PRD-016) that appears in a tracking source below;
+#   - a GitHub issue or pull request reference such as #1234;
+#   - a repository-relative path (optionally with a #anchor) that exists.
+TRACKING_ID = re.compile(r"^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+$")
+TRACKING_ISSUE = re.compile(r"^#[1-9][0-9]*$")
+TRACKING_SOURCES = (
+    Path("docs") / "roadmap" / "data" / "roadmap-items.yml",
+    Path("docs") / "product" / "implementation-todo-list.md",
+)
+# A reason that says "Quarantined" is a quarantine whatever category the entry claims; filing it
+# as environment-gated would hide a coverage gap among skips that are expected to run elsewhere.
+QUARANTINE_REASON_PREFIX = re.compile(r"^\s*Quarantined\b", re.IGNORECASE)
 
 # Every `Skip = <expression>` in a test project, in any of the forms xUnit accepts:
 #     [Fact(Skip = "plain literal")]
@@ -677,12 +695,47 @@ def parse_review_date(value: str, entry_id: str) -> _dt.date:
         raise GateFailure(f"{entry_id}: review_by '{value}' is not an ISO date (YYYY-MM-DD)") from exc
 
 
+def build_tracking_resolver(repo_root: Path):
+    """Return a callable that explains why a tracking value does not resolve, or None if it does."""
+    corpus = ""
+    for relative in TRACKING_SOURCES:
+        source = repo_root / relative
+        if source.is_file():
+            corpus += source.read_text(encoding="utf-8") + "\n"
+
+    def resolve(tracking: str) -> str | None:
+        value = tracking.strip()
+        if TRACKING_ISSUE.match(value):
+            return None
+        if TRACKING_ID.match(value):
+            if re.search(rf"(?<![\w-]){re.escape(value)}(?![\w-])", corpus):
+                return None
+            sources = ", ".join(path.as_posix() for path in TRACKING_SOURCES)
+            return f"tracking ID '{value}' does not appear in any tracking source ({sources})"
+        path_part = value.split("#", 1)[0]
+        if "/" in path_part and not Path(path_part).is_absolute() and ".." not in Path(path_part).parts:
+            if (repo_root / path_part).exists():
+                return None
+            return f"tracking path '{path_part}' does not exist in the repository"
+        return (
+            f"tracking '{value}' is not a roadmap/backlog ID (e.g. W9-ASSET-010), "
+            "a GitHub reference (#1234), or a repository-relative path"
+        )
+
+    return resolve
+
+
 def evaluate(
     sites: list[SkipSite],
     entries: list[dict],
     today: _dt.date,
+    tracking_resolver=None,
 ) -> list[str]:
-    """Return one problem line per failure; an empty list means the inventory is sound."""
+    """Return one problem line per failure; an empty list means the inventory is sound.
+
+    *tracking_resolver* (from :func:`build_tracking_resolver`) checks that each entry's tracking
+    reference resolves. Synthetic fixtures without a repository behind them pass None.
+    """
     problems: list[str] = []
 
     seen_keys: dict[tuple[str, str], SkipSite] = {}
@@ -722,6 +775,17 @@ def evaluate(
                 f"{', '.join(sorted(VALID_CATEGORIES))}"
             )
             continue
+
+        if category != "quarantined" and QUARANTINE_REASON_PREFIX.match(entry["reason"]):
+            problems.append(
+                f"{entry_id} ({entry['path']}): reason starts with 'Quarantined' but category is "
+                f"'{category}'; register it as 'quarantined'"
+            )
+
+        if tracking_resolver is not None:
+            unresolved = tracking_resolver(entry["tracking"])
+            if unresolved:
+                problems.append(f"{entry_id} ({entry['path']}, {entry['test']}): {unresolved}")
 
         key = (entry["path"], entry["test"], entry["reason"])
         if key in registered:
@@ -806,7 +870,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     sites = discover_skips(args.tests_dir.resolve(), args.repo_root.resolve())
-    problems = evaluate(sites, entries, today)
+    problems = evaluate(sites, entries, today, build_tracking_resolver(args.repo_root.resolve()))
 
     if args.json_output:
         evidence = build_evidence(sites, entries)
