@@ -69,7 +69,14 @@ public sealed record ShortCorrectionReceipt(
         if (string.IsNullOrWhiteSpace(Reason) || string.IsNullOrWhiteSpace(Actor)) issues.Add("A reviewed reason and attributed actor are required.");
         if (RecordedAt == default) issues.Add("RecordedAt is required.");
         if (RestoresLot is null) issues.Add("The restored lot state is required.");
-        else if (RestoresLot.Acquisition.Direction != OpenLotDirection.Short) issues.Add("Short corrections restore Short lots only.");
+        else
+        {
+            try
+            { OpenLotValidation.Validate(RestoresLot); }
+            catch (ArgumentException exception)
+            { issues.Add("The restored lot is not a valid canonical open lot: " + exception.Message); }
+            if (RestoresLot.Acquisition?.Direction != OpenLotDirection.Short) issues.Add("Short corrections restore Short lots only.");
+        }
         if (Kind == ShortCorrectionKind.Rebook && (FollowsReversalId is null || FollowsReversalId == Guid.Empty))
             issues.Add("A rebook must follow a retained reversal.");
         if (Kind == ShortCorrectionKind.Reversal && FollowsReversalId is not null) issues.Add("A reversal follows no other correction.");

@@ -38,6 +38,39 @@ public sealed class ShortCorrectionTests
     }
 
     [Fact]
+    public void Reversal_RefusesRedatedInverses_AndInversesThatDropDimensionsOrCurrencyDetail()
+    {
+        var posted = Entry(ShortLotJournalProjector.Cover(Liability, 4_000m, 3_200m), dimensions: new LedgerLineDimensionSet { PositionId = Guid.NewGuid() });
+        var receipt = Receipt(ShortCorrectionKind.Reversal, posted.JournalEntryId);
+        var inverse = ShortLotJournalProjector.Reverse(posted.Lines);
+        var dimensions = posted.Lines[0].Dimensions;
+        ShortCorrectionGuard.RequireReversal(receipt, posted, Entry(inverse, at: At.AddDays(3), dimensions: dimensions));
+
+        var otherPeriod = () => ShortCorrectionGuard.RequireReversal(receipt, posted, Entry(inverse, effectiveDate: new DateOnly(2026, 12, 1), dimensions: dimensions));
+        otherPeriod.Should().Throw<ArgumentException>().WithMessage("*re-dated reversals are refused*");
+        var backdated = () => ShortCorrectionGuard.RequireReversal(receipt, posted, Entry(inverse, at: At.AddDays(-1), dimensions: dimensions));
+        backdated.Should().Throw<ArgumentException>().WithMessage("*re-dated reversals are refused*");
+        var droppedDimensions = () => ShortCorrectionGuard.RequireReversal(receipt, posted, Entry(inverse));
+        droppedDimensions.Should().Throw<ArgumentException>().WithMessage("*exact inverse*");
+        var otherCurrency = () => ShortCorrectionGuard.RequireReversal(receipt, posted,
+            Entry(inverse, dimensions: dimensions, currency: line => new LedgerEntryCurrency("USD", "GBP", line.debit, line.credit, 1m)));
+        otherCurrency.Should().Throw<ArgumentException>().WithMessage("*exact inverse*");
+        var noCurrency = () => ShortCorrectionGuard.RequireReversal(receipt, posted, Entry(inverse, dimensions: dimensions, currency: _ => null));
+        noCurrency.Should().Throw<ArgumentException>().WithMessage("*exact inverse*");
+    }
+
+    [Fact]
+    public void Receipts_RequireAValidRestoredLot()
+    {
+        var receipt = Receipt(ShortCorrectionKind.Reversal, Guid.NewGuid());
+        (receipt with { RestoresLot = receipt.RestoresLot with { LotId = " " } }).Validate().Should().Contain(i => i.Contains("not a valid canonical open lot"));
+        (receipt with { RestoresLot = receipt.RestoresLot with { OpenQuantity = 500m } }).Validate().Should().Contain(i => i.Contains("not a valid canonical open lot"));
+        (receipt with { RestoresLot = receipt.RestoresLot with { Acquisition = receipt.RestoresLot.Acquisition with { Evidence = [] } } }).Validate()
+            .Should().Contain(i => i.Contains("not a valid canonical open lot"));
+        (receipt with { RestoresLot = receipt.RestoresLot with { Acquisition = null! } }).Validate().Should().Contain(i => i.Contains("Short lots only"));
+    }
+
+    [Fact]
     public void Rebook_FollowsItsReversal_AndCarriesExactlyTheCorrectedProjection()
     {
         var posted = Entry(ShortLotJournalProjector.Cover(Liability, 4_000m, 3_200m));
@@ -50,11 +83,21 @@ public sealed class ShortCorrectionTests
         var unlinked = () => ShortCorrectionGuard.RequireRebook(rebook with { FollowsReversalId = Guid.NewGuid() }, reversal, corrected, Entry(corrected));
         unlinked.Should().Throw<ArgumentException>().WithMessage("*follow the reversal of the same corrected mutation*");
         var otherLot = () => ShortCorrectionGuard.RequireRebook(rebook with { RestoresLot = rebook.RestoresLot with { TaxLotRecordId = Guid.NewGuid() } }, reversal, corrected, Entry(corrected));
-        otherLot.Should().Throw<ArgumentException>().WithMessage("*lot its reversal restored*");
+        // Evidence binds the durable lot identity, so a different record id is no longer a valid canonical lot at all.
+        otherLot.Should().Throw<ArgumentException>().WithMessage("*not a valid canonical open lot*");
         var drift = () => ShortCorrectionGuard.RequireRebook(rebook, reversal, corrected, Entry(ShortLotJournalProjector.Cover(Liability, 4_000m, 3_250m)));
         drift.Should().Throw<ArgumentException>().WithMessage("*exactly the lines projected*");
         var noReversal = () => ShortCorrectionGuard.RequireRebook(rebook with { FollowsReversalId = null }, reversal, corrected, Entry(corrected));
         noReversal.Should().Throw<ArgumentException>().WithMessage("*must follow a retained reversal*");
+
+        var otherJournal = () => ShortCorrectionGuard.RequireRebook(rebook with { CorrectsJournalEntryId = Guid.NewGuid() }, reversal, corrected, Entry(corrected));
+        otherJournal.Should().Throw<ArgumentException>().WithMessage("*same corrected mutation and journal*");
+        var reusedIdentity = () => ShortCorrectionGuard.RequireRebook(rebook with { CorrectionId = reversal.CorrectionId }, reversal, corrected, Entry(corrected));
+        reusedIdentity.Should().Throw<ArgumentException>().WithMessage("*cannot reuse the reversal's identity*");
+        var intoTheOriginal = () => ShortCorrectionGuard.RequireRebook(rebook, reversal, corrected, posted);
+        intoTheOriginal.Should().Throw<ArgumentException>().WithMessage("*cannot reuse the reversal's identity or the corrected journal*");
+        var changedSnapshot = () => ShortCorrectionGuard.RequireRebook(rebook with { RestoresLot = rebook.RestoresLot with { OpenQuantity = 99m } }, reversal, corrected, Entry(corrected));
+        changedSnapshot.Should().Throw<ArgumentException>().WithMessage("*complete restored snapshot unchanged*");
     }
 
     [Fact]
@@ -92,18 +135,29 @@ public sealed class ShortCorrectionTests
     private static RetainedEvidenceIdentityDto Evidence(string name) => new("ev-" + name, "evidence://short/" + name, new string('b', 64), "Broker",
         "doc-" + name, "Accepted", "controller", At, new DateOnly(2026, 10, 15), 1, At, "controller", "ShortSaleCharacter", name);
 
+    private static readonly Guid SecurityId = Guid.Parse("cccccccc-0000-0000-0000-000000000003");
+    private static readonly Guid PositionId = Guid.Parse("dddddddd-0000-0000-0000-000000000004");
+    private static readonly Guid BookId = Guid.Parse("eeeeeeee-0000-0000-0000-000000000005");
+
     private static OpenLotDto Lot()
     {
         var recordId = Guid.Parse("bbbbbbbb-0000-0000-0000-000000000002");
         var acquired = new DateOnly(2026, 9, 30);
-        return new OpenLotDto(recordId, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "short-acme-1", acquired, 100m, 100m, 10_000m, 10_000m, 3,
-            new OpenLotAcquisitionDto(LotQuantityBasis.Units, "USD", "USD", 1m, 10_000m, 10_000m, acquired, null, []) { Direction = OpenLotDirection.Short });
+        var at = new DateTimeOffset(acquired.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var evidence = new RetainedEvidenceIdentityDto("ev-open", "evidence://short/open", new string('a', 64), "Broker", "fill-open",
+            "Accepted", "controller", at, acquired, 1, at, "controller", "OpenLotAcquisition", recordId.ToString("D"));
+        return new OpenLotDto(recordId, SecurityId, PositionId, BookId, "short-acme-1", acquired, 100m, 100m, 10_000m, 10_000m, 3,
+            new OpenLotAcquisitionDto(LotQuantityBasis.Units, "USD", "USD", 1m, 10_000m, 10_000m, acquired, null, [evidence]) { Direction = OpenLotDirection.Short });
     }
 
-    private static JournalEntry Entry(IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> lines)
+    private static JournalEntry Entry(IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> lines, DateOnly? effectiveDate = null,
+        DateTimeOffset? at = null, LedgerLineDimensionSet? dimensions = null, Func<(LedgerAccount account, decimal debit, decimal credit), LedgerEntryCurrency?>? currency = null)
     {
         var id = Guid.NewGuid();
-        return new JournalEntry(id, At, "Short correction", lines.Select(line => new LedgerEntry(Guid.NewGuid(), id, At, line.account, line.debit, line.credit,
-            "Short correction", new LedgerLineDimensionSet(), new LedgerEntryCurrency("USD", "USD", line.debit, line.credit, 1m))).ToArray());
+        var timestamp = at ?? At;
+        currency ??= line => new LedgerEntryCurrency("USD", "USD", line.debit, line.credit, 1m);
+        return new JournalEntry(id, timestamp, "Short correction", lines.Select(line => new LedgerEntry(Guid.NewGuid(), id, timestamp, line.account, line.debit, line.credit,
+            "Short correction", dimensions ?? new LedgerLineDimensionSet(), currency(line))).ToArray(),
+            new JournalEntryMetadata(EffectiveDate: effectiveDate ?? new DateOnly(2026, 11, 1)));
     }
 }
