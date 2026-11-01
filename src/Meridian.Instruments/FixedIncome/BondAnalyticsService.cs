@@ -304,7 +304,8 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
         return new BondAnalyticsResult(security.SecurityId, security.Currency, model.Version, context, convention,
             clean, measures.DirtyPrice, accrued, yield, currentRate * 100m / clean,
             measures.MacaulayDuration, measures.ModifiedDuration, measures.Convexity, measures.Dv01,
-            yield, flows, [], inputs, [], Capabilities(true), diagnostics) { SpreadDv01 = spreadDv01 };
+            yield, flows, [], inputs, [], Capabilities(true), diagnostics)
+        { SpreadDv01 = spreadDv01 };
     }
 
     private static bool TryBuildFloating(Guid securityId, StructuredCashFlowLeg leg, DeclaredScheduleResolution declared,
