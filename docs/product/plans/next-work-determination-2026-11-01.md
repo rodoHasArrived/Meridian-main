@@ -233,6 +233,34 @@ run. #3232's `.gitattributes` / regenerate-on-merge follow-up is the item that a
 its justification has changed: it is no longer "the publisher is broken," it is "a working publisher
 still needs someone to act on its output."
 
+### The same merge left a second stale artifact, and no required check can see it
+
+Found while clearing the first one, and it is the stronger half of the argument above.
+
+`7ca57b62` also left `docs/source/generated/source-hash-manifest.json` stale for **`SRC-APP` and
+`SRC-WPF`** — which are precisely and only the two source modules it changed
+(`src/Meridian.Application/{Commands/ConfigCommands.cs,Services/ConfigurationService.cs}` and four
+files under `src/Meridian.Wpf/`). Verified in a clean worktree at the base with nothing else applied:
+`build_manifest` disagrees with the committed manifest for those two modules and no other.
+
+So one merge left **two** derived artifacts stale. The difference is in how each one surfaces:
+
+| Stale artifact | Where it surfaces |
+| --- | --- |
+| `wpf-screen-development-tracker.{json,md}` | `verify-docs` → the required `quality-gate`. Loud, and red on `main` |
+| `source-hash-manifest.json` (`SRC-APP`, `SRC-WPF`) | Only the non-required `Prepare generated repair patch` check, and only on a **PR branched off the bad head** |
+
+`validate-doc-hashes.py` is invoked by `make/docs.mk` and `make/ai.mk` and by the reviewed-hash
+merge tool. **No GitHub workflow runs it.** So this drift is invisible to every required check and
+to every `push` run on `main`; it becomes visible only when someone opens a PR, whose
+`generated-repair` check then fails for a defect the PR did not introduce. Any PR off this base that
+does not itself touch those two modules inherits that failure — which is what happened to this
+determination's own branch, and to #3354 before it refreshed its own module hash.
+
+That is worth more than the two-line fix it took to clear: a reviewed-hash gate that only a
+downstream PR can trip will keep charging the queue for defects it did not cause, and the regenerate
+-on-merge item above is what stops both symptoms at the source.
+
 ## Summary
 
 | Priority | Work | Why now |
@@ -244,7 +272,8 @@ still needs someone to act on its output."
 | **P1** | **Produce the `W10-LOT-002` evidence packet on one candidate build** | The user-requested queue's head, no longer gated behind anything. `next-work-20261029` already names the test selection and requires PostgreSQL results kept separate. All five W10 rows are short of *evidence*, not source — this is the first one |
 | **P1** | **Re-review `W10-RECON-001` and set its health from the merged head** | The registry's only `yellow` row, `last_reviewed: 2026-09-26`, describing PR #3004 as its pending implementation. #3004 merged 2026-10-28 |
 | **P1** | **Fix the two `verify-workflows` races** — `ignore_cleanup_errors=True`; the `disposable.py` reconcile window | The only item here that got worse: 380 call sites across 119 files, up from 321/98, still zero using the flag. `quality-gate` is required, and this reddens it with no code defect |
-| **P1** | **Promote the `.gitattributes` / regenerate-on-merge follow-up** | Re-justified, not carried: `Generated Repair Publisher` now succeeds (runs 974–978 green after #3232). The remaining gap is that nothing applies its patch before the next merge — which is what cost `rc.1` and cost this head |
+| **P1** | **Promote the `.gitattributes` / regenerate-on-merge follow-up** | Re-justified, not carried: `Generated Repair Publisher` now succeeds (runs 974–978 green after #3232). The remaining gap is that nothing applies its patch before the next merge — which is what cost `rc.1` and cost this head, twice over: `7ca57b62` left both the WPF tracker and the `SRC-APP`/`SRC-WPF` source hashes stale |
+| **P1** | **Run the reviewed source-hash validator in CI** | `validate-doc-hashes.py` lives only in `make/docs.mk`, `make/ai.mk` and the merge tool; **no workflow runs it**. Manifest drift on `main` is therefore invisible to every required check and surfaces only as a failed non-required `generated-repair` check on an unrelated downstream PR — it hit this branch and #3354 |
 | **P2** | **Add a `pwsh` preflight to the script-test lane that fails once with an accurate message** — not a `skipUnless` guard | Carried forward intact, including the predecessor's correction. Dropped to P2 because the lane has been green since the outage healed |
 | **P2** | **Rebase the eight D-series PRs stacked on #3328, and resolve #3352** | #3328 merged as `b735371a`, so #3339–#3346 are stacked on landed history. All eight currently measure conflict-free; #3352's two conflicts are both resolver-covered `doc-health-dashboard` paths |
 | **P2** | **Bump the dev-only `eslint`/`typescript-eslint` tree past `minimatch <11.0.1`** | 11 moderate advisories, up from 2; 0 high. Below the gate's threshold, so it gates nothing — but the weekly certification cadence means a future *high* advisory has up to seven days of `main` pushes to hide in |
