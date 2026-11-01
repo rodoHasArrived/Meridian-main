@@ -4617,7 +4617,8 @@ Meridian-main
 │   │   │       ├── OpenLotSuccessors.cs
 │   │   │       ├── OpenLotUnifiedAmortization.cs
 │   │   │       ├── OpenLotValidation.cs
-│   │   │       └── OpenLotYieldToWorst.cs
+│   │   │       ├── OpenLotYieldToWorst.cs
+│   │   │       └── ShortCarryInstruction.cs
 │   │   ├── AccountingSystem
 │   │   │   └── AccountingSystemDtos.cs
 │   │   ├── Api
@@ -5132,6 +5133,8 @@ Meridian-main
 │   │   │   └── ValidatedConfig.cs
 │   │   ├── Contracts
 │   │   │   └── IProviderCredentialStore.cs
+│   │   ├── Currency
+│   │   │   └── CurrencyMinorUnits.cs
 │   │   ├── Diagnostics
 │   │   │   └── RuntimeDiagnosticRedactor.cs
 │   │   ├── Exceptions
@@ -5585,6 +5588,7 @@ Meridian-main
 │   │   │   ├── CanonicalLotCorporateActionService.cs
 │   │   │   ├── FactorPaydownLotInstructionService.cs
 │   │   │   ├── LedgerJournalConstruction.cs
+│   │   │   ├── ShortCarryPostingGuard.cs
 │   │   │   ├── SpineAcquisitionLotCompletion.cs
 │   │   │   └── SpineAcquisitionLotFacts.cs
 │   │   ├── MiddleOffice
@@ -6287,6 +6291,7 @@ Meridian-main
 │   │   ├── ShadowNavValidator.cs
 │   │   ├── ShareClass.cs
 │   │   ├── ShareClassUnitRegisterProjector.cs
+│   │   ├── ShortCarryProjector.cs
 │   │   ├── ShortLotJournalProjector.cs
 │   │   ├── StalePricePolicy.cs
 │   │   ├── TaxCharacter.cs
@@ -11259,7 +11264,8 @@ Meridian-main
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.PreparationRevision.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.ReferenceAuthority.cs
 │   │   │   │   ├── AssetAccountingLifecycleSeparationTests.cs
-│   │   │   │   └── BondSettlementConsiderationTests.cs
+│   │   │   │   ├── BondSettlementConsiderationTests.cs
+│   │   │   │   └── ShortCarryTests.cs
 │   │   │   ├── OperationsContinuity
 │   │   │   │   ├── FinancialOperationsCommandCenterReadService.AcceptanceTests.cs
 │   │   │   │   ├── FinancialOperationsCommandCenterReadService.PublicationTests.cs
