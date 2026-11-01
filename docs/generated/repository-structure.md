@@ -828,6 +828,9 @@ Meridian-main
 ├── .githooks
 │   └── pre-commit
 ├── .github
+│   ├── actions
+│   │   └── setup-dotnet-nuget
+│   │       └── action.yml
 │   ├── agents
 │   │   ├── adr-generator.agent.md
 │   │   ├── blueprint-agent.md
