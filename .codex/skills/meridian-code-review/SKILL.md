@@ -95,6 +95,10 @@ Non-trigger examples:
 - Check whether the touched layer is validated in the right test project.
 - For `src/Meridian.Ui/dashboard/`, expect targeted Vitest, TypeScript, or build validation for user-visible UI behavior.
 
+### Level 2/3 Financial and Security Invariants
+
+For ledger/accounting, storage migrations, provider adapters, shared domain contracts, money movement, authentication/secrets, or deployment changes (see `docs/ai/solo-developer-workflow.md`), also check: balanced journals, immutable posted records, idempotency, period locks, deterministic replay, source provenance, authorization and tenancy isolation, and fail-closed error paths. This is AI critique, not independent human review; report findings to the developer.
+
 ## Output Standards
 
 - List findings in severity order.

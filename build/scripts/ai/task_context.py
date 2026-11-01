@@ -381,10 +381,11 @@ def markdown(packet: dict[str, Any]) -> str:
             add_command(command, "Module or route validation requirement")
     lines += ["## Validation (not executed)", "", plan["policy"], ""]
     lines += [f"- `{entry['command']}`: {'; '.join(entry['reasons'])}" for entry in commands.values()]
-    lines += ["", "Required final checks remain:", ""]
+    lines += ["", "Final checks (by risk tier):", ""]
     for check in plan["requiredFinalChecks"]:
         label = shlex.join(check["argv"]) if check.get("argv") else check.get("name", check["id"])
-        lines.append(f"- `{label}`")
+        note = "" if check.get("required", True) else f" (optional: {check.get('reason', 'tier-dependent')})"
+        lines.append(f"- `{label}`{note}")
     lines += ["", "## Warnings", "", *[f"- {warning}" for warning in packet["warnings"]], ""]
 
     # Group exact content only. Every equivalent path still appears with its full
