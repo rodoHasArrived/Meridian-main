@@ -646,6 +646,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.ApplyProviderRuntimeCredentialRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.BackfillAutoRemediationSummary"
     },
     {
@@ -1469,6 +1475,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.ProviderRouteScopeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.ProviderRuntimeCredentialApplicationStatus"
     },
     {
       "kind": "contract-set-member",
@@ -2926,6 +2938,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.CashFlows.CalculationBlockerDigest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.CashFlows.CashFlowAmortization"
     },
     {
@@ -3028,6 +3046,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowInputDigest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowOutputDigest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowRequest"
     },
     {
@@ -3047,6 +3083,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowStream"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowSubjectKinds"
     },
     {
       "kind": "contract-set-member",
@@ -3101,6 +3143,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.CashFlows.SecurityContractualCashFlowTerms"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.CashFlows.SecurityTermsDigest"
     },
     {
       "kind": "contract-set-member",
@@ -5554,6 +5602,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondEconomicsCompatibility"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FixedIncome.BondExerciseEconomics"
     },
     {
@@ -5741,6 +5795,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FixedIncome.BondYieldConvention"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FixedIncome.DiscountMath"
     },
     {
       "kind": "contract-set-member",
@@ -12065,6 +12125,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityProjectionRecordExtensions"
     },
     {
       "kind": "contract-set-member",
@@ -26038,6 +26104,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityProjectionRecordExtensions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRawPriceDto"
     },
     {
@@ -29495,6 +29567,54 @@
       "label": "",
       "source": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowEvidence",
       "target": "contract:Meridian.Contracts.CashFlows.CashFlowCurveSnapshot"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowInputDigest",
+      "target": "contract:Meridian.Contracts.CashFlows.CashFlowCalendarSnapshot"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowInputDigest",
+      "target": "contract:Meridian.Contracts.CashFlows.CashFlowCurveSnapshot"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowInputDigest",
+      "target": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowContract"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowInputDigest",
+      "target": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowRequest"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowOutputDigest",
+      "target": "contract:Meridian.Contracts.CashFlows.CashFlowCalculationBlocker"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowOutputDigest",
+      "target": "contract:Meridian.Contracts.CashFlows.CashFlowExerciseCalculation"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowOutputDigest",
+      "target": "contract:Meridian.Contracts.CashFlows.CashFlowExerciseEligibility"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowOutputDigest",
+      "target": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowEvent"
     },
     {
       "kind": "contract-reference",
@@ -55714,7 +55834,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "a36fd51ee09534bbe60a88babcce6b8dfee831d23804865808dac3d26d0928f8",
+  "fingerprint": "405c3a98aff5710a2cba67c984999179517d9eecf995bb35605218b048fba182",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -56408,6 +56528,12 @@
       "id": "contract:Meridian.Contracts.Api.ApplyProviderPresetRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Api.ApplyProviderPresetRequest"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Api.ApplyProviderRuntimeCredentialRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.ApplyProviderRuntimeCredentialRequest"
     },
     {
       "classification": "class",
@@ -57236,6 +57362,12 @@
       "id": "contract:Meridian.Contracts.Api.ProviderRouteScopeDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Api.ProviderRouteScopeDto"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Api.ProviderRuntimeCredentialApplicationStatus",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.ProviderRuntimeCredentialApplicationStatus"
     },
     {
       "classification": "response",
@@ -58690,6 +58822,12 @@
       "label": "Meridian.Contracts.Calendars.StaticBusinessDayCalendarSource"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.CashFlows.CalculationBlockerDigest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.CashFlows.CalculationBlockerDigest"
+    },
+    {
       "classification": "enum",
       "id": "contract:Meridian.Contracts.CashFlows.CashFlowAmortization",
       "kind": "contract-type",
@@ -58792,6 +58930,24 @@
       "label": "Meridian.Contracts.CashFlows.ContractualCashFlowEvidence"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowInputDigest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.CashFlows.ContractualCashFlowInputDigest"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.CashFlows.ContractualCashFlowJsonContext"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowOutputDigest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.CashFlows.ContractualCashFlowOutputDigest"
+    },
+    {
       "classification": "request",
       "id": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowRequest",
       "kind": "contract-type",
@@ -58814,6 +58970,12 @@
       "id": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowStream",
       "kind": "contract-type",
       "label": "Meridian.Contracts.CashFlows.ContractualCashFlowStream"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowSubjectKinds",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.CashFlows.ContractualCashFlowSubjectKinds"
     },
     {
       "classification": "class",
@@ -58868,6 +59030,12 @@
       "id": "contract:Meridian.Contracts.CashFlows.SecurityContractualCashFlowTerms",
       "kind": "contract-type",
       "label": "Meridian.Contracts.CashFlows.SecurityContractualCashFlowTerms"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.CashFlows.SecurityTermsDigest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.CashFlows.SecurityTermsDigest"
     },
     {
       "classification": "record",
@@ -61318,6 +61486,12 @@
       "label": "Meridian.Contracts.FixedIncome.BondCouponStructureDto"
     },
     {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.FixedIncome.BondEconomicsCompatibility",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FixedIncome.BondEconomicsCompatibility"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Contracts.FixedIncome.BondExerciseEconomics",
       "kind": "contract-type",
@@ -61508,6 +61682,12 @@
       "id": "contract:Meridian.Contracts.FixedIncome.BondYieldConvention",
       "kind": "contract-type",
       "label": "Meridian.Contracts.FixedIncome.BondYieldConvention"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.FixedIncome.DiscountMath",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FixedIncome.DiscountMath"
     },
     {
       "classification": "service_contract",
@@ -67832,6 +68012,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityProjectionRecord"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityProjectionRecordExtensions",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityProjectionRecordExtensions"
     },
     {
       "classification": "dto",
@@ -81513,11 +81699,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3573,
-    "contract_set_memberships": 4417,
-    "edges": 9257,
+    "contract_references": 3581,
+    "contract_set_memberships": 4429,
+    "edges": 9277,
     "foreign_keys": 155,
     "logical_references": 6,
-    "nodes": 4475
+    "nodes": 4486
   }
 }

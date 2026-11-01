@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Configuration;
 using Meridian.Core.Config;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Wpf.Services;

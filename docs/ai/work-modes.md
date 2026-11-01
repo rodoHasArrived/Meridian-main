@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-06-04
+**Reviewed:** 2026-10-31
 
 Use these modes to right-size context and validation effort without skipping safety or correctness.
 Pair mode selection with the active entry in `docs/ai/model-routing-policy.json` when a task requires explicit model-class routing.
@@ -17,7 +17,11 @@ Pair mode selection with the active entry in `docs/ai/model-routing-policy.json`
 
 ## Task-Start Recipe
 
-Before editing, record:
+For a small single-agent task (Level 1 per `solo-developer-workflow.md`), a one-line note is enough:
+the mode plus the first proof command. Record the full five-item set below only for multi-agent,
+multi-lane, or cross-subsystem work, and for any Level 2/3 change that needs it.
+
+Before editing multi-agent or cross-subsystem work, record:
 
 - the chosen mode,
 - the coordinator or final integration owner,
