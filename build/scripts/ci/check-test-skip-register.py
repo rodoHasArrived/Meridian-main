@@ -713,10 +713,14 @@ def build_tracking_resolver(repo_root: Path):
             sources = ", ".join(path.as_posix() for path in TRACKING_SOURCES)
             return f"tracking ID '{value}' does not appear in any tracking source ({sources})"
         path_part = value.split("#", 1)[0]
-        if "/" in path_part and not Path(path_part).is_absolute() and ".." not in Path(path_part).parts:
+        if path_part and not Path(path_part).is_absolute() and ".." not in Path(path_part).parts:
+            # Any existing repository-relative file counts, including root files such as
+            # README.md. A missing nested path is reported as missing; a missing bare word
+            # (e.g. "TBD") falls through to the generic "not a tracking reference" error.
             if (repo_root / path_part).exists():
                 return None
-            return f"tracking path '{path_part}' does not exist in the repository"
+            if "/" in path_part:
+                return f"tracking path '{path_part}' does not exist in the repository"
         return (
             f"tracking '{value}' is not a roadmap/backlog ID (e.g. W9-ASSET-010), "
             "a GitHub reference (#1234), or a repository-relative path"

@@ -650,6 +650,16 @@ class TrackingResolutionTests(unittest.TestCase):
     def test_existing_repository_path_resolves(self):
         self.assertEqual(self.problems_for("docs/testing/quarantine.md#tenant-admin"), [])
 
+    def test_existing_repository_root_file_resolves(self):
+        (self.root / "QUARANTINE.md").write_text("# Quarantine\n", encoding="utf-8")
+
+        self.assertEqual(self.problems_for("QUARANTINE.md#tenant-admin"), [])
+
+    def test_missing_repository_root_file_fails(self):
+        problems = self.problems_for("MISSING.md")
+
+        self.assertTrue(any("is not a roadmap/backlog ID" in p for p in problems), msg=problems)
+
     def test_untracked_placeholder_fails(self):
         problems = self.problems_for("TBD")
 

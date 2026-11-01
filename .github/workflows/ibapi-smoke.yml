@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "src/Meridian.Infrastructure/Adapters/InteractiveBrokers/**"
+      - ".github/actions/setup-dotnet-nuget/**"
       - "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj"
       - "src/Meridian.IbApi.SmokeStub/**"
       - "tests/Meridian.Tests/Infrastructure/Providers/IB*.cs"
@@ -18,6 +19,7 @@ on:
       - main
     paths:
       - "src/Meridian.Infrastructure/Adapters/InteractiveBrokers/**"
+      - ".github/actions/setup-dotnet-nuget/**"
       - "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj"
       - "src/Meridian.IbApi.SmokeStub/**"
       - "tests/Meridian.Tests/Infrastructure/Providers/IB*.cs"
