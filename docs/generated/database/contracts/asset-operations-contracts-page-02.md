@@ -194,6 +194,7 @@ classDiagram
     }
     class Meridian_Contracts_AssetOperations_PortfolioCashLadderQuery["PortfolioCashLadderQuery"] {
         +int BucketDays
+        +string? EngineVersion
         +string? FundAccountId
         +int HorizonDays
         +decimal? MinimumCashThreshold
