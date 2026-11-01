@@ -60,23 +60,33 @@ public static class OpenLotYieldToWorst
                 continue;
             if (schedule.ValueKind != JsonValueKind.Array)
                 throw new ArgumentException("Redemption schedules must be arrays; malformed authority cannot be omitted.");
-            var rows = schedule.EnumerateArray().ToArray();
-            for (var index = 0; index < rows.Length; index++)
+            // Rows are processed in chronological order so a window's implied end is the next start, whatever
+            // the authored order; duplicate starts and overlapping windows are ambiguous authority.
+            var parsed = new List<(JsonElement Row, DateOnly Date)>();
+            foreach (var row in schedule.EnumerateArray())
             {
-                var row = rows[index];
                 if (row.ValueKind != JsonValueKind.Object)
                     throw new ArgumentException("Redemption schedule entries must be complete objects.");
                 var members = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 if (row.EnumerateObject().Any(property => !members.Add(property.Name)))
                     throw new ArgumentException("Redemption schedule entries cannot contain ambiguous duplicate members.");
+                if (!DateOnly.TryParseExact(SecurityTermReader.ReadString(row, kind.ToLowerInvariant() + "Date"), "yyyy-MM-dd",
+                        System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var start))
+                    throw new ArgumentException("Automatic yield comparison requires explicit fixed-price European or Bermudan whole redemption dates within the lot's life.");
+                parsed.Add((row, start));
+            }
+            var rows = parsed.OrderBy(item => item.Date).ToArray();
+            if (rows.Select(item => item.Date).Distinct().Count() != rows.Length)
+                throw new ArgumentException("Redemption schedule rows must have distinct start dates.");
+            for (var index = 0; index < rows.Length; index++)
+            {
+                var (row, date) = rows[index];
                 var prefix = kind.ToLowerInvariant();
                 var dateText = SecurityTermReader.ReadString(row, prefix + "Date");
                 var style = SecurityTermReader.ReadString(row, "exerciseStyle");
                 var bermudan = style == "Bermudan";
                 var endText = SecurityTermReader.ReadString(row, prefix + "EndDate");
-                if (!DateOnly.TryParseExact(dateText, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture,
-                        System.Globalization.DateTimeStyles.None, out var date)
-                    || date <= lot.AcquiredDate || date > maturity
+                if ((!bermudan && date <= lot.AcquiredDate) || date > maturity
                     || style is not ("European" or "Bermudan")
                     || SecurityTermReader.ReadString(row, "priceBasis") != "PercentOfPar"
                     || SecurityTermReader.ReadDecimal(row, prefix + "Price") is not { } price || price <= 0m
@@ -86,12 +96,19 @@ public static class OpenLotYieldToWorst
                     throw new ArgumentException("Automatic yield comparison requires explicit fixed-price European or Bermudan whole redemption dates within the lot's life.");
                 // Make-whole spreads and notice windows are not interpreted as fixed point redemptions,
                 // even when a stray fixed price is also present. A cadence is meaningful only for a
-                // Bermudan window.
+                // Bermudan window and must itself be a supported regular frequency.
                 foreach (var member in new[] { "makeWholeSpreadBps", "minimumNoticeDays", "maximumNoticeDays" })
                     if (SecurityTermReader.TryGetProperty(row, member, out var value) && value.ValueKind != JsonValueKind.Null)
                         throw new ArgumentException("Redemption notice and make-whole calculations require a separate supported schedule treatment.");
-                if (!bermudan && SecurityTermReader.TryGetProperty(row, "exerciseFrequency", out var cadence) && cadence.ValueKind != JsonValueKind.Null)
-                    throw new ArgumentException("An exercise cadence applies to Bermudan windows only.");
+                string? cadenceText = null;
+                if (SecurityTermReader.TryGetProperty(row, "exerciseFrequency", out var cadence) && cadence.ValueKind != JsonValueKind.Null)
+                {
+                    if (!bermudan)
+                        throw new ArgumentException("An exercise cadence applies to Bermudan windows only.");
+                    if (cadence.ValueKind != JsonValueKind.String || !SecurityTermConventions.TryParsePaymentFrequency(cadence.GetString(), out _))
+                        throw new ArgumentException("A Bermudan exercise cadence must be a supported regular frequency.");
+                    cadenceText = cadence.GetString();
+                }
                 if (!bermudan)
                 {
                     candidates.Add(Price(kind, date, price));
@@ -99,7 +116,8 @@ public static class OpenLotYieldToWorst
                 }
                 // A Bermudan window runs to its declared end, else to the day before the next row, else to
                 // maturity; every regular-grid exercise date in the window is a retained alternative at the
-                // same fixed price, so the selection names the actual worst date rather than the window.
+                // same fixed price, so the selection names the actual worst date rather than the window. A
+                // window that began before acquisition keeps the exercise dates still ahead of the lot.
                 DateOnly windowEnd;
                 if (endText is not null)
                 {
@@ -107,15 +125,17 @@ public static class OpenLotYieldToWorst
                             System.Globalization.DateTimeStyles.None, out windowEnd) || windowEnd < date)
                         throw new ArgumentException("A Bermudan redemption window needs an end date on or after its start date.");
                 }
-                else if (index + 1 < rows.Length && rows[index + 1].ValueKind == JsonValueKind.Object
-                    && DateOnly.TryParseExact(SecurityTermReader.ReadString(rows[index + 1], prefix + "Date"), "yyyy-MM-dd",
-                        System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var next))
-                    windowEnd = next.AddDays(-1);
+                else if (index + 1 < rows.Length)
+                    windowEnd = rows[index + 1].Date.AddDays(-1);
                 else
                     windowEnd = maturity;
                 if (windowEnd > maturity)
                     throw new ArgumentException("A Bermudan redemption window cannot extend past maturity.");
-                if (!BondExerciseEconomics.TryExerciseDates(row, date, windowEnd, style, reference.PaymentFrequency, out var dates, out var refusal))
+                if (index + 1 < rows.Length && windowEnd >= rows[index + 1].Date)
+                    throw new ArgumentException("Redemption schedule windows cannot overlap the next row; conflicting prices are ambiguous authority.");
+                if (windowEnd <= lot.AcquiredDate)
+                    throw new ArgumentException("Automatic yield comparison requires explicit fixed-price European or Bermudan whole redemption dates within the lot's life.");
+                if (!BondExerciseEconomics.TryExerciseDates(row, date, windowEnd, style, reference.PaymentFrequency, out var dates, out var refusal, cadenceText))
                     throw new ArgumentException(refusal);
                 foreach (var exercise in dates.Where(exercise => exercise > lot.AcquiredDate && exercise <= maturity))
                     candidates.Add(Price(kind, exercise, price));

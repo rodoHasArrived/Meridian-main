@@ -210,13 +210,13 @@ public static class BondExerciseEconomics
     /// acquisition-price yield-to-worst comparison so both lists are the same dates.
     /// </summary>
     public static bool TryExerciseDates(JsonElement row, DateOnly start, DateOnly end, string style,
-        string? couponFrequency, out IReadOnlyList<DateOnly> dates, out string? refusal)
+        string? couponFrequency, out IReadOnlyList<DateOnly> dates, out string? refusal, string? exerciseFrequency = null)
     {
         dates = [start];
         refusal = null;
         if (style == "European")
             return true;
-        var frequency = BondContractualEconomics.Text(row, "exerciseFrequency") ?? couponFrequency;
+        var frequency = exerciseFrequency ?? BondContractualEconomics.Text(row, "exerciseFrequency") ?? couponFrequency;
         if (!SecurityTermConventions.TryParsePaymentFrequency(frequency, out var cadence)
             || cadence.PeriodsPerYear() is not { } periods)
         {
