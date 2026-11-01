@@ -165,6 +165,79 @@ public sealed class ProviderCredentialOwnershipMigrationTests : IDisposable
         (await new FileProviderCredentialStore(_root).ReadForProviderAsync("quickbooks"))!.Environment.Should().Be("production");
     }
 
+    [Fact]
+    public async Task Transfer_MovesTheProviderWideOAuthTokenUnderTheScope_AndBackOnRollback()
+    {
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(Request());
+        var token = new OAuthToken("access-1", "Bearer", DateTimeOffset.UtcNow.AddHours(1), "refresh-1");
+        await store.SaveOAuthTokenAsync("alpaca", token);
+        var original = (await store.ReadForProviderAsync("alpaca"))!;
+
+        var receipt = await store.MigrateToScopeAsync("alpaca", Owner, "migration-oauth", original.CredentialGeneration, "operator");
+        receipt.OAuthTokenTransferred.Should().BeTrue();
+        (await store.ReadOAuthTokensAsync()).Should().BeEmpty("the provider-wide token no longer exists beside the owned record");
+        (await store.ReadScopedOAuthTokensAsync(Owner)).Should().ContainSingle().Which.Value.Should().Be(token);
+        (await store.ReadScopedOAuthTokensAsync(new("tenant-b", "connection-a", "account-a", "paper"))).Should().BeEmpty();
+
+        var rolledBack = await store.RollbackMigrationAsync("alpaca", Owner, "migration-oauth", "controller");
+        rolledBack.RolledBack.Should().BeTrue();
+        rolledBack.OAuthTokenTransferred.Should().BeTrue();
+        (await store.ReadScopedOAuthTokensAsync(Owner)).Should().BeEmpty();
+        (await store.ReadOAuthTokensAsync()).Should().ContainSingle().Which.Value.Should().Be(token);
+        var audit = await File.ReadAllTextAsync(Path.Combine(Path.GetDirectoryName(store.VaultPath)!, "provider-credentials.audit.jsonl"));
+        audit.Should().NotContain("access-1").And.NotContain("refresh-1");
+    }
+
+    [Fact]
+    public async Task Transfer_RefusesWhenTheOwnedScopeAlreadyHoldsAnOAuthToken()
+    {
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(Request());
+        await store.SaveOAuthTokenAsync("alpaca", new OAuthToken("legacy", "Bearer", DateTimeOffset.UtcNow.AddHours(1)));
+        await store.SaveScopedOAuthTokenAsync("alpaca", new OAuthToken("owned", "Bearer", DateTimeOffset.UtcNow.AddHours(1)), Owner);
+        var original = (await store.ReadForProviderAsync("alpaca"))!;
+
+        var act = () => store.MigrateToScopeAsync("alpaca", Owner, "migration-conflict", original.CredentialGeneration, "operator");
+
+        await act.Should().ThrowAsync<ProviderCredentialConflictException>();
+        (await store.ReadForProviderAsync("alpaca"))!.Credentials.Should().BeEquivalentTo(original.Credentials);
+        (await store.ReadOAuthTokensAsync()).Should().ContainKey("alpaca");
+    }
+
+    [Fact]
+    public async Task Finalize_RequiresVerificationUnderTheNewOwnership_ThenRetiresRollbackAndReleasesTheProviderWideRecord()
+    {
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(Request());
+        var original = (await store.ReadForProviderAsync("alpaca"))!;
+        var receipt = await store.MigrateToScopeAsync("alpaca", Owner, "migration-f", original.CredentialGeneration, "operator");
+
+        var unverified = () => store.FinalizeMigrationAsync("alpaca", Owner, "migration-f", "controller");
+        await unverified.Should().ThrowAsync<InvalidOperationException>().WithMessage("*successful verification*");
+        var legacySave = () => store.SaveAsync(Request("other-key"));
+        await legacySave.Should().ThrowAsync<ProviderCredentialConflictException>("the active migration still blocks the provider-wide record");
+
+        await store.RecordScopedVerificationAsync(new("alpaca", false, "boom"), Owner);
+        await unverified.Should().ThrowAsync<InvalidOperationException>("a failed verification does not finalize");
+        await store.RecordScopedVerificationAsync(new("alpaca", true, ExternalAccountId: Owner.ExternalAccountId, Actor: "verifier"), Owner);
+
+        var finalized = await store.FinalizeMigrationAsync("alpaca", Owner, "migration-f", "controller");
+        finalized.FinalizedBy.Should().Be("controller");
+        finalized.FinalizedAt.Should().NotBeNull();
+        finalized.IsActive.Should().BeFalse();
+        store = new FileProviderCredentialStore(_root);
+        (await store.FinalizeMigrationAsync("alpaca", Owner, "migration-f", "someone-else")).Should().Be(finalized, "finalization is idempotent");
+        var rollback = () => store.RollbackMigrationAsync("alpaca", Owner, "migration-f", "controller");
+        await rollback.Should().ThrowAsync<InvalidOperationException>().WithMessage("*finalized migration cannot be rolled back*");
+        (await store.ReadScopedAsync("alpaca", Owner))!.Credentials.Should().BeEquivalentTo(original.Credentials);
+        await store.SaveAsync(Request("other-key"));
+        (await store.ReadForProviderAsync("alpaca"))!.Get("KeyId").Should().Be("other-key", "a finalized migration no longer blocks a new provider-wide record");
+        var audit = await File.ReadAllTextAsync(Path.Combine(Path.GetDirectoryName(store.VaultPath)!, "provider-credentials.audit.jsonl"));
+        audit.Should().Contain("ownership-finalize").And.Contain("migration-f");
+        _ = receipt;
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_root))

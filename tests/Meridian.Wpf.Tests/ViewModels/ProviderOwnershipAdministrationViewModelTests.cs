@@ -136,6 +136,39 @@ public sealed class ProviderOwnershipAdministrationViewModelTests
     }
 
     [Fact]
+    public async Task Finalize_EndsRollback_AndMarksTheReceiptFinalized()
+    {
+        var client = new Mock<IWorkstationProviderOwnershipApiClient>();
+        client.Setup(c => c.PreviewMigrationAsync("paper-a", "alpaca", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ApiResponse<ProviderCredentialStoreStatus>.Ok(Status("gen-1")));
+        client.Setup(c => c.MigrateAsync("paper-a", It.IsAny<ProviderCredentialMigrationRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string _, ProviderCredentialMigrationRequest request, CancellationToken _) =>
+                ApiResponse<ProviderCredentialMigrationReceipt>.Ok(Receipt(request.MigrationId, false) with { OAuthTokenTransferred = true }));
+        ProviderCredentialMigrationRequest? finalized = null;
+        client.Setup(c => c.FinalizeAsync("paper-a", It.IsAny<ProviderCredentialMigrationRequest>(), It.IsAny<CancellationToken>()))
+            .Callback<string, ProviderCredentialMigrationRequest, CancellationToken>((_, request, _) => finalized = request)
+            .ReturnsAsync((string _, ProviderCredentialMigrationRequest request, CancellationToken _) =>
+                ApiResponse<ProviderCredentialMigrationReceipt>.Ok(Receipt(request.MigrationId, false) with { OAuthTokenTransferred = true, FinalizedBy = "controller", FinalizedAt = new DateTimeOffset(2026, 11, 1, 0, 0, 0, TimeSpan.Zero) }));
+        var view = new ProviderOwnershipAdministrationViewModel(client.Object) { ProviderId = "alpaca" };
+        view.OwnedConnections.Add(Connection("paper-a"));
+        view.SelectedConnection = view.OwnedConnections[0];
+
+        view.FinalizeCommand.CanExecute(null).Should().BeFalse();
+        await view.PreviewMigrationCommand.ExecuteAsync(null);
+        await view.MigrateCommand.ExecuteAsync(null);
+        view.ReceiptText.Should().Contain("OAuth token moved with the record");
+        view.FinalizeCommand.CanExecute(null).Should().BeTrue();
+
+        await view.FinalizeCommand.ExecuteAsync(null);
+        finalized!.MigrationId.Should().Be(view.Receipt!.MigrationId);
+        finalized.ExpectedGeneration.Should().BeNull();
+        view.ReceiptText.Should().Contain("finalized");
+        view.StatusText.Should().Contain("rollback has ended");
+        view.RollbackCommand.CanExecute(null).Should().BeFalse();
+        view.FinalizeCommand.CanExecute(null).Should().BeFalse();
+    }
+
+    [Fact]
     public async Task CreateConnection_SendsNoTenantOrActor()
     {
         var client = new Mock<IWorkstationProviderOwnershipApiClient>();

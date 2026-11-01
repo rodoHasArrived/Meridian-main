@@ -14,6 +14,84 @@ public sealed partial class FileProviderCredentialStore
         string migrationId, string actor, CancellationToken ct = default)
         => TransferOwnershipAsync(providerId, scope, migrationId, null, actor, rollback: true, ct);
 
+    public async Task<ProviderCredentialMigrationReceipt> FinalizeMigrationAsync(string providerId, ProviderCredentialScope scope,
+        string migrationId, string actor, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        ArgumentException.ThrowIfNullOrWhiteSpace(migrationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(actor);
+        var descriptor = RequireDescriptor(providerId);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
+            var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
+            if (!vault.OwnershipMigrations.TryGetValue(migrationId, out var receipt)
+                || receipt.ProviderId != descriptor.ProviderId || receipt.Scope != scope)
+                throw new ProviderCredentialConflictException();
+            if (receipt.RolledBack)
+                throw new InvalidOperationException("A rolled-back migration has nothing to finalize.");
+            if (receipt.FinalizedAt is not null)
+                return receipt;
+            if (!vault.Providers.TryGetValue(scope.StorageKey(descriptor.ProviderId), out var record) || record.Scope != scope)
+                throw new ProviderCredentialConflictException();
+            // Finalization needs proof the secret works under its new ownership: a successful verification
+            // recorded after the migration, and no later failure or save that re-flagged verification.
+            if (record.LastSuccessfulAt is not { } verified || verified < receipt.MigratedAt
+                || record.Metadata.GetValueOrDefault("verificationRequired") == "true")
+                throw new InvalidOperationException("Finalize requires a successful verification of the owned record after the migration; verify the selected connection first.");
+            if (receipt.OAuthTokenTransferred && !vault.ScopedOAuthTokens.Values.Any(token => token.Scope == scope
+                    && ProviderCredentialCatalog.NormalizeProviderId(token.ProviderName) == descriptor.ProviderId))
+                throw new InvalidOperationException("The transferred OAuth token is no longer held under the owned scope; finalize is refused.");
+            receipt = receipt with { FinalizedBy = actor, FinalizedAt = DateTimeOffset.UtcNow };
+            vault.OwnershipMigrations[migrationId] = receipt;
+            var audit = JsonNode.Parse(BuildAuditLine(descriptor, "ownership-finalize", actor,
+                BuildStatus(descriptor, ToReadResult(descriptor, record, ProviderCredentialSourceDto.LocalEncryptedStore)),
+                record.Fields.Keys.ToArray(), scope))!.AsObject();
+            audit["migrationId"] = migrationId;
+            await CommitWithAuditAsync(vault, audit.ToJsonString(JsonOptions),
+                () => WriteVaultAsync(vault, ct, discardPreviousGeneration: false), descriptor.ProviderId, "ownership-finalize",
+                new AuditCommitCheck("ownership-finalize", migrationId, null, null), ct).ConfigureAwait(false);
+            return receipt;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    /// <summary>
+    /// Moves the provider-wide OAuth token under <paramref name="scope"/> (or back on rollback). Returns whether a
+    /// token moved. Two provider-wide tokens for one provider, or a token already held by the target, are refused.
+    /// </summary>
+    private static bool TransferOAuthToken(ProviderCredentialVault vault, string providerId, ProviderCredentialScope scope, bool rollback)
+    {
+        if (!rollback)
+        {
+            var keys = vault.OAuthTokens.Keys.Where(key => ProviderCredentialCatalog.NormalizeProviderId(key) == providerId).ToArray();
+            if (keys.Length == 0)
+                return false;
+            if (keys.Length > 1)
+                throw new InvalidOperationException("More than one provider-wide OAuth token names this provider; resolve the duplicate before transferring ownership.");
+            var scopedKey = scope.StorageKey(keys[0]);
+            if (vault.ScopedOAuthTokens.ContainsKey(scopedKey))
+                throw new ProviderCredentialConflictException();
+            vault.ScopedOAuthTokens[scopedKey] = new ScopedOAuthVaultRecord { ProviderName = keys[0], Scope = scope, Token = vault.OAuthTokens[keys[0]] };
+            vault.OAuthTokens.Remove(keys[0]);
+            return true;
+        }
+        var owned = vault.ScopedOAuthTokens.Where(pair => pair.Value.Scope == scope
+            && ProviderCredentialCatalog.NormalizeProviderId(pair.Value.ProviderName) == providerId).ToArray();
+        if (owned.Length != 1)
+            throw new InvalidOperationException("The transferred OAuth token is no longer held under the owned scope; rollback is refused.");
+        var (key, record) = (owned[0].Key, owned[0].Value);
+        if (vault.OAuthTokens.ContainsKey(record.ProviderName) || record.Token is null)
+            throw new ProviderCredentialConflictException();
+        vault.OAuthTokens[record.ProviderName] = record.Token;
+        vault.ScopedOAuthTokens.Remove(key);
+        return true;
+    }
+
     private async Task<ProviderCredentialMigrationReceipt> TransferOwnershipAsync(string providerId, ProviderCredentialScope scope,
         string migrationId, string? expectedGeneration, string actor, bool rollback, CancellationToken ct)
     {
@@ -51,6 +129,8 @@ public sealed partial class FileProviderCredentialStore
             }
             else if (rollback)
                 throw new ProviderCredentialConflictException();
+            if (rollback && receipt!.FinalizedAt is not null)
+                throw new InvalidOperationException("A finalized migration cannot be rolled back; the provider-wide record was released when it was finalized.");
 
             var scopedKey = scope.StorageKey(descriptor.ProviderId);
             var sourceKey = rollback ? scopedKey : descriptor.ProviderId;
@@ -64,14 +144,17 @@ public sealed partial class FileProviderCredentialStore
             if (descriptor.NormalizeEnvironment(record.Environment) != scope.Environment ||
                 (!string.IsNullOrWhiteSpace(record.ExternalAccountId) && record.ExternalAccountId != scope.ExternalAccountId))
                 throw new InvalidDataException("Legacy credentials do not match the reviewed connection account and environment.");
-            // Separate OAuth tokens require their own provider-specific transfer; never silently
-            // leave a refreshable provider-wide token active alongside a newly owned record.
-            if (vault.OAuthTokens.Keys.Any(key => ProviderCredentialCatalog.NormalizeProviderId(key) == descriptor.ProviderId))
-                throw new InvalidOperationException("Remove or migrate the separate legacy OAuth token before transferring ownership.");
+            // A separate provider-wide OAuth token (access and refresh token) moves under the same scope
+            // with the record, and back on rollback, so a refreshable provider-wide token is never left
+            // active alongside an owned record. The moved token is unverified like the record itself.
+            var oauthTransferred = rollback ? receipt!.OAuthTokenTransferred : TransferOAuthToken(vault, descriptor.ProviderId, scope, rollback: false);
+            if (rollback && oauthTransferred)
+                TransferOAuthToken(vault, descriptor.ProviderId, scope, rollback: true);
 
             receipt = rollback
                 ? receipt! with { RolledBack = true, RolledBackBy = actor, RolledBackAt = DateTimeOffset.UtcNow }
-                : new ProviderCredentialMigrationReceipt(migrationId, descriptor.ProviderId, scope, generation, actor, DateTimeOffset.UtcNow);
+                : new ProviderCredentialMigrationReceipt(migrationId, descriptor.ProviderId, scope, generation, actor, DateTimeOffset.UtcNow,
+                    OAuthTokenTransferred: oauthTransferred);
             record.Scope = rollback ? null : scope;
             record.Environment = scope.Environment;
             // A transferred secret is unverified under its new ownership. Never carry a previous

@@ -124,7 +124,7 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
                     return ToReadResult(descriptor, localRecord, ProviderCredentialSourceDto.LocalEncryptedStore);
                 }
                 if (scope is null && vault.OwnershipMigrations.Values.Any(migration =>
-                    migration.ProviderId == descriptor.ProviderId && !migration.RolledBack))
+                    migration.ProviderId == descriptor.ProviderId && migration.IsActive))
                     return null;
             }
         }
@@ -181,7 +181,7 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
             var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
             vault.Providers.TryGetValue(storageKey, out var existing);
             if (scope is null && vault.OwnershipMigrations.Values.Any(migration =>
-                migration.ProviderId == descriptor.ProviderId && !migration.RolledBack))
+                migration.ProviderId == descriptor.ProviderId && migration.IsActive))
                 throw new ProviderCredentialConflictException();
             if (existing is not null)
                 ValidateRecordScope(existing, scope);
@@ -207,7 +207,7 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
             vault.Providers[storageKey] = updated;
             // A replacement must durably invalidate the original migration's rollback authority.
             var invalidateMigrationRollback = scope is not null && vault.OwnershipMigrations.Values.Any(migration =>
-                !migration.RolledBack && migration.ProviderId == descriptor.ProviderId && migration.Scope == scope);
+                migration.IsActive && migration.ProviderId == descriptor.ProviderId && migration.Scope == scope);
             var auditLine = BuildAuditLine(
                 descriptor,
                 "save",
@@ -861,6 +861,7 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
             "oauth-delete" => !vault.OAuthTokens.ContainsKey(Key),
             "scoped-oauth-save" => vault.ScopedOAuthTokens.TryGetValue(Key, out var scoped) && scoped.Token is not null && DigestMatches(scoped.Token),
             "scoped-oauth-delete" => !vault.ScopedOAuthTokens.ContainsKey(Key),
+            "ownership-finalize" => vault.OwnershipMigrations.TryGetValue(Key, out var finalized) && finalized.FinalizedAt is not null,
             _ => false
         };
 
