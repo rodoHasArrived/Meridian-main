@@ -65,7 +65,7 @@ internal sealed class ConfigCommands : ICliCommand
 
     private CliResult RunDetectProviders()
     {
-        _configService.PrintProviderDetection();
+        Console.Write(_configService.FormatProviderDetection());
         return CliResult.Ok();
     }
 
