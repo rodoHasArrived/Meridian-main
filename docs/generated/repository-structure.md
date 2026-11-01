@@ -4324,7 +4324,6 @@ Meridian-main
 │   │   │   ├── CashFlow
 │   │   │   │   ├── ContractualCashFlowPreviewService.cs
 │   │   │   │   ├── FileContractualCashFlowRunStore.cs
-│   │   │   │   ├── ScheduleSpecFactory.cs
 │   │   │   │   ├── SecurityPrincipalBalance.cs
 │   │   │   │   ├── StructuredCashFlowLedgerBridge.cs
 │   │   │   │   └── StructuredCashFlowLedgerGate.cs
@@ -10933,7 +10932,6 @@ Meridian-main
 │   │   │   ├── OperationsContinuityWorkflowServiceTests.PreparedStart.cs
 │   │   │   ├── ReconciliationGovernanceServiceTests.cs
 │   │   │   ├── ReconciliationRunServiceTests.cs
-│   │   │   ├── ScheduleSpecFactoryTests.cs
 │   │   │   ├── SecurityMasterCashFlowProjectionShapeTests.cs
 │   │   │   ├── SecurityMasterCashFlowServiceTests.AsOf.cs
 │   │   │   ├── SecurityMasterCashFlowServiceTests.cs

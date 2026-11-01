@@ -44,12 +44,10 @@ schedules through create, read and amendment, including common-only schedule cha
 replay keeps the original common and asset documents. See
 [dated economic schedule validation](../../docs/domain/security.md#dated-economic-schedule-validation).
 
-The internal `SecurityMaster/CashFlow/ScheduleSpecFactory` remains a preparatory adapter over decoded
-F# conventions, with its broader day/week cadence and explicit common-calendar fallback tests.
-Production projections explicitly use `Meridian.Contracts.SecurityMaster.ScheduleSpecFactory`:
-that versioned record reader follows the descriptor, requires monthly-or-longer coupon cadences or
-AtMaturity, and resolves only the declaring block's calendars. The prototype is not a production
-fallback; both factories retain their separate refusal and calendar tests. See the
+Production projections use `Meridian.Contracts.SecurityMaster.ScheduleSpecFactory`: that versioned
+record reader follows the descriptor, requires monthly-or-longer coupon cadences or AtMaturity, and
+resolves only the declaring block's calendars; it never substitutes a common or holiday calendar. The
+former Application-side prototype factory (with a common-calendar fallback) was removed. See the
 [contractual schedule rollout](../../docs/domain/contractual-schedule.md#future-expansion-notes)
 for the declared engine and remaining 5b work.
 Cash-flow service composition retains its exact six-argument and calendar-aware seven-argument
