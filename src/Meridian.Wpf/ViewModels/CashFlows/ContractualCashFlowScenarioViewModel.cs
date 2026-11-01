@@ -84,6 +84,18 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
 
     public ContractualCashFlowScenarioViewModel(IWorkstationContractualCashFlowApiClient client, string subjectKind, Guid subjectId, string subjectLabel)
     {
+        CashDeltasTable = new WorkstationTableModel<CashFlowDateDelta>(
+            CashDeltas,
+            [
+                new("Date", nameof(CashFlowDateDelta.Date), 95, "{0:yyyy-MM-dd}"),
+                new("Stream", nameof(CashFlowDateDelta.StreamId), 110),
+                new("First run", nameof(CashFlowDateDelta.LeftNetCash), 120),
+                new("Second run", nameof(CashFlowDateDelta.RightNetCash), 120),
+                new("Delta", nameof(CashFlowDateDelta.Delta), 120)
+            ],
+            "Net cash deltas by date",
+            "No net cash differences",
+            "Compare two retained runs of this subject to list dated net cash differences.");
         EventsTable = new WorkstationTableModel<CashFlowEventRow>(
             Events,
             [
@@ -132,6 +144,8 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
     public IAsyncRelayCommand VerifyReplayCommand { get; }
     public IAsyncRelayCommand CompareRunsCommand { get; }
     public ObservableCollection<CashFlowDateDelta> CashDeltas { get; } = new();
+    /// <summary>Dense-table projection of <see cref="CashDeltas"/> for the workstation grid control.</summary>
+    public WorkstationTableModel<CashFlowDateDelta> CashDeltasTable { get; }
     public ObservableCollection<string> BlockerDeltas { get; } = new();
 
     public DateTime ValuationDate { get => _valuationDate; set => Edit(ref _valuationDate, value); }
