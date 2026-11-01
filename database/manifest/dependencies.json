@@ -232,6 +232,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.ShortCoverTerms"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AccountingSystem.AccountingApprovalQueueConfigurationDto"
     },
     {
@@ -55834,7 +55840,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "405c3a98aff5710a2cba67c984999179517d9eecf995bb35605218b048fba182",
+  "fingerprint": "a5bbd366dad69169934bc7232d9c0907695c8bcf4a052609abe0010f866a9e73",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -56114,6 +56120,12 @@
       "id": "contract:Meridian.Contracts.Accounting.Lots.ReviewOpenLotBackfillEvidenceRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Accounting.Lots.ReviewOpenLotBackfillEvidenceRequest"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.ShortCoverTerms",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.ShortCoverTerms"
     },
     {
       "classification": "dto",
@@ -81700,10 +81712,10 @@
   ],
   "summary": {
     "contract_references": 3581,
-    "contract_set_memberships": 4429,
-    "edges": 9277,
+    "contract_set_memberships": 4430,
+    "edges": 9278,
     "foreign_keys": 155,
     "logical_references": 6,
-    "nodes": 4486
+    "nodes": 4487
   }
 }
