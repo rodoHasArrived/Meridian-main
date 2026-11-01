@@ -8,6 +8,8 @@ certification or an operator verdict.
 | --- | --- | --- |
 | Short opening | Debit cash, credit a liability for positive opening proceeds. | Explicit Short direction, matching Short/Liability position, canonical acquisition facts and existing independent posting approval. |
 | Short cover | Debit relieved opening proceeds, credit execution cash cost, recognize proceeds less cost as book gain/loss. | Explicit functional-currency execution price, homogeneous canonical relief pool, effective relief-policy revision, versioned selections and existing approval. |
+| Short borrow fee (`short-carry-v1`, stacked branch) | Debit stock borrow fee expense, credit cash for quantity × lender reference price × annual rate × accrued days / 360 or 365, at ledger rounding. Lot quantity and liability basis are unchanged. | Reviewed `ShortCarryInstruction` naming the open short lot's record and business identity, Short direction, quantity within open quantity, functional-currency only, lender statement evidence; `ShortCarryPostingGuard` proves the journal carries exactly the expense debit and cash credit at FX 1. |
+| Payment in lieu (`short-carry-v1`, stacked branch) | Debit dividend expense, credit cash for quantity × declared gross dividend per unit. | Same instruction and guard with the dividend notice as evidence; no borrow-fee inputs may be present. |
 | Remaining-face amortization | Continue the acquisition schedule for surviving booked quantity times current/booked factor. Retain acquisition FX. | Explicit calculation v3, immutable paydown receipt and prior disposal/basis history; locked lot and Security Master inputs. |
 | Automatic yield-to-worst | Solve the regular-coupon yield for maturity and each fixed-price European whole call/put. Select the minimum maturity/issuer-call yield, with deterministic date/kind tie-breaking. | Full alternative list and selected date/price/yield are retained in the reviewed v3 instruction and recomputed before posting. |
 
@@ -43,8 +45,11 @@ prepayments still block. Declared schedule conventions block the v3 remaining-fa
 declared bonds amortize through `canonical-lot-amortization-v5`, which shares the analytics
 coupon, stub, accrual and discount-time calculator (the interim v4 model was removed before any
 instruction was produced). These need their own valuation inputs and proof;
-they are not interpreted as absent. Short manufactured income, corporate actions and tax
-character and short reversal/rebook also remain separate treatments. Tax reports refuse to infer short-sale character from
+they are not interpreted as absent. Short borrow fees and payments in lieu have a reviewed
+instruction, projector and guard but no atomic store path yet: posting them as governed period
+journals that reference the open short lot is the remaining step, and it needs the PostgreSQL
+proof this environment cannot run. Short corporate actions, tax character and short
+reversal/rebook also remain separate treatments. Tax reports refuse to infer short-sale character from
 opening-lot age. Broader consumer certification and live Windows acceptance remain open.
 
 Required proof includes balanced gain/flat/loss covers, positive remaining quantity and basis,
