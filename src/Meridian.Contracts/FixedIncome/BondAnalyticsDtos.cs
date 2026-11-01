@@ -77,4 +77,11 @@ public sealed record BondAnalyticsResult(
     IReadOnlyList<string> Diagnostics)
 {
     public bool IsBlocked => Blockers.Count > 0;
+
+    /// <summary>
+    /// Floating-rate analytics only: the dirty-price change per 100 face for a one-basis-point increase in the
+    /// coupon spread, repriced at the unchanged projected-flow yield. Omitted for fixed and zero-coupon models.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? SpreadDv01 { get; init; }
 }

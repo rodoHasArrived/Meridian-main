@@ -32,6 +32,15 @@ yield-to-worst v3 models retain their schemas, admission and replay arithmetic.
 ## Public seams
 
 - `BondCalculationContext` names economic date, settlement date, recorded cutoff and pinned inputs.
+- `bond-analytics-v3` (stacked branch) prices explicitly typed Floating bonds with one named-index
+  leg: each coupon is the period's observed fixing (already-reset periods, from the retained reset
+  schedule or a sourced current fixing) or the retained forward curve's projected fixing (future
+  periods) plus the spread, capped and floored. The yield discounts those projected flows and is not a
+  discount margin; duration, convexity and DV01 are rate measures of the projected flows, and the
+  optional `SpreadDv01` reprices the flows with the spread raised one basis point at the same yield.
+  A missing historical fixing (`MissingFixing`) or forward curve (`ForwardCurveRequired`) refuses the
+  calculation; exercise scenarios are not calculated for floaters. v1/v2 output is unchanged and the
+  new field is omitted from their serialized results.
 - `IBondAnalyticsService` produces metrics, projected payments, capabilities and typed blockers.
 - Cash-flow context overloads preserve existing call signatures as compatibility adapters.
 - Reference array routes remain available; paged routes use bounded keyset cursors.
