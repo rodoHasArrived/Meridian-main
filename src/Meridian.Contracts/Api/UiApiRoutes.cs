@@ -122,6 +122,7 @@ public static class UiApiRoutes
     public const string ProviderRoutingConnectionCredentialMigrationPreview = "/api/provider-routing/connections/{connectionId}/credentials/migration-preview";
     public const string ProviderRoutingConnectionCredentialMigrate = "/api/provider-routing/connections/{connectionId}/credentials/migrate";
     public const string ProviderRoutingConnectionCredentialRollback = "/api/provider-routing/connections/{connectionId}/credentials/rollback";
+    public const string ProviderRoutingConnectionCredentialFinalize = "/api/provider-routing/connections/{connectionId}/credentials/finalize";
     public const string ProviderRoutingBindings = "/api/provider-routing/bindings";
     public const string ProviderRoutingTrustSnapshots = "/api/provider-routing/trust-snapshots";
     public const string ProviderRoutingPreview = "/api/provider-routing/preview";

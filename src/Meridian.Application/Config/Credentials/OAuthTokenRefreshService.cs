@@ -350,6 +350,18 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
                 return new OAuthRefreshResult(false, Error: $"No token stored for provider: {providerName}");
             if (!currentToken.CanRefresh)
                 return new OAuthRefreshResult(false, Error: "Token cannot be refreshed (no refresh token or refresh token expired)");
+            // Ownership boundary: a token this runtime caches but the vault no longer retains under this
+            // ownership (transferred to an owned connection, rolled back to provider-wide, or removed) must not
+            // be rotated remotely, because rotation would invalidate the refresh token its real owner holds.
+            var retained = await ReadOwnedTokensAsync(ct).ConfigureAwait(false);
+            if (!retained.ContainsKey(providerName))
+            {
+                _tokens.TryRemove(providerName, out _);
+                const string transferred = "Token ownership changed: the vault no longer retains this token under this runtime's ownership, so it was evicted without a remote refresh.";
+                _log.Warning("OAuth token for {Provider} is no longer retained under this ownership; evicted without refreshing", providerName);
+                OnRefreshFailed?.Invoke(providerName, transferred);
+                return new OAuthRefreshResult(false, Error: transferred, RefreshedAt: DateTimeOffset.UtcNow);
+            }
             // Build refresh request
             var tokenEndpoint = providerConfig.TokenEndpoint;
             if (string.IsNullOrEmpty(tokenEndpoint))
@@ -421,6 +433,16 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
                 auditDeferred = true;
                 _log.Warning("OAuth token refresh for {Provider} committed but its audit record is deferred to {PendingAuditPath}",
                     providerName, deferred.PendingAuditPath);
+            }
+            catch (ProviderCredentialConflictException)
+            {
+                // Ownership moved between the retention check and the commit; the vault refused to republish
+                // the token under this ownership, so this runtime stops holding it.
+                _tokens.TryRemove(providerName, out _);
+                const string conflict = "Token ownership changed during refresh; the vault refused the provider-wide save and the token was evicted.";
+                _log.Warning("OAuth token refresh for {Provider} was refused by the vault because its ownership changed", providerName);
+                OnRefreshFailed?.Invoke(providerName, conflict);
+                return new OAuthRefreshResult(false, Error: conflict, RefreshedAt: DateTimeOffset.UtcNow);
             }
 
             OnTokenRefreshed?.Invoke(providerName, newToken);

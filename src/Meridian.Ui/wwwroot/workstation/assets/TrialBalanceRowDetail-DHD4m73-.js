@@ -1,4 +1,8 @@
+<<<<<<<< HEAD:src/Meridian.Ui/wwwroot/workstation/assets/TrialBalanceRowDetail-DHD4m73-.js
 import{D as e,T as t,c as n,g as r,s as i,t as a}from"./button-54cMGGk-.js";import{E as o}from"./index-9PV8RXPt.js";import{t as s}from"./technical-details-DkSErllb.js";import{n as c}from"./ui-kit-primitives-ByIgwyJ8.js";import{S as l,y as u}from"./accounting-screen.basis-bridge.view-model-DEvzRH-Y.js";var d=e(t(),1),f=i(),p=!1;function m(){if(p||typeof document>`u`)return;p=!0;let e=document.createElement(`style`);e.setAttribute(`data-mds`,`accounttree`),e.textContent=`
+========
+import{D as e,T as t,c as n,g as r,s as i,t as a}from"./button-54cMGGk-.js";import{E as o}from"./index-DfxrIyX8.js";import{t as s}from"./technical-details-DkSErllb.js";import{n as c}from"./ui-kit-primitives-ByIgwyJ8.js";import{S as l,y as u}from"./accounting-screen.basis-bridge.view-model-CHVhf5hc.js";var d=e(t(),1),f=i(),p=!1;function m(){if(p||typeof document>`u`)return;p=!0;let e=document.createElement(`style`);e.setAttribute(`data-mds`,`accounttree`),e.textContent=`
+>>>>>>>> origin/codex/pr3328-credential-lifecycle:src/Meridian.Ui/wwwroot/workstation/assets/TrialBalanceRowDetail-DCA9pTI-.js
 .act{border:1px solid var(--border,#E4E3DE);border-radius:var(--radius-chip,2px);
   overflow:hidden;background:var(--bg-light,#FBFAF8);}
 .act__head{display:grid;grid-template-columns:1fr auto;gap:12px;padding:8px 12px;

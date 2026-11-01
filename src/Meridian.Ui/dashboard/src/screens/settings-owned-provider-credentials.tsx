@@ -64,6 +64,29 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
       if (current(token)) setEditor({ ...emptyEditor, message: describeApiError(error, "Owned connections are unavailable. Credential actions are blocked.").summary });
     }
   }
+  /**
+   * Reloads owned connections after an ownership command. The selected connection, and so the ownership
+   * panel's receipt, survive when the same ownership is still retained; its status is read again.
+   */
+  async function refreshOwnership() {
+    const keep = selected;
+    if (!keep) { await loadConnections(); return; }
+    const token = begin();
+    setEditor(previous => ({ ...previous, busy: "connections", message: "" }));
+    try {
+      const choices = ownedCredentialConnections(await getProviderRoutingConnections(options(token)), row.providerId);
+      if (!current(token)) return;
+      const retained = choices.find(choice => credentialOwnershipKey(choice) === credentialOwnershipKey(keep));
+      if (!retained) {
+        setEditor({ ...emptyEditor, choices, message: "Selected ownership changed or was removed. Select a current owned connection before retrying." });
+        return;
+      }
+      const status = await readStatus(retained, token);
+      if (current(token)) setEditor(previous => ({ ...previous, choices, connectionId: retained.connectionId, status, busy: null, values: {}, editing: false, acknowledged: false, message: "Owned connections refreshed; selected connection status reloaded." }));
+    } catch (error) {
+      if (current(token)) setEditor(previous => ({ ...previous, status: null, values: {}, busy: null, message: describeApiError(error, "Selected connection is unavailable. Refresh owned connections before retrying.").summary }));
+    }
+  }
   useEffect(() => {
     const generation = epoch;
     const pendingRequest = request;
@@ -173,6 +196,6 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
     <div role="status" aria-live="polite" className="text-xs text-muted-foreground">{editor.busy ? "Loading selected connection…" : editor.message}</div>
     <div className="text-xs text-muted-foreground" aria-label={`${row.displayName} readiness checks`}>Readiness checks. Provider overview: <span>Verification freshness: {row.freshnessStatus === "delayed" ? "Delayed" : row.freshnessStatus === "stale" ? "Stale" : row.freshnessStatus === "current" ? "Current" : "Not reported"}</span>. Selected connection: {editor.status ? `${editor.status.credentialState} · ${editor.status.verificationState}` : "Select a current owned connection; provider-wide readiness does not authorize credential changes."}</div>
     <p className="text-xs text-muted-foreground">Impact summary: {row.affectedWorkflowsLabel}. Changes apply only to the selected retained connection.</p>
-    {sessionIdentity ? <ProviderOwnershipPanel providerId={row.providerId} displayName={row.displayName} connection={selected ?? null} onChanged={async () => { await loadConnections(); await onRefresh?.(); }} /> : null}
+    {sessionIdentity ? <ProviderOwnershipPanel providerId={row.providerId} displayName={row.displayName} connection={selected ?? null} onChanged={async () => { await refreshOwnership(); await onRefresh?.(); }} /> : null}
   </section>;
 }

@@ -22,6 +22,8 @@ public interface IWorkstationProviderOwnershipApiClient
     Task<ApiResponse<ProviderCredentialStoreStatus>> PreviewMigrationAsync(string connectionId, string providerId, CancellationToken ct = default);
     Task<ApiResponse<ProviderCredentialMigrationReceipt>> MigrateAsync(string connectionId, ProviderCredentialMigrationRequest request, CancellationToken ct = default);
     Task<ApiResponse<ProviderCredentialMigrationReceipt>> RollbackAsync(string connectionId, ProviderCredentialMigrationRequest request, CancellationToken ct = default);
+    /// <summary>Retires a verified migration: rollback ends and the provider-wide record is released; the receipt stays in audit.</summary>
+    Task<ApiResponse<ProviderCredentialMigrationReceipt>> FinalizeAsync(string connectionId, ProviderCredentialMigrationRequest request, CancellationToken ct = default);
 }
 
 public sealed class WorkstationProviderOwnershipApiClient : IWorkstationProviderOwnershipApiClient
@@ -58,6 +60,9 @@ public sealed class WorkstationProviderOwnershipApiClient : IWorkstationProvider
 
     public Task<ApiResponse<ProviderCredentialMigrationReceipt>> RollbackAsync(string connectionId, ProviderCredentialMigrationRequest request, CancellationToken ct = default)
         => _apiClient.PostWithResponseAsync<ProviderCredentialMigrationReceipt>(Route(UiApiRoutes.ProviderRoutingConnectionCredentialRollback, connectionId), request, ct);
+
+    public Task<ApiResponse<ProviderCredentialMigrationReceipt>> FinalizeAsync(string connectionId, ProviderCredentialMigrationRequest request, CancellationToken ct = default)
+        => _apiClient.PostWithResponseAsync<ProviderCredentialMigrationReceipt>(Route(UiApiRoutes.ProviderRoutingConnectionCredentialFinalize, connectionId), request, ct);
 
     private static string Route(string template, string connectionId)
     {

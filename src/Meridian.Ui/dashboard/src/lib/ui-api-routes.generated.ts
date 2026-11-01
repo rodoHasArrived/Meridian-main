@@ -103,6 +103,7 @@ export const UI_API_ROUTES = {
   ProviderRoutingConnectionCredentialMigrationPreview: "/api/provider-routing/connections/{connectionId}/credentials/migration-preview",
   ProviderRoutingConnectionCredentialMigrate: "/api/provider-routing/connections/{connectionId}/credentials/migrate",
   ProviderRoutingConnectionCredentialRollback: "/api/provider-routing/connections/{connectionId}/credentials/rollback",
+  ProviderRoutingConnectionCredentialFinalize: "/api/provider-routing/connections/{connectionId}/credentials/finalize",
   ProviderRoutingBindings: "/api/provider-routing/bindings",
   ProviderRoutingTrustSnapshots: "/api/provider-routing/trust-snapshots",
   ProviderRoutingPreview: "/api/provider-routing/preview",
