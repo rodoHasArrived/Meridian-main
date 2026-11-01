@@ -5384,6 +5384,7 @@ Meridian-main
 │   │   │   ├── IMarginModel.cs
 │   │   │   ├── MarginAccountType.cs
 │   │   │   ├── MarginCallStatus.cs
+│   │   │   ├── MarginPricing.cs
 │   │   │   ├── MarginRequirement.cs
 │   │   │   ├── PortfolioMarginModel.cs
 │   │   │   ├── RegTMarginModel.cs
