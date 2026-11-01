@@ -22,7 +22,8 @@ public static class CurrencyMinorUnits
     {
         var precision = GetPrecision(currency);
         var unit = 1m;
-        for (var i = 0; i < precision; i++) unit /= 10m;
+        for (var i = 0; i < precision; i++)
+            unit /= 10m;
         return unit;
     }
 }
