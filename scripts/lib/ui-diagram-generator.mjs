@@ -1160,23 +1160,22 @@ export async function renderDotFile(viz, dotPath) {
 }
 
 export async function generateUiDiagrams({ repoRoot, renderAll = false }) {
+  // docs/diagrams/ is the single canonical home for the generated UI diagrams. A byte-identical
+  // mirror under docs/diagrams/ui/ used to be written as well, doubling ~13 MB of committed
+  // binaries without any reader referencing the copy.
   const docsDiagramsDir = path.join(repoRoot, 'docs', 'diagrams');
-  const uiDiagramsDir = path.join(docsDiagramsDir, 'ui');
   const { files } = await buildUiDiagramOutputs(repoRoot);
-  await fs.mkdir(uiDiagramsDir, { recursive: true });
 
   for (const [fileName, contents] of files) {
     await writeFileIfChanged(path.join(docsDiagramsDir, fileName), contents);
-    await writeFileIfChanged(path.join(uiDiagramsDir, fileName), contents);
   }
 
   const viz = await instance();
-  const rootDotPaths = (await fs.readdir(docsDiagramsDir))
+  const dotPaths = (await fs.readdir(docsDiagramsDir))
     .filter((fileName) => fileName.endsWith('.dot'))
     .filter((fileName) => renderAll || fileName.startsWith('ui-'))
-    .map((fileName) => path.join(docsDiagramsDir, fileName));
-  const uiDotPaths = [...files.keys()].map((fileName) => path.join(uiDiagramsDir, fileName));
-  const dotPaths = [...rootDotPaths, ...uiDotPaths].sort((left, right) => left.localeCompare(right));
+    .map((fileName) => path.join(docsDiagramsDir, fileName))
+    .sort((left, right) => left.localeCompare(right));
 
   const rendered = [];
   for (const dotPath of dotPaths) {
