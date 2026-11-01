@@ -828,6 +828,9 @@ Meridian-main
 ├── .githooks
 │   └── pre-commit
 ├── .github
+│   ├── actions
+│   │   └── setup-dotnet-nuget
+│   │       └── action.yml
 │   ├── agents
 │   │   ├── adr-generator.agent.md
 │   │   ├── blueprint-agent.md
@@ -1617,41 +1620,6 @@ Meridian-main
 │   │   │   ├── symbol-search-resolution.dot
 │   │   │   ├── symbol-search-resolution.png
 │   │   │   └── symbol-search-resolution.svg
-│   │   ├── ui
-│   │   │   ├── README.md
-│   │   │   ├── ui-implementation-flow.dot
-│   │   │   ├── ui-implementation-flow.png
-│   │   │   ├── ui-implementation-flow.svg
-│   │   │   ├── ui-navigation-map.dot
-│   │   │   ├── ui-navigation-map.png
-│   │   │   ├── ui-navigation-map.svg
-│   │   │   ├── ui-wpf-screen-catalog.dot
-│   │   │   ├── ui-wpf-screen-catalog.png
-│   │   │   ├── ui-wpf-screen-catalog.svg
-│   │   │   ├── ui-wpf-screen-summary.dot
-│   │   │   ├── ui-wpf-screen-summary.png
-│   │   │   ├── ui-wpf-screen-summary.svg
-│   │   │   ├── ui-wpf-screens-accounting.dot
-│   │   │   ├── ui-wpf-screens-accounting.png
-│   │   │   ├── ui-wpf-screens-accounting.svg
-│   │   │   ├── ui-wpf-screens-data.dot
-│   │   │   ├── ui-wpf-screens-data.png
-│   │   │   ├── ui-wpf-screens-data.svg
-│   │   │   ├── ui-wpf-screens-portfolio.dot
-│   │   │   ├── ui-wpf-screens-portfolio.png
-│   │   │   ├── ui-wpf-screens-portfolio.svg
-│   │   │   ├── ui-wpf-screens-reporting.dot
-│   │   │   ├── ui-wpf-screens-reporting.png
-│   │   │   ├── ui-wpf-screens-reporting.svg
-│   │   │   ├── ui-wpf-screens-settings.dot
-│   │   │   ├── ui-wpf-screens-settings.png
-│   │   │   ├── ui-wpf-screens-settings.svg
-│   │   │   ├── ui-wpf-screens-strategy.dot
-│   │   │   ├── ui-wpf-screens-strategy.png
-│   │   │   ├── ui-wpf-screens-strategy.svg
-│   │   │   ├── ui-wpf-screens-trading.dot
-│   │   │   ├── ui-wpf-screens-trading.png
-│   │   │   └── ui-wpf-screens-trading.svg
 │   │   ├── uml
 │   │   │   ├── Activity Diagram - Data Collection Process Flow.png
 │   │   │   ├── Activity Diagram - Data Collection Process Flow.svg
@@ -8184,6 +8152,7 @@ Meridian-main
 │   │   │   │   │   ├── statement-import-panel.view-model.test.ts
 │   │   │   │   │   ├── statement-import-panel.view-model.ts
 │   │   │   │   │   ├── statement-import-preview.tsx
+│   │   │   │   │   ├── statement-import-screen.test.tsx
 │   │   │   │   │   ├── statement-import-screen.tsx
 │   │   │   │   │   ├── strategy-designer-screen.copy.ts
 │   │   │   │   │   ├── strategy-designer-screen.test.tsx
