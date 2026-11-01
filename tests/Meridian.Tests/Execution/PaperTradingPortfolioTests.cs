@@ -758,9 +758,7 @@ public sealed class PaperTradingPortfolioMarginRulesTests
         //   Cash = $100 000 − $5 000 = $95 000 (50 % additional margin posted)
         //   Collateral = 150 % × $10 000 = $15 000
         //   Cover MV = 100 × $200 = $20 000
-        //   Maintenance = 130 % × $20 000 = $26 000
-        //   Equity = $95 000 + 0 long MV = $95 000
-        //   ExcessLiquidity = $95 000 − $26 000 = $69 000 → no call (too much cash)
+        //   (Too much cash for a call.)
         //
         // Simplest real margin call: start with minimal cash for long
         //   $1 000 cash, 50 % reg-T; buy 20 shares @ $100 → notional $2 000
@@ -815,9 +813,9 @@ public sealed class PaperTradingPortfolioMarginRulesTests
         //   $10 000 cash, short 100 @ $100 → cash = $10 000 - $5 000 = $5 000
         //                                       collateral = $15 000
         //   Price jumps to $500 → cover MV = $50 000
-        //   maintenance = 130 % × $50 000 = $65 000
-        //   equity = $5 000 + 0 long MV = $5 000
-        //   ExcessLiquidity = $5 000 − $65 000 = −$60 000 → MARGIN CALL ✓
+        //   net equity = $20 000 credit − $50 000 short = −$30 000
+        //   maintenance = 30 % × $50 000 = $15 000 (130 % against the credit balance)
+        //   ExcessLiquidity = −$30 000 − $15 000 = −$45 000 → MARGIN CALL ✓
         var portfolio = new PaperTradingPortfolio(
         [
             new AccountDefinition("margin-1", "Reg T", AccountKind.Brokerage, 10_000m,
@@ -827,12 +825,44 @@ public sealed class PaperTradingPortfolioMarginRulesTests
         portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Sell, qty: 100, price: 100m));
 
         // Price explodes to $500 → short is massively underwater
-        // maintenance = 130 % × $50 000 = $65 000; equity = $5 000 → call
+        // net equity = −$30 000 against $15 000 maintenance → call
         var status = portfolio.CheckMarginStatus("margin-1",
             new Dictionary<string, decimal> { ["AAPL"] = 500m });
 
         status.IsMarginCall.Should().BeTrue();
         status.MarginDeficiency.Should().BeGreaterThan(0m);
+    }
+
+    [Fact]
+    public void CheckMarginStatus_RegTShortAtEntry_IsNotAMarginCall()
+    {
+        // $10k cash, short 100 @ $100: $5k additional margin posted, $15k credit balance.
+        // At the entry price the account meets Reg T (credit $15k ≥ 130 % × $10k), so the
+        // net-equity check must not report a call.
+        var portfolio = BuildRegTPortfolio(10_000m);
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Sell, qty: 100, price: 100m));
+
+        var status = portfolio.CheckMarginStatus("margin-1",
+            new Dictionary<string, decimal> { ["AAPL"] = 100m });
+
+        status.IsMarginCall.Should().BeFalse();
+        status.PortfolioRequirement.MaintenanceMargin.Should().Be(3_000m);
+        status.PortfolioRequirement.ExcessLiquidity.Should().Be(7_000m);
+        status.PositionRequirements.Should().ContainSingle()
+            .Which.ExcessLiquidity.Should().Be(7_000m,
+                "per-position equity must subtract the short liability too");
+    }
+
+    [Fact]
+    public void CheckMarginStatus_MissingPriceForOpenPosition_FailsClosed()
+    {
+        var portfolio = BuildRegTPortfolio(100_000m);
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 100, price: 200m));
+
+        var act = () => portfolio.CheckMarginStatus("margin-1", new Dictionary<string, decimal>());
+
+        act.Should().Throw<MarginPriceUnavailableException>()
+            .Which.Symbols.Should().Equal("AAPL");
     }
 
     [Fact]

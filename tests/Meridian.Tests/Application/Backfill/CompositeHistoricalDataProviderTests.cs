@@ -104,6 +104,51 @@ public sealed class CompositeHistoricalDataProviderTests : IDisposable
     }
 
     [Fact]
+    public async Task GetDailyBarsAsync_ProviderHttpTimeout_FailsOverToNextProvider()
+    {
+        // HttpClient reports its own timeout as TaskCanceledException while the caller's
+        // token is still live. That is a provider failure, not a caller cancellation.
+        var bars = CreateBars("SPY", 3);
+
+        var p1 = CreateMockProvider("p1", priority: 1);
+        p1.Setup(p => p.GetDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new TaskCanceledException("The request was canceled due to the configured HttpClient.Timeout"));
+
+        var p2 = CreateMockProvider("p2", priority: 2);
+        p2.Setup(p => p.GetDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(bars);
+
+        using var composite = CreateComposite(p1, p2);
+
+        var result = await composite.GetDailyBarsAsync("SPY", null, null);
+
+        result.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public async Task GetAdjustedDailyBarsAsync_ProviderHttpTimeout_FailsOverToNextProvider()
+    {
+        var p1 = CreateMockProvider("p1", priority: 1);
+        p1.Setup(p => p.Capabilities).Returns(new HistoricalDataCapabilities { AdjustedPrices = true });
+        p1.Setup(p => p.GetAdjustedDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new TaskCanceledException("The request was canceled due to the configured HttpClient.Timeout"));
+
+        var p2 = CreateMockProvider("p2", priority: 2);
+        p2.Setup(p => p.Capabilities).Returns(new HistoricalDataCapabilities { AdjustedPrices = true });
+        p2.Setup(p => p.GetAdjustedDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[]
+            {
+                new AdjustedHistoricalBar("SPY", new DateOnly(2026, 1, 2), 100m, 101m, 99m, 100.5m, 1_000, "p2")
+            });
+
+        using var composite = CreateComposite(p1, p2);
+
+        var result = await composite.GetAdjustedDailyBarsAsync("SPY", null, null);
+
+        result.Should().ContainSingle();
+    }
+
+    [Fact]
     public async Task GetDailyBarsAsync_ThrowsAggregateException_WhenAllProvidersFail()
     {
         var p1 = CreateMockProvider("p1", priority: 1);
@@ -678,7 +723,10 @@ public sealed class CompositeHistoricalDataProviderTests : IDisposable
         var resolver = new Mock<Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver>();
         resolver.Setup(r => r.MapSymbolAsync("SPY", "input", "p1", cts.Token))
             .ReturnsAsync("SPY");
+        // The caller cancels during the validation lookup. (An OCE thrown while the caller's
+        // token is still live is a provider-side failure, not caller cancellation.)
         resolver.Setup(r => r.MapSymbolAsync("SPY", "input", "p2", cts.Token))
+            .Callback(() => cts.Cancel())
             .ThrowsAsync(new OperationCanceledException(cts.Token));
 
         using var composite = new CompositeHistoricalDataProvider(

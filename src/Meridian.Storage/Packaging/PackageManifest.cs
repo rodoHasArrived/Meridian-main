@@ -72,12 +72,17 @@ public sealed class PackageManifest
     /// <summary>
     /// SHA256 checksum of the entire package file.
     /// </summary>
+    /// <remarks>
+    /// Set on the manifest returned with a <see cref="PackageResult"/>. The copy embedded in
+    /// the package leaves it empty, because a file cannot contain its own checksum.
+    /// </remarks>
     [JsonPropertyName("packageChecksum")]
     public string? PackageChecksum { get; set; }
 
     /// <summary>
     /// Total size of the package file in bytes.
     /// </summary>
+    /// <remarks>Like <see cref="PackageChecksum"/>, set on the returned manifest only.</remarks>
     [JsonPropertyName("packageSizeBytes")]
     public long PackageSizeBytes { get; set; }
 

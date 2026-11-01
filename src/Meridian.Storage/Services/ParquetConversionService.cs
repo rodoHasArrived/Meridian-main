@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using System.Text.Json;
 using Meridian.Core.Logging;
+using Meridian.Storage.Archival;
 using Parquet;
 using Parquet.Data;
 using Parquet.Schema;
@@ -85,6 +86,10 @@ public sealed class ParquetConversionService
                 _log.Information("Converted {Source} to Parquet ({RecordCount} records)",
                     Path.GetFileName(jsonlPath), convertedRecords);
             }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 summary.Errors++;
@@ -157,36 +162,46 @@ public sealed class ParquetConversionService
         if (schema.Length == 0)
             return 0;
 
-        await using var fileStream = File.Create(parquetPath);
-        using var writer = await ParquetWriter.CreateAsync(new ParquetSchema(schema), fileStream, cancellationToken: ct).ConfigureAwait(false);
-
         long convertedRecords = 0;
-        var batch = new List<Dictionary<string, JsonElement>>(DefaultRowGroupSize);
 
-        using var reader = await OpenJsonlReaderAsync(jsonlPath, ct).ConfigureAwait(false);
-        while (!reader.EndOfStream && !ct.IsCancellationRequested)
+        // Written to a temp file and renamed into place only when complete. The skip check
+        // in ConvertAsync treats an existing output as converted, so a truncated file left
+        // at the final path by a cancelled or failed run would permanently hide those rows.
+        await AtomicFileWriter.WriteStreamAsync(parquetPath, async fileStream =>
         {
-            var line = await reader.ReadLineAsync(ct).ConfigureAwait(false);
-            if (string.IsNullOrWhiteSpace(line))
-                continue;
+            using var writer = await ParquetWriter.CreateAsync(new ParquetSchema(schema), fileStream, cancellationToken: ct).ConfigureAwait(false);
 
-            if (!TryParseRecord(line, out var record))
-                continue;
+            var batch = new List<Dictionary<string, JsonElement>>(DefaultRowGroupSize);
 
-            batch.Add(record);
-            if (batch.Count >= DefaultRowGroupSize)
+            using var reader = await OpenJsonlReaderAsync(jsonlPath, ct).ConfigureAwait(false);
+            while (!reader.EndOfStream)
+            {
+                // Throw rather than break: ending the loop quietly would commit a file that
+                // looks complete but holds only part of the source.
+                ct.ThrowIfCancellationRequested();
+
+                var line = await reader.ReadLineAsync(ct).ConfigureAwait(false);
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+
+                if (!TryParseRecord(line, out var record))
+                    continue;
+
+                batch.Add(record);
+                if (batch.Count >= DefaultRowGroupSize)
+                {
+                    await WriteRowGroupAsync(writer, schema, batch, ct).ConfigureAwait(false);
+                    convertedRecords += batch.Count;
+                    batch.Clear();
+                }
+            }
+
+            if (batch.Count > 0)
             {
                 await WriteRowGroupAsync(writer, schema, batch, ct).ConfigureAwait(false);
                 convertedRecords += batch.Count;
-                batch.Clear();
             }
-        }
-
-        if (batch.Count > 0)
-        {
-            await WriteRowGroupAsync(writer, schema, batch, ct).ConfigureAwait(false);
-            convertedRecords += batch.Count;
-        }
+        }, ct).ConfigureAwait(false);
 
         return convertedRecords;
     }
@@ -196,8 +211,11 @@ public sealed class ParquetConversionService
         var fieldTypes = new Dictionary<string, Type>(StringComparer.Ordinal);
 
         using var reader = await OpenJsonlReaderAsync(path, ct).ConfigureAwait(false);
-        while (!reader.EndOfStream && !ct.IsCancellationRequested)
+        while (!reader.EndOfStream)
         {
+            // A schema built from part of the file would drop columns, so cancel outright.
+            ct.ThrowIfCancellationRequested();
+
             var line = await reader.ReadLineAsync(ct).ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(line) || !TryParseRecord(line, out var record))
                 continue;
