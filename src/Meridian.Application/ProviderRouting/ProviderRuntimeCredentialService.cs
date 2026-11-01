@@ -54,7 +54,7 @@ public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IP
         }, ct).ConfigureAwait(false);
         _applicationTracker.MarkBound(bound.ProviderId);
         _logger.LogInformation("Bound host runtime credentials for provider {ProviderId} to connection {ConnectionId} in tenant {TenantId} by {Actor}; running instances keep their credentials until applied or restarted.",
-            bound.ProviderId, bound.ConnectionId, bound.TenantId, actor ?? "unattributed");
+            bound.ProviderId, bound.ConnectionId, bound.TenantId, ProviderRoutingLogValues.Safe(actor ?? "unattributed"));
         return bound;
     }
 
@@ -92,12 +92,12 @@ public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IP
         {
             _applicationTracker.MarkApplied(provider);
             _logger.LogInformation("Applied host runtime credential binding for provider {ProviderId} (connection {ConnectionId}, tenant {TenantId}) to running instances by {Actor}.",
-                binding.ProviderId, binding.ConnectionId, binding.TenantId, actor);
+                binding.ProviderId, binding.ConnectionId, binding.TenantId, ProviderRoutingLogValues.Safe(actor));
         }
         else
         {
             _logger.LogInformation("Host runtime credential binding for provider {ProviderId} stays pending a deliberate restart; no in-process recycle is registered (requested by {Actor}).",
-                binding.ProviderId, actor);
+                binding.ProviderId, ProviderRoutingLogValues.Safe(actor));
         }
         return GetApplicationStatus(provider, connectionId, tenantId);
     }
@@ -120,14 +120,14 @@ public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IP
         {
             var rolledBack = await migration.RollbackMigrationAsync(provider, scope, migrationId, actor, ct).ConfigureAwait(false);
             _logger.LogInformation("Rolled back credential ownership migration {MigrationId} for provider {ProviderId} from connection {ConnectionId} in tenant {TenantId} by {Actor}.",
-                migrationId, provider, connectionId, tenantId, actor);
+                ProviderRoutingLogValues.Safe(migrationId), provider, ProviderRoutingLogValues.Safe(connectionId), ProviderRoutingLogValues.Safe(tenantId), ProviderRoutingLogValues.Safe(actor));
             return rolledBack;
         }
         if (string.IsNullOrWhiteSpace(expectedGeneration))
             throw new ArgumentException("Migration requires the expected credential generation of the record being transferred.", nameof(expectedGeneration));
         var migrated = await migration.MigrateToScopeAsync(provider, scope, migrationId, expectedGeneration, actor, ct).ConfigureAwait(false);
         _logger.LogInformation("Migrated credential ownership {MigrationId} for provider {ProviderId} to connection {ConnectionId} in tenant {TenantId} at generation {CredentialGeneration} by {Actor}.",
-            migrationId, provider, connectionId, tenantId, expectedGeneration, actor);
+            ProviderRoutingLogValues.Safe(migrationId), provider, ProviderRoutingLogValues.Safe(connectionId), ProviderRoutingLogValues.Safe(tenantId), ProviderRoutingLogValues.Safe(expectedGeneration), ProviderRoutingLogValues.Safe(actor));
         return migrated;
     }
 
