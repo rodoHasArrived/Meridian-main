@@ -10,7 +10,7 @@ description: >
   Meridian namespaces, BindableBase, EventPipeline, IMarketDataClient, IStorageSink,
   WriteAheadLog, AtomicFileWriter, or ProviderSdk types.
 license: See repository LICENSE
-last_updated: 2026-03-21
+last_updated: 2026-10-31
 compatibility: >
   Portable Agent Skill package for Agent Skills-compatible hosts. Reads repository files, optional
   reference bundles, and Python helper scripts for evals, packaging, and deterministic validation.
@@ -21,7 +21,7 @@ metadata:
 ---
 # Meridian Code Review
 
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-10-31
 
 > **GitHub Copilot / Actions equivalent:** [`.github/agents/code-review-agent.md`](../../../.github/agents/code-review-agent.md) — same lens framework as a GitHub agent definition.
 > **Navigation index:** [`docs/ai/skills/README.md`](../../../docs/ai/skills/README.md)
@@ -48,8 +48,8 @@ Every code review task follows this 4-step workflow:
 
 ### 4 — COMPLETE (MCP)
 - Commit the refactored files (if in refactor mode)
-- Create a PR via GitHub with a summary of findings and changes
-- Request review from the appropriate team members
+- Create a PR via GitHub with a summary of findings and changes, only if the developer asked for one
+- Report findings to the developer, with severity, evidence, and residual risk; the developer decides on merge. This review is AI critique, not independent human review
 
 ---
 
@@ -210,6 +210,17 @@ Apply relevant lenses based on what the code does. Not every lens applies to eve
 - **WARNING**: Retention policy engine running without acquiring a file lock — may compact files being actively written
 - **INFO**: Storage path construction not using `StorageOptions.GetPath(...)` helper — inconsistent naming across org modes
 - **INFO**: Missing checksum validation on WAL replay — silent data corruption on replay
+
+### Level 2/3 Financial & Security Invariants *(overlay)*
+*Apply to: ledger/accounting, storage migrations, Security Master, provider adapters, shared domain contracts, money movement, trading/execution, authentication, secrets, deployment (Level 2/3 in [`docs/ai/solo-developer-workflow.md`](../../../docs/ai/solo-developer-workflow.md)). Run alongside the numbered lenses.*
+
+- **CRITICAL**: Unbalanced journal entries (debits != credits) or mutation of posted/immutable ledger records instead of reversing entries
+- **CRITICAL**: Non-idempotent posting, import, or retry path (duplicate effects on replay); writes into a locked accounting period
+- **CRITICAL**: Non-deterministic replay (wall-clock, random, unordered iteration) in event-sourced or reconciliation logic; missing source provenance on imported or derived financial data
+- **CRITICAL**: Missing authorization or tenancy isolation on an endpoint or read model; secrets in code, logs, or fixtures; destructive migration without a recovery path
+- **CRITICAL**: Error path that fails open (allows trade, approval, or posting on exception or missing data) instead of failing closed
+
+This review is AI critique from a separate agent, not independent human review; do not state or imply human approval. Level 3 owner acceptance is recorded by the owner.
 
 ---
 

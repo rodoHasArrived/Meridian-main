@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-28
+**Reviewed:** 2026-10-31
 
 This is the canonical developer and agent entrypoint for Meridian engineering and contribution work.
 
@@ -25,7 +25,7 @@ It replaces hand-built planning and historical engineering prose with active ope
 - **WPF performance and UI/UX audit:** [WPF Performance & UI/UX Refinement Audit 2026-06-14](wpf-perf-uiux-audit-2026-06-14.md) *(dated; its changes were not compiled or run when written)*
 - **Release-evidence working ledger:** [Production-Certification Evidence Chain](production-certification-evidence-chain.md)
 - **CI/CD ownership and rollout:** [CI/CD validation ownership](ci-cd-optimization.md)
-- **Solo-developer CI consolidation:** [Measured removal of duplicate CI execution](solo-developer-ci-consolidation.md) (proposal; preserves required checks and financial safety coverage)
+- **Solo-developer CI consolidation:** [Measured removal of duplicate CI execution](solo-developer-ci-consolidation.md) (audit and owner-approval follow-ups; preserves required checks and financial safety coverage)
 - **Pipeline budget measurements (PRD-112):** [Bounded benchmark lane and retained evidence](pipeline-benchmark.md)
 - **Docs regeneration automation constraints:** [Docs Regeneration Automation — Design Constraints](docs-regeneration-automation-design.md)
 - **Browser/docs regeneration and generated merge conflicts:** [Prepare an isolated repair and reviewed-hash merge](generated-merge-recovery.md)
@@ -78,12 +78,12 @@ npm run dev:fixtures -- --doctor
 Recommendations explain the selected checks and any uncertain coverage; they do not run tests.
 .NET recommendations use a stable, project-specific session profile for incremental iteration.
 Build-definition changes select a new profile automatically; ordinary source edits keep it warm.
-Add `--fresh` to recommend independent outputs for handoff; required final checks are retained.
+Add `--fresh` to recommend independent outputs for handoff; final checks are reported by risk tier (hosted gates always; the full local `bash scripts/ci.sh` is optional for routine changes and required for CI-tooling paths).
 Use `recommend-validation --base origin/main` to include committed branch changes as well as
 working-tree changes, or repeat `--changed-file <path>` to preview an explicit scope. The npm
 shortcut is `npm run checks:recommend -- --base origin/main`. See the
 [focused validation guide](../ai/tooling/throughput-pilot.md#recommend-focused-validation) and
-[browser diagnostics](web-development.md) for details. The required full gate below still applies.
+[browser diagnostics](web-development.md) for details. The hosted `quality-gate` remains the authoritative merge result.
 
 Shared assistant context already has a canonical generator. Edit the marked section in
 `.claude/skills/_shared/project-context.md`, run `npm run guidance:sync`, then
@@ -113,7 +113,7 @@ credentials. Warnings also produce a nonzero exit; read which capability is miss
 attempting that lane. Live-provider credentials and PostgreSQL are not prerequisites for a focused
 browser or Python check. Doctor is a diagnostic, not proof that the selected lane passes.
 
-Choose the lane that covers the change while iterating. A lane runs its maintained prerequisites
+A lane is selected by the area you changed; the risk tier (below) decides the minimum local validation. Choose the lane that covers the change while iterating. A lane runs its maintained prerequisites
 and checks in order; focused test commands below are useful for a shorter edit/test loop.
 
 | Change or failure | Maintained lane | Additional prerequisites |
@@ -130,20 +130,28 @@ and focused commands for recognized failures. Retained build logs and .NET shard
 under `artifacts/build-logs/` and `artifacts/test-results/dotnet/`. Diagnose resource or lock
 contention with `validation-status` and the recovery guidance below before starting another build.
 
-For completed PR-ready work, run the full canonical repository gate after the focused checks:
+Scale local validation to the risk tier in the [solo-developer workflow](../ai/solo-developer-workflow.md#verification-tiers):
+
+| Tier | Local expectation before opening a PR |
+| --- | --- |
+| Level 1 - routine (docs, styling, isolated utilities, low-risk UI) | The matching focused lane above. The hosted `quality-gate` provides the full result. |
+| Level 2 - financial or architectural | Focused lanes plus targeted tests of the changed invariants (positive and negative); run the PostgreSQL-backed tests for storage or financial-persistence changes. |
+| Level 3 - sensitive or destructive | Everything in Level 2, adversarial and fail-closed tests, and the full gate below when practical. |
+
+The full canonical repository gate is optional locally for Level 1 and recommended for Level 2/3:
 
 ```powershell
 bash scripts/ci.sh
 ```
 
-The local aggregate overlaps .NET and browser verification when resources permit, then runs docs
+State honestly in the PR which checks ran. The local aggregate overlaps .NET and browser verification when resources permit, then runs docs
 and workflow verification serially. Use `--jobs 1` for serial execution or `--jobs 2` to request
 bounded overlap. Each invocation retains its own lane evidence and waits for all required results.
 `bash scripts/ci.sh --cold` measures a full gate with fresh .NET build outputs while retaining
 dependency caches. See [local feedback measurements](../development/build-observability.md#local-feedback-latency-and-observed-retries)
 for receipts, warm edit-to-result timing, and the exact meaning of cold.
 
-Focused checks and environment diagnostics do not replace this gate or the required hosted checks.
+Focused checks and environment diagnostics do not replace the required hosted checks.
 
 GitHub Actions `Meridian CI / quality-gate` is the authoritative merge result. Local work may
 happen on `main` when the user explicitly requests it or the checkout is intentionally operating
@@ -263,7 +271,7 @@ validation-status --summary`, then `dotnet build-server shutdown`. Stop only aba
 `dotnet`, `MSBuild`, `testhost`, `csc`, or `VBCSCompiler` PIDs after confirming their command lines
 point at this checkout; do not kill unrelated local .NET services.
 
-For local pre-PR proof across the highest-value free tools, use:
+For optional local proof (recommended at Level 2/3) across the highest-value free tools, use:
 
 ```powershell
 pwsh ./scripts/dev/run-local-quality.ps1
