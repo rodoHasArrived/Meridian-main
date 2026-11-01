@@ -423,6 +423,12 @@ metadata chain. Broker-native notional metadata (`notional`, `alpaca:notional`) 
 for gateways implementing `INotionalOrderSizingGateway`; on any other gateway the order is refused
 rather than measured at a size the broker will not route.
 
+## Audit hardening (2026-11)
+
+- **Margin models.** `RegTMarginModel`'s short rates (150 % initial, 130 % maintenance) are credit-balance rates. Requirements are reported against net equity (long MV − short MV + cash) as `(rate − 1) × |short MV|`, so a compliant short no longer raises a false margin call. `PortfolioMarginModel` equity subtracts the short liability.
+- **Fail-closed pricing.** Both models, and `PaperTradingPortfolio.CheckMarginStatus`, throw `MarginPriceUnavailableException` when an open position has no price, instead of skipping it. Flat positions need no price.
+- **Exact quantities.** Margin sizing, `PortfolioStatePositionTracker` and `PositionReconciliationService` use `ExactQuantity`, so fractional holdings are not rounded to whole shares.
+
 ## Diagrams
 
 See `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.
