@@ -6,7 +6,7 @@
   "inputs": [
     {
       "path": "docs/roadmap/data/decision-log.yml",
-      "sha256": "834dbffd2ba1377dba3f36c73135abe4106900f5cb59236f918c4bd0dd4e76a7"
+      "sha256": "b6d9bbc0c8241595fcd71c8131be019c89a4d13ab1385f266154801d80e9b187"
     },
     {
       "path": "docs/roadmap/data/document-index.yml",
@@ -14,7 +14,7 @@
     },
     {
       "path": "docs/roadmap/data/program-state.yml",
-      "sha256": "757d8942ae97c0987f75f24f602aeca2ef79e32ab34346cbfb7804fc3a31e968"
+      "sha256": "2755929b04c46dbe9b9ab8d3d56d94b4720cc418126df39b827700358707631c"
     },
     {
       "path": "docs/roadmap/data/risk-register.yml",
@@ -22,7 +22,7 @@
     },
     {
       "path": "docs/roadmap/data/roadmap-items.yml",
-      "sha256": "663edcc7de078429ebcf13a1fbac7c9acf5be9b725ec795d2f8e4af35c36feaf"
+      "sha256": "3efb2584bdcacd70a086606c45c2ce2ba604ecddbfda61eab025400ddde8a40e"
     },
     {
       "path": "docs/roadmap/data/stage-gates.yml",
@@ -32,15 +32,15 @@
   "outputs": [
     {
       "path": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
-      "sha256": "b362d899a169d0bf258a7e53973b7a6102b9c9ff48a8d65c76ff8dbe83c244f3"
+      "sha256": "e3c436132eceac9884f1233889c98ae14aac5b1d0ace14787c7b273a4cf731d5"
     },
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
-      "sha256": "69765bf74359bbbdee2cc452560fc72afd68dd60c39aee6c916c0215c97ce4e7"
+      "sha256": "b18df26e1fda9ad74e1d5a5a95aa257095de753011abf31cbc1c3bd0b2a8cc71"
     },
     {
       "path": "docs/status/ROADMAP_SUMMARY.md",
-      "sha256": "b362d899a169d0bf258a7e53973b7a6102b9c9ff48a8d65c76ff8dbe83c244f3"
+      "sha256": "e3c436132eceac9884f1233889c98ae14aac5b1d0ace14787c7b273a4cf731d5"
     }
   ],
   "schema": {
