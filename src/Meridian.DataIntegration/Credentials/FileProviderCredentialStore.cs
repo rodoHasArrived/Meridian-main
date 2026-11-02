@@ -124,7 +124,7 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
                     return ToReadResult(descriptor, localRecord, ProviderCredentialSourceDto.LocalEncryptedStore);
                 }
                 if (scope is null && vault.OwnershipMigrations.Values.Any(migration =>
-                    migration.ProviderId == descriptor.ProviderId && !migration.RolledBack))
+                    migration.ProviderId == descriptor.ProviderId && migration.IsActive))
                     return null;
             }
         }
@@ -181,7 +181,7 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
             var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
             vault.Providers.TryGetValue(storageKey, out var existing);
             if (scope is null && vault.OwnershipMigrations.Values.Any(migration =>
-                migration.ProviderId == descriptor.ProviderId && !migration.RolledBack))
+                migration.ProviderId == descriptor.ProviderId && migration.IsActive))
                 throw new ProviderCredentialConflictException();
             if (existing is not null)
                 ValidateRecordScope(existing, scope);
@@ -207,7 +207,7 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
             vault.Providers[storageKey] = updated;
             // A replacement must durably invalidate the original migration's rollback authority.
             var invalidateMigrationRollback = scope is not null && vault.OwnershipMigrations.Values.Any(migration =>
-                !migration.RolledBack && migration.ProviderId == descriptor.ProviderId && migration.Scope == scope);
+                migration.IsActive && migration.ProviderId == descriptor.ProviderId && migration.Scope == scope);
             var auditLine = BuildAuditLine(
                 descriptor,
                 "save",
@@ -442,6 +442,8 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
                 vault.OAuthTokens.Remove(providerName);
                 vault.LegacyImportedOAuthProviders.Add(providerName);
             }
+            else if (IsOAuthTokenTransferred(vault, providerName))
+                throw TransferredOAuthTokenConflict(providerName);
             else
                 vault.OAuthTokens[providerName] = token;
             // Rotation can invalidate the previous refresh token at the provider immediately.
@@ -476,6 +478,12 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
             {
                 if (!vault.LegacyImportedOAuthProviders.Add(pair.Key))
                     continue;
+                if (IsOAuthTokenTransferred(vault, pair.Key))
+                {
+                    // The owned connection holds this provider's token; a legacy snapshot never republishes it provider-wide.
+                    Log.Warning("Skipped provider-wide OAuth token import for {Provider}: its token was transferred to an owned connection", pair.Key);
+                    continue;
+                }
                 vault.OAuthTokens.TryAdd(pair.Key, pair.Value);
             }
             // A successful import acknowledges that the plaintext source may be erased.
@@ -861,6 +869,7 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
             "oauth-delete" => !vault.OAuthTokens.ContainsKey(Key),
             "scoped-oauth-save" => vault.ScopedOAuthTokens.TryGetValue(Key, out var scoped) && scoped.Token is not null && DigestMatches(scoped.Token),
             "scoped-oauth-delete" => !vault.ScopedOAuthTokens.ContainsKey(Key),
+            "ownership-finalize" => vault.OwnershipMigrations.TryGetValue(Key, out var finalized) && finalized.FinalizedAt is not null,
             _ => false
         };
 

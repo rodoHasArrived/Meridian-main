@@ -4292,6 +4292,7 @@ Meridian-main
 │   │   ├── SecurityMaster
 │   │   │   ├── CashFlow
 │   │   │   │   ├── ContractualCashFlowPreviewService.cs
+│   │   │   │   ├── FileBondExerciseNoticeStore.cs
 │   │   │   │   ├── FileContractualCashFlowRunStore.cs
 │   │   │   │   ├── ScheduleSpecFactory.cs
 │   │   │   │   ├── SecurityPrincipalBalance.cs
@@ -4586,7 +4587,9 @@ Meridian-main
 │   │   │       ├── OpenLotUnifiedAmortization.cs
 │   │   │       ├── OpenLotValidation.cs
 │   │   │       ├── OpenLotYieldToWorst.cs
-│   │   │       └── ShortCarryInstruction.cs
+│   │   │       ├── ShortCarryInstruction.cs
+│   │   │       ├── ShortCorrection.cs
+│   │   │       └── ShortCoverTerms.cs
 │   │   ├── AccountingSystem
 │   │   │   └── AccountingSystemDtos.cs
 │   │   ├── Api
@@ -4650,12 +4653,14 @@ Meridian-main
 │   │   │   ├── IBusinessDayCalendarSource.cs
 │   │   │   └── JointBusinessDayCalendar.cs
 │   │   ├── CashFlows
+│   │   │   ├── BondExerciseNotice.cs
 │   │   │   ├── ContractualCashFlowContracts.cs
 │   │   │   ├── ContractualCashFlowEngine.cs
 │   │   │   ├── ContractualCashFlowEngine.Exercise.cs
 │   │   │   ├── ContractualCashFlowEngine.Prepayment.cs
 │   │   │   ├── ContractualCashFlowEngine.Walk.cs
 │   │   │   ├── ContractualCashFlowJsonContext.cs
+│   │   │   ├── ContractualCashFlowRunComparer.cs
 │   │   │   ├── ContractualCashFlowSubjectKinds.cs
 │   │   │   └── SecurityContractualCashFlowTerms.cs
 │   │   ├── Catalog
@@ -5558,6 +5563,8 @@ Meridian-main
 │   │   │   ├── FactorPaydownLotInstructionService.cs
 │   │   │   ├── LedgerJournalConstruction.cs
 │   │   │   ├── ShortCarryPostingGuard.cs
+│   │   │   ├── ShortCorrectionGuard.cs
+│   │   │   ├── ShortCoverPostingGuard.cs
 │   │   │   ├── SpineAcquisitionLotCompletion.cs
 │   │   │   └── SpineAcquisitionLotFacts.cs
 │   │   ├── MiddleOffice
@@ -9962,6 +9969,7 @@ Meridian-main
 │   │   ├── SecurityMaster
 │   │   │   └── StructuredCashFlowTermsResolverIntegrationTests.cs
 │   │   ├── ContractualCashFlowEngineTests.cs
+│   │   ├── ContractualCashFlowRunComparerTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Contracts.UnitTests.csproj
 │   │   └── README.md
@@ -10905,6 +10913,7 @@ Meridian-main
 │   │   │   │   └── ProviderModuleSetupServiceTests.cs
 │   │   │   ├── Wizard
 │   │   │   │   └── WizardConfigurationStepTests.cs
+│   │   │   ├── BondExerciseNoticeStoreTests.cs
 │   │   │   ├── ContractualCashFlowPreviewTests.cs
 │   │   │   ├── ContractualCashFlowScheduleRefusalTests.cs
 │   │   │   ├── DirectLendingSchedulePeriodsTests.cs
@@ -11242,7 +11251,9 @@ Meridian-main
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.ReferenceAuthority.cs
 │   │   │   │   ├── AssetAccountingLifecycleSeparationTests.cs
 │   │   │   │   ├── BondSettlementConsiderationTests.cs
-│   │   │   │   └── ShortCarryTests.cs
+│   │   │   │   ├── ShortCarryTests.cs
+│   │   │   │   ├── ShortCorrectionTests.cs
+│   │   │   │   └── ShortCoverCurrencyTests.cs
 │   │   │   ├── OperationsContinuity
 │   │   │   │   ├── FinancialOperationsCommandCenterReadService.AcceptanceTests.cs
 │   │   │   │   ├── FinancialOperationsCommandCenterReadService.PublicationTests.cs
