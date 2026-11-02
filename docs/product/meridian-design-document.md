@@ -1,10 +1,10 @@
-# Meridian Design Document — Version 1.6
+# Meridian Design Document — Version 1.7
 
 **Status:** active
 **Placement:** canonical
 **Owner:** core-team
-**Reviewed:** 2026-10-30
-**Supersedes:** Version 1.5 (fund operations and incremental delivery), Version 1.4 (financial authority and complementary design 2026-10-19), Version 1.3 (structure and registered W11 direction), Version 1.2 (status refresh in the same review cycle), Version 1.1 (registry snapshot 2026-09-28), Version 1.0 (registry snapshot
+**Reviewed:** 2026-11-01
+**Supersedes:** Version 1.6 (strategy and order-management objectives), Version 1.5 (fund operations and incremental delivery), Version 1.4 (financial authority and complementary design 2026-10-19), Version 1.3 (structure and registered W11 direction), Version 1.2 (status refresh in the same review cycle), Version 1.1 (registry snapshot 2026-09-28), Version 1.0 (registry snapshot
 2026-08-03), and Version 0.25 (full text preserved at
 [`archive/docs/design/meridian-design-document-v0.25.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/design/meridian-design-document-v0.25.md))
 **Source:** Ground-up rewrite of the 0.15–0.25 charter lineage. Grounded in the roadmap registry
@@ -24,6 +24,11 @@ Version 1.6 records the user's expanded objectives under `DEC-TRADING-STRATEGY-D
 financial operations, strategy formulation and validation, order management, and governed
 strategy execution are peer product outcomes. Section 22.7 defines the additional direction and
 acceptance boundaries; it does not change existing delivery ranks or certify implementation.
+Version 1.7 restates the value proposition under `DEC-VALUE-PROPOSITION-001`, following the
+[2026-11-01 value-proposition review](value-proposition-review-2026-11-01.md): one promise across
+decisions, execution, and proof (Sections 1.2–1.5), a first-buyer discovery hypothesis (Section
+3.1), and five design candidates (Sections 25.3.8–25.3.12). It registers no row and changes no
+rank, status, acceptance, deployment envelope, or release authority.
 
 > **Status facts in this charter are snapshots.** Where a registry row and this document disagree,
 > the registry (`docs/roadmap/data/roadmap-items.yml`) wins; fix this document rather than citing
@@ -35,6 +40,7 @@ acceptance boundaries; it does not change existing delivery ranks or certify imp
 | If you need… | Read |
 | --- | --- |
 | What Meridian sells and why it wins | [Value proposition](#1-value-proposition), [delivery strategy](#2-value-delivery-strategy), [customers](#3-market-and-customers) |
+| The three questions every surface answers, and how each is proven | [Product promise](#12-the-product-promise) |
 | Who uses it and what each decision must retain | [Operating journeys](#4-users-stakeholders-and-operating-journeys) |
 | What is built, accepted, and in flight today | [Implementation baseline](#5-current-implementation-baseline) and [current roadmap](../roadmap/generated/ROADMAP_SUMMARY.md) |
 | Domain scope, ownership, and initial package boundaries | [Domain catalog](#6-functional-domain-catalog) through [business object model](#10-core-business-object-model) |
@@ -45,6 +51,7 @@ acceptance boundaries; it does not change existing delivery ranks or certify imp
 | Shared evidence/accounting states and operational requirements | [State vocabulary](#118-canonical-state-vocabulary), [operational requirements](#123-operational-and-non-functional-requirements) |
 | Metric definitions and calculation safeguards | [Metrics](#15-north-star-metrics), [measurement contract](#16-measurement-contract) |
 | Complementary capabilities to evaluate next | [Design candidates](#253-complementary-capability-candidates) |
+| Pre-trade impact preview, decision trace, and single-principal attestation | [Decision-to-proof candidates](#2538-pre-trade-financial-impact-preview) |
 | Fund operations, delivery dependencies, acceptance, and rollout | [Fund operations](#225-fund-operations-depth), [delivery and acceptance](#226-delivery-acceptance-and-rollout) |
 | Strategy formulation, order management, and governed execution | [Strategy and order-management direction](#227-strategy-and-order-management-direction) |
 
@@ -78,32 +85,49 @@ across otherwise capable tools:
 * Accounting systems record entries; operational source evidence may live outside the ledger.
 * Close-management tools coordinate tasks across data and accounting systems.
 * Fund administrators provide certification services with their own review and delivery cycles.
+* Trading and portfolio tools show what an order does to a position; its cash, income, and
+  accounting consequences often surface only after the trade, in a different system.
 
-The opportunity includes financial numbers delivered with their proof and investment decisions
-carried through a verifiable strategy and order lifecycle. These are customer-discovery hypotheses,
-not verified claims that every competing product lacks a capability.
+The opportunity includes investment decisions whose financial consequences are visible before
+commitment, decisions carried through a verifiable strategy and order lifecycle, and financial
+numbers delivered with their proof. These are customer-discovery hypotheses, not verified claims
+that every competing product lacks a capability.
 
 ### 1.2 The Product Promise
 
-> **Meridian sells proven numbers.** Every figure Meridian publishes carries a reconstructable
-> chain — source evidence, normalization, validation, reconciliation, ledger impact, approval,
-> report usage, delivery — so finance teams close faster, operate leaner, and hand every
-> stakeholder an answer they can check.
+> **Meridian shows you what a decision will do before you make it, records what actually
+> happened, and proves every number that results — and says plainly which numbers it cannot
+> prove yet.**
 >
 > Ask any question. Verify every answer.
 
-The expanded product promise also covers formulating and validating investment strategies,
-managing orders, and executing strategies under explicit account authority and risk controls.
-Each outcome retains its inputs, decisions, versions, observed results, and recovery history.
-Financial operations and trading share this evidence model without making a completed close a
-prerequisite for strategy research or order-management development.
+In short: **decide with consequences, execute under control, prove the result.**
 
-A number is **proven** when its evidence chain is current, reconciled, approved, and
-reconstructable on demand. That definition is the product's unit of value, its quality bar, and its
-primary metric (Verified Coverage, Section 1.5). Meridian is not a dashboard with an audit trail
-bolted on; it is the governed financial system underneath the dashboard.
+Proof is the product's noun. A number is **proven** when its evidence chain is current,
+reconciled, approved, and reconstructable on demand. A decision is **traced** when its intent,
+the consequences previewed before it, the authority and controls that admitted it, the broker or
+simulator observations that followed, and its accounting handoff are retained and linked. These
+definitions are the product's unit of value and its quality bar; Verified Coverage (Section 1.5)
+remains the primary metric. Meridian is not a dashboard with an audit trail bolted on; it is the
+governed system underneath the dashboard. Its honesty is part of the promise: a figure or decision
+whose support is incomplete is shown as unproven, never as implicitly complete (Section 2.3).
 
-The customer buys three compounding outcomes:
+Every Meridian surface answers one of three questions. Each answer has a proof object and a test
+a buyer can run:
+
+| Question | What Meridian does | Proof object | Buyer-checkable test | Workspaces |
+| --- | --- | --- | --- | --- |
+| **What happens if I do this?** | Previews a proposed trade's cash, accrued income, exposure, limit verdicts, and projected journal lines from the same terms, marks, lot method, and rules that will book it | Retained preview on the order intent, labeled `Projected` and never posted (candidate, Section 25.3.8) | Preview Fidelity (candidate, Section 1.5): the retained preview, re-evaluated at the actual fill terms, reproduces the posted effects or names the divergence | `Strategy`, `Portfolio`, `Trading` |
+| **What actually happened?** | One governed OMS for operator-directed and strategy-generated orders, broker-confirmed lifecycle, and recovery without duplicate effects (Section 22.7) | Decision Trace (candidate, Section 25.3.9) | Every executed order resolves a complete trace, or names the missing link | `Trading` |
+| **Can I prove it?** | Reconcile, book, close, and report, with every amount opening its proof | Number Passport (Section 22.1) | Verified Coverage (Section 1.5) | `Accounting`, `Reporting`, `Data` |
+
+**Every number has a passport; every decision has a trace.** The integration claim is testable
+because the preview, the OMS handoff, and the books use the same engines: the front office and
+the books cannot silently disagree about the same trade. Each question delivers a bounded outcome
+on its own. Strategy research and order management do not wait on a completed close, and an
+executed order does not accept its downstream accounting, close, or reporting workflow.
+
+For financial operations, the third answer compounds:
 
 1. **Audit-ready truth on demand.** The proof chain is produced by the workflow itself, not
    assembled after it. Close binders, NAV support, and statement packages fall out of normal
@@ -113,6 +137,19 @@ The customer buys three compounding outcomes:
    accounts without weakening approval, evidence, or period-lock discipline.
 3. **A close that compounds.** Every resolved exception, approved mapping, and certified dataset
    makes the next period faster. Proof is an asset that accrues, not a cost that recurs.
+
+**Start anywhere; every record joins the same chain.** Importing a statement yields reconciled
+positions; running a strategy yields paper positions that reconcile; placing an order yields a
+trace that books. An entry point that cannot yet join the chain says so (Activation Ratio,
+Section 1.5). **Controls follow consequence:** research and simulation need no credentials or
+approvals because they hold no authority, while execution, posting, close, and release keep their
+full controls.
+
+Meridian competes on proof, honest unproven states, consequence preview, integration for teams
+that run the front office and the books together, and local data ownership. It does not compete on
+asset-class breadth, research-data content, execution algorithms, or enterprise scale. It does not
+promise better returns or better decisions; it promises knowable consequences and checkable
+records. The Section 25.3 candidates named above are design proposals, not shipped capability.
 
 The financial-operations question remains:
 
@@ -163,9 +200,21 @@ Meridian is **not**:
 * a generic no-code workflow builder,
 * an enterprise risk or forecasting suite detached from operational records,
 * an outsourced services operation,
+* a research-data vendor or an investment-advice product: research in Meridian is retained
+  research records (theses, assumptions, linked evidence, review) over data the customer already
+  licenses or public sources such as SEC EDGAR,
+* a marketplace that distributes third-party executable strategies,
+* an execution-management system or algorithmic execution venue,
+* a retail investing application,
 * an autonomous accounting agent. AI may extract, match, summarize, detect discrepancies, and
   draft — it must never bypass operator approval, retained evidence, ledger controls, period
   locks, segregation of duties, report release checks, or payment controls (Section 21).
+
+A **self-directed principal** — one person who both prepares and approves, typically inside the
+Single Family Office profile — is a supported operating posture only through the explicit,
+labeled single-principal attestation registered as `W14-ATTEST-001` under
+`DEC-SINGLE-PRINCIPAL-001` (Section 25.3.12; status in Section 5.3). It is not a retail product
+segment, and it never presents a self-attested result as independently reviewed.
 
 ### 1.4 Differentiation
 
@@ -177,14 +226,18 @@ the complete operator workflow, its retained proof, and the customer's observed 
    Number Passport (Section 22).
 2. **Truthful-by-construction operations.** The product never lies about its own state. Simulated,
    sample, or synthetic data is loudly labeled; unsupported persistence fails closed; missing or
-   stale evidence renders as `review-required` or `blocked`, never as implicit success. Honesty is
-   a design requirement to validate in every supported workflow (Section 2.3).
-3. **Strategy, orders, and financial operations with shared evidence.** Strategy formulation,
+   stale evidence renders as `review-required` or `blocked`, never as implicit success; a figure
+   Meridian cannot yet prove is shown as unproven, with the missing link named. Honesty is a design
+   requirement to validate in every supported workflow (Section 2.3).
+3. **Every number has a passport; every decision has a trace.** Strategy formulation,
    backtesting, paper validation, authorized live promotion, order entry and lifecycle management,
    execution, reconciliation, accounting, close, and delivery are direct product outcomes.
    Meridian's codebase carries bounded trading and close capabilities (Section 5); Section 22.7
-   defines the additional strategy and OMS direction. Customer evaluation must establish the
-   value and supported coverage of each workflow and their connections.
+   defines the additional strategy and OMS direction. The connection is demonstrated, not
+   asserted: a pre-trade preview, the order's trace, and the posted result use the same terms,
+   marks, and rules, so their agreement is testable (Preview Fidelity, Section 1.5). Customer
+   evaluation must establish the value and supported coverage of each workflow and their
+   connections.
 4. **Whole-balance-sheet modeling.** Assets, liabilities, commitments, guarantees, collateral, tax
    obligations, intercompany balances, and contingent exposures are modeled as equal citizens
    through contract packs (Section 22).
@@ -225,6 +278,15 @@ time it came from. None is computed today; the registry row that implements each
 | Proof Latency | For each record class, the median and 95th percentile of (verified-at − source-received-at) over items verified in the period. | Only items that became verified in the period; items still unverified are reported as an aging count beside it, not dropped. | Data Confidence and Validation | Not registered |
 | Governed Touchless Rate | Items advanced under an active, approved straight-through policy with no per-item human action ÷ all policy-eligible items in the period. | Eligibility follows Section 21: material or high-risk classes are never eligible and are excluded from both terms. A sampled-and-reviewed item still counts as touchless; an item a reviewer changed does not. | Accounting and Ledger | Not registered |
 | Activation Ratio | Capabilities reachable from an operator surface in a supported profile ÷ all shipped capabilities. | Shipped means a registry row that is `accepted` or `done`, plus each supported foundation listed in Section 2.1. Reachable means an operator can start it from the browser or WPF workstation without a developer tool. | Core Team | Not registered |
+
+**Candidate companion metric (not one of the five; unregistered).** **Preview Fidelity** tests the
+decision-side promise in Section 1.2. For executed orders in a declared scope that carry a retained
+pre-trade preview (Section 25.3.8), it is the share whose posted cash and journal effects equal the
+retained preview re-evaluated at the actual fill price, quantity, and trade and settlement dates.
+Every mismatch is listed by cause: unsupported treatment, changed terms or mark, changed lot
+selection, or engine divergence. Orders without a retained preview are reported as an excluded
+count, never dropped. It has no owner lane, implementing row, baseline, or target until a registry
+decision adopts it, and it does not alter any formula above.
 
 ### 1.6 Measurement Contract
 
@@ -432,6 +494,16 @@ views), but its governed exit criteria are not met and it must not be described 
 | Registered Investment Advisors | Portfolio operations, client reporting, data aggregation, performance review, advisor workflows, compliance support | Aggregated, reconciled client records with governed report delivery |
 | Single Family Offices | Entity management, trust and beneficiary reporting, alternative assets, treasury, consolidated reporting | Whole-balance-sheet visibility across entities with verifiable consolidation |
 | Hybrid / Institutional Users | Configurable workflows across operations, reporting, financing, planning, governance | One governed operational record across desks and functions |
+
+**First-buyer discovery hypothesis (not an adopted segment or ranking).** Section 22 requires
+product discovery to select the first buyer with recorded evidence. The current evidence points to
+**small investment teams that run the front office and the books themselves** — emerging managers,
+single family offices, and independent advisers — where the person who decides a trade and the
+person who books it work side by side, separate front- and back-office suites are unaffordable,
+and the connected chain in Section 1.2 is the whole value. That shape fits the single-node local
+envelope in Section 12.3 better than a multi-client administrator, which needs remote, multi-user
+access the v1 envelope excludes. The table order above is unchanged; validating or rejecting this
+hypothesis is a product decision with its own evidence.
 
 ### 3.2 Product Strategy
 
@@ -644,8 +716,8 @@ not yet the wired operator path, and the W9 slate exists precisely to close that
 ### 5.3 Registry Status
 
 This is the only place in the charter that states registry status (program snapshot 2026-10-14,
-plus the W11 rows registered 2026-10-16, W12 rows registered 2026-10-17, and W13 direction registered
-2026-10-30). When it disagrees with `docs/roadmap/data/roadmap-items.yml`,
+plus the W11 rows registered 2026-10-16, W12 rows registered 2026-10-17, W13 direction registered
+2026-10-30, `W10-BOND-001` registered 2026-10-31, and `W14-ATTEST-001` registered 2026-11-01). When it disagrees with `docs/roadmap/data/roadmap-items.yml`,
 the registry wins; fix this section and nothing else.
 
 **Closed baselines** (registry status `done`, evidence complete). W1-W5 form the accepted
@@ -702,6 +774,7 @@ does not adopt ranks, accept an entire row, or reprioritize the adopted work:
 | W10 · 11 | `W10-CONSOL-001` | `planned` | `DEC-DEPTH-SLATE-001` | Intercompany elimination; a first two-entity, single-currency slice exists in source (Section 2.6) |
 | W10 · 12 | `W10-LOT-002` | `in_progress` (priority critical) | `DEC-DEPTH-SLATE-001` | Security-identified open-lot convergence: acquisition, backfill, relief, and face-lot amortization on one durable lot and immutable-journal boundary |
 | — | `W10-DEBT-001` | `planned` | — | God-file burn-down against the file-size ratchet (unranked hygiene row) |
+| — | `W10-BOND-001` | `in_progress` | `DEC-W10-BOND-REGISTER-001` | Bond analytics, declared-schedule migration, and contractual cash-flow projection (unranked depth row) |
 | W11 · 1 | `W11-PASSPORT-001` | `planned` | `DEC-CHARTER-DIRECTION-001` | Number Passport contract across amount surfaces (Section 22.1) |
 | W11 · 2 | `W11-COVER-001` | `planned` | `DEC-CHARTER-DIRECTION-001` | Verified Coverage measurement and operator surface (Sections 1.5, 22.3) |
 | W11 · 3 | `W11-STAKE-001` | `planned` | `DEC-CHARTER-DIRECTION-001` | Governed stakeholder verification access on delivered packages (Section 22.3) |
@@ -715,13 +788,18 @@ does not adopt ranks, accept an entire row, or reprioritize the adopted work:
 | W12 · unranked | `W12-CREDIT-001` | `planned` | `DEC-FUND-OPERATIONS-DIRECTION-001` | DirectLoan operations and evidence reconciliation (Section 6.8) |
 | W13 · unranked | `W13-STRAT-001` | `planned` | `DEC-TRADING-STRATEGY-DIRECTION-001` | Strategy formulation, validation, and governed execution workflow (Section 22.7) |
 | W13 · unranked | `W13-OMS-001` | `planned` | `DEC-TRADING-STRATEGY-DIRECTION-001` | Operator order management and durable execution lifecycle (Section 22.7) |
+| W14 · unranked | `W14-ATTEST-001` | `planned` | `DEC-SINGLE-PRINCIPAL-001` | Single-principal attestation for governed approvals in the single-operator envelope (Section 25.3.12) |
 
 `W9-DEMO-002` (rank 2) and `W9-ASSET-010` are `done` and listed with the closed baselines above.
 No roadmap decision was recorded between the 2026-09-28 and 2026-10-14 snapshots; the changes in
 that interval are rows moving into implementation, not acceptances. `DEC-CHARTER-DIRECTION-001`
 (2026-10-16) registers the W11 rows only. `DEC-FUND-OPERATIONS-DIRECTION-001` (2026-10-17)
 registers the five W12 rows. `DEC-TRADING-STRATEGY-DIRECTION-001` (2026-10-30) registers the two
-W13 rows for the user's expanded objectives. These decisions accept planning scope, not
+W13 rows for the user's expanded objectives. `DEC-W10-BOND-REGISTER-001` (2026-10-31) registers
+`W10-BOND-001` as an unranked in-progress depth row, and `DEC-VALUE-PROPOSITION-001` (2026-11-01)
+restates the value proposition without registering a row. `DEC-SINGLE-PRINCIPAL-001` (2026-11-01)
+registers `W14-ATTEST-001` as an unranked planned row for the single-principal attestation
+direction in Section 25.3.12; W14 has no adopted rank. These decisions accept planning scope, not
 implementation or operator acceptance; prior acceptance records and release gates remain unchanged.
 
 The W9 ordering is strategy, not backlog trivia: truth before demonstration, honest gates before
@@ -2552,6 +2630,18 @@ retains the bounded financial close package; and specifies authority, recovery, 
 requirements for the additional workflows. Existing metric formulas, delivery ranks, historical
 acceptance, runtime restrictions, financial controls, and release gates remain unchanged.
 
+Version 1.7 restates the value proposition under `DEC-VALUE-PROPOSITION-001` after an adversarial
+review of a proposed expansion ([2026-11-01 review](value-proposition-review-2026-11-01.md)). It
+keeps proof as the product's noun and widens it to decisions; organizes the promise around three
+buyer questions, each with a proof object and a checkable test; records a first-buyer discovery
+hypothesis without changing the customer table; adds Preview Fidelity as an unregistered candidate
+metric; syncs the missing `W10-BOND-001` status row; and adds five design candidates (25.3.8–25.3.12).
+The review's declined elements — a configurable workflow builder, a third-party strategy
+marketplace, forecasting and enterprise-risk expansion, a retail segment, an insurance segment, and
+new root workspaces — stay out. The restatement itself registers no row; the same-day
+`DEC-SINGLE-PRINCIPAL-001` then registers 25.3.12 as `W14-ATTEST-001`. No rank, status, acceptance,
+metric formula, deployment envelope, or release gate changes.
+
 The superseded Version 0.25 text — including the Executive Marketecture Deck and the v0.15–v0.20
 addenda in their original form — is preserved at
 [`archive/docs/design/meridian-design-document-v0.25.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/design/meridian-design-document-v0.25.md).
@@ -2579,10 +2669,12 @@ addenda in their original form — is preserved at
 | **1.4** | **Integrated clarification and complementary design: financial authority, measurement safeguards preserving W11 formulas, domain ownership, interaction acceptance, and retained passport proof; six bounded capability candidates with dependencies and acceptance scenarios. Existing W9/W10/W11 direction and acceptance preserved** |
 | **1.5** | **Incremental delivery and acceptance: first monthly-close proof, conditional dependency boundaries, approved opening economic state, fee-event sequencing, pre-/post-close and opening representations, complete statement mapping, concurrency/recovery evidence, and measured operator rehearsal (22.6). All functionality is stated as Meridian requirements; the five W12 rows remain planned and unranked** |
 | **1.6** | **Expanded strategy and OMS objectives under `DEC-TRADING-STRATEGY-DIRECTION-001`: peer financial-operations, strategy formulation/validation, order-management, and governed-execution outcomes; corresponding operator journeys and domain concepts; explicit manual-order authority, recovery, and acceptance boundaries (22.7). The two W13 rows are planned and unranked; existing metrics, priorities, acceptance, and release authority are preserved** |
+| **1.7** | **Value-proposition restatement under `DEC-VALUE-PROPOSITION-001`: one promise across decisions, execution, and proof (1.2); honest unproven states and "every number has a passport; every decision has a trace" (1.4); Preview Fidelity as an unregistered candidate metric (1.5); first-buyer discovery hypothesis (3.1); `W10-BOND-001` status sync (5.3); five candidates — pre-trade impact preview, decision trace, decision-to-proof reference slice, explanation assistant, single-principal attestation (25.3.8–25.3.12); 25.3.12 registered the same day as `W14-ATTEST-001` under `DEC-SINGLE-PRINCIPAL-001`. No rank, status, acceptance, formula, envelope, or release change** |
 
 ### 25.3 Complementary Capability Candidates
 
-These six capabilities extend the value of existing records, evidence, and workflows. They are
+These capabilities — six added in Version 1.4 (25.3.1–25.3.6) and five in Version 1.7
+(25.3.8–25.3.12) — extend the value of existing records, evidence, and workflows. They are
 **design candidates for evaluation**, not adopted roadmap scope, scheduled work, or implemented
 capability claims. Before implementation, an adopted candidate needs a registry row with its owning
 lane, bounded outcome, dependencies, exit criteria, and required evidence. Any deferred product
@@ -2592,8 +2684,9 @@ reuse of its contracts does not bypass its acceptance gates.
 All candidates use the existing seven workspaces, shared domain services and read models, and
 browser/WPF-specific acceptance evidence. They do not expand the current single-company/local
 release envelope in Section 12.3 or authorize remote multi-tenant access. They preserve scoped access, evidence retention,
-independent approval, posted immutability, and deterministic financial calculations. None confers
-new posting, payment, report-release, or cross-tenant authority. Before adopting a candidate,
+independent approval, posted immutability, and deterministic financial calculations; 25.3.12
+proposes a separately labeled attestation path that never reads as independent approval. None
+confers new posting, payment, report-release, or cross-tenant authority. Before adopting a candidate,
 inspect current source for already-delivered portions and register only the incremental outcome.
 
 #### 25.3.1 Correction Impact and Remediation Preview
@@ -2756,7 +2849,168 @@ evaluate obligation monitoring and portable verification when their source and p
 dependencies are demonstrated. This is a proposed discovery order, not a change to W9/W10/W11 ranking
 or an engineering schedule. Product and owning lanes must record adoption separately.
 
+The Version 1.7 candidates form a second chain. A preview (25.3.8) attaches to an order whose trace
+(25.3.9) ends in the accounting handoff; the reference slice (25.3.10) exercises both inside the
+First Trusted Close; the explanation assistant (25.3.11) follows the variance bridge (25.3.3).
+The single-principal decision (25.3.12) was taken first and registered as `W14-ATTEST-001`, because
+it determines how every approval reads in the v1 envelope; next evaluate the reference slice, which is mostly activation of existing code;
+then the preview and trace together; and the explanation assistant last. This is a discovery order,
+not a rank.
+
 For each evaluation, retain one representative operator scenario, current-source overlap review,
 failure/permission cases, browser/WPF acceptance scope, and the intended improvement to Section
 1.6's measures. Do not invent percentage gains. Generic tolerance replay and learned-rule promotion
 remain with `W10-RECON-003` and `W10-RECON-004`; they are dependencies to reuse, not new candidates.
+
+#### 25.3.8 Pre-Trade Financial Impact Preview
+
+**Operator outcome:** before submitting an operator-directed order in `Trading`, or reviewing a
+strategy-proposed order in `Strategy`, see its projected effect on cash and settlement, accrued
+income, positions and lots, exposure and limit verdicts, and journal lines in the declared scope.
+Compare alternatives and retain the chosen preview on the order intent.
+
+**Composition and boundary:** compose existing engines on the server. A non-mutating dry run of the
+pre-trade validator (`CompositeRiskValidator` and its rules, which already compute post-order
+exposure but only to reject); the asset accounting event spine's `Projected` effects
+(`ProjectedAccountingEffectDto`, `W9-ASSET-010`); the account cash forecast and portfolio cash
+ladder (`AccountCashForecastEngine`, `PortfolioCashLadderEngine`); and instrument analytics where
+supported (`W10-BOND-001`). The preview binds the exact terms version, mark and its freshness under
+`W10-MARK-001`, lot-selection method, and policy versions. It is labeled `Projected`, never
+`Drafted`, `Approved`, or `Posted`, and it creates no posting candidate, reservation, or approval.
+Trading & Execution owns the preview record on the order intent; Risk, Instruments/Asset
+Operations, and Financial Operations own their contributions; neither workstation computes a figure
+locally. The existing browser order preview, which shows notional and resulting position only,
+is replaced on the live path rather than kept beside it (Section 2.1). Start with one supported
+instrument class and one account.
+
+**Acceptance scenario:** a proposed purchase of a declared fixed-rate bond shows dirty
+consideration (clean price plus purchased accrued interest), cash after settlement, the resulting
+face-value lot, concentration and notional verdicts, and projected acquisition journal lines.
+After a paper fill at a different price, re-evaluating the retained preview at the fill terms
+reproduces the posted effects (Preview Fidelity, Section 1.5). A changed term version, stale mark,
+unsupported treatment, or missing forecast input renders the affected component `review-required`
+or `blocked` with its reason, never a plausible number. A preview never authorizes dispatch:
+admission rechecks risk, authority, and versions at the command boundary.
+
+**Adoption decision:** choose the first instrument class and account, the supported projected
+treatments, and whether a preview is optional or required for operator-directed orders; decide
+separately whether Preview Fidelity becomes a registered metric.
+
+#### 25.3.9 Decision Trace
+
+**Operator outcome:** from an executed order, a position change, or a posted trade journal, open one
+trace showing why the order existed and what happened: the originating intent (operator
+instruction or strategy run), an optional investment thesis and its assumptions, the retained
+preview, account authority and risk verdict, broker or simulator observations, fills, and the
+accounting handoff. A missing link is named, not hidden.
+
+**Composition and boundary:** a read-only composed view, like the Number Passport, over existing
+records — the order intent and OMS lifecycle (`W13-OMS-001`), strategy-run and promotion lineage
+(`W13-STRAT-001`), the recovery journal and fill funnel, and the ledger handoff — reachable from
+passports and the evidence graph (`W5X-OEG-001`). The optional **investment thesis** record
+(statement, assumptions, linked evidence, author, review) belongs to Research & Analytics, which
+already owns theses (Section 7.1); it is an input to a decision, never authority for one. A trace
+grants nothing: it cannot admit, amend, or cancel an order or post an entry. The new durable noun
+needs a `docs/domain/` dictionary entry before code (Section 10.2).
+
+**Acceptance scenario:** a partially filled, then amended, order traces its original and replacement
+identities, both broker acknowledgements, two fills, and one accounting handoff; a duplicate fill
+observation appears once. An operator-directed order shows no strategy lineage rather than an
+invented one. A missing preview, broker confirmation, or handoff is shown as a named gap. Scope
+and permissions apply to every linked record; restricted links are identified without disclosing
+their content.
+
+**Adoption decision:** agree the minimum complete trace for the first supported order workflow,
+whether the thesis record ships with it, and how a trace is included in an evidence package.
+
+#### 25.3.10 Decision-to-Proof Reference Slice
+
+**Operator outcome:** demonstrate the Section 1.2 promise end to end on one declared configuration.
+Declare a fixed-rate bullet bond, preview its purchase, submit an operator-directed paper order,
+record the fill, settlement, and face-value lot, accrue coupon income and amortize premium or
+discount through governed posting candidates, reconcile position and cash against an independent
+synthetic custodian statement, and produce tied statements whose amounts open their passports.
+
+**Composition and boundary:** this is the First Trusted Close (Section 22.6.1) with a decision at its
+head, not a second slice: one entity, one book and functional currency, one period, durable
+storage. It composes `W10-BOND-001`, `W10-LOT-002`, `W10-MARK-001`, `W9-PAPER-003`,
+`W9-INGEST-009`, `W12-BOOK-001`, `W12-FINRPT-001`, `W10-PROV-001`, and candidates 25.3.8–25.3.9.
+The 2026-11-01 review found the remaining seams to be mostly activation work: paper settlement cash
+excludes purchased accrued interest (`PaperTradingGateway`); the coupon-accrual posting bridge has
+no production caller (`SecurityMasterAmortizationLedgerBridge`,
+`SecurityMasterCashFlowService.BuildLedgerPostingsAsync`); bond analytics declare amortization and
+posting unsupported (`BondAnalyticsService`); the bond asset class has no basic create workflow;
+and no custodian fixture carries bond accrued interest. Bond backtesting is out of scope because
+the native engine refuses non-share lot units. No live order, live custodian feed, or new asset
+class is involved.
+
+**Acceptance scenario:** a premium bond bought mid-coupon shows purchased accrued interest in
+settlement cash, books a lot at clean cost, accrues and amortizes to period end through approved
+candidates, receives a coupon, and reconciles to the statement with no unexplained residual. The
+trial balance, balance sheet, income statement, and cash bridge tie and reproduce on reopening. A
+changed term, stale mark, duplicate fill, or missing statement blocks the dependent step and names
+the reason.
+
+**Adoption decision:** confirm the bond terms, dates, and independently worked figures, the posting
+treatments for purchased accrued interest and amortization, and which parent rows' exit criteria
+the slice evidence may cite. The slice does not discharge any parent row by itself.
+
+#### 25.3.11 Evidence-Grounded Explanation Assistant
+
+**Operator outcome:** ask why a balance, position, or value changed between two dates in
+`Accounting`, `Portfolio`, or `Reporting`, and receive a drafted explanation built only from a
+computed variance bridge, with each statement linked to its component and records and the
+unexplained residual stated.
+
+**Composition and boundary:** depends on the variance bridge (25.3.3) and passports (`W10-PROV-001`,
+`W11-PASSPORT-001`). The bridge computes every amount; the assistant only drafts narrative over it.
+It follows Section 21's review states and retention (model, version, inputs, reviewer, edits) and
+records its drafts under the existing `AssistantDraft` action origin. Meridian has no runtime model
+integration today, so adoption also needs a model-hosting and data-egress posture compatible with
+the local envelope (Section 12.3) and handling that treats imported document text as untrusted
+input. The assistant cannot post, approve, correct, release, or certify a residual.
+
+**Acceptance scenario:** for the bridge `1,000 + 100 + 20 unexplained = 1,120` (25.3.3), the draft
+cites the activity components, names the 20 as unexplained, and invents no cause. Removing a
+supporting record flags the affected statement as unsupported. An instruction embedded in an
+imported document does not change the draft's scope or actions. A reviewer's edit is retained
+beside the original draft.
+
+**Adoption decision:** choose the model-hosting posture (local or a governed remote service), the
+data that may leave the host, and the first bridge type.
+
+#### 25.3.12 Single-Principal Attestation
+
+**Registered** as `W14-ATTEST-001` under `DEC-SINGLE-PRINCIPAL-001` (2026-11-01); status lives in
+Section 5.3. Unlike the other candidates in this section, this is adopted planned direction. The
+text below remains the design intent the row's exit criteria were drawn from.
+
+**Operator outcome:** let a self-directed principal — one person who both prepares and approves,
+typically in a Single Family Office deployment — complete governed workflows honestly. Source
+enforces two principals in governed flows (`MakerCheckerRequired` for corporate-action posting,
+`SelfApprovalNotAllowed` for reconciliation casework, `OperatorOverrideSelfApprovalException` for
+Security Master overrides), while the v1 supported envelope (Section 12.3, ADR-019) is a
+single-operator local workstation with no supported path for a remote independent approver. A
+second login on the same workstation would make "who approved it?" untrue.
+
+**Composition and boundary:** an audited, tenant-scoped declaration that a scope operates under
+single-principal control. Within it, eligible approvals are recorded as **attestations** by the
+preparer rather than independent approvals, and every passport, trace, package, and audit view shows
+"attested by preparer — not independently reviewed". Verified Coverage reports attested items
+separately and never merges them with independently approved items; whether attested items count
+toward the headline is a `W11-COVER-001` adoption decision. Material or high-risk classes named by
+policy stay blocked. Identity & Access owns the declaration; each domain keeps its approval rule
+and adds the attested path. This candidate changes no ADR or `PRD-000` sign-off; real maker-checker
+between distinct principals in a small-team, single-node envelope is a separate envelope decision.
+
+**Acceptance scenario:** with the declaration off, self-approval is refused exactly as today. With
+it on, an eligible corporate-action posting completes as an attestation, its package shows the
+attestation label, and Verified Coverage lists the item as attested. Turning the declaration on or
+off is an audited administrative action. Packages delivered under it reproduce their original
+attestation labels after it is withdrawn, and later items require independent approval.
+
+**Adoption decision:** decided on 2026-11-01 — v1 supports single-principal operation only through
+this labeled attestation path, never as independent review. Still open under the row: which classes
+stay excluded, how stakeholders see attestations in delivered packages, whether attested items count
+toward the Verified Coverage headline (`W11-COVER-001`), and the row's sequence relative to a future
+small-team envelope decision.

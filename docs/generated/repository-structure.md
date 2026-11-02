@@ -2017,6 +2017,7 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── reporting-operating-model-2026-09.md
 │   │   ├── review-history.md
+│   │   ├── value-proposition-review-2026-11-01.md
 │   │   ├── w9-demo-002-closure-2026-09-16.md
 │   │   ├── w9-operator-acceptance-2026-08-29.md
 │   │   ├── w9-operator-acceptance-2026-10-18.md
