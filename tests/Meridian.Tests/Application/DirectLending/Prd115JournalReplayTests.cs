@@ -43,8 +43,7 @@ public sealed class Prd115JournalReplayTests
         entry.Lines.Should().ContainSingle(line => line.Account.Name == "FeeReceivable" && line.Credit == 3m);
         entry.Lines.Should().ContainSingle(line => line.Account.Name == "PenaltyReceivable" && line.Credit == 2m);
         entry.Lines.Should().ContainSingle(line => line.Account.Name == "LoanPrincipal" && line.Credit == 50m);
-        entry.Lines.Should().ContainSingle(line => line.Account.Name == "UnappliedCash" && line.Account.AccountType == LedgerAccountType.Liability && line.Credit == 20m);
-        entry.Lines.Should().ContainSingle(line => line.Account.Name == "PrepaidInterest" && line.Account.AccountType == LedgerAccountType.Liability && line.Credit == 10m);
+        entry.Lines.Should().ContainSingle(line => line.Account.Name == "PrepaidInterestLiability" && line.Account.AccountType == LedgerAccountType.Liability && line.Credit == 30m);
     }
 
     [Fact]
@@ -68,7 +67,8 @@ public sealed class Prd115JournalReplayTests
         using var penalty = JsonSerializer.SerializeToDocument(new { penaltyAmount = 2m, cashAccountingVersion = DirectLendingCashJournal.CashAccountingVersion }, Json);
         using var receipt = PaymentPayload(contract,
             new MixedPaymentResolutionDto(new PaymentBreakdownDto(0m, 0m, 3m, 2m, 0m),
-                "Manual", DirectLendingCashJournal.CashAccountingVersion, 0m, 0m, DirectLendingCashJournal.CashAccountingVersion), 5m);
+                "Manual", DirectLendingCashJournal.CashAccountingVersion, 0m)
+            { CashAccountingVersion = DirectLendingCashJournal.CashAccountingVersion, ExcessRuleApplied = ExcessPaymentApplication.PrepaidInterest }, 5m);
         var writes = new List<LedgerJournalEntryWrite>();
         foreach (var (type, payload) in new[]
                  {
@@ -127,6 +127,9 @@ public sealed class Prd115JournalReplayTests
     [InlineData("missing-date")]
     [InlineData("conflicting-rule")]
     [InlineData("excess-precision")]
+    [InlineData("missing-penalty-expectation")]
+    [InlineData("penalty-without-child")]
+    [InlineData("child-without-penalty")]
     public void VersionedReceipt_RejectsMalformedRetainedEvidence(string defect)
     {
         using var original = PaymentPayload(Contract(Guid.NewGuid()));
@@ -143,6 +146,9 @@ public sealed class Prd115JournalReplayTests
             case "missing-version": node["resolution"]!.AsObject().Remove("cashAccountingVersion"); break;
             case "missing-date": node.AsObject().Remove("effectiveDate"); break;
             case "conflicting-rule": node["resolution"]!["ruleVersion"] = "unreviewed-rule"; break;
+            case "missing-penalty-expectation": node.AsObject().Remove("automaticPrepaymentPenaltyAmount"); break;
+            case "penalty-without-child": node["automaticPrepaymentPenaltyAmount"] = 1m; break;
+            case "child-without-penalty": node["prepaymentPenaltyEventId"] = Guid.NewGuid(); break;
             case "excess-precision":
                 node["amount"] = 100.00000000001m;
                 node["resolution"]!["unappliedAmount"] = 20.00000000001m;
@@ -189,8 +195,8 @@ public sealed class Prd115JournalReplayTests
         first.Servicing.DrawdownLots.Should().ContainSingle().Which.RemainingPrincipal.Should().Be(50m);
         first.Servicing.Balances.InterestAccruedUnpaid.Should().Be(4m);
         first.Servicing.Balances.FeesAccruedUnpaid.Should().Be(0m);
-        first.Servicing.Balances.UnappliedCash.Should().Be(20m);
-        first.Servicing.Balances.PrepaidInterest.Should().Be(10m, "future application needs separately supported contractual instructions");
+        first.Servicing.Balances.UnappliedCash.Should().Be(0m);
+        first.Servicing.Balances.PrepaidInterest.Should().Be(30m, "replay retains the recorded same-day accrual without inventing a release");
         first.Contract.TermsVersions.Single(version => version.VersionNumber == 1).TermsHash.Should().Be(contract.TermsVersions[0].TermsHash);
     }
 
@@ -237,8 +243,8 @@ public sealed class Prd115JournalReplayTests
         var contract = Contract(Guid.NewGuid());
         var history = SeedHistory(contract);
         using var receipt = PaymentPayload(contract, new MixedPaymentResolutionDto(
-            new PaymentBreakdownDto(11m, 5m, 3m, 2m, 50m), "Manual", DirectLendingCashJournal.CashAccountingVersion, 19m, 10m,
-            DirectLendingCashJournal.CashAccountingVersion));
+            new PaymentBreakdownDto(11m, 5m, 3m, 2m, 50m), "Manual", DirectLendingCashJournal.CashAccountingVersion, 0m)
+        { CashAccountingVersion = DirectLendingCashJournal.CashAccountingVersion, ExcessToPrepaidInterest = 29m, ExcessRuleApplied = ExcessPaymentApplication.PrepaidInterest });
         history.Add(Event(6, "loan.mixed-payment-applied", receipt.RootElement));
 
         Action act = () => new DirectLendingEventRebuilder().Rebuild(contract.LoanId, history);
@@ -264,22 +270,19 @@ public sealed class Prd115JournalReplayTests
     [Theory]
     [InlineData("missing-policy")]
     [InlineData("hold-policy")]
-    [InlineData("at-maturity")]
-    [InlineData("prohibited-principal")]
-    [InlineData("penalty-bearing-principal")]
+    [InlineData("prohibited-excess-principal")]
     public void VersionedReceipt_RejectsClassificationUnsupportedByRetainedTerms(string defect)
     {
         var original = Contract(Guid.NewGuid());
         var terms = defect switch
         {
-            "missing-policy" => original.CurrentTerms with { ExcessPaymentPolicy = null },
+            "missing-policy" => original.CurrentTerms with { ExcessPaymentApplication = null },
             "hold-policy" => original.CurrentTerms with
             {
-                ExcessPaymentPolicy = new DirectLendingExcessPaymentPolicyDto(1, ExcessPaymentTreatment.HoldUnappliedCash, "synthetic-hold-instructions")
+                ExcessPaymentApplication = ExcessPaymentApplication.HoldUnapplied
             },
-            "at-maturity" => original.CurrentTerms with { MaturityDate = Date },
-            "prohibited-principal" => original.CurrentTerms with { PrepaymentAllowed = false },
-            "penalty-bearing-principal" => original.CurrentTerms with { PrepaymentPenaltyRate = 0.02m },
+            "prohibited-excess-principal" => original.CurrentTerms with
+            { PrepaymentAllowed = false, ExcessPaymentApplication = ExcessPaymentApplication.PrincipalPrepayment },
             _ => throw new ArgumentOutOfRangeException(nameof(defect))
         };
         var contract = original with
@@ -287,12 +290,74 @@ public sealed class Prd115JournalReplayTests
             CurrentTerms = terms,
             TermsVersions = [new LoanTermsVersionDto(1, DirectLendingServiceSupport.ComputeTermsHash(terms), terms, "LoanCreated", null, RecordedAt)]
         };
-        using var payload = PaymentPayload(contract);
+        var resolution = defect == "prohibited-excess-principal"
+            ? new MixedPaymentResolutionDto(new PaymentBreakdownDto(10m, 5m, 3m, 2m, 50m),
+                "Manual", DirectLendingCashJournal.CashAccountingVersion, 0m)
+            { ExcessToPrincipal = 30m, ExcessRuleApplied = terms.ExcessPaymentApplication,
+                CashAccountingVersion = DirectLendingCashJournal.CashAccountingVersion }
+            : null;
+        using var payload = PaymentPayload(contract, resolution);
         var receipt = DirectLendingCashJournal.Read(payload.RootElement);
 
         Action act = () => DirectLendingCashJournal.ValidateTerms(receipt, contract);
 
         act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void VersionedReceipt_PrepaidRoutingAtMaturityNeedsNoAdditionalElection()
+    {
+        var original = Contract(Guid.NewGuid());
+        var terms = original.CurrentTerms with { MaturityDate = Date };
+        var contract = original with
+        {
+            CurrentTerms = terms,
+            TermsVersions = [new LoanTermsVersionDto(1, DirectLendingServiceSupport.ComputeTermsHash(terms), terms, "LoanCreated", null, RecordedAt)]
+        };
+        using var payload = PaymentPayload(contract);
+
+        Action validate = () => DirectLendingCashJournal.ValidateTerms(DirectLendingCashJournal.Read(payload.RootElement), contract);
+
+        validate.Should().NotThrow();
+    }
+
+    [Fact]
+    public void VersionedReceipt_HeldExcessUsesCanonicalLiabilityAccount()
+    {
+        var contract = Contract(Guid.NewGuid(), ExcessPaymentApplication.HoldUnapplied);
+        using var payload = PaymentPayload(contract,
+            new MixedPaymentResolutionDto(new PaymentBreakdownDto(0m, 0m, 0m, 0m, 0m),
+                "Manual", DirectLendingCashJournal.CashAccountingVersion, 100m)
+            { ExcessRuleApplied = ExcessPaymentApplication.HoldUnapplied, CashAccountingVersion = DirectLendingCashJournal.CashAccountingVersion });
+        var receipt = DirectLendingCashJournal.Read(payload.RootElement);
+        DirectLendingCashJournal.ValidateTerms(receipt, contract);
+
+        var lines = DirectLendingCashJournal.BuildLines(receipt);
+
+        lines.Should().HaveCount(2);
+        lines.Should().ContainSingle(line => line.AccountCode == "UnappliedCashLiability" &&
+            line.AccountType == LedgerAccountType.Liability && line.Credit == 100m);
+    }
+
+    [Theory]
+    [InlineData("UnappliedCashLiability")]
+    [InlineData("PrepaidInterestLiability")]
+    public void CashLiabilityAccount_CannotBypassSecurityMasterGuardByOmittingSymbols(string account)
+    {
+        var id = Guid.NewGuid();
+        const string description = "Synthetic cash receipt with omitted instrument evidence";
+        var journal = new JournalEntry(id, RecordedAt, description,
+        [
+            new LedgerEntry(Guid.NewGuid(), id, RecordedAt, new LedgerAccount("Cash", LedgerAccountType.Asset), 100m, 0m, description),
+            new LedgerEntry(Guid.NewGuid(), id, RecordedAt, new LedgerAccount(account, LedgerAccountType.Liability), 0m, 100m, description)
+        ]);
+        var period = new LedgerAccountingPeriod(Guid.NewGuid(), null, 2026, 3, "Synthetic March",
+            new DateOnly(2026, 3, 1), new DateOnly(2026, 3, 31), "Open", RecordedAt, null, 1);
+        var write = new LedgerJournalEntryWrite(journal, Guid.NewGuid(), period.PeriodId);
+
+        Action validate = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        validate.Should().Throw<LedgerValidationException>().WithMessage("*without a resolved Security Master security id*");
     }
 
     [Theory]
@@ -307,7 +372,8 @@ public sealed class Prd115JournalReplayTests
             : (object)new { amount = 3m, cashAccountingVersion = DirectLendingCashJournal.CashAccountingVersion });
         var collection = new MixedPaymentResolutionDto(
             new PaymentBreakdownDto(0m, 0m, penalty ? 0m : 3m, penalty ? 3m : 0m, 0m),
-            "Manual", DirectLendingCashJournal.CashAccountingVersion, 0m, 0m, DirectLendingCashJournal.CashAccountingVersion);
+            "Manual", DirectLendingCashJournal.CashAccountingVersion, 0m)
+            { CashAccountingVersion = DirectLendingCashJournal.CashAccountingVersion, ExcessRuleApplied = ExcessPaymentApplication.PrepaidInterest };
         var hold = collection with { Breakdown = new PaymentBreakdownDto(0m, 0m, 0m, 0m, 0m), UnappliedAmount = 3m };
 
         DirectLendingCashJournal.ValidateAssessmentEvidence([legacy], collection).Should().Contain("reviewed receivable reconciliation");
@@ -332,7 +398,7 @@ public sealed class Prd115JournalReplayTests
 
         saved.Lines.Should().OnlyContain(line => line.Currency == CurrencyCode.USD);
         saved.Lines.Sum(line => line.DebitAmount).Should().Be(saved.Lines.Sum(line => line.CreditAmount));
-        saved.Lines.Should().ContainSingle(line => line.AccountCode == "PrepaidInterest" && line.CreditAmount == 10m);
+        saved.Lines.Should().ContainSingle(line => line.AccountCode == "PrepaidInterestLiability" && line.CreditAmount == 30m);
         saved.Lines.Should().NotContain(line => line.AccountCode.EndsWith("Income", StringComparison.Ordinal));
         saved.SourceEventId.Should().Be(source.EventId);
     }
@@ -340,7 +406,7 @@ public sealed class Prd115JournalReplayTests
     [Fact]
     public async Task ReleaseOutboxDraft_RetainsOriginalCurrencyAndContainsNoNewCash()
     {
-        var contract = Contract(Guid.NewGuid(), PrepaidInterestApplication.FutureCashInterest);
+        var contract = Contract(Guid.NewGuid());
         using var payload = PrepaidAccrualPayload(Date.AddDays(1));
         var source = Event(8, "loan.daily-accrual-posted", payload.RootElement, Date.AddDays(1));
         // A delayed outbox delivery must retain the accrual denomination even if a later
@@ -352,17 +418,17 @@ public sealed class Prd115JournalReplayTests
         draft.Lines.Should().OnlyContain(line => line.Currency == CurrencyCode.USD);
         draft.Lines.Should().NotContain(line => line.AccountCode == "Cash");
         draft.Lines.Sum(line => line.DebitAmount).Should().Be(draft.Lines.Sum(line => line.CreditAmount));
-        draft.Lines.Should().ContainSingle(line => line.AccountCode == "PrepaidInterest" && line.DebitAmount == 4m);
+        draft.Lines.Should().ContainSingle(line => line.AccountCode == "PrepaidInterestLiability" && line.DebitAmount == 4m);
         draft.Lines.Where(line => line.AccountCode == "AccruedInterestReceivable").Sum(line => line.DebitAmount - line.CreditAmount).Should().Be(0m);
     }
 
     [Fact]
-    public async Task OptedInPrepaidAccrual_ReducesLiabilityAndReceivableWithoutNewCashOrDoubleIncome()
+    public async Task ContractualPrepaidAccrual_ReducesLiabilityAndReceivableWithoutNewCashOrDoubleIncome()
     {
-        var contract = Contract(Guid.NewGuid(), PrepaidInterestApplication.FutureCashInterest);
+        var contract = Contract(Guid.NewGuid());
         var accrualDate = Date.AddDays(1);
         var entry = new DailyAccrualEntryDto(Guid.NewGuid(), accrualDate, 4m, 2m, 0m, 0.08m, RecordedAt,
-            PrepaidInterestApplied: 4m,
+            PrepaidInterestConsumed: 4m,
             PrepaidInterestReleases: [new PrepaidInterestReleaseDto(ReceiptId, 4m)]);
         var service = new AccrualLedgerService(Projector());
 
@@ -374,7 +440,7 @@ public sealed class Prd115JournalReplayTests
         journal.Lines.Should().NotContain(line => line.Account.Name == "Cash");
         journal.Lines.Where(line => line.Account.Name == "InterestIncome").Sum(line => line.Credit - line.Debit).Should().Be(4m);
         journal.Lines.Where(line => line.Account.Name == "AccruedInterestReceivable").Sum(line => line.Debit - line.Credit).Should().Be(0m);
-        journal.Lines.Should().ContainSingle(line => line.Account.Name == "PrepaidInterest" && line.Debit == 4m);
+        journal.Lines.Should().ContainSingle(line => line.Account.Name == "PrepaidInterestLiability" && line.Debit == 4m);
         journal.Lines.Should().ContainSingle(line => line.Account.Name == "CommitmentFeeReceivable" && line.Debit == 2m,
             "prepaid interest must not settle fees");
     }
@@ -402,7 +468,7 @@ public sealed class Prd115JournalReplayTests
             case "missing-releases": node.AsObject().Remove("prepaidInterestReleases"); break;
             case "duplicate-receipt":
                 node["prepaidInterestReleases"]!.AsArray().Add(node["prepaidInterestReleases"]![0]!.DeepClone());
-                node["prepaidInterestApplied"] = 8m;
+                node["prepaidInterestConsumed"] = 8m;
                 node["interestAmount"] = 8m;
                 break;
             case "empty-receipt": node["prepaidInterestReleases"]![0]!["cashTransactionId"] = Guid.Empty; break;
@@ -422,13 +488,13 @@ public sealed class Prd115JournalReplayTests
     [Fact]
     public void Replay_UsesImmutableReceiptReleaseInstructionAcrossSubsequentTermsAmendment()
     {
-        var contract = Contract(Guid.NewGuid(), PrepaidInterestApplication.FutureCashInterest);
+        var contract = Contract(Guid.NewGuid());
         var history = SeedHistory(contract);
         using var receipt = PaymentPayload(contract);
         history.Add(Event(6, "loan.mixed-payment-applied", receipt.RootElement));
         var amended = contract.CurrentTerms with
         {
-            ExcessPaymentPolicy = contract.CurrentTerms.ExcessPaymentPolicy! with { Application = PrepaidInterestApplication.HoldForReview }
+            ExcessPaymentApplication = ExcessPaymentApplication.HoldUnapplied
         };
         history.Add(Event(7, "loan.terms-amended", new { terms = amended, versionNumber = 2, amendmentReason = "Future receipts are held" }));
         using var accrual = PrepaidAccrualPayload(Date.AddDays(1));
@@ -436,26 +502,26 @@ public sealed class Prd115JournalReplayTests
 
         var state = new DirectLendingEventRebuilder().Rebuild(contract.LoanId, history)!;
 
-        state.Contract.CurrentTerms.ExcessPaymentPolicy!.Application.Should().Be(PrepaidInterestApplication.HoldForReview);
-        state.Servicing.Balances.PrepaidInterest.Should().Be(6m);
+        state.Contract.CurrentTerms.ExcessPaymentApplication.Should().Be(ExcessPaymentApplication.HoldUnapplied);
+        state.Servicing.Balances.PrepaidInterest.Should().Be(26m);
         state.Servicing.Balances.PrepaidInterestLots.Should().ContainSingle().Which.Should().BeEquivalentTo(
-            new PrepaidInterestLotDto(ReceiptId, Date, 10m, 6m, PrepaidInterestApplication.FutureCashInterest, "synthetic-prepaid-interest-election"));
+            new PrepaidInterestLotDto(ReceiptId, Date, 30m, 26m, contract.TermsVersions[0].TermsHash));
         state.Servicing.Balances.InterestAccruedUnpaid.Should().Be(0m);
         state.Servicing.Balances.CommitmentFeeAccruedUnpaid.Should().Be(2m);
-        state.Servicing.AccrualEntries.Should().ContainSingle(item => item.PrepaidInterestApplied == 4m &&
+        state.Servicing.AccrualEntries.Should().ContainSingle(item => item.PrepaidInterestConsumed == 4m &&
             item.PrepaidInterestReleases!.Count == 1 && item.PrepaidInterestReleases[0].CashTransactionId == ReceiptId);
         state.Should().BeEquivalentTo(new DirectLendingEventRebuilder().Rebuild(contract.LoanId, history));
     }
 
     [Fact]
-    public void Replay_RefusesReleaseFromReceiptWithoutOptIn()
+    public void Replay_RefusesSameDateReleasePendingReviewedOrdering()
     {
         var contract = Contract(Guid.NewGuid());
         var history = SeedHistory(contract);
         using var receipt = PaymentPayload(contract);
         history.Add(Event(6, "loan.mixed-payment-applied", receipt.RootElement));
-        using var accrual = PrepaidAccrualPayload(Date.AddDays(1));
-        history.Add(Event(7, "loan.daily-accrual-posted", accrual.RootElement, Date.AddDays(1)));
+        using var accrual = PrepaidAccrualPayload(Date);
+        history.Add(Event(7, "loan.daily-accrual-posted", accrual.RootElement, Date));
 
         Action act = () => new DirectLendingEventRebuilder().Rebuild(contract.LoanId, history);
 
@@ -465,9 +531,9 @@ public sealed class Prd115JournalReplayTests
     [Fact]
     public async Task ReleaseBearingAccrualReversal_RequiresGovernedReceiptRestoration()
     {
-        var contract = Contract(Guid.NewGuid(), PrepaidInterestApplication.FutureCashInterest);
+        var contract = Contract(Guid.NewGuid());
         var accrual = new DailyAccrualEntryDto(Guid.NewGuid(), Date.AddDays(1), 4m, 0m, 0m, 0.08m, RecordedAt,
-            PrepaidInterestApplied: 4m, PrepaidInterestReleases: [new PrepaidInterestReleaseDto(ReceiptId, 4m)]);
+            PrepaidInterestConsumed: 4m, PrepaidInterestReleases: [new PrepaidInterestReleaseDto(ReceiptId, 4m)]);
         var service = new AccrualLedgerService(Projector());
         var metadata = new DirectLendingEventWriteMetadata(null, null, null, "test", false);
 
@@ -480,13 +546,205 @@ public sealed class Prd115JournalReplayTests
         await projectorCall.Should().ThrowAsync<DirectLendingCommandException>().WithMessage("*governed restoration*");
     }
 
+    [Fact]
+    public async Task AutomaticPenalty_UsesOnlyRoutedExcessAndSeparateBalancedAssessmentJournal()
+    {
+        var history = AutomaticPenaltyHistory(out var contract);
+        var receipt = history[^2];
+        var penalty = history[^1];
+        using var receiptPayload = JsonDocument.Parse(receipt.PayloadJson);
+        using var penaltyPayload = JsonDocument.Parse(penalty.PayloadJson);
+        var projector = Projector();
+        var receiptWrites = await projector.ProjectAsync(contract.LoanId, contract, receipt.EventType, Date,
+            receiptPayload, receipt.EventId, new DirectLendingEventWriteMetadata(null, null, receipt.CommandId, "test", false), CancellationToken.None);
+        var penaltyWrites = await projector.ProjectAsync(contract.LoanId, contract, penalty.EventType, Date,
+            penaltyPayload, penalty.EventId, new DirectLendingEventWriteMetadata(receipt.EventId, null, null, "test", false), CancellationToken.None);
+
+        var receiptJournal = receiptWrites.Should().ContainSingle().Subject.Entry;
+        var penaltyJournal = penaltyWrites.Should().ContainSingle().Subject.Entry;
+        receiptJournal.IsBalanced.Should().BeTrue();
+        penaltyJournal.IsBalanced.Should().BeTrue();
+        receiptJournal.Lines.Should().ContainSingle(line => line.Account.Name == "LoanPrincipal" && line.Credit == 80m,
+            "base principal of 50 and routed excess of 30 are each applied exactly once");
+        receiptJournal.Lines.Should().NotContain(line => line.Account.AccountType == LedgerAccountType.Revenue);
+        penaltyJournal.Lines.Should().ContainSingle(line => line.Account.Name == "PenaltyReceivable" && line.Debit == 0.60m);
+        penaltyJournal.Lines.Should().ContainSingle(line => line.Account.Name == "PenaltyIncome" && line.Credit == 0.60m);
+        penaltyJournal.Lines.Should().NotContain(line => line.Account.Name == "Cash");
+
+        var rebuilt = new DirectLendingEventRebuilder().Rebuild(contract.LoanId, history)!;
+        rebuilt.AggregateVersion.Should().Be(7);
+        rebuilt.Servicing.Balances.PrincipalOutstanding.Should().Be(20m);
+        rebuilt.Servicing.DrawdownLots.Should().ContainSingle().Which.RemainingPrincipal.Should().Be(20m);
+        rebuilt.Servicing.Balances.PenaltyAccruedUnpaid.Should().Be(0.60m);
+        rebuilt.Should().BeEquivalentTo(new DirectLendingEventRebuilder().Rebuild(contract.LoanId, history));
+    }
+
+    [Theory]
+    [InlineData("missing-child")]
+    [InlineData("wrong-child-id")]
+    [InlineData("wrong-causation")]
+    [InlineData("wrong-receipt-id")]
+    [InlineData("wrong-cash-id")]
+    [InlineData("version-gap")]
+    [InlineData("duplicate-child")]
+    [InlineData("separate-command")]
+    public void Replay_AutomaticPenaltyRequiresExactlyItsRetainedCompanion(string defect)
+    {
+        var history = AutomaticPenaltyHistory(out var contract);
+        var child = history[^1];
+        switch (defect)
+        {
+            case "missing-child": history.RemoveAt(history.Count - 1); break;
+            case "wrong-child-id": history[^1] = child with { EventId = Guid.NewGuid() }; break;
+            case "wrong-causation": history[^1] = child with { CausationId = Guid.NewGuid() }; break;
+            case "version-gap": history[^1] = child with { AggregateVersion = 8 }; break;
+            case "duplicate-child": history.Add(child with { AggregateVersion = 8, EventId = Guid.NewGuid() }); break;
+            case "separate-command": history[^1] = child with { CommandId = Guid.NewGuid() }; break;
+            case "wrong-receipt-id":
+            case "wrong-cash-id":
+                var node = JsonNode.Parse(child.PayloadJson)!;
+                node[defect == "wrong-receipt-id" ? "receiptEventId" : "cashTransactionId"] = Guid.NewGuid();
+                history[^1] = child with { PayloadJson = node.ToJsonString() };
+                break;
+        }
+
+        Action rebuild = () => new DirectLendingEventRebuilder().Rebuild(contract.LoanId, history);
+
+        rebuild.Should().Throw<InvalidOperationException>();
+    }
+
+    [Theory]
+    [InlineData("missing-kind")]
+    [InlineData("unknown-version")]
+    [InlineData("wrong-basis")]
+    [InlineData("wrong-rate")]
+    [InlineData("wrong-loan")]
+    [InlineData("missing-amount")]
+    [InlineData("missing-currency")]
+    [InlineData("wrong-hash")]
+    [InlineData("precision")]
+    public void AutomaticPenalty_RejectsUnsupportedRetainedEvidence(string defect)
+    {
+        var history = AutomaticPenaltyHistory(out var contract);
+        var node = JsonNode.Parse(history[^1].PayloadJson)!;
+        switch (defect)
+        {
+            case "missing-kind": node.AsObject().Remove("assessmentKind"); break;
+            case "unknown-version": node["cashAccountingVersion"] = "unknown"; break;
+            case "wrong-basis": node["excessToPrincipal"] = 80m; break;
+            case "wrong-rate": node["prepaymentPenaltyRate"] = 0.01m; break;
+            case "wrong-loan": node["loanId"] = Guid.NewGuid(); break;
+            case "missing-amount": node.AsObject().Remove("penaltyAmount"); break;
+            case "missing-currency": node.AsObject().Remove("currency"); break;
+            case "wrong-hash": node["termsHash"] = "wrong"; break;
+            case "precision": node["penaltyAmount"] = 0.60000000001m; break;
+        }
+        using var payload = JsonDocument.Parse(node.ToJsonString());
+
+        Action decode = () => DirectLendingCashJournal.ReadAutomaticPenalty(payload.RootElement, contract, Date);
+
+        decode.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task AutomaticPenaltyOutbox_UsesLinkedReceiptAndRetainedCurrency()
+    {
+        var history = AutomaticPenaltyHistory(out var contract);
+        var amended = contract with { CurrentTerms = contract.CurrentTerms with { BaseCurrency = CurrencyCode.EUR } };
+
+        var journal = await DraftJournalAsync(amended, history[^1], history);
+
+        journal.Lines.Should().OnlyContain(line => line.Currency == CurrencyCode.USD);
+        journal.Lines.Should().ContainSingle(line => line.AccountCode == "PenaltyReceivable" && line.DebitAmount == 0.60m);
+        journal.Lines.Should().NotContain(line => line.AccountCode == "Cash");
+        journal.Lines.Sum(line => line.DebitAmount).Should().Be(journal.Lines.Sum(line => line.CreditAmount));
+    }
+
+    [Fact]
+    public void Reconciliation_HistoricalClearingResidualsKeepCurrenciesAndBasesSeparate()
+    {
+        var loanId = Guid.NewGuid();
+        var usd = OperationalClearingJournal(loanId, CurrencyCode.USD, 0m, 100m);
+        var eur = OperationalClearingJournal(loanId, CurrencyCode.EUR, 0m, 70m);
+        var offset = OperationalClearingJournal(loanId, CurrencyCode.USD, 20m, 0m);
+        var tax = OperationalClearingJournal(loanId, CurrencyCode.USD, 0m, 5m) with { LedgerBasis = "Tax" };
+        var failed = OperationalClearingJournal(loanId, CurrencyCode.USD, 0m, 999m) with { Status = JournalEntryStatus.Failed };
+        var foreign = OperationalClearingJournal(Guid.NewGuid(), CurrencyCode.USD, 0m, 999m);
+
+        var results = DirectLendingCashReconciliation.Build(loanId, Guid.NewGuid(), [], [],
+            journalEntries: [usd, eur, offset, tax, failed, foreign]);
+
+        results.Should().HaveCount(3);
+        results.Select(item => item.ActualAmount).Should().BeEquivalentTo(new decimal?[] { 80m, 70m, 5m });
+        results.Should().OnlyContain(item => item.MatchStatus == "HistoricalClearingResidual" &&
+            item.MatchRule == "RetainedOperationalClearing" && item.ExpectedAmount == null &&
+            item.VarianceAmount == null && item.CashTransactionId == null);
+        results.Should().OnlyContain(item => item.Notes.Any(note => note.Contains("does not certify the authoritative general-ledger")));
+        results.Single(item => item.ActualAmount == 80m).Notes.Should().Contain(note => note.Contains(usd.SourceEventId.ToString("D")));
+    }
+
+    [Fact]
+    public void Reconciliation_NewSplitJournalsAndOffsetHistoricalClearingCreateNoResidual()
+    {
+        var loanId = Guid.NewGuid();
+        var clearing = OperationalClearingJournal(loanId, CurrencyCode.USD, 0m, 100m);
+        var offset = OperationalClearingJournal(loanId, CurrencyCode.USD, 100m, 0m);
+        var split = clearing with
+        {
+            JournalEntryId = Guid.NewGuid(), SourceEventId = Guid.NewGuid(),
+            Lines = [new JournalLineDto(Guid.NewGuid(), 1, "PrepaidInterestLiability", 0m, 100m, CurrencyCode.USD, null)]
+        };
+
+        DirectLendingCashReconciliation.Build(loanId, Guid.NewGuid(), [], [],
+            journalEntries: [clearing, offset, split]).Should().BeEmpty();
+    }
+
     private static readonly Guid ReceiptId = Guid.Parse("c5399570-97f4-4da1-85d0-3342769506b1");
 
-    private static async Task<JournalEntryDto> DraftJournalAsync(LoanContractDetailDto contract, LoanEventLineageDto source)
+    private static List<LoanEventLineageDto> AutomaticPenaltyHistory(out LoanContractDetailDto contract)
+    {
+        var original = Contract(Guid.NewGuid(), ExcessPaymentApplication.PrincipalPrepayment);
+        var terms = original.CurrentTerms with { PrepaymentPenaltyRate = 0.02m };
+        contract = original with
+        {
+            CurrentTerms = terms,
+            TermsVersions = [new LoanTermsVersionDto(1, DirectLendingServiceSupport.ComputeTermsHash(terms), terms, "LoanCreated", null, RecordedAt)]
+        };
+        var receiptId = Guid.NewGuid();
+        var penaltyId = Guid.NewGuid();
+        var resolution = new MixedPaymentResolutionDto(new PaymentBreakdownDto(10m, 5m, 3m, 2m, 50m),
+            "Manual", DirectLendingCashJournal.CashAccountingVersion, 0m)
+        {
+            ExcessToPrincipal = 30m, ExcessRuleApplied = ExcessPaymentApplication.PrincipalPrepayment,
+            CashAccountingVersion = DirectLendingCashJournal.CashAccountingVersion
+        };
+        using var payload = PaymentPayload(contract, resolution, penaltyEventId: penaltyId);
+        var history = SeedHistory(contract);
+        history.Add(Event(6, "loan.mixed-payment-applied", payload.RootElement) with
+        { EventId = receiptId, CommandId = Guid.NewGuid() });
+        history.Add(Event(7, "loan.prepayment-penalty-charged", new
+        {
+            loanId = contract.LoanId, penaltyAmount = 0.60m, excessToPrincipal = 30m,
+            prepaymentPenaltyRate = 0.02m, effectiveDate = Date, termsVersion = 1,
+            termsHash = contract.TermsVersions[0].TermsHash, currency = CurrencyCode.USD,
+            cashTransactionId = ReceiptId, receiptEventId = receiptId,
+            cashAccountingVersion = DirectLendingCashJournal.CashAccountingVersion,
+            assessmentKind = "ExcessPrincipalPrepayment"
+        }) with { EventId = penaltyId, CausationId = receiptId });
+        return history;
+    }
+
+    private static JournalEntryDto OperationalClearingJournal(Guid loanId, CurrencyCode currency, decimal debit, decimal credit) =>
+        new(Guid.NewGuid(), loanId, Date, Date, Guid.NewGuid(), "loan.mixed-payment-applied", "Primary",
+            "Synthetic retained clearing evidence", RecordedAt, null, JournalEntryStatus.Draft,
+            [new JournalLineDto(Guid.NewGuid(), 1, "LoanAndAccrualsClearing", debit, credit, currency, null)]);
+
+    private static async Task<JournalEntryDto> DraftJournalAsync(LoanContractDetailDto contract, LoanEventLineageDto source,
+        IReadOnlyList<LoanEventLineageDto>? history = null)
     {
         var store = Substitute.For<IDirectLendingOperationsStore>();
         var query = Substitute.For<IDirectLendingQueryService>();
-        query.GetHistoryAsync(contract.LoanId, Arg.Any<CancellationToken>()).Returns([source]);
+        query.GetHistoryAsync(contract.LoanId, Arg.Any<CancellationToken>()).Returns(history ?? [source]);
         query.GetJournalsAsync(contract.LoanId, Arg.Any<CancellationToken>()).Returns([]);
         query.GetLoanAsync(contract.LoanId, Arg.Any<CancellationToken>()).Returns(contract);
         JournalEntryDto? saved = null;
@@ -511,11 +769,12 @@ public sealed class Prd115JournalReplayTests
     {
         accrualEntryId = Guid.NewGuid(), accrualDate, interestAmount = 4m, commitmentFeeAmount = 2m,
         penaltyAmount = 0m, annualRateApplied = 0.08m, pikInterestAmount = 0m,
-        prepaidInterestApplied = 4m, prepaidInterestReleases = new[] { new PrepaidInterestReleaseDto(ReceiptId, 4m) },
+        prepaidInterestConsumed = 4m, prepaidInterestReleases = new[] { new PrepaidInterestReleaseDto(ReceiptId, 4m) },
         cashAccountingVersion = DirectLendingCashJournal.CashAccountingVersion, currency = CurrencyCode.USD
     }, Json);
 
-    private static JsonDocument PaymentPayload(LoanContractDetailDto contract, MixedPaymentResolutionDto? resolution = null, decimal amount = 100m)
+    private static JsonDocument PaymentPayload(LoanContractDetailDto contract, MixedPaymentResolutionDto? resolution = null,
+        decimal amount = 100m, Guid? penaltyEventId = null)
         => JsonSerializer.SerializeToDocument(new
         {
             loanId = contract.LoanId,
@@ -524,11 +783,15 @@ public sealed class Prd115JournalReplayTests
             externalRef = "synthetic-cash-1",
             requestedBreakdown = (PaymentBreakdownDto?)null,
             resolution = resolution ?? new MixedPaymentResolutionDto(new PaymentBreakdownDto(10m, 5m, 3m, 2m, 50m),
-                "Manual", DirectLendingCashJournal.CashAccountingVersion, 20m, 10m, DirectLendingCashJournal.CashAccountingVersion),
+                "Manual", DirectLendingCashJournal.CashAccountingVersion, 0m)
+            { ExcessToPrepaidInterest = 30m, CashAccountingVersion = DirectLendingCashJournal.CashAccountingVersion,
+                ExcessRuleApplied = contract.CurrentTerms.ExcessPaymentApplication },
             termsVersion = contract.CurrentTermsVersion,
             termsHash = contract.TermsVersions.Single(version => version.VersionNumber == contract.CurrentTermsVersion).TermsHash,
             currency = contract.CurrentTerms.BaseCurrency,
-            cashTransactionId = ReceiptId
+            cashTransactionId = ReceiptId,
+            automaticPrepaymentPenaltyAmount = resolution is null ? 0m : DirectLendingPaymentResolver.CalculateExcessPrepaymentPenalty(contract.CurrentTerms, resolution),
+            prepaymentPenaltyEventId = penaltyEventId
         }, Json);
 
     private static List<LoanEventLineageDto> SeedHistory(LoanContractDetailDto contract) =>
@@ -545,7 +808,8 @@ public sealed class Prd115JournalReplayTests
             tradeDate = Date, settleDate = Date, externalRef = "synthetic-draw"
         }),
         Event(4, "loan.daily-accrual-posted", Accrual(10m, 5m, 2m)),
-        Event(5, "loan.fee-assessed", new { amount = 3m, effectiveDate = Date, feeType = "Synthetic", note = "Test" })
+        Event(5, "loan.fee-assessed", new { amount = 3m, effectiveDate = Date, feeType = "Synthetic", note = "Test",
+            cashAccountingVersion = DirectLendingCashJournal.CashAccountingVersion })
     ];
 
     private static object Accrual(decimal interest, decimal fee, decimal penalty) => new
@@ -558,13 +822,13 @@ public sealed class Prd115JournalReplayTests
         new(Guid.NewGuid(), version, type, 1, effectiveDate ?? Date, RecordedAt, JsonSerializer.Serialize(payload, Json),
             null, null, null, "test", false);
 
-    private static LoanContractDetailDto Contract(Guid loanId, PrepaidInterestApplication application = PrepaidInterestApplication.HoldForReview)
+    private static LoanContractDetailDto Contract(Guid loanId, ExcessPaymentApplication? rule = ExcessPaymentApplication.PrepaidInterest)
     {
         var terms = new DirectLendingTermsDto(Date, new DateOnly(2029, 3, 24), 1000m, CurrencyCode.USD,
             RateTypeKind.Fixed, 0.08m, null, null, null, null, DayCountBasis.Act360, PaymentFrequency.Monthly,
             AmortizationType.Bullet, null, null, true, null,
-            SecurityMasterReference: new DirectLendingSecurityMasterReferenceDto(SecurityId, "PRD115", "synthetic", "approval", "mapping"),
-            ExcessPaymentPolicy: new DirectLendingExcessPaymentPolicyDto(1, ExcessPaymentTreatment.PrepaidInterest, "synthetic-prepaid-interest-election", application));
+            SecurityMasterReference: new DirectLendingSecurityMasterReferenceDto(SecurityId, "PRD115", "synthetic", "approval", "mapping"))
+        { ExcessPaymentApplication = rule };
         return new LoanContractDetailDto(loanId, "PRD-115 Synthetic Loan", new BorrowerInfoDto(Guid.NewGuid(), "Synthetic", null),
             LoanStatus.Active, Date, Date, null, 1, terms,
             [new LoanTermsVersionDto(1, DirectLendingServiceSupport.ComputeTermsHash(terms), terms, "LoanCreated", null, RecordedAt)]);

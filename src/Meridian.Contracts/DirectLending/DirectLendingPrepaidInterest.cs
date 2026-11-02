@@ -15,12 +15,11 @@ public static class DirectLendingPrepaidInterest
             throw new ArgumentException("Prepaid receipt identity or amount is invalid.");
         if (DirectLendingPaymentResolver.ValidatePolicy(terms) is { } policyError)
             throw new ArgumentException(policyError);
-        if (terms.ExcessPaymentPolicy is not { Treatment: ExcessPaymentTreatment.PrepaidInterest } policy ||
-            receiptDate >= terms.MaturityDate)
-            throw new ArgumentException("Prepaid interest requires a retained contractual election before maturity.");
+        if (terms.EffectiveExcessPaymentApplication != ExcessPaymentApplication.PrepaidInterest)
+            throw new ArgumentException("Prepaid interest requires the retained canonical contractual election.");
 
         lots.Add(new PrepaidInterestLotDto(cashTransactionId, receiptDate, prepaidAmount, prepaidAmount,
-            policy.Application, policy.ContractualReference));
+            DirectLendingPaymentResolver.ComputeTermsHash(terms)));
         return lots.OrderBy(item => item.ReceiptDate).ThenBy(item => item.CashTransactionId).ToArray();
     }
 
@@ -36,8 +35,7 @@ public static class DirectLendingPrepaidInterest
         {
             if (remainingInterest <= 0m)
                 break;
-            if (lot.Application != PrepaidInterestApplication.FutureCashInterest ||
-                accrualDate <= lot.ReceiptDate || lot.RemainingAmount == 0m)
+            if (accrualDate <= lot.ReceiptDate || lot.RemainingAmount == 0m)
                 continue;
             var amount = Math.Min(remainingInterest, lot.RemainingAmount);
             releases.Add(new PrepaidInterestReleaseDto(lot.CashTransactionId, amount));
@@ -66,8 +64,7 @@ public static class DirectLendingPrepaidInterest
                 !byId.TryGetValue(release.CashTransactionId, out var index))
                 throw new InvalidOperationException("Prepaid release has an unsupported receipt identity or amount.");
             var lot = lots[index];
-            if (lot.Application != PrepaidInterestApplication.FutureCashInterest ||
-                accrualDate <= lot.ReceiptDate || release.Amount > lot.RemainingAmount)
+            if (accrualDate <= lot.ReceiptDate || release.Amount > lot.RemainingAmount)
                 throw new InvalidOperationException("Prepaid release exceeds the retained receipt instruction or available credit.");
             lots[index] = lot with { RemainingAmount = lot.RemainingAmount - release.Amount };
         }
@@ -82,7 +79,7 @@ public static class DirectLendingPrepaidInterest
                 item.RemainingAmount < 0m || item.RemainingAmount > item.OriginalAmount ||
                 !DirectLendingPaymentResolver.IsLedgerAmount(item.OriginalAmount) ||
                 !DirectLendingPaymentResolver.IsLedgerAmount(item.RemainingAmount) ||
-                !Enum.IsDefined(item.Application) || string.IsNullOrWhiteSpace(item.ContractualReference)) ||
+                string.IsNullOrWhiteSpace(item.TermsHash) || item.TermsHash.Length != 64 || !item.TermsHash.All(Uri.IsHexDigit)) ||
             lots.Select(item => item.CashTransactionId).Distinct().Count() != lots.Length ||
             lots.Sum(item => item.RemainingAmount) > servicing.Balances.PrepaidInterest)
             throw new InvalidOperationException("Retained prepaid-interest credits are inconsistent with their liability balance.");

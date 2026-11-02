@@ -313,13 +313,13 @@
   "composite_types": [],
   "dependencies": [
     {
-      "fingerprint": "a0b024c04db8a782158f7c6db0b5c54951264879fb93cc19063f23fdbc7f5a3f",
+      "fingerprint": "617659693c793b7bbdc7b52c9ba5078f6bb10c6e1e6f960accca4b4c401b7f68",
       "kind": "normal",
-      "source": "security_master.accrual_entry_projection_prepaid_interest_applied_check on security_master.accrual_entry_projection",
+      "source": "security_master.accrual_entry_projection_prepaid_interest_consumed_check on security_master.accrual_entry_projection",
       "source_kind": "table constraint",
       "source_name": null,
       "source_schema": "security_master",
-      "target": "security_master.accrual_entry_projection.prepaid_interest_applied",
+      "target": "security_master.accrual_entry_projection.prepaid_interest_consumed",
       "target_kind": "table column",
       "target_name": "accrual_entry_projection",
       "target_schema": "security_master"
@@ -4457,7 +4457,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "22164a9c84f98c830327cae582b4b44008b384ee973feacb19892948ed01aae9",
+  "fingerprint": "c1a1827628d07b95586b46a1c1338958e4d7142ebda63d18bd62ba7f0f83d1f8",
   "foreign_tables": [],
   "functions": [
     {
@@ -4538,8 +4538,8 @@
         }
       ],
       "comment": null,
-      "definition_hash": "7152e218e666891c5326773058ff65d0da903833fd7995f7d27f89bebb3146fc",
-      "fingerprint": "5570db488fbe3783af67007855c4182763788ad3105a29128f16168f2b0f53fd",
+      "definition_hash": "7d64cfa482328b38db7d53e759fac8185e90dc9e65cad8ed9f4abff5b779fb8c",
+      "fingerprint": "27f70e8da0f6819db8ef2426d740b053752ca66d3e5aed42789a29ed113759f8",
       "kind": "function",
       "language": "plpgsql",
       "name": "protect_retained_loan_cash",
@@ -5348,11 +5348,11 @@
           "comment": null,
           "data_type": "numeric",
           "default": "0",
-          "fingerprint": "72592d98d9f4b5ba9a38f3539026090ace2fc87de0c4eac411b632896131b668",
+          "fingerprint": "6717655b6fcb831e687a3eec1a09ccbf1b917035cb4af8a5fea3a19d80a43ec7",
           "generated": null,
           "generated_expression": null,
           "identity": null,
-          "name": "prepaid_interest_applied",
+          "name": "prepaid_interest_consumed",
           "nullable": false,
           "ordinal_position": 10,
           "security_labels": [],
@@ -5380,16 +5380,16 @@
       "constraints": [
         {
           "columns": [
-            "prepaid_interest_applied"
+            "prepaid_interest_consumed"
           ],
           "comment": null,
           "deferrable": false,
-          "definition": "CHECK (prepaid_interest_applied >= 0::numeric)",
+          "definition": "CHECK (prepaid_interest_consumed >= 0::numeric)",
           "delete_action": null,
-          "fingerprint": "6f1549bb01f7030b50d4c8cbc4237275115235361959608cc74aec11a82ce4d3",
+          "fingerprint": "d62bdce16672e503474a16e4f2d0a93703aff3726b55260670e55293374eba33",
           "initially_deferred": false,
           "match_type": null,
-          "name": "accrual_entry_projection_prepaid_interest_applied_check",
+          "name": "accrual_entry_projection_prepaid_interest_consumed_check",
           "no_inherit": false,
           "referenced_columns": [],
           "referenced_schema": null,
@@ -5421,7 +5421,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "b4c4b0a846b00316e5c3151c0b5b45b75196a9d333e53d15593dd28f1ec58e2b",
+      "fingerprint": "b5b3c531575b6972d6abf60626117d586928762373864b3feada76686ab80136",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -52595,11 +52595,11 @@
           "comment": null,
           "data_type": "numeric",
           "default": "0",
-          "fingerprint": "72592d98d9f4b5ba9a38f3539026090ace2fc87de0c4eac411b632896131b668",
+          "fingerprint": "6717655b6fcb831e687a3eec1a09ccbf1b917035cb4af8a5fea3a19d80a43ec7",
           "generated": null,
           "generated_expression": null,
           "identity": null,
-          "name": "prepaid_interest_applied",
+          "name": "prepaid_interest_consumed",
           "nullable": false,
           "ordinal_position": 10,
           "security_labels": [],
@@ -52627,16 +52627,16 @@
       "constraints": [
         {
           "columns": [
-            "prepaid_interest_applied"
+            "prepaid_interest_consumed"
           ],
           "comment": null,
           "deferrable": false,
-          "definition": "CHECK (prepaid_interest_applied >= 0::numeric)",
+          "definition": "CHECK (prepaid_interest_consumed >= 0::numeric)",
           "delete_action": null,
-          "fingerprint": "6f1549bb01f7030b50d4c8cbc4237275115235361959608cc74aec11a82ce4d3",
+          "fingerprint": "d62bdce16672e503474a16e4f2d0a93703aff3726b55260670e55293374eba33",
           "initially_deferred": false,
           "match_type": null,
-          "name": "accrual_entry_projection_prepaid_interest_applied_check",
+          "name": "accrual_entry_projection_prepaid_interest_consumed_check",
           "no_inherit": false,
           "referenced_columns": [],
           "referenced_schema": null,
@@ -52668,7 +52668,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "b4c4b0a846b00316e5c3151c0b5b45b75196a9d333e53d15593dd28f1ec58e2b",
+      "fingerprint": "b5b3c531575b6972d6abf60626117d586928762373864b3feada76686ab80136",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [

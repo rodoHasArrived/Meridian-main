@@ -149,9 +149,9 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
             reader.GetDecimal(6),
             reader.GetDecimal(7),
             reader.GetDecimal(8),
-            reader.GetDecimal(13),
-            reader.GetDecimal(14),
-            ParseNullableJson<IReadOnlyList<PrepaidInterestLotDto>>(reader.IsDBNull(15) ? null : reader.GetString(15)));
+            PrepaidInterest: reader.GetDecimal(14),
+            UnappliedCash: reader.GetDecimal(13),
+            PrepaidInterestLots: ParseNullableJson<IReadOnlyList<PrepaidInterestLotDto>>(reader.IsDBNull(15) ? null : reader.GetString(15)));
         var currentRateReset = ParseNullableJson<RateResetDto>(reader.IsDBNull(9) ? null : reader.GetString(9));
         DateOnly? lastAccrualDate = reader.IsDBNull(10) ? null : DateOnly.FromDateTime(reader.GetDateTime(10));
         DateOnly? lastPaymentDate = reader.IsDBNull(11) ? null : DateOnly.FromDateTime(reader.GetDateTime(11));
@@ -353,21 +353,70 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                     $"Direct lending aggregate version conflict for {loanId}. Expected {expectedVersion}, actual {currentVersion}."));
         }
 
+        var additionalEvents = persistenceBatch?.AdditionalEvents ?? [];
+        if (nextVersion != expectedVersion + 1 + additionalEvents.Count ||
+            additionalEvents.Count > 1 ||
+            (additionalEvents.Count > 0 && !TryGetCashAccountingRequest(payload.RootElement, out _)) ||
+            additionalEvents.Any(item => eventType != "loan.mixed-payment-applied" ||
+                item.EventType != "loan.prepayment-penalty-charged" ||
+                item.EventId == Guid.Empty || item.EventId == eventId ||
+                item.Metadata.CommandId is not null || item.Metadata.CausationId != eventId ||
+                item.Metadata.CorrelationId != metadata.CorrelationId || item.EffectiveDate != effectiveDate))
+            throw new InvalidOperationException("A mixed-payment assessment must be the next linked event in the same command transaction.");
+        if (eventType == "loan.mixed-payment-applied" &&
+            TryGetCashAccountingRequest(payload.RootElement, out _))
+        {
+            var expectedPenalty = payload.RootElement.GetProperty("automaticPrepaymentPenaltyAmount").GetDecimal();
+            var expectedPenaltyId = payload.RootElement.GetProperty("prepaymentPenaltyEventId");
+            if (expectedPenalty < 0m || additionalEvents.Count != (expectedPenalty > 0m ? 1 : 0) ||
+                (expectedPenalty == 0m && expectedPenaltyId.ValueKind != JsonValueKind.Null) ||
+                (expectedPenalty > 0m && expectedPenaltyId.GetGuid() != additionalEvents[0].EventId))
+                throw new InvalidOperationException("A mixed-payment command must retain exactly its declared automatic penalty assessment.");
+            if (additionalEvents.Count == 1)
+            {
+                using var assessment = JsonDocument.Parse(additionalEvents[0].PayloadJson);
+                var assessmentRoot = assessment.RootElement;
+                if (assessmentRoot.GetProperty("loanId").GetGuid() != loanId ||
+                    assessmentRoot.GetProperty("receiptEventId").GetGuid() != eventId ||
+                    assessmentRoot.GetProperty("penaltyAmount").GetDecimal() != expectedPenalty ||
+                    assessmentRoot.GetProperty("excessToPrincipal").GetDecimal() != payload.RootElement.GetProperty("resolution").GetProperty("excessToPrincipal").GetDecimal() ||
+                    new[] { "cashTransactionId", "termsVersion", "termsHash", "currency" }.Any(property =>
+                        !JsonElement.DeepEquals(assessmentRoot.GetProperty(property), payload.RootElement.GetProperty(property))))
+                    throw new InvalidOperationException("An automatic penalty assessment must retain its receipt's identity, basis and contractual evidence.");
+            }
+        }
+        var primaryVersion = expectedVersion + 1;
+
         // The retained-cash database guard permits a prepaid-liability decrease only
         // when its exact receipt releases are already evidenced by this version's
         // accrual event. The event and every subsequent write remain one transaction.
         var recordsPrepaidRelease = eventType == "loan.daily-accrual-posted" &&
-            payload.RootElement.TryGetProperty("prepaidInterestApplied", out var applied) &&
+            payload.RootElement.TryGetProperty("prepaidInterestConsumed", out var applied) &&
             applied.GetDecimal() > 0m;
         if (recordsPrepaidRelease)
-            await AppendEventAsync(connection, transaction, loanId, nextVersion, eventType, eventSchemaVersion, effectiveDate, payload, metadata, eventId, ct).ConfigureAwait(false);
+            await AppendEventAsync(connection, transaction, loanId, primaryVersion, eventType, eventSchemaVersion, effectiveDate, payload, metadata, eventId, ct).ConfigureAwait(false);
         await UpsertStateAsync(connection, transaction, loanId, nextVersion, contract, servicing, ct).ConfigureAwait(false);
         await UpsertNormalizedProjectionAsync(connection, transaction, loanId, nextVersion, contract, servicing, ct).ConfigureAwait(false);
         if (!recordsPrepaidRelease)
-            await AppendEventAsync(connection, transaction, loanId, nextVersion, eventType, eventSchemaVersion, effectiveDate, payload, metadata, eventId, ct).ConfigureAwait(false);
+            await AppendEventAsync(connection, transaction, loanId, primaryVersion, eventType, eventSchemaVersion, effectiveDate, payload, metadata, eventId, ct).ConfigureAwait(false);
+        for (var index = 0; index < additionalEvents.Count; index++)
+        {
+            var additional = additionalEvents[index];
+            using var additionalPayload = JsonDocument.Parse(additional.PayloadJson);
+            await AppendEventAsync(connection, transaction, loanId, primaryVersion + index + 1,
+                additional.EventType, additional.EventSchemaVersion, additional.EffectiveDate,
+                additionalPayload, additional.Metadata, additional.EventId, ct).ConfigureAwait(false);
+        }
         await PersistBatchArtifactsAsync(connection, transaction, loanId, eventId, persistenceBatch, ct).ConfigureAwait(false);
         await AppendLedgerJournalEntriesAsync(connection, transaction, ledgerJournalEntries, ct).ConfigureAwait(false);
-        await MaybeInsertSnapshotAsync(connection, transaction, loanId, nextVersion, contract, servicing, forceSnapshot: false, ct).ConfigureAwait(false);
+        foreach (var additional in additionalEvents)
+        {
+            await PersistBatchArtifactsAsync(connection, transaction, loanId, additional.EventId,
+                new DirectLendingPersistenceBatch([], [], [], additional.OutboxMessages), ct).ConfigureAwait(false);
+            await AppendLedgerJournalEntriesAsync(connection, transaction, additional.LedgerJournalEntries, ct).ConfigureAwait(false);
+        }
+        await MaybeInsertSnapshotAsync(connection, transaction, loanId, nextVersion, contract, servicing,
+            forceSnapshot: additionalEvents.Count > 0, ct).ConfigureAwait(false);
 
         await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
@@ -1025,7 +1074,7 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                     annual_rate_applied,
                     recorded_at,
                     pik_interest_amount,
-                    prepaid_interest_applied,
+                    prepaid_interest_consumed,
                     prepaid_interest_releases_json)
                 values (
                     @accrual_entry_id,
@@ -1037,7 +1086,7 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                     @annual_rate_applied,
                     @recorded_at,
                     @pik_interest_amount,
-                    @prepaid_interest_applied,
+                    @prepaid_interest_consumed,
                     cast(@prepaid_interest_releases_json as jsonb));
                 """;
             insert.Parameters.AddWithValue("accrual_entry_id", entry.AccrualEntryId);
@@ -1049,7 +1098,7 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
             insert.Parameters.AddWithValue("annual_rate_applied", entry.AnnualRateApplied);
             insert.Parameters.AddWithValue("recorded_at", entry.RecordedAt.UtcDateTime);
             insert.Parameters.AddWithValue("pik_interest_amount", entry.PikInterestAmount);
-            insert.Parameters.AddWithValue("prepaid_interest_applied", entry.PrepaidInterestApplied);
+            insert.Parameters.AddWithValue("prepaid_interest_consumed", entry.PrepaidInterestConsumed);
             insert.Parameters.AddWithValue("prepaid_interest_releases_json", JsonSerializer.Serialize(entry.PrepaidInterestReleases, JsonOptions));
             await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
@@ -1417,7 +1466,7 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                    annual_rate_applied,
                    recorded_at,
                    pik_interest_amount,
-                   prepaid_interest_applied,
+                   prepaid_interest_consumed,
                    prepaid_interest_releases_json::text
             from {Qualified("accrual_entry_projection")}
             where loan_id = @loan_id

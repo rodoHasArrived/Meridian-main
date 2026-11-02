@@ -163,7 +163,7 @@
       "review_after": "2027-04-30"
     },
     {
-      "path": "src/Meridian.Storage/DirectLending/Migrations/010_direct_lending_retained_cash.sql",
+      "path": "src/Meridian.Storage/DirectLending/Migrations/010_direct_lending_excess_payment_balances.sql",
       "rule_id": "migration-alter-column-type",
       "reason": "Proposed scoped exception submitted for independent human Accounting and Storage review; approval remains pending. Widens only direct-lending operational monetary columns to numeric so retained receipts, allocations, balances, fee assessments, journal drafts and reconciliation evidence preserve every accepted decimal exactly. No row, column, existing value or historical terms hash is removed or rewritten; authoritative ledger numeric(38,10), balance controls and period locks remain unchanged. New cash commands reject amounts that cannot round-trip that ledger contract. Apply with the transactional migration runner and a reviewed window for ALTER TABLE locks; populated upgrade, exact backfill, reapply and old-writer refusal are covered by synthetic PostgreSQL tests. Stop older writers before activation. Failed-upgrade rollback remains transactional; do not downgrade after retained liabilities, instructions or higher precision values exist. Historical rounded or missing accounting requires separately reviewed remediation.",
       "review_after": "2027-05-02"

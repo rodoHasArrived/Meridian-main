@@ -354,10 +354,16 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
         }
 
+        var termsSelectionError = DirectLendingPaymentResolver.ValidatePaymentTermsSelection(stored.Contract, request.EffectiveDate);
+        if (termsSelectionError is not null)
+            return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.Validation, termsSelectionError);
+
         MixedPaymentDecision decision;
+        decimal automaticPenalty;
         try
         {
             decision = DirectLendingAggregateInterop.ApplyMixedPayment(stored.Servicing, stored.Contract.CurrentTerms, request);
+            automaticPenalty = DirectLendingPaymentResolver.CalculateExcessPrepaymentPenalty(stored.Contract.CurrentTerms, decision.Resolution);
         }
         catch (ArgumentException error)
         {
@@ -370,6 +376,10 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         if (assessmentError is not null)
             return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.Validation, assessmentError);
         var cashTransactionId = decision.CashTransactionId;
+        var receiptEventId = Guid.NewGuid();
+        Guid? penaltyEventId = automaticPenalty > 0m ? Guid.NewGuid() : null;
+        var eventMetadata = DirectLendingServiceSupport.CreateEventMetadata(metadata, "meridian.direct-lending");
+        var termsHash = stored.Contract.TermsVersions.Single(item => item.VersionNumber == stored.Contract.CurrentTermsVersion).TermsHash;
         var allocations = decision.Allocations
             .Select(allocation => new DirectLendingPaymentAllocationWrite(
                 cashTransactionId,
@@ -390,18 +400,53 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             Request = request,
             Resolution = resolution,
             TermsVersion = stored.Contract.CurrentTermsVersion,
-            TermsHash = stored.Contract.TermsVersions.Single(item => item.VersionNumber == stored.Contract.CurrentTermsVersion).TermsHash,
+            TermsHash = termsHash,
             Currency = stored.Contract.CurrentTerms.BaseCurrency,
             CashTransactionId = cashTransactionId,
-            CashAccountingVersion = DirectLendingPaymentResolver.CashAccountingVersion
+            CashAccountingVersion = DirectLendingPaymentResolver.CashAccountingVersion,
+            AutomaticPrepaymentPenaltyAmount = automaticPenalty,
+            PrepaymentPenaltyEventId = penaltyEventId
         });
+
+        IReadOnlyList<DirectLendingAdditionalEventWrite> additionalEvents = [];
+        if (penaltyEventId is Guid assessmentEventId)
+        {
+            using var penaltyPayload = DirectLendingServiceSupport.CreatePayloadDocument(new
+            {
+                loanId,
+                PenaltyAmount = automaticPenalty,
+                resolution.ExcessToPrincipal,
+                PrepaymentPenaltyRate = stored.Contract.CurrentTerms.PrepaymentPenaltyRate ?? 0m,
+                request.EffectiveDate,
+                TermsVersion = stored.Contract.CurrentTermsVersion,
+                TermsHash = termsHash,
+                Currency = stored.Contract.CurrentTerms.BaseCurrency,
+                CashTransactionId = cashTransactionId,
+                ReceiptEventId = receiptEventId,
+                CashAccountingVersion = DirectLendingPaymentResolver.CashAccountingVersion,
+                AssessmentKind = "ExcessPrincipalPrepayment"
+            });
+            var assessmentMetadata = eventMetadata with { CommandId = null, CausationId = receiptEventId };
+            var assessmentJournals = await _loanAccountingProjector.ProjectAsync(
+                loanId, stored.Contract, "loan.prepayment-penalty-charged", request.EffectiveDate,
+                penaltyPayload, assessmentEventId, assessmentMetadata, ct).ConfigureAwait(false);
+            var assessmentBatch = DirectLendingServiceSupport.WithOutbox(
+                loanId, assessmentEventId, "loan.prepayment-penalty-charged", request.EffectiveDate,
+                servicing.ServicingRevision, assessmentMetadata, null);
+            additionalEvents =
+            [
+                new DirectLendingAdditionalEventWrite(assessmentEventId, "loan.prepayment-penalty-charged",
+                    _options.CurrentEventSchemaVersion, request.EffectiveDate, penaltyPayload.RootElement.GetRawText(),
+                    assessmentMetadata, assessmentJournals, assessmentBatch.OutboxMessages)
+            ];
+        }
 
         try
         {
             await SaveAsync(
                 loanId,
                 stored.AggregateVersion,
-                stored.AggregateVersion + 1,
+                stored.AggregateVersion + 1 + additionalEvents.Count,
                 stored.Contract,
                 servicing,
                 eventType: "loan.mixed-payment-applied",
@@ -423,8 +468,11 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
                     ],
                     allocations,
                     [],
-                    []),
-                ct: ct).ConfigureAwait(false);
+                    []) { AdditionalEvents = additionalEvents },
+                ct: ct,
+                retainedEventId: receiptEventId,
+                retainedMetadata: eventMetadata,
+                eventServicingRevision: servicing.ServicingRevision - additionalEvents.Count).ConfigureAwait(false);
 
         }
         catch (Exception error) when (IsPaymentConcurrencyConflict(error))
@@ -586,11 +634,11 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             entry.PenaltyAmount,
             entry.AnnualRateApplied,
             entry.PikInterestAmount,
-            entry.PrepaidInterestApplied,
+            entry.PrepaidInterestConsumed,
             entry.PrepaidInterestReleases,
             request,
             Currency = stored.Contract.CurrentTerms.BaseCurrency,
-            CashAccountingVersion = entry.PrepaidInterestApplied > 0m ? DirectLendingPaymentResolver.CashAccountingVersion : null
+            CashAccountingVersion = entry.PrepaidInterestConsumed > 0m ? DirectLendingPaymentResolver.CashAccountingVersion : null
         });
 
         try
@@ -779,7 +827,8 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
 
         var allocations = await _operationsStore.GetPaymentAllocationsAsync(loanId, ct).ConfigureAwait(false);
         var current = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
-        results.AddRange(DirectLendingCashReconciliation.Build(loanId, runId, cashTransactions, allocations, current?.Servicing.AccrualEntries));
+        var journals = await _operationsStore.GetJournalEntriesAsync(loanId, ct).ConfigureAwait(false);
+        results.AddRange(DirectLendingCashReconciliation.Build(loanId, runId, cashTransactions, allocations, current?.Servicing.AccrualEntries, journals));
 
         var run = new ReconciliationRunDto(runId, loanId, latestProjection.ProjectionRunId, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, "Completed");
         var savedRun = await _operationsStore.SaveReconciliationRunAsync(run, results, exceptions, ct).ConfigureAwait(false);
@@ -1557,10 +1606,13 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         JsonDocument payload,
         DirectLendingCommandMetadataDto? metadata,
         CancellationToken ct = default,
-        DirectLendingPersistenceBatch? persistenceBatch = null)
+        DirectLendingPersistenceBatch? persistenceBatch = null,
+        Guid? retainedEventId = null,
+        DirectLendingEventWriteMetadata? retainedMetadata = null,
+        long? eventServicingRevision = null)
     {
-        var eventMetadata = DirectLendingServiceSupport.CreateEventMetadata(metadata, "meridian.direct-lending");
-        var eventId = Guid.NewGuid();
+        var eventMetadata = retainedMetadata ?? DirectLendingServiceSupport.CreateEventMetadata(metadata, "meridian.direct-lending");
+        var eventId = retainedEventId ?? Guid.NewGuid();
         var ledgerJournalEntries = await _loanAccountingProjector.ProjectAsync(
             loanId,
             contract,
@@ -1587,7 +1639,7 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
                 eventId,
                 eventType,
                 effectiveDate,
-                servicing.ServicingRevision,
+                eventServicingRevision ?? servicing.ServicingRevision,
                 eventMetadata,
                 persistenceBatch),
             ledgerJournalEntries,

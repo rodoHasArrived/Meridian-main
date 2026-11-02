@@ -75,6 +75,22 @@ public enum AmortizationType : byte
     CustomSchedule = 3
 }
 
+/// <summary>
+/// Where the part of a payment left after every amount owed is settled goes. See the PRD-115
+/// blueprint (<c>docs/engineering/blueprints/direct-lending-excess-payment-application.md</c>).
+/// </summary>
+public enum ExcessPaymentApplication : byte
+{
+    /// <summary>Credit unapplied cash; the operator applies or refunds it later. The default.</summary>
+    HoldUnapplied = 0,
+
+    /// <summary>Apply to outstanding principal, subject to the loan's prepayment terms.</summary>
+    PrincipalPrepayment = 1,
+
+    /// <summary>Carry as prepaid interest, consumed by later daily accruals.</summary>
+    PrepaidInterest = 2
+}
+
 public sealed record CollateralDto(
     Guid CollateralId,
     CollateralType CollateralType,
@@ -123,41 +139,34 @@ public sealed record DirectLendingTermsDto(
     decimal? EffectiveRateCap = null,
     decimal? PrepaymentPenaltyRate = null,
     decimal? PurchasePrice = null,
-    DirectLendingSecurityMasterReferenceDto? SecurityMasterReference = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    DirectLendingExcessPaymentPolicyDto? ExcessPaymentPolicy = null);
-
-public enum ExcessPaymentTreatment : byte
+    DirectLendingSecurityMasterReferenceDto? SecurityMasterReference = null)
 {
-    HoldUnappliedCash = 0,
-    PrincipalPrepayment = 1,
-    PrepaidInterest = 2
+    /// <summary>
+    /// How payment excess is applied; <see langword="null"/> (not specified) behaves as
+    /// <see cref="DirectLending.ExcessPaymentApplication.HoldUnapplied"/>.
+    /// </summary>
+    /// <remarks>
+    /// Expand-only member of a hashed record. The terms hash is the SHA-256 of this record's JSON, so
+    /// the property is an <c>init</c> member omitted from JSON while null: every terms version
+    /// recorded before it existed keeps its hash, and setting a rule (a material term) changes it.
+    /// Pinned by <c>DirectLendingTermsHashCharacterizationTests</c> and its F# counterpart.
+    /// </remarks>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ExcessPaymentApplication? ExcessPaymentApplication { get; init; }
+
+    /// <summary>The rule in force, treating "not specified" as <see cref="DirectLending.ExcessPaymentApplication.HoldUnapplied"/>.</summary>
+    [JsonIgnore]
+    public ExcessPaymentApplication EffectiveExcessPaymentApplication
+        => ExcessPaymentApplication ?? DirectLending.ExcessPaymentApplication.HoldUnapplied;
 }
 
-/// <summary>
-/// An explicit contractual election for cash remaining after the supported payment allocation.
-/// Absence preserves the legacy terms hash and makes no new contractual election.
-/// </summary>
-public sealed record DirectLendingExcessPaymentPolicyDto(
-    int Version,
-    ExcessPaymentTreatment Treatment,
-    string ContractualReference,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    PrepaidInterestApplication Application = PrepaidInterestApplication.HoldForReview);
-
-public enum PrepaidInterestApplication : byte
-{
-    HoldForReview = 0,
-    FutureCashInterest = 1
-}
-
+/// <summary>A retained prepaid receipt; its cash event identifies the exact contractual terms version.</summary>
 public sealed record PrepaidInterestLotDto(
     Guid CashTransactionId,
     DateOnly ReceiptDate,
     decimal OriginalAmount,
     decimal RemainingAmount,
-    PrepaidInterestApplication Application,
-    string ContractualReference);
+    string TermsHash);
 
 public sealed record PrepaidInterestReleaseDto(Guid CashTransactionId, decimal Amount);
 
@@ -220,8 +229,8 @@ public sealed record OutstandingBalancesDto(
     decimal CommitmentFeeAccruedUnpaid,
     decimal FeesAccruedUnpaid,
     decimal PenaltyAccruedUnpaid,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] decimal UnappliedCash = 0m,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] decimal PrepaidInterest = 0m,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] decimal UnappliedCash = 0m,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<PrepaidInterestLotDto>? PrepaidInterestLots = null);
 
 public sealed record DrawdownLotDto(
@@ -256,7 +265,7 @@ public sealed record DailyAccrualEntryDto(
     decimal AnnualRateApplied,
     DateTimeOffset RecordedAt,
     decimal PikInterestAmount = 0m,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] decimal PrepaidInterestApplied = 0m,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] decimal PrepaidInterestConsumed = 0m,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<PrepaidInterestReleaseDto>? PrepaidInterestReleases = null);
 
 public sealed record LoanServicingStateDto(

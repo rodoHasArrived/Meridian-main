@@ -27,7 +27,10 @@ let private FloatingWithFloorCapAndSecurityMasterHash = "1D87D653D4189C9FEED4F98
 [<Literal>]
 let private InterestOnlyWithGraceHash = "BB66416FE686BA4860EE7FE5AA4A0016D6DCE9CC8006F58DAC9E177CC6BB6E89"
 
-let private fixedBulletTerms () =
+/// Fixed bullet DTO with an explicit PrincipalPrepayment excess rule (PRD-115); same hex as the C# lane.
+let private FixedBulletWithPrincipalPrepaymentRuleHash = "229F0A104022000EBB8CB539D80A04A9EF5894A1AAFF3891EBA7B2380FC73290"
+
+let private fixedBulletTermsWithRule (rule: Nullable<ExcessPaymentApplication>) =
     DirectLendingTermsDto(
         DateOnly(2026, 1, 15),
         DateOnly(2029, 1, 15),
@@ -45,7 +48,10 @@ let private fixedBulletTerms () =
         Nullable 0.005m,
         Nullable 200m,
         true,
-        """{"leverage":"<=4.0x"}""")
+        """{"leverage":"<=4.0x"}""",
+        ExcessPaymentApplication = rule)
+
+let private fixedBulletTerms () = fixedBulletTermsWithRule (Nullable())
 
 let private floatingWithFloorCapAndSecurityMasterTerms () =
     DirectLendingTermsDto(
@@ -122,6 +128,14 @@ let ``Terms hash for the fixed bullet DTO matches the base capture and the C# la
     decision.Contract.TermsVersions.[0].TermsHash |> should equal FixedBulletHash
 
 [<Fact>]
+let ``Terms hash with an explicit excess-payment rule matches the C# lane and differs from the base capture`` () =
+    let decision =
+        createLoanWith (fixedBulletTermsWithRule (Nullable ExcessPaymentApplication.PrincipalPrepayment))
+
+    decision.TermsVersion.TermsHash |> should equal FixedBulletWithPrincipalPrepaymentRuleHash
+    decision.TermsVersion.TermsHash |> should not' (equal FixedBulletHash)
+
+[<Fact>]
 let ``Terms hash for the floating DTO with floor cap and Security Master reference matches the base capture`` () =
     let decision = createLoanWith (floatingWithFloorCapAndSecurityMasterTerms ())
 
@@ -134,13 +148,13 @@ let ``Terms hash for the interest-only DTO with grace matches the base capture``
     decision.TermsVersion.TermsHash |> should equal InterestOnlyWithGraceHash
 
 [<Fact>]
-let ``Absent and explicit null excess policy roundtrip with the historical terms hash`` () =
+let ``Absent and explicit null excess rule roundtrip with the historical terms hash`` () =
     let options = JsonSerializerOptions(PropertyNamingPolicy = JsonNamingPolicy.CamelCase)
     let original = fixedBulletTerms ()
     let legacyJson = JsonSerializer.Serialize(original, options)
-    Assert.DoesNotContain("excessPaymentPolicy", legacyJson)
+    Assert.DoesNotContain("excessPaymentApplication", legacyJson)
 
-    let withExplicitNull = legacyJson.Substring(0, legacyJson.Length - 1) + ",\"excessPaymentPolicy\":null}"
+    let withExplicitNull = legacyJson.Substring(0, legacyJson.Length - 1) + ",\"excessPaymentApplication\":null}"
     let roundtrip = JsonSerializer.Deserialize<DirectLendingTermsDto>(withExplicitNull, options)
     let decision = createLoanWith roundtrip
 
@@ -148,26 +162,24 @@ let ``Absent and explicit null excess policy roundtrip with the historical terms
     JsonSerializer.Serialize(roundtrip, options) |> should equal legacyJson
 
 [<Fact>]
-let ``An explicit excess policy receives a new hash without changing the retained legacy terms version`` () =
+let ``An explicit excess rule receives a new hash without changing the retained legacy terms version`` () =
     let options = JsonSerializerOptions(PropertyNamingPolicy = JsonNamingPolicy.CamelCase)
     let original = fixedBulletTerms ()
     let created = createLoanWith original
-    let legacyJson = JsonSerializer.Serialize(original, options)
-    let policy = DirectLendingExcessPaymentPolicyDto(1, ExcessPaymentTreatment.HoldUnappliedCash, "synthetic-contract:cash-hold")
-    let amendedJson =
-        legacyJson.Substring(0, legacyJson.Length - 1)
-        + ",\"excessPaymentPolicy\":" + JsonSerializer.Serialize(policy, options) + "}"
-    let amendedTerms = JsonSerializer.Deserialize<DirectLendingTermsDto>(amendedJson, options)
+    let amendedTerms = fixedBulletTermsWithRule (Nullable ExcessPaymentApplication.PrincipalPrepayment)
+    let amendedJson = JsonSerializer.Serialize(amendedTerms, options)
     let amended =
         DirectLendingAggregateInterop.AmendTerms
             created.Contract created.Servicing
             (AmendLoanTermsRequest(amendedTerms, "Explicit contractual cash election"))
             (DateTimeOffset(2026, 1, 2, 0, 0, 0, TimeSpan.Zero))
 
-    amended.TermsVersion.TermsHash |> should not' (equal FixedBulletHash)
+    amended.TermsVersion.TermsHash |> should equal FixedBulletWithPrincipalPrepaymentRuleHash
     amended.Contract.TermsVersions[1].TermsHash |> should equal FixedBulletHash
-    amended.Contract.TermsVersions[1].Terms.ExcessPaymentPolicy |> should equal null
-    amended.Contract.CurrentTerms.ExcessPaymentPolicy |> should equal policy
+    amended.Contract.TermsVersions[1].Terms.ExcessPaymentApplication.HasValue |> should equal false
+    amended.Contract.CurrentTerms.ExcessPaymentApplication |> should equal (Nullable ExcessPaymentApplication.PrincipalPrepayment)
+    Assert.Contains("\"excessPaymentApplication\":1", amendedJson)
+    Assert.DoesNotContain("effectiveExcessPaymentApplication", amendedJson)
 
 // ----- SCH-DEF-006: 30/360 accrues per calendar day over 360 -----
 

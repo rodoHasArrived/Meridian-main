@@ -11,13 +11,18 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Contracts
 
-Direct-lending cash contracts add an optional, versioned contractual excess-payment election.
-Null elections are omitted so legacy terms-hash goldens remain unchanged. The shared
-`DirectLendingPaymentResolver` caps owed buckets, respects principal permissions, and accounts
-for every receipt unit as a receivable collection or a retained cash liability. Unsupported ledger
-precision is rejected. Per-receipt prepaid-interest instructions distinguish held credits from an
-explicit future cash-interest release; balances and portfolio totals keep currencies separate.
+Direct-lending cash contracts use the canonical hash-compatible `ExcessPaymentApplication` term.
+The shared resolver preserves the existing capped allocation, routes residual cash, and retains
+cash liabilities and receipt-level terms hashes. Principal excess, prepaid interest and unapplied
+cash have separate conserved amounts; the approved excess-principal penalty is assessed separately.
+Both languages consume earned cash interest from retained prepaid receipts. Unsupported ledger
+precision is rejected and liability totals remain separate from exposure and from other currencies.
 See [direct-lending receipt accounting](../../docs/domain/direct-lending-cash.md).
+
+`BondAnalyticsCashFlow.FloatingCoupon` carries v3-only reset evidence: reset date, observed/forecast
+status, named index, index and effective coupon annual fractions, spread in basis points, and source.
+The optional field and `BondAnalyticsResult.SpreadDv01` are omitted from fixed/zero v1/v2 JSON.
+These are calculation display contracts; they do not introduce discount margin or posting authority.
 
 `BondContractualEconomics` owns declared per-100 coupon cash, reference-period stub fractions, accrued interest and discounting time. `BondExerciseEconomics` shares fixed-price whole-redemption dates and cash across analytics and cash forecasts. `BondFloatingRateEvidence` freezes each observed or forecast reset with explicit units, source, spread, cap/floor, principal and accrual fraction. New declared lot previews use `canonical-lot-amortization-v5`; v1–v3 retain their original arithmetic and dispatch. The interim v4 declared model was removed before any instruction was produced and is refused as an unsupported version.
 
@@ -1540,6 +1545,15 @@ Direct lending command result codes distinguish validation failures, missing agg
 optimistic concurrency conflicts, and idempotency/command conflicts so persistence stores can return
 operator-safe failure reasons without parsing exception text.
 
+Direct lending terms carry an optional `ExcessPaymentApplication` rule (`HoldUnapplied`,
+`PrincipalPrepayment` or `PrepaidInterest`) for the part of a payment left after every amount owed
+is settled. A null rule behaves as `HoldUnapplied` (`EffectiveExcessPaymentApplication`). It is an
+expand-only `init` member, omitted from JSON while null, so every terms version recorded before it
+existed keeps its terms hash. Setting a rule is a material term and changes the hash, and the C#
+and F# lanes pin that value identically. Routing, balances and journals follow in later PRD-115
+increments; see the
+[excess payment application blueprint](../../docs/engineering/blueprints/direct-lending-excess-payment-application.md).
+
 Accounting reconciliation casework contracts are shared here: break queue items carry assignee, priority, SLA policy/state/timestamps, age band, versioned taxonomy, threaded comments with mention/evidence/hash metadata, evidence counts, sign-off/reopen metadata, source-origin metadata, and optimistic concurrency versions. Resolve/dismiss, casework command, and bulk casework request payloads carry `ActionOrigin` so reviewed automation can draft triage but cannot resolve, sign off, dismiss, or reopen accounting exceptions. Casework command, bulk-triage, taxonomy, SLA policy, validation-problem, and sequenced audit-event payloads must remain additive so browser and WPF workstation clients use the same Accounting workflow.
 
 Manual journal entry contracts include private-capital entry types for capital calls,
@@ -1865,6 +1879,12 @@ Workbench slice by fund, ledger-book, fund-event, capital-account, investor, or 
 payload keeps investor-level account evidence, allocation rules, statement/restatement lineage, and
 audit drill-throughs on shared DTOs while naming broader cap-table, LP portal, live-payment, and
 forecasting behavior as planned rather than live.
+
+## Security Master governance controls (2026-11)
+
+- **Contract-multiplier requirement.** `InstrumentTypeDescriptorCatalog.RequiresContractMultiplier(assetClass)` is true only when a descriptor whose *primary* asset class matches declares `multiplier` among its required economic terms (listed options and futures; not swaps, warrants or FX forwards). Compatible-class lists are deliberately ignored. Clients call this instead of matching asset-class names, so they cannot diverge.
+
+See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
 
 ## Diagrams
 

@@ -36,10 +36,10 @@ public sealed class AccrualLedgerService : IAccrualLedgerService
             accrual.PenaltyAmount,
             accrual.AnnualRateApplied,
             accrual.PikInterestAmount,
-            accrual.PrepaidInterestApplied,
+            accrual.PrepaidInterestConsumed,
             accrual.PrepaidInterestReleases,
             Currency = contract.CurrentTerms.BaseCurrency,
-            CashAccountingVersion = accrual.PrepaidInterestApplied > 0m ? DirectLendingPaymentResolver.CashAccountingVersion : null
+            CashAccountingVersion = accrual.PrepaidInterestConsumed > 0m ? DirectLendingPaymentResolver.CashAccountingVersion : null
         });
 
         return _projector.ProjectAsync(
@@ -62,7 +62,7 @@ public sealed class AccrualLedgerService : IAccrualLedgerService
         CancellationToken ct = default,
         LedgerAdjustmentApprovalMetadataDto? adjustmentApproval = null)
     {
-        if (accrual.PrepaidInterestApplied != 0m || accrual.PrepaidInterestReleases?.Count > 0)
+        if (accrual.PrepaidInterestConsumed != 0m || accrual.PrepaidInterestReleases?.Count > 0)
         {
             throw new DirectLendingCommandException(new DirectLendingCommandError(
                 DirectLendingErrorCode.Validation,

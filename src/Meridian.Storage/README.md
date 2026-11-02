@@ -15,7 +15,8 @@ Direct-lending migration 010 retains complete terms JSON, unapplied cash, prepai
 receipt-level release operands in normalized projections as well as existing state/snapshots.
 Accepted balance, cash, allocation, journal, and reconciliation decimals round-trip exactly.
 Versioned payment retries compare the original request, while state, event, cash, allocations,
-ledger, and outbox remain one serializable transaction. Retained-cash guards reject older-writer
+ledger, and outbox remain one serializable transaction, including the consecutive automatic
+excess-principal penalty event, its journal and final compound-command snapshot. Retained-cash guards reject older-writer
 erasure and unsupported reductions; drain old writers before activation. Legacy terms hashes and
 historic accounting evidence are not rewritten. See
 [direct-lending receipt accounting](../../docs/domain/direct-lending-cash.md).

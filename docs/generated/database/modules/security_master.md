@@ -33,7 +33,7 @@ erDiagram
         numeric_18_8_ annual_rate_applied
         timestamp_with_time_zone recorded_at
         numeric_24_8_ pik_interest_amount
-        numeric prepaid_interest_applied
+        numeric prepaid_interest_consumed
         jsonb prepaid_interest_releases_json
     }
     security_master_bond_accrual_convention_projection {

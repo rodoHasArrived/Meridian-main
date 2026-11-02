@@ -29,7 +29,7 @@ internal static class SecurityMasterMapping
                 request.CommonTerms ?? current.CommonTerms, SecurityKindMappingMode.Write));
         }
         else if (request.CommonTerms is JsonElement submittedCommon
-            && current.AssetClass is "Bond" or "DirectLoan" or "StructuredCredit")
+            && SecurityAssetClassCatalog.Canonicalize(current.AssetClass) is "Bond" or "DirectLoan" or "StructuredCredit")
         {
             var assetTerms = SecurityAssetClassTermsUpgrader.UpgradeForRead(current.AssetClass, current.AssetSpecificTerms);
             var schedules = SecurityEconomicScheduleParser.Parse(assetTerms, submittedCommon);
@@ -287,6 +287,10 @@ internal static class SecurityMasterMapping
     private static SecurityKind ToSecurityKind(string assetClass, JsonElement json, JsonElement commonTerms,
         SecurityKindMappingMode mode = SecurityKindMappingMode.Read)
     {
+        // The switch below and every per-class rule it consults are keyed by canonical names; a
+        // registered alias ("Loan", "MBS", "PrivateFund") is the class it names, not an unknown
+        // class to refuse on write or to degrade to OtherSecurity on read.
+        assetClass = SecurityAssetClassCatalog.Canonicalize(assetClass);
         EnsureSupportedAssetSchemaVersion(assetClass, json, mode);
         if (mode == SecurityKindMappingMode.Write)
             SecurityAssetPackAdmission.EnsureSubmittedFields(assetClass, json);

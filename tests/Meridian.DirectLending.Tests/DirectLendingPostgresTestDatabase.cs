@@ -112,7 +112,7 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
                 try
                 {
                     foreach (var path in Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "DirectLending", "Migrations"), "*.sql")
-                        .Where(path => string.CompareOrdinal(Path.GetFileName(path), "010_direct_lending_retained_cash.sql") < 0))
+                        .Where(path => string.CompareOrdinal(Path.GetFileName(path), "010_direct_lending_excess_payment_balances.sql") < 0))
                         File.Copy(path, Path.Combine(legacyScripts.FullName, Path.GetFileName(path)));
                     await new PostgresMigrationRunner(new PostgresMigrationRunnerOptions
                     {

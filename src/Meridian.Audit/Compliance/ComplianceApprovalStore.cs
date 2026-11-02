@@ -117,6 +117,9 @@ public sealed class FileComplianceApprovalStore : IComplianceApprovalStore
         ArgumentException.ThrowIfNullOrWhiteSpace(approvalRequestId);
         ArgumentNullException.ThrowIfNull(approver);
         ValidateAuthenticatedActor(approver.ActorId, nameof(approver));
+        // Stored actor ids are trimmed, so the incoming id must be too; otherwise " requester-1 "
+        // slips past the self-approval and decision-replacement guards below.
+        var approverActorId = approver.ActorId.Trim();
 
         lock (_gate)
         {
@@ -135,7 +138,7 @@ public sealed class FileComplianceApprovalStore : IComplianceApprovalStore
 
             if (string.Equals(
                     request.RequestedByActorId,
-                    approver.ActorId,
+                    approverActorId,
                     StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException(
@@ -145,7 +148,7 @@ public sealed class FileComplianceApprovalStore : IComplianceApprovalStore
             var existing = request.Decisions.FirstOrDefault(decision =>
                 string.Equals(
                     decision.ApprovedByActorId,
-                    approver.ActorId,
+                    approverActorId,
                     StringComparison.OrdinalIgnoreCase));
             if (existing is not null)
             {
@@ -160,7 +163,7 @@ public sealed class FileComplianceApprovalStore : IComplianceApprovalStore
 
             var decision = new ComplianceApprovalDecisionRecord(
                 ApprovalId: $"compliance-decision-{Guid.NewGuid():N}",
-                ApprovedByActorId: approver.ActorId.Trim(),
+                ApprovedByActorId: approverActorId,
                 Approved: approved,
                 DecidedAtUtc: now);
             var updated = request with

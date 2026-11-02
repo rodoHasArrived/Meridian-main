@@ -640,13 +640,13 @@
       "sha256": "ecf4860c90bdc362b06f70b1c7a7f33779174d35e04ba83d337e5963d30ff506"
     },
     {
-      "filename": "010_direct_lending_retained_cash.sql",
+      "filename": "010_direct_lending_excess_payment_balances.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
       "ordinal": null,
-      "path": "src/Meridian.Storage/DirectLending/Migrations/010_direct_lending_retained_cash.sql",
+      "path": "src/Meridian.Storage/DirectLending/Migrations/010_direct_lending_excess_payment_balances.sql",
       "schema": "security_master",
-      "sha256": "7d8ce68675f22170b608e1526dc20833b9e6ee337bc239712d98006fd4a1d9e6"
+      "sha256": "ca1dcccefa79fc9802ded1772ed6a6f08f0892925f32674f4b440af1bb2efb2f"
     },
     {
       "filename": "001_asset_operations.sql",
@@ -1415,7 +1415,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "69d5872a2d4da89d0629693bd69e9ab2ff9abd5cf710615f377a62495c02998b",
+  "fingerprint": "33d8c345a1e27d02b2b3174d773ea5ce1294f47743e8b192d7838bc071811389",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1668,7 +1668,7 @@
     },
     {
       "category": "destructive_changes",
-      "path": "src/Meridian.Storage/DirectLending/Migrations/010_direct_lending_retained_cash.sql",
+      "path": "src/Meridian.Storage/DirectLending/Migrations/010_direct_lending_excess_payment_balances.sql",
       "reason": "Proposed scoped exception submitted for independent human Accounting and Storage review; approval remains pending. Widens only direct-lending operational monetary columns to numeric so retained receipts, allocations, balances, fee assessments, journal drafts and reconciliation evidence preserve every accepted decimal exactly. No row, column, existing value or historical terms hash is removed or rewritten; authoritative ledger numeric(38,10), balance controls and period locks remain unchanged. New cash commands reject amounts that cannot round-trip that ledger contract. Apply with the transactional migration runner and a reviewed window for ALTER TABLE locks; populated upgrade, exact backfill, reapply and old-writer refusal are covered by synthetic PostgreSQL tests. Stop older writers before activation. Failed-upgrade rollback remains transactional; do not downgrade after retained liabilities, instructions or higher precision values exist. Historical rounded or missing accounting requires separately reviewed remediation.",
       "review_after": "2027-05-02",
       "rule_id": "migration-alter-column-type"

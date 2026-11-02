@@ -22,7 +22,9 @@ internal static class DirectLendingCashJournal
         string? TermsHash,
         CurrencyCode? Currency,
         DateOnly? EffectiveDate,
-        Guid? CashTransactionId)
+        Guid? CashTransactionId,
+        decimal AutomaticPrepaymentPenaltyAmount = 0m,
+        Guid? PrepaymentPenaltyEventId = null)
     {
         internal bool IsVersioned => Resolution?.CashAccountingVersion is not null;
     }
@@ -34,6 +36,10 @@ internal static class DirectLendingCashJournal
         IReadOnlyList<PrepaidInterestReleaseDto> Releases,
         CurrencyCode? Currency,
         DateOnly? AccrualDate);
+
+    internal sealed record AutomaticPenalty(
+        decimal Amount, decimal ExcessPrincipal, decimal Rate, int TermsVersion, string TermsHash,
+        CurrencyCode Currency, DateOnly EffectiveDate, Guid CashTransactionId, Guid ReceiptEventId);
 
     internal static Receipt Read(JsonElement payload)
     {
@@ -66,7 +72,8 @@ internal static class DirectLendingCashJournal
 
         if (resolution.CashAccountingVersion is null)
         {
-            if (resolution.PrepaidInterestAmount != 0m || hasVersionedEnvelope)
+            if (resolution.ExcessToPrepaidInterest != 0m || resolution.ExcessToPrincipal != 0m ||
+                resolution.ExcessRuleApplied is not null || hasVersionedEnvelope)
                 throw Invalid("versioned cash evidence requires an explicit cash accounting version");
             return new Receipt(amount, resolution, null, null, null, null, null);
         }
@@ -93,8 +100,11 @@ internal static class DirectLendingCashJournal
             RequiredDecimal(breakdownElement, "toPenalty", "ToPenalty"),
             RequiredDecimal(breakdownElement, "toPrincipal", "ToPrincipal"),
             RequiredDecimal(resolutionElement, "unappliedAmount", "UnappliedAmount"),
-            TryProperty(resolutionElement, "prepaidInterestAmount", "PrepaidInterestAmount", out _)
-                ? RequiredDecimal(resolutionElement, "prepaidInterestAmount", "PrepaidInterestAmount")
+            TryProperty(resolutionElement, "excessToPrincipal", "ExcessToPrincipal", out _)
+                ? RequiredDecimal(resolutionElement, "excessToPrincipal", "ExcessToPrincipal")
+                : 0m,
+            TryProperty(resolutionElement, "excessToPrepaidInterest", "ExcessToPrepaidInterest", out _)
+                ? RequiredDecimal(resolutionElement, "excessToPrepaidInterest", "ExcessToPrepaidInterest")
                 : 0m
         };
         if (!DirectLendingPaymentResolver.IsLedgerAmount(amount) ||
@@ -130,14 +140,30 @@ internal static class DirectLendingCashJournal
                 DateTimeStyles.None, out var effectiveDate))
             throw Invalid("payment effective date is missing or invalid");
 
-        return new Receipt(amount, resolution, termsVersion, termsHashElement.GetString(), currency, effectiveDate, cashId);
+        var penaltyAmount = RequiredDecimal(payload, "automaticPrepaymentPenaltyAmount", "AutomaticPrepaymentPenaltyAmount");
+        Guid? penaltyEventId = null;
+        if (!TryProperty(payload, "prepaymentPenaltyEventId", "PrepaymentPenaltyEventId", out var penaltyIdElement))
+            throw Invalid("automatic penalty event identity evidence is missing");
+        if (penaltyIdElement.ValueKind != JsonValueKind.Null)
+        {
+            if (penaltyIdElement.ValueKind != JsonValueKind.String ||
+                !penaltyIdElement.TryGetGuid(out var retainedPenaltyId) || retainedPenaltyId == Guid.Empty)
+                throw Invalid("automatic penalty event identity is invalid");
+            penaltyEventId = retainedPenaltyId;
+        }
+        if (penaltyAmount < 0m || !DirectLendingPaymentResolver.IsLedgerAmount(penaltyAmount) ||
+            (penaltyAmount > 0m) != penaltyEventId.HasValue)
+            throw Invalid("automatic penalty amount and companion event identity are inconsistent");
+
+        return new Receipt(amount, resolution, termsVersion, termsHashElement.GetString(), currency, effectiveDate,
+            cashId, penaltyAmount, penaltyEventId);
     }
 
     internal static AccrualRelease ReadAccrualRelease(JsonElement payload, decimal cashInterest)
     {
         RequireUniqueProperties(payload);
-        var applied = TryProperty(payload, "prepaidInterestApplied", "PrepaidInterestApplied", out _)
-            ? RequiredDecimal(payload, "prepaidInterestApplied", "PrepaidInterestApplied")
+        var applied = TryProperty(payload, "prepaidInterestConsumed", "PrepaidInterestConsumed", out _)
+            ? RequiredDecimal(payload, "prepaidInterestConsumed", "PrepaidInterestConsumed")
             : 0m;
         var releases = new List<PrepaidInterestReleaseDto>();
         if (TryProperty(payload, "prepaidInterestReleases", "PrepaidInterestReleases", out var releaseElements) &&
@@ -209,15 +235,84 @@ internal static class DirectLendingCashJournal
         if (DirectLendingPaymentResolver.ValidatePolicy(retainedTerms) is { } policyError)
             throw Invalid(policyError);
         var resolution = receipt.Resolution!;
-        var beforeMaturity = receipt.EffectiveDate!.Value < retainedTerms.MaturityDate;
-        if (resolution.PrepaidInterestAmount > 0m &&
-            (!beforeMaturity || retainedTerms.ExcessPaymentPolicy is not
-                { Version: 1, Treatment: ExcessPaymentTreatment.PrepaidInterest }))
-            throw Invalid("prepaid interest requires the retained contractual election and a date before maturity");
-        if (resolution.Breakdown.ToPrincipal > 0m && beforeMaturity &&
-            (!retainedTerms.PrepaymentAllowed ||
-             retainedTerms.ExcessPaymentPolicy is not null && retainedTerms.PrepaymentPenaltyRate > 0m))
-            throw Invalid("recorded principal prepayment is not permitted by the retained contractual instructions");
+        if (resolution.ExcessRuleApplied != retainedTerms.ExcessPaymentApplication)
+            throw Invalid("recorded excess routing rule does not match the retained contractual terms");
+        if (resolution.ExcessToPrepaidInterest > 0m &&
+            retainedTerms.EffectiveExcessPaymentApplication != ExcessPaymentApplication.PrepaidInterest)
+            throw Invalid("prepaid interest requires the retained contractual routing rule");
+        if (retainedTerms.EffectiveExcessPaymentApplication == ExcessPaymentApplication.PrepaidInterest &&
+            resolution.UnappliedAmount != 0m)
+            throw Invalid("the retained uncapped prepaid-interest rule cannot leave routed excess unapplied");
+        if (resolution.ExcessToPrincipal > 0m &&
+            (retainedTerms.EffectiveExcessPaymentApplication != ExcessPaymentApplication.PrincipalPrepayment ||
+             !retainedTerms.PrepaymentAllowed))
+            throw Invalid("recorded excess principal prepayment is not permitted by the retained contractual instructions");
+        if (receipt.AutomaticPrepaymentPenaltyAmount !=
+            DirectLendingPaymentResolver.CalculateExcessPrepaymentPenalty(retainedTerms, resolution))
+            throw Invalid("automatic penalty amount does not match the retained excess principal and terms");
+    }
+
+    internal static AutomaticPenalty? ReadAutomaticPenalty(
+        JsonElement payload, LoanContractDetailDto contract, DateOnly effectiveDate)
+    {
+        RequireUniqueProperties(payload);
+        if (!TryProperty(payload, "assessmentKind", "AssessmentKind", out var kind))
+        {
+            if (TryProperty(payload, "receiptEventId", "ReceiptEventId", out _) ||
+                TryProperty(payload, "excessToPrincipal", "ExcessToPrincipal", out _))
+                throw Invalid("automatic penalty assessment kind is missing");
+            return null;
+        }
+        if (kind.ValueKind != JsonValueKind.String || kind.GetString() != "ExcessPrincipalPrepayment" ||
+            !IsVersionedAssessment(payload))
+            throw Invalid("automatic penalty assessment kind or version is invalid");
+
+        var amount = RequiredDecimal(payload, "penaltyAmount", "PenaltyAmount");
+        var principal = RequiredDecimal(payload, "excessToPrincipal", "ExcessToPrincipal");
+        var rate = RequiredDecimal(payload, "prepaymentPenaltyRate", "PrepaymentPenaltyRate");
+        if (amount <= 0m || principal <= 0m || rate <= 0m ||
+            !DirectLendingPaymentResolver.IsLedgerAmount(amount) || !DirectLendingPaymentResolver.IsLedgerAmount(principal))
+            throw Invalid("automatic penalty amount, rate or excess principal basis is invalid");
+        var loanId = RequiredGuid(payload, "loanId", "LoanId");
+        var cashId = RequiredGuid(payload, "cashTransactionId", "CashTransactionId");
+        var receiptEventId = RequiredGuid(payload, "receiptEventId", "ReceiptEventId");
+        if (loanId != contract.LoanId ||
+            !TryProperty(payload, "termsVersion", "TermsVersion", out var versionElement) ||
+            !versionElement.TryGetInt32(out var termsVersion) || termsVersion <= 0 ||
+            !TryProperty(payload, "termsHash", "TermsHash", out var hashElement) ||
+            hashElement.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(hashElement.GetString()))
+            throw Invalid("automatic penalty loan or retained terms identity is invalid");
+        var termsHash = hashElement.GetString()!;
+        var terms = contract.TermsVersions.SingleOrDefault(item => item.VersionNumber == termsVersion);
+        if (terms is null || terms.TermsHash != termsHash || !terms.Terms.PrepaymentAllowed ||
+            terms.Terms.EffectiveExcessPaymentApplication != ExcessPaymentApplication.PrincipalPrepayment ||
+            terms.Terms.PrepaymentPenaltyRate != rate ||
+            decimal.Round(principal * rate, 2, MidpointRounding.AwayFromZero) != amount)
+            throw Invalid("automatic penalty is unsupported by its retained terms and excess principal basis");
+        if (!TryProperty(payload, "effectiveDate", "EffectiveDate", out var dateElement) ||
+            dateElement.ValueKind != JsonValueKind.String ||
+            !DateOnly.TryParseExact(dateElement.GetString(), "yyyy-MM-dd", CultureInfo.InvariantCulture,
+                DateTimeStyles.None, out var recordedDate) || recordedDate != effectiveDate)
+            throw Invalid("automatic penalty date does not match its retained event date");
+        var currency = RequiredCurrency(payload);
+        if (currency != terms.Terms.BaseCurrency)
+            throw Invalid("automatic penalty currency does not match its retained terms");
+
+        return new AutomaticPenalty(amount, principal, rate, termsVersion, termsHash, currency,
+            recordedDate, cashId, receiptEventId);
+    }
+
+    internal static void ValidatePenaltyReceipt(
+        AutomaticPenalty penalty, Receipt receipt, Guid receiptEventId, Guid penaltyEventId)
+    {
+        if (!receipt.IsVersioned || penalty.ReceiptEventId != receiptEventId ||
+            receipt.PrepaymentPenaltyEventId != penaltyEventId ||
+            receipt.AutomaticPrepaymentPenaltyAmount != penalty.Amount ||
+            receipt.Resolution!.ExcessToPrincipal != penalty.ExcessPrincipal ||
+            receipt.CashTransactionId != penalty.CashTransactionId || receipt.EffectiveDate != penalty.EffectiveDate ||
+            receipt.Currency != penalty.Currency || receipt.TermsVersion != penalty.TermsVersion ||
+            receipt.TermsHash != penalty.TermsHash)
+            throw Invalid("automatic penalty does not match its retained receipt and companion identity");
     }
 
     internal static void ValidateEffectiveDate(Receipt receipt, DateOnly effectiveDate)
@@ -288,9 +383,9 @@ internal static class DirectLendingCashJournal
         Add("CommitmentFeeReceivable", LedgerAccountType.Asset, resolution.Breakdown.ToCommitmentFee);
         Add("FeeReceivable", LedgerAccountType.Asset, resolution.Breakdown.ToFees);
         Add("PenaltyReceivable", LedgerAccountType.Asset, resolution.Breakdown.ToPenalty);
-        Add("LoanPrincipal", LedgerAccountType.Asset, resolution.Breakdown.ToPrincipal);
-        Add("UnappliedCash", LedgerAccountType.Liability, resolution.UnappliedAmount);
-        Add("PrepaidInterest", LedgerAccountType.Liability, resolution.PrepaidInterestAmount);
+        Add("LoanPrincipal", LedgerAccountType.Asset, resolution.Breakdown.ToPrincipal + resolution.ExcessToPrincipal);
+        Add("UnappliedCashLiability", LedgerAccountType.Liability, resolution.UnappliedAmount);
+        Add("PrepaidInterestLiability", LedgerAccountType.Liability, resolution.ExcessToPrepaidInterest);
         return lines;
 
         void Add(string account, LedgerAccountType type, decimal credit)
@@ -306,6 +401,41 @@ internal static class DirectLendingCashJournal
             value.TryGetDecimal(out var amount))
             return amount;
         throw Invalid($"numeric '{camelCase}' is missing or invalid");
+    }
+
+    internal static decimal ReadAssessmentAmount(JsonElement payload, bool penalty)
+    {
+        var amount = penalty
+            ? RequiredDecimal(payload, "penaltyAmount", "PenaltyAmount")
+            : RequiredDecimal(payload, "amount", "Amount");
+        if (amount < 0m || !DirectLendingPaymentResolver.IsLedgerAmount(amount))
+            throw Invalid("assessment amount must be nonnegative and exactly representable by the ledger");
+        return amount;
+    }
+
+    private static Guid RequiredGuid(JsonElement payload, string camelCase, string pascalCase)
+    {
+        if (TryProperty(payload, camelCase, pascalCase, out var element) &&
+            element.ValueKind == JsonValueKind.String && element.TryGetGuid(out var value) && value != Guid.Empty)
+            return value;
+        throw Invalid($"identity '{camelCase}' is missing or invalid");
+    }
+
+    private static CurrencyCode RequiredCurrency(JsonElement payload)
+    {
+        if (!TryProperty(payload, "currency", "Currency", out var element))
+            throw Invalid("currency is missing");
+        CurrencyCode currency;
+        if (element.ValueKind == JsonValueKind.Number && element.TryGetByte(out var number))
+            currency = (CurrencyCode)number;
+        else if (element.ValueKind == JsonValueKind.String &&
+                 Enum.TryParse(element.GetString(), ignoreCase: false, out CurrencyCode parsed))
+            currency = parsed;
+        else
+            throw Invalid("currency is invalid");
+        if (!Enum.IsDefined(currency) || currency == CurrencyCode.Other)
+            throw Invalid("currency must identify a supported denomination");
+        return currency;
     }
 
     private static bool TryProperty(JsonElement root, string camelCase, string pascalCase, out JsonElement value)

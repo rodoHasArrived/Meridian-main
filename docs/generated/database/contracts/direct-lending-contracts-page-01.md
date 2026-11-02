@@ -2,7 +2,7 @@
 
 # `direct-lending-contracts` data objects - page 1 of 2
 
-Objects 1-80 of 107. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 105. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -133,7 +133,7 @@ classDiagram
         +decimal InterestAmount
         +decimal PenaltyAmount
         +decimal PikInterestAmount
-        +decimal PrepaidInterestApplied
+        +decimal PrepaidInterestConsumed
         +IReadOnlyList~PrepaidInterestReleaseDto~? PrepaidInterestReleases
         +DateTimeOffset RecordedAt
     }
@@ -162,12 +162,6 @@ classDiagram
         +T? Value
     }
     class Meridian_Contracts_DirectLending_DirectLendingErrorCode["DirectLendingErrorCode"] {
-    }
-    class Meridian_Contracts_DirectLending_DirectLendingExcessPaymentPolicyDto["DirectLendingExcessPaymentPolicyDto"] {
-        +PrepaidInterestApplication Application
-        +string ContractualReference
-        +ExcessPaymentTreatment Treatment
-        +int Version
     }
     class Meridian_Contracts_DirectLending_DirectLendingOperationsCalendarItemDto["DirectLendingOperationsCalendarItemDto"] {
         +string Detail
@@ -331,7 +325,7 @@ classDiagram
         +decimal? DefaultRateSpreadBps
         +decimal? EffectiveRateCap
         +decimal? EffectiveRateFloor
-        +DirectLendingExcessPaymentPolicyDto? ExcessPaymentPolicy
+        +ExcessPaymentApplication? ExcessPaymentApplication
         +decimal? FixedAnnualRate
     }
     class Meridian_Contracts_DirectLending_DrawdownLotDto["DrawdownLotDto"] {
@@ -342,7 +336,7 @@ classDiagram
         +decimal RemainingPrincipal
         +DateOnly SettleDate
     }
-    class Meridian_Contracts_DirectLending_ExcessPaymentTreatment["ExcessPaymentTreatment"] {
+    class Meridian_Contracts_DirectLending_ExcessPaymentApplication["ExcessPaymentApplication"] {
     }
     class Meridian_Contracts_DirectLending_FeeBalanceDto["FeeBalanceDto"] {
         +DateTimeOffset CreatedAt
@@ -478,9 +472,11 @@ classDiagram
     class Meridian_Contracts_DirectLending_MixedPaymentResolutionDto["MixedPaymentResolutionDto"] {
         +PaymentBreakdownDto Breakdown
         +string? CashAccountingVersion
-        +decimal PrepaidInterestAmount
+        +ExcessPaymentApplication? ExcessRuleApplied
+        +string? ExcessRuleNote
+        +decimal ExcessToPrepaidInterest
+        +decimal ExcessToPrincipal
         +string ResolutionBasis
-        +string? ReviewReason
         +string? RuleVersion
         +decimal UnappliedAmount
     }
@@ -518,20 +514,17 @@ classDiagram
     class Meridian_Contracts_DirectLending_PostDailyAccrualRequest["PostDailyAccrualRequest"] {
         +DateOnly AccrualDate
     }
-    class Meridian_Contracts_DirectLending_PrepaidInterestApplication["PrepaidInterestApplication"] {
-    }
     class Meridian_Contracts_DirectLending_PrepaidInterestApplicationResultDto["PrepaidInterestApplicationResultDto"] {
         +decimal AppliedAmount
         +IReadOnlyList~PrepaidInterestLotDto~ Lots
         +IReadOnlyList~PrepaidInterestReleaseDto~ Releases
     }
     class Meridian_Contracts_DirectLending_PrepaidInterestLotDto["PrepaidInterestLotDto"] {
-        +PrepaidInterestApplication Application
         +Guid CashTransactionId
-        +string ContractualReference
         +decimal OriginalAmount
         +DateOnly ReceiptDate
         +decimal RemainingAmount
+        +string TermsHash
     }
     class Meridian_Contracts_DirectLending_PrepaidInterestReleaseDto["PrepaidInterestReleaseDto"] {
         +decimal Amount
@@ -614,6 +607,18 @@ classDiagram
         +Guid? ProjectedCashFlowId
         +Guid ReconciliationResultId
     }
+    class Meridian_Contracts_DirectLending_ReconciliationRunDto["ReconciliationRunDto"] {
+        +DateTimeOffset? CompletedAt
+        +Guid LoanId
+        +Guid? ProjectionRunId
+        +Guid ReconciliationRunId
+        +DateTimeOffset RequestedAt
+        +string Status
+    }
+    class Meridian_Contracts_DirectLending_RemoveCollateralRequest["RemoveCollateralRequest"] {
+        +Guid CollateralId
+        +string Reason
+    }
     Meridian_Contracts_DirectLending_AddCollateralRequest --> Meridian_Contracts_DirectLending_CollateralType
     Meridian_Contracts_DirectLending_AddCollateralRequest --> Meridian_Contracts_DirectLending_CurrencyCode
     Meridian_Contracts_DirectLending_AmendLoanTermsRequest --> Meridian_Contracts_DirectLending_DirectLendingTermsDto
@@ -628,8 +633,6 @@ classDiagram
     Meridian_Contracts_DirectLending_DirectLendingCommandError --> Meridian_Contracts_DirectLending_DirectLendingErrorCode
     Meridian_Contracts_DirectLending_DirectLendingCommandException --> Meridian_Contracts_DirectLending_DirectLendingCommandError
     Meridian_Contracts_DirectLending_DirectLendingCommandResult --> Meridian_Contracts_DirectLending_DirectLendingCommandError
-    Meridian_Contracts_DirectLending_DirectLendingExcessPaymentPolicyDto --> Meridian_Contracts_DirectLending_ExcessPaymentTreatment
-    Meridian_Contracts_DirectLending_DirectLendingExcessPaymentPolicyDto --> Meridian_Contracts_DirectLending_PrepaidInterestApplication
     Meridian_Contracts_DirectLending_DirectLendingOperationsLoanHealthDto --> Meridian_Contracts_DirectLending_CurrencyCode
     Meridian_Contracts_DirectLending_DirectLendingOperationsLoanHealthDto --> Meridian_Contracts_DirectLending_LoanStatus
     Meridian_Contracts_DirectLending_DirectLendingOperationsReadModelDto --> Meridian_Contracts_DirectLending_DirectLendingOperationsCalendarItemDto
@@ -646,8 +649,8 @@ classDiagram
     Meridian_Contracts_DirectLending_DirectLendingTermsDto --> Meridian_Contracts_DirectLending_AmortizationType
     Meridian_Contracts_DirectLending_DirectLendingTermsDto --> Meridian_Contracts_DirectLending_CurrencyCode
     Meridian_Contracts_DirectLending_DirectLendingTermsDto --> Meridian_Contracts_DirectLending_DayCountBasis
-    Meridian_Contracts_DirectLending_DirectLendingTermsDto --> Meridian_Contracts_DirectLending_DirectLendingExcessPaymentPolicyDto
     Meridian_Contracts_DirectLending_DirectLendingTermsDto --> Meridian_Contracts_DirectLending_DirectLendingSecurityMasterReferenceDto
+    Meridian_Contracts_DirectLending_DirectLendingTermsDto --> Meridian_Contracts_DirectLending_ExcessPaymentApplication
     Meridian_Contracts_DirectLending_DirectLendingTermsDto --> Meridian_Contracts_DirectLending_PaymentFrequency
     Meridian_Contracts_DirectLending_DirectLendingTermsDto --> Meridian_Contracts_DirectLending_RateTypeKind
     Meridian_Contracts_DirectLending_JournalEntryDto --> Meridian_Contracts_DirectLending_JournalEntryStatus
@@ -672,11 +675,11 @@ classDiagram
     Meridian_Contracts_DirectLending_LoanSummaryDto --> Meridian_Contracts_DirectLending_CurrencyCode
     Meridian_Contracts_DirectLending_LoanSummaryDto --> Meridian_Contracts_DirectLending_LoanStatus
     Meridian_Contracts_DirectLending_LoanTermsVersionDto --> Meridian_Contracts_DirectLending_DirectLendingTermsDto
+    Meridian_Contracts_DirectLending_MixedPaymentResolutionDto --> Meridian_Contracts_DirectLending_ExcessPaymentApplication
     Meridian_Contracts_DirectLending_MixedPaymentResolutionDto --> Meridian_Contracts_DirectLending_PaymentBreakdownDto
     Meridian_Contracts_DirectLending_OutstandingBalancesDto --> Meridian_Contracts_DirectLending_PrepaidInterestLotDto
     Meridian_Contracts_DirectLending_PrepaidInterestApplicationResultDto --> Meridian_Contracts_DirectLending_PrepaidInterestLotDto
     Meridian_Contracts_DirectLending_PrepaidInterestApplicationResultDto --> Meridian_Contracts_DirectLending_PrepaidInterestReleaseDto
-    Meridian_Contracts_DirectLending_PrepaidInterestLotDto --> Meridian_Contracts_DirectLending_PrepaidInterestApplication
     Meridian_Contracts_DirectLending_ProjectedCashFlowDto --> Meridian_Contracts_DirectLending_CurrencyCode
     Meridian_Contracts_DirectLending_ProjectionRunDto --> Meridian_Contracts_DirectLending_ProjectionRunStatus
 ```

@@ -35,15 +35,24 @@ When changing persistence-facing behavior, keep loan state, accrual, cash-flow, 
 and servicer-report projections tied to Security Master identity and lineage so loan planning,
 servicing, and accounting evidence can reconcile through the same instrument source of truth.
 
-Mixed receipts use the shared `DirectLendingPaymentResolver` contractual rules. Each receipt
-is fully represented by receivable/principal allocations and retained unapplied-cash or
-prepaid-interest liabilities. All aggregate transitions preserve those liability balances.
-An absent excess-payment policy preserves the legacy terms hash and makes no prepaid-interest
-or excess-prepayment election. Prepaid-interest receipt lots freeze their contractual reference,
-date, and application election. The explicit `FutureCashInterest` election applies eligible lots
-to subsequently earned cash interest, preserving gross accrual and retained release evidence.
-Same-day interest, PIK, fees, and penalties do not consume those lots. `HoldForReview` and legacy
-untracked balances remain held; amendments cannot retroactively change a receipt's election.
+## Audit hardening (2026-11)
+
+Each manual line is capped at the amount requested, the cash still unallocated, and the bucket's
+outstanding balance. The shared `DirectLendingPaymentResolver` preserves that allocation and the
+automatic waterfall, then routes only the residual under the canonical `ExcessPaymentApplication`
+term. A null rule means `HoldUnapplied` and preserves the legacy terms hash. Permitted excess
+principal prepayment reduces drawdown lots earliest first; prohibited excess prepayment stays
+unapplied with a note. A configured penalty is assessed automatically on the excess principal
+actually applied, after receipt allocations, as a separate event in the command's atomic write.
+
+Every receipt is represented by receivable/principal allocations and retained unapplied-cash or
+prepaid-interest liabilities. Prepaid-interest receipt lots retain their receipt identity, date,
+original amount, remaining balance, and canonical terms hash. Subsequent cash-interest accruals
+consume those balances without an additional contractual election or maturity cap, preserving
+gross accrual and exact consumption evidence. PIK, fees, and penalties do not consume prepaid
+interest. The implementation retains a strict later-date boundary; same-day application remains
+an explicit Accounting review item. Amendments cannot rewrite an existing receipt's terms
+evidence, and all other aggregate transitions preserve retained cash balances and receipt lots.
 
 ## Diagrams
 

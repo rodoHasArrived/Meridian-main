@@ -11,7 +11,8 @@ internal static class DirectLendingCashReconciliation
         Guid runId,
         IReadOnlyList<CashTransactionDto> cashTransactions,
         IReadOnlyList<PaymentAllocationDto> allocations,
-        IReadOnlyList<DailyAccrualEntryDto>? accrualEntries = null)
+        IReadOnlyList<DailyAccrualEntryDto>? accrualEntries = null,
+        IReadOnlyList<JournalEntryDto>? journalEntries = null)
     {
         var activeReceipts = cashTransactions.Where(item => !item.IsVoided && item.TransactionType == "MixedPayment").ToArray();
         var receiptIds = activeReceipts.Where(item => item.LoanId == loanId).Select(item => item.CashTransactionId).ToHashSet();
@@ -24,7 +25,7 @@ internal static class DirectLendingCashReconciliation
         foreach (var entry in accrualEntries ?? [])
         {
             var releases = entry.PrepaidInterestReleases ?? [];
-            if (entry.PrepaidInterestApplied == 0m && releases.Count == 0)
+            if (entry.PrepaidInterestConsumed == 0m && releases.Count == 0)
                 continue;
 
             var orphanedReleases = releases.Where(item => item.CashTransactionId == Guid.Empty || !receiptIds.Contains(item.CashTransactionId)).ToArray();
@@ -32,7 +33,7 @@ internal static class DirectLendingCashReconciliation
             if (missingReceiptEvidence)
             {
                 unattributedRelease = true;
-                var unsupportedAmount = releases.Count == 0 ? entry.PrepaidInterestApplied : orphanedReleases.Sum(item => item.Amount);
+                var unsupportedAmount = releases.Count == 0 ? entry.PrepaidInterestConsumed : orphanedReleases.Sum(item => item.Amount);
                 results.Add(new ReconciliationResultDto(
                     Guid.NewGuid(), runId, loanId, null, null, "CashAllocationEvidenceInvalid",
                     0m, unsupportedAmount, -unsupportedAmount, entry.AccrualDate, entry.AccrualDate,
@@ -43,8 +44,8 @@ internal static class DirectLendingCashReconciliation
                     ], DateTimeOffset.UtcNow));
             }
 
-            if (missingReceiptEvidence || entry.PrepaidInterestApplied < 0m || entry.PrepaidInterestApplied > entry.InterestAmount ||
-                releases.Sum(item => item.Amount) != entry.PrepaidInterestApplied ||
+            if (missingReceiptEvidence || entry.PrepaidInterestConsumed < 0m || entry.PrepaidInterestConsumed > entry.InterestAmount ||
+                releases.Sum(item => item.Amount) != entry.PrepaidInterestConsumed ||
                 releases.Select(item => item.CashTransactionId).Distinct().Count() != releases.Count ||
                 releases.Any(item => item.CashTransactionId == Guid.Empty || item.Amount <= 0m ||
                     !DirectLendingPaymentResolver.IsLedgerAmount(item.Amount)))
@@ -85,6 +86,34 @@ internal static class DirectLendingCashReconciliation
                     : variance != 0m
                         ? "Retained allocations do not explain the receipt. Historical cash requires explicit remediation; no balance has been inferred."
                         : "Receipt accounting is complete. Held cash remains a liability; external statement matching is assessed separately."
+                ], DateTimeOffset.UtcNow));
+        }
+
+        // Operational journals are a retained source of historical clearing evidence. They
+        // are not the authoritative general ledger, and neither a bank match nor a proposed
+        // reclassification follows from their residual. Keep currencies and bases separate.
+        var clearingLines = (journalEntries ?? [])
+            .Where(entry => entry.LoanId == loanId && entry.Status is JournalEntryStatus.Draft or JournalEntryStatus.Posted)
+            .SelectMany(entry => entry.Lines
+                .Where(line => string.Equals(line.AccountCode, "LoanAndAccrualsClearing", StringComparison.OrdinalIgnoreCase))
+                .Select(line => (Entry: entry, Line: line)));
+        foreach (var group in clearingLines.GroupBy(item => (item.Line.Currency, item.Entry.LedgerBasis)))
+        {
+            var debits = group.Sum(item => item.Line.DebitAmount);
+            var credits = group.Sum(item => item.Line.CreditAmount);
+            var residual = credits - debits;
+            if (residual == 0m)
+                continue;
+            var entries = group.Select(item => item.Entry).DistinctBy(item => item.JournalEntryId).ToArray();
+            results.Add(new ReconciliationResultDto(
+                Guid.NewGuid(), runId, loanId, null, null, "HistoricalClearingResidual",
+                null, residual, null, null, entries.Max(item => item.AccountingDate),
+                "RetainedOperationalClearing", null,
+                [
+                    $"Currency: {group.Key.Currency}; ledger basis: {group.Key.LedgerBasis}; account: LoanAndAccrualsClearing; credit-positive residual: {residual.ToString(CultureInfo.InvariantCulture)}.",
+                    $"Retained debits: {debits.ToString(CultureInfo.InvariantCulture)}; retained credits: {credits.ToString(CultureInfo.InvariantCulture)}; draft entries: {entries.Count(item => item.Status == JournalEntryStatus.Draft)}; posted entries: {entries.Count(item => item.Status == JournalEntryStatus.Posted)}.",
+                    $"Source events: {string.Join(", ", entries.Select(item => item.SourceEventId).Distinct().OrderBy(item => item).Select(item => item.ToString("D")))}.",
+                    "This residual comes from retained operational journals, including drafts. It does not certify the authoritative general-ledger balance or an external cash match. Historical postings are unchanged; any reclassification requires Accounting review."
                 ], DateTimeOffset.UtcNow));
         }
 

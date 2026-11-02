@@ -2,23 +2,11 @@
 
 # `direct-lending-contracts` data objects - page 2 of 2
 
-Objects 81-107 of 107. References crossing pages remain available in the dependency manifest.
+Objects 81-105 of 105. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% direct-lending-contracts: module mapping, not DTO/table equivalence
-    class Meridian_Contracts_DirectLending_ReconciliationRunDto["ReconciliationRunDto"] {
-        +DateTimeOffset? CompletedAt
-        +Guid LoanId
-        +Guid? ProjectionRunId
-        +Guid ReconciliationRunId
-        +DateTimeOffset RequestedAt
-        +string Status
-    }
-    class Meridian_Contracts_DirectLending_RemoveCollateralRequest["RemoveCollateralRequest"] {
-        +Guid CollateralId
-        +string Reason
-    }
     class Meridian_Contracts_DirectLending_ReplayDirectLendingRequest["ReplayDirectLendingRequest"] {
         +bool RecomputeDerivedArtifacts
     }

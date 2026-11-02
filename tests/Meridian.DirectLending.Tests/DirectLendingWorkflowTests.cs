@@ -16,6 +16,7 @@ public sealed class DirectLendingWorkflowTests
         await service.BookDrawdownAsync(loan.LoanId, new BookDrawdownRequest(250_000m, new DateOnly(2026, 3, 23), new DateOnly(2026, 3, 23), "wire-1"));
         await service.AssessFeeAsync(loan.LoanId, new AssessFeeRequest("Origination", 1_500m, new DateOnly(2026, 3, 24), "Upfront"));
         await service.PostDailyAccrualAsync(loan.LoanId, new PostDailyAccrualRequest(new DateOnly(2026, 3, 24)));
+        var owed = (await service.GetServicingStateAsync(loan.LoanId))!.Balances;
 
         var servicing = await service.ApplyMixedPaymentAsync(
             loan.LoanId,
@@ -31,12 +32,16 @@ public sealed class DirectLendingWorkflowTests
         servicing.Should().NotBeNull();
         servicing!.Balances.PrincipalOutstanding.Should().Be(246_650m);
         cash.Should().ContainSingle(x => x.TransactionType == "MixedPayment" && x.Amount == 5_000m);
-        // One day's earned interest is 250,000 * 8% / 360 = 55.56. The
-        // requested 100 cannot create the additional 44.44 of interest income.
+        // Manual allocations remain capped by the actual debt; the residual is
+        // retained as a liability, so all cash is accounted for without income overstatement.
+        var expectedInterest = Math.Min(100m, owed.InterestAccruedUnpaid);
+        var expectedCommitmentFee = Math.Min(50m, owed.CommitmentFeeAccruedUnpaid);
+        var expectedHeld = 5_000m - expectedInterest - expectedCommitmentFee - 1_500m - 3_350m;
         allocations.Should().HaveCount(5);
-        allocations.Single(item => item.TargetType == "Interest").AllocatedAmount.Should().Be(55.56m);
-        allocations.Single(item => item.TargetType == "UnappliedCash").AllocatedAmount.Should().Be(44.44m);
-        servicing.Balances.UnappliedCash.Should().Be(44.44m);
+        allocations.Single(x => x.TargetType is "Interest" or "InterestAccrued").AllocatedAmount.Should().Be(expectedInterest);
+        allocations.Single(x => x.TargetType is "CommitmentFee" or "CommitmentFeeAccrued").AllocatedAmount.Should().Be(expectedCommitmentFee);
+        allocations.Single(x => x.TargetType == "UnappliedCash").AllocatedAmount.Should().Be(expectedHeld);
+        servicing.Balances.UnappliedCash.Should().Be(expectedHeld);
         allocations.Sum(x => x.AllocatedAmount).Should().Be(5_000m);
     }
 

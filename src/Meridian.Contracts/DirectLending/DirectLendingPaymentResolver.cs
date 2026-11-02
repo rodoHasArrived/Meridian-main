@@ -1,32 +1,26 @@
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+
 namespace Meridian.Contracts.DirectLending;
 
 /// <summary>Shared, deterministic cash allocation for the C# and F# servicing paths.</summary>
 public static class DirectLendingPaymentResolver
 {
     public const string CashAccountingVersion = "direct-lending-cash-v1";
+    private static readonly JsonSerializerOptions TermsJson = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     /// <summary>Matches the authoritative ledger's numeric(38,10) storage without rounding.</summary>
     public static bool IsLedgerAmount(decimal amount) =>
         decimal.Round(amount, 10, MidpointRounding.ToEven) == amount &&
         amount > -10_000_000_000_000_000_000_000_000_000m && amount < 10_000_000_000_000_000_000_000_000_000m;
 
-    public static string? ValidatePolicy(DirectLendingTermsDto terms)
-    {
-        var policy = terms.ExcessPaymentPolicy;
-        if (policy is null)
-            return null;
-        if (policy.Version != 1 || !Enum.IsDefined(policy.Treatment) || !Enum.IsDefined(policy.Application))
-            return "The excess-payment policy version or treatment is unsupported.";
-        if (policy.Treatment != ExcessPaymentTreatment.PrepaidInterest && policy.Application != PrepaidInterestApplication.HoldForReview)
-            return "A prepaid-interest release instruction requires a prepaid-interest treatment.";
-        if (string.IsNullOrWhiteSpace(policy.ContractualReference))
-            return "An excess-payment policy requires a contractual evidence reference.";
-        if (policy.Treatment == ExcessPaymentTreatment.PrincipalPrepayment && !terms.PrepaymentAllowed)
-            return "Principal prepayment is prohibited by the loan terms.";
-        if (policy.Treatment == ExcessPaymentTreatment.PrincipalPrepayment && terms.PrepaymentPenaltyRate > 0m)
-            return "Penalty-bearing principal prepayment requires reviewed penalty and allocation instructions; version 1 cannot infer them.";
-        return null;
-    }
+    public static string ComputeTermsHash(DirectLendingTermsDto terms) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(terms, TermsJson))));
+
+    public static string? ValidatePolicy(DirectLendingTermsDto terms) =>
+        terms.ExcessPaymentApplication is { } rule && !Enum.IsDefined(rule)
+            ? "The contractual excess-payment application is unsupported." : null;
 
     public static string? ValidatePrincipalPayment(
         LoanServicingStateDto servicing, DirectLendingTermsDto terms, decimal amount, DateOnly effectiveDate)
@@ -39,8 +33,6 @@ public static class DirectLendingPaymentResolver
             return "Principal-only payment exceeds outstanding principal; use a mixed-payment receipt to retain excess cash.";
         if (effectiveDate < terms.MaturityDate && !terms.PrepaymentAllowed)
             return "Principal prepayment is prohibited by the loan terms; use a mixed-payment receipt to hold cash.";
-        if (effectiveDate < terms.MaturityDate && terms.ExcessPaymentPolicy is not null && terms.PrepaymentPenaltyRate > 0m)
-            return "Penalty-bearing principal prepayment requires reviewed penalty and allocation instructions.";
         return ValidatePolicy(terms);
     }
 
@@ -53,12 +45,40 @@ public static class DirectLendingPaymentResolver
         return ValidatePolicy(newTerms);
     }
 
+    /// <summary>Refuses ambiguous backdated routing; recording time is not a contractual effective date.</summary>
+    public static string? ValidatePaymentTermsSelection(LoanContractDetailDto contract, DateOnly effectiveDate)
+    {
+        if (contract.CurrentTermsVersion <= 1)
+            return null;
+        var current = contract.TermsVersions.SingleOrDefault(item => item.VersionNumber == contract.CurrentTermsVersion);
+        if (current is null)
+            return "The current payment terms version is not retained.";
+        if (effectiveDate < DateOnly.FromDateTime(current.RecordedAt.UtcDateTime) &&
+            contract.TermsVersions.Any(item => item.VersionNumber < current.VersionNumber && !SameRoutingTerms(item.Terms, current.Terms)))
+            return "Backdated receipt crosses amended payment terms without contractual effective-date evidence; reviewed terms-version selection is required.";
+        return null;
+    }
+
+    private static bool SameRoutingTerms(DirectLendingTermsDto left, DirectLendingTermsDto right) =>
+        left.EffectiveExcessPaymentApplication == right.EffectiveExcessPaymentApplication &&
+        left.PrepaymentAllowed == right.PrepaymentAllowed && left.PrepaymentPenaltyRate == right.PrepaymentPenaltyRate &&
+        left.InterestOnlyMonths == right.InterestOnlyMonths && left.OriginationDate == right.OriginationDate &&
+        left.MaturityDate == right.MaturityDate && left.BaseCurrency == right.BaseCurrency;
+
+    /// <summary>Existing penalty convention, applied only to the separately routed excess-principal basis.</summary>
+    public static decimal CalculateExcessPrepaymentPenalty(DirectLendingTermsDto terms, MixedPaymentResolutionDto resolution)
+    {
+        if (resolution.ExcessToPrincipal <= 0m || !(terms.PrepaymentPenaltyRate > 0m))
+            return 0m;
+        var amount = decimal.Round(resolution.ExcessToPrincipal * terms.PrepaymentPenaltyRate.Value, 2, MidpointRounding.AwayFromZero);
+        if (!IsLedgerAmount(amount))
+            throw new ArgumentException("The excess-principal penalty exceeds the authoritative ledger amount contract.", nameof(terms));
+        return amount;
+    }
+
     public static MixedPaymentResolutionDto Resolve(
-        LoanServicingStateDto servicing,
-        DirectLendingTermsDto terms,
-        decimal amount,
-        PaymentBreakdownDto? requestedBreakdown,
-        DateOnly effectiveDate)
+        LoanServicingStateDto servicing, DirectLendingTermsDto terms, decimal amount,
+        PaymentBreakdownDto? requestedBreakdown, DateOnly effectiveDate)
     {
         ArgumentNullException.ThrowIfNull(servicing);
         ArgumentNullException.ThrowIfNull(terms);
@@ -77,64 +97,49 @@ public static class DirectLendingPaymentResolver
 
         var remaining = amount;
         var balances = servicing.Balances;
-        var policy = terms.ExcessPaymentPolicy;
-        var atMaturity = effectiveDate >= terms.MaturityDate;
-        var inInterestOnlyPeriod = !atMaturity && terms.InterestOnlyMonths > 0 &&
-            effectiveDate < terms.OriginationDate.AddMonths(terms.InterestOnlyMonths);
-        var principalPermitted = atMaturity || (terms.PrepaymentAllowed &&
-            (policy is null || !(terms.PrepaymentPenaltyRate > 0m)));
-
+        var inInterestOnlyPeriod = terms.InterestOnlyMonths > 0 && effectiveDate < terms.OriginationDate.AddMonths(terms.InterestOnlyMonths);
         decimal Take(decimal requestedAmount, decimal outstanding)
         {
             var applied = Math.Min(remaining, Math.Min(Math.Max(0m, requestedAmount), Math.Max(0m, outstanding)));
             remaining -= applied;
             return applied;
         }
-
-        var principalRequest = requestedBreakdown?.ToPrincipal ??
-            (atMaturity || (policy is null && !inInterestOnlyPeriod) ? balances.PrincipalOutstanding : 0m);
+        // Preserve the existing allocation; the contractual rule routes only its residual.
         var breakdown = new PaymentBreakdownDto(
             Take(requestedBreakdown?.ToInterest ?? balances.InterestAccruedUnpaid, balances.InterestAccruedUnpaid),
             Take(requestedBreakdown?.ToCommitmentFee ?? balances.CommitmentFeeAccruedUnpaid, balances.CommitmentFeeAccruedUnpaid),
             Take(requestedBreakdown?.ToFees ?? balances.FeesAccruedUnpaid, balances.FeesAccruedUnpaid),
             Take(requestedBreakdown?.ToPenalty ?? balances.PenaltyAccruedUnpaid, balances.PenaltyAccruedUnpaid),
-            Take(principalPermitted ? principalRequest : 0m, balances.PrincipalOutstanding));
-
-        decimal prepaidInterest = 0m;
-        if (remaining > 0m && policy?.Treatment == ExcessPaymentTreatment.PrincipalPrepayment)
+            Take(requestedBreakdown?.ToPrincipal ?? (inInterestOnlyPeriod ? 0m : balances.PrincipalOutstanding), balances.PrincipalOutstanding));
+        decimal excessPrincipal = 0m, prepaid = 0m;
+        string? note = null;
+        if (remaining > 0m)
         {
-            breakdown = breakdown with
+            switch (terms.EffectiveExcessPaymentApplication)
             {
-                ToPrincipal = breakdown.ToPrincipal + Take(remaining, balances.PrincipalOutstanding - breakdown.ToPrincipal)
-            };
+                case ExcessPaymentApplication.PrincipalPrepayment when terms.PrepaymentAllowed:
+                    excessPrincipal = Take(remaining, balances.PrincipalOutstanding - breakdown.ToPrincipal);
+                    break;
+                case ExcessPaymentApplication.PrincipalPrepayment:
+                    note = "Principal prepayment is not allowed; excess cash is held unapplied.";
+                    break;
+                case ExcessPaymentApplication.PrepaidInterest:
+                    prepaid = remaining;
+                    remaining = 0m;
+                    break;
+            }
         }
-        else if (remaining > 0m && !atMaturity && policy?.Treatment == ExcessPaymentTreatment.PrepaidInterest)
-        {
-            prepaidInterest = remaining;
-            remaining = 0m;
-        }
-
-        if (!new[] { breakdown.ToInterest, breakdown.ToCommitmentFee, breakdown.ToFees,
-                breakdown.ToPenalty, breakdown.ToPrincipal, remaining, prepaidInterest }.All(IsLedgerAmount))
+        if (!new[] { breakdown.ToInterest, breakdown.ToCommitmentFee, breakdown.ToFees, breakdown.ToPenalty,
+                breakdown.ToPrincipal, excessPrincipal, prepaid, remaining }.All(IsLedgerAmount))
             throw new ArgumentException("Resolved allocations must be exactly representable by the ledger's numeric(38,10) amount contract.", nameof(servicing));
 
-        var reviewReason = remaining > 0m && policy is null
-            ? "No excess-payment election is declared; cash is retained pending contractual review."
-            : prepaidInterest > 0m && policy?.Application == PrepaidInterestApplication.HoldForReview
-                ? "Prepaid interest is retained; release requires reviewed contractual period instructions."
-                : remaining > 0m && atMaturity && policy?.Treatment == ExcessPaymentTreatment.PrepaidInterest
-                    ? "No future contractual interest period is established at or after maturity; excess cash is held unapplied."
-                : remaining > 0m && !principalPermitted && principalRequest > 0m
-                    ? "Requested principal allocation is not permitted by the supported contractual instructions."
-                    : null;
-
-        return new MixedPaymentResolutionDto(
-            breakdown,
-            requestedBreakdown is null ? "WaterfallAuto" : "Manual",
-            CashAccountingVersion,
-            remaining,
-            prepaidInterest,
-            CashAccountingVersion,
-            reviewReason);
+        return new MixedPaymentResolutionDto(breakdown, requestedBreakdown is null ? "WaterfallAuto" : "Manual", CashAccountingVersion, remaining)
+        {
+            ExcessToPrincipal = excessPrincipal,
+            ExcessToPrepaidInterest = prepaid,
+            ExcessRuleApplied = terms.ExcessPaymentApplication,
+            ExcessRuleNote = note,
+            CashAccountingVersion = CashAccountingVersion
+        };
     }
 }

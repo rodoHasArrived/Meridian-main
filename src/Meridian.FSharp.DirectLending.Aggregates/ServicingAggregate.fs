@@ -146,24 +146,34 @@ module internal ServicingAggregate =
     let applyMixedPayment (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) amount breakdown effectiveDate =
         let resolution =
             DirectLendingPaymentResolver.Resolve(servicing, terms, amount, breakdown, effectiveDate)
+        let principalApplied = resolution.Breakdown.ToPrincipal + resolution.ExcessToPrincipal
+        let penaltyAssessed = DirectLendingPaymentResolver.CalculateExcessPrepaymentPenalty(terms, resolution)
         let cashTransactionId = Guid.NewGuid()
         let prepaidLots =
             DirectLendingPrepaidInterest.CreateReceiptLots(
-                servicing, terms, cashTransactionId, effectiveDate, resolution.PrepaidInterestAmount)
+                servicing, terms, cashTransactionId, effectiveDate, resolution.ExcessToPrepaidInterest)
 
         let updatedBalances =
             OutstandingBalancesDto(
-                max 0m (servicing.Balances.PrincipalOutstanding - resolution.Breakdown.ToPrincipal),
+                max 0m (servicing.Balances.PrincipalOutstanding - principalApplied),
                 max 0m (servicing.Balances.InterestAccruedUnpaid - resolution.Breakdown.ToInterest),
                 max 0m (servicing.Balances.CommitmentFeeAccruedUnpaid - resolution.Breakdown.ToCommitmentFee),
                 max 0m (servicing.Balances.FeesAccruedUnpaid - resolution.Breakdown.ToFees),
-                max 0m (servicing.Balances.PenaltyAccruedUnpaid - resolution.Breakdown.ToPenalty),
+                max 0m (servicing.Balances.PenaltyAccruedUnpaid - resolution.Breakdown.ToPenalty) + penaltyAssessed,
                 UnappliedCash = servicing.Balances.UnappliedCash + resolution.UnappliedAmount,
-                PrepaidInterest = servicing.Balances.PrepaidInterest + resolution.PrepaidInterestAmount,
+                PrepaidInterest = servicing.Balances.PrepaidInterest + resolution.ExcessToPrepaidInterest,
                 PrepaidInterestLots = prepaidLots)
 
-        let totalDrawnAfter = max 0m (servicing.TotalDrawn - resolution.Breakdown.ToPrincipal)
+        let totalDrawnAfter = max 0m (servicing.TotalDrawn - principalApplied)
         let nextRevision = servicing.ServicingRevision + 1L
+        let finalRevision = nextRevision + (if penaltyAssessed > 0m then 1L else 0L)
+        let paymentHistory =
+            prependRevision nextRevision "InternalEvent" effectiveDate (sprintf "Mixed payment applied for %.2f." amount) servicing.RevisionHistory
+        let revisionHistory =
+            if penaltyAssessed > 0m then
+                prependRevision finalRevision "InternalEvent" effectiveDate (sprintf "Prepayment penalty charged for %.2f." penaltyAssessed) paymentHistory
+            else
+                paymentHistory
         let updated =
             LoanServicingStateDto(
                 servicing.LoanId,
@@ -172,12 +182,12 @@ module internal ServicingAggregate =
                 totalDrawnAfter,
                 DirectLendingInterop.CalculateAvailableToDraw(servicing.CurrentCommitment, totalDrawnAfter),
                 updatedBalances,
-                applyPaymentToLots resolution.Breakdown.ToPrincipal servicing.DrawdownLots,
+                applyPaymentToLots principalApplied servicing.DrawdownLots,
                 servicing.CurrentRateReset,
                 servicing.LastAccrualDate,
                 Nullable effectiveDate,
-                nextRevision,
-                prependRevision nextRevision "InternalEvent" effectiveDate (sprintf "Mixed payment applied for %.2f." amount) servicing.RevisionHistory,
+                finalRevision,
+                revisionHistory,
                 servicing.AccrualEntries,
                 Collateral = servicing.Collateral,
                 UnamortizedDiscount = servicing.UnamortizedDiscount,
@@ -190,9 +200,9 @@ module internal ServicingAggregate =
                 ("CommitmentFee", resolution.Breakdown.ToCommitmentFee)
                 ("Fees", resolution.Breakdown.ToFees)
                 ("Penalty", resolution.Breakdown.ToPenalty)
-                ("Principal", resolution.Breakdown.ToPrincipal)
+                ("Principal", principalApplied)
                 ("UnappliedCash", resolution.UnappliedAmount)
-                ("PrepaidInterest", resolution.PrepaidInterestAmount)
+                ("PrepaidInterest", resolution.ExcessToPrepaidInterest)
             |]
             |> Array.choose (fun (targetType, allocatedAmount) ->
                 if allocatedAmount <= 0m then
@@ -351,7 +361,7 @@ module internal ServicingAggregate =
                 annualRate,
                 DateTimeOffset.UtcNow,
                 pikInterestAmount,
-                PrepaidInterestApplied = prepaidApplication.AppliedAmount,
+                PrepaidInterestConsumed = prepaidApplication.AppliedAmount,
                 PrepaidInterestReleases = prepaidApplication.Releases)
 
         let nextRevision = servicing.ServicingRevision + 1L

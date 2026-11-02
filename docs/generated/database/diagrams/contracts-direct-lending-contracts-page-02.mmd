@@ -1,17 +1,5 @@
 classDiagram
     %% direct-lending-contracts: module mapping, not DTO/table equivalence
-    class Meridian_Contracts_DirectLending_ReconciliationRunDto["ReconciliationRunDto"] {
-        +DateTimeOffset? CompletedAt
-        +Guid LoanId
-        +Guid? ProjectionRunId
-        +Guid ReconciliationRunId
-        +DateTimeOffset RequestedAt
-        +string Status
-    }
-    class Meridian_Contracts_DirectLending_RemoveCollateralRequest["RemoveCollateralRequest"] {
-        +Guid CollateralId
-        +string Reason
-    }
     class Meridian_Contracts_DirectLending_ReplayDirectLendingRequest["ReplayDirectLendingRequest"] {
         +bool RecomputeDerivedArtifacts
     }

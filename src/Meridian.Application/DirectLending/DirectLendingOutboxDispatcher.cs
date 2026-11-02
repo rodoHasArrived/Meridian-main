@@ -208,7 +208,7 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
 
                 if (prepaidRelease.AppliedAmount > 0m)
                 {
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "PrepaidInterest", prepaidRelease.AppliedAmount, 0m, accrualCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "PrepaidInterestLiability", prepaidRelease.AppliedAmount, 0m, accrualCurrency, lineDimensionsJson));
                     lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "AccruedInterestReceivable", 0m, prepaidRelease.AppliedAmount, accrualCurrency, lineDimensionsJson));
                 }
 
@@ -258,12 +258,30 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
                 break;
 
             case "loan.prepayment-penalty-charged":
-                var prepaymentPenaltyAmount = GetRequiredDecimal(payload.RootElement, "penaltyAmount", "PenaltyAmount");
+                var automaticPenalty = DirectLendingCashJournal.ReadAutomaticPenalty(payload.RootElement, contract, accountingDate);
+                var penaltyCurrency = contract.CurrentTerms.BaseCurrency;
+                if (automaticPenalty is not null)
+                {
+                    var receiptEvent = history.SingleOrDefault(item => item.EventId == automaticPenalty.ReceiptEventId);
+                    if (receiptEvent is null || receiptEvent.EventType != "loan.mixed-payment-applied" ||
+                        sourceEvent.AggregateVersion != receiptEvent.AggregateVersion + 1 ||
+                        sourceEvent.CausationId != receiptEvent.EventId || sourceEvent.CommandId is not null)
+                        throw new InvalidOperationException("Automatic penalty journal lacks its immediately preceding retained receipt event.");
+                    using var receiptPayload = JsonDocument.Parse(receiptEvent.PayloadJson);
+                    var penaltyReceipt = DirectLendingCashJournal.Read(receiptPayload.RootElement);
+                    DirectLendingCashJournal.ValidateTerms(penaltyReceipt, contract);
+                    DirectLendingCashJournal.ValidatePenaltyReceipt(automaticPenalty, penaltyReceipt,
+                        receiptEvent.EventId, sourceEvent.EventId);
+                    penaltyCurrency = automaticPenalty.Currency;
+                }
+                var prepaymentPenaltyAmount = DirectLendingCashJournal.IsVersionedAssessment(payload.RootElement)
+                    ? DirectLendingCashJournal.ReadAssessmentAmount(payload.RootElement, penalty: true)
+                    : GetRequiredDecimal(payload.RootElement, "penaltyAmount", "PenaltyAmount");
                 description = "Prepayment penalty";
                 if (prepaymentPenaltyAmount > 0m)
                 {
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "PenaltyReceivable", prepaymentPenaltyAmount, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "PenaltyIncome", 0m, prepaymentPenaltyAmount, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "PenaltyReceivable", prepaymentPenaltyAmount, 0m, penaltyCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "PenaltyIncome", 0m, prepaymentPenaltyAmount, penaltyCurrency, lineDimensionsJson));
                 }
                 break;
         }

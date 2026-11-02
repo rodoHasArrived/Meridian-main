@@ -97,7 +97,7 @@ public sealed class LoanAccountingProjector
                 Add("InterestIncome", LedgerAccountType.Revenue, 0m, interest);
                 // Earn the gross contractual interest once, then settle only its supported
                 // cash-interest receivable from the previously retained liability.
-                Add("PrepaidInterest", LedgerAccountType.Liability, prepaidRelease.AppliedAmount, 0m);
+                Add("PrepaidInterestLiability", LedgerAccountType.Liability, prepaidRelease.AppliedAmount, 0m);
                 Add("AccruedInterestReceivable", LedgerAccountType.Asset, 0m, prepaidRelease.AppliedAmount);
                 // PIK interest capitalizes into loan principal instead of a cash receivable.
                 Add("LoanPrincipal", LedgerAccountType.Asset, pikInterest, 0m);
@@ -150,16 +150,21 @@ public sealed class LoanAccountingProjector
                 if (!DirectLendingCashJournal.IsVersionedAssessment(root))
                     break;
                 description = "Loan fee assessment";
-                var feeAssessment = GetDecimal(root, "amount", "Amount");
+                var feeAssessment = DirectLendingCashJournal.ReadAssessmentAmount(root, penalty: false);
                 Add("FeeReceivable", LedgerAccountType.Asset, feeAssessment, 0m);
                 Add("FeeIncome", LedgerAccountType.Revenue, 0m, feeAssessment);
                 break;
 
             case "loan.prepayment-penalty-charged":
+                var automaticPenalty = DirectLendingCashJournal.ReadAutomaticPenalty(root, contract, accountingDate);
                 if (!DirectLendingCashJournal.IsVersionedAssessment(root))
                     break;
                 description = "Loan prepayment penalty assessment";
-                var penaltyAssessment = GetDecimal(root, "penaltyAmount", "PenaltyAmount");
+                if (automaticPenalty is not null &&
+                    (metadata.CausationId != automaticPenalty.ReceiptEventId || metadata.CommandId is not null))
+                    throw new InvalidOperationException("Automatic prepayment penalty must be caused by its retained receipt event and cannot own a separate command.");
+                currency = automaticPenalty?.Currency.ToString() ?? currency;
+                var penaltyAssessment = DirectLendingCashJournal.ReadAssessmentAmount(root, penalty: true);
                 Add("PenaltyReceivable", LedgerAccountType.Asset, penaltyAssessment, 0m);
                 Add("PenaltyIncome", LedgerAccountType.Revenue, 0m, penaltyAssessment);
                 break;

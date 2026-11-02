@@ -16,10 +16,15 @@ public sealed record MixedPaymentResolutionDto(
     PaymentBreakdownDto Breakdown,
     string ResolutionBasis,
     string? RuleVersion,
-    decimal UnappliedAmount,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] decimal PrepaidInterestAmount = 0m,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? CashAccountingVersion = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ReviewReason = null);
+    decimal UnappliedAmount)
+{
+    public decimal ExcessToPrincipal { get; init; }
+    public decimal ExcessToPrepaidInterest { get; init; }
+    public ExcessPaymentApplication? ExcessRuleApplied { get; init; }
+    public string? ExcessRuleNote { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? CashAccountingVersion { get; init; }
+}
 
 public sealed record ApplyMixedPaymentRequest(
     decimal Amount,

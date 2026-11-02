@@ -169,11 +169,10 @@ internal static class DirectLendingServiceSupport
             messages.Add(CreateOutboxMessage("direct-lending.reconciliation.requested"));
         }
 
-        return new DirectLendingPersistenceBatch(
-            batch?.CashTransactions ?? [],
-            batch?.PaymentAllocations ?? [],
-            batch?.FeeBalances ?? [],
-            (batch?.OutboxMessages ?? []).Concat(messages).ToArray());
+        return (batch ?? DirectLendingPersistenceBatch.Empty) with
+        {
+            OutboxMessages = (batch?.OutboxMessages ?? []).Concat(messages).ToArray()
+        };
 
         DirectLendingOutboxMessageWrite CreateOutboxMessage(string topic)
             => new(

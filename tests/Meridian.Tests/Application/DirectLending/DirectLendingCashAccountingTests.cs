@@ -12,25 +12,25 @@ public sealed class DirectLendingCashAccountingTests
     private static readonly DateOnly PaymentDate = new(2026, 2, 15);
 
     [Fact]
-    public void LegacyTerms_NullPolicyPreservesCapturedHashAndJsonRoundTrip()
+    public void LegacyTerms_NullRulePreservesCapturedHashAndJsonRoundTrip()
     {
         var terms = DirectLendingTermsHashCharacterizationTests.FixedBulletTerms();
         var json = JsonSerializer.Serialize(terms, Json);
-        json.Should().NotContain("excessPaymentPolicy");
+        json.Should().NotContain("excessPaymentApplication");
         var roundTrip = JsonSerializer.Deserialize<DirectLendingTermsDto>(json, Json)!;
         DirectLendingServiceSupport.ComputeTermsHash(roundTrip)
             .Should().Be(DirectLendingTermsHashCharacterizationTests.FixedBulletHash);
         DirectLendingServiceSupport.ComputeTermsHash(terms with
         {
-            ExcessPaymentPolicy = new(1, ExcessPaymentTreatment.HoldUnappliedCash, "synthetic-contract:cash-clause")
+            ExcessPaymentApplication = ExcessPaymentApplication.HoldUnapplied
         }).Should().NotBe(DirectLendingTermsHashCharacterizationTests.FixedBulletHash);
     }
 
     [Theory]
-    [InlineData(ExcessPaymentTreatment.HoldUnappliedCash)]
-    [InlineData(ExcessPaymentTreatment.PrincipalPrepayment)]
-    [InlineData(ExcessPaymentTreatment.PrepaidInterest)]
-    public async Task ManualAllocation_CSharpAndFSharpConserveTheEntireReceipt(ExcessPaymentTreatment treatment)
+    [InlineData(ExcessPaymentApplication.HoldUnapplied)]
+    [InlineData(ExcessPaymentApplication.PrincipalPrepayment)]
+    [InlineData(ExcessPaymentApplication.PrepaidInterest)]
+    public async Task ManualAllocation_CSharpAndFSharpConserveTheEntireReceipt(ExcessPaymentApplication treatment)
     {
         var (service, loanId) = await CreateAsync(PolicyTerms(treatment));
         await service.BookDrawdownAsync(loanId, new(100m, PaymentDate, PaymentDate, "synthetic-draw"));
@@ -59,11 +59,11 @@ public sealed class DirectLendingCashAccountingTests
     [InlineData(true)]
     public async Task ProhibitedPrepayment_HoldsCashWithoutReducingPrincipal(bool manual)
     {
-        var terms = PolicyTerms(ExcessPaymentTreatment.HoldUnappliedCash) with { PrepaymentAllowed = false };
+        var terms = PolicyTerms(ExcessPaymentApplication.PrincipalPrepayment) with { PrepaymentAllowed = false };
         var (service, loanId) = await CreateAsync(terms);
         await service.BookDrawdownAsync(loanId, new(100m, PaymentDate, PaymentDate, null));
         var after = await service.ApplyMixedPaymentAsync(loanId,
-            new(120m, PaymentDate, manual ? new(0m, 0m, 0m, 0m, 120m) : null, null));
+            new(120m, PaymentDate, manual ? new(0m, 0m, 0m, 0m, 0m) : null, null));
         after!.Balances.PrincipalOutstanding.Should().Be(100m);
         after.Balances.UnappliedCash.Should().Be(120m);
         var principalOnly = () => service.ApplyPrincipalPaymentAsync(loanId, new(1m, PaymentDate, null));
@@ -78,7 +78,7 @@ public sealed class DirectLendingCashAccountingTests
         var terms = DirectLendingTermsHashCharacterizationTests.FixedBulletTerms() with
         {
             InterestOnlyMonths = 12,
-            ExcessPaymentPolicy = explicitPrepayment ? new(1, ExcessPaymentTreatment.PrincipalPrepayment, "synthetic:prepay") : null
+            ExcessPaymentApplication = explicitPrepayment ? ExcessPaymentApplication.PrincipalPrepayment : null
         };
         var (service, loanId) = await CreateAsync(terms);
         await service.BookDrawdownAsync(loanId, new(100m, PaymentDate, PaymentDate, null));
@@ -87,72 +87,157 @@ public sealed class DirectLendingCashAccountingTests
         after.Balances.UnappliedCash.Should().Be(explicitPrepayment ? 25m : 125m);
     }
 
-    [Fact]
-    public async Task PrepaidInterest_RemainsLiabilityAcrossAccrualAndTermsAmendment()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BasePrincipalAllocation_PreservesExistingWaterfallWhenExcessPrepaymentIsProhibited(bool manual)
     {
-        var terms = PolicyTerms(ExcessPaymentTreatment.PrepaidInterest);
+        var terms = PolicyTerms(ExcessPaymentApplication.PrincipalPrepayment) with
+        {
+            InterestOnlyMonths = 0,
+            PrepaymentAllowed = false
+        };
+        var (service, loanId) = await CreateAsync(terms);
+        await service.BookDrawdownAsync(loanId, new(100m, PaymentDate, PaymentDate, null));
+        var result = (await service.ApplyMixedPaymentAsync(loanId,
+            new(120m, PaymentDate, manual ? new(0m, 0m, 0m, 0m, 60m) : null, null)))!;
+
+        result.Balances.PrincipalOutstanding.Should().Be(manual ? 40m : 0m);
+        result.Balances.UnappliedCash.Should().Be(manual ? 60m : 20m);
+        var receipt = (await service.GetHistoryAsync(loanId)).Last();
+        using var payload = JsonDocument.Parse(receipt.PayloadJson);
+        var resolution = payload.RootElement.GetProperty("resolution").Deserialize<MixedPaymentResolutionDto>(Json)!;
+        resolution.ExcessToPrincipal.Should().Be(0m);
+        resolution.ExcessRuleNote.Should().Contain("not allowed");
+    }
+
+    [Fact]
+    public async Task ExcessPrincipalPenalty_UsesOnlyExcessBasisAndRetainsOneCashReceiptAcrossRetryAndReplay()
+    {
+        var terms = PolicyTerms(ExcessPaymentApplication.PrincipalPrepayment) with { PrepaymentPenaltyRate = 0.05m };
+        var (service, loanId) = await CreateAsync(terms);
+        await service.BookDrawdownAsync(loanId, new(100m, PaymentDate, PaymentDate, null));
+        var before = (await service.GetServicingStateAsync(loanId))!;
+        var request = new ApplyMixedPaymentRequest(70.10m, PaymentDate, new(0m, 0m, 0m, 0m, 20m), "excess-only-penalty");
+        var metadata = new DirectLendingCommandMetadataDto(Guid.NewGuid(), null, Guid.NewGuid(), "synthetic", false);
+        var fsharp = DirectLendingAggregateInterop.ApplyMixedPayment(before, terms, request);
+
+        var result = (await service.ApplyMixedPaymentAsync(loanId, request, metadata))!;
+        result.Balances.PrincipalOutstanding.Should().Be(29.90m);
+        result.Balances.PenaltyAccruedUnpaid.Should().Be(2.51m);
+        result.Balances.Should().BeEquivalentTo(fsharp.Servicing.Balances);
+        result.ServicingRevision.Should().Be(before.ServicingRevision + 2);
+        var history = await service.GetHistoryAsync(loanId);
+        var receipt = history[^2];
+        var penalty = history[^1];
+        receipt.EventType.Should().Be("loan.mixed-payment-applied");
+        receipt.CommandId.Should().Be(metadata.CommandId);
+        penalty.EventType.Should().Be("loan.prepayment-penalty-charged");
+        penalty.CommandId.Should().BeNull();
+        penalty.CausationId.Should().Be(receipt.EventId);
+        penalty.CorrelationId.Should().Be(receipt.CorrelationId);
+        using var payload = JsonDocument.Parse(receipt.PayloadJson);
+        payload.RootElement.GetProperty("automaticPrepaymentPenaltyAmount").GetDecimal().Should().Be(2.51m);
+        payload.RootElement.GetProperty("prepaymentPenaltyEventId").GetGuid().Should().Be(penalty.EventId);
+        var allocations = await service.GetPaymentAllocationsAsync(loanId);
+        allocations.Sum(item => item.AllocatedAmount).Should().Be(70.10m);
+        allocations.Should().OnlyContain(item => item.SourceEventId == receipt.EventId && item.TargetType == "Principal");
+        var retry = (await service.ApplyMixedPaymentAsync(loanId, request, metadata))!;
+        retry.Balances.Should().BeEquivalentTo(result.Balances);
+        (await service.GetHistoryAsync(loanId)).Should().HaveCount(history.Count);
+        (await service.GetCashTransactionsAsync(loanId)).Should().ContainSingle();
+        var replay = new DirectLendingEventRebuilder().Rebuild(loanId, history)!;
+        replay.Servicing.Balances.Should().BeEquivalentTo(result.Balances);
+        replay.Servicing.ServicingRevision.Should().Be(result.ServicingRevision);
+    }
+
+    [Fact]
+    public async Task BackdatedReceiptAcrossChangedRouting_RequiresReviewedEffectiveTermsButOriginalRetrySucceeds()
+    {
+        var terms = PolicyTerms(ExcessPaymentApplication.HoldUnapplied);
+        var (service, loanId) = await CreateAsync(terms);
+        var request = new ApplyMixedPaymentRequest(20m, PaymentDate, null, "original-receipt");
+        var metadata = new DirectLendingCommandMetadataDto(Guid.NewGuid(), null, null, "synthetic", false);
+        await service.ApplyMixedPaymentAsync(loanId, request, metadata);
+        await service.AmendTermsAsync(loanId, new(terms with
+        {
+            ExcessPaymentApplication = ExcessPaymentApplication.PrepaidInterest
+        }, "Prospective excess routing"));
+        var count = (await service.GetHistoryAsync(loanId)).Count;
+        var ambiguous = () => service.ApplyMixedPaymentAsync(loanId, new(10m, PaymentDate.AddDays(1), null, null));
+        await ambiguous.Should().ThrowAsync<DirectLendingCommandException>().WithMessage("*contractual effective-date evidence*");
+        var retry = (await service.ApplyMixedPaymentAsync(loanId, request, metadata))!;
+        retry.Balances.UnappliedCash.Should().Be(20m);
+        retry.Balances.PrepaidInterest.Should().Be(0m);
+        (await service.GetHistoryAsync(loanId)).Should().HaveCount(count);
+        (await service.GetCashTransactionsAsync(loanId)).Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task PrepaidInterest_ReceiptRuleSurvivesTermsAmendmentAndSettlesLaterAccrual()
+    {
+        var terms = PolicyTerms(ExcessPaymentApplication.PrepaidInterest);
         var (service, loanId) = await CreateAsync(terms);
         await service.BookDrawdownAsync(loanId, new(1_000m, PaymentDate, PaymentDate, null));
         var receipt = (await service.ApplyMixedPaymentAsync(loanId, new(40m, PaymentDate, null, null)))!;
         receipt.Balances.PrepaidInterest.Should().Be(40m);
         receipt.Balances.InterestAccruedUnpaid.Should().Be(0m);
-        await service.AmendTermsAsync(loanId, new(PolicyTerms(ExcessPaymentTreatment.HoldUnappliedCash), "Synthetic amendment for future receipts"));
+        await service.AmendTermsAsync(loanId, new(PolicyTerms(ExcessPaymentApplication.HoldUnapplied), "Synthetic amendment for future receipts"));
         var accrual = (await service.PostDailyAccrualAsync(loanId, new(PaymentDate.AddDays(1))))!;
         var after = (await service.GetServicingStateAsync(loanId))!;
-        after.Balances.PrepaidInterest.Should().Be(40m, "release has not been contractually instructed");
-        after.Balances.InterestAccruedUnpaid.Should().Be(accrual.InterestAmount);
+        after.Balances.PrepaidInterest.Should().Be(40m - accrual.InterestAmount);
+        after.Balances.InterestAccruedUnpaid.Should().Be(0m);
         var rebuilt = new DirectLendingEventRebuilder().Rebuild(loanId, await service.GetHistoryAsync(loanId));
         rebuilt!.Servicing.Balances.Should().BeEquivalentTo(after.Balances, options => options.WithStrictOrdering());
     }
 
     [Fact]
-    public async Task PrepaidElectionAtMaturity_HoldsExcessWithoutInventingFutureInterest()
+    public async Task PrepaidElectionAtMaturity_RetainsApprovedResidualWithoutRecognizingIncome()
     {
-        var terms = PolicyTerms(ExcessPaymentTreatment.PrepaidInterest);
+        var terms = PolicyTerms(ExcessPaymentApplication.PrepaidInterest);
         var (service, loanId) = await CreateAsync(terms);
         await service.BookDrawdownAsync(loanId, new(100m, PaymentDate, PaymentDate, null));
         var after = (await service.ApplyMixedPaymentAsync(loanId, new(125m, terms.MaturityDate, null, null)))!;
         after.Balances.PrincipalOutstanding.Should().Be(0m);
-        after.Balances.UnappliedCash.Should().Be(25m);
-        after.Balances.PrepaidInterest.Should().Be(0m);
+        after.Balances.UnappliedCash.Should().Be(0m);
+        after.Balances.PrepaidInterest.Should().Be(25m);
     }
 
     [Fact]
-    public async Task ExplicitFutureCashInterest_ReleasesOnlySubsequentEarnedInterestAndSurvivesAmendmentAndRetry()
+    public async Task PrepaidInterest_ReleasesOnlySubsequentEarnedInterestAndSurvivesAmendmentAndRetry()
     {
-        var terms = PolicyTerms(ExcessPaymentTreatment.PrepaidInterest) with
+        var terms = PolicyTerms(ExcessPaymentApplication.PrepaidInterest) with
         {
             FixedAnnualRate = 0.36m,
-            CommitmentFeeRate = null,
-            ExcessPaymentPolicy = new(1, ExcessPaymentTreatment.PrepaidInterest, "synthetic:future-cash-interest", PrepaidInterestApplication.FutureCashInterest)
+            CommitmentFeeRate = null
         };
         var (service, loanId) = await CreateAsync(terms);
         await service.BookDrawdownAsync(loanId, new(1_000m, PaymentDate, PaymentDate, null));
         await service.ApplyMixedPaymentAsync(loanId, new(2.50m, PaymentDate, null, null));
         var sameDay = (await service.PostDailyAccrualAsync(loanId, new(PaymentDate)))!;
         sameDay.InterestAmount.Should().Be(1m);
-        sameDay.PrepaidInterestApplied.Should().Be(0m, "a receipt cannot settle earlier or same-day accrual under this election");
+        sameDay.PrepaidInterestConsumed.Should().Be(0m, "a receipt cannot settle earlier or same-day accrual under this election");
 
         var metadata = new DirectLendingCommandMetadataDto(Guid.NewGuid(), null, null, "synthetic", false);
         var nextDay = (await service.PostDailyAccrualAsync(loanId, new(PaymentDate.AddDays(1)), metadata))!;
         nextDay.InterestAmount.Should().Be(1m);
-        nextDay.PrepaidInterestApplied.Should().Be(1m);
+        nextDay.PrepaidInterestConsumed.Should().Be(1m);
         nextDay.PrepaidInterestReleases!.Sum(item => item.Amount).Should().Be(1m);
         (await service.GetServicingStateAsync(loanId))!.Balances.InterestAccruedUnpaid.Should().Be(1m,
             "the prior unpaid day is not a subsequent accrual allocation");
 
         await service.AmendTermsAsync(loanId, new(terms with
         {
-            ExcessPaymentPolicy = new(1, ExcessPaymentTreatment.HoldUnappliedCash, "synthetic:future-receipts-only")
+            ExcessPaymentApplication = ExcessPaymentApplication.HoldUnapplied
         }, "Prospective cash policy amendment"));
         await service.PostDailyAccrualAsync(loanId, new(PaymentDate.AddDays(2)));
         var last = (await service.PostDailyAccrualAsync(loanId, new(PaymentDate.AddDays(3))))!;
-        last.PrepaidInterestApplied.Should().Be(0.5m, "release is capped at remaining receipt credit");
+        last.PrepaidInterestConsumed.Should().Be(0.5m, "release is capped at remaining receipt credit");
         var beforeRetry = (await service.GetServicingStateAsync(loanId))!;
         beforeRetry.Balances.PrepaidInterest.Should().Be(0m);
         beforeRetry.Balances.InterestAccruedUnpaid.Should().Be(1.5m);
         beforeRetry.Balances.PrepaidInterestLots!.Single().RemainingAmount.Should().Be(0m);
-        beforeRetry.Balances.PrepaidInterestLots!.Single().Application.Should().Be(PrepaidInterestApplication.FutureCashInterest);
+        beforeRetry.Balances.PrepaidInterestLots!.Single().TermsHash.Should().Be(DirectLendingServiceSupport.ComputeTermsHash(terms));
 
         var repeated = await service.PostDailyAccrualAsync(loanId, new(PaymentDate.AddDays(1)), metadata);
         repeated.Should().BeEquivalentTo(nextDay);
@@ -169,28 +254,29 @@ public sealed class DirectLendingCashAccountingTests
     [Fact]
     public async Task HoldReceipt_CannotAcquireReleasePermissionFromLaterAmendment()
     {
-        var terms = PolicyTerms(ExcessPaymentTreatment.PrepaidInterest) with { FixedAnnualRate = 0.36m, CommitmentFeeRate = null };
+        var terms = PolicyTerms(ExcessPaymentApplication.HoldUnapplied) with { FixedAnnualRate = 0.36m, CommitmentFeeRate = null };
         var (service, loanId) = await CreateAsync(terms);
         await service.BookDrawdownAsync(loanId, new(1_000m, PaymentDate, PaymentDate, null));
         await service.ApplyMixedPaymentAsync(loanId, new(5m, PaymentDate, null, null));
         await service.AmendTermsAsync(loanId, new(terms with
         {
-            ExcessPaymentPolicy = terms.ExcessPaymentPolicy! with { Application = PrepaidInterestApplication.FutureCashInterest }
+            ExcessPaymentApplication = ExcessPaymentApplication.PrepaidInterest
         }, "Future receipts may settle future cash interest"));
         var entry = (await service.PostDailyAccrualAsync(loanId, new(PaymentDate.AddDays(1))))!;
-        entry.PrepaidInterestApplied.Should().Be(0m);
-        (await service.GetServicingStateAsync(loanId))!.Balances.PrepaidInterest.Should().Be(5m);
+        entry.PrepaidInterestConsumed.Should().Be(0m);
+        (await service.GetServicingStateAsync(loanId))!.Balances.UnappliedCash.Should().Be(5m);
+        (await service.GetServicingStateAsync(loanId))!.Balances.PrepaidInterest.Should().Be(0m);
     }
 
     [Fact]
     public async Task RetryAfterAnotherPaymentAndAmendment_ReturnsCommittedStateWithoutNewCash()
     {
-        var (service, loanId) = await CreateAsync(PolicyTerms(ExcessPaymentTreatment.HoldUnappliedCash));
+        var (service, loanId) = await CreateAsync(PolicyTerms(ExcessPaymentApplication.HoldUnapplied));
         var metadata = new DirectLendingCommandMetadataDto(Guid.NewGuid(), null, null, "synthetic", false);
         var request = new ApplyMixedPaymentRequest(20m, PaymentDate, null, "retained-command");
         await service.ApplyMixedPaymentAsync(loanId, request, metadata);
-        await service.AmendTermsAsync(loanId, new(PolicyTerms(ExcessPaymentTreatment.PrepaidInterest), "Synthetic amendment"));
-        await service.ApplyMixedPaymentAsync(loanId, new(30m, PaymentDate.AddDays(1), null, "other-receipt"));
+        await service.AmendTermsAsync(loanId, new(PolicyTerms(ExcessPaymentApplication.PrepaidInterest), "Synthetic amendment"));
+        await service.ApplyMixedPaymentAsync(loanId, new(30m, DateOnly.FromDateTime(DateTime.UtcNow).AddDays(1), null, "other-receipt"));
         var before = (await service.GetServicingStateAsync(loanId))!;
         var historyCount = (await service.GetHistoryAsync(loanId)).Count;
 
@@ -205,7 +291,7 @@ public sealed class DirectLendingCashAccountingTests
     [Fact]
     public async Task PrincipalOnlyOverpayment_IsRejectedWithoutDiscardingReceiptAmount()
     {
-        var (service, loanId) = await CreateAsync(PolicyTerms(ExcessPaymentTreatment.HoldUnappliedCash));
+        var (service, loanId) = await CreateAsync(PolicyTerms(ExcessPaymentApplication.HoldUnapplied));
         await service.BookDrawdownAsync(loanId, new(10m, PaymentDate, PaymentDate, null));
         var historyCount = (await service.GetHistoryAsync(loanId)).Count;
         var command = () => service.ApplyPrincipalPaymentAsync(loanId, new(11m, PaymentDate, null));
@@ -217,7 +303,7 @@ public sealed class DirectLendingCashAccountingTests
     [Fact]
     public async Task PrincipalOnlyRetry_DoesNotReducePrincipalTwice()
     {
-        var (service, loanId) = await CreateAsync(PolicyTerms(ExcessPaymentTreatment.HoldUnappliedCash));
+        var (service, loanId) = await CreateAsync(PolicyTerms(ExcessPaymentApplication.HoldUnapplied));
         await service.BookDrawdownAsync(loanId, new(100m, PaymentDate, PaymentDate, null));
         var metadata = new DirectLendingCommandMetadataDto(Guid.NewGuid(), null, null, "synthetic", false);
         var request = new ApplyPrincipalPaymentRequest(25m, PaymentDate, "same-receipt");
@@ -228,9 +314,9 @@ public sealed class DirectLendingCashAccountingTests
     }
 
     [Theory]
-    [InlineData(ExcessPaymentTreatment.HoldUnappliedCash)]
-    [InlineData(ExcessPaymentTreatment.PrepaidInterest)]
-    public async Task CurrencyAmendment_CannotRelabelHeldCash(ExcessPaymentTreatment treatment)
+    [InlineData(ExcessPaymentApplication.HoldUnapplied)]
+    [InlineData(ExcessPaymentApplication.PrepaidInterest)]
+    public async Task CurrencyAmendment_CannotRelabelHeldCash(ExcessPaymentApplication treatment)
     {
         var terms = PolicyTerms(treatment);
         var (service, loanId) = await CreateAsync(terms);
@@ -244,8 +330,8 @@ public sealed class DirectLendingCashAccountingTests
     public async Task Reports_ExposeHeldBalancesByCurrencyWithoutAddingUnlikeAmounts()
     {
         var service = new InMemoryDirectLendingService();
-        var usd = await AddLoanAsync(service, PolicyTerms(ExcessPaymentTreatment.HoldUnappliedCash));
-        var eur = await AddLoanAsync(service, PolicyTerms(ExcessPaymentTreatment.PrepaidInterest) with { BaseCurrency = CurrencyCode.EUR });
+        var usd = await AddLoanAsync(service, PolicyTerms(ExcessPaymentApplication.HoldUnapplied));
+        var eur = await AddLoanAsync(service, PolicyTerms(ExcessPaymentApplication.PrepaidInterest) with { BaseCurrency = CurrencyCode.EUR });
         await service.ApplyMixedPaymentAsync(usd, new(12m, PaymentDate, null, null));
         await service.ApplyMixedPaymentAsync(eur, new(34m, PaymentDate, null, null));
         var summary = await service.GetPortfolioSummaryAsync();
@@ -264,7 +350,7 @@ public sealed class DirectLendingCashAccountingTests
     [Fact]
     public async Task InvalidManualAmounts_FailBeforeStateMutation()
     {
-        var (service, loanId) = await CreateAsync(PolicyTerms(ExcessPaymentTreatment.HoldUnappliedCash));
+        var (service, loanId) = await CreateAsync(PolicyTerms(ExcessPaymentApplication.HoldUnapplied));
         var count = (await service.GetHistoryAsync(loanId)).Count;
         var command = () => service.ApplyMixedPaymentAsync(loanId, new(10m, PaymentDate, new(-1m, 0m, 0m, 0m, 0m), null));
         await command.Should().ThrowAsync<DirectLendingCommandException>();
@@ -275,7 +361,7 @@ public sealed class DirectLendingCashAccountingTests
     [Fact]
     public async Task ReceiptPrecisionBeyondLedgerContract_IsRejectedWithoutRounding()
     {
-        var (service, loanId) = await CreateAsync(PolicyTerms(ExcessPaymentTreatment.HoldUnappliedCash));
+        var (service, loanId) = await CreateAsync(PolicyTerms(ExcessPaymentApplication.HoldUnapplied));
         var command = () => service.ApplyMixedPaymentAsync(loanId, new(0.00000000001m, PaymentDate, null, null));
         await command.Should().ThrowAsync<DirectLendingCommandException>().WithMessage("*numeric(38,10)*");
         (await service.GetCashTransactionsAsync(loanId)).Should().BeEmpty();
@@ -367,10 +453,11 @@ public sealed class DirectLendingCashAccountingTests
             .Single().MatchStatus.Should().Be("CashAllocationEvidenceInvalid");
     }
 
-    private static DirectLendingTermsDto PolicyTerms(ExcessPaymentTreatment treatment) =>
+    private static DirectLendingTermsDto PolicyTerms(ExcessPaymentApplication treatment) =>
         DirectLendingTermsHashCharacterizationTests.FixedBulletTerms() with
         {
-            ExcessPaymentPolicy = new(1, treatment, "synthetic-contract:excess-cash")
+            ExcessPaymentApplication = treatment,
+            InterestOnlyMonths = 12
         };
 
     private static async Task<(InMemoryDirectLendingService Service, Guid LoanId)> CreateAsync(DirectLendingTermsDto terms)

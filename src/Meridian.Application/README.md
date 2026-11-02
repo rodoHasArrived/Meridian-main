@@ -14,8 +14,9 @@ last_reviewed: 2026-10-31
 PRD-115 direct-lending receipt handling retains the original request, terms version/hash, currency,
 cash identity, and exact allocation. C# and F# use the same resolver; journals and replay decode
 the retained result. Retried commands return committed state, and receipt-allocation reconciliation
-exposes held cash and incomplete historical evidence. Explicit prepaid-interest release uses the
-receipt's retained instruction, never a later terms amendment. Existing period, Security Master,
+exposes held cash and incomplete historical evidence. Prepaid-interest consumption uses the
+receipt's retained canonical terms hash, never a later terms amendment. Automatic excess-principal
+penalties retain a linked assessment event and journal in the same transaction. Existing period, Security Master,
 posting, and atomic persistence controls remain applicable. See
 [direct-lending receipt accounting](../../docs/domain/direct-lending-cash.md).
 
@@ -1334,6 +1335,16 @@ workstation-mode host writes these lines to the same file. Verify it with
 - **Backfill cancellation.** `HistoricalBackfillService` and `CrossSourceBackfillReconciliationService` rethrow `OperationCanceledException` only for caller cancellation. A provider timeout is recorded as a per-symbol or per-provider failure.
 - **Help text.** `HelpCommand` cites only repository paths that exist, which `HelpCommandTests.HelpText_CitedRepositoryPaths_AllExist` enforces.
 - **OAuth refresh start-up.** If `OAuthTokenRefreshService`'s first initialization fails (vault unavailable, transient I/O), the background loop retries with capped exponential backoff (30 s, doubling to 15 min) instead of exiting. Before, tokens stopped refreshing until the process restarted.
+- **Manual payment breakdowns (in-memory service).** `DirectLendingServiceSupport.ResolveMixedPayment` applies the same owed-balance cap as the F# servicing aggregate, so both service implementations allocate identically. The canonical PRD-115 term routes only the residual to unapplied cash, permitted principal or prepaid interest, with retained allocation and journal evidence.
+
+## Security Master governance controls (2026-11)
+
+- **Governed term amendments.** `IGovernedTermAmendmentPolicy` (`GovernedTermAmendmentPolicy`) is the single source of the `SecurityMasterWorkbench:RequireGovernedTermAmendments` refusal, shared by the web API and the WPF editor so they cannot disagree. It is consulted by client edit surfaces, not by `ISecurityMasterService.AmendTermsAsync`, which is also the governed publisher's write and provider ingest's.
+- **Independent profile approval.** `SecurityAssetProfileGovernanceService` refuses an asset-profile approval by the actor who drafted it when `SecurityMasterWorkbench:RequireIndependentProfileApprover` is on. It defaults to off, and the setting is read at approval time so it hot-reloads. `RequireIndependentReviewer` remains unconsumed.
+- **Classification labels.** `SecurityEconomicDefinitionAdapter` stores asset-class, family and sub-type labels from the F# domain's explicit name functions rather than union `ToString()`, which would emit payload syntax such as `OtherFamily "x"` or `Some(...)`.
+- **Removed prototype.** The unused Application-side `SecurityMaster/CashFlow/ScheduleSpecFactory` prototype was deleted; production uses `Meridian.Contracts.SecurityMaster.ScheduleSpecFactory`.
+
+See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
 
 ## Diagrams
 
