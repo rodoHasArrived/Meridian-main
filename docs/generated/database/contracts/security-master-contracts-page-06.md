@@ -2,11 +2,21 @@
 
 # `security-master-contracts` data objects - page 6 of 7
 
-Objects 401-480 of 486. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 487. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityOverrideAuditEntryDto["SecurityOverrideAuditEntryDto"] {
+        +string Actor
+        +SecurityOverrideApprovalStatusDto ApprovalStatus
+        +string? Comment
+        +string EventType
+        +DateTimeOffset OccurredAt
+        +string? ReasonCode
+        +DateTimeOffset? ReviewedAt
+        +string? Reviewer
+    }
     class Meridian_Contracts_SecurityMaster_SecurityPaymentFrequency["SecurityPaymentFrequency"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityPaymentFrequencyExtensions["SecurityPaymentFrequencyExtensions"] {
@@ -482,20 +492,6 @@ classDiagram
         +string OptionCode
         +Guid? OptionId
         +JsonElement? Parameters
-    }
-    class Meridian_Contracts_SecurityMaster_UpsertDataVendorEntitlementRequest["UpsertDataVendorEntitlementRequest"] {
-        +string? AccountId
-        +string Actor
-        +decimal? AumThresholdUsd
-        +string? ClientId
-        +string? ContactEmail
-        +string? ContractReference
-        +DataVendorDataType DataType
-        +int? DefaultMaxDaysStale
-        +DateTimeOffset EffectiveFrom
-        +DateTimeOffset? EffectiveTo
-        +Guid? EntitlementId
-        +string? ExpectedRefreshCadence
     }
     Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceKind
     Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceUnit
