@@ -69,17 +69,17 @@ public static partial class ScheduleTermsWriteRules
             var first = ValidateSchedule(calls, true, canonical, maturity, frequency, block,
                 new GapScope(changes.Changed(SecurityVersionedTerms.CallScheduleKey), changes.Changed(IssueDateKey), issue,
                     RetainedMemberNames(retained, SecurityVersionedTerms.CallScheduleKey)));
-            if (first is not null)
+            if (first is { } earliest)
             {
                 if (SecurityAssetTermsSchema.Field(canonical, "isCallable") is not null && Member(payload, "isCallable") is not { ValueKind: JsonValueKind.True })
                     Refuse("A declared call schedule requires isCallable=true so scalar consumers agree with it.");
                 var scalarKey = SecurityAssetTermsSchema.Field(canonical, "callDate") is not null ? "callDate"
                     : SecurityAssetTermsSchema.Field(canonical, "callableDate") is not null ? "callableDate" : null;
-                if (scalarKey is not null && Date(payload, scalarKey) != first)
+                if (scalarKey is not null && Date(payload, scalarKey) != earliest.Start)
                     Refuse($"{scalarKey} must equal the earliest declared call date so scalar consumers agree with it.");
                 if ((changes.Changed(SecurityVersionedTerms.CallScheduleKey) || changes.Changed(NonCallPeriodEndKey))
-                    && RootAnchorDate(canonical, payload, NonCallPeriodEndKey) is { } nonCallPeriodEnd && first < nonCallPeriodEnd)
-                    Refuse(DescribeCallBeforeNonCallPeriodEnd(first.Value, nonCallPeriodEnd));
+                    && RootAnchorDate(canonical, payload, NonCallPeriodEndKey) is { } nonCallPeriodEnd && earliest.Start < nonCallPeriodEnd)
+                    Refuse(DescribeCallBeforeNonCallPeriodEnd(earliest.Path, earliest.Start, nonCallPeriodEnd));
             }
         }
         if (Available(SecurityVersionedTerms.PutScheduleKey))
@@ -155,7 +155,8 @@ public static partial class ScheduleTermsWriteRules
         return result;
     }
 
-    private static DateOnly? ValidateSchedule(JsonElement? declaration, bool call, string assetClass, DateOnly? maturity,
+    // Returns the earliest populated entry (its stored path and start), or null when none is declared.
+    private static (string Path, DateOnly Start)? ValidateSchedule(JsonElement? declaration, bool call, string assetClass, DateOnly? maturity,
         string? couponFrequency, JsonElement? conventions, GapScope gaps)
     {
         var startKey = call ? "callDate" : "putDate";
@@ -225,7 +226,7 @@ public static partial class ScheduleTermsWriteRules
             if ((gaps.Entries || gaps.IssueChanged) && gaps.Issue is { } issue && start < issue)
                 Refuse(DescribeWindowBeforeIssue(path, startKey, start!.Value, issue));
         }
-        return rows.Length == 0 ? null : rows[0].Start;
+        return rows.Length == 0 ? null : (rows[0].Path, rows[0].Start!.Value);
     }
 
     // ADR-024's protocol-unset spellings are not entries and the tolerant codec drops them.

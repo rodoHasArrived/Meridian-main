@@ -127,9 +127,21 @@ public sealed class ScheduleTermsWriteRulesGapTests
             StructuredCredit("2027-01-01", nonCallPeriodEnd: "2026-06-15"));
 
         action.Should().Throw<InvalidOperationException>().Which.Message.Should().Be(Prefix +
-            "Declared callSchedule opens its earliest call on 2027-01-01, before the nonCallPeriodEnd 2027-06-15; no call may open before the non-call period ends.");
+            "Declared callSchedule[0] callDate 2027-01-01 is before the nonCallPeriodEnd 2027-06-15; no call may open before the non-call period ends.");
         retained.Should().NotThrow();
         periodMoved.Should().Throw<InvalidOperationException>().WithMessage("*nonCallPeriodEnd*");
+    }
+
+    [Fact]
+    public void C5c_NamesTheEarliestEntryByItsStoredIndex()
+    {
+        var terms = System.Text.Json.Nodes.JsonNode.Parse(StructuredCredit("2028-01-01", nonCallPeriodEnd: "2027-06-15").GetRawText())!.AsObject();
+        terms["callSchedule"]!.AsArray().Add(new JsonObject { ["callDate"] = "2027-03-01", ["exerciseStyle"] = "European" });
+
+        var action = () => ScheduleTermsWriteRules.Validate("StructuredCredit", JsonSerializer.SerializeToElement(terms));
+
+        action.Should().Throw<InvalidOperationException>().Which.Message.Should().Be(Prefix +
+            "Declared callSchedule[1] callDate 2027-03-01 is before the nonCallPeriodEnd 2027-06-15; no call may open before the non-call period ends.");
     }
 
     [Fact]

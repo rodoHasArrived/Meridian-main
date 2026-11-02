@@ -148,8 +148,8 @@ public static partial class ScheduleTermsWriteRules
         => $"Declared {path} {startKey} {Format(start)} is before the {IssueDateKey} {Format(issue)}; an exercise window cannot open before issue.";
 
     // C5c: no call may open before the non-call period ends.
-    private static string DescribeCallBeforeNonCallPeriodEnd(DateOnly earliest, DateOnly nonCallPeriodEnd)
-        => $"Declared {SecurityVersionedTerms.CallScheduleKey} opens its earliest call on {Format(earliest)}, before the {NonCallPeriodEndKey} {Format(nonCallPeriodEnd)}; " +
+    private static string DescribeCallBeforeNonCallPeriodEnd(string path, DateOnly start, DateOnly nonCallPeriodEnd)
+        => $"Declared {path} callDate {Format(start)} is before the {NonCallPeriodEndKey} {Format(nonCallPeriodEnd)}; " +
            "no call may open before the non-call period ends.";
 
     // A declared exercise frequency recurs a whole number of months apart.
