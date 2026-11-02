@@ -71,6 +71,17 @@ public sealed class DirectLendingTermsHashCharacterizationTests
     }
 
     [Fact]
+    public void ExcessRule_SerializesAsNumericEnumValueInTheHashForm()
+    {
+        // Mirrors the hash serializer options (camel case, no string-enum converter). Registering a
+        // string-enum converter would re-hash every rule-bearing terms version, so pin the form.
+        var hashForm = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
+        var withRule = FixedBulletTerms() with { ExcessPaymentApplication = ExcessPaymentApplication.PrincipalPrepayment };
+
+        System.Text.Json.JsonSerializer.Serialize(withRule, hashForm).Should().Contain("\"excessPaymentApplication\":1");
+    }
+
+    [Fact]
     public void ExcessRule_RoundTripsThroughEventJson()
     {
         var withRule = FixedBulletTerms() with { ExcessPaymentApplication = ExcessPaymentApplication.PrepaidInterest };
