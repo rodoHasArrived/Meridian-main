@@ -2,7 +2,7 @@
 
 # `direct-lending-contracts` data objects - page 1 of 2
 
-Objects 1-80 of 99. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 100. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -319,8 +319,8 @@ classDiagram
         +decimal? DefaultRateSpreadBps
         +decimal? EffectiveRateCap
         +decimal? EffectiveRateFloor
+        +ExcessPaymentApplication? ExcessPaymentApplication
         +decimal? FixedAnnualRate
-        +decimal? FloorRate
     }
     class Meridian_Contracts_DirectLending_DrawdownLotDto["DrawdownLotDto"] {
         +DateOnly DrawdownDate
@@ -329,6 +329,8 @@ classDiagram
         +decimal OriginalPrincipal
         +decimal RemainingPrincipal
         +DateOnly SettleDate
+    }
+    class Meridian_Contracts_DirectLending_ExcessPaymentApplication["ExcessPaymentApplication"] {
     }
     class Meridian_Contracts_DirectLending_FeeBalanceDto["FeeBalanceDto"] {
         +DateTimeOffset CreatedAt
@@ -610,8 +612,6 @@ classDiagram
         +string Reason
         +RestructuringType RestructuringType
     }
-    class Meridian_Contracts_DirectLending_RestructuringType["RestructuringType"] {
-    }
     Meridian_Contracts_DirectLending_AddCollateralRequest --> Meridian_Contracts_DirectLending_CollateralType
     Meridian_Contracts_DirectLending_AddCollateralRequest --> Meridian_Contracts_DirectLending_CurrencyCode
     Meridian_Contracts_DirectLending_AmendLoanTermsRequest --> Meridian_Contracts_DirectLending_DirectLendingTermsDto
@@ -642,6 +642,7 @@ classDiagram
     Meridian_Contracts_DirectLending_DirectLendingTermsDto --> Meridian_Contracts_DirectLending_CurrencyCode
     Meridian_Contracts_DirectLending_DirectLendingTermsDto --> Meridian_Contracts_DirectLending_DayCountBasis
     Meridian_Contracts_DirectLending_DirectLendingTermsDto --> Meridian_Contracts_DirectLending_DirectLendingSecurityMasterReferenceDto
+    Meridian_Contracts_DirectLending_DirectLendingTermsDto --> Meridian_Contracts_DirectLending_ExcessPaymentApplication
     Meridian_Contracts_DirectLending_DirectLendingTermsDto --> Meridian_Contracts_DirectLending_PaymentFrequency
     Meridian_Contracts_DirectLending_DirectLendingTermsDto --> Meridian_Contracts_DirectLending_RateTypeKind
     Meridian_Contracts_DirectLending_JournalEntryDto --> Meridian_Contracts_DirectLending_JournalEntryStatus
@@ -670,5 +671,4 @@ classDiagram
     Meridian_Contracts_DirectLending_ProjectedCashFlowDto --> Meridian_Contracts_DirectLending_CurrencyCode
     Meridian_Contracts_DirectLending_ProjectionRunDto --> Meridian_Contracts_DirectLending_ProjectionRunStatus
     Meridian_Contracts_DirectLending_RestructureLoanRequest --> Meridian_Contracts_DirectLending_DirectLendingTermsDto
-    Meridian_Contracts_DirectLending_RestructureLoanRequest --> Meridian_Contracts_DirectLending_RestructuringType
 ```

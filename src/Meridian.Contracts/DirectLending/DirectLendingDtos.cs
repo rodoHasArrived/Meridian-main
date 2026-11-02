@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Contracts.DirectLending;
 
 public enum CurrencyCode : byte
@@ -73,6 +75,22 @@ public enum AmortizationType : byte
     CustomSchedule = 3
 }
 
+/// <summary>
+/// Where the part of a payment left after every amount owed is settled goes. See the PRD-115
+/// blueprint (<c>docs/engineering/blueprints/direct-lending-excess-payment-application.md</c>).
+/// </summary>
+public enum ExcessPaymentApplication : byte
+{
+    /// <summary>Credit unapplied cash; the operator applies or refunds it later. The default.</summary>
+    HoldUnapplied = 0,
+
+    /// <summary>Apply to outstanding principal, subject to the loan's prepayment terms.</summary>
+    PrincipalPrepayment = 1,
+
+    /// <summary>Carry as prepaid interest, consumed by later daily accruals.</summary>
+    PrepaidInterest = 2
+}
+
 public sealed record CollateralDto(
     Guid CollateralId,
     CollateralType CollateralType,
@@ -121,7 +139,26 @@ public sealed record DirectLendingTermsDto(
     decimal? EffectiveRateCap = null,
     decimal? PrepaymentPenaltyRate = null,
     decimal? PurchasePrice = null,
-    DirectLendingSecurityMasterReferenceDto? SecurityMasterReference = null);
+    DirectLendingSecurityMasterReferenceDto? SecurityMasterReference = null)
+{
+    /// <summary>
+    /// How payment excess is applied; <see langword="null"/> (not specified) behaves as
+    /// <see cref="DirectLending.ExcessPaymentApplication.HoldUnapplied"/>.
+    /// </summary>
+    /// <remarks>
+    /// Expand-only member of a hashed record. The terms hash is the SHA-256 of this record's JSON, so
+    /// the property is an <c>init</c> member omitted from JSON while null: every terms version
+    /// recorded before it existed keeps its hash, and setting a rule (a material term) changes it.
+    /// Pinned by <c>DirectLendingTermsHashCharacterizationTests</c> and its F# counterpart.
+    /// </remarks>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ExcessPaymentApplication? ExcessPaymentApplication { get; init; }
+
+    /// <summary>The rule in force, treating "not specified" as <see cref="DirectLending.ExcessPaymentApplication.HoldUnapplied"/>.</summary>
+    [JsonIgnore]
+    public ExcessPaymentApplication EffectiveExcessPaymentApplication
+        => ExcessPaymentApplication ?? DirectLending.ExcessPaymentApplication.HoldUnapplied;
+}
 
 public sealed record DirectLendingSecurityMasterReferenceDto(
     Guid SecurityId,

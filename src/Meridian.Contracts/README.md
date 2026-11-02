@@ -1537,6 +1537,15 @@ Direct lending command result codes distinguish validation failures, missing agg
 optimistic concurrency conflicts, and idempotency/command conflicts so persistence stores can return
 operator-safe failure reasons without parsing exception text.
 
+Direct lending terms carry an optional `ExcessPaymentApplication` rule (`HoldUnapplied`,
+`PrincipalPrepayment` or `PrepaidInterest`) for the part of a payment left after every amount owed
+is settled. A null rule behaves as `HoldUnapplied` (`EffectiveExcessPaymentApplication`). It is an
+expand-only `init` member, omitted from JSON while null, so every terms version recorded before it
+existed keeps its terms hash. Setting a rule is a material term and changes the hash, and the C#
+and F# lanes pin that value identically. Routing, balances and journals follow in later PRD-115
+increments; see the
+[excess payment application blueprint](../../docs/engineering/blueprints/direct-lending-excess-payment-application.md).
+
 Accounting reconciliation casework contracts are shared here: break queue items carry assignee, priority, SLA policy/state/timestamps, age band, versioned taxonomy, threaded comments with mention/evidence/hash metadata, evidence counts, sign-off/reopen metadata, source-origin metadata, and optimistic concurrency versions. Resolve/dismiss, casework command, and bulk casework request payloads carry `ActionOrigin` so reviewed automation can draft triage but cannot resolve, sign off, dismiss, or reopen accounting exceptions. Casework command, bulk-triage, taxonomy, SLA policy, validation-problem, and sequenced audit-event payloads must remain additive so browser and WPF workstation clients use the same Accounting workflow.
 
 Manual journal entry contracts include private-capital entry types for capital calls,

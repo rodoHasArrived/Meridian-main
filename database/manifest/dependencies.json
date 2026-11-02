@@ -4234,6 +4234,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.ExcessPaymentApplication"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.FeeBalanceDto"
     },
     {
@@ -20092,6 +20098,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.ExcessPaymentApplication"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.FeeBalanceDto"
     },
     {
@@ -30755,6 +30767,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.DirectLending.DirectLendingTermsDto",
       "target": "contract:Meridian.Contracts.DirectLending.DirectLendingSecurityMasterReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.DirectLendingTermsDto",
+      "target": "contract:Meridian.Contracts.DirectLending.ExcessPaymentApplication"
     },
     {
       "kind": "contract-reference",
@@ -56044,7 +56062,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "6b93497edeea1ffeef62acf64c2a24ca47f96fa2d56e0a833df54e1356875f42",
+  "fingerprint": "63fbb8c11c718db083912c6d610081c0846ee6db96477fafc2dfbdd60ff2f454",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -60326,6 +60344,12 @@
       "id": "contract:Meridian.Contracts.DirectLending.DrawdownLotDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.DirectLending.DrawdownLotDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.DirectLending.ExcessPaymentApplication",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.ExcessPaymentApplication"
     },
     {
       "classification": "dto",
@@ -82035,11 +82059,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3594,
-    "contract_set_memberships": 4451,
-    "edges": 9312,
+    "contract_references": 3595,
+    "contract_set_memberships": 4453,
+    "edges": 9315,
     "foreign_keys": 155,
     "logical_references": 6,
-    "nodes": 4507
+    "nodes": 4508
   }
 }
