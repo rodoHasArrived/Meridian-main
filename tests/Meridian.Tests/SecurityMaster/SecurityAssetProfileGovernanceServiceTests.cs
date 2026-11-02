@@ -68,6 +68,41 @@ public sealed class SecurityAssetProfileGovernanceServiceTests
         rollback.Lineage.AuditEvents.Should().Contain(audit => audit.ApprovalReference == "AP-003");
     }
 
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task ApproveProfileAsync_SelfApproval_FollowsRequireIndependentProfileApprover(bool requireIndependent, bool expectApproved)
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-asset-profiles", Guid.NewGuid().ToString("N"));
+        var options = Substitute.For<Microsoft.Extensions.Options.IOptionsMonitor<SecurityMasterWorkbenchOptions>>();
+        options.CurrentValue.Returns(new SecurityMasterWorkbenchOptions { RequireIndependentProfileApprover = requireIndependent });
+        var service = new SecurityAssetProfileGovernanceService(new StorageOptions { RootPath = dataRoot }, options);
+        var draft = await service.DraftProfileAsync(
+            CreateDraftRequest("custom-self-approval", fieldLabel: "NAV date"),
+            "Settings-Admin");
+        var approval = new SecurityAssetProfileApprovalRequestDto(
+            "custom-self-approval",
+            draft.Profile.Version,
+            new DateOnly(2026, 6, 1),
+            "AP-SELF",
+            null,
+            "Approve own draft.",
+            "corr-self");
+
+        var act = async () => await service.ApproveProfileAsync(approval, " settings-admin ");
+
+        if (expectApproved)
+        {
+            (await act()).Profile.Status.Should().Be(SecurityAssetProfileStatusDto.Approved);
+        }
+        else
+        {
+            await act.Should().ThrowAsync<ArgumentException>().WithMessage("*someone other than the actor who drafted it*");
+            service.GetAllProfiles().Single(p => p.ProfileId == "custom-self-approval").Status
+                .Should().Be(SecurityAssetProfileStatusDto.Draft);
+        }
+    }
+
     [Fact]
     public async Task DraftProfileAsync_RejectsReservedFieldKeys()
     {

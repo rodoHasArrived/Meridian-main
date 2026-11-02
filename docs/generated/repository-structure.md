@@ -4294,7 +4294,6 @@ Meridian-main
 │   │   │   │   ├── ContractualCashFlowPreviewService.cs
 │   │   │   │   ├── FileBondExerciseNoticeStore.cs
 │   │   │   │   ├── FileContractualCashFlowRunStore.cs
-│   │   │   │   ├── ScheduleSpecFactory.cs
 │   │   │   │   ├── SecurityPrincipalBalance.cs
 │   │   │   │   ├── StructuredCashFlowLedgerBridge.cs
 │   │   │   │   └── StructuredCashFlowLedgerGate.cs
@@ -4343,6 +4342,7 @@ Meridian-main
 │   │   │   ├── EdgarIngestOrchestrator.cs
 │   │   │   ├── FaceValueLotExtensions.cs
 │   │   │   ├── FileSecurityCashFlowReceiptStore.cs
+│   │   │   ├── GovernedTermAmendmentPolicy.cs
 │   │   │   ├── IAffectedLedgerBookResolver.cs
 │   │   │   ├── IEdgarIngestOrchestrator.cs
 │   │   │   ├── ILedgerPeriodLockReader.cs
@@ -6948,7 +6948,8 @@ Meridian-main
 │   │   │   │   ├── 055_security_governance_events_otc_collateral_stream.sql
 │   │   │   │   ├── 056_otc_contract_lifecycle_events.sql
 │   │   │   │   ├── 057_terms_capability_floor.sql
-│   │   │   │   └── 058_security_master_schedule_decimal_precision.sql
+│   │   │   │   ├── 058_security_master_schedule_decimal_precision.sql
+│   │   │   │   └── 059_security_events_append_only_guard.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -10926,7 +10927,6 @@ Meridian-main
 │   │   │   ├── OperationsContinuityWorkflowServiceTests.PreparedStart.cs
 │   │   │   ├── ReconciliationGovernanceServiceTests.cs
 │   │   │   ├── ReconciliationRunServiceTests.cs
-│   │   │   ├── ScheduleSpecFactoryTests.cs
 │   │   │   ├── SecurityMasterCashFlowProjectionShapeTests.cs
 │   │   │   ├── SecurityMasterCashFlowServiceTests.AsOf.cs
 │   │   │   ├── SecurityMasterCashFlowServiceTests.cs
@@ -11795,6 +11795,7 @@ Meridian-main
 │   │   │   ├── FaceValueLotTests.cs
 │   │   │   ├── ForwardCurveCashFlowTests.cs
 │   │   │   ├── InMemorySecurityForwardCurveProvider.cs
+│   │   │   ├── InstrumentTypeDescriptorMultiplierTests.cs
 │   │   │   ├── KeyedGatePoolTests.cs
 │   │   │   ├── ListingIdentityTests.cs
 │   │   │   ├── ListingMicColumnTests.cs
@@ -11863,6 +11864,7 @@ Meridian-main
 │   │   │   ├── SecurityEconomicTermsV2BridgeCoverageTests.cs
 │   │   │   ├── SecurityEconomicTypedFactorHistoryTests.cs
 │   │   │   ├── SecurityEnrichmentTests.cs
+│   │   │   ├── SecurityIdentifierNormalizationParityTests.cs
 │   │   │   ├── SecurityIdentifierNormalizerTests.cs
 │   │   │   ├── SecurityIncomeCashFlowProjectorTests.cs
 │   │   │   ├── SecurityLotModelTests.cs
@@ -11888,6 +11890,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterDraftProposalServiceTests.cs
 │   │   │   ├── SecurityMasterGovernanceEventsPostgresTests.cs
 │   │   │   ├── SecurityMasterGovernedConcurrencyPostgresTests.cs
+│   │   │   ├── SecurityMasterGovernedConcurrencyPostgresTests.EventLogGuard.cs
 │   │   │   ├── SecurityMasterGovernedConcurrencyPostgresTests.Recovery.cs
 │   │   │   ├── SecurityMasterHistoricalSymbolTimelineResolverTests.cs
 │   │   │   ├── SecurityMasterIdentifierLifecycleTests.cs

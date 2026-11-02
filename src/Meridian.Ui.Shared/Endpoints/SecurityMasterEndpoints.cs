@@ -1579,10 +1579,8 @@ public static partial class SecurityMasterEndpoints
         => workbenchOptions.CurrentValue.RequireGovernedTermAmendments
             ? Results.Problem(
                 statusCode: StatusCodes.Status403Forbidden,
-                title: "Direct term amendments are disabled by governance policy.",
-                detail: "This deployment requires term corrections to pass maker-checker: stage the edit through the "
-                    + "Security Master workbench field-edit route and publish it through the governed "
-                    + "Draft → Submitted → Approved → Published lifecycle instead of amending terms directly.")
+                title: AppSecurityMaster.GovernedTermAmendmentPolicy.RefusalTitle,
+                detail: AppSecurityMaster.GovernedTermAmendmentPolicy.RefusalDetail)
             : null;
 
     private static SecurityMasterIngestStatusResponse ToIngestStatusResponse(

@@ -24,6 +24,14 @@ public sealed class SecurityMasterWorkbenchOptions
     /// <summary>Whether governed edits require an independent reviewer (mirrors the approval matrix row).</summary>
     public bool RequireIndependentReviewer { get; init; } = true;
 
+    /// <summary>
+    /// When true, approving an asset-profile version is refused if the approver is the actor who
+    /// drafted it. Default false preserves existing behavior: no deployment default changes until a
+    /// separate decision is made on deployment defaults and legacy-draft handling. Separate from
+    /// <see cref="RequireIndependentReviewer"/>, which no code path consumes yet.
+    /// </summary>
+    public bool RequireIndependentProfileApprover { get; init; }
+
     /// <summary>Maximum number of conflicts a single bulk-resolve request may carry.</summary>
     public int MaxBulkResolveBatch { get; init; } = 200;
 

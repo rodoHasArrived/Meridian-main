@@ -114,8 +114,12 @@ schema fields cannot replace conditional coupon rules; the historical option exp
 assessed against each descriptor's explicit capability and conditional domain rules.
 
 The workbench multiplier check now reads `LotUnit`/`LotMultiplierTermKey`. The WPF
-`RequiresContractMultiplier` substring predicate remains in
-[SecurityMasterViewModel](../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs).
+`RequiresContractMultiplier` in
+[SecurityMasterViewModel](../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs) no longer
+matches the asset-class name for `Option`/`Future`/`Derivative`; it asks
+`InstrumentTypeDescriptorCatalog.RequiresContractMultiplier`, which reads the descriptors'
+required economic terms. That narrows it: `Swap`, `Derivative` and other classes whose descriptors
+declare no multiplier are no longer asked for one.
 The reverse `SecurityKindMapping` table and readiness `ProjectorsFor` switch remain independently
 maintained; #3191's coverage did not close them. The reverse-mapping round-trip test still skips
 unmapped enum values, so it does not prove complete reverse coverage.
@@ -137,11 +141,13 @@ intentional outside-slice result; adding a type, endpoint or registry row alone 
 
 ### D5 — Governed write controls: still open on the reviewed source
 
-`RequireGovernedTermAmendments` is checked at HTTP; the WPF editor calls
-`ISecurityMasterService.AmendTermsAsync` in process. The service does not enforce this option.
-An enabled deployment therefore needs a shared authority check that distinguishes approved merge
-commands from direct edits; simply turning the option on at every call would block the approved
-publisher too.
+`RequireGovernedTermAmendments` is checked at HTTP and now also by the WPF editor, through the
+shared `IGovernedTermAmendmentPolicy` (the desktop binds the same `SecurityMasterWorkbench`
+configuration section). `ISecurityMasterService.AmendTermsAsync` still does not enforce the option:
+it is also the approved publisher's write and provider ingest's, so another in-process caller of
+the service can still amend directly. A service-boundary check would need to distinguish approved
+merge commands from direct edits; simply turning the option on at every call would block the
+approved publisher too.
 
 [ApprovedFieldEditCanonicalMergeHandler](../../src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs)
 uses the projection version read at publish time, while `SecurityMasterRevisionRecord` carries no
@@ -153,15 +159,18 @@ proof because revision transitions overwrite the current actor. Unsupported merg
 Information log; expose the canonical-merge outcome to the operator before calling it complete.
 
 [SecurityAssetProfileGovernanceService](../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs)
-still approves a matching draft without comparing the approver to its drafter. Store and enforce
-independent review at the shared write boundary. No policy-default change is accepted by this
-review; deployment defaults and legacy draft handling require a separate decision.
+can now refuse an approval by the actor who drafted the version, controlled by the new
+`SecurityMasterWorkbench:RequireIndependentProfileApprover` option. It defaults to **false**
+because no policy-default change is accepted by this review; `RequireIndependentReviewer` remains
+unconsumed. Deployment defaults and legacy draft handling (a draft's author is read from
+`ApprovedBy`) still require a separate decision.
 
 ### D6 — Classification labels: still open, including historical payload policy
 
 [SecurityEconomicDefinitionAdapter](../../src/Meridian.Application/SecurityMaster/SecurityEconomicDefinitionAdapter.cs)
-still persists F# option/union `ToString()` output for family/subtype. Use declared label helpers
-and pin every catalog class's serialized labels. `InstrumentTypeDescriptorCatalog` separately
+persisted F# option/union `ToString()` output for family/subtype. New writes now use the F#
+`SecurityClassification.assetClassName`/`familyName`/`subTypeName` helpers; pinning every catalog
+class's serialized labels is still open. `InstrumentTypeDescriptorCatalog` separately
 retains labels such as Deposit `DemandDeposit`, FxSpot `BankProduct` and Warrant `OptionContract`;
 compare their intended semantics with the F# registry rather than assume the two taxonomies are
 interchangeable. Decide how already-retained `Some(...)`/`OtherSubType ...` values are displayed
@@ -179,8 +188,8 @@ source, effective-date and client-confirmation fields distinct from authenticate
 a declared source is evidence supplied by the caller, not independent source verification. The old
 override-expiry and patch-version questions also require explicit retained-state acceptance proof.
 
-The current migration set has no append-only trigger on `security_events`; identifier replacement
-still deletes/reinserts the current identifier rows. Preserve economic replay and distinguish
+Migration 059 adds append-only row triggers and a truncate trigger on `security_events`, matching
+the governance log; identifier replacement still deletes/reinserts the current identifier rows. Preserve economic replay and distinguish
 valid-time identifiers from recorded history before designing a revision store. The already-merged
 039 payload backfill does not authorize future event rewrites.
 
@@ -193,7 +202,9 @@ fixtures could break audit reads; this review makes no source-generation compati
 ### D8 — Identifier normalization and listing identity: still open, scoped carefully
 
 F# `SecurityIdentifier.normalizeValue` trims/upper-cases; the C# kind-aware normalizer also removes
-permitted punctuation. The F# duplicate invariant can therefore disagree with the lookup boundary.
+permitted punctuation. The F# duplicate and expiry checks now use a kind-aware
+`normalizeIdentifierValue` that mirrors the C# rules, pinned by a parity test over every shared
+kind; the two implementations are still separate copies.
 The unused F# `validateLei` rotates four characters before MOD 97, unlike ISO 17442's LEI order;
 no production caller was found in this pass. Consolidate authority at a dependency-safe seam and
 pin F#, C# and SQL compatibility, without introducing a project-reference cycle. Listing MIC,
