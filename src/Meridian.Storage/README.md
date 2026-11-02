@@ -11,6 +11,15 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Storage
 
+Direct-lending migration 010 retains complete terms JSON, unapplied cash, prepaid interest and
+receipt-level release operands in normalized projections as well as existing state/snapshots.
+Accepted balance, cash, allocation, journal, and reconciliation decimals round-trip exactly.
+Versioned payment retries compare the original request, while state, event, cash, allocations,
+ledger, and outbox remain one serializable transaction. Retained-cash guards reject older-writer
+erasure and unsupported reductions; drain old writers before activation. Legacy terms hashes and
+historic accounting evidence are not rewritten. See
+[direct-lending receipt accounting](../../docs/domain/direct-lending-cash.md).
+
 Governed short opening/cover now binds explicit direction to the authoritative Short/Liability
 position and liability carrying account. Opening debits cash and credits retained proceeds;
 cover debits relieved proceeds, credits execution cash cost, and books the exact realized result.

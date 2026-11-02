@@ -9,6 +9,7 @@ module Meridian.FSharp.Tests.DirectLendingScheduleCharacterizationTests
 
 open System
 open System.Collections.Generic
+open System.Text.Json
 open Xunit
 open FsUnit.Xunit
 open Meridian.Contracts.DirectLending
@@ -131,6 +132,42 @@ let ``Terms hash for the interest-only DTO with grace matches the base capture``
     let decision = createLoanWith (interestOnlyWithGraceTerms ())
 
     decision.TermsVersion.TermsHash |> should equal InterestOnlyWithGraceHash
+
+[<Fact>]
+let ``Absent and explicit null excess policy roundtrip with the historical terms hash`` () =
+    let options = JsonSerializerOptions(PropertyNamingPolicy = JsonNamingPolicy.CamelCase)
+    let original = fixedBulletTerms ()
+    let legacyJson = JsonSerializer.Serialize(original, options)
+    Assert.DoesNotContain("excessPaymentPolicy", legacyJson)
+
+    let withExplicitNull = legacyJson.Substring(0, legacyJson.Length - 1) + ",\"excessPaymentPolicy\":null}"
+    let roundtrip = JsonSerializer.Deserialize<DirectLendingTermsDto>(withExplicitNull, options)
+    let decision = createLoanWith roundtrip
+
+    decision.TermsVersion.TermsHash |> should equal FixedBulletHash
+    JsonSerializer.Serialize(roundtrip, options) |> should equal legacyJson
+
+[<Fact>]
+let ``An explicit excess policy receives a new hash without changing the retained legacy terms version`` () =
+    let options = JsonSerializerOptions(PropertyNamingPolicy = JsonNamingPolicy.CamelCase)
+    let original = fixedBulletTerms ()
+    let created = createLoanWith original
+    let legacyJson = JsonSerializer.Serialize(original, options)
+    let policy = DirectLendingExcessPaymentPolicyDto(1, ExcessPaymentTreatment.HoldUnappliedCash, "synthetic-contract:cash-hold")
+    let amendedJson =
+        legacyJson.Substring(0, legacyJson.Length - 1)
+        + ",\"excessPaymentPolicy\":" + JsonSerializer.Serialize(policy, options) + "}"
+    let amendedTerms = JsonSerializer.Deserialize<DirectLendingTermsDto>(amendedJson, options)
+    let amended =
+        DirectLendingAggregateInterop.AmendTerms
+            created.Contract created.Servicing
+            (AmendLoanTermsRequest(amendedTerms, "Explicit contractual cash election"))
+            (DateTimeOffset(2026, 1, 2, 0, 0, 0, TimeSpan.Zero))
+
+    amended.TermsVersion.TermsHash |> should not' (equal FixedBulletHash)
+    amended.Contract.TermsVersions[1].TermsHash |> should equal FixedBulletHash
+    amended.Contract.TermsVersions[1].Terms.ExcessPaymentPolicy |> should equal null
+    amended.Contract.CurrentTerms.ExcessPaymentPolicy |> should equal policy
 
 // ----- SCH-DEF-006: 30/360 accrues per calendar day over 360 -----
 

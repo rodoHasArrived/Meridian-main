@@ -62,6 +62,11 @@ internal static class DirectLendingServiceSupport
             return new DirectLendingCommandError(DirectLendingErrorCode.Validation, "Effective rate cap must be greater than or equal to the effective rate floor.");
         }
 
+        if (DirectLendingPaymentResolver.ValidatePolicy(terms) is { } policyError)
+        {
+            return new DirectLendingCommandError(DirectLendingErrorCode.Validation, policyError);
+        }
+
         return null;
     }
 
@@ -126,70 +131,19 @@ internal static class DirectLendingServiceSupport
             ReplayFlag: metadata?.ReplayFlag ?? false);
     }
 
-    public static MixedPaymentResolutionDto ResolveMixedPayment(LoanServicingStateDto servicing, decimal amount, PaymentBreakdownDto? requestedBreakdown)
+    public static MixedPaymentResolutionDto ResolveMixedPayment(
+        LoanServicingStateDto servicing, DirectLendingTermsDto terms, decimal amount,
+        PaymentBreakdownDto? requestedBreakdown, DateOnly effectiveDate)
     {
-        if (amount <= 0m)
+        try
         {
-            return new MixedPaymentResolutionDto(new PaymentBreakdownDto(0m, 0m, 0m, 0m, 0m), "Invalid", null, amount);
+            return DirectLendingPaymentResolver.Resolve(servicing, terms, amount, requestedBreakdown, effectiveDate);
         }
-
-        var remaining = amount;
-        PaymentBreakdownDto resolved;
-
-        if (requestedBreakdown is not null)
+        catch (ArgumentException exception)
         {
-            resolved = new PaymentBreakdownDto(
-                Math.Min(remaining, Math.Max(0m, requestedBreakdown.ToInterest)),
-                0m,
-                0m,
-                0m,
-                0m);
-            remaining -= resolved.ToInterest;
-
-            resolved = resolved with
-            {
-                ToCommitmentFee = Math.Min(remaining, Math.Max(0m, requestedBreakdown.ToCommitmentFee))
-            };
-            remaining -= resolved.ToCommitmentFee;
-
-            resolved = resolved with
-            {
-                ToFees = Math.Min(remaining, Math.Max(0m, requestedBreakdown.ToFees))
-            };
-            remaining -= resolved.ToFees;
-
-            resolved = resolved with
-            {
-                ToPenalty = Math.Min(remaining, Math.Max(0m, requestedBreakdown.ToPenalty))
-            };
-            remaining -= resolved.ToPenalty;
-
-            resolved = resolved with
-            {
-                ToPrincipal = Math.Min(remaining, Math.Max(0m, requestedBreakdown.ToPrincipal))
-            };
-            remaining -= resolved.ToPrincipal;
-
-            return new MixedPaymentResolutionDto(resolved, "Manual", "v1", remaining);
+            throw new DirectLendingCommandException(new DirectLendingCommandError(
+                DirectLendingErrorCode.Validation, exception.Message));
         }
-
-        var balances = servicing.Balances;
-        var toInterest = Math.Min(remaining, balances.InterestAccruedUnpaid);
-        remaining -= toInterest;
-        var toCommitmentFee = Math.Min(remaining, balances.CommitmentFeeAccruedUnpaid);
-        remaining -= toCommitmentFee;
-        var toFees = Math.Min(remaining, balances.FeesAccruedUnpaid);
-        remaining -= toFees;
-        var toPenalty = Math.Min(remaining, balances.PenaltyAccruedUnpaid);
-        remaining -= toPenalty;
-        var toPrincipal = Math.Min(remaining, balances.PrincipalOutstanding);
-        remaining -= toPrincipal;
-
-        return new MixedPaymentResolutionDto(
-            new PaymentBreakdownDto(toInterest, toCommitmentFee, toFees, toPenalty, toPrincipal),
-            "WaterfallAuto",
-            "v1",
-            remaining);
     }
 
     public static DirectLendingPersistenceBatch WithOutbox(
@@ -224,7 +178,7 @@ internal static class DirectLendingServiceSupport
         DirectLendingOutboxMessageWrite CreateOutboxMessage(string topic)
             => new(
                 topic,
-                loanId.ToString("D"),
+                $"{loanId:D}:{sourceEventId:D}",
                 JsonSerializer.Serialize(new
                 {
                     loanId,

@@ -31,7 +31,12 @@ public sealed class DirectLendingWorkflowTests
         servicing.Should().NotBeNull();
         servicing!.Balances.PrincipalOutstanding.Should().Be(246_650m);
         cash.Should().ContainSingle(x => x.TransactionType == "MixedPayment" && x.Amount == 5_000m);
-        allocations.Should().HaveCount(4);
+        // One day's earned interest is 250,000 * 8% / 360 = 55.56. The
+        // requested 100 cannot create the additional 44.44 of interest income.
+        allocations.Should().HaveCount(5);
+        allocations.Single(item => item.TargetType == "Interest").AllocatedAmount.Should().Be(55.56m);
+        allocations.Single(item => item.TargetType == "UnappliedCash").AllocatedAmount.Should().Be(44.44m);
+        servicing.Balances.UnappliedCash.Should().Be(44.44m);
         allocations.Sum(x => x.AllocatedAmount).Should().Be(5_000m);
     }
 

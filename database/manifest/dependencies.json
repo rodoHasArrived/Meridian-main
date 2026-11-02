@@ -4138,6 +4138,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.DirectLendingExcessPaymentPolicyDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.DirectLendingOperationsCalendarItemDto"
     },
     {
@@ -4210,6 +4216,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.DirectLendingPaymentResolver"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.DirectLendingPrepaidInterest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.DirectLendingReplayCheckpointDto"
     },
     {
@@ -4229,6 +4247,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.DrawdownLotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.ExcessPaymentTreatment"
     },
     {
       "kind": "contract-set-member",
@@ -4343,6 +4367,30 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.PostDailyAccrualRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.PrepaidInterestApplication"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.PrepaidInterestApplicationResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.PrepaidInterestLotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.PrepaidInterestReleaseDto"
     },
     {
       "kind": "contract-set-member",
@@ -19984,6 +20032,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.DirectLendingExcessPaymentPolicyDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.DirectLendingOperationsCalendarItemDto"
     },
     {
@@ -20056,6 +20110,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.DirectLendingPaymentResolver"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.DirectLendingPrepaidInterest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.DirectLendingReplayCheckpointDto"
     },
     {
@@ -20075,6 +20141,12 @@
       "label": "",
       "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.DrawdownLotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.ExcessPaymentTreatment"
     },
     {
       "kind": "contract-set-member",
@@ -20189,6 +20261,30 @@
       "label": "",
       "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.PostDailyAccrualRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.PrepaidInterestApplication"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.PrepaidInterestApplicationResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.PrepaidInterestLotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.PrepaidInterestReleaseDto"
     },
     {
       "kind": "contract-set-member",
@@ -30609,6 +30705,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.DailyAccrualEntryDto",
+      "target": "contract:Meridian.Contracts.DirectLending.PrepaidInterestReleaseDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope",
       "target": "contract:Meridian.Contracts.DirectLending.DirectLendingCommandMetadataDto"
     },
@@ -30629,6 +30731,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.DirectLending.DirectLendingCommandResult",
       "target": "contract:Meridian.Contracts.DirectLending.DirectLendingCommandError"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.DirectLendingExcessPaymentPolicyDto",
+      "target": "contract:Meridian.Contracts.DirectLending.ExcessPaymentTreatment"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.DirectLendingExcessPaymentPolicyDto",
+      "target": "contract:Meridian.Contracts.DirectLending.PrepaidInterestApplication"
     },
     {
       "kind": "contract-reference",
@@ -30731,6 +30845,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.DirectLending.DirectLendingTermsDto",
       "target": "contract:Meridian.Contracts.DirectLending.DayCountBasis"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.DirectLendingTermsDto",
+      "target": "contract:Meridian.Contracts.DirectLending.DirectLendingExcessPaymentPolicyDto"
     },
     {
       "kind": "contract-reference",
@@ -30893,6 +31013,30 @@
       "label": "",
       "source": "contract:Meridian.Contracts.DirectLending.MixedPaymentResolutionDto",
       "target": "contract:Meridian.Contracts.DirectLending.PaymentBreakdownDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.OutstandingBalancesDto",
+      "target": "contract:Meridian.Contracts.DirectLending.PrepaidInterestLotDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.PrepaidInterestApplicationResultDto",
+      "target": "contract:Meridian.Contracts.DirectLending.PrepaidInterestLotDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.PrepaidInterestApplicationResultDto",
+      "target": "contract:Meridian.Contracts.DirectLending.PrepaidInterestReleaseDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.PrepaidInterestLotDto",
+      "target": "contract:Meridian.Contracts.DirectLending.PrepaidInterestApplication"
     },
     {
       "kind": "contract-reference",
@@ -51728,6 +51872,12 @@
       "target": "database:reporting.reporting_artifact_blobs"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.accrual_entry_projection_prepaid_interest_applied_check on security_master.accrual_entry_projection",
+      "target": "database:security_master.accrual_entry_projection.prepaid_interest_applied"
+    },
+    {
       "constraint": "bond_accrual_convention_projection_security_id_fkey",
       "kind": "foreign-key",
       "label": "security_id",
@@ -52954,6 +53104,18 @@
       "label": "",
       "source": "database:security_master.journal_line_journal_entry_id_fkey on security_master.journal_line",
       "target": "database:security_master.journal_entry_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.loan_servicing_projection_prepaid_interest_check on security_master.loan_servicing_projection",
+      "target": "database:security_master.loan_servicing_projection.prepaid_interest"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.loan_servicing_projection_unapplied_cash_check on security_master.loan_servicing_projection",
+      "target": "database:security_master.loan_servicing_projection.unapplied_cash"
     },
     {
       "constraint": "option_alias_projection_contract_symbol_fkey",
@@ -56020,7 +56182,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "cac4e1a52be4a648849077594bbab124d42588f316a8548cdb1253b1400ae03f",
+  "fingerprint": "5924cc0eb0e8ffa4b74be6e7493a43f68e84e6dd93d2507c4e318b2b8c08f636",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -60209,6 +60371,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.DirectLending.DirectLendingExcessPaymentPolicyDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.DirectLendingExcessPaymentPolicyDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.DirectLending.DirectLendingOperationsCalendarItemDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.DirectLending.DirectLendingOperationsCalendarItemDto"
@@ -60280,6 +60448,18 @@
       "label": "Meridian.Contracts.DirectLending.DirectLendingOutboxMessageDto"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.DirectLending.DirectLendingPaymentResolver",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.DirectLendingPaymentResolver"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.DirectLending.DirectLendingPrepaidInterest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.DirectLendingPrepaidInterest"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.DirectLending.DirectLendingReplayCheckpointDto",
       "kind": "contract-type",
@@ -60302,6 +60482,12 @@
       "id": "contract:Meridian.Contracts.DirectLending.DrawdownLotDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.DirectLending.DrawdownLotDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.DirectLending.ExcessPaymentTreatment",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.ExcessPaymentTreatment"
     },
     {
       "classification": "dto",
@@ -60416,6 +60602,30 @@
       "id": "contract:Meridian.Contracts.DirectLending.PostDailyAccrualRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.DirectLending.PostDailyAccrualRequest"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.DirectLending.PrepaidInterestApplication",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.PrepaidInterestApplication"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.DirectLending.PrepaidInterestApplicationResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.PrepaidInterestApplicationResultDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.DirectLending.PrepaidInterestLotDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.PrepaidInterestLotDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.DirectLending.PrepaidInterestReleaseDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.PrepaidInterestReleaseDto"
     },
     {
       "classification": "dto",
@@ -79323,6 +79533,16 @@
       "schema": "security_master"
     },
     {
+      "id": "database:security_master.accrual_entry_projection.prepaid_interest_applied",
+      "kind": "database-object",
+      "label": "security_master.accrual_entry_projection.prepaid_interest_applied"
+    },
+    {
+      "id": "database:security_master.accrual_entry_projection_prepaid_interest_applied_check on security_master.accrual_entry_projection",
+      "kind": "database-object",
+      "label": "security_master.accrual_entry_projection_prepaid_interest_applied_check on security_master.accrual_entry_projection"
+    },
+    {
       "id": "database:security_master.bond_accrual_convention_projection",
       "kind": "database-table",
       "label": "security_master.bond_accrual_convention_projection",
@@ -80409,6 +80629,26 @@
       "kind": "database-table",
       "label": "security_master.loan_servicing_projection",
       "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.loan_servicing_projection.prepaid_interest",
+      "kind": "database-object",
+      "label": "security_master.loan_servicing_projection.prepaid_interest"
+    },
+    {
+      "id": "database:security_master.loan_servicing_projection.unapplied_cash",
+      "kind": "database-object",
+      "label": "security_master.loan_servicing_projection.unapplied_cash"
+    },
+    {
+      "id": "database:security_master.loan_servicing_projection_prepaid_interest_check on security_master.loan_servicing_projection",
+      "kind": "database-object",
+      "label": "security_master.loan_servicing_projection_prepaid_interest_check on security_master.loan_servicing_projection"
+    },
+    {
+      "id": "database:security_master.loan_servicing_projection_unapplied_cash_check on security_master.loan_servicing_projection",
+      "kind": "database-object",
+      "label": "security_master.loan_servicing_projection_unapplied_cash_check on security_master.loan_servicing_projection"
     },
     {
       "id": "database:security_master.loan_snapshot",
@@ -81999,11 +82239,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3593,
-    "contract_set_memberships": 4448,
-    "edges": 9308,
+    "contract_references": 3601,
+    "contract_set_memberships": 4464,
+    "edges": 9335,
     "foreign_keys": 155,
     "logical_references": 6,
-    "nodes": 4505
+    "nodes": 4519
   }
 }

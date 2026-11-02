@@ -32,6 +32,9 @@ public interface IDirectLendingStateStore
 
     Task<IReadOnlyList<LoanEventLineageDto>> GetHistoryAsync(Guid loanId, CancellationToken ct = default);
 
+    async Task<LoanEventLineageDto?> FindCommandEventAsync(Guid loanId, Guid commandId, CancellationToken ct = default)
+        => (await GetHistoryAsync(loanId, ct).ConfigureAwait(false)).FirstOrDefault(item => item.CommandId == commandId);
+
     Task SaveStateAsync(
         Guid loanId,
         long aggregateVersion,

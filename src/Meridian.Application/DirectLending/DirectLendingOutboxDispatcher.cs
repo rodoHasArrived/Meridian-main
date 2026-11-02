@@ -196,38 +196,51 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
                 var commitmentFee = GetRequiredDecimal(payload.RootElement, "commitmentFeeAmount", "CommitmentFeeAmount");
                 var penalty = GetDecimal(payload.RootElement, "penaltyAmount", "PenaltyAmount");
                 var pikInterest = GetDecimal(payload.RootElement, "pikInterestAmount", "PikInterestAmount");
+                var prepaidRelease = DirectLendingCashJournal.ReadAccrualRelease(payload.RootElement, interest);
+                DirectLendingCashJournal.ValidateAccrualDate(prepaidRelease, accountingDate);
+                var accrualCurrency = prepaidRelease.Currency ?? contract.CurrentTerms.BaseCurrency;
                 description = "Daily accrual";
                 if (interest > 0m)
                 {
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "AccruedInterestReceivable", interest, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "InterestIncome", 0m, interest, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "AccruedInterestReceivable", interest, 0m, accrualCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "InterestIncome", 0m, interest, accrualCurrency, lineDimensionsJson));
+                }
+
+                if (prepaidRelease.AppliedAmount > 0m)
+                {
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "PrepaidInterest", prepaidRelease.AppliedAmount, 0m, accrualCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "AccruedInterestReceivable", 0m, prepaidRelease.AppliedAmount, accrualCurrency, lineDimensionsJson));
                 }
 
                 // PIK interest capitalizes into loan principal instead of a cash receivable.
                 if (pikInterest > 0m)
                 {
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "LoanPrincipal", pikInterest, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "InterestIncome", 0m, pikInterest, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "LoanPrincipal", pikInterest, 0m, accrualCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "InterestIncome", 0m, pikInterest, accrualCurrency, lineDimensionsJson));
                 }
 
                 if (commitmentFee > 0m)
                 {
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "CommitmentFeeReceivable", commitmentFee, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "CommitmentFeeIncome", 0m, commitmentFee, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "CommitmentFeeReceivable", commitmentFee, 0m, accrualCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "CommitmentFeeIncome", 0m, commitmentFee, accrualCurrency, lineDimensionsJson));
                 }
 
                 if (penalty > 0m)
                 {
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "PenaltyReceivable", penalty, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "PenaltyIncome", 0m, penalty, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "PenaltyReceivable", penalty, 0m, accrualCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "PenaltyIncome", 0m, penalty, accrualCurrency, lineDimensionsJson));
                 }
                 break;
 
             case "loan.mixed-payment-applied":
-                var paymentAmount = GetRequiredDecimal(payload.RootElement, "amount", "Amount");
                 description = "Mixed payment";
-                lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "Cash", paymentAmount, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
-                lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "LoanAndAccrualsClearing", 0m, paymentAmount, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                var receipt = DirectLendingCashJournal.Read(payload.RootElement);
+                DirectLendingCashJournal.ValidateTerms(receipt, contract);
+                DirectLendingCashJournal.ValidateEffectiveDate(receipt, accountingDate);
+                var receiptCurrency = receipt.Currency ?? contract.CurrentTerms.BaseCurrency;
+                foreach (var cashLine in DirectLendingCashJournal.BuildLines(receipt))
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, cashLine.AccountCode,
+                        cashLine.Debit, cashLine.Credit, receiptCurrency, lineDimensionsJson));
                 break;
 
             case "loan.fee-assessed":

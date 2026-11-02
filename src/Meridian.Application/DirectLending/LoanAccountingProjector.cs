@@ -89,8 +89,16 @@ public sealed class LoanAccountingProjector
                 var commitmentFee = GetDecimal(root, "commitmentFeeAmount");
                 var penalty = GetDecimal(root, "penaltyAmount");
                 var pikInterest = GetDecimal(root, "pikInterestAmount");
+                var prepaidRelease = DirectLendingCashJournal.ReadAccrualRelease(root, interest);
+                DirectLendingCashJournal.ValidateAccrualDate(prepaidRelease, accountingDate);
+                if (prepaidRelease.AppliedAmount > 0m && prepaidRelease.Currency != contract.CurrentTerms.BaseCurrency)
+                    throw new InvalidOperationException("Prepaid-interest release currency does not match the contractual accrual currency.");
                 Add("AccruedInterestReceivable", LedgerAccountType.Asset, interest, 0m);
                 Add("InterestIncome", LedgerAccountType.Revenue, 0m, interest);
+                // Earn the gross contractual interest once, then settle only its supported
+                // cash-interest receivable from the previously retained liability.
+                Add("PrepaidInterest", LedgerAccountType.Liability, prepaidRelease.AppliedAmount, 0m);
+                Add("AccruedInterestReceivable", LedgerAccountType.Asset, 0m, prepaidRelease.AppliedAmount);
                 // PIK interest capitalizes into loan principal instead of a cash receivable.
                 Add("LoanPrincipal", LedgerAccountType.Asset, pikInterest, 0m);
                 Add("InterestIncome", LedgerAccountType.Revenue, 0m, pikInterest);
@@ -106,6 +114,11 @@ public sealed class LoanAccountingProjector
                 var reversedCommitmentFee = GetDecimal(root, "commitmentFeeAmount");
                 var reversedPenalty = GetDecimal(root, "penaltyAmount");
                 var reversedPikInterest = GetDecimal(root, "pikInterestAmount");
+                var reversedPrepaidRelease = DirectLendingCashJournal.ReadAccrualRelease(root, reversedInterest);
+                if (reversedPrepaidRelease.AppliedAmount > 0m)
+                    throw new DirectLendingCommandException(new DirectLendingCommandError(
+                        DirectLendingErrorCode.Validation,
+                        "An accrual that applied prepaid interest requires governed restoration of its receipt balances before reversal."));
                 Add("InterestIncome", LedgerAccountType.Revenue, reversedInterest, 0m);
                 Add("AccruedInterestReceivable", LedgerAccountType.Asset, 0m, reversedInterest);
                 Add("InterestIncome", LedgerAccountType.Revenue, reversedPikInterest, 0m);
@@ -125,9 +138,30 @@ public sealed class LoanAccountingProjector
 
             case "loan.mixed-payment-applied":
                 description = "Loan cash receipt";
-                var paymentAmount = GetDecimal(root, "amount");
-                Add("Cash", LedgerAccountType.Asset, paymentAmount, 0m);
-                Add("LoanAndAccrualsClearing", LedgerAccountType.Asset, 0m, paymentAmount);
+                var receipt = DirectLendingCashJournal.Read(root);
+                DirectLendingCashJournal.ValidateTerms(receipt, contract);
+                DirectLendingCashJournal.ValidateEffectiveDate(receipt, accountingDate);
+                currency = receipt.Currency?.ToString() ?? currency;
+                foreach (var cashLine in DirectLendingCashJournal.BuildLines(receipt))
+                    Add(cashLine.AccountCode, cashLine.AccountType, cashLine.Debit, cashLine.Credit);
+                break;
+
+            case "loan.fee-assessed":
+                if (!DirectLendingCashJournal.IsVersionedAssessment(root))
+                    break;
+                description = "Loan fee assessment";
+                var feeAssessment = GetDecimal(root, "amount", "Amount");
+                Add("FeeReceivable", LedgerAccountType.Asset, feeAssessment, 0m);
+                Add("FeeIncome", LedgerAccountType.Revenue, 0m, feeAssessment);
+                break;
+
+            case "loan.prepayment-penalty-charged":
+                if (!DirectLendingCashJournal.IsVersionedAssessment(root))
+                    break;
+                description = "Loan prepayment penalty assessment";
+                var penaltyAssessment = GetDecimal(root, "penaltyAmount", "PenaltyAmount");
+                Add("PenaltyReceivable", LedgerAccountType.Asset, penaltyAssessment, 0m);
+                Add("PenaltyIncome", LedgerAccountType.Revenue, 0m, penaltyAssessment);
                 break;
 
             case "loan.write-off-applied":

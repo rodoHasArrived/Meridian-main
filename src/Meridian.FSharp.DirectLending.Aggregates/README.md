@@ -35,6 +35,16 @@ When changing persistence-facing behavior, keep loan state, accrual, cash-flow, 
 and servicer-report projections tied to Security Master identity and lineage so loan planning,
 servicing, and accounting evidence can reconcile through the same instrument source of truth.
 
+Mixed receipts use the shared `DirectLendingPaymentResolver` contractual rules. Each receipt
+is fully represented by receivable/principal allocations and retained unapplied-cash or
+prepaid-interest liabilities. All aggregate transitions preserve those liability balances.
+An absent excess-payment policy preserves the legacy terms hash and makes no prepaid-interest
+or excess-prepayment election. Prepaid-interest receipt lots freeze their contractual reference,
+date, and application election. The explicit `FutureCashInterest` election applies eligible lots
+to subsequently earned cash interest, preserving gross accrual and retained release evidence.
+Same-day interest, PIK, fees, and penalties do not consume those lots. `HoldForReview` and legacy
+untracked balances remain held; amendments cannot retroactively change a receipt's election.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
@@ -71,6 +81,6 @@ Preserve accounting evidence and test direct-lending calculations with scenario 
 - `docs/status/contract-compatibility-matrix.md`
 
 Contract activation and amendment preserve collateral, unamortized discount/premium and the PIK
-toggle. The SCH-DEF-008 characterization now asserts that preservation. No servicing formula or event
-shape changes; scheduled PIK/resets still require an explicit persisted schedule/fixing policy and
+toggle. The SCH-DEF-008 characterization asserts that preservation. Existing schedule formulas
+remain unchanged; scheduled PIK/resets still require an explicit persisted schedule/fixing policy and
 versioned formula/residual state rather than assumptions based on payment frequency.

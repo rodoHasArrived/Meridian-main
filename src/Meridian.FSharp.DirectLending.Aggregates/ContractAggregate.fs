@@ -16,6 +16,10 @@ module internal ContractAggregate =
         Convert.ToHexString bytes
 
     let createTermsVersion versionNumber terms sourceAction amendmentReason recordedAt =
+        match DirectLendingPaymentResolver.ValidatePolicy(terms) with
+        | null -> ()
+        | error -> invalidArg "terms" error
+
         LoanTermsVersionDto(
             versionNumber,
             computeTermsHash terms,
@@ -61,6 +65,10 @@ module internal ContractAggregate =
           TermsVersion = termsVersion }
 
     let amendTerms (contract: LoanContractDetailDto) (servicing: LoanServicingStateDto) terms amendmentReason recordedAt =
+        match DirectLendingPaymentResolver.ValidateTermsAmendment(servicing, contract.CurrentTerms, terms) with
+        | null -> ()
+        | error -> invalidArg "terms" error
+
         let nextVersionNumber = contract.CurrentTermsVersion + 1
         let termsVersion = createTermsVersion nextVersionNumber terms "TermsAmended" amendmentReason recordedAt
         let versions =

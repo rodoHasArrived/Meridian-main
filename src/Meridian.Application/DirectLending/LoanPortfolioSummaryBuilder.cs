@@ -27,7 +27,9 @@ internal static class LoanPortfolioSummaryBuilder
                     facilities.Sum(loan => loan.InterestAccruedUnpaid),
                     facilities.Sum(loan => loan.PenaltyAccruedUnpaid),
                     facilities.Sum(loan => loan.AvailableToDraw),
-                    collateral.Where(item => item.Currency == currency).Sum(item => item.EstimatedValue));
+                    collateral.Where(item => item.Currency == currency).Sum(item => item.EstimatedValue),
+                    facilities.Sum(loan => loan.UnappliedCash),
+                    facilities.Sum(loan => loan.PrepaidInterest));
             }).ToArray();
 
         // Retain scalar compatibility for a single denomination. Mixed sums have no
@@ -49,7 +51,9 @@ internal static class LoanPortfolioSummaryBuilder
             empty ? 0m : single?.TotalCollateralValue,
             loans,
             currencyTotals,
-            single?.Currency);
+            single?.Currency,
+            empty ? 0m : single?.TotalUnappliedCash,
+            empty ? 0m : single?.TotalPrepaidInterest);
     }
 
     private static bool HasKnownDenomination(CurrencyCode currency) =>

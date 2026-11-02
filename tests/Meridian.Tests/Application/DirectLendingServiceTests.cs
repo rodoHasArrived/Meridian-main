@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.DirectLending;
 using Meridian.Contracts.DirectLending;
+using Meridian.FSharp.DirectLending.Aggregates;
 
 namespace Meridian.Tests.Application;
 
@@ -64,8 +65,9 @@ public sealed class DirectLendingServiceTests
         afterReset.CurrentRateReset!.AllInRate.Should().Be(0.055m);
 
         accrual.Should().NotBeNull();
-        accrual!.InterestAmount.Should().BeApproximately(38.194444444m, 0.000000001m);
-        accrual.CommitmentFeeAmount.Should().BeApproximately(62.5m, 0.000000001m);
+        // 250,000 * 5.5% / 360 = 38.194444...; the canonical posting amount is 38.19.
+        accrual!.InterestAmount.Should().Be(38.19m);
+        accrual.CommitmentFeeAmount.Should().Be(62.50m);
 
         var servicing = await service.GetServicingStateAsync(detail.LoanId);
         var history = await service.GetHistoryAsync(detail.LoanId);
@@ -111,12 +113,13 @@ public sealed class DirectLendingServiceTests
         var leapAccrual = await service.PostDailyAccrualAsync(detail.LoanId, new PostDailyAccrualRequest(new DateOnly(2028, 2, 29)));
 
         // Fixed 8% on 250,000 principal: 2027 divides by 365, leap year 2028 divides by 366.
+        // Each daily amount uses the canonical two-decimal posting convention.
         nonLeapAccrual.Should().NotBeNull();
-        nonLeapAccrual!.InterestAmount.Should().BeApproximately(20_000m / 365m, 0.000000001m);
-        nonLeapAccrual.CommitmentFeeAmount.Should().BeApproximately(22_500m / 365m, 0.000000001m);
+        nonLeapAccrual!.InterestAmount.Should().Be(54.79m); // 20,000 / 365 = 54.794520...
+        nonLeapAccrual.CommitmentFeeAmount.Should().Be(61.64m); // 22,500 / 365 = 61.643835...
         leapAccrual.Should().NotBeNull();
-        leapAccrual!.InterestAmount.Should().BeApproximately(20_000m / 366m, 0.000000001m);
-        leapAccrual.CommitmentFeeAmount.Should().BeApproximately(22_500m / 366m, 0.000000001m);
+        leapAccrual!.InterestAmount.Should().Be(54.64m); // 20,000 / 366 = 54.644808...
+        leapAccrual.CommitmentFeeAmount.Should().Be(61.48m); // 22,500 / 366 = 61.475409...
     }
 
     [Fact]
@@ -131,31 +134,74 @@ public sealed class DirectLendingServiceTests
 
         var accrual = await service.PostDailyAccrualAsync(detail.LoanId, new PostDailyAccrualRequest(new DateOnly(2026, 3, 24)));
 
-        // Fixed 8% on 250,000 principal, Act/360: one day accrues 20,000 / 360,
-        // capitalized into principal instead of the cash-interest receivable.
-        var expectedPik = 20_000m / 360m;
+        // Fixed 8% on 250,000 principal, Act/360: 20,000 / 360 = 55.555555...,
+        // posted as 55.56 and capitalized instead of entering the cash-interest receivable.
         accrual.Should().NotBeNull();
         accrual!.InterestAmount.Should().Be(0m);
-        accrual.PikInterestAmount.Should().BeApproximately(expectedPik, 0.000000001m);
+        accrual.PikInterestAmount.Should().Be(55.56m);
 
         var servicing = await service.GetServicingStateAsync(detail.LoanId);
         servicing.Should().NotBeNull();
-        servicing!.Balances.PrincipalOutstanding.Should().BeApproximately(250_000m + expectedPik, 0.000000001m);
+        servicing!.Balances.PrincipalOutstanding.Should().Be(250_055.56m);
         servicing.Balances.InterestAccruedUnpaid.Should().Be(0m);
         servicing.IsPikToggled.Should().BeTrue();
 
         // Event replay must reproduce the capitalized balance.
         var rebuilt = await service.RebuildStateFromHistoryAsync(detail.LoanId);
         rebuilt.Should().NotBeNull();
-        rebuilt!.Servicing.Balances.PrincipalOutstanding.Should().BeApproximately(250_000m + expectedPik, 0.000000001m);
+        rebuilt!.Servicing.Balances.PrincipalOutstanding.Should().Be(250_055.56m);
         rebuilt.Servicing.Balances.InterestAccruedUnpaid.Should().Be(0m);
 
-        // After PIK is switched off, cash interest accrues on the grown principal.
+        // After PIK is switched off, 250,055.56 * 8% / 360 = 55.567902...,
+        // so the grown principal produces a 55.57 cash-interest posting.
         await service.TogglePikAsync(detail.LoanId, new TogglePikRequest(EnablePik: false, new DateOnly(2026, 3, 24), "PIK period ended"));
         var cashAccrual = await service.PostDailyAccrualAsync(detail.LoanId, new PostDailyAccrualRequest(new DateOnly(2026, 3, 25)));
         cashAccrual.Should().NotBeNull();
         cashAccrual!.PikInterestAmount.Should().Be(0m);
-        cashAccrual.InterestAmount.Should().BeApproximately((250_000m + expectedPik) * 0.08m / 360m, 0.000000001m);
+        cashAccrual.InterestAmount.Should().Be(55.57m);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PostDailyAccrualAsync_AtHalfCentMidpoint_ShouldMatchCanonicalFSharpAwayFromZero(bool pik)
+    {
+        var service = new InMemoryDirectLendingService();
+        var request = BuildCreateRequest() with
+        {
+            Terms = BuildTerms(commitmentAmount: 36m) with
+            {
+                FixedAnnualRate = 0.10m,
+                CommitmentFeeRate = 0.10m
+            }
+        };
+        var detail = await service.CreateLoanAsync(request);
+        var originationDate = request.Terms.OriginationDate;
+        await service.ActivateLoanAsync(detail.LoanId, new ActivateLoanRequest(originationDate));
+        await service.BookDrawdownAsync(detail.LoanId, new BookDrawdownRequest(18m, originationDate, originationDate, "half-cent"));
+        if (pik)
+            await service.TogglePikAsync(detail.LoanId, new TogglePikRequest(true, originationDate, "Synthetic midpoint PIK election"));
+
+        var before = (await service.GetServicingStateAsync(detail.LoanId))!;
+        var accrualRequest = new PostDailyAccrualRequest(originationDate.AddDays(1));
+        var canonical = DirectLendingAggregateInterop.PostDailyAccrual(before, detail.CurrentTerms, accrualRequest);
+        var accrual = (await service.PostDailyAccrualAsync(detail.LoanId, accrualRequest))!;
+
+        // Both the drawn and undrawn amounts are 18: 18 * 10% / 360 = 0.005 exactly.
+        // Away-from-zero posts 0.01; rounding ties to even would incorrectly post zero.
+        accrual.InterestAmount.Should().Be(pik ? 0m : 0.01m);
+        accrual.PikInterestAmount.Should().Be(pik ? 0.01m : 0m);
+        accrual.CommitmentFeeAmount.Should().Be(0.01m);
+        accrual.AnnualRateApplied.Should().Be(0.10m);
+        canonical.Entry.InterestAmount.Should().Be(accrual.InterestAmount);
+        canonical.Entry.PikInterestAmount.Should().Be(accrual.PikInterestAmount);
+        canonical.Entry.CommitmentFeeAmount.Should().Be(accrual.CommitmentFeeAmount);
+
+        var after = (await service.GetServicingStateAsync(detail.LoanId))!;
+        after.Balances.PrincipalOutstanding.Should().Be(pik ? 18.01m : 18m);
+        after.Balances.InterestAccruedUnpaid.Should().Be(pik ? 0m : 0.01m);
+        after.Balances.CommitmentFeeAccruedUnpaid.Should().Be(0.01m);
+        after.Balances.Should().BeEquivalentTo(canonical.Servicing.Balances);
     }
 
     [Fact]

@@ -35,7 +35,11 @@ public sealed class AccrualLedgerService : IAccrualLedgerService
             accrual.CommitmentFeeAmount,
             accrual.PenaltyAmount,
             accrual.AnnualRateApplied,
-            accrual.PikInterestAmount
+            accrual.PikInterestAmount,
+            accrual.PrepaidInterestApplied,
+            accrual.PrepaidInterestReleases,
+            Currency = contract.CurrentTerms.BaseCurrency,
+            CashAccountingVersion = accrual.PrepaidInterestApplied > 0m ? DirectLendingPaymentResolver.CashAccountingVersion : null
         });
 
         return _projector.ProjectAsync(
@@ -58,6 +62,13 @@ public sealed class AccrualLedgerService : IAccrualLedgerService
         CancellationToken ct = default,
         LedgerAdjustmentApprovalMetadataDto? adjustmentApproval = null)
     {
+        if (accrual.PrepaidInterestApplied != 0m || accrual.PrepaidInterestReleases?.Count > 0)
+        {
+            throw new DirectLendingCommandException(new DirectLendingCommandError(
+                DirectLendingErrorCode.Validation,
+                "An accrual that applied prepaid interest requires governed restoration of its receipt balances before reversal."));
+        }
+
         using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
         {
             loanId,

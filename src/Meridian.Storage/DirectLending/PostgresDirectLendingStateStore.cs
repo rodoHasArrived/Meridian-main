@@ -124,7 +124,10 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                    current_rate_reset_json::text,
                    last_accrual_date,
                    last_payment_date,
-                   servicing_revision
+                   servicing_revision,
+                   unapplied_cash,
+                   prepaid_interest,
+                   prepaid_interest_lots_json::text
             from {Qualified("loan_servicing_projection")}
             where loan_id = @loan_id;
             """;
@@ -145,7 +148,10 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
             reader.GetDecimal(5),
             reader.GetDecimal(6),
             reader.GetDecimal(7),
-            reader.GetDecimal(8));
+            reader.GetDecimal(8),
+            reader.GetDecimal(13),
+            reader.GetDecimal(14),
+            ParseNullableJson<IReadOnlyList<PrepaidInterestLotDto>>(reader.IsDBNull(15) ? null : reader.GetString(15)));
         var currentRateReset = ParseNullableJson<RateResetDto>(reader.IsDBNull(9) ? null : reader.GetString(9));
         DateOnly? lastAccrualDate = reader.IsDBNull(10) ? null : DateOnly.FromDateTime(reader.GetDateTime(10));
         DateOnly? lastPaymentDate = reader.IsDBNull(11) ? null : DateOnly.FromDateTime(reader.GetDateTime(11));
@@ -247,6 +253,31 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
         return results;
     }
 
+    public async Task<LoanEventLineageDto?> FindCommandEventAsync(Guid loanId, Guid commandId, CancellationToken ct = default)
+    {
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"""
+            select event_id, aggregate_version, event_type, event_schema_version,
+                   effective_date, recorded_at, payload::text, causation_id, correlation_id,
+                   command_id, source_system, replay_flag
+            from {Qualified("loan_event")}
+            where loan_id = @loan_id and command_id = @command_id;
+            """;
+        command.Parameters.AddWithValue("loan_id", loanId);
+        command.Parameters.AddWithValue("command_id", commandId);
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+            return null;
+        return new LoanEventLineageDto(
+            reader.GetGuid(0), reader.GetInt64(1), reader.GetString(2), reader.GetInt32(3),
+            reader.IsDBNull(4) ? null : DateOnly.FromDateTime(reader.GetDateTime(4)),
+            new DateTimeOffset(reader.GetDateTime(5), TimeSpan.Zero), reader.GetString(6),
+            reader.IsDBNull(7) ? null : reader.GetGuid(7),
+            reader.IsDBNull(8) ? null : reader.GetGuid(8),
+            reader.GetGuid(9), reader.IsDBNull(10) ? null : reader.GetString(10), reader.GetBoolean(11));
+    }
+
     public async Task SaveStateAsync(
         Guid loanId,
         long aggregateVersion,
@@ -256,6 +287,20 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
+        var currentVersion = await LoadCurrentVersionAsync(connection, transaction, loanId, ct).ConfigureAwait(false);
+        await using (var historyVersion = connection.CreateCommand())
+        {
+            historyVersion.Transaction = transaction;
+            historyVersion.CommandText = $"select coalesce(max(aggregate_version), 0) from {Qualified("loan_event")} where loan_id = @loan_id;";
+            historyVersion.Parameters.AddWithValue("loan_id", loanId);
+            var retainedVersion = (long)(await historyVersion.ExecuteScalarAsync(ct).ConfigureAwait(false) ?? 0L);
+            if (retainedVersion != aggregateVersion || currentVersion > aggregateVersion)
+            {
+                throw new DirectLendingCommandException(new DirectLendingCommandError(
+                    DirectLendingErrorCode.ConcurrencyConflict,
+                    $"Direct lending history changed during rebuild for {loanId}; reload the retained events before retrying."));
+            }
+        }
         await UpsertStateAsync(connection, transaction, loanId, aggregateVersion, contract, servicing, ct).ConfigureAwait(false);
         await UpsertNormalizedProjectionAsync(connection, transaction, loanId, aggregateVersion, contract, servicing, ct).ConfigureAwait(false);
         await MaybeInsertSnapshotAsync(connection, transaction, loanId, aggregateVersion, contract, servicing, forceSnapshot: true, ct).ConfigureAwait(false);
@@ -308,9 +353,18 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                     $"Direct lending aggregate version conflict for {loanId}. Expected {expectedVersion}, actual {currentVersion}."));
         }
 
+        // The retained-cash database guard permits a prepaid-liability decrease only
+        // when its exact receipt releases are already evidenced by this version's
+        // accrual event. The event and every subsequent write remain one transaction.
+        var recordsPrepaidRelease = eventType == "loan.daily-accrual-posted" &&
+            payload.RootElement.TryGetProperty("prepaidInterestApplied", out var applied) &&
+            applied.GetDecimal() > 0m;
+        if (recordsPrepaidRelease)
+            await AppendEventAsync(connection, transaction, loanId, nextVersion, eventType, eventSchemaVersion, effectiveDate, payload, metadata, eventId, ct).ConfigureAwait(false);
         await UpsertStateAsync(connection, transaction, loanId, nextVersion, contract, servicing, ct).ConfigureAwait(false);
         await UpsertNormalizedProjectionAsync(connection, transaction, loanId, nextVersion, contract, servicing, ct).ConfigureAwait(false);
-        await AppendEventAsync(connection, transaction, loanId, nextVersion, eventType, eventSchemaVersion, effectiveDate, payload, metadata, eventId, ct).ConfigureAwait(false);
+        if (!recordsPrepaidRelease)
+            await AppendEventAsync(connection, transaction, loanId, nextVersion, eventType, eventSchemaVersion, effectiveDate, payload, metadata, eventId, ct).ConfigureAwait(false);
         await PersistBatchArtifactsAsync(connection, transaction, loanId, eventId, persistenceBatch, ct).ConfigureAwait(false);
         await AppendLedgerJournalEntriesAsync(connection, transaction, ledgerJournalEntries, ct).ConfigureAwait(false);
         await MaybeInsertSnapshotAsync(connection, transaction, loanId, nextVersion, contract, servicing, forceSnapshot: false, ct).ConfigureAwait(false);
@@ -351,10 +405,32 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
         var existingPayloadJson = reader.GetString(1);
         using var existingPayload = JsonDocument.Parse(existingPayloadJson);
 
-        return string.Equals(existingEventType, eventType, StringComparison.Ordinal) &&
-               JsonElement.DeepEquals(existingPayload.RootElement, payload.RootElement)
-            ? DuplicateCommandStatus.Matching
-            : DuplicateCommandStatus.Mismatched;
+        if (!string.Equals(existingEventType, eventType, StringComparison.Ordinal))
+            return DuplicateCommandStatus.Mismatched;
+
+        // New payment events retain their original request independently of the calculated
+        // allocation. A retry cannot be compared against a resolution recalculated from
+        // balances or contractual terms that have changed since the first commit.
+        var matches = eventType == "loan.mixed-payment-applied" &&
+            TryGetCashAccountingRequest(existingPayload.RootElement, out var existingRequest) &&
+            TryGetCashAccountingRequest(payload.RootElement, out var requested)
+                ? JsonElement.DeepEquals(existingRequest, requested)
+                : eventType == "loan.daily-accrual-posted" &&
+                  existingPayload.RootElement.TryGetProperty("request", out var originalAccrual) &&
+                  payload.RootElement.TryGetProperty("request", out var requestedAccrual)
+                    ? JsonElement.DeepEquals(originalAccrual, requestedAccrual)
+                : JsonElement.DeepEquals(existingPayload.RootElement, payload.RootElement);
+        return matches ? DuplicateCommandStatus.Matching : DuplicateCommandStatus.Mismatched;
+    }
+
+    private static bool TryGetCashAccountingRequest(JsonElement payload, out JsonElement request)
+    {
+        request = default;
+        return payload.TryGetProperty("cashAccountingVersion", out var version) &&
+            version.ValueKind == JsonValueKind.String &&
+            version.GetString() == DirectLendingPaymentResolver.CashAccountingVersion &&
+            payload.TryGetProperty("request", out request) &&
+            request.ValueKind == JsonValueKind.Object;
     }
 
     private enum DuplicateCommandStatus
@@ -662,7 +738,8 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                     grace_period_days,
                     effective_rate_floor,
                     effective_rate_cap,
-                    prepayment_penalty_rate)
+                    prepayment_penalty_rate,
+                    terms_json)
                 values (
                     @loan_id,
                     @terms_version,
@@ -691,7 +768,8 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                     @grace_period_days,
                     @effective_rate_floor,
                     @effective_rate_cap,
-                    @prepayment_penalty_rate);
+                    @prepayment_penalty_rate,
+                    cast(@terms_json as jsonb));
                 """;
             insert.Parameters.AddWithValue("loan_id", loanId);
             insert.Parameters.AddWithValue("terms_version", termsVersion.VersionNumber);
@@ -721,6 +799,7 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
             insert.Parameters.AddWithValue("effective_rate_floor", (object?)termsVersion.Terms.EffectiveRateFloor ?? DBNull.Value);
             insert.Parameters.AddWithValue("effective_rate_cap", (object?)termsVersion.Terms.EffectiveRateCap ?? DBNull.Value);
             insert.Parameters.AddWithValue("prepayment_penalty_rate", (object?)termsVersion.Terms.PrepaymentPenaltyRate ?? DBNull.Value);
+            insert.Parameters.AddWithValue("terms_json", JsonSerializer.Serialize(termsVersion.Terms, JsonOptions));
             await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
     }
@@ -749,6 +828,9 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                 commitment_fee_accrued_unpaid,
                 fees_accrued_unpaid,
                 penalty_accrued_unpaid,
+                unapplied_cash,
+                prepaid_interest,
+                prepaid_interest_lots_json,
                 current_rate_reset_json,
                 last_accrual_date,
                 last_payment_date,
@@ -766,6 +848,9 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                 @commitment_fee_accrued_unpaid,
                 @fees_accrued_unpaid,
                 @penalty_accrued_unpaid,
+                @unapplied_cash,
+                @prepaid_interest,
+                cast(@prepaid_interest_lots_json as jsonb),
                 cast(@current_rate_reset_json as jsonb),
                 @last_accrual_date,
                 @last_payment_date,
@@ -782,6 +867,9 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                 commitment_fee_accrued_unpaid = excluded.commitment_fee_accrued_unpaid,
                 fees_accrued_unpaid = excluded.fees_accrued_unpaid,
                 penalty_accrued_unpaid = excluded.penalty_accrued_unpaid,
+                unapplied_cash = excluded.unapplied_cash,
+                prepaid_interest = excluded.prepaid_interest,
+                prepaid_interest_lots_json = excluded.prepaid_interest_lots_json,
                 current_rate_reset_json = excluded.current_rate_reset_json,
                 last_accrual_date = excluded.last_accrual_date,
                 last_payment_date = excluded.last_payment_date,
@@ -799,6 +887,9 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
         command.Parameters.AddWithValue("commitment_fee_accrued_unpaid", servicing.Balances.CommitmentFeeAccruedUnpaid);
         command.Parameters.AddWithValue("fees_accrued_unpaid", servicing.Balances.FeesAccruedUnpaid);
         command.Parameters.AddWithValue("penalty_accrued_unpaid", servicing.Balances.PenaltyAccruedUnpaid);
+        command.Parameters.AddWithValue("unapplied_cash", servicing.Balances.UnappliedCash);
+        command.Parameters.AddWithValue("prepaid_interest", servicing.Balances.PrepaidInterest);
+        command.Parameters.AddWithValue("prepaid_interest_lots_json", JsonSerializer.Serialize(servicing.Balances.PrepaidInterestLots, JsonOptions));
         command.Parameters.AddWithValue(
             "current_rate_reset_json",
             servicing.CurrentRateReset is null ? "null" : JsonSerializer.Serialize(servicing.CurrentRateReset, JsonOptions));
@@ -933,7 +1024,9 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                     penalty_amount,
                     annual_rate_applied,
                     recorded_at,
-                    pik_interest_amount)
+                    pik_interest_amount,
+                    prepaid_interest_applied,
+                    prepaid_interest_releases_json)
                 values (
                     @accrual_entry_id,
                     @loan_id,
@@ -943,7 +1036,9 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                     @penalty_amount,
                     @annual_rate_applied,
                     @recorded_at,
-                    @pik_interest_amount);
+                    @pik_interest_amount,
+                    @prepaid_interest_applied,
+                    cast(@prepaid_interest_releases_json as jsonb));
                 """;
             insert.Parameters.AddWithValue("accrual_entry_id", entry.AccrualEntryId);
             insert.Parameters.AddWithValue("loan_id", loanId);
@@ -954,6 +1049,8 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
             insert.Parameters.AddWithValue("annual_rate_applied", entry.AnnualRateApplied);
             insert.Parameters.AddWithValue("recorded_at", entry.RecordedAt.UtcDateTime);
             insert.Parameters.AddWithValue("pik_interest_amount", entry.PikInterestAmount);
+            insert.Parameters.AddWithValue("prepaid_interest_applied", entry.PrepaidInterestApplied);
+            insert.Parameters.AddWithValue("prepaid_interest_releases_json", JsonSerializer.Serialize(entry.PrepaidInterestReleases, JsonOptions));
             await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
     }
@@ -1185,7 +1282,8 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                    grace_period_days,
                    effective_rate_floor,
                    effective_rate_cap,
-                   prepayment_penalty_rate
+                   prepayment_penalty_rate,
+                   terms_json::text
             from {Qualified("loan_terms_version")}
             where loan_id = @loan_id
             order by terms_version desc;
@@ -1196,7 +1294,8 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         while (await reader.ReadAsync(ct).ConfigureAwait(false))
         {
-            var terms = new DirectLendingTermsDto(
+            var terms = ParseNullableJson<DirectLendingTermsDto>(reader.IsDBNull(27) ? null : reader.GetString(27))
+                ?? new DirectLendingTermsDto(
                 DateOnly.FromDateTime(reader.GetDateTime(5)),
                 DateOnly.FromDateTime(reader.GetDateTime(6)),
                 reader.GetDecimal(7),
@@ -1317,7 +1416,9 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                    penalty_amount,
                    annual_rate_applied,
                    recorded_at,
-                   pik_interest_amount
+                   pik_interest_amount,
+                   prepaid_interest_applied,
+                   prepaid_interest_releases_json::text
             from {Qualified("accrual_entry_projection")}
             where loan_id = @loan_id
             order by accrual_date desc, accrual_entry_id;
@@ -1336,7 +1437,9 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                 reader.GetDecimal(4),
                 reader.GetDecimal(5),
                 new DateTimeOffset(reader.GetDateTime(6), TimeSpan.Zero),
-                reader.GetDecimal(7)));
+                reader.GetDecimal(7),
+                reader.GetDecimal(8),
+                ParseNullableJson<IReadOnlyList<PrepaidInterestReleaseDto>>(reader.IsDBNull(9) ? null : reader.GetString(9))));
         }
 
         return results;

@@ -11,6 +11,14 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Application
 
+PRD-115 direct-lending receipt handling retains the original request, terms version/hash, currency,
+cash identity, and exact allocation. C# and F# use the same resolver; journals and replay decode
+the retained result. Retried commands return committed state, and receipt-allocation reconciliation
+exposes held cash and incomplete historical evidence. Explicit prepaid-interest release uses the
+receipt's retained instruction, never a later terms amendment. Existing period, Security Master,
+posting, and atomic persistence controls remain applicable. See
+[direct-lending receipt accounting](../../docs/domain/direct-lending-cash.md).
+
 Bond cash-flow context receipts now use `bond-cash-flow-context-v2`, sharing declared fixed-coupon economics and retaining floating reset evidence. Replay dispatches v1 through its original arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
 
 `ContractualCashFlowPreviewService` resolves retained Security Master/direct-lending facts and pinned curves for the shared calculation engine. Swap leg conventions are decoded only at or above their declared terms version, preserving inert residue on earlier rows. Currency and convention lookup follow the shared resolver's source and alias ordering; malformed leg rows block calculation before raw and typed rows are paired. Invalid retained economic schedules produce a structured `ContractInputsUnavailable` blocker before calculation or run persistence; unrelated storage and runtime failures still propagate. `FileContractualCashFlowRunStore` publishes write-once, verifiable replay packets under the data root; replay uses the packet's normalized contract without rerunning current source mapping. Missing historical balance/notice evidence and assigned provider schedules block rather than falling back. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).

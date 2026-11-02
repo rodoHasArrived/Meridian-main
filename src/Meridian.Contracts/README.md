@@ -11,6 +11,14 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Contracts
 
+Direct-lending cash contracts add an optional, versioned contractual excess-payment election.
+Null elections are omitted so legacy terms-hash goldens remain unchanged. The shared
+`DirectLendingPaymentResolver` caps owed buckets, respects principal permissions, and accounts
+for every receipt unit as a receivable collection or a retained cash liability. Unsupported ledger
+precision is rejected. Per-receipt prepaid-interest instructions distinguish held credits from an
+explicit future cash-interest release; balances and portfolio totals keep currencies separate.
+See [direct-lending receipt accounting](../../docs/domain/direct-lending-cash.md).
+
 `BondContractualEconomics` owns declared per-100 coupon cash, reference-period stub fractions, accrued interest and discounting time. `BondExerciseEconomics` shares fixed-price whole-redemption dates and cash across analytics and cash forecasts. `BondFloatingRateEvidence` freezes each observed or forecast reset with explicit units, source, spread, cap/floor, principal and accrual fraction. New declared lot previews use `canonical-lot-amortization-v5`; v1–v3 retain their original arithmetic and dispatch. The interim v4 declared model was removed before any instruction was produced and is refused as an unsupported version.
 
 `CashFlows/` owns the versioned calculation-only cash-flow contracts, exercise/notice resolution, standard make-whole formulas, structured coupon/principal walks, deterministic CPR/SMM/PSA prepayments, and replay verification. The `cashFlowContract` companion reads ahead of existing write ceilings; undeclared terms and existing call/put element shapes remain unchanged. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).

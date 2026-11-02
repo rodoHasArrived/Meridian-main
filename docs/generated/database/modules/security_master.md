@@ -3,8 +3,8 @@
 # `security_master` schema
 
 - Relations: 127
-- Functions/procedures: 12
-- Triggers: 25
+- Functions/procedures: 13
+- Triggers: 26
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -33,6 +33,8 @@ erDiagram
         numeric_18_8_ annual_rate_applied
         timestamp_with_time_zone recorded_at
         numeric_24_8_ pik_interest_amount
+        numeric prepaid_interest_applied
+        jsonb prepaid_interest_releases_json
     }
     security_master_bond_accrual_convention_projection {
         uuid security_id PK,FK
@@ -119,7 +121,7 @@ erDiagram
         date effective_date
         date transaction_date
         date settlement_date
-        numeric_24_2_ amount
+        numeric amount
         text currency
         text counterparty
         text external_ref
@@ -530,8 +532,8 @@ erDiagram
         uuid loan_id
         date drawdown_date
         date settle_date
-        numeric_24_2_ original_principal
-        numeric_24_2_ remaining_principal
+        numeric original_principal
+        numeric remaining_principal
         text external_ref
     }
     security_master_equity_projection {
@@ -552,8 +554,8 @@ erDiagram
         uuid loan_id FK
         text fee_type
         date effective_date
-        numeric_24_2_ original_amount
-        numeric_24_2_ unpaid_amount
+        numeric original_amount
+        numeric unpaid_amount
         uuid source_event_id FK
         text note
         timestamp_with_time_zone created_at
@@ -631,8 +633,8 @@ erDiagram
         uuid journal_entry_id FK
         integer line_no
         text account_code
-        numeric_24_2_ debit_amount
-        numeric_24_2_ credit_amount
+        numeric debit_amount
+        numeric credit_amount
         text currency
         jsonb dimensions_json
         timestamp_with_time_zone created_at
@@ -678,19 +680,22 @@ erDiagram
         uuid loan_id PK
         bigint aggregate_version
         text status
-        numeric_24_2_ current_commitment
-        numeric_24_2_ total_drawn
-        numeric_24_2_ available_to_draw
-        numeric_24_2_ principal_outstanding
-        numeric_24_2_ interest_accrued_unpaid
-        numeric_24_2_ commitment_fee_accrued_unpaid
-        numeric_24_2_ fees_accrued_unpaid
-        numeric_24_2_ penalty_accrued_unpaid
+        numeric current_commitment
+        numeric total_drawn
+        numeric available_to_draw
+        numeric principal_outstanding
+        numeric interest_accrued_unpaid
+        numeric commitment_fee_accrued_unpaid
+        numeric fees_accrued_unpaid
+        numeric penalty_accrued_unpaid
         jsonb current_rate_reset_json
         date last_accrual_date
         date last_payment_date
         bigint servicing_revision
         timestamp_with_time_zone updated_at
+        numeric unapplied_cash
+        numeric prepaid_interest
+        jsonb prepaid_interest_lots_json
     }
     security_master_loan_snapshot {
         uuid loan_id PK
@@ -736,6 +741,7 @@ erDiagram
         numeric_18_8_ effective_rate_floor
         numeric_18_8_ effective_rate_cap
         numeric_18_8_ prepayment_penalty_rate
+        jsonb terms_json
     }
     security_master_money_market_fund_projection {
         uuid security_id PK
@@ -994,7 +1000,7 @@ erDiagram
         integer allocation_seq_no
         text target_type
         uuid target_id
-        numeric_24_2_ allocated_amount
+        numeric allocated_amount
         text allocation_rule
         uuid source_event_id FK
         timestamp_with_time_zone created_at
@@ -1105,9 +1111,9 @@ erDiagram
         uuid projected_flow_id FK
         uuid cash_transaction_id FK
         text match_status
-        numeric_24_2_ expected_amount
-        numeric_24_2_ actual_amount
-        numeric_24_2_ variance_amount
+        numeric expected_amount
+        numeric actual_amount
+        numeric variance_amount
         date expected_date
         date actual_date
         text match_rule
@@ -1786,7 +1792,7 @@ erDiagram
 | Relation | Kind | Columns | Primary key | Foreign keys | Indexes | Comment |
 | --- | --- | ---: | --- | ---: | ---: | --- |
 | `accounting_period_lock` | table | 10 | `ledger_basis`, `period_start_date`, `period_end_date` | 0 | 1 | - |
-| `accrual_entry_projection` | table | 9 | `accrual_entry_id` | 0 | 2 | - |
+| `accrual_entry_projection` | table | 11 | `accrual_entry_id` | 0 | 2 | - |
 | `bond_accrual_convention_projection` | table | 9 | `security_id` | 1 | 1 | - |
 | `bond_issuer_projection` | table | 8 | `security_id` | 1 | 2 | - |
 | `bond_lifecycle_projection` | table | 13 | `security_id` | 1 | 1 | - |
@@ -1834,10 +1840,10 @@ erDiagram
 | `loan_event` | table | 14 | `event_id` | 0 | 6 | - |
 | `loan_event_event_position_seq` | sequence | 0 | - | 0 | 0 | - |
 | `loan_event_position_seq` | sequence | 0 | - | 0 | 0 | - |
-| `loan_servicing_projection` | table | 16 | `loan_id` | 0 | 1 | - |
+| `loan_servicing_projection` | table | 19 | `loan_id` | 0 | 1 | - |
 | `loan_snapshot` | table | 5 | `loan_id`, `aggregate_version` | 0 | 2 | - |
 | `loan_state` | table | 6 | `loan_id` | 0 | 1 | - |
-| `loan_terms_version` | table | 28 | `loan_id`, `terms_version` | 0 | 2 | - |
+| `loan_terms_version` | table | 29 | `loan_id`, `terms_version` | 0 | 2 | - |
 | `money_market_fund_projection` | table | 9 | `security_id` | 0 | 3 | - |
 | `ndf_projection` | table | 13 | `security_id` | 0 | 3 | Relational projection of NonDeliverableForward asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `operations_workflow_audit` | table | 28 | `audit_id` | 0 | 5 | - |

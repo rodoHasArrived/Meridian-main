@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "b8d7526d130827d090f7247d08754e9e3db68bd888fc6837e01f6279ef16137c",
+  "database_fingerprint": "7082a593f77abce9dab9034150e00076592e2bc9f88cdc27c22cf0dbf3fff074",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -6110,6 +6110,18 @@
       "target_schema": "reporting"
     },
     {
+      "fingerprint": "a0b024c04db8a782158f7c6db0b5c54951264879fb93cc19063f23fdbc7f5a3f",
+      "kind": "normal",
+      "source": "security_master.accrual_entry_projection_prepaid_interest_applied_check on security_master.accrual_entry_projection",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.accrual_entry_projection.prepaid_interest_applied",
+      "target_kind": "table column",
+      "target_name": "accrual_entry_projection",
+      "target_schema": "security_master"
+    },
+    {
       "fingerprint": "caf418184b811124c825b6128cdca4813e7d2fd79c38635c87cb8404db2f5e10",
       "kind": "normal",
       "source": "security_master.bond_accrual_convention_projection_security_id_fkey on security_master.bond_accrual_convention_projection",
@@ -8003,6 +8015,30 @@
       "target": "security_master.journal_entry_pkey",
       "target_kind": "index",
       "target_name": "journal_entry_pkey",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "9ff8f33b44365fc025fb5c7338b596a286a1ceecc471a8d6acdd7468574bfbfc",
+      "kind": "normal",
+      "source": "security_master.loan_servicing_projection_prepaid_interest_check on security_master.loan_servicing_projection",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.loan_servicing_projection.prepaid_interest",
+      "target_kind": "table column",
+      "target_name": "loan_servicing_projection",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "244a20111b94b2ab5593a7aa1db85abc96344d0787ec66f9f3bf27a44286904b",
+      "kind": "normal",
+      "source": "security_master.loan_servicing_projection_unapplied_cash_check on security_master.loan_servicing_projection",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.loan_servicing_projection.unapplied_cash",
+      "target_kind": "table column",
+      "target_name": "loan_servicing_projection",
       "target_schema": "security_master"
     },
     {
@@ -15065,6 +15101,14 @@
       "object": "column:security_master.accrual_entry_projection.pik_interest_amount"
     },
     {
+      "fingerprint": "72592d98d9f4b5ba9a38f3539026090ace2fc87de0c4eac411b632896131b668",
+      "object": "column:security_master.accrual_entry_projection.prepaid_interest_applied"
+    },
+    {
+      "fingerprint": "80ffc1ab66e664088a530336f892d1b0000104581674457e19ad9fedcd18cff9",
+      "object": "column:security_master.accrual_entry_projection.prepaid_interest_releases_json"
+    },
+    {
       "fingerprint": "7b5bf5ec87693d3fbd6655907482286f44b1cdea2c508b599465c11d07b22fad",
       "object": "column:security_master.accrual_entry_projection.recorded_at"
     },
@@ -15333,7 +15377,7 @@
       "object": "column:security_master.cash_sweep_projection.yield_rate"
     },
     {
-      "fingerprint": "3c0d1bcfe79a28d787b381ac408b6ccea7c09e92451a600b5be4d3c699e7c014",
+      "fingerprint": "eb31aa29cfedbbdae5ee1ffa2950c5806e3afe841ccd6934731107edc85004f3",
       "object": "column:security_master.cash_transaction.amount"
     },
     {
@@ -16777,11 +16821,11 @@
       "object": "column:security_master.drawdown_lot_projection.lot_id"
     },
     {
-      "fingerprint": "10cc84fd70db488db22a548999b2424587cf49ead52307a01c0301ed9f18aefe",
+      "fingerprint": "0b08c9eb13f762023456c7155402f9e706dbc9db633115baf605ccc4eaa40545",
       "object": "column:security_master.drawdown_lot_projection.original_principal"
     },
     {
-      "fingerprint": "47937f3d26f00e3175b8a58ce18dc9da7c2e9739d84785562f1d436a392d0e0e",
+      "fingerprint": "cd5c0519b731dfd8c0bc99a6ea32d487899259346860f1f29048de8adff1c3ce",
       "object": "column:security_master.drawdown_lot_projection.remaining_principal"
     },
     {
@@ -16857,7 +16901,7 @@
       "object": "column:security_master.fee_balance.note"
     },
     {
-      "fingerprint": "8f7a9b647a624f3f431092c05a57ce4c9a95cb20a6d86d2f88f2a9637c73aa98",
+      "fingerprint": "95b94084244fc4b99130acf04774dfc8101efc4cf0fa2c13af37a98cebd47682",
       "object": "column:security_master.fee_balance.original_amount"
     },
     {
@@ -16865,7 +16909,7 @@
       "object": "column:security_master.fee_balance.source_event_id"
     },
     {
-      "fingerprint": "798b7fa84c878576ed05cacb589838741db9ef14c6ad788dbcf3d995a0e1c08e",
+      "fingerprint": "9be34d541a497283513e4d652cb6eb0aa99431c5c7256bd64eb993dfb1744262",
       "object": "column:security_master.fee_balance.unpaid_amount"
     },
     {
@@ -17109,7 +17153,7 @@
       "object": "column:security_master.journal_line.created_at"
     },
     {
-      "fingerprint": "896e611ac6d9b7e8c2807dc92f38ea6aa639b4033e205403a80029311ca9fb96",
+      "fingerprint": "e8a5c747d53f7af04add8662bd188b5287171aea5f29622faf6fe5d94072509c",
       "object": "column:security_master.journal_line.credit_amount"
     },
     {
@@ -17117,7 +17161,7 @@
       "object": "column:security_master.journal_line.currency"
     },
     {
-      "fingerprint": "3bcdae609c2e9ba202e5fa07a0529f488c8bf20e8e31038f1b49a439ddfc8d41",
+      "fingerprint": "d961ab36550b7b8ccf37141dbda8a3c1f18d6c1695be880056131c6c63c4d112",
       "object": "column:security_master.journal_line.debit_amount"
     },
     {
@@ -17249,15 +17293,15 @@
       "object": "column:security_master.loan_servicing_projection.aggregate_version"
     },
     {
-      "fingerprint": "d8fa23a5fd23d4af602ad891c0a05675b5fb18b6aee996c47552bc71cc3ef520",
+      "fingerprint": "dc6b35c2fe6da8fad039aba5f2780f18487f0476838b2b8feab47ba8bc00e92c",
       "object": "column:security_master.loan_servicing_projection.available_to_draw"
     },
     {
-      "fingerprint": "19592d42bf86fd0f10476e58916af60312fc3bd6ed5443acc551301e87cf8f8c",
+      "fingerprint": "a0e78e3e01ebca24f3ffe384ced3b297eee441daf2e0f4aaa18f98cb6c2db057",
       "object": "column:security_master.loan_servicing_projection.commitment_fee_accrued_unpaid"
     },
     {
-      "fingerprint": "4f120f1be40937dd2dc73d20aead6fc8e1c77659d1e01049fce38c4271f3a1dd",
+      "fingerprint": "8da969e5aa017310cb0efee6471ad9452d0e5974f962b8c864a0e581775a4e0e",
       "object": "column:security_master.loan_servicing_projection.current_commitment"
     },
     {
@@ -17265,11 +17309,11 @@
       "object": "column:security_master.loan_servicing_projection.current_rate_reset_json"
     },
     {
-      "fingerprint": "ebfbea59967a02470c37dffc41745831c25563222d21181353efc403dfe34493",
+      "fingerprint": "136d53ad3a2cb4e875f7c666046ba30aca9d45b4dd63ee25884cddebcfe8afd4",
       "object": "column:security_master.loan_servicing_projection.fees_accrued_unpaid"
     },
     {
-      "fingerprint": "bbb77bdda95131db9126a0f6c9d138a923caed9d031fbc903d530bcc060fc077",
+      "fingerprint": "86e4292c9d5c3620f88e3ea37c8987e68a2e5dee0bfd3babe00e979a4681255d",
       "object": "column:security_master.loan_servicing_projection.interest_accrued_unpaid"
     },
     {
@@ -17285,11 +17329,19 @@
       "object": "column:security_master.loan_servicing_projection.loan_id"
     },
     {
-      "fingerprint": "5b9de4427ad193f60a49b69424e79a1fbfe463294553611fba139f0fdbc00763",
+      "fingerprint": "a485228f52ed39ce6ad08708bb02f5a8a89154f5c58f38c65e041f40f5a82ae7",
       "object": "column:security_master.loan_servicing_projection.penalty_accrued_unpaid"
     },
     {
-      "fingerprint": "9d3128294325f16138dc6ac2f3338661bfe3affdf2d0216a3791d987474c2c18",
+      "fingerprint": "a390728be93e6a6a923ac45b0e277af764ef66303e56f331bce9eb699fe463d5",
+      "object": "column:security_master.loan_servicing_projection.prepaid_interest"
+    },
+    {
+      "fingerprint": "0d28c696ff799b63101e0fb2c8220e72c4a0521ad39a4366153446f65499f9b4",
+      "object": "column:security_master.loan_servicing_projection.prepaid_interest_lots_json"
+    },
+    {
+      "fingerprint": "7493b3a0d7499122d8ad30133854c1cce17f2462f7a826398467b39b45d2e268",
       "object": "column:security_master.loan_servicing_projection.principal_outstanding"
     },
     {
@@ -17301,8 +17353,12 @@
       "object": "column:security_master.loan_servicing_projection.status"
     },
     {
-      "fingerprint": "76fccd5af368ee9855e79ed10684c32b8804a3627b94097a3b37152e598a7e1c",
+      "fingerprint": "a0ee81f0b9b71a2a8993774b9c46a9e922a16bf609ccfbeda25c016c982f2ad7",
       "object": "column:security_master.loan_servicing_projection.total_drawn"
+    },
+    {
+      "fingerprint": "b863971ed3020103bc11d2a9472c48652053e89520a11548f7ba470697b38799",
+      "object": "column:security_master.loan_servicing_projection.unapplied_cash"
     },
     {
       "fingerprint": "80854d226356951b163ab7f1c4960b7cf6591f97f3ddaf2ecda7c65a48e4aa62",
@@ -17459,6 +17515,10 @@
     {
       "fingerprint": "0a527dc2636eded41412a7e60d6c90a39c061a11c6f2eb997dc8e76294e076c2",
       "object": "column:security_master.loan_terms_version.terms_hash"
+    },
+    {
+      "fingerprint": "fc396e9b914d876afc3c7f1b23ca1aa59718d0a403432a276b4bd4e2d2a3cbae",
+      "object": "column:security_master.loan_terms_version.terms_json"
     },
     {
       "fingerprint": "657990921db680805f834f09a156cd67adacdd22985351b1988562f189ca7110",
@@ -18329,7 +18389,7 @@
       "object": "column:security_master.outbox_message.visible_after"
     },
     {
-      "fingerprint": "5d19b1364a61e669eac3e650f9766d196d1c51153a51b6c41de1985f647db3f0",
+      "fingerprint": "4fff8b8f9d6c3dfe3a617459084da5d10ec5ce89fab4cf1c7abd5fc96ec5265c",
       "object": "column:security_master.payment_allocation.allocated_amount"
     },
     {
@@ -18701,7 +18761,7 @@
       "object": "column:security_master.reconciliation_exception.status"
     },
     {
-      "fingerprint": "438834fad240e3163a8b8d45634028596e5627d2a4fba56e1695445105f77490",
+      "fingerprint": "ac22316ac7be3d77215ad190a31fb5e527409553806083e7fab6a408c641ac92",
       "object": "column:security_master.reconciliation_result.actual_amount"
     },
     {
@@ -18717,7 +18777,7 @@
       "object": "column:security_master.reconciliation_result.created_at"
     },
     {
-      "fingerprint": "7b889fbc5348e0ba6ed6cb5d8e9b64c6e3efb2d7ee47fbfd33ee1f63b634e4f5",
+      "fingerprint": "4460aed8b0bef01a21bc448f8576db9f5f43f4d6906646f3b106759956a58130",
       "object": "column:security_master.reconciliation_result.expected_amount"
     },
     {
@@ -18761,7 +18821,7 @@
       "object": "column:security_master.reconciliation_result.tolerance_json"
     },
     {
-      "fingerprint": "ebd95a924680fdfd5f4d991946d73244ba1dafad86a85ea3b700e4ae3b3bcfdc",
+      "fingerprint": "1af2eaff53f7178851e125c1320625f3f9fba4892cb8b0dd999c3a8ad8be2e5a",
       "object": "column:security_master.reconciliation_result.variance_amount"
     },
     {
@@ -22569,6 +22629,10 @@
       "object": "constraint:security_master.accrual_entry_projection.accrual_entry_projection_pkey"
     },
     {
+      "fingerprint": "6f1549bb01f7030b50d4c8cbc4237275115235361959608cc74aec11a82ce4d3",
+      "object": "constraint:security_master.accrual_entry_projection.accrual_entry_projection_prepaid_interest_applied_check"
+    },
+    {
       "fingerprint": "da4d4c56953bdb59f9edec00a9f813cf21eee8b859745e7b87bc685091095814",
       "object": "constraint:security_master.bond_accrual_convention_projection.bond_accrual_convention_projection_pkey"
     },
@@ -23071,6 +23135,14 @@
     {
       "fingerprint": "513fc0343246e110f47381c3f077c8de748a6a49b1ae4a7e9bf3e28b1079111f",
       "object": "constraint:security_master.loan_servicing_projection.loan_servicing_projection_pkey"
+    },
+    {
+      "fingerprint": "19a6dd2351e010b3acc96f9fea0d432c8425daa7e5f5446e52e4587087e19c1b",
+      "object": "constraint:security_master.loan_servicing_projection.loan_servicing_projection_prepaid_interest_check"
+    },
+    {
+      "fingerprint": "50ca998c8c27ba1450e1580ad7aceabbc7354daadbbc24f0577f29e231c56ad9",
+      "object": "constraint:security_master.loan_servicing_projection.loan_servicing_projection_unapplied_cash_check"
     },
     {
       "fingerprint": "00e97ac15799c457bd6e4aa518eedb2a1222adf194724480e3a455307e60ecb9",
@@ -25885,6 +25957,10 @@
       "object": "dependency:reporting.fk_reporting_statement_revision_previous_blob on reporting.reporting_statement_reconciliation_document_revisions->reporting.reporting_artifact_blobs_pkey:normal"
     },
     {
+      "fingerprint": "a0b024c04db8a782158f7c6db0b5c54951264879fb93cc19063f23fdbc7f5a3f",
+      "object": "dependency:security_master.accrual_entry_projection_prepaid_interest_applied_check on security_master.accrual_entry_projection->security_master.accrual_entry_projection.prepaid_interest_applied:normal"
+    },
+    {
       "fingerprint": "caf418184b811124c825b6128cdca4813e7d2fd79c38635c87cb8404db2f5e10",
       "object": "dependency:security_master.bond_accrual_convention_projection_security_id_fkey on security_master.bond_accrual_convention_projection->security_master.securities.security_id:normal"
     },
@@ -26515,6 +26591,14 @@
     {
       "fingerprint": "2a26b8524eef3278f016b83dc493a6eed7e56a8f23202696d75f46f14664a232",
       "object": "dependency:security_master.journal_line_journal_entry_id_fkey on security_master.journal_line->security_master.journal_entry_pkey:normal"
+    },
+    {
+      "fingerprint": "9ff8f33b44365fc025fb5c7338b596a286a1ceecc471a8d6acdd7468574bfbfc",
+      "object": "dependency:security_master.loan_servicing_projection_prepaid_interest_check on security_master.loan_servicing_projection->security_master.loan_servicing_projection.prepaid_interest:normal"
+    },
+    {
+      "fingerprint": "244a20111b94b2ab5593a7aa1db85abc96344d0787ec66f9f3bf27a44286904b",
+      "object": "dependency:security_master.loan_servicing_projection_unapplied_cash_check on security_master.loan_servicing_projection->security_master.loan_servicing_projection.unapplied_cash:normal"
     },
     {
       "fingerprint": "25b59bd632a5ac845fc74dee6a6208869d5be6b30037299f50719808a3eb24bc",
@@ -27411,6 +27495,10 @@
     {
       "fingerprint": "de4703e5e0d23d433e867b384f85fbc83c5d846d1bf97a55f09ae9a2be911fbe",
       "object": "function:security_master.guard_close_price_snapshot_append()"
+    },
+    {
+      "fingerprint": "5570db488fbe3783af67007855c4182763788ad3105a29128f16168f2b0f53fd",
+      "object": "function:security_master.protect_retained_loan_cash()"
     },
     {
       "fingerprint": "8c3a738ba4673a8ab767d318ef962674213704c16942ff0b5ee2ea0fb402420d",
@@ -30757,7 +30845,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "c685da15f883c0fba6c7a34c3c71131b08341d89578d49a438b0dc0feeb9c677",
+      "fingerprint": "22164a9c84f98c830327cae582b4b44008b384ee973feacb19892948ed01aae9",
       "object": "schema:security_master"
     },
     {
@@ -31213,7 +31301,7 @@
       "object": "table:security_master.accounting_period_lock"
     },
     {
-      "fingerprint": "42b91836a41b845b80deed209c0e1f382a3b2a12b39440833935fd0bbec6861e",
+      "fingerprint": "b4c4b0a846b00316e5c3151c0b5b45b75196a9d333e53d15593dd28f1ec58e2b",
       "object": "table:security_master.accrual_entry_projection"
     },
     {
@@ -31241,7 +31329,7 @@
       "object": "table:security_master.cash_sweep_projection"
     },
     {
-      "fingerprint": "13aa4f53afa420f1d489ab2226dcff0549c179616da1f35d0134cc11431180d9",
+      "fingerprint": "4c732f12949927e9b6f8832f341c7daa8c4a5891c164def8d287b6624c819246",
       "object": "table:security_master.cash_transaction"
     },
     {
@@ -31353,7 +31441,7 @@
       "object": "table:security_master.direct_loan_projection"
     },
     {
-      "fingerprint": "82c1ca1dbb42caad0019698e44f6a05e7dc7e2ff8e6ed07ed27e52b3066e7dbe",
+      "fingerprint": "6ca146bd347eababca5b964602f0bc6510a2e8564da67a1a280b95c774a13713",
       "object": "table:security_master.drawdown_lot_projection"
     },
     {
@@ -31361,7 +31449,7 @@
       "object": "table:security_master.equity_projection"
     },
     {
-      "fingerprint": "a328529f049b824df62c5894b07c58b0abb18e3bb0fd5d13929165480969b662",
+      "fingerprint": "d02ee29d98327c682fd957929714eb9d076769142059ca474558212bd5a2b10f",
       "object": "table:security_master.fee_balance"
     },
     {
@@ -31385,7 +31473,7 @@
       "object": "table:security_master.journal_entry"
     },
     {
-      "fingerprint": "3d462ad1fa33889428e59bbce3a2ad4b86f2a104ecb2485e9574798256d19ba8",
+      "fingerprint": "166c33a8c64911f3e725aae0de0351cc36b750a6e224423d2cd3906de34ba276",
       "object": "table:security_master.journal_line"
     },
     {
@@ -31397,7 +31485,7 @@
       "object": "table:security_master.loan_event"
     },
     {
-      "fingerprint": "e9429d9197cc3457510e0ec935cff730982229ce567b9138eaaf6e793a809aae",
+      "fingerprint": "3f0f8a57f1ea4911b61a856c15b3d2e20de9af713ee54936abd509a8a9551be9",
       "object": "table:security_master.loan_servicing_projection"
     },
     {
@@ -31405,11 +31493,11 @@
       "object": "table:security_master.loan_snapshot"
     },
     {
-      "fingerprint": "50cf56d7fa54e8267fff9863a5069d91b4e805987e71b8bbf3aae13e252c1022",
+      "fingerprint": "3f5858a0c1b90497149a551af7a6ff838c5e1d52a97eff053b13a5adedb415c7",
       "object": "table:security_master.loan_state"
     },
     {
-      "fingerprint": "cbf8ca0cfcef40bcd82b6110963961bb3c5e702da2988621997d542f2fca078f",
+      "fingerprint": "cf986b5dcfea44faf4692dbb8b0aabae082669b70fffafede4f93e6371d1e24d",
       "object": "table:security_master.loan_terms_version"
     },
     {
@@ -31481,7 +31569,7 @@
       "object": "table:security_master.outbox_message"
     },
     {
-      "fingerprint": "63ff98e25181a8396f6d7731aa3ecee7e6a00f1d494393c5c0562e59a24c3587",
+      "fingerprint": "457de52f05243f80d7d344a9b993fb04b3b861985a0fdc091397604054aa7bf3",
       "object": "table:security_master.payment_allocation"
     },
     {
@@ -31517,7 +31605,7 @@
       "object": "table:security_master.reconciliation_exception"
     },
     {
-      "fingerprint": "53ff7040b61aa83c6e47e7577bcfd943c9532ab53730e491c5ac9045ad41358c",
+      "fingerprint": "0c4b7400ca18b39e3f7a7df2aa2b82e444580c508d41b2876957b20720b036d7",
       "object": "table:security_master.reconciliation_result"
     },
     {
@@ -31899,6 +31987,10 @@
     {
       "fingerprint": "1bc7290c6709817c8dd7fde3920442a8e2febf5b82ef6aed74e77a0ebd2b252c",
       "object": "trigger:reporting.reporting_statement_reconciliation_documents.trg_reporting_statement_document_truncate_guard"
+    },
+    {
+      "fingerprint": "c7f96024ebd2056228db2904befc984d0cced1a61c9f9b7d8b7ae87f29d88920",
+      "object": "trigger:security_master.loan_state.protect_retained_loan_cash"
     },
     {
       "fingerprint": "55f97ace58093c707a4cbcdf062c7e28034d8605ffdbc4c8e433b45acf410731",
@@ -127367,6 +127459,18 @@
       "composite_types": [],
       "dependencies": [
         {
+          "fingerprint": "a0b024c04db8a782158f7c6db0b5c54951264879fb93cc19063f23fdbc7f5a3f",
+          "kind": "normal",
+          "source": "security_master.accrual_entry_projection_prepaid_interest_applied_check on security_master.accrual_entry_projection",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.accrual_entry_projection.prepaid_interest_applied",
+          "target_kind": "table column",
+          "target_name": "accrual_entry_projection",
+          "target_schema": "security_master"
+        },
+        {
           "fingerprint": "caf418184b811124c825b6128cdca4813e7d2fd79c38635c87cb8404db2f5e10",
           "kind": "normal",
           "source": "security_master.bond_accrual_convention_projection_security_id_fkey on security_master.bond_accrual_convention_projection",
@@ -129260,6 +129364,30 @@
           "target": "security_master.journal_entry_pkey",
           "target_kind": "index",
           "target_name": "journal_entry_pkey",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "9ff8f33b44365fc025fb5c7338b596a286a1ceecc471a8d6acdd7468574bfbfc",
+          "kind": "normal",
+          "source": "security_master.loan_servicing_projection_prepaid_interest_check on security_master.loan_servicing_projection",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.loan_servicing_projection.prepaid_interest",
+          "target_kind": "table column",
+          "target_name": "loan_servicing_projection",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "244a20111b94b2ab5593a7aa1db85abc96344d0787ec66f9f3bf27a44286904b",
+          "kind": "normal",
+          "source": "security_master.loan_servicing_projection_unapplied_cash_check on security_master.loan_servicing_projection",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.loan_servicing_projection.unapplied_cash",
+          "target_kind": "table column",
+          "target_name": "loan_servicing_projection",
           "target_schema": "security_master"
         },
         {
@@ -131475,7 +131603,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "c685da15f883c0fba6c7a34c3c71131b08341d89578d49a438b0dc0feeb9c677",
+      "fingerprint": "22164a9c84f98c830327cae582b4b44008b384ee973feacb19892948ed01aae9",
       "foreign_tables": [],
       "functions": [
         {
@@ -131537,6 +131665,37 @@
           "security_definer": false,
           "security_labels": [],
           "signature": "guard_close_price_snapshot_append()",
+          "strict": false,
+          "volatility": "volatile"
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "PUBLIC",
+              "grantor": "meridian",
+              "privilege": "execute"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "execute"
+            }
+          ],
+          "comment": null,
+          "definition_hash": "7152e218e666891c5326773058ff65d0da903833fd7995f7d27f89bebb3146fc",
+          "fingerprint": "5570db488fbe3783af67007855c4182763788ad3105a29128f16168f2b0f53fd",
+          "kind": "function",
+          "language": "plpgsql",
+          "name": "protect_retained_loan_cash",
+          "owner": "meridian",
+          "parallel_safety": "unsafe",
+          "result_type": "trigger",
+          "schema": "security_master",
+          "security_definer": false,
+          "security_labels": [],
+          "signature": "protect_retained_loan_cash()",
           "strict": false,
           "volatility": "volatile"
         },
@@ -132329,10 +132488,62 @@
               "security_labels": [],
               "type_name": "numeric",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric",
+              "default": "0",
+              "fingerprint": "72592d98d9f4b5ba9a38f3539026090ace2fc87de0c4eac411b632896131b668",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "prepaid_interest_applied",
+              "nullable": false,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "80ffc1ab66e664088a530336f892d1b0000104581674457e19ad9fedcd18cff9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "prepaid_interest_releases_json",
+              "nullable": true,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "prepaid_interest_applied"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (prepaid_interest_applied >= 0::numeric)",
+              "delete_action": null,
+              "fingerprint": "6f1549bb01f7030b50d4c8cbc4237275115235361959608cc74aec11a82ce4d3",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "accrual_entry_projection_prepaid_interest_applied_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
             {
               "columns": [
                 "accrual_entry_id"
@@ -132356,7 +132567,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "42b91836a41b845b80deed209c0e1f382a3b2a12b39440833935fd0bbec6861e",
+          "fingerprint": "b4c4b0a846b00316e5c3151c0b5b45b75196a9d333e53d15593dd28f1ec58e2b",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -134483,9 +134694,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "3c0d1bcfe79a28d787b381ac408b6ccea7c09e92451a600b5be4d3c699e7c014",
+              "fingerprint": "eb31aa29cfedbbdae5ee1ffa2950c5806e3afe841ccd6934731107edc85004f3",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -134662,7 +134873,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "13aa4f53afa420f1d489ab2226dcff0549c179616da1f35d0134cc11431180d9",
+          "fingerprint": "4c732f12949927e9b6f8832f341c7daa8c4a5891c164def8d287b6624c819246",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -146117,9 +146328,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "10cc84fd70db488db22a548999b2424587cf49ead52307a01c0301ed9f18aefe",
+              "fingerprint": "0b08c9eb13f762023456c7155402f9e706dbc9db633115baf605ccc4eaa40545",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -146133,9 +146344,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "47937f3d26f00e3175b8a58ce18dc9da7c2e9739d84785562f1d436a392d0e0e",
+              "fingerprint": "cd5c0519b731dfd8c0bc99a6ea32d487899259346860f1f29048de8adff1c3ce",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -146188,7 +146399,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "82c1ca1dbb42caad0019698e44f6a05e7dc7e2ff8e6ed07ed27e52b3066e7dbe",
+          "fingerprint": "6ca146bd347eababca5b964602f0bc6510a2e8564da67a1a280b95c774a13713",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -146722,9 +146933,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "8f7a9b647a624f3f431092c05a57ce4c9a95cb20a6d86d2f88f2a9637c73aa98",
+              "fingerprint": "95b94084244fc4b99130acf04774dfc8101efc4cf0fa2c13af37a98cebd47682",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -146738,9 +146949,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "798b7fa84c878576ed05cacb589838741db9ef14c6ad788dbcf3d995a0e1c08e",
+              "fingerprint": "9be34d541a497283513e4d652cb6eb0aa99431c5c7256bd64eb993dfb1744262",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -146869,7 +147080,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "a328529f049b824df62c5894b07c58b0abb18e3bb0fd5d13929165480969b662",
+          "fingerprint": "d02ee29d98327c682fd957929714eb9d076769142059ca474558212bd5a2b10f",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -148857,9 +149068,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": "0",
-              "fingerprint": "3bcdae609c2e9ba202e5fa07a0529f488c8bf20e8e31038f1b49a439ddfc8d41",
+              "fingerprint": "d961ab36550b7b8ccf37141dbda8a3c1f18d6c1695be880056131c6c63c4d112",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -148873,9 +149084,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": "0",
-              "fingerprint": "896e611ac6d9b7e8c2807dc92f38ea6aa639b4033e205403a80029311ca9fb96",
+              "fingerprint": "e8a5c747d53f7af04add8662bd188b5287171aea5f29622faf6fe5d94072509c",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -149003,7 +149214,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "3d462ad1fa33889428e59bbce3a2ad4b86f2a104ecb2485e9574798256d19ba8",
+          "fingerprint": "166c33a8c64911f3e725aae0de0351cc36b750a6e224423d2cd3906de34ba276",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -150088,9 +150299,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "4f120f1be40937dd2dc73d20aead6fc8e1c77659d1e01049fce38c4271f3a1dd",
+              "fingerprint": "8da969e5aa017310cb0efee6471ad9452d0e5974f962b8c864a0e581775a4e0e",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -150104,9 +150315,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "76fccd5af368ee9855e79ed10684c32b8804a3627b94097a3b37152e598a7e1c",
+              "fingerprint": "a0ee81f0b9b71a2a8993774b9c46a9e922a16bf609ccfbeda25c016c982f2ad7",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -150120,9 +150331,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "d8fa23a5fd23d4af602ad891c0a05675b5fb18b6aee996c47552bc71cc3ef520",
+              "fingerprint": "dc6b35c2fe6da8fad039aba5f2780f18487f0476838b2b8feab47ba8bc00e92c",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -150136,9 +150347,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "9d3128294325f16138dc6ac2f3338661bfe3affdf2d0216a3791d987474c2c18",
+              "fingerprint": "7493b3a0d7499122d8ad30133854c1cce17f2462f7a826398467b39b45d2e268",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -150152,9 +150363,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "bbb77bdda95131db9126a0f6c9d138a923caed9d031fbc903d530bcc060fc077",
+              "fingerprint": "86e4292c9d5c3620f88e3ea37c8987e68a2e5dee0bfd3babe00e979a4681255d",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -150168,9 +150379,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "19592d42bf86fd0f10476e58916af60312fc3bd6ed5443acc551301e87cf8f8c",
+              "fingerprint": "a0e78e3e01ebca24f3ffe384ced3b297eee441daf2e0f4aaa18f98cb6c2db057",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -150184,9 +150395,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "ebfbea59967a02470c37dffc41745831c25563222d21181353efc403dfe34493",
+              "fingerprint": "136d53ad3a2cb4e875f7c666046ba30aca9d45b4dd63ee25884cddebcfe8afd4",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -150200,9 +150411,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "5b9de4427ad193f60a49b69424e79a1fbfe463294553611fba139f0fdbc00763",
+              "fingerprint": "a485228f52ed39ce6ad08708bb02f5a8a89154f5c58f38c65e041f40f5a82ae7",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -150292,10 +150503,98 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric",
+              "default": "0",
+              "fingerprint": "b863971ed3020103bc11d2a9472c48652053e89520a11548f7ba470697b38799",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "unapplied_cash",
+              "nullable": false,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric",
+              "default": "0",
+              "fingerprint": "a390728be93e6a6a923ac45b0e277af764ef66303e56f331bce9eb699fe463d5",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "prepaid_interest",
+              "nullable": false,
+              "ordinal_position": 18,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "0d28c696ff799b63101e0fb2c8220e72c4a0521ad39a4366153446f65499f9b4",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "prepaid_interest_lots_json",
+              "nullable": true,
+              "ordinal_position": 19,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "prepaid_interest"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (prepaid_interest >= 0::numeric)",
+              "delete_action": null,
+              "fingerprint": "19a6dd2351e010b3acc96f9fea0d432c8425daa7e5f5446e52e4587087e19c1b",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "loan_servicing_projection_prepaid_interest_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "unapplied_cash"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (unapplied_cash >= 0::numeric)",
+              "delete_action": null,
+              "fingerprint": "50ca998c8c27ba1450e1580ad7aceabbc7354daadbbc24f0577f29e231c56ad9",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "loan_servicing_projection_unapplied_cash_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
             {
               "columns": [
                 "loan_id"
@@ -150319,7 +150618,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "e9429d9197cc3457510e0ec935cff730982229ce567b9138eaaf6e793a809aae",
+          "fingerprint": "3f0f8a57f1ea4911b61a856c15b3d2e20de9af713ee54936abd509a8a9551be9",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -150748,7 +151047,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "50cf56d7fa54e8267fff9863a5069d91b4e805987e71b8bbf3aae13e252c1022",
+          "fingerprint": "3f5858a0c1b90497149a551af7a6ff838c5e1d52a97eff053b13a5adedb415c7",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -150788,7 +151087,26 @@
           "schema": "security_master",
           "security_labels": [],
           "sequence": null,
-          "triggers": []
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER protect_retained_loan_cash BEFORE INSERT OR UPDATE ON security_master.loan_state FOR EACH ROW EXECUTE FUNCTION security_master.protect_retained_loan_cash()",
+              "definition_hash": "ec1c267ae862da804751c62a58d9160b636bc40366351a66e1d752dd3d2a4faa",
+              "enabled": "origin",
+              "events": [
+                "insert",
+                "update"
+              ],
+              "fingerprint": "c7f96024ebd2056228db2904befc984d0cced1a61c9f9b7d8b7ae87f29d88920",
+              "function_schema": "security_master",
+              "function_signature": "protect_retained_loan_cash()",
+              "level": "row",
+              "name": "protect_retained_loan_cash",
+              "relation": "loan_state",
+              "schema": "security_master",
+              "timing": "before"
+            }
+          ]
         },
         {
           "acl": [
@@ -151283,6 +151601,22 @@
               "security_labels": [],
               "type_name": "numeric",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "fc396e9b914d876afc3c7f1b23ca1aa59718d0a403432a276b4bd4e2d2a3cbae",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "terms_json",
+              "nullable": true,
+              "ordinal_position": 29,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -151311,7 +151645,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "cbf8ca0cfcef40bcd82b6110963961bb3c5e702da2988621997d542f2fca078f",
+          "fingerprint": "cf986b5dcfea44faf4692dbb8b0aabae082669b70fffafede4f93e6371d1e24d",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -158667,9 +159001,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "5d19b1364a61e669eac3e650f9766d196d1c51153a51b6c41de1985f647db3f0",
+              "fingerprint": "4fff8b8f9d6c3dfe3a617459084da5d10ec5ce89fab4cf1c7abd5fc96ec5265c",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -158841,7 +159175,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "63ff98e25181a8396f6d7731aa3ecee7e6a00f1d494393c5c0562e59a24c3587",
+          "fingerprint": "457de52f05243f80d7d344a9b993fb04b3b861985a0fdc091397604054aa7bf3",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -161692,9 +162026,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "7b889fbc5348e0ba6ed6cb5d8e9b64c6e3efb2d7ee47fbfd33ee1f63b634e4f5",
+              "fingerprint": "4460aed8b0bef01a21bc448f8576db9f5f43f4d6906646f3b106759956a58130",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -161708,9 +162042,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "438834fad240e3163a8b8d45634028596e5627d2a4fba56e1695445105f77490",
+              "fingerprint": "ac22316ac7be3d77215ad190a31fb5e527409553806083e7fab6a408c641ac92",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -161724,9 +162058,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "ebd95a924680fdfd5f4d991946d73244ba1dafad86a85ea3b700e4ae3b3bcfdc",
+              "fingerprint": "1af2eaff53f7178851e125c1320625f3f9fba4892cb8b0dd999c3a8ad8be2e5a",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -161963,7 +162297,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "53ff7040b61aa83c6e47e7577bcfd943c9532ab53730e491c5ac9045ad41358c",
+          "fingerprint": "0c4b7400ca18b39e3f7a7df2aa2b82e444580c508d41b2876957b20720b036d7",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -179401,10 +179735,62 @@
               "security_labels": [],
               "type_name": "numeric",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric",
+              "default": "0",
+              "fingerprint": "72592d98d9f4b5ba9a38f3539026090ace2fc87de0c4eac411b632896131b668",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "prepaid_interest_applied",
+              "nullable": false,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "80ffc1ab66e664088a530336f892d1b0000104581674457e19ad9fedcd18cff9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "prepaid_interest_releases_json",
+              "nullable": true,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "prepaid_interest_applied"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (prepaid_interest_applied >= 0::numeric)",
+              "delete_action": null,
+              "fingerprint": "6f1549bb01f7030b50d4c8cbc4237275115235361959608cc74aec11a82ce4d3",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "accrual_entry_projection_prepaid_interest_applied_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
             {
               "columns": [
                 "accrual_entry_id"
@@ -179428,7 +179814,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "42b91836a41b845b80deed209c0e1f382a3b2a12b39440833935fd0bbec6861e",
+          "fingerprint": "b4c4b0a846b00316e5c3151c0b5b45b75196a9d333e53d15593dd28f1ec58e2b",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -181555,9 +181941,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "3c0d1bcfe79a28d787b381ac408b6ccea7c09e92451a600b5be4d3c699e7c014",
+              "fingerprint": "eb31aa29cfedbbdae5ee1ffa2950c5806e3afe841ccd6934731107edc85004f3",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -181734,7 +182120,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "13aa4f53afa420f1d489ab2226dcff0549c179616da1f35d0134cc11431180d9",
+          "fingerprint": "4c732f12949927e9b6f8832f341c7daa8c4a5891c164def8d287b6624c819246",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -193189,9 +193575,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "10cc84fd70db488db22a548999b2424587cf49ead52307a01c0301ed9f18aefe",
+              "fingerprint": "0b08c9eb13f762023456c7155402f9e706dbc9db633115baf605ccc4eaa40545",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -193205,9 +193591,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "47937f3d26f00e3175b8a58ce18dc9da7c2e9739d84785562f1d436a392d0e0e",
+              "fingerprint": "cd5c0519b731dfd8c0bc99a6ea32d487899259346860f1f29048de8adff1c3ce",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -193260,7 +193646,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "82c1ca1dbb42caad0019698e44f6a05e7dc7e2ff8e6ed07ed27e52b3066e7dbe",
+          "fingerprint": "6ca146bd347eababca5b964602f0bc6510a2e8564da67a1a280b95c774a13713",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -193794,9 +194180,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "8f7a9b647a624f3f431092c05a57ce4c9a95cb20a6d86d2f88f2a9637c73aa98",
+              "fingerprint": "95b94084244fc4b99130acf04774dfc8101efc4cf0fa2c13af37a98cebd47682",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -193810,9 +194196,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "798b7fa84c878576ed05cacb589838741db9ef14c6ad788dbcf3d995a0e1c08e",
+              "fingerprint": "9be34d541a497283513e4d652cb6eb0aa99431c5c7256bd64eb993dfb1744262",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -193941,7 +194327,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "a328529f049b824df62c5894b07c58b0abb18e3bb0fd5d13929165480969b662",
+          "fingerprint": "d02ee29d98327c682fd957929714eb9d076769142059ca474558212bd5a2b10f",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -195929,9 +196315,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": "0",
-              "fingerprint": "3bcdae609c2e9ba202e5fa07a0529f488c8bf20e8e31038f1b49a439ddfc8d41",
+              "fingerprint": "d961ab36550b7b8ccf37141dbda8a3c1f18d6c1695be880056131c6c63c4d112",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -195945,9 +196331,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": "0",
-              "fingerprint": "896e611ac6d9b7e8c2807dc92f38ea6aa639b4033e205403a80029311ca9fb96",
+              "fingerprint": "e8a5c747d53f7af04add8662bd188b5287171aea5f29622faf6fe5d94072509c",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -196075,7 +196461,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "3d462ad1fa33889428e59bbce3a2ad4b86f2a104ecb2485e9574798256d19ba8",
+          "fingerprint": "166c33a8c64911f3e725aae0de0351cc36b750a6e224423d2cd3906de34ba276",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -197054,9 +197440,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "4f120f1be40937dd2dc73d20aead6fc8e1c77659d1e01049fce38c4271f3a1dd",
+              "fingerprint": "8da969e5aa017310cb0efee6471ad9452d0e5974f962b8c864a0e581775a4e0e",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -197070,9 +197456,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "76fccd5af368ee9855e79ed10684c32b8804a3627b94097a3b37152e598a7e1c",
+              "fingerprint": "a0ee81f0b9b71a2a8993774b9c46a9e922a16bf609ccfbeda25c016c982f2ad7",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -197086,9 +197472,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "d8fa23a5fd23d4af602ad891c0a05675b5fb18b6aee996c47552bc71cc3ef520",
+              "fingerprint": "dc6b35c2fe6da8fad039aba5f2780f18487f0476838b2b8feab47ba8bc00e92c",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -197102,9 +197488,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "9d3128294325f16138dc6ac2f3338661bfe3affdf2d0216a3791d987474c2c18",
+              "fingerprint": "7493b3a0d7499122d8ad30133854c1cce17f2462f7a826398467b39b45d2e268",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -197118,9 +197504,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "bbb77bdda95131db9126a0f6c9d138a923caed9d031fbc903d530bcc060fc077",
+              "fingerprint": "86e4292c9d5c3620f88e3ea37c8987e68a2e5dee0bfd3babe00e979a4681255d",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -197134,9 +197520,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "19592d42bf86fd0f10476e58916af60312fc3bd6ed5443acc551301e87cf8f8c",
+              "fingerprint": "a0e78e3e01ebca24f3ffe384ced3b297eee441daf2e0f4aaa18f98cb6c2db057",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -197150,9 +197536,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "ebfbea59967a02470c37dffc41745831c25563222d21181353efc403dfe34493",
+              "fingerprint": "136d53ad3a2cb4e875f7c666046ba30aca9d45b4dd63ee25884cddebcfe8afd4",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -197166,9 +197552,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "5b9de4427ad193f60a49b69424e79a1fbfe463294553611fba139f0fdbc00763",
+              "fingerprint": "a485228f52ed39ce6ad08708bb02f5a8a89154f5c58f38c65e041f40f5a82ae7",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -197258,10 +197644,98 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric",
+              "default": "0",
+              "fingerprint": "b863971ed3020103bc11d2a9472c48652053e89520a11548f7ba470697b38799",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "unapplied_cash",
+              "nullable": false,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric",
+              "default": "0",
+              "fingerprint": "a390728be93e6a6a923ac45b0e277af764ef66303e56f331bce9eb699fe463d5",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "prepaid_interest",
+              "nullable": false,
+              "ordinal_position": 18,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "0d28c696ff799b63101e0fb2c8220e72c4a0521ad39a4366153446f65499f9b4",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "prepaid_interest_lots_json",
+              "nullable": true,
+              "ordinal_position": 19,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "prepaid_interest"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (prepaid_interest >= 0::numeric)",
+              "delete_action": null,
+              "fingerprint": "19a6dd2351e010b3acc96f9fea0d432c8425daa7e5f5446e52e4587087e19c1b",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "loan_servicing_projection_prepaid_interest_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "unapplied_cash"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (unapplied_cash >= 0::numeric)",
+              "delete_action": null,
+              "fingerprint": "50ca998c8c27ba1450e1580ad7aceabbc7354daadbbc24f0577f29e231c56ad9",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "loan_servicing_projection_unapplied_cash_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
             {
               "columns": [
                 "loan_id"
@@ -197285,7 +197759,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "e9429d9197cc3457510e0ec935cff730982229ce567b9138eaaf6e793a809aae",
+          "fingerprint": "3f0f8a57f1ea4911b61a856c15b3d2e20de9af713ee54936abd509a8a9551be9",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -197714,7 +198188,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "50cf56d7fa54e8267fff9863a5069d91b4e805987e71b8bbf3aae13e252c1022",
+          "fingerprint": "3f5858a0c1b90497149a551af7a6ff838c5e1d52a97eff053b13a5adedb415c7",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -197754,7 +198228,26 @@
           "schema": "security_master",
           "security_labels": [],
           "sequence": null,
-          "triggers": []
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER protect_retained_loan_cash BEFORE INSERT OR UPDATE ON security_master.loan_state FOR EACH ROW EXECUTE FUNCTION security_master.protect_retained_loan_cash()",
+              "definition_hash": "ec1c267ae862da804751c62a58d9160b636bc40366351a66e1d752dd3d2a4faa",
+              "enabled": "origin",
+              "events": [
+                "insert",
+                "update"
+              ],
+              "fingerprint": "c7f96024ebd2056228db2904befc984d0cced1a61c9f9b7d8b7ae87f29d88920",
+              "function_schema": "security_master",
+              "function_signature": "protect_retained_loan_cash()",
+              "level": "row",
+              "name": "protect_retained_loan_cash",
+              "relation": "loan_state",
+              "schema": "security_master",
+              "timing": "before"
+            }
+          ]
         },
         {
           "acl": [
@@ -198249,6 +198742,22 @@
               "security_labels": [],
               "type_name": "numeric",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "fc396e9b914d876afc3c7f1b23ca1aa59718d0a403432a276b4bd4e2d2a3cbae",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "terms_json",
+              "nullable": true,
+              "ordinal_position": 29,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -198277,7 +198786,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "cbf8ca0cfcef40bcd82b6110963961bb3c5e702da2988621997d542f2fca078f",
+          "fingerprint": "cf986b5dcfea44faf4692dbb8b0aabae082669b70fffafede4f93e6371d1e24d",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -205633,9 +206142,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "5d19b1364a61e669eac3e650f9766d196d1c51153a51b6c41de1985f647db3f0",
+              "fingerprint": "4fff8b8f9d6c3dfe3a617459084da5d10ec5ce89fab4cf1c7abd5fc96ec5265c",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -205807,7 +206316,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "63ff98e25181a8396f6d7731aa3ecee7e6a00f1d494393c5c0562e59a24c3587",
+          "fingerprint": "457de52f05243f80d7d344a9b993fb04b3b861985a0fdc091397604054aa7bf3",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -208658,9 +209167,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "7b889fbc5348e0ba6ed6cb5d8e9b64c6e3efb2d7ee47fbfd33ee1f63b634e4f5",
+              "fingerprint": "4460aed8b0bef01a21bc448f8576db9f5f43f4d6906646f3b106759956a58130",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -208674,9 +209183,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "438834fad240e3163a8b8d45634028596e5627d2a4fba56e1695445105f77490",
+              "fingerprint": "ac22316ac7be3d77215ad190a31fb5e527409553806083e7fab6a408c641ac92",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -208690,9 +209199,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(24,2)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "ebd95a924680fdfd5f4d991946d73244ba1dafad86a85ea3b700e4ae3b3bcfdc",
+              "fingerprint": "1af2eaff53f7178851e125c1320625f3f9fba4892cb8b0dd999c3a8ad8be2e5a",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -208929,7 +209438,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "53ff7040b61aa83c6e47e7577bcfd943c9532ab53730e491c5ac9045ad41358c",
+          "fingerprint": "0c4b7400ca18b39e3f7a7df2aa2b82e444580c508d41b2876957b20720b036d7",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -224495,6 +225004,24 @@
         }
       ],
       "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER protect_retained_loan_cash BEFORE INSERT OR UPDATE ON security_master.loan_state FOR EACH ROW EXECUTE FUNCTION security_master.protect_retained_loan_cash()",
+          "definition_hash": "ec1c267ae862da804751c62a58d9160b636bc40366351a66e1d752dd3d2a4faa",
+          "enabled": "origin",
+          "events": [
+            "insert",
+            "update"
+          ],
+          "fingerprint": "c7f96024ebd2056228db2904befc984d0cced1a61c9f9b7d8b7ae87f29d88920",
+          "function_schema": "security_master",
+          "function_signature": "protect_retained_loan_cash()",
+          "level": "row",
+          "name": "protect_retained_loan_cash",
+          "relation": "loan_state",
+          "schema": "security_master",
+          "timing": "before"
+        },
         {
           "comment": null,
           "definition": "CREATE TRIGGER otc_contract_lifecycle_append_only BEFORE DELETE OR UPDATE ON security_master.otc_contract_lifecycle_events FOR EACH ROW EXECUTE FUNCTION security_master.reject_otc_contract_lifecycle_mutation()",

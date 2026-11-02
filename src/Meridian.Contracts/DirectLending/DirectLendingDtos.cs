@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Contracts.DirectLending;
 
 public enum CurrencyCode : byte
@@ -121,7 +123,48 @@ public sealed record DirectLendingTermsDto(
     decimal? EffectiveRateCap = null,
     decimal? PrepaymentPenaltyRate = null,
     decimal? PurchasePrice = null,
-    DirectLendingSecurityMasterReferenceDto? SecurityMasterReference = null);
+    DirectLendingSecurityMasterReferenceDto? SecurityMasterReference = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    DirectLendingExcessPaymentPolicyDto? ExcessPaymentPolicy = null);
+
+public enum ExcessPaymentTreatment : byte
+{
+    HoldUnappliedCash = 0,
+    PrincipalPrepayment = 1,
+    PrepaidInterest = 2
+}
+
+/// <summary>
+/// An explicit contractual election for cash remaining after the supported payment allocation.
+/// Absence preserves the legacy terms hash and makes no new contractual election.
+/// </summary>
+public sealed record DirectLendingExcessPaymentPolicyDto(
+    int Version,
+    ExcessPaymentTreatment Treatment,
+    string ContractualReference,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    PrepaidInterestApplication Application = PrepaidInterestApplication.HoldForReview);
+
+public enum PrepaidInterestApplication : byte
+{
+    HoldForReview = 0,
+    FutureCashInterest = 1
+}
+
+public sealed record PrepaidInterestLotDto(
+    Guid CashTransactionId,
+    DateOnly ReceiptDate,
+    decimal OriginalAmount,
+    decimal RemainingAmount,
+    PrepaidInterestApplication Application,
+    string ContractualReference);
+
+public sealed record PrepaidInterestReleaseDto(Guid CashTransactionId, decimal Amount);
+
+public sealed record PrepaidInterestApplicationResultDto(
+    decimal AppliedAmount,
+    IReadOnlyList<PrepaidInterestLotDto> Lots,
+    IReadOnlyList<PrepaidInterestReleaseDto> Releases);
 
 public sealed record DirectLendingSecurityMasterReferenceDto(
     Guid SecurityId,
@@ -176,7 +219,10 @@ public sealed record OutstandingBalancesDto(
     decimal InterestAccruedUnpaid,
     decimal CommitmentFeeAccruedUnpaid,
     decimal FeesAccruedUnpaid,
-    decimal PenaltyAccruedUnpaid);
+    decimal PenaltyAccruedUnpaid,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] decimal UnappliedCash = 0m,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] decimal PrepaidInterest = 0m,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<PrepaidInterestLotDto>? PrepaidInterestLots = null);
 
 public sealed record DrawdownLotDto(
     Guid LotId,
@@ -209,7 +255,9 @@ public sealed record DailyAccrualEntryDto(
     decimal PenaltyAmount,
     decimal AnnualRateApplied,
     DateTimeOffset RecordedAt,
-    decimal PikInterestAmount = 0m);
+    decimal PikInterestAmount = 0m,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] decimal PrepaidInterestApplied = 0m,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<PrepaidInterestReleaseDto>? PrepaidInterestReleases = null);
 
 public sealed record LoanServicingStateDto(
     Guid LoanId,
@@ -284,7 +332,9 @@ public sealed record LoanSummaryDto(
     DateOnly OriginationDate,
     DateOnly MaturityDate,
     DateOnly? LastAccrualDate,
-    DateOnly? LastPaymentDate);
+    DateOnly? LastPaymentDate,
+    decimal UnappliedCash = 0m,
+    decimal PrepaidInterest = 0m);
 
 public sealed record LoanPortfolioSummaryDto(
     int TotalLoans,
@@ -300,7 +350,9 @@ public sealed record LoanPortfolioSummaryDto(
     decimal? TotalCollateralValue,
     IReadOnlyList<LoanSummaryDto> Loans,
     IReadOnlyList<LoanPortfolioCurrencyTotalsDto>? CurrencyTotals = null,
-    CurrencyCode? TotalCurrency = null);
+    CurrencyCode? TotalCurrency = null,
+    decimal? TotalUnappliedCash = null,
+    decimal? TotalPrepaidInterest = null);
 
 /// <summary>
 /// Unconverted totals in the retained loan or collateral currency. Portfolio scalar totals
@@ -316,7 +368,9 @@ public sealed record LoanPortfolioCurrencyTotalsDto(
     decimal? TotalInterestAccruedUnpaid,
     decimal? TotalPenaltyAccruedUnpaid,
     decimal? TotalAvailableToDraw,
-    decimal? TotalCollateralValue);
+    decimal? TotalCollateralValue,
+    decimal? TotalUnappliedCash = null,
+    decimal? TotalPrepaidInterest = null);
 
 public sealed record DirectLendingOperationsReadModelDto(
     DateTimeOffset AsOf,
